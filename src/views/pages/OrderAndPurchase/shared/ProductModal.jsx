@@ -24,40 +24,40 @@ const Header = styled.div`
 const ProductsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-items: start;
-  overflow-y: auto;
-  padding: 0 1em;
-  align-content: start;
   gap: 12px;
+  align-content: start;
+  align-items: start;
+  padding: 0 1em;
+  overflow-y: auto;
 `;
 
 const ProductCard = styled.button`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
   background-color: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   }
 `;
 
 const ImageContainer = styled.div`
   position: relative;
+  flex-shrink: 0;
   width: 60px;
   height: 60px;
-  flex-shrink: 0;
+  overflow: hidden;
   background-color: #f5f5f5;
   border-radius: 6px;
-  overflow: hidden;
 
   img,
   .placeholder-icon {
@@ -73,8 +73,8 @@ const ImageContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #d9d9d9;
     font-size: 20px;
+    color: #d9d9d9;
   }
 `;
 
@@ -83,38 +83,38 @@ const ProductInfo = styled.div`
   min-width: 0;
 
   .name {
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 13px;
     font-weight: 500;
     color: #262626;
-    margin-bottom: 4px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .barcode {
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 11px;
     color: #8c8c8c;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 
 const Wrapper = styled.div`
-  height: 100%;
-  overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   gap: 8px;
+  height: 100%;
+  overflow: hidden;
 `;
 
 const FooterRow = styled.div`
   display: flex;
   flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
   padding: 0 1em 0.2em;
 `;
 
@@ -122,28 +122,28 @@ const EmptyState = styled.div`
   display: grid;
   place-items: center;
   padding: 1.5em;
-  color: #8c8c8c;
   font-size: 0.9rem;
+  color: #8c8c8c;
 `;
 
 const SummaryPill = styled.button`
-  border: 1px solid #d9d9d9;
-  background: #f5f5f5;
-  border-radius: 999px;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
   padding: 0.35rem 0.8rem;
   font-size: 0.85rem;
-  color: #1f1f1f;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
   line-height: 1;
+  color: #1f1f1f;
+  cursor: pointer;
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  transition: all 0.2s ease;
 
   &:hover {
+    color: #0958d9;
     background: #e6f4ff;
     border-color: #91caff;
-    color: #0958d9;
   }
 
   &:focus-visible {
@@ -161,8 +161,8 @@ const TooltipContent = styled.div`
 const TooltipRow = styled.p`
   margin: 0;
   font-size: ${({ $muted }) => ($muted ? '0.78rem' : '0.82rem')};
-  color: ${({ $muted }) => ($muted ? '#8c8c8c' : '#262626')};
   line-height: 1.35;
+  color: ${({ $muted }) => ($muted ? '#8c8c8c' : '#262626')};
 `;
 
 const TooltipHighlight = styled.span`

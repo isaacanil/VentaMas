@@ -2,7 +2,7 @@ import { Table as AntTable } from 'antd';
 import styled from 'styled-components';
 
 export const StyledProductTable = styled(AntTable)`
-  background: #ffffff;
+  background: #fff;
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
@@ -12,7 +12,7 @@ export const StyledProductTable = styled(AntTable)`
   }
 
   .ant-table-thead > tr > th {
-    background: #ffffffff !important;
+    background: #ffff !important;
     color: #374151;
     font-weight: 600;
     font-size: 13px;
@@ -27,11 +27,13 @@ export const StyledProductTable = styled(AntTable)`
   }
 
   .ant-table-tbody > tr:hover > td {
-    background: rgba(204, 204, 204, 0.2) !important;
-    // border: 1px solid #dbeafe !important;
+    background: rgb(204 204 204 / 20%) !important;
+
+    /* border: 1px solid #dbeafe !important; */
   }
+
   .ant-table-tbody > tr:hover {
-    background: #ffffffff !important;
+    background: #ffff !important;
     border: 1px solid #dbeafe !important;
   }
 `;

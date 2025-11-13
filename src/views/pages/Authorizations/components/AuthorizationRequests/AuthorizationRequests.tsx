@@ -261,9 +261,9 @@ export const AuthorizationRequests = ({
 };
 
 const Container = styled(Card)`
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   .ant-card-body {
     display: flex;
@@ -275,15 +275,15 @@ const Container = styled(Card)`
 
 const FilterBar = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -291,11 +291,11 @@ const FilterBar = styled.div`
 
 const FilterSection = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
@@ -307,7 +307,7 @@ const FilterGroup = styled.div`
   gap: 12px;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
 
@@ -319,21 +319,21 @@ const FilterGroup = styled.div`
 
 const FilterLabel = styled.span`
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgb(0 0 0 / 85%);
 `;
 
 const CardsSection = styled.div`
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
   gap: 16px;
   overflow: hidden;
 `;
 
 const CardsSpin = styled(Spin)`
-  width: 100%;
   display: flex;
   flex: 1;
+  width: 100%;
 
   .ant-spin-container {
     display: flex;
@@ -342,8 +342,8 @@ const CardsSpin = styled(Spin)`
 `;
 
 const CardsContent = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
 `;
 
@@ -354,13 +354,13 @@ const CardsGrid = styled.div`
 `;
 
 const EmptyState = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  text-align: center;
   padding: 32px 16px;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgb(0 0 0 / 45%);
+  text-align: center;
   border: 1px dashed #d9d9d9;
   border-radius: 12px;
 `;

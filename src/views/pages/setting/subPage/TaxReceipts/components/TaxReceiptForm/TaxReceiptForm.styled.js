@@ -6,7 +6,7 @@ export const ModalLayout = styled.div`
   grid-template-columns: 1fr;
   gap: 24px;
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     grid-template-columns: 2fr 1fr;
     align-items: start;
   }
@@ -15,8 +15,7 @@ export const ModalLayout = styled.div`
 export const FormGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  row-gap: 8px;
-  column-gap: 16px;
+  gap: 8px 16px;
 `;
 
 export const FullRow = styled.div`
@@ -45,7 +44,7 @@ export const Span12 = styled.div`
 `;
 
 export const MobileOnly = styled.div`
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     display: none;
   }
 `;
@@ -53,7 +52,7 @@ export const MobileOnly = styled.div`
 export const DesktopOnly = styled.aside`
   display: none;
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     display: block;
   }
 `;
@@ -77,8 +76,8 @@ export const SequenceActionItem = styled(Form.Item)`
 export const AsidePanel = styled.div`
   position: sticky;
   top: 0;
-  padding: 12px 12px 4px 12px;
-  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 12px 4px;
+  background: rgb(0 0 0 / 2%);
+  border-left: 1px solid rgb(0 0 0 / 6%);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.02);
 `;

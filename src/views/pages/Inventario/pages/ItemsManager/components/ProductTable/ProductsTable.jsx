@@ -266,22 +266,22 @@ export const ProductsTable = ({ products, searchTerm }) => {
 };
 const ProductName = styled.div`
   display: flex;
+  gap: 1.2em;
   align-items: center;
   height: 100%;
-  gap: 1.2em;
 `;
 
 // Totales en el pie de tabla
 const TotalsContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
   font-weight: 600;
   white-space: nowrap;
 `;
 
 const Divider = styled.span`
-  color: var(--Gray6);
+  color: var(--gray6);
 `;
 
 // Píldora flotante con totales
@@ -290,20 +290,20 @@ const FloatingTotals = styled.div`
   right: 16px;
   bottom: 50px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
   padding: 8px 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  pointer-events: ${(p) => (p.$hidden ? 'none' : 'auto')};
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
   opacity: ${(p) => (p.$hidden ? 0 : 1)};
+  backdrop-filter: blur(6px);
   transform: translateY(${(p) => (p.$hidden ? '8px' : '0')});
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-  pointer-events: ${(p) => (p.$hidden ? 'none' : 'auto')};
-  @media (max-width: 600px) {
+
+  @media (width <= 600px) {
     right: 8px;
     bottom: 8px;
     padding: 6px 10px;
@@ -314,8 +314,9 @@ const FloatingTotals = styled.div`
 // Botón de cerrar con estilo mínimo (reutiliza antd Button)
 const CloseButton = styled(antd.Button)`
   margin-left: 8px;
-  color: var(--Gray6);
-  &:hover {
-    color: var(--Gray3);
+  color: var(--gray6);
+
+  &.ant-btn:hover {
+    color: var(--gray3);
   }
 `;

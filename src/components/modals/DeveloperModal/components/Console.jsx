@@ -181,12 +181,11 @@ const ConsoleContainer = styled.div`
 const ConsoleTerminal = styled.div`
   background-color: #0c0c0c;
   color: #c0c0c0;
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 14px;
   padding: 16px;
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   position: relative;
   cursor: text; /* Cursor de texto para indicar que es clickeable */
 
@@ -196,17 +195,17 @@ const ConsoleTerminal = styled.div`
     cursor: pointer !important; /* Mantener cursor pointer para elementos seleccionables */
 
     &:hover {
-      background-color: rgba(0, 102, 204, 0.15);
+      background-color: rgb(0 102 204 / 15%);
     }
 
     &.selected {
       position: relative;
 
-      &:after {
+      &::after {
         content: '';
         position: absolute;
         inset: 0;
-        border: 2px solid #0066cc;
+        border: 2px solid #06c;
         pointer-events: none;
         z-index: 10;
       }
@@ -217,9 +216,11 @@ const ConsoleTerminal = styled.div`
   &::-webkit-scrollbar {
     width: 16px;
   }
+
   &::-webkit-scrollbar-track {
     background: #000;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #808080;
     border: 1px solid #000;
@@ -232,6 +233,7 @@ const ConsoleTerminal = styled.div`
       background: #606060;
     }
   }
+
   &::-webkit-scrollbar-corner {
     background: #000;
   }
@@ -241,7 +243,7 @@ const WelcomeText = styled.div`
   color: #c0c0c0;
   margin-bottom: 0;
   white-space: pre-line;
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.2;
@@ -259,8 +261,8 @@ const ConsoleLine = styled.div`
     }
   }};
   white-space: pre-wrap;
-  word-wrap: break-word;
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  overflow-wrap: break-word;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.2;
@@ -281,16 +283,16 @@ const ConsoleLine = styled.div`
   }
 
   .prompt {
-    color: #c0c0c0; // Color del sistema para el prompt C:\VentaMax>
+    color: #c0c0c0; /* Color del sistema para el prompt C:\VentaMax> */
   }
 
   .user-command {
-    color: #f5deb3; // Color cremita solo para lo que escribe el usuario
+    color: #f5deb3; /* Color cremita solo para lo que escribe el usuario */
   }
 
   .selection-active {
-    color: #ffffff;
-    background-color: #0066cc;
+    color: #fff;
+    background-color: #06c;
     padding: 0 5px;
     margin-left: -5px;
     border-radius: 2px;
@@ -305,7 +307,7 @@ const ConsolePrompt = styled.span`
   color: #c0c0c0;
   margin-right: 0;
   user-select: none;
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 14px;
   font-weight: 400;
 `;
@@ -315,7 +317,7 @@ const ConsoleInput = styled.input`
   background: transparent;
   border: none;
   color: #f5deb3; /* Color cremita/beige para diferenciarlo del sistema */
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 14px;
   font-weight: 400;
   outline: none;

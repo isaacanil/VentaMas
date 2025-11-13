@@ -99,13 +99,13 @@ const InsuranceConfig = () => {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
+  height: 100%;
 `;
 
 const Content = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 1em;
 `;

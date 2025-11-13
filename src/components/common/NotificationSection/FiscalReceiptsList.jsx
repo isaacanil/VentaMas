@@ -9,8 +9,8 @@ const ReceiptListContainer = styled.div`
 
 const ReceiptItem = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 8px 12px;
   background: ${(props) =>
     props.alertLevel === 'critical'
@@ -29,24 +29,24 @@ const ReceiptItem = styled.div`
   transition: all 0.2s;
 
   &:hover {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   }
 `;
 
 const ReceiptInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
 `;
 
 const ReceiptName = styled.div`
-  font-weight: 500;
-  font-size: 12px;
-  color: #262626;
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #262626;
 `;
 
 const ReceiptSeries = styled.div`
@@ -56,8 +56,8 @@ const ReceiptSeries = styled.div`
 
 const ReceiptStatus = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   font-size: 11px;
   font-weight: 500;
   color: ${(props) =>
@@ -73,6 +73,7 @@ const StatusIcon = styled.i`
 `;
 
 const RemainingCount = styled.div`
+  min-width: 40px;
   font-size: 13px;
   font-weight: 600;
   color: ${(props) =>
@@ -82,20 +83,19 @@ const RemainingCount = styled.div`
         ? '#d48806'
         : '#389e0d'};
   text-align: right;
-  min-width: 40px;
 `;
 
 const EmptyState = styled.div`
-  text-align: center;
   padding: 20px;
-  color: #8c8c8c;
   font-size: 12px;
+  color: #8c8c8c;
+  text-align: center;
 `;
 
 const EmptyIcon = styled.i`
+  margin-bottom: 8px;
   font-size: 24px;
   color: #d9d9d9;
-  margin-bottom: 8px;
 `;
 
 /**

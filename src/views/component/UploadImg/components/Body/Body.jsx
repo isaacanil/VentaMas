@@ -32,8 +32,8 @@ const Container = styled.div`
 `;
 const BodyWrapper = styled.div`
   display: grid;
-  gap: 1em; // gap between rows
+  gap: 1em; /* gap between rows */
   margin-bottom: 1em;
-  grid-template-rows: min-content 1fr; // this was missing
+  grid-template-rows: min-content 1fr; /* this was missing */
   overflow: hidden;
 `;

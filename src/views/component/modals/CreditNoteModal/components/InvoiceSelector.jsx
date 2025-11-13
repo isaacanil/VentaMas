@@ -16,11 +16,12 @@ import { normalizeText } from '../../../../../utils/text';
 */
 
 const Wrapper = styled.div`
-  height: 100%;
   display: grid;
+
   /* Header | List | Footer */
   grid-template-rows: min-content 1fr min-content;
   gap: 8px;
+  height: 100%;
   overflow: hidden;
 `;
 
@@ -40,39 +41,39 @@ const InvoicesContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
+  align-content: start;
   padding: 0 1em 1.5em;
   overflow-y: auto;
-  align-content: start;
 `;
 
 const InvoiceCard = styled.div`
+  padding: 12px 14px;
+  cursor: pointer;
   background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
   border: 1px solid
     ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
-  padding: 12px 14px;
   border-radius: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1890ff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
   }
 
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 8px;
   }
 
   .number {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     font-size: 15px;
     font-weight: 600;
     color: #262626;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .date {
@@ -104,41 +105,41 @@ const InvoiceCard = styled.div`
 `;
 
 const InvoiceInfo = styled.div`
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  background: #fff;
-  transition: border-color 0.2s;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 10px 12px;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
   opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
+  transition: border-color 0.2s;
 
   &:hover {
     border-color: ${({ $disabled }) => ($disabled ? '#d9d9d9' : '#1890ff')};
   }
 
   &.empty {
-    justify-content: center;
     align-items: center;
-    color: #8c8c8c;
+    justify-content: center;
     min-height: 64px;
+    color: #8c8c8c;
   }
 
   .invoice-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
 
   .invoice-number {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     font-size: 15px;
     font-weight: 600;
     color: #262626;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .invoice-details {

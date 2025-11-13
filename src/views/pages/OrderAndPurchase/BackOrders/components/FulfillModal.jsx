@@ -22,7 +22,7 @@ const FulfillModal = ({ open, onCancel, onConfirm, group, loading }) => {
       open={open}
       onCancel={onCancel}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       {!group ? null : (
         <Space direction="vertical" size={12} style={{ width: '100%' }}>

@@ -6,21 +6,21 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ActionButtonsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  flex-shrink: 0;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: auto;
   background: inherit;
 `;
 
 const ActionButton = styled.button`
+  display: flex;
+  margin-left: 5px;
+  cursor: pointer;
   background: none;
   border: none;
-  display: flex;
-  cursor: pointer;
-  margin-left: 5px;
 
   &:hover {
     color: #0056b3;

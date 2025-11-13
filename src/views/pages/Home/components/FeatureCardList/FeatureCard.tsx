@@ -55,39 +55,39 @@ export const FeatureCard = ({ card }: FeatureCardProps): JSX.Element => {
 };
 
 const FeatureCardIcon = styled.div`
-  font-size: 1.3em;
-  width: 1.3em;
-  height: 1.3em;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  width: 1.3em;
+  height: 1.3em;
+  font-size: 1.3em;
   color: #0086df;
   transition: color 0.2s ease-in-out;
-  flex-shrink: 0;
 `;
 
 const FeatureCardTitle = styled.span`
-  color: #2c3e50;
-  font-size: 0.95em;
-  font-weight: 500;
-  white-space: nowrap;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #2c3e50;
+  white-space: nowrap;
   transition: color 0.2s ease-in-out;
-  flex: 1;
 `;
 
 const cardBaseStyles = css`
-  border-radius: 8px;
-  background-color: #fff;
-  min-height: 3em;
-  border: 1px solid #eaeaea;
-  width: 100%;
-  padding: 0.6em 1em;
   display: flex;
-  align-items: center;
   gap: 0.8em;
+  align-items: center;
+  width: 100%;
+  min-height: 3em;
+  padding: 0.6em 1em;
   text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
   transition:
     background-color 0.2s ease-in-out,
     border-color 0.2s ease-in-out;
@@ -113,5 +113,6 @@ const Container = styled(Link)`
 
 const ActionContainer = styled.div`
   ${cardBaseStyles}
+
   cursor: pointer;
 `;

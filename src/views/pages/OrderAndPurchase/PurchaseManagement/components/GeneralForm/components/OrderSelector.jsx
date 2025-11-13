@@ -16,18 +16,18 @@ import { normalizeText } from '../../../../../../../utils/text';
 import { calculateOrderTotals } from '../../../../OrderManagement/utils/orderCalculationsUtil';
 
 const Wrapper = styled.div`
-  height: 100%;
-  overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
   gap: 8px;
+  height: 100%;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
-  padding: 0 1em;
   display: flex;
   gap: 8px;
   align-items: center;
+  padding: 0 1em;
 
   .search-container {
     flex: 1;
@@ -37,39 +37,39 @@ const Header = styled.div`
 const OrdersContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-items: start;
-  overflow-y: auto;
-  padding: 0 1em;
-  align-content: start;
   gap: 12px;
+  align-content: start;
+  align-items: start;
+  padding: 0 1em;
+  overflow-y: auto;
 
   .empty-container {
-    grid-column: 1 / -1;
     display: flex;
-    justify-content: center;
+    grid-column: 1 / -1;
     align-items: center;
-    min-height: 200px;
+    justify-content: center;
     width: 100%;
+    min-height: 200px;
 
-    .ant-empty {
+        .ant-empty {
       .ant-empty-description {
-        color: #8c8c8c;
         font-size: 14px;
+        color: #8c8c8c;
       }
     }
   }
 `;
 
 const OrderCard = styled.div`
+  padding: 12px;
+  cursor: pointer;
   background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
   border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
   border-radius: 8px;
-  padding: 12px;
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   }
 
   .order-number {
@@ -84,9 +84,9 @@ const OrderCard = styled.div`
   }
 
   .order-total {
+    margin-top: 4px;
     font-size: 14px;
     color: #262626;
-    margin-top: 4px;
   }
 `;
 

@@ -15,8 +15,8 @@ export const BusinessName = ({
 };
 
 const StyledBusinessName = styled.h2`
-  font-size: 1rem;
-  font-weight: 500;
+  padding-left: 2px;
+  margin: 0;
   font-family:
     'SF Pro Text',
     -apple-system,
@@ -24,11 +24,12 @@ const StyledBusinessName = styled.h2`
     'Segoe UI',
     Roboto,
     sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--color-gray-500, #718096);
-  margin: 0;
+  color: transparent;
   letter-spacing: -0.3px;
-  opacity: 0.9;
-  padding-left: 2px;
+  text-shadow: 0 1px 1px rgb(255 255 255 / 50%);
 
   /* Add subtle gradient background to the text */
   background-image: linear-gradient(
@@ -36,8 +37,6 @@ const StyledBusinessName = styled.h2`
     var(--color-gray-600, #4a5568),
     var(--color-gray-500, #718096)
   );
-  -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
-  text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.5);
+  opacity: 0.9;
 `;

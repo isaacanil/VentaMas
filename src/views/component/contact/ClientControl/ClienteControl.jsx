@@ -280,21 +280,21 @@ const Container = styled.div`
   position: relative;
   display: grid;
   gap: 6px;
+  width: 100%;
   margin: 0;
   border: 0;
-  width: 100%;
 `;
 const Header = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 2.64em;
   position: relative;
   z-index: 10;
+  display: flex;
   gap: 0.5em;
-  background-color: var(--Gray8);
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.64em;
   padding: 0 0.5em;
+  background-color: var(--gray-8);
 
   .ant-input-affix-wrapper {
     border-right: none;
@@ -312,11 +312,11 @@ const InputWrapper = styled.div`
 `;
 
 const ClientButton = styled(AntButton)`
-  border-radius: 0;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 32px;
+  border-radius: 0;
 
   &.ant-btn-primary {
     background-color: #1890ff;
@@ -330,10 +330,10 @@ const ClientButton = styled(AntButton)`
 
 const ControlsContainer = styled.div`
   display: flex;
+  gap: 12px;
   align-items: center;
   width: 100%;
   padding: 0 6px;
-  gap: 12px;
 
   .ant-select {
     width: 200px;
@@ -344,7 +344,7 @@ const ControlsContainer = styled.div`
   }
 
   .ant-checkbox-wrapper {
-    white-space: nowrap;
     margin-left: auto;
+    white-space: nowrap;
   }
 `;

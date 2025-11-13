@@ -92,7 +92,7 @@ const DoctorModal = () => {
   return (
     <Modal
       title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MedicineBoxOutlined />
           {isEditMode ? 'Editar Médico' : 'Agregar Médico'}
         </div>
@@ -112,7 +112,7 @@ const DoctorModal = () => {
           {isEditMode ? 'Actualizar' : 'Agregar'}
         </Button>,
       ]}
-      destroyOnClose
+      destroyOnHidden
       width={500}
     >
       <Form

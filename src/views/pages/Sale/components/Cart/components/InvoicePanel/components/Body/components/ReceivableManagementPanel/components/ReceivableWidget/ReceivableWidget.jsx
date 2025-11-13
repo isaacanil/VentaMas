@@ -153,21 +153,21 @@ export const ReceivableWidget = ({
 };
 
 const WidgetContainer = styled.div`
+  padding: 16px;
+  margin-top: 8px;
   background-color: white;
   border: 1px solid #dee2e6;
   border-radius: 12px;
-  padding: 16px;
-  margin-top: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
   transition: all 0.3s ease;
 `;
 
 const WidgetHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: space-between;
   padding-bottom: 8px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #e9ecef;
 `;
 
@@ -187,22 +187,22 @@ const BalanceBadge = styled.div`
 `;
 
 const BalanceLabel = styled.span`
+  margin-bottom: 2px;
   font-size: 10px;
+  font-weight: 500;
   color: #6c757d;
   text-transform: uppercase;
-  font-weight: 500;
   letter-spacing: 0.5px;
-  margin-bottom: 2px;
 `;
 
 const BalanceValue = styled.span`
+  padding: 2px 6px;
   font-size: 12px;
   font-weight: 600;
   color: #856404;
-  padding: 2px 6px;
   background: #fff3cd;
-  border-radius: 6px;
   border: 1px solid #ffeaa7;
+  border-radius: 6px;
 `;
 
 const WidgetContent = styled.div`
@@ -220,47 +220,47 @@ const InfoRow = styled.div`
 const ActionButtonsRow = styled.div`
   display: flex;
   gap: 8px;
-  margin-top: 12px;
   padding-top: 12px;
+  margin-top: 12px;
   border-top: 1px solid #e9ecef;
 `;
 
 const InfoItem = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   min-width: 0;
 `;
 
 const InfoIcon = styled.div`
-  color: #6c757d;
-  font-size: 14px;
   flex-shrink: 0;
+  font-size: 14px;
+  color: #6c757d;
 `;
 
 const InfoDetails = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
-  flex: 1;
 `;
 
 const InfoLabel = styled.span`
+  margin-bottom: 2px;
   font-size: 10px;
+  font-weight: 500;
   color: #6c757d;
   text-transform: uppercase;
-  font-weight: 500;
   letter-spacing: 0.5px;
-  margin-bottom: 2px;
 `;
 
 const InfoValue = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
   font-weight: 600;
   color: ${(props) => (props.highlighted ? '#856404' : '#212529')};
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 export default ReceivableWidget;

@@ -27,12 +27,11 @@ export const QRCodeControl = ({ product, value }) => {
   );
 };
 const Container = styled.div`
-  width: 100%;
   display: grid;
-  align-items: center;
-  justify-content: center;
   gap: 0.6em;
-  justify-items: center;
+  place-items: center center;
+  justify-content: center;
+  width: 100%;
 `;
 const StyledQRCode = styled(QRCode)`
   /* Estilos CSS aquí */
@@ -42,11 +41,12 @@ const StyledQRCode = styled(QRCode)`
 `;
 
 const Icon = styled.div`
-  width: 100%;
-  height: 6.3em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 6.3em;
+
   svg {
     font-size: 4em;
   }

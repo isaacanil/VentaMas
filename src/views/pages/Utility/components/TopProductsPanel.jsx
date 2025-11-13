@@ -107,21 +107,21 @@ const ProductsContainer = styled.div`
 const MetricsHeader = styled.div`
   display: none;
 
-  @media (min-width: 720px) {
+  @media (width >= 720px) {
     display: grid;
     grid-template-columns: minmax(0, 2.2fr) repeat(4, minmax(110px, 1fr));
     align-items: center;
     padding: 0 1rem;
     font-size: 0.7rem;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #94a3b8;
   }
 `;
 
 const HeaderCell = styled.span`
-  text-align: ${({ align }) => align || 'left'};
   font-weight: 600;
+  text-align: ${({ align }) => align || 'left'};
 `;
 
 const ProductsList = styled.div`
@@ -135,11 +135,11 @@ const ProductRow = styled.div`
   grid-template-columns: minmax(0, 2.2fr) repeat(4, minmax(110px, 1fr));
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  border-radius: 18px;
   background: #f8fafc;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%);
 
-  @media (max-width: 719px) {
+  @media (width <= 719px) {
     grid-template-columns: 1fr;
     padding: 0.85rem;
   }
@@ -153,16 +153,16 @@ const ProductInfo = styled.div`
 `;
 
 const Badge = styled.span`
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  background: rgba(79, 70, 229, 0.16);
-  color: #4f46e5;
-  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
   font-size: 0.85rem;
+  font-weight: 600;
+  color: #4f46e5;
+  background: rgb(79 70 229 / 16%);
+  border-radius: 10px;
 `;
 
 const ProductMeta = styled.div`
@@ -175,7 +175,7 @@ const MetricCell = styled.div`
   gap: 0.25rem;
   align-items: flex-end;
 
-  @media (max-width: 719px) {
+  @media (width <= 719px) {
     align-items: flex-start;
   }
 `;
@@ -186,7 +186,7 @@ const MetricLabel = styled.span`
   text-transform: uppercase;
   letter-spacing: 0.04em;
 
-  @media (min-width: 720px) {
+  @media (width >= 720px) {
     display: none;
   }
 `;

@@ -58,19 +58,19 @@ export const TableHeader = ({
 };
 
 const Container = styled.div`
-  display: grid;
-  align-items: center;
-  gap: 1em;
-  color: var(--Gray7);
-  font-size: 14px;
-  border-bottom: var(--border-primary);
-  border-top: var(--border-primary);
-  font-weight: 500;
-  background-color: white;
   position: sticky;
   top: 0;
   z-index: 1;
+  display: grid;
+  gap: 1em;
+  align-items: center;
   width: 100%;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray7);
+  background-color: white;
+  border-top: var(--border-primary);
+  border-bottom: var(--border-primary);
 `;
 const sizeHeights = {
   small: '2.1em',
@@ -79,26 +79,33 @@ const sizeHeights = {
 };
 
 const HeaderCell = styled.div`
-  display: flex;
   align-items: center;
-  padding: 0 10px;
-  height: ${() => sizeHeights.medium};
-  &[data-size='small'] {
-    height: ${sizeHeights.small};
-  }
-  &[data-size='large'] {
-    height: ${sizeHeights.large};
-  }
+  display: flex;
   font-weight: bold;
   gap: 0.6em;
+  height: ${() => sizeHeights.medium};
+  justify-content: ${(props) => props.align || 'flex-start'};
+  overflow: hidden;
+  padding: 0 10px;
   position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
+  text-align: ${(props) => props.align || 'left'};
+  white-space: nowrap;
+
+    &[data-size='small'] {
+    height: ${sizeHeights.small};
+  }
+
+    &[data-size='large'] {
+    height: ${sizeHeights.large};
+  }
+
   ${(props) =>
     props.fixed === 'left' &&
     `
     left: 0;
     z-index: 2;
     background-color: #ffffff;
-    border-right: 1px solid var(--Gray3);
+    border-right: 1px solid var(--gray-3);
   `}
   ${(props) =>
     props.fixed === 'right' &&
@@ -106,12 +113,9 @@ const HeaderCell = styled.div`
     right: 0;
     z-index: 2;
     background-color: #ffffff;
-    border-left: 1px solid var(--Gray3);
+    border-left: 1px solid var(--gray-3);
   `}
-  justify-content: ${(props) => props.align || 'flex-start'};
-  text-align: ${(props) => props.align || 'left'};
-  overflow: hidden;
-  white-space: nowrap;
+
   @media (width <= 1600px) {
     min-width: ${(props) => props.minWidth || '100px'};
     max-width: ${(props) => props.maxWidth || '1fr'};
@@ -120,15 +124,14 @@ const HeaderCell = styled.div`
 
 const MotionIcon = styled(motion.div)`
   display: flex;
-  align-items: center;
-  color: var(--color);
-  font-size: 1.4em;
-  min-width: 1em;
-  display: flex;
-  justify-items: center;
+  place-items: center center;
   justify-content: center;
+  min-width: 1em;
+  font-size: 1.4em;
+  color: var(--color);
+
   svg {
-    color: inherit;
     font-size: inherit;
+    color: inherit;
   }
 `;

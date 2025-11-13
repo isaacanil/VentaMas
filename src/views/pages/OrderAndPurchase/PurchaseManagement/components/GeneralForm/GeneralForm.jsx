@@ -394,13 +394,14 @@ const Group = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1em;
+
   @media (width <= 768px) {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 `;
 const InvoiceDetails = styled.div`
-  overflow-x: auto;
   display: grid;
   grid-template-columns: 300px 200px 200px 200px;
   gap: 0.4em;
+  overflow-x: auto;
 `;

@@ -128,8 +128,8 @@ export const DateRangeFilter = ({ setDates, dates }) => {
 };
 
 const Header = styled.div`
-  background-color: white;
   padding: 0.5em 1em;
+  background-color: white;
 `;
 
 const Body = styled.div`
@@ -139,51 +139,52 @@ const Body = styled.div`
 
 const Options = styled.div`
   display: grid;
-  gap: 2em 1em;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2em 1em;
 `;
 
 const StyledButton = styled.div``;
 
 const StyledMenu = styled.ul`
-  max-width: 800px;
-  width: 100%;
-  height: calc(100vh - 12em);
-  align-content: start;
-  overflow-y: scroll;
+  z-index: 100000;
   display: flex;
   flex-direction: column;
+  align-content: start;
+  width: 100%;
+  max-width: 800px;
+  height: calc(100vh - 12em);
+  padding: 0;
+  overflow-y: scroll;
+  overflow-y: hidden;
+  list-style: none;
   background-color: #f1f1f1;
   border: 1px solid #ccc;
   border-radius: var(--border-radius);
-  padding: 0;
-  list-style: none;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.212);
-  z-index: 100000;
+  box-shadow: 0 0 10px rgb(0 0 0 / 21.2%);
   transition: opacity 0.2s ease-in-out;
-  overflow-y: hidden;
 `;
 
 const StyledMenuItem = styled.li`
-  list-style: none;
   display: flex;
   align-items: center;
-  padding: 0 1em;
   height: 2.6em;
+  padding: 0 1em;
   margin: 0;
-  font-weight: 450;
   font-size: 14px;
-  border-radius: 6px;
-  background-color: ${(props) => (props.isActive ? '#2772e4' : '#ffffff')};
+  font-weight: 450;
   color: ${(props) => (props.isActive ? '#ffffff' : '#000000')};
   text-transform: capitalize;
+  list-style: none;
+  background-color: ${(props) => (props.isActive ? '#2772e4' : '#ffffff')};
+  border-radius: 6px;
 `;
 const OptionsGroup = styled.div`
   display: grid;
-  align-content: start;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  text-align: left;
   gap: 0.5em;
+  align-content: start;
+  text-align: left;
+
   h3 {
     font-size: 14px;
     font-weight: 600;
@@ -194,10 +195,11 @@ const OptionsGroup = styled.div`
 const Items = styled.div`
   display: grid;
   gap: 0.5em;
-  text-align: left;
   padding: 0;
   margin: 0;
-  @media (max-width: 800px) {
+  text-align: left;
+
+  @media (width <= 800px) {
     grid-template-columns: 1fr;
   }
 `;

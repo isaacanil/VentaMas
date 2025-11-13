@@ -142,18 +142,18 @@ export const Utility = () => {
 const Container = styled.div`
   display: grid;
   grid-template-rows: auto 1fr;
-  min-height: 100vh;
   height: 100vh;
-  background: ${colors.background.canvas};
+  min-height: 100vh;
   color: ${colors.text.primary};
+  background: ${colors.background.canvas};
 `;
 
 const DashboardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing.xxl};
-  overflow-y: auto;
   padding: ${spacing.xxl};
+  overflow-y: auto;
 `;
 
 const ComparisonSection = styled.div`
@@ -164,6 +164,6 @@ const ComparisonSection = styled.div`
 
 const AnalyticsGrid = styled.div`
   display: grid;
-  gap: ${spacing.xxl};
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: ${spacing.xxl};
 `;

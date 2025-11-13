@@ -39,7 +39,7 @@ const DropdownMenuComponent = forwardRef(
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                padding: '0.4em 0.4em ',
+                padding: '0.4em',
               }}
             >
               <Button onClick={deleteAllItems}>Deselecionar todo</Button>
@@ -118,20 +118,19 @@ const Container = styled.div`
   position: absolute;
   top: 100%;
   left: 0;
-  border-radius: 10px;
-  border: 1px solid #ccc;
   z-index: 1000;
-  overflow: hidden;
   width: 100%;
+  overflow: hidden;
   background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
 `;
 const Wrapper = styled.div`
-  display: grid;
-  grid-template-rows: min-content 1fr;
-
   top: 100%;
   left: 0;
+  display: grid;
+  grid-template-rows: min-content 1fr;
   height: calc(100vh - 9em);
 `;
 const CategoryList = styled.div`
@@ -141,13 +140,14 @@ const CategoryList = styled.div`
   gap: 0.4em;
 `;
 const CategoriesContainer = styled.div`
+
   /* estilos para el contenedor de las categorías */
   display: grid;
   gap: 2em;
-  padding: 0 0.4em;
   align-content: start;
-  overflow-y: auto;
   height: calc(100vh - 9em);
+  padding: 0 0.4em;
+  overflow-y: auto;
 `;
 
 const Categories = styled.div`
@@ -157,23 +157,23 @@ const Categories = styled.div`
   padding: 0 0.4em;
 `;
 const Body = styled.div`
+
   /* estilos para el cuerpo del menú desplegable */
 
   display: grid;
-  align-content: start;
-
-  overflow-y: auto;
   gap: 0.6em;
+  align-content: start;
   padding-bottom: 1em;
+  overflow-y: auto;
 `;
 
 const Header = styled.div`
-  /* estilos para el header */
-  padding: 0.4em;
   display: grid;
   grid-template-columns: 1fr min-content;
-
   align-items: center;
+
+  /* estilos para el header */
+  padding: 0.4em;
   font-weight: bold;
   border-bottom: 1px solid #ccc;
 `;

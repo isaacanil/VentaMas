@@ -11,14 +11,15 @@ export const Footer = ({ onSubmit, onCancel }) => {
 };
 
 const Container = styled.div`
-  background-color: #ffffff96;
-  backdrop-filter: blur(5px);
-  padding: 0.4em;
   position: sticky;
   bottom: 0;
+  padding: 0.4em;
+  background-color: #ffffff96;
+  border: var(--border-primary);
+
   /* position: absolute;
       bottom: 4px;
       right: 0; */
   border-radius: var(--border-radius);
-  border: var(--border-primary);
+  backdrop-filter: blur(5px);
 `;

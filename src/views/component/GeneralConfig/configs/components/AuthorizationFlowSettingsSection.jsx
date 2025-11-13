@@ -219,13 +219,13 @@ const Container = styled.div`
 
 const SectionContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1em;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px;
   background-color: #fdfdfdff;
-  border-radius: 12px;
   border: 1px solid #e5e9f2;
+  border-radius: 12px;
 `;
 
 const InfoBlock = styled.div`
@@ -244,7 +244,7 @@ const InfoTitle = styled.h4`
 const InfoDescription = styled.p`
   margin: 0;
   font-size: 14px;
-  color: rgba(31, 41, 51, 0.6);
+  color: rgb(31 41 51 / 60%);
 `;
 
 const ToggleButton = styled.button`
@@ -255,12 +255,12 @@ const ToggleButton = styled.button`
   width: 44px;
   height: 24px;
   padding: 0;
-  border-radius: 999px;
-  border: none;
-  background-color: ${({ $checked }) => ($checked ? '#2abf88' : '#b8c2cc')};
-  transition: background-color 0.2s ease;
   cursor: pointer;
   outline: none;
+  background-color: ${({ $checked }) => ($checked ? '#2abf88' : '#b8c2cc')};
+  border: none;
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
 
   &:disabled {
     cursor: not-allowed;
@@ -274,9 +274,9 @@ const ToggleThumb = styled.span`
   left: ${({ $checked }) => ($checked ? '22px' : '2px')};
   width: 20px;
   height: 20px;
+  background-color: #fff;
   border-radius: 50%;
-  background-color: #ffffff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 30%);
   transition: left 0.2s ease;
 `;
 
@@ -287,7 +287,6 @@ const StatusCard = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-radius: 10px;
   background-color: ${({ $type }) =>
     $type === 'info' ? 'rgba(42, 191, 136, 0.12)' : 'rgba(245, 158, 11, 0.15)'};
   border: 1px solid
@@ -295,25 +294,26 @@ const StatusCard = styled.div`
       $type === 'info'
         ? 'rgba(42, 191, 136, 0.35)'
         : 'rgba(245, 158, 11, 0.35)'};
+  border-radius: 10px;
 `;
 
 const StatusHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const StatusIndicator = styled.span`
   width: 10px;
   height: 10px;
-  border-radius: 50%;
   background-color: ${({ $type }) =>
     $type === 'info' ? '#2abf88' : '#f59e0b'};
+  border-radius: 50%;
 `;
 
 const StatusTitle = styled.span`
-  font-weight: 600;
   font-size: 15px;
+  font-weight: 600;
   color: ${({ $type }) => ($type === 'info' ? '#0f5132' : '#8a3b00')};
 `;
 
@@ -321,19 +321,19 @@ const StatusDescription = styled.p`
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
-  color: rgba(31, 41, 51, 0.75);
+  color: rgb(31 41 51 / 75%);
 `;
 
 const HistoryLink = styled.button`
   align-self: flex-start;
   padding: 0;
-  border: none;
-  background: none;
-  color: #1570ef;
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
+  color: #1570ef;
   text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
 
   &:hover {
     color: #0b4abf;
@@ -346,8 +346,8 @@ const ModulesSection = styled.div`
   gap: 12px;
   padding: 16px;
   background-color: #f8f9fb;
-  border-radius: 12px;
   border: 1px solid #e5e9f2;
+  border-radius: 12px;
 `;
 
 const ModulesTitle = styled.h4`
@@ -360,7 +360,7 @@ const ModulesTitle = styled.h4`
 const ModulesDescription = styled.p`
   margin: 0;
   font-size: 13px;
-  color: rgba(31, 41, 51, 0.65);
+  color: rgb(31 41 51 / 65%);
 `;
 
 const ModulesGrid = styled.div`
@@ -376,13 +376,13 @@ const ModuleCard = styled.div`
   gap: 8px;
   padding: 14px;
   background-color: white;
-  border-radius: 8px;
   border: 1px solid #e1e8ed;
+  border-radius: 8px;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1570ef;
-    box-shadow: 0 2px 8px rgba(21, 112, 239, 0.1);
+    box-shadow: 0 2px 8px rgb(21 112 239 / 10%);
   }
 `;
 
@@ -392,15 +392,15 @@ const ModuleHeader = styled.div`
 `;
 
 const ModuleLabel = styled.span`
+  margin-left: 4px;
   font-size: 14px;
   font-weight: 600;
   color: #1f2933;
-  margin-left: 4px;
 `;
 
 const ModuleDescription = styled.p`
   margin: 0 0 0 24px;
   font-size: 13px;
   line-height: 1.4;
-  color: rgba(31, 41, 51, 0.6);
+  color: rgb(31 41 51 / 60%);
 `;

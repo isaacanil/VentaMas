@@ -105,14 +105,14 @@ const Header = styled.div`
 `;
 const Body = styled.div`
   display: grid;
-  align-content: start;
   gap: 1em;
+  align-content: start;
 `;
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  gap: 1.4em;
+  align-content: start;
   width: 100%;
   background-color: white;
-  grid-template-rows: min-content 1fr min-content;
-  display: grid;
-  align-content: start;
-  gap: 1.4em;
 `;

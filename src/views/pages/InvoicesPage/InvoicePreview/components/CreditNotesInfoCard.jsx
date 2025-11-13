@@ -94,21 +94,21 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
 `;
 
 const CardTitle = styled.h3`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 `;
 
 const CardSummary = styled.div`
@@ -126,15 +126,15 @@ const SummaryItem = styled.div`
 
 const SummaryLabel = styled.span`
   font-size: 0.75rem;
-  color: #666;
   font-weight: 500;
+  color: #666;
 `;
 
 const SummaryValue = styled.span`
+  font-family: monospace;
   font-size: 0.875rem;
   font-weight: 600;
   color: #1890ff;
-  font-family: monospace;
 `;
 
 const CardContent = styled.div`
@@ -150,12 +150,12 @@ const Section = styled.div`
 `;
 
 const SectionTitle = styled.h4`
-  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  margin: 0 0 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
 `;
 
 const ItemsList = styled.div`
@@ -165,11 +165,11 @@ const ItemsList = styled.div`
 `;
 
 const CreditNoteItem = styled.div`
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #f8f9fa;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  margin-bottom: 0.75rem;
 
   &:last-child {
     margin-bottom: 0;
@@ -178,23 +178,23 @@ const CreditNoteItem = styled.div`
 
 const ItemHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
 `;
 
 const ItemNCF = styled.span`
-  font-weight: 600;
-  color: #333;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
 `;
 
 const ItemAmount = styled.span`
-  font-weight: 600;
-  color: #1890ff;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #1890ff;
 `;
 
 const ItemDetails = styled.div`
@@ -210,17 +210,17 @@ const ItemDetail = styled.div`
 `;
 
 const DetailLabel = styled.span`
-  font-size: 0.75rem;
-  color: #666;
-  font-weight: 500;
   min-width: 60px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
 `;
 
 const DetailValue = styled.span`
-  font-size: 0.75rem;
-  color: #333;
-  font-weight: 500;
   display: flex;
-  align-items: center;
   gap: 0.25rem;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #333;
 `;

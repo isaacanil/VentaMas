@@ -288,8 +288,8 @@ const SelectContainer = styled.div`
   gap: 8px;
 
   label {
-    font-weight: 500;
     font-size: 16px;
+    font-weight: 500;
   }
 `;
 
@@ -307,26 +307,25 @@ const TemplatesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
-
   padding-right: 8px;
 `;
 
 const TemplateCard = styled(Card)`
+  position: relative;
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  transition: all 0.3s;
+  background-color: ${(props) => {
+    if (props.disabled) return '#f5f5f5';
+    return props.selected ? '#f0f8ff' : '#fff';
+  }};
   border: 2px solid
     ${(props) => {
       if (props.disabled) return '#f0f0f0';
       return props.selected ? '#1890ff' : '#f0f0f0';
     }};
-  background-color: ${(props) => {
-    if (props.disabled) return '#f5f5f5';
-    return props.selected ? '#f0f8ff' : '#fff';
-  }};
-  position: relative;
   opacity: ${(props) => (props.disabled ? 0.7 : 1)};
+  transition: all 0.3s;
 
-  &:hover {
+    &:hover {
     box-shadow: ${(props) =>
       props.disabled ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)'};
   }
@@ -340,29 +339,29 @@ const ExistingOverlay = styled.div`
   position: absolute;
   top: 8px;
   right: 8px;
-  background-color: #ff4d4f;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  color: white;
+  background-color: #ff4d4f;
+  border-radius: 4px;
 `;
 
 const CardHeader = styled.div`
-  border-bottom: 1px solid #f0f0f0;
   padding-bottom: 12px;
   margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 
   h4 {
-    margin: 0 0 6px 0;
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
     color: ${(props) => {
       if (props.disabled) return '#aaaaaa';
       return props.selected ? '#1890ff' : 'inherit';
     }};
-    font-size: 16px;
-    font-weight: 600;
   }
 
   small {
@@ -373,6 +372,7 @@ const CardHeader = styled.div`
 
 const CardBody = styled.div`
   margin-bottom: 16px;
+
   p {
     margin: 4px 0;
     font-size: 14px;
@@ -381,8 +381,8 @@ const CardBody = styled.div`
 
 const FooterContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
 `;
 

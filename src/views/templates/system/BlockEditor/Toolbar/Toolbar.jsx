@@ -174,20 +174,16 @@ export default Toolbar;
 const ToolbarWrapper = styled.div`
   display: flex;
   gap: 10px;
-  background-color: #f5f5f5;
-  padding: 2px 12px;
   height: 3em;
+  padding: 2px 12px;
+  background-color: #f5f5f5;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 `;
 
 const StyledButton = styled.button`
   display: grid;
-  border: 1px solid #ccc;
   padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
   font-size: ${(props) => {
     switch (props.size) {
       case 'small':
@@ -200,12 +196,16 @@ const StyledButton = styled.button`
         return '16px';
     }
   }};
+  color: ${(props) => (props.isActive ? 'white' : 'black')};
+  cursor: pointer;
+  background-color: ${(props) => (props.isActive ? '#007BFF' : 'transparent')};
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
   svg {
     font-size: 16px;
   }
-
-  background-color: ${(props) => (props.isActive ? '#007BFF' : 'transparent')};
-  color: ${(props) => (props.isActive ? 'white' : 'black')};
 
   &:hover {
     background-color: ${(props) => (props.isActive ? '#0056b3' : '#e0e0e0')};

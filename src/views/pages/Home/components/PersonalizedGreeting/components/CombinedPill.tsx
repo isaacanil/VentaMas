@@ -38,49 +38,49 @@ export const CombinedPill = ({
 
 const PillContainer = styled.div<{ $interactive: boolean }>`
   display: flex;
-  align-items: center;
   gap: 0.65rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 999px;
-  backdrop-filter: blur(18px);
+  align-items: center;
   width: fit-content;
   max-width: 100%;
-  background: rgba(15, 23, 42, 0.2);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+  padding: 0.5rem 0.75rem;
   color: #fff;
+  cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
+  outline: none;
+  background: rgb(15 23 42 / 20%);
+  border-radius: 999px;
+  box-shadow: 0 10px 20px rgb(15 23 42 / 18%);
+  backdrop-filter: blur(18px);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
     border-color 180ms ease;
-  cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
-  outline: none;
 
   &:hover {
+    border-color: rgb(255 255 255 / 70%);
+    box-shadow: 0 4px 10px rgb(15 23 42 / 18%);
     transform: scale(1.01);
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
-    border-color: rgba(255, 255, 255, 0.7);
   }
 
   &:focus-visible {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    border-color: rgb(59 130 246 / 50%);
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 25%);
   }
 `;
 
 const UserRow = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.45rem;
+  align-items: center;
   min-width: 0;
 `;
 
 const UserName = styled.span`
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.97);
-  white-space: nowrap;
+  display: inline-block;
+  max-width: clamp(140px, 35vw, 260px);
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(140px, 35vw, 260px);
-  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 97%);
+  white-space: nowrap;
 `;

@@ -483,7 +483,7 @@ export const PaymentInfoModal = ({
     closable={false} // Ocultar botón de cerrar
     maskClosable={false} // Deshabilitar cierre al hacer click fuera
     keyboard={false} // Deshabilitar cierre con tecla Escape
-    destroyOnClose
+    destroyOnHidden
     style={{ top: '10px' }}
     title="Información de Pago"
     width={620}
@@ -493,22 +493,22 @@ export const PaymentInfoModal = ({
 );
 
 const Container = styled.div`
-  width: 100%;
   display: grid;
   gap: 1rem;
+  width: 100%;
 `;
 
 const PaymentCard = styled.div`
+  overflow: hidden;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
 `;
 
 const CardContent = styled.div`
-  padding: 16px;
   display: grid;
   gap: 1.25rem;
+  padding: 16px;
 `;
 
 const SectionTitle = styled.div`
@@ -526,20 +526,20 @@ const MethodsWrapper = styled.div`
 `;
 
 const MethodsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
 `;
 
 const DiscountContainer = styled.div`
-  width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
 `;
 
 const DiscountSection = styled.div`
@@ -548,17 +548,17 @@ const DiscountSection = styled.div`
   gap: 0.75rem;
   padding: 1rem;
   background: #fafafa;
-  border-radius: 8px;
   border: 1px solid #e8e8e8;
+  border-radius: 8px;
 `;
 
 const DiscountControls = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
-  flex-wrap: wrap;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -567,20 +567,20 @@ const DiscountControls = styled.div`
 const DiscountTypeSelect = styled(Select)`
   min-width: 140px;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     width: 100%;
   }
 `;
 
 const DiscountHelp = styled.span`
   font-size: 12px;
-  color: #8c8c8c;
   line-height: 1.4;
+  color: #8c8c8c;
 `;
 
 const ContinueButtonContainer = styled.div`
-  margin-top: 1.5rem;
   padding-top: 1rem;
+  margin-top: 1.5rem;
   border-top: 1px solid #e8e8e8;
 `;
 
@@ -589,10 +589,10 @@ const ContinueButton = styled(Button)`
   font-size: 16px;
   font-weight: 600;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+  box-shadow: 0 2px 8px rgb(24 144 255 / 20%);
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    box-shadow: 0 4px 12px rgb(24 144 255 / 30%);
     transform: translateY(-1px);
     transition: all 0.3s ease;
   }
@@ -601,20 +601,20 @@ const ContinueButton = styled(Button)`
 const MethodRow = styled.div`
   display: grid;
   gap: 0.75rem;
-  border-radius: 10px;
   background: #fff;
+  border-radius: 10px;
 `;
 
 const MethodHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
 `;
 
 const MethodLabel = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 500;
   color: #262626;
 `;
@@ -639,7 +639,7 @@ const MethodControls = styled.div`
   gap: 0.75rem;
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     align-items: flex-start;
   }
@@ -661,22 +661,22 @@ const ControlLabel = styled.span`
 
 const Summary = styled.div`
   display: grid;
-  gap: 0.75rem;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
 `;
 
 const SummaryItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
   background: ${({ $variant }) => {
     if ($variant === 'positive') return '#d3faacff';
     if ($variant === 'negative') return '#ffc8deff';
     return '#f3f3f3';
   }};
-  padding: 0.75rem 1rem;
   border-radius: 8px;
-  text-align: center;
 `;
 
 const SummaryLabel = styled.span`
@@ -703,9 +703,9 @@ const SummaryValue = styled.span`
 
 const EmptyMessage = styled.div`
   padding: 1rem;
-  border-radius: 8px;
-  background: #fafafa;
-  color: #8c8c8c;
   font-size: 13px;
+  color: #8c8c8c;
   text-align: center;
+  background: #fafafa;
+  border-radius: 8px;
 `;

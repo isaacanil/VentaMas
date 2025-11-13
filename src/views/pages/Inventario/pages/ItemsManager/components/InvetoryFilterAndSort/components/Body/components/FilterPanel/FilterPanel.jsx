@@ -445,19 +445,20 @@ const Section = styled.div`
   gap: 0.85em;
 `;
 const SectionTitle = styled.p`
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
+  color: #0b528bff;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  color: #0b528bff;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
+
   &::after {
-    content: '';
     flex: 1;
     height: 1px;
+    content: '';
     background-color: #0b528bff;
   }
 `;
@@ -469,8 +470,9 @@ const FieldGrid = styled.div`
 const GroupContainer = styled.div`
   display: grid;
   gap: 0.35em;
-  width: 100%;
   align-items: start;
+  width: 100%;
+
   label,
   span,
   p {

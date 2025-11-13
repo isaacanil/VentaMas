@@ -127,7 +127,7 @@ const Container = styled.div`
 // }
 // const Container = styled.div`
 //     border: var(--border-primary);
-//     background-color: var(--White1);
+//     background-color: var(--white-1);
 //     border-radius: 6px;
 //     height: 100%;
 //     position: relative;
@@ -139,7 +139,7 @@ const Container = styled.div`
 
 // `
 // const Head = styled.div`
-//     background-color: var(--White1);
+//     background-color: var(--white-1);
 //     color: #303030;
 //     height: 2em;
 //     display: grid;

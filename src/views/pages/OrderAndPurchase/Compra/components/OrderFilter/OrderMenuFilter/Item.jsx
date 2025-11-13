@@ -58,43 +58,45 @@ export const Item = ({ data, array, setArray, index }) => {
     </Container>
   );
 };
-const Container = styled.div``;
+const Container = styled.div`
+  /* Item container */
+`;
 const Body = styled.div`
-  height: auto;
-  background-color: rgb(242, 242, 242);
-  padding: 0.4em 1em;
-  gap: 1em;
+  background-color: rgb(242 242 242);
   display: grid;
-  transition: height transform 2s ease-in-out;
+  gap: 1em;
+  height: auto;
+  padding: 0.4em 1em;
+  transition: height, transform 2s ease-in-out;
   ${(props) => {
     switch (props.isOpen) {
       case true:
         return `
-                transform: translate(0, 0px);
                 background-color: rgb(242, 242, 242);
-                padding: 0.4em 1em;
-                position: relative;
-                height: auto;
-                z-index: 1;
                 display: grid;
                 gap: 1em;
-                transition-property: transform, z-index;
-                transition-duration: 400ms, 400ms;
+                height: auto;
+                padding: 0.4em 1em;
+                position: relative;
+                transform: translate(0, 0px);
                 transition-delay: 0s, 400ms;
+                transition-duration: 400ms, 400ms;
+                transition-property: transform, z-index;
                 transition-timing-function: easy-in-out;
+                z-index: 1;
                 `;
 
       case false:
         return `   
-                transform: translate(0, -500px);  
-                position: absolute; 
                 height: 0px;
-                z-index: ${-(props.index + 3)};
-                width: 100%;   
-                transition-property: transform, z-index;
-                transition-duration: 400ms, 400ms;
+                position: absolute; 
+                transform: translate(0, -500px);  
                 transition-delay: 100ms, 0ms;
+                transition-duration: 400ms, 400ms;
+                transition-property: transform, z-index;
                 transition-timing-function: easy-in-out, lineal;
+                width: 100%;   
+                z-index: ${-(props.index + 3)};
         `;
 
       default:
@@ -104,28 +106,28 @@ const Body = styled.div`
 `;
 
 const Head = styled.div`
-  height: 2em;
   display: grid;
-  align-items: center;
-  gap: 1em;
   grid-template-columns: min-content 1fr;
-  background-color: var(--White);
+  gap: 1em;
+  align-items: center;
+  height: 2em;
   padding: 0 1em;
+  background-color: var(--white);
 `;
 const Items = styled.ul`
-  list-style: none;
-  padding: 0;
   display: grid;
   gap: 0.4em;
+  padding: 0;
+  list-style: none;
 `;
 const FilterOption = styled.li`
-  grid-template-columns: min-content 1fr;
-  gap: 1em;
-  padding: 0.2em 0.6em;
+  background-color: rgb(254 254 254);
   border-radius: 0.4em;
-  background-color: rgb(254, 254, 254);
-  position: relative;
   display: grid;
+  gap: 1em;
+  grid-template-columns: min-content 1fr;
+  padding: 0.2em 0.6em;
+  position: relative;
   ${(props) => {
     switch (props.isSelected) {
       case true:

@@ -10,11 +10,19 @@ export const ViewportContainer = ({ children }) => {
 };
 
 const Container = styled.div`
+
+  /* Posicionamiento para que sea el contenedor raíz */
+  position: relative;
+  width: 100%;
+
   /* Usar la altura dinámica del viewport */
   height: ${(props) => props.viewportHeight}px;
 
   /* Fallback para navegadores que soportan dvh */
   height: 100dvh;
+
+  /* Asegurar que no hay scroll horizontal */
+  overflow-x: hidden;
 
   /* Fallback tradicional */
   @supports not (height: 100dvh) {
@@ -22,15 +30,8 @@ const Container = styled.div`
   }
 
   /* Para dispositivos móviles, evitar el scroll causado por la barra de navegación */
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     height: ${(props) => props.viewportHeight}px;
     overflow: hidden;
   }
-
-  /* Asegurar que no hay scroll horizontal */
-  overflow-x: hidden;
-
-  /* Posicionamiento para que sea el contenedor raíz */
-  position: relative;
-  width: 100%;
 `;

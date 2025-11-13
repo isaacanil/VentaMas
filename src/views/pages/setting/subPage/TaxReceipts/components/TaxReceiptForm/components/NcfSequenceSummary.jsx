@@ -9,53 +9,54 @@ const SummaryContainer = styled.div`
   --outline-variant: #e0e3eb; /* gris suave (light) */
   --on-surface: #1f1f1f;
   --on-surface-variant: #5f6368; /* gris Google */
-  --surface: #ffffff;
-  --chip-bg: rgba(26, 115, 232, 0.08);
+  --surface: #fff;
+  --chip-bg: rgb(26 115 232 / 8%);
   --chip-fg: #1a73e8;
 
-  color: var(--on-surface);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
+  color: var(--on-surface);
 
   /* Densidad aún más compacta si se desea: <SummaryContainer data-density="compact" /> */
   &[data-density='compact'] {
     --pad-y: 10px;
     --pad-x: 12px;
     --gap: 6px;
+
     gap: 10px;
     margin-bottom: 12px;
   }
 `;
 
 const SummaryItem = styled.article`
-  min-width: 220px;
   display: flex;
+  min-width: 220px;
 `;
 
 const SummaryCard = styled.div`
-  background: var(--surface);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--radius);
-  padding: var(--pad-y) var(--pad-x);
   display: grid;
   gap: var(--gap);
   width: 100%;
   min-height: 100%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: var(--pad-y) var(--pad-x);
+  background: var(--surface);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
   transition:
     box-shadow 120ms ease,
     transform 120ms ease,
     border-color 120ms ease;
 
   &:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 8%);
     transform: translateY(-1px);
   }
 
   &:focus-within {
-    outline: 2px solid rgba(26, 115, 232, 0.25);
+    outline: 2px solid rgb(26 115 232 / 25%);
     outline-offset: 2px;
   }
 
@@ -67,47 +68,47 @@ const SummaryCard = styled.div`
 const SummaryLabel = styled.span`
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--on-surface-variant);
   line-height: 1.2;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 `;
 
 const SummaryValue = styled.span`
+  font-family: 'Roboto Mono', 'Fira Code', Menlo, Consolas, monospace;
   font-size: clamp(16px, 1.6vw, 20px);
   font-weight: 600;
-  color: var(--on-surface);
   line-height: 1.15;
-  word-break: break-word;
-  font-family: 'Roboto Mono', 'Fira Code', Menlo, Consolas, monospace;
+  color: var(--on-surface);
   letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
 `;
 
 const SummaryHint = styled.span`
   font-size: 12px;
-  color: var(--on-surface-variant);
   line-height: 1.45;
+  color: var(--on-surface-variant);
 `;
 
 const SummaryFooter = styled.div`
-  margin-top: 4px;
-  padding-top: 8px;
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  margin-top: 4px;
   border-top: 1px solid var(--outline-variant);
 `;
 
 const SummaryBadge = styled.span`
-  background: var(--chip-bg);
-  color: var(--chip-fg);
-  border-radius: 999px;
   padding: 2px 10px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
   line-height: 1.6;
+  color: var(--chip-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--chip-bg);
+  border-radius: 999px;
 `;
 
 const resolveDisplayValue = (value, fallback) => {

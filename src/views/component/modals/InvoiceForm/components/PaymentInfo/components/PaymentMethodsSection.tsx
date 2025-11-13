@@ -61,13 +61,13 @@ export const PaymentMethodsSection: FC<PaymentMethodsSectionProps> = ({
 };
 
 const MethodsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
 `;
 
 const SectionTitle = styled.div`
@@ -86,9 +86,9 @@ const MethodsWrapper = styled.div`
 
 const EmptyMessage = styled.div`
   padding: 1rem;
-  border-radius: 8px;
-  background: #fafafa;
-  color: #8c8c8c;
   font-size: 13px;
+  color: #8c8c8c;
   text-align: center;
+  background: #fafafa;
+  border-radius: 8px;
 `;

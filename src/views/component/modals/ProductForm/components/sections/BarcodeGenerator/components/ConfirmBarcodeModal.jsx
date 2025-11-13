@@ -37,7 +37,7 @@ const ConfirmBarcodeModal = ({
         </Space>
       }
       width={400}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" style={{ width: '100%' }}>
         <Text strong>Nuevo código de barras:</Text>

@@ -12,20 +12,20 @@ const Header = styled.div`
   padding: 0.1em 0.4em 0;
   font-size: 14px;
   font-weight: 600;
-  color: var(--Gray6);
+  color: var(--gray-6);
   letter-spacing: 0.4px;
 `;
 
 const Title = styled.div`
-  color: #2c3e50;
-  width: 100%;
-  font-size: 13px;
-  line-height: 1.1;
-  padding: 0.4em 0.4em 0;
   display: -webkit-box;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  width: 100%;
+  padding: 0.4em 0.4em 0;
   overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #2c3e50;
+  letter-spacing: 0.2px;
   hyphens: auto;
 `;
 

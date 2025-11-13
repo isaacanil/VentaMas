@@ -10,9 +10,6 @@ export const Row = ({ children, col, element }) => {
 };
 const Container = styled.div`
   display: grid;
-  width: 100%;
-  gap: 1em;
-
   grid-template-columns: ${(props) => {
     if (props.col) {
       return props?.col?.map(({ min, max }) => {
@@ -20,4 +17,6 @@ const Container = styled.div`
       });
     }
   }};
+  gap: 1em;
+  width: 100%;
 `;

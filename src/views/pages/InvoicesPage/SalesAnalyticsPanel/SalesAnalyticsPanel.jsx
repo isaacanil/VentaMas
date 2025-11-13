@@ -114,88 +114,88 @@ const Group = styled.div`
   grid-template-columns: ${(props) => (props.$isMobile ? '1fr' : '1fr 1fr')};
   gap: 1em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
     gap: 0.75em;
   }
 `;
 
 const Component = styled(motion.div)`
-  width: ${(props) => (props.$isMobile ? '100vw' : '90vw')};
-  max-width: ${(props) => (props.$isMobile ? '100vw' : '1200px')};
   display: grid;
   gap: ${(props) => (props.$isMobile ? '2em' : '4em')};
+  width: ${(props) => (props.$isMobile ? '100vw' : '90vw')};
+  max-width: ${(props) => (props.$isMobile ? '100vw' : '1200px')};
   height: 100%;
-  background-color: #ffffff;
+  padding: ${(props) => (props.$isMobile ? '0.75em' : '1em')};
+  overflow-y: scroll;
+  background-color: #fff;
   border: 1px solid #1d1d1d37;
   border-radius: ${(props) => (props.$isMobile ? '0' : '0.5em')};
-  overflow-y: scroll;
-  padding: ${(props) => (props.$isMobile ? '0.75em' : '1em')};
 
-  @media (max-width: 768px) {
-    width: 100vw;
+  @media (width <= 768px) {
     gap: 1.5em;
+    width: 100vw;
     padding: 0.75em;
     border-radius: 0;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 1em;
     padding: 0.5em;
   }
 `;
 
 const Backdrop = styled(motion.div)`
-  width: 100%;
-  height: calc(100vh);
-  display: grid;
-  justify-content: center;
-  align-items: ${(props) => (props.$isMobile ? 'stretch' : 'center')};
   position: absolute;
-  overflow: hidden;
   top: 0;
   z-index: 3000000000000000000;
+  display: grid;
+  align-items: ${(props) => (props.$isMobile ? 'stretch' : 'center')};
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh);
+  overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     align-items: stretch;
   }
 `;
 
 const Header = styled.div`
-  display: grid;
-  grid-template-columns: 1fr max-content;
-  align-items: center;
-  gap: 1em;
   position: sticky;
   top: 0;
-  background-color: #ffffff;
   z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  gap: 1em;
+  align-items: center;
   padding: ${(props) => (props.$isMobile ? '0.5em 0' : '0')};
   margin: ${(props) => (props.$isMobile ? '0 -0.5em' : '0')};
+  background-color: #fff;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0.5em 0;
-    margin: 0 -0.75em;
-    padding-left: 0.75em;
     padding-right: 0.75em;
+    padding-left: 0.75em;
+    margin: 0 -0.75em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.5em;
-    margin: 0 -0.5em;
-    padding-left: 0.5em;
     padding-right: 0.5em;
+    padding-left: 0.5em;
+    margin: 0 -0.5em;
   }
 `;
 
 const TitleContainer = styled.div`
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     h2 {
       font-size: 1.5em !important;
     }
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     h2 {
       font-size: 1.3em !important;
       line-height: 1.2;
@@ -209,13 +209,13 @@ const CloseButton = styled(Button)`
   padding: ${(props) => (props.$isMobile ? '0' : '0.5em 1em')};
   font-size: ${(props) => (props.$isMobile ? '1.2em' : '1em')};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     min-width: 36px;
     height: 36px;
     font-size: 1.1em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     min-width: 32px;
     height: 32px;
     font-size: 1em;
@@ -226,11 +226,11 @@ const ChartsContainer = styled.div`
   display: grid;
   gap: ${(props) => (props.$isMobile ? '2em' : '4em')};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 1.5em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 1em;
   }
 `;

@@ -5,8 +5,8 @@ export const StatusIndicatorDot = ({ color }) => {
   return <Container color={color}></Container>;
 };
 const Container = styled.div`
-  height: 0.6em;
   width: 1.2em;
-  border-radius: 10px;
+  height: 0.6em;
   background-color: ${(props) => props.color};
+  border-radius: 10px;
 `;

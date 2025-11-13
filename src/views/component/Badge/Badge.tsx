@@ -24,16 +24,16 @@ const getVariantStyles = (props: StyledBadgeProps) => {
   switch (props.$variant) {
     case 'outlined':
       return css`
+        color: ${props.$color};
         background-color: transparent;
         border: 1px solid ${props.$color};
-        color: ${props.$color};
       `;
     case 'text':
       return css`
-        background-color: transparent;
-        color: ${props.$color};
-        padding-left: 0;
         padding-right: 0;
+        padding-left: 0;
+        color: ${props.$color};
+        background-color: transparent;
 
         &:hover {
           background-color: transparent;
@@ -42,24 +42,24 @@ const getVariantStyles = (props: StyledBadgeProps) => {
       `;
     case 'light':
       return css`
-        background-color: ${props.$bgColor}40;
         color: ${props.$color};
+        background-color: ${props.$bgColor}40;
       `;
     default: // filled
       return css`
-        background-color: ${props.$bgColor};
         color: ${props.$color};
+        background-color: ${props.$bgColor};
       `;
   }
 };
 
 const StyledBadge = styled.div<StyledBadgeProps>`
-  display: inline-flex;
   align-items: center;
   border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
   font-weight: 500;
   transition: all 0.3s ease;
-  cursor: pointer;
 
   ${(props) => {
     switch (props.$size) {

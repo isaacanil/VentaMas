@@ -74,10 +74,10 @@ export const LocationDisplay = ({
 
 const LocationPath = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
   flex-wrap: ${(props) => (props.$variant === 'inline' ? 'wrap' : 'nowrap')};
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 
   .location-content {
     flex: 1;
@@ -88,20 +88,20 @@ const LocationPath = styled.div`
     display: flex;
     align-items: flex-start;
     padding: 4px 12px;
-    background: #f8fafc;
-    border-radius: 8px;
     font-size: 0.9rem;
     color: #1e293b;
-    border: 1px solid #e2e8f0;
+    overflow-wrap: anywhere;
     white-space: normal;
-    word-break: break-word;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
 
     .icon {
-      color: #2563eb;
-      margin-right: 6px;
-      font-size: 0.85rem;
       flex-shrink: 0;
       margin-top: 3px;
+      margin-right: 6px;
+      font-size: 0.85rem;
+      color: #2563eb;
     }
 
     .location-text {
@@ -117,14 +117,14 @@ const LocationPath = styled.div`
 
   .segment-chip {
     display: inline-flex;
-    align-items: center;
     gap: 5px;
+    align-items: center;
     padding: 5px 10px;
-    border-radius: 999px;
-    background: #f1f5f9;
-    border: 1px solid transparent;
     font-size: 0.8rem;
     color: #1e293b;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 999px;
 
     &.fallback {
       background: #f8fafc;
@@ -136,44 +136,44 @@ const LocationPath = styled.div`
     }
 
     .icon {
-      color: #2563eb;
       font-size: 0.7rem;
+      color: #2563eb;
     }
 
     .text {
       line-height: 1.2;
-      word-break: break-word;
+      overflow-wrap: anywhere;
     }
   }
 
   .navigation-icon {
+    display: ${(props) => (props.$variant === 'inline' ? 'none' : 'block')};
+    flex-shrink: 0;
+    font-size: 0.9rem;
     color: #2563eb;
     transition: transform 0.2s ease;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-    display: ${(props) => (props.$variant === 'inline' ? 'none' : 'block')};
   }
 `;
 
 const LocationBadge = styled.div`
   position: relative;
-  background: ${(props) =>
-    props.$variant === 'inline' ? 'transparent' : '#ffffff'};
-  padding: ${(props) => (props.$variant === 'inline' ? '6px 0' : '8px')};
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: #1e293b;
   display: flex;
   flex-direction: ${(props) =>
     props.$variant === 'inline' ? 'row' : 'column'};
+  gap: ${(props) => (props.$variant === 'inline' ? '8px' : '6px')};
   align-items: ${(props) =>
     props.$variant === 'inline' ? 'center' : 'flex-start'};
-  gap: ${(props) => (props.$variant === 'inline' ? '8px' : '6px')};
+  padding: ${(props) => (props.$variant === 'inline' ? '6px 0' : '8px')};
+  margin-top: ${(props) => (props.$variant === 'inline' ? '0' : 'auto')};
+  font-size: 0.9rem;
+  color: #1e293b;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background: ${(props) =>
+    props.$variant === 'inline' ? 'transparent' : '#ffffff'};
   border: ${(props) =>
     props.$variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
-  margin-top: ${(props) => (props.$variant === 'inline' ? '0' : 'auto')};
+  border-radius: 10px;
+  transition: all 0.2s ease;
 
   &:hover {
     border-color: ${(props) =>

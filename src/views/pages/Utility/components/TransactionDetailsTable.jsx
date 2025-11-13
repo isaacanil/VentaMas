@@ -139,9 +139,9 @@ const TableCard = styled.div`
   flex-direction: column;
   gap: 0.75rem;
   padding: 1.5rem;
-  background: #ffffff;
+  background: #fff;
   border-radius: 20px;
-  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 10px 35px rgb(15 23 42 / 10%);
 `;
 
 const TableWrapper = styled.div`
@@ -151,15 +151,15 @@ const TableWrapper = styled.div`
 
 const StyledTable = styled.table`
   width: 100%;
-  border-collapse: collapse;
   min-width: 680px;
+  border-collapse: collapse;
 
   th,
   td {
-    text-align: left;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
     white-space: nowrap;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   thead th {
@@ -174,13 +174,13 @@ const StyledTable = styled.table`
   }
 
   tbody td.positive {
-    color: #16a34a;
     font-weight: 600;
+    color: #16a34a;
   }
 
   tbody td.negative {
-    color: #dc2626;
     font-weight: 600;
+    color: #dc2626;
   }
 `;
 
@@ -190,39 +190,39 @@ const TrendIcon = styled.span`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 10px;
+  color: ${({ trend }) =>
+    trend === 'up' ? '#16a34a' : trend === 'down' ? '#dc2626' : '#475569'};
   background: ${({ trend }) =>
     trend === 'up'
       ? 'rgba(34, 197, 94, 0.12)'
       : trend === 'down'
         ? 'rgba(220, 38, 38, 0.12)'
         : 'rgba(148, 163, 184, 0.12)'};
-  color: ${({ trend }) =>
-    trend === 'up' ? '#16a34a' : trend === 'down' ? '#dc2626' : '#475569'};
+  border-radius: 10px;
 `;
 
 const EmptyState = styled.div`
-  text-align: center;
-  color: #64748b;
   padding: 1.5rem 0;
+  color: #64748b;
+  text-align: center;
 `;
 
 const Pagination = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
   padding-top: 0.5rem;
 `;
 
 const PaginationButton = styled.button`
-  border: none;
-  background: #e2e8f0;
-  color: #1f2937;
-  font-weight: 600;
   padding: 0.45rem 1rem;
-  border-radius: 12px;
+  font-weight: 600;
+  color: #1f2937;
   cursor: pointer;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 12px;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
@@ -230,8 +230,8 @@ const PaginationButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
+    opacity: 0.5;
   }
 `;
 
@@ -243,10 +243,10 @@ const PaginationPages = styled.div`
 const PageDot = styled.button`
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  border: none;
-  background: #cbd5f5;
   cursor: pointer;
+  background: #cbd5f5;
+  border: none;
+  border-radius: 50%;
   transition:
     transform 0.2s ease,
     background 0.2s ease;

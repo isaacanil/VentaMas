@@ -36,17 +36,16 @@ export function ProductControlEfficient({ products }) {
 }
 
 const Container = styled.div`
-  height: 100%;
-  background-color: ${(props) => props.theme.bg.color2};
-  overflow: hidden;
-  border-radius: var(--border-radius-light);
+  position: relative;
   display: grid;
   grid-template-rows: min-content 1fr;
+  height: 100%;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.bg.color2};
+  border-radius: var(--border-radius-light);
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-
-  position: relative;
 `;
 
 const ProductList = ({ products }) => {
@@ -106,18 +105,18 @@ const ProductList = ({ products }) => {
 };
 
 const ProductsListContainer = styled.div`
+  gap: 0.4em;
+  width: 100%;
   height: calc(100vh - 8.41em);
+  padding: 0.4em;
+  overflow: auto;
+  background-color: var(--color2);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+
   @media (width > 800px) {
     height: calc(100vh - 5.3em);
   }
-
-  padding: 0.4em;
-  gap: 0.4em;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  overflow: auto;
-  width: 100%;
-  background-color: var(--color2);
 `;
 // import { useVirtualizer } from '@tanstack/react-virtual';
 // import { useEffect, useRef, useState } from 'react';

@@ -77,14 +77,14 @@ export const DatePicker = ({
 // Estilos adaptados
 const Container = styled.div`
   display: grid;
-  width: 100%;
   grid-template-columns: max-content;
   gap: 0.4em;
+  width: 100%;
 `;
 
 const Col = styled.div`
   display: flex;
-  justify-content: end;
   flex-direction: column;
   gap: 0.2em;
+  justify-content: end;
 `;

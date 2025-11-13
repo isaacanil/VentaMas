@@ -75,49 +75,52 @@ const Container = styled.header`
   position: sticky;
   top: 0.1rem;
   z-index: 100;
-  width: min(1200px, calc(100% - 2rem));
-  margin: 0.1rem auto 0;
-  padding: 0.3rem 0.5rem;
-  border-radius: 100px;
-  background: rgba(66, 164, 245, 1);
-  backdrop-filter: blur(10px);
-  color: #fff;
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  row-gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8em;
-  flex-wrap: wrap;
-  row-gap: 0.75rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: min(1200px, calc(100% - 2rem));
+  padding: 0.3rem 0.5rem;
+  margin: 0.1rem auto 0;
+  color: #fff;
+  background: rgb(66 164 245 / 100%);
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 100px;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 12%);
   backdrop-filter: blur(6px);
 `;
 
 const GreetingSection = styled.div`
-  flex: 0 0 auto;
   display: flex;
-  justify-content: flex-start;
-  min-width: 200px;
-  order: 3;
-  align-items: center;
+  flex: 0 0 auto;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  order: 3;
+  min-width: 200px;
 `;
 
 const CenterSection = styled.div`
   position: absolute;
-  left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
+  left: 50%;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
 `;
 
 const BrandName = styled.span`
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.15rem 0.65rem;
   font-family:
-    'Inter',
+    Inter,
     'Plus Jakarta Sans',
     system-ui,
     -apple-system,
@@ -125,76 +128,72 @@ const BrandName = styled.span`
     sans-serif;
   font-size: clamp(1.3rem, 3vw, 1.4rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  color: rgb(255 255 255 / 92%);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.15rem 0.65rem;
+  letter-spacing: 0.08em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     display: none;
   }
 `;
 
 const UserSection = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
   flex: 0 0 auto;
-  min-width: 180px;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
   order: 3;
+  min-width: 180px;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
-  align-items: center;
-  gap: 0.45rem;
   flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
   justify-content: flex-end;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     justify-content: flex-start;
   }
 `;
 
 const iconButtonStyles = css`
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(15, 23, 42, 0.2);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
-  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
   padding: 0;
+  color: #fff;
   cursor: pointer;
+  outline: none;
+  background: rgb(15 23 42 / 20%);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 10px 20px rgb(15 23 42 / 18%);
+  backdrop-filter: blur(10px);
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
     transform 180ms ease,
     box-shadow 180ms ease;
-  backdrop-filter: blur(10px);
-  outline: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.6);
+    background: rgb(255 255 255 / 22%);
+    border-color: rgb(255 255 255 / 60%);
+    box-shadow: 0 14px 28px rgb(15 23 42 / 24%);
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.24);
   }
 
   &:active {
+    box-shadow: 0 8px 18px rgb(15 23 42 / 20%);
     transform: translateY(0);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline: 2px solid rgb(255 255 255 / 90%);
     outline-offset: 2px;
   }
 

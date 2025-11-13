@@ -548,17 +548,23 @@ export const InvoicePanel = () => {
 };
 
 export const Modal = styled(AntdModal)`
+  /* stylelint-disable-next-line block-no-empty -- overridden by Antd defaults */
   .ant-modal-content {
   }
+
   .ant-modal-header {
     padding: 1em 1em 0;
   }
+
   .ant-modal-body {
     padding: 1em;
+
     /* overflow-y: scroll;    */
   }
+
   .ant-modal-footer {
     padding: 0 1em 1em;
   }
+
   padding: 0;
 `;

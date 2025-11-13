@@ -51,14 +51,14 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr min-content min-content;
   justify-content: space-between;
-  padding: 0em 0.4em;
+  padding: 0 0.4em;
   border-radius: 0.4em;
   cursor: pointer;
   border: 2px solid transparent;
-  background-color: ${({ color }) => color}; // Usamos el color dinámico
+  background-color: ${({ color }) => color}; /* Usamos el color dinámico */
   :hover {
     background-color: ${({ color }) =>
-      color}; // Mantén el hover del mismo color
+      color}; /* Mantén el hover del mismo color */
   }
   ${(props) =>
     props.selected &&
@@ -68,7 +68,7 @@ const Container = styled.div`
     `}
 `;
 const CategoryItem = styled.span`
-  padding: 0.4em 0.4em;
+  padding: 0.4em;
   height: 100%;
 `;
 const FavoriteStar = styled.span`
@@ -78,6 +78,7 @@ const FavoriteStar = styled.span`
   align-items: center;
   margin-left: 10px;
   cursor: pointer;
+
   svg {
     color: #ffd900;
     font-size: 1.2em;

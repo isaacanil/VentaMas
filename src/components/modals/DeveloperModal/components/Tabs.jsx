@@ -24,27 +24,27 @@ export const Tabs = ({ tabs, defaultTab = 0 }) => {
 
 const TabsContainer = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  flex: 1;
   overflow: hidden;
 `;
 
 const TabsList = styled.div`
   display: flex;
+  flex-shrink: 0; /* No permite que se reduzca */
   background: #2a2a2a;
   border-bottom: 1px solid #333;
-  flex-shrink: 0; /* No permite que se reduzca */
 `;
 
 const TabButton = styled.button`
+  padding: 12px 16px;
+  font-size: 13px;
+  color: ${(props) => (props.active ? '#00ff88' : '#999')};
+  cursor: pointer;
   background: none;
   border: none;
-  padding: 12px 16px;
-  color: ${(props) => (props.active ? '#00ff88' : '#999')};
-  font-size: 13px;
-  cursor: pointer;
   border-bottom: 2px solid
     ${(props) => (props.active ? '#00ff88' : 'transparent')};
 
@@ -54,10 +54,10 @@ const TabButton = styled.button`
 `;
 
 const TabContent = styled.div`
-  flex: 1;
-  background: #1a1a1a;
-  min-height: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
+  background: #1a1a1a;
 `;

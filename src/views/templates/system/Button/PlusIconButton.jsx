@@ -17,17 +17,17 @@ export const PlusIconButton = ({ fn }) => {
 };
 
 const Container = styled.div`
+  display: grid;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
-
-  display: grid;
-  justify-content: center;
-  align-items: center;
-  border-radius: 100px;
   background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.307);
+  border: 1px solid rgb(0 0 0 / 30.7%);
+  border-radius: 100px;
+
   svg {
     width: 1.5em;
-    fill: rgba(31, 31, 31, 0.72);
+    fill: rgb(31 31 31 / 72%);
   }
 `;

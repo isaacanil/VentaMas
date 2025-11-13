@@ -20,10 +20,10 @@ const Container = styled.div`
 
 const Header = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
-  max-width: 1300px;
+  align-items: center;
   width: ${widthSize};
+  max-width: 1300px;
   height: 2.4em;
   margin: 0 auto;
 `;
@@ -31,9 +31,9 @@ const Header = styled.div`
 const Wrapper = styled.div`
   display: grid;
   grid-template-rows: auto 1fr;
-  overflow-y: auto;
   gap: 1em;
   padding: 0.5em;
+  overflow-y: auto;
 `;
 
 const StyledBreadcrumb = styled(Breadcrumb)`
@@ -44,8 +44,8 @@ const BackButton = styled(Button)`
   margin-right: 8px;
 `;
 const ContentContainer = styled.div`
-  max-width: 1300px;
   width: ${widthSize};
+  max-width: 1300px;
   margin: 0 auto;
 `;
 

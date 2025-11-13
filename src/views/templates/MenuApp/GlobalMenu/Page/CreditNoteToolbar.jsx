@@ -205,8 +205,8 @@ export const CreditNoteToolbar = ({ side = 'left', data }) => {
 
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const SpinningIcon = styled(FontAwesomeIcon)`
@@ -216,6 +216,7 @@ const SpinningIcon = styled(FontAwesomeIcon)`
     from {
       transform: rotate(0deg);
     }
+
     to {
       transform: rotate(360deg);
     }

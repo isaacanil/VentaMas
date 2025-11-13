@@ -87,24 +87,23 @@ const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
   display: grid;
   gap: 0.5em;
   align-items: start;
+  width: 100vw;
+  height: 100%;
   padding: 0.3em;
-  z-index: 9999;
+  background-color: rgb(0 0 0 / 80%);
 `;
 
 const ImageContainer = styled.div`
-  background-color: #000;
   width: calc(100%);
   height: calc(88vh);
   overflow: hidden;
-
-  border-radius: 10px;
   object-fit: contain;
+  background-color: #000;
+  border-radius: 10px;
 
   /* .content-style {
     width: 100%;
@@ -119,13 +118,13 @@ const ImageContainer = styled.div`
 `;
 
 const Header = styled.div`
-  width: 100%;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  padding: 0.5em 1em;
   background-color: #2e2e2e;
   border-radius: 10px;
-  z-index: 9999;
-  padding: 0.5em 1em;
 `;
 export default ImageViewer;

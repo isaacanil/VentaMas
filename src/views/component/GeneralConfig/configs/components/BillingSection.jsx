@@ -13,18 +13,18 @@ const Section = styled.div`
 `;
 
 const SectionHeader = styled.div`
-  cursor: pointer;
   display: flex;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
+  cursor: pointer;
 
   .header-content {
     flex: 1;
   }
 
   .fa-icon {
-    margin-top: 6px;
     width: 14px;
+    margin-top: 6px;
   }
 
   &:hover {

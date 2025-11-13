@@ -24,14 +24,15 @@ const LocationCell = styled.div`
   transition: all 0.2s ease;
   background: ${({ isEntry }) =>
     isEntry
-      ? 'rgba(76, 175, 80, 0.08)' // Verde más natural y familiar (como éxito)
-      : 'rgba(239, 83, 80, 0.08)'}; // Rojo más suave y familiar (como acción)
+      ? 'rgba(76, 175, 80, 0.08)' /* Verde más natural y familiar (como éxito) */
+      : 'rgba(239, 83, 80, 0.08)'}; /* Rojo más suave y familiar (como acción) */
+
   border-radius: 8px;
   border: 1px solid
-    ${({ isEntry }) =>
-      isEntry
-        ? 'rgba(76, 175, 80, 0.25)' // Verde institucional
-        : 'rgba(239, 83, 80, 0.25)'}; // Rojo institucional
+      ${({ isEntry }) =>
+        isEntry
+          ? 'rgba(76, 175, 80, 0.25)' /* Verde institucional */
+          : 'rgba(239, 83, 80, 0.25)'}; 
   opacity: ${({ isExternal }) => (isExternal ? 0.85 : 1)};
   ${({ isExternal }) =>
     isExternal &&
@@ -87,8 +88,9 @@ const DirectionLabel = styled.span`
 const MovementTypeBadge = styled.span`
   background: ${({ isEntry }) =>
     isEntry
-      ? 'rgba(33, 150, 243, 0.1)' // Azul corporativo (confianza y profesionalismo)
-      : 'rgba(156, 39, 176, 0.1)'}; // Púrpura (calidad y dignidad)
+      ? 'rgba(33, 150, 243, 0.1)' /* Azul corporativo (confianza y profesionalismo) */
+      : 'rgba(156, 39, 176, 0.1)'}; /* Púrpura (calidad y dignidad) */
+
   color: ${({ isEntry }) => (isEntry ? '#1976D2' : '#7B1FA2')};
   padding: 6px 12px;
   border-radius: 8px;

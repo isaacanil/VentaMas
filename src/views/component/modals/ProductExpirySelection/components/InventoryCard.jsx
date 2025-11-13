@@ -18,10 +18,10 @@ import {
 } from '../../../../../features/warehouse/productExpirySelectionSlice';
 
 const StyledCard = styled.div`
+  overflow: hidden;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 
 const StyledCardContent = styled.div`
@@ -30,8 +30,8 @@ const StyledCardContent = styled.div`
 
 const StyledCardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: start;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
 `;
 
@@ -48,12 +48,12 @@ const StyledIconWrapper = styled.div`
 `;
 
 const StyledBadge = styled.span`
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: #fff;
   background-color: ${({ variant }) =>
     variant === 'default' ? '#1890ff' : '#faad14'};
-  color: #fff;
-  padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  font-size: 0.75rem;
 `;
 
 const StyledCardDetails = styled.div`
@@ -64,24 +64,24 @@ const StyledCardDetails = styled.div`
 `;
 
 const StyledLoteDetails = styled.div`
-  grid-column: span 2;
   display: flex;
+  grid-column: span 2;
   align-items: center;
 `;
 
 const StyledProgressBar = styled.div`
-  margin-top: 0.5rem;
   width: 100%;
+  height: 6px;
+  margin-top: 0.5rem;
   background-color: #e0e0e0;
   border-radius: 8px;
-  height: 6px;
 `;
 
 const StyledProgress = styled.div`
-  background-color: #1890ff;
-  height: 6px;
-  border-radius: 8px;
   width: ${({ width }) => width}%;
+  height: 6px;
+  background-color: #1890ff;
+  border-radius: 8px;
 `;
 
 const InventoryCard = ({ item }) => {

@@ -618,7 +618,7 @@ const InvoiceSummary = () => {
             left: 0,
             width: '100%',
             height: '100%',
-            background: 'rgba(255,255,255,0.7)',
+            background: 'rgb(255 255 255 / 70%)',
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
@@ -706,30 +706,31 @@ const InvoiceSummary = () => {
 export default InvoiceSummary;
 
 const SummaryContainer = styled.div`
-  border-radius: 5px;
-  padding: 0px 10px;
   position: relative;
+  padding: 0 10px;
+  border-radius: 5px;
 `;
 
 export const LineItem = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 2px 0;
+
   :first-child {
     border-bottom: 1px solid #ccc;
   }
-  :last-child {
-    border-top: 1px solid #ccc;
-    padding: 0;
-  }
 
-  align-items: center;
+  :last-child {
+    padding: 0;
+    border-top: 1px solid #ccc;
+  }
 `;
 
 const DiscountInputContainer = styled.div`
   display: grid;
-  justify-items: end;
   gap: 4px;
+  justify-items: end;
 `;
 
 const AuthorizationNote = styled.span`
@@ -737,37 +738,42 @@ const AuthorizationNote = styled.span`
   color: ${({ $tone }) => ($tone === 'warning' ? '#d48806' : '#595959')};
 `;
 
-const TotalLine = styled(LineItem)``;
+const TotalLine = styled(LineItem)`
+  /* This is the total line in the invoice summary */
+`;
 
 const Button = styled.button`
-  background-color: #007bff;
+  padding: 8px 12px;
   color: white;
+  cursor: pointer;
+  background-color: #007bff;
   border: none;
   border-radius: 5px;
-  padding: 8px 12px;
-  cursor: pointer;
+
   :disabled {
-    background-color: #8a8a8a;
     cursor: not-allowed;
+    background-color: #8a8a8a;
+
     :hover {
       background-color: #585858;
     }
   }
+
   :not(:disabled):hover {
     background-color: #0056b3;
   }
 `;
 
 const TotalLabel = styled.span`
-  font-weight: bold;
-  font-size: 1.2em;
-  height: 2.4em;
   display: grid;
   align-content: center;
+  height: 2.4em;
+  font-size: 1.2em;
+  font-weight: bold;
 `;
 
 export const Label = styled.span`
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-  font-size: 14px;
 `;

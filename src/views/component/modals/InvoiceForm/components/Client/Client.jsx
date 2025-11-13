@@ -233,16 +233,16 @@ const Container = styled.div`
 `;
 
 const ClientDetailsCard = styled.div`
+  overflow: hidden;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
   background: #fafafa;
   border-bottom: 1px solid #e8e8e8;
@@ -257,45 +257,45 @@ const HeaderTitle = styled.div`
 const PrimaryDetailsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  padding: 12px;
   gap: 8px;
+  padding: 12px;
 `;
 
 const DetailItem = styled.div`
   display: flex;
-  align-items: flex-start;
+  grid-column: ${(props) => (props.$fullWidth ? '1 / -1' : 'auto')};
   gap: 8px;
+  align-items: flex-start;
   padding: 8px;
   border-radius: 6px;
-  grid-column: ${(props) => (props.$fullWidth ? '1 / -1' : 'auto')};
 `;
 
 const DetailIcon = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  color: #8c8c8c;
   font-size: 14px;
-  flex-shrink: 0;
+  color: #8c8c8c;
+  border-radius: 6px;
 `;
 
 const DetailContent = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
 `;
 
 const CollapsibleContent = styled.div`
   max-height: ${(props) => (props.isCollapsed ? '0' : '500px')};
+  padding: ${(props) => (props.isCollapsed ? '0 12px' : '0 12px 12px 12px')};
   overflow: hidden;
   transition:
     max-height 0.3s ease,
     padding 0.3s ease;
-  padding: ${(props) => (props.isCollapsed ? '0 12px' : '0 12px 12px 12px')};
 `;
 
 const DetailsGrid = styled.div`
@@ -313,20 +313,20 @@ const FooterActions = styled.div`
 
 const ChangeClientButton = styled.button`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 6px 12px;
-  background: #ffffff;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #262626;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  color: #262626;
   white-space: nowrap;
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  cursor: pointer;
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  transition: all 0.2s ease;
 
   &:hover {
     ${(props) =>
@@ -342,17 +342,17 @@ const ChangeClientButton = styled.button`
 
 const ExpandButton = styled.button`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #8c8c8c;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  color: #8c8c8c;
   white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: all 0.2s ease;
 
   &:hover {
     color: #1890ff;
@@ -375,7 +375,7 @@ const DetailValue = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: #262626;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 `;
 
 const GenericContainer = styled.div`
@@ -383,10 +383,10 @@ const GenericContainer = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 20px;
+  margin-bottom: 16px;
+  background: #fff7e6;
   border: 1px dashed #ffd591;
   border-radius: 12px;
-  background: #fff7e6;
-  margin-bottom: 16px;
 `;
 
 const GenericTitle = styled.span`
@@ -397,24 +397,24 @@ const GenericTitle = styled.span`
 
 const GenericDescription = styled.span`
   font-size: 12px;
-  color: #8c8c8c;
   line-height: 1.4;
+  color: #8c8c8c;
 `;
 
 const GenericButton = styled.button`
   align-self: flex-start;
   padding: 8px 16px;
-  border-radius: 6px;
-  background: #1890ff;
-  border: 1px solid #1890ff;
-  color: #ffffff;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   font-size: 13px;
   font-weight: 500;
+  color: #fff;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background: #1890ff;
+  border: 1px solid #1890ff;
+  border-radius: 6px;
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
 
   &:hover {
     ${(props) =>
@@ -428,8 +428,8 @@ const GenericButton = styled.button`
 `;
 
 const ModalContent = styled.div`
-  padding: 24px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 24px 0;
 `;

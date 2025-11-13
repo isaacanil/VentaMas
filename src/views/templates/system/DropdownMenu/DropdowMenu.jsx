@@ -65,14 +65,13 @@ export const DropdownMenu = ({
 };
 
 const Container = styled.div`
+  z-index: 555;
   width: 100%;
-  padding: 0.2em;
   min-width: 350px;
   max-width: 400px;
+  padding: 0.2em;
+  overflow: hidden;
   background-color: white;
   border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-
-  z-index: 555;
-  overflow: hidden;
+  box-shadow: 0 0 5px rgb(0 0 0 / 30%);
 `;

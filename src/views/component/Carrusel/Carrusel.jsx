@@ -137,14 +137,14 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
   );
 };
 const Container = styled.div`
-  background-color: ${(props) => props.theme.bg.shade};
-  width: 100%;
-  display: grid;
-  grid-template-columns: min-content 1fr min-content;
   align-items: center;
+  background-color: ${(props) => props.theme.bg.shade};
+  display: grid;
+  gap: 0.4em;
+  grid-template-columns: min-content 1fr min-content;
   height: 2.6em;
   padding: 0 1em;
-  gap: 0.4em;
+  width: 100%;
   ${(props) => {
     switch (props.themeColor) {
       case 'transparent':
@@ -155,34 +155,36 @@ const Container = styled.div`
   }}
 `;
 const Button = styled.button`
-  height: 1.5em;
-  width: 1em;
-  padding: 0;
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1em;
+  height: 1.5em;
+  padding: 0;
+  margin: 0;
   font-size: 1.3em;
-  border: 0;
   color: ${({ theme }) => theme.text.primary};
-  background-color: transparent;
-  border-radius: var(--border-radius-light);
   outline: 0;
+  background-color: transparent;
+  border: 0;
+  border-radius: var(--border-radius-light);
   transition: 500ms background-color ease-in-out;
+
   :hover {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgb(0 0 0 / 20%);
   }
 `;
 const Categories = styled(motion.ul)`
-  border-radius: var(--border-radius-light);
-  overflow-x: hidden;
-  overflow-x: scroll;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 0;
   display: flex;
   flex-wrap: nowrap;
   gap: 0.6em;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-x: scroll;
+  scrollbar-width: none;
+  border-radius: var(--border-radius-light);
+  -webkit-overflow-scrolling: touch;
+
   ::-webkit-scrollbar {
     display: none; /* Oculta la barra de scroll */
   }

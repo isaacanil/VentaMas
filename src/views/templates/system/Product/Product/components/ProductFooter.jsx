@@ -11,52 +11,49 @@ import {
 
 // Styled components
 const FooterWrapper = styled.div`
-  padding: 0 0.4em;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  padding: 0 0.4em;
   pointer-events: none;
-  transition: 0.8s border-radius ease-in-out;
   border-top-left-radius: ${({ imageHiddenRef }) =>
     imageHiddenRef === false ? '10px' : '0'};
+  transition: 0.8s border-radius ease-in-out;
 `;
 
 const Group = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
 `;
 
 const AmountToBuy = styled.div`
-  padding: 0 0.4em;
-  height: 1.6em;
-  margin-left: 1.6em;
-  width: min-content;
-  border-radius: 4px;
   display: flex;
   align-items: center;
+  width: min-content;
+  height: 1.6em;
+  padding: 0 0.4em;
+  margin-left: 1.6em;
+  font-size: 15px;
+  font-weight: 600;
+  color: ${(props) => getAmountColor(props)};
+  letter-spacing: 0.2px;
   white-space: nowrap;
+  background-color: ${(props) => getAmountBackground(props)};
+  border-radius: 4px;
   transition:
     background-color 0.4s ease-in-out,
     color 0.4s ease-in-out;
-
-  background-color: ${(props) => getAmountBackground(props)};
-  color: ${(props) => getAmountColor(props)};
-
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
 `;
 
 const Price = styled.div`
   display: block;
   height: 100%;
-  font-weight: 550;
   font-size: 16px;
-  transition: color 0.4s ease-in-out;
-
+  font-weight: 550;
   color: ${(props) => getPriceColor(props)};
+  transition: color 0.4s ease-in-out;
 `;
 
 /**

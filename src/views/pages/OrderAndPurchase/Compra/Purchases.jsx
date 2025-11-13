@@ -92,18 +92,17 @@ export const Purchases = () => {
 };
 
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: var(--color2);
-  display: grid;
-  grid-template-rows: min-content 1fr;
 `;
 
 const ContentArea = styled.div`
-  padding: 0.5;
   display: grid;
   grid-template-rows: min-content 1fr;
-
+  padding: 0.5;
   overflow: hidden;
 `;

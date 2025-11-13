@@ -11,10 +11,11 @@ export const Header = ({ data }) => {
 
 const ITEMS = styled.div`
   h3 {
-    text-transform: uppercase;
     font-size: 0.8em;
     font-weight: 500;
+    text-transform: uppercase;
   }
+
   width: 100%;
   height: 2em;
   display: grid;

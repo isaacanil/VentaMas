@@ -12,15 +12,15 @@ const { TextArea } = Input;
 
 const TreeContainer = styled.div`
   height: 300px;
+  padding: 8px;
   margin-top: 16px;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  padding: 8px;
 `;
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr); // Changed from 2 to 3 columns
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 `;

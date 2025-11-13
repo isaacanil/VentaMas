@@ -20,17 +20,17 @@ const ModalContainer = styled.div`
   position: absolute;
   top: 0;
   left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 
 const ModalContent = styled.div`
-  background-color: #fff;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  background-color: #fff;
   border-radius: 4px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 20%);
 `;

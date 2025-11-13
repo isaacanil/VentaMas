@@ -177,25 +177,25 @@ export const Setting = () => {
 };
 
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  gap: 0.5em;
   width: 100%;
   height: 100%;
-  display: grid;
-  gap: 0.5em;
-  grid-template-rows: min-content 1fr;
 `;
 const Body = styled.div`
   width: 100%;
+  background-color: #fff;
   border-radius: var(--border-radius);
-  background-color: #ffffff;
 `;
 const SearchWrapper = styled.div`
   padding: 1.5em 1em 0;
 `;
 
 const SearchInner = styled.div`
-  margin: 0 auto;
   width: 100%;
   max-width: 640px;
+  margin: 0 auto;
 
   .ant-input-affix-wrapper {
     border-radius: 999px;
@@ -208,21 +208,20 @@ const Categories = styled.div`
   padding: 1em;
 `;
 const CategoryContainer = styled.div`
+  width: 100%;
+  max-width: 1000px;
   padding: 10px;
   margin: 0 auto;
-  max-width: 1000px;
-  width: 100%;
   background-color: var(--color2);
   border-radius: var(--border-radius);
 `;
 const Cards = styled.div`
-  padding: 10px 0 0 0;
-  margin: 0 auto;
-
-  width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1em;
+  width: 100%;
+  padding: 10px 0 0;
+  margin: 0 auto;
 `;
 
 const SearchOption = styled.div`
@@ -233,18 +232,18 @@ const SearchOption = styled.div`
 
 const SearchOptionTitle = styled.span`
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgb(0 0 0 / 88%);
 `;
 
 const SearchOptionMeta = styled.span`
   font-size: 0.75rem;
+  color: rgb(0 0 0 / 45%);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(0, 0, 0, 0.45);
 `;
 
 const SearchOptionDescription = styled.span`
   font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.65);
   line-height: 1.3;
+  color: rgb(0 0 0 / 65%);
 `;

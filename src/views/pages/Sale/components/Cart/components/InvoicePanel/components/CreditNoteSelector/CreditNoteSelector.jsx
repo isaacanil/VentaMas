@@ -255,15 +255,15 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
 `;
 
 const HeaderLeft = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const HeaderRight = styled.div`
@@ -273,15 +273,15 @@ const HeaderRight = styled.div`
 
 const CreditNoteItem = styled(List.Item)`
   padding: 12px !important;
-  border: 1px solid ${(props) => (props.$isSelected ? '#52c41a' : '#f0f0f0')} !important;
-  border-radius: 6px;
   margin-bottom: 8px !important;
   background-color: ${(props) => (props.$isSelected ? '#f6ffed' : 'white')};
+  border: 1px solid ${(props) => (props.$isSelected ? '#52c41a' : '#f0f0f0')} !important;
+  border-radius: 6px;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1890ff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   }
 `;
 
@@ -291,8 +291,8 @@ const ItemContent = styled.div`
 
 const ItemHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 `;
 
@@ -308,10 +308,10 @@ const ItemActions = styled.div`
 `;
 
 const SummarySection = styled.div`
-  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 16px;
   text-align: right;
+  border-top: 1px solid #f0f0f0;
 `;
 
 export default CreditNoteSelector;

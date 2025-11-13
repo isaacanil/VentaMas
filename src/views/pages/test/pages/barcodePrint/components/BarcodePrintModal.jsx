@@ -11,22 +11,23 @@ const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */
   display: grid;
   grid-template-columns: 1fr;
+  gap: 8px;
   justify-items: center;
   width: 100%;
-  gap: 8px;
-  margin: 0;
   padding: 10px;
+  margin: 0;
 
   @media print {
     /* Impresión: nada de grid/flex para que respeten los saltos */
     display: block !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin: 0;
     padding: 5px;
+    margin: 0;
+    break-inside: avoid;
+
     & > .barcode-item {
       margin-bottom: 7mm;
     }
+
     & > .barcode-item:last-child {
       margin-bottom: 0;
     }

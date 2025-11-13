@@ -79,19 +79,22 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
 const Container = styled.div`
   overflow: hidden;
   height: 2em;
-  border: 1px solid rgba(0, 0, 0, 0.226);
+  border: 1px solid rgb(0 0 0 / 22.6%);
   position: relative;
   border-radius: 4px;
   transition: width 600ms ease-in-out;
+
   input {
     display: none;
   }
+
   label {
-    padding: 0 0.6em;
     display: flex;
-    height: 100%;
     gap: 0.6em;
     align-items: center;
+    height: 100%;
+    padding: 0 0.6em;
+
     svg {
       font-size: 1.2em;
     }
@@ -127,9 +130,9 @@ const Container = styled.div`
 
 const Progress = styled.div`
   position: absolute;
-  height: 100%;
-  background-color: rgba(66, 164, 245, 0.555);
   width: ${(props) => props.progressStatus}%;
-  transition: width 600ms ease-in-out;
+  height: 100%;
   pointer-events: none;
+  background-color: rgb(66 164 245 / 55.5%);
+  transition: width 600ms ease-in-out;
 `;

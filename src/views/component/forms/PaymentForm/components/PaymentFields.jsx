@@ -305,14 +305,14 @@ export const PaymentFields = () => {
 };
 
 const Container = styled.div`
-  padding: 0em 0em;
+  padding: 0;
 `;
 
 const SwitchContainer = styled.div`
-  height: 56px;
   display: flex;
   align-items: end;
   justify-content: center;
+  height: 56px;
   padding: 0 0.5em;
 `;
 
@@ -331,7 +331,9 @@ const FormItem = styled(Form.Item)`
   .ant-form-item-label {
     padding: 0;
   }
+
   margin: 0;
+
   svg {
     font-size: 1.2em;
     color: #414141;

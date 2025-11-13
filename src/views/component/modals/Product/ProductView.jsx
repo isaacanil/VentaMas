@@ -71,10 +71,10 @@ const Body = styled.div`
 `;
 
 const BodyWrapper = styled.div`
-  max-width: 1000px;
-  margin: 0 auto;
   display: grid;
   gap: 1em;
+  max-width: 1000px;
+  margin: 0 auto;
 `;
 
 const ProductInfoContainer = styled.div`
@@ -94,15 +94,15 @@ const StyledGrid = styled.div`
 
 const StyledItem = styled.div`
   display: flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
 `;
 
 const ProductImage = styled.img`
   width: 100%;
   height: 200px;
-  background-color: #f5f5f5;
   object-fit: ${noImg ? 'contain' : 'cover'};
+  background-color: #f5f5f5;
   border-radius: 8px;
 `;
 const Item = ({ icon, children }) => (

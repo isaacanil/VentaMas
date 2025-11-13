@@ -19,16 +19,16 @@ import Header from './components/Header';
 import ProductGroup from './components/ProductGroup';
 
 const Container = styled.div`
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  height: 100vh;
 `;
 
 const Content = styled.div`
   flex: 1;
   padding: 24px;
-  background: #ffffff;
   overflow-y: auto;
+  background: #fff;
 `;
 
 const ProductGroupsContainer = styled.div`

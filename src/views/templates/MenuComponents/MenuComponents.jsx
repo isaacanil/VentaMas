@@ -32,28 +32,29 @@ export const MenuComponents = () => {
 };
 const Container = styled.div`
   display: none;
-  @media (max-width: 800px) {
-    height: 4em;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(15px);
-    overflow: hidden;
-    display: flex;
+
+  @media (width <= 800px) {
     z-index: 1;
+    display: flex;
     align-items: center;
+    width: 100%;
+    height: 4em;
     padding: 0.8em 1.2em;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    background-color: rgb(255 255 255 / 85%);
+    border-top: 1px solid rgb(0 0 0 / 10%);
+    box-shadow: 0 -2px 10px rgb(0 0 0 / 5%);
+    backdrop-filter: blur(15px);
   }
 `;
 const Items = styled.ul`
   display: flex;
-  width: 100%;
-  list-style: none;
-  justify-content: end;
-  margin: 0;
-  padding: 0;
   gap: 0.8em;
+  justify-content: end;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 const Item = styled.li`
   ${(props) => (props.align === 'right' ? 'margin-left: auto;' : '')}
@@ -61,15 +62,15 @@ const Item = styled.li`
     
     .ant-btn {
     height: 2.5em;
-    border-radius: 8px;
-    font-weight: 600;
     font-size: 0.95em;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
     border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 
     &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     &:active {

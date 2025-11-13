@@ -7,19 +7,19 @@ import styled from 'styled-components';
 const { Button, List, Pagination } = antd;
 // Estilos personalizados usando styled-components
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.4em;
+  align-content: start;
   padding: 20px;
   background-color: #f5f5f5;
   border-radius: 8px;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  align-content: start;
-  gap: 0.4em;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
 `;
 

@@ -82,26 +82,30 @@ export const MenuLink = ({ item, onActionDone }) => {
 };
 const commonStyles = css`
   display: flex;
-  justify-content: space-between;
-  padding: 0 0.8em;
-  height: 2.8em;
   align-items: center;
+  justify-content: space-between;
+  height: 2.8em;
+  padding: 0 0.8em;
+  margin: 0;
   font-weight: 450;
-  color: var(--Gray6);
-  margin: 0em;
+  color: var(--gray-6);
   border-bottom: var(--border-primary);
+
   :last-child {
     border-bottom: none;
   }
+
   :hover {
     color: ${(props) => props.theme.bg.color};
     transition: background-color 400ms ease;
+
     svg {
       color: ${(props) => props.theme.bg.color};
     }
   }
+
   svg {
-    color: var(--Gray6);
+    color: var(--gray-6);
   }
 `;
 
@@ -109,8 +113,8 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
   ${commonStyles}
 
   &.active {
-    color: white;
     font-weight: 600;
+    color: white;
     background-color: ${(props) => props.theme.bg.color};
     border-radius: 0.4em;
 
@@ -127,18 +131,18 @@ const Group = styled.div`
   display: flex;
   gap: 1rem;
   align-items: center;
-  overflow: hidden;
   max-width: 80%;
+  overflow: hidden;
 
   span {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 const Icon = styled.div`
-  width: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1.2em;
 `;

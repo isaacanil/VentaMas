@@ -106,8 +106,8 @@ const Container = styled.div`
 `;
 const FormControl = styled.form`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   flex-wrap: wrap;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1em;
   overflow: auto;
 `;

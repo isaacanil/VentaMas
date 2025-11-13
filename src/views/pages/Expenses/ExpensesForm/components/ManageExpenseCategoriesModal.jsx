@@ -191,7 +191,7 @@ const ManageExpenseCategoriesModal = ({ open, onClose, onAddCategory }) => {
       footer={null}
       style={{ top: '10px' }}
       width={560}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space
         style={{

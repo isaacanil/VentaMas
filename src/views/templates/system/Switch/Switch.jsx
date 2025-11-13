@@ -9,23 +9,23 @@ const sizeVariants = {
 };
 
 const SwitchContainer = styled.div`
+  display: flex;
+  align-items: center;
   width: ${({ size }) => sizeVariants[size].width};
   min-width: ${({ size }) => sizeVariants[size].width};
   max-width: ${({ size }) => sizeVariants[size].width};
   height: ${({ size }) => sizeVariants[size].height};
   min-height: ${({ size }) => sizeVariants[size].height};
-  border-radius: ${({ size }) => `calc(${sizeVariants[size].height} / 2)`};
-  background-color: ${({ isOn }) => (isOn ? '#1976D2' : '#c5c5c5')};
-  display: flex;
-  align-items: center;
   cursor: pointer;
+  background-color: ${({ isOn }) => (isOn ? '#1976D2' : '#c5c5c5')};
+  border-radius: ${({ size }) => `calc(${sizeVariants[size].height} / 2)`};
 `;
 
 const Knob = styled(motion.div)`
   width: ${({ size }) => sizeVariants[size].knobSize};
   height: ${({ size }) => sizeVariants[size].knobSize};
-  border-radius: 50%;
   background-color: white;
+  border-radius: 50%;
 `;
 
 export const Switch = ({

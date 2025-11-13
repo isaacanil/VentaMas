@@ -75,18 +75,19 @@ const Header = styled.div`
 const Body = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0em;
+  gap: 0;
   padding-left: 1em;
 `;
 
 const Icon = styled.div`
-  width: 2.4em;
   display: grid;
   justify-content: center;
+  width: 2.4em;
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+
   svg {
-    color: ${(props) => (props.disabled ? '#999' : '#3f3f3f')};
     font-size: 1.4em;
+    color: ${(props) => (props.disabled ? '#999' : '#3f3f3f')};
   }
 `;
 
@@ -97,8 +98,8 @@ const Title = styled.div`
 `;
 
 const Description = styled.div`
+  margin-top: 0.2em;
   font-size: 12px;
   line-height: 1.3;
   color: ${(props) => (props.disabled ? '#999' : '#5f5f5f')};
-  margin-top: 0.2em;
 `;

@@ -111,8 +111,8 @@ const Container = styled.div``;
 const TotalContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-top: 1rem;
   padding: 1rem;
+  margin-top: 1rem;
   background-color: #f7f7f7;
   border-radius: 0.4em;
 `;

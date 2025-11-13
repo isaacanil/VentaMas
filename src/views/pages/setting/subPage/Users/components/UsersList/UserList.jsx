@@ -29,36 +29,36 @@ import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';
 
 const Role = styled.div`
-  height: 2em;
-  border-radius: 100px;
-  width: fit-content;
   display: flex;
-  text-transform: capitalize;
   align-items: center;
+  width: fit-content;
+  height: 2em;
   padding: 0 1em;
+  font-weight: 600;
   color: ${(props) => props.primaryColor};
+  text-transform: capitalize;
   background-color: ${(props) => props.secondaryColor};
   border: 2px solid ${(props) => props.primaryColor};
-  font-weight: 600;
+  border-radius: 100px;
 `;
 
 const IndexBadge = styled.div`
-  width: 2.5em;
-  height: 2.5em;
   display: grid;
   place-items: center;
+  width: 2.5em;
+  height: 2.5em;
   font-weight: 600;
-  border-radius: 12px;
-  background: ${({ theme }) => theme?.bg?.tertiary ?? 'rgba(15, 23, 42, 0.08)'};
   color: ${({ theme }) => theme?.text?.secondary ?? '#344054'};
+  background: ${({ theme }) => theme?.bg?.tertiary ?? 'rgba(15, 23, 42, 0.08)'};
   border: 1px solid
     ${({ theme }) => theme?.border?.primary ?? 'rgba(15, 23, 42, 0.08)'};
+  border-radius: 12px;
 `;
 
 const NameCell = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75em;
+  align-items: center;
 `;
 
 const NameContent = styled.div`
@@ -93,16 +93,16 @@ const StatusPill = styled.span`
   align-items: center;
   justify-content: center;
   padding: 0.35em 0.9em;
-  border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
   color: ${({ $active }) => ($active ? '#0F5132' : '#4F6275')};
+  text-transform: capitalize;
   background: ${({ $active }) =>
     $active ? 'rgba(25, 135, 84, 0.12)' : 'rgba(148, 163, 184, 0.18)'};
   border: 1px solid
     ${({ $active }) =>
       $active ? 'rgba(25, 135, 84, 0.35)' : 'rgba(148, 163, 184, 0.35)'};
-  text-transform: capitalize;
+  border-radius: 999px;
 `;
 
 export const UserList = () => {
@@ -464,7 +464,7 @@ const SearchBar = styled.div`
   background-color: ${(props) => props.theme.bg.primary};
   border-bottom: var(--border-primary);
 
-  & .ant-input-affix-wrapper,
+    & .ant-input-affix-wrapper,
   & .ant-input {
     width: 100%;
     max-width: 320px;

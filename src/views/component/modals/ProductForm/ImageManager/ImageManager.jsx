@@ -24,9 +24,9 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px;
   height: 100%;
-  background: #ffffff;
+  padding: 20px;
+  background: #fff;
   border-radius: 8px;
 `;
 
@@ -34,22 +34,21 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 20px 12px;
   padding-bottom: 12px;
+  margin: -20px -20px 0;
   border-bottom: 1px solid #e5e7eb;
-
-  margin: -20px -20px 0 -20px;
-  padding: 16px 20px 12px 20px;
   border-radius: 8px 8px 0 0;
 `;
 
 const MainContent = styled.div`
   display: grid;
+  flex: 1;
   grid-template-columns: 1fr 280px;
   gap: 24px;
-  flex: 1;
   min-height: 0;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     grid-template-columns: 1fr;
     gap: 20px;
   }
@@ -62,39 +61,39 @@ const UploadSection = styled.div`
 `;
 
 const SectionTitle = styled.h3`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #374151;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
 
   .anticon {
-    color: #6b7280;
     font-size: 16px;
+    color: #6b7280;
   }
 `;
 
 const UploadContainer = styled.div`
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 20px;
-  border: 2px dashed #d1d5db;
-  transition: all 0.2s ease;
   position: relative;
+  padding: 20px;
+  background: #fafafa;
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
-    border-color: #3b82f6;
     background: #f8faff;
+    border-color: #3b82f6;
   }
 
   .ant-upload-drag {
-    border: none !important;
-    background: transparent !important;
     padding: 24px 16px !important;
+    background: transparent !important;
+    border: none !important;
   }
 
   .ant-upload-drag:hover {
@@ -102,38 +101,35 @@ const UploadContainer = styled.div`
   }
 
   .ant-upload-drag-icon {
+    margin-bottom: 8px !important;
     font-size: 36px !important;
     color: #6b7280 !important;
-    margin-bottom: 8px !important;
   }
 
   .ant-upload-text {
-    font-size: 14px !important;
-    color: #374151 !important;
-    font-weight: 500 !important;
     margin-bottom: 4px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
   }
 
   .ant-upload-hint {
-    color: #6b7280 !important;
     font-size: 12px !important;
+    color: #6b7280 !important;
   }
 `;
 
 const ProgressContainer = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 6px;
+  inset: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: rgb(255 255 255 / 95%);
+  border-radius: 6px;
   backdrop-filter: blur(2px);
-  z-index: 10;
 `;
 
 const PreviewSection = styled.div`
@@ -143,24 +139,24 @@ const PreviewSection = styled.div`
 `;
 
 const PreviewCard = styled.div`
-  background: #ffffff;
-  border-radius: 6px;
   padding: 16px;
+  background: #fff;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%);
 `;
 
 const ImagePreview = styled.div`
-  width: 100%;
-  height: 180px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #f9fafb;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e5e7eb;
+  width: 100%;
+  height: 180px;
   margin-bottom: 12px;
+  overflow: hidden;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
 
   img {
     width: 100%;
@@ -170,8 +166,8 @@ const ImagePreview = styled.div`
   }
 
   .no-image {
-    color: #9ca3af;
     font-size: 36px;
+    color: #9ca3af;
   }
 `;
 
@@ -184,26 +180,26 @@ const ButtonGroup = styled.div`
 const GallerySection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
   grid-column: 1 / -1;
+  gap: 12px;
 `;
 
 const GalleryContainer = styled.div`
-  background: #ffffff;
-  border-radius: 6px;
   padding: 20px;
+  background: #fff;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%);
 `;
 
 const HelpText = styled.p`
-  margin: 0 0 16px 0;
-  color: #6b7280;
-  font-size: 13px;
-  background: #f9fafb;
   padding: 8px 12px;
-  border-radius: 4px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+  background: #f9fafb;
   border-left: 3px solid #3b82f6;
+  border-radius: 4px;
 `;
 
 // React component

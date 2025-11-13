@@ -25,35 +25,35 @@ const TagContainer = styled.div`
 `;
 
 const MoreTag = styled.div`
-  background: #f0f0f0;
-  color: #666;
   padding: 4px 12px;
-  border-radius: 16px;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #666;
+  cursor: pointer;
+  background: #f0f0f0;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   backdrop-filter: blur(10px);
   transition: all 0.2s ease;
-  cursor: pointer;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     background: #e0e0e0;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
+    transform: translateY(-2px);
   }
 `;
 
 const SingleColorTag = styled.div`
-  background: #3f3f3f; /* Color único para todas las opciones */
-  color: white;
   padding: 4px 12px;
-  border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+  background: #3f3f3f; /* Color único para todas las opciones */
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
   }
 `;

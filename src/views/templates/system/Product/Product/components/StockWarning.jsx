@@ -29,7 +29,7 @@ const WarningWrapper = styled.div`
   }};
   transform: translateX(0) scale(1);
   transition: all 300ms ease-in-out;
-  color: #ffffff;
+  color: #fff;
   font-size: 14px;
   font-weight: 500;
   z-index: 1;

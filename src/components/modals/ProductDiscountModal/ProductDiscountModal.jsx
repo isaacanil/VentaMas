@@ -156,7 +156,7 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
       title="Aplicar Descuento al Producto"
       open={visible}
       onCancel={onClose}
-      style={{ top: 10 }}
+      style={{ top: '10px' }}
       footer={[
         <Button key="cancel" onClick={onClose}>
           Cancelar
@@ -199,7 +199,7 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
         <DiscountSection>
           {discountType === 'percentage' && (
             <div>
-              <Text strong style={{ marginBottom: 8, display: 'block' }}>
+              <Text strong style={{ marginBottom: '8px', display: 'block' }}>
                 Descuentos rápidos:
               </Text>
               <PresetGrid>
@@ -287,34 +287,33 @@ const ProductInfo = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-
-  border-radius: 8px;
   border: 1px solid #e0e6ed;
+  border-radius: 8px;
 `;
 
 const ProductHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ProductName = styled.div`
+  flex: 1;
   font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
-  flex: 1;
   line-height: 1.3;
+  color: #2c3e50;
 `;
 
 const QuantityBadge = styled.div`
-  background-color: #1890ff;
-  color: white;
   padding: 4px 8px;
-  border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
+  color: white;
   white-space: nowrap;
+  background-color: #1890ff;
+  border-radius: 12px;
 `;
 
 const PriceDetails = styled.div`
@@ -325,9 +324,14 @@ const PriceDetails = styled.div`
 
 const PriceRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: ${(props) => (props.$isFinal ? '8px 0 4px 0' : '4px 0')};
+  padding-right: ${(props) =>
+    props.$isFinal || props.$isDiscount ? '8px' : '0'};
+  padding-left: ${(props) =>
+    props.$isFinal || props.$isDiscount ? '8px' : '0'};
+  margin: ${(props) => (props.$isFinal || props.$isDiscount ? '0 -8px' : '0')};
   background-color: ${(props) =>
     props.$isFinal
       ? 'rgba(82, 196, 26, 0.1)'
@@ -336,18 +340,13 @@ const PriceRow = styled.div`
         : 'transparent'};
   border-radius: ${(props) =>
     props.$isFinal || props.$isDiscount ? '6px' : '0'};
-  margin: ${(props) => (props.$isFinal || props.$isDiscount ? '0 -8px' : '0')};
-  padding-left: ${(props) =>
-    props.$isFinal || props.$isDiscount ? '8px' : '0'};
-  padding-right: ${(props) =>
-    props.$isFinal || props.$isDiscount ? '8px' : '0'};
 `;
 
 const PriceLabel = styled.span`
   font-size: 14px;
+  font-weight: ${(props) => (props.$isFinal ? '600' : '500')};
   color: ${(props) =>
     props.$isFinal ? '#52c41a' : props.$isDiscount ? '#ff4d4f' : '#6c757d'};
-  font-weight: ${(props) => (props.$isFinal ? '600' : '500')};
 `;
 
 const PriceValue = styled.span`
@@ -366,13 +365,13 @@ const PriceValue = styled.span`
 
 const _DiscountDivider = styled.div`
   height: 1px;
+  margin: 4px 0;
   background: linear-gradient(
     90deg,
     transparent 0%,
     #e0e6ed 50%,
     transparent 100%
   );
-  margin: 4px 0;
 `;
 
 const _ProductDetails = styled.div`
@@ -384,15 +383,15 @@ const _ProductDetails = styled.div`
 const DiscountSection = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: 20px;
+  width: 100%;
 `;
 
 const CustomDiscountSection = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: 12px;
+  width: 100%;
 `;
 
 const CustomRadio = styled(Radio)`
@@ -404,8 +403,8 @@ const CustomRadio = styled(Radio)`
 
 const RadioContent = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const PresetGrid = styled.div`
@@ -415,26 +414,26 @@ const PresetGrid = styled.div`
 `;
 
 const PresetPill = styled.div`
-  height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
-  min-width: auto;
-  border-radius: 16px;
-  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#d9d9d9')};
-  background-color: ${(props) => (props.$isSelected ? '#1890ff' : 'white')};
-  color: ${(props) => (props.$isSelected ? 'white' : '#595959')};
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: auto;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
   font-weight: 500;
+  color: ${(props) => (props.$isSelected ? 'white' : '#595959')};
+  cursor: pointer;
+  background-color: ${(props) => (props.$isSelected ? '#1890ff' : 'white')};
+  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#d9d9d9')};
+  border-radius: 16px;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #1890ff;
     color: ${(props) => (props.$isSelected ? 'white' : '#1890ff')};
+    border-color: #1890ff;
+    box-shadow: 0 2px 4px rgb(24 144 255 / 20%);
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
   }
 
   &:active {
@@ -443,18 +442,18 @@ const PresetPill = styled.div`
 `;
 
 const _PresetButton = styled(Button)`
+  min-width: auto;
   height: 32px;
   padding: 0 8px;
   font-size: 12px;
-  min-width: auto;
 `;
 
 const DiscountResultsSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 8px;
   padding: 12px;
+  margin-top: 8px;
+  border: 1px solid rgb(24 144 255 / 20%);
   border-radius: 8px;
-  border: 1px solid rgba(24, 144, 255, 0.2);
 `;

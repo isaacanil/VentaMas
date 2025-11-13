@@ -247,13 +247,13 @@ const Header = styled.div`
   }
 `;
 const Body = styled.div`
-  padding: 1.8em 1.5em;
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.8em;
-  min-height: 340px;
-  align-items: start;
   align-content: start;
+  align-items: start;
+  min-height: 340px;
+  padding: 1.8em 1.5em;
 `;
 const Footer = styled.div`
   display: flex;

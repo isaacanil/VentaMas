@@ -36,39 +36,39 @@ export const BaseChartContainer = ({ title, children, height = '200px' }) => {
 };
 
 const Container = styled.div`
+  display: grid;
+  gap: ${(props) => (props.$isMobile ? '0.5em' : '1em')};
   height: ${(props) => {
     const baseHeight = parseInt(props.$height);
     return props.$isMobile ? `${baseHeight - 20}px` : props.$height;
   }};
-  display: grid;
-  gap: ${(props) => (props.$isMobile ? '0.5em' : '1em')};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
+    gap: 0.5em;
     height: ${(props) => {
       const baseHeight = parseInt(props.$height);
       return `${baseHeight - 20}px`;
     }};
-    gap: 0.5em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
+    gap: 0.25em;
     height: ${(props) => {
       const baseHeight = parseInt(props.$height);
       return `${baseHeight - 40}px`;
     }};
-    gap: 0.25em;
   }
 `;
 
 const TitleContainer = styled.div`
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     h3 {
       font-size: 1.1em !important;
       text-align: center;
     }
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     h3 {
       font-size: 1em !important;
       line-height: 1.2;
@@ -80,7 +80,7 @@ const ChartContainer = styled.div`
   height: 100%;
   overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     overflow-x: auto;
   }
 `;

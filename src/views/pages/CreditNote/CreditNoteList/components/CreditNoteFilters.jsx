@@ -340,11 +340,11 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
 };
 
 const Container = styled.div`
-  background: white;
-  padding: 0em 1em 0em;
+  padding: 0 1em;
   margin-bottom: 1rem;
+  background: white;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0.5rem;
     overflow-x: auto;
   }
@@ -352,21 +352,21 @@ const Container = styled.div`
 
 const MobileContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 0.8em 1em;
+  justify-content: center;
   width: 100%;
-  background-color: var(--White);
-  border-bottom: 1px solid var(--Gray);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 0.8em 1em;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--gray);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 `;
 
 const MobileFiltersContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem;
   min-height: 300px;
+  padding: 1.5rem;
 `;
 
 const MobileFilterGroup = styled.div`
@@ -376,22 +376,22 @@ const MobileFilterGroup = styled.div`
 `;
 
 const MobileFilterLabel = styled.label`
+  margin-bottom: 0.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #262626;
-  margin-bottom: 0.25rem;
 `;
 
 const FiltersRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
   align-items: flex-end;
-  flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
-    align-items: stretch;
     gap: 1rem;
+    align-items: stretch;
   }
 `;
 
@@ -400,7 +400,7 @@ const FilterGroup = styled.div`
   flex-direction: column;
   gap: 0.5rem;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
 
     /* Asegura que los controles ocupen todo el ancho */

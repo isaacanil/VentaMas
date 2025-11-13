@@ -16,14 +16,15 @@ export const DetailSummary = ({ items = [] }) => {
 
 const AccountSection = styled.div`
   max-width: 500px;
-  border-radius: 8px;
   padding: 1.2em;
   background-color: white;
+  border-radius: 8px;
 `;
 const InfoRow = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 10px 0;
+
   :not(:last-child) {
     border-bottom: 1px solid #d7d7db;
   }

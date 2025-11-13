@@ -15,11 +15,11 @@ export const Tooltip = ({ description = null, Children, placement }) => {
   );
 };
 const Container = styled.div`
-  width: min-content;
   position: relative;
+  width: min-content;
 `;
 const Message = styled.div`
-  background-color: rgba(0, 0, 0, 0.87);
+  background-color: rgb(0 0 0 / 87%);
   color: white;
   padding: 0 8px;
   border-radius: var(--border-radius-light);

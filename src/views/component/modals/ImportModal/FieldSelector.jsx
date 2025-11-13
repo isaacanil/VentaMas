@@ -97,19 +97,19 @@ const EssentialList = styled.div`
 `;
 
 const EssentialField = styled.div`
-  background-color: #f0f0f0;
-  border-radius: 4px;
   padding: 4px 8px;
   font-size: 0.9em;
+  background-color: #f0f0f0;
+  border-radius: 4px;
 `;
 
 const CheckboxGroup = styled(Checkbox.Group)`
   display: flex;
   flex-direction: column;
-  margin-top: 10px;
   max-height: 300px;
-  overflow-y: auto;
   padding: 10px 0;
+  margin-top: 10px;
+  overflow-y: auto;
 
   .ant-checkbox-wrapper {
     margin: 5px 0;

@@ -39,53 +39,55 @@ const GlobalPrintStyle = createGlobalStyle`
 `;
 
 const Label = styled.div`
-  width: ${(p) => p.width}mm;
-  height: ${(p) => p.height}mm;
-  padding: ${(p) => p.margin}mm;
   box-sizing: border-box;
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  text-align: center;
+  width: ${(p) => p.width}mm;
+  height: ${(p) => p.height}mm;
+  padding: ${(p) => p.margin}mm;
   margin: 0 auto;
+  text-align: center;
+  background: #fff;
   border: 1px dashed #ccc;
+
   @media print {
     border: none;
-    page-break-after: always;
+    break-after: always;
   }
 `;
 
 const ProdName = styled.div`
+  width: 100%;
+  max-height: 6mm;
+  margin-bottom: 0.5mm;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font:
     600 ${(p) => p.fontSize}pt / 1 Arial,
     sans-serif;
-  max-height: 6mm;
-  overflow: hidden;
   text-transform: uppercase;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  width: 100%;
-  margin-bottom: 0.5mm;
 `;
 
 const Quiet = styled.div`
-  padding: 0 ${(p) => mmToIn(p.qmm)}in;
-  flex-grow: 1;
   display: flex;
+  flex-grow: 1;
   align-items: center;
   justify-content: center;
+  padding: 0 ${(p) => mmToIn(p.qmm)}in;
 `;
 
 const PreviewContainer = styled.div`
   max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
   padding: 8px;
   margin-top: 12px;
+  overflow-y: auto;
   background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+
   @media print {
     display: none;
   }
@@ -221,7 +223,7 @@ export const BarcodePrintModal = ({
         okText="Imprimir"
         cancelText="Cancelar"
         width={420}
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>

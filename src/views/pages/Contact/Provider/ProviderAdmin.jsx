@@ -18,12 +18,12 @@ export const ProviderAdmin = () => {
   );
 };
 const Container = styled.div`
-  width: 100vw;
-  height: calc(100vh - 2.75em);
-  background-color: var(--color2);
   display: grid;
   grid-auto-rows: min-content;
-  justify-content: center;
   align-items: flex-start;
+  justify-content: center;
+  width: 100vw;
+  height: calc(100vh - 2.75em);
   overflow: hidden;
+  background-color: var(--color2);
 `;

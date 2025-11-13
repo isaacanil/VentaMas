@@ -13,23 +13,23 @@ const ModalContent = styled.div`
 `;
 
 const Header = styled.div`
-  text-align: center;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  text-align: center;
 `;
 
 const IconBadge = styled.div`
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #722ed1 0%, #1677ff 100%);
-  color: #fff;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
   font-size: 34px;
+  color: #fff;
+  background: linear-gradient(135deg, #722ed1 0%, #1677ff 100%);
+  border-radius: 24px;
 `;
 
 const Subtitle = styled(Text)`
@@ -40,20 +40,20 @@ const UserCard = styled.div`
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border-radius: 16px;
   background: linear-gradient(
     135deg,
-    rgba(114, 46, 209, 0.08) 0%,
-    rgba(22, 119, 255, 0.08) 100%
+    rgb(114 46 209 / 8%) 0%,
+    rgb(22 119 255 / 8%) 100%
   );
-  border: 1px solid rgba(114, 46, 209, 0.2);
+  border: 1px solid rgb(114 46 209 / 20%);
+  border-radius: 16px;
 `;
 
 const UserLabel = styled.span`
   font-size: 12px;
+  color: #722ed1;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #722ed1;
 `;
 
 const UserName = styled.span`
@@ -69,24 +69,24 @@ const Section = styled.div`
 
 const SectionTitle = styled(Text)`
   font-size: 14px;
+  color: #8c8c8c !important;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8c8c8c !important;
 `;
 
 const ModulesGrid = styled.div`
   display: grid;
-  gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
 `;
 
 const ModuleOption = styled.div`
   display: grid;
   gap: 6px;
   padding: 16px 18px;
-  border-radius: 14px;
-  border: 1px solid #d9d9d9;
   background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 14px;
 `;
 const ModuleName = styled.span`
   font-size: 15px;
@@ -96,14 +96,14 @@ const ModuleName = styled.span`
 
 const ModuleDescription = styled.span`
   font-size: 12px;
-  color: #595959;
   line-height: 1.4;
+  color: #595959;
 `;
 
 const ActionBar = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
+  justify-content: flex-end;
   margin-top: 4px;
 `;
 
@@ -156,7 +156,7 @@ export const GeneratePinModal = ({
       footer={null}
       width={580}
       centered
-      destroyOnClose
+      destroyOnHidden
     >
       <ModalContent>
         <Header>

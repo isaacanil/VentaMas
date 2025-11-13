@@ -16,15 +16,15 @@ const StyledContainer = styled.div`
 `;
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 24px;
 `;
 
 const StyledTitle = styled.h2`
+  margin-bottom: 24px;
   font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 24px;
 `;
 
 const BatchList = () => {

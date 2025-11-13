@@ -18,13 +18,13 @@ const StyledForm = styled(Form)`
 `;
 
 const ConfirmationLabel = styled(Text)`
-  margin-bottom: 8px;
   display: block;
+  margin-bottom: 8px;
 `;
 
 const ConfirmationCode = styled.strong`
-  color: #ff4d4f;
   margin-left: 4px;
+  color: #ff4d4f;
 `;
 
 export const CancelModal = ({

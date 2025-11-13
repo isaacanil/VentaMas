@@ -40,7 +40,7 @@ const Summary = styled.div`
   display: grid;
   gap: 0.75rem;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 `;
@@ -49,14 +49,14 @@ const SummaryItem = styled.div<{ $variant?: 'positive' | 'negative' }>`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
   background: ${({ $variant }) => {
     if ($variant === 'positive') return '#d3faacff';
     if ($variant === 'negative') return '#ffc8deff';
     return '#f3f3f3';
   }};
-  padding: 0.75rem 1rem;
   border-radius: 8px;
-  text-align: center;
 `;
 
 const SummaryLabel = styled.span<{ $variant?: 'positive' | 'negative' }>`

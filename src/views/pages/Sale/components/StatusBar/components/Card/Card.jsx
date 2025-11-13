@@ -47,20 +47,20 @@ export const ProductCounter = ({
 
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4rem;
+  align-items: center;
   padding: 0.4rem 0.6rem;
-  border-radius: 14px;
-  background: var(--Gray8);
-  color: white;
-  font-weight: 600;
   font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
   cursor: pointer;
+  background: var(--gray8);
+  border-radius: 14px;
   transition: all 0.2s ease;
 
-  &:hover {
+    &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 `;
 
@@ -70,18 +70,18 @@ const CounterContent = styled.div`
 `;
 
 const CounterSeparator = styled.span`
-  font-weight: 600;
   margin: 0 0.25rem;
-  color: rgba(255, 255, 255, 0.7);
   font-size: 0.7rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 70%);
 `;
 
 const UnitsText = styled.span`
-  margin-left: 0.35rem;
   padding: 0.12rem 0.35rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.85);
+  margin-left: 0.35rem;
   font-size: 0.68rem;
   font-weight: 500;
+  color: rgb(255 255 255 / 85%);
+  background: rgb(255 255 255 / 18%);
+  border-radius: 10px;
 `;

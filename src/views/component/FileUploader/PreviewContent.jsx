@@ -8,23 +8,23 @@ const PreviewContainer = styled.div`
 `;
 
 const PDFContainer = styled.div`
-  height: 100%;
-  margin: 0;
-  padding: 0;
   width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
 
   iframe {
     width: 100%;
     height: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(0 0 0 / 10%);
     border-radius: 4px;
   }
 `;
 
 const LoadingContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100%;
 `;
 
@@ -35,8 +35,8 @@ const AccessibleStatus = styled.div`
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   border: 0;
+  clip-path: inset(50%);
 `;
 
 const PreviewContent = ({

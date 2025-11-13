@@ -81,20 +81,20 @@ export const UserSection = () => {
 
 const Container = styled.div`
   display: flex;
+  gap: 0.8em;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8em;
   padding: 0.8em 1em;
-  border-radius: var(--border-radius);
   background: #fff;
   border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 `;
 
 const Left = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.8em;
+  align-items: center;
   min-width: 0; /* enable text truncation */
 `;
 
@@ -106,39 +106,39 @@ const Info = styled.div`
 `;
 
 const Username = styled.div`
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
   color: #1f1f1f;
   text-transform: capitalize;
-  max-width: 220px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const AvatarCircle = styled.div`
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
+  width: 2rem;
+  height: 2rem;
   font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, #7c4dff 0%, #8e2de2 100%);
-  flex: none;
+  color: #fff;
   user-select: none;
+  background: linear-gradient(135deg, #7c4dff 0%, #8e2de2 100%);
+  border-radius: 9999px;
 `;
 
 const BusinessPill = styled(Tag)`
-  white-space: nowrap;
+  align-self: flex-start;
   max-width: 240px;
+  padding: 4px 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
   line-height: 1;
-  padding: 4px 8px;
+  white-space: nowrap;
   border-radius: 9999px;
-  align-self: flex-start;
 
   span {
     display: block;
@@ -159,16 +159,16 @@ const IconButton = styled.button`
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e8e8e8;
-  background: #ffffff;
   color: #595959;
   cursor: pointer;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
   transition: all 0.15s ease-in-out;
 
   &:hover {
-    background: #f5f5f5;
     color: #262626;
+    background: #f5f5f5;
   }
 
   &:active {

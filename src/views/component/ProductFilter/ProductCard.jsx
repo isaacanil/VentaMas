@@ -17,11 +17,11 @@ export const ProductCard = ({ data, fn, close }) => {
   );
 };
 const Container = styled.div`
-  min-height: 2.4em;
-  height: min-content;
   display: flex;
   align-items: center;
+  height: min-content;
+  min-height: 2.4em;
   padding: 0 0.6em;
-  background-color: var(--White);
+  background-color: var(--white);
   border-radius: var(--border-radius-light);
 `;

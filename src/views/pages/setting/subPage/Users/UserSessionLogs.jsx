@@ -170,22 +170,22 @@ export const UserSessionLogs = () => {
 };
 
 const Wrapper = styled.div`
-  padding: 1.5rem;
-  height: 100%;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  height: 100%;
+  min-height: 0;
+  padding: 1.5rem;
   background-color: ${({ theme }) =>
     theme?.palette?.background?.light || '#f8f8f8'};
 `;
 
 const Header = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
 `;
 
 const Title = styled.h2`

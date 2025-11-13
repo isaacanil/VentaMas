@@ -180,15 +180,15 @@ export default BusinessCreator;
 
 const Wrapper = styled.div`
   display: grid;
-  max-height: 100vh;
   grid-template-rows: min-content 1fr;
+  max-height: 100vh;
   overflow: hidden;
   background: #f5f5f5;
 `;
 
 const PageContainer = styled.div`
-  padding: 24px;
   width: 100%;
+  padding: 24px;
   overflow-y: auto;
 `;
 
@@ -203,7 +203,7 @@ const FormSection = styled.div`
 
   .ant-card {
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
   }
 
   .ant-typography {
@@ -216,7 +216,7 @@ const TwoColumns = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 24px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;

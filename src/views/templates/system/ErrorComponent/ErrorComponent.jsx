@@ -2,12 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 const ErrorText = styled.div`
-  font-size: 1em;
   display: grid;
   gap: 0.4em;
-
-  overflow: auto;
   padding: 8px;
+  overflow: auto;
+  font-size: 1em;
 
   & > p {
     height: 2em;

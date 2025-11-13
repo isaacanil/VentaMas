@@ -33,43 +33,44 @@ const LocationCell = styled.div`
     border: 1px dashed #bdbdbd;
     &:hover { transform: none; box-shadow: none; }
   `}
+
   &:hover {
-    transform: translateY(-1px);
     background: ${({ isEntry }) =>
       isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
     box-shadow: 0 2px 8px
       ${({ isEntry }) =>
         isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
+    transform: translateY(-1px);
   }
 `;
 const LocationName = styled.div`
-  font-weight: 600;
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
-  font-size: 1em;
-  white-space: nowrap;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  font-size: 1em;
+  font-weight: 600;
+  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
   letter-spacing: -0.3px;
+  white-space: nowrap;
 `;
 const DirectionWrapper = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 `;
 const DirectionArrow = styled.span`
   font-size: 1.1em;
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
   font-weight: bold;
+  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
 `;
 const DirectionLabel = styled.span`
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
+  display: flex;
+  gap: 4px;
+  align-items: center;
   font-size: 0.85em;
   font-weight: 500;
+  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
   opacity: 0.9;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 `;
 const ReasonBadge = styled.span`
   padding: 4px 12px;
@@ -181,14 +182,14 @@ const getLocationDisplay = (movement) => {
 };
 
 const MovementTypeBadge = styled.span`
+  padding: 6px 12px;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: ${({ isEntry }) => (isEntry ? '#1976D2' : '#7B1FA2')};
+  letter-spacing: -0.2px;
   background: ${({ isEntry }) =>
     isEntry ? 'rgba(33, 150, 243, 0.1)' : 'rgba(156, 39, 176, 0.1)'};
-  color: ${({ isEntry }) => (isEntry ? '#1976D2' : '#7B1FA2')};
-  padding: 6px 12px;
   border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.9em;
-  letter-spacing: -0.2px;
 `;
 
 const AllMovements = () => {
@@ -334,7 +335,7 @@ const AllMovements = () => {
 export default AllMovements;
 
 const Page = styled.div`
-  height: 100%;
   display: grid;
   grid-template-rows: min-content min-content 1fr;
+  height: 100%;
 `;

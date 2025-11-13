@@ -412,11 +412,11 @@ Escriba HELP para ver una lista de comandos disponibles.\n
 
 // Estilos adicionales
 const ConsoleContainer = styled.div`
-  flex: 1;
+  position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
 `;
 
 export default DeveloperModal;

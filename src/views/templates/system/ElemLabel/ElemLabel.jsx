@@ -12,10 +12,10 @@ const ElemLabel = ({ children, label }) => {
 
 export default ElemLabel;
 const Container = styled.div`
-  width: 100%;
   position: relative;
+  width: 100%;
 `;
 const Label = styled.label`
   font-size: 13px;
-  color: var(--Gray5);
+  color: var(--gray-5);
 `;

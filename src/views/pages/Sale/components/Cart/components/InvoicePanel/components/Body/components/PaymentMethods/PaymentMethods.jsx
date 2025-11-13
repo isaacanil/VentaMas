@@ -301,7 +301,7 @@ export const PaymentMethods = () => {
   );
 };
 const Container = styled.div`
-  padding: 0em 0em;
+  padding: 0;
 `;
 const Row = styled.div`
   display: grid;
@@ -316,7 +316,9 @@ const FormItem = styled(Form.Item)`
   .ant-form-item-label {
     padding: 0;
   }
+
   margin: 0;
+
   svg {
     font-size: 1.2em;
     color: #414141;

@@ -12,8 +12,9 @@ import { calcFooterHeight, calcHeaderHeight } from './documentHeightCalculator';
 const Container = styled.div`
   position: relative;
   width: 100%;
-  margin: 0;
   padding: 16px;
+  margin: 0;
+
   @media print {
     padding: 0;
   }
@@ -23,13 +24,16 @@ const PrintLayout = styled.div`
   & table {
     width: 100% !important;
   }
+
   @media print {
     thead {
       display: table-header-group;
     }
+
     tfoot {
       display: table-footer-group;
     }
+
     /* la tabla interna de Content: */
     > tbody > tr > td > table {
       display: table-row-group !important;
@@ -52,27 +56,28 @@ const FooterSpace = styled.div`
 const FixedHeader = styled.div`
   padding: 16px;
   margin-bottom: 16px;
+
   @media print {
     position: fixed;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     z-index: 10000;
   }
 `;
 
 const FixedFooter = styled.div`
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 16px;
   z-index: 10000;
+  padding: 16px;
 
   @media print {
     position: fixed;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
   }
 `;
 

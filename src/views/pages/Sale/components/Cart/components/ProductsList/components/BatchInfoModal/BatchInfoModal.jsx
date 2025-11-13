@@ -11,21 +11,21 @@ const InfoList = styled.div`
 
 const InfoRow = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const Label = styled.span`
   font-size: 13px;
-  color: #686868;
   font-weight: 500;
+  color: #686868;
 `;
 
 const Value = styled.span`
   font-size: 13px;
-  color: #3a3a3a;
   font-weight: 500;
+  color: #3a3a3a;
   text-align: right;
 `;
 

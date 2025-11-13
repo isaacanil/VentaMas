@@ -9,11 +9,11 @@ const { Title } = Typography;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0.4em 1em;
-  border-bottom: 1px solid #ddd;
   background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
 `;
 
 const ButtonGroup = styled.div`

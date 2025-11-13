@@ -163,18 +163,18 @@ export const CashRegisterOpening = () => {
   );
 };
 const Backdrop = styled.div`
-  background-color: #f5f5f5;
   height: 100vh;
   overflow-y: scroll;
+  background-color: #f5f5f5;
 `;
 const Container = styled.div`
+  position: relative;
+  display: grid;
+  gap: 0.8em;
+  align-content: start;
+  align-items: start;
   max-width: 500px;
   height: 100%;
-  position: relative;
-  margin: 0 auto;
-  display: grid;
-  align-items: start;
-  align-content: start;
-  gap: 0.8em;
   padding: 1em;
+  margin: 0 auto;
 `;

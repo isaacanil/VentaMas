@@ -320,8 +320,8 @@ const Wrapper = styled.div`
 `;
 
 const PageContainer = styled.div`
-  padding: 24px;
   width: 100%;
+  padding: 24px;
   overflow-y: auto;
 `;
 
@@ -336,7 +336,7 @@ const FormSection = styled.div`
 
   .ant-card {
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
   }
 
   .ant-typography {
@@ -349,7 +349,7 @@ const TwoColumns = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 24px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -363,9 +363,9 @@ const LogoSection = styled.div`
     .ant-upload {
       width: 300px !important;
       height: 150px !important;
-      border-radius: 8px;
       background: #fafafa;
       border: 2px dashed #d9d9d9;
+      border-radius: 8px;
       transition: all 0.3s ease;
 
       &:hover {
@@ -376,11 +376,11 @@ const LogoSection = styled.div`
 `;
 
 const PreviewContainer = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 
   img {
     max-width: 100%;

@@ -43,16 +43,16 @@ const Container = styled.div`
   margin-top: 20px;
 `;
 const Wrapper = styled.div`
-  width: min-content;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 0.8em;
   justify-content: center;
+  width: min-content;
+  padding: 0 0.8em;
 `;
 const ProductRef = styled(Typography.Text)`
-  font-weight: 600;
-  font-size: 16px;
   margin-bottom: 0;
+  font-size: 16px;
+  font-weight: 600;
   white-space: nowrap;
 `;

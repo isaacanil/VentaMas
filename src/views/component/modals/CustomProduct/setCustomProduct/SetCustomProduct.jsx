@@ -101,13 +101,13 @@ export const SetCustomProduct = ({ isOpen }) => {
 };
 
 const Body = styled.div`
-  padding: 1em;
   display: grid;
-  width: 100%;
-  height: 100%;
-  background-color: #f1ebeb;
   grid-template-rows: min-content 1fr min-content;
   gap: 0.2em 0.4em;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
+  background-color: #f1ebeb;
 `;
 const Row = styled.div`
   display: flex;
@@ -115,9 +115,8 @@ const Row = styled.div`
   margin-bottom: 0.4em;
 `;
 const Group = styled.div`
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
+  flex: 1 1 0;
+
   div {
     select {
       width: 100%;
@@ -126,10 +125,10 @@ const Group = styled.div`
 `;
 
 const PriceBar = styled.div`
-  width: 100%;
   display: flex;
-  height: 2.4em;
   align-items: center;
-  padding: 0 1em;
   justify-content: space-between;
+  width: 100%;
+  height: 2.4em;
+  padding: 0 1em;
 `;

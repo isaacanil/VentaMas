@@ -63,19 +63,21 @@ const PageWrapper = styled.div`
 
 const ContentWrapper = styled.div`
   max-width: 1200px;
-  margin: 2rem auto;
   padding: 0 1rem;
+  margin: 2rem auto;
 `;
 
 const StyledCard = styled(Card)`
   height: 100%;
+
   .ant-card-meta-title {
-    font-size: 1.1rem;
     margin-bottom: 0.5rem;
+    font-size: 1.1rem;
   }
+
   .ant-card-meta-description {
-    color: rgba(0, 0, 0, 0.45);
     line-height: 1.5;
+    color: rgb(0 0 0 / 45%);
   }
 `;
 

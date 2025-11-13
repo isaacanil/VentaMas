@@ -307,11 +307,11 @@ const PermissionGroupsWrapper = styled.div`
 `;
 
 const PermissionsContainer = styled.div`
-  border: 1px solid ${({ theme }) => theme?.border?.primary ?? '#f0f0f0'};
-  border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid ${({ theme }) => theme?.border?.primary ?? '#f0f0f0'};
+  border-radius: 12px;
 `;
 
 const PermissionMeta = styled.div`
@@ -354,11 +354,12 @@ const SummaryText = styled.span`
 
 const PermissionRow = styled.div`
   display: flex;
+  gap: 1.5rem;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
   padding: 0.85rem 1.1rem;
-  &:not(:last-child) {
+
+    &:not(:last-child) {
     border-bottom: 1px solid
       ${({ theme }) => theme?.border?.primary ?? '#f0f0f0'};
   }

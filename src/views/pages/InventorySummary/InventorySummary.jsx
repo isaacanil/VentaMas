@@ -42,15 +42,15 @@ function getListPriceUnit(p) {
 
 // ---------------------- Styled ----------------------
 const Page = styled.div`
-  height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr;
+  height: 100vh;
 `;
 const Content = styled.div`
-  padding: 16px;
   max-width: 1440px;
-  overflow-y: auto;
+  padding: 16px;
   margin: 0 auto;
+  overflow-y: auto;
 `;
 const Header = styled.div`
   display: flex;
@@ -65,32 +65,34 @@ const LeftFilters = styled.div`
   flex-wrap: nowrap;
   gap: 8px;
   align-items: center;
+
   & > * {
     flex: 0 0 auto;
   }
+
   /* Si en pantallas muy pequeñas se requiere que bajen, quitar el media query siguiente */
-  @media (max-width: 420px) {
+  @media (width <= 420px) {
     flex-wrap: wrap;
   }
 `;
 const RightActions = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   margin-left: auto;
 `;
 const KpiGrid = styled.div`
-  margin-top: 16px;
   display: grid;
-  gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
 `;
 const Card = styled.div`
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: #fff;
-  border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  border: 1px solid rgb(0 0 0 / 6%);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
 `;
 const KpiTitle = styled.div`
   font-size: 12px;
@@ -103,22 +105,23 @@ const KpiValue = styled.div`
   color: #111827;
 `;
 const SectionGrid = styled.div`
-  margin-top: 16px;
   display: grid;
-  gap: 12px;
   grid-template-columns: 1fr;
-  @media (min-width: 1280px) {
+  gap: 12px;
+  margin-top: 16px;
+
+  @media (width >= 1280px) {
     grid-template-columns: repeat(2, 1fr);
   }
 `;
 const SectionCard = styled(Card)``;
 const SectionCardWide = styled(SectionCard)`
-  @media (min-width: 1280px) {
+  @media (width >= 1280px) {
     grid-column: span 1;
   }
 `;
 const SectionTitle = styled.h3`
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 15px;
   font-weight: 600;
 `;
@@ -128,24 +131,29 @@ const TableWrap = styled.div`
 `;
 const Table = styled.table`
   width: 100%;
-  border-collapse: collapse;
   font-size: 13px;
+  border-collapse: collapse;
+
   thead tr {
     color: #6b7280;
     border-bottom: 1px solid #e5e7eb;
   }
+
   th,
   td {
     padding: 8px 12px;
     text-align: left;
   }
+
   tbody tr {
     border-bottom: 1px solid #f3f4f6;
   }
+
   td.num {
     text-align: right;
     white-space: nowrap;
   }
+
   th.num {
     text-align: right;
   }

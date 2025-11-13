@@ -24,28 +24,28 @@ import { defaultsMap, sanitizeData } from './orderLogic';
 
 const Container = styled.div`
   display: grid;
-  height: 100%;
   grid-template-rows: min-content 1fr min-content;
+  height: 100%;
   overflow-y: hidden;
 `;
 
 const Body = styled.div`
-  padding: 1em;
-  overflow-y: auto;
   width: 100%;
+  padding: 1em;
   margin: 0 auto;
+  overflow-y: auto;
 `;
 const ButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
   position: sticky;
   bottom: 0;
-  width: 100%;
+  display: flex;
   gap: 1em;
-  background-color: #ffffff;
+  justify-content: flex-end;
+  width: 100%;
   padding: 1em;
-  border-top: 1px solid #e8e8e8;
   margin-top: auto;
+  background-color: #fff;
+  border-top: 1px solid #e8e8e8;
 `;
 
 const OrderManagement = () => {

@@ -56,8 +56,8 @@ const Container = styled.div`
   gap: 1em;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
   width: 100%;
+  height: 100%;
 `;
 const LeftSide = styled.div``;
 const RightSide = styled.div``;

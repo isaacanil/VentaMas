@@ -22,22 +22,22 @@ const FILTERS_BY_VALUE = PRODUCT_STOCK_FILTER_OPTIONS.reduce((acc, option) => {
 }, {});
 
 const Centered = styled.div`
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
   flex-direction: column;
   gap: 12px;
-  position: relative;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  height: 100%;
 `;
 
 const FiltersPopoverContent = styled.div`
-  min-width: 240px;
-  max-width: 260px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 240px;
+  max-width: 260px;
 `;
 
 const FiltersList = styled.div`
@@ -52,14 +52,14 @@ const FiltersList = styled.div`
 
 const FilterCheckbox = styled(Checkbox)`
   display: flex;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
 
   .ant-checkbox + span {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
     color: #0f172a;
   }
 
@@ -75,14 +75,14 @@ const FilterLabel = styled.span`
 
 const FilterDescription = styled.span`
   font-size: 0.75rem;
-  color: #6b7280;
   line-height: 1.2;
+  color: #6b7280;
 `;
 
 const FiltersFooter = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const ClearFiltersButton = styled(Button)`
@@ -91,15 +91,15 @@ const ClearFiltersButton = styled(Button)`
 
 const SummaryBubble = styled.div`
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 10px 16px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
   font-size: 0.8rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+  color: #f8fafc;
   pointer-events: auto;
+  background: rgb(15 23 42 / 92%);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 20%);
 `;
 
 const ProductStockBrowser = ({

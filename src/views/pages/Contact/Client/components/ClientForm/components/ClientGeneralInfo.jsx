@@ -16,8 +16,8 @@ const { Form, Input, Button, notification } = antd;
 
 const Wrapper = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1em;
 `;
 
 export const ClientGeneralInfo = ({
@@ -242,8 +242,8 @@ export const ClientGeneralInfo = ({
 
 const FlexContainer = styled.div`
   display: flex;
-  gap: 1em;
   flex-grow: 1;
+  gap: 1em;
 `;
 
 const ButtonContainer = styled.div`

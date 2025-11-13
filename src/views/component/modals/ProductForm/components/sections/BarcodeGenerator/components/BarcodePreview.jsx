@@ -9,31 +9,31 @@ const { Text } = Typography;
 
 const PreviewContainer = styled.div`
   padding: 12px 16px;
+  text-align: center;
   background: #f0f2f5;
   border: 2px dashed #d9d9d9;
   border-radius: 8px;
-  text-align: center;
   transition: all 0.3s ease;
 
-  &:hover {
-    border-color: #1890ff;
+    &:hover {
     background: #f6f8fa;
+    border-color: #1890ff;
   }
 `;
 
 const CurrentCodeContainer = styled.div`
   padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
   background: #fff7e6;
   border: 2px solid #ffd666;
   border-radius: 8px;
-  margin-bottom: 16px;
-  text-align: center;
 `;
 
 const InfoSection = styled.div`
   padding: 12px 0;
-  border-top: 1px solid #f0f0f0;
   margin-top: 16px;
+  border-top: 1px solid #f0f0f0;
 `;
 
 const InfoGrid = styled.div`
@@ -51,7 +51,7 @@ const InfoLabel = styled.div`
 `;
 
 const InfoValue = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
   color: #595959;
   text-align: right;
 `;
@@ -60,21 +60,21 @@ const StatusBadge = styled.span`
   display: inline-flex;
   align-items: center;
   padding: 2px 6px;
-  background: ${(props) => (props.valid ? '#f6ffed' : '#fff2e8')};
-  color: ${(props) => (props.valid ? '#52c41a' : '#fa8c16')};
-  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
+  color: ${(props) => (props.valid ? '#52c41a' : '#fa8c16')};
+  background: ${(props) => (props.valid ? '#f6ffed' : '#fff2e8')};
+  border-radius: 4px;
 `;
 
 const StatusText = styled.div`
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-top: 8px;
   display: flex;
+  gap: 4px;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #8c8c8c;
 `;
 
 const PreviewText = styled.div`
@@ -126,20 +126,12 @@ export const BarcodePreview = ({
                 )}
               </Space>
             }
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: '16px' }}
           >
             <CurrentCodeContainer
               style={{
-                borderColor: hasManualChanges
-                  ? '#fa8c16'
-                  : isUpdating
-                    ? '#1890ff'
-                    : '#ffd666',
-                background: hasManualChanges
-                  ? '#fff7e6'
-                  : isUpdating
-                    ? '#f0f8ff'
-                    : '#fff7e6',
+                borderColor: `${hasManualChanges ? '#fa8c16' : isUpdating ? '#1890ff' : '#ffd666'}`,
+                background: `${hasManualChanges ? '#fff7e6' : isUpdating ? '#f0f8ff' : '#fff7e6'}`,
               }}
             >
               <Space
@@ -152,11 +144,7 @@ export const BarcodePreview = ({
                     fontFamily: 'monospace',
                     fontSize: '16px',
                     fontWeight: 'bold',
-                    color: hasManualChanges
-                      ? '#fa8c16'
-                      : isUpdating
-                        ? '#1890ff'
-                        : 'inherit',
+                    color: `${hasManualChanges ? '#fa8c16' : isUpdating ? '#1890ff' : 'inherit'}`,
                   }}
                 >
                   {currentBarcode}
@@ -260,7 +248,7 @@ export const BarcodePreview = ({
 
       {/* Si no hay preview y no hay código actual */}
       {!showPreview && !currentBarcode && (
-        <Form.Item label="Vista Previa" style={{ marginTop: 24 }}>
+        <Form.Item label="Vista Previa" style={{ marginTop: '24px' }}>
           <PreviewContainer>
             <PreviewText style={{ color: '#8c8c8c' }}>
               Completa los campos para ver la previsualización

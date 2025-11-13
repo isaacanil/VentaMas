@@ -15,35 +15,37 @@ export const Header = ({ onClose }) => {
 };
 const Container = styled.div`
   display: flex;
+  gap: 0.5em;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5em;
   padding: 0.65em 0.9em;
+  background: linear-gradient(#fff, #fcfcfc);
   border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(#ffffff, #fcfcfc);
 `;
 const Title = styled.h3`
+  margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  margin: 0;
   color: #222;
   letter-spacing: 0.5px;
 `;
 const CloseButton = styled.button`
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  width: 2rem;
-  height: 2rem;
   display: grid;
   place-items: center;
+  width: 2rem;
+  height: 2rem;
   color: #666;
+  cursor: pointer;
+  background: transparent;
+  border: none;
   border-radius: 8px;
   transition: 0.15s;
+
   &:hover {
-    background: #f2f2f2;
     color: #222;
+    background: #f2f2f2;
   }
+
   svg {
     font-size: 1.05rem;
   }

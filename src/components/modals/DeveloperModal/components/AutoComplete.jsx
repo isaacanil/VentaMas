@@ -147,15 +147,15 @@ const SuggestionsList = styled.div`
 
 const SuggestionItem = styled.div`
   padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #2a2a2a;
-  background: ${(props) => (props.isSelected ? '#0d3863' : 'transparent')};
   color: ${(props) => (props.isSelected ? 'white' : '#e0e0e0')};
+  cursor: pointer;
+  background: ${(props) => (props.isSelected ? '#0d3863' : 'transparent')};
+  border-bottom: 1px solid #2a2a2a;
   transition: all 0.1s ease;
 
   &:hover {
-    background: #0066cc;
     color: white;
+    background: #06c;
   }
 
   &:last-child {
@@ -164,25 +164,25 @@ const SuggestionItem = styled.div`
 `;
 
 const CommandText = styled.div`
-  font-weight: bold;
-  font-size: 13px;
-  color: ${(props) => (props.theme?.isSelected ? 'white' : '#8ee78e')};
   margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: bold;
+  color: ${(props) => (props.theme?.isSelected ? 'white' : '#8ee78e')};
 `;
 
 const DescriptionText = styled.div`
   font-size: 11px;
-  opacity: 0.8;
   color: ${(props) => (props.theme?.isSelected ? 'white' : '#ccc')};
+  opacity: 0.8;
 `;
 
 const _SuggestionsFooter = styled.div`
   padding: 6px 12px;
+  font-size: 10px;
+  color: #888;
+  text-align: center;
   background: #2d2d2d;
   border-top: 1px solid #333;
-  color: #888;
-  font-size: 10px;
-  text-align: center;
 `;
 
 export default AutoComplete;

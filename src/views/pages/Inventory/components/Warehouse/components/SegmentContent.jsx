@@ -28,8 +28,8 @@ const SegmentInfo = styled.div`
 
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
@@ -40,8 +40,8 @@ const SectionTitle = styled.h3`
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 export default function SegmentContent() {

@@ -21,58 +21,58 @@ const WorkingCodeSection = styled.div`
 `;
 
 const WorkingCodeLabel = styled.div`
+  margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
   color: #262626;
-  margin-bottom: 8px;
 `;
 
 const WorkingCodeContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   padding: 12px 16px;
+  background: #fff;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  background: #fff;
 `;
 
 const WorkingCodeValue = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  flex: 1;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
   font-size: 16px;
   font-weight: 600;
   color: #262626;
-  flex: 1;
 `;
 
 const StatusBadge = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
-  color: #52c41a;
+  align-items: center;
   font-size: 12px;
   font-weight: 500;
+  color: #52c41a;
 `;
 
 const FormatBadge = styled.div`
-  color: #1890ff;
   font-size: 12px;
   font-weight: 500;
+  color: #1890ff;
 `;
 
 const CopyIconButton = styled.button`
-  background: none;
-  border: none;
-  color: #8c8c8c;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
   display: flex;
   align-items: center;
+  padding: 4px;
+  color: #8c8c8c;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 4px;
 
   &:hover {
-    background: #f5f5f5;
     color: #1890ff;
+    background: #f5f5f5;
   }
 `;
 
@@ -81,10 +81,10 @@ const SuggestionsSection = styled.div`
 `;
 
 const SectionTitle = styled.div`
+  margin-bottom: 16px;
   font-size: 14px;
   font-weight: 500;
   color: #262626;
-  margin-bottom: 16px;
 `;
 
 const SuggestionsContainer = styled.div`
@@ -95,15 +95,15 @@ const SuggestionsContainer = styled.div`
 
 const SuggestionCard = styled.div`
   padding: 16px;
+  cursor: pointer;
+  background: ${(props) => (props.selected ? '#e6f7ff' : '#fafafa')};
   border: 1px solid ${(props) => (props.selected ? '#1890ff' : '#f0f0f0')};
   border-radius: 6px;
-  background: ${(props) => (props.selected ? '#e6f7ff' : '#fafafa')};
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => (props.selected ? '#1890ff' : '#d9d9d9')};
     background: ${(props) => (props.selected ? '#e6f7ff' : '#f5f5f5')};
+    border-color: ${(props) => (props.selected ? '#1890ff' : '#d9d9d9')};
   }
 `;
 
@@ -121,18 +121,18 @@ const SuggestionTitle = styled.div`
 `;
 
 const SuggestionCode = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
   font-size: 15px;
   font-weight: 600;
   color: #1890ff;
-  margin-bottom: 4px;
   letter-spacing: 0.3px;
 `;
 
 const SuggestionDescription = styled.div`
   font-size: 12px;
-  color: #8c8c8c;
   line-height: 1.4;
+  color: #8c8c8c;
 `;
 
 export const BarcodeCorrector = ({

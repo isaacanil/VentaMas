@@ -8,13 +8,13 @@ const { Modal, Typography } = ant;
 const { Text } = Typography;
 
 const PreviewBox = styled.div`
-  border: 1px dashed #d9d9d9;
-  padding: 16px;
-  border-radius: 6px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: 16px;
   background: #fafafa;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
 `;
 
 export const BarcodePreviewModal = ({

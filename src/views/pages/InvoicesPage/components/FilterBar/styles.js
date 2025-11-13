@@ -2,16 +2,16 @@ import styled from 'styled-components';
 
 export const Bar = styled.div`
   display: flex;
-  align-items: flex-end;
   gap: 1rem;
-  padding: 0.4rem 1rem;
-  border-bottom: 1px solid var(--Gray);
-  background: var(--White);
+  align-items: flex-end;
   justify-content: flex-start;
+  padding: 0.4rem 1rem;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray);
 
   .ant-form-item {
-    margin-bottom: 0 !important;
     display: inline-block;
+    margin-bottom: 0 !important;
   }
 
   .ant-form-item-label {
@@ -20,22 +20,22 @@ export const Bar = styled.div`
   }
 
   .ant-form-item-label > label {
+    height: auto !important;
     font-size: 11px !important;
     font-weight: 500 !important;
     color: #666 !important;
-    height: auto !important;
   }
 `;
 
 export const MobileWrapper = styled.div`
-  border-bottom: 1px solid var(--Gray);
-  background: var(--White);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray);
 `;
 
 export const MobileHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0.8rem 1rem;
 
   .mobile-totals {
@@ -46,10 +46,10 @@ export const MobileHeader = styled.div`
 `;
 
 export const DrawerContent = styled.div`
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding: 1.5rem;
 
   .ant-form {
     display: flex !important;
@@ -80,8 +80,8 @@ export const DrawerContent = styled.div`
   }
 
   .ant-form-item {
-    margin-bottom: 0 !important;
     width: 100% !important;
+    margin-bottom: 0 !important;
   }
 
   .ant-form-item-label {
@@ -92,5 +92,23 @@ export const DrawerContent = styled.div`
       font-weight: 500 !important;
       color: #333 !important;
     }
+  }
+`;
+
+export const ModalContent = styled.div`
+  .ant-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .ant-form-item {
+    margin-bottom: 0 !important;
+  }
+
+  .ant-form-item-label > label {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
   }
 `;

@@ -79,60 +79,60 @@ const ModulesNavigator = ({ fiscalReceiptsData }) => {
 };
 
 const Container = styled.div`
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-rows: auto 1fr;
-  overflow: hidden;
   gap: 8px;
+  width: 100%;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
 `;
 
 const ModulesBar = styled.div`
   display: flex;
+  flex-shrink: 0;
   gap: 4px;
   padding: 12px 16px;
-  margin: 16px 24px 0 24px;
-  background: linear-gradient(to bottom, #ffffff, #f8fafc);
+  margin: 16px 24px 0;
+  background: linear-gradient(to bottom, #fff, #f8fafc);
   border-bottom: 1px solid #e5e7eb;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 4%);
 `;
 
 const ModuleTab = styled.button`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 10px 20px;
+  font-size: 14px;
+  font-weight: ${(props) => (props.$active ? '600' : '500')};
+  color: ${(props) => (props.$active ? '#ffffff' : '#6b7280')};
+  cursor: pointer;
   background: ${(props) =>
     props.$active
       ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
       : '#ffffff'};
-  color: ${(props) => (props.$active ? '#ffffff' : '#6b7280')};
   border: 1px solid ${(props) => (props.$active ? '#1890ff' : '#e5e7eb')};
   border-radius: 12px;
-  font-size: 14px;
-  font-weight: ${(props) => (props.$active ? '600' : '500')};
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: ${(props) =>
     props.$active
       ? '0 4px 12px rgba(24, 144, 255, 0.25), 0 2px 6px rgba(24, 144, 255, 0.15)'
       : '0 1px 2px rgba(0, 0, 0, 0.05)'};
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
+    color: ${(props) => (props.$active ? '#ffffff' : '#374151')};
     background: ${(props) =>
       props.$active
         ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
         : '#f8fafc'};
     border-color: ${(props) => (props.$active ? '#1890ff' : '#cbd5e1')};
-    color: ${(props) => (props.$active ? '#ffffff' : '#374151')};
-    transform: translateY(-1px);
     box-shadow: ${(props) =>
       props.$active
         ? '0 6px 16px rgba(24, 144, 255, 0.3), 0 3px 8px rgba(24, 144, 255, 0.2)'
         : '0 2px 8px rgba(0, 0, 0, 0.08)'};
+    transform: translateY(-1px);
   }
 
   &:active {
@@ -147,17 +147,17 @@ const ModuleIcon = styled.span`
 `;
 
 const ModuleLabel = styled.span`
-  white-space: nowrap;
   font-size: 14px;
+  white-space: nowrap;
 `;
 
 const ContentWrapper = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  overflow: hidden;
-  padding: 0 24px;
   min-height: 0;
+  padding: 0 24px;
+  overflow: hidden;
 `;
 
 export default ModulesNavigator;

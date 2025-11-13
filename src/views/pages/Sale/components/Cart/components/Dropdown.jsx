@@ -11,23 +11,24 @@ const DropdownContainer = styled.div`
 const DropdownButton = styled.div``;
 
 const DropdownContent = styled.div`
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
   position: absolute;
-  background-color: #f9f9f9;
-  min-width: min-content;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-  padding: 4px;
   z-index: 100000;
+  display: ${(props) => (props.isOpen ? 'block' : 'none')};
+  min-width: min-content;
+  padding: 4px;
+  background-color: #f9f9f9;
   border-radius: 4px;
+  box-shadow: 0 8px 16px 0 rgb(0 0 0 / 20%);
 `;
 
 const DropdownItem = styled.div`
-  padding: 0 16px;
   display: flex;
-  width: 100%;
   align-items: center;
+  width: 100%;
   height: 2em;
+  padding: 0 16px;
   cursor: pointer;
+
   &:hover {
     background-color: #f1f1f1;
   }

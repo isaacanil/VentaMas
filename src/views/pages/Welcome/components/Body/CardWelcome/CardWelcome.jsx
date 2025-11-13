@@ -116,85 +116,84 @@ const Container = styled.div`
   gap: 4rem;
   align-items: center;
   max-width: 1200px;
-  margin: 0 auto;
   padding: 3rem 2rem;
+  margin: 0 auto;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     grid-template-columns: 1fr;
     gap: 3rem;
     text-align: center;
   }
 
-  @media (max-width: 768px) {
-    padding: 2rem 1rem;
+  @media (width <= 768px) {
     gap: 2rem;
+    padding: 2rem 1rem;
   }
 `;
 
 const MainContent = styled.div`
   max-width: 600px;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     order: 2;
     max-width: none;
   }
 `;
 
 const HeroCard = styled(Card)`
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  padding: 2rem;
+  background: linear-gradient(145deg, #fff 0%, #f8fafc 100%);
   border: none;
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 10%);
 
   .ant-card-body {
     padding: 0;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 1.5rem;
   }
 `;
 
 const AppName = styled.h1`
-  color: var(--color-primary, #1890ff) !important;
-  font-weight: 800 !important;
-  font-size: 3.5rem !important;
   margin-bottom: 0.5rem !important;
+  font-size: 3.5rem !important;
+  font-weight: 800 !important;
+  color: var(--color-primary, #1890ff) !important;
   background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 2.5rem !important;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     font-size: 2rem !important;
   }
 `;
 
 const Subtitle = styled.h2`
-  color: var(--color-text-primary, #262626);
+  margin-bottom: 1.5rem;
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: var(--color-text-primary, #262626);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 1.25rem;
   }
 `;
 
 const Description = styled.p`
-  color: var(--color-text-secondary, #666);
+  margin-bottom: 2rem;
   font-size: 1.1rem;
   line-height: 1.6;
-  margin-bottom: 2rem;
+  color: var(--color-text-secondary, #666);
 
-  @media (max-width: 768px) {
-    font-size: 1rem;
+  @media (width <= 768px) {
     margin-bottom: 1.5rem;
+    font-size: 1rem;
   }
 `;
 
@@ -204,7 +203,7 @@ const FeaturesGrid = styled.div`
   gap: 1rem;
   margin-bottom: 2rem;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
@@ -212,28 +211,28 @@ const FeaturesGrid = styled.div`
 
 const FeatureItem = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
   padding: 0.75rem;
-  background: rgba(24, 144, 255, 0.05);
+  background: rgb(24 144 255 / 5%);
   border-radius: 8px;
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(24, 144, 255, 0.1);
+    background: rgb(24 144 255 / 10%);
     transform: translateY(-2px);
   }
 `;
 
 const FeatureIcon = styled.span`
-  color: var(--color-primary, #1890ff);
   font-size: 1.2rem;
+  color: var(--color-primary, #1890ff);
 `;
 
 const FeatureText = styled.span`
-  color: var(--color-text-primary, #262626);
-  font-weight: 500;
   font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #262626);
 `;
 
 const ButtonContainer = styled(Space)`
@@ -241,23 +240,23 @@ const ButtonContainer = styled(Space)`
 
   .ant-btn {
     height: 48px;
-    border-radius: 8px;
     font-weight: 600;
+    border-radius: 8px;
 
     &.ant-btn-primary {
       background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
       border: none;
-      box-shadow: 0 4px 15px rgba(24, 144, 255, 0.3);
+      box-shadow: 0 4px 15px rgb(24 144 255 / 30%);
 
       &:hover {
         background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+        box-shadow: 0 6px 20px rgb(24 144 255 / 40%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
       }
     }
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     flex-direction: column;
     width: 100%;
 
@@ -269,10 +268,10 @@ const ButtonContainer = styled(Space)`
 
 const LogoContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     order: 1;
   }
 `;
@@ -284,15 +283,15 @@ const LogoBG = styled.div`
   padding: 3rem;
   background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 50%;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 35px rgb(0 0 0 / 10%);
   transition: all 0.3s ease;
 
   &:hover {
+    box-shadow: 0 20px 40px rgb(0 0 0 / 15%);
     transform: scale(1.05) rotate(5deg);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 2rem;
   }
 `;

@@ -44,7 +44,7 @@ const Container = styled.div`
   display: grid;
   gap: 0.4em;
   padding: 0.4em;
-  border-radius: var(--border-radius);
-  border: var(--border1);
   background-color: white;
+  border: var(--border1);
+  border-radius: var(--border-radius);
 `;

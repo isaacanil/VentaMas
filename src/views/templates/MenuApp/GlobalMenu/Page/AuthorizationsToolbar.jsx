@@ -33,6 +33,6 @@ export const AuthorizationsToolbar = ({ side }) => {
 
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4em;
+  align-items: center;
 `;

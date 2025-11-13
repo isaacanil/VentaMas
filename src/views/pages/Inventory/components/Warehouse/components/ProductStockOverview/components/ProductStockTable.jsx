@@ -222,22 +222,22 @@ const QuantityBadge = styled.div`
   align-items: center;
   justify-content: center;
   min-width: 108px;
-  padding: 2px 2px;
-  border-radius: 16px;
+  padding: 2px;
+  font-weight: 600;
+  color: #0f172a;
   background: ${(props) => props.$status.background}1f;
   border: 1px solid ${(props) => props.$status.color}30;
-  color: #0f172a;
-  font-weight: 600;
+  border-radius: 16px;
 
   .quantity-main {
     display: inline-flex;
-    align-items: baseline;
     gap: 6px;
+    align-items: baseline;
   }
 
   .quantity-icon {
-    color: ${(props) => props.$status.color};
     font-size: 0.85rem;
+    color: ${(props) => props.$status.color};
   }
 
   .quantity-value {
@@ -246,73 +246,73 @@ const QuantityBadge = styled.div`
 
   .quantity-unit {
     font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #64748b;
-    letter-spacing: 0.05em;
     font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .quantity-status {
     font-size: 0.7rem;
     font-weight: 600;
-    text-transform: uppercase;
     color: ${(props) => props.$status.color};
+    text-transform: uppercase;
   }
 `;
 
 const BatchBadge = styled.span`
   display: inline-block;
   padding: 6px 12px;
-  border-radius: 999px;
-  background: ${(props) => (props.$empty ? '#f1f5f9' : '#dbeafe')};
-  color: ${(props) => (props.$empty ? '#64748b' : '#1d4ed8')};
-  font-weight: 600;
   font-size: 0.75rem;
+  font-weight: 600;
+  color: ${(props) => (props.$empty ? '#64748b' : '#1d4ed8')};
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background: ${(props) => (props.$empty ? '#f1f5f9' : '#dbeafe')};
+  border-radius: 999px;
 `;
 
 const ExpirationBadge = styled.span`
   display: inline-block;
   padding: 6px 10px;
-  border-radius: 10px;
-  background: ${(props) => (props.$empty ? '#f8fafc' : '#ecfccb')};
-  color: ${(props) => (props.$empty ? '#94a3b8' : '#4d7c0f')};
-  font-weight: 600;
   font-size: 0.78rem;
+  font-weight: 600;
+  color: ${(props) => (props.$empty ? '#94a3b8' : '#4d7c0f')};
+  background: ${(props) => (props.$empty ? '#f8fafc' : '#ecfccb')};
+  border-radius: 10px;
 `;
 
 const ActionCluster = styled.div`
   display: inline-flex;
+  gap: 8px;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
   width: 100%;
 `;
 
 const LocationButton = styled.button`
   display: inline-flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
   padding: 4px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(37, 99, 235, 0.18);
-  background: #f8fafc;
-  color: #2563eb;
   font-size: 0.85rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  color: #2563eb;
   text-align: left;
+  cursor: pointer;
+  background: #f8fafc;
+  border: 1px solid rgb(37 99 235 / 18%);
+  border-radius: 12px;
+  transition: all 0.15s ease;
 
   .location-icon {
     font-size: 0.75rem;
   }
 
   &:hover {
-    background: #dbeafe;
     color: #1d4ed8;
-    border-color: rgba(37, 99, 235, 0.32);
+    background: #dbeafe;
+    border-color: rgb(37 99 235 / 32%);
   }
 
   &:active {
@@ -321,18 +321,18 @@ const LocationButton = styled.button`
 `;
 
 const LocationText = styled.span`
+  display: -webkit-box;
   flex: 1;
   min-width: 0;
-  color: #0f172a;
-  font-weight: 500;
-  font-size: 0.8rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  font-size: 0.8rem;
+  font-weight: 500;
   line-height: 1.3;
-  word-break: break-word;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
 `;
 
 const MenuButton = styled.button`
@@ -341,17 +341,17 @@ const MenuButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
   color: #64748b;
   cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #f1f5f9;
     color: #1f2937;
-    border-color: rgba(148, 163, 184, 0.4);
+    background: #f1f5f9;
+    border-color: rgb(148 163 184 / 40%);
   }
 
   &:active {

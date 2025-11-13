@@ -117,21 +117,22 @@ export const ProductControl = ({
 };
 
 const Container = styled.div`
+  position: relative;
   height: 100%;
-  background-color: ${(props) => props.theme.bg.color2};
   overflow: hidden;
+  background-color: ${(props) => props.theme.bg.color2};
   border-radius: var(--border-radius-light);
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-  position: relative;
 `;
 const Wrapper = styled(motion.div)`
   height: 100%;
   padding: 0.5em;
   width: 100%;
   position: relative;
-  //padding-top: 1em;
+
+  /* padding-top: 1em; */
   overflow-y: scroll;
 
   ${({ isScrolled }) =>

@@ -108,34 +108,36 @@ export const PaymentArea = () => {
   );
 };
 const Container = styled.div`
-  background-color: white;
   display: grid;
   gap: 0.4em;
+  background-color: white;
 `;
 const PaymentOptions = styled.div`
   display: grid;
-  gap: 0.4em;
   grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4em;
 
   input[type='radio']:checked + label {
-    background-color: #1976d2;
-    color: black;
     font-weight: 500;
     color: white;
+    background-color: #1976d2;
   }
+
   input[type='radio'] {
     display: none;
   }
+
   label {
     flex-grow: 1;
+    font-weight: 500;
+    text-align: center;
+    background-color: #ccd7e6;
     border-radius: 4px;
     transition:
       background-color,
       400ms ease-in-out,
       color 400ms ease-in-out;
-    background-color: #ccd7e6;
-    font-weight: 500;
-    text-align: center;
+
     :hover {
       background-color: var(--color3);
     }
@@ -143,9 +145,10 @@ const PaymentOptions = styled.div`
 `;
 const PaymentOption = styled.div`
   display: flex;
-  align-items: center;
   flex-grow: 1;
   gap: 1em;
+  align-items: center;
+
   span {
     display: flex;
     justify-content: space-between;
@@ -157,14 +160,14 @@ const LeftSide = styled.div`
 `;
 const RightSide = styled.div`
   display: grid;
-  padding: 0.6em 0 0;
   gap: 0.8em;
+  padding: 0.6em 0 0;
 `;
 const PaymentInfo = styled.div`
   display: grid;
-  padding: 0 0.4em;
-  gap: 1em;
   grid-template-columns: 1fr 0.7fr;
+  gap: 1em;
+  padding: 0 0.4em;
 `;
 
 const Wrapper = styled.span`
@@ -175,6 +178,6 @@ const Wrapper = styled.span`
 const Label = styled.span`
   display: flex;
   justify-content: space-between;
-  font-weight: 500;
   font-size: 14px;
+  font-weight: 500;
 `;

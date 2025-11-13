@@ -20,9 +20,9 @@ const HeaderStats = styled.div`
 `;
 
 const StatBox = styled.div`
+  min-width: 80px;
   padding: 6px 12px;
   border-radius: 4px;
-  min-width: 80px;
 
   &.total {
     background: #fafafa;
@@ -42,8 +42,8 @@ const StatBox = styled.div`
 
 const FiltersWrapper = styled.div`
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
   align-items: flex-end;
 `;
 

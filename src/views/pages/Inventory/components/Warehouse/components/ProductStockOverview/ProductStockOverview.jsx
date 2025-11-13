@@ -20,16 +20,16 @@ import ProductStockTable from './components/ProductStockTable';
 import StockSummary from './components/StockSummary';
 
 const Container = styled.div`
-  padding: 16px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: #ffffff;
   display: grid;
   gap: 24px;
   align-items: start;
+  width: 100%;
+  max-width: 1400px;
+  padding: 16px;
+  margin: 0 auto;
+  background: #fff;
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -45,9 +45,9 @@ const SideContent = styled.div`
   top: 16px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     position: relative;
     top: 0;
   }
@@ -55,76 +55,76 @@ const SideContent = styled.div`
 
 const SearchBar = styled(Input)`
   width: 100%;
-  border-radius: 8px;
   padding: 8px 12px;
+  background: #fff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 2%);
 
-  .ant-input {
+    .ant-input {
     font-size: 0.95rem;
   }
 
-  .ant-input-prefix {
-    color: #64748b;
+    .ant-input-prefix {
     margin-right: 8px;
     font-size: 1rem;
+    color: #64748b;
   }
 
-  &:hover,
+    &:hover,
   &:focus {
     border-color: #cbd5e1;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 6px rgb(0 0 0 / 4%);
   }
 `;
 
 const ControlsBar = styled.div`
   display: flex;
-  align-items: center;
-  gap: 16px;
-  justify-content: space-between;
   flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const SearchWrapper = styled.div`
   width: 400px;
   max-width: 100%;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
   }
 `;
 
 const ViewModeToggle = styled(Segmented)`
+  flex-shrink: 0;
+  padding: 4px;
   background: #f8fafc;
   border-radius: 999px;
-  padding: 4px;
-  flex-shrink: 0;
 
   .ant-segmented-item {
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: #475569;
     padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
     transition: all 0.2s ease;
   }
 
   .ant-segmented-item-selected {
+    color: #fff;
     background: #2563eb;
-    color: #ffffff;
-    box-shadow: 0 6px 18px -10px rgba(37, 99, 235, 0.8);
+    box-shadow: 0 6px 18px -10px rgb(37 99 235 / 80%);
   }
 
-  @media (max-width: 768px) {
-    width: 100%;
+  @media (width <= 768px) {
     justify-content: center;
+    width: 100%;
   }
 `;
 
 const CenteredState = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 100%;
   padding: 40px 16px;
 `;
@@ -136,26 +136,26 @@ const LoadingState = styled(CenteredState)`
 
 const ThresholdLegend = styled.div`
   display: flex;
-  align-items: center;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
   font-size: 0.75rem;
   color: #64748b;
-  margin-bottom: 8px;
 `;
 
 const LegendItem = styled.span`
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 `;
 
 const LegendDot = styled.span`
+  display: inline-flex;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
   background: ${({ $color }) => $color};
-  display: inline-flex;
+  border-radius: 50%;
 `;
 
 function ProductStockOverview() {

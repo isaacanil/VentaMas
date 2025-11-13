@@ -41,6 +41,6 @@ export const InsuranceConfigToolbar = ({ side = 'left' }) => {
 const Container = styled.div``;
 const Group = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4em;
+  align-items: center;
 `;

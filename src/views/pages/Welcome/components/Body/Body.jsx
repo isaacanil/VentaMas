@@ -87,8 +87,8 @@ export default Body;
 
 const Container = styled.div`
   width: 100%;
-  min-height: calc(100vh - 140px); // Ajustar por header y footer
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  min-height: calc(100vh - 140px); /* Ajustar por header y footer */
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
   overflow-x: hidden;
 `;
 
@@ -97,7 +97,7 @@ const MainContent = styled.div`
   margin: 0 auto;
   padding: 40px 20px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 20px 16px;
   }
 `;
@@ -105,7 +105,7 @@ const MainContent = styled.div`
 const HeroSection = styled.div`
   margin-bottom: 80px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     margin-bottom: 60px;
   }
 `;
@@ -120,7 +120,7 @@ const GallerySection = styled.div`
     font-size: 2rem;
     font-weight: 600;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       font-size: 1.5rem;
       margin-bottom: 30px;
     }

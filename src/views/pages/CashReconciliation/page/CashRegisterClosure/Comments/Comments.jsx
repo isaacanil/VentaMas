@@ -22,22 +22,22 @@ export const Comments = ({ icon, label, ...props }) => {
   );
 };
 const Container = styled.div`
-  padding: 0.4em 0.4em;
+  padding: 0.4em;
   background-color: white;
-  border-radius: 0.5em;
   border: var(--border-primary);
+  border-radius: 0.5em;
 `;
 const FormItemStyled = styled(Form.Item)`
-  margin: 0;
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  margin: 0;
 
   .ant-form-item-label {
-    text-align: left;
-    padding: 0;
     display: block;
+    padding: 0;
     margin-bottom: 4px;
+    text-align: left;
   }
 
   .ant-form-item-label > label {

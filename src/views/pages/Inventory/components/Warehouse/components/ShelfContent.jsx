@@ -38,15 +38,15 @@ const ShelfInfo = styled.div`
 
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
 `;
 
@@ -62,15 +62,15 @@ const SectionContent = styled.div`
 `;
 
 const AddButton = styled(Button)`
-  margin-bottom: 0; /* Alineación con el título */
   display: flex;
   align-items: center;
+  margin-bottom: 0; /* Alineación con el título */
 `;
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 const DetailItem = styled.p`
@@ -80,6 +80,7 @@ const DetailItem = styled.p`
 
   & > strong {
     font-weight: 600;
+
     /* Color distintivo para los títulos de los detalles */
   }
 `;

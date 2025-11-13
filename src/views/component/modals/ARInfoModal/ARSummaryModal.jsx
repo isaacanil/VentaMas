@@ -35,12 +35,12 @@ const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 const StyledCard = styled(Card)`
-  border-radius: 8px;
   margin-bottom: 16px;
+  border-radius: 8px;
 `;
 const StyledDescriptions = styled.div`
-  margin-bottom: 24px;
   padding: 16px;
+  margin-bottom: 24px;
   background: #fafafa;
   border-radius: 8px;
 
@@ -50,8 +50,8 @@ const StyledDescriptions = styled.div`
   }
 
   .info-label {
-    font-weight: 500;
     width: 120px;
+    font-weight: 500;
     color: #666;
   }
 
@@ -79,8 +79,8 @@ const InfoCard = styled.div`
 
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 16px;
   }
 
@@ -94,9 +94,9 @@ const InfoCard = styled.div`
     flex-direction: column;
 
     .label {
-      color: #666;
-      font-size: 12px;
       margin-bottom: 4px;
+      font-size: 12px;
+      color: #666;
     }
 
     .value {
@@ -107,16 +107,16 @@ const InfoCard = styled.div`
 `;
 
 const StatusTag = styled.span`
+  margin-left: 8px;
+  font-size: 12px;
   color: ${(props) =>
     props.isPaid ? '#52c41a' : props.isLate ? '#f5222d' : '#1890ff'};
-  font-size: 12px;
-  margin-left: 8px;
 `;
 
 const InfoValue = styled.span`
   display: flex;
-  align-items: baseline;
   gap: 4px;
+  align-items: baseline;
 
   .amount {
     font-size: 16px;

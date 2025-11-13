@@ -413,15 +413,15 @@ export const DailySalesBarChart = ({ sales }) => {
 };
 
 const Container = styled.div`
-  height: 250px;
   display: grid;
   gap: 1em;
+  height: 250px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.75em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.5em;
   }
 `;
@@ -430,24 +430,24 @@ const Header = styled.div`
   display: grid;
   gap: 1em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.75em;
   }
 `;
 
 const TitleContainer = styled.div`
-  @media (max-width: 768px) {
-    h3 {
+  @media (width <= 768px) {
+        h3 {
       font-size: 1.3em !important;
       text-align: center;
     }
   }
 
-  @media (max-width: 480px) {
-    h3 {
+  @media (width <= 480px) {
+        h3 {
       font-size: 1.1em !important;
-      text-align: center;
       line-height: 1.2;
+      text-align: center;
     }
   }
 `;
@@ -458,12 +458,12 @@ const PeriodControls = styled.div`
   gap: 1em;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
     gap: 0.75em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.5em;
   }
 `;
@@ -472,89 +472,89 @@ const PeriodTypeButtons = styled.div`
   display: flex;
   gap: 0.5em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     justify-content: center;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.25em;
   }
 `;
 
 const PeriodButton = styled.button`
   padding: 0.5em 1em;
+  font-size: 0.9em;
+  color: ${(props) => (props.$active ? '#fff' : '#333')};
+  white-space: nowrap;
+  cursor: pointer;
+  background-color: ${(props) => (props.$active ? '#007bff' : '#fff')};
   border: 1px solid #ddd;
   border-radius: 0.25em;
-  background-color: ${(props) => (props.$active ? '#007bff' : '#fff')};
-  color: ${(props) => (props.$active ? '#fff' : '#333')};
-  cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9em;
-  white-space: nowrap;
 
-  &:hover {
+    &:hover {
     background-color: ${(props) => (props.$active ? '#0056b3' : '#f8f9fa')};
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0.4em 0.8em;
     font-size: 0.85em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
+    flex: 1;
     padding: 0.3em 0.6em;
     font-size: 0.8em;
-    flex: 1;
   }
 `;
 
 const NavigationControls = styled.div`
   display: flex;
+  gap: 1em;
   align-items: center;
   justify-content: center;
-  gap: 1em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.75em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.5em;
   }
 `;
 
 const NavButton = styled.button`
-  padding: 0.5em;
-  border: 1px solid #ddd;
-  border-radius: 0.25em;
-  background-color: #fff;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 1.1em;
-  min-width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5em;
+  font-size: 1.1em;
+  color: #333;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.25em;
+  transition: all 0.2s ease;
 
-  &:hover:not(:disabled) {
+    &:hover:not(:disabled) {
     background-color: #f8f9fa;
     border-color: #007bff;
   }
 
-  &:disabled {
-    opacity: 0.5;
+    &:disabled {
     cursor: not-allowed;
+    opacity: 0.5;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     min-width: 36px;
     height: 36px;
     font-size: 1em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     min-width: 32px;
     height: 32px;
     font-size: 0.9em;
@@ -562,23 +562,23 @@ const NavButton = styled.button`
 `;
 
 const PeriodDisplay = styled.div`
-  font-weight: 600;
-  font-size: 1.1em;
-  color: #333;
-  min-width: 200px;
-  text-align: center;
   flex: 1;
+  min-width: 200px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     min-width: 150px;
     font-size: 1em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     min-width: 120px;
-    font-size: 0.9em;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 0.9em;
     white-space: nowrap;
   }
 `;
@@ -587,7 +587,7 @@ const ChartContainer = styled.div`
   height: 100%;
   overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     /* Asegurar que el gráfico sea scrollable horizontalmente si es necesario */
     overflow-x: auto;
   }

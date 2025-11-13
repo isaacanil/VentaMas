@@ -11,7 +11,27 @@ import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice
 import { highlightSearch } from '../highlight/Highlight';
 
 const Container = styled.li`
+
+  /* box-shadow: ${(props) =>
+    props.isSelected ? '0 0 0 1px #1677ff' : '0 1px 3px rgba(0,0,0,0.05)'}; */
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  gap: 1em;
+  align-items: start;
+  min-height: 75px;
+  padding: 0.8em;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  cursor: pointer;
   list-style: none;
+  background-color: ${(props) =>
+    props.hasMissingName
+      ? '#fff5f5'
+      : props.hasMissingID
+        ? '#fffbeb'
+        : '#ffffff'};
   border: 2px solid
     ${(props) =>
       props.hasMissingName
@@ -21,32 +41,12 @@ const Container = styled.li`
           : props.isSelected
             ? '#4096ff'
             : '#eaeaea'};
-  display: grid;
-  grid-template-columns: 1fr min-content;
-  gap: 1em;
-  min-height: 75px;
-  padding: 0.8em;
-  align-items: start;
-  margin: 0;
-  font-size: 0.9rem;
   border-radius: 6px;
-  background-color: ${(props) =>
-    props.hasMissingName
-      ? '#fff5f5'
-      : props.hasMissingID
-        ? '#fffbeb'
-        : '#ffffff'};
-
-  color: #2c3e50;
-  cursor: pointer;
   transition: all 0.2s ease;
-  /* box-shadow: ${(props) =>
-    props.isSelected ? '0 0 0 1px #1677ff' : '0 1px 3px rgba(0,0,0,0.05)'}; */
-  position: relative;
 
-  @media (max-width: 700px) {
-    min-height: auto;
+  @media (width <= 700px) {
     align-items: center;
+    min-height: auto;
   }
 
   &:hover {
@@ -67,8 +67,8 @@ const Container = styled.li`
   }
 
   .warning {
-    font-weight: 500;
     font-size: 0.85rem;
+    font-weight: 500;
   }
 
   .warning-name {
@@ -80,53 +80,53 @@ const Container = styled.li`
   }
 
   span.search-highlight {
-    background-color: rgba(0, 62, 236, 0.1);
-    border-radius: 2px;
     padding: 0 2px;
+    background-color: rgb(0 62 236 / 10%);
+    border-radius: 2px;
   }
 `;
 
 const ClientInfo = styled.div`
   display: grid;
-  align-items: start;
-
   grid-template-columns: minmax(150px, 2fr) minmax(110px, 1fr) minmax(
       130px,
       1fr
     );
   gap: 0.8em;
+  align-items: start;
 
-  @media (max-width: 700px) {
+  @media (width <= 700px) {
     grid-template-columns: 1fr;
     gap: 0.3em;
     min-height: auto;
   }
+
   .client-name {
-    font-size: 1em;
-    line-height: 1.2;
-    font-weight: 600;
-    color: #3078bf;
     display: flex;
     gap: 1em;
-    display: flex;
     justify-content: flex-start;
     min-height: 45px;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #3078bf;
 
-    @media (max-width: 700px) {
+    @media (width <= 700px) {
       min-height: auto;
     }
   }
+
   .client-detail {
-    font-size: 1em;
-    color: #4e4e4e;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     min-height: 45px;
     overflow: hidden;
-    word-wrap: break-word;
+    font-size: 1em;
+    color: #4e4e4e;
+    overflow-wrap: break-word;
 
-    @media (max-width: 700px) {
+    @media (width <= 700px) {
       display: grid;
       grid-template-columns: 100px 1fr;
       gap: 1em;
@@ -137,10 +137,12 @@ const ClientInfo = styled.div`
   .warning {
     font-size: 1em;
     font-style: italic;
+
     &.warning-name {
-      color: #e74c3c;
       font-weight: 500;
+      color: #e74c3c;
     }
+
     &.warning-id {
       color: #f39c12;
     }
@@ -159,7 +161,7 @@ const ActionButtons = styled.div`
     }
   }
 
-  @media (max-width: 700px) {
+  @media (width <= 700px) {
     align-self: center;
     padding-top: 0;
   }

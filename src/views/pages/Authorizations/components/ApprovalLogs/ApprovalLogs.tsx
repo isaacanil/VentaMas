@@ -113,10 +113,10 @@ const Wrapper = styled.div`
 
 const Controls = styled.div`
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const FilterGroup = styled.div`
@@ -128,27 +128,27 @@ const FilterGroup = styled.div`
 
 const TableContainer = styled.div`
   position: relative;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   overflow: hidden;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 6%);
 `;
 
 const TableElement = styled.table`
   width: 100%;
-  border-collapse: collapse;
   min-width: 960px;
+  border-collapse: collapse;
 `;
 
 const TableHeadCell = styled.th`
-  background: #f7f9fc;
-  color: #1f2937;
-  font-weight: 600;
+  padding: 12px 16px;
   font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: left;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 12px 16px;
-  text-align: left;
+  background: #f7f9fc;
   border-bottom: 1px solid #e5e7eb;
 `;
 
@@ -176,22 +176,22 @@ const TagPill = styled.span<{ $color: string }>`
   display: inline-flex;
   align-items: center;
   padding: 2px 10px;
+  margin-right: 6px;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 999px;
-  background: ${({ $color }) => `${$color}1a`};
   color: ${({ $color }) => $color};
-  margin-right: 6px;
+  background: ${({ $color }) => `${$color}1a`};
+  border-radius: 999px;
 `;
 
 const LoadingOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.75);
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  background: rgb(255 255 255 / 75%);
 `;
 
 const spin = keyframes`
@@ -210,44 +210,44 @@ const Spinner = styled.div`
 
 const EmptyState = styled.div`
   padding: 48px 24px;
-  text-align: center;
-  color: #6b7280;
   font-size: 14px;
+  color: #6b7280;
+  text-align: center;
 `;
 
 const ErrorBanner = styled.div`
   padding: 12px 16px;
-  border-radius: 10px;
-  background: #fee2e2;
-  color: #b91c1c;
   font-size: 13px;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 10px;
 `;
 
 const PaginationControls = styled.div`
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
   padding: 12px 16px 16px;
 `;
 
 const PaginationButton = styled.button`
   padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #1f2937;
   font-size: 12px;
+  color: #1f2937;
   cursor: pointer;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
 
   &:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
+    opacity: 0.5;
   }
 
   &:hover:not(:disabled) {
-    border-color: #2563eb;
     color: #2563eb;
+    border-color: #2563eb;
   }
 `;
 

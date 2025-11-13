@@ -178,46 +178,46 @@ export const InvoiceItemWide = ({ data }) => {
 
 // Mantenemos exactamente los mismos styled components del InvoiceItem original
 const Card = styled.div`
-  background: #ffffff;
-  border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e8e8e8;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  justify-content: space-between;
   padding-bottom: 8px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
 `;
 
 const InvoiceInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
   min-width: 0;
 `;
 
 const InvoiceNumber = styled.div`
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 15px;
-  color: #1a1a1a;
   flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
 
   svg {
     font-size: 12px;
@@ -226,19 +226,19 @@ const InvoiceNumber = styled.div`
 `;
 
 const NCFNumber = styled.span`
-  font-size: 11px;
-  color: #666;
-  font-weight: 400;
-  background: #f5f5f5;
   padding: 2px 6px;
-  border-radius: 3px;
   margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 3px;
 `;
 
 const ClientName = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   font-size: 13px;
   color: #666;
 
@@ -248,18 +248,18 @@ const ClientName = styled.div`
   }
 
   span {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
 const HeaderMeta = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
   flex-shrink: 0;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
 `;
 
 const DateInfo = styled.div`
@@ -309,36 +309,36 @@ const DetailItem = styled.div`
 `;
 
 const DetailLabel = styled.span`
+  margin-bottom: 2px;
   font-size: 10px;
-  color: #999;
   font-weight: 500;
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-bottom: 2px;
 `;
 
 const DetailValue = styled.span`
   font-size: 12px;
-  color: #333;
   font-weight: 600;
+  color: #333;
 `;
 
 const LeftSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const RightSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const PaymentMethod = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   font-size: 12px;
   color: #666;
 
@@ -348,24 +348,24 @@ const PaymentMethod = styled.div`
   }
 
   span {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
 const TotalAmount = styled.div`
+  flex-shrink: 0;
   font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
   text-align: left;
-  flex-shrink: 0;
 `;
 
 const ActionBar = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const ActionButtons = styled.div`
@@ -383,6 +383,7 @@ const ActionButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;

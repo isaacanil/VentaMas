@@ -67,50 +67,50 @@ const Container = styled.div`
 `;
 
 const MenuButton = styled.button`
-  background: transparent;
-  border: none;
   display: grid;
   place-items: center;
-  height: 32px;
   width: 32px;
+  height: 32px;
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background: transparent;
+  border: none;
   opacity: ${(props) => (props.disabled ? 0.6 : 1)};
 `;
 
 const DotsIcon = styled.span`
   font-size: 22px;
+  font-weight: 600;
   line-height: 0;
   color: ${(props) => (props.disabled ? '#94a3b8' : '#1e293b')};
-  font-weight: 600;
 `;
 
 const MenuWrapper = styled(motion.div)`
   position: absolute;
-  border: 1px solid #cfcfcf;
+  right: 2px;
   bottom: 8px;
   left: 2px;
-  right: 2px;
-  margin: 0 auto;
-  width: 95%;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.397);
   z-index: 1000;
+  width: 95%;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 39.7%);
 `;
 
 const MenuHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 12px;
+  justify-content: space-between;
+  padding: 12px;
   border-bottom: 1px solid #eee;
 `;
 
 const HeaderTitle = styled.h3`
   margin: 0;
   font-size: 14px;
-  color: #0f172a;
   font-weight: 600;
+  color: #0f172a;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 `;
@@ -118,35 +118,35 @@ const HeaderTitle = styled.h3`
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 4px;
   gap: 0.2em;
+  padding: 4px;
 `;
 
 const MenuItem = styled.button`
   display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 10px;
-  border: none;
-  background: ${(props) => props.$theme?.background || '#ffffff'};
-  border-radius: 6px;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  align-items: center;
   width: 100%;
-  text-align: left;
+  padding: 10px;
   font-size: 15px;
   font-weight: 500;
   color: ${(props) => props.$theme?.color || '#475569'};
+  text-align: left;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background: ${(props) => props.$theme?.background || '#ffffff'};
+  border: none;
+  border-radius: 6px;
+  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
   transition: all 0.2s;
 
-  &:hover {
-    background: ${(props) => {
-      if (props.disabled) return props.$theme?.background || '#ffffff';
-      return props.$theme?.backgroundHover || '#f0f0f0';
-    }};
+  &&:hover {
     color: ${(props) => {
       if (props.disabled) return props.$theme?.color || '#475569';
       return props.$theme?.colorHover || '#0f172a';
+    }};
+    background: ${(props) => {
+      if (props.disabled) return props.$theme?.background || '#ffffff';
+      return props.$theme?.backgroundHover || '#f0f0f0';
     }};
   }
 `;
@@ -162,18 +162,18 @@ const CloseButton = styled.button`
   position: absolute;
   top: 8px;
   right: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
   padding: 4px 8px;
   font-size: 16px;
-  color: #64748b;
   font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  background: transparent;
+  border: none;
   border-radius: 4px;
 
-  &:hover {
-    background: #f0f0f0;
+  &&:hover {
     color: #0f172a;
+    background: #f0f0f0;
   }
 `;
 

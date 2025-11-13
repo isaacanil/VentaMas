@@ -3,31 +3,31 @@ import styled from 'styled-components';
 export const PageContainer = styled.div`
   display: grid;
   grid-template-rows: min-content 1fr;
-  min-height: 100vh;
   height: 100%;
-  background: #ffffffff;
+  min-height: 100vh;
   overflow: hidden;
+  background: #ffff;
 `;
 
 export const Workspace = styled.div`
   display: grid;
   grid-template-columns: ${({ $showNavigator }) =>
     $showNavigator ? '200px 1fr' : '1fr'};
-  min-height: 0;
   height: 100%;
+  min-height: 0;
   background: #fff;
 
-  @media (max-width: 992px) {
+  @media (width <= 992px) {
     grid-template-columns: 1fr;
   }
 `;
 
 export const ScrollArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
   position: relative;
+  flex: 1;
   height: 100%;
+  min-height: 0;
+  overflow-y: auto;
 `;
 
 export const StudioWrapper = styled.div`
@@ -45,18 +45,18 @@ export const StudioGrid = styled.div`
   gap: 24px;
   width: 100%;
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     grid-template-columns: 1fr;
   }
 `;
 
 export const StickySummary = styled.div`
-  padding: 0px 8px 12px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 0 8px 12px 0;
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     display: none;
     padding: 0;
   }

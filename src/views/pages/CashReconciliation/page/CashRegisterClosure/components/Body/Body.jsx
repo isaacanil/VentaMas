@@ -67,30 +67,30 @@ const Container = styled.div`
 
 const Group = styled.div`
   display: grid;
-  gap: 3em;
-  justify-content: space-between;
   grid-template-columns: ${(props) =>
     props.narrow ? '1fr' : 'repeat(2, 1fr)'};
+  gap: 3em;
+  justify-content: space-between;
 `;
 
 const PillToggle = styled.div`
   display: flex;
-  background: #ffffff;
-  border-radius: 30px;
   width: fit-content;
   padding: 4px;
-  margin: 0 auto 0 auto;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 30px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 `;
 
 const ToggleButton = styled.button`
   padding: 8px 16px;
-  border-radius: 20px;
-  border: none;
-  background: ${(props) => (props.active ? '#4285F4' : 'transparent')};
-  color: ${(props) => (props.active ? 'white' : '#333')};
   font-weight: ${(props) => (props.active ? '600' : '400')};
+  color: ${(props) => (props.active ? 'white' : '#333')};
   cursor: pointer;
+  background: ${(props) => (props.active ? '#4285F4' : 'transparent')};
+  border: none;
+  border-radius: 20px;
   transition: all 0.3s ease;
 
   &:hover {

@@ -46,8 +46,8 @@ const updateMode = OPERATION_MODES.UPDATE.id;
 
 const Wrapper = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1em;
 `;
 
 // Generate country options

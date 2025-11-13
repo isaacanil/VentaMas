@@ -23,34 +23,34 @@ const Header = styled.div`
 `;
 
 const IconBadge = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  margin: 0 auto 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
-  color: #fff;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
   font-size: 28px;
+  color: #fff;
+  background: linear-gradient(135deg, #1890ff 0%, #52c41a 100%);
+  border-radius: 18px;
 `;
 
 const Subtitle = styled(Text)`
-  color: #8c8c8c !important;
   display: block;
   margin-top: 6px;
+  color: #8c8c8c !important;
 `;
 
 const PinCard = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: #fff;
-  border-radius: 18px;
+  width: 100%;
   padding: 20px 20px 16px;
+  background: #fff;
   border: 1px solid #f0f0f0;
-  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgb(9 30 66 / 8%);
 `;
 
 const ModulePins = styled.div`
@@ -65,52 +65,52 @@ const ModulePinRow = styled.div`
   gap: 10px;
   padding: 14px 16px;
   background: #fafafa;
-  border-radius: 12px;
   border: 1px solid #f0f0f0;
-  box-shadow: inset 0 0 0 1px rgba(24, 144, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgb(24 144 255 / 8%);
 `;
 
 const ModuleHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 8px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ModuleLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: #1f1f1f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 `;
 
 const PinNumber = styled.div`
+  padding: 6px 0;
+  font-family: 'Roboto Mono', 'Courier New', monospace;
   font-size: 26px;
   font-weight: 700;
-  letter-spacing: 6px;
-  font-family: 'Roboto Mono', 'Courier New', monospace;
-  text-align: center;
-  padding: 6px 0;
   color: #141414;
+  text-align: center;
+  letter-spacing: 6px;
 `;
 
 const PinPlaceholder = styled.div`
+  padding: 6px 0;
+  font-family: 'Roboto Mono', 'Courier New', monospace;
   font-size: 26px;
   font-weight: 700;
-  letter-spacing: 6px;
-  font-family: 'Roboto Mono', 'Courier New', monospace;
-  text-align: center;
-  padding: 6px 0;
-  opacity: 0.35;
   color: #141414;
+  text-align: center;
+  letter-spacing: 6px;
+  opacity: 0.35;
 `;
 
 const ModuleMeta = styled.span`
+  display: block;
   font-size: 12px;
   color: #595959;
   text-align: center;
-  display: block;
 `;
 
 const ModuleActions = styled.div`
@@ -121,48 +121,48 @@ const ModuleActions = styled.div`
 
 const ModuleButton = styled(Button)`
   && {
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    color: #262626;
-    font-size: 12px;
     height: 30px;
     padding: 0 12px;
+    font-size: 12px;
+    color: #262626;
+    background: #fff;
+    border: 1px solid #d9d9d9;
 
     &:hover,
     &:focus {
+      color: #0050b3;
       background: #e6f7ff;
       border-color: #91d5ff;
-      color: #0050b3;
     }
 
     &:disabled {
+      color: rgb(0 0 0 / 25%);
       background: #f5f5f5;
       border-color: #d9d9d9;
-      color: rgba(0, 0, 0, 0.25);
     }
   }
 `;
 
 const PrintButton = styled(Button)`
   && {
+    height: 36px;
+    padding: 0 16px;
+    color: #fff;
     background: #1890ff;
     border: none;
-    color: #fff;
-    padding: 0 16px;
-    height: 36px;
 
     &:hover,
     &:focus {
-      background: #40a9ff;
       color: #fff;
+      background: #40a9ff;
     }
   }
 `;
 
 const ActionBar = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 10px;
+  justify-content: flex-end;
   margin-top: 4px;
 `;
 
@@ -431,7 +431,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
       footer={null}
       width={560}
       centered
-      destroyOnClose
+      destroyOnHidden
     >
       <ModalBody>
         <Header>

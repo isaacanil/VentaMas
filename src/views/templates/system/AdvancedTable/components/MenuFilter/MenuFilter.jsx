@@ -65,12 +65,14 @@ export const FilterUI = ({
 const FilterLabel = styled.div`
   display: flex;
   gap: 0.5em;
+
   span > svg {
     font-size: 1.2em;
     color: #696969cc;
   }
+
   div {
-    @media (max-width: 1000px) {
+    @media (width <= 1000px) {
       display: none;
     }
   }
@@ -82,8 +84,8 @@ const Filters = styled.div`
 `;
 const Container = styled.div`
   display: flex;
-  align-items: center;
-  padding: 0 1em;
   gap: 2em;
+  align-items: center;
   height: 2.5em;
+  padding: 0 1em;
 `;

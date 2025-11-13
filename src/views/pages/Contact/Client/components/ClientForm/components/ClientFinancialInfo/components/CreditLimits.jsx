@@ -198,23 +198,23 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
 
 // Estilos con Styled Components
 const Container = styled.div`
+  padding: 0 12px 8px;
   border-radius: 6px;
-  padding: 0px 12px 8px;
 `;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 6px;
 `;
 
 const Title = styled.h2`
+  margin: 0;
   font-size: 1rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.4;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 const SummaryGrid = styled.div`
@@ -230,12 +230,12 @@ const SummaryCard = styled.div`
   background: ${({ theme }) => theme.bg?.light || '#ffffff'};
   border: 1px solid ${({ theme }) => theme.border?.light || '#e8e8e8'};
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
 `;
 
 const SummaryIcon = styled.div`
-  font-size: 1rem;
   margin-right: 10px;
+  font-size: 1rem;
   line-height: 1;
   color: ${(props) => {
     if (props.creditValue !== undefined) {
@@ -252,11 +252,11 @@ const SummaryContent = styled.div`
 `;
 
 const SummaryLabel = styled.div`
+  margin-bottom: 4px;
   font-size: 0.75rem;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
   font-weight: 500;
   line-height: 1.5;
-  margin-bottom: 4px;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 `;
 
 const SummaryValue = styled.div`
@@ -275,18 +275,18 @@ const SummaryValue = styled.div`
 `;
 
 const EditButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  margin-left: 8px;
-  color: #666;
-  font-size: 0.875rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 6px;
+  margin-left: 8px;
+  font-size: 0.875rem;
+  color: #666;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 
   &:hover {
     color: #1890ff;

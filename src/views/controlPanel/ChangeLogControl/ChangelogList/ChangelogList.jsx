@@ -50,20 +50,23 @@ const Container = styled.div`
   height: calc(100vh - 2.75em);
 `;
 const Wrapper = styled.div`
-  padding: 1em;
-  max-width: 900px;
   width: 100%;
-  overflow: auto;
+  max-width: 900px;
+  padding: 1em;
   margin: 0 auto;
+  overflow: auto;
+
   h1 {
     margin-left: 0;
   }
+
   h2 {
     margin-left: 0;
   }
 `;
 const EditorWrapper = styled.div`
   margin-bottom: 6em;
+
   :last-child {
     margin-bottom: 0;
   }

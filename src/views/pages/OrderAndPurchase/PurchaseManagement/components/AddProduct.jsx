@@ -387,11 +387,13 @@ const StatsContainer = styled.div`
 const TotalItem = styled(Statistic)`
   align-self: end;
   justify-content: space-between;
+
   .ant-statistic-title {
     font-size: 14px;
     color: #333;
     text-align: right;
   }
+
   .ant-statistic-content {
     font-size: 16px;
     font-weight: bold;
@@ -401,11 +403,11 @@ const TotalItem = styled(Statistic)`
 
 const ActionContainer = styled(StatsContainer)`
   display: flex;
-  align-items: end;
-  padding: 0 0 0.3em 0;
-  justify-content: flex-end;
-  margin-left: 0.8em;
   gap: 0.4em;
+  align-items: end;
+  justify-content: flex-end;
+  padding: 0 0 0.3em;
+  margin-left: 0.8em;
 `;
 
 const StyledFormItem = styled(Form.Item)`
@@ -424,8 +426,8 @@ const StyledFormItem = styled(Form.Item)`
   }
 
   &.ant-form-item {
-    margin-bottom: 0;
     display: flex;
     flex-direction: column;
+    margin-bottom: 0;
   }
 `;

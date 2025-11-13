@@ -22,6 +22,6 @@ export const ShowcaseList = ({ showcases }) => {
 
 const Container = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
 `;

@@ -65,17 +65,17 @@ export const BusinessIndicator = () => {
 };
 
 const Container = styled.div`
-  display: flex;
   align-items: center;
+  background: ${(props) => props.$bgColor};
+  border-radius: 14px;
+  color: ${(props) => props.$color};
+  cursor: ${(props) => (props.$isClickable ? 'pointer' : 'default')};
+  display: flex;
+  font-size: 1rem;
+  font-weight: 600;
   gap: 0.4rem;
   padding: 0.4rem 0.6rem;
-  border-radius: 14px;
-  background: ${(props) => props.$bgColor};
-  color: ${(props) => props.$color};
-  font-weight: 600;
-  font-size: 1rem;
   transition: all 0.2s ease;
-  cursor: ${(props) => (props.$isClickable ? 'pointer' : 'default')};
 
   ${(props) =>
     props.$isClickable &&
@@ -87,8 +87,8 @@ const Container = styled.div`
   `}
 `;
 const BusinessText = styled.span`
-  font-weight: 700;
   font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 `;

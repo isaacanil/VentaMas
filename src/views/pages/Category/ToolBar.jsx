@@ -24,19 +24,19 @@ export const ToolBar = () => {
   );
 };
 const Container = styled.div`
-  height: 2.5em;
-  width: 100vw;
-  background-color: rgb(255, 255, 255);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100vw;
+  height: 2.5em;
+  background-color: rgb(255 255 255);
 `;
 const Wrapper = styled.div`
-  max-width: 1000px;
-  width: 100%;
-  padding: 0 1em;
   display: flex;
-  justify-content: right;
-  align-items: center;
   gap: 1em;
+  align-items: center;
+  justify-content: right;
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 1em;
 `;

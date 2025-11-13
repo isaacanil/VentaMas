@@ -63,8 +63,8 @@ const Container = styled.div`
 `;
 const OrderDetails = styled.div`
   display: grid;
-  gap: 1rem;
   grid-template-columns: repeat(4, minmax(min-content, 1fr));
+  gap: 1rem;
 `;
 const OrderTotal = styled.div`
   display: grid;

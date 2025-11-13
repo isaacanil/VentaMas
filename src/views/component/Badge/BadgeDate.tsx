@@ -21,32 +21,32 @@ const defaultConfig: BadgeDateConfig = {
 };
 
 const BadgeContainer = styled.div<{ bgColor?: string; simple?: boolean }>`
-  padding: ${(props) => (props.simple ? '8px 16px' : '1px 8px')};
-  border-radius: 6px;
+  display: ${(props) => (props.simple ? 'flex' : 'inline-block')};
+  align-items: ${(props) => (props.simple ? 'center' : 'initial')};
+  justify-content: ${(props) => (props.simple ? 'center' : 'initial')};
   min-width: 115px;
+  padding: ${(props) => (props.simple ? '8px 16px' : '1px 8px')};
   background-color: ${(props) =>
     props.simple ? '#f8f9fa' : props.bgColor || '#E3F2FD'};
-  display: ${(props) => (props.simple ? 'flex' : 'inline-block')};
-  justify-content: ${(props) => (props.simple ? 'center' : 'initial')};
-  align-items: ${(props) => (props.simple ? 'center' : 'initial')};
+  border-radius: 6px;
 `;
 
 const DateIconContainer = styled.div<{ simple?: boolean }>`
   display: flex;
-  justify-content: ${(props) => (props.simple ? 'center' : 'space-between')};
-  align-items: center;
   gap: 4px;
+  align-items: center;
+  justify-content: ${(props) => (props.simple ? 'center' : 'space-between')};
 `;
 
 const DateText = styled.span<{ color: string; simple?: boolean }>`
-  color: ${(props) => (props.simple ? '#495057' : props.color)};
   font-size: ${(props) => (props.simple ? '14px' : '14px')};
+  color: ${(props) => (props.simple ? '#495057' : props.color)};
 `;
 
 const BadgeText = styled.div<{ color: string }>`
-  color: ${(props) => props.color};
   font-size: 12px;
   font-weight: 500;
+  color: ${(props) => props.color};
 `;
 
 interface IconProps {

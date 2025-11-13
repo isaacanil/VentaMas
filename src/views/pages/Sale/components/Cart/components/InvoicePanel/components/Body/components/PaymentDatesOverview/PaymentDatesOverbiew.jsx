@@ -119,15 +119,15 @@ const PaymentDatesOverview = ({
 };
 
 const ViewButton = styled(Button)`
-  margin-top: 10px;
   width: 100%;
+  margin-top: 10px;
 `;
 
 const ListItemContent = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   padding: 5px 10px;
   background-color: ${(props) => (props.isNext ? '#e6f7ff' : 'transparent')};
   border-radius: 4px;
@@ -142,11 +142,11 @@ const ListItemContent = styled.div`
 `;
 
 const NextPaymentBadge = styled.span`
-  background-color: #1890ff;
-  color: white;
   padding: 2px 8px;
-  border-radius: 10px;
   font-size: 12px;
+  color: white;
+  background-color: #1890ff;
+  border-radius: 10px;
 `;
 
 export default PaymentDatesOverview;

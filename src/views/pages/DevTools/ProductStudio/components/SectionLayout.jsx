@@ -7,7 +7,7 @@ const { Text, Title } = Typography;
 export const SectionCard = styled(Card)`
   border-radius: 18px !important;
   border: 1px solid #f0f2f5 !important;
-  box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 10px 30px -15px rgb(15 23 42 / 25%);
 `;
 
 export const SectionHeader = styled.div`
@@ -32,7 +32,7 @@ export const FieldGrid = styled.div`
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -57,7 +57,8 @@ export const DividerLabel = styled.div`
 const InlineSwitchRow = styled.div`
   display: flex;
   align-items: center;
-  // justify-content: space-between;
+
+  /* justify-content: space-between; */
   gap: 12px;
   width: 100%;
 `;

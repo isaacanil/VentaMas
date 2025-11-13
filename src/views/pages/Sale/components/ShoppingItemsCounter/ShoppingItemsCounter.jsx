@@ -24,23 +24,23 @@ export const ShoppingItemsCounter = ({ products }) => {
 };
 
 const Container = styled.div`
-  background-color: var(--Gray8);
-  font-weight: 600;
-  padding: 0 1em;
+  position: absolute;
+  right: 1.2em;
+  bottom: 0.2em;
+  z-index: 100;
   display: flex;
   align-items: center;
   height: 2.2em;
-  position: absolute;
-  z-index: 100;
-  border-radius: 100px;
+  padding: 0 1em;
+  font-weight: 600;
   color: white;
-  bottom: 0.2em;
-  right: 1.2em;
+  background-color: var(--gray-8);
+  border-radius: 100px;
 `;
 const Separator = styled.span`
-  font-weight: 600;
   display: flex;
   align-items: center;
+  font-weight: 600;
   color: white;
 `;
 export default ShoppingItemsCounter;

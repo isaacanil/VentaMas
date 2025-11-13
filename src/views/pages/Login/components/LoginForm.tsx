@@ -72,41 +72,41 @@ function assertIsValidSignInResult(
 }
 
 const Container = styled.div`
-  padding: 1em 1em;
-  width: 100%;
-  height: 100%;
   display: grid;
   align-items: start;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 
-  @media (min-height: 980px) {
+  @media (height >= 980px) {
+    align-content: center;
+    align-items: center;
     padding: 3rem 1.5rem;
     padding-top: 4rem;
-    align-items: center;
-    align-content: center;
   }
 `;
 
 const Wrapper = styled.div`
-  max-width: 450px;
-  width: 100%;
-  border-radius: 1em;
-  padding: 0 1em 2rem;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 450px;
+  padding: 0 1em 2rem;
+  border-radius: 1em;
 `;
 
 const Body = styled.div`
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin: 0;
 `;
 
 const StyledIcon = styled(FontAwesomeIcon)`
-  color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
+  color: rgb(255 255 255 / 70%);
   transition:
     color 0.2s ease,
     transform 0.2s ease;
@@ -114,14 +114,14 @@ const StyledIcon = styled(FontAwesomeIcon)`
 
 const InputElement = styled.input`
   flex: 1;
-  border: none;
-  background: transparent;
-  color: #ffffff;
   font-size: 1rem;
   line-height: 1.2;
+  color: #fff;
+  background: transparent;
+  border: none;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgb(255 255 255 / 60%);
   }
 
   &:focus {
@@ -129,30 +129,29 @@ const InputElement = styled.input`
   }
 
   &:-webkit-autofill {
-    -webkit-text-fill-color: #ffffff;
-    box-shadow: 0 0 0 1000px rgba(15, 19, 35, 0.55) inset;
-    -webkit-box-shadow: 0 0 0 1000px rgba(15, 19, 35, 0.55) inset;
+    box-shadow: 0 0 0 1000px rgb(15 19 35 / 55%) inset;
+    -webkit-text-fill-color: #fff;
   }
 `;
 
 const IconInputWrapper = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
+  align-items: center;
   width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: rgb(15 19 35 / 55%);
+  border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 999px;
-  background: rgba(15, 19, 35, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.18);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     background-color 0.2s ease;
 
   &:focus-within {
+    background: rgb(15 19 35 / 72%);
     border-color: ${ACCENT_COLOR};
-    box-shadow: 0 0 0 2px rgba(84, 192, 168, 0.2);
-    background: rgba(15, 19, 35, 0.72);
+    box-shadow: 0 0 0 2px rgb(84 192 168 / 20%);
   }
 
   &:focus-within ${StyledIcon} {
@@ -161,7 +160,7 @@ const IconInputWrapper = styled.div`
   }
 
   &:focus-within ${InputElement}::placeholder {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgb(255 255 255 / 85%);
   }
 `;
 
@@ -183,22 +182,22 @@ const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
 IconInput.displayName = 'IconInput';
 
 const TogglePasswordButton = styled.button`
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   font-size: 1rem;
   line-height: 1;
+  color: rgb(255 255 255 / 70%);
+  cursor: pointer;
+  background: transparent;
+  border: none;
   transition:
     color 0.2s ease,
     transform 0.2s ease;
 
   &:hover {
-    color: #ffffff;
+    color: #fff;
     transform: translateY(-1px);
   }
 
@@ -215,52 +214,52 @@ const spin = keyframes`
 `;
 
 const SubmitButton = styled.button`
-  width: 100%;
-  border: none;
-  border-radius: 999px;
-  height: 52px;
-  margin-top: 1rem;
-  background: ${ACCENT_COLOR};
-  color: #0f1323;
-  font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
-  cursor: pointer;
   display: inline-flex;
+  gap: 0.75rem;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  width: 100%;
+  height: 52px;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f1323;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  background: ${ACCENT_COLOR};
+  border: none;
+  border-radius: 999px;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
     filter 0.2s ease;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(84, 192, 168, 0.28);
+    box-shadow: 0 12px 24px rgb(84 192 168 / 28%);
     filter: brightness(1.05);
+    transform: translateY(-1px);
   }
 
   &:active {
+    box-shadow: 0 8px 18px rgb(84 192 168 / 18%);
     transform: translateY(0);
-    box-shadow: 0 8px 18px rgba(84, 192, 168, 0.18);
   }
 
   &:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
     box-shadow: none;
+    opacity: 0.6;
     filter: none;
+    transform: none;
   }
 `;
 
 const LoadingSpinner = styled.span`
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  border: 2px solid rgba(15, 19, 35, 0.4);
+  border: 2px solid rgb(15 19 35 / 40%);
   border-top-color: #0f1323;
+  border-radius: 50%;
   animation: ${spin} 0.6s linear infinite;
 `;
 
@@ -279,14 +278,14 @@ type OnFinishFailedInfo = Parameters<
 const StyledForm = styled(BaseLoginForm)`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  color: white;
-  height: 100%;
   gap: 16px;
+  justify-content: space-between;
+  height: 100%;
+  color: white;
 
   label {
-    color: white !important;
     font-weight: 500;
+    color: white !important;
   }
 
   .ant-form-item {
@@ -308,13 +307,13 @@ const StyledForm = styled(BaseLoginForm)`
 
 const FormErrorMessage = styled.div`
   width: 100%;
-  border-radius: 8px;
-  background: rgba(255, 87, 87, 0.18);
-  color: #ffb4b4;
-  font-weight: 500;
-  font-size: 0.9rem;
   padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ffb4b4;
   text-align: center;
+  background: rgb(255 87 87 / 18%);
+  border-radius: 8px;
 `;
 
 export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {

@@ -34,23 +34,23 @@ const Container = styled.div`
   width: 100%;
 `;
 const EditorContainer = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
-  padding: 1em;
+  gap: 20px;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  width: 100%;
+  height: 100%;
+  padding: 1em;
 `;
 const EditorWrapper = styled.div`
+  display: grid;
   width: 100%;
   max-width: 600px;
   height: 100%;
   min-height: 200px;
-  display: grid;
+  padding: 2em;
+  margin-bottom: 20px;
   background-color: #fff;
   border-radius: 4px;
-  padding: 2em;
-  box-shadow: 0 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  box-shadow: 0 0 2px 4px rgb(0 0 0 / 10%);
 `;

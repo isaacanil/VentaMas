@@ -46,9 +46,9 @@ export const CashupInvoicesOverview = memo(
 
 CashupInvoicesOverview.displayName = 'CashupInvoicesOverview';
 const Container = styled.div`
-  height: 100%;
-  width: 100%;
   display: grid;
   grid-template-rows: 1fr;
+  width: 100%;
+  height: 100%;
   background-color: var(--color2);
 `;

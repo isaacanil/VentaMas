@@ -66,20 +66,21 @@ export const CheckoutAction = ({
 };
 
 const Container = styled.div`
-  background-color: var(--Gray8);
-  overflow: hidden;
-  color: white;
   display: flex;
-  padding: 0 0.4em;
-  height: 2.6em;
   align-items: center;
   justify-content: space-between;
+  height: 2.6em;
+  padding: 0 0.4em;
+  overflow: hidden;
+  color: white;
+  background-color: var(--gray8);
   border-top-left-radius: var(--border-radius-light);
 
   h3 {
-    width: 100%;
     display: flex;
     gap: 0.4em;
+    width: 100%;
+
     .price {
       letter-spacing: 1px;
     }
@@ -88,17 +89,17 @@ const Container = styled.div`
 
 const PriceContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4em;
-  font-weight: 700;
+  align-items: center;
   font-size: 1.4em;
+  font-weight: 700;
   letter-spacing: 1px;
 `;
 const Button = styled(antd.Button)`
-  font-weight: 600;
-  font-size: 1em;
-  display: flex;
   align-items: center;
+  display: flex;
+  font-size: 1em;
+  font-weight: 600;
   justify-content: center;
   padding: 0.4em;
   ${(props) => (props.disabled ? 'background-color: #8f8e8e !important' : null)}

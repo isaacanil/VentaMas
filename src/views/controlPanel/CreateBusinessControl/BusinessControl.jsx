@@ -335,9 +335,9 @@ const Head = styled.div``;
 
 const SearchAndFilterContainer = styled.div`
   display: flex;
-  padding: 10px;
   gap: 10px;
   align-items: center;
+  padding: 10px;
 `;
 
 const SearchInputWrapper = styled.div`
@@ -346,57 +346,57 @@ const SearchInputWrapper = styled.div`
 
 const Body = styled.div`
   display: grid;
-  padding: 10px;
-  gap: 10px;
-  background-color: var(--color2);
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
   align-content: start;
+  padding: 10px;
   overflow: auto;
+  background-color: var(--color2);
 `;
 const Pagination = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
   gap: 15px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
 `;
 
 const PageIndicator = styled.div`
+  min-width: 40px;
   font-size: 14px;
   font-weight: 500;
   color: #595959;
-  min-width: 40px;
   text-align: center;
 `;
 
 const LoadingMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  color: #595959;
-  gap: 1rem;
   font-size: 1rem;
+  color: #595959;
 `;
 
 const ErrorMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
+  font-size: 1rem;
   color: #ff4d4f;
   text-align: center;
-  font-size: 1rem;
 `;
 
 const EmptyMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;

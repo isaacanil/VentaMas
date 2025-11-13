@@ -13,35 +13,35 @@ import { renderHighlightedText } from './utils/textUtils';
 import { traverse } from './utils/traverseUtils';
 
 const Container = styled.div`
-  height: 100%;
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 250px;
   max-width: 400px;
+  height: 100%;
   padding: 8px;
-  position: relative;
 `;
 
 const ContentWrapper = styled.div`
   position: relative;
-  flex: 1;
-  min-height: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
 `;
 
 const InfoMessage = styled.div`
   padding: 8px 16px;
-  color: #666;
   font-size: 0.9em;
+  color: #666;
   text-align: center;
 `;
 
 const FooterContainer = styled.div`
-  padding-top: 8px;
   display: flex;
   justify-content: flex-end;
+  padding-top: 8px;
   pointer-events: none;
 
   > * {
@@ -53,9 +53,9 @@ const FooterOverlay = styled.div`
   position: absolute;
   right: 12px;
   bottom: 12px;
-  pointer-events: none;
   display: inline-flex;
   max-width: calc(100% - 24px);
+  pointer-events: none;
 `;
 
 const Tree = memo(

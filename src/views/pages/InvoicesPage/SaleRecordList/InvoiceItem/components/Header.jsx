@@ -25,8 +25,8 @@ const Container = styled.div`
   gap: 1.4em;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
   padding-bottom: 8px;
+  margin-bottom: 10px;
   border-bottom: 1px solid #cfcfcf;
 `;
 const Client = styled.h4`
@@ -34,11 +34,10 @@ const Client = styled.h4`
   font-weight: normal;
 `;
 const Day = styled.div`
-  white-space: nowrap;
+  place-self: center end;
   margin: 0;
   text-align: right;
-  justify-self: end;
-  align-self: center;
+  white-space: nowrap;
 `;
 const Title = styled.h4`
   margin: 0;

@@ -146,7 +146,7 @@ export function GroupedLotsModal({
       ]}
       width={1200}
       style={{ top: 10 }}
-      destroyOnClose
+      destroyOnHidden
     >
       {group && (
         <>
@@ -985,15 +985,17 @@ export function GroupedLotsModal({
 const SimpleTable = styled.table`
   width: 100%;
   border-collapse: collapse;
+
   thead th {
-    text-align: left;
     padding: 8px;
+    text-align: left;
     border-bottom: 1px solid #eee;
   }
+
   tbody td {
     padding: 10px 8px;
-    border-bottom: 1px solid #f5f5f5;
     vertical-align: top;
+    border-bottom: 1px solid #f5f5f5;
   }
 `;
 
@@ -1006,15 +1008,15 @@ const TagsWrap = styled.div`
 const LotCellWrap = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 2px;
+  align-items: flex-start;
 `;
 
 const LotNameBlock = styled.div`
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
   min-height: 36px;
+  line-height: 1.1;
 `;
 
 export default GroupedLotsModal;

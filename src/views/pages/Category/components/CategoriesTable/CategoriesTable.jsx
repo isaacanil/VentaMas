@@ -30,7 +30,6 @@ export const CategoriesTable = ({ searchTerm }) => {
 };
 const Container = styled.div`
   width: 100%;
-  padding: 0 1em;
   display: flex;
   justify-content: center;
   overflow: hidden;
@@ -38,18 +37,19 @@ const Container = styled.div`
 `;
 const Body = styled.header`
   justify-self: center;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(0 0 0 / 10%);
   border-radius: 10px;
   position: relative;
   overflow: hidden;
-  //max-height: 400px;
+
+  /* max-height: 400px; */
   width: 100%;
   max-width: 1000px;
-
   display: grid;
   grid-template-rows: min-content 1fr;
-  background-color: #ffffff;
-  @media (max-width: 800px) {
+  background-color: #fff;
+
+  @media (width <= 800px) {
     max-height: 100%;
   }
 `;
@@ -65,7 +65,7 @@ const TableBody = styled.div`
   align-content: start;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   overflow-y: scroll;
-  color: var(--Gray10);
+  color: var(--gray-10);
   font-size: 15px;
 `;
 const TitleContainer = styled.div`
@@ -74,9 +74,7 @@ const TitleContainer = styled.div`
   justify-content: center;
   background: #3f3f3f;
   height: 2em;
-
   color: white;
-
   font-weight: 600;
   text-align: center;
 `;
@@ -85,12 +83,13 @@ const Row = styled.div`
   align-items: center;
   height: 3em;
   gap: 0.6em;
-  grid-template-columns: minmax(100px, 1fr) //Nombre
-    minmax(100px, min-content); // accion
-  border-right: 1px solid rgba(16, 16, 16, 0.2);
-  border-bottom: 1px solid rgba(16, 16, 16, 0.2);
 
-  @media (max-width: 800px) {
+  /* Nombre + acción columns */
+  grid-template-columns: minmax(100px, 1fr) minmax(100px, min-content);
+  border-right: 1px solid rgb(16 16 16 / 20%);
+  border-bottom: 1px solid rgb(16 16 16 / 20%);
+
+  @media (width <= 800px) {
     gap: 0;
   }
   ${(props) => {
@@ -142,7 +141,7 @@ const Row = styled.div`
         return `
           padding-right: 16px;
           height: 2em;
-          background-color: var(--White1);
+          background-color: var(--white-1);
         `;
 
       default:

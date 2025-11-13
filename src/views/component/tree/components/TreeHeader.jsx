@@ -11,8 +11,8 @@ const HeaderContainer = styled.div`
 
 const ActionsContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 `;
 
 const TreeHeader = ({

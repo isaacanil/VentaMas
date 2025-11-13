@@ -24,33 +24,33 @@ import { PAYMENT_TERMS, TIME_UNITS } from './constants';
 
 // Styled Components
 const StyledFormSection = styled.div`
+  padding: 1em 0 0.4em;
   background: white;
   border-radius: 8px;
-  padding: 1em 0em 0.4em;
   transition: all 0.3s ease;
 `;
 
 const StyledSectionTitle = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
   font-size: 16px;
   font-weight: 600;
   color: #1f1f1f;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 
   .anticon {
-    color: #1890ff;
     font-size: 18px;
+    color: #1890ff;
   }
 `;
 
 const StyledTypeContainer = styled(StyledFormSection)`
+  position: relative;
+  padding: 12px;
+  margin-bottom: 8px;
   background: #fafafa;
   border: 1px solid #f0f0f0;
-  margin-bottom: 8px;
-  padding: 12px;
-  position: relative;
 
   &:last-child {
     margin-bottom: 0;
@@ -58,10 +58,10 @@ const StyledTypeContainer = styled(StyledFormSection)`
 
   .delete-button {
     position: absolute;
-    right: 8px;
     top: 8px;
-    transition: all 0.2s;
+    right: 8px;
     z-index: 10;
+    transition: all 0.2s;
   }
 
   &:hover .delete-button {
@@ -83,9 +83,9 @@ const StyledGrid = styled.div`
 
 const PlansContainer = styled.div`
   max-height: 400px;
-  overflow-y: auto;
   padding-right: 8px;
   margin: 16px 0;
+  overflow-y: auto;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -98,31 +98,31 @@ const PlansContainer = styled.div`
 `;
 
 const StyledFooter = styled.div`
-  margin-top: 24px;
-  padding: 16px 0;
-  border-top: 1px solid #f0f0f0;
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
+  justify-content: flex-end;
+  padding: 16px 0;
+  margin-top: 24px;
+  border-top: 1px solid #f0f0f0;
 `;
 
 const StyledAddButton = styled.button`
-  width: 100%;
-  padding: 8px;
-  border: 1px dashed #d9d9d9;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  width: 100%;
+  padding: 8px;
   color: #1890ff;
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
   transition: all 0.3s;
 
   &:hover {
-    border-color: #1890ff;
     color: #40a9ff;
+    border-color: #1890ff;
   }
 
   .anticon {

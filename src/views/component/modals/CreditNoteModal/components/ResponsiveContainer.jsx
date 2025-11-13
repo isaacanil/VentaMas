@@ -18,7 +18,7 @@ export const ResponsiveContainer = ({
         onClose={onClose}
         height="100%"
         closable={true}
-        destroyOnClose={true}
+        destroyOnHidden={true}
         styles={{
           body: { padding: '16px' },
           header: {
@@ -57,19 +57,19 @@ const StyledDrawer = styled(Drawer)`
   }
 
   .ant-drawer-close {
-    color: #666;
     font-size: 16px;
+    color: #666;
   }
 `;
 
 const DrawerContent = styled.div`
   height: 100%;
-  overflow-y: auto;
   padding-bottom: 20px;
-
-  /* Smooth scrolling */
-  scroll-behavior: smooth;
+  overflow-y: auto;
 
   /* Better touch scrolling on iOS */
   -webkit-overflow-scrolling: touch;
+
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 `;

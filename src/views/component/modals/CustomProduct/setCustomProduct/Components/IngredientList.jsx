@@ -44,33 +44,32 @@ export const IngredientList = ({ handleIngredientOpen }) => {
 };
 
 const Container = styled.div`
-  margin: 0;
-  padding: 0;
-  border-radius: 10px;
-  height: 100%;
+  position: relative;
   display: grid;
   grid-template-rows: 1fr min-content;
-  background-color: rgb(218, 217, 217);
-  position: relative;
+  height: 100%;
+  padding: 0;
+  margin: 0;
   overflow: hidden;
+  background-color: rgb(218 217 217);
+  border-radius: 10px;
 `;
 const IngredientsWrapper = styled.ul`
-  overflow-y: scroll;
-
-  width: 100%;
-  background-color: #d9d9d9;
-  padding: 0.6em;
   display: grid;
-  grid-auto-rows: min-content;
   grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
+  grid-auto-rows: min-content;
   gap: 0.6em;
+  width: 100%;
+  padding: 0.6em;
+  overflow-y: scroll;
+  background-color: #d9d9d9;
 `;
 const IngredientPriceBar = styled.div`
-  width: 100%;
   display: flex;
-  height: 2.4em;
   align-items: center;
-  padding: 0 1em;
   justify-content: space-between;
+  width: 100%;
+  height: 2.4em;
+  padding: 0 1em;
   border-top: var(--border-primary);
 `;

@@ -35,7 +35,7 @@ const PrintModal = ({
       confirmLoading={isLoading}
       maskClosable={false}
       centered
-      destroyOnClose
+      destroyOnHidden
       afterClose={onClose}
       // getContainer={false}
     >

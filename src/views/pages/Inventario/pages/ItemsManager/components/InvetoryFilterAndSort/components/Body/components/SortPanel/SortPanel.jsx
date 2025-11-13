@@ -148,19 +148,21 @@ const Container = styled.div`
 `;
 const Row = styled.div`
   display: grid;
-  gap: 0.65em;
   grid-template-columns: 1fr min-content;
+  gap: 0.65em;
   align-items: flex-end;
 `;
 
 const FlexGrow = styled.div`
   display: grid;
   gap: 0.35em;
+
   label,
   span,
   p {
     font-size: 0.78rem;
   }
+
   /* Evitar tooltip nativo (title) en item seleccionado */
   .ant-select-selection-item {
     pointer-events: none;
@@ -168,22 +170,21 @@ const FlexGrow = styled.div`
 `;
 
 export const Label = styled.label`
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: center;
   font-size: 0.72rem;
   font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
 `;
 
 const ModifiedMarker = styled.div`
-  background-color: #ffaa0bff;
-  border-radius: 50%;
-
   width: 0.7rem;
   height: 0.7rem;
   font-size: 0.7rem;
-  border: 1px solid #ffffffff;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  background-color: #ffaa0bff;
+  border: 1px solid #ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgb(0 0 0 / 20%);
 `;
 
 export const LabelWithStatus = ({ children, modified }) => (

@@ -150,21 +150,23 @@ const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0.6em;
-  border-bottom: 1px solid var(--Gray2);
+  border-bottom: 1px solid var(--gray-2);
 `;
 const TotalBills = styled.div`
-  border-top: 1px solid var(--Gray2);
-  padding: 0.4em;
+  position: sticky;
+  bottom: 0;
   display: grid;
   grid-template-columns: 3.6em 10em 1fr;
   gap: 0.8em;
+  padding: 0.4em;
   font-weight: bold;
-  position: sticky;
-  bottom: 0;
+  border-top: 1px solid var(--gray-2);
+
   span {
     :nth-child(2) {
       text-align: right;
     }
+
     :last-child {
       text-align: right;
     }

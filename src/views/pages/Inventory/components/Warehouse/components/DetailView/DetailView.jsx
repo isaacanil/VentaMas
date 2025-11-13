@@ -10,8 +10,8 @@ import { MovementsTable } from './components/MovementsTable';
 
 const DetailContent = styled.div`
   margin-top: 10px;
-  color: #333;
   font-size: 1em;
+  color: #333;
 `;
 
 export const DetailView = () => {

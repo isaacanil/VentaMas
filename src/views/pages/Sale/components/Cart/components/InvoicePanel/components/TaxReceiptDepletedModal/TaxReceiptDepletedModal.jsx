@@ -40,8 +40,8 @@ const OptionLabel = styled.div`
 `;
 
 const RemainingTag = styled.span`
-  color: var(--text-secondary-color, #595959);
   font-size: 12px;
+  color: var(--text-secondary-color, #595959);
 `;
 
 const ContentWrapper = styled.div`
@@ -74,7 +74,7 @@ export const TaxReceiptDepletedModal = ({
       onCancel={onCancel}
       footer={null}
       title="Sin comprobantes"
-      destroyOnClose
+      destroyOnHidden
     >
       <ContentWrapper>
         <Typography.Paragraph>

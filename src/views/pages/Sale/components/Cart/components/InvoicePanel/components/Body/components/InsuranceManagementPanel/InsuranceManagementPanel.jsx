@@ -261,19 +261,20 @@ const PanelContainer = styled(motion.div)`
   padding: 6px 12px;
   background: #f4f4f4;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
 `;
 
 const Header = styled.div`
-  padding: 0.2em 0;
   display: flex;
   justify-content: space-between;
+  padding: 0.2em 0;
 `;
 
 const Footer = styled.div`
   :nth-child(n) {
     div {
       border-bottom: 1px solid #ccc;
+
       :last-child {
         border-bottom: 0;
       }
@@ -282,11 +283,11 @@ const Footer = styled.div`
 `;
 
 const Label = styled.span`
-  color: #333;
-  font-weight: 600;
-  font-size: 1.1em;
   display: block;
   margin-bottom: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #333;
 `;
 
 const FormItem = styled(Form.Item)`
@@ -295,6 +296,6 @@ const FormItem = styled(Form.Item)`
 
 const Group = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: 1fr 0.8fr;
+  gap: 1em;
 `;

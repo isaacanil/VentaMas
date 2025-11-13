@@ -16,26 +16,27 @@ export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
 };
 const Container = styled.div`
   :root {
-    --menu-items: rgb(241, 241, 241);
-    //btnMenuItem
-    --btnMenuItem-bg-color: var(--menu-items);
-    --btnMenuItem-width: 1.6em;
-    --btnMenuItem-height: 2px;
+    --menu-items: rgb(241 241 241);
+
+    /* btnMenuItem */
+    --btn-menu-item-bg-color: var(--menu-items);
+    --btn-menu-item-width: 1.6em;
+    --btn-menu-item-height: 2px;
   }
+
   justify-self: start;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 2em;
   height: 2em;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgb(0 0 0 / 20%);
   border-radius: var(--border-radius);
   cursor: pointer;
-
   z-index: ${(props) => (props.isOpen ? 10000 : 0)};
   transition-delay: ${(props) => !props.isOpen && '1s'};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 2.3em;
     height: 2.3em;
   }
@@ -48,13 +49,13 @@ const MenuIcon = styled.div`
   background-color: var(--menu-items);
   transition: all 1s ease-in-out;
 
-  // Iconos más grandes en móviles
-  @media (max-width: 768px) {
+  /* Iconos más grandes en móviles */
+  @media (width <= 768px) {
     width: 1.4em;
     height: 2.5px;
   }
 
-  &:after {
+  &::after {
     content: '';
     position: absolute;
     z-index: 10;
@@ -64,7 +65,7 @@ const MenuIcon = styled.div`
     margin-top: 6px;
     transition: all 0.4s ease-in-out;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       width: 1.4em;
       height: 2.5px;
       margin-top: 7px;
@@ -81,7 +82,7 @@ const MenuIcon = styled.div`
     margin-top: -6px;
     transition: all 0.4s ease-in-out;
 
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       width: 1.4em;
       height: 2.5px;
       margin-top: -7px;

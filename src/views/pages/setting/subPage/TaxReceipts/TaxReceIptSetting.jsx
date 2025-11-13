@@ -225,7 +225,7 @@ export const TaxReceiptSetting = () => {
         <Head>
           <Title
             level={3}
-            style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}
+            style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}
           >
             Configuración de Comprobantes
           </Title>
@@ -234,7 +234,7 @@ export const TaxReceiptSetting = () => {
               fontSize: '16px',
               margin: 0,
               lineHeight: '1.5',
-              color: 'rgba(0, 0, 0, 0.65)',
+              color: 'rgb(0 0 0 / 65%)',
             }}
           >
             Ajusta cómo se generan y muestran los comprobantes en el punto de

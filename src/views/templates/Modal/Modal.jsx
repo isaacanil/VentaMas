@@ -5,23 +5,22 @@ const ModalContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
+  background-color: rgb(0 0 0 / 50%);
 `;
 
 const ModalWrapper = styled.div`
-  background-color: white;
-
-  border-radius: 8px;
+  position: relative;
   width: 600px;
   height: 600px;
   overflow: hidden;
-  position: relative;
+  background-color: white;
+  border-radius: 8px;
 `;
 
 const ModalHeader = styled.h2`
@@ -40,11 +39,11 @@ const ModalButtons = styled.div`
 `;
 
 const ModalButton = styled.button`
-  margin-left: 10px;
   padding: 10px 20px;
+  margin-left: 10px;
+  cursor: pointer;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
 
   &:hover {
     background-color: #f5f5f5;

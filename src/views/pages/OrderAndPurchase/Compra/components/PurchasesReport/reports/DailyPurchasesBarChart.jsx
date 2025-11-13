@@ -124,8 +124,8 @@ export const DailyPurchasesBarChart = ({ purchases }) => {
     )
 }
 const Container = styled.div`
-    height: 200px;
  
     display: grid;
     gap: 1em;
+    height: 200px;
 `

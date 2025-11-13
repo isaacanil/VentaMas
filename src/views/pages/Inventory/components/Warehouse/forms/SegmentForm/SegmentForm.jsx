@@ -101,7 +101,7 @@ export default function SegmentForm() {
       open={isOpen}
       onCancel={handleClose}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <Spin
         spinning={loading}

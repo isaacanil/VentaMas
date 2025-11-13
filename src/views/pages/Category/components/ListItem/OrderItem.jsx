@@ -109,10 +109,10 @@ export const OrderItem = ({ cat, Row, Col }) => {
 };
 
 const Button = styled(antd.Button)`
-  font-size: 1.2em;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
 `;
 
 const CategoryName = styled.input`
@@ -121,7 +121,7 @@ const CategoryName = styled.input`
   height: 2em;
 
   :focus {
-    outline: 2px solid rgba(0, 0, 0, 0.2);
+    outline: 2px solid rgb(0 0 0 / 20%);
   }
   ${(props) => {
     switch (props.readOnly) {

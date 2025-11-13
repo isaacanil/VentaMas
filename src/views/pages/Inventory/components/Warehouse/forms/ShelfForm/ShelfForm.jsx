@@ -87,7 +87,7 @@ export function ShelfForm() {
       open={isOpen}
       onCancel={handleClose}
       footer={null} // No mostrar pie de página de botones por defecto
-      destroyOnClose
+      destroyOnHidden
     >
       <Spin
         spinning={loading}

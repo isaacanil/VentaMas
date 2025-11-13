@@ -22,22 +22,22 @@ const Container = styled.div`
 const PrintLayout = styled.table`
   width: 100%;
   height: 100%;
-
   border-collapse: collapse;
 `;
 
 const HeaderSpace = styled.div`
   @media print {
-    height: 310px; // 250px
+    height: 310px; /* 250px */
   }
 `;
 
 const FooterSpace = styled.div`
-  height: 180px; // Adjust based on your footer height
+  height: 180px; /* Adjust based on your footer height */
 `;
 
 const FixedHeader = styled.div`
   padding: 16px;
+
   /* background: #ffffff; */
 
   @media print {
@@ -54,6 +54,7 @@ const FixedFooter = styled.div`
   left: 0;
   right: 0;
   padding: 16px;
+
   /* background: #ffffff; */
   z-index: 10000;
 

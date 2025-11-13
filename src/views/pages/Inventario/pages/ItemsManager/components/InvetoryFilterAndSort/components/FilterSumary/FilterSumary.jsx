@@ -57,9 +57,10 @@ export const FilterSumary = ({ criterio, orden }) => {
 };
 const Container = styled.div`
   height: 3em;
+
   div {
-    background-color: var(--White3);
     padding: 0.2em;
+    background-color: var(--white-3);
   }
 `;
 const Icon = styled.div`
@@ -70,14 +71,13 @@ const Icon = styled.div`
 `;
 const Resumen = styled.div`
   display: grid;
-  width: min-content;
-
-  min-width: 180px;
   gap: 0.2em;
+  width: min-content;
+  min-width: 180px;
 `;
 const Wrapper = styled.div`
-  width: fit-content;
   display: grid;
-  gap: 1em;
   grid-template-columns: 1fr 2em;
+  gap: 1em;
+  width: fit-content;
 `;

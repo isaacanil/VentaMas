@@ -96,9 +96,10 @@ const SignatureGroup = styled.div`
 const FooterSection = styled.div`
   display: grid;
   gap: 2em;
-  padding: 0 1em 1em 1em;
+  padding: 0 1em 1em;
   padding-top: 32px;
   font-size: 0.875rem;
+
   /* border: 1px solid red; */
 `;
 
@@ -109,14 +110,14 @@ const TotalsContainer = styled.div`
 const TotalRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  font-size: 14px;
   gap: 1em;
+  font-size: 14px;
 
   span {
     white-space: nowrap;
   }
 
-  &.bold {
+    &.bold {
     font-weight: bold;
   }
 

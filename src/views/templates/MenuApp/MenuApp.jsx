@@ -132,7 +132,7 @@ const Backdrop = styled.div`
   position: absolute;
   left: 0;
   right: 0;
-  backdrop-filter: blur(0px);
+  backdrop-filter: blur(0);
   z-index: 10;
   pointer-events: none;
   transition: all 1s ease;
@@ -160,10 +160,10 @@ const Container = styled.div`
   padding: 0 1em;
   gap: 0.4em;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
+    gap: 1em;
     height: 3.2em;
     padding: 0 1em;
-    gap: 1em;
   }
 
   ${(props) => {
@@ -196,11 +196,11 @@ const Container = styled.div`
   }}
 `;
 const Group = styled.div`
+  align-items: center;
   display: flex;
   flex-shrink: 0;
-  align-items: center;
-  gap: 0.4em;
   flex-wrap: nowrap;
+  gap: 0.4em;
 
   /* Evita que los botones u otros elementos se achiquen excesivamente */
   & > * {
@@ -210,78 +210,78 @@ const Group = styled.div`
   /* Solo el wrapper del input puede crecer y encogerse para absorber espacio */
   & > [data-role='search-wrapper'] {
     flex: 1 1 auto;
-    min-width: 160px;
     flex-shrink: 1;
+    min-width: 160px;
   }
 
-  // Mejoras para móviles más grandes
-  @media (max-width: 1024px) {
+  /* Mejoras para móviles más grandes */
+  @media (width <= 1024px) {
     gap: 0.6em;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.5em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     gap: 0.4em;
   }
 `;
 const SectionName = styled.div`
-  display: flex;
   align-items: center;
-  font-weight: 600;
-  font-size: 1.1em;
+  background-color: rgb(0 0 0 / 20%);
+  border-radius: 6px;
   color: white;
+  display: flex;
+  font-size: 1.1em;
+  font-weight: 600;
+  gap: 0.4em;
   height: 1.8em;
   max-width: 250px;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  gap: 0.4em;
-  border-radius: 6px;
-  background-color: rgba(0, 0, 0, 0.2);
   padding: 0 0.4em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
-  // Mejoras para móviles - elementos más grandes en pantallas más pequeñas
-  @media (max-width: 1024px) {
+  /* Mejoras para móviles - elementos más grandes en pantallas más pequeñas */
+  @media (width <= 1024px) {
     font-size: 1.1em;
-    height: 1.9em;
-    padding: 0 0.6em;
     gap: 0.5em;
+    height: 1.9em;
     max-width: 280px;
+    padding: 0 0.6em;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 1.15em;
     height: 2em;
-    padding: 0 0.5em;
     max-width: 200px;
+    padding: 0 0.5em;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     font-size: 1.2em;
     height: 2.2em;
-    padding: 0 0.6em;
     max-width: 180px;
+    padding: 0 0.6em;
   }
 `;
 
 const StatusBadge = styled.div`
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.15em 0.75em;
+  background-color: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 30%);
   border-radius: 999px;
+  color: rgb(255 255 255 / 90%);
+  display: inline-flex;
   font-size: 0.75em;
   font-weight: 600;
+  justify-content: center;
   letter-spacing: 0.03em;
+  padding: 0.15em 0.75em;
   text-transform: uppercase;
-  background-color: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 0.7em;
     padding: 0.1em 0.65em;
   }
@@ -291,14 +291,14 @@ const SearchInputWrapper = styled.div`
   display: flex;
   flex: 1 1 auto;
   min-width: 160px;
-  width: auto;
   overflow: hidden;
+  width: auto;
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     max-width: 350px;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     display: none;
   }
 `;
@@ -306,9 +306,9 @@ const SearchInputWrapper = styled.div`
 const MobileSearchButton = styled.div`
   display: none;
 
-  @media (max-width: 768px) {
-    display: flex;
+  @media (width <= 768px) {
     align-items: center;
+    display: flex;
     justify-content: center;
   }
 `;

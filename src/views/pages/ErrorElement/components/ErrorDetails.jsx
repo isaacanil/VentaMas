@@ -25,17 +25,17 @@ ErrorDetails.propTypes = {
 };
 
 const Container = styled(motion.div)`
+  padding: 1rem;
   background: #f8f9fa;
   border-radius: 6px;
-  padding: 1rem;
 `;
 
 const ErrorCode = styled.div`
   max-height: 200px;
+  padding: 1rem;
   overflow-y: auto;
   background: #f0f2f5;
   border-radius: 4px;
-  padding: 1rem;
 
   &::-webkit-scrollbar {
     width: 8px;

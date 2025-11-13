@@ -24,19 +24,22 @@ const Container = styled.div`
 `;
 
 const SectionsWrapper = styled.div`
-  overflow-y: auto;
-  height: 100%;
-  padding: 0.9em 0.9em 1em;
   display: grid;
   gap: 1.1em;
   align-content: start;
+  height: 100%;
+  padding: 0.9em 0.9em 1em;
+  overflow-y: auto;
   scroll-behavior: smooth;
+
   &::-webkit-scrollbar {
     width: 8px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #d0d0d0;
     border-radius: 4px;
@@ -44,7 +47,7 @@ const SectionsWrapper = styled.div`
 `;
 
 const Divider = styled.div`
-  height: 1px;
   width: 100%;
+  height: 1px;
   background: #e9e9e9;
 `;

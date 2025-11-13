@@ -22,19 +22,19 @@ const RightContainer = styled.div`
 
 const DropdownButton = styled.button`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
   color: white;
   cursor: pointer;
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 6px;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgb(255 255 255 / 20%);
+    border-color: rgb(255 255 255 / 40%);
   }
 
   svg {

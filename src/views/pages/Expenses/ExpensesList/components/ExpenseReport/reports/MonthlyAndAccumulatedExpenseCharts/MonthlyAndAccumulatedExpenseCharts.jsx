@@ -43,8 +43,8 @@ export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
 };
 
 const Container = styled.div`
-    height: 400px;
     display: grid;
+    height: 400px;
 `;
 const Group = styled.div`
   display: grid;

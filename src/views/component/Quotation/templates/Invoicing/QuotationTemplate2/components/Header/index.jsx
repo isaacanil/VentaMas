@@ -85,17 +85,18 @@ const Container = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.1rem;
   margin-bottom: 1rem;
+  font-size: 1.1rem;
 `;
 const HeaderInfo = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0em;
+  margin-bottom: 0;
 `;
 const CompanyInfo = styled.div`
-  line-height: 1.2;
   font-size: 14px;
+  line-height: 1.2;
+
   p {
     margin: 0.5em 0;
   }
@@ -107,15 +108,15 @@ const CustomerInfo = styled(CompanyInfo)`
 `;
 
 const CompanyTitle = styled.h2`
-  font-weight: bold;
   font-size: 1.25rem;
+  font-weight: bold;
 `;
 
 const RightAlign = styled.div`
   display: grid;
   justify-content: end;
-  text-align: right;
   font-size: 14px;
+  text-align: right;
 `;
 
 const LogoContainer = styled.div`

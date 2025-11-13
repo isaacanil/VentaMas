@@ -39,37 +39,37 @@ const Container = styled.div`
 `;
 
 const DatePickerContent = styled.div`
-  padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0px')};
-  min-width: ${({ $isMobile }) => ($isMobile ? 'auto' : '540px')};
-  max-width: ${({ $isMobile }) => ($isMobile ? '100%' : '680px')};
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 0;
+  min-width: ${({ $isMobile }) => ($isMobile ? 'auto' : '540px')};
+  max-width: ${({ $isMobile }) => ($isMobile ? '100%' : '680px')};
   height: ${({ $isMobile }) => ($isMobile ? 'auto' : '350px')};
+  min-height: 0;
   max-height: ${({ $isMobile }) => ($isMobile ? 'none' : '460px')};
+  padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0px')};
 `;
 
 const ActionsSection = styled.div`
-  display: flex;
-  gap: 8px;
-  border-top: 1px solid #f0f0f0;
-  background: white;
-  padding: ${(props) => (props.$isMobile ? '1em' : '0px')};
   position: sticky;
   bottom: 0;
   z-index: 1;
+  display: flex;
+  gap: 8px;
+  padding: ${(props) => (props.$isMobile ? '1em' : '0px')};
+  background: white;
+  border-top: 1px solid #f0f0f0;
 `;
 
 const ActionButton = styled.button`
   flex: 1;
   padding: 8px 16px;
+  font-size: 14px;
+  color: ${(props) => (props.$primary ? 'white' : '#595959')};
+  cursor: pointer;
+  background: ${(props) => (props.$primary ? '#1890ff' : 'white')};
   border: 1px solid ${(props) => (props.$primary ? '#1890ff' : '#d9d9d9')};
   border-radius: 4px;
-  background: ${(props) => (props.$primary ? '#1890ff' : 'white')};
-  color: ${(props) => (props.$primary ? 'white' : '#595959')};
-  font-size: 14px;
-  cursor: pointer;
   transition: all 0.3s;
 
   &:hover {
@@ -91,25 +91,25 @@ const DesktopLayout = styled.div`
   grid-template-columns: 1fr 220px;
   gap: 16px;
   align-items: stretch;
-  min-height: 0;
   height: 100%;
+  min-height: 0;
 `;
 
 const CalendarPane = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
-  flex: 1;
   height: 100%;
 `;
 
 const SidebarPane = styled.aside`
   display: flex;
+  flex: 0 0 220px;
   flex-direction: column;
   width: 220px;
-  flex: 0 0 220px;
-  min-height: 0;
   height: 100%;
+  min-height: 0;
   max-height: 100%;
   overflow: hidden;
 `;

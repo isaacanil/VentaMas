@@ -115,9 +115,9 @@ export function formatUpdatedAt(value) {
 }
 
 export const Diff = styled.span`
+  font-weight: ${({ $value }) => ($value !== 0 ? 600 : 400)};
   color: ${({ $value }) =>
     $value === 0 ? '#374151' : $value > 0 ? '#059669' : '#dc2626'};
-  font-weight: ${({ $value }) => ($value !== 0 ? 600 : 400)};
 `;
 
 // Contenedor de tags reutilizable

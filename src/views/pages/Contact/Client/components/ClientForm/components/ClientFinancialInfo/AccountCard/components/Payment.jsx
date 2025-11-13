@@ -63,50 +63,50 @@ export function Payment({ installments, balance, isActive, account }) {
 
 const PaymentContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 16px;
+  align-items: center;
+  justify-content: space-between;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     flex-direction: column;
-    align-items: stretch;
     gap: 12px;
+    align-items: stretch;
   }
 `;
 
 const PaymentInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
 `;
 
 const ProgressBar = styled.div`
   width: 100%;
   height: 6px;
+  overflow: hidden;
   background: #f0f0f0;
   border-radius: 3px;
-  overflow: hidden;
 `;
 
 const ProgressFill = styled.div`
+  width: ${({ $percentage }) => $percentage}%;
   height: 100%;
   background: #2e7d32;
   border-radius: 3px;
-  width: ${({ $percentage }) => $percentage}%;
   transition: width 0.3s ease;
 `;
 
 const PaymentActions = styled.div`
   display: flex;
-  align-items: center;
-  gap: 12px;
   flex-shrink: 0;
+  gap: 12px;
+  align-items: center;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     flex-direction: column;
-    align-items: flex-end;
     gap: 8px;
+    align-items: flex-end;
   }
 `;
 
@@ -116,18 +116,18 @@ const BalanceAmount = styled.div`
   color: ${({ $isPaid }) => ($isPaid ? '#2e7d32' : '#cf1322')};
   text-align: right;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     font-size: 14px;
   }
 `;
 
 const PaymentButton = styled(Button)`
-  height: 32px;
-  border-radius: 6px;
-  font-weight: 500;
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
+  height: 32px;
+  font-weight: 500;
+  border-radius: 6px;
 
   &:disabled {
     opacity: 0.5;
@@ -140,6 +140,6 @@ const PaymentButton = styled(Button)`
 
 export const PaymentRow = styled.div`
   display: grid;
-  padding: 0.4em;
   grid-template-columns: min-content 0.7fr 1fr min-content;
+  padding: 0.4em;
 `;

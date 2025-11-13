@@ -7,9 +7,8 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   max-width: 50rem;
-  margin: 0 auto;
-
   padding: 16px;
+  margin: 0 auto;
 `;
 
 const StyledCard = styled.div`
@@ -23,8 +22,8 @@ const HeaderInfo = styled.div`
 `;
 
 const CompanyInfo = styled.div`
-  line-height: 1.2;
   font-size: 14px;
+  line-height: 1.2;
 `;
 
 const CustomerInfo = styled(CompanyInfo)`
@@ -33,13 +32,13 @@ const CustomerInfo = styled(CompanyInfo)`
 `;
 
 const CompanyTitle = styled.h2`
-  font-weight: bold;
   font-size: 1.25rem;
+  font-weight: bold;
 `;
 
 const RightAlign = styled.div`
-  text-align: right;
   font-size: 14px;
+  text-align: right;
 `;
 
 const TableContainer = styled.div`
@@ -48,8 +47,8 @@ const TableContainer = styled.div`
 
 const FooterSection = styled.div`
   display: grid;
-  gap: 2em;
   grid-template-columns: 1fr 0.4fr;
+  gap: 2em;
   margin-top: 32px;
   font-size: 0.875rem;
 `;
@@ -62,8 +61,8 @@ const TotalsContainer = styled.div`
 const TotalRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  font-size: 14px;
   gap: 1em;
+  font-size: 14px;
 
   span {
     white-space: nowrap;

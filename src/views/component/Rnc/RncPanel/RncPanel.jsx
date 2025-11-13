@@ -10,48 +10,45 @@ import { createElement, useState } from 'react';
 import styled from 'styled-components';
 
 const Panel = styled.div`
+  position: sticky;
+  position: relative;
+  top: 10px;
+  height: fit-content;
   padding: 24px;
   background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  height: fit-content;
-  position: sticky;
-  top: 10px;
   border: 1px solid #f0f0f0;
-  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 `;
 
 const LoadingOverlay = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 1;
+  background: rgb(255 255 255 / 80%);
   border-radius: 4px;
 `;
 
 const Header = styled.div`
-  margin-bottom: 24px;
   padding-bottom: 16px;
+  margin-bottom: 24px;
   border-bottom: 1px solid #f0f0f0;
 `;
 
 const Title = styled.h3`
-  color: #262626;
-  font-size: 16px;
   margin: 0;
+  font-size: 16px;
   font-weight: 500;
+  color: #262626;
 `;
 
 const Subtitle = styled.p`
-  color: #8c8c8c;
+  margin: 4px 0 0;
   font-size: 13px;
-  margin: 4px 0 0 0;
+  color: #8c8c8c;
 `;
 
 const Info = styled.div`
@@ -62,26 +59,26 @@ const Info = styled.div`
 const Field = styled.div`
   display: grid;
   grid-template-columns: 120px 1fr;
-  align-items: baseline;
   gap: 12px;
+  align-items: baseline;
 
   label {
-    color: #595959;
     font-size: 13px;
+    color: #595959;
   }
 
   span {
-    color: #262626;
     font-size: 14px;
+    color: #262626;
   }
 `;
 
 const StatusBox = styled.div`
-  padding: 16px;
+  border: 1px solid;
   border-radius: 8px;
   margin-top: 16px;
+  padding: 16px;
   position: relative;
-  border: 1px solid;
 
   ${({ $status }) => {
     switch ($status) {
@@ -117,15 +114,15 @@ const StatusBox = styled.div`
   }}
 
   .details-section {
-    margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px dashed currentColor;
+    margin-top: 12px;
+    border-top: 1px dashed currentcolor;
     opacity: 0.9;
   }
 
   .details-list {
-    margin: 8px 0 0 0;
     padding-left: 16px;
+    margin: 8px 0 0;
     list-style-type: none;
 
     li {
@@ -134,10 +131,10 @@ const StatusBox = styled.div`
       margin-bottom: 4px;
       font-size: 14px;
 
-      &:before {
-        content: '•';
+      &::before {
         position: absolute;
         left: 0;
+        content: '•';
         opacity: 0.7;
       }
     }

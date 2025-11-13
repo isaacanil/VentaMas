@@ -43,8 +43,8 @@ export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
 };
 
 const Container = styled.div`
-    height: 400px;
     display: grid;
+    height: 400px;
 `;
 
 const Group = styled.div`

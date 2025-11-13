@@ -43,26 +43,26 @@ const AccountsReceivableTestPage = () => {
 };
 
 const TestContainer = styled.div`
-  padding: 20px;
   max-width: 1200px;
+  min-height: 100vh;
+  padding: 20px;
   margin: 0 auto;
   background: #f8fafc;
-  min-height: 100vh;
 `;
 
 const TestHeader = styled.div`
-  text-align: center;
   margin-bottom: 40px;
+  text-align: center;
 
   h1 {
-    color: #1e293b;
-    font-size: 2rem;
     margin-bottom: 8px;
+    font-size: 2rem;
+    color: #1e293b;
   }
 
   p {
-    color: #64748b;
     font-size: 1rem;
+    color: #64748b;
   }
 `;
 
@@ -70,9 +70,9 @@ const TestSection = styled.div`
   margin-bottom: 40px;
 
   h2 {
-    color: #1e293b;
-    font-size: 1.25rem;
     margin-bottom: 16px;
+    font-size: 1.25rem;
+    color: #1e293b;
   }
 `;
 

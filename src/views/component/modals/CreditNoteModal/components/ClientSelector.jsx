@@ -13,10 +13,10 @@ import { normalizeText } from '../../../../../utils/text';
 */
 
 const Wrapper = styled.div`
-  height: 100%;
   display: grid;
   grid-template-rows: min-content 1fr;
   gap: 8px;
+  height: 100%;
   overflow: hidden;
 `;
 
@@ -35,30 +35,30 @@ const ClientsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
+  align-content: start;
   padding: 0 1em 1.5em;
   overflow-y: auto;
-  align-content: start;
 `;
 
 const ClientCard = styled.div`
+  padding: 12px 14px;
+  cursor: pointer;
   background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
   border: 1px solid
     ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
-  padding: 12px 14px;
   border-radius: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1890ff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
   }
 
   .name {
+    margin-bottom: 4px;
     font-size: 15px;
     font-weight: 600;
     color: #262626;
-    margin-bottom: 4px;
   }
 
   .details {
@@ -75,32 +75,32 @@ const ClientCard = styled.div`
 `;
 
 const ClientInfo = styled.div`
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  transition: border-color 0.2s;
-  background: #fff;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 10px 12px;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
   opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
+  transition: border-color 0.2s;
 
   &:hover {
     border-color: ${({ $disabled }) => ($disabled ? '#d9d9d9' : '#1890ff')};
   }
 
   &.empty {
-    justify-content: center;
     align-items: center;
-    color: #8c8c8c;
+    justify-content: center;
     min-height: 64px;
+    color: #8c8c8c;
   }
 
   .client-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
 
   .client-name {
@@ -117,8 +117,8 @@ const ClientInfo = styled.div`
     color: #595959;
 
     .detail-label {
-      color: #8c8c8c;
       font-size: 11px;
+      color: #8c8c8c;
     }
   }
 `;

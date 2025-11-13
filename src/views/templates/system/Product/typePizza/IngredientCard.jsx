@@ -22,14 +22,13 @@ export const IngredientCard = ({ item }) => {
   );
 };
 const Item = styled.div`
-  height: 2.5em;
-  background-color: #f0f0f0;
-  width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
   display: grid;
-
-  align-items: center;
-  padding: 0 1em;
   grid-template-columns: 1fr 1fr min-content min-content;
+  align-items: center;
+  width: 100%;
+  height: 2.5em;
+  padding: 0 1em;
+  background-color: #f0f0f0;
+  border: 1px solid rgb(0 0 0 / 30%);
+  border-radius: 8px;
 `;

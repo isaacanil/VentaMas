@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const TabsContainer = styled.div`
-  height: 100%;
-  width: 100%;
   display: grid;
-  overflow: hidden;
+  /* stylelint-disable declaration-block-no-redundant-longhand-properties -- dynamic grid layout is clearer when rows, columns, and areas are handled independently */
   grid-template-areas: ${(props) => {
     switch (props.tabPosition) {
       case 'bottom':
@@ -18,6 +16,10 @@ const TabsContainer = styled.div`
         return '"tabs" "content"';
     }
   }};
+  grid-template-rows: ${(props) =>
+    props.tabPosition === 'top' || props.tabPosition === 'bottom'
+      ? 'min-content 1fr'
+      : '1fr'};
   grid-template-columns: ${(props) => {
     switch (props.tabPosition) {
       case 'left':
@@ -28,31 +30,30 @@ const TabsContainer = styled.div`
         return '1fr';
     }
   }};
-
-  grid-template-rows: ${(props) =>
-    props.tabPosition === 'top' || props.tabPosition === 'bottom'
-      ? 'min-content 1fr'
-      : '1fr'};
+  /* stylelint-enable declaration-block-no-redundant-longhand-properties */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 `;
 
 const TabList = styled.ul`
-  list-style-type: none;
-  padding: 0;
-  background-color: #f8f9fa;
   display: flex;
-  grid-area: tabs;
   flex-direction: ${(props) =>
     props.tabPosition === 'left' || props.tabPosition === 'right'
       ? 'column'
       : 'row'};
+  grid-area: tabs;
+  padding: 0;
+  list-style-type: none;
+  background-color: #f8f9fa;
 `;
 
 const Tab = styled.li`
   padding: 10px 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  background-color: ${(props) => (props.active ? '#4caf50' : '#f8f9fa')};
   color: ${(props) => (props.active ? '#fff' : '#000')};
+  white-space: nowrap;
+  cursor: pointer;
+  background-color: ${(props) => (props.active ? '#4caf50' : '#f8f9fa')};
 
   &:hover {
     background-color: ${(props) => (props.active ? '#4caf50' : '#e9ecef')};
@@ -60,11 +61,11 @@ const Tab = styled.li`
 `;
 
 const TabContent = styled.div`
-  padding: 10px;
-  border-top: none;
   grid-area: content;
+  padding: 10px;
   overflow: auto;
   background-color: #fdfdfd;
+  border-top: none;
 `;
 
 const Tabs = ({ tabs, tabPosition = 'top' }) => {

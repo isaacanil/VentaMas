@@ -1,9 +1,16 @@
 /* Estilos responsive para RangePicker en dispositivos móviles */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   /* Estilos para el popup del RangePicker */
   .ant-picker-dropdown .ant-picker-panel-container {
     width: auto !important;
     max-width: calc(100vw - 20px) !important;
+  }
+
+  /* Ajustar el ancho del panel único */
+  .ant-picker-dropdown .ant-picker-panel {
+    width: 100% !important;
+    max-width: 300px !important;
+    margin: 0 auto !important;
   }
 
   /* Ocultar el segundo panel (mes) en dispositivos móviles */
@@ -15,13 +22,6 @@
   .ant-picker-dropdown .ant-picker-panels {
     justify-content: center !important;
     width: auto !important;
-  }
-
-  /* Ajustar el ancho del panel único */
-  .ant-picker-dropdown .ant-picker-panel {
-    width: 100% !important;
-    max-width: 300px !important;
-    margin: 0 auto !important;
   }
 
   /* Ajustar el contenedor del popup para evitar overflow */

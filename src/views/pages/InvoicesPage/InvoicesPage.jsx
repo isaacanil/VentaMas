@@ -101,10 +101,10 @@ export const InvoicesPage = () => {
   );
 };
 const Container = styled(motion.div)`
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: min-content min-content 1fr;
   height: 100%;
   overflow: hidden;
-  display: grid;
   background-color: var(--color2);
-  grid-template-rows: min-content min-content 1fr;
-  box-sizing: border-box;
 `;

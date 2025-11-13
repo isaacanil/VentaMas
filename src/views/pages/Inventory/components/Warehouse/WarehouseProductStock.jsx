@@ -13,8 +13,8 @@ import ProductStockOverview from './components/ProductStockOverview/ProductStock
 
 const Container = styled.div`
   display: grid;
-  height: 100%;
   grid-template-rows: min-content min-content 1fr;
+  height: 100%;
   overflow: hidden;
 `;
 
@@ -24,10 +24,10 @@ const Content = styled.div`
 `;
 
 const EmptyWrapper = styled.div`
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
 `;
 
 export const WarehouseProductStock = () => {

@@ -118,74 +118,71 @@ export const SearchPanel = ({
 
 const SearchOverlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(74, 145, 226, 0.7),
-    rgba(80, 200, 120, 0.3) 10%,
-    rgba(255, 255, 255, 0.1),
-    transparent 35vh
-  );
+  inset: 0;
   z-index: 1001;
   cursor: pointer;
+  background: linear-gradient(
+    180deg,
+    rgb(74 145 226 / 70%),
+    rgb(80 200 120 / 30%) 10%,
+    rgb(255 255 255 / 10%),
+    transparent 35vh
+  );
 `;
 
 const SearchPanelContainer = styled.div`
   position: fixed;
   top: 0.5em;
-  left: 3%;
   right: 3%;
-  background-color: #ffffff;
-  padding: 0.4rem 0.6rem;
-  border-radius: 50px;
-  max-width: 420px;
-  margin: 0 auto;
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.15),
-    0 2px 10px rgba(0, 0, 0, 0.08);
-  border: 2px solid rgba(0, 0, 0, 0.41);
-  backdrop-filter: blur(10px);
+  left: 3%;
   z-index: 1002;
+  max-width: 420px;
+  padding: 0.4rem 0.6rem;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 2px solid rgb(0 0 0 / 41%);
+  border-radius: 50px;
+  box-shadow:
+    0 8px 25px rgb(0 0 0 / 15%),
+    0 2px 10px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(10px);
 `;
 
 const SearchPanelContent = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.6rem;
+  align-items: center;
 
   .ant-input-affix-wrapper {
     flex: 1;
-    border-radius: 50px;
-    border: none;
-    background-color: transparent;
     padding: 0.2rem 0.8rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 50px;
 
     .ant-input {
+      padding: 0.3rem 0;
+      font-size: 1rem;
       background-color: transparent;
       border: none;
       box-shadow: none;
-      font-size: 1rem;
-      padding: 0.3rem 0;
 
       &::placeholder {
-        color: rgba(0, 0, 0, 0.5);
         font-weight: 400;
+        color: rgb(0 0 0 / 50%);
       }
     }
 
     .ant-input-prefix {
       margin-right: 0.5rem;
-      color: rgba(0, 0, 0, 0.45);
+      color: rgb(0 0 0 / 45%);
     }
 
     .ant-input-clear-icon {
-      color: rgba(0, 0, 0, 0.35);
+      color: rgb(0 0 0 / 35%);
 
       &:hover {
-        color: rgba(0, 0, 0, 0.6);
+        color: rgb(0 0 0 / 60%);
       }
     }
 
@@ -199,18 +196,18 @@ const SearchPanelContent = styled.div`
 
 const CloseButton = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
   width: 2.2em;
   height: 2.2em;
+  cursor: pointer;
+  background-color: rgb(0 0 0 / 8%);
+  border: 1px solid rgb(0 0 0 / 10%);
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.1);
 
   svg {
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgb(0 0 0 / 60%);
   }
 `;

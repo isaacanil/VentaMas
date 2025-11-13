@@ -148,34 +148,34 @@ ${items
 const SelectionModeIndicator = styled.div`
   position: sticky;
   top: 0;
-  background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-  color: white;
-  padding: 8px 16px;
-  margin: -16px -16px 12px -16px; /* Compensar el padding del ConsoleTerminal */
+  z-index: 100;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-family: 'Consolas', 'Lucida Console', 'Courier New', monospace;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin: -16px -16px 12px; /* Compensar el padding del ConsoleTerminal */
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 13px;
   font-weight: bold;
-  z-index: 100;
-  border-bottom: 2px solid #0055aa;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  color: white;
+  background: linear-gradient(135deg, #06c 0%, #049 100%);
+  border-bottom: 2px solid #05a;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 40%);
 
   span:first-child {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
   }
 
   span:last-child {
-    font-weight: normal;
-    font-size: 12px;
-    opacity: 0.95;
-    background: rgba(255, 255, 255, 0.1);
     padding: 4px 8px;
+    font-size: 12px;
+    font-weight: normal;
+    background: rgb(255 255 255 / 10%);
+    border: 1px solid rgb(255 255 255 / 20%);
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.95;
   }
 `;
 

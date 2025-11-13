@@ -23,4 +23,6 @@ export const ProductInventoryCard = ({
     </Container>
   );
 };
-const Container = styled.div``;
+const Container = styled.div`
+  /* Container for the product card */
+`;

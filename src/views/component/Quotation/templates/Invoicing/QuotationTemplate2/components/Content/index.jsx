@@ -61,13 +61,15 @@ export default function Content({ data }) {
 }
 const TableContainer = styled.div`
   margin-top: 16px;
+
   @media print {
     margin-top: 0;
   }
 `;
 const Container = styled.div`
+  width: 100%;
   padding: 0 2em;
   border: 1px solid #e0e0e0;
-  width: 100%;
+
   /* border: 1px solid green; */
 `;

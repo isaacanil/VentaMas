@@ -65,12 +65,12 @@ const CreditSelector = ({
   // Filtered credit notes list
   const filteredNotes = search
     ? creditNotes.filter((note) => {
-        const term = search.toLowerCase();
-        return (
-          (note.ncf || '').toLowerCase().includes(term) ||
-          (note.number || '').toLowerCase().includes(term)
-        );
-      })
+      const term = search.toLowerCase();
+      return (
+        (note.ncf || '').toLowerCase().includes(term) ||
+        (note.number || '').toLowerCase().includes(term)
+      );
+    })
     : creditNotes;
 
   // Handlers
@@ -169,7 +169,7 @@ const CreditSelector = ({
         width={600}
         okText="Aceptar"
         cancelText="Cerrar"
-        destroyOnClose
+        destroyOnHidden
         styles={{ body: { padding: '1em' } }}
       >
         {!clientId ? (
@@ -277,17 +277,17 @@ const CreditSelector = ({
 
 /* ---------------------------- styled components --------------------------- */
 const WidgetCard = styled.div`
+  padding: 16px;
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  user-select: none;
+  background: white;
   border: 1px solid #d9d9d9;
   border-radius: 8px;
-  padding: 16px;
-  background: white;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
-  user-select: none;
 
-  &:hover {
+  &&:hover {
     box-shadow: ${(props) =>
-      props.$disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'};
+    props.$disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'};
   }
 `;
 
@@ -302,94 +302,98 @@ const Placeholder = styled.div`
 `;
 
 const ListItem = styled.div`
-  padding: 8px 12px;
-  border: 1px solid ${(props) => (props.$selected ? '#495057' : '#f0f0f0')};
-  border-radius: 6px;
-  margin-bottom: 8px;
   display: flex;
   gap: 8px;
   align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid ${(props) => (props.$selected ? '#495057' : '#f0f0f0')};
+  border-radius: 6px;
 
-  &:hover {
+  &&:hover {
     border-color: #6c757d;
   }
 `;
 
 const ItemContent = styled.div`
-  flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex: 1;
   align-items: center;
+  justify-content: space-between;
   min-width: 0;
+
   .info {
     flex: 1;
     min-width: 0;
+
     .ncf {
       font-weight: 500;
     }
+
     .date {
       font-size: 12px;
       color: #8c8c8c;
     }
   }
+
   .amount {
+    display: flex;
     flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-start;
     min-width: 100px;
     font-family: monospace;
     font-weight: 500;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
     text-align: left;
   }
 `;
 
 const RowTop = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 2px;
 `;
 
 const RowBottom = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const LeftSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const CountBadge = styled.span`
-  background: #6c757d;
-  color: white;
   padding: 2px 8px;
-  border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  color: white;
+  background: #6c757d;
+  border-radius: 12px;
 `;
 
 const SelectedBadge = styled.span`
-  background: #495057;
-  color: white;
   padding: 2px 8px;
-  border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
+  color: white;
+  background: #495057;
+  border-radius: 12px;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
   padding: 8px 12px;
+  margin-bottom: 1em;
+  outline: none;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  outline: none;
-  margin-bottom: 1em;
 
-  &:focus {
+  &&:focus {
     border-color: #495057;
   }
 `;
@@ -399,37 +403,37 @@ const NotesList = styled.div`
 `;
 
 const EmptyMessage = styled.div`
-  text-align: center;
-  color: #8c8c8c;
   padding: 2em;
+  color: #8c8c8c;
+  text-align: center;
 `;
 
 const CustomCheckbox = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 1px solid
-    ${(props) =>
-      props.$disabled ? '#d9d9d9' : props.$checked ? '#495057' : '#d9d9d9'};
-  border-radius: 4px;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: white;
   cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   background: ${(props) => (props.$checked ? '#495057' : 'white')};
-  color: white;
-  flex-shrink: 0;
+  border: 1px solid
+    ${(props) =>
+    props.$disabled ? '#d9d9d9' : props.$checked ? '#495057' : '#d9d9d9'};
+  border-radius: 4px;
 
-  &:hover {
+  &&:hover {
     border-color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
   }
 `;
 
 const InfoIcon = styled.div`
   margin-left: 8px;
-  cursor: pointer;
   color: ${(props) => (props.$disabled ? '#d9d9d9' : '#8c8c8c')};
+  cursor: pointer;
 
-  &:hover {
+  &&:hover {
     color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
   }
 `;
@@ -444,45 +448,45 @@ const InputContainer = styled.div`
 const NumberInput = styled.input`
   width: 90px;
   padding: 8px;
+  font-family: monospace;
+  text-align: right;
+  outline: none;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  outline: none;
-  text-align: right;
-  font-family: monospace;
 
-  &:focus {
+  &&:focus {
     border-color: #495057;
   }
 `;
 
 const AmountLabel = styled.span`
   font-size: 11px;
-  color: #6c757d;
   font-weight: 500;
+  color: #6c757d;
   text-transform: uppercase;
 `;
 
 const AmountValue = styled.span`
-  font-size: 13px;
-  color: #262626;
-  font-weight: 600;
   font-family: monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #262626;
 `;
 
 const InputLabel = styled.span`
   font-size: 11px;
-  color: #6c757d;
   font-weight: 500;
+  color: #6c757d;
   text-transform: uppercase;
   white-space: nowrap;
 `;
 
 const RightSection = styled.div`
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 16px;
   flex-shrink: 0;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-start;
   min-width: 240px;
 
   .amount-section {
@@ -495,8 +499,8 @@ const RightSection = styled.div`
   .input-section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     gap: 4px;
+    align-items: flex-start;
     min-width: 120px;
   }
 `;

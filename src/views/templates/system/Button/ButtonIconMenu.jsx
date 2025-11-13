@@ -59,24 +59,23 @@ export const ButtonIconMenu = ({
   );
 };
 const Container = styled.button`
+  place-items: center center;
+  background-color: rgb(0 0 0 / 20%);
   border: none;
-  color: white;
-  width: 2em;
-  height: 2em;
-  padding: 0;
-  display: grid;
-  justify-items: center;
-  justify-content: center;
-  align-items: center;
   border-radius: var(--border-radius);
-  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
   cursor: pointer;
+  display: grid;
+  height: 2em;
+  justify-content: center;
+  padding: 0;
   position: relative;
+  width: 2em;
 
-  // Adaptación responsive para móviles
-  @media (max-width: 768px) {
-    width: 2.3em;
+  /* Adaptación responsive para móviles */
+  @media (width <= 768px) {
     height: 2.3em;
+    width: 2.3em;
   }
 
   ${({ $indicator }) =>
@@ -91,15 +90,15 @@ const Container = styled.button`
         height: 8px;
         border-radius: 50%;
         background: #f6573bff;
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 0 2px rgb(255 255 255 / 90%);
       }
     `}
 
   svg {
     font-size: 1.2em;
 
-    // Iconos más grandes en móviles
-    @media (max-width: 768px) {
+    /* Iconos más grandes en móviles */
+    @media (width <= 768px) {
       font-size: 1.4em;
     }
   }

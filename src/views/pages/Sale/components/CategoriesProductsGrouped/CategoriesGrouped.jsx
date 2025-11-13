@@ -68,13 +68,15 @@ const CategoryGroup = styled(motion.div)`
   :first-child {
     margin-top: 0;
   }
+
   margin-bottom: 2em;
+
   span {
     margin: 1em;
     margin-bottom: 2em;
     font-size: 1em;
     font-weight: 550;
-    color: var(--Gray8);
+    color: var(--gray-8);
   }
 `;
 const Title = styled.div`
@@ -82,5 +84,5 @@ const Title = styled.div`
   margin-bottom: 1em;
   font-size: 1em;
   font-weight: 550;
-  color: var(--Gray8);
+  color: var(--gray-8);
 `;

@@ -73,7 +73,7 @@ export const BusinessInfoModal = ({
       centered
       onCancel={onClose}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
       title={<Title>Información del negocio</Title>}
       width={480}
       styles={{
@@ -110,10 +110,10 @@ export const BusinessInfoModal = ({
 };
 
 const Title = styled.h2`
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
-  margin: 0;
 `;
 
 const ModalBody = styled.div`
@@ -130,24 +130,24 @@ const LogoWrapper = styled.div`
 const LogoImage = styled.img`
   width: 120px;
   height: 120px;
-  object-fit: contain;
-  border-radius: 20px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
   padding: 0.65rem;
-  background: rgba(248, 250, 252, 0.9);
+  object-fit: contain;
+  background: rgb(248 250 252 / 90%);
+  border: 1px solid rgb(15 23 42 / 8%);
+  border-radius: 20px;
 `;
 
 const LogoPlaceholder = styled.div`
-  width: 120px;
-  height: 120px;
-  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
+  height: 120px;
   font-size: 3rem;
   font-weight: 700;
   color: #1d4ed8;
-  background: rgba(226, 232, 240, 0.65);
+  background: rgb(226 232 240 / 65%);
+  border-radius: 20px;
 `;
 
 const InfoList = styled.div`
@@ -164,17 +164,17 @@ const InfoItem = styled.div`
 
 const InfoLabel = styled.span`
   font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #94a3b8;
-  font-weight: 600;
 `;
 
 const InfoValue = styled.span`
   font-size: 0.95rem;
-  color: #0f172a;
   font-weight: 500;
-  word-break: break-word;
+  color: #0f172a;
+  overflow-wrap: anywhere;
 `;
 
 const EmptyState = styled.p`

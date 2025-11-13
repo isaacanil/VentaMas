@@ -146,79 +146,82 @@ export const Select = ({
   );
 };
 const Asterisk = styled.span`
+
+  padding-left: 8px;
   color: red;
+
   svg {
     font-size: 0.8em;
   }
-  padding-left: 8px;
 `;
 const OtherContainer = styled.div`
   display: flex;
 `;
 const Container = styled.div`
   position: relative;
+  width: 100%;
   max-width: 300px;
   height: min-content;
-  width: 100%;
 `;
 
 const Head = styled.div`
-  width: 100%;
   display: flex;
   align-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--border-radius-light);
-  background-color: var(--White);
-  overflow: hidden;
+  width: 100%;
   padding: 0 0 0 0.2em;
-  transition-duration: 20s;
+  overflow: hidden;
+  background-color: var(--white);
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius-light);
   transition-timing-function: ease-in-out;
+  transition-duration: 20s;
   transition-property: all;
 `;
 const Body = styled.div`
-  min-width: 300px;
-  width: 100%;
-  max-height: 300px;
-  height: 300px;
   position: absolute;
   z-index: 999999999999;
-  background-color: #ffffff;
+  width: 100%;
+  min-width: 300px;
+  height: 300px;
+  max-height: 300px;
   overflow: hidden;
+  background-color: #fff;
+  border: 1px solid rgb(0 0 0 / 20%);
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px rgb(0 0 0 / 20%);
 `;
 const List = styled.ul`
   z-index: 1;
   display: block;
-  padding: 0;
   height: 100%;
+  padding: 0;
   overflow-y: auto;
 `;
 const Group = styled.div`
-  height: 2.2em;
-  width: 100%;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 10px;
-  transition: 1s display ease-in-out;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.2em;
   padding-right: 0.5em;
+  transition: 1s display ease-in-out;
 
   h3 {
-    margin: 0 0 0 10px;
-    font-weight: 500;
-    font-size: 1em;
-    color: rgb(66, 66, 66);
-    width: 100%;
-    line-height: 1pc;
     display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    //white-space: nowrap;
-    text-transform: uppercase;
-    text-overflow: ellipsis;
+    width: 100%;
+    margin: 0 0 0 10px;
     overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    font-size: 1em;
+    font-weight: 500;
+    line-height: 1pc;
+    color: rgb(66 66 66);
+    text-transform: uppercase;
+
+    /* white-space: nowrap; */
+    -webkit-box-orient: vertical;
   }
 `;
 
@@ -228,9 +231,10 @@ const Item = styled.p`
   display: flex;
   align-items: center;
   height: 2.4em;
+
   &:hover {
-    background-color: var(--color);
     color: white;
+    background-color: var(--color);
   }
 
   ${(props) => {
@@ -243,31 +247,31 @@ const Item = styled.p`
   }}
 `;
 const Icon = styled.div`
-  height: 1em;
-  width: 0.8em;
   display: flex;
   align-items: center;
+  width: 0.8em;
+  height: 1em;
 `;
 const SearchSection = styled.div`
   position: sticky;
   top: 0;
   padding: 0.2em;
-  background-color: var(--White2);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--white-2);
+  border-bottom: 1px solid rgb(0 0 0 / 10%);
 `;
 const NoneItemMessageContainer = styled.div`
   padding: 1em;
 `;
 const Label = styled.label`
   font-size: 13px;
-  color: var(--Gray5);
+  color: var(--gray-5);
   margin-bottom: 4px;
   ${(props) => {
     switch (props.labelVariant) {
       case 'primary':
         return `
         font-size: 11px;
-        color: var(--Gray5);
+        color: var(--gray-5);
         position: absolute;
         z-index: 1;
         background-color: white;
@@ -291,7 +295,7 @@ const Label = styled.label`
       default:
         return `
         font-size: 13px;
-        color: var(--Gray5);
+        color: var(--gray-5);
         margin-bottom: 4px;
         `;
     }

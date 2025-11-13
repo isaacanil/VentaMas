@@ -110,11 +110,11 @@ const SaleUnitsManager = ({ onShowPricingModal }) => {
 export default SaleUnitsManager;
 
 const EmptySaleUnitsMessage = styled.p`
+  padding: 15px;
   font-size: 1rem;
   color: #666;
   text-align: center;
-  padding: 15px;
+  background-color: #f9f9f9;
   border: 1px dashed #ccc;
   border-radius: 8px;
-  background-color: #f9f9f9;
 `;

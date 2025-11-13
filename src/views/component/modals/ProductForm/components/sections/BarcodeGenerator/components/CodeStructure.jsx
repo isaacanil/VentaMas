@@ -6,47 +6,47 @@ const { Text } = Typography;
 
 const CodeStructureContainer = styled.div`
   display: flex;
-  gap: 4px;
-  justify-content: center;
-  align-items: center;
   flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
   padding: 16px;
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #f0f0f0;
   border-radius: 6px;
 `;
 
 const CodePart = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 80px;
   padding: 12px 8px;
   background: ${(props) => props.color};
   border: 1px solid ${(props) => props.border};
   border-radius: 4px;
-  min-width: 80px;
-  position: relative;
 
   .code-value {
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
-    margin-bottom: 4px;
     color: #262626;
   }
 
   .code-label {
     font-size: 10px;
     font-weight: 500;
+    line-height: 1.2;
     color: #8c8c8c;
     text-align: center;
-    line-height: 1.2;
   }
 `;
 
 const InfoSection = styled.div`
-  margin-top: 16px;
   padding-top: 12px;
+  margin-top: 16px;
   border-top: 1px solid #f0f0f0;
 `;
 
@@ -65,17 +65,17 @@ const InfoLabel = styled.div`
 `;
 
 const InfoValue = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
   color: #595959;
   text-align: right;
 `;
 
 const StructureTitle = styled.div`
+  margin-bottom: 12px;
   font-size: 12px;
   font-weight: 500;
   color: #262626;
   text-align: center;
-  margin-bottom: 12px;
 `;
 
 export const CodeStructure = ({ selectedConfig }) => {

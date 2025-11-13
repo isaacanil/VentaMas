@@ -166,14 +166,14 @@ const AccountRow = ({ account }) => {
 
 const InsuranceBadge = styled.span`
   display: inline-flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   padding: 2px 8px;
-  border-radius: 999px;
-  background: #e0f2fe;
-  color: #0284c7;
   font-size: 11px;
   font-weight: 600;
+  color: #0284c7;
+  background: #e0f2fe;
+  border-radius: 999px;
 `;
 
 export default AccountRow;

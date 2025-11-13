@@ -278,17 +278,17 @@ const Container = styled.div`
 `;
 
 const ResumeCard = styled.div`
+  overflow: hidden;
+  background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
-  background: #ffffff;
+  box-shadow: 0 4px 16px rgb(15 23 42 / 6%);
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
   background: #fafafa;
   border-bottom: 1px solid #e8e8e8;
@@ -339,15 +339,15 @@ const RowList = styled.div`
 
 const Row = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const RowMain = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 `;
 
 const RowText = styled.div`
@@ -393,13 +393,14 @@ const RowLabel = styled.div`
 
 const RowHelper = styled.div`
   display: flex;
+  gap: 0;
   align-items: center;
   justify-content: flex-start;
-  gap: 0;
   color: #8a97ab;
 `;
 
 const RowValue = styled.div`
+  min-width: 96px;
   font-size: ${(props) => {
     if (props.$context === 'detail') {
       if (
@@ -433,22 +434,21 @@ const RowValue = styled.div`
     return '#1f2933';
   }};
   text-align: right;
-  min-width: 96px;
 `;
 
 const InfoIconButton = styled.button`
-  border: none;
-  background: transparent;
-  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
+  padding: 0;
   font-size: 13px;
   color: #8a97ab;
-  border-radius: 50%;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
   transition: color 0.2s ease;
 
   &:hover,
@@ -457,7 +457,7 @@ const InfoIconButton = styled.button`
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(39, 54, 75, 0.4);
+    outline: 2px solid rgb(39 54 75 / 40%);
     outline-offset: 2px;
   }
 `;
@@ -467,7 +467,7 @@ const PaymentSection = styled(Section)``;
 const BalanceRow = styled(Row)``;
 
 const EmptyRow = styled.div`
+  padding-left: 42px;
   font-size: 12px;
   color: #8a97ab;
-  padding-left: 42px;
 `;

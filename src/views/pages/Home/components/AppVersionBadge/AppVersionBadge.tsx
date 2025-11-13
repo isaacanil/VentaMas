@@ -103,55 +103,55 @@ export const AppVersionBadge = ({
 const BadgeContainer = styled.div<{ $showLabel: boolean }>`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
   gap: ${({ $showLabel }) => ($showLabel ? '0.35rem' : '0')};
+  align-items: flex-end;
 `;
 
 const BadgeLabel = styled.span`
   font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(15, 23, 42, 0.55);
   font-weight: 600;
+  color: rgb(15 23 42 / 55%);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 `;
 
 const BadgeButton = styled.button`
   display: inline-flex;
-  align-items: center;
   gap: 0.45rem;
-  border-radius: 999px;
+  align-items: center;
   padding: 0.35rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(15 23 42 / 85%);
   cursor: pointer;
+  background: rgb(255 255 255 / 85%);
+  border: 1px solid rgb(255 255 255 / 65%);
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgb(15 23 42 / 8%);
   transition:
     transform 150ms ease,
     box-shadow 150ms ease,
     border-color 150ms ease;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(15, 23, 42, 0.85);
 
   &:hover {
+    box-shadow: 0 4px 14px rgb(15 23 42 / 12%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
   }
 
   &:disabled {
     cursor: default;
+    box-shadow: none;
     opacity: 0.7;
     transform: none;
-    box-shadow: none;
   }
 `;
 
 const BadgeDot = styled.span<{ $active: boolean }>`
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
   background: ${({ $active }) => ($active ? '#16a34a' : '#9ca3af')};
-  flex-shrink: 0;
+  border-radius: 50%;
 `;
 
 const BadgeText = styled.span`

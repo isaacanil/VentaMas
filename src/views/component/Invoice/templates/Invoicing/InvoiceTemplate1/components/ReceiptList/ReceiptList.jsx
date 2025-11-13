@@ -16,4 +16,6 @@ export function ReceiptList({ title, list = [], formatReceipt }) {
   );
 }
 
-const Group = styled.div``;
+const Group = styled.div`
+  /* Group container */
+`;

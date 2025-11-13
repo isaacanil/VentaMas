@@ -18,9 +18,9 @@ const Products = ({ products }) => {
 export default Products;
 
 const StyledTitle = styled.h2`
-  font-weight: 600;
   margin: 0 0 1em;
   font-size: 1rem;
+  font-weight: 600;
 `;
 
 const ProductTable = ({ products }) => {

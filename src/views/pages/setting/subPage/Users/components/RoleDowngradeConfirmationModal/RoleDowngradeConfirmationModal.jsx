@@ -66,18 +66,19 @@ export default RoleDowngradeConfirmationModal;
 // Styled Components
 const StyledModal = styled(Modal)`
   .ant-modal-content {
-    border-radius: 20px;
-    overflow: hidden;
     padding: 0;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
-    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 24px 48px rgb(0 0 0 / 15%);
+    animation: modal-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  @keyframes modalSlideIn {
+  @keyframes modal-slide-in {
     from {
       opacity: 0;
       transform: translateY(-12px) scale(0.96);
     }
+
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -86,22 +87,22 @@ const StyledModal = styled(Modal)`
 `;
 
 const Container = styled.div`
-  background: #ffffff;
   text-align: center;
+  background: #fff;
 `;
 
 const IconContainer = styled.div`
-  padding: 32px 24px 24px 24px;
+  padding: 32px 24px 24px;
   font-size: 48px;
   color: #ff9500;
 `;
 
 const Content = styled.div`
-  padding: 0 24px 24px 24px;
+  padding: 0 24px 24px;
 `;
 
 const Title = styled.h3`
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 17px;
   font-weight: 600;
   color: #1d1d1f;
@@ -109,24 +110,24 @@ const Title = styled.h3`
 `;
 
 const Subtitle = styled.p`
-  margin: 0 0 24px 0;
+  margin: 0 0 24px;
   font-size: 13px;
-  color: #86868b;
   line-height: 1.38;
+  color: #86868b;
 
   strong {
-    color: #1d1d1f;
     font-weight: 600;
+    color: #1d1d1f;
   }
 `;
 
 const RoleChange = styled.div`
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin: 24px 0;
   padding: 16px;
+  margin: 24px 0;
   background: #f5f5f7;
   border-radius: 12px;
 `;
@@ -136,34 +137,34 @@ const Role = styled.div`
 `;
 
 const RoleLabel = styled.div`
+  margin-bottom: 4px;
   font-size: 11px;
+  font-weight: 500;
   color: #86868b;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  margin-bottom: 4px;
-  font-weight: 500;
 `;
 
 const RoleName = styled.div`
   font-size: 15px;
-  color: #1d1d1f;
   font-weight: 600;
+  color: #1d1d1f;
   text-transform: capitalize;
 `;
 
 const ArrowIcon = styled.div`
-  color: #86868b;
   font-size: 16px;
+  color: #86868b;
 `;
 
 const Warning = styled.div`
-  margin: 24px 0;
   padding: 12px 16px;
-  background: #fff9f4;
-  border-radius: 8px;
+  margin: 24px 0;
   font-size: 13px;
   color: #bf4800;
+  background: #fff9f4;
   border: 1px solid #ffe5cc;
+  border-radius: 8px;
 `;
 
 const Actions = styled.div`
@@ -174,31 +175,31 @@ const Actions = styled.div`
 const Button = styled.button`
   flex: 1;
   padding: 17px 16px;
-  border: none;
-  background: transparent;
   font-size: 17px;
   cursor: pointer;
+  background: transparent;
+  border: none;
   transition: background-color 0.15s ease;
 
-  &:not(:last-child) {
+    &:not(:last-child) {
     border-right: 0.5px solid #d2d2d7;
   }
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.04);
+    &:hover {
+    background: rgb(0 0 0 / 4%);
   }
 
-  &:active {
-    background: rgba(0, 0, 0, 0.08);
+    &:active {
+    background: rgb(0 0 0 / 8%);
   }
 `;
 
 const CancelButton = styled(Button)`
-  color: #007aff;
   font-weight: 400;
+  color: #007aff;
 `;
 
 const ConfirmButton = styled(Button)`
-  color: #ff3b30;
   font-weight: 600;
+  color: #ff3b30;
 `;

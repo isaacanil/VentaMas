@@ -9,4 +9,6 @@ export const Factura = () => {
   );
 };
 
-const Container = styled.div``;
+const Container = styled.div`
+  display: block;
+`;

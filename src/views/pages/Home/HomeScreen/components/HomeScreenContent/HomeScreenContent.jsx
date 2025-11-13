@@ -15,6 +15,6 @@ export const HomeScreenContent = () => {
 };
 const Container = styled.div`
   display: flex;
-  background-color: #0084ff;
   width: 100%;
+  background-color: #0084ff;
 `;

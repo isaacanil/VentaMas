@@ -7,12 +7,12 @@ import { formatLots, formatUnits } from './nodeName.helpers';
 
 const NameContainer = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 8px;
   flex: 1;
+  gap: 8px;
+  align-items: center;
   min-width: 0;
   padding-right: 8px;
+  margin-left: 8px;
 `;
 
 const TitleWrapper = styled.div`
@@ -24,33 +24,34 @@ const TitleWrapper = styled.div`
 
 const TitleText = styled.span`
   display: inline-flex;
+  flex: 1;
   align-items: center;
   min-width: 0;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
   color: #1f2933;
-  flex: 1;
+  white-space: nowrap;
 `;
 
 const ThemeTag = styled.span`
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   padding: 2px 8px;
-  border-radius: 999px;
+  margin-top: 2px;
   font-size: 0.7rem;
   font-weight: 600;
+  line-height: 1.2;
+  color: ${({ $color }) => $color || '#0f172a'};
   background-color: ${({ $background }) =>
     $background || 'rgba(22, 119, 255, 0.16)'};
-  color: ${({ $color }) => $color || '#0f172a'};
-  line-height: 1.2;
-  margin-top: 2px;
-  align-self: flex-start;
+  border-radius: 999px;
 `;
 
 const DetailLine = styled.span`
   font-size: 0.72rem;
+  font-weight: ${({ $variant }) => ($variant === 'actual' ? 600 : 400)};
   line-height: 1.1;
   color: ${({ $variant }) => {
     switch ($variant) {
@@ -64,7 +65,6 @@ const DetailLine = styled.span`
         return '#667085';
     }
   }};
-  font-weight: ${({ $variant }) => ($variant === 'actual' ? 600 : 400)};
 `;
 
 const NodeName = ({

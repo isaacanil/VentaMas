@@ -53,26 +53,24 @@ export const Category = ({
 };
 
 const Container = styled(motion.li)`
-  //font & text
-  font-size: 14px;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-  //box
-  height: 2.2em;
-  display: flex;
   align-items: center;
-  padding: 0 0.75em;
-  gap: 0.5em;
-  //color & Ground
   background-color: ${({ theme }) => theme.bg.color2};
   border-radius: var(--border-radius);
-  text-transform: capitalize;
-  font-weight: 500;
   color: #585858;
+  display: flex;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 0.5em;
+  height: 2.2em;
+  letter-spacing: 0.2px;
+  padding: 0 0.75em;
+  text-transform: capitalize;
   transition: 300ms ease-in-out;
+  white-space: nowrap;
+
   :hover {
+    color: rgb(83 83 83);
     background-color: #e7f0fa;
-    color: rgb(83, 83, 83);
   }
 
   ${(props) => {

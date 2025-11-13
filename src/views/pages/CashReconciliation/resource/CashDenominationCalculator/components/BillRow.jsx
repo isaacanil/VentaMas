@@ -52,8 +52,8 @@ const BillRowContainer = styled.div`
   display: grid;
   grid-template-columns: 3em 10em 1fr;
   gap: 1.4em;
-  border-radius: var(--border-radius);
   align-items: center;
+  border-radius: var(--border-radius);
 `;
 
 const BillRef = styled.div`

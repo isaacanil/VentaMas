@@ -219,17 +219,17 @@ export const ClientForm = ({ isOpen, mode, data }) => {
 };
 const Backdrop = styled.div`
   position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
-  top: 0px;
-  left: 0px;
   width: 100%;
   height: 100vh;
-  z-index: 10000;
   overflow: hidden;
   pointer-events: none;
+  backdrop-filter: blur(4px);
 `;
 const Container = styled.div`
   max-width: 30em;
@@ -238,13 +238,10 @@ const Container = styled.div`
   overflow: hidden;
   width: 100%;
   height: 100%;
-  background-color: var(--White1);
+  background-color: var(--white-1);
   pointer-events: all;
   transform: translateX(600px);
-  transition-property: transform, box-shadow;
-  transition-timing-function: ease-in-out, ease-in-out;
-  transition-delay: 0s, 700ms;
-  transition-duration: 800ms, 600ms;
+  transition: transform 800ms ease-in-out 0s, box-shadow 600ms ease-in-out 700ms;
 
   ${(props) => {
     switch (props.isOpen) {
@@ -259,52 +256,55 @@ const Container = styled.div`
 `;
 
 const ToolBar = styled.div`
-  padding: 0 0.6em;
-  height: 2.75em;
   display: flex;
-  align-items: center;
   gap: 0.4em;
+  align-items: center;
+  height: 2.75em;
+  padding: 0 0.6em;
   background-color: white;
 `;
 const Body = styled.div`
   padding: 1em;
 `;
 const Footer = styled.div`
-  padding: 0 1em;
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   gap: 0.5em;
+  align-items: center;
+  justify-content: flex-end;
   height: 3em;
+  padding: 0 1em;
 `;
 const Group = styled.div`
   display: grid;
   gap: 0.2em;
-  margin-bottom: 1em;
-  background-color: rgb(254, 254, 254);
   padding: 0.2em 0.6em 0.8em;
+  margin-bottom: 1em;
+  background-color: rgb(254 254 254);
   border-radius: 4px;
+
   label {
     display: flex;
-    font-weight: 400;
+    align-items: center;
     justify-content: space-between;
     font-size: 13px;
-    align-items: center;
-    color: #1565c0;
     font-weight: 500;
+    color: #1565c0;
   }
+
   input {
     display: block;
+    width: 100%;
     height: 1.8em;
     padding: 0 1em;
+    color: var(--font-color);
+    outline: 2px solid rgb(0 0 0 / 5%);
     border: none;
     border-radius: 4px;
-    width: 100%;
-    outline: 2px solid rgba(0, 0, 0, 0.05);
-    color: var(--font-color);
+
     :focus {
       outline: 2px solid #0572ffce;
     }
+
     /* &:not(:placeholder-shown){
         outline: 2px solid #0572ffce;
     } */
@@ -312,12 +312,14 @@ const Group = styled.div`
       color: #57575779;
     }
   }
+
   textarea {
-    border: none;
-    border-radius: 6px;
     padding: 0.4em 1em;
     outline: none;
-    outline: 2px solid rgba(0, 0, 0, 0.05);
+    outline: 2px solid rgb(0 0 0 / 5%);
+    border: none;
+    border-radius: 6px;
+
     ::placeholder {
       color: #9191917a;
     }

@@ -7,23 +7,23 @@ import { CustomProduct } from '../../../../../templates/system/Product/CustomPro
 import { Product } from '../../../../../templates/system/Product/Product/Product';
 
 const StyledItemRow = styled.div`
-  display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
-  gap: 0.4em;
   position: absolute;
   top: ${({ top }) => `${top}px`};
   left: 0;
+  display: grid;
+  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  gap: 0.4em;
   width: 100%;
   height: ${({ height }) => `${height}px`};
 `;
 
 const EmptyRow = styled.div`
-  display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
-  gap: 0.4em;
   position: absolute;
   top: ${({ top }) => `${top}px`};
   left: 0;
+  display: grid;
+  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  gap: 0.4em;
   width: 100%;
   height: ${({ height }) => `${height}px`};
   pointer-events: none;

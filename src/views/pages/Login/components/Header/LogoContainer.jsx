@@ -37,19 +37,19 @@ export const LogoContainer = () => {
 
 const badgeExpand = keyframes`
     0% {
-        opacity: 0;
         max-width: clamp(60px, 5vw, 60px);
+        opacity: 0;
         padding-right: clamp(0.7rem, 0.7rem, 0.7rem);
     }
 
     55% {
-        opacity: 1;
         max-width: min(100%, 392px);
+        opacity: 1;
     }
 
     100% {
-        opacity: 1;
         max-width: min(100%, 360px);
+        opacity: 1;
         padding-right: clamp(1.5rem, 1.5rem, 1.5rem);
     }
 `;
@@ -81,15 +81,15 @@ const copyReveal = keyframes`
 const Container = styled.section`
   display: flex;
   flex-direction: column;
+  gap: clamp(0.8rem, 1.2vw, 1.4rem);
   align-items: center;
   justify-content: flex-start;
-  text-align: center;
-  gap: clamp(0.8rem, 1.2vw, 1.4rem);
   width: 100%;
-  backdrop-filter: blur(16px);
-  color: #ffffff;
-  margin-bottom: clamp(0.8rem, 1.8vw, 1.2rem);
   padding-top: clamp(1.25rem, 5vh, 2rem);
+  margin-bottom: clamp(0.8rem, 1.8vw, 1.2rem);
+  color: #fff;
+  text-align: center;
+  backdrop-filter: blur(16px);
 `;
 
 const Branding = styled.div`
@@ -101,38 +101,38 @@ const Branding = styled.div`
 
 const BrandBadge = styled.div`
   display: flex;
-  align-items: center;
   gap: clamp(0.45rem, 1vw, 0.75rem);
+  align-items: center;
+  max-width: min(100%, 360px);
   padding: clamp(0.4rem, 0.4rem, 0.4rem) clamp(1.5rem, 1.5rem, 1.5rem)
     clamp(0.4rem, 0.4rem, 0.4rem) clamp(0.7rem, 0.7rem, 0.7rem);
-  border-radius: 999px;
-  background: rgba(15, 19, 35, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(18px);
-  max-width: min(100%, 360px);
   margin-bottom: clamp(0.6rem, 1.5vw, 1rem);
   overflow: hidden;
+  background: rgb(15 19 35 / 32%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  backdrop-filter: blur(18px);
   animation: ${badgeExpand} 900ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
   animation-delay: 120ms;
   will-change: max-width, padding-right, opacity;
 
-  @media (max-width: 620px) {
+  @media (width <= 620px) {
     flex-direction: column;
+    gap: 0.6rem;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
-    padding: 0.75rem 1rem;
-    gap: 0.6rem;
-    animation: none;
-    opacity: 1;
     max-width: min(100%, 360px);
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    opacity: 1;
+    animation: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
-    opacity: 1;
     max-width: min(100%, 360px);
     padding-right: clamp(1.5rem, 1.5rem, 1.5rem);
+    opacity: 1;
+    animation: none;
   }
 `;
 
@@ -147,9 +147,9 @@ const BadgeLogo = styled(Logo).attrs({
   will-change: transform, opacity;
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
     opacity: 1;
     transform: none;
+    animation: none;
   }
 `;
 
@@ -164,23 +164,23 @@ const BrandCopy = styled.div`
   animation-delay: 620ms;
   will-change: transform, opacity;
 
-  @media (max-width: 620px) {
-    text-align: center;
+  @media (width <= 620px) {
     align-items: center;
+    text-align: center;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
     opacity: 1;
     transform: none;
+    animation: none;
   }
 `;
 
 const BadgeOverline = styled.span`
-  text-transform: uppercase;
   font-size: 0.75rem;
-  letter-spacing: 0.18em;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
   opacity: 0.78;
 `;
 
@@ -196,17 +196,17 @@ const Headline = styled.h2`
   font-size: clamp(1.6rem, 3vw, 1.9rem);
   font-weight: 700;
   color: var(--color, #54c0a8);
-  text-shadow: 0 2px 6px rgba(84, 192, 168, 0.28);
+  text-shadow: 0 2px 6px rgb(84 192 168 / 28%);
 `;
 
 const Description = styled.p`
-  margin: 0;
   max-width: 460px;
+  margin: 0;
   font-size: clamp(0.9rem, 2vw, 0.96rem);
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgb(255 255 255 / 92%);
 
-  @media (max-width: 620px) {
+  @media (width <= 620px) {
     font-size: clamp(0.85rem, 2.2vw, 0.92rem);
   }
 `;

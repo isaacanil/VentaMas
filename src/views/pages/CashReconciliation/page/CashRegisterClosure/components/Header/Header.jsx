@@ -23,16 +23,17 @@ export const Header = ({ state = 'closed' }) => {
 };
 const Group = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
 `;
 
 const Container = styled.div`
-  //height: 4.4em;
-  background-color: white;
   padding: 0.4em;
-  border-radius: var(--border-radius);
+  background-color: white;
   border: var(--border-primary);
+  border-radius: var(--border-radius);
+
+  /* height: 4.4em; */
 `;
 const Row = styled.div`
   display: flex;

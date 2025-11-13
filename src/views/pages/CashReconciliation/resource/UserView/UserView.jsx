@@ -52,12 +52,12 @@ export const UserView = ({
 };
 
 const Container = styled.div`
-  padding: 0.4em;
-  background-color: white;
-  border-radius: var(--border-radius);
-  border: var(--border-primary);
   display: grid;
   gap: 0.4em;
+  padding: 0.4em;
+  background-color: white;
+  border: var(--border-primary);
+  border-radius: var(--border-radius);
 `;
 
 const Group = styled.div`
@@ -67,16 +67,16 @@ const Group = styled.div`
 `;
 
 const FormItemStyled = styled(Form.Item)`
-  margin: 0;
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  margin: 0;
 
   .ant-form-item-label {
-    text-align: left;
-    padding: 0;
     display: block;
+    padding: 0;
     margin-bottom: 4px;
+    text-align: left;
   }
 
   .ant-form-item-label > label {
@@ -89,10 +89,10 @@ const FormItemStyled = styled(Form.Item)`
 `;
 
 const Icon = styled.div`
-  width: 2em;
-  height: 2em;
-  align-self: end;
   display: flex;
   align-items: center;
+  align-self: end;
   justify-content: center;
+  width: 2em;
+  height: 2em;
 `;

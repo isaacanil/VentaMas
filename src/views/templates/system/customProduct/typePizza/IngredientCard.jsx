@@ -42,13 +42,13 @@ export const IngredientCard = ({ item, index }) => {
 };
 
 const Container = styled.label`
-  list-style: none;
-  height: 2.2em;
   display: grid;
-  align-items: center;
   grid-template-columns: min-content 1fr 0.8fr;
   gap: 1em;
+  align-items: center;
+  height: 2.2em;
   padding: 0 1em;
+  list-style: none;
   background-color: #f1efef;
   border-radius: 8px;
 `;

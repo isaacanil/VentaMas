@@ -27,7 +27,7 @@ const MonthlyPurchasesChart = ({ monthlyData, options }) => {
 export default MonthlyPurchasesChart;
 
 const Container = styled.div`
-    // Tu estilización aquí si es necesaria, por ejemplo:
+    /* Tu estilización aquí si es necesaria, por ejemplo: */
     width: 100%;
     height: 400px;
 `;

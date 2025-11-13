@@ -41,11 +41,11 @@ const ChartCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 1.5rem;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.1);
   min-height: 320px;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 35px rgb(15 23 42 / 10%);
 `;
 
 const SectionHeader = styled.div`

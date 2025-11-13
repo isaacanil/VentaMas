@@ -26,8 +26,7 @@ const TextContainer = styled.div`
 `;
 
 const StyledGreeting = styled.h1`
-  font-size: 1.4rem;
-  font-weight: 600;
+  margin: 0;
   font-family:
     'SF Pro Display',
     -apple-system,
@@ -35,24 +34,25 @@ const StyledGreeting = styled.h1`
     'Segoe UI',
     Roboto,
     sans-serif;
-  color: var(--color-gray-700, #4a5568);
-  margin: 0;
-  letter-spacing: -0.5px;
+  font-size: 1.4rem;
+  font-weight: 600;
   line-height: 1.2;
+  color: var(--color-gray-700, #4a5568);
+  letter-spacing: -0.5px;
 `;
 
 const NameSpan = styled.span`
-  color: var(--color-primary-600, #3182ce);
-  font-weight: 700;
   position: relative;
+  font-weight: 700;
+  color: var(--color-primary-600, #3182ce);
 
-  &:after {
-    content: '';
+  &::after {
     position: absolute;
     bottom: -2px;
     left: 0;
     width: 100%;
     height: 2px;
+    content: '';
     background: linear-gradient(
       to right,
       var(--color-primary-400, #63b3ed),

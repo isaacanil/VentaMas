@@ -17,8 +17,8 @@ import styled from 'styled-components';
 // Styled Components Definitions
 const Container = styled.div`
   max-width: 800px;
-  margin: 0 auto;
   padding: 16px;
+  margin: 0 auto;
 `;
 
 const CardHeaderWrapper = styled.div`
@@ -33,24 +33,24 @@ const CardHeaderWrapper = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  gap: 16px;
   grid-template-columns: 1fr;
+  gap: 16px;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: 1fr 1fr;
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 `;
 
 const Card = styled.div`
+  overflow: hidden;
   background-color: ${(props) => (props.active ? '#f0f0f0' : '#d0d0d0')};
-  opacity: ${(props) => (props.active ? '1' : '0.5')};
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  overflow: hidden;
+  opacity: ${(props) => (props.active ? '1' : '0.5')};
 `;
 
 const CardContentWrapper = styled.div`

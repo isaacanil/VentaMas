@@ -3,12 +3,13 @@ import styled from 'styled-components';
 const Container = styled('div')`
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 0 0.6em;
-  height: 2em;
   width: min-content;
+  height: 2em;
+  padding: 0 0.6em;
   white-space: nowrap;
+  background-color: rgb(0 0 0 / 20%);
   border-radius: 8px;
+
   @media (width < 768px) {
     height: 2.3em;
     padding: 0 0.8em;

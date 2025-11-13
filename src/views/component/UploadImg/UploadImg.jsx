@@ -32,22 +32,19 @@ export const UploadImg = ({ isOpen, setIsOpen }) => {
 };
 const Backdrop = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  inset: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 `;
 const Container = styled.div`
   position: relative;
-  background-color: #e2e2e2fd;
+  z-index: 1;
   display: grid;
-  height: 100%;
+  grid-template-rows: min-content 1fr;
   width: 100%;
+  height: 100%;
   padding: 0.6em 1em;
   overflow: hidden;
-  z-index: 1;
-  grid-template-rows: min-content 1fr;
+  background-color: #e2e2e2fd;
 `;

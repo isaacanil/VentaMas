@@ -338,16 +338,16 @@ export const General = ({ showImageManager }) => {
 };
 
 const ImageContent = styled.div`
-  border-radius: 5px;
-  height: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 150px;
   overflow: hidden;
+  border-radius: 5px;
 `;
 const ImageContainer = styled.div`
-  height: 100%;
   width: 100%;
+  height: 100%;
 `;
 
 const Image = styled.img`
@@ -358,10 +358,9 @@ const Image = styled.img`
 `;
 const Footer = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 10px;
   align-items: center;
-
-  height: min-content;
+  justify-content: flex-end;
   width: 100%;
+  height: min-content;
 `;

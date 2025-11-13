@@ -16,18 +16,18 @@ export const UserSection = () => {
 };
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4em;
+  align-items: center;
 `;
 const Icon = styled.div`
-  width: 1.6em;
-  height: 1.6em;
-  border-radius: 50%;
-  background-color: var(--Black);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.2em;
+  width: 1.6em;
+  height: 1.6em;
   margin-right: 0.4em;
+  font-size: 1.2em;
+  color: white;
+  background-color: var(--black);
+  border-radius: 50%;
 `;

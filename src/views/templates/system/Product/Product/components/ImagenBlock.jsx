@@ -16,8 +16,8 @@ const ImageWrapper = styled.div`
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     z-index: 1;
+    transform: translate(-50%, -50%);
   }
 
   ${({ imageHiddenRef }) =>
@@ -30,16 +30,16 @@ const ImageWrapper = styled.div`
 `;
 
 const ImageContainer = styled.div`
-  height: 80px;
-  width: 80px;
-  overflow: hidden;
   position: relative;
+  width: 80px;
+  height: 80px;
   padding: 4px;
+  overflow: hidden;
   transition: transform 0.4s ease-in-out;
 
   img {
-    height: 100%;
     width: 100%;
+    height: 100%;
     object-fit: cover;
     object-position: center;
     border-radius: 7px;
@@ -48,15 +48,12 @@ const ImageContainer = styled.div`
 
 const LoadingOverlay = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 80%);
   border-radius: var(--border-radius);
 `;
 

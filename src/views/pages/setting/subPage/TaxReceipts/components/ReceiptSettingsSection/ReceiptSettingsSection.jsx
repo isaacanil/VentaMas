@@ -34,9 +34,9 @@ const Container = styled.div`
 
 const SectionContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1em;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -51,14 +51,16 @@ const AlertsContainer = styled.div`
 const Info = styled.div`
   display: flex;
   flex-direction: column;
+
   > h4 {
     margin: 0;
     font-size: 16px;
     font-weight: 500;
   }
+
   > p {
     margin: 0;
     font-size: 14px;
-    color: rgba(0, 0, 0, 0.45);
+    color: rgb(0 0 0 / 45%);
   }
 `;

@@ -17,7 +17,7 @@ export const PaymentInfoModal: FC<PaymentInfoModalProps> = ({
     closable={false}
     maskClosable={false}
     keyboard={false}
-    destroyOnClose
+    destroyOnHidden
     style={{ top: '10px' }}
     title="Información de Pago"
     width={620}

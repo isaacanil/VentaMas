@@ -74,27 +74,27 @@ export const AlertDialog = ({ onSubmit, submitBtnName }) => {
   );
 };
 const Backdrop = styled(motion.div)`
-  height: 100vh;
-  width: 100vw;
-  backdrop-filter: blur(5px) brightness(0.5) saturate(100%) contrast(100%);
   position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   top: 0;
   left: 0;
   z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(5px) brightness(0.5) saturate(100%) contrast(100%);
 `;
 const Container = styled(motion.div)`
-  height: 300px;
-  max-width: 600px;
-  width: 100%;
-  background-color: white;
-  border-radius: var(--border-radius);
-  padding: 0.4em;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   gap: 1em;
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  padding: 0.4em;
+  background-color: white;
+  border-radius: var(--border-radius);
 `;
 const Header = styled.div`
   padding: 1em;

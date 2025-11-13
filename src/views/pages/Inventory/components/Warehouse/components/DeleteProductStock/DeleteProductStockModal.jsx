@@ -42,23 +42,22 @@ const SelectorContainer = styled.div`
 `;
 
 const SelectorOption = styled.div`
+  display: flex;
   flex: 1;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background-color: ${(props) => (props.isSelected ? '#e6f7ff' : 'white')};
   border: 2px solid ${(props) => (props.isSelected ? '#1890ff' : '#d9d9d9')};
   border-radius: 6px;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
-  background-color: ${(props) => (props.isSelected ? '#e6f7ff' : 'white')};
   transition: all 0.3s;
 
   &:hover {
     border-color: ${(props) => !props.disabled && '#1890ff'};
   }
-
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
 `;
 
 const IconWrapper = styled.div`
@@ -231,7 +230,7 @@ export const DeleteProductStockModal = () => {
       open={isOpen}
       onCancel={handleCancel}
       onOk={handleOk}
-      style={{ top: 20 }}
+      style={{ top: '20px' }}
       okButtonProps={{ loading: isSubmitting }}
       cancelButtonProps={{ disabled: isSubmitting }}
       destroyOnHidden

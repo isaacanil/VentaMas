@@ -133,61 +133,61 @@ export const BusinessCard = ({ business, onEditBusiness }) => {
 
 const StyledCard = styled.div`
   padding: 0.75rem;
+  cursor: pointer;
+  background-color: #fff;
   border: 1px solid var(--color-border, #e8e8e8);
   border-radius: 6px;
-  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 2%);
   transition: all 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 
   &:hover {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 `;
 
 const Head = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  justify-content: space-between;
   padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border, #f0f0f0);
 `;
 
 const BusinessName = styled.div`
-  color: var(--color-text-primary, #262626);
-  font-size: 1rem;
-  font-weight: 600;
+  position: relative;
+  flex: 1; /* Toma todo el espacio disponible */
   margin-right: 0.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1; /* Toma todo el espacio disponible */
-  position: relative;
+  font-size: 1rem;
+  font-weight: 600;
   line-height: normal; /* Mantiene todo en una línea */
+  color: var(--color-text-primary, #262626);
+  white-space: nowrap;
 
   &:hover::before {
-    content: attr(data-tooltip);
     position: absolute;
-    background: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    z-index: 100;
     top: -30px;
     left: 50%;
+    z-index: 100;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    color: #fff;
+    white-space: nowrap;
+    content: attr(data-tooltip);
+    background: rgb(0 0 0 / 80%);
+    border-radius: 4px;
     transform: translateX(-50%);
   }
 `;
 
 const EditIcon = styled.span`
+  padding: 4px;
   color: var(--color-primary, #1890ff);
   opacity: 0.7;
   transition: opacity 0.2s ease;
-  padding: 4px;
 
   &:hover {
     opacity: 1;
@@ -196,27 +196,26 @@ const EditIcon = styled.span`
 
 const Body = styled.div`
   display: grid;
-
   gap: 0.5rem;
 `;
 
 const IconWrapper = styled.span`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 1.4em;
   height: 1.4em;
-  flex-shrink: 0;
 `;
 
 const InfoItem = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.375rem;
-  color: var(--color-text-secondary, #595959);
-  font-size: 0.85rem;
+  align-items: center;
   min-width: 0;
   overflow: hidden;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #595959);
 
   span {
     overflow: hidden;

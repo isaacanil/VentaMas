@@ -35,18 +35,16 @@ export const Header = () => {
   );
 };
 const Container = styled.div`
-  background-color: var(--White);
-
   width: 100%;
   padding: 16px;
+  background-color: var(--white);
 `;
 
 const HeaderWrapper = styled.div`
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto;
-
   display: grid;
-  align-items: center;
   grid-template-columns: 1fr auto;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 `;

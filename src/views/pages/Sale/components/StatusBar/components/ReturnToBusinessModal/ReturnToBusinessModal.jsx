@@ -108,16 +108,16 @@ const BusinessInfo = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 208, 132, 0.1);
   padding: 12px 16px;
-  border-radius: 8px;
   margin-bottom: 24px;
+  background: rgb(0 208 132 / 10%);
+  border-radius: 8px;
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
   gap: 12px;
+  justify-content: center;
 `;
 
 export default ReturnToBusinessModal;

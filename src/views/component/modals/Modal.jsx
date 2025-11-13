@@ -92,18 +92,18 @@ export const Modal = ({
   );
 };
 const Backdrop = styled(motion.div)`
-  width: 100%;
-  height: 100%;
-  background-color: var(--BlackOp);
-  backdrop-filter: blur(var(--blur));
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: absolute;
-  z-index: 10000;
-  overflow-y: hidden;
   top: 0;
   left: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  background-color: var(--black-op);
+  backdrop-filter: blur(var(--blur));
   transition: opacity 400ms ease-in-out;
 `;
 const Container = styled(motion.div)`
@@ -111,16 +111,17 @@ const Container = styled(motion.div)`
   max-width: 720px;
   height: 98vh;
   max-height: 1000px;
-  background-color: var(--White);
+  background-color: var(--white);
   display: grid;
   grid-template-rows: 3em auto 3em;
   border-radius: 6px;
   overflow: hidden;
   position: relative;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     width: 100vw;
-    height: 100%;
     max-width: 100vw;
+    height: 100%;
     max-height: 100%;
     border-radius: 0;
   }
@@ -151,11 +152,10 @@ const Container = styled(motion.div)`
 `;
 const Header = styled.div`
   display: flex;
-
-  background-color: rgb(48, 48, 48);
   align-items: center;
-  padding: 0 1em;
   justify-content: space-between;
+  padding: 0 1em;
+  background-color: rgb(48 48 48);
 `;
 const Body = styled.div`
   display: grid;
@@ -163,12 +163,12 @@ const Body = styled.div`
 `;
 const Footer = styled.div`
   display: flex;
-  padding: 0 1em;
-  border-top: 1px solid var(--Gray);
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
+  padding: 0 1em;
+  border-top: 1px solid var(--gray);
 `;
 const Title = styled.div`
-  color: rgb(255, 255, 255);
   font-weight: 600;
+  color: rgb(255 255 255);
 `;

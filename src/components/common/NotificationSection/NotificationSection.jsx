@@ -2,20 +2,20 @@ import React from 'react';
 import styled from 'styled-components';
 
 const SectionContainer = styled.div`
-  background: white;
-  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 12px;
+  background: white;
   border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: space-between;
   padding-bottom: 8px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #f5f5f5;
 `;
 
@@ -28,8 +28,8 @@ const SectionTitle = styled.h3`
 
 const NavigationContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 `;
 
 const NavButton = styled.button`
@@ -38,10 +38,10 @@ const NavButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
+  cursor: pointer;
+  background: white;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  background: white;
-  cursor: pointer;
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
@@ -50,8 +50,8 @@ const NavButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
+    opacity: 0.5;
   }
 
   i {
@@ -61,27 +61,27 @@ const NavButton = styled.button`
 `;
 
 const PageIndicator = styled.span`
+  min-width: 40px;
+  margin: 0 8px;
   font-size: 11px;
   color: #8c8c8c;
-  margin: 0 8px;
-  min-width: 40px;
   text-align: center;
 `;
 
 const ContentContainer = styled.div`
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
 `;
 
 const ScrollableContent = styled.div`
   display: flex;
-  transition: transform 0.3s ease;
   transform: translateX(${(props) => props.offset}px);
+  transition: transform 0.3s ease;
 `;
 
 const PageContainer = styled.div`
-  min-width: 100%;
   flex-shrink: 0;
+  min-width: 100%;
 `;
 
 /**

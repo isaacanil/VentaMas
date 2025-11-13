@@ -24,22 +24,23 @@ export const ToolBar = () => {
   );
 };
 const Container = styled.div`
-  height: 2.5em;
-  width: 100%;
-  background-color: rgb(255, 255, 255);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 2.5em;
   margin-bottom: 1em;
+  background-color: rgb(255 255 255);
 `;
 const Wrapper = styled.div`
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 0 1em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1em;
-  @media (max-width: 1000px) {
+
+  @media (width <= 1000px) {
     padding: 1em;
   }
 `;

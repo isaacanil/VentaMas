@@ -519,14 +519,7 @@ type AdvancedTheme = DefaultTheme & {
 };
 
 const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
-  border: var(--border-primary);
-  height: 100%;
   display: grid;
-  background-color: ${({ theme }) =>
-    (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
-  border-radius: 0.4em;
-  overflow: hidden;
-
   grid-template-rows: ${({ $hasTitle, $hasToolbar }) =>
     [
       $hasTitle ? 'min-content' : null,
@@ -535,12 +528,18 @@ const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
     ]
       .filter(Boolean)
       .join(' ')};
+  height: 100%;
+  overflow: hidden;
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
+  border: var(--border-primary);
+  border-radius: 0.4em;
 `;
 
 const TableTitle = styled.div`
+  height: min-content;
   padding: 0.8em 1em;
   font-size: 1.1em;
-  height: min-content;
   font-weight: 600;
   background-color: ${({ theme }) =>
     (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
@@ -548,27 +547,26 @@ const TableTitle = styled.div`
 `;
 
 const TableContainer = styled.div`
+  position: relative;
   display: grid;
   grid-template-rows: 1fr min-content;
-  overflow: hidden;
-  position: relative;
   width: 100%;
+  overflow: hidden;
   isolation: isolate;
 `;
 
 const Wrapper = styled.div<{ isWideScreen: boolean }>`
+  position: relative;
   display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   height: 100%;
-  grid-template-rows: min-content 1fr;
-  overflow-y: scroll;
-  overflow-x: auto;
-  background-color: #ffffff;
-  position: relative;
+  overflow: auto scroll;
+  background-color: #fff;
 
   &::-webkit-scrollbar {
-    height: 8px;
     width: 8px;
+    height: 8px;
   }
 
   &::-webkit-scrollbar-track {
@@ -587,13 +585,13 @@ export const ExpanderButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: none;
-  background: transparent;
+  color: var(--gray-7);
   cursor: pointer;
-  color: var(--Gray7);
+  background: transparent;
+  border: none;
 
   &:hover {
-    color: var(--Gray9);
+    color: var(--gray-9);
   }
 `;
 
@@ -601,9 +599,9 @@ export const ExpandedRow = styled.div`
   grid-column: 1 / -1;
   padding: 8px 12px;
   background: #fafafa;
-  border-left: 2px solid var(--Gray3);
-  border-right: 2px solid var(--Gray3);
-  border-bottom: 1px dashed var(--Gray3);
+  border-right: 2px solid var(--gray-3);
+  border-bottom: 1px dashed var(--gray-3);
+  border-left: 2px solid var(--gray-3);
 `;
 
 type StyledColumn = InternalColumn<TableRow>;
@@ -613,6 +611,7 @@ export const Row = styled.div<{
   isWideLayout: boolean;
   isWideScreen: boolean;
 }>`
+  position: relative;
   display: grid;
   grid-template-columns: ${(props) => {
     if (!props.columns.length) return '1fr';
@@ -631,9 +630,8 @@ export const Row = styled.div<{
     const value = template.join(' ');
     return value || '1fr';
   }};
-  align-items: center;
   gap: 0.6em;
-  position: relative;
-  min-width: fit-content;
+  align-items: center;
   width: 100%;
+  min-width: fit-content;
 `;

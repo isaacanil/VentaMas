@@ -10,11 +10,11 @@ interface TextCellProps {
 }
 
 const Container = styled.div`
+  display: inline-block;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
-  display: inline-block;
 `;
 
 function TextCell({ value, useTooltip = true }: TextCellProps) {

@@ -57,14 +57,13 @@ export const Item = ({ data, num, colWidth }) => {
 };
 
 const Role = styled.div`
-  height: 2em;
-  max-width: 120px;
-  border-radius: 100px;
-  width: 100%;
   display: flex;
-  text-transform: capitalize;
   align-items: center;
+  width: 100%;
+  max-width: 120px;
+  height: 2em;
   padding: 0 1em;
+  font-weight: 600;
   color: ${(props) => {
     switch (props.role) {
       case 'owner':
@@ -79,6 +78,24 @@ const Role = styled.div`
         return `#F31260;`;
       case 'dev':
         return `#f312bb;`;
+      default:
+    }
+  }};
+  text-transform: capitalize;
+  background-color: ${(props) => {
+    switch (props.role) {
+      case 'owner':
+        return `#d1dfee`;
+      case 'admin':
+        return `#ddd4e7;`;
+      case 'buyer':
+        return `#cfe7da;`;
+      case 'cashier':
+        return `#e2d1b5;`;
+      case 'manager':
+        return `#e9c8d3;`;
+      case 'dev':
+        return `#ecd8e8;`;
       default:
     }
   }};
@@ -100,36 +117,18 @@ const Role = styled.div`
         default:
       }
     }};
-  font-weight: 600;
-  background-color: ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#d1dfee`;
-      case 'admin':
-        return `#ddd4e7;`;
-      case 'buyer':
-        return `#cfe7da;`;
-      case 'cashier':
-        return `#e2d1b5;`;
-      case 'manager':
-        return `#e9c8d3;`;
-      case 'dev':
-        return `#ecd8e8;`;
-      default:
-    }
-  }};
+  border-radius: 100px;
 `;
 const Container = styled.div`
-  height: 3em;
-  width: 100%;
-  padding: 0 1em;
   display: flex;
-
   align-items: center;
+  width: 100%;
+  height: 3em;
+  padding: 0 1em;
   font-size: 14px;
 
   :hover {
-    background-color: var(--White2);
+    background-color: var(--white-2);
   }
 `;
 const Col = styled.div`

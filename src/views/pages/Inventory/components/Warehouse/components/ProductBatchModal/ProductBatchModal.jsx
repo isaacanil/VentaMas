@@ -26,26 +26,26 @@ import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
 
 const StyledWrapper = styled.div`
   .batch-select-button {
+    padding: 10px 20px;
+    font-weight: 500;
+    color: white;
     background: linear-gradient(145deg, #2563eb, #1d4ed8);
     border: none;
-    padding: 10px 20px;
     border-radius: 12px;
-    color: white;
-    font-weight: 500;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
     &:hover {
+      box-shadow: 0 6px 8px -1px rgb(0 0 0 / 15%);
       transform: translateY(-2px);
-      box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
     }
   }
 `;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
-    border-radius: 16px;
     overflow: hidden;
+    border-radius: 16px;
   }
 
   .search-container {
@@ -57,68 +57,69 @@ const BatchGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
-  padding: 12px 0;
   max-height: 60vh;
+  padding: 12px 0;
   overflow-y: auto;
 
-  &::-webkit-scrollbar {
+    &::-webkit-scrollbar {
     width: 8px;
   }
 
-  &::-webkit-scrollbar-track {
+    &::-webkit-scrollbar-track {
     background: #f1f5f9;
     border-radius: 4px;
   }
 
-  &::-webkit-scrollbar-thumb {
+    &::-webkit-scrollbar-thumb {
     background: #94a3b8;
     border-radius: 4px;
   }
 `;
 
 const LocationBadge = styled.span`
-  background: #f1f5f9;
+  display: inline-block;
   padding: 4px 8px;
-  border-radius: 6px;
+  margin-bottom: 4px;
   font-size: 0.8rem;
   color: #475569;
-  margin-bottom: 4px;
-  display: inline-block;
+  background: #f1f5f9;
+  border-radius: 6px;
 
-  &:hover {
+    &:hover {
     background: #e2e8f0;
   }
 `;
 
 const BatchCard = styled.div`
   position: relative;
-  background: white;
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background: white;
   border: 2px solid
     ${({ selected, $expired }) => {
       if (selected && $expired) return '#dc2626';
       if (selected) return '#2563eb';
       return '#e2e8f0';
     }};
+  border-radius: 12px;
   box-shadow: ${({ selected, $expired }) => {
     if (selected && $expired) return '0 4px 12px rgba(220, 38, 38, 0.2)';
     if (selected) return '0 4px 12px rgba(37, 99, 235, 0.15)';
     return '0 2px 8px rgba(0, 0, 0, 0.05)';
   }};
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  transition: all 0.2s ease;
 
-  &:hover {
+    &:hover {
+    box-shadow: 0 6px 16px rgb(0 0 0 / 10%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   }
 
   .card-header {
     /* padding-bottom: 2px; */
+
     /* border-bottom: 1px solid #e2e8f0; */
   }
 
@@ -143,18 +144,18 @@ const BatchCard = styled.div`
   }
 
   .batch-number {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1e293b;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
   }
 
   .info-row {
     display: flex;
-    align-items: center;
     gap: 6px;
+    align-items: center;
     font-size: 0.85rem;
     color: #64748b;
 
@@ -165,38 +166,38 @@ const BatchCard = styled.div`
 
     .date-container {
       display: flex;
-      align-items: center;
       gap: 6px;
+      align-items: center;
     }
 
     .text {
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
   .quantity {
-    color: #2563eb;
     font-weight: 500;
+    color: #2563eb;
   }
 
   .check-icon {
+    font-size: 18px;
     color: #2563eb;
     opacity: ${(props) => (props.selected ? 1 : 0)};
     transform: ${(props) => (props.selected ? 'scale(1)' : 'scale(0.5)')};
     transition: all 0.2s ease;
-    font-size: 18px;
   }
 `;
 
 const StatusBadge = styled.span`
   padding: 0 8px;
-  border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
-  background: ${(props) => (props.$expired ? '#fee2e2' : '#dcfce7')};
   color: ${(props) => (props.$expired ? '#dc2626' : '#15803d')};
+  background: ${(props) => (props.$expired ? '#fee2e2' : '#dcfce7')};
+  border-radius: 999px;
 `;
 
 export function ProductBatchModal() {
@@ -392,7 +393,7 @@ export function ProductBatchModal() {
         onCancel={() => dispatch(closeProductStockSimple())}
         title="Seleccionar Ubicación del Producto"
         width={800}
-        style={{ top: 10 }}
+        style={{ top: '10px' }}
         footer={
           <Button
             type="primary"
@@ -541,11 +542,12 @@ function renderBatchCard({
             <span className="text">{stock.quantity} unidades</span>
           </div>
           <div className="info-row">
+            {/* stylelint-disable-next-line nesting-selector-no-missing-scoping-root */}
             <CalendarOutlined className="icon" />
             <div className="date-container">
               <span
                 className="text"
-                style={{ color: isExpired ? '#dc2626' : undefined }}
+                style={{ color: `${isExpired ? '#dc2626' : 'inherit'}` }}
               >
                 {formattedExpiration || 'N/A'}
               </span>
@@ -563,7 +565,7 @@ function renderBatchCard({
 }
 
 const Section = styled.div`
-  & + & {
+    & + & {
     margin-top: 24px;
   }
 `;
@@ -577,6 +579,6 @@ const SectionTitle = styled.h3`
 
 const SectionNotice = styled.p`
   margin: 12px 0;
-  color: #64748b;
   font-size: 0.9rem;
+  color: #64748b;
 `;

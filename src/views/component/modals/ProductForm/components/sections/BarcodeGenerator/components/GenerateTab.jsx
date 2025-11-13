@@ -24,15 +24,15 @@ const Container = styled.div`
   flex-direction: column;
   gap: 16px;
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     flex-direction: row;
     gap: 24px;
   }
 `;
 
 const MainContent = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
 `;
@@ -42,9 +42,9 @@ const MainContent = styled.div`
 // Contenedor para alinear el label y la acción de "Editar Configuración"
 const LabelWithAction = styled.div`
   display: flex;
-  justify-content: space-between;
   gap: 10px;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
 `;
 
@@ -90,7 +90,7 @@ export const GenerateTab = ({
             </Select>
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 8 }}>
+          <Form.Item style={{ marginBottom: '8px' }}>
             <Checkbox
               checked={useCompanyPrefix}
               onChange={(e) => setUseCompanyPrefix(e.target.checked)}
@@ -153,7 +153,7 @@ export const GenerateTab = ({
                 />
               </Form.Item>
 
-              <Form.Item style={{ marginBottom: 16 }}>
+              <Form.Item style={{ marginBottom: '16px' }}>
                 <Checkbox
                   checked={autoMode}
                   onChange={(e) => setAutoMode(e.target.checked)}
@@ -203,7 +203,7 @@ export const GenerateTab = ({
                     fontFamily: 'monospace',
                     fontSize: '16px',
                     fontWeight: 'bold',
-                    backgroundColor: autoMode ? '#f6ffed' : undefined,
+                    backgroundColor: `${autoMode ? '#f6ffed' : 'undefined'}`,
                   }}
                   suffix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
                 />
@@ -261,7 +261,7 @@ export const GenerateTab = ({
                     fontFamily: 'monospace',
                     fontSize: '16px',
                     fontWeight: 'bold',
-                    backgroundColor: autoMode ? '#f6ffed' : undefined,
+                    backgroundColor: `${autoMode ? '#f6ffed' : 'undefined'}`,
                   }}
                   suffix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
                 />
@@ -271,7 +271,7 @@ export const GenerateTab = ({
           {/* Vista previa removida: se mostrará en un modal aparte */}
           {/* Botón de generar */}
           {!hideGenerateButton && (
-            <Form.Item style={{ marginTop: 24 }}>
+            <Form.Item style={{ marginTop: '24px' }}>
               <Button
                 type="primary"
                 size="large"
@@ -294,7 +294,7 @@ export const GenerateTab = ({
               {loadingGenerate && (
                 <Text
                   type="secondary"
-                  style={{ fontSize: 12, marginTop: 8, display: 'block' }}
+                  style={{ fontSize: '12px', marginTop: '8px', display: 'block' }}
                 >
                   Generando código...
                 </Text>

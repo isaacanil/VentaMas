@@ -30,8 +30,8 @@ const SignatureContainer = styled.div`
 
 const Line = styled.div`
   width: 100%;
-  border-bottom: 1px solid black;
   padding: 0 10px;
+  border-bottom: 1px solid black;
 `;
 
 const Text = styled.span`

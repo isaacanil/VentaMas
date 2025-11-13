@@ -52,7 +52,7 @@ InvoiceTemplate1.displayName = 'InvoiceTemplate1';
 export const SubTitle = styled.p`
   font-weight: 600;
   line-height: 12px;
-  padding: 0 0;
+  padding: 0;
   margin: 0;
   white-space: nowrap;
 

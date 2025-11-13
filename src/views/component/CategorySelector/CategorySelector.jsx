@@ -159,5 +159,6 @@ export const CategorySelector = () => {
 
 const Container = styled.div`
   position: relative;
+
   /* estilos para el contenedor principal */
 `;

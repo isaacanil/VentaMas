@@ -215,23 +215,23 @@ export const Login = (): JSX.Element => {
 /* ---------- estilos ---------- */
 
 const Background = styled.div`
-  background-color: #4d4d4d;
-  height: 100vh;
+  position: relative;
   display: grid;
   place-items: center;
-  position: relative;
+  height: 100vh;
   overflow: hidden;
+  background-color: #4d4d4d;
 `;
 
 const ButtonBack = styled(Button)`
   position: absolute;
-  cursor: pointer;
-  display: flex;
   top: 2em;
   left: 2em;
-  align-items: center;
   z-index: 10;
+  display: flex;
   gap: 0.5em;
+  align-items: center;
+  cursor: pointer;
 `;
 
 const Imagen = styled.div`
@@ -249,42 +249,42 @@ const Imagen = styled.div`
 `;
 
 const ImagenContainer = styled.div`
-  padding: 1em;
+  position: relative;
   height: 100%;
   max-height: min(800px, 100vh);
-  position: relative;
+  padding: 1em;
   padding-right: 0;
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     display: none;
   }
 `;
 
 const NoImageMsg = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #ccc;
+  background: rgb(0 0 0 / 20%);
   border: 1px dashed #777;
   border-radius: 1em;
-  color: #ccc;
-  background: rgba(0, 0, 0, 0.2);
 `;
 
 const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   max-width: 1366px;
-  max-height: min(800px, 100vh);
   height: 100%;
+  max-height: min(800px, 100vh);
   margin: 0 auto;
 
-  @media (max-width: 1000px) {
+  @media (width <= 1000px) {
     grid-template-columns: 1fr 1fr;
   }
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     grid-template-columns: 1fr;
     justify-content: center;
     justify-items: center;

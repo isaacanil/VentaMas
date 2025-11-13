@@ -58,40 +58,40 @@ const Container = styled.div`
 
 const HeaderCard = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   padding: 12px 16px;
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
 `;
 
 const HeaderItem = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex: 1;
+  gap: 8px;
+  align-items: center;
 `;
 
 const IconWrapper = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
+  font-size: 14px;
+  color: #1890ff;
   background: #f0f5ff;
   border-radius: 6px;
-  color: #1890ff;
-  font-size: 14px;
-  flex-shrink: 0;
 `;
 
 const InfoContent = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
 `;
 
 const Label = styled.div`

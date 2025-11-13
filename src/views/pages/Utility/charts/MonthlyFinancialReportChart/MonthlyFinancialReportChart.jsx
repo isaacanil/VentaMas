@@ -120,8 +120,8 @@ export const MonthlyFinancialReportChart = ({ expenses, invoices }) => {
 };
 
 const Container = styled.div`
-  height: 200px;
-  width: 100%;
   display: grid;
   gap: 1em;
+  width: 100%;
+  height: 200px;
 `;

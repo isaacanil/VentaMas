@@ -389,18 +389,17 @@ export const CreditNoteList = () => {
 };
 
 const Container = styled.div`
-  height: 100%;
   display: grid;
-  grid-template-rows: min-content 1fr;
   flex-direction: column;
+  grid-template-rows: min-content 1fr;
+  height: 100%;
 `;
 
 const TableContainer = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   padding: 1rem;
-
   overflow: hidden;
 `;
 
@@ -408,15 +407,15 @@ const CreditNoteConfigWarning = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 60vh;
   padding: 1em 2em;
   background-color: #f8f9fa;
-  min-height: 60vh;
 `;
 
 const HeaderContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0.5rem;
   background: white;
   border-bottom: 1px solid #f0f0f0;
@@ -433,63 +432,64 @@ const EmptyStateContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2.5em;
-  text-align: center;
   max-width: 480px;
+  padding: 2.5em;
   margin: 0 auto;
+  text-align: center;
   background-color: white;
   border: 1px solid #e8e8e8;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
 `;
 
 const EmptyStateIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1.5em;
   font-size: 24px;
   color: #f5a623;
   background-color: #fffbe6;
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5em;
 `;
 
 const EmptyStateTitle = styled.h3`
   margin: 0;
+  margin-bottom: 0.6em;
   font-size: 1.4em;
   font-weight: 600;
   color: #262626;
-  margin-bottom: 0.6em;
 `;
 
 const EmptyStateSubDescription = styled.p`
-  margin: 0 0 1.5em 0;
-  font-size: 1em;
-  color: #8c8c8c;
-  line-height: 1.5;
   max-width: 380px;
+  margin: 0 0 1.5em;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #8c8c8c;
 `;
 
 const EmptyStateDescription = styled.p`
-  margin: 0 0 2.5em 0;
-  font-size: 1em;
-  color: #8c8c8c;
-  line-height: 1.5;
   max-width: 380px;
+  margin: 0 0 2.5em;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #8c8c8c;
 `;
 
 const ConfigButton = styled.button`
   height: 48px;
-  border-radius: 8px;
-  font-weight: 600;
   padding: 0 2.5em;
-  background-color: #1a1a1a;
+  font-weight: 600;
   color: white;
+  background-color: #1a1a1a;
   border: none;
+  border-radius: 8px;
+
   &:hover {
-    background-color: #333;
     color: white !important;
+    background-color: #333;
   }
 `;

@@ -70,7 +70,7 @@ export const SessionInfoModal = ({
       footer={null}
       title={<Title>Información de la sesión</Title>}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={420}
       styles={{
         body: {
@@ -95,10 +95,10 @@ export const SessionInfoModal = ({
 };
 
 const Title = styled.h2`
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-primary-600, #2563eb);
-  margin: 0;
 `;
 
 const InfoGrid = styled.div`
@@ -114,16 +114,16 @@ const InfoRow = styled.div`
 
 const InfoLabel = styled.span`
   font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #94a3b8;
-  font-weight: 600;
 `;
 
 const InfoValue = styled.span`
   font-size: 0.95rem;
-  color: #0f172a;
   font-weight: 500;
+  color: #0f172a;
 `;
 
 const EmptyState = styled.p`

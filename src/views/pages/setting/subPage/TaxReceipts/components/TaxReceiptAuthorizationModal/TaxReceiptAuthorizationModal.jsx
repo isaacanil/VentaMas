@@ -379,8 +379,8 @@ const Container = styled.div`
 
 const HeaderContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const ReceiptOptionContent = styled.div`
@@ -402,20 +402,20 @@ const ReceiptOptionContent = styled.div`
     }
 
     .code-value {
-      font-weight: 500;
-      background: rgba(24, 144, 255, 0.1);
       padding: 0 4px;
+      font-weight: 500;
+      background: rgb(24 144 255 / 10%);
       border-radius: 3px;
     }
   }
 `;
 
 const ReceiptCard = styled.div`
-  background-color: #f8fafc;
-  border-radius: 8px;
   padding: 16px;
-  border: 1px solid #e6e8eb;
   margin-bottom: 20px;
+  background-color: #f8fafc;
+  border: 1px solid #e6e8eb;
+  border-radius: 8px;
 `;
 
 const ReceiptDetails = styled.div`
@@ -426,10 +426,10 @@ const ReceiptDetails = styled.div`
 
 const ReceiptDetailItem = styled.div`
   display: flex;
-  flex-direction: column;
   flex: 1;
-  min-width: 120px;
+  flex-direction: column;
   gap: 4px;
+  min-width: 120px;
 `;
 
 export default TaxReceiptAuthorizationModal;

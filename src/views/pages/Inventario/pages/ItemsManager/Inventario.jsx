@@ -30,12 +30,11 @@ export const Inventory = () => {
 };
 
 const Container = styled.div`
-  display: grid;
   position: relative;
-  grid-template-columns: auto;
-  background-color: var(--White);
+  display: grid;
   grid-template-rows: min-content 1fr;
-
+  grid-template-columns: auto;
   height: 100%;
   overflow: hidden;
+  background-color: var(--white);
 `;

@@ -251,11 +251,11 @@ const ConfigContainer = styled.div`
 
 const ThresholdRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-4);
   margin-top: var(--space-3);
-  flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     gap: var(--space-3);
   }
@@ -263,9 +263,9 @@ const ThresholdRow = styled.div`
 
 const ThresholdItem = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-1);
-  flex: 1;
   min-width: 200px;
 
   label {
@@ -277,10 +277,10 @@ const ThresholdItem = styled.div`
 
 const CustomReceiptCard = styled.div`
   padding: var(--space-4);
-  border: 1px solid var(--border-200);
-  border-radius: var(--radius);
   margin-top: var(--space-3);
   background-color: var(--bg-light);
+  border: 1px solid var(--border-200);
+  border-radius: var(--radius);
 
   .ant-typography {
     margin-bottom: var(--space-2) !important;
@@ -288,10 +288,10 @@ const CustomReceiptCard = styled.div`
 `;
 
 const ReceiptTitle = styled.h6`
+  margin: 0 0 var(--space-2) 0;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary, #262626);
-  margin: 0 0 var(--space-2) 0;
   text-transform: capitalize;
   letter-spacing: 0.02em;
 `;

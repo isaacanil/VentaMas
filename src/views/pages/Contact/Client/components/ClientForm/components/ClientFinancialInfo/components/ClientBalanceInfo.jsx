@@ -51,7 +51,7 @@ export const ClientBalanceInfo = ({ client, pendingBalance }) => {
 };
 
 const Container = styled.div`
-  padding: 0px 12px;
+  padding: 0 12px;
   background: transparent;
 `;
 
@@ -71,13 +71,13 @@ const ClientDetails = styled.div`
 
 const ClientCode = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
+  margin: 0;
   font-size: 0.8rem;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
   font-weight: 500;
   line-height: 1.5;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 
   svg {
     font-size: 0.7rem;
@@ -87,19 +87,19 @@ const ClientCode = styled.div`
 
 const ClientName = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
-  font-size: 0.875rem;
-  color: 'rgba(0, 0, 0, 0.87)';
-  font-weight: 500;
-  line-height: 1.4;
+  align-items: center;
   margin: 0;
   overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: 'rgba(0, 0, 0, 0.87)';
 
   svg {
+    flex-shrink: 0;
     font-size: 0.8rem;
     opacity: 0.8;
-    flex-shrink: 0;
   }
 
   span {
@@ -112,19 +112,19 @@ const ClientName = styled.div`
 const BalanceSection = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
   gap: 4px;
+  align-items: flex-end;
 `;
 
 const BalanceLabel = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
+  margin: 0;
   font-size: 0.8rem;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
   font-weight: 500;
   line-height: 1.5;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 
   svg {
     font-size: 0.7rem;
@@ -133,11 +133,11 @@ const BalanceLabel = styled.div`
 `;
 
 const BalanceValue = styled.span`
+  margin: 0;
   font-size: 1rem;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   font-weight: 600;
   line-height: 1.4;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 const PaymentSection = styled.div`

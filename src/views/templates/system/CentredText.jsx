@@ -50,25 +50,24 @@ export const CenteredText = ({
   );
 };
 const Container = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
   display: grid;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 100%;
-  margin: 0;
   padding: 0;
-
-  position: absolute;
-  top: 0;
-  left: 0;
+  margin: 0;
 `;
 
 const Wrapper = styled.div`
   position: relative;
   display: grid;
   align-items: center;
-  margin: 0;
   padding: 10px;
+  margin: 0;
 `;
 
 const Content = styled.div`
@@ -77,12 +76,9 @@ const Content = styled.div`
   max-width: 500px;
   padding: 1em;
   margin: 0;
-
   display: grid;
   gap: 2em;
-  justify-items: center;
-  align-items: center;
-
+  place-items: center center;
   text-align: center;
 
   ${({ containerVariant }) =>

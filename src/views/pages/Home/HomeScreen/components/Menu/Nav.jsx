@@ -35,18 +35,17 @@ const SidebarContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
   width: 8em;
+  height: 100vh;
   background-color: #fff;
   border-right: 1px solid #e5e5e5;
   transition: width 0.2s ease-in-out;
 `;
 
 const SidebarMenu = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-
   gap: 1em;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;

@@ -15,19 +15,19 @@ import { getContainerOutline } from './utils/stockTheme';
 import { containerVariants } from './utils/variants';
 
 const Container = styled(motion.li)`
-  box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.02);
-  width: 100%;
-  border-radius: var(--border-radius);
+  position: relative;
   display: flex;
   gap: 6px;
-  overflow: hidden;
-  background-color: #ffffff;
-  position: relative;
-  transition: outline 0.4s ease-in-out;
+  width: 100%;
   height: ${({ imageHiddenRef }) => (imageHiddenRef ? '60px' : '80px')};
+  overflow: hidden;
 
   /* El outline sólo depende de si está seleccionado o no */
   outline: ${(props) => getContainerOutline(props)};
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 2px 2px 10px 2px rgb(0 0 0 / 2%);
+  transition: outline 0.4s ease-in-out;
 
   &:hover {
     img {
@@ -39,8 +39,8 @@ const Container = styled(motion.li)`
 
 const Content = styled.div`
   display: grid;
-  width: 100%;
   grid-template-rows: 1fr min-content;
+  width: 100%;
 `;
 
 const ProductComponent = memo(({ product }) => {

@@ -86,6 +86,7 @@ const StatsGrid = styled.div`
 
 const StyledCard = styled(Card)`
   text-align: center;
+
   &.ant-card {
     background: #f8f9fa;
     border-radius: 8px;

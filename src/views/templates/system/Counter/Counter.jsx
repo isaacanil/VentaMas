@@ -84,24 +84,24 @@ export const Counter = ({ amountToBuy, stock, id, item }) => {
 const Container = styled.div`
   display: flex;
   align-items: center;
-  background-color: #f5f5f7;
-  height: 32px;
-  border-radius: 10px;
-  overflow: hidden;
   width: 100%;
+  height: 32px;
+  overflow: hidden;
+  background-color: #f5f5f7;
   border: 1px solid #ddd;
+  border-radius: 10px;
 `;
 
 const ButtonCounter = styled.button`
-  border: none;
-  outline: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
   width: 40px;
   height: 100%;
   cursor: pointer;
+  outline: none;
+  background-color: #f5f5f5;
+  border: none;
   transition: background-color 0.2s;
 
   &:hover {
@@ -113,26 +113,26 @@ const ButtonCounter = styled.button`
   }
 
   &:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
+    opacity: 0.5;
   }
 `;
 
 const CounterDisplay = styled.input`
-  border: none;
   width: 34px;
   height: 100%;
-  text-align: center;
   font-size: 14px;
   font-weight: 500;
+  color: #333;
+  text-align: center;
   outline: none;
   background-color: white;
-  color: #333;
+  border: none;
 
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
-    -webkit-appearance: none;
     margin: 0;
+    appearance: none;
   }
 `;
 

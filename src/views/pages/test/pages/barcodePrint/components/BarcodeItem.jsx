@@ -116,7 +116,7 @@ const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
         <div
           style={{
             fontSize: '10px',
-            color: '#ff0000',
+            color: '#f00',
             textAlign: 'center',
             marginBottom: '4px',
           }}

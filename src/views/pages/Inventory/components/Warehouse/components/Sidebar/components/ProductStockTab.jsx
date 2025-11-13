@@ -9,19 +9,19 @@ import styled from 'styled-components';
 import Tree from '../../../../../../../component/tree/Tree';
 
 const TabContent = styled.div`
-  padding: 16px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  padding: 16px;
 `;
 
 const ProductList = styled.div`
-  flex: 1;
-  overflow: hidden;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 `;
 
 const ProductStockTab = ({ products, loading, onSearch }) => {

@@ -39,15 +39,15 @@ const ImagePanel = styled.div`
 `;
 
 const PreviewFrame = styled.div`
+  display: flex;
   flex: 0 0 140px;
+  align-items: center;
+  justify-content: center;
   height: 140px;
-  border-radius: 14px;
   overflow: hidden;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 14px;
 
   img {
     width: 100%;
@@ -57,17 +57,17 @@ const PreviewFrame = styled.div`
 `;
 
 const PreviewActions = styled.div`
-  flex: 1;
-  min-width: 140px;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 8px;
   justify-content: center;
+  min-width: 140px;
 `;
 
 const PreviewButton = styled(Button)`
-  width: 140px;
   justify-content: center;
+  width: 140px;
 `;
 
 const { Option } = Select;

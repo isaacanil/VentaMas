@@ -45,21 +45,22 @@ const Col = styled.div`
 
 // Componente estilizado rediseñado con una estética más corporativa, minimalista y moderna
 const ClientInfoWidget = styled.div`
-  padding: 10px 0 0;
-  margin-bottom: 20px;
+
   /* border-bottom: 1px solid #eaeaea; */
   display: flex;
   align-items: center;
+  padding: 10px 0 0;
+  margin-bottom: 20px;
 
   .icon-container {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    background-color: #f5f5f5;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
     margin-right: 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
   }
 
   .icon {
@@ -73,11 +74,11 @@ const ClientInfoWidget = styled.div`
   }
 
   .label {
+    margin-bottom: 2px;
     font-size: 12px;
     color: #8c8c8c;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 2px;
   }
 
   .client-name {
@@ -89,18 +90,18 @@ const ClientInfoWidget = styled.div`
 
 const LoadingContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   padding: 20px;
 `;
 
 // Nuevo componente para los encabezados de sección
 const SectionHeader = styled.h3`
-  font-size: 16px;
-  color: #262626;
+  padding-bottom: 8px;
   margin-top: 10px;
   margin-bottom: 16px;
-  padding-bottom: 8px;
+  font-size: 16px;
+  color: #262626;
   border-bottom: 1px solid #f0f0f0;
 `;
 

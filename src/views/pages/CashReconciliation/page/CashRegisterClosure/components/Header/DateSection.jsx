@@ -37,21 +37,12 @@ export const DateSection = ({ date }) => {
     )
   );
 };
-const Container = styled.div`
-  //border-radius: var(--border-radius);
-  //background-color: var(--White);
-  //border: 1px solid rgba(0, 0, 0, 0.150);
-  //padding: 0.1em 0.6em;
-  //display: flex;
-  //align-items: center;
-  //align-content: center;
-  //justify-content: space-between;
-`;
+const Container = styled.div``;
 const DateContainer = styled.div`
   display: flex;
+  flex-wrap: nowrap;
+  grid-template-columns: 1fr 1fr;
   gap: 1em;
   align-items: center;
-  grid-template-columns: 1fr 1fr;
-  flex-wrap: nowrap;
   font-size: 14px;
 `;

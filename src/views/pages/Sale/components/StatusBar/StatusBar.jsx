@@ -45,34 +45,33 @@ export const StatusBar = ({ products, statusMeta, className }) => {
 
 const PreorderIndicator = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.4rem;
+  align-items: center;
   padding: 0.4rem 0.6rem;
-  border-radius: 14px;
-  background: rgba(255, 182, 4, 0.2);
-  color: #ffb604;
-  font-weight: 700;
   font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffb604;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  background: rgb(255 182 4 / 20%);
+  border-radius: 14px;
 `;
 
 const Pill = styled(motion.div)`
   display: flex;
-  align-items: center;
   gap: 0.4rem;
+  align-items: center;
   align-self: flex-end;
+  padding: 0.4rem;
   margin: 0.6rem 0.9rem 0.9rem;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 22px;
-  padding: 0.4rem 0.4rem;
-
-  box-shadow:
-    0 3px 8px rgba(0, 0, 0, 0.12),
-    0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(95, 95, 95, 0.3);
   font-size: 1rem;
+  background: rgb(255 255 255 / 95%);
+  border: 1px solid rgb(95 95 95 / 30%);
+  border-radius: 22px;
+  box-shadow:
+    0 3px 8px rgb(0 0 0 / 12%),
+    0 1px 3px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(8px);
 `;
 
 export default StatusBar;

@@ -23,9 +23,9 @@ dayjs.locale('es');
 const CategorySelectContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr auto auto;
-  justify-content: space-between;
-  align-items: center;
   gap: 10px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const PAYMENT_METHODS = [

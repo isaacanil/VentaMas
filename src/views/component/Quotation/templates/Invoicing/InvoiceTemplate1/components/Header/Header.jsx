@@ -70,9 +70,9 @@ const Container = styled.div`
   margin-bottom: 0.6em;
 `;
 const Title = styled.p`
+  padding: 0.2em 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
-  padding: 0.2em 0;
   text-align: center;
-  margin: 0;
 `;

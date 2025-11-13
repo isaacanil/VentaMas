@@ -94,31 +94,31 @@ class ErrorBoundary extends React.Component {
 
 // Styled Components
 const ErrorContainer = styled.div`
-  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  min-height: 100%;
   padding: 20px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
 `;
 
 const StyledResult = styled(Result)`
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  max-width: 600px;
-  width: 100%;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 10%);
 
   .ant-result-title {
-    color: #ff4d4f;
     font-weight: 600;
+    color: #ff4d4f;
   }
 
   .ant-result-subtitle {
-    color: #666;
     font-size: 16px;
     line-height: 1.6;
+    color: #666;
   }
 
   .ant-result-extra {
@@ -126,12 +126,12 @@ const StyledResult = styled(Result)`
 
     .ant-btn {
       margin: 0 8px;
-      border-radius: 6px;
       font-weight: 500;
+      border-radius: 6px;
 
       &:hover {
+        box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
     }
   }
@@ -139,22 +139,22 @@ const StyledResult = styled(Result)`
 
 const ErrorDetails = styled.div`
   position: absolute;
+  right: 20px;
   bottom: 20px;
   left: 20px;
-  right: 20px;
-  background: #f8f8f8;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #e8e8e8;
   max-height: 200px;
+  padding: 16px;
   overflow-y: auto;
+  background: #f8f8f8;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
 `;
 
 const ErrorText = styled.div`
   margin: 8px 0;
+  font-family: 'Courier New', monospace;
   font-size: 12px;
   color: #666;
-  font-family: 'Courier New', monospace;
 
   strong {
     color: #333;

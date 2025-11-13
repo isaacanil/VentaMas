@@ -11,17 +11,16 @@ const PaymentDetailsContainer = styled.div`
 `;
 
 const PaymentDetailsList = styled.ul`
-  list-style-type: none;
-  padding: 0;
   display: grid;
   gap: 10px;
+  padding: 0;
+  list-style-type: none;
 `;
 
 const PaymentDetailItem = styled.li`
   display: grid;
   grid-template-columns: 2fr 1fr;
-  justify-items: space-between;
-  align-items: center;
+  place-items: center space-between;
 `;
 
 const PaymentDetailValue = styled.span`

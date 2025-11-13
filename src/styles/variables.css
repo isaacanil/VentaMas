@@ -1,57 +1,61 @@
 :root {
-  /*white to black*/
+  /* white to black */
 
-  /* colors*/
-  --White: rgb(255, 255, 255);
-  --White1: rgb(245, 245, 245);
-  --White2: rgb(240, 240, 240);
-  --White3: rgb(220, 220, 220);
-  --White4: rgb(210, 210, 210);
-  --White5: rgb(200, 200, 200);
+  /* colors */
+  --white: rgb(255 255 255);
+  --white-1: rgb(245 245 245);
+  --white-2: rgb(240 240 240);
+  --white-3: rgb(220 220 220);
+  --white-4: rgb(210 210 210);
+  --white-5: rgb(200 200 200);
 
-  --Gray: rgb(180, 180, 180);
-  --Gray1: rgb(160, 160, 160);
-  --Gray2: rgb(140, 140, 140);
-  --Gray3: rgb(120, 120, 120);
-  --Gray4: rgb(100, 100, 100);
-  --Gray5: rgb(80, 80, 80);
-  --Black4: rgb(60, 60, 60);
-  --Black3: rgb(40, 40, 40);
-  --Black2: rgb(20, 20, 20);
-  --Black1: rgb(10, 10, 10);
-  --Black: rgb(0, 0, 0);
-  --BlackOp: rgba(0, 0, 0, 0.2);
-  --BlackOp1: rgba(0, 0, 0, 0.3);
-  --BlackOp2: rgba(0, 0, 0, 0.4);
-  /*color primarios*/
-  --icolor: rgb(245, 147, 66);
-  /*color secundario*/
+  --gray: rgb(180 180 180);
+  --gray-1: rgb(160 160 160);
+  --gray-2: rgb(140 140 140);
+  --gray-3: rgb(120 120 120);
+  --gray-4: rgb(100 100 100);
+  --gray-5: rgb(80 80 80);
+  --black-4: rgb(60 60 60);
+  --black-3: rgb(40 40 40);
+  --black-2: rgb(20 20 20);
+  --black-1: rgb(10 10 10);
+  --black: rgb(0 0 0);
+  --black-op: rgb(0 0 0 / 20%);
+  --black-op-1: rgb(0 0 0 / 30%);
+  --black-op-2: rgb(0 0 0 / 40%);
+
+  /* color primarios */
+  --icolor: rgb(245 147 66);
+
+  /* color secundario */
   --icolor1: #67b8de;
-  /*color terciario*/
+
+  /* color terciario */
   --icolor2: #91c9e8;
-  /*color cuaternario*/
+
+  /* color cuaternario */
   --icolor3: #b4dced;
 
-  /*border*/
+  /* border */
   --border-radius1: 10px;
-  --border-radiusTotal: 100px;
+  --border-radius-total: 100px;
 
-  /*padding*/
+  /* padding */
 
   --padding: 0.5em;
   --padding1: 1em;
   --padding2: 1.5em;
   --padding3: 2em;
 
-  /*gap*/
+  /* gap */
   --gap: 0.5em;
   --gap1: 1em;
   --gap2: 1.5em;
   --gap3: 2em;
 
-  /*blur*/
+  /* blur */
   --blur: 5px;
 
-  /*Media Querys*/
-  --WdMedium: 800px;
+  /* Media Querys */
+  --wd-medium: 800px;
 }

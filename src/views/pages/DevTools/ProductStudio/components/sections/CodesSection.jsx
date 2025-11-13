@@ -11,10 +11,10 @@ import {
 
 const CodesCard = styled(SectionCard)`
   .ant-card-body {
-    min-height: 340px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-height: 340px;
   }
 `;
 

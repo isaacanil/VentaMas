@@ -102,8 +102,8 @@ export const PaymentMethodRow: FC<PaymentMethodRowProps> = ({
 const MethodRow = styled.div`
   display: grid;
   gap: 0.75rem;
-  border-radius: 10px;
   background: #fff;
+  border-radius: 10px;
 `;
 
 const MethodControls = styled.div`
@@ -111,7 +111,7 @@ const MethodControls = styled.div`
   gap: 0.75rem;
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     align-items: flex-start;
   }
@@ -126,14 +126,14 @@ const ControlGroup = styled.div`
 
 const MethodHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
 `;
 
 const MethodLabel = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 500;
   color: #262626;
 `;

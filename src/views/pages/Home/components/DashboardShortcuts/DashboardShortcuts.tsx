@@ -46,11 +46,11 @@ export const DashboardShortcuts = (): JSX.Element => {
 const ShortcutsSection = styled.div`
   display: grid;
   gap: 1em;
-  max-width: 1440px;
   width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.8em;
   }
 `;

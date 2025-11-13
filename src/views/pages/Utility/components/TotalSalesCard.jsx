@@ -234,26 +234,26 @@ const ComparisonCard = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: ${spacing.xs};
-  padding: ${spacing.lg};
-  border-radius: ${radii.lg};
-  background: ${colors.background.surface};
-  border: 1px solid ${colors.stroke.subtle};
-  box-shadow: ${shadows.md};
   width: 100%;
   max-width: 360px;
+  padding: ${spacing.lg};
+  background: ${colors.background.surface};
+  border: 1px solid ${colors.stroke.subtle};
+  border-radius: ${radii.lg};
+  box-shadow: ${shadows.md};
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  align-items: flex-start;
   gap: ${spacing.md};
+  align-items: flex-start;
 `;
 
 const HeaderInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: ${spacing.xs};
-  flex: 1;
   min-width: 0;
 `;
 
@@ -271,8 +271,8 @@ const ValueHighlight = styled.div`
 
 const ChangeLine = styled.div`
   display: inline-flex;
-  align-items: center;
   gap: ${spacing.xs};
+  align-items: center;
   cursor: ${({ title }) => (title ? 'help' : 'default')};
 `;
 
@@ -282,16 +282,17 @@ const ChangeIcon = styled.span`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: ${radii.pill};
-  background: ${({ trend }) => getTrendVariant(trend).surface};
   color: ${({ trend }) => getTrendVariant(trend).color};
+  background: ${({ trend }) => getTrendVariant(trend).surface};
   border: 1px solid ${({ trend }) => getTrendVariant(trend).border};
+  border-radius: ${radii.pill};
 `;
 
 const loadingShimmer = keyframes`
     0% {
         background-position: -120px 0;
     }
+
     100% {
         background-position: 120px 0;
     }
@@ -308,7 +309,6 @@ const LoadingBar = styled.span`
   display: block;
   width: ${({ $width }) => $width || '100%'};
   height: ${({ $height }) => $height || '14px'};
-  border-radius: ${radii.pill};
   background: linear-gradient(
     90deg,
     ${colors.skeleton.base} 0%,
@@ -316,5 +316,6 @@ const LoadingBar = styled.span`
     ${colors.skeleton.base} 100%
   );
   background-size: 200% 100%;
+  border-radius: ${radii.pill};
   animation: ${loadingShimmer} 1.4s ease-in-out infinite;
 `;

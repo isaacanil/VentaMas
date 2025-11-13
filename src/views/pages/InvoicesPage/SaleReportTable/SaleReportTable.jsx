@@ -269,10 +269,10 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
 
 const TotalContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0.2em 0.5em;
   gap: 0.5em;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.2em 0.5em;
   font-size: 1em;
   font-weight: 600;
 `;

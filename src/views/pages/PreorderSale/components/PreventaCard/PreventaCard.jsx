@@ -17,7 +17,7 @@ const StyledCard = styled(Card)`
   transition: box-shadow 0.3s;
 
   &:hover {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px rgb(0 0 0 / 10%);
   }
 `;
 
@@ -43,15 +43,15 @@ const IDText = styled.span`
 
 const TitleSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
 `;
 
 const Title = styled.h2`
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 600; /* font-semibold */
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
   white-space: nowrap;
 `;
 
@@ -68,17 +68,17 @@ const ContentItem = styled.div`
 `;
 
 const Icon = styled(FontAwesomeIcon)`
-  margin-right: 0.5rem;
-  height: 1rem;
   width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
 `;
 
 const Articles = styled.span`
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
 const Price = styled.div`

@@ -448,7 +448,7 @@ export default function ProductStudio() {
               placement="right"
               width={720}
               open={imageDrawerVisible}
-              destroyOnClose
+              destroyOnHidden
               onClose={() => setImageDrawerVisible(false)}
               bodyStyle={{ padding: 0 }}
             >

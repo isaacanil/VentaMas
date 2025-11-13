@@ -48,7 +48,7 @@ export default function Content({ data }) {
           <div>
             <div>{name}</div>
             {hasBrand && (
-              <div style={{ fontSize: 11, color: '#555555' }}>
+              <div style={{ fontSize: '11px', color: '#555' }}>
                 Marca: {rawBrand}
               </div>
             )}
@@ -146,32 +146,34 @@ export default function Content({ data }) {
 }
 const TableContainer = styled.div`
   margin-top: 16px;
+
   @media print {
     margin-top: 0;
   }
 `;
 const Container = styled.div`
   padding: 0 2em;
+
   /* border: 1px solid green; */
 `;
 
 const CreditNotesSection = styled.div`
+  padding-top: 16px;
   margin-top: 16px;
   border-top: 1px solid #ddd;
-  padding-top: 16px;
 
   @media print {
-    margin-top: 12px;
     padding-top: 12px;
+    margin-top: 12px;
   }
 `;
 
 const SectionTitle = styled.h4`
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 600;
-  text-align: center;
   color: #333;
+  text-align: center;
 `;
 
 const CreditNotesTable = styled.div`
@@ -180,7 +182,7 @@ const CreditNotesTable = styled.div`
   }
 
   .ant-table-thead > tr > th {
-    background-color: #f5f5f5;
     font-weight: 600;
+    background-color: #f5f5f5;
   }
 `;

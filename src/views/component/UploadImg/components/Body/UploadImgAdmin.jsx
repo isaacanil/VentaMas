@@ -63,31 +63,33 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
 };
 
 const Container = styled.div`
+  position: relative;
   box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  height: 100%;
+  padding: 0.4em 0.4em 0.4em 0.8em;
+  background-color: #fafafa;
+  border-radius: 8px;
+
   h2 {
     margin: 0;
     font-size: 18px;
   }
-  height: 100%;
-  background-color: #fafafa;
-  display: grid;
-  padding: 0.4em 0.4em 0.4em 0.8em;
-  grid-template-columns: 1fr min-content;
-  border-radius: 8px;
-  position: relative;
 `;
 const ImgContainer = styled.div`
   align-self: center;
-  max-height: 5em;
-  height: 5em;
   width: 5em;
+  height: 5em;
+  max-height: 5em;
+  overflow: hidden;
   background-color: #fff;
   border-radius: 8px;
-  overflow: hidden;
+
   img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     object-position: center;
-    height: 100%;
-    width: 100%;
   }
 `;

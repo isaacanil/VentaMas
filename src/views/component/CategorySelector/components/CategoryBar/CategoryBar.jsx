@@ -52,14 +52,14 @@ export const CategoryBar = ({ open, setOpen, items = [] }) => {
   );
 };
 const Container = styled.div`
-  height: 2.6em;
-  align-items: center;
-  padding: 0.2em 0.4em;
-  width: 100%;
-  gap: 0.4em;
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
-  background-color: #ffffff;
+  gap: 0.4em;
+  align-items: center;
+  width: 100%;
+  height: 2.6em;
+  padding: 0.2em 0.4em;
+  background-color: #fff;
 `;
 const Category = ({ item }) => {
   const dispatch = useDispatch();
@@ -77,46 +77,51 @@ const Category = ({ item }) => {
 };
 
 const CategoryList = styled.div`
+
   /* estilos para la lista de categorías */
   display: flex;
   gap: 0.4em;
   align-items: center;
   height: 100%;
   overflow-x: auto;
-  border-radius: 0.4em;
   white-space: nowrap;
+  border-radius: 0.4em;
+
   ::-webkit-scrollbar {
     display: none;
   }
 `;
 
 const CategoryItem = styled.div`
-  /* estilos para cada categoría */
-  padding: 0 0.6em;
-  height: 2.2em;
   display: flex;
   gap: 1em;
-  white-space: nowrap;
   align-items: center;
+  justify-content: space-between;
+  height: 2.2em;
+
+  /* estilos para cada categoría */
+  padding: 0 0.6em;
+  white-space: nowrap;
   background-color: ${({ type }) =>
     categoryColors[type] || categoryColors.default};
   border-radius: 0.4em;
-  justify-content: space-between;
 `;
 
 const RemoveIcon = styled.span`
-  /* estilos para el icono de eliminar */
-  cursor: pointer;
-  color: var(--Black5);
-  font-size: 1em;
-  height: 1.2em;
-  width: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1.2em;
+  height: 1.2em;
+  font-size: 1em;
+  color: var(--black-5);
+
+  /* estilos para el icono de eliminar */
+  cursor: pointer;
+
   :hover {
-    color: var(--Black5);
-    background-color: var(--White5);
+    color: var(--black-5);
+    background-color: var(--white-5);
     border-radius: 0.4em;
   }
 `;

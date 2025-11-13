@@ -36,47 +36,47 @@ const { Button, message } = ant;
 
 // ----- styled components -----
 const Container = styled.div`
+  background: #fff;
+  border: 1px solid #ffd666;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  font-size: 13px;
+  margin-top: 4px;
+  max-width: ${(p) => p.$maxWidth || 340}px;
+  min-width: 280px;
+  padding: 16px;
   position: absolute;
   top: 100%;
+  z-index: ${(p) => p.$zIndex || 20};
   ${(p) =>
     p.$placement === 'right'
       ? 'right: 0;'
       : p.$placement === 'center'
         ? 'left: 50%; transform: translateX(-50%);'
         : 'left: 0;'}
-  margin-top: 4px;
-  background: #ffffff;
-  border: 1px solid #ffd666;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  border-radius: 6px;
-  z-index: ${(p) => p.$zIndex || 20};
-  padding: 16px;
-  min-width: 280px;
-  max-width: ${(p) => p.$maxWidth || 340}px;
-  font-size: 13px;
 `;
 
 const Title = styled.div`
-  font-weight: 600;
-  font-size: 13px;
   margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
   color: #262626;
   text-align: center;
 `;
 
 const SuggestionText = styled.div`
+  margin-bottom: 16px;
   font-size: 14px;
   font-weight: 500;
   color: #595959;
   text-align: center;
-  margin-bottom: 16px;
 `;
 
 const Row = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
   gap: 4px;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 16px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 18px;
@@ -88,23 +88,23 @@ const CurrentCode = styled.span`
 `;
 
 const Plus = styled.span`
-  color: #1890ff;
-  font-size: 20px;
   margin: 0 6px;
+  font-size: 20px;
+  color: #1890ff;
 `;
 
 const CheckDigit = styled.span`
+  padding: 3px 6px;
   color: #52c41a;
   background: #f6ffed;
-  padding: 3px 6px;
-  border-radius: 4px;
   border: 1px solid #b7eb8f;
+  border-radius: 4px;
 `;
 
 const Actions = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
+  justify-content: flex-end;
 `;
 
 export default function BarcodeFixTooltip({

@@ -6,11 +6,11 @@ import { Client } from '../../../../../templates/system/client/Client';
 
 const Body = styled.div`
   z-index: 1;
-  width: 100%;
   display: grid;
+  width: 100%;
   height: 100%;
-  overflow: hidden;
   padding: 0;
+  overflow: hidden;
 
   h3 {
     color: #333;
@@ -20,26 +20,26 @@ const Body = styled.div`
 
 const LoadingContainer = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
   height: 100%;
-  flex-direction: column;
-  gap: 1rem;
 
   .ant-spin {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 0.5rem;
+    align-items: center;
   }
 `;
 
 const ClientsList = styled.div`
   display: grid;
-  padding: 0.5em;
-  overflow-y: auto;
   gap: 0.4em;
   align-content: start;
+  padding: 0.5em;
+  overflow-y: auto;
 `;
 
 const ClientListContainerComponent = ({

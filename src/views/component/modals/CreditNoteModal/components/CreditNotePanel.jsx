@@ -116,15 +116,14 @@ const PanelContainer = styled.div`
   border-radius: 8px;
   background-color: ${(props) => props.theme?.background?.primary || '#fff'};
   overflow: hidden;
-
   transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 
   ${(props) =>
     props.isExpanded &&
     css`
       border-color: ${props.theme?.primary?.color || '#1890ff'};
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
     `}
 
   &:last-child {
@@ -134,8 +133,8 @@ const PanelContainer = styled.div`
 
 const PanelHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: ${(props) => (props.isMobile ? '8px 12px' : '12px 16px')};
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -148,9 +147,9 @@ const PanelHeader = styled.div`
 
 const HeaderLeft = styled.div`
   display: flex;
-  align-items: center;
-  gap: 12px;
   flex: 1;
+  gap: 12px;
+  align-items: center;
 `;
 
 const TitleAndDate = styled.div`
@@ -161,41 +160,41 @@ const TitleAndDate = styled.div`
 
 const DateInfo = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   font-size: 0.8rem;
   color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const HeaderRight = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const ExpandIcon = styled.span`
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-  font-size: 12px;
-  transition: transform 0.2s ease;
   min-width: 12px;
+  font-size: 12px;
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
+  transition: transform 0.2s ease;
 `;
 
 const PanelTitle = styled.span`
+  font-size: 1rem;
   font-weight: 600;
   color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-size: 1rem;
 `;
 
 const TotalText = styled.span`
+  font-family: monospace;
+  font-size: 1rem;
   font-weight: 600;
   color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-size: 1rem;
-  font-family: monospace;
 `;
 
 const ViewButton = styled(Button)`
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
   padding: 4px;
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 
   &:hover {
     color: ${(props) => props.theme?.primary?.color || '#1890ff'};
@@ -210,9 +209,9 @@ const PanelContent = styled.div`
 const ItemsListHeader = styled.div`
   display: flex;
   padding: 8px 20px;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
   font-size: 0.75rem;
   font-weight: 500;
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
   text-transform: uppercase;
   border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
 `;
@@ -243,8 +242,8 @@ const ItemRow = styled.div`
     props.isMobile &&
     css`
       flex-direction: column;
-      align-items: stretch;
       gap: 8px;
+      align-items: stretch;
       padding: 12px 0;
     `}
 `;
@@ -275,24 +274,24 @@ const ColumnLabel = styled.span`
 
 const TotalSection = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 16px 20px;
-  border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
+  font-weight: 600;
   background-color: ${(props) =>
     props.theme?.background?.secondary || '#fafafa'};
-  font-weight: 600;
+  border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
 `;
 
 const TotalLabel = styled.span`
-  color: ${(props) => props.theme?.text?.primary || '#333'};
   font-size: 0.9rem;
+  color: ${(props) => props.theme?.text?.primary || '#333'};
 `;
 
 const TotalValue = styled.span`
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-size: 1.1rem;
   font-family: monospace;
+  font-size: 1.1rem;
+  color: ${(props) => props.theme?.text?.primary || '#333'};
 `;
 
 export { CreditNotePanel };

@@ -21,8 +21,8 @@ const NodeContainer = styled.div`
   border-radius: 6px;
   background-color: ${(props) =>
     props.isSelected ? '#e9e9e9' : 'transparent'};
-  cursor: pointer; // Replace the 'not-allowed' logic
-  opacity: 1; // Remove the disabled opacity
+  cursor: pointer; /* Replace the 'not-allowed' logic */
+  opacity: 1; /* Remove the disabled opacity */
   min-height: ${({ $hasLabel }) => ($hasLabel ? '48px' : '40px')};
   height: auto;
   position: relative;

@@ -92,7 +92,7 @@ InvoiceTemplate1.displayName = 'InvoiceTemplate1';
 export const SubTitle = styled.p`
   font-weight: 600;
   line-height: 12px;
-  padding: 0 0;
+  padding: 0;
   margin: 0;
   white-space: nowrap;
 
@@ -143,15 +143,15 @@ const Space = styled.div`
 `;
 
 const InsuranceInfo = styled.div`
-  margin: 0.5em 0;
   padding: 0.5em 0;
+  margin: 0.5em 0;
   border-top: 1px dashed black;
   border-bottom: 1px dashed black;
 `;
 
 const CommentSection = styled.div`
-  margin: 0.5em 0;
   padding: 0.5em 0;
+  margin: 0.5em 0;
   border-top: 1px dashed black;
   border-bottom: 1px dashed black;
 
@@ -161,14 +161,14 @@ const CommentSection = styled.div`
 
   .comment-text {
     font-style: italic;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     white-space: pre-wrap;
   }
 `;
 
 const CreditNotesSection = styled.div`
-  margin: 0.5em 0;
   padding: 0.5em 0;
+  margin: 0.5em 0;
   border-top: 1px dashed black;
   border-bottom: 1px dashed black;
 `;

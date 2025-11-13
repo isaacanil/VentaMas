@@ -125,7 +125,7 @@ export const ProductCard = ({
 const StyledCard = styled(Card)`
   margin-bottom: 0.75rem;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 
   &:last-child {
     margin-bottom: 0;
@@ -138,8 +138,8 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  align-items: flex-start;
   gap: 0.75rem;
+  align-items: flex-start;
   margin-bottom: 0.75rem;
 `;
 
@@ -153,11 +153,11 @@ const ProductInfo = styled.div`
 `;
 
 const ProductName = styled.div`
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
   margin-bottom: 0.25rem;
-  word-break: break-word;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: ${(props) => props.theme?.text?.primary || '#333'};
+  overflow-wrap: anywhere;
 `;
 
 const ProductMeta = styled.div`
@@ -172,8 +172,8 @@ const CardBody = styled.div`
 
 const QuantitySection = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const QuantityLabel = styled.span`
@@ -188,8 +188,8 @@ const QuantityControls = styled.div`
 
 const QuantityDisplay = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
 `;
 
 const PriceSection = styled.div`
@@ -202,13 +202,13 @@ const PriceSection = styled.div`
 
 const PriceRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
   &.total {
-    font-weight: 600;
-    margin-top: 0.25rem;
     padding-top: 0.25rem;
+    margin-top: 0.25rem;
+    font-weight: 600;
     border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
   }
 `;
@@ -219,12 +219,12 @@ const PriceLabel = styled.span`
 `;
 
 const PriceValue = styled.span`
+  font-family: monospace;
   font-size: 0.85rem;
   color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-family: monospace;
 
   .total & {
-    font-weight: 600;
     font-size: 0.9rem;
+    font-weight: 600;
   }
 `;

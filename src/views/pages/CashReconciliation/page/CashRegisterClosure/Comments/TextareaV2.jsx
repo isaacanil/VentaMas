@@ -66,20 +66,19 @@ const InputWrapper = styled.div.attrs(() => ({
 }))`
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  background-color: white;
   border-radius: 4px;
-
   height: 5em;
   outline: none;
   position: relative;
   width: 100%;
   max-width: ${(props) => (props.search ? '280px' : null)};
   background: ${(props) => props.bgColor || 'white'};
+
   svg {
     font-size: 18px;
     color: #999;
   }
+
   transition:
     all 0.3s ease,
     width 0.3ms linear;
@@ -100,30 +99,30 @@ const InputWrapper = styled.div.attrs(() => ({
 `;
 
 const StyledInput = styled.textarea`
-  border: none;
-  outline: none;
   flex: 1;
+  width: 100%;
+  height: 100%;
   padding: 0.6em;
   font-size: 14px;
-  height: 100%;
+  color: rgb(51 51 51);
   resize: none;
-  color: rgb(51, 51, 51);
-  width: 100%;
+  outline: none;
   background: transparent;
+  border: none;
+
   &::placeholder {
     color: #999;
   }
 `;
 
 const ErrorMessage = styled.span`
-  color: #ff3547;
-  font-size: 12px;
-  margin-left: 8px;
   display: ${(props) => (props.show ? 'inline' : 'hidden')};
+  margin-left: 8px;
+  font-size: 12px;
+  color: #ff3547;
 `;
 const Label = styled.label`
-  font-size: 13px;
-  color: var(--Gray5);
-
   margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--gray-5);
 `;

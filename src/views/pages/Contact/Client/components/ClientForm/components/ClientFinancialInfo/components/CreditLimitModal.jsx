@@ -104,7 +104,7 @@ const CreditLimitModal = ({
       onOk={handleSave}
       confirmLoading={loading}
       width={500}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         form={form}

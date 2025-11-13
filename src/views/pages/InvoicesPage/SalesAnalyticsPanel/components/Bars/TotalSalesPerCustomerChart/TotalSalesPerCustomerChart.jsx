@@ -24,14 +24,13 @@ export const TotalSalesPerCustomerChart = ({ sales }) => {
 
 const Container = styled.div`
   display: grid;
-  align-items: start;
-  align-content: start;
-
   gap: 1em;
+  align-content: start;
+  align-items: start;
 `;
 const Group = styled.div`
   display: grid;
   grid-template-columns: 200px 1fr;
-  align-items: end;
   gap: 1em;
+  align-items: end;
 `;

@@ -5,12 +5,12 @@ import styled from 'styled-components';
 const { Text, Paragraph } = Typography;
 
 const WarningBox = styled.div`
-  padding: 16px;
+  border: 1px solid;
   border-radius: 8px;
   margin: 16px 0;
-  position: relative;
   overflow: hidden;
-  border: 1px solid;
+  padding: 16px;
+  position: relative;
 
   ${({ $status }) => {
     switch ($status) {
@@ -75,8 +75,8 @@ const WarningBox = styled.div`
   }
 
   .details-list {
-    margin: 8px 0 0 0;
     padding-left: 0;
+    margin: 8px 0 0;
     list-style-type: none;
 
     li {
@@ -84,11 +84,11 @@ const WarningBox = styled.div`
       padding-left: 12px;
       margin-bottom: 4px;
 
-      &:before {
-        content: '•';
+      &::before {
         position: absolute;
         left: 0;
-        color: currentColor;
+        color: currentcolor;
+        content: '•';
         opacity: 0.7;
       }
     }
@@ -96,8 +96,8 @@ const WarningBox = styled.div`
 `;
 
 const IconWrapper = styled.div`
-  font-size: 20px;
   margin-right: 12px;
+  font-size: 20px;
 `;
 
 const Content = styled.div`

@@ -5,10 +5,11 @@ import styled from 'styled-components';
 // Removed per-item BackorderCard view in favor of compact summaries
 
 const ProductGroupContainer = styled(motion.div)`
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e6e6e6;
   overflow: hidden;
+  background: white;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+
   /* Single-row compact card */
 `;
 

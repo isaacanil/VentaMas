@@ -57,7 +57,7 @@ export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
 };
 const Container = styled.div`
   display: grid;
-  align-items: start;
-  align-content: start;
   gap: 0.4em;
+  align-content: start;
+  align-items: start;
 `;

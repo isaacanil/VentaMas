@@ -265,21 +265,20 @@ export const Header = ({
 const Container = styled.div``;
 
 const Select = styled.select`
-  height: 1.8em;
-  border-radius: var(--border-radius-light);
-  padding: 0 0.6em;
-  transition: width 0.5s ease;
   width: 100%;
+  height: 1.8em;
+  padding: 0 0.6em;
+  border-radius: var(--border-radius-light);
+  transition: width 0.5s ease;
 `;
 const ProductPriceBar = styled.div`
-  height: 2em;
-  width: 100%;
-
-  //background-color: #f1ebeb;
   display: flex;
-  justify-content: flex-end;
-  padding: 0 1em;
   align-items: center;
-  span {
-  }
+  justify-content: flex-end;
+  width: 100%;
+  height: 2em;
+  padding: 0 1em;
+
+  /* background-color: #f1ebeb; */
+
 `;

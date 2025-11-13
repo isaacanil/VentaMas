@@ -106,6 +106,7 @@ const fadeIn = keyframes`
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -116,6 +117,7 @@ const slideUp = keyframes`
     opacity: 0;
     transform: translateY(24px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -125,30 +127,30 @@ const slideUp = keyframes`
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  z-index: 1800;
   display: grid;
   place-items: center;
-  z-index: 1800;
-  animation: ${fadeIn} 0.16s ease forwards;
   padding: 16px;
+  background: rgb(15 23 42 / 50%);
+  animation: ${fadeIn} 0.16s ease forwards;
 `;
 
 const Dialog = styled.article`
-  width: min(420px, 92vw);
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
-  padding: 20px;
   display: grid;
   gap: 18px;
+  width: min(420px, 92vw);
+  padding: 20px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 38px rgb(15 23 42 / 18%);
   animation: ${slideUp} 0.22s ease forwards;
 `;
 
 const Header = styled.header`
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
 `;
 
 const Title = styled.h2`
@@ -159,18 +161,18 @@ const Title = styled.h2`
 `;
 
 const CloseButton = styled.button`
-  height: 32px;
-  width: 32px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 1.4rem;
-  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #64748b;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  background: transparent;
+  border: none;
+  border-radius: 8px;
 
   &:hover {
     color: ${({ disabled }) => (disabled ? '#94a3b8' : '#0f172a')};
@@ -180,8 +182,9 @@ const CloseButton = styled.button`
 
 const Body = styled.div`
   font-size: 0.95rem;
-  color: #334155;
   line-height: 1.45;
+  color: #334155;
+
   strong {
     color: #0f172a;
   }
@@ -189,43 +192,43 @@ const Body = styled.div`
 
 const Footer = styled.footer`
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
+  justify-content: flex-end;
 `;
 
 const BaseButton = styled.button`
   min-width: 120px;
   padding: 10px 16px;
-  border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   border: none;
+  border-radius: 8px;
+  opacity: ${({ disabled }) => (disabled ? 0.65 : 1)};
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
     background 0.2s ease;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${({ disabled }) => (disabled ? 0.65 : 1)};
 `;
 
 const PrimaryButton = styled(BaseButton)`
+  color: #fff;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
-  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 12px 22px rgb(37 99 235 / 25%);
 
   &:hover {
-    transform: ${({ disabled }) =>
-      disabled ? 'none' : 'translateY(-1px) scale(1.01)'};
     box-shadow: ${({ disabled }) =>
       disabled
         ? '0 12px 22px rgba(37, 99, 235, 0.25)'
         : '0 16px 28px rgba(37, 99, 235, 0.3)'};
+    transform: ${({ disabled }) =>
+      disabled ? 'none' : 'translateY(-1px) scale(1.01)'};
   }
 `;
 
 const SecondaryButton = styled(BaseButton)`
-  background: #e2e8f0;
   color: #1f2937;
+  background: #e2e8f0;
 
   &:hover {
     background: ${({ disabled }) => (disabled ? '#e2e8f0' : '#cbd5f5')};

@@ -45,13 +45,17 @@ export const Product = ({ product }) => {
 };
 const Container = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: minmax(100px, 200px) min-content;
+  gap: 1em;
 `;
-const Header = styled.div``;
-const Body = styled.div``;
+const Header = styled.div`
+  /* Header container */
+`;
+const Body = styled.div`
+  /* Body container */
+`;
 const Counter = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: 2em 80px 2em;
+  gap: 1em;
 `;

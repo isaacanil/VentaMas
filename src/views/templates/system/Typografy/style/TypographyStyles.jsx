@@ -64,10 +64,11 @@ const boldScale = {
 const baseTypography = css`
   font-size: ${({ context, variant, size }) =>
     getFontSize({ context, variant, size, variantToSizeMap, generalSize })};
-
   text-align: ${({ align }) => (align ? align : 'left')};
+
   /* margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')}; */
   ${({ disableMargins }) => disableMargins && 'margin: 0;'}
+
   /* font-weight: ${({ bold }) => boldScale[String(bold)] || 'normal'}; */
   ${({ bold }) => bold && `font-weight: ${boldScale[String(bold)]} ;`}
   ${({ italic }) => italic && 'font-style: italic;'}
@@ -76,6 +77,7 @@ const baseTypography = css`
   ${({ capitalize }) => capitalize && 'text-transform: capitalize;'}
   ${({ lowercase }) => lowercase && 'text-transform: lowercase;'}
   ${({ noWrap }) => noWrap && 'white-space: nowrap;'}
+
   letter-spacing: ${({ letterSpacing }) => letterSpacing || 'normal'};
   text-transform: ${({ textTransform }) => textTransform || 'none'};
   ${({ display }) => display && `display: ${display};`}

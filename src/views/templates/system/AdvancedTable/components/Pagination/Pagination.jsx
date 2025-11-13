@@ -63,10 +63,9 @@ export const Pagination = ({
 const PaginationContainer = styled.div`
   display: flex;
   gap: 0.5em;
-  justify-self: center;
-  justify-content: space-between;
   align-items: center;
-
+  justify-content: space-between;
+  justify-self: center;
   height: 100%;
 `;
 
@@ -83,6 +82,7 @@ const PageSwitch = styled.button`
   align-items: center;
   border-radius: 100px;
   border: none;
+
   &:hover:not(:disabled) {
     background-color: #e0e0e0;
   }

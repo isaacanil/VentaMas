@@ -19,8 +19,8 @@ LoadingState.defaultProps = {
 };
 
 const StateContainer = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;

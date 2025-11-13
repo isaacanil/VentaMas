@@ -30,10 +30,10 @@ const Widget = styled.div`
 
   .header {
     display: flex;
-    align-items: center;
     gap: 8px;
-    color: #64748b;
+    align-items: center;
     font-size: 0.9rem;
+    color: #64748b;
 
     .icon {
       color: #94a3b8;
@@ -43,16 +43,16 @@ const Widget = styled.div`
 
 const OrdersBar = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 
   .bar {
+    display: flex;
     flex: 1;
     height: 24px;
+    overflow: hidden;
     background: #f1f5f9;
     border-radius: 12px;
-    display: flex;
-    overflow: hidden;
   }
 
   .progress {
@@ -63,10 +63,10 @@ const OrdersBar = styled.div`
 
   .total {
     min-width: 70px;
-    text-align: right;
+    font-size: 0.9rem;
     font-weight: 500;
     color: #0f172a;
-    font-size: 0.9rem;
+    text-align: right;
   }
 `;
 
@@ -77,15 +77,15 @@ const DetailsList = styled.div`
 `;
 
 const DetailItem = styled.div`
+  position: relative;
   padding: 12px;
   background: #f8fafc;
   border-radius: 8px;
-  position: relative;
 
   .date {
-    color: #64748b;
-    font-size: 0.85rem;
     margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: #64748b;
   }
 
   .top-info {
@@ -95,18 +95,18 @@ const DetailItem = styled.div`
   }
 
   .quantities {
-    color: #0f172a;
     font-size: 0.9rem;
+    color: #0f172a;
   }
 `;
 
 const StatusPill = styled.span`
-  background: #e0f7fa;
-  color: #00695c;
   padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
   margin-left: 8px;
+  font-size: 0.75rem;
+  color: #00695c;
+  background: #e0f7fa;
+  border-radius: 12px;
 `;
 
 const BackOrderList = ({ productId }) => {

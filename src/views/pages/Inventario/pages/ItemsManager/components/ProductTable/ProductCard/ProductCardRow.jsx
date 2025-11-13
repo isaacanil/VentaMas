@@ -106,24 +106,24 @@ export const ProductCardRow = ({ product, Col, Row }) => {
 };
 
 const Container = styled.div`
-  background-color: white;
   padding-right: 0.6em;
-  padding-right: 0px;
+  padding-right: 0;
+  background-color: white;
 `;
 const ImgContainer = styled.div`
-  width: 100%;
-  max-height: 2.75em;
-  height: 100%;
   position: relative;
-  overflow: hidden;
   display: flex;
+  width: 100%;
+  height: 100%;
+  max-height: 2.75em;
+  overflow: hidden;
   border-radius: var(--border-radius-light);
 `;
 const Img = styled.img`
+  height: 100%;
   object-fit: cover;
   object-position: center;
   width: 100%;
-  height: 100%;
   ${(props) => {
     switch (props.noFound) {
       case true:
@@ -135,10 +135,10 @@ const Img = styled.img`
   }}
 `;
 const ProductName = styled.span`
-  color: var(--Gray7);
-  margin: 0;
   padding: 0;
+  margin: 0;
   font-weight: 500;
+  color: var(--gray7);
 `;
 const Item = styled.div`
   ${(props) => {

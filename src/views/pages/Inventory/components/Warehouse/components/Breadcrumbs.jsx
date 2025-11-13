@@ -10,8 +10,9 @@ const BreadcrumbContainer = styled.nav`
 `;
 
 const BreadcrumbLink = styled.a`
-  text-decoration: none;
   color: #0070f3;
+  text-decoration: none;
+
   &:hover {
     text-decoration: underline;
   }

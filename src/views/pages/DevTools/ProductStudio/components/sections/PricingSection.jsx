@@ -15,9 +15,9 @@ const { Text } = Typography;
 
 const PriceTableWrapper = styled.div`
   margin-top: 12px;
+  overflow: hidden;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  overflow: hidden;
 `;
 
 const PriceTableRow = styled.div`
@@ -25,11 +25,11 @@ const PriceTableRow = styled.div`
   grid-template-columns: 2fr 1.3fr repeat(3, 1fr);
   gap: 12px;
   padding: 12px 16px;
-  background: ${({ $header }) => ($header ? '#f8fafc' : '#fff')};
-  font-weight: ${({ $header }) => ($header ? 600 : 500)};
   font-size: 13px;
-  text-transform: ${({ $header }) => ($header ? 'uppercase' : 'none')};
+  font-weight: ${({ $header }) => ($header ? 600 : 500)};
   color: ${({ $header }) => ($header ? '#0f172a' : '#334155')};
+  text-transform: ${({ $header }) => ($header ? 'uppercase' : 'none')};
+  background: ${({ $header }) => ($header ? '#f8fafc' : '#fff')};
   border-bottom: 1px solid #e2e8f0;
 
   &:last-child {
@@ -45,14 +45,14 @@ const PriceTableRow = styled.div`
 const LabelCell = styled.span`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 2px;
+  align-items: flex-start;
   font-weight: 600;
 
   span.label {
     display: flex;
-    align-items: center;
     gap: 4px;
+    align-items: center;
     font-weight: 600;
   }
 
@@ -75,19 +75,19 @@ const InfoIcon = styled(InfoCircleOutlined)`
 
 const NumericCell = styled.span`
   display: block;
-  text-align: right;
   font-variant-numeric: tabular-nums;
   color: #0f172a;
+  text-align: right;
 `;
 
 const GainCell = styled.span`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
   gap: 2px;
+  align-items: flex-end;
   font-weight: 600;
   color: #0f172a;
+  text-align: right;
 
   span.percent {
     font-size: 12px;
@@ -96,8 +96,8 @@ const GainCell = styled.span`
   }
 
   span.placeholder {
-    color: #94a3b8;
     font-weight: 500;
+    color: #94a3b8;
   }
 `;
 

@@ -501,22 +501,22 @@ const Container = styled.div`
   height: 100%;
 `;
 const Component = styled.div`
-  width: 98vw;
   display: grid;
   grid-template-rows: min-content 1fr;
   gap: 1em;
-  margin: 0 auto;
+  width: 98vw;
   height: 100%;
-  background-color: #ffffff;
-  overflow: hidden;
   padding: 0 1em 1em;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #fff;
 `;
 const Header = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
 `;
 const FiltersBar = styled.div`
   display: flex;
@@ -529,22 +529,13 @@ const RangePickerWrapper = styled.div`
   max-width: 340px;
 `;
 const TableContainer = styled.div`
-  min-height: 0;
   height: 100%;
+  min-height: 0;
 `;
 const StatusBadge = styled.span`
   padding: 4px 8px;
-  border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  background-color: ${({ status }) =>
-    status === 'open'
-      ? '#e7f5e7'
-      : status === 'processing'
-        ? '#fff7ed'
-        : status === 'closed'
-          ? '#f5f5f5'
-          : '#e7f5e7'};
   color: ${({ status }) =>
     status === 'open'
       ? '#2e7d32'
@@ -553,6 +544,15 @@ const StatusBadge = styled.span`
         : status === 'closed'
           ? '#666'
           : '#2e7d32'};
+  background-color: ${({ status }) =>
+    status === 'open'
+      ? '#e7f5e7'
+      : status === 'processing'
+        ? '#fff7ed'
+        : status === 'closed'
+          ? '#f5f5f5'
+          : '#e7f5e7'};
+  border-radius: 4px;
 `;
 
 // Badge de usuarios activos eliminado
@@ -566,12 +566,12 @@ const EditorsInline = styled.div`
 `;
 
 const EditorPill = styled.span`
-  background: #f3f4f6;
-  color: #111827;
-  font-size: 11px;
   padding: 2px 8px;
-  border-radius: 999px;
+  font-size: 11px;
   line-height: 1.2;
+  color: #111827;
+  background: #f3f4f6;
+  border-radius: 999px;
 `;
 
 const MorePill = styled(EditorPill)`

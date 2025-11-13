@@ -7,24 +7,24 @@ import styled from 'styled-components';
 import Button from '../Button/Button';
 
 const NavBarContainer = styled.nav`
-  background-color: #1e3a8a; /* bg-primary */
-  color: #ffffff; /* text-primary-foreground */
   padding: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #fff; /* text-primary-foreground */
+  background-color: #1e3a8a; /* bg-primary */
+  box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
 `;
 
 const NavBarWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   max-width: 1280px; /* container mx-auto */
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 `;
 
 const LeftSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 1rem; /* space-x-4 */
+  align-items: center;
 `;
 
 const Title = styled.h1`

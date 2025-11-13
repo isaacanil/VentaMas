@@ -24,10 +24,10 @@ export const CardList = ({
 };
 
 const Container = styled.div`
-  height: 100%;
   width: 100%;
   max-width: ${(props) =>
     typeof props.$maxWidth === 'number'
       ? `${props.$maxWidth}px`
       : props.$maxWidth};
+  height: 100%;
 `;

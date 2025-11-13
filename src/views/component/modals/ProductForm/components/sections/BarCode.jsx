@@ -33,9 +33,9 @@ const { Card, Input, Form, Button, Tooltip } = ant;
 
 const HeaderContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 8px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ContentContainer = styled.div`
@@ -46,23 +46,23 @@ const ContentContainer = styled.div`
 `;
 
 const BarcodeContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 16px;
+  background-color: white;
   border: 2px solid ${(props) => (props.valid ? '#d9d9d9' : '#ff7875')};
   border-radius: 8px;
-  padding: 16px;
-  background-color: white;
-  margin-bottom: 16px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 
 const BarcodeQuietZoneContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: ${(props) => props.quietZone || 0}mm;
   background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 
 const FormItemContainer = styled.div`
@@ -76,13 +76,13 @@ const InputWrapper = styled.div`
 `;
 
 const ValidationMessage = styled.div`
-  color: ${(props) => (props.isValid ? '#52c41a' : '#ff4d4f')};
-  font-size: 12px;
-  margin-top: 4px;
-  line-height: 1.3;
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: ${(props) => (props.isValid ? '#52c41a' : '#ff4d4f')};
 `;
 
 const FooterContainer = styled.div`

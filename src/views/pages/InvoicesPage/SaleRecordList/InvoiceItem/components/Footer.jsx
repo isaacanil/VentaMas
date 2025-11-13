@@ -82,22 +82,22 @@ export const Footer = ({ data }) => {
 };
 
 const Container = styled.div`
+  position: relative;
   display: grid;
+  grid-template-columns: 1fr min-content;
   gap: 1em;
   overflow: hidden;
-  position: relative;
-  grid-template-columns: 1fr min-content;
 `;
 const OrderActions = styled.div`
   display: grid;
-  gap: 0.6em;
   grid-template-columns: repeat(3, min-content);
+  gap: 0.6em;
 `;
 const Tag = styled(antd.Tag)`
-  font-size: 1em;
   padding: 0.2em 0.4em;
-  border-radius: 0.2em;
+  font-size: 1em;
   font-weight: 500;
-  text-transform: capitalize;
   text-align: center;
+  text-transform: capitalize;
+  border-radius: 0.2em;
 `;

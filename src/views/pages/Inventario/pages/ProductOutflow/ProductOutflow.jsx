@@ -157,40 +157,39 @@ export const ProductOutflow = () => {
 const Container = styled.div`
   display: grid;
   grid-template-rows: min-content auto 1fr;
-  grid-gap: 16px;
+  gap: 16px;
   height: 100%;
   background-color: var(--color2);
 `;
 
 const Table = styled.div`
-  max-width: 1000px;
-  width: 100%;
-  overflow-y: scroll;
-  margin: 0 auto;
-  height: calc(100vh - 200px);
-  background-color: aliceblue;
-  border: 1px solid rgba(0, 0, 0, 0.01);
-  border-radius: var(--border-radius);
-  background-color: var(--White);
   position: relative;
+  width: 100%;
+  max-width: 1000px;
+  height: calc(100vh - 200px);
+  margin: 0 auto;
+  overflow-y: scroll;
+  background-color: aliceblue;
+  background-color: var(--white);
+  border: 1px solid rgb(0 0 0 / 1%);
+  border-radius: var(--border-radius);
 `;
 const TableItems = styled.div`
   display: grid;
-  height: calc(100% - 2.6em);
   align-content: flex-start;
+  height: calc(100% - 2.6em);
 `;
 const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 6em 1fr 1fr 5em;
   align-items: center;
-  background-color: var(--White);
-
+  background-color: var(--white);
   padding: 8px;
   font-size: 14px;
   font-weight: bold;
   position: sticky;
   top: 0;
-  border: 1px solid rgba(0, 0, 0, 0);
+  border: 1px solid rgb(0 0 0 / 0%);
   transition: all 0.2s linear;
   ${({ isScrolled }) =>
     isScrolled &&
@@ -204,10 +203,11 @@ const Row = styled.div`
   display: grid;
   grid-template-columns: 6em 1fr 1fr 5em;
   align-items: center;
-  border-radius: 4px;
   padding: 8px;
   font-size: 14px;
+  border-radius: 4px;
   transition: all 0.2s linear;
+
   :hover {
     background-color: #f5f5f5;
   }

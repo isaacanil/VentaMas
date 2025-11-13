@@ -17,21 +17,22 @@ const TwoColumns = styled.div`
   grid-template-columns: min-content min-content;
   gap: 16px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const ThresholdInput = styled(InputNumber)`
   width: 140px;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     width: 100%;
   }
 `;
 
 const EmailInput = styled(Input)`
-  max-width: 480px;
   width: 100%;
+  max-width: 480px;
 `;
 
 const StockAlertSettingsSection = () => {

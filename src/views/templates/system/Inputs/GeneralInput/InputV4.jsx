@@ -226,11 +226,13 @@ export const InputV4 = ({
 };
 
 const Asterisk = styled.span`
+
+  padding-left: 8px;
   color: red;
+
   svg {
     font-size: 0.8em;
   }
-  padding-left: 8px;
 `;
 
 const Backdrop = styled.div`
@@ -255,8 +257,9 @@ const Icon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2em;
   width: 1.6em;
+  height: 2em;
+
   svg {
     font-size: 18px;
     color: #999;
@@ -271,9 +274,9 @@ const ButtonIcon = styled.span`
 
 const PasswordToggle = styled.div`
   display: flex;
-  width: 2em;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 2em;
   cursor: pointer;
 `;
 
@@ -311,8 +314,7 @@ const InputWrapper = styled.div.attrs(() => ({
   display: flex;
   align-items: center;
   gap: 4px;
-  color: rgb(51, 51, 51);
-  border: 1px solid #ccc;
+  color: rgb(51 51 51);
   border-radius: ${(props) => (props.hasButtons ? '4px 0 0 4px' : '4px')};
 
   &:focus-within {
@@ -337,8 +339,8 @@ const InputWrapper = styled.div.attrs(() => ({
   /* Para Chrome, Safari y Opera */
   input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
-    -webkit-appearance: none;
     margin: 0;
+    appearance: none;
   }
 
   input[type='date'] {
@@ -424,13 +426,13 @@ const StyledInput = styled.input`
   }
 
   ::-webkit-calendar-picker-indicator {
-    width: 100%;
-    height: 100%;
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0;
     z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
   }
 
   &::placeholder {
@@ -558,7 +560,7 @@ const InputButton = styled.button`
 
 const Label = styled.label`
   font-size: 13px;
-  color: var(--Gray5);
+  color: var(--gray-5);
   margin-bottom: 4px;
 
   ${(props) => {
@@ -566,7 +568,7 @@ const Label = styled.label`
       case 'primary':
         return `
           font-size: 11px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           position: absolute;
           z-index: 1;
           background-color: white;
@@ -583,7 +585,7 @@ const Label = styled.label`
       case 'label1':
         return `
           font-size: 14px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           margin-bottom: 4px;
         `;
       case 'label2':
@@ -608,7 +610,7 @@ const Label = styled.label`
       default:
         return `
           font-size: 13px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           margin-bottom: 4px;
         `;
     }
@@ -618,26 +620,26 @@ const Label = styled.label`
 const ErrorContainer = styled.ul`
   display: grid;
   gap: 2px;
-  margin-top: 4px;
   padding: 0;
+  margin-top: 4px;
   margin-bottom: 4px;
-  list-style-type: circle !important;
   list-style-position: inside !important;
+  list-style-type: circle !important;
   background-color: var(--color-danger-light);
   border-radius: var(--border-radius-light);
 `;
 
 const ErrorMessage = styled.li`
-  color: #ff3547;
-  font-size: 14px;
-  margin-left: 8px;
   display: ${(props) => (props.show ? 'inline' : 'hidden')};
+  margin-left: 8px;
+  font-size: 14px;
+  color: #ff3547;
 
   ::before {
-    content: '• ';
-    font-size: large;
-    color: #ff3547;
-    font-weight: bold;
     height: 100%;
+    font-size: large;
+    font-weight: bold;
+    color: #ff3547;
+    content: '• ';
   }
 `;

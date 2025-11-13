@@ -403,7 +403,6 @@ export default SaleUnitForm;
 const Group = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
   gap: 1em;
   width: 100%;
 `;
@@ -416,36 +415,36 @@ const Grid = styled.div`
 const CardContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  align-content: start;
   gap: 1em;
+  align-content: start;
   margin-top: 20px;
 `;
 
 const Card = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  width: 100%;
   padding: 8px 16px;
   background-color: #fafafa;
-  width: 100%;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.15);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 2px rgb(0 0 0 / 15%);
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1rem;
   margin-bottom: 8px;
+  font-size: 1rem;
 `;
 
 const IconContainer = styled.div`
   margin-bottom: 8px;
 `;
 const OptionTitle = styled.span`
-  font-weight: 550;
   margin-right: 16px;
+  font-weight: 550;
 `;
 const OptionContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 const Option = ({ title, value }) => {
   return (

@@ -210,6 +210,6 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
 
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
 `;

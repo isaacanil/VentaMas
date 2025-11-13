@@ -7,9 +7,9 @@ export const EmptyState = ({ children }) => {
 
 const Wrapper = styled.div`
   padding: 2rem;
-  text-align: center;
   color: #64748b;
+  text-align: center;
+  background: #f8fafc;
   border: 1px dashed #cbd5f5;
   border-radius: 16px;
-  background: #f8fafc;
 `;

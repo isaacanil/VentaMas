@@ -216,17 +216,17 @@ const Body = styled.div`
 `;
 
 const MenuItems = styled(motion.ul)`
-  list-style: none;
+  width: 100%;
+  min-height: 300px;
   padding: 0.2em;
   margin: 0;
-  width: 100%;
+  list-style: none;
   background-color: #f5f5f5;
-  min-height: 300px;
 `;
 const MenuItem = styled(motion.li)`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 5px 10px;
   background-color: ${(props) =>
     props.reorderable ? '#f5f4f4 !important' : 'white '};
@@ -235,6 +235,7 @@ const MenuItem = styled(motion.li)`
   &:last-child {
     border-bottom: none;
   }
+
   div {
     display: flex;
     gap: 0.2em;

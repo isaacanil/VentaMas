@@ -54,34 +54,34 @@ const iconTypes = {
 
 const BaseButton = styled.button`
   position: relative;
-  min-width: 120px;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  transform-origin: center;
+  min-width: 120px;
+  padding: 0.75rem 1.5rem;
   overflow: hidden;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transform-origin: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:disabled {
-    opacity: 0.7;
     cursor: not-allowed;
+    opacity: 0.7;
     transform: none !important;
   }
 
   &::before {
-    content: '';
     position: absolute;
     inset: 0;
+    content: '';
     background: linear-gradient(
       45deg,
       transparent,
-      rgba(255, 255, 255, 0.1),
+      rgb(255 255 255 / 10%),
       transparent
     );
     transform: translateX(-100%);
@@ -98,30 +98,30 @@ const BaseButton = styled.button`
 `;
 
 const CancelButton = styled(BaseButton)`
-  background: ${(props) => props.theme.colors.background || '#ffffff'};
   color: #64748b;
+  background: ${(props) => props.theme.colors.background || '#ffffff'};
   border: 2px solid #e2e8f0;
 
   &:hover:not(:disabled) {
-    background: #f8fafc;
     color: #475569;
+    background: #f8fafc;
     border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgb(148 163 184 / 10%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.1);
   }
 `;
 
 const ConfirmButton = styled(BaseButton)`
-  background: ${(props) => dialogTheme[props.$type]?.button || '#3b82f6'};
   color: white;
+  background: ${(props) => dialogTheme[props.$type]?.button || '#3b82f6'};
   border: none;
   box-shadow: 0 2px 8px ${(props) => dialogTheme[props.$type]?.border}40;
 
   &:hover:not(:disabled) {
     background: ${(props) =>
       dialogTheme[props.$type]?.buttonHover || '#2563eb'};
-    transform: translateY(-2px);
     box-shadow: 0 4px 15px ${(props) => dialogTheme[props.$type]?.border}60;
+    transform: translateY(-2px);
   }
 
   &:disabled {
@@ -131,13 +131,13 @@ const ConfirmButton = styled(BaseButton)`
 
 const CloseButton = styled(BaseButton)`
   width: 32px;
-  height: 32px;
   min-width: unset;
+  height: 32px;
   padding: 0;
-  border-radius: 50%;
-  background: transparent;
   color: ${(props) => dialogTheme[props.type]?.text};
+  background: transparent;
   border: 2px solid ${(props) => dialogTheme[props.type]?.border}40;
+  border-radius: 50%;
 
   &:hover:not(:disabled) {
     background: ${(props) => dialogTheme[props.type]?.border}20;
@@ -152,18 +152,19 @@ const CloseButton = styled(BaseButton)`
 `;
 
 const LoadingSpinner = styled.div`
+  display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
   border-bottom-color: transparent;
   border-radius: 50%;
-  display: inline-block;
   animation: rotation 1s linear infinite;
 
   @keyframes rotation {
     0% {
       transform: rotate(0deg);
     }
+
     100% {
       transform: rotate(360deg);
     }
@@ -299,25 +300,26 @@ const getDialogSize = (size) => {
 
 const Backdrop = styled(motion.div)`
   position: fixed;
-  height: 100%;
-  width: 100vw;
-  backdrop-filter: blur(4px) brightness(0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   top: 0;
   left: 0;
   z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100%;
   padding: 1rem;
+  backdrop-filter: blur(4px) brightness(0.7);
 `;
 
 const Container = styled(motion.div)`
   ${(props) => getDialogSize(props.$size)}
+
   width: 100%;
   background-color: ${(props) =>
     dialogTheme[props.type]?.background || props.theme.colors.background};
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 8%);
   padding: 1.75rem;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
@@ -335,8 +337,8 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: ${(props) => dialogTheme[props.type]?.text};
   padding-bottom: 0.5rem;
+  color: ${(props) => dialogTheme[props.type]?.text};
   border-bottom: 1px solid ${(props) => dialogTheme[props.type]?.border}30;
 `;
 
@@ -346,24 +348,24 @@ const Body = styled.div`
 `;
 
 const Description = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1.5rem;
+  color: ${(props) => dialogTheme[props.type]?.text};
   background-color: ${(props) =>
     dialogTheme[props.type]?.iconBg || 'rgba(0,0,0,0.05)'};
-  color: ${(props) => dialogTheme[props.type]?.text};
-  padding: 1.5rem;
-  border-radius: 12px;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
   border: 1px solid ${(props) => dialogTheme[props.type]?.border}30;
+  border-radius: 12px;
 `;
 
 const IconWrapper = styled.div`
-  width: 2em;
-  height: 2em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 2em;
+  height: 2em;
   color: ${(props) => dialogTheme[props.type]?.text || 'inherit'};
 `;
 
@@ -374,6 +376,6 @@ const MessageText = styled(Typography)`
 
 const Footer = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 1rem;
+  justify-content: flex-end;
 `;

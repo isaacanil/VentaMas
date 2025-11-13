@@ -2,20 +2,21 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
   width: 100%;
-  margin: 0;
-  padding: 3mm;
-  line-height: 20px;
   width: 100vw;
+  padding: 3mm;
+  margin: 0;
+  font-family: Lato, sans-serif;
   font-size: 11px;
+  line-height: 20px;
   text-transform: uppercase;
-  font-family: 'Lato', sans-serif;
   pointer-events: none;
+
   p {
     line-height: 16px;
   }
+
   @media print {
     margin: 0;
-
     pointer-events: auto;
   }
 `;
@@ -45,19 +46,18 @@ export function InfoItem({
 const Group = styled.div`
   display: flex;
   gap: 12px;
-  text-transform: ${(props) => props.textTransform};
   justify-content: ${(props) => props.justifyContent};
+  text-transform: ${(props) => props.textTransform};
 `;
 
 export const Subtitle = styled.p`
   display: flex;
-  font-weight: 600;
-  line-height: 12px;
+  justify-content: ${({ align }) => align};
   padding: 0;
   margin: 0;
+  font-weight: 600;
+  line-height: 12px;
   white-space: nowrap;
-
-  justify-content: ${({ align }) => align};
 `;
 
 export const Paragraph = styled.p`

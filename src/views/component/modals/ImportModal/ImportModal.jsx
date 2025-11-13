@@ -247,6 +247,7 @@ const Body = styled.div`
 
 const Section = styled.div`
   margin-bottom: 2em;
+
   p {
     margin-bottom: 1em;
   }

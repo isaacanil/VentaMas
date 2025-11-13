@@ -13,11 +13,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FilterLabel = styled.div`
+  display: flex;
+  align-items: center;
   margin-bottom: 8px;
   font-size: 14px;
   color: #595959;
-  display: flex;
-  align-items: center;
 `;
 
 const FiltersDrawer = ({

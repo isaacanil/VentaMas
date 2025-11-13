@@ -31,17 +31,16 @@ const Container = styled.div`
   height: 100%;
   max-width: 300px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgb(0 0 0 / 15%);
   margin-left: 4px;
   width: 100%;
   top: 5.2em;
   position: absolute;
   z-index: 1;
-  background-color: #ffffff;
-  transform: scale(1);
+  background-color: #fff;
   transition: transform 400ms ease-in-out;
   transform: perspective();
-  box-shadow: 10px 10px 10px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 10px 10px 10px 2px rgb(0 0 0 / 15%);
   ${(props) => {
     switch (props.isOpen) {
       case true:
@@ -60,10 +59,11 @@ const Container = styled.div`
   }}
 `;
 const Head = styled.div`
-  background-color: var(--White);
+  background-color: var(--white);
+
   h3 {
-    margin: 0;
     padding: 0.4em 1em;
+    margin: 0;
   }
 `;
 const Body = styled.div``;

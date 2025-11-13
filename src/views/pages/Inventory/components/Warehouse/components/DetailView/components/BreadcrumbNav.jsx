@@ -10,8 +10,8 @@ const StyledBreadcrumb = styled(Breadcrumb)`
 `;
 
 const BreadcrumbLink = styled.span`
-  cursor: pointer;
   color: #1890ff;
+  cursor: pointer;
 `;
 
 export const BreadcrumbNav = ({ breadcrumbs }) => {

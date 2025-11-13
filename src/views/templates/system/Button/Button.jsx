@@ -65,30 +65,29 @@ Button.displayName = 'Button';
 
 const styleByDefault = css`
   display: flex;
+  gap: 0.6em;
   align-items: center;
   justify-content: ${(props) => props.alignText || 'center'};
-  gap: 0.6em;
   font-size: 16px;
   font-weight: 500;
   text-align: ${(props) => props.alignText || 'center'};
-  text-decoration: none;
   text-transform: capitalize;
   white-space: nowrap;
-  border: none;
-  outline: none;
+  text-decoration: none;
+  pointer-events: all;
   cursor: pointer;
-
-  svg {
-    font-size: 1.2em;
-    margin: 0;
-    display: flex;
-    place-items: center;
-  }
-
+  outline: none;
+  border: none;
   transition:
     border-color 0.25s,
     background-color 500ms;
-  pointer-events: all;
+
+  svg {
+    display: flex;
+    place-items: center;
+    margin: 0;
+    font-size: 1.2em;
+  }
 
   &:focus,
   &:focus-visible {
@@ -359,7 +358,7 @@ export const Container = styled.button`
     }
   }}
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     display: ${(props) => (props.hidden === true ? 'none' : 'flex')};
   }
 `;

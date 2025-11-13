@@ -14,12 +14,12 @@ const Container = styled.li`
   gap: 0.2em;
   align-items: center;
   justify-content: center;
-  padding: 0.6em 0.4em;
-  border-radius: 8px;
   width: 100%;
+  padding: 0.6em 0.4em;
   color: ${({ isActive }) => (isActive ? '#fff' : '#333')};
-  background-color: ${({ isActive }) => (isActive ? '#1E90FF' : 'transparent')};
   cursor: pointer;
+  background-color: ${({ isActive }) => (isActive ? '#1E90FF' : 'transparent')};
+  border-radius: 8px;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
@@ -31,8 +31,8 @@ const Container = styled.li`
 const Icon = styled.div`
   display: flex;
   align-items: center;
-  font-size: 30px;
   justify-content: center;
+  font-size: 30px;
 `;
 const Label = styled.div`
   display: block;

@@ -9,13 +9,13 @@ import { setBillingSettings } from '../../../../../firebase/billing/billingSetti
 const InnerCard = styled(Card)`
   margin-bottom: 16px;
   cursor: pointer;
+  background-color: ${(props) => (props.selected ? '#e6f7ff' : '#ffffff')};
   border: ${(props) =>
     props.selected ? '2px solid #1890ff' : '1px solid #f0f0f0'};
-  background-color: ${(props) => (props.selected ? '#e6f7ff' : '#ffffff')};
 
   &:hover {
-    border-color: #1890ff;
     background-color: #e6f7ff;
+    border-color: #1890ff;
   }
 `;
 

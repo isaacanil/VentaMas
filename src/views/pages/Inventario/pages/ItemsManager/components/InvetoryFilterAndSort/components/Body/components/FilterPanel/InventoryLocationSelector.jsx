@@ -319,22 +319,22 @@ const Wrapper = styled.div`
 `;
 
 const SelectorButton = styled.button`
-  width: 100%;
   display: flex;
+  gap: 0.65rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
+  width: 100%;
   min-height: 2.4rem;
   padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid ${({ $active }) => ($active ? '#228df1ff' : '#d7dce3')};
-  background: ${({ disabled }) => (disabled ? '#f3f4f6' : '#ffffff')};
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  background: ${({ disabled }) => (disabled ? '#f3f4f6' : '#ffffff')};
+  border: 1px solid ${({ $active }) => ($active ? '#228df1ff' : '#d7dce3')};
+  border-radius: 8px;
+  box-shadow: ${({ $active }) =>
+    $active ? '0 0 0 3px rgba(30, 64, 175, 0.1)' : 'none'};
   transition:
     border 0.18s ease,
     box-shadow 0.18s ease;
-  box-shadow: ${({ $active }) =>
-    $active ? '0 0 0 3px rgba(30, 64, 175, 0.1)' : 'none'};
 
   &:hover {
     border-color: ${({ disabled }) => (disabled ? '#d7dce3' : '#1e40af')};
@@ -343,22 +343,22 @@ const SelectorButton = styled.button`
   &:focus-visible {
     outline: none;
     border-color: #1e40af;
-    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18);
+    box-shadow: 0 0 0 3px rgb(30 64 175 / 18%);
   }
 `;
 
 const SelectorContent = styled.div`
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
+  min-width: 0;
 `;
 
 const Placeholder = styled.span`
-  color: #94a3b8;
   font-size: 0.82rem;
+  color: #94a3b8;
 `;
 
 const Chips = styled.div`
@@ -372,32 +372,32 @@ const Chip = styled.span`
   align-items: center;
   max-width: 180px;
   padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(30, 64, 175, 0.11);
-  color: #1e40af;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e40af;
+  white-space: nowrap;
+  background: rgb(30 64 175 / 11%);
+  border-radius: 999px;
 `;
 
 const Chevron = styled.span`
   display: inline-flex;
+  color: #475569;
   transform: ${({ $open }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
   transition: transform 0.18s ease;
-  color: #475569;
 `;
 
 const Dropdown = styled.div`
   z-index: 1200;
   display: grid;
   gap: 0;
-  border-radius: 14px;
-  border: 1px solid #d7dce3;
-  background: #ffffff;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15);
   overflow: hidden;
+  background: #fff;
+  border: 1px solid #d7dce3;
+  border-radius: 14px;
+  box-shadow: 0 24px 48px rgb(15 23 42 / 15%);
 `;
 
 const SearchBar = styled.div`
@@ -408,17 +408,17 @@ const SearchBar = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 0.45rem 0.75rem;
-  border-radius: 10px;
-  border: 1px solid #d7dce3;
   font-size: 0.85rem;
   color: #0f172a;
   background: #f9fafb;
+  border: 1px solid #d7dce3;
+  border-radius: 10px;
 
   &:focus {
     outline: none;
+    background: #fff;
     border-color: #1e40af;
-    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(30 64 175 / 12%);
   }
 
   &::placeholder {
@@ -427,11 +427,11 @@ const SearchInput = styled.input`
 `;
 
 const OptionsList = styled.div`
-  max-height: 260px;
-  overflow-y: auto;
-  padding: 0.4rem 0.25rem 0.4rem 0.25rem;
   display: grid;
   gap: 0.1rem;
+  max-height: 260px;
+  padding: 0.4rem 0.25rem;
+  overflow-y: auto;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -442,7 +442,7 @@ const OptionsList = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.6);
+    background: rgb(148 163 184 / 60%);
     border-radius: 999px;
   }
 `;
@@ -450,14 +450,14 @@ const OptionsList = styled.div`
 const OptionItem = styled.label`
   display: grid;
   grid-template-columns: auto 1fr;
-  align-items: flex-start;
   gap: 0.65rem;
+  align-items: flex-start;
   padding: 0.55rem 0.65rem;
   margin: 0 0.35rem;
-  border-radius: 12px;
   cursor: pointer;
   background: ${({ $checked }) =>
     $checked ? 'rgba(30, 64, 175, 0.08)' : 'transparent'};
+  border-radius: 12px;
   transition: background 0.18s ease;
 
   &:hover {
@@ -480,51 +480,51 @@ const OptionText = styled.div`
 `;
 
 const OptionTitle = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 0.85rem;
   font-weight: 600;
   color: #0f172a;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
 const OptionSubtitle = styled.span`
-  font-size: 0.72rem;
-  color: #475569;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.72rem;
+  color: #475569;
   white-space: nowrap;
 `;
 
 const StateMessage = styled.div`
   padding: 1.1rem 1rem;
-  text-align: center;
   font-size: 0.78rem;
   color: #64748b;
+  text-align: center;
 `;
 
 const Footer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.6rem 0.85rem 0.75rem;
-  border-top: 1px solid #eef1f6;
   background: #f9fafc;
+  border-top: 1px solid #eef1f6;
 `;
 
 const FooterButton = styled.button`
-  border: none;
-  background: none;
-  color: #1e40af;
+  padding: 0.25rem 0.45rem;
   font-size: 0.78rem;
   font-weight: 600;
+  color: #1e40af;
   cursor: pointer;
-  padding: 0.25rem 0.45rem;
+  background: none;
+  border: none;
   border-radius: 8px;
 
   &:hover:enabled {
-    background: rgba(30, 64, 175, 0.08);
+    background: rgb(30 64 175 / 8%);
   }
 
   &:disabled {

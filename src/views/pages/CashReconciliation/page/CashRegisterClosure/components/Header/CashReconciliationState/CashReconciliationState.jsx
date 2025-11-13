@@ -24,13 +24,12 @@ const Container = styled.div`
   align-items: center;
 `;
 const Label = styled.span`
+  margin-bottom: 0;
   font-size: 13px;
-  color: var(--Gray5);
-
-  margin-bottom: 0px;
+  color: var(--gray5);
 `;
 const State = styled.div`
-  border-radius: var(--border-radius);
   padding: 0.2em 0.6em;
   background-color: #eee094;
+  border-radius: var(--border-radius);
 `;

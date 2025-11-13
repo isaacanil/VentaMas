@@ -231,18 +231,18 @@ const Page = styled.div`
 `;
 const Content = styled.div`
   max-width: 900px;
-  margin: 2rem auto;
   padding: 0 1rem;
+  margin: 2rem auto;
 `;
 const Section = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 300px;
+  padding: 1rem;
+  margin-bottom: 2rem;
   background: #fff;
   border-radius: 8px;
-  margin-bottom: 2rem;
-  padding: 1rem;
 `;
 const Actions = styled.div`
   display: flex;
@@ -252,6 +252,7 @@ const Actions = styled.div`
 `;
 const ImageContainer = styled.div`
   position: relative;
+
   .ant-image img {
     max-height: 300px;
     object-fit: contain;
@@ -259,13 +260,14 @@ const ImageContainer = styled.div`
 `;
 const DeleteBtn = styled(Button)`
   position: absolute;
-  bottom: 1rem;
   right: 1rem;
-  background: rgba(0, 0, 0, 0.6);
+  bottom: 1rem;
   color: #fff;
+  background: rgb(0 0 0 / 60%);
   border: none;
+
   &:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgb(0 0 0 / 80%);
   }
 `;
 const ProgressBar = styled.div`
@@ -274,6 +276,7 @@ const ProgressBar = styled.div`
 `;
 const Stats = styled.div`
   text-align: center;
+
   p {
     margin: 4px 0;
   }

@@ -73,6 +73,7 @@ const ActiveIngredientModal = () => {
         isUpdate ? 'Actualizar Principio Activo' : 'Crear Principio Activo'
       }
       open={isOpen}
+      forceRender
       onOk={handleOk}
       width={400}
       onCancel={handleCancel}

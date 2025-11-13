@@ -9,8 +9,8 @@ import { setBillingSettings } from '../../../../../firebase/billing/billingSetti
 
 const OptionContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
 
   .period {
@@ -18,8 +18,8 @@ const OptionContainer = styled.div`
   }
 
   .description {
-    color: rgba(0, 0, 0, 0.45);
     font-size: 0.9em;
+    color: rgb(0 0 0 / 45%);
   }
 `;
 
@@ -29,9 +29,9 @@ const ConfigItem = styled.div`
 `;
 
 const ConfigGroupItem = styled.div`
-  border-left: 2px solid #f0f0f0;
   padding-left: 16px;
   margin-bottom: 16px;
+  border-left: 2px solid #f0f0f0;
 `;
 
 const DueDateConfig = () => {

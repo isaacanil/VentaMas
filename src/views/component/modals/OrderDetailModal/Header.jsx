@@ -16,9 +16,8 @@ export const Header = () => {
 
 const Container = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-
+  justify-content: space-between;
   border-radius: 0.5em 0.5em 0 0;
 `;
 

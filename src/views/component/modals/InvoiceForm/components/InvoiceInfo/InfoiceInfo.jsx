@@ -106,7 +106,7 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
       open={isOpen}
       footer={null}
       onCancel={handleCancel}
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Spin spinning={isLoading} tip="Cargando..." size="large">
@@ -180,8 +180,8 @@ const ActionsRow = styled.div`
 
 const CancelButton = styled(Button)`
   display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 500;
 `;
 
@@ -196,15 +196,15 @@ const WarningCard = styled.div`
   flex-direction: column;
   gap: 1rem;
   padding: 1.25rem;
-  border-radius: 12px;
   background: #fff8eb;
   border: 1px solid #fcd34d;
+  border-radius: 12px;
 `;
 
 const WarningHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
 `;
 
 const WarningIcon = styled(FontAwesomeIcon)`
@@ -230,17 +230,17 @@ const WarningSubtitle = styled.span`
 `;
 
 const WarningList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
   gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
 const WarningItem = styled.li`
   display: flex;
-  align-items: flex-start;
   gap: 0.625rem;
+  align-items: flex-start;
   color: #374151;
 `;
 
@@ -266,6 +266,6 @@ const StyledInput = styled(Input)`
 
 const FormActions = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 0.75rem;
+  justify-content: flex-end;
 `;

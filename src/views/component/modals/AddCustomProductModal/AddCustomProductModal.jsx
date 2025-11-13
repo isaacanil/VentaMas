@@ -118,25 +118,25 @@ const Modal = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
-  max-height: 600px;
-  width: 100%;
-  background-color: var(--White3);
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr;
+  width: 100%;
+  height: 100%;
+  max-height: 600px;
+  overflow: hidden;
+  background-color: var(--white-3);
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 10px;
 `;
 const Head = styled.div`
-  height: 2.5em;
-  width: 100%;
-  background-color: rgb(60, 60, 60);
-  color: white;
   display: flex;
   align-items: center;
-  padding: 0 0.4em 0 1em;
   justify-content: space-between;
+  width: 100%;
+  height: 2.5em;
+  padding: 0 0.4em 0 1em;
+  color: white;
+  background-color: rgb(60 60 60);
 `;
 const Body = styled.div`
   display: grid;
@@ -147,39 +147,39 @@ const TitleSection = styled.div`
 `;
 const Container = styled.div``;
 const Box = styled.div`
-  height: 100%;
   width: 100%;
+  height: 100%;
   padding: 0.6em;
 `;
 const List = styled.ul`
-  border: 1px solid rgba(0, 0, 0, 0.161);
-  border-radius: 10px;
-  height: 100%;
-  width: 100%;
-  background-color: #bbbbbb;
-  padding: 0.4em;
-  overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.137);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: min-content;
   gap: 0.2em;
+  width: 100%;
+  height: 100%;
+  padding: 0.4em;
+  overflow: hidden;
+  background-color: #bbb;
+  border: 1px solid rgb(0 0 0 / 16.1%);
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgb(0 0 0 / 13.7%);
 `;
 const Group = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
 `;
 const Col = styled.div`
   justify-self: ${(props) => (props.justifySelf ? 'flex-end' : 'none')};
 `;
 const Flex = styled.div`
   display: flex;
-  width: 100%;
-  justify-content: ${(props) =>
-    props.justifyContent ? props.justifyContent : 'none'};
-  padding: ${(props) => (props.padding ? props.padding : ' 0 1em')};
   gap: ${(props) => (props.gap ? props.gap : '1em')};
   align-items: ${(props) => props.alignItems};
+  justify-content: ${(props) =>
+    props.justifyContent ? props.justifyContent : 'none'};
+  width: 100%;
+  padding: ${(props) => (props.padding ? props.padding : ' 0 1em')};
   background-color: ${(props) => props.backgroundColor};
 `;

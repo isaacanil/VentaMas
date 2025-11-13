@@ -18,17 +18,18 @@ export const DeleteButton = ({ fn }) => {
 };
 
 const Container = styled('div')`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   padding: 0.2em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: rgb(206 56 56);
+  border: 1px solid rgb(0 0 0 / 30.7%);
   border-radius: 100px;
-  background-color: rgb(206, 56, 56);
-  border: 1px solid rgba(0, 0, 0, 0.307);
+
   svg {
     width: 1em;
-    fill: rgb(248, 248, 248);
+    fill: rgb(248 248 248);
   }
 `;

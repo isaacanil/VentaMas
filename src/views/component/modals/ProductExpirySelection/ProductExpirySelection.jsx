@@ -13,19 +13,20 @@ import InventoryCard from './components/InventoryCard';
 import { useGetAllInventoryData } from './fbFetchAllInventoryData';
 
 const StyledPageContainer = styled.div`
-  padding: 20px;
-  background: linear-gradient(to bottom right, #f0f2f5, #c3d8ff);
-  min-height: 75vh;
   display: grid;
   gap: 1rem;
+  min-height: 75vh;
+  padding: 20px;
+  background: linear-gradient(to bottom right, #f0f2f5, #c3d8ff);
 `;
 
 const StyledCardsGroup = styled.div`
   display: grid;
+
   h3 {
-    color: #1a1a1a;
     font-size: 1rem;
     font-weight: 700;
+    color: #1a1a1a;
   }
 `;
 
@@ -36,12 +37,12 @@ const StyledCardGrid = styled.div`
 `;
 
 const ErrorBanner = styled.div`
-  margin-top: 1rem;
   padding: 12px;
-  border-radius: 8px;
-  background: #fff1f0;
+  margin-top: 1rem;
   color: #a8071a;
+  background: #fff1f0;
   border: 1px solid #ffa39e;
+  border-radius: 8px;
 `;
 
 const groupInventoryByWarehouse = (inventoryItems) => {

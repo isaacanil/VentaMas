@@ -1,89 +1,92 @@
 :root {
-  --White: rgb(255, 255, 255);
-  --White1: rgb(250, 250, 250);
-  --White2: rgb(245, 245, 245);
-  --White3: rgb(240, 240, 240);
-  --White4: rgb(235, 235, 235);
-  --White5: rgb(230, 230, 230);
-  --Gray: rgb(220, 220, 220);
-  --Gray1: rgb(210, 210, 210);
-  --Gray2: rgb(200, 200, 200);
-  --Gray3: rgb(180, 180, 180);
-  --Gray4: rgb(160, 160, 160);
-  --Gray5: rgb(140, 140, 140);
-  --Gray6: rgb(120, 120, 120);
-  --Gray7: rgb(100, 100, 100);
-  --Gray8: rgb(80, 80, 80);
-  --Gray9: rgb(70, 70, 70);
-  --Gray10: rgb(60, 60, 60);
-  --Black5: rgb(50, 50, 50);
-  --Black4: rgb(40, 40, 40);
-  --Black3: rgb(30, 30, 30);
-  --Black2: rgb(20, 20, 20);
-  --Black1: rgb(10, 10, 10);
-  --Black: rgb(0, 0, 0);
+  --white: rgb(255 255 255);
+  --white-1: rgb(250 250 250);
+  --white-2: rgb(245 245 245);
+  --white-3: rgb(240 240 240);
+  --white-4: rgb(235 235 235);
+  --white-5: rgb(230 230 230);
+  --gray: rgb(220 220 220);
+  --gray-1: rgb(210 210 210);
+  --gray-2: rgb(200 200 200);
+  --gray-3: rgb(180 180 180);
+  --gray-4: rgb(160 160 160);
+  --gray-5: rgb(140 140 140);
+  --gray-6: rgb(120 120 120);
+  --gray-7: rgb(100 100 100);
+  --gray-8: rgb(80 80 80);
+  --gray-9: rgb(70 70 70);
+  --gray-10: rgb(60 60 60);
+  --black-5: rgb(50 50 50);
+  --black-4: rgb(40 40 40);
+  --black-3: rgb(30 30 30);
+  --black-2: rgb(20 20 20);
+  --black-1: rgb(10 10 10);
+  --black: rgb(0 0 0);
 
-  --BlackOp: rgba(0, 0, 0, 0.3);
-  --BlackOp1: rgba(0, 0, 0, 0.2);
-  --BlackOp2: rgba(0, 0, 0, 0.3);
-  /*color primarios*/
+  --black-op: rgb(0 0 0 / 30%);
+  --black-op-1: rgb(0 0 0 / 20%);
+  --black-op-2: rgb(0 0 0 / 30%);
+
+  /* color primarios */
   --color: #42a5f5;
   --color-dark: #1d69a8;
   --color-main: #007bff;
 
-  /*color secundario*/
+  /* color secundario */
   --color1: #67b8de;
-  /*color terciario*/
-  --color2: #f2f7fa;
-  /*color cuaternario*/
-  --color3: #d4e3f1;
-  --color4: rgba(202, 214, 230, 0.274);
 
-  /*border*/
+  /* color terciario */
+  --color2: #f2f7fa;
+
+  /* color cuaternario */
+  --color3: #d4e3f1;
+  --color4: rgb(202 214 230 / 27.4%);
+
+  /* border */
   --border-radius-light: 4px;
   --border-radius: 7px;
   --border-radius-total: 100px;
-  --border-primary: 1px solid rgba(0, 0, 0, 0.1);
-  --border1: 1px solid rgba(0, 0, 0, 0.1);
-  --border2: 1px solid rgba(0, 0, 0, 0.2);
+  --border-primary: 1px solid rgb(0 0 0 / 10%);
+  --border1: 1px solid rgb(0 0 0 / 10%);
+  --border2: 1px solid rgb(0 0 0 / 20%);
 
-  /*font*/
-  --font-color-dark: var(--Black4);
-  --font-color-dark-medium: var(--Black4);
-  --font-color-dark-slightly: var(--Gray8);
-  --font-color4: var(--Gray8);
-  --font-color5: var(--Gray6);
+  /* font */
+  --font-color-dark: var(--black-4);
+  --font-color-dark-medium: var(--black-4);
+  --font-color-dark-slightly: var(--gray-8);
+  --font-color4: var(--gray-8);
+  --font-color5: var(--gray-6);
 
-  /*padding*/
-  --box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.2);
+  /* padding */
+  --box-shadow: 0px 15px 25px rgb(0 0 0 / 20%);
   --padding: 0.4em;
   --padding1: 1em;
 
-  /*gap*/
+  /* gap */
   --gap: 0.5em;
   --gap1: 1em;
   --gap2: 1.5em;
   --gap3: 2em;
 
-  /*blur*/
+  /* blur */
   --blur: 2px;
 
-  /*Media Querys*/
-  --WdMedium: 800px;
+  /* Media Querys */
+  --wd-medium: 800px;
   --max-width: 1000px;
 
-  /*Menu*/
+  /* Menu */
 
-  --menu-items: rgb(241, 241, 241);
+  --menu-items: rgb(241 241 241);
 
-  --btnMenuItem-bg-color: var(--menu-items);
-  --btnMenuItem-width: 1.6em;
-  --btnMenuItem-height: 2px;
+  --btn-menu-item-bg-color: var(--menu-items);
+  --btn-menu-item-width: 1.6em;
+  --btn-menu-item-height: 2px;
 }
 
 /* @media (prefers-color-scheme: light) {
     :root {
-      --bg1: var(--White);
-      --bg2: var(--White1);
+      --bg1: var(--white);
+      --bg2: var(--white-1);
     }
   } */

@@ -18,6 +18,10 @@ import { useFilterBar } from './hooks/useFilterBar';
 
 const { RangePicker } = DatePicker; // Destructure RangePicker
 
+const StyledRangePicker = styled(RangePicker)`
+  width: ${(props) => (props.$fullWidth ? '100%' : 'auto')};
+`;
+
 export const FilterBar = memo(
   ({
     config = {},
@@ -113,8 +117,8 @@ export const FilterBar = memo(
           case 'dateRange': // Added case for dateRange
             return (
               <FilterGroup key={filterConfig.key}>
-                <RangePicker
-                  style={{ width: isInDrawer ? '100%' : 'auto' }} // Full width in drawer
+                <StyledRangePicker
+                  $fullWidth={isInDrawer}
                   format="DD/MM/YYYY" // Adjust format as needed
                   value={
                     state.filters[filterConfig.key]?.startDate &&
@@ -281,26 +285,26 @@ export const FilterBar = memo(
 FilterBar.displayName = 'FilterBar';
 
 const FilterContainer = styled.div`
+  padding: 0.2rem;
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 0.2rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 
-  @media (max-width: 768px) {
-    border-radius: 0;
-    padding: 0.5rem;
+  @media (width <= 768px) {
     position: sticky;
     top: 0;
     z-index: 100;
+    padding: 0.5rem;
+    border-radius: 0;
   }
 `;
 
 const FilterWrapper = styled.div`
   display: flex;
-  gap: 0.3rem;
   flex-wrap: wrap;
+  gap: 0.3rem;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     gap: 0.5rem;
 
     /* Hacer que los elementos ocupen todo el ancho en móvil */
@@ -320,7 +324,7 @@ const FilterWrapper = styled.div`
 
 const FilterGroup = styled.div`
   /* Asegurar que los inputs y selectores tengan el ancho completo en móvil */
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .ant-input,
     .ant-select,
     .ant-picker {
@@ -335,31 +339,32 @@ const ButtonGroup = styled.div`
   gap: 0.3rem;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     margin-left: auto;
   }
 `;
 
 const DesktopWrapper = styled.div`
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     display: none;
   }
 `;
 
 const MobileWrapper = styled.div`
   display: none;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     display: block;
   }
 `;
 
 const MobileHeader = styled.div`
-  display: flex;
-  gap: 8px;
-  background-color: white;
   position: sticky;
   top: 0;
   z-index: 100;
+  display: flex;
+  gap: 8px;
+  background-color: white;
 `;
 
 const MobileFilterWrapper = styled.div`
@@ -376,13 +381,13 @@ const MobileFilterWrapper = styled.div`
 
 const DrawerFooter = styled.div`
   position: absolute;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  padding: 16px;
-  background: white;
-  border-top: 1px solid #f0f0f0;
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+  padding: 16px;
+  background: white;
+  border-top: 1px solid #f0f0f0;
 `;

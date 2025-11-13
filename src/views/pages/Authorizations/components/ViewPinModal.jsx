@@ -17,15 +17,15 @@ const MODULE_LABELS = {
 };
 
 const PinDisplay = styled.div`
-  margin: 12px 0;
   padding: 12px;
-  border-radius: 8px;
-  background: #001529;
-  color: #fff;
+  margin: 12px 0;
   font-family: 'Roboto Mono', monospace;
   font-size: 20px;
-  letter-spacing: 3px;
+  color: #fff;
   text-align: center;
+  letter-spacing: 3px;
+  background: #001529;
+  border-radius: 8px;
 `;
 
 export const ViewPinModal = ({
@@ -172,7 +172,7 @@ export const ViewPinModal = ({
       ]}
       width={500}
       centered
-      destroyOnClose
+      destroyOnHidden
       title={null}
     >
       <div style={{ padding: '8px 0' }}>{renderView()}</div>

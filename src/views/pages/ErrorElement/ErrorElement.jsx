@@ -36,6 +36,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <AnimatePresence>
             <LogoWrapper
+              key="logo"
               variants={ANIMATIONS.logo}
               initial="hidden"
               animate="visible"
@@ -44,6 +45,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
             </LogoWrapper>
 
             <StyledAlert
+              key="alert"
               icon={<BugOutlined className="error-icon" />}
               message={
                 <AntTitle level={4} style={{ margin: 0 }}>
@@ -55,7 +57,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
               showIcon
             />
 
-            <ReportSection>
+            <ReportSection key="report">
               <Checkbox onChange={handleReportChange}>
                 <Text strong>{MESSAGES.REPORT_ERROR}</Text>
               </Checkbox>
@@ -64,7 +66,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
               </Text>
             </ReportSection>
 
-            <ButtonGroup>
+            <ButtonGroup key="actions">
               {canGoBack && (
                 <Button
                   icon={<RollbackOutlined />}
@@ -86,9 +88,9 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
                 {MESSAGES.GO_HOME}
               </Button>
             </ButtonGroup>
-            <br />
             {user?.role === 'dev' && (
               <ErrorDetails
+                key="details"
                 errorStackTrace={errorStackTrace}
                 variants={ANIMATIONS.errorDetails}
               />
@@ -106,9 +108,9 @@ ErrorElement.propTypes = {
 };
 
 const Container = styled(motion.div)`
-  height: 100vh;
   display: flex;
   justify-content: center;
+  height: 100vh;
   overflow-y: auto;
 `;
 
@@ -116,14 +118,14 @@ const LogoWrapper = styled(motion.div)`
   display: flex;
   justify-content: center;
   margin-bottom: 2.5rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 10%));
 `;
 
 const StyledAlert = styled(Alert)`
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 0, 0, 0.1);
   margin: 1em 0;
+  border: 1px solid rgb(255 0 0 / 10%);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgb(0 0 0 / 8%);
 
   .error-icon {
     font-size: 28px;
@@ -136,20 +138,20 @@ const StyledAlert = styled(Alert)`
 `;
 
 const ReportSection = styled(Space)`
-  padding: 1.5rem;
-  background: var(--color-background-light);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--color-background-light);
+  border: 1px solid rgb(0 0 0 / 6%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
 
   .report-description {
+    padding-left: 24px;
     font-size: 0.9rem;
     opacity: 0.85;
-    padding-left: 24px;
   }
 
   .ant-checkbox-wrapper:hover {
@@ -158,24 +160,26 @@ const ReportSection = styled(Space)`
 `;
 
 const ButtonGroup = styled(Space)`
-  width: 100%;
-  justify-content: center;
   gap: 16px !important;
+  justify-content: center;
+  width: 100%;
   margin-top: 1rem;
 
   .back-button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
     &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
       transform: translateX(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
   }
 
   .home-button {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
     &:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
   }
 

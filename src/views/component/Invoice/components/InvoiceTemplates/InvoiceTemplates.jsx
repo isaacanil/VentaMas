@@ -33,24 +33,24 @@ const InvoiceContainer = styled.div`
   width: ${(props) => TEMPLATES_CONFIG[props.template]?.width};
   height: ${(props) => TEMPLATES_CONFIG[props.template]?.height};
   padding: ${(props) => TEMPLATES_CONFIG[props.template]?.padding};
-  background: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin: 20px auto;
+  background: white;
+  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
 
   @media print {
-    box-shadow: none;
     margin: 0;
+    box-shadow: none;
   }
 `;
 
 const PreviewContainer = styled.div`
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: flex-start;
-  background: #f0f0f0;
-  padding: 0px;
+  justify-content: center;
+  width: 100%;
   min-height: 50vh;
+  padding: 0;
+  background: #f0f0f0;
 `;
 
 export default function InvoiceTemplates({

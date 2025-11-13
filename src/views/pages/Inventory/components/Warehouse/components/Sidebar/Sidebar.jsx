@@ -32,18 +32,18 @@ import { WarehouseForm } from '../../forms/WarehouseForm/WarehouseForm';
 const SidebarContainer = styled.div`
   display: flex;
   flex-direction: column;
+  min-width: 0;
   height: 100%;
   border-right: 1px solid #eee;
-  min-width: 0;
 `;
 
 const TreeWrapper = styled.div`
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  width: 100%;
-  padding: 10px 0;
   display: flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 0;
 `;
 
 const SidebarSummaryFooter = styled.div`
@@ -51,34 +51,34 @@ const SidebarSummaryFooter = styled.div`
   flex-direction: column;
   gap: 4px;
   padding: 10px 16px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
   font-size: 0.8rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+  color: #f8fafc;
+  background: rgb(15 23 42 / 92%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 20%);
 `;
 
 const SummaryPrimary = styled.span`
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
   font-weight: 600;
   color: #f8fafc;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const SummaryHeader = styled.div`
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
 `;
 
 const SummaryStatus = styled.span`
-  color: ${({ $loading }) => ($loading ? '#bfdbfe' : '#bef264')};
-  font-size: 0.72rem;
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
+  font-size: 0.72rem;
+  color: ${({ $loading }) => ($loading ? '#bfdbfe' : '#bef264')};
 `;
 
 // Function to get level actions (no change needed here)

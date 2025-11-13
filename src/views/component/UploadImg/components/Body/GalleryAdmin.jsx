@@ -37,14 +37,14 @@ export const GalleryAdmin = ({ images, setImg }) => {
 };
 
 const Container = styled.div`
-  background-color: #fafafa;
-  border-radius: 8px;
   display: grid;
   grid-template-rows: min-content 1fr;
-  align-items: stretch;
   gap: 0.8em;
-  overflow: hidden;
+  align-items: stretch;
   padding: 0.4em;
+  overflow: hidden;
+  background-color: #fafafa;
+  border-radius: 8px;
 `;
 const Header = styled.div`
   h2 {
@@ -53,34 +53,35 @@ const Header = styled.div`
   }
 `;
 const Body = styled.div`
-  background-color: var(--White3);
-  border-radius: var(--border-radius);
+  position: relative;
   display: grid;
   grid-template-rows: 1fr;
-  margin: 0;
   padding: 0.4em;
+  margin: 0;
   overflow-y: scroll;
-  position: relative;
+  background-color: var(--white-3);
+  border-radius: var(--border-radius);
 
   .wrapper {
-    padding: 0em 1em;
-    margin: 0;
     display: grid;
-    justify-items: center;
-    justify-content: center;
-    align-items: flex-start;
-    align-content: flex-start;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    //grid-template-rows: repeat(3, minmax(100px, 1fr));
     grid-auto-rows: min-content;
     gap: 1em;
+    place-content: flex-start center;
+    place-items: flex-start center;
+    padding: 0 1em;
+    margin: 0;
+
+    /* grid-template-rows: repeat(3, minmax(100px, 1fr)); */
   }
+
   .imgContainer {
     width: 100px;
     height: 100px;
-    border-radius: 8px;
     overflow: hidden;
     background-color: white;
+    border-radius: 8px;
+
     img {
       width: 100%;
       height: 100%;

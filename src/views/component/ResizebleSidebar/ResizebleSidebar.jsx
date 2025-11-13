@@ -13,9 +13,10 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+
   /* background-color: #ffffff; */
 
-  // padding: 0.4em 0;
+  /* padding: 0.4em 0; */
   height: 100%;
 `;
 

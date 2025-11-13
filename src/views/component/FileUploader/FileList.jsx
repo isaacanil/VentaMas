@@ -31,11 +31,11 @@ const FileInfo = styled.div`
 `;
 
 const DeleteButton = styled.button`
-  background: none;
-  border: none;
+  padding: 5px;
   color: #ff4d4f;
   cursor: pointer;
-  padding: 5px;
+  background: none;
+  border: none;
 
   &:hover {
     color: #cf1322;
@@ -52,12 +52,12 @@ const FileGroup = styled.div`
 `;
 
 const PreviewButton = styled.button`
-  background: none;
-  border: none;
-  color: #1890ff;
-  cursor: pointer;
   padding: 5px;
   margin-right: 8px;
+  color: #1890ff;
+  cursor: pointer;
+  background: none;
+  border: none;
 
   &:hover {
     color: #40a9ff;
@@ -66,15 +66,15 @@ const PreviewButton = styled.button`
 
 const GroupTitle = styled.h4`
   margin: 12px 0;
-  color: #666;
   font-weight: 500;
+  color: #666;
 `;
 
 const FileIcon = styled.span`
-  margin-right: 8px;
-  font-size: 16px;
   display: flex;
   align-items: center;
+  margin-right: 8px;
+  font-size: 16px;
 `;
 
 const FileList = ({

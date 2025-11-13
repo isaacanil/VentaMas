@@ -27,25 +27,25 @@ export const BarCodeControl = ({ product, value }) => {
   );
 };
 const Container = styled.div`
-  width: 100%;
   display: grid;
-  align-items: center;
+  place-items: center center;
   justify-content: center;
-
-  justify-items: center;
+  width: 100%;
 `;
 
 const StyledBarcode = styled(Barcode)`
+  width: 100%;
+
   /* Estilos CSS aquí */
   height: 3em;
-  width: 100%;
 `;
 const Icon = styled.div`
-  width: 100%;
-  height: 6.4em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 6.4em;
+
   svg {
     font-size: 4em;
   }

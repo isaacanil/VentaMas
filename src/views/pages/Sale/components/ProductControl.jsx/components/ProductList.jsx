@@ -111,37 +111,37 @@ export const ProductList = ({ products, productsLoading, statusMeta = {} }) => {
 };
 
 const ProductsListContainer = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #ccc;
-  border-left: none;
-  border-right: none;
-  background-color: var(--colo2);
-  min-height: 0;
-  width: 100%;
   position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  background-color: var(--colo2);
+  border: 1px solid #ccc;
+  border-right: none;
+  border-left: none;
 `;
 
 const ProductsScrollArea = styled.div`
-  flex: 1;
+  position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
   padding: 0.4em;
   overflow: auto;
-  position: relative;
 `;
 
 const VirtualRowsContainer = styled.div`
-  height: ${({ totalSize }) => `${totalSize}px`};
-  width: 100%;
   position: relative;
+  width: 100%;
+  height: ${({ totalSize }) => `${totalSize}px`};
 `;
 
 const FloatingStatusBar = styled(StatusBar)`
   position: absolute;
-  bottom: 0.9rem;
   right: 0.9rem;
-  margin: 0;
+  bottom: 0.9rem;
   z-index: 10;
+  margin: 0;
 `;

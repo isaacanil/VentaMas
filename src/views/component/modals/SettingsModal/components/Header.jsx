@@ -28,10 +28,10 @@ export const Header = ({ config }) => {
   );
 };
 const Container = styled.div`
-  height: 2.6em;
   display: grid;
-  padding: 0 1em;
-  align-items: center;
   grid-template-columns: 1fr min-content;
+  align-items: center;
+  height: 2.6em;
+  padding: 0 1em;
   border-bottom: ${(props) => props.theme.border.base};
 `;

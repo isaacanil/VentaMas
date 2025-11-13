@@ -26,10 +26,10 @@ export const CashReconciliation = () => {
 };
 
 const Container = styled.div`
-  height: 100%;
-  width: 100%;
   display: grid;
   grid-template-rows: min-content 1fr;
-  background-color: var(--color2);
+  width: 100%;
+  height: 100%;
   overflow-y: hidden;
+  background-color: var(--color2);
 `;

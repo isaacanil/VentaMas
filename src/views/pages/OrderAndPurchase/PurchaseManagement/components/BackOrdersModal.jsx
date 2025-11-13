@@ -245,23 +245,23 @@ const ModalContent = styled.div`
 
 const CompactStatsSection = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
   background-color: #fafafa;
-  border-radius: 6px;
   border: 1px solid #f0f0f0;
+  border-radius: 6px;
 `;
 
 const QuantityInputSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 
   label {
     font-size: 14px;
-    color: #333;
     font-weight: 500;
+    color: #333;
   }
 `;
 
@@ -278,7 +278,7 @@ const QuickStats = styled.div`
 `;
 
 const SectionTitle = styled.h4`
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 500;
   color: #333;

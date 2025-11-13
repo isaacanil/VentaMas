@@ -118,16 +118,15 @@ export const OutputProductEntry = () => {
   );
 };
 const Container = styled.div`
-  background-color: var(--White);
-
+  position: relative;
+  z-index: 2;
   display: grid;
   gap: 0.2em;
   padding: 0.2em 1em 0.4em;
-  position: relative;
-  z-index: 2;
+  background-color: var(--white);
 `;
 const Row = styled.div`
-  color: rgb(37, 37, 37);
+  color: rgb(37 37 37);
   display: grid;
   position: relative;
   gap: 1em;
@@ -140,9 +139,10 @@ const Row = styled.div`
 `;
 const Col = styled.div`
   display: flex;
-  font-weight: 500;
-  min-width: 2em;
   align-items: center;
+  min-width: 2em;
+  font-weight: 500;
+
   span {
     font-size: 12px;
     line-height: 12px;
@@ -155,14 +155,16 @@ const Group = styled.div`
   width: 100%;
   height: 100%;
   padding: 0.5em;
-  border-radius: 0.5em;
-  background-color: var(--White);
-  border: 1px solid var(--Gray-300);
   cursor: pointer;
+  background-color: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 0.5em;
   transition: all 0.2s ease-in-out;
+
   &:hover {
-    background-color: var(--Gray-100);
+    background-color: var(--gray-100);
   }
+
   span {
     font-size: 12px;
     line-height: 12px;

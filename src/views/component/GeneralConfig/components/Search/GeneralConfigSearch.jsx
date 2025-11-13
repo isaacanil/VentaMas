@@ -230,43 +230,43 @@ export const GeneralConfigSearch = ({
 };
 
 const SearchContainer = styled.div`
-  width: 100%;
   display: flex;
   justify-content: center;
+  width: 100%;
 `;
 
 const SearchInner = styled.div`
+  position: relative;
   width: 100%;
   max-width: 640px;
-  position: relative;
   padding: 0 1rem 0.8rem;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0 0.4rem 0.6rem;
   }
 `;
 
 const SearchField = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.6rem;
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 999px;
+  align-items: center;
   padding: 0.45rem 0.85rem;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  background: #fff;
+  border: 1px solid rgb(15 23 42 / 12%);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgb(15 23 42 / 8%);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
   &:focus-within {
     border-color: var(--primary-color, #1677ff);
-    box-shadow: 0 12px 28px rgba(22, 119, 255, 0.18);
+    box-shadow: 0 12px 28px rgb(22 119 255 / 18%);
   }
 
-  @media (max-width: 768px) {
-    padding: 0.4rem 0.7rem;
+  @media (width <= 768px) {
     gap: 0.5rem;
+    padding: 0.4rem 0.7rem;
   }
 `;
 
@@ -275,7 +275,7 @@ const SearchIcon = styled.span`
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgb(0 0 0 / 45%);
 
   svg {
     font-size: 1rem;
@@ -284,31 +284,31 @@ const SearchIcon = styled.span`
 
 const SearchInput = styled.input`
   flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgb(0 0 0 / 88%);
+  outline: none;
+  background: transparent;
+  border: none;
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.45);
+    color: rgb(0 0 0 / 45%);
   }
 `;
 
 const SearchClearButton = styled.button`
-  border: none;
-  background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(0, 0, 0, 0.45);
   padding: 0.1rem;
+  color: rgb(0 0 0 / 45%);
   cursor: pointer;
+  background: transparent;
+  border: none;
   transition: color 0.2s ease;
 
   &:hover {
-    color: rgba(0, 0, 0, 0.75);
+    color: rgb(0 0 0 / 75%);
   }
 
   svg {
@@ -319,22 +319,22 @@ const SearchClearButton = styled.button`
 const SearchDropdown = styled.div`
   position: absolute;
   top: calc(100% + 0.35rem);
-  left: 1rem;
   right: 1rem;
-  background: #ffffff;
+  left: 1rem;
+  z-index: 6;
+  max-height: 320px;
+  padding: 0.4rem 0;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgb(15 23 42 / 8%);
   border-radius: 16px;
   box-shadow:
-    0 26px 66px rgba(15, 23, 42, 0.16),
-    0 12px 24px rgba(15, 23, 42, 0.12);
-  padding: 0.4rem 0;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  max-height: 320px;
-  overflow-y: auto;
-  z-index: 6;
+    0 26px 66px rgb(15 23 42 / 16%),
+    0 12px 24px rgb(15 23 42 / 12%);
 
-  @media (max-width: 768px) {
-    left: 0.4rem;
+  @media (width <= 768px) {
     right: 0.4rem;
+    left: 0.4rem;
   }
 `;
 
@@ -348,13 +348,13 @@ const SearchOptionButton = styled.button`
   flex-direction: column;
   gap: 0.3rem;
   cursor: pointer;
-  color: rgba(15, 23, 42, 0.92);
+  color: rgb(15 23 42 / 92%);
   transition: background 0.2s ease;
 
   &:hover,
   &:focus {
     outline: none;
-    background: rgba(22, 119, 255, 0.12);
+    background: rgb(22 119 255 / 12%);
   }
 
   ${(props) =>
@@ -368,26 +368,26 @@ const SearchOptionButton = styled.button`
 const SearchOptionTitle = styled.span`
   display: block;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgb(0 0 0 / 88%);
 `;
 
 const SearchOptionMeta = styled.span`
   display: block;
   font-size: 0.75rem;
+  color: rgb(0 0 0 / 48%);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(0, 0, 0, 0.48);
 `;
 
 const SearchOptionDescription = styled.span`
   display: block;
   font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.65);
   line-height: 1.35;
+  color: rgb(0 0 0 / 65%);
 `;
 
 const EmptyState = styled.div`
   padding: 0.8rem 1rem;
-  color: rgba(0, 0, 0, 0.45);
   font-size: 0.9rem;
+  color: rgb(0 0 0 / 45%);
 `;

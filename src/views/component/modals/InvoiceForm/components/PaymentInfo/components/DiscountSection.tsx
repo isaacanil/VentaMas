@@ -91,10 +91,10 @@ export const DiscountSection: FC<DiscountSectionProps> = ({
 };
 
 const DiscountContainer = styled.div`
-  width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  margin: 0 auto;
 `;
 
 const DiscountSectionWrapper = styled.div`
@@ -103,8 +103,8 @@ const DiscountSectionWrapper = styled.div`
   gap: 0.75rem;
   padding: 1rem;
   background: #fafafa;
-  border-radius: 8px;
   border: 1px solid #e8e8e8;
+  border-radius: 8px;
 `;
 
 const SectionTitle = styled.div`
@@ -117,11 +117,11 @@ const SectionTitle = styled.div`
 
 const DiscountControls = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
-  flex-wrap: wrap;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -129,9 +129,9 @@ const DiscountControls = styled.div`
 
 const TypeButton = styled(Button)`
   display: inline-flex;
+  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
   min-width: 160px;
   padding: 0 0.75rem;
 
@@ -142,6 +142,6 @@ const TypeButton = styled(Button)`
 
 const DiscountHelp = styled.span`
   font-size: 12px;
-  color: #8c8c8c;
   line-height: 1.4;
+  color: #8c8c8c;
 `;

@@ -8,36 +8,38 @@ const Contained = styled.div`
 `;
 
 const StyledCard = styled(Contained)`
+  margin-bottom: 16px;
   background: #fafafa;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 
 const Group = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  justify-items: center;
   gap: 16px;
-  @media (max-width: 768px) {
+  justify-items: center;
+
+  @media (width <= 768px) {
     justify-items: start;
   }
 `;
 
 const TotalItem = styled(Statistic)`
   .ant-statistic-title {
-    color: #8c8c8c;
     font-size: 14px;
+    color: #8c8c8c;
   }
+
   .ant-statistic-content {
-    color: #262626;
     font-size: 16px;
+    color: #262626;
   }
 `;
 
 const GrandTotalItem = styled(TotalItem)`
-  color: #cf1322;
   font-weight: bold;
+  color: #cf1322;
 `;
 
 const TotalsSummary = ({ replenishments }) => {

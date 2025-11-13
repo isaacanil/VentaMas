@@ -30,8 +30,8 @@ export const CustomProduct = ({ product }) => {
 };
 const ProductContainer = styled.div`
   border-radius: 6px;
-  border: 4px solid rgb(250, 234, 89);
-  background-color: rgb(250, 234, 89);
+  border: 4px solid rgb(250 234 89);
+  background-color: rgb(250 234 89);
   overflow: hidden;
   display: grid;
   gap: 10px;
@@ -75,7 +75,8 @@ const ProductImgWrapper = styled.div`
   height: 100%;
   width: 80px;
   border-radius: 6px;
-  // background-color: green;
+
+  /* background-color: green; */
   padding: 4px;
   transition: all 400ms ease-in-out;
   ${(props) => {
@@ -120,12 +121,11 @@ const ProductImgWrapper = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 80px;
     width: 80px;
     font-weight: 700;
     height: 100%;
-    color: rgba(0, 0, 0, 0.2);
-    background-color: var(--White3);
+    color: rgb(0 0 0 / 20%);
+    background-color: var(--white-3);
     border-radius: 7px;
   }
   ${(props) => {
@@ -153,7 +153,7 @@ const Body = styled.div`
 `;
 const Main = styled.div``;
 const Title = styled.div`
-  color: var(--Gray6);
+  color: var(--gray-6);
   width: 100%;
   font-size: 13.5px;
   line-height: 1pc;
@@ -165,7 +165,8 @@ const Title = styled.div`
   letter-spacing: 0.2px;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  //white-space: nowrap;
+
+  /* white-space: nowrap; */
   text-transform: capitalize;
   text-overflow: ellipsis;
   overflow: hidden;

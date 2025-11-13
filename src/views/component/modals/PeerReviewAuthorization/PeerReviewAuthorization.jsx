@@ -10,20 +10,20 @@ import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVe
 import { Header } from './components/Header/Header';
 
 const ErrorMessage = styled.div`
-  font-size: 1em;
-  min-height: 2em;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffebee;
-  color: #d32f2f;
-  border-radius: 4px;
-  border: 1px solid #ef5350;
-  margin: 0;
+  min-height: 2em;
   padding: 8px 12px;
+  margin: 0;
   margin-top: 1em;
+  font-size: 1em;
   font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 `;
 
 export const PeerReviewAuthorization = ({

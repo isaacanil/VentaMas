@@ -102,20 +102,20 @@ const Card = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: ${spacing.md};
-  padding: ${spacing.lg};
-  border-radius: ${radii.lg};
-  background: ${colors.background.surface};
-  border: 1px solid ${colors.stroke.subtle};
-  box-shadow: ${shadows.md};
   width: 100%;
   max-width: 360px;
+  padding: ${spacing.lg};
+  background: ${colors.background.surface};
+  border: 1px solid ${colors.stroke.subtle};
+  border-radius: ${radii.lg};
+  box-shadow: ${shadows.md};
 `;
 
 const CardHeader = styled.div`
   display: flex;
+  gap: ${spacing.sm};
   align-items: center;
   justify-content: space-between;
-  gap: ${spacing.sm};
 `;
 
 const Content = styled.div`
@@ -125,16 +125,16 @@ const Content = styled.div`
 `;
 
 const DatePill = styled.span`
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   padding: 0.25rem 0.75rem;
-  border-radius: ${radii.pill};
-  background: ${colors.layers.neutralSoft};
-  color: ${colors.text.secondary};
   font-size: 0.75rem;
   font-weight: 600;
+  color: ${colors.text.secondary};
   letter-spacing: 0.02em;
+  background: ${colors.layers.neutralSoft};
+  border-radius: ${radii.pill};
 `;
 
 const EmptyHint = styled.div`
@@ -146,8 +146,8 @@ const EmptyHint = styled.div`
 
 const MetaRow = styled.div`
   display: flex;
-  gap: ${spacing.md};
   flex-wrap: wrap;
+  gap: ${spacing.md};
 `;
 
 const MetaItem = styled.div`
@@ -158,10 +158,10 @@ const MetaItem = styled.div`
 
 const MetaLabel = styled.span`
   font-size: 0.7rem;
+  font-weight: 600;
+  color: ${colors.text.secondary};
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: ${colors.text.secondary};
-  font-weight: 600;
 `;
 
 const MetaValue = styled.span`
@@ -176,10 +176,10 @@ const MeasurementIcon = styled.span`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: rgba(148, 163, 184, 0.18);
   color: ${colors.text.secondary};
   cursor: help;
+  background: rgb(148 163 184 / 18%);
+  border-radius: 50%;
 
   svg {
     font-size: 0.95rem;
@@ -187,7 +187,7 @@ const MeasurementIcon = styled.span`
 
   &:hover {
     color: ${colors.brand.primary};
-    background: rgba(59, 130, 246, 0.15);
+    background: rgb(59 130 246 / 15%);
   }
 `;
 
@@ -195,6 +195,7 @@ const loadingShimmer = keyframes`
     0% {
         background-position: -120px 0;
     }
+
     100% {
         background-position: 120px 0;
     }
@@ -211,7 +212,6 @@ const LoadingBar = styled.span`
   display: block;
   width: ${({ $width }) => $width || '100%'};
   height: ${({ $height }) => $height || '14px'};
-  border-radius: ${radii.pill};
   background: linear-gradient(
     90deg,
     ${colors.skeleton.base} 0%,
@@ -219,5 +219,6 @@ const LoadingBar = styled.span`
     ${colors.skeleton.base} 100%
   );
   background-size: 200% 100%;
+  border-radius: ${radii.pill};
   animation: ${loadingShimmer} 1.4s ease-in-out infinite;
 `;

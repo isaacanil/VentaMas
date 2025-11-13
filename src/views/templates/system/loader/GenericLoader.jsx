@@ -13,13 +13,13 @@ gsap.registerPlugin(SplitText);
 const SplashWrapper = styled.div`
   position: fixed;
   inset: 0;
-  background: #000;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
   user-select: none;
+  background: #000;
 `;
 
 const Title = styled.h1`
@@ -35,8 +35,8 @@ const Subtitle = styled.h2`
   font-size: 1rem;
   font-weight: 400;
   color: #d1d1d1; /* gris suave */
-  letter-spacing: 0.25em;
   text-transform: uppercase;
+  letter-spacing: 0.25em;
 `;
 
 const getThemeStyles = (theme) => {
@@ -48,52 +48,52 @@ const getThemeStyles = (theme) => {
 };
 
 const SplashMessage = styled.p`
-  margin: 1.5rem 0 0;
   max-width: 320px;
-  text-align: center;
+  margin: 1.5rem 0 0;
   font-size: 1rem;
   line-height: 1.5;
   color: ${({ theme }) => getThemeStyles(theme).textColor};
+  text-align: center;
 `;
 
 const MinimalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  padding: 24px;
   z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 24px;
   pointer-events: ${({ $active }) => ($active ? 'auto' : 'none')};
-  opacity: ${({ $active }) => ($active ? 1 : 0)};
-  transition: opacity 0.3s ease;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0) 0%,
-    rgba(15, 23, 42, 0.12) 45%,
-    rgba(15, 23, 42, 0.28) 100%
+    rgb(15 23 42 / 0%) 0%,
+    rgb(15 23 42 / 12%) 45%,
+    rgb(15 23 42 / 28%) 100%
   );
+  opacity: ${({ $active }) => ($active ? 1 : 0)};
+  transition: opacity 0.3s ease;
 `;
 
 const MinimalCard = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
-  background: rgba(15, 23, 42, 0.78);
-  backdrop-filter: blur(10px);
-  border-radius: 18px;
+  align-items: center;
+  width: 100%;
+  max-width: min(420px, calc(100vw - 48px));
   padding: 14px 20px;
   color: #fff;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
-  max-width: min(420px, calc(100vw - 48px));
-  width: 100%;
+  background: rgb(15 23 42 / 78%);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgb(15 23 42 / 35%);
+  backdrop-filter: blur(10px);
 `;
 
 const MinimalLogo = styled.img`
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
   object-fit: contain;
-  flex-shrink: 0;
 `;
 
 const MinimalMessage = styled.p`

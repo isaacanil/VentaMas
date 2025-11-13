@@ -111,5 +111,5 @@ ${({ type }) =>
   ${({ color }) => color === 'secondary' && 'color: var(--color1);'}
   ${({ color }) => color === 'tertiary' && 'color: var(--color2);'}
   ${({ color }) => color === 'quaternary' && 'color: var(--color3);'}
-  ${({ color }) => color === 'gray-dark' && 'color: var(--Gray8);'}
+  ${({ color }) => color === 'gray-dark' && 'color: var(--gray-8);'}
 `;

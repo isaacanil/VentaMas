@@ -40,9 +40,10 @@ const FormContainer = styled(Form)`
 
 const StyledButton = styled(Button)`
   width: 100%;
-  background-color: #1890ff;
   color: white;
-  &:hover {
+  background-color: #1890ff;
+
+    &:hover {
     background-color: #40a9ff;
   }
 `;
@@ -250,7 +251,7 @@ export function ProductStockForm() {
             description={productsErrorMessage}
             type="error"
             showIcon
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: '16px' }}
           />
         )}
         {batchesErrorMessage && (
@@ -259,7 +260,7 @@ export function ProductStockForm() {
             description={batchesErrorMessage}
             type="error"
             showIcon
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: '16px' }}
           />
         )}
         <FormContainer form={form} layout="vertical" onFinish={handleSubmit}>
@@ -353,7 +354,7 @@ export function ProductStockForm() {
                 <span
                   style={{
                     whiteSpace: 'nowrap',
-                    color: remainingStock < 0 ? 'red' : 'black',
+                    color: `${remainingStock < 0 ? 'red' : 'black'}`,
                   }}
                 >
                   {` (Máximo: ${totalStockFromBatches - totalStockFromProducts})`}
@@ -366,7 +367,7 @@ export function ProductStockForm() {
                 message="El máximo disponible ha sido alcanzado. Por favor intenta con otro producto o lote."
                 type="warning"
                 showIcon
-                style={{ marginBottom: 16 }}
+                style={{ marginBottom: '16px' }}
               />
             )
           )}
@@ -389,7 +390,7 @@ export function ProductStockForm() {
                   message="El stock ingresado excede el total disponible. Por favor ajusta la cantidad."
                   type="error"
                   showIcon
-                  style={{ marginTop: 8 }}
+                  style={{ marginTop: '8px' }}
                 />
               )}
             </Form.Item>

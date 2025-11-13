@@ -69,6 +69,6 @@ const Container = styled.div`
 
 const TimeBadge = styled.div`
   display: flex;
-  justify-content: flex-start;
   align-items: center;
+  justify-content: flex-start;
 `;

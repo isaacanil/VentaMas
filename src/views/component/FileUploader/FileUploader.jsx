@@ -279,7 +279,7 @@ const FileUploader = ({
     };
 
     return (
-      <Badge count={fileCount} style={{ marginLeft: 8 }}>
+      <Badge count={fileCount} style={{ marginLeft: '8px' }}>
         <Button
           icon={<FileOutlined />}
           onClick={handleOpenDrawer}

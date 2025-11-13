@@ -132,11 +132,11 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
 };
 
 const ImageContainer = styled.div`
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
 `;
 
 const CellImage = styled.img`

@@ -173,34 +173,33 @@ const Header = styled.div`
   width: 100%;
 `;
 const Body = styled.div`
-  height: 100%;
   width: 100%;
+  height: 100%;
   overflow-y: hidden;
 `;
 const Table = styled.div`
-  max-width: 1100px;
   width: 100%;
-  overflow-y: hidden;
-  margin: 0 auto;
+  max-width: 1100px;
   height: 100%;
+  margin: 0 auto;
+  overflow-y: hidden;
   background-color: aliceblue;
-
-  background-color: var(--White);
+  background-color: var(--white);
 `;
 const TableItems = styled.div`
+  position: relative;
   display: grid;
-  height: calc(100% - 2.6em);
-  overflow-y: scroll;
   align-content: flex-start;
   align-items: flex-start;
-  position: relative;
+  height: calc(100% - 2.6em);
+  overflow-y: scroll;
 `;
 
 const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 3em 1fr 1fr 1fr 1fr 5em;
   align-items: center;
-  background-color: var(--White);
+  background-color: var(--white);
   padding: 8px 24px 8px 8px;
   gap: 1em;
   font-size: 14px;
@@ -213,7 +212,7 @@ const TableHeader = styled.div`
   ${({ isScrolled }) =>
     isScrolled &&
     `
-    background-color: var(--White);
+    background-color: var(--white);
     border-bottom: 1px solid rgba(0, 0, 0, 0.100);
   `}
 `;
@@ -221,12 +220,13 @@ const TableHeader = styled.div`
 const Row = styled.div`
   display: grid;
   grid-template-columns: 3em 1fr 1fr 1fr 1fr 5em;
-  align-items: center;
   gap: 1em;
-  border-radius: 4px;
-  padding: 8px 8px 8px 8px;
+  align-items: center;
+  padding: 8px;
   font-size: 14px;
+  border-radius: 4px;
   transition: all 0.2s linear;
+
   :hover {
     background-color: #f5f5f5;
   }

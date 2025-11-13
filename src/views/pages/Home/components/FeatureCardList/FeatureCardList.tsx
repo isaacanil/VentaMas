@@ -85,17 +85,18 @@ export const FeatureCardList = ({
 const Container = styled.div`
   display: grid;
   gap: 0.8em;
-  background-color: #fff;
   padding: 1em;
+  background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 5%);
 `;
 
 const Wrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 0.8em;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -103,10 +104,10 @@ const Wrapper = styled.div`
 const Category = styled.div`
   display: grid;
   gap: 0.2em;
-  padding: 0.6em;
   align-content: start;
-  border-radius: 8px;
+  padding: 0.6em;
   background-color: #fafafa;
+  border-radius: 8px;
 `;
 
 const featureContainerVariants = {
@@ -144,15 +145,15 @@ const CardMotionWrapper = styled(motion.div)`
 `;
 
 const Title = styled(Typography.Title)`
-  color: #2c3e50 !important;
   margin: 0 !important;
   font-size: 1.1rem !important;
   font-weight: 600 !important;
+  color: #2c3e50 !important;
 `;
 
 const CategoryHeader = styled.span`
+  padding: 0 0.4em;
   font-size: 1em;
   font-weight: 600;
   color: #34495e;
-  padding: 0 0.4em;
 `;

@@ -115,54 +115,54 @@ const Container = styled.div`
 `;
 const Wrapper = styled.div`
   position: relative;
+
   label {
-    height: 12px;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0 0.4em;
     position: absolute;
     top: -8px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    background-color: white;
-    color: #353535;
-    font-weight: 600;
-    border-radius: 3px;
+    height: 12px;
+    padding: 0 0.4em;
+    margin: 0;
     font-size: 11px;
+    font-weight: 600;
+    color: #353535;
+    background-color: white;
+    border-radius: 3px;
   }
 `;
 
 const MenuOptions = styled.ul`
   display: grid;
-  gap: 0.2em;
   grid-template-columns: repeat(6, 1fr);
-  list-style: none;
+  gap: 0.2em;
   padding: 0;
+  list-style: none;
 `;
 const StyledMenu = styled.div`
-  border: 1px solid #ccc;
-  padding: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: -58px;
+  right: 0;
+  z-index: 10;
   width: min-content;
   max-width: 500px;
-  border-radius: 6px;
-  background: #ffffff;
-  position: absolute;
-  z-index: 10;
+  padding: 10px;
   margin: -80px 0;
-  right: 0;
-  top: -58px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgb(0 0 0 / 20%);
 `;
 
 const StyledMenuItem = styled.li`
-  padding: 5px 5px;
   display: flex;
-  height: 2.4em;
-  width: 3.2em;
   align-items: center;
-  border-radius: 4px;
   justify-content: center;
-  background-color: #f3f3f3;
-
+  width: 3.2em;
+  height: 2.4em;
+  padding: 5px;
   cursor: pointer;
+  background-color: #f3f3f3;
+  border-radius: 4px;
 `;

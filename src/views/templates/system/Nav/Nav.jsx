@@ -9,55 +9,55 @@ import { useState, Fragment, useEffect, useMemo } from 'react'; // Add Fragment
 import styled from 'styled-components';
 
 const Sidebar = styled.div`
+  position: relative;
   display: none;
   width: ${(props) => (props.collapsed ? '60px' : '270px')};
-  background: #fff;
   padding: 0.6em;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   transition: width 0.3s ease;
-  position: relative;
 
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     display: block;
   }
 `;
 
 const SidebarTitle = styled.div`
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 16px;
   font-weight: 600;
   color: #444;
-  margin-bottom: 12px;
-  padding: 0 12px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  opacity: ${(props) => (props.collapsed ? 0 : 1)};
-  overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
+  opacity: ${(props) => (props.collapsed ? 0 : 1)};
   transition: opacity 0.2s ease;
 `;
 
 const CollapseButton = styled.button`
-  width: 100%;
-  max-width: 3em;
-  height: 36px;
-  min-width: 40px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  width: 100%;
+  min-width: 40px;
+  max-width: 3em;
+  height: 36px;
   margin-bottom: 8px;
   color: #444;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &:hover {
-    background: #f0f0f0;
     color: #1890ff;
+    background: #f0f0f0;
   }
 
   svg {
@@ -76,18 +76,18 @@ const MenuGroupContainer = styled.div`
 
 // New styled component for the simple label
 const GroupLabel = styled.div`
+  display: ${(props) => (props.collapsed ? 'none' : 'block')};
+  padding: 10px 12px 4px; /* Padding: more top/bottom, less bottom */
+  margin-top: 8px; /* Add some space above the label */
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 11px; /* Smaller font size */
   font-weight: 600; /* Bold */
   color: #888; /* Grey color */
   text-transform: uppercase; /* Uppercase text */
-  padding: 10px 12px 4px 12px; /* Padding: more top/bottom, less bottom */
-  margin-top: 8px; /* Add some space above the label */
+  white-space: nowrap;
   opacity: ${(props) => (props.collapsed ? 0 : 1)};
   transition: opacity 0.2s ease;
-  display: ${(props) => (props.collapsed ? 'none' : 'block')};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 
   /* Add margin only if not the very first item */
   &:not(:first-child) {
@@ -96,23 +96,23 @@ const GroupLabel = styled.div`
 `;
 
 const SidebarRow = styled.div`
-  padding: 10px 12px;
-  height: 3em; /* Ensure consistent height */
+  align-items: center;
+  border-radius: 6px;
+  color: #666; /* Default color */
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: space-between; /* Keep space-between for potential arrow */
-  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #666; /* Default color */
-  white-space: nowrap;
   gap: 8px; /* Add gap for consistency */
+  height: 3em; /* Ensure consistent height */
+  justify-content: space-between; /* Keep space-between for potential arrow */
   margin-bottom: 2px; /* Add small gap between rows */
+  padding: 10px 12px;
+  white-space: nowrap;
 
   &:hover {
-    background: #f0f0f0;
     color: #444; /* Hover color */
+    background: #f0f0f0;
   }
 
   /* Active state styling (only applies if props.active is true) */
@@ -126,26 +126,28 @@ const SidebarRow = styled.div`
 
   .row-content {
     display: flex;
-    align-items: center;
-    gap: 6px;
     flex-grow: 1; /* Allow content to take available space */
+    gap: 6px;
+    align-items: center;
     overflow: hidden; /* Hide overflow */
   }
 
   .row-icon {
     min-width: 22px;
     font-size: 16px;
-    text-align: center;
+
     /* Icon color based on active state */
     color: ${(props) => (props.active ? '#1890ff' : '#666')};
+    text-align: center;
   }
 
   .row-label {
-    opacity: ${(props) => (props.collapsed ? 0 : 1)};
-    transition: opacity 0.2s ease;
     display: ${(props) => (props.collapsed ? 'none' : 'inline')};
     overflow: hidden;
     text-overflow: ellipsis;
+    opacity: ${(props) => (props.collapsed ? 0 : 1)};
+    transition: opacity 0.2s ease;
+
     /* Removed max-width, rely on flex overflow */
   }
 
@@ -153,96 +155,95 @@ const SidebarRow = styled.div`
     /* Only display arrow if it's a group and not collapsed */
     display: ${(props) =>
       props.isGroup && !props.collapsed ? 'inline-block' : 'none'};
+    padding-left: 5px; /* Add some space before arrow */
+    margin-left: auto; /* Push arrow to the right */
+    color: #666; /* Default arrow color */
     transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
     transition: transform 0.3s ease;
-    color: #666; /* Default arrow color */
-    margin-left: auto; /* Push arrow to the right */
-    padding-left: 5px; /* Add some space before arrow */
   }
 `;
 
 const MenuGroupItems = styled.div`
-  margin-left: ${(props) =>
-    props.collapsed ? '0' : '12px'}; /* Keep indentation for group items */
   display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 2px;
   margin-top: 2px;
+  margin-left: ${(props) =>
+    props.collapsed ? '0' : '12px'}; /* Keep indentation for group items */
+
   transition: all 0.3s ease;
 `;
 
 const MobileSelector = styled.div`
   display: none;
-  @media (max-width: 768px) {
-    display: block;
+
+  @media (width <= 768px) {
     position: relative;
+    display: block;
   }
 `;
 
 const MobileButton = styled.button`
-  width: 100%;
-  padding: 12px;
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  padding: 12px;
   cursor: pointer;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
 
   span {
+    max-width: 80%;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 80%;
     text-align: left;
+    white-space: nowrap;
   }
 `;
 
 const Backdrop = styled.div`
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
   z-index: 998;
+  display: ${(props) => (props.isOpen ? 'block' : 'none')};
+  background: rgb(0 0 0 / 40%);
 `;
 
 const MobileMenu = styled.div`
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  left: 0;
   z-index: 999;
-  opacity: ${(props) => (props.isOpen ? '1' : '0')};
   pointer-events: ${(props) => (props.isOpen ? 'all' : 'none')};
-  transition: all 0.3s ease;
-  transform: translateY(${(props) => (props.isOpen ? '0' : '-100%')});
+  background: #fff;
   border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+  opacity: ${(props) => (props.isOpen ? '1' : '0')};
+  transform: translateY(${(props) => (props.isOpen ? '0' : '-100%')});
+  transition: all 0.3s ease;
 `;
 
 const MobileMenuContent = styled.div`
-  padding: 0.6em;
-  max-height: 80vh;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 80vh;
+  padding: 0.6em;
+  overflow-y: auto;
 `;
 
 const MobileMenuItem = styled.div`
-  padding: 12px;
+  align-items: center;
+  border-radius: 6px;
+  color: #444;
   cursor: pointer;
   display: flex;
-  align-items: center;
   gap: 8px;
-  border-radius: 6px;
+  padding: 12px;
   transition: all 0.2s ease;
-  color: #444;
 
   &:hover {
     background: #f5f5f5;
@@ -257,18 +258,18 @@ const MobileMenuItem = styled.div`
   `}
 
   .menu-icon {
-    font-size: 16px;
     width: 20px;
-    text-align: center;
+    font-size: 16px;
     color: #444;
+    text-align: center;
   }
 
   .menu-label {
-    font-size: 14px;
+    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 14px;
     white-space: nowrap;
-    flex: 1;
   }
 `;
 
@@ -279,15 +280,15 @@ const MobileMenuGroup = styled.div`
 `;
 
 const MobileMenuGroupHeader = styled.div`
-  padding: 12px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 6px;
+  padding: 12px;
   font-size: 14px;
   font-weight: 500;
   color: #666;
+  cursor: pointer;
+  border-radius: 6px;
 
   &:hover {
     background: #f5f5f5;
@@ -295,14 +296,14 @@ const MobileMenuGroupHeader = styled.div`
 
   .group-title {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
   }
 
   .group-icon {
     width: 20px;
-    text-align: center;
     font-size: 16px;
+    text-align: center;
   }
 
   .group-arrow {
@@ -312,12 +313,12 @@ const MobileMenuGroupHeader = styled.div`
 `;
 
 const MobileMenuGroupItems = styled.div`
-  margin-left: 12px;
   display: ${(props) => (props.isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 8px;
-  margin-top: 2px;
   padding-left: 8px;
+  margin-top: 2px;
+  margin-left: 12px;
   border-left: 1px solid #f0f0f0;
 `;
 
@@ -325,31 +326,31 @@ const AppLayout = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f0f2f5;
   overflow: hidden;
+  background: #f0f2f5;
 `;
 
 const MainLayout = styled.div`
+  display: flex;
   flex: 1;
   gap: 0.4em;
-  display: flex;
   width: 100%;
-  padding: 0 0.4em;
   height: calc(100vh - 64px);
+  padding: 0 0.4em;
   overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0.4em;
   }
 `;
 
 const PageContainer = styled.div`
   display: flex;
-  gap: 0.4em;
   flex: 1;
+  gap: 0.4em;
   overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     gap: 0.4em;
   }
@@ -357,7 +358,8 @@ const PageContainer = styled.div`
 
 const MobileWrapper = styled.div`
   display: none;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     display: flex;
     flex-direction: column;
     gap: 0.4em;
@@ -366,20 +368,20 @@ const MobileWrapper = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  flex: 1;
-  overflow: hidden;
   display: flex;
+  flex: 1;
   flex-direction: column;
+  overflow: hidden;
 `;
 
 const Content = styled.div`
-  background: #fff;
-  padding: 0.2em 0.4em;
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex: 1;
+  width: 100%;
+  padding: 0.2em 0.4em;
   overflow-y: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -675,10 +677,10 @@ export function Nav({
 }
 
 const MobileMenuTitle = styled.div`
+  padding: 8px 12px;
+  margin-bottom: 12px;
   font-size: 16px;
   font-weight: 600;
   color: #444;
-  margin-bottom: 12px;
-  padding: 8px 12px;
   border-bottom: 1px solid #f0f0f0;
 `;

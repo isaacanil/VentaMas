@@ -124,8 +124,8 @@ const Container = styled(motion.div)`
   border-radius: 4px;
   display: grid;
   grid-template-columns: min-content 1fr min-content;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  background-color: var(--White);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+  background-color: var(--white);
   backdrop-filter: blur(20px);
   align-items: center;
 
@@ -144,7 +144,7 @@ const Container = styled(motion.div)`
   transform: translateY(-100px);
   transition: transform 1s ease-in-out;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     width: 96%;
   }
 
@@ -190,20 +190,20 @@ const Container = styled(motion.div)`
 `;
 
 const Title = styled.h2`
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 14px;
   margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 14px;
   text-transform: capitalize;
 `;
 const Body = styled.div`
   display: grid;
-  align-items: center;
   gap: 0.4em;
+  align-items: center;
 `;
 const Icon = styled.div`
-  height: 2.4em;
   width: 2.8em;
+
   /*
     display: flex;
     align-items: center;
@@ -212,9 +212,10 @@ const Icon = styled.div`
   height: 100%;
   display: flex;
   align-items: center;
+
   svg {
-    fill: white;
     font-size: 1.4em;
+    fill: white;
   }
 
   ${(props) => {

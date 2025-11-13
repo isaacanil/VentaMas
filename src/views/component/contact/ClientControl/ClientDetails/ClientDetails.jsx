@@ -175,10 +175,10 @@ export const ClientDetails = ({ mode }) => {
 
 const Container = styled.div`
   position: relative;
-  padding: 0em 0.4em 0em;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
   gap: 0.6em;
+  padding: 0 0.4em;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
 `;
 
 const MainInfoRow = styled.div`
@@ -196,7 +196,7 @@ const ClientIdColumn = styled.div`
 const ClientId = styled.div`
   font-weight: 500;
   line-height: 18px;
-  color: var(--Gray6);
+  color: var(--gray-6);
   white-space: nowrap;
 `;
 
@@ -214,19 +214,19 @@ const BalanceGroup = styled.div`
 `;
 
 const ExpandButton = styled.button`
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #ddd;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  outline: none;
-  transition: all 0.2s;
+  width: 18px;
+  height: 18px;
   padding: 0;
+  cursor: pointer;
+  outline: none;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+  transition: all 0.2s;
 
   &:hover {
     background: #f5f5f7;
@@ -238,64 +238,64 @@ const ExpandButton = styled.button`
 `;
 
 const ExpandIcon = styled.span`
-  font-size: 8px;
-  color: #666;
-  transform: ${(props) => (props.isExpanded ? 'rotate(180deg)' : 'rotate(0)')};
-  transition: transform 0.3s;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: ${(props) => (props.isExpanded ? '-1px' : '1px')};
+  font-size: 8px;
+  color: #666;
+  transform: ${(props) => (props.isExpanded ? 'rotate(180deg)' : 'rotate(0)')};
+  transition: transform 0.3s;
 `;
 
 const ExpandablePanel = styled(motion.div)`
   position: absolute;
   top: 100%;
-  left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  padding: 0.6em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  left: 0;
   z-index: 5;
   display: grid;
   gap: 0.6em;
+  padding: 0.6em;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 
 const PanelHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  justify-content: space-between;
   padding-bottom: 0.5em;
   margin-bottom: 0.3em;
+  border-bottom: 1px solid #eee;
 `;
 
 const PanelTitle = styled.h3`
+  margin: 0;
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--Gray6);
-  margin: 0;
+  color: var(--gray-6);
 `;
 
 const CloseButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #999;
-  font-size: 1.2rem;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  background: transparent;
+  border: none;
   border-radius: 50%;
   transition: all 0.2s;
 
   &:hover {
-    background: #f5f5f7;
     color: #666;
+    background: #f5f5f7;
   }
 
   &:active {

@@ -65,7 +65,7 @@ export const Item = ({ data, array, setArray, index }) => {
 const Container = styled.div``;
 const Body = styled.div`
   height: auto;
-  background-color: rgb(242, 242, 242);
+  background-color: rgb(242 242 242);
   padding: 0.4em 1em;
   gap: 1em;
   display: grid;
@@ -108,26 +108,26 @@ const Body = styled.div`
 `;
 
 const Head = styled.div`
-  height: 2em;
   display: grid;
-  align-items: center;
-  gap: 1em;
   grid-template-columns: min-content 1fr;
-  background-color: var(--White);
+  gap: 1em;
+  align-items: center;
+  height: 2em;
   padding: 0 1em;
+  background-color: var(--white);
 `;
 const Items = styled.ul`
-  list-style: none;
-  padding: 0;
   display: grid;
   gap: 0.4em;
+  padding: 0;
+  list-style: none;
 `;
 const FilterOption = styled.li`
   grid-template-columns: min-content 1fr;
   gap: 1em;
   padding: 0.2em 0.6em;
   border-radius: 0.4em;
-  background-color: rgb(254, 254, 254);
+  background-color: rgb(254 254 254);
   position: relative;
   display: grid;
   ${(props) => {

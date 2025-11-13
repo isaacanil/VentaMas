@@ -10,8 +10,9 @@ const PresetsContainer = styled.div`
   padding: ${({ $layout }) =>
     $layout === 'sidebar' ? '12px 2px 12px 12px' : '12px'};
   padding-bottom: ${({ $layout }) => ($layout === 'sidebar' ? '0' : '12px')};
-  // border-bottom: ${({ $layout }) =>
-    $layout === 'sidebar' ? 'none' : '1px solid #f0f0f0'};
+
+  /* border-bottom: ${({ $layout }) =>
+    $layout === 'sidebar' ? 'none' : '1px solid #f0f0f0'}; */
   height: ${({ $layout }) => ($layout === 'sidebar' ? '100%' : 'auto')};
 `;
 
@@ -52,25 +53,26 @@ const PresetsDropdown = styled.div`
   background: white;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
   z-index: 1000;
   margin-top: 6px;
   max-height: 240px;
   overflow-y: auto;
-  animation: dropdownSlide 0.2s ease-out;
+  animation: dropdown-slide 0.2s ease-out;
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     left: 0;
     right: auto;
     width: 100%;
     max-width: none;
   }
 
-  @keyframes dropdownSlide {
+  @keyframes dropdown-slide {
     from {
       opacity: 0;
       transform: translateY(-8px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -181,7 +183,7 @@ const DEFAULT_GROUP = 'Rangos rápidos';
 const MobileDrawerOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgb(15 23 42 / 55%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -190,17 +192,18 @@ const MobileDrawerOverlay = styled.div`
 
 const MobileDrawer = styled.div`
   width: 100%;
-  background: #ffffff;
+  background: #fff;
   border-radius: 16px 16px 0 0;
   max-height: 75vh;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.28s ease-out;
+  animation: slide-up 0.28s ease-out;
 
-  @keyframes slideUp {
+  @keyframes slide-up {
     from {
       transform: translateY(100%);
     }
+
     to {
       transform: translateY(0);
     }

@@ -33,7 +33,6 @@ const Container = styled.div`
 `;
 const WarehouseInfo = styled.div`
   padding: 20px;
-
   background-color: #f5f5f5;
   border-radius: 8px;
 `;
@@ -45,9 +44,8 @@ const SectionTitle = styled.h3`
 
 export const DetailContainer = styled.div`
   display: grid;
-  gap: 0em 0.6em;
-
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0 0.6em;
 `;
 export const DetailItem = styled.p`
   margin: 8px 0;
@@ -56,20 +54,21 @@ export const DetailItem = styled.p`
 
   & > strong {
     font-weight: 600;
+
     /* Color distintivo para los títulos de los detalles */
   }
 `;
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 export default function WarehouseContent() {

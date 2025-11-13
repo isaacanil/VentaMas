@@ -171,14 +171,14 @@ const InvoiceName = styled.h3`
 `;
 
 const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4px;
+  color: #6b7280;
+  cursor: pointer;
+  background: none;
+  border: none;
   transition: all 0.2s;
 
   &:hover {
@@ -201,9 +201,10 @@ const EmptyComment = styled.p`
 const StyledModal = styled(Modal)`
   .ant-modal-content {
     padding: 0;
+
     /* border-radius: 16px;  // se comenta para poder sobrescribir desde Ant */
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 8%);
   }
 `;
 
@@ -214,22 +215,22 @@ const ModalContainer = styled.div`
 `;
 
 const ContentArea = styled.div`
-  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 20px;
 `;
 
 const EditorArea = styled.div`
   position: relative;
+  padding: 4px;
   background: #f8fafc;
   border-radius: 12px;
-  padding: 4px;
 
   .ant-input {
-    background: transparent;
     font-size: 14px;
     color: #334155;
+    background: transparent;
 
     &::placeholder {
       color: #94a3b8;
@@ -239,26 +240,26 @@ const EditorArea = styled.div`
 
 const CharCount = styled.span`
   position: absolute;
-  bottom: 8px;
   right: 12px;
+  bottom: 8px;
   font-size: 11px;
   color: #94a3b8;
 `;
 
 const ToolbarContainer = styled.div`
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
   padding: 8px 1.4em;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 `;
 
 const ToolbarLabel = styled.span`
+  display: block;
+  margin-bottom: 8px;
   font-size: 12px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 8px;
 `;
 
 const ToolbarActions = styled.div`
@@ -301,11 +302,11 @@ const IconButton = styled(Button)`
 `;
 
 const Actions = styled.div`
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
   padding: 16px 20px;
   border-top: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
 `;
 
 const ButtonGroup = styled.div`

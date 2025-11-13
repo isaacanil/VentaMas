@@ -107,41 +107,41 @@ export const AccountCard = ({
 };
 
 const Card = styled.div`
-  background: #ffffff;
-  border-radius: 8px;
   padding: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e8e8e8;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 16px;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 `;
 
 const AccountInfo = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const AccountNumber = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
-  font-weight: 600;
+  align-items: center;
   font-size: 15px;
+  font-weight: 600;
   color: #1a1a1a;
 
   svg {
@@ -152,8 +152,8 @@ const AccountNumber = styled.div`
 
 const AccountDate = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   font-size: 13px;
   color: #666;
 
@@ -165,18 +165,18 @@ const AccountDate = styled.div`
 
 const HeaderMeta = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const FrequencyTag = styled.div`
-  font-size: 12px;
   padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   background: #f5f5f5;
-  color: #666;
+  border-radius: 4px;
 `;
 
 const FinancialDetails = styled.div``;
@@ -192,22 +192,21 @@ const DetailGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 4px 12px;
-  background: #fafafa;
-  border-radius: 6px;
-  border: 1px solid #f0f0f0;
-
   justify-content: flex-start;
+  padding: 4px 12px;
+  text-align: center;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
 `;
 
 const GroupContent = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
-  text-align: center;
   gap: 12px;
+  align-items: center;
   justify-content: center;
+  text-align: center;
 `;
 
 const GroupItem = styled.div`
@@ -219,8 +218,8 @@ const GroupItem = styled.div`
 
 const GroupLabel = styled.span`
   font-size: 12px;
-  color: #666;
   font-weight: 500;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 `;

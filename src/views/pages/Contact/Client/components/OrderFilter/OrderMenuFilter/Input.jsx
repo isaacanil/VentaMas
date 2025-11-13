@@ -24,24 +24,26 @@ export const Input = ({ data, onChange, fn }) => {
   );
 };
 const Container = styled.div`
-  width: 100%;
   display: flex;
-  height: 2em;
   align-items: center;
   justify-content: space-between;
-  background-color: white;
+  width: 100%;
+  height: 2em;
   padding: 0 1em;
+  background-color: white;
   border-radius: 6px;
+
   input {
-    border: none;
     outline: none;
+    border: none;
   }
+
   div {
-    height: 1.2em;
-    width: 1.2em;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--White2);
+    width: 1.2em;
+    height: 1.2em;
+    background-color: var(--white-2);
   }
 `;

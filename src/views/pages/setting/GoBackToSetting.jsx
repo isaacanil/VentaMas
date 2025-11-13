@@ -8,9 +8,11 @@ const pulse = keyframes`
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
   }
@@ -18,20 +20,20 @@ const pulse = keyframes`
 
 const Button = styled.button`
   position: fixed;
-  bottom: 2rem;
   right: 2rem;
+  bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #007bff;
-  color: #fff;
-  font-size: 1.5rem;
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 50%;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 1.5rem;
+  color: #fff;
   cursor: pointer;
+  background-color: #007bff;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   transition: all 0.2s ease-in-out;
 
   &:hover {
@@ -41,7 +43,7 @@ const Button = styled.button`
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+    box-shadow: 0 0 0 3px rgb(0 123 255 / 50%);
   }
 `;
 

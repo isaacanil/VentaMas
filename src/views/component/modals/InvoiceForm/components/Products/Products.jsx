@@ -320,5 +320,5 @@ const Counter = styled.div`
   grid-template-columns: 2em 80px 2em;
 `;
 const ActionsContainer = styled.div`
-  text-align: right; // Esto alinea tu botón a la derecha
+  text-align: right; /* Esto alinea tu botón a la derecha */
 `;

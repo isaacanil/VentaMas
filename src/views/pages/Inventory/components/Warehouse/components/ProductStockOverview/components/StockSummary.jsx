@@ -11,7 +11,7 @@ const Container = styled.div`
   gap: 1em;
   align-items: start;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -32,11 +32,11 @@ const StatsGrid = styled.div`
 
 const StatItem = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 8px;
-  border-radius: 8px;
   background: #f8fafc;
+  border-radius: 8px;
   transition: all 0.2s ease;
 
   &:hover {
@@ -45,15 +45,15 @@ const StatItem = styled.div`
 `;
 
 const IconContainer = styled.div`
-  width: 28px;
-  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  background: ${(props) => props.background};
-  color: ${(props) => props.color};
+  width: 28px;
+  height: 28px;
   font-size: 0.9rem;
+  color: ${(props) => props.color};
+  background: ${(props) => props.background};
+  border-radius: 6px;
 `;
 
 const StatInfo = styled.div`

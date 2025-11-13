@@ -12,11 +12,11 @@ import { ShelfForm } from '../../../forms/ShelfForm/ShelfForm';
 import { WarehouseForm } from '../../../forms/WarehouseForm/WarehouseForm';
 
 const TabContent = styled.div`
-  padding: 16px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  padding: 16px;
 `;
 
 const TreeContainer = styled.div`
@@ -31,7 +31,7 @@ const TreeContainer = styled.div`
     padding: 4px 0;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04);
+      background: rgb(0 0 0 / 4%);
     }
   }
 

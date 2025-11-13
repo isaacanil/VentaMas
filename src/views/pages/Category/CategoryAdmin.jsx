@@ -17,10 +17,10 @@ export const CategoryAdmin = () => {
   );
 };
 const Container = styled.div`
-  width: 100vw;
-  height: calc(100vh - 2.75em);
-  background-color: var(--color2);
   display: grid;
   grid-template-rows: 1fr;
+  width: 100vw;
+  height: calc(100vh - 2.75em);
   overflow: hidden;
+  background-color: var(--color2);
 `;

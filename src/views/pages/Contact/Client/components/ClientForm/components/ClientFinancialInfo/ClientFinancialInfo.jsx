@@ -149,26 +149,26 @@ export const Container = styled.div`
 // Encabezado de sección
 export const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 // Títulos y texto
 export const CodeTitle = styled.p`
+  margin: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.4;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 export const ClientName = styled.p`
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
-  line-height: 1.5;
   margin: 0;
+  font-size: 0.875rem;
   font-style: italic;
+  font-weight: 400;
+  line-height: 1.5;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 `;
 
 // Cards de balance
@@ -181,19 +181,19 @@ export const BalanceCard = styled(Card)`
 `;
 
 export const BalanceTitle = styled.div`
+  margin-bottom: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.5;
-  margin-bottom: 0.5rem;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 export const BalanceAmount = styled.div`
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #ff4d4f;
   line-height: 1.3;
-  margin: 0;
+  color: #ff4d4f;
 `;
 
 // Cards de límite de crédito
@@ -214,19 +214,19 @@ export const CreditAvailableCard = styled(Card)`
 `;
 
 export const LimitTitle = styled.div`
+  margin-bottom: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.5;
-  margin-bottom: 0.5rem;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 export const LimitAmount = styled.div`
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.3;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 `;
 
 // Botón estilizado
@@ -240,33 +240,33 @@ export const StyledButton = styled(Button)`
 // Sección de cuentas por cobrar
 export const AccountsReceivable = styled.div`
   display: grid;
-  padding: 0 12px;
   gap: 1rem;
+  padding: 0 12px;
 `;
 
 export const SectionTitle = styled.h2`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
+  margin: 0;
   font-size: 1rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   line-height: 1.4;
-  margin: 0;
+  color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
 
   svg {
     font-size: 0.9rem;
-    opacity: 0.8;
     color: #1890ff;
+    opacity: 0.8;
   }
 `;
 
 export const OpenAccountsTitle = styled.div`
+  margin-bottom: 10px;
   font-size: 0.875rem;
   font-weight: 400;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
   line-height: 1.5;
-  margin-bottom: 10px;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 `;
 
 // Sección de pagos
@@ -282,8 +282,8 @@ export const PaymentRow = styled.div`
   span {
     font-size: 0.875rem;
     font-weight: 400;
-    color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
     line-height: 1.5;
+    color: ${({ theme }) => theme.text?.primary || 'rgba(0, 0, 0, 0.87)'};
   }
 `;
 
@@ -294,9 +294,9 @@ export const Section = styled.section`
 
 // Línea divisoria
 export const Line = styled.div`
+  margin: 0.5rem 0;
   border-bottom: 1px solid
     ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
-  margin: 0.5rem 0;
 `;
 
 // Contenedor de cuentas
@@ -309,8 +309,8 @@ const Accounts = styled.div`
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
   padding: 0.75rem 0;
+  margin-top: 1rem;
 
   .ant-pagination {
     font-size: 0.875rem;
@@ -331,28 +331,28 @@ const PaginationContainer = styled.div`
 export const NoAccountsMessage = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 16px;
   align-items: center;
   justify-content: center;
-  gap: 16px;
   height: 200px;
-  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+  margin: 1rem 0;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.5;
+  color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
   background: #fafafa;
-  border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.divider || 'rgba(0, 0, 0, 0.12)'};
-  margin: 1rem 0;
+  border-radius: 8px;
 
   svg {
     font-size: 2.5rem;
-    opacity: 0.6;
     color: #bfbfbf;
+    opacity: 0.6;
   }
 
   span {
-    text-align: center;
     font-size: 1rem;
     color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
+    text-align: center;
   }
 `;

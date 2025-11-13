@@ -11,9 +11,9 @@ const Label = styled.label`
 `;
 
 const ErrorMessage = styled.div`
-  color: #ff4d4f;
-  font-size: 12px;
   margin-top: 4px;
+  font-size: 12px;
+  color: #ff4d4f;
 `;
 
 export const ConfigurationTab = ({
@@ -88,7 +88,7 @@ export const ConfigurationTab = ({
         {validation.message && (
           <ErrorMessage
             style={{
-              color: validation.status === 'error' ? '#ff4d4f' : '#52c41a',
+              color: `${validation.status === 'error' ? '#ff4d4f' : '#52c41a'}`,
             }}
           >
             {validation.message}

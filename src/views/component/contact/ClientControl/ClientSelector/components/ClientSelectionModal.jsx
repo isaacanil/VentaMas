@@ -12,27 +12,27 @@ const Overlay = styled.div`
   position: fixed;
   top: 2.75em;
   left: 0;
+  z-index: 99;
   width: 100%;
   height: 100%;
-  will-change: opacity;
   backdrop-filter: blur(2px);
-  z-index: 99;
+  will-change: opacity;
 `;
 
 const MotionContainer = styled(motion.div)`
   position: fixed;
-  z-index: 100000;
   top: 3em;
-  max-width: 700px;
   right: 0;
-  overflow: hidden;
-  height: calc(100vh - 3.2em);
+  z-index: 100000;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
-  border-radius: 10px;
   width: 100%;
-  border: 1px solid #c7c7c7;
+  max-width: 700px;
+  height: calc(100vh - 3.2em);
+  overflow: hidden;
   background-color: #fff;
+  border: 1px solid #c7c7c7;
+  border-radius: 10px;
 `;
 
 const containerVariants = {

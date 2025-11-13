@@ -7,8 +7,8 @@ const StyledInput = styled(Input)`
   cursor: pointer;
 
   input {
-    cursor: pointer !important;
     color: ${(props) => (props.$hasValue ? 'inherit' : '#bfbfbf')} !important;
+    cursor: pointer !important;
   }
 
   &:hover {
@@ -17,7 +17,7 @@ const StyledInput = styled(Input)`
 
   &:focus-within {
     border-color: #1890ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    box-shadow: 0 0 0 2px rgb(24 144 255 / 20%);
   }
 `;
 
@@ -27,11 +27,11 @@ const ClearIcon = styled.div`
   justify-content: center;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  background: #bfbfbf;
+  font-size: 10px;
   color: white;
   cursor: pointer;
-  font-size: 10px;
+  background: #bfbfbf;
+  border-radius: 50%;
   transition: all 0.3s;
 
   &:hover {

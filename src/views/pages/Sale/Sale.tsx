@@ -334,20 +334,20 @@ export const Sales = (): JSX.Element => {
 };
 
 const Container = styled(motion.div)`
-  height: 100%;
   display: grid;
-  overflow-y: hidden;
   grid-template-columns: 1fr min-content;
+  height: 100%;
+  overflow-y: hidden;
   background-color: ${({ theme }: { theme: unknown }) =>
     resolveBackgroundShade(theme)};
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     grid-template-columns: 1fr;
   }
 `;
 const ProductContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 0;
   height: 100%;
+  min-height: 0;
 `;

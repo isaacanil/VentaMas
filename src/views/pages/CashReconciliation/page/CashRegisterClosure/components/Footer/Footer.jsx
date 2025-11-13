@@ -11,11 +11,11 @@ export const Footer = ({ onSubmit, onCancel }) => {
   );
 };
 const Container = styled.div`
-  background-color: white;
-  padding: 0.4em;
   position: sticky;
   bottom: 2px;
   z-index: 1000;
-  border-radius: var(--border-radius);
+  padding: 0.4em;
+  background-color: white;
   border: var(--border-primary);
+  border-radius: var(--border-radius);
 `;

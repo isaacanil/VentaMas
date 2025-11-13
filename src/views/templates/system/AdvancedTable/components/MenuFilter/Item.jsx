@@ -54,17 +54,17 @@ export const Item = ({
   );
 };
 const Container = styled.div`
-  background-color: ${(props) => props.theme.bg.shave};
+  position: relative;
   display: flex;
   align-items: center;
-  position: relative;
+  background-color: ${(props) => props.theme.bg.shave};
 `;
 const Header = styled.div`
   height: 2.2em;
   border-radius: 8px;
   justify-content: space-between;
   gap: 1em;
-  border: 2px solid #cccccc;
+  border: 2px solid #ccc;
   display: flex;
   align-items: center;
   background-color: ${(props) => props.theme.bg.shade};
@@ -79,34 +79,36 @@ const Header = styled.div`
 
 const Menu = styled.div`
   position: absolute;
-  height: 300px;
+  top: 100%;
+  z-index: 100;
   display: grid;
   grid-template-rows: 1fr min-content;
   min-width: 300px;
-  top: 100%;
-  background-color: rgb(242, 242, 242);
-  z-index: 100;
-  border-radius: 8px;
-  border: 1px solid #cccccc;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  height: 300px;
   overflow-y: hidden;
+  background-color: rgb(242 242 242);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px 0 rgb(0 0 0 / 20%);
 `;
 
 const Body = styled.div`
   top: 100%;
-  background-color: rgb(255, 255, 255);
   z-index: 100;
   overflow-y: scroll;
+  background-color: rgb(255 255 255);
 `;
 const OptionItem = styled.div`
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 1px solid #ccc;
   height: 2.4em;
   display: flex;
   padding: 0 1em;
   align-items: center;
+
   :last-child {
     border-bottom: none;
   }
+
   :hover {
     background-color: #5e5e5e + cc;
   }
@@ -120,17 +122,18 @@ const OptionItem = styled.div`
 
 const Footer = styled.div`
   display: flex;
-
   height: 2.2em;
+
   button {
     flex-grow: 1;
-    border: none;
-    background-color: gray;
     font-weight: 500;
     color: white;
+    background-color: gray;
+    border: none;
+
     :disabled {
-      background-color: #cccccc;
-      color: #666666;
+      color: #666;
+      background-color: #ccc;
     }
   }
 `;

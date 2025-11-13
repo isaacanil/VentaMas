@@ -65,28 +65,28 @@ const SummaryCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
 `;
 
 const CardTitle = styled.h4`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 `;
 
 const TotalAmount = styled.span`
+  font-family: monospace;
   font-size: 0.875rem;
   font-weight: 600;
   color: #1890ff;
-  font-family: monospace;
 `;
 
 const CardContent = styled.div`
@@ -103,26 +103,26 @@ const CreditNoteItem = styled.div`
 
 const ItemInfo = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 6px 8px;
   background: #f8f9fa;
-  border-radius: 4px;
   border: 1px solid #e8e8e8;
+  border-radius: 4px;
 `;
 
 const NCF = styled.span`
+  font-family: monospace;
   font-size: 0.75rem;
   font-weight: 500;
   color: #333;
-  font-family: monospace;
 `;
 
 const Amount = styled.span`
+  font-family: monospace;
   font-size: 0.75rem;
   font-weight: 600;
   color: #1890ff;
-  font-family: monospace;
 `;
 
 const SummaryInfo = styled.div`
@@ -133,8 +133,8 @@ const SummaryInfo = styled.div`
 
 const SummaryRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 
 const SummaryLabel = styled.span`
@@ -143,8 +143,8 @@ const SummaryLabel = styled.span`
 `;
 
 const SummaryValue = styled.span`
+  font-family: monospace;
   font-size: 0.75rem;
   font-weight: 600;
   color: #333;
-  font-family: monospace;
 `;

@@ -18,34 +18,38 @@ const StyledButton = styled.button`
     switch (props.variant) {
       case 'ghost':
         return css`
-          background: transparent;
           color: #1e3a8a;
+          background: transparent;
+
           &:hover {
-            background-color: rgba(30, 58, 138, 0.1);
+            background-color: rgb(30 58 138 / 10%);
           }
         `;
       case 'secondary':
         return css`
+          color: #fff;
           background-color: #6d28d9;
-          color: #ffffff;
+
           &:hover {
             background-color: #5b21b6;
           }
         `;
       case 'outline':
         return css`
+          color: #ef4444;
           background: transparent;
           border: 1px solid #ef4444;
-          color: #ef4444;
+
           &:hover {
+            color: #fff;
             background-color: #ef4444;
-            color: #ffffff;
           }
         `;
       default:
         return css`
+          color: #fff;
           background-color: #3b82f6;
-          color: #ffffff;
+
           &:hover {
             background-color: #2563eb;
           }

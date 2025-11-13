@@ -367,7 +367,7 @@ export default function TaxReceiptForm({
       open={editModalVisible}
       onCancel={() => setEditModalVisible(false)}
       width={screens.lg ? 800 : 600}
-      style={{ top: 10 }}
+      style={{ top: '10px' }}
       footer={[
         <Button key="cancel" onClick={() => setEditModalVisible(false)}>
           Cancelar
@@ -382,7 +382,7 @@ export default function TaxReceiptForm({
           Guardar
         </Button>,
       ]}
-      destroyOnClose
+      destroyOnHidden
     >
       {currentEditItem && (
         <ModalLayout>

@@ -171,15 +171,15 @@ export const CashRegisterClosure = () => {
 const Backdrop = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #f0f0f0;
   overflow-y: scroll;
+  background-color: #f0f0f0;
 `;
 const Container = styled.div`
+  display: grid;
+  gap: 0.4em;
   width: 100%;
   max-width: 1000px;
   height: 100%;
   padding: 0.4em;
   margin: 0 auto;
-  display: grid;
-  gap: 0.4em;
 `;

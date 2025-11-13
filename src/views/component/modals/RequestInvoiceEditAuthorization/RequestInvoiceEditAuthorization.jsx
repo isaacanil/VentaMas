@@ -84,7 +84,7 @@ export const RequestInvoiceEditAuthorization = ({
       onCancel={handleCancel}
       centered
       width={560}
-      destroyOnClose
+      destroyOnHidden
       footer={[
         <Button key="cancel" onClick={handleCancel} disabled={submitting}>
           Cancelar

@@ -20,8 +20,8 @@ const columnStyles = {
 };
 
 const Container = styled.div`
-  display: grid;
   align-items: center;
+  display: grid;
   gap: 0.4em;
   ${({ space }) => paddingStyles[space]}
   ${({ cols }) => columnStyles[cols] || columnStyles.default}

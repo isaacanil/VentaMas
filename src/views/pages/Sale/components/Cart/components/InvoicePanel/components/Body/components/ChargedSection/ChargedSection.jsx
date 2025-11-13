@@ -17,6 +17,6 @@ export const ChargedSection = () => {
 };
 
 const Container = styled.div`
-  background-color: var(--White2);
   display: grid;
+  background-color: var(--white-2);
 `;

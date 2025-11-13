@@ -23,15 +23,17 @@ const { Title, Text } = Typography;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
-    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
   }
+
   .ant-modal-header {
     padding: 20px 24px;
-    border-bottom: 1px solid #f0f0f0;
     background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
   }
+
   .ant-modal-body {
     padding: 24px;
   }
@@ -39,7 +41,7 @@ const StyledModal = styled(Modal)`
 
 const StyledCard = styled(Card)`
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
 
   .ant-card-body {
     padding: 24px;
@@ -48,8 +50,8 @@ const StyledCard = styled(Card)`
 
 const IconWrapper = styled.span`
   margin-right: 8px;
-  color: #1890ff;
   font-size: 1.1em;
+  color: #1890ff;
 `;
 
 const StatusBadge = styled(Badge)`
@@ -60,8 +62,9 @@ const StatusBadge = styled(Badge)`
 `;
 
 const QuantityCard = styled(Card)`
-  border-radius: 8px;
   background: #fafafa;
+  border-radius: 8px;
+
   .ant-card-body {
     padding: 16px;
   }

@@ -1179,14 +1179,14 @@ const Wrapper = styled.div`
 const ProductNameCell = styled.span`
   display: inline-block;
   max-width: 100%;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const ProductNameWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 2px;
+  align-items: flex-start;
 `;

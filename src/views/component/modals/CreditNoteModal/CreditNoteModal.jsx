@@ -945,8 +945,8 @@ const Container = styled.div`
 `;
 
 const Description = styled.p`
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
   margin: 0;
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const FormSection = styled.div`
@@ -959,15 +959,15 @@ const FormRow = styled.div`
   display: flex;
   gap: 1rem;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     gap: 0.75rem;
   }
 `;
 
 const FormField = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 0.5rem;
 `;
@@ -980,14 +980,14 @@ const ProductsSection = styled.div`
 
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.75rem;
+    align-items: flex-start;
   }
 `;
 
@@ -997,7 +997,7 @@ const SectionTitle = styled.h3`
   font-weight: 600;
   color: ${(props) => props.theme?.text?.primary || '#333'};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 0.9rem;
   }
 `;
@@ -1010,7 +1010,7 @@ const SearchContainer = styled.div`
   display: flex;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
   }
 `;
@@ -1018,23 +1018,23 @@ const SearchContainer = styled.div`
 const TotalSection = styled.div`
   display: flex;
   justify-content: flex-end;
-  padding: 0.5rem 0;
   width: 100%;
+  padding: 0.5rem 0;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     justify-content: center;
   }
 `;
 
 const TotalInfo = styled.div`
   min-width: 300px;
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
   padding: 1rem;
   background-color: ${(props) =>
     props.theme?.background?.secondary || '#fafafa'};
+  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     min-width: 100%;
     padding: 0.75rem;
   }
@@ -1042,16 +1042,16 @@ const TotalInfo = styled.div`
 
 const InfoRow = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0.25rem 0;
 
   &.total {
-    margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-    font-weight: 600;
+    margin-top: 0.5rem;
     font-size: 1.1rem;
+    font-weight: 600;
+    border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
   }
 `;
 
@@ -1060,28 +1060,28 @@ const InfoLabel = styled.span`
 `;
 
 const InfoValue = styled.span`
+  font-family: monospace;
   font-weight: 500;
   color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-family: monospace;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 0.75rem;
+  justify-content: flex-end;
   padding-top: 1rem;
   border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     position: sticky;
     bottom: 0;
-    background: white;
-    margin: 1rem -16px -20px -16px;
-    padding: 1rem 16px;
-    border-top: 1px solid #f0f0f0;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     flex-direction: column-reverse;
     gap: 0.75rem;
+    padding: 1rem 16px;
+    margin: 1rem -16px -20px;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 10%);
 
     button {
       width: 100%;
@@ -1092,17 +1092,17 @@ const ActionButtons = styled.div`
 `;
 
 const CountdownText = styled.div`
-  text-align: right;
+  margin-top: -0.5rem;
   font-size: 0.75rem;
   color: ${(props) => props.theme?.text?.secondary || '#888'};
-  margin-top: -0.5rem;
+  text-align: right;
 `;
 
 const RelatedNCSection = styled.div`
-  margin-top: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-top: 1.5rem;
 `;
 
 const NoProductsMessage = styled.div`
@@ -1111,8 +1111,8 @@ const NoProductsMessage = styled.div`
 
 const TitleRow = styled.span`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 600;
 `;
 
@@ -1120,18 +1120,18 @@ const NCFContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  max-width: 300px;
   padding: 12px 16px;
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
   background-color: ${(props) =>
     props.theme?.background?.secondary || '#fafafa'};
-  max-width: 300px;
+  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
 `;
 
 const NCFLabel = styled.span`
+  margin-bottom: 4px;
   font-size: 0.75rem;
   color: ${(props) => props.theme?.text?.secondary || '#666'};
-  margin-bottom: 4px;
 `;
 
 const NCFValue = styled.span`
@@ -1163,31 +1163,31 @@ const ApplicationHistoryList = styled.div`
 `;
 
 const ApplicationHistoryItem = styled.div`
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
   padding: 1rem;
   background-color: ${(props) =>
     props.theme?.background?.secondary || '#fafafa'};
+  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
+  border-radius: 8px;
 `;
 
 const ApplicationHistoryHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
 `;
 
 const ApplicationHistoryDate = styled.span`
   font-size: 0.875rem;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
   font-weight: 500;
+  color: ${(props) => props.theme?.text?.secondary || '#666'};
 `;
 
 const ApplicationHistoryAmount = styled.span`
+  font-family: monospace;
   font-size: 1rem;
   font-weight: 600;
   color: ${(props) => props.theme?.text?.primary || '#333'};
-  font-family: monospace;
 `;
 
 const ApplicationHistoryDetails = styled.div`
@@ -1206,18 +1206,18 @@ const ApplicationHistoryDetail = styled.div`
 `;
 
 const ApplicationHistorySummary = styled.div`
-  border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  padding-top: 1rem;
-  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
 `;
 
 const ApplicationHistorySummaryItem = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   font-size: 0.875rem;
 
   strong {

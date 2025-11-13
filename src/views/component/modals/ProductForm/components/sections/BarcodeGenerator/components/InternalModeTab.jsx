@@ -27,15 +27,15 @@ const Container = styled.div`
   flex-direction: column;
   gap: 16px;
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     flex-direction: row;
     gap: 24px;
   }
 `;
 
 const MainContent = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
 `;
@@ -43,8 +43,8 @@ const MainContent = styled.div`
 // Vista previa lateral removida (se usará modal externo)
 
 const FormSection = styled.div`
-  border: 1px solid #eaeaea;
   padding: 16px;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
 `;
 
@@ -75,7 +75,7 @@ export const InternalModeTab = ({
           type="info"
           icon={<ShopOutlined />}
           showIcon
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: '16px' }}
         />
 
         {/* Formulario de generación simplificado */}
@@ -87,7 +87,7 @@ export const InternalModeTab = ({
           </FormSectionHeader>
           <Form form={form} layout="vertical" style={{ width: '100%' }}>
             {/* Checkbox para modo automático */}
-            <Form.Item style={{ marginBottom: 16 }}>
+            <Form.Item style={{ marginBottom: '16px' }}>
               <Checkbox
                 checked={autoMode}
                 onChange={(e) => setAutoMode(e.target.checked)}
@@ -133,7 +133,7 @@ export const InternalModeTab = ({
                   fontFamily: 'monospace',
                   fontSize: '16px',
                   fontWeight: 'bold',
-                  backgroundColor: autoMode ? '#f6ffed' : undefined,
+                  backgroundColor: `${autoMode ? '#f6ffed' : 'undefined'}`,
                 }}
                 suffix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
               />
@@ -143,7 +143,7 @@ export const InternalModeTab = ({
             {livePreview && (
               <Form.Item
                 label="Previsualización Nuevo Código"
-                style={{ marginTop: 16 }}
+                style={{ marginTop: '16px' }}
               >
                 <PreviewContainer>
                   <PreviewText>{livePreview}</PreviewText>
@@ -152,7 +152,7 @@ export const InternalModeTab = ({
             )}
 
             {/* Botón de generar */}
-            <Form.Item style={{ marginTop: 24 }}>
+            <Form.Item style={{ marginTop: '24px' }}>
               <Button
                 type="primary"
                 size="large"

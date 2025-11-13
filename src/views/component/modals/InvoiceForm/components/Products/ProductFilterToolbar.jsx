@@ -93,17 +93,17 @@ const Toolbar = styled.div`
   gap: 16px;
   align-items: flex-start;
   padding: 8px 12px;
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 14px 32px rgb(15 23 42 / 5%);
 `;
 
 const FieldGroup = styled.div`
   display: flex;
+  flex: 0 1 260px;
   flex-direction: column;
   gap: 6px;
-  flex: 0 1 260px;
   min-width: 200px;
   max-width: 320px;
 `;
@@ -133,28 +133,28 @@ const SearchIcon = styled(FontAwesomeIcon)`
   position: absolute;
   top: 50%;
   left: 14px;
-  transform: translateY(-50%);
-  color: #9ca3af;
   font-size: 16px;
+  color: #9ca3af;
+  transform: translateY(-50%);
 `;
 
 const SearchInput = styled.input`
   width: 100%;
   padding: 10px 12px 10px 38px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
   font-size: 14px;
   color: #111827;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
   &:focus {
     outline: none;
+    background: #fff;
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
   }
 
   &::placeholder {
@@ -170,8 +170,8 @@ const SortGroup = styled(FieldGroup)`
 
 const SortSelectors = styled.div`
   display: flex;
-  gap: 10px;
   flex-wrap: nowrap;
+  gap: 10px;
   align-items: center;
 `;
 
@@ -180,10 +180,10 @@ const SortSelect = styled(Select)`
   height: 2.8em;
 
   && .ant-select-selector {
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
     padding: 6px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
     transition:
       border-color 0.2s ease,
       box-shadow 0.2s ease;
@@ -194,15 +194,15 @@ const SortSelect = styled(Select)`
   }
 
   &&.ant-select-focused .ant-select-selector {
+    background: #fff;
     border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
   }
 
   && .ant-select-selection-item {
     font-size: 14px;
-    color: #111827;
     font-weight: 500;
+    color: #111827;
   }
 
   && .ant-select-selection-placeholder {
@@ -217,15 +217,15 @@ const DirectionToggle = styled.button`
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 0;
   cursor: pointer;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     background 0.2s ease;
-  padding: 0;
 
   &:hover {
     background: #eef2ff;
@@ -233,9 +233,9 @@ const DirectionToggle = styled.button`
 
   &:focus-visible {
     outline: none;
+    background: #fff;
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
   }
 `;
 
@@ -246,9 +246,9 @@ const DirectionIcon = styled(FontAwesomeIcon)`
 
 const CategoryOption = styled.span`
   display: inline-flex;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
   width: 100%;
 `;
 
@@ -256,8 +256,8 @@ const CategoryOptionText = styled.span`
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
   color: #111827;
+  white-space: nowrap;
 `;
 
 const CategoryOptionBadge = styled.span`
@@ -266,9 +266,9 @@ const CategoryOptionBadge = styled.span`
   justify-content: center;
   min-width: 30px;
   padding: 2px 10px;
-  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: #e0f2fe;
   color: #0369a1;
+  background: #e0f2fe;
+  border-radius: 999px;
 `;

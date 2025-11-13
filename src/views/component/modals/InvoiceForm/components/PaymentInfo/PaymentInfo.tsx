@@ -74,23 +74,23 @@ export const PaymentInfo: FC<PaymentInfoProps> = ({
 };
 
 const Container = styled.div`
-  width: 100%;
   display: grid;
   gap: 1rem;
+  width: 100%;
 `;
 
 const PaymentCard = styled.div`
+  margin-bottom: 16px;
+  overflow: hidden;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
 `;
 
 const CardContent = styled.div`
-  padding: 16px;
   display: grid;
   gap: 1.25rem;
+  padding: 16px;
 `;
 
 const ContinueButtonContainer = styled.div`
@@ -105,10 +105,10 @@ const ContinueButton = styled(Button)`
 
   && {
     padding: 0.75rem 1.5rem;
-    border-radius: 8px;
     background: linear-gradient(135deg, #1890ff, #13c2c2);
     border: none;
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(24 144 255 / 20%);
     transition: all 0.3s ease;
   }
 

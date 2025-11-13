@@ -101,11 +101,11 @@ const ChartCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 1.5rem;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.1);
   min-height: 320px;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 35px rgb(15 23 42 / 10%);
 `;
 
 const SectionHeader = styled.div`
@@ -126,7 +126,7 @@ const PieWrapper = styled.div`
   gap: 1.5rem;
   align-items: center;
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
@@ -140,34 +140,34 @@ const DoughnutContainer = styled.div`
 `;
 
 const DistributionLegend = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
 const LegendItem = styled.li`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
   color: #1f2937;
 `;
 
 const LegendLabel = styled.span`
   display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 600;
 `;
 
 const LegendDot = styled.span`
   width: 0.75rem;
   height: 0.75rem;
-  border-radius: 50%;
   background: ${({ color }) => color};
+  border-radius: 50%;
 `;
 
 const LegendPercentage = styled.span`
@@ -178,8 +178,8 @@ const LegendPercentage = styled.span`
 const LegendValue = styled.span`
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-end;
   gap: 0.15rem;
+  align-items: flex-end;
   font-weight: 600;
   text-align: right;
 `;
@@ -191,6 +191,6 @@ const LegendNote = styled.span`
 `;
 
 const LegendDivider = styled.li`
-  border-top: 1px solid #e2e8f0;
   margin: 0.25rem 0;
+  border-top: 1px solid #e2e8f0;
 `;

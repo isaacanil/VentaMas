@@ -6,13 +6,13 @@ import { formatUpdatedAt } from './inventoryTableUtils.js';
 
 const UserBadge = styled.span`
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 2px 8px;
-  border-radius: 999px;
-  background: #f3f4f6;
-  color: #111827;
   font-size: 12px;
+  color: #111827;
+  background: #f3f4f6;
+  border-radius: 999px;
 `;
 
 const EditorsInline = styled.div`
@@ -23,10 +23,10 @@ const EditorsInline = styled.div`
 `;
 
 const ExtraEditors = styled.span`
-  background: #e5e7eb;
-  color: #374151;
-  font-size: 11px;
   padding: 2px 6px;
+  font-size: 11px;
+  color: #374151;
+  background: #e5e7eb;
   border-radius: 999px;
 `;
 

@@ -152,23 +152,23 @@ export const TableBody = ({
 
 const Container = styled.div`
   display: grid;
-  align-content: flex-start;
   gap: 0.2em 1em;
+  align-content: flex-start;
+
   &[data-border='on'] {
     row-gap: 0;
   }
 `;
 const GroupHeader = styled.div`
-  background-color: #f0f0f09e;
   padding: 10px;
   font-weight: bold;
-  // Otros estilos que desees agregar
+  background-color: #f0f0f09e;
 `;
 
 const ExpandedRow = styled.div`
   padding: 1em;
   background-color: var(--background-100, #f9f9f9);
-  border-top: 1px solid var(--Gray1);
+  border-top: 1px solid var(--gray-1);
 `;
 
 const BodyCell = styled.div`
@@ -176,14 +176,18 @@ const BodyCell = styled.div`
   align-items: center;
   padding: 0 10px;
   height: 100%;
+
   /* base (medium) height */
   height: 3.4em;
+
   &[data-size='small'] {
     height: 2.6em;
   }
+
   &[data-size='large'] {
     height: 4.6em;
   }
+
   position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
   ${(props) =>
     props.fixed === 'left' &&
@@ -191,7 +195,7 @@ const BodyCell = styled.div`
     left: 0;
     z-index: 1;
     background-color: white;
-    border-right: 1px solid var(--Gray1);
+    border-right: 1px solid var(--gray-1);
   `}
   ${(props) =>
     props.fixed === 'right' &&
@@ -199,7 +203,7 @@ const BodyCell = styled.div`
     right: 0;
     z-index: 1;
     background-color: white;
-    border-left: 1px solid var(--Gray1);
+    border-left: 1px solid var(--gray-1);
   `}
   justify-content: ${(props) => props.align || 'flex-start'};
   text-align: ${(props) => props.align || 'left'};

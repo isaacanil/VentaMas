@@ -76,30 +76,30 @@ export const BusinessInfoPill = ({
 
 const PillButton = styled.button`
   display: inline-flex;
-  align-items: center;
   gap: 0.4rem;
-  border-radius: 999px;
-  padding: 0.45rem 1rem;
-  background: rgba(255, 255, 255, 1);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  color: rgba(15, 23, 42, 0.88);
+  align-items: center;
   min-height: 48px;
-  backdrop-filter: blur(12px);
+  padding: 0.45rem 1rem;
+  color: rgb(15 23 42 / 88%);
   cursor: pointer;
+  background: rgb(255 255 255 / 100%);
+  border: 1px solid rgb(15 23 42 / 8%);
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
   transition:
     transform 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease;
 
   &:hover {
+    border-color: rgb(15 23 42 / 25%);
     transform: translateY(-1px);
-    border-color: rgba(15, 23, 42, 0.25);
   }
 
   &:focus-visible {
     outline: none;
-    border-color: rgba(37, 99, 235, 0.55);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    border-color: rgb(37 99 235 / 55%);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 25%);
   }
 `;
 
@@ -112,16 +112,16 @@ const TextGroup = styled.span`
 
 const Label = styled.span`
   font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  color: rgb(15 23 42 / 55%);
   text-transform: uppercase;
-  color: rgba(15, 23, 42, 0.55);
+  letter-spacing: 0.08em;
 `;
 
 const Name = styled.span`
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(15, 23, 42, 0.9);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgb(15 23 42 / 90%);
+  white-space: nowrap;
 `;

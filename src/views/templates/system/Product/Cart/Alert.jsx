@@ -62,8 +62,8 @@ const Component = styled.div`
   z-index: 20;
 
   h1 {
-    font-size: 1em;
     margin: 0;
+    font-size: 1em;
     color: white;
   }
   ${(props) => {

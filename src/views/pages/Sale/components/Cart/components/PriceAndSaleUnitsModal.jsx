@@ -20,21 +20,21 @@ const ModalContainer = styled.div`
 `;
 
 const SectionTitle = styled.h3`
+  margin-bottom: 10px;
   font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 10px;
 `;
 
 const PriceOption = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 10px;
   cursor: pointer;
+  background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
   border: ${({ selected }) =>
     selected ? '2px solid #1890ff' : '1px solid #ddd'};
   border-radius: 8px;
-  background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   transition: background 0.3s ease;
 
   &:hover {
@@ -43,37 +43,37 @@ const PriceOption = styled.div`
 `;
 
 const SaleUnitsContainer = styled.div`
-  padding: 0.6em;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background-color: #fafafa;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.6em;
+  padding: 0.6em;
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
 `;
 
 const SaleUnitCard = styled.div`
-  padding: 15px;
-  cursor: pointer;
-  border-radius: 10px;
-  border: ${({ selected }) =>
-    selected ? '2px solid #1890ff' : '1px solid #ddd'};
-  background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
-  transition: background 0.3s ease;
-
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding: 15px;
+  cursor: pointer;
+  background: ${({ selected }) => (selected ? '#e6f7ff' : 'white')};
+  border: ${({ selected }) =>
+    selected ? '2px solid #1890ff' : '1px solid #ddd'};
+  border-radius: 10px;
+  transition: background 0.3s ease;
+
   &:hover {
     background: #f0f0f0;
   }
 `;
 
 const EmptySaleUnitsMessage = styled.div`
-  color: #999;
-  font-size: 1rem;
-  text-align: center;
   margin-top: 10px;
+  font-size: 1rem;
+  color: #999;
+  text-align: center;
 `;
 
 const PriceOptions = styled.div`
@@ -84,13 +84,13 @@ const PriceOptions = styled.div`
 
 const InfoMessage = styled.div`
   padding: 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #155724;
+  text-align: center;
   background-color: #f0f8ff;
   border: 1px solid #d4edda;
   border-radius: 8px;
-  color: #155724;
-  font-size: 0.9rem;
-  text-align: center;
-  margin-bottom: 10px;
 
   .info-button {
     margin-top: 10px;

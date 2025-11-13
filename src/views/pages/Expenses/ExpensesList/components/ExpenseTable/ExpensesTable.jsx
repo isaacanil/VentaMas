@@ -422,8 +422,8 @@ const ErrorDescription = styled.div`
 `;
 
 const ErrorActionLink = styled.a`
-  color: var(--Primary6, #1677ff);
   font-weight: 600;
+  color: var(--primary-6, #1677ff);
   text-decoration: none;
 
   &:hover {
@@ -434,17 +434,17 @@ const ErrorActionLink = styled.a`
 const ErrorCodeSnippet = styled.code`
   display: block;
   padding: 0.4em 0.6em;
-  border-radius: 0.3em;
-  background-color: #f5f5f5;
   font-size: 0.85em;
   word-break: break-all;
+  background-color: #f5f5f5;
+  border-radius: 0.3em;
 `;
 
 const Container = styled.div`
-  height: 100%;
-  width: 100%;
-  background-color: white;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  background-color: white;
 `;

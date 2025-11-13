@@ -15,25 +15,25 @@ export const ConfigModal = ({ config }) => {
   );
 };
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   max-width: 1000px;
   height: 100%;
   max-height: 520px;
+  overflow: hidden;
   background-color: white;
   border-radius: var(--border-radius);
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: min-content 1fr;
 `;
 const Backdrop = styled.div`
   position: fixed;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 100;
   top: 0;
   left: 0;
+  z-index: 100;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0 0 0 / 50%);
 `;

@@ -6,21 +6,21 @@ import styled from 'styled-components';
 import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 
 const CustomCardContainer = styled.div`
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  padding: 16px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
   width: 300px;
+  height: 100%;
+  padding: 16px;
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 const CardFooter = styled.div`
   margin-top: 16px;

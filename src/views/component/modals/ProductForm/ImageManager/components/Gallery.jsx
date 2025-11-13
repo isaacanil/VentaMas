@@ -53,12 +53,13 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 10px;
-  margin-top: 20px;
   width: 100%;
+  margin-top: 20px;
 `;
 
 const Thumbnail = styled.div`
-  //border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
+
   /* border: 1px solid #ccc;
   padding: 10px;
   text-align: center;
@@ -68,7 +69,6 @@ const Thumbnail = styled.div`
 const ImageContainer = styled.div`
   width: 100%;
   height: 110px;
-
   overflow: hidden;
 `;
 

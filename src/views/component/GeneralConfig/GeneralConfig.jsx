@@ -158,10 +158,10 @@ const SearchHighlightStyles = createGlobalStyle`
   }
 
   .config-search-highlight {
-    box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
-    border-radius: 12px;
     outline: 2px solid var(--primary-color, #1677ff);
     outline-offset: 0;
+    border-radius: 12px;
+    box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
     transition: box-shadow 0.25s ease;
   }
 `;

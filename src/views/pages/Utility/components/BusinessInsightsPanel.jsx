@@ -80,19 +80,19 @@ export const BusinessInsightsPanel = ({
 
 const InsightsGrid = styled.div`
   display: grid;
-  gap: ${spacing.md};
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: ${spacing.md};
 `;
 
 const InsightCard = styled.article`
   position: relative;
   display: grid;
   grid-template-columns: 6px 1fr;
+  min-height: 150px;
   background: ${colors.background.surface};
+  border: 1px solid rgb(148 163 184 / 25%);
   border-radius: ${radii.md};
   box-shadow: ${shadows.sm};
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  min-height: 150px;
 `;
 
 const AccentStrip = styled.span`
@@ -113,15 +113,15 @@ const CardContent = styled.div`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: ${spacing.sm};
+  align-items: flex-start;
+  justify-content: space-between;
 `;
 
 const HeaderMeta = styled.div`
   display: flex;
-  align-items: center;
   gap: ${spacing.xs};
+  align-items: center;
 `;
 
 const Badge = styled.span`
@@ -129,13 +129,13 @@ const Badge = styled.span`
   align-items: center;
   justify-content: center;
   padding: 0.4rem 0.75rem;
-  border-radius: ${radii.pill};
   font-size: 0.75rem;
   font-weight: 700;
+  color: ${({ $variant }) => $variant.badge.color};
   text-transform: uppercase;
   letter-spacing: 0.04em;
   background: ${({ $variant }) => $variant.badge.background};
-  color: ${({ $variant }) => $variant.badge.color};
+  border-radius: ${radii.pill};
 `;
 
 const Value = styled.div`
@@ -151,10 +151,10 @@ const MeasurementIcon = styled.span`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: rgba(148, 163, 184, 0.18);
   color: ${colors.text.secondary};
   cursor: help;
+  background: rgb(148 163 184 / 18%);
+  border-radius: 50%;
 
   svg {
     font-size: 0.95rem;
@@ -162,6 +162,6 @@ const MeasurementIcon = styled.span`
 
   &:hover {
     color: ${colors.brand.primary};
-    background: rgba(59, 130, 246, 0.15);
+    background: rgb(59 130 246 / 15%);
   }
 `;

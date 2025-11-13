@@ -11,16 +11,16 @@ export const ChevronDownButton = () => {
   );
 };
 const Container = styled.div`
-  height: 2em;
-  width: 2em;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 2em;
+  height: 2em;
   background-color: #162b85;
   border-radius: 100px;
+
   svg {
     width: 1.1em;
-
-    fill: #ffffff;
+    fill: #fff;
   }
 `;

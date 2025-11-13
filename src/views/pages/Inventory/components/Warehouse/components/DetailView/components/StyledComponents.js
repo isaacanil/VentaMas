@@ -2,8 +2,8 @@ import styled from 'styled-components';
 
 export const DetailContainer = styled.div`
   flex: 1;
-  padding: 20px;
   width: 100%;
+  padding: 20px;
 `;
 
 export const DetailTitle = styled.h3`
@@ -14,6 +14,6 @@ export const DetailTitle = styled.h3`
 
 export const DetailContent = styled.div`
   margin-top: 10px;
-  color: #333;
   font-size: 1em;
+  color: #333;
 `;

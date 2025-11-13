@@ -122,8 +122,8 @@ const Actions = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0;
-  border-radius: 8px;
   margin-bottom: 10px;
+  border-radius: 8px;
 `;
 
 const Left = styled.div`
@@ -140,8 +140,8 @@ const BottomActions = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0;
-  border-radius: 8px;
   margin-top: 10px;
+  border-radius: 8px;
 `;
 
 // Botón para mostrar los comprobantes deshabilitados
@@ -150,13 +150,13 @@ const DisabledReceiptsButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #722ed1;
+  cursor: pointer;
   background-color: #f9f0ff;
   border: 1px dashed #722ed1;
   border-radius: 8px;
-  color: #722ed1;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
   transition: all 0.3s;
 
   &:hover {
@@ -164,7 +164,7 @@ const DisabledReceiptsButton = styled.button`
     border-color: #531dab;
   }
 
-  .ant-badge {
+    .ant-badge {
     margin-left: 8px;
   }
 `;

@@ -147,30 +147,30 @@ export const PaymentMethodBarChart = ({ sales }) => {
 };
 
 const Container = styled.div`
-  height: ${(props) => (props.$isMobile ? '180px' : '200px')};
   display: grid;
   gap: ${(props) => (props.$isMobile ? '0.5em' : '1em')};
+  height: ${(props) => (props.$isMobile ? '180px' : '200px')};
 
-  @media (max-width: 768px) {
-    height: 180px;
+  @media (width <= 768px) {
     gap: 0.5em;
+    height: 180px;
   }
 
-  @media (max-width: 480px) {
-    height: 160px;
+  @media (width <= 480px) {
     gap: 0.25em;
+    height: 160px;
   }
 `;
 
 const TitleContainer = styled.div`
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     h3 {
       font-size: 1.1em !important;
       text-align: center;
     }
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     h3 {
       font-size: 1em !important;
       line-height: 1.2;
@@ -182,7 +182,7 @@ const ChartContainer = styled.div`
   height: 100%;
   overflow: hidden;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     overflow-x: auto;
   }
 `;

@@ -17,10 +17,9 @@ const AnimatedDigit = ({ digit }) => {
 };
 
 const Digit = styled(motion.span)`
-  font-weight: 600;
-
   display: flex;
   align-items: center;
+  font-weight: 600;
 `;
 
 export default AnimatedDigit;

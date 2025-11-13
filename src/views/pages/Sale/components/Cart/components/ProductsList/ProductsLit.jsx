@@ -178,16 +178,16 @@ export const ProductsList = () => {
 };
 
 const Container = styled.ul`
-  background-color: ${(props) => props.theme.bg.color2};
-  display: grid;
-  gap: 0.4em;
-  grid-template-rows: 1fr min-content;
-  width: 100%;
-  margin: 0;
-  padding: 0.4em;
-  overflow-y: scroll;
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.121);
+  display: grid;
+  grid-template-rows: 1fr min-content;
+  gap: 0.4em;
+  width: 100%;
+  padding: 0.4em;
+  margin: 0;
+  overflow-y: scroll;
+  background-color: ${(props) => props.theme.bg.color2};
+  border: 1px solid rgb(0 0 0 / 12.1%);
 `;
 const EmptyCartMessage = styled(motion.div)`
   margin: 1em;
@@ -195,7 +195,7 @@ const EmptyCartMessage = styled(motion.div)`
 
 const Body = styled.div`
   display: grid;
-  align-items: start;
-  align-content: start;
   gap: 0.2rem;
+  align-content: start;
+  align-items: start;
 `;

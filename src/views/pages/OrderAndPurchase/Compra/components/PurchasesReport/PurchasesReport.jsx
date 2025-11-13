@@ -77,36 +77,36 @@ export const PurchasesReport = () => {
   );
 };
 const Component = styled(motion.div)`
-  width: 98vw;
   display: grid;
   gap: 4em;
   align-content: start;
+  width: 98vw;
   height: 100%;
-  background-color: #ffffff;
+  padding: 0 1em;
+  overflow-y: scroll;
+  background-color: #fff;
   border: 1px solid #1d1d1d37;
   border-radius: 0.5em;
-  overflow-y: scroll;
-  padding: 0 1em;
 `;
 
 const Backdrop = styled(motion.div)`
+  position: absolute;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  justify-content: center;
   width: 100%;
   height: calc(100vh);
-  display: grid;
-  top: 0;
-  justify-content: center;
-  position: absolute;
   overflow: hidden;
-  z-index: 30;
 `;
 
 const Header = styled.div`
-  display: grid;
-  grid-template-columns: 1fr max-content;
-  align-items: center;
   position: sticky;
   top: 0;
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  gap: 1em;
+  align-items: center;
   padding: 1em 1em 0;
   background: white;
-  gap: 1em;
 `;

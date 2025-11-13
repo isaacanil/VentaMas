@@ -59,45 +59,46 @@ const Header = () => {
 export default Header;
 
 const Head = styled.div`
-  display: flex;
-  align-items: center;
-  height: 2.2em;
-  width: 100%;
-  gap: 1em;
-  font-size: 25px;
-  padding: 0 1em;
-  justify-content: space-between;
-  background: linear-gradient(135deg, var(--color, #1890ff) 0%, #40a9ff 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.2em;
+  padding: 0 1em;
+  font-size: 25px;
+  background: linear-gradient(135deg, var(--color, #1890ff) 0%, #40a9ff 100%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
+    height: 60px;
     padding: 0 1em;
     font-size: 20px;
-    height: 60px;
   }
 `;
 
 const Group = styled.div`
   display: flex;
-  color: white;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  color: white;
 `;
 
 const WebName = styled.div`
+  margin: 0;
   font-size: 1.1em;
   font-weight: 700;
-  margin: 0;
   color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     font-size: 1.2em;
   }
-  @media (max-width: 480px) {
+
+  @media (width <= 480px) {
     font-size: 1em;
   }
 `;

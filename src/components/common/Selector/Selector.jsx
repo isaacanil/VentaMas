@@ -161,23 +161,23 @@ const Trigger = styled.button`
   display: grid;
   grid-template-columns: ${({ $hasIcon }) =>
     $hasIcon ? 'min-content 1fr min-content' : '1fr min-content'};
-  align-items: center;
-  padding: 7px 12px;
-  background: ${({ styles }) => styles.bgColor};
-  color: ${({ styles }) => styles.color};
-  border: 1px solid ${({ styles }) => styles.borderColor};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
   gap: 8px;
+  align-items: center;
   width: ${({ $width }) => $width || 'min-content'};
   min-width: 160px;
+  padding: 7px 12px;
+  font-size: 0.9rem;
+  color: ${({ styles }) => styles.color};
+  cursor: pointer;
+  background: ${({ styles }) => styles.bgColor};
+  border: 1px solid ${({ styles }) => styles.borderColor};
+  border-radius: 6px;
 
   span {
-    white-space: nowrap;
     overflow: hidden;
-    text-align: start;
     text-overflow: ellipsis;
+    text-align: start;
+    white-space: nowrap;
   }
 
   &:hover {
@@ -186,32 +186,32 @@ const Trigger = styled.button`
 `;
 
 const Chevron = styled.span`
-  transition: transform 0.2s;
   transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
+  transition: transform 0.2s;
 `;
 
 const Dropdown = styled.ul`
+  z-index: 1000;
+  width: max-content;
+  min-width: 200px;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  padding: 4px;
-  min-width: 200px;
-  width: max-content;
-  z-index: 1000;
-  list-style: none;
-  margin: 0;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 15%);
 `;
 
 const DropdownItem = styled.li`
-  padding: 8px 12px;
   display: flex;
-  align-items: center;
   gap: 8px;
-  cursor: pointer;
-  border-radius: 6px;
+  align-items: center;
+  padding: 8px 12px;
   color: ${({ styles }) => styles.color};
+  cursor: pointer;
   background: ${({ isSelected, styles }) =>
     isSelected ? styles.bgColor : 'white'};
+  border-radius: 6px;
 
   &:hover {
     background: ${({ styles }) => styles.hoverBgColor || styles.bgColor};
@@ -222,20 +222,20 @@ const SearchContainer = styled.div`
   display: flex;
   align-items: center;
   padding: 8px;
-  border-bottom: 1px solid #eee;
   margin-bottom: 4px;
+  border-bottom: 1px solid #eee;
 `;
 
 const SearchIcon = styled(FontAwesomeIcon)`
-  color: #999;
   margin-right: 8px;
+  color: #999;
 `;
 
 const SearchInput = styled.input`
-  border: none;
-  outline: none;
   width: 100%;
   font-size: 0.9rem;
+  outline: none;
+  border: none;
 
   &::placeholder {
     color: #999;

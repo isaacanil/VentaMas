@@ -4,9 +4,9 @@ import styled from 'styled-components';
 
 const Footer = styled.div`
   display: grid;
-  padding: 0.5em 1em;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
+  padding: 0.5em 1em;
   border-top: 1px solid #ddd;
 `;
 

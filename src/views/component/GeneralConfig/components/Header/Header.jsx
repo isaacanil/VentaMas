@@ -11,10 +11,10 @@ const { Button } = antd;
 const HeaderContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 16px;
-  background: #ffffff;
+  background: #fff;
   border-bottom: 1px solid #f0f0f0;
 `;
 

@@ -119,19 +119,19 @@ export const ExportInvoice = ({ invoices = [] }) => {
   );
 };
 const Container = styled.div`
-  max-width: 1300px;
-  width: 100%;
-  height: 3em;
   display: flex;
-  align-items: center;
-  margin: 0 auto;
   gap: 1em;
+  align-items: center;
   justify-content: space-between;
+  width: 100%;
+  max-width: 1300px;
+  height: 3em;
+  margin: 0 auto;
 `;
 const Group = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
 `;
 const SpinningIcon = styled(FontAwesomeIcon)`
   animation: spin 1s linear infinite;
@@ -140,6 +140,7 @@ const SpinningIcon = styled(FontAwesomeIcon)`
     from {
       transform: rotate(0deg);
     }
+
     to {
       transform: rotate(360deg);
     }

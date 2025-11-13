@@ -175,44 +175,42 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
 
 const Container = styled(motion.div)`
   position: fixed;
-  z-index: 9900;
   top: 0;
   left: 0;
-  max-width: 400px;
+  z-index: 9900;
   width: 100%;
+  max-width: 400px;
   height: 100%;
-
-  border-radius: 0 10px 10px 0;
   overflow: hidden;
   background-color: white;
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 0 10px 10px 0;
   box-shadow:
-    5px 0 15px rgba(0, 0, 0, 0.1),
-    10px 0 25px rgba(0, 0, 0, 0.05);
+    5px 0 15px rgb(0 0 0 / 10%),
+    10px 0 25px rgb(0 0 0 / 5%);
 `;
 
 const ActionButtons = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
 `;
 
 const Wrapper = styled.div`
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-rows: auto auto 1fr;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     max-width: 500px;
   }
 `;
 const NavigationBody = styled.div`
-  background-color: ${(props) => props.theme.bg.color2};
   padding: 0.6em 0.9em;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
+  background-color: ${(props) => props.theme.bg.color2};
 `;
 
 const NavigationLinks = styled.div`
@@ -226,25 +224,25 @@ const MenuGroup = styled.div`
 `;
 
 const MenuContainer = styled.div`
-  background-color: ${(props) => props.theme.bg.shade};
-  border-radius: var(--border-radius, 8px);
   padding: 0.25rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  background-color: ${(props) => props.theme.bg.shade};
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius, 8px);
 `;
 const Header = styled.div`
-  height: 2.75em;
-  width: 100%;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: ${(props) => props.theme.bg.color};
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.75em;
+  padding: 1rem;
+  background-color: ${(props) => props.theme.bg.color};
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     height: 2.75em;
   }
 `;
@@ -255,6 +253,6 @@ const HeaderContent = styled.div`
 `;
 
 const LogoContainer = styled.div`
-  height: 2em;
   width: 2.4rem;
+  height: 2em;
 `;

@@ -20,19 +20,23 @@ const Container = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.8em;
+
   p {
     margin: 0;
+
     &:nth-child(1) {
       font-weight: 600;
     }
   }
 
-  :not(:first-child):not(:last-child) {
+  :not(:first-child, :last-child) {
     justify-content: center;
   }
+
   :first-child {
     justify-content: flex-start;
   }
+
   :last-child {
     justify-content: flex-end;
   }
@@ -51,12 +55,13 @@ const Container = styled.div`
          justify-content: center;
          
      `} */
-  @media (max-width: 500px) {
+  @media (width <= 500px) {
     display: grid;
   }
-  @media (max-width: 600px) {
+
+  @media (width <= 600px) {
     grid-template-columns: 1fr;
+    gap: 0;
     margin: 0;
-    gap: 0em;
   }
 `;

@@ -6,17 +6,17 @@ import styled from 'styled-components';
 const StyledInputContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
 `;
 
 const StyledInput = styled.input`
+  max-width: 300px;
   padding: 0.5rem;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  max-width: 300px;
 `;
 
 const FilterInput = ({

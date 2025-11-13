@@ -38,7 +38,7 @@ const Description = styled(Paragraph)`
     margin: 0;
     font-size: 16px;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.65);
+    color: rgb(0 0 0 / 65%);
   }
 `;
 
@@ -47,8 +47,8 @@ const SectionCard = styled.section`
   gap: 1.2em;
   padding: 18px;
   background-color: #fdfdfd;
-  border-radius: 12px;
   border: 1px solid #e5e9f2;
+  border-radius: 12px;
 `;
 
 const SectionHeader = styled.div`
@@ -67,7 +67,7 @@ const SectionDescription = styled(Paragraph)`
   && {
     margin: 0;
     font-size: 14px;
-    color: rgba(31, 41, 51, 0.6);
+    color: rgb(31 41 51 / 60%);
   }
 `;
 
@@ -88,8 +88,8 @@ const StyledSelect = styled(Select)`
 
   && .ant-select-selector {
     padding: 12px;
-    border-radius: 10px;
     border-color: #e5e9f2;
+    border-radius: 10px;
   }
 
   && .ant-select-selection-item {
@@ -112,7 +112,7 @@ const OptionLabel = styled.span`
 
 const OptionMeta = styled.span`
   font-size: 13px;
-  color: rgba(31, 41, 51, 0.58);
+  color: rgb(31 41 51 / 58%);
 `;
 
 const LoadingContainer = styled.div`

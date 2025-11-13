@@ -34,29 +34,29 @@ export const Cart = () => {
 const Container = styled.div<{ $isOpen: boolean }>`
   position: relative;
   background-color: ${({ theme }) =>
-    (theme as CartTheme).bg?.shade ?? 'var(--White)'};
-  //  max-width: 30em;
+    (theme as CartTheme).bg?.shade ?? 'var(--white)'};
+
+  /* max-width: 30em; */
   width: 26em;
   overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
-  border-left: 1px solid rgba(0, 0, 0, 0.21);
+  border-left: 1px solid rgb(0 0 0 / 21%);
   padding: 0;
   margin: 0;
   gap: 0.4em;
   transition: width 600ms 0ms linear;
-  @media (max-width: 800px) {
+
+  @media (width <= 800px) {
     height: 100%;
     width: 100%;
     max-width: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.121);
+    border: 1px solid rgb(0 0 0 / 12.1%);
     border-top: 0;
-
     border-bottom: 0;
     position: absolute;
     top: 0;
     z-index: 1000;
-
     transition: transform 600ms 0ms linear;
 
     ${({ $isOpen }) => {

@@ -33,7 +33,7 @@ const Container = styled.div`
   padding: 0.6em 0.8em;
 `;
 const Label = styled.span`
-  margin-right: 1em;
   display: flex;
   gap: 1em;
+  margin-right: 1em;
 `;

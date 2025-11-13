@@ -149,18 +149,18 @@ const StyledTable = styled(Table)`
 
 const EmptyStateContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 250px;
   background-color: #fafafa;
-  border-radius: 4px;
   border: 1px solid #f0f0f0;
+  border-radius: 4px;
 `;
 
 const CountDisplay = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 `;
 
 export default AccountsTable;

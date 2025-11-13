@@ -50,20 +50,20 @@ const TableFooter = ({
 
 export default TableFooter;
 const Footer = styled.div`
-  padding: 0 1em;
   z-index: 1;
-  grid-template-columns: 1fr 1fr 1fr;
   display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
-  background-color: white;
   height: 3em;
+  padding: 0 1em;
+  background-color: white;
   border-top: var(--border-primary);
 `;
 const FooterLeftSide = styled.div`
-  justify-self: start;
   display: flex;
   gap: 1em;
   align-items: center;
+  justify-self: start;
 `;
 
 const FooterRightSide = styled.div`
@@ -71,21 +71,22 @@ const FooterRightSide = styled.div`
 `;
 const Counter = styled.div`
   display: flex;
-  white-space: nowrap;
-  align-items: center;
-  border-radius: var(--border-radius);
   gap: 0.5em;
+  align-items: center;
   padding: 0.2em 1em;
-  font-weight: 600;
   font-size: 0.9em;
+  font-weight: 600;
+  white-space: nowrap;
   background-color: #d3d3d3;
+  border-radius: var(--border-radius);
 `;
 const ElementsName = styled.div`
-  font-weight: 600;
   font-size: 1em;
+  font-weight: 600;
   color: var(--color-gray);
   text-transform: capitalize;
-  @media (max-width: 1100px) {
+
+  @media (width <= 1100px) {
     display: none;
   }
 `;

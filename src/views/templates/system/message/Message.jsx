@@ -52,12 +52,12 @@ const Container = styled.div`
       case 'error':
         return `
                 background-color: rgba(255, 0, 0, 0.100);
-                color: var(--Gray10)
+                color: var(--gray-10)
                 `;
       case 'primary':
         return `
                 background-color:  rgba(0, 129, 250, 0.100);
-                color: var(--Black4);
+                color: var(--black-4);
                 `;
       default:
         break;

@@ -16,35 +16,36 @@ const Container = styled.div`
 `;
 
 const IconWrapper = styled.div`
+  margin-bottom: 2rem;
   font-size: 6rem;
   color: #ff8c00;
-  margin-bottom: 2rem;
 `;
 
 const Title = styled.h1`
+  margin: 0;
   font-size: 3rem;
   font-weight: 700;
-  margin: 0;
   color: #333;
   text-align: center;
 `;
 
 const Subtitle = styled.p`
-  font-size: 1.5rem;
   margin: 1rem 0 3.4rem;
+  font-size: 1.5rem;
   color: #555;
   text-align: center;
 `;
 
 const Button = styled(Link)`
-  font-size: 1.2rem;
-  background-color: var(--color);
-  color: #fff;
-  border: none;
   padding: 0.4em 1.6rem;
-  border-radius: 0.5rem;
+  font-size: 1.2rem;
+  color: #fff;
   cursor: pointer;
+  background-color: var(--color);
+  border: none;
+  border-radius: 0.5rem;
   transition: all 0.2s ease-in-out;
+
   &:hover {
     background-color: var(--color);
     transform: translateY(-2px);

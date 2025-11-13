@@ -38,19 +38,19 @@ export const InfoCard = ({
   );
 };
 const CardWrapper = styled.div`
-  background-color: ${({ color }) => color};
-  border-radius: 10px;
-  border: 2px solid ${({ color }) => color};
-  margin-bottom: 20px;
   padding: 20px;
+  margin-bottom: 20px;
+  background-color: ${({ color }) => color};
+  border: 2px solid ${({ color }) => color};
+  border-radius: 10px;
 `;
 
 const Title = styled.h2`
-  font-size: 1.2rem;
   margin-bottom: 10px;
+  font-size: 1.2rem;
 `;
 
 const Info = styled.p`
-  font-size: 1rem;
   margin-bottom: 5px;
+  font-size: 1rem;
 `;

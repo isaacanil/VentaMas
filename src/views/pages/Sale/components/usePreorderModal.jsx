@@ -31,9 +31,9 @@ const ModalCard = styled.div`
 
 const ModalHeader = styled.header`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
 `;
 
 const ModalTitle = styled.h3`
@@ -50,16 +50,16 @@ const HeaderNote = styled.span`
 
 const IconButton = styled.button`
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid #cbd5f5;
-  background: #fff;
-  color: #1d4ed8;
   font-size: 0.8rem;
   font-weight: 600;
+  color: #1d4ed8;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #cbd5f5;
+  border-radius: 999px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
   transition: all 0.18s ease;
 
@@ -73,16 +73,16 @@ const ModalBody = styled.div`
   display: grid;
   gap: 14px;
   max-height: 60vh;
-  overflow-y: auto;
   padding-right: 4px;
+  overflow-y: auto;
 `;
 
 const EmptyState = styled.div`
-  margin: 40px 0 28px;
   display: grid;
   gap: 6px;
-  text-align: center;
+  margin: 40px 0 28px;
   color: #64748b;
+  text-align: center;
 `;
 
 const SelectorRow = styled.div`
@@ -94,19 +94,19 @@ const SelectorRow = styled.div`
 `;
 
 const SelectedSummary = styled.div`
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  background: #f8fafc;
   display: grid;
   gap: 10px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 `;
 
 const SummaryRow = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ItemTitle = styled.span`
@@ -130,12 +130,12 @@ const StatusPill = styled.span`
   align-items: center;
   justify-content: center;
   padding: 2px 10px;
-  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: capitalize;
   color: ${({ $tone }) => $tone?.text || '#0f172a'};
+  text-transform: capitalize;
   background: ${({ $tone }) => $tone?.background || '#e2e8f0'};
+  border-radius: 999px;
 `;
 
 const Amount = styled.span`
@@ -146,20 +146,20 @@ const Amount = styled.span`
 const PrimaryAction = styled.button`
   width: 100%;
   padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
+  color: #fff;
   cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 8px;
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
 
   &:hover {
+    box-shadow: 0 12px 22px rgb(37 99 235 / 20%);
     transform: translateY(-1px) scale(1.01);
-    box-shadow: 0 12px 22px rgba(37, 99, 235, 0.2);
   }
 `;
 
@@ -168,16 +168,16 @@ const LoadingState = styled.div`
   gap: 12px;
   justify-items: center;
   padding: 40px 0;
-  color: #475569;
   font-size: 0.9rem;
+  color: #475569;
 `;
 
 const Spinner = styled.div`
   width: 36px;
   height: 36px;
-  border-radius: 50%;
   border: 4px solid #bfdbfe;
   border-top-color: #1d4ed8;
+  border-radius: 50%;
   animation: spin 0.9s linear infinite;
 
   @keyframes spin {
@@ -475,7 +475,7 @@ export const usePreorderModal = () => {
         title={null}
         footer={null}
         onCancel={handleClose}
-        destroyOnClose
+        destroyOnHidden
         maskClosable
         width={520}
       >

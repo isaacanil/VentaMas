@@ -2,6 +2,7 @@
 .theme-dark,
 [data-theme='dark'] {
   /* usa el selector que prefieras */
+
   /* ─── Colores base (ligeramente aclarados) ─── */
   --primary: #3380ff; /* #0066ff → +8 % L */
   --secondary: #ff6e8f; /* #ff5577 → +8 % L */
@@ -22,8 +23,8 @@
   --border: #3a3f4e;
 
   /* Sombras: más difusas para imitar elevación en dark */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 60%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 70%);
 }
 
 /* Ejemplo de activación por prefers-color-scheme ----------
@@ -33,4 +34,4 @@
     ...
   }
 }
-----------------------------------------------------------------*/
+---------------------------------------------------------------- */

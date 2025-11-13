@@ -17,7 +17,7 @@ export const Body = ({ data, Item, colWidth, reverse }) => {
 };
 
 const Container = styled.div`
-  height: 100%;
   width: 100%;
-  background-color: #ffffff;
+  height: 100%;
+  background-color: #fff;
 `;

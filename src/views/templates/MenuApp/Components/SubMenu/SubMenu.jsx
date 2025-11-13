@@ -51,28 +51,27 @@ const Group = styled.div`
 `;
 
 const MenuLinkList = styled.div`
-  background-color: ${(props) => props.theme.bg.shade};
-  border-radius: var(--border-radius, 8px);
   padding: 0.25rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  background-color: ${(props) => props.theme.bg.shade};
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius, 8px);
 `;
 const Body = styled.div`
+  display: grid;
+  gap: 0.6em;
+  align-content: start;
+  padding: 0.8em;
+
   /* position: relative; */
   background-color: var(--color2);
-  padding: 0.8em;
-  display: grid;
-  align-content: start;
-  gap: 0.6em;
 `;
 
 const Container = styled.div`
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(255 255 255);
   width: 100%;
-
   display: grid;
   grid-template-rows: min-content 1fr;
-
   position: absolute;
   z-index: 1;
   top: 2.75em;
@@ -81,7 +80,7 @@ const Container = styled.div`
   height: calc(100% - 2.75em);
   transform: translateX(-100%);
   transition: 200ms transform ease-in-out;
-  color: rgb(80, 80, 80);
+  color: rgb(80 80 80);
   ${(props) => {
     switch (props.isOpen) {
       case true:
@@ -97,20 +96,22 @@ const Container = styled.div`
 const Header = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 1.5em;
+  justify-content: space-between;
   height: 3.8em;
+  padding: 0 1.5em;
   margin: 0;
+
   span {
     font-size: 16px;
-    line-height: 18px;
     font-weight: 500;
+    line-height: 18px;
     text-align: center;
     text-align: end;
   }
+
   button {
-    color: rgb(66, 165, 245);
     justify-self: flex-start;
+    color: rgb(66 165 245);
   }
 `;

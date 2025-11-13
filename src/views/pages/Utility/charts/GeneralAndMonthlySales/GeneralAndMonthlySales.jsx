@@ -28,12 +28,11 @@ const GeneralAndMonthlySales = ({ invoices }) => {
 export default GeneralAndMonthlySales;
 
 const Container = styled.div`
-  height: 200px;
   display: grid;
+  height: 200px;
 `;
 const Group = styled.div`
   display: grid;
   grid-template-columns: 200px 1fr;
-
   gap: 1em;
 `;

@@ -3,23 +3,23 @@ import styled from 'styled-components';
 
 // Estilos usando styled-components
 const Card = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
   display: grid;
   grid-template-rows: min-content min-content 1fr;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  overflow: hidden;
   cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 `;
 
 const Header = styled.div`
-  padding: 0.6em 1em;
   display: grid;
+  grid-template-columns: 1fr min-content;
+  gap: 1em;
   align-items: start;
   height: 4em;
-  gap: 1em;
-  grid-template-columns: 1fr min-content;
+  padding: 0.6em 1em;
 `;
 
 const Title = styled.h2`
@@ -30,16 +30,16 @@ const Title = styled.h2`
 
 const ShortName = styled.span`
   display: inline-block;
-  background-color: #333;
-  color: #fff;
-  border-radius: 4px;
   padding: 4px 8px;
   font-size: 12px;
+  color: #fff;
   white-space: nowrap;
+  background-color: #333;
+  border-radius: 4px;
 `;
 
 const Section = styled.div`
-  padding: 0em 1em;
+  padding: 0 1em;
 `;
 
 // Definición del componente WarehouseCard

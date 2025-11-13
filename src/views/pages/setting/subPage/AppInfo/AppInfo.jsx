@@ -7,7 +7,7 @@ const InfoWrapper = styled.div`
   background-color: #f7f7f7;
   padding: 3rem 2rem;
   border-radius: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   width: 100%;
   max-width: 600px;
   margin: 1em auto;
@@ -29,10 +29,12 @@ const InfoList = styled.ul`
 const InfoItem = styled.li`
   font-size: 1.25rem;
   margin-bottom: 1.5rem;
+
   span {
     display: block;
     font-size: 1rem;
-    // text-align: right;
+
+    /* text-align: right; */
   }
 `;
 

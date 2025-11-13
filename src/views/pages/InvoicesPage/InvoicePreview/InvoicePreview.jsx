@@ -92,8 +92,7 @@ const Container = styled.div`
 
 const Group = styled.div`
   display: grid;
-  align-items: stretch;
-
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
+  align-items: stretch;
 `;

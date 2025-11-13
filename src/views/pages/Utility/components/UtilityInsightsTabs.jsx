@@ -142,30 +142,30 @@ const Header = styled.div`
 
 const TabsContainer = styled.div`
   display: flex;
-  gap: ${spacing.sm};
   flex-wrap: wrap;
+  gap: ${spacing.sm};
 `;
 
 const TabButton = styled.button`
-  border: 1px solid ${colors.stroke.subtle};
-  background: ${colors.background.surface};
-  color: ${colors.text.secondary};
   padding: 0.55rem 1.15rem;
-  border-radius: ${radii.pill};
   font-weight: 600;
-  transition: all 0.2s ease;
+  color: ${colors.text.secondary};
+  background: ${colors.background.surface};
+  border: 1px solid ${colors.stroke.subtle};
+  border-radius: ${radii.pill};
   box-shadow: ${shadows.xs};
+  transition: all 0.2s ease;
 
   &[data-active='true'] {
+    color: #fff;
     background: linear-gradient(105deg, #4f46e5 0%, #22d3ee 100%);
-    color: #ffffff;
     border-color: transparent;
-    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
+    box-shadow: 0 10px 25px rgb(79 70 229 / 25%);
   }
 
   &:hover:not([data-active='true']) {
-    background: ${colors.layers.neutralSoft};
     color: ${colors.text.primary};
+    background: ${colors.layers.neutralSoft};
   }
 `;
 
@@ -178,7 +178,7 @@ const Content = styled.div`
 const PanelCard = styled.div`
   padding: ${spacing.xl};
   background: ${colors.background.surface};
+  border: 1px solid ${colors.stroke.subtle};
   border-radius: ${radii.lg};
   box-shadow: ${shadows.md};
-  border: 1px solid ${colors.stroke.subtle};
 `;

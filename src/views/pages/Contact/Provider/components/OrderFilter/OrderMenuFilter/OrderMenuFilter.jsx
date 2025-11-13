@@ -26,22 +26,21 @@ export const OrderMenuFilter = ({ MenuIsOpen }) => {
 };
 
 const Container = styled.div`
-  overflow: hidden;
-  max-height: 350px;
-  height: 100%;
-  max-width: 300px;
+  background-color: #fff;
+  border: 1px solid rgb(0 0 0 / 15%);
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 10px 10px 10px 2px rgb(0 0 0 / 15%);
+  height: 100%;
   margin-left: 4px;
-  width: 100%;
-  top: 5.2em;
+  max-height: 350px;
+  max-width: 300px;
+  overflow: hidden;
   position: absolute;
-  z-index: 1;
-  background-color: #ffffff;
-  transform: scale(1);
+  top: 5.2em;
+  transform: none;
   transition: transform 400ms ease-in-out;
-  transform: perspective();
-  box-shadow: 10px 10px 10px 2px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  z-index: 1;
   ${(props) => {
     switch (props.isOpen) {
       case true:
@@ -60,10 +59,13 @@ const Container = styled.div`
   }}
 `;
 const Head = styled.div`
-  background-color: var(--White);
+  background-color: var(--white);
+
   h3 {
-    margin: 0;
     padding: 0.4em 1em;
+    margin: 0;
   }
 `;
-const Body = styled.div``;
+const Body = styled.div`
+  /* TODO: Add content to the body */
+`;

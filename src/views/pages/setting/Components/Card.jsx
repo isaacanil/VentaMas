@@ -26,18 +26,19 @@ const Head = styled.div`
   gap: 0.6em;
 `;
 const Container = styled(Link)`
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   padding: 16px;
   color: #333;
+  scroll-margin-top: 120px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   transition:
     box-shadow 0.25s ease,
     transform 0.25s ease;
-  scroll-margin-top: 120px;
+
   :hover {
-    text-decoration: none;
     color: #333;
+    text-decoration: none;
     transform: translateY(-2px);
   }
 
@@ -47,21 +48,20 @@ const Container = styled(Link)`
   }
 `;
 const CardWrapper = styled.div`
-  background-color: #fff;
-
   color: #333;
+  background-color: #fff;
 `;
 
 const Title = styled.span`
+  display: block;
+  margin-bottom: 6px;
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 6px;
-  display: block;
 `;
 
 const Description = styled.p`
-  font-size: 14px;
   display: block;
+  font-size: 14px;
   color: #666;
 `;
 

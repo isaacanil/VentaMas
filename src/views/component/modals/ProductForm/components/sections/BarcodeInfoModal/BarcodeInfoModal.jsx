@@ -12,8 +12,8 @@ const { Modal, Button } = ant;
 
 const HeaderContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const InfoSection = styled.div`
@@ -35,7 +35,7 @@ const InfoLabel = styled.div`
 `;
 
 const InfoValue = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, monospace;
   color: #595959;
   text-align: right;
 `;
@@ -44,18 +44,18 @@ const StatusBadge = styled.span`
   display: inline-flex;
   align-items: center;
   padding: 2px 6px;
-  background: ${(props) => (props.valid ? '#f6ffed' : '#fff2e8')};
-  color: ${(props) => (props.valid ? '#52c41a' : '#fa8c16')};
-  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
+  color: ${(props) => (props.valid ? '#52c41a' : '#fa8c16')};
+  background: ${(props) => (props.valid ? '#f6ffed' : '#fff2e8')};
+  border-radius: 4px;
 `;
 
 const MonospaceText = styled.div`
+  margin-bottom: 12px;
   font-family: monospace;
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 12px;
   color: #262626;
 `;
 
@@ -66,9 +66,9 @@ const ModalBarcodeContainer = styled.div`
 
 const ModalBarcodeDisplay = styled.div`
   padding: 8px;
-  border-radius: 4px;
-  border: 2px solid ${(props) => (props.valid ? '#52c41a' : '#faad14')};
   background-color: ${(props) => (props.valid ? '#f6ffed' : '#fffbe6')};
+  border: 2px solid ${(props) => (props.valid ? '#52c41a' : '#faad14')};
+  border-radius: 4px;
 `;
 
 export const BarcodeInfoModal = ({ visible, onClose, barcodeValue }) => {

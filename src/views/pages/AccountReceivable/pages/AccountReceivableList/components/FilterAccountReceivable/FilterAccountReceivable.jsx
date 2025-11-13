@@ -124,22 +124,22 @@ FilterAccountReceivable.defaultProps = {
 };
 
 const Container = styled.div`
-  width: 100%;
   display: flex;
-  background-color: var(--White);
+  gap: 1em;
   align-items: end;
-  border-bottom: 1px solid var(--Gray);
+  width: 100%;
   padding: 0.4em 1em;
   margin: 0 auto;
-  gap: 1em;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--gray);
 
   select {
     padding: 0.1em 0.2em;
   }
 
-  @media (max-width: 900px) {
-    gap: 0.8em;
+  @media (width <= 900px) {
     display: grid;
+    gap: 0.8em;
   }
 `;
 
@@ -148,35 +148,34 @@ const Buttons = styled.div`
   flex-wrap: wrap;
   gap: 1em;
 
-  @media (max-width: 900px) {
+  @media (width <= 900px) {
     gap: 0.2em;
-    order: 1;
     justify-content: space-between;
+    order: 1;
   }
 `;
 
 const Label = styled.div`
-  font-size: 1em;
-  font-weight: 550;
-  min-height: 2em;
   display: flex;
   align-items: center;
+  min-height: 2em;
+  font-size: 1em;
+  font-weight: 550;
   white-space: nowrap;
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     font-size: 1em;
   }
 `;
 
 const Row = styled.div`
   display: grid;
+  grid-template-columns: min-content min-content min-content;
   gap: 1em;
   align-items: end;
-  grid-template-columns: min-content min-content min-content;
 
-  @media (max-width: 800px) {
-    row-gap: 0;
-    column-gap: 1em;
+  @media (width <= 800px) {
+    gap: 0 1em;
   }
 `;
 
@@ -185,7 +184,7 @@ const OrderOptions = styled.div`
   gap: 1em;
   align-items: center;
 
-  @media (max-width: 800px) {
+  @media (width <= 800px) {
     gap: 0.2em;
   }
 `;

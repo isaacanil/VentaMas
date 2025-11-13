@@ -290,7 +290,7 @@ const UnifiedARAlert = ({
                   fontSize: '10px',
                   fontWeight: '500',
                   color: itemStyle.color,
-                  backgroundColor: 'rgba(255,255,255,0.8)',
+                  backgroundColor: 'rgb(255 255 255 / 80%)',
                   padding: '2px 6px',
                   borderRadius: '10px',
                   textTransform: 'uppercase',

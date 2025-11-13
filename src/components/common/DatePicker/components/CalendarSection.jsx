@@ -18,17 +18,17 @@ if (locale) {
 }
 
 const CalendarContainer = styled.div`
-  overflow-y: auto;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
 `;
 
 const CalendarHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0 4px;
 `;
 
@@ -38,16 +38,16 @@ const NavButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: none;
-  background: transparent;
   color: #595959;
   cursor: pointer;
+  background: transparent;
+  border: none;
   border-radius: 4px;
   transition: all 0.3s;
 
   &:hover {
-    background: #f5f5f5;
     color: #1890ff;
+    background: #f5f5f5;
   }
 `;
 
@@ -66,10 +66,10 @@ const WeekDaysHeader = styled.div`
 
 const WeekDay = styled.div`
   padding: 8px 4px;
-  text-align: center;
   font-size: 12px;
-  color: #8c8c8c;
   font-weight: 500;
+  color: #8c8c8c;
+  text-align: center;
 `;
 
 const CalendarGrid = styled.div`
@@ -88,20 +88,17 @@ const CalendarDay = styled.div`
   border-radius: 4px;
   transition: all 0.3s;
   position: relative;
-
   color: ${(props) => {
     if (!props.$isCurrentMonth) return '#bfbfbf';
     if (props.$isSelected) return 'white';
     if (props.$isToday) return '#1890ff';
     return '#262626';
   }};
-
   background: ${(props) => {
     if (props.$isSelected) return '#1890ff';
     if (props.$isInRange && !props.$isSelected) return '#e6f7ff';
     return 'transparent';
   }};
-
   font-weight: ${(props) => {
     if (props.$isSelected || props.$isToday) return '500';
     return '400';

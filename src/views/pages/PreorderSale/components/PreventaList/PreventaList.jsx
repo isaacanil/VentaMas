@@ -9,17 +9,17 @@ const Grid = styled.div`
   grid-template-columns: 1fr;
   gap: 1rem;
 
-  @media (min-width: 640px) {
+  @media (width >= 640px) {
     /* sm */
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     /* lg */
     grid-template-columns: repeat(3, 1fr);
   }
 
-  @media (min-width: 1280px) {
+  @media (width >= 1280px) {
     /* xl */
     grid-template-columns: repeat(4, 1fr);
   }

@@ -40,20 +40,20 @@ export const Home = (): JSX.Element => {
 };
 
 const HomeLayout = styled.div`
-  min-height: 100vh;
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background-color: var(--color2);
+  width: 100%;
+  min-height: 100vh;
   padding-bottom: 2rem;
+  background-color: var(--color2);
 `;
 
 const MainContent = styled.main`
-  flex: 1;
-  width: 100%;
   display: flex;
+  flex: 1;
   justify-content: center;
+  width: 100%;
   padding: 0 1rem;
   overflow-y: auto;
 `;
@@ -61,20 +61,20 @@ const MainContent = styled.main`
 const MainContentInner = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 1.25rem;
+  align-items: stretch;
   width: min(1200px, 100%);
   margin: 0 auto;
 `;
 
 const TopInfoRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
   padding: 0.2em 0;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  margin: 0 auto;
 `;

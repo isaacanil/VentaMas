@@ -25,10 +25,9 @@ export const ClientAdmin = () => {
   );
 };
 const Container = styled.div`
+  display: grid;
   width: 100vw;
   height: calc(100vh - 2.75em);
-  background-color: var(--color2);
-  display: grid;
-
   overflow: hidden;
+  background-color: var(--color2);
 `;

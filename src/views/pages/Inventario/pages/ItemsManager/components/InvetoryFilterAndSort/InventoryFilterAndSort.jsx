@@ -188,7 +188,7 @@ export const InventoryFilterAndSort = ({
         animate={isOpen ? 'visible' : 'hidden'}
         exit="hidden"
         // Evita interacción mientras está oculto
-        style={{ pointerEvents: isOpen ? 'auto' : 'none' }}
+        style={{ pointerEvents: `${isOpen ? 'auto' : 'none'}` }}
       >
         <Header onClose={handleOpen} />
         <Body contextKey={contextKey} />
@@ -204,27 +204,29 @@ export const InventoryFilterAndSort = ({
     </Container>
   );
 };
-const Container = styled.div``;
+const Container = styled.div`
+  /* This is a container for the filter button and the floating menu. */
+`;
 const FloatingMenu = styled(motion.aside)`
   position: fixed;
   top: 12px;
   left: 12px;
   z-index: 200;
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
   width: min(410px, 92vw);
   max-height: calc(100vh - 24px);
+  overflow: hidden;
+  outline: none;
   background: #fff;
   border: 1px solid var(--border-color, #e5e5e5);
   border-radius: 12px;
-  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.18);
-  display: grid;
-  grid-template-rows: min-content 1fr min-content;
-  overflow: hidden;
+  box-shadow: 0 4px 28px rgb(0 0 0 / 18%);
   backdrop-filter: blur(3px);
-  outline: none;
   transform-origin: top left;
   will-change: transform, opacity;
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     top: 2px;
     right: 2px;
     left: 2px;
@@ -235,26 +237,26 @@ const FloatingMenu = styled(motion.aside)`
   }
 
   @media (prefers-reduced-motion: reduce) {
+    filter: none !important;
     transition: none !important;
     animation: none !important;
-    filter: none !important;
   }
 `;
 
 const Footer = styled.footer`
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
   gap: 0.6em;
+  align-items: flex-start;
   padding: 0.65em 0.9em 0.8em;
-  border-top: 1px solid #f0f0f0;
   background: linear-gradient(#fff, #fafafa);
+  border-top: 1px solid #f0f0f0;
 `;
 
 const Actions = styled.div`
   display: flex;
-  width: 100%;
   gap: 0.5em;
   align-items: center;
   justify-content: end;
+  width: 100%;
 `;

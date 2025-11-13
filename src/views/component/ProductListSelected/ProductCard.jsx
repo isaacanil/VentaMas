@@ -59,50 +59,54 @@ export const ProductCard = ({
 const Container = styled.div`
   display: grid;
   grid-template-columns: 250px 1fr 1fr 1fr min-content;
-  height: 2.75em;
-  align-items: center;
+  gap: 1em;
   align-content: center;
+  align-items: center;
+  height: 2.75em;
   padding: 0 0.8em;
-  background-color: #fff;
   color: #353535;
+  background-color: #fff;
   border-bottom: var(--border-primary);
   border-radius: var(--border-radius-light);
-  gap: 1em;
+
   :last-child {
     border-bottom: none;
   }
 `;
 const Col = styled.div`
-  color: var(--Gray6);
+  color: var(--gray-6);
+
   &:first-child {
     span {
-      max-width: 180px;
-      width: 100%;
-      line-height: 1pc;
       display: -webkit-box;
-      -webkit-line-clamp: 1;
-      -webkit-box-orient: vertical;
-      //white-space: nowrap;
-      text-transform: capitalize;
-      text-overflow: ellipsis;
+      width: 100%;
+      max-width: 180px;
       overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: 1;
+      line-height: 1pc;
+      text-transform: capitalize;
+
+      /* white-space: nowrap; */
+      -webkit-box-orient: vertical;
     }
   }
+
   &:nth-child(3n) {
     span {
       display: block;
       text-align: right;
     }
   }
+
   &:nth-child(4n) {
+    display: block;
+    text-align: right;
+
     span {
       display: block;
       text-align: right;
     }
-  }
-  &:nth-child(4n) {
-    display: block;
-    text-align: right;
   }
 `;
 const Input = ({ value, onChange, handleBlur, handleFocus }) => {
@@ -124,11 +128,12 @@ const Input = ({ value, onChange, handleBlur, handleFocus }) => {
   );
 };
 const InputContainer = styled.input`
+  width: 100%;
+  height: 100%;
   outline: none;
   border: none;
-  height: 100%;
   border: 1px solid transparent;
-  width: 100%;
+
   :focus {
     border: 1px solid black;
   }

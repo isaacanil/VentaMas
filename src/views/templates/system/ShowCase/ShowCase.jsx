@@ -42,13 +42,10 @@ export function Showcase({
   );
 }
 const Container = styled.div`
-  background-color: var(--White2);
   display: grid;
-  padding: 0.3em 0.6em;
   justify-content: center;
+  padding: 0.3em 0.6em;
 
-  text-align: center;
-  border-radius: 0.4em;
   /* color: ${(props) => {
     if (
       props.color === 'success-contained' ||
@@ -56,24 +53,27 @@ const Container = styled.div`
     ) {
       return `red`;
     } else if (props.color === 'default') {
-      return 'var(--Black)';
+      return 'var(--black)';
     } else {
       return props.color; // Esto manejará cualquier string de color CSS directamente
     }
   }}; */
   color: ${(props) => props?.theme?.colors[props?.color]?.text ?? ''};
+  text-align: center;
+  background-color: var(--white-2);
   background-color: ${(props) => props?.theme?.colors[props?.color]?.bg ?? ''};
+  border-radius: 0.4em;
 `;
 const Value = styled.h2`
-  font-size: 1.4em;
   margin: 0;
+  font-size: 1.4em;
 `;
 const Title = styled.span`
+  margin: 0;
   font-size: 1em;
   font-weight: 500;
-  margin: 0;
 `;
 const Description = styled.span`
-  font-size: 0.9em;
   margin: 0;
+  font-size: 0.9em;
 `;

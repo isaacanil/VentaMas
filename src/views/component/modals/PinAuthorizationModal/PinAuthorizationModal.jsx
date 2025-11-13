@@ -22,35 +22,35 @@ import { db } from '../../../../firebase/firebaseconfig';
 const { Paragraph, Text } = Typography;
 
 const ErrorMessage = styled.div`
-  font-size: 0.95em;
-  min-height: 2em;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffebee;
-  color: #d32f2f;
-  border-radius: 4px;
-  border: 1px solid #ef5350;
+  min-height: 2em;
   padding: 8px 12px;
   margin-top: 0.8em;
+  font-size: 0.95em;
   font-weight: 500;
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
 `;
 
 const ModeToggle = styled.div`
-  text-align: center;
   margin-top: 16px;
+  text-align: center;
 
   button {
-    padding: 0;
     height: auto;
+    padding: 0;
     font-size: 0.9em;
   }
 `;
 
 const PinInputContainer = styled.div`
   display: flex;
-  justify-content: center;
   gap: 12px;
+  justify-content: center;
   margin: 24px 0;
 `;
 
@@ -74,21 +74,21 @@ const PinDot = styled.div`
   `}
 
   &::after {
-    content: '';
     width: 12px;
     height: 12px;
-    border-radius: 50%;
+    content: '';
     background-color: ${(props) => (props.$filled ? '#52c41a' : 'transparent')};
+    border-radius: 50%;
     transition: all 0.15s ease;
   }
 `;
 
 const HiddenInput = styled.input`
   position: absolute;
-  opacity: 0;
-  pointer-events: none;
   width: 1px;
   height: 1px;
+  pointer-events: none;
+  opacity: 0;
 `;
 
 const PinInputWrapper = styled.div`
@@ -322,7 +322,7 @@ export const PinAuthorizationModal = ({
       centered
       width={480}
       zIndex={99990}
-      destroyOnClose
+      destroyOnHidden
       footer={[
         <Button key="cancel" onClick={handleCancel} disabled={loading}>
           Cancelar

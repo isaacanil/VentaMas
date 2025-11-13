@@ -9,32 +9,33 @@ const LoaderWrapper = styled.div`
 `;
 
 const LoadingOverlay = styled.div`
-  transition: opacity 0.5s ease-in-out;
-  opacity: ${(props) => (props.$fadeOut ? 0 : 1)};
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background: rgb(255 255 255 / 80%);
+  opacity: ${(props) => (props.$fadeOut ? 0 : 1)};
+  transition: opacity 0.5s ease-in-out;
 `;
 
 const Spinner = styled.div`
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
   width: 40px;
   height: 40px;
+  border: 4px solid rgb(0 0 0 / 10%);
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
   animation: spin 0.8s linear infinite;
 
   @keyframes spin {
     0% {
       transform: rotate(0deg);
     }
+
     100% {
       transform: rotate(360deg);
     }
@@ -42,10 +43,10 @@ const Spinner = styled.div`
 `;
 
 const ContentWrapper = styled.div`
+  display: grid;
+  height: 100%;
   opacity: ${(props) => (props.$loading ? 0.6 : 1)};
   transition: opacity 0.3s ease-in-out;
-  height: 100%;
-  display: grid;
 `;
 
 const Loader = ({ loading = false, children, minHeight, overlay = true }) => {

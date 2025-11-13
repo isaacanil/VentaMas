@@ -135,10 +135,10 @@ export const UtilityHeader = ({
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: ${spacing.lg};
   flex-wrap: wrap;
+  gap: ${spacing.lg};
+  align-items: flex-start;
+  justify-content: space-between;
 `;
 
 const TitleGroup = styled.div`
@@ -149,9 +149,9 @@ const TitleGroup = styled.div`
 
 const Filters = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: ${spacing.md};
   align-items: center;
-  flex-wrap: wrap;
   justify-content: flex-end;
 `;
 
@@ -162,15 +162,15 @@ const PickerCard = styled.div`
   min-width: 260px;
   padding: ${spacing.md};
   background: ${colors.background.surface};
-  border-radius: ${radii.md};
   border: 1px solid ${colors.stroke.soft};
+  border-radius: ${radii.md};
   box-shadow: ${shadows.sm};
 `;
 
 const ControlLabel = styled.span`
   font-size: ${typography.caption.fontSize};
-  line-height: ${typography.caption.lineHeight};
   font-weight: ${typography.caption.fontWeight};
+  line-height: ${typography.caption.lineHeight};
   color: ${colors.text.secondary};
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -178,22 +178,22 @@ const ControlLabel = styled.span`
 
 const RangeInfo = styled.div`
   display: inline-flex;
-  align-items: center;
-  gap: ${spacing.sm};
   flex-wrap: wrap;
+  gap: ${spacing.sm};
+  align-items: center;
 `;
 
 const PresetPill = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 ${spacing.sm};
   min-height: 24px;
-  border-radius: ${radii.pill};
-  background: ${colors.brand.subtle};
-  color: ${colors.brand.primary};
+  padding: 0 ${spacing.sm};
   font-size: ${typography.caption.fontSize};
   font-weight: 600;
-  letter-spacing: 0.02em;
+  color: ${colors.brand.primary};
   text-transform: capitalize;
+  letter-spacing: 0.02em;
+  background: ${colors.brand.subtle};
+  border-radius: ${radii.pill};
 `;

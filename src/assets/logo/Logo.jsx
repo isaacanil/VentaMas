@@ -35,6 +35,6 @@ export const Logo = ({
 
 const Img = styled.img`
   display: block !important;
-  height: ${({ $dimension }) => $dimension} !important;
   width: ${({ $dimension }) => $dimension} !important;
+  height: ${({ $dimension }) => $dimension} !important;
 `;

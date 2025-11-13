@@ -8,16 +8,18 @@ import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/war
 import ROUTES_PATH from '../../../../../../../routes/routesName';
 
 const MenuContainer = styled.div`
-  border-bottom: 1px solid #e0e0e0;
   margin-bottom: 0;
+  border-bottom: 1px solid #e0e0e0;
 `;
 
 const TabList = styled.div`
   display: flex;
   overflow-x: auto;
+
   &::-webkit-scrollbar {
     height: 4px;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 4px;
@@ -25,19 +27,19 @@ const TabList = styled.div`
 `;
 
 const Tab = styled.button`
+  display: flex;
+  gap: 4px;
+  align-items: center;
   padding: 12px 16px;
-  border: none;
-  background: none;
-  cursor: pointer;
   font-size: 14px;
   color: ${(props) => (props.active ? '#1976d2' : '#666')};
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: none;
   border-bottom: 2px solid
     ${(props) => (props.active ? '#1976d2' : 'transparent')};
   transition: all 0.3s ease;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 
   &:hover {
     color: #1976d2;
@@ -45,8 +47,8 @@ const Tab = styled.button`
 `;
 
 const ExternalArrow = styled.span`
-  font-size: 12px;
   margin-left: 2px;
+  font-size: 12px;
   opacity: 0.7;
 `;
 

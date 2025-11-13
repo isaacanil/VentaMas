@@ -18,8 +18,8 @@ import {
 const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 
 const CardDescription = styled.p`
-  color: #888;
   margin-bottom: 20px;
+  color: #888;
 `;
 
 const FormContainer = styled(Form)`
@@ -29,9 +29,10 @@ const FormContainer = styled(Form)`
 
 const StyledButton = styled(Button)`
   width: 100%;
-  background-color: #1890ff;
   color: white;
-  &:hover {
+  background-color: #1890ff;
+
+    &:hover {
     background-color: #40a9ff;
   }
 `;
@@ -111,7 +112,7 @@ export function WarehouseForm() {
       }
       open={isOpen}
       onCancel={handleClose}
-      destroyOnClose
+      destroyOnHidden
       footer={null} // Remove default footer
     >
       <Spin
@@ -202,8 +203,9 @@ export function WarehouseForm() {
 
 const DimensionInputGroup = styled.div`
   display: grid;
-  gap: 0.6em;
   grid-template-columns: repeat(3, 1fr);
+  gap: 0.6em;
+
   input[type='number'] {
     width: 100% !important;
     max-width: none !important;

@@ -11,10 +11,10 @@ ErrorCard.propTypes = {
 };
 
 const StyledCard = styled.div`
-  max-width: 600px;
   width: 100%;
-  border-radius: 8px;
-  padding: 2rem;
+  max-width: 600px;
   height: 100%;
   max-height: none;
+  padding: 2rem;
+  border-radius: 8px;
 `;

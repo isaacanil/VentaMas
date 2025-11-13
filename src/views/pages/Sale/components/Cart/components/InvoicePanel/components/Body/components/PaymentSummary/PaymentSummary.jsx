@@ -25,6 +25,6 @@ export const PaymentSummary = () => {
 };
 const Container = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: 1fr 1fr;
+  gap: 1em;
 `;

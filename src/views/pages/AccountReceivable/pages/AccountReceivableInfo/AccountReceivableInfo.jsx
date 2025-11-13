@@ -170,8 +170,8 @@ const Container = styled.div`
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
 `;
 const Body = styled.div``;
@@ -182,10 +182,10 @@ const Title = styled.h1`
 `;
 
 const BackButton = styled.button`
-  background: none;
-  border: none;
   color: #006fee;
   cursor: pointer;
+  background: none;
+  border: none;
 `;
 
 const InfoSection = styled.div`
@@ -194,21 +194,21 @@ const InfoSection = styled.div`
 
 const Table = styled.table`
   width: 100%;
-  border-collapse: collapse;
   margin-bottom: 20px;
+  border-collapse: collapse;
   background-color: white;
 `;
 
 const Th = styled.th`
-  border: 1px solid #d7d7db;
   padding: 10px;
   background-color: #f5f5f5;
+  border: 1px solid #d7d7db;
 `;
 
 const Td = styled.td`
-  border: 1px solid #d7d7db;
   padding: 10px;
   text-align: center;
+  border: 1px solid #d7d7db;
 `;
 
 const Button = styled.button`
@@ -232,11 +232,11 @@ const Button = styled.button`
     `}
 `;
 const Sidebar = styled.div`
+  display: grid;
+  align-items: start;
   padding: 1em;
   background-color: #f9f9f9;
   border: 1px solid #d7d7db;
-  display: grid;
-  align-items: start;
 `;
 const Actions = styled.div`
   display: grid;

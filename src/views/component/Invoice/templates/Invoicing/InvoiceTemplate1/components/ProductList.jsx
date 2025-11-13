@@ -123,10 +123,10 @@ const Container = styled.div``;
 
 const Products = styled.div`
   display: block;
-  border: none;
   padding: 0;
-  list-style: none;
   line-height: 22px;
+  list-style: none;
+  border: none;
 `;
 const Product = styled.div`
   width: 100%;
@@ -140,17 +140,17 @@ const Product = styled.div`
   }
 `;
 const ProductName = styled.div`
-  width: 100%;
+  display: -webkit-box;
   grid-column: 1 / 4;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
   line-height: 1.4pc;
   text-transform: capitalize;
 
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
+  /* white-space: nowrap; */
   -webkit-box-orient: vertical;
-  //white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
 `;
 
 const InsuranceCoverage = styled.div`
@@ -159,27 +159,27 @@ const InsuranceCoverage = styled.div`
 `;
 
 const ProductComment = styled.div`
+  padding-left: 8px;
+  margin: 2px 0;
   font-size: 0.9em;
   font-style: italic;
   color: #444;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: pre-wrap;
-  padding-left: 8px;
   border-left: 1px dotted #888;
-  margin: 2px 0;
 `;
 
 const ProductDiscount = styled.div`
+  padding-left: 8px;
+  margin: 2px 0;
   font-size: 0.9em;
   font-weight: 600;
   color: #52c41a;
-  padding-left: 8px;
   border-left: 2px solid #52c41a;
-  margin: 2px 0;
 `;
 
 const ProductBrand = styled.div`
   font-size: 0.95em;
-  color: #333;
   font-weight: 500;
+  color: #333;
 `;

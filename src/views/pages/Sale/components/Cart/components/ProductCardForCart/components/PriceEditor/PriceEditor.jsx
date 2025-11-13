@@ -107,27 +107,27 @@ export const PriceEditor = ({ item, onModalOpen }) => {
 const PriceContainer = styled.div`
   display: flex;
   align-items: center;
+  width: 100%;
+  height: 32px;
+  overflow: hidden;
+  background-color: #f5f5f7;
   border: 1px solid #ddd;
   border-radius: 8px;
-  overflow: hidden;
-  height: 32px;
-  width: 100%;
-  background-color: #f5f5f7;
 `;
 
 const DropdownButton = styled.button`
-  border: none;
-  background-color: #f5f5f5;
-  height: 100%;
-  width: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 100%;
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background-color: #f5f5f5;
+  border: none;
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
   transition: background-color 0.2s;
 
-  &:hover {
+  &&:hover {
     background-color: ${(props) => (props.disabled ? '#f5f5f5' : '#eaeaea')};
   }
 `;
@@ -148,17 +148,17 @@ const PriceInput = styled.input`
   flex: 1;
   height: 100%;
   padding: 0 8px;
-  border: none;
-  background-color: white;
   font-size: 14px;
   font-weight: 500;
   color: #333;
   outline: none;
+  background-color: white;
+  border: none;
 
-  &:disabled {
-    background-color: #f9f9f9;
+  &&:disabled {
     color: #999;
     cursor: not-allowed;
+    background-color: #f9f9f9;
   }
 `;
 

@@ -199,34 +199,36 @@ export const TableTaxReceipt = ({ array, setData }) => {
 };
 
 const Container = styled.div`
-  border: 1px solid var(--Gray1);
-  border-radius: 10px;
   overflow: hidden;
+  border: 1px solid var(--gray1);
+  border-radius: 10px;
 `;
 
 const EmptyMessage = styled.div`
   padding: 2em;
-  text-align: center;
   font-size: 14px;
   color: #666;
+  text-align: center;
 `;
 
 const Row = styled.div`
-  display: grid;
   align-items: center;
+  background-color: ${(props) => (props.disabled ? '#f5f5f5' : 'transparent')};
+  border-bottom: 1px solid var(--gray1);
+  display: grid;
   grid-template-columns:
     minmax(150px, 0.7fr) minmax(40px, 0.2fr) minmax(40px, 0.2fr) minmax(
       90px,
       0.5fr
     )
     minmax(80px, 0.3fr) minmax(80px, 0.3fr) minmax(100px, 0.6fr) 80px;
-  border-bottom: 1px solid var(--Gray1);
   height: 2.75em;
-  :last-child {
+  position: relative;
+
+    :last-child {
     border-bottom: 0;
   }
-  background-color: ${(props) => (props.disabled ? '#f5f5f5' : 'transparent')};
-  position: relative;
+
   ${(props) =>
     props.disabled &&
     `
@@ -239,39 +241,45 @@ const Row = styled.div`
 `;
 
 const Col = styled.div`
-  height: 100%;
-  padding: 0 0.6em;
   display: flex;
   align-items: center;
-  border-right: 1px solid var(--Gray1);
-  :last-child {
+  height: 100%;
+  padding: 0 0.6em;
+  border-right: 1px solid var(--gray1);
+
+    :last-child {
     border-right: 0;
   }
-  :first-child {
+
+    :first-child {
     border-left: 0;
   }
-  input[type='text'],
+
+    input[type='text'],
   input[type='number'] {
     width: 100%;
     height: 100%;
-    border: 0;
-    font-size: 12px;
     padding: 0;
+    font-size: 12px;
+    border: 0;
+
     :focus {
       outline: none;
     }
   }
-  input[type='number']::-webkit-inner-spin-button,
+
+    input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
-    -webkit-appearance: none;
     margin: 0;
+    appearance: none;
   }
-  h4 {
-    font-size: 12px;
+
+    h4 {
     width: 100%;
-    text-align: left;
-    margin: 0;
     padding: 0 !important;
+    margin: 0;
+    font-size: 12px;
+    text-align: left;
   }
 `;
 
@@ -280,62 +288,69 @@ const LimitDisplay = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
+  padding: 4px 8px;
   font-size: 12px;
-  color: #1890ff;
   font-weight: 600;
+  color: #1890ff;
   letter-spacing: 0.5px;
   background-color: #f0f8ff;
-  padding: 4px 8px;
-  border-radius: 4px;
   border: 1px dashed #1890ff;
+  border-radius: 4px;
 `;
 
 const ActionButtonsContainer = styled.div`
   display: flex;
-  justify-content: space-around;
   align-items: center;
+  justify-content: space-around;
   width: 100%;
   height: 100%;
 `;
 
 const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   padding: 4px;
   font-size: 18px;
+  cursor: pointer;
+  background: none;
+  border: none;
   border-radius: 4px;
   transition: all 0.2s;
+
   &.edit-button {
     color: #474747;
-    &:hover {
+
+        &:hover {
       color: #414141;
     }
   }
+
   &.delete-button {
     color: #ff4d4f;
-    &:hover {
+
+        &:hover {
       color: #ff7875;
-      background-color: rgba(255, 77, 79, 0.1);
+      background-color: rgb(255 77 79 / 10%);
     }
   }
+
   &.enable-button {
-    color: #52c41a;
-    opacity: 1 !important;
-    font-weight: 500;
-    background-color: transparent;
-    box-shadow: none;
     position: relative;
     z-index: 300;
-    &:hover {
+    font-weight: 500;
+    color: #52c41a;
+    background-color: transparent;
+    box-shadow: none;
+    opacity: 1 !important;
+
+        &:hover {
       color: #73d13d;
       background-color: #fff;
     }
   }
-  &:focus {
+
+    &:focus {
     outline: none;
   }
 `;

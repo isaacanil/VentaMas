@@ -24,9 +24,9 @@ export const GeneralBalance = ({ data }) => {
 };
 
 const Container = styled.div`
-  width: min-content;
   display: grid;
-  width: 100%;
   justify-items: right;
+  width: min-content;
+  width: 100%;
   white-space: nowrap;
 `;

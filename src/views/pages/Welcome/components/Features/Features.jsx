@@ -89,9 +89,9 @@ const Features = () => {
                     borderRadius: '16px',
                     overflow: 'hidden',
                     background:
-                      'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      'linear-gradient(135deg, #fff 0%, #f8fafc 100%)',
                     boxShadow:
-                      '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      '0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%)',
                   }}
                   bodyStyle={{
                     padding: '32px 24px',
@@ -108,7 +108,7 @@ const Features = () => {
                     </IconContainer>
                     <Title
                       level={4}
-                      style={{ margin: '16px 0 12px 0', color: '#1f2937' }}
+                      style={{ margin: '16px 0 12px', color: '#1f2937' }}
                     >
                       {feature.title}
                     </Title>
@@ -162,18 +162,15 @@ const Features = () => {
 
 // Styled Components
 const FeaturesSection = styled(motion.section)`
-  padding: 80px 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   position: relative;
+  padding: 80px 0;
   overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 
   &::before {
-    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
+    content: '';
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="%23e2e8f0" opacity="0.5"/></svg>')
       repeat;
     background-size: 50px 50px;
@@ -182,13 +179,13 @@ const FeaturesSection = styled(motion.section)`
 `;
 
 const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
   position: relative;
   z-index: 1;
+  max-width: 1200px;
+  padding: 0 24px;
+  margin: 0 auto;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 0 16px;
   }
 `;
@@ -207,43 +204,43 @@ const FeatureCard = styled(motion.div)`
 
   &:hover .ant-card {
     box-shadow:
-      0 20px 25px -5px rgba(0, 0, 0, 0.1),
-      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      0 20px 25px -5px rgb(0 0 0 / 10%),
+      0 10px 10px -5px rgb(0 0 0 / 4%);
   }
 `;
 
 const IconContainer = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: ${(props) =>
-    `linear-gradient(135deg, ${props.color}15 0%, ${props.color}25 100%)`};
-  border: 2px solid ${(props) => `${props.color}30`};
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 64px;
+  height: 64px;
   margin: 0 auto 16px;
   font-size: 28px;
   color: ${(props) => props.color};
+  background: ${(props) =>
+    `linear-gradient(135deg, ${props.color}15 0%, ${props.color}25 100%)`};
+  border: 2px solid ${(props) => `${props.color}30`};
+  border-radius: 50%;
   transition: all 0.3s ease;
 
   &:hover {
-    transform: rotate(5deg) scale(1.1);
     background: ${(props) =>
       `linear-gradient(135deg, ${props.color}25 0%, ${props.color}35 100%)`};
+    transform: rotate(5deg) scale(1.1);
   }
 `;
 
 const BenefitsSection = styled(motion.div)`
-  margin-top: 80px;
   padding: 40px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  margin-top: 80px;
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
   border-radius: 20px;
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 10px 15px -3px rgb(0 0 0 / 10%),
+    0 4px 6px -2px rgb(0 0 0 / 5%);
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     padding: 24px 16px;
     margin-top: 60px;
   }
@@ -256,7 +253,7 @@ const BenefitsList = styled.div`
   max-width: 800px;
   margin: 0 auto;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -265,12 +262,12 @@ const BenefitItem = styled(motion.div)`
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   font-size: 1rem;
   font-weight: 500;
   color: #374151;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 5%);
   transition: all 0.2s ease;
 
   &:hover {

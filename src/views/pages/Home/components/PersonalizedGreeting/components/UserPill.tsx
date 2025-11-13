@@ -32,10 +32,10 @@ export const UserPill = ({ userName }: UserPillProps): JSX.Element => {
 const UserPillContainer = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 24px;
   padding: 5px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: rgb(255 255 255 / 80%);
+  border-radius: 24px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
 `;
 
 const UserIcon = styled.span`
@@ -46,8 +46,9 @@ const UserIcon = styled.span`
 `;
 
 const UserText = styled.span`
-  font-size: 0.9rem;
-  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-family:
     'SF Pro Text',
     -apple-system,
@@ -55,9 +56,8 @@ const UserText = styled.span`
     'Segoe UI',
     Roboto,
     sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--color-primary-600, #3182ce);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
 `;

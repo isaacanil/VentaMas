@@ -12,25 +12,25 @@ export const Header = ({ title, subtitle: _subtitle }) => {
 };
 
 const HeaderContainer = styled.div`
-  background: #2a2a2a;
-  padding: 12px 20px;
-  border-bottom: 1px solid #333;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px 20px;
+  background: #2a2a2a;
+  border-bottom: 1px solid #333;
 `;
 
 const Title = styled.h2`
-  color: #fff;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  margin: 0;
+  color: #fff;
 `;
 
 const Subtitle = styled.p`
-  color: #999;
+  margin: 2px 0 0;
   font-size: 13px;
-  margin: 2px 0 0 0;
+  color: #999;
 `;
 
 const DevBadge = styled.div``;
