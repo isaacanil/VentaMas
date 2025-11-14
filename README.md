@@ -49,7 +49,7 @@ Aplicación web empresarial para la plataforma VentaMas, construida con React 18
 
 ### Carpetas especiales
 
-- `docs/`: contiene las guías funcionales de autorización, inventario, flujos de PIN, etc. Agrupa información para onboarding y para auditar cambios de negocio.
+- `docs/`: contiene las guías funcionales de autorización, inventario, flujos de PIN, etc. Agrupa información para onboarding y auditoría; usa `docs/documentation/reference/structure-guide.md` como referencia para nombres y plantillas.
 - `pending/`: mini backlog operativo (formato `YYYY-MM-DD_<tema>.md`). El archivo `pending/README.md` explica cómo mantenerlas y sugiere automatizar `tools/check_pending.sh` para revisarlas cada día.
 - `reports/`: destino centralizado para salidas automáticas (como `unused-exports.csv` o futuros reportes de lint). La carpeta está listada en `.gitignore` para evitar ruido en la raíz.
 - `tools/`: utilidades internas:

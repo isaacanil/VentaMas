@@ -1,4 +1,5 @@
 export { quantityZeroToInactivePerBusiness } from './modules/Inventory/functions/quantityZeroToInactivePerBusiness.js';
+import { reconcileBatchStatusFromStocks } from './modules/Inventory/functions/reconcileBatchStatusFromStocks.js';
 import { syncProductsStockCron } from './versions/v2/inventory/syncProductsStockCron.js';
 import { stockAlertsDailyDigest } from './modules/Inventory/functions/stockAlertsDailyDigest.js';
 import { handleInvoiceRequest } from './modules/invoice/controllers/invoice.controller.js';
@@ -7,6 +8,7 @@ import { quotationPdf } from './modules/quotation/quotationGenerate/quotationGen
 import { keepSupabaseAlive } from './modules/supabase/controllers/keepSupabaseAlive.controller.js';
 import { updatePendingBalance } from './versions/v1/modules/accountsReceivable/triggers/updatePendingBalance.js';
 import { handleCreateUser } from './versions/v1/modules/auth/handle/handleCreateUser.js';
+import { reconcilePendingBalanceCron } from './versions/v2/accountsReceivable/reconcilePendingBalanceCron.js';
 import {
   handleUpdateUser,
   handleUpdateUserWithPermissions,
@@ -54,6 +56,7 @@ import { rebuildNcfLedger } from './versions/v2/invoice/controllers/rebuildNcfLe
 export {
   keepSupabaseAlive,
   handleInvoiceRequest,
+  reconcileBatchStatusFromStocks,
   stockAlertsDailyDigest,
   quotationPdf,
   invoiceLetterPdf,
@@ -90,4 +93,5 @@ export {
   autoRotateModulePins,
   syncRealtimePresence,
   syncProductsStockCron,
+  reconcilePendingBalanceCron,
 };

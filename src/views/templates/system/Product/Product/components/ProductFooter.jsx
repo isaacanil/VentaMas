@@ -78,16 +78,22 @@ export const ProductFooter = ({
   isOutOfStock,
 }) => {
   const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
-  const stockValue =
-    typeof productInCart?.stock === 'number'
+  const hasSelectedProductStock = Boolean(productInCart?.productStockId);
+  const stockValue = hasSelectedProductStock
+    ? typeof productInCart?.stock === 'number'
       ? productInCart.stock
-      : typeof product?.displayStock === 'number'
-        ? product.displayStock
-        : product?.stock;
+      : typeof product?.stock === 'number'
+        ? product.stock
+        : undefined
+    : typeof product?.stock === 'number'
+      ? product.stock
+      : typeof productInCart?.stock === 'number'
+        ? productInCart.stock
+        : undefined;
+  const hasValidStock =
+    typeof stockValue === 'number' && !Number.isNaN(stockValue);
   const formattedStock =
-    typeof stockValue === 'number' && !Number.isNaN(stockValue)
-      ? useFormatNumber(stockValue)
-      : '-';
+    hasValidStock && stockValue !== 0 ? useFormatNumber(stockValue) : '-';
 
   return (
     <FooterWrapper imageHiddenRef={productState.imageHidden}>
@@ -102,7 +108,8 @@ export const ProductFooter = ({
         >
           {isProductInCart &&
             `${useFormatNumber(productInCart.amountToBuy)} / `}
-          {stockValue === 0 ? '-' : formattedStock}
+          {formattedStock}
+
         </AmountToBuy>
       </Group>
 

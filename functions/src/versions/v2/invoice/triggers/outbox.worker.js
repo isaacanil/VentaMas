@@ -511,9 +511,13 @@ export const processInvoiceOutbox = firestore
             Number(ar?.totalInstallments) > 0 &&
             accountReceivableNextIDSnap
           ) {
+            const normalizedAr = {
+              ...ar,
+              invoiceId,
+            };
             const arRecord = await addAccountReceivable(tx, {
               user,
-              ar,
+              ar: normalizedAr,
               accountReceivableNextIDSnap,
             });
             await addInstallmentReceivable(tx, { user, ar: arRecord });

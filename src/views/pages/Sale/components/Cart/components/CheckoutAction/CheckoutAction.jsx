@@ -73,7 +73,7 @@ const Container = styled.div`
   padding: 0 0.4em;
   overflow: hidden;
   color: white;
-  background-color: var(--gray8);
+  background-color: var(--gray-8);
   border-top-left-radius: var(--border-radius-light);
 
   h3 {

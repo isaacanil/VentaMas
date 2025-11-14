@@ -391,4 +391,13 @@ export const waitForInvoiceResult = async ({
 
     await delay(pollInterval);
   }
+
+  const exhaustedError = new Error(
+    'No se pudo confirmar la factura después de varios intentos. Verifica el historial de facturación o intenta nuevamente.',
+  );
+  exhaustedError.code = 'invoice-retries-exceeded';
+  exhaustedError.invoice = lastSnapshot;
+  exhaustedError.invoiceId = invoiceId;
+  exhaustedError.businessId = businessId;
+  throw exhaustedError;
 };

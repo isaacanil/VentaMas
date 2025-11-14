@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import axios from 'axios';
-import functions from 'firebase-functions';
+import { https } from 'firebase-functions';
 import PdfPrinter from 'pdfmake';
 
 import { buildContent } from './builders/content.js';
@@ -29,7 +29,7 @@ const fonts = {
 
 const printer = new PdfPrinter(fonts);
 
-export const quotationPdf = functions.https.onCall(async (req) => {
+export const quotationPdf = https.onCall(async (req) => {
   const { business: biz, data: d } = req.data;
 
   const images = {};

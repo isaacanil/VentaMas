@@ -54,7 +54,7 @@ const Container = styled.div`
   font-weight: 600;
   color: white;
   cursor: pointer;
-  background: var(--gray8);
+  background: var(--gray-8);
   border-radius: 14px;
   transition: all 0.2s ease;
 

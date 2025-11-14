@@ -4,7 +4,7 @@ import {
   CalendarOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { Modal, Button, Input, Empty, Spin } from 'antd';
+import { Modal, Button, Input, Empty, Spin, notification } from 'antd';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -96,16 +96,18 @@ const BatchCard = styled.div`
   flex-direction: column;
   gap: 4px;
   padding: 8px;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   background: white;
   border: 2px solid
-    ${({ selected, $expired }) => {
+    ${({ selected, $expired, $disabled }) => {
+      if ($disabled) return '#cbd5f5';
       if (selected && $expired) return '#dc2626';
       if (selected) return '#2563eb';
       return '#e2e8f0';
     }};
   border-radius: 12px;
-  box-shadow: ${({ selected, $expired }) => {
+  box-shadow: ${({ selected, $expired, $disabled }) => {
+    if ($disabled) return 'none';
     if (selected && $expired) return '0 4px 12px rgba(220, 38, 38, 0.2)';
     if (selected) return '0 4px 12px rgba(37, 99, 235, 0.15)';
     return '0 2px 8px rgba(0, 0, 0, 0.05)';
@@ -113,8 +115,9 @@ const BatchCard = styled.div`
   transition: all 0.2s ease;
 
     &:hover {
-    box-shadow: 0 6px 16px rgb(0 0 0 / 10%);
-    transform: translateY(-2px);
+    box-shadow: ${({ $disabled }) =>
+      $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
+    transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-2px)')};
   }
 
   .card-header {
@@ -219,20 +222,27 @@ export function ProductBatchModal() {
   // Obtener datos de productStock en tiempo real
   const { data: productStocks, loading } = useListenProductsStock(productId);
   const { locationNames, fetchLocationName } = useLocationNames();
+  const isStrictProduct = Boolean(product?.restrictSaleWithoutStock);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTimestamp = today.getTime();
 
+  const sanitizedProductStocks = useMemo(() => {
+    if (!isStrictProduct) return productStocks;
+    return productStocks.filter((stock) => Number(stock?.quantity) > 0);
+  }, [productStocks, isStrictProduct]);
+
   const filteredBySearch = useMemo(() => {
     const term = searchText.trim().toLowerCase();
-    if (!term) return productStocks;
-    return productStocks.filter(
+    const source = sanitizedProductStocks;
+    if (!term) return source;
+    return source.filter(
       (stock) =>
         stock.batchNumberId?.toString().toLowerCase().includes(term) ||
         stock.location?.toLowerCase().includes(term),
     );
-  }, [productStocks, searchText]);
+  }, [sanitizedProductStocks, searchText]);
 
   const normalizeLocationId = (value) => {
     if (typeof value !== 'string') return '';
@@ -306,6 +316,16 @@ export function ProductBatchModal() {
     }
   }, [products.length]);
 
+  useEffect(() => {
+    if (!selectedBatch) return;
+    const exists = sanitizedProductStocks.some(
+      (stock) => stock.id === selectedBatch,
+    );
+    if (!exists) {
+      setSelectedBatch(null);
+    }
+  }, [sanitizedProductStocks, selectedBatch]);
+
   // Modificar la función formatLocation
   function formatLocation(locationId) {
     if (!locationId) return '';
@@ -314,6 +334,16 @@ export function ProductBatchModal() {
 
   const handleBatchToggle = (stock, isExpired) => {
     if (!stock) return;
+
+    const numericQuantity = Number(stock.quantity) || 0;
+    if (isStrictProduct && numericQuantity <= 0) {
+      notification.warning({
+        message: 'Inventario agotado',
+        description:
+          'Este lote no tiene unidades disponibles. Selecciona otro lote con existencia.',
+      });
+      return;
+    }
 
     const isCurrentlySelected = selectedBatch === stock.id;
 
@@ -355,7 +385,9 @@ export function ProductBatchModal() {
 
   const handleConfirm = () => {
     if (selectedBatch) {
-      const chosenStock = productStocks.find((s) => s.id === selectedBatch);
+      const chosenStock = sanitizedProductStocks.find(
+        (s) => s.id === selectedBatch,
+      );
 
       if (!chosenStock) {
         return;
@@ -437,6 +469,7 @@ export function ProductBatchModal() {
                           normalizeExpirationDate,
                           formatLocation,
                           normalizeLocationId,
+                          isStrictProduct,
                         }),
                       )}
                     </BatchGrid>
@@ -462,6 +495,7 @@ export function ProductBatchModal() {
                           normalizeExpirationDate,
                           formatLocation,
                           normalizeLocationId,
+                          isStrictProduct,
                         }),
                       )}
                     </BatchGrid>
@@ -487,6 +521,7 @@ export function ProductBatchModal() {
                     normalizeExpirationDate,
                     formatLocation,
                     normalizeLocationId,
+                    isStrictProduct,
                   }),
                 )}
               </BatchGrid>
@@ -511,6 +546,7 @@ function renderBatchCard({
   normalizeExpirationDate,
   formatLocation,
   normalizeLocationId,
+  isStrictProduct,
 }) {
   const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
   const isExpired =
@@ -519,13 +555,16 @@ function renderBatchCard({
     ? new Date(expirationTimestamp).toLocaleDateString()
     : null;
   const locationId = normalizeLocationId(stock.location);
+  const numericQuantity = Number(stock.quantity) || 0;
+  const isDisabled = isStrictProduct && numericQuantity <= 0;
 
   return (
     <BatchCard
       key={stock.id}
       selected={selectedBatch === stock.id}
       $expired={isExpired}
-      onClick={() => handleBatchToggle(stock, isExpired)}
+      $disabled={isDisabled}
+      onClick={() => !isDisabled && handleBatchToggle(stock, isExpired)}
     >
       <div className="card-header">
         <div className="batch-number">

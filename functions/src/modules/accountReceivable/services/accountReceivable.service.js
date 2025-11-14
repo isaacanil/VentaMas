@@ -11,7 +11,7 @@ export async function manageReceivableAccounts(
     logger.info('Factura no marcada para cuentas por cobrar, omitiendo.');
     return;
   }
-  if (accountsReceivable?.totalInstallments) {
+  if (!accountsReceivable?.totalInstallments) {
     logger.info('Cuentas por cobrar no definidas, omitiendo.');
     return;
   }

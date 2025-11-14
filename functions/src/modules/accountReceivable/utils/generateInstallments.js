@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-import { FieldValue, Timestamp } from '../../../core/config/firebase.js';
+import { Timestamp } from '../../../core/config/firebase.js';
 
 import { calculatePaymentDates } from './calculatePaymentDates.js';
 
@@ -15,7 +15,7 @@ export function generateInstallments({ ar, user }) {
 
   const part = round2(totalReceivable / totalInstallments);
   const diff = round2(totalReceivable - part * totalInstallments);
-  const tsNow = FieldValue.serverTimestamp();
+  const tsNow = Date.now();
 
   return paymentDates.map((msDate, i) => {
     const amount = i === totalInstallments - 1 ? round2(part + diff) : part;

@@ -431,23 +431,19 @@ export function useGetProducts(
       const sanitizedSelected = Array.isArray(selectedWarehouses)
         ? selectedWarehouses.filter(Boolean)
         : [];
-      const baseMapper = (product) => {
-        const rawStock =
-          typeof product?.originalStock === 'number'
-            ? product.originalStock
-            : Number(product?.stock ?? 0);
-        const baseStock = Number.isFinite(rawStock) ? rawStock : 0;
-        const stockByLocation = stockIndex?.[product.id] || undefined;
-        return {
-          ...product,
-          originalStock: baseStock,
-          stock: baseStock,
-          globalStock: baseStock,
-          displayStock: baseStock,
-          stockSource: 'global',
-          stockByLocation,
-        };
+      const resolveBaseStock = (product) => {
+        const declaredStock = Number(product?.stock);
+        if (Number.isFinite(declaredStock)) {
+          return declaredStock;
+        }
+        const declaredOriginal = Number(product?.originalStock);
+        return Number.isFinite(declaredOriginal) ? declaredOriginal : 0;
       };
+      const withStock = (product, stockValue) => ({
+        ...product,
+        stock: stockValue,
+      });
+      const baseMapper = (product) => withStock(product, resolveBaseStock(product));
 
       if (!stockFilterActive || sanitizedSelected.length === 0) {
         return base.map(baseMapper);
@@ -457,11 +453,6 @@ export function useGetProducts(
 
       const result = [];
       for (const product of base) {
-        const rawStock =
-          typeof product?.originalStock === 'number'
-            ? product.originalStock
-            : Number(product?.stock ?? 0);
-        const baseStock = Number.isFinite(rawStock) ? rawStock : 0;
         const stockByLocation = stockIndex?.[product.id] || {};
         const scopedStock = sanitizedSelected.reduce(
           (sum, locationId) => sum + Number(stockByLocation?.[locationId] || 0),
@@ -470,17 +461,7 @@ export function useGetProducts(
 
         if (scopedStock <= 0) continue;
 
-        result.push({
-          ...product,
-          originalStock: baseStock,
-          globalStock: baseStock,
-          stock: scopedStock,
-          scopedStock,
-          displayStock: scopedStock,
-          stockSource: 'location',
-          stockByLocation,
-          filteredWarehouses: sanitizedSelected,
-        });
+        result.push(withStock(product, scopedStock));
       }
 
       return result;

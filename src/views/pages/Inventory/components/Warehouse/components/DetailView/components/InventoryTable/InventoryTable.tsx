@@ -1,8 +1,11 @@
 import {
   DeleteOutlined,
+  MoreOutlined,
   SwapOutlined,
+  SyncOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
+import { Dropdown, notification, type MenuProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -13,6 +16,7 @@ import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTabl
 
 import { selectUser } from '../../../../../../../../../features/auth/userSlice.js';
 import { openDeleteModal } from '../../../../../../../../../features/productStock/deleteProductStockSlice.js';
+import { reconcileBatchStatus } from '../../../../../../../../../firebase/functions/inventory/reconcileBatchStatus.js';
 import { getBatchById } from '../../../../../../../../../firebase/warehouse/batchService.js';
 import BatchViewModal from '../BatchViewModal.jsx';
 import { ProductMovementModal } from '../ProductMovementModal.jsx';
@@ -23,7 +27,14 @@ import { useInventoryColumns } from './hooks/useInventoryColumns';
 import { useInventoryFilters } from './hooks/useInventoryFilters';
 import { useProductFilterOptions } from './hooks/useProductFilterOptions';
 import { useProductsStock } from './hooks/useProductsStock';
-import { Container, MenuItemContent, Title, TitleSection } from './styles';
+import {
+  Container,
+  MenuItemContent,
+  Title,
+  TitleActions,
+  TitleSection,
+  ToolbarButton,
+} from './styles';
 import { normalizeToDayjs, toMillis } from './utils/dateUtils';
 import {
   NO_BATCH_VALUE,
@@ -63,6 +74,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   const rawUser: unknown = useSelector(selectUser);
   const user = isAppUser(rawUser) ? rawUser : null;
   const { productsStock, loading } = useProductsStock(location);
+  const [syncingBatches, setSyncingBatches] = useState(false);
   const { productOptions, productBatchMap } =
     useProductFilterOptions(productsStock);
   const {
@@ -251,6 +263,88 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       ],
     }),
     [handleDeleteBatch, handleMove, handleViewProductStock],
+  );
+
+  const describeSyncResult = useCallback((result: Record<string, number>) => {
+    if (!result) return undefined;
+    const { batchesUpdated = 0, activatedBatches = 0, deactivatedBatches = 0 } =
+      result;
+    return `Actualizados: ${batchesUpdated} · Activados: ${activatedBatches} · Desactivados: ${deactivatedBatches}`;
+  }, []);
+
+  const handleSyncBatches = useCallback(
+    async (dryRun = false) => {
+      if (!user?.businessID) {
+        notification.error({
+          message: 'Usuario sin negocio',
+          description: 'No se pudo determinar el businessID para sincronizar.',
+        });
+        return;
+      }
+
+      setSyncingBatches(true);
+      try {
+        const result = await reconcileBatchStatus({
+          businessId: user.businessID,
+          actorUid: user.uid,
+          dryRun,
+        });
+
+        notification.success({
+          message: dryRun
+            ? 'Simulación completada'
+            : 'Lotes sincronizados correctamente',
+          description: describeSyncResult(result),
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Error al sincronizar lotes',
+          description:
+            err instanceof Error ? err.message : 'No se pudo completar la acción',
+        });
+      } finally {
+        setSyncingBatches(false);
+      }
+    },
+    [describeSyncResult, user],
+  );
+
+  const toolbarMenuItems = useMemo<MenuProps['items']>(
+    () => [
+      {
+        key: 'sync-batches',
+        label: (
+          <MenuItemContent>
+            <SyncOutlined spin={syncingBatches} />
+            {syncingBatches ? 'Sincronizando…' : 'Sincronizar lotes'}
+          </MenuItemContent>
+        ),
+        disabled: syncingBatches,
+      },
+      {
+        key: 'sync-batches-dry',
+        label: (
+          <MenuItemContent>
+            <SyncOutlined />
+            Simular sincronización
+          </MenuItemContent>
+        ),
+        disabled: syncingBatches,
+      },
+    ],
+    [syncingBatches],
+  );
+
+  const handleToolbarMenuClick = useCallback<NonNullable<MenuProps['onClick']>>(
+    async ({ key }) => {
+      if (key === 'sync-batches') {
+        await handleSyncBatches(false);
+      }
+      if (key === 'sync-batches-dry') {
+        await handleSyncBatches(true);
+      }
+    },
+    [handleSyncBatches],
   );
 
   const handleSort = useCallback(
@@ -443,6 +537,22 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       <Container>
         <TitleSection>
           <Title>Gestión de Inventario</Title>
+          <TitleActions>
+            <Dropdown
+              trigger={['click']}
+              menu={{
+                items: toolbarMenuItems,
+                onClick: handleToolbarMenuClick,
+              }}
+              placement="bottomRight"
+            >
+              <ToolbarButton
+                aria-label="Acciones avanzadas"
+                icon={<MoreOutlined />}
+                loading={syncingBatches}
+              />
+            </Dropdown>
+          </TitleActions>
         </TitleSection>
 
         <SearchControls

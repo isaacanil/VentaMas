@@ -1,8 +1,10 @@
 import {
   collection,
   doc,
+  increment,
   setDoc,
   Timestamp,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
@@ -157,20 +159,21 @@ export const fbPayActiveInstallmentForAccount = async ({
       isActive: newInstallmentBalance > 0,
     });
 
+    const paidInstallmentsSet = new Set(account.paidInstallments || []);
     if (newInstallmentBalance <= THRESHOLD) {
-      const updatedPaidInstallments = [
-        ...(account.paidInstallments || []),
-        installment.id,
-      ];
-      batch.update(accountsReceivableRef, {
-        arBalance: newAccountBalance,
-        lastPaymentDate: Timestamp.now(),
-        lastPayment: amountToApply,
-        isActive: newAccountBalance > THRESHOLD,
-        isClosed: newAccountBalance <= THRESHOLD,
-        paidInstallments: updatedPaidInstallments,
-      });
+      paidInstallmentsSet.add(installment.id);
     }
+
+    batch.update(accountsReceivableRef, {
+      arBalance: newAccountBalance,
+      lastPaymentDate: Timestamp.now(),
+      lastPayment: amountToApply,
+      isActive: newAccountBalance > THRESHOLD,
+      isClosed: newAccountBalance <= THRESHOLD,
+      ...(newInstallmentBalance <= THRESHOLD
+        ? { paidInstallments: Array.from(paidInstallmentsSet) }
+        : {}),
+    });
 
     batch.set(installmentPaymentRef, {
       ...defaultInstallmentPaymentsAR,
@@ -188,6 +191,25 @@ export const fbPayActiveInstallmentForAccount = async ({
     });
 
     await batch.commit();
+
+    if (clientId) {
+      // Ajustar saldo inmediatamente mientras la función agregadora corre en background
+      const clientRef = doc(
+        db,
+        'businesses',
+        user.businessID,
+        'clients',
+        clientId,
+      );
+      await updateDoc(clientRef, {
+        'client.pendingBalance': increment(-amountToApply),
+      }).catch((err) => {
+        console.warn(
+          'No se pudo actualizar client.pendingBalance inmediatamente, quedará a cargo del trigger:',
+          err,
+        );
+      });
+    }
 
     // Obtener la factura relacionada una vez confirmado el batch
     const invoice = await fbGetInvoice(user.businessID, account.invoiceId);

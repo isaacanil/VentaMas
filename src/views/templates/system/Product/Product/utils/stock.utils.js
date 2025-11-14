@@ -4,7 +4,6 @@ export const resolveStock = (p) => {
   const candidateKeys = [
     'scopedStock',
     'stock',
-    'displayStock',
     'originalStock',
   ];
   for (const key of candidateKeys) {

@@ -32,7 +32,20 @@ export const Title = styled.h2`
 `;
 
 export const TitleSection = styled.div`
-  /* padding: 1em 0; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+export const TitleActions = styled.div`
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+export const ToolbarButton = styled(Button)`
+  ${iconButtonStyles};
 `;
 
 export const SearchContainer = styled(Form)`
