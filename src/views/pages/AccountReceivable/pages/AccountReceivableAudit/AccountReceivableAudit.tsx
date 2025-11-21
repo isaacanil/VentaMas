@@ -1,3 +1,4 @@
+import { DownloadOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -10,11 +11,9 @@ import {
   Typography,
   message,
 } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
-import type { TablePaginationConfig } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
@@ -26,11 +25,16 @@ import {
 } from '../../../../../hooks/exportToExcel/exportConfig';
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+
 import { FinancialSummary } from './components/FinancialSummary';
 import { InvoiceTable } from './components/InvoiceTable';
 import { DEFAULT_SAMPLE_LIMIT, MAX_SAMPLE_LIMIT } from './constants';
 import { useReceivableInvoices } from './hooks/useReceivableInvoices';
 import { formatDate, formatPrice } from './utils/formatters';
+
+import type { ReceivableInvoice } from './types';
+
+import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 
@@ -121,7 +125,7 @@ export const AccountReceivableAudit = () => {
   });
 
   const totalInvoices = receivableInvoices.length;
-  const filteredInvoices = useMemo(() => {
+  const filteredInvoices = useMemo<ReceivableInvoice[]>(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     return receivableInvoices.filter((invoice) => {
       const matchesSearch =
@@ -340,7 +344,9 @@ export const AccountReceivableAudit = () => {
           </FilterGroup>
           <Button
             icon={<DownloadOutlined />}
-            onClick={handleExportToExcel}
+            onClick={() => {
+              void handleExportToExcel();
+            }}
             disabled={!filteredInvoices.length}
             loading={exporting}
           >

@@ -3,11 +3,11 @@ import dayjs from 'dayjs';
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import { DatePicker } from '../../../../../../../components/common/DatePicker';
 import { icons } from '../../../../../../../constants/icons/icons';
 import useBusiness from '../../../../../../../hooks/useBusiness';
 import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
 import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
-import { DatePicker } from '../../../../../../../components/common/DatePicker';
 
 export const FilterAccountReceivable = ({
   datesSelected = [],

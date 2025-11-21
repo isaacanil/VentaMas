@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
 import { FilterBar as CommonFilterBar } from '../../../../../components/common/FilterBar';
+
 import {
   AmountRangeFilter,
   ClientFilter,

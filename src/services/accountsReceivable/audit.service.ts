@@ -11,9 +11,11 @@ export interface AuditRequestPayload {
   since?: number;
 }
 
+export type AuditResponse = unknown;
+
 export const fetchAccountsReceivableAudit = async (
   payload: AuditRequestPayload,
-) => {
+): Promise<AuditResponse> => {
   if (!payload?.businessId) {
     throw new Error('Debes indicar el businessId para ejecutar la auditoría.');
   }
@@ -32,6 +34,5 @@ export const fetchAccountsReceivableAudit = async (
     }),
   });
 
-  return parseFunctionsResponse(response);
+  return parseFunctionsResponse<AuditResponse>(response);
 };
-

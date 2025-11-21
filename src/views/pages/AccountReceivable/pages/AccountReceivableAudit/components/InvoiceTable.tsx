@@ -1,10 +1,11 @@
-import { Button, Dropdown, Empty, Table, message } from 'antd';
 import { MoreOutlined } from '@ant-design/icons';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import { Button, Dropdown, Empty, Table, message } from 'antd';
 import { useCallback, useMemo } from 'react';
 
-import type { ReceivableInvoice, ReceivablesLookup } from '../types';
 import { formatDate, formatPrice } from '../utils/formatters';
+
+import type { ReceivableInvoice, ReceivablesLookup } from '../types';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 interface InvoiceTableProps {
   invoices: ReceivableInvoice[];

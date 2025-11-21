@@ -323,8 +323,6 @@ const columns = [
     maxWidth: '1fr',
     minWidth: '200px',
     cell: ({ value }) => {
-      const paidLabel = useFormatPrice(value?.paid || 0);
-      const totalLabel = useFormatPrice(value?.total || 0);
       const pendingLabel = useFormatPrice(value?.pending || 0);
 
       if (!value || (!value.total && !value.paid)) {
@@ -483,54 +481,6 @@ const PaymentBadge = styled.span`
     $complete ? 'rgba(82, 196, 26, 0.12)' : 'rgba(250, 173, 20, 0.14)'};
   border: 1px solid
     ${({ $complete }) => ($complete ? '#b7eb8f' : '#ffd591')};
-`;
-
-const PartialContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  min-width: 160px;
-`;
-
-const AmountRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: ${({ $centered }) =>
-    $centered ? 'flex-end' : 'space-between'};
-  gap: 8px;
-  font-size: 12px;
-  color: #595959;
-  width: 100%;
-  text-align: right;
-`;
-
-const AmountLabel = styled.span`
-  font-weight: 600;
-  color: #8c8c8c;
-`;
-
-const AmountPill = styled.span`
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: #fffbe6;
-  color: #d48806;
-  font-weight: 700;
-  border: 1px solid #ffe58f;
-`;
-
-const AmountValue = styled.span`
-  font-weight: 700;
-  color: ${({ $variant }) => {
-    if ($variant === 'pending') return '#cf1322';
-    if ($variant === 'paid') return '#d48806';
-    return '#1a1a1a';
-  }};
 `;
 
 const PendingChip = styled.span`

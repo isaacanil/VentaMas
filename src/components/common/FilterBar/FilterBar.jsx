@@ -1,3 +1,5 @@
+import { faBroom, faFilter, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
   Drawer,
@@ -9,16 +11,15 @@ import {
   Space,
   Switch,
 } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBroom, faFilter, faSliders } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { DatePicker } from '../DatePicker/DatePicker';
 
 import { useOverflowCollapse } from '../../../hooks/useOverflowCollapse';
 import useViewportWidth from '../../../hooks/windows/useViewportWidth';
+import { DatePicker } from '../DatePicker/DatePicker';
+
 import {
   Bar,
   DesktopActions,

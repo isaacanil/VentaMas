@@ -5,9 +5,10 @@ import ChangeLogCreate from '../../views/controlPanel/ChangeLogControl/ChangeLog
 import { BusinessControl } from '../../views/controlPanel/CreateBusinessControl/BusinessControl';
 import BSeriesInvoices from '../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices';
 import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit';
-import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
 import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
+import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
 import SyncDiagnostics from '../../views/pages/DevTools/SyncDiagnostics';
+import CheckProductPriceAudit from '../../views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit';
 import TestPlayground from '../../views/pages/DevTools/TestPlayground';
 import BusinessCreator from '../../views/pages/setting/subPage/BusinessEditor/BusinessCreator';
 import { Doc } from '../../views/templates/system/AdvancedTable/Doc';
@@ -24,6 +25,7 @@ const {
   INVENTORY_MIGRATION,
   SYNC_DIAGNOSTICS,
   INVOICE_V2_RECOVERY,
+  PRICE_LIST_AUDIT,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -68,6 +70,12 @@ const routes = [
   {
     path: RoutesName.DEV_VIEW_TERM.PRUEBA,
     element: <TestPlayground />,
+  },
+  {
+    path: PRICE_LIST_AUDIT,
+    element: <CheckProductPriceAudit />,
+    devOnly: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: INVENTORY_MIGRATION,

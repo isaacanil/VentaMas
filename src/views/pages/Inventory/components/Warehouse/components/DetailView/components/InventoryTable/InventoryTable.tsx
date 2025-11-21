@@ -62,6 +62,12 @@ type AppUser = {
 const isAppUser = (value: unknown): value is AppUser =>
   typeof value === 'object' && value !== null;
 
+type ReconcileBatchStatusResult = {
+  batchesUpdated?: number;
+  activatedBatches?: number;
+  deactivatedBatches?: number;
+};
+
 export const InventoryTable: React.FC<InventoryTableProps> = ({
   currentNode,
   searchTerm,
@@ -265,12 +271,18 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     [handleDeleteBatch, handleMove, handleViewProductStock],
   );
 
-  const describeSyncResult = useCallback((result: Record<string, number>) => {
-    if (!result) return undefined;
-    const { batchesUpdated = 0, activatedBatches = 0, deactivatedBatches = 0 } =
-      result;
-    return `Actualizados: ${batchesUpdated} · Activados: ${activatedBatches} · Desactivados: ${deactivatedBatches}`;
-  }, []);
+  const describeSyncResult = useCallback(
+    (result?: ReconcileBatchStatusResult) => {
+      if (!result) return undefined;
+      const {
+        batchesUpdated = 0,
+        activatedBatches = 0,
+        deactivatedBatches = 0,
+      } = result;
+      return `Actualizados: ${batchesUpdated} · Activados: ${activatedBatches} · Desactivados: ${deactivatedBatches}`;
+    },
+    [],
+  );
 
   const handleSyncBatches = useCallback(
     async (dryRun = false) => {
@@ -284,11 +296,11 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
       setSyncingBatches(true);
       try {
-        const result = await reconcileBatchStatus({
+        const result = (await reconcileBatchStatus({
           businessId: user.businessID,
           actorUid: user.uid,
           dryRun,
-        });
+        })) as ReconcileBatchStatusResult;
 
         notification.success({
           message: dryRun
@@ -336,12 +348,12 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   );
 
   const handleToolbarMenuClick = useCallback<NonNullable<MenuProps['onClick']>>(
-    async ({ key }) => {
+    ({ key }) => {
       if (key === 'sync-batches') {
-        await handleSyncBatches(false);
+        void handleSyncBatches(false);
       }
       if (key === 'sync-batches-dry') {
-        await handleSyncBatches(true);
+        void handleSyncBatches(true);
       }
     },
     [handleSyncBatches],

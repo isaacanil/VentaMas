@@ -1,4 +1,12 @@
-import React from 'react';
+import {
+  CloudUploadOutlined,
+  HomeOutlined,
+  InfoCircleOutlined,
+  MailOutlined,
+  PictureOutlined,
+  ReloadOutlined,
+  ShopOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -10,15 +18,7 @@ import {
   Typography,
   Upload,
 } from 'antd';
-import {
-  CloudUploadOutlined,
-  HomeOutlined,
-  InfoCircleOutlined,
-  MailOutlined,
-  PictureOutlined,
-  ReloadOutlined,
-  ShopOutlined,
-} from '@ant-design/icons';
+import React from 'react';
 import styled from 'styled-components';
 
 const { Option } = Select;

@@ -1,12 +1,14 @@
 import type {
+  AccountsReceivableDoc,
+  ReceivableInvoice,
+} from '../types';
+import type {
   DocumentData,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
 
-import type {
-  AccountsReceivableDoc,
-  ReceivableInvoice,
-} from '../types';
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 export const toMillis = (value?: unknown): number | null => {
   if (value == null) return null;
@@ -40,10 +42,21 @@ export const toMillis = (value?: unknown): number | null => {
 export const mapInvoiceDoc = (
   docSnap: QueryDocumentSnapshot<DocumentData>,
 ): ReceivableInvoice => {
-  const payload = docSnap.data() || {};
-  const canonical = payload?.data || {};
-  const totals = canonical?.totalPurchase?.value ?? canonical?.payment?.value;
-  const totalAmount = Number.isFinite(Number(totals)) ? Number(totals) : 0;
+  const payload = docSnap.data();
+  const payloadRecord = isRecord(payload) ? payload : {};
+  const canonical = isRecord(payloadRecord.data) ? payloadRecord.data : {};
+
+  const totalPurchaseValue = isRecord(canonical.totalPurchase)
+    ? canonical.totalPurchase.value
+    : undefined;
+  const paymentValue = isRecord(canonical.payment)
+    ? canonical.payment.value
+    : undefined;
+
+  const totalAmountValue = totalPurchaseValue ?? paymentValue;
+  const totalAmount = Number.isFinite(Number(totalAmountValue))
+    ? Number(totalAmountValue)
+    : 0;
 
   const createdAt =
     toMillis(canonical?.date) ||
@@ -54,34 +67,47 @@ export const mapInvoiceDoc = (
   return {
     invoiceId: docSnap.id,
     number:
-      canonical?.numberID ||
-      canonical?.number ||
-      canonical?.invoiceNumber ||
-      null,
-    ncf: canonical?.NCF ?? null,
-    clientName: canonical?.client?.name || 'Sin cliente',
+      (typeof canonical?.numberID === 'string' || typeof canonical?.numberID === 'number'
+        ? canonical.numberID
+        : null) ||
+      (typeof canonical?.number === 'string' || typeof canonical?.number === 'number'
+        ? canonical.number
+        : null) ||
+      (typeof canonical?.invoiceNumber === 'string' ||
+      typeof canonical?.invoiceNumber === 'number'
+        ? canonical.invoiceNumber
+        : null),
+    ncf: typeof canonical?.NCF === 'string' ? canonical.NCF : null,
+    clientName:
+      (isRecord(canonical?.client) &&
+        typeof canonical.client.name === 'string' &&
+        canonical.client.name) ||
+      'Sin cliente',
     totalAmount,
     createdAt,
-    status: canonical?.status || null,
+    status: typeof canonical?.status === 'string' ? canonical.status : null,
   };
 };
 
 export const mapAccountsReceivableDoc = (
   docSnap: QueryDocumentSnapshot<DocumentData>,
 ): AccountsReceivableDoc => {
-  const data = docSnap.data() || {};
-  const totalReceivable = Number(data?.totalReceivable);
-  const arBalance = Number(data?.arBalance);
+  const data = docSnap.data();
+  const dataRecord = isRecord(data) ? data : {};
+  const totalReceivable = Number(dataRecord.totalReceivable);
+  const arBalance = Number(dataRecord.arBalance);
+  const invoiceId =
+    typeof dataRecord.invoiceId === 'string' ? dataRecord.invoiceId : null;
 
   return {
     id: docSnap.id,
-    invoiceId: data?.invoiceId || null,
+    invoiceId,
     totalReceivable: Number.isFinite(totalReceivable)
       ? totalReceivable
       : undefined,
     arBalance: Number.isFinite(arBalance) ? arBalance : undefined,
     createdAt:
-      toMillis(data?.createdAt) ||
+      toMillis(dataRecord.createdAt) ||
       toMillis(docSnap.get('createdAt')) ||
       null,
   };

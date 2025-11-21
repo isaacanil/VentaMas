@@ -1,4 +1,4 @@
-import { faMoneyBillWave, faHistory } from '@fortawesome/free-solid-svg-icons';
+import { faHistory } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tag, Collapse } from 'antd';
 import dayjs from 'dayjs';

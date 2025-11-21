@@ -15,15 +15,16 @@ import {
   FIRESTORE_IN_LIMIT,
   MAX_SAMPLE_LIMIT,
 } from '../constants';
-import type {
-  ReceivableInvoice,
-  ReceivablesLookup,
-} from '../types';
 import {
   chunkArray,
   mapAccountsReceivableDoc,
   mapInvoiceDoc,
 } from '../utils/firestoreMappers';
+
+import type {
+  ReceivableInvoice,
+  ReceivablesLookup,
+} from '../types';
 
 interface UseReceivableInvoicesOptions {
   defaultLimit?: number;
@@ -99,7 +100,7 @@ export const useReceivableInvoices = (
         .flat()
         .filter((doc) => doc.invoiceId)
         .reduce<ReceivablesLookup>((acc, doc) => {
-          acc[doc.invoiceId as string] = doc;
+          acc[doc.invoiceId] = doc;
           return acc;
         }, {});
     },

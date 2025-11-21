@@ -1,7 +1,8 @@
 import { Modal, Alert } from 'antd';
-import { AnimatePresence, motion } from 'framer-motion';
-import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import React, { useState, forwardRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import ProductDiscountModal from '../../../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
@@ -21,6 +22,27 @@ import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart';
 
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
+
+const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
+  <Body ref={ref} style={style} {...props}>
+    {children}
+  </Body>
+));
+VirtuosoList.displayName = 'VirtuosoList';
+
+const VirtuosoItem = forwardRef(({ children, ...props }, ref) => (
+  <motion.div
+    ref={ref}
+    {...props}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.2 }}
+  >
+    {children}
+  </motion.div>
+));
+VirtuosoItem.displayName = 'VirtuosoItem';
 
 export const ProductsList = () => {
   const dispatch = useDispatch();
@@ -89,21 +111,28 @@ export const ProductsList = () => {
 
   return (
     <Container>
-      <Body>
+      <ListContainer>
         {ProductSelected.length > 0 ? (
-          <AnimatePresence>
-            {' '}
-            {ProductSelected.map((item, index) => (
+          <Virtuoso
+            data={ProductSelected}
+            computeItemKey={(index, item) =>
+              item?.cid || item?.id || `item-${index}`
+            }
+            itemContent={(index, item) => (
               <ProductCardForCart
                 item={item}
-                key={index}
                 onOpenCommentModal={handleOpenCommentModal}
                 onOpenDeleteModal={handleOpenDeleteModal}
                 onOpenDiscountModal={handleOpenDiscountModal}
                 onOpenBatchInfoModal={handleOpenBatchInfoModal}
               />
-            ))}
-          </AnimatePresence>
+            )}
+            components={{
+              List: VirtuosoList,
+              Item: VirtuosoItem,
+            }}
+            style={{ height: '100%' }}
+          />
         ) : (
           <EmptyCartMessage
             key="empty-message"
@@ -114,7 +143,7 @@ export const ProductsList = () => {
             <Typography variant="body1">{EMPTY_CART_MESSAGE}</Typography>
           </EmptyCartMessage>
         )}
-      </Body>
+      </ListContainer>
       {insuranceEnabled && (
         <InsuranceAuthFields
           values={insuranceData}
@@ -183,12 +212,19 @@ const Container = styled.ul`
   grid-template-rows: 1fr min-content;
   gap: 0.4em;
   width: 100%;
-  padding: 0.4em;
+  padding: 0;
   margin: 0;
-  overflow-y: scroll;
+  overflow: hidden;
   background-color: ${(props) => props.theme.bg.color2};
   border: 1px solid rgb(0 0 0 / 12.1%);
 `;
+
+const ListContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;
+
 const EmptyCartMessage = styled(motion.div)`
   margin: 1em;
 `;
@@ -198,4 +234,7 @@ const Body = styled.div`
   gap: 0.2rem;
   align-content: start;
   align-items: start;
+  padding: 0.4em;
+  border-top: 6px solid transparent;
+  border-bottom: 0px solid transparent;
 `;

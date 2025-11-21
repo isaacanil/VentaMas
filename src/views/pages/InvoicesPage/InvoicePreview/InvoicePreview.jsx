@@ -3,20 +3,20 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { selectUser } from '../../../../features/auth/userSlice';
 import {
   closeInvoicePreviewModal,
   selectInvoicePreview,
 } from '../../../../features/invoice/invoicePreviewSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
-import { useFbGetCreditNoteApplicationsByInvoice } from '../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
 import { useFbGetAccountReceivableByInvoice } from '../../../../firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
+import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { syncInvoicePaymentsFromAR } from '../../../../firebase/invoices/syncInvoicePaymentsFromAR';
+import { useFbGetCreditNoteApplicationsByInvoice } from '../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
 import { formatPrice } from '../../../../utils/formatPrice';
 
+import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { ClientInfoCard } from './components/ClientInfo';
 import { CreditNotesInfoCard } from './components/CreditNotesInfoCard';
-import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { PaymentMethodInfoCard } from './components/PaymentMethodInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';

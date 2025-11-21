@@ -27,6 +27,7 @@ const DEV_VIEW_TERM = {
   INVOICE_V2_RECOVERY: '/dev/tools/invoice-v2-recovery',
   INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
   SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
+  PRICE_LIST_AUDIT: '/dev/tools/price-list-audit',
   CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
   CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
   APP_CONFIG: {

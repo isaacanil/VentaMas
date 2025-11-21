@@ -1,9 +1,9 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import { FilterBar } from '../../../../components/common/FilterBar';
 import { useFbGetClients } from '../../../../firebase/client/useFbGetClients';
 import { filterData } from '../../../../hooks/search/useSearch';
-import { FilterBar } from '../../../../components/common/FilterBar';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable';

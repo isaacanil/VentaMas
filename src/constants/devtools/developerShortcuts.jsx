@@ -40,6 +40,13 @@ export const developerShortcuts = [
     category: 'Herramientas',
   },
   {
+    id: 'price-list-audit',
+    title: 'Auditar price vs listPrice',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.PRICE_LIST_AUDIT,
+    category: 'Precios',
+  },
+  {
     id: 'switch-business',
     title: 'Cambiar Negocio',
     icon: icons.operationModes.add,

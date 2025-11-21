@@ -1,4 +1,4 @@
-import { faFilter, faPlus, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faFilter, faPlus, faCopy, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip, Dropdown, Badge, Typography } from 'antd';
 import { memo } from 'react';
@@ -69,7 +69,7 @@ const ClientSelectionToolbarComponent = ({
           </Button>
         </Tooltip>
         <Tooltip title="Cerrar">
-          <Button onClick={onClose}>
+          <Button onClick={onClose} icon={<FontAwesomeIcon icon={faTimes} />}>
             <ButtonText> Cerrar</ButtonText>
           </Button>
         </Tooltip>

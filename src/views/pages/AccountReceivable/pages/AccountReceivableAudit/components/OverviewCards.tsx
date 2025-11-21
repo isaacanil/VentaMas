@@ -1,5 +1,5 @@
-import { Card, Tooltip, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import { Card, Tooltip, Typography } from 'antd';
 import styled from 'styled-components';
 
 const { Text } = Typography;

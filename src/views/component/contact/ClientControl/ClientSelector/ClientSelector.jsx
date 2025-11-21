@@ -1,4 +1,4 @@
-import { useState, useMemo, Suspense } from 'react';
+import { useMemo, Suspense, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { OPERATION_MODES } from '../../../../../constants/modes';
@@ -55,8 +55,6 @@ export const ClientSelector = () => {
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen });
 
   const [filter, setFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
 
   const getDuplicateClients = (clients) => {
     const namesCount = clients.reduce((acc, { client }) => {
@@ -93,12 +91,6 @@ export const ClientSelector = () => {
         ? clientsWithoutNames
         : filteredClients;
   }, [filter, duplicateClients, clientsWithoutNames, filteredClients]);
-  const paginatedClients = useMemo(() => {
-    return filteredClientsToShow.slice(
-      (currentPage - 1) * pageSize,
-      currentPage * pageSize,
-    );
-  }, [filteredClientsToShow, currentPage, pageSize]);
 
   const handleMenuClick = (e) => setFilter(e.key);
 
@@ -145,7 +137,7 @@ export const ClientSelector = () => {
         />
 
         <ClientListContainer
-          paginatedClients={paginatedClients}
+          clients={filteredClientsToShow}
           loading={loading}
           selectedClient={selectedClient}
           openUpdateClientModal={openUpdateClientModal}
@@ -153,16 +145,7 @@ export const ClientSelector = () => {
           onClose={handleClose}
           searchTerm={searchTerm}
         />
-
-        <ClientPaginationBar
-          filteredClients={filteredClients}
-          clients={clients}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          filteredClientsToShow={filteredClientsToShow}
-          setCurrentPage={setCurrentPage}
-          setPageSize={setPageSize}
-        />
+        <ClientPaginationBar filteredClients={filteredClients} clients={clients} />
       </ClientSelectionModal>
     </Suspense>
   );

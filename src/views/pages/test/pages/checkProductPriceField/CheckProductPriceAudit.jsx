@@ -7,6 +7,7 @@ import {
   fbEqualizeProductsPrice,
   fbEqualizeAllProductsPrice,
 } from '../../../../../firebase/products/fbEqualizeProductPrice';
+import { fbBackfillListPriceFromPrice } from '../../../../../firebase/products/fbBackfillListPriceFromPrice';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 
 function toNumber(n, fallback = 0) {
@@ -49,6 +50,9 @@ export default function CheckProductPriceAudit() {
 
   const equalCount = rows.filter((r) => r.eqLPPrice).length;
   const mismatchCount = rows.length - equalCount;
+  const missingListPriceCount = rows.filter(
+    (r) => r.listPrice <= 0 && r.price > 0,
+  ).length;
 
   let visible = rows;
   if (viewFilter === 'equal') {
@@ -75,6 +79,24 @@ export default function CheckProductPriceAudit() {
     try {
       const updated = await fbEqualizeProductsPrice(user, mismatches);
       setStatusMsg(`Igualados ${updated} productos (vista actual).`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleBackfillListPrice = async () => {
+    const confirm = window.confirm(
+      'Copiará pricing.price -> pricing.listPrice cuando listPrice esté vacío/0. ¿Deseas continuar?',
+    );
+    if (!confirm) return;
+    setBusy(true);
+    try {
+      const result = await fbBackfillListPriceFromPrice(user, {
+        allowZeroPrice: false,
+      });
+      setStatusMsg(
+        `ListPrice copiado en ${result.updated}/${result.candidates} productos (escaneados ${result.scanned}).`,
+      );
     } finally {
       setBusy(false);
     }
@@ -187,6 +209,20 @@ export default function CheckProductPriceAudit() {
             disabled={busy || mismatchCount === 0}
           >
             Igualar todos (no coinciden)
+          </button>
+          <button
+            onClick={handleBackfillListPrice}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: '1px solid #ddd',
+              background: '#0ea5e9',
+              color: 'white',
+            }}
+            title="Cuando listPrice no existe se copia price"
+            disabled={busy || missingListPriceCount === 0}
+          >
+            Copiar price -> listPrice (faltantes)
           </button>
           <button
             onClick={handleFixAllBusiness}

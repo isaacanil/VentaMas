@@ -1,15 +1,14 @@
 import { Spin } from 'antd';
-import { VirtuosoGrid } from 'react-virtuoso';
 import { forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '../../../../../../routes/routesName';
 import { CenteredText } from '../../../../../templates/system/CentredText';
-import { StatusBar } from '../../StatusBar/StatusBar';
-
 import { CustomProduct } from '../../../../../templates/system/Product/CustomProduct';
 import { Product } from '../../../../../templates/system/Product/Product/Product';
+import { StatusBar } from '../../StatusBar/StatusBar';
 
 const GridList = styled.div`
   display: grid;
@@ -38,9 +37,15 @@ const GridItem = styled.div`
   padding: 2px; 
 `;
 
+const ListComponent = forwardRef((props, ref) => <GridList ref={ref} {...props} />);
+ListComponent.displayName = 'ProductListGrid';
+
+const ItemComponent = forwardRef((props, ref) => <GridItem ref={ref} {...props} />);
+ItemComponent.displayName = 'ProductListItem';
+
 const virtuosoComponents = {
-  List: forwardRef((props, ref) => <GridList ref={ref} {...props} />),
-  Item: forwardRef((props, ref) => <GridItem ref={ref} {...props} />),
+  List: ListComponent,
+  Item: ItemComponent,
 };
 
 export const ProductList = ({ products, productsLoading, statusMeta = {} }) => {

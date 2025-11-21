@@ -71,20 +71,33 @@ Total operaciones en batch: ${batchOperations}
  * Valida y ajusta el precio del producto.
  */
 export function validateProductPricing(product) {
-  if (!product.pricing?.price || product.pricing.price <= 0) {
-    if (product.pricing) {
-      product.pricing.price = product.pricing.listPrice || 0;
-    } else {
-      product.pricing = {
-        price: 0,
-        listPrice: 0,
-        avgPrice: 0,
-        minPrice: 0,
-        cardPrice: 0,
-        offerPrice: 0,
-      };
-    }
+  const toNumber = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  if (!product.pricing) {
+    product.pricing = {
+      price: 0,
+      listPrice: 0,
+      avgPrice: 0,
+      minPrice: 0,
+      cardPrice: 0,
+      offerPrice: 0,
+    };
+    return product;
   }
+
+  const price = toNumber(product.pricing.price);
+  const listPrice = toNumber(product.pricing.listPrice);
+  const hasPrice = price > 0;
+  const hasListPrice = listPrice > 0;
+
+  const resolvedListPrice = hasListPrice ? listPrice : hasPrice ? price : 0;
+  const resolvedPrice = hasPrice ? price : resolvedListPrice;
+
+  product.pricing.listPrice = resolvedListPrice;
+  product.pricing.price = resolvedPrice;
   return product;
 }
 

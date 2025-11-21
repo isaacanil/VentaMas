@@ -1,5 +1,6 @@
 import * as antd from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 import { icons } from '../../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../../constants/modes';
@@ -10,7 +11,6 @@ import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumb
 import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { ButtonGroup } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
-import styled from 'styled-components';
 
 const { Button } = antd;
 

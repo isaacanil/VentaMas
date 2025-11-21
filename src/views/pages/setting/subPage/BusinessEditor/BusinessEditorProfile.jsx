@@ -10,7 +10,6 @@ import {
   fbUpdateBusinessLogo,
 } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 
-import { countries } from './countries.json';
 import {
   Wrapper,
   PageContainer,
@@ -22,6 +21,7 @@ import {
   FormActionsBar,
   SubmitButton,
 } from './components/BusinessProfileSections';
+import { countries } from './countries.json';
 import useUnsavedChangesPrompt from './hooks/useUnsavedChangesPrompt';
 import {
   mapBusinessDataToFormValues,
