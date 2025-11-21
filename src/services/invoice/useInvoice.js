@@ -57,7 +57,38 @@ const buildTestModeInvoice = async ({
 
 /** ---- Utilidades de manejo de errores / cash count ---- */
 
-const CASH_COUNT_REGEX = /cashcount[-\s]?(none|closing|closed)/i;
+const CASH_COUNT_REGEX =
+  /cash[\s_-]*count(?:[\s_-]*(?:status|state|is|=))?[\s_-]*([a-z_]+)/i;
+
+const normalizeCashCountState = (rawState) => {
+  if (!rawState) return null;
+  const normalized = rawState.replace(/[^a-z]/gi, '').toLowerCase();
+  if (!normalized) return null;
+
+  if (
+    normalized === 'none' ||
+    normalized.startsWith('noopen') ||
+    normalized.startsWith('notfound') ||
+    normalized.startsWith('notopen') ||
+    normalized.startsWith('missing') ||
+    normalized.startsWith('absent') ||
+    normalized.startsWith('without') ||
+    normalized.startsWith('undefined')
+  ) {
+    return 'none';
+  }
+  if (normalized.startsWith('closing')) {
+    return 'closing';
+  }
+  if (normalized.startsWith('closed') || normalized === 'close') {
+    return 'closed';
+  }
+  if (normalized.startsWith('open')) {
+    return 'open';
+  }
+
+  return null;
+};
 
 const safeAssign = (error, key, value) => {
   if (!error || value === undefined) return;
@@ -82,7 +113,10 @@ const extractCashCountState = (err) => {
   for (const segment of rawSegments) {
     const match = segment.match(CASH_COUNT_REGEX);
     if (match && match[1]) {
-      return match[1].toLowerCase();
+      const normalized = normalizeCashCountState(match[1]);
+      if (normalized) {
+        return normalized;
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import ChangeLogCreate from '../../views/controlPanel/ChangeLogControl/ChangeLog
 import { BusinessControl } from '../../views/controlPanel/CreateBusinessControl/BusinessControl';
 import BSeriesInvoices from '../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices';
 import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit';
+import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
 import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
 import SyncDiagnostics from '../../views/pages/DevTools/SyncDiagnostics';
 import TestPlayground from '../../views/pages/DevTools/TestPlayground';
@@ -22,6 +23,7 @@ const {
   APP_CONFIG,
   INVENTORY_MIGRATION,
   SYNC_DIAGNOSTICS,
+  INVOICE_V2_RECOVERY,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -56,6 +58,11 @@ const routes = [
   {
     path: RoutesName.DEV_VIEW_TERM.B_SERIES_INVOICES,
     element: <BSeriesInvoices />,
+    status: ROUTE_STATUS.BETA,
+  },
+  {
+    path: INVOICE_V2_RECOVERY,
+    element: <InvoiceV2Recovery />,
     status: ROUTE_STATUS.BETA,
   },
   {

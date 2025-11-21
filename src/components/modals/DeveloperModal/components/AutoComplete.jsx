@@ -66,7 +66,7 @@ const AutoComplete = ({
 
   const handleSuggestionClick = (suggestion, index) => {
     onSelectedIndexChange(index);
-    onSuggestionSelect(suggestion);
+    onSuggestionSelect?.(suggestion, { trigger: 'click' });
   };
 
   const handleMouseEnter = (index) => {
@@ -79,17 +79,28 @@ const AutoComplete = ({
       className="autocomplete-container"
     >
       <SuggestionsList>
-        {suggestions.map((suggestion, index) => (
-          <SuggestionItem
-            key={index}
-            isSelected={index === selectedIndex}
-            onClick={() => handleSuggestionClick(suggestion, index)}
-            onMouseEnter={() => handleMouseEnter(index)}
-          >
-            <CommandText>{suggestion.command}</CommandText>
-            <DescriptionText>{suggestion.description}</DescriptionText>
-          </SuggestionItem>
-        ))}
+        {suggestions.map((suggestion, index) => {
+          const isInstant = !suggestion?.requiresInput;
+
+          return (
+            <SuggestionItem
+              key={index}
+              isSelected={index === selectedIndex}
+              onClick={() => handleSuggestionClick(suggestion, index)}
+              onMouseEnter={() => handleMouseEnter(index)}
+            >
+              <CommandRow>
+                <CommandText>{suggestion.command}</CommandText>
+                {isInstant && (
+                  <InstantBadge title="Se ejecuta al hacer clic">
+                    ⚡
+                  </InstantBadge>
+                )}
+              </CommandRow>
+              <DescriptionText>{suggestion.description}</DescriptionText>
+            </SuggestionItem>
+          );
+        })}
       </SuggestionsList>
     </AutoCompleteContainer>
   );
@@ -170,10 +181,30 @@ const CommandText = styled.div`
   color: ${(props) => (props.theme?.isSelected ? 'white' : '#8ee78e')};
 `;
 
+const CommandRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
 const DescriptionText = styled.div`
   font-size: 11px;
   color: ${(props) => (props.theme?.isSelected ? 'white' : '#ccc')};
   opacity: 0.8;
+`;
+
+const InstantBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #0c0c0c;
+  border-radius: 999px;
+  box-shadow: 0 0 6px rgb(250 204 21 / 30%);
 `;
 
 const _SuggestionsFooter = styled.div`

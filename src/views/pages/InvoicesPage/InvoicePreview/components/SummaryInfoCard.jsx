@@ -19,6 +19,7 @@ const SummaryInfoCard = ({ summaryData }) => {
     totalPurchaseWithoutTaxes,
     totalTaxes,
     payment,
+    change,
   } = summaryData;
 
   return (
@@ -75,6 +76,16 @@ const SummaryInfoCard = ({ summaryData }) => {
             </TotalLabel>
             <TotalValue>{useFormatPrice(payment?.value) || 'N/A'}</TotalValue>
           </TotalItem>
+
+          <InfoItem>
+            <InfoLabel>
+              <FontAwesomeIcon icon={faDollarSign} />
+              Cambio / Faltante:
+            </InfoLabel>
+            <InfoValue>
+              {useFormatPrice(change?.value ?? payment?.change) || 'N/A'}
+            </InfoValue>
+          </InfoItem>
         </InfoSection>
       </CardContent>
     </StyledCard>

@@ -1,10 +1,18 @@
 import {
   SearchOutlined,
   CheckCircleOutlined,
-  CalendarOutlined,
+  EnvironmentOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { Modal, Button, Input, Empty, Spin, notification } from 'antd';
+import {
+  Modal,
+  Button,
+  Input,
+  Empty,
+  Spin,
+  notification,
+  Checkbox,
+} from 'antd';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -23,6 +31,8 @@ import {
 } from '../../../../../../../features/productStock/productStockSimpleSlice';
 import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
 import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
+
+const numberFormatter = new Intl.NumberFormat('es-DO');
 
 const StyledWrapper = styled.div`
   .batch-select-button {
@@ -76,26 +86,46 @@ const BatchGrid = styled.div`
   }
 `;
 
-const LocationBadge = styled.span`
-  display: inline-block;
-  padding: 4px 8px;
-  margin-bottom: 4px;
-  font-size: 0.8rem;
+const StatsBar = styled.div`
+  display: inline-flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
   color: #475569;
-  background: #f1f5f9;
-  border-radius: 6px;
+`;
 
-    &:hover {
-    background: #e2e8f0;
-  }
+const StatLabel = styled.span`
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+`;
+
+const StatValue = styled.strong`
+  font-size: 1rem;
+  color: #0f172a;
+`;
+
+const LocationBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+
+  font-size: 0.8rem;
+  color: #334155;
+  border-radius: 8px;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
 `;
 
 const BatchCard = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px;
+    gap: 10px;
+    padding: 6px 10px;
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   background: white;
   border: 2px solid
@@ -114,75 +144,84 @@ const BatchCard = styled.div`
   }};
   transition: all 0.2s ease;
 
-    &:hover {
+  &:hover {
     box-shadow: ${({ $disabled }) =>
       $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
     transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-2px)')};
   }
 
-  .card-header {
-    /* padding-bottom: 2px; */
-
-    /* border-bottom: 1px solid #e2e8f0; */
-  }
-
-  .card-content {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 12px;
-  }
-
-  .locations-column {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .info-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-left: 12px;
-    border-left: 1px solid #e2e8f0;
-  }
-
   .batch-number {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
+    flex: 1;
     font-size: 1rem;
     font-weight: 600;
     color: #1e293b;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .quantity-chip {
+    align-self: flex-start;
+    padding: 2px 4px;
+    font-weight: 600;
+    color: #1d4ed8;
+    background: #e8f0ff;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .date-text {
+    color: #475569;
+    font-weight: 500;
+    white-space: nowrap;
   }
 
   .info-row {
     display: flex;
-    gap: 6px;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.86rem;
     color: #64748b;
+    min-height: 24px;
 
     .icon {
       min-width: 16px;
+      flex-shrink: 0;
       color: #94a3b8;
-    }
-
-    .date-container {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
   }
 
-  .quantity {
-    font-weight: 500;
-    color: #2563eb;
+  .location-row {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    min-width: 0;
+    gap: 8px;
+
+    .location-badge {
+      flex: 1;
+    }
   }
 
   .check-icon {
@@ -192,15 +231,6 @@ const BatchCard = styled.div`
     transform: ${(props) => (props.selected ? 'scale(1)' : 'scale(0.5)')};
     transition: all 0.2s ease;
   }
-`;
-
-const StatusBadge = styled.span`
-  padding: 0 8px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: ${(props) => (props.$expired ? '#dc2626' : '#15803d')};
-  background: ${(props) => (props.$expired ? '#fee2e2' : '#dcfce7')};
-  border-radius: 999px;
 `;
 
 export function ProductBatchModal() {
@@ -228,6 +258,24 @@ export function ProductBatchModal() {
   today.setHours(0, 0, 0, 0);
   const todayTimestamp = today.getTime();
 
+  const normalizeExpirationDate = (value) => {
+    if (!value) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = Date.parse(value);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (value?.seconds !== undefined) {
+      return value.seconds * 1000;
+    }
+    if (typeof value?.toDate === 'function') {
+      return value.toDate().getTime();
+    }
+    return null;
+  };
+
+  const [hideExpired, setHideExpired] = useState(false);
+
   const sanitizedProductStocks = useMemo(() => {
     if (!isStrictProduct) return productStocks;
     return productStocks.filter((stock) => Number(stock?.quantity) > 0);
@@ -235,19 +283,39 @@ export function ProductBatchModal() {
 
   const filteredBySearch = useMemo(() => {
     const term = searchText.trim().toLowerCase();
-    const source = sanitizedProductStocks;
+    const source = hideExpired
+      ? sanitizedProductStocks.filter((stock) => {
+          const exp = normalizeExpirationDate(stock?.expirationDate);
+          return exp === null || exp >= todayTimestamp;
+        })
+      : sanitizedProductStocks;
     if (!term) return source;
     return source.filter(
       (stock) =>
         stock.batchNumberId?.toString().toLowerCase().includes(term) ||
         stock.location?.toLowerCase().includes(term),
     );
-  }, [sanitizedProductStocks, searchText]);
+  }, [sanitizedProductStocks, searchText, hideExpired, todayTimestamp]);
 
   const normalizeLocationId = (value) => {
     if (typeof value !== 'string') return '';
     return value.trim();
   };
+
+  const inventorySummary = useMemo(() => {
+    const locationSet = new Set();
+    let totalQuantity = 0;
+    filteredBySearch.forEach((stock) => {
+      const loc = normalizeLocationId(stock?.location);
+      if (loc) locationSet.add(loc);
+      const qty = Number(stock?.quantity) || 0;
+      if (Number.isFinite(qty)) totalQuantity += qty;
+    });
+    return {
+      totalLocations: locationSet.size,
+      totalQuantity,
+    };
+  }, [filteredBySearch]);
 
   const isInSelectedLocations = (locationId, selectedList) => {
     if (
@@ -332,6 +400,39 @@ export function ProductBatchModal() {
     return locationNames[locationId] || 'Cargando...';
   }
 
+  const commitSelection = (stockOrId) => {
+    if (!stockOrId) return;
+    const chosenStock =
+      typeof stockOrId === 'object'
+        ? stockOrId
+        : sanitizedProductStocks.find((s) => s.id === stockOrId);
+
+    if (!chosenStock) return;
+
+    const batchInfo = {
+      productStockId: chosenStock.id ?? null,
+      batchId: chosenStock.batchId ?? null,
+      batchNumber: chosenStock.batchNumberId ?? null,
+      quantity: chosenStock.quantity ?? null,
+      expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
+      locationId: chosenStock.location ?? null,
+      locationName: chosenStock.location
+        ? formatLocation(chosenStock.location)
+        : null,
+    };
+
+    dispatch(
+      addProduct({
+        ...product,
+        productStockId: batchInfo.productStockId,
+        batchId: batchInfo.batchId,
+        stock: chosenStock.quantity,
+        batchInfo,
+      }),
+    );
+    dispatch(closeProductStockSimple());
+  };
+
   const handleBatchToggle = (stock, isExpired) => {
     if (!stock) return;
 
@@ -356,10 +457,10 @@ export function ProductBatchModal() {
       Modal.confirm({
         title: 'Producto vencido',
         icon: <ExclamationCircleOutlined style={{ color: '#dc2626' }} />,
-        content: 'El lote seleccionado está vencido. ¿Desea continuar?',
+        content: 'El lote seleccionado está vencido. ¿Desea agregarlo al carrito?',
         okText: 'Continuar',
         cancelText: 'Cancelar',
-        onOk: () => setSelectedBatch(stock.id),
+        onOk: () => commitSelection(stock),
       });
       return;
     }
@@ -367,54 +468,9 @@ export function ProductBatchModal() {
     setSelectedBatch(stock.id);
   };
 
-  const normalizeExpirationDate = (value) => {
-    if (!value) return null;
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') {
-      const parsed = Date.parse(value);
-      return Number.isNaN(parsed) ? null : parsed;
-    }
-    if (value.seconds !== undefined) {
-      return value.seconds * 1000;
-    }
-    if (typeof value.toDate === 'function') {
-      return value.toDate().getTime();
-    }
-    return null;
-  };
-
   const handleConfirm = () => {
     if (selectedBatch) {
-      const chosenStock = sanitizedProductStocks.find(
-        (s) => s.id === selectedBatch,
-      );
-
-      if (!chosenStock) {
-        return;
-      }
-
-      const batchInfo = {
-        productStockId: chosenStock.id ?? null,
-        batchId: chosenStock.batchId ?? null,
-        batchNumber: chosenStock.batchNumberId ?? null,
-        quantity: chosenStock.quantity ?? null,
-        expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
-        locationId: chosenStock.location ?? null,
-        locationName: chosenStock.location
-          ? formatLocation(chosenStock.location)
-          : null,
-      };
-
-      dispatch(
-        addProduct({
-          ...product,
-          productStockId: batchInfo.productStockId,
-          batchId: batchInfo.batchId,
-          stock: chosenStock.quantity,
-          batchInfo,
-        }),
-      );
-      dispatch(closeProductStockSimple());
+      commitSelection(selectedBatch);
     }
   };
 
@@ -436,7 +492,10 @@ export function ProductBatchModal() {
           </Button>
         }
       >
-        <div className="search-container">
+        <div
+          className="search-container"
+          style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+        >
           <Input
             placeholder="Buscar por número de lote o ubicación..."
             prefix={<SearchOutlined />}
@@ -444,7 +503,30 @@ export function ProductBatchModal() {
             onChange={(e) => setSearchText(e.target.value)}
             style={{ borderRadius: '8px' }}
           />
+          <Checkbox
+            checked={hideExpired}
+            onChange={(e) => setHideExpired(e.target.checked)}
+          >
+            Ocultar vencidos
+          </Checkbox>
         </div>
+
+        {!loading && filteredBySearch.length > 0 && (
+          <StatsBar>
+            <StatLabel>
+              Ubicaciones:
+              <StatValue>
+                {numberFormatter.format(inventorySummary.totalLocations)}
+              </StatValue>
+            </StatLabel>
+            <StatLabel>
+              Unidades:
+              <StatValue>
+                {numberFormatter.format(inventorySummary.totalQuantity)}
+              </StatValue>
+            </StatLabel>
+          </StatsBar>
+        )}
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -571,33 +653,23 @@ function renderBatchCard({
           Lote #{stock.batchNumberId}
           <CheckCircleOutlined className="check-icon" />
         </div>
+        <div className="header-meta">
+          <span
+            className="date-text"
+            style={{ color: `${isExpired ? '#dc2626' : '#475569'}` }}
+          >
+            {formattedExpiration || 'N/A'}
+          </span>
+          <div className="quantity-chip">
+            {numberFormatter.format(numericQuantity)} uds
+          </div>
+        </div>
       </div>
-      <div className="card-content">
-        <div className="locations-column">
-          <LocationBadge>{formatLocation(locationId)}</LocationBadge>
-        </div>
-        <div className="info-column">
-          <div className="info-row quantity">
-            <span className="text">{stock.quantity} unidades</span>
-          </div>
-          <div className="info-row">
-            {/* stylelint-disable-next-line nesting-selector-no-missing-scoping-root */}
-            <CalendarOutlined className="icon" />
-            <div className="date-container">
-              <span
-                className="text"
-                style={{ color: `${isExpired ? '#dc2626' : 'inherit'}` }}
-              >
-                {formattedExpiration || 'N/A'}
-              </span>
-              {formattedExpiration && (
-                <StatusBadge $expired={isExpired}>
-                  {isExpired ? 'Vencido' : 'Vigente'}
-                </StatusBadge>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="info-row location-row">
+        <EnvironmentOutlined className="icon" />
+        <LocationBadge className="location-badge">
+          {formatLocation(locationId)}
+        </LocationBadge>
       </div>
     </BatchCard>
   );

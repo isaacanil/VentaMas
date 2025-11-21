@@ -118,6 +118,13 @@ const ButtonCounter = styled.button`
   }
 `;
 
+const CounterDisplayWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+`;
+
 const CounterDisplay = styled.input`
   width: 34px;
   height: 100%;
@@ -134,6 +141,12 @@ const CounterDisplay = styled.input`
     margin: 0;
     appearance: none;
   }
+`;
+
+const CounterLimit = styled.span`
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
 `;
 
 const MinusIcon = styled.span`

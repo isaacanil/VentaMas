@@ -86,6 +86,7 @@ const HeaderCell = styled.div`
   height: ${() => sizeHeights.medium};
   justify-content: ${(props) => props.align || 'flex-start'};
   overflow: hidden;
+  min-width: 0;
   padding: 0 10px;
   position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
   text-align: ${(props) => props.align || 'left'};

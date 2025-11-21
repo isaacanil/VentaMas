@@ -11,7 +11,11 @@ import { fbGetClient } from '../client/fbGetClient';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
 
-export const useListenAccountsReceivable = (user, dateRange = null) => {
+export const useListenAccountsReceivable = (
+  user,
+  dateRange = null,
+  statusFilter = 'active',
+) => {
   const [accountsReceivable, setAccountsReceivable] = useState([]);
 
   useEffect(() => {
@@ -27,10 +31,12 @@ export const useListenAccountsReceivable = (user, dateRange = null) => {
       'accountsReceivable',
     );
 
-    let constraints = [
-      where('isActive', '==', true),
-      orderBy('createdAt', 'desc'),
-    ];
+    const constraints = [orderBy('createdAt', 'desc')];
+
+    if (statusFilter !== 'all') {
+      const includeActive = statusFilter === 'active';
+      constraints.unshift(where('isActive', '==', includeActive));
+    }
 
     if (dateRange && dateRange.startDate && dateRange.endDate) {
       constraints.push(
@@ -92,7 +98,7 @@ export const useListenAccountsReceivable = (user, dateRange = null) => {
     });
 
     return () => unsubscribe();
-  }, [user, dateRange]);
+  }, [user, dateRange, statusFilter]);
 
   return accountsReceivable;
 };

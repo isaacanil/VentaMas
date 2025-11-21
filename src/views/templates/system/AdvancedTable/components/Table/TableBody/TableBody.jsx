@@ -174,6 +174,8 @@ const ExpandedRow = styled.div`
 const BodyCell = styled.div`
   display: flex;
   align-items: center;
+  min-width: 0;
+  width: 100%;
   padding: 0 10px;
   height: 100%;
 

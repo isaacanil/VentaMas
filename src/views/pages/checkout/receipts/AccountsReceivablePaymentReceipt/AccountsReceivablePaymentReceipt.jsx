@@ -42,7 +42,12 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
               />
               <InfoItem
                 label={'FACTURA'}
-                value={`#${useFormatNumber(account?.invoiceNumber)}`}
+                value={
+                  account?.invoiceNumber !== undefined &&
+                  account?.invoiceNumber !== null
+                    ? `#${useFormatNumber(account?.invoiceNumber)}`
+                    : 'N/A'
+                }
               />
               <InfoItem
                 label={'PAGO'}

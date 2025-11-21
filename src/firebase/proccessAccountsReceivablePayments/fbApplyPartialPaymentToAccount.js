@@ -146,6 +146,7 @@ export const fbApplyPartialPaymentToAccount = async ({
           invoiceId: accountData.invoiceId,
           amountPaid: totalPaid,
           invoice,
+          paymentMethods,
         });
       }
 
@@ -155,12 +156,17 @@ export const fbApplyPartialPaymentToAccount = async ({
         accountInstallments,
       );
 
+      const invoiceNumber =
+        invoice?.data?.numberID || invoice?.numberID || accountData?.invoiceNumber;
+      const receiptInvoiceId =
+        accountData.invoiceId || invoice?.data?.id || invoice?.id || null;
+
       const paymentReceipt = {
         accounts: [
           {
             arNumber: accountData.numberId,
-            invoiceNumber: invoice?.numberID,
-            invoiceId: accountData.invoiceId,
+            invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
+            invoiceId: receiptInvoiceId,
             arId: accountData.id,
             paidInstallments: paidInstallmentsData,
             remainingInstallments:

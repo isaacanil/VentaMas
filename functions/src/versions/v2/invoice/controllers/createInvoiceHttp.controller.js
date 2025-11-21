@@ -113,10 +113,13 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
         });
       }
     }
+    let cashCountId = null;
     try {
       const user = { businessID: businessId, uid: userId };
       const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
+      cashCountId =
+        ccSnap?.get?.('cashCount.id') || ccSnap?.id || ccSnap?.get?.('id') || null;
     } catch (error) {
       logger.warn('Cash count validation failed (HTTP)', {
         traceId,
@@ -130,6 +133,7 @@ export const createInvoiceV2Http = https.onRequest(async (req, res) => {
       userId,
       payload: data,
       idempotencyKey,
+      cashCountId,
     });
 
     logger.info('createInvoiceV2Http completed', {

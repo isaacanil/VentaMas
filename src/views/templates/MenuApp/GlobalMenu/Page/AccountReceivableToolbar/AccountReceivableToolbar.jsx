@@ -1,5 +1,5 @@
 import { BankOutlined, FileExcelOutlined } from '@ant-design/icons';
-import { message } from 'antd';
+import { Button, message } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -17,8 +17,7 @@ import {
 import exportToExcel from '../../../../../../hooks/exportToExcel/useExportToExcel';
 import DateUtils from '../../../../../../utils/date/dateUtils';
 import { getDateRange } from '../../../../../../utils/date/getDateRange';
-import { Button } from '../../../../system/Button/Button';
-
+import useBusiness from '../../../../../../hooks/useBusiness';
 import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentModal';
 
 export const AccountReceivableToolbar = ({ side = 'left', data }) => {
@@ -26,6 +25,7 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [processedAccounts, setProcessedAccounts] = useState([]);
   const user = useSelector(selectUser);
+  const { isPharmacy } = useBusiness();
 
   // Usar un periodo de tiempo por defecto (últimos 30 días)
   const [datesSelected] = useState(getDateRange('last30Days'));
@@ -34,6 +34,11 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
   const accounts = useListenAccountsReceivable(user, datesSelected);
 
   useEffect(() => {
+    if (!isPharmacy) {
+      setProcessedAccounts([]);
+      return;
+    }
+
     if (accounts) {
       // Procesar y formatear las cuentas para el modal
       const processed = accounts.map((account) => {
@@ -82,7 +87,7 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
 
       setProcessedAccounts(insuranceAccounts);
     }
-  }, [accounts]);
+  }, [accounts, isPharmacy]);
 
   const buildExportRows = (rows = []) => {
     // Determinar si debemos incluir la columna de Aseguradora
@@ -187,21 +192,26 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
         <>
           <Button
             onClick={handleExportExcel}
-            title={`Exportar Excel`}
-            borderRadius={'light'}
             icon={<FileExcelOutlined />}
-          />
-          <Button
-            onClick={handleOpenMultiPayment}
-            title={`Pago múltiple de aseguradoras`}
-            borderRadius={'light'}
-            icon={<BankOutlined />}
-          />
-          <MultiPaymentModal
-            visible={isModalVisible}
-            onCancel={handleCloseModal}
-            accounts={processedAccounts}
-          />
+          >
+            Exportar Excel
+          </Button>
+          {isPharmacy && (
+            <>
+              <Button
+                type="primary"
+                icon={<BankOutlined />}
+                onClick={handleOpenMultiPayment}
+              >
+                Pago múltiple de aseguradoras
+              </Button>
+              <MultiPaymentModal
+                visible={isModalVisible}
+                onCancel={handleCloseModal}
+                accounts={processedAccounts}
+              />
+            </>
+          )}
         </>
       )}
     </Container>

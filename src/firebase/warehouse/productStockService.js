@@ -52,8 +52,38 @@ export const getProductStockCollectionRef = (businessID) => {
   return collection(db, 'businesses', businessID, 'productsStock');
 };
 
+const buildLocationPath = (rawLocation) => {
+  if (!rawLocation) return '';
+  if (typeof rawLocation === 'string') return rawLocation;
+  if (typeof rawLocation === 'object') {
+    if (typeof rawLocation.path === 'string') return rawLocation.path;
+    if (Array.isArray(rawLocation.pathSegments)) {
+      return rawLocation.pathSegments.filter(Boolean).join('/');
+    }
+    const {
+      warehouse,
+      warehouseId,
+      shelf,
+      shelfId,
+      row,
+      rowId,
+      segment,
+      segmentId,
+    } = rawLocation;
+    return [
+      warehouse || warehouseId,
+      shelf || shelfId,
+      row || rowId,
+      segment || segmentId,
+    ]
+      .filter(Boolean)
+      .join('/');
+  }
+  return '';
+};
+
 // Crear un nuevo producto en stock
-export const createProductStock = async (user, productStockData) => {
+export const createProductStock = async (user, productStockData = {}) => {
   const id = nanoid();
 
   try {
@@ -63,16 +93,13 @@ export const createProductStock = async (user, productStockData) => {
     if (!productStockCollectionRef) return; // If null, do not proceed
 
     const productStockDocRef = doc(productStockCollectionRef, id);
-
-    // Asegurarse de que location esté en el formato 'warehouse/shelf/row/segment'
-    const { warehouse, shelf, row, segment } = productStockData.location; // Asumiendo que location es un objeto
-    const _locationPath = [warehouse, shelf, row, segment]
-      .filter(Boolean)
-      .join('/');
+    const { location: rawLocation, ...rest } = productStockData;
+    const normalizedLocation = buildLocationPath(rawLocation);
 
     await setDoc(productStockDocRef, {
-      ...productStockData,
+      ...rest,
       id,
+      location: normalizedLocation,
       createdAt: serverTimestamp(),
       createdBy: user.uid,
       updatedAt: serverTimestamp(),
@@ -82,7 +109,7 @@ export const createProductStock = async (user, productStockData) => {
       deletedBy: null,
     });
 
-    return productStockData;
+    return { ...rest, id, location: normalizedLocation };
   } catch (error) {
     console.error('Error al añadir el documento: ', error);
     throw error;

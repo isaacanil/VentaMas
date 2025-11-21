@@ -36,6 +36,7 @@ import {
 import { useNavigationTracker } from './hooks/routes/useNavigationTracker';
 import { useCheckForInternetConnection } from './hooks/useCheckForInternetConnection';
 import { useDeveloperCommands } from './hooks/useDeveloperCommands';
+import { usePersistentDeveloperBusiness } from './hooks/usePersistentDeveloperBusiness';
 import { useTaxReceiptsFix } from './hooks/useTaxReceiptsFix';
 import { routes } from './routes/routes';
 import SEO from './Seo/Seo';
@@ -113,6 +114,7 @@ const AppContent = () => {
 
   useTaxReceiptsFix();
   useDeveloperCommands(); // Activar comandos de desarrollador
+  usePersistentDeveloperBusiness(); // Mantener negocio temporal entre sesiones
 
   useEffect(() => {
     dispatch(ReloadImageHiddenSetting());

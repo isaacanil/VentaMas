@@ -1,7 +1,5 @@
 import { nanoid } from 'nanoid';
 
-import { Timestamp } from '../../../core/config/firebase.js';
-
 import { calculatePaymentDates } from './calculatePaymentDates.js';
 
 const round2 = (n) => Math.round(n * 100) / 100;
@@ -25,7 +23,7 @@ export function generateInstallments({ ar, user }) {
       installmentNumber: i + 1,
       installmentAmount: amount,
       installmentBalance: amount,
-      installmentDate: Timestamp.fromMillis(msDate),
+      installmentDate: msDate,
       createdAt: tsNow,
       updatedAt: tsNow,
       createdBy: user.uid,

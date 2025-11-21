@@ -1,13 +1,25 @@
 import DateUtils from './date/dateUtils';
 import { isReference } from './refereceUtils';
 
-export function isInvoicePaidInFull(invoice) {
-  // Extract the paid amount and the total purchase amount from the invoice
-  const paidAmount = invoice.payment.value;
-  const totalPurchase = invoice.totalPurchase.value;
+export function getInvoicePaymentInfo(invoice) {
+  const paidAmount = Number(invoice?.payment?.value ?? 0);
+  const totalPurchase = Number(invoice?.totalPurchase?.value ?? 0);
 
-  // Compare if the paid amount is equal to the total purchase amount
-  return paidAmount === totalPurchase;
+  const safePaid = Number.isFinite(paidAmount) ? paidAmount : 0;
+  const safeTotal = Number.isFinite(totalPurchase) ? totalPurchase : 0;
+  const pending = Math.max(safeTotal - safePaid, 0);
+
+  return {
+    paid: safePaid,
+    total: safeTotal,
+    pending,
+    isPaidInFull:
+      safeTotal === 0 ? safePaid === safeTotal : safePaid >= safeTotal,
+  };
+}
+
+export function isInvoicePaidInFull(invoice) {
+  return getInvoicePaymentInfo(invoice).isPaidInFull;
 }
 
 export function getActivePaymentMethods(invoice) {

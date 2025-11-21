@@ -570,7 +570,7 @@ const Row = styled.div`
 
 const Group = styled.div`
   display: grid;
-  grid-template-columns: 1fr 120px;
+  grid-template-columns: 1fr 1fr;
   gap: 0.4em;
   align-items: center;
 `;

@@ -14,6 +14,22 @@ import { OpenMenuButton } from '../system/Button/OpenMenuButton';
 import { NotificationButton } from './Components/NotificationButton/NotificationButton';
 import { SideBar } from './Components/SideBar';
 import { GlobalMenu } from './GlobalMenu/GlobalMenu';
+/**
+ * @param {Object} props
+ * @param {any} [props.data]
+ * @param {string} [props.sectionName]
+ * @param {any} [props.sectionNameIcon]
+ * @param {string} [props.borderRadius]
+ * @param {Function} [props.setSearchData]
+ * @param {string} [props.searchData]
+ * @param {string} [props.displayName]
+ * @param {any} [props.sectionStatus]
+ * @param {Object} [props.toolbarProps]
+ * @param {boolean} [props.showBackButton]
+ * @param {boolean} [props.showNotificationButton]
+ * @param {Function} [props.onBackClick]
+ * @param {Function} [props.onReportSaleOpen]
+ */
 
 export const MenuApp = ({
   data,

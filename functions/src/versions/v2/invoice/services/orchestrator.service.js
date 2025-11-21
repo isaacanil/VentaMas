@@ -18,6 +18,7 @@ export async function createPendingInvoice({
   userId,
   payload,
   idempotencyKey,
+  cashCountId,
 }) {
   const requestHash = stableHash(payload);
   const cartHash = stableHash(payload?.cart);
@@ -79,6 +80,26 @@ export async function createPendingInvoice({
     }
 
     // Base doc
+    const preferredCashCountId =
+      cashCountId || payload?.cashCountId || payload?.cart?.cashCountId || null;
+
+    const canonicalCartPayload = payload?.cart
+      ? { ...payload.cart }
+      : {};
+    if (preferredCashCountId && !canonicalCartPayload.cashCountId) {
+      canonicalCartPayload.cashCountId = preferredCashCountId;
+    }
+
+    const snapshotMeta = {
+      preorder: isPreorder,
+      preorderId: isPreorder ? preorderCartId || null : null,
+    };
+    if (preferredCashCountId) {
+      snapshotMeta.cashCount = {
+        intendedCashCountId: preferredCashCountId,
+      };
+    }
+
     const baseDoc = {
       version: 2,
       status: 'pending',
@@ -94,10 +115,7 @@ export async function createPendingInvoice({
         ncf: payload?.ncf || null,
         client: payload?.client || null,
         totals: payload?.cart?.payment || null,
-        meta: {
-          preorder: isPreorder,
-          preorderId: isPreorder ? preorderCartId || null : null,
-        },
+        meta: snapshotMeta,
         dueDate: derivedDueDate || null,
         invoiceComment: derivedInvoiceComment || null,
       },
@@ -188,10 +206,11 @@ export async function createPendingInvoice({
       payload: {
         businessId,
         userId,
-        cart: payload?.cart || {},
+        cart: canonicalCartPayload,
         client: payload?.client || null,
         dueDate: derivedDueDate || null,
         invoiceComment: derivedInvoiceComment || null,
+        preferredCashCountId,
       },
     });
     auditTx(tx, {
@@ -216,6 +235,7 @@ export async function createPendingInvoice({
       payload: {
         businessId,
         userId,
+        preferredCashCountId,
       },
     });
     auditTx(tx, {

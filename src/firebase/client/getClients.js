@@ -12,12 +12,15 @@ export async function getClients(user) {
     const clientsRef = collection(db, 'businesses', user.businessID, 'clients');
 
     const clients = await getDocs(clientsRef);
-
     if (clients.empty) return [];
 
-    const clientsList = clients.docs.map((doc) =>
-      extractNormalizedClient(doc.data()),
-    );
+    const clientsList = clients.docs.reduce((acc, doc) => {
+      const data = doc.data() || {};
+      if (data.isDeleted) return acc;
+      acc.push(extractNormalizedClient(data));
+      return acc;
+    }, []);
+
     return clientsList;
   } catch (error) {
     console.error('Error loading insurance data:', error);

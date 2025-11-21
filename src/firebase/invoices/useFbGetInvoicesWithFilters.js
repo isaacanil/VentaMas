@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
+import { getInvoicePaymentInfo } from '../../utils/invoice';
 import { validateUser } from '../../utils/userValidation';
 import { db } from '../firebaseconfig';
 
@@ -16,6 +17,14 @@ import { db } from '../firebaseconfig';
 const applyClientSideFilters = (invoices, filters) => {
   return invoices.filter((invoice) => {
     const invoiceData = invoice.data;
+
+    if (filters.receivablesOnly) {
+      const isReceivableInvoice =
+        invoiceData?.isAddedToReceivables === true ||
+        Boolean(invoiceData?.accountsReceivable) ||
+        invoiceData?.snapshot?.cart?.isAddedToReceivables === true;
+      if (!isReceivableInvoice) return false;
+    }
 
     // Filtro por método de pago
     if (filters.paymentMethod) {
@@ -36,6 +45,17 @@ const applyClientSideFilters = (invoices, filters) => {
     if (filters.maxAmount !== null && filters.maxAmount !== undefined) {
       const totalAmount = invoiceData.totalPurchase?.value || 0;
       if (totalAmount > filters.maxAmount) return false;
+    }
+
+    if (filters.paymentStatus) {
+      const { paid, total, isPaidInFull } = getInvoicePaymentInfo(invoiceData);
+      const hasPayment = paid > 0;
+      const hasPending = total > paid;
+
+      if (filters.paymentStatus === 'paid' && !isPaidInFull) return false;
+      if (filters.paymentStatus === 'partial' && !(hasPayment && hasPending))
+        return false;
+      if (filters.paymentStatus === 'unpaid' && hasPayment) return false;
     }
 
     return true;
@@ -163,8 +183,10 @@ export const useFbGetInvoicesWithFilters = (filters = {}) => {
     filters.endDate,
     filters.clientId,
     filters.paymentMethod,
+    filters.paymentStatus,
     filters.minAmount,
     filters.maxAmount,
+    filters.receivablesOnly,
     user?.uid,
     user?.role,
   ]);

@@ -19,7 +19,7 @@ import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
-  isInvoicePaidInFull,
+  getInvoicePaymentInfo,
 } from '../../../../../utils/invoice';
 import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
@@ -28,7 +28,8 @@ import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization
 export const InvoiceItem = ({ data }) => {
   const componentToPrintRef = useRef(null);
   const dispatch = useDispatch();
-  const isCredit = isInvoicePaidInFull(data);
+  const paymentInfo = getInvoicePaymentInfo(data);
+  const isPaidInFull = paymentInfo.isPaidInFull;
 
   // Data extraction
   const numberID = data?.numberID;
@@ -106,8 +107,8 @@ export const InvoiceItem = ({ data }) => {
           </InvoiceInfo>
           <HeaderMeta>
             <DateInfo>{formatDate(date?.seconds)}</DateInfo>
-            <StatusTag $isCredit={isCredit}>
-              {isCredit ? 'Contado' : 'Crédito'}
+            <StatusTag $isPaid={isPaidInFull}>
+              {isPaidInFull ? 'Pagada' : 'Pago parcial'}
             </StatusTag>
           </HeaderMeta>
         </CardHeader>
@@ -154,7 +155,24 @@ export const InvoiceItem = ({ data }) => {
 
         {/* Total y Acciones */}
         <ActionBar>
-          <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+          <TotalsBlock>
+            <TotalLabel>Total</TotalLabel>
+            <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+            <PaymentProgress>
+              <PaymentLine>
+                <PaymentDot />
+                <span>Pagado: {useFormatPrice(paymentInfo.paid)}</span>
+              </PaymentLine>
+              {!isPaidInFull && (
+                <PaymentLine>
+                  <PaymentDot $type="pending" />
+                  <span>
+                    Pendiente: {useFormatPrice(paymentInfo.pending)}
+                  </span>
+                </PaymentLine>
+              )}
+            </PaymentProgress>
+          </TotalsBlock>
           <ActionButtons>
             <ActionButton
               onClick={handleEdit}
@@ -276,8 +294,8 @@ const StatusTag = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.5px;
 
-  ${({ $isCredit }) =>
-    $isCredit
+  ${({ $isPaid }) =>
+    $isPaid
       ? `
     background: #f6ffed;
     color: #389e0d;
@@ -382,6 +400,45 @@ const ActionBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+`;
+
+const TotalsBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 11px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+`;
+
+const PaymentProgress = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PaymentLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #595959;
+`;
+
+const PaymentDot = styled.span`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${({ $type }) => ($type === 'pending' ? '#d4380d' : '#52c41a')};
+  box-shadow: 0 0 0 1px
+    ${({ $type }) =>
+      $type === 'pending'
+        ? 'rgba(212, 56, 13, 0.35)'
+        : 'rgba(82, 196, 26, 0.35)'};
 `;
 
 const ActionButtons = styled.div`

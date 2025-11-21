@@ -10,10 +10,11 @@ import {
   getActiveInstallmentsByArId,
   processInstallmentPayment,
   updateAccountReceivableState,
+  updateInvoiceTotals,
   validateBasicPaymentParams,
   validateAccountHasPendingBalance,
 } from './arPaymentUtils';
-import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
+import { roundToTwoDecimals } from './financeUtils';
 
 export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
   const { clientId, paymentMethods } = paymentDetails;
@@ -142,30 +143,26 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
       const invoice = await fbGetInvoice(user.businessID, account.invoiceId);
       // Actualizar la factura con los pagos realizados
       if (invoice) {
-        const invoiceRef = doc(
-          db,
-          'businesses',
-          user.businessID,
-          'invoices',
-          account.invoiceId,
-        );
-        const invoiceData = invoice.data;
-        invoiceData.totalPaid = roundToTwoDecimals(
-          (invoiceData.totalPaid || 0) + accountTotalPaid,
-        );
-        invoiceData.balanceDue = roundToTwoDecimals(
-          invoiceData.totalAmount - invoiceData.totalPaid,
-        );
-        invoiceData.status = invoiceData.balanceDue <= THRESHOLD;
-
-        batch.update(invoiceRef, invoiceData);
+        updateInvoiceTotals(batch, {
+          businessId: user.businessID,
+          invoiceId: account.invoiceId,
+          amountPaid: accountTotalPaid,
+          invoice,
+          paymentMethods,
+        });
       }
+
+      const invoiceNumber =
+        invoice?.data?.numberID ||
+        invoice?.numberID ||
+        account?.invoiceNumber ||
+        null;
 
       paymentReceipt.accounts.push({
         arNumber: account.numberId,
         arId: account.id,
-        invoiceNumber: invoice?.data?.numberID,
-        invoiceId: invoice?.data?.id,
+        invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
+        invoiceId: account.invoiceId || invoice?.data?.id || invoice?.id,
         paidInstallments,
         remainingInstallments:
           account?.totalInstallments - paidInstallments.length,

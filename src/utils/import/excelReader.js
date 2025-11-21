@@ -50,35 +50,43 @@ export const readExcelFile = async (file) => {
       );
     }
 
-    const jsonData = [];
+    let headers = null;
+    const rows = [];
 
-    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      const rowValues = row.values.slice(1); // Elimina el primer elemento que es el número de fila
-      if (rowNumber === 1) {
-        jsonData.push(rowValues);
-      } else {
-        const rowObject = {};
-        jsonData[0].forEach((key, index) => {
-          rowObject[key] = rowValues[index];
-        });
-        jsonData.push(rowObject);
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      // row.values[0] es undefined; las celdas arrancan en el índice 1
+      const rowValues = row.values
+        .slice(1)
+        .map((cell) => (cell && typeof cell === 'object' && 'text' in cell ? cell.text : cell));
+
+      if (!headers) {
+        headers = rowValues;
+        return;
       }
+
+      const rowObject = {};
+      headers.forEach((key, index) => {
+        if (key === undefined || key === null || key === '') return; // ignora encabezados vacíos
+        rowObject[key] = rowValues[index];
+      });
+      rows.push(rowObject);
     });
 
-    console.log(
-      '✅ Filas procesadas:',
-      jsonData.length + 1,
-      '(incluyendo encabezados)',
-    );
+    if (!headers || headers.length === 0) {
+      throw new Error(
+        '❌ No se encontraron encabezados en la hoja. Asegúrate de que la primera fila tenga nombres de columna.',
+      );
+    }
 
-    if (jsonData.length === 0) {
+    console.log('✅ Filas procesadas:', rows.length + 1, '(incluyendo encabezados)');
+
+    if (rows.length === 0) {
       throw new Error(
         '❌ No se encontraron datos para procesar. Verifica que la hoja tenga al menos una fila de datos además de los encabezados.',
       );
     }
 
-    jsonData.shift(); // Elimina la primera fila (encabezados)
-    return jsonData;
+    return rows;
   } catch (error) {
     console.error('❌ Error leyendo archivo Excel:', error);
 

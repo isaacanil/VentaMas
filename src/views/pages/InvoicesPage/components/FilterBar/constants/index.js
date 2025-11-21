@@ -14,6 +14,13 @@ export const PAYMENT_METHODS = [
   { value: 'transfer', label: 'Transferencia' },
 ];
 
+export const PAYMENT_STATUS = [
+  { value: '', label: 'Todos' },
+  { value: 'paid', label: 'Pagadas' },
+  { value: 'partial', label: 'Pago parcial' },
+  { value: 'unpaid', label: 'Sin pago' },
+];
+
 export const BREAKPOINTS = {
   mobile: 900,
   tablet: 768,
@@ -41,10 +48,22 @@ export const FILTER_CONFIG = {
     type: 'select',
     required: false,
   },
+  paymentStatus: {
+    label: 'Estado de pago',
+    width: 165,
+    options: PAYMENT_STATUS,
+    type: 'select',
+    required: false,
+  },
   amount: {
     label: 'Monto',
     type: 'range',
     inputWidth: 90,
+    required: false,
+  },
+  receivable: {
+    label: 'Cuenta por cobrar',
+    type: 'toggle',
     required: false,
   },
   sort: {
@@ -60,8 +79,10 @@ export const ACCESSIBILITY_CONFIG = {
   ariaLabels: {
     clientSelect: 'Seleccionar cliente',
     paymentMethodSelect: 'Seleccionar método de pago',
+    paymentStatusSelect: 'Seleccionar estado de pago',
     minAmount: 'Monto mínimo',
     maxAmount: 'Monto máximo',
+    receivablesOnly: 'Filtrar solo facturas a crédito',
     sortCriteria: 'Criterio de ordenamiento',
     sortDirection: 'Cambiar dirección de ordenamiento',
     filterButton: 'Abrir filtros',

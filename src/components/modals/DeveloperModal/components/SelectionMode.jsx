@@ -152,7 +152,7 @@ const SelectionModeIndicator = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 8px 32px;
   margin: -16px -16px 12px; /* Compensar el padding del ConsoleTerminal */
   font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
   font-size: 13px;

@@ -10,6 +10,7 @@ export const AmountRangeFilter = ({
   maxAmount,
   onMinChange,
   onMaxChange,
+  label,
 }) => {
   const numberInputProps = {
     size: 'middle',
@@ -20,7 +21,7 @@ export const AmountRangeFilter = ({
   };
 
   return (
-    <FilterField label={FILTER_CONFIG.amount.label}>
+    <FilterField label={label ?? FILTER_CONFIG.amount.label}>
       <Space.Compact>
         <InputNumber
           {...numberInputProps}

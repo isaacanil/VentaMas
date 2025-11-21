@@ -6,7 +6,6 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../Button/Button';
-import { DateRangeFilter } from '../../Button/TimeFilterButton/DateRangeFilter';
 
 const { RangePicker } = AntdDatePicker;
 
@@ -19,12 +18,7 @@ const getEmptyDates = () => {
   return [null, null];
 };
 
-export const DatePicker = ({
-  setDates,
-  dates,
-  datesDefault,
-  dateOptionsMenu = false,
-}) => {
+export const DatePicker = ({ setDates, dates, datesDefault }) => {
   useEffect(() => {
     if (datesDefault === 'today') {
       setDates(getDefaultDates());
@@ -69,7 +63,6 @@ export const DatePicker = ({
           />
         </Col>
       )}
-      {dateOptionsMenu && <DateRangeFilter setDates={setDates} dates={dates} />}
     </Container>
   );
 };

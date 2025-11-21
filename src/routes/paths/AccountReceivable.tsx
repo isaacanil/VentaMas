@@ -1,3 +1,4 @@
+import AccountReceivableAudit from '../../views/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit';
 import AccountReceivableInfo from '../../views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo';
 import { AccountReceivableList } from '../../views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList';
 import { ReceivablePaymentReceipt } from '../../views/pages/InvoicesPage/ReceivablePaymentReceipt';
@@ -9,12 +10,14 @@ const {
   ACCOUNT_RECEIVABLE_LIST,
   ACCOUNT_RECEIVABLE_INFO,
   RECEIVABLE_PAYMENT_RECEIPTS,
+  ACCOUNT_RECEIVABLE_AUDIT,
 } = ROUTES_NAME.ACCOUNT_RECEIVABLE;
 
 const routes: AppRoute[] = [
   { path: ACCOUNT_RECEIVABLE_LIST, element: <AccountReceivableList /> },
   { path: ACCOUNT_RECEIVABLE_INFO, element: <AccountReceivableInfo /> },
   { path: RECEIVABLE_PAYMENT_RECEIPTS, element: <ReceivablePaymentReceipt /> },
+  { path: ACCOUNT_RECEIVABLE_AUDIT, element: <AccountReceivableAudit /> },
 ];
 
 export default routes;

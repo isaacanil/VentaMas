@@ -2,7 +2,6 @@ import {
   collection,
   doc,
   increment,
-  setDoc,
   Timestamp,
   updateDoc,
   writeBatch,
@@ -21,6 +20,7 @@ import {
   createAccountReceiptData,
   validateAccountHasPendingBalance,
   validatePaymentAmount,
+  updateInvoiceTotals,
 } from './arPaymentUtils';
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 
@@ -216,21 +216,15 @@ export const fbPayActiveInstallmentForAccount = async ({
 
     // Update related invoice totals after batch
     if (invoice) {
-      const invoiceRef = doc(
-        db,
-        'businesses',
-        user.businessID,
-        'invoices',
-        account.invoiceId,
-      );
-      const invoiceData = { ...invoice };
-      const previousPaid = invoiceData.totalPaid || 0;
-      invoiceData.totalPaid = roundToTwoDecimals(amountToApply + previousPaid);
-      invoiceData.balanceDue = roundToTwoDecimals(
-        invoiceData.totalAmount - invoiceData.totalPaid,
-      );
-      invoiceData.status = invoiceData.balanceDue <= THRESHOLD;
-      await setDoc(invoiceRef, invoiceData, { merge: true });
+      const invoiceBatch = writeBatch(db);
+      updateInvoiceTotals(invoiceBatch, {
+        businessId: user.businessID,
+        invoiceId: account.invoiceId,
+        amountPaid: amountToApply,
+        invoice,
+        paymentMethods,
+      });
+      await invoiceBatch.commit();
     }
 
     // Check if there's a small remaining balance due to rounding

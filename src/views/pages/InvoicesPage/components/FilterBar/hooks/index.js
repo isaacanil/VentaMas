@@ -75,7 +75,9 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
 export const useFilterHandlers = (filters, onFiltersChange) => {
   const createFilterHandler = useCallback(
     (filterKey) => (value) => {
-      onFiltersChange?.({ ...(filters ?? {}), [filterKey]: value ?? null });
+      const nextValue =
+        filterKey === 'paymentStatus' ? value || '' : value ?? null;
+      onFiltersChange?.({ ...(filters ?? {}), [filterKey]: nextValue });
     },
     [filters, onFiltersChange],
   );
@@ -84,8 +86,10 @@ export const useFilterHandlers = (filters, onFiltersChange) => {
     () => ({
       clientId: createFilterHandler('clientId'),
       paymentMethod: createFilterHandler('paymentMethod'),
+      paymentStatus: createFilterHandler('paymentStatus'),
       minAmount: createFilterHandler('minAmount'),
       maxAmount: createFilterHandler('maxAmount'),
+      receivablesOnly: createFilterHandler('receivablesOnly'),
     }),
     [createFilterHandler],
   );
@@ -95,8 +99,10 @@ export const useFilterHandlers = (filters, onFiltersChange) => {
       ...(filters ?? {}),
       clientId: null,
       paymentMethod: null,
+      paymentStatus: '',
       minAmount: null,
       maxAmount: null,
+      receivablesOnly: false,
     });
   }, [filters, onFiltersChange]);
 
@@ -104,8 +110,10 @@ export const useFilterHandlers = (filters, onFiltersChange) => {
     return !!(
       filters?.clientId ||
       filters?.paymentMethod ||
+      filters?.paymentStatus ||
       filters?.minAmount ||
-      filters?.maxAmount
+      filters?.maxAmount ||
+      filters?.receivablesOnly
     );
   }, [filters]);
 

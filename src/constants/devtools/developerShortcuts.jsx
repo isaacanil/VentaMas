@@ -26,6 +26,13 @@ export const developerShortcuts = [
     category: 'Comprobantes Fiscal',
   },
   {
+    id: 'invoice-v2-recovery',
+    title: 'Soporte Invoice V2',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.INVOICE_V2_RECOVERY,
+    category: 'Comprobantes Fiscal',
+  },
+  {
     id: 'test-playground',
     title: 'Pruebas',
     icon: <BugOutlined />,

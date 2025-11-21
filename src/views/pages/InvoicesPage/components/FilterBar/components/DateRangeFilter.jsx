@@ -5,7 +5,7 @@ import { DatePicker } from '../../../../../../components/common/DatePicker/DateP
 
 import { FilterField } from './FilterField';
 
-export const DateRangeFilter = ({ datesSelected, setDatesSelected }) => {
+export const DateRangeFilter = ({ datesSelected, setDatesSelected, label }) => {
   const handleDateChange = useCallback(
     (value) => {
       if (Array.isArray(value)) {
@@ -34,13 +34,14 @@ export const DateRangeFilter = ({ datesSelected, setDatesSelected }) => {
   }, [datesSelected]);
 
   return (
-    <FilterField label="Fechas">
+    <FilterField label={label ?? 'Fechas'}>
       <DatePicker
         mode="range"
         value={dateValue}
         onChange={handleDateChange}
         allowClear
         size="middle"
+        style={{ width: '100%' }}
       />
     </FilterField>
   );

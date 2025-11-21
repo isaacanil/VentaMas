@@ -7,9 +7,10 @@ import { selectUser } from '../../../../../../features/auth/userSlice';
 import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
 import { fbDeleteClient } from '../../../../../../firebase/client/fbDeleteClient';
 import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
-import { truncateString } from '../../../../../../utils/text/truncateString';
+import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { ButtonGroup } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
+import styled from 'styled-components';
 
 const { Button } = antd;
 
@@ -31,28 +32,42 @@ export const tableConfig = () => {
     {
       Header: 'Nombre',
       accessor: 'name',
+      minWidth: '220px',
+      maxWidth: '1fr',
     },
     {
       Header: 'Telefono',
       accessor: 'phone',
       cell: ({ value }) => (value ? useFormatPhoneNumber(value) : noData),
+      minWidth: '140px',
     },
     {
       Header: 'RNC/Cedula',
       accessor: 'rnc',
       cell: ({ value }) => (value ? value : noData),
+      minWidth: '150px',
     },
     {
-      Header: 'Direccion',
+      Header: 'Dirección',
       accessor: 'address',
 
-      cell: ({ value }) => (value ? truncateString(value, 14) : noData),
+      cell: ({ value }) =>
+        value ? <CellText title={value}>{value}</CellText> : noData,
+      minWidth: '220px',
+      maxWidth: '3fr',
+
+    },
+    {
+      Header: 'Balance',
+      accessor: 'balance',
+      align: 'right',
+      cell: ({ value }) => useFormatPrice(value || 0),
+      minWidth: '150px',
     },
     {
       Header: 'Acciones',
       accessor: 'actions',
-      minWidth: '300px',
-      maxWidth: '1fr',
+      minWidth: '100px',
       align: 'right',
       cell: ({ value }) => {
         return (
@@ -71,15 +86,13 @@ export const tableConfig = () => {
       },
     },
   ];
-
-  const filterConfig = [
-    {
-      label: 'Cliente',
-      accessor: 'name',
-    },
-  ];
-  return {
-    columns,
-    filterConfig,
-  };
+  return { columns };
 };
+
+const CellText = styled.span`
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;

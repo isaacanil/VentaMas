@@ -15,6 +15,7 @@ import { defaultPaymentsAR } from '../../../schema/accountsReceivable/paymentAR'
 import { fbAddAccountReceivablePaymentReceipt } from '../../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { db } from '../../firebaseconfig';
 import { fbGetInvoice } from '../../invoices/fbGetInvoice';
+import { updateInvoiceTotals } from '../arPaymentUtils';
 
 const THRESHOLD = 1e-10;
 // Función mejorada para redondear a dos decimales y evitar problemas de precisión
@@ -320,26 +321,26 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
 
         // Actualizar la factura si existe
         if (invoiceRef && invoiceData) {
-          const currentTotalPaid = invoiceData.totalPaid || 0;
-          const newTotalPaid = roundToTwoDecimals(
-            currentTotalPaid + accountTotalPaid,
-          );
-          const newBalanceDue = roundToTwoDecimals(
-            invoiceData.totalAmount - newTotalPaid,
-          );
-
-          batch.update(invoiceRef, {
-            totalPaid: newTotalPaid,
-            balanceDue: newBalanceDue,
-            status: newBalanceDue <= THRESHOLD,
+          updateInvoiceTotals(batch, {
+            businessId: user.businessID,
+            invoiceId: accountData.invoiceId,
+            amountPaid: accountTotalPaid,
+            invoice: invoiceData,
+            paymentMethods,
           });
         }
+
+        const invoiceNumber =
+          invoiceData?.data?.numberID ||
+          invoiceData?.numberID ||
+          accountData?.invoiceNumber ||
+          null;
 
         // Agregar al recibo
         paymentReceipt.accounts.push({
           arNumber: accountData.numberId,
           arId: accountData.id,
-          invoiceNumber: invoiceData?.numberID,
+          invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
           invoiceId: accountData.invoiceId,
           paidInstallments,
           remainingInstallments:

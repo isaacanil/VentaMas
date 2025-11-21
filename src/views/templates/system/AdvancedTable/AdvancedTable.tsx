@@ -616,16 +616,12 @@ export const Row = styled.div<{
   grid-template-columns: ${(props) => {
     if (!props.columns.length) return '1fr';
 
-    const template = props.isWideLayout
-      ? props.columns.map((col) =>
-          col.keepWidth
-            ? `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
-            : '1fr',
-        )
-      : props.columns.map(
-          (col) =>
-            `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`,
-        );
+    const template = props.columns.map((col) => {
+      const minWidth = col.minWidth || '100px';
+      const maxWidth = col.maxWidth || '1fr';
+
+      return `minmax(${minWidth}, ${maxWidth})`;
+    });
 
     const value = template.join(' ');
     return value || '1fr';

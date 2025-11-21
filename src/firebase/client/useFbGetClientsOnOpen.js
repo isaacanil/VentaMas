@@ -37,8 +37,10 @@ export const useFbGetClientsOnOpen = ({ isOpen }) => {
     unsubscribeRef.current = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((doc) => {
+        const list = snap.docs.reduce((acc, doc) => {
           const data = doc.data() || {};
+          if (data.isDeleted) return acc;
+
           const client = extractNormalizedClient(data);
           const extras = {};
 
@@ -49,12 +51,13 @@ export const useFbGetClientsOnOpen = ({ isOpen }) => {
             }
           }
 
-          return {
+          acc.push({
             id: doc.id,
             ...extras,
             client,
-          };
-        });
+          });
+          return acc;
+        }, []);
         setClients(list);
         setLoading(false);
       },

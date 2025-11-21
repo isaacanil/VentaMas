@@ -12,10 +12,21 @@ export const fbAddPayment = async (user, paymentDetails) => {
     'accountsReceivablePayments',
     id,
   );
+  const paymentMethod =
+    paymentDetails?.paymentMethod || paymentDetails?.paymentMethods || [];
+  const amountPaid =
+    paymentDetails?.totalPaid ||
+    paymentDetails?.totalAmount ||
+    paymentDetails?.amount ||
+    0;
   const paymentData = {
     ...defaultPaymentsAR,
     ...paymentDetails,
     id,
+    paymentMethod,
+    paymentMethods: paymentMethod,
+    amount: amountPaid,
+    date: Timestamp.now(),
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
     createdUserId: user?.uid,

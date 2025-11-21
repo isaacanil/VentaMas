@@ -27,6 +27,12 @@ export const Bar = styled.div`
   }
 `;
 
+export const DesktopActions = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+`;
+
 export const MobileWrapper = styled.div`
   background: var(--white);
   border-bottom: 1px solid var(--gray);
@@ -38,7 +44,7 @@ export const MobileHeader = styled.div`
   justify-content: space-between;
   padding: 0.8rem 1rem;
 
-  .mobile-totals {
+  .mobile-extra {
     display: flex;
     gap: 1rem;
     font-weight: 550;

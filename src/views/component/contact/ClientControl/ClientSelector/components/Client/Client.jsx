@@ -10,13 +10,17 @@ import { addClient } from '@features/clientCart/clientCartSlice';
 import { clearAuthData } from '@features/insurance/insuranceAuthSlice';
 import { highlightSearch } from '@templates/system/highlight/Highlight';
 
+export const clientGridTemplate =
+  'minmax(80px, 0.8fr) minmax(170px, 1.8fr) minmax(130px, 1fr) minmax(130px, 1fr)';
+export const clientGridTemplateWithActions = `${clientGridTemplate} minmax(110px, min-content)`;
+
 const Container = styled.li`
 
   /* box-shadow: ${(props) =>
     props.isSelected ? '0 0 0 1px #1677ff' : '0 1px 3px rgba(0,0,0,0.05)'}; */
   position: relative;
   display: grid;
-  grid-template-columns: 1fr min-content;
+  grid-template-columns: ${clientGridTemplateWithActions};
   gap: 1em;
   align-items: start;
   min-height: 75px;
@@ -39,13 +43,14 @@ const Container = styled.li`
         : props.hasMissingID
           ? '#fff5d6'
           : props.isSelected
-            ? '#4096ff'
-            : '#eaeaea'};
+          ? '#4096ff'
+          : '#eaeaea'};
   border-radius: 6px;
   transition: all 0.2s ease;
 
   @media (width <= 700px) {
     align-items: center;
+    grid-template-columns: 1fr min-content;
     min-height: auto;
   }
 
@@ -87,18 +92,17 @@ const Container = styled.li`
 `;
 
 const ClientInfo = styled.div`
-  display: grid;
-  grid-template-columns: minmax(150px, 2fr) minmax(110px, 1fr) minmax(
-      130px,
-      1fr
-    );
-  gap: 0.8em;
+  display: contents;
   align-items: start;
+  column-gap: 0.8em;
 
-  @media (width <= 700px) {
-    grid-template-columns: 1fr;
-    gap: 0.3em;
-    min-height: auto;
+  .client-number {
+    display: flex;
+    align-items: center;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #5a5a5a;
+    white-space: nowrap;
   }
 
   .client-name {
@@ -110,10 +114,10 @@ const ClientInfo = styled.div`
     font-weight: 600;
     line-height: 1.2;
     color: #3078bf;
+  }
 
-    @media (width <= 700px) {
-      min-height: auto;
-    }
+  .client-details {
+    display: contents;
   }
 
   .client-detail {
@@ -126,10 +130,58 @@ const ClientInfo = styled.div`
     color: #4e4e4e;
     overflow-wrap: break-word;
 
+    .detail-label {
+      font-size: 0.9em;
+      font-weight: 600;
+      color: #727272;
+      display: none;
+    }
+
     @media (width <= 700px) {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35em;
+      min-height: auto;
+
+      .detail-label {
+        display: block;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+    }
+  }
+
+  @media (width <= 700px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4em 1em;
+    min-height: auto;
+    grid-column: 1 / 2;
+
+    .client-number {
+      grid-column: 1;
+      grid-row: 1;
+      justify-content: flex-start;
+    }
+
+    .client-name {
+      grid-column: 2;
+      grid-row: 1;
+      min-height: auto;
+    }
+
+    .client-details {
+      grid-column: 1 / -1;
       display: grid;
-      grid-template-columns: 100px 1fr;
-      gap: 1em;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6em 1em;
+      width: 100%;
+    }
+
+    .client-detail {
+      grid-column: auto;
       min-height: auto;
     }
   }
@@ -153,6 +205,8 @@ const ActionButtons = styled.div`
   display: flex;
   gap: 0.4em;
   align-self: start;
+  justify-self: end;
+  grid-column: 5;
   padding-top: 0.5em;
 
   button {
@@ -162,7 +216,9 @@ const ActionButtons = styled.div`
   }
 
   @media (width <= 700px) {
+    grid-column: 2;
     align-self: center;
+    justify-self: end;
     padding-top: 0;
   }
 `;
@@ -227,44 +283,35 @@ export const Client = ({
       isSelected={selectedClient?.id === client.id}
     >
       <ClientInfo>
+        <div className="client-number">#{client?.numberId ?? '—'}</div>
         <div className="client-name">
-          <div
-            style={{
-              color: '#5a5a5a',
-              fontWeight: '400',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {' '}
-            # {client.numberId}
-          </div>
           {client.name ? (
             <div>{highlightSearch(client.name, searchTerm)}</div>
           ) : (
             <span className="warning warning-name">Nombre no disponible</span>
           )}
         </div>
-        <div className="client-detail">
-          {client.personalID ? (
-            <>
-              <div style={{ fontSize: '0.9em', fontWeight: 600 }}>
-                RNC/Cédula :
-              </div>
-              <div>{client.personalID}</div>
-            </>
-          ) : (
-            <Tag color="red">Sin identificación</Tag>
-          )}
-        </div>
-        <div className="client-detail">
-          {client.tel ? (
-            <>
-              <div style={{ fontSize: '0.9em', fontWeight: 600 }}>Tel:</div>
-              <div>{client.tel}</div>
-            </>
-          ) : (
-            <Tag color="red">Sin teléfono</Tag>
-          )}
+        <div className="client-details">
+          <div className="client-detail">
+            {client.personalID ? (
+              <>
+                <div className="detail-label">RNC/Cédula</div>
+                <div>{client.personalID}</div>
+              </>
+            ) : (
+              <Tag color="red">Sin identificación</Tag>
+            )}
+          </div>
+          <div className="client-detail">
+            {client.tel ? (
+              <>
+                <div className="detail-label">Tel.</div>
+                <div>{client.tel}</div>
+              </>
+            ) : (
+              <Tag color="red">Sin teléfono</Tag>
+            )}
+          </div>
         </div>
       </ClientInfo>
       <ActionButtons>

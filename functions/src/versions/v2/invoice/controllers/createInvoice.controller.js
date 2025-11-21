@@ -164,10 +164,13 @@ export const createInvoiceV2 = onCall(async ({ data }, context) => {
         );
       }
     }
+    let cashCountId = null;
     try {
       const user = { businessID: businessId, uid: userId };
       const ccSnap = await getOpenCashCountDoc?.(user);
       await checkOpenCashCount({ cashCountSnap: ccSnap, user });
+      cashCountId =
+        ccSnap?.get?.('cashCount.id') || ccSnap?.id || ccSnap?.get?.('id') || null;
     } catch (error) {
       logger.warn('Cash count validation failed', {
         traceId,
@@ -184,6 +187,7 @@ export const createInvoiceV2 = onCall(async ({ data }, context) => {
       userId,
       payload: data,
       idempotencyKey,
+      cashCountId,
     });
 
     logger.info('createInvoiceV2 completed', {

@@ -166,6 +166,7 @@ export const fbPayAllInstallmentsForAccount = async ({
           invoiceId: accountData.invoiceId,
           amountPaid: totalPaid,
           invoice,
+          paymentMethods,
         });
       }
 
@@ -178,7 +179,7 @@ export const fbPayAllInstallmentsForAccount = async ({
       const accountReceiptData = {
         arNumber: safeString(accountData.numberId),
         arId: safeString(accountData.id),
-        invoiceNumber: safeString(invoice?.data?.numberID || invoice?.numberID),
+        invoiceNumber: (invoice?.data?.numberID || invoice?.numberID) ? String(invoice?.data?.numberID || invoice?.numberID) : 'N/A',
         invoiceId: safeString(invoice?.data?.id || invoice?.id),
         paidInstallments: paidInstallmentsData || [],
         remainingInstallments:

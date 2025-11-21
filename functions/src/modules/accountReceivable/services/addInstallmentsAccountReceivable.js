@@ -24,14 +24,35 @@ export async function addInstallmentReceivable(tx, { user, ar }) {
   }
 
   const basePath = `businesses/${user.businessID}/accountsReceivableInstallments`;
+  const normalizeMillis = (value, fallback = Date.now()) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (value instanceof Date) {
+      const ms = value.getTime();
+      return Number.isFinite(ms) ? ms : fallback;
+    }
+    if (value?.toMillis instanceof Function) {
+      const ms = value.toMillis();
+      return Number.isFinite(ms) ? ms : fallback;
+    }
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+    return fallback;
+  };
 
   for (const inst of installments) {
     const instRef = db.doc(`${basePath}/${inst.id}`);
+    const createdAtMs = normalizeMillis(inst.createdAt);
+    const updatedAtMs = normalizeMillis(inst.updatedAt, createdAtMs);
+    const installmentDateMs = normalizeMillis(inst.installmentDate, createdAtMs);
     const instData = {
       ...inst,
-      createdAt: Timestamp.fromMillis(inst.createdAt),
-      updatedAt: Timestamp.fromMillis(inst.updatedAt),
-      installmentDate: Timestamp.fromMillis(inst.installmentDate),
+      createdAt: Timestamp.fromMillis(createdAtMs),
+      updatedAt: Timestamp.fromMillis(updatedAtMs),
+      installmentDate: Timestamp.fromMillis(installmentDateMs),
     };
     tx.set(instRef, instData);
     logger.info(`Cuota creada (tx): ${inst.id}`, { arId: ar?.id });

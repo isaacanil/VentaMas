@@ -73,8 +73,13 @@ export const AccountReceivableList = () => {
   const sortCriteria = 'defaultCriteria';
   const sortDirection = 'asc';
   const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
+  const [statusFilter, setStatusFilter] = useState('active');
 
-  const accounts = useListenAccountsReceivable(user, datesSelected);
+  const accounts = useListenAccountsReceivable(
+    user,
+    datesSelected,
+    statusFilter,
+  );
 
   useEffect(() => {
     const data = mapDataToAccounts(accounts);
@@ -115,6 +120,10 @@ export const AccountReceivableList = () => {
     setClientType(type);
   };
 
+  const handleStatusFilterChange = (status) => {
+    setStatusFilter(status);
+  };
+
   return (
     <Container>
       <MenuApp
@@ -128,6 +137,8 @@ export const AccountReceivableList = () => {
         datesSelected={datesSelected}
         setDatesSelected={setDatesSelected}
         onClientTypeChange={handleClientTypeChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
       />
       <AccountReceivableTable
         data={processedAccount}

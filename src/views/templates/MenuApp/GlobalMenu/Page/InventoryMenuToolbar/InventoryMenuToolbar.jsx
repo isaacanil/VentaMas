@@ -52,10 +52,15 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
   });
   const [showProgress, setShowProgress] = useState(false);
 
-  const handleImport = async (file) => {
+  const handleImport = async (file, { dryRun = false } = {}) => {
     try {
-      setShowProgress(true);
       const productData = await importProductData(file, 'es');
+
+      if (dryRun) {
+        return productData;
+      }
+
+      setShowProgress(true);
       await fbAddActiveIngredients(user, productData);
       await fbAddProducts(user, productData, 10000, (progress) => {
         setImportProgress(progress.stats);
@@ -63,10 +68,14 @@ export const InventoryMenuToolbar = ({ side = 'left' }) => {
       message.success('Archivo importado correctamente.');
     } catch (error) {
       console.error('Error al importar productos:', error);
-      message.error('Hubo un problema al importar el archivo.');
+      if (!dryRun) {
+        message.error('Hubo un problema al importar el archivo.');
+      }
     } finally {
-      // Dejamos el modal visible 2 segundos más para que se vea el 100%
-      setTimeout(() => setShowProgress(false), 2000);
+      if (!dryRun) {
+        // Dejamos el modal visible 2 segundos más para que se vea el 100%
+        setTimeout(() => setShowProgress(false), 2000);
+      }
     }
   };
 

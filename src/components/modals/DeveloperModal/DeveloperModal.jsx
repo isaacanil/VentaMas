@@ -195,10 +195,26 @@ export const DeveloperModal = () => {
     setAutoCompleteSelectedIndex(-1);
   };
 
-  const handleAutoCompleteSuggestionSelect = (suggestion) => {
-    setCommandInput(suggestion.command);
+  const handleAutoCompleteSuggestionSelect = (
+    suggestion,
+    options = { trigger: 'keyboard' },
+  ) => {
+    if (!suggestion) return;
+
+    const command = suggestion.command || '';
+    const needsAdditionalInput =
+      typeof suggestion.requiresInput === 'boolean'
+        ? suggestion.requiresInput
+        : command.endsWith(' ');
+
     setShowAutoComplete(false);
     setAutoCompleteSelectedIndex(-1);
+    setCommandInput(command);
+
+    if (options.trigger === 'click' && !needsAdditionalInput) {
+      triggerCommandExecution(command);
+      setCommandInput('');
+    }
   };
 
   const handleAutoCompleteSelectedIndexChange = (index) => {
@@ -270,7 +286,25 @@ export const DeveloperModal = () => {
   // Cerrar el modal
   const handleClose = () => {
     dispatch(toggleDeveloperModal());
-  }; // Manejar entrada de teclado
+  };
+
+  const triggerCommandExecution = (command) => {
+    const commandText = command?.trim();
+    if (!commandText || !commandProcessorRef.current) return;
+
+    const executeCommand = async () => {
+      const result =
+        await commandProcessorRef.current.executeCommand(commandText);
+
+      if (result && result.clearConsole) {
+        setConsoleOutput([]);
+      }
+    };
+
+    executeCommand();
+  };
+
+  // Manejar entrada de teclado
   const handleKeyDown = (e) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
     if (selectionMode.active) {
@@ -306,18 +340,43 @@ export const DeveloperModal = () => {
         return;
       }
 
-      if (
-        e.key === 'Tab' ||
-        (e.key === 'Enter' && autoCompleteSelectedIndex >= 0)
-      ) {
+      if (e.key === 'Tab') {
         e.preventDefault();
-        if (
-          autoCompleteSelectedIndex >= 0 &&
-          autoCompleteSelectedIndex < autoCompleteSuggestions.length
-        ) {
-          const selectedSuggestion =
-            autoCompleteSuggestions[autoCompleteSelectedIndex];
-          handleAutoCompleteSuggestionSelect(selectedSuggestion);
+        let targetIndex = autoCompleteSelectedIndex;
+        if (targetIndex < 0) {
+          const searchText = commandInput.trim().toLowerCase();
+          if (searchText) {
+            const matchIndex = autoCompleteSuggestions.findIndex((suggestion) =>
+              suggestion.command
+                ?.toLowerCase()
+                .startsWith(searchText),
+            );
+            if (matchIndex >= 0) {
+              targetIndex = matchIndex;
+            }
+          }
+          if (targetIndex < 0) {
+            targetIndex = 0;
+          }
+          setAutoCompleteSelectedIndex(targetIndex);
+        }
+        const suggestion = autoCompleteSuggestions[targetIndex];
+        if (suggestion) {
+          handleAutoCompleteSuggestionSelect(suggestion, {
+            trigger: 'keyboard',
+          });
+        }
+        return;
+      }
+
+      if (e.key === 'Enter' && autoCompleteSelectedIndex >= 0) {
+        e.preventDefault();
+        const suggestion =
+          autoCompleteSuggestions[autoCompleteSelectedIndex];
+        if (suggestion) {
+          handleAutoCompleteSuggestionSelect(suggestion, {
+            trigger: 'keyboard',
+          });
         }
         return;
       }
@@ -341,17 +400,7 @@ export const DeveloperModal = () => {
       }
 
       if (commandInput.trim() && commandProcessorRef.current) {
-        const executeCommand = async () => {
-          const result =
-            await commandProcessorRef.current.executeCommand(commandInput);
-
-          // Manejar resultado del comando
-          if (result && result.clearConsole) {
-            setConsoleOutput([]);
-          }
-        };
-
-        executeCommand();
+        triggerCommandExecution(commandInput);
         setCommandInput('');
       }
     }

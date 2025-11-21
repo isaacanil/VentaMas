@@ -96,7 +96,8 @@ export const getInstallmentsByArId = async (user, arId) => {
  * @returns {string} El ID del nuevo pago.
  */
 export const createPaymentRecord = (writer, { user, paymentDetails }) => {
-  const { totalPaid, paymentMethods, comments, clientId } = paymentDetails;
+  const { totalPaid, paymentMethods, comments, clientId, arId } =
+    paymentDetails;
   const paymentId = nanoid();
   const paymentsRef = doc(
     db,
@@ -110,6 +111,10 @@ export const createPaymentRecord = (writer, { user, paymentDetails }) => {
     ...defaultPaymentsAR,
     id: paymentId,
     paymentMethods,
+    paymentMethod: paymentMethods, // alias para compatibilidad con UI
+    amount: totalPaid, // alias para listas de historial
+    date: Timestamp.now(), // alias para UI que usa "date"
+    arId: arId || null,
     totalPaid,
     clientId,
     comments,
@@ -393,10 +398,12 @@ export const createAccountReceiptData = ({
 }) => {
   const safeString = (val) => (val !== undefined && val !== null ? val : null);
 
+  const invoiceNumber = invoice?.numberID || invoice?.data?.numberID;
+
   return {
     arNumber: account.numberId,
     arId: account.id,
-    invoiceNumber: safeString(invoice?.numberID || invoice?.data?.numberID),
+    invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
     invoiceId: safeString(invoice?.id || invoice?.data?.id),
     paidInstallments: paidInstallments.map((installmentInfo) => ({
       number: installmentInfo.number,
@@ -519,27 +526,116 @@ export const processInstallmentPayment = (
  * @param {Object} writer - Batch o transacción de Firestore
  * @param {Object} params - Parámetros de actualización
  */
+export const mergePaymentMethods = (existingMethods = [], newMethods = []) => {
+  const sanitizedExisting = Array.isArray(existingMethods)
+    ? existingMethods
+        .filter((m) => m && m.method)
+        .map((m) => ({
+          ...m,
+          value: roundToTwoDecimals(Number(m.value) || 0),
+          status: Boolean(m.status) && (Number(m.value) || 0) > 0,
+        }))
+    : [];
+
+  const incomingMethods = Array.isArray(newMethods)
+    ? newMethods
+        .filter((m) => m && m.method && m.status)
+        .map((m) => ({
+          ...m,
+          value: roundToTwoDecimals(Number(m.value) || 0),
+          status: Boolean(m.status) && (Number(m.value) || 0) > 0,
+        }))
+    : [];
+
+  const methodMap = new Map();
+
+  sanitizedExisting.forEach((method) => {
+    methodMap.set(method.method, method);
+  });
+
+  incomingMethods.forEach((method) => {
+    const previous = methodMap.get(method.method) || {
+      method: method.method,
+      value: 0,
+      status: false,
+    };
+    const combinedValue = roundToTwoDecimals(
+      (Number(previous.value) || 0) + (Number(method.value) || 0),
+    );
+
+    methodMap.set(method.method, {
+      ...previous,
+      ...method,
+      value: combinedValue,
+      status: combinedValue > 0,
+    });
+  });
+
+  return Array.from(methodMap.values());
+};
+
 export const updateInvoiceTotals = (
   writer,
-  { businessId, invoiceId, amountPaid, invoice },
+  { businessId, invoiceId, amountPaid, invoice, paymentMethods = [] },
 ) => {
   if (!invoice || !invoiceId) return;
 
   const invoiceRef = doc(db, 'businesses', businessId, 'invoices', invoiceId);
   const invoiceData = invoice.data || invoice;
-  const previousPaid = invoiceData.totalPaid || 0;
+  const previousPaid = invoiceData.totalPaid || invoice.totalPaid || 0;
+  const invoiceTotal = roundToTwoDecimals(
+    invoiceData.totalAmount ??
+      invoiceData.totalPurchase?.value ??
+      invoice.totalAmount ??
+      invoice.totalPurchase?.value ??
+      0,
+  );
   const newTotalPaid = roundToTwoDecimals(previousPaid + amountPaid);
-  const newBalanceDue = roundToTwoDecimals(
-    invoiceData.totalAmount - newTotalPaid,
+  const newBalanceDue = roundToTwoDecimals(invoiceTotal - newTotalPaid);
+  const newChange = roundToTwoDecimals(newTotalPaid - invoiceTotal);
+
+  const updatedPaymentMethods = mergePaymentMethods(
+    invoiceData.paymentMethod || invoice.paymentMethod,
+    paymentMethods,
   );
 
-  writer.update(invoiceRef, {
+  const invoiceUpdate = {
     totalPaid: newTotalPaid,
     balanceDue: newBalanceDue,
     status: newBalanceDue <= THRESHOLD,
-  });
+    'data.totalPaid': newTotalPaid,
+    'data.balanceDue': newBalanceDue,
+    'data.status': newBalanceDue <= THRESHOLD,
+    payment: {
+      ...(invoiceData.payment || invoice.payment || {}),
+      value: newTotalPaid,
+    },
+    change: {
+      ...(invoiceData.change || invoice.change || {}),
+      value: newChange,
+    },
+    'data.payment': {
+      ...(invoiceData.payment || invoice.payment || {}),
+      value: newTotalPaid,
+    },
+    'data.change': {
+      ...(invoiceData.change || invoice.change || {}),
+      value: newChange,
+    },
+  };
 
-  return { newTotalPaid, newBalanceDue };
+  if (updatedPaymentMethods.length > 0) {
+    invoiceUpdate.paymentMethod = updatedPaymentMethods;
+    invoiceUpdate['data.paymentMethod'] = updatedPaymentMethods;
+  }
+
+  writer.update(invoiceRef, invoiceUpdate);
+
+  return {
+    newTotalPaid,
+    newBalanceDue,
+    paymentMethod: updatedPaymentMethods,
+  };
 };
 
 /**
@@ -568,18 +664,18 @@ export const createFullPaymentReceipt = ({
     createdBy: safeString(user?.uid),
     accounts: Array.isArray(accounts)
       ? accounts.map((account) => ({
-          arNumber: safeString(account.arNumber),
-          arId: safeString(account.arId),
-          invoiceNumber: safeString(account.invoiceNumber),
-          invoiceId: safeString(account.invoiceId),
-          paidInstallments: Array.isArray(account.paidInstallments)
-            ? account.paidInstallments
-            : [],
-          remainingInstallments: safeNumber(account.remainingInstallments),
-          totalInstallments: safeNumber(account.totalInstallments),
-          totalPaid: safeNumber(account.totalPaid),
-          arBalance: safeNumber(account.arBalance),
-        }))
+        arNumber: safeString(account.arNumber),
+        arId: safeString(account.arId),
+        invoiceNumber: safeString(account.invoiceNumber),
+        invoiceId: safeString(account.invoiceId),
+        paidInstallments: Array.isArray(account.paidInstallments)
+          ? account.paidInstallments
+          : [],
+        remainingInstallments: safeNumber(account.remainingInstallments),
+        totalInstallments: safeNumber(account.totalInstallments),
+        totalPaid: safeNumber(account.totalPaid),
+        arBalance: safeNumber(account.arBalance),
+      }))
       : [],
     totalAmount: safeNumber(totalAmount),
     paymentMethod: Array.isArray(paymentMethods) ? paymentMethods : [],

@@ -14,6 +14,7 @@ export const fbAddClient = async (user, client) => {
       ...client,
       id: nanoid(8),
       numberId: await getNextID(user, 'lastClientId'),
+      isDeleted: false,
     };
 
     const clientRef = doc(

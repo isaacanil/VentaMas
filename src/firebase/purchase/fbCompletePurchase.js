@@ -5,6 +5,7 @@ import {
   serverTimestamp,
   writeBatch,
   setDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -73,18 +74,30 @@ const updatePurchaseWarehouseStock = async (
       batch.productId,
     );
 
-    // If stock is 0, update product status to inactive
-    const updateProductData = {
-      stock: totalStock,
-      updatedAt: serverTimestamp(),
-      updatedBy: user.uid,
-    };
+    await runTransaction(db, async (transaction) => {
+      const productSnap = await transaction.get(productRef);
+      if (!productSnap.exists()) {
+        throw new Error(
+          `Producto ${batch.productId} no encontrado durante la compra ${purchase.id}`,
+        );
+      }
 
-    if (totalStock === 0) {
-      updateProductData.status = 'inactive';
-    }
+      const currentStock = Number(productSnap?.data()?.stock ?? 0);
+      const nextStock = Math.max(0, currentStock + totalStock);
+      const updateProductData = {
+        stock: nextStock,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      };
 
-    await updateDoc(productRef, updateProductData);
+      if (nextStock <= 0) {
+        updateProductData.status = 'inactive';
+      } else if (productSnap.data()?.status === 'inactive') {
+        updateProductData.status = 'active';
+      }
+
+      transaction.update(productRef, updateProductData);
+    });
 
     // Create batch for this product
     const batchData = await createBatch(user, {
@@ -106,7 +119,9 @@ const updatePurchaseWarehouseStock = async (
       ...baseFields,
       batchId: batchData.id,
       batchNumberId: batchData.numberId,
-      location: `${destinationWarehouse.id}`,
+      location: {
+        warehouse: destinationWarehouse.id,
+      },
       productId: batch.productId,
       productName: batch.productName,
       quantity: totalStock,

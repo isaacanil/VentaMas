@@ -56,6 +56,7 @@ export default defineConfig({
       ),
       views: fileURLToPath(new URL('./src/views', import.meta.url)),
     },
+    dedupe: ['react', 'react-dom', 'styled-components'],
   },
   build: {
     sourcemap: false,

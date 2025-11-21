@@ -10,9 +10,16 @@ import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
 
 const { Button } = antd;
 
-export function Payment({ installments, balance, isActive, account }) {
+export function Payment({
+  installments,
+  balance,
+  isActive,
+  account,
+  client: propClient,
+}) {
   const dispatch = useDispatch();
-  const client = useSelector(selectClient);
+  const storeClient = useSelector(selectClient);
+  const client = propClient || storeClient;
 
   const handleOpenPayment = () => {
     dispatch(

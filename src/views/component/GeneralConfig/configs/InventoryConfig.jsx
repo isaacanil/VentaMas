@@ -1,9 +1,10 @@
-import { Empty, message, Select, Spin, Typography } from 'antd';
+import { Button, Empty, message, Select, Spin, Typography } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
+import { fbRecalculateProductStockTotals } from '../../../../firebase/inventory/recalculateProductStockTotals';
 import {
   setDefaultWarehouse,
   useListenWarehouses,
@@ -122,11 +123,27 @@ const LoadingContainer = styled.div`
   padding: 24px 0;
 `;
 
+const ActionsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+`;
+
+const ActionHelper = styled(Text)`
+  && {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(31 41 51 / 60%);
+  }
+`;
+
 const InventoryConfig = () => {
   const user = useSelector(selectUser);
   const { data: warehouses = [], loading } = useListenWarehouses();
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isReconciling, setIsReconciling] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const sortedWarehouses = useMemo(() => {
@@ -173,6 +190,32 @@ const InventoryConfig = () => {
       messageApi.error(errorMessage);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleRecalculateStock = async () => {
+    if (!user?.businessID) {
+      messageApi.error('No se encontró el negocio del usuario.');
+      return;
+    }
+
+    setIsReconciling(true);
+    try {
+      const summary = await fbRecalculateProductStockTotals(user);
+      const updatedProducts = Number(summary?.productsUpdated ?? 0);
+      if (updatedProducts > 0) {
+        messageApi.success(
+          `Stock recalculado para ${updatedProducts} producto${updatedProducts === 1 ? '' : 's'}.`,
+        );
+      } else {
+        messageApi.info('No se encontraron productos para actualizar.');
+      }
+    } catch (error) {
+      const errMsg =
+        error?.message || 'No se pudo recalcular el stock agregado.';
+      messageApi.error(errMsg);
+    } finally {
+      setIsReconciling(false);
     }
   };
 
@@ -257,6 +300,36 @@ const InventoryConfig = () => {
             </StyledSelect>
           </SelectorContainer>
         )}
+      </SectionCard>
+
+      <SectionCard
+        aria-label="Recalcular stock de productos"
+        id="inventory-stock-recalc"
+        data-config-section="inventory-stock-recalc"
+      >
+        <SectionHeader>
+          <SectionTitle>Sincronizar stock agregado</SectionTitle>
+          <SectionDescription>
+            Actualiza el stock mostrado en cada producto sumando las
+            existencias activas registradas en el inventario. Úsalo cuando el
+            stock que ves en catálogos o reportes no coincide con lo que tienes
+            físicamente.
+          </SectionDescription>
+        </SectionHeader>
+
+        <ActionsRow>
+          <Button
+            type="primary"
+            onClick={handleRecalculateStock}
+            loading={isReconciling}
+            disabled={isUpdating}
+          >
+            Recalcular stock agregado
+          </Button>
+          <ActionHelper>
+            El proceso puede tardar unos segundos si tienes muchos productos.
+          </ActionHelper>
+        </ActionsRow>
       </SectionCard>
 
       <SectionCard

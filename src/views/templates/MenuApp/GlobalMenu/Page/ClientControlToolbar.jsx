@@ -3,11 +3,12 @@ import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { Button } from 'antd';
+
 import { icons } from '../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../constants/modes';
 import { toggleClientModal } from '../../../../../features/modals/modalSlice';
 import routesName from '../../../../../routes/routesName';
-import { Button, ButtonGroup } from '../../../system/Button/Button';
 
 export const ClientControlToolbar = ({ side = 'left' }) => {
   const { CLIENTS } = routesName.CONTACT_TERM;
@@ -21,14 +22,9 @@ export const ClientControlToolbar = ({ side = 'left' }) => {
   return matchWithCashReconciliation ? (
     <Container>
       {side === 'right' && (
-        <ButtonGroup>
-          <Button
-            borderRadius="normal"
-            startIcon={icons.mathOperations.add}
-            title="Nuevo Cliente"
-            onClick={openModal}
-          />
-        </ButtonGroup>
+        <Button type="primary" icon={icons.mathOperations.add} onClick={openModal}>
+          Cliente
+        </Button>
       )}
     </Container>
   ) : null;

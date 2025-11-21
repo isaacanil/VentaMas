@@ -1,69 +1,110 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Modal, Tag, Tooltip } from 'antd';
+import { Button, Modal, Tooltip } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { addClient } from '../../../../features/clientCart/clientCartSlice';
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice';
 import { highlightSearch } from '../highlight/Highlight';
 
-const Container = styled.li`
+export const clientGridTemplate = '45px  1fr 120px 120px';
+export const clientGridTemplateWithActions = `${clientGridTemplate} 60px`;
 
-  /* box-shadow: ${(props) =>
-    props.isSelected ? '0 0 0 1px #1677ff' : '0 1px 3px rgba(0,0,0,0.05)'}; */
-  position: relative;
+export const clientHeaderStyles = css`
   display: grid;
-  grid-template-columns: 1fr min-content;
-  gap: 1em;
+  grid-template-columns: ${clientGridTemplateWithActions};
+  column-gap: 0.5em;
+  align-items: center;
+  padding: 0.65em 1em;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #475569;
+
+  .actions-col {
+    justify-self: end;
+  }
+`;
+
+const desktopCardStyles = css`
+  display: grid;
+  grid-template-columns: ${clientGridTemplateWithActions};
+  gap: 0.5em;
   align-items: start;
-  min-height: 75px;
-  padding: 0.8em;
-  margin: 0;
+  padding: 0.9em 1em;
+`;
+
+const mobileCardStyles = css`
+  grid-template-columns: 1fr auto;
+  gap: 0.5em 0.8em;
+  align-items: start;
+  padding: 1em;
+`;
+
+const Container = styled.div`
+  position: relative;
+  ${desktopCardStyles};
+  min-height: 70px;
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: #1f2937;
   cursor: pointer;
-  list-style: none;
   background-color: ${(props) =>
     props.hasMissingName
-      ? '#fff5f5'
+      ? '#fff7f7'
       : props.hasMissingID
-        ? '#fffbeb'
+        ? '#fffaf0'
         : '#ffffff'};
-  border: 2px solid
+  border: 1px solid
     ${(props) =>
       props.hasMissingName
-        ? '#ffd1d1'
+        ? '#fecaca'
         : props.hasMissingID
-          ? '#fff5d6'
+          ? '#fcd34d'
           : props.isSelected
             ? '#4096ff'
-            : '#eaeaea'};
-  border-radius: 6px;
-  transition: all 0.2s ease;
-
-  @media (width <= 700px) {
-    align-items: center;
-    min-height: auto;
-  }
+            : '#e5e7eb'};
+  border-radius: 12px;
+  box-shadow: ${(props) =>
+    props.isSelected
+      ? '0 8px 20px rgba(64, 150, 255, 0.16)'
+      : '0 2px 8px rgba(15, 23, 42, 0.05)'};
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
-    background-color: ${(props) =>
+    border-color: ${(props) =>
+      props.hasMissingName
+        ? '#f87171'
+        : props.hasMissingID
+          ? '#fbbf24'
+          : '#1677ff'};
+    box-shadow: ${(props) =>
       props.isSelected
-        ? '#e6f4ff'
-        : props.hasMissingName
-          ? '#fff0f0'
-          : props.hasMissingID
-            ? '#fff7e0'
-            : '#f8f9fa'};
+        ? '0 10px 24px rgba(64, 150, 255, 0.2)'
+        : '0 6px 16px rgba(15, 23, 42, 0.08)'};
+    background-color: ${(props) =>
+      props.hasMissingName
+        ? '#fff3f3'
+        : props.hasMissingID
+          ? '#fff7ea'
+          : '#f7fbff'};
+  }
+
+  @media (width <= 700px) {
+    ${mobileCardStyles};
+    min-height: auto;
+    border-radius: 14px;
   }
 
   .highlight {
     container-type: inline-size;
     font-weight: 500;
-    color: #2d3436;
+    color: #1f2937;
   }
 
   .warning {
@@ -86,19 +127,26 @@ const Container = styled.li`
   }
 `;
 
-const ClientInfo = styled.div`
-  display: grid;
-  grid-template-columns: minmax(150px, 2fr) minmax(110px, 1fr) minmax(
-      130px,
-      1fr
-    );
-  gap: 0.8em;
-  align-items: start;
+const MissingValue = styled.span`
+  color: #7c8086ff;
+  font-weight: 600;
+`;
 
-  @media (width <= 700px) {
-    grid-template-columns: 1fr;
-    gap: 0.3em;
-    min-height: auto;
+const ClientInfo = styled.div`
+  display: contents;
+  align-items: start;
+  column-gap: 0.8em;
+
+  .client-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+    border-radius: 999px;
   }
 
   .client-name {
@@ -106,13 +154,21 @@ const ClientInfo = styled.div`
     gap: 1em;
     justify-content: flex-start;
     min-height: 45px;
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 0.95em;
+    font-weight: 500;
     line-height: 1.2;
-    color: #3078bf;
+    color: #122042ff;
+    
+    /* IMPORTANTE: min-width: 0 es necesario en Flexbox para permitir 
+       que el contenedor se encoja y active el text-overflow */
+    min-width: 0; 
+    overflow: hidden; 
 
-    @media (width <= 700px) {
-      min-height: auto;
+    & > div {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
     }
   }
 
@@ -122,15 +178,58 @@ const ClientInfo = styled.div`
     justify-content: flex-start;
     min-height: 45px;
     overflow: hidden;
-    font-size: 1em;
-    color: #4e4e4e;
+    font-size: 0.95em;
+    color: #475569;
     overflow-wrap: break-word;
 
+    .detail-label {
+      font-size: 0.85em;
+      font-weight: 600;
+      color: #94a3b8;
+      display: none;
+    }
+
     @media (width <= 700px) {
-      display: grid;
-      grid-template-columns: 100px 1fr;
-      gap: 1em;
+      display: flex;
+      flex-direction: column; 
+      gap: 2px; 
       min-height: auto;
+
+      .detail-label {
+        display: block;
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  @media (width <= 700px) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8em 0;
+    grid-column: 1 / 2;
+    width: 100%;
+    /* Aseguramos que el contenedor padre también maneje el ancho correctamente */
+    min-width: 0; 
+
+    .client-number {
+      flex: 0 0 70px;
+      justify-content: flex-start;
+    }
+
+    .client-name {
+      /* Calcula el espacio restante */
+      flex: 1 1 calc(100% - 70px);
+      min-height: auto;
+      /* Refuerzo para móvil */
+      min-width: 0; 
+    }
+
+    .client-detail {
+      flex: 0 0 50%;
+      box-sizing: border-box;
+      
+      &:nth-of-type(1) { padding-right: 8px; }
+      &:nth-of-type(2) { padding-left: 8px; }
     }
   }
 
@@ -148,11 +247,12 @@ const ClientInfo = styled.div`
     }
   }
 `;
-
 const ActionButtons = styled.div`
   display: flex;
   gap: 0.4em;
   align-self: start;
+  justify-self: end;
+  grid-column: 5;
   padding-top: 0.5em;
 
   button {
@@ -162,7 +262,11 @@ const ActionButtons = styled.div`
   }
 
   @media (width <= 700px) {
-    align-self: center;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    justify-self: end;
+    gap: 0.3em;
     padding-top: 0;
   }
 `;
@@ -183,12 +287,7 @@ export const Client = ({
   const handleSubmit = (client) => {
     dispatch(addClient(client));
 
-    if (client.id && user) {
-      // dispatch(fetchInsuranceAuthByClientId({
-      //     user,
-      //     clientId: client.id
-      // }));
-    } else {
+    if (!client.id || !user) {
       dispatch(clearAuthData());
     }
 
@@ -227,17 +326,8 @@ export const Client = ({
       isSelected={selectedClient?.id === client.id}
     >
       <ClientInfo>
+        <div className="client-number">{client?.numberId ?? '—'}</div>
         <div className="client-name">
-          <div
-            style={{
-              color: '#5a5a5a',
-              fontWeight: '400',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {' '}
-            # {client.numberId}
-          </div>
           {client.name ? (
             <div>{highlightSearch(client.name, searchTerm)}</div>
           ) : (
@@ -247,23 +337,21 @@ export const Client = ({
         <div className="client-detail">
           {client.personalID ? (
             <>
-              <div style={{ fontSize: '0.9em', fontWeight: 600 }}>
-                RNC/Cédula :
-              </div>
+              <div className="detail-label">RNC/Cédula</div>
               <div>{client.personalID}</div>
             </>
           ) : (
-            <Tag color="red">Sin identificación</Tag>
+            <MissingValue>—</MissingValue>
           )}
         </div>
         <div className="client-detail">
           {client.tel ? (
             <>
-              <div style={{ fontSize: '0.9em', fontWeight: 600 }}>Tel:</div>
+              <div className="detail-label">Tel.</div>
               <div>{client.tel}</div>
             </>
           ) : (
-            <Tag color="red">Sin teléfono</Tag>
+            <MissingValue>—</MissingValue>
           )}
         </div>
       </ClientInfo>

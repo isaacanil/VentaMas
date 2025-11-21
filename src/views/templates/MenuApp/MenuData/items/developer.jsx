@@ -75,6 +75,18 @@ const developer = [
         group: 'tools',
       },
       {
+        title: 'Soporte Invoice V2',
+        route: dev.INVOICE_V2_RECOVERY,
+        icon: <BugOutlined />,
+        group: 'tools',
+      },
+      {
+        title: 'Facturas Serie B',
+        route: dev.B_SERIES_INVOICES,
+        icon: <BugOutlined />,
+        group: 'tools',
+      },
+      {
         title: 'Pruebas',
         route: dev.PRUEBA,
         icon: <BugOutlined />,

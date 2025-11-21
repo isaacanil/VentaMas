@@ -10,7 +10,7 @@ import {
   extractNormalizedClient,
 } from './clientNormalizer';
 
-export const useFbGetClients = () => {
+export const useFbGetClients = ({ includeDeleted = false } = {}) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = useSelector(selectUser);
@@ -30,8 +30,11 @@ export const useFbGetClients = () => {
         setLoading(false);
         return;
       }
-      const clientArray = snapshot.docs.map((docSnap) => {
+      const clientArray = snapshot.docs.reduce((acc, docSnap) => {
         const data = docSnap.data() || {};
+        const isDeleted = Boolean(data.isDeleted);
+        if (!includeDeleted && isDeleted) return acc;
+
         const client = extractNormalizedClient(data);
         const extras = {};
 
@@ -42,12 +45,14 @@ export const useFbGetClients = () => {
           }
         }
 
-        return {
+        acc.push({
           id: docSnap.id,
+          isDeleted,
           ...extras,
           client,
-        };
-      });
+        });
+        return acc;
+      }, []);
 
       setClients(clientArray);
       setLoading(false);

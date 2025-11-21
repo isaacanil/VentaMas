@@ -44,6 +44,7 @@ class CommandProcessor {
     try {
       const businessesList = await fbGetBusinessesList();
       this.setBusinesses(businessesList);
+      this.businesses = businessesList;
       return businessesList;
     } catch (error) {
       console.error('Error al cargar negocios:', error);
@@ -183,6 +184,7 @@ class CommandProcessor {
       {
         command: 'BUSINESS SWITCH ',
         description: 'Cambia a otro negocio por ID',
+        requiresInput: true,
       },
       { command: 'BUSINESS RETURN', description: 'Vuelve al negocio original' },
       {
@@ -194,7 +196,11 @@ class CommandProcessor {
       { command: 'ROLE', description: 'Administra roles' },
       { command: 'ROLE LIST', description: 'Lista roles disponibles' },
       { command: 'ROLE SELECT', description: 'Selección interactiva de roles' },
-      { command: 'ROLE SWITCH ', description: 'Cambia a otro role por ID' },
+      {
+        command: 'ROLE SWITCH ',
+        description: 'Cambia a otro role por ID',
+        requiresInput: true,
+      },
       { command: 'ROLE RETURN', description: 'Vuelve al role original' },
       { command: 'ROLE STATUS', description: 'Estado actual de roles' },
 
@@ -205,7 +211,11 @@ class CommandProcessor {
         command: 'NAVIGATE SELECT',
         description: 'Selección interactiva de rutas',
       },
-      { command: 'NAVIGATE SEARCH ', description: 'Busca rutas por texto' },
+      {
+        command: 'NAVIGATE SEARCH ',
+        description: 'Busca rutas por texto',
+        requiresInput: true,
+      },
       { command: 'NAVIGATE /home', description: 'Navega a inicio' },
       { command: 'NAVIGATE /sales', description: 'Navega a ventas' },
       { command: 'NAVIGATE /inventory', description: 'Navega a inventario' },
@@ -238,6 +248,7 @@ class CommandProcessor {
       {
         command: 'PRODUCT ID ',
         description: 'Busca productos por nombre y muestra su ID',
+        requiresInput: true,
       },
 
       // Comandos USER MANAGEMENT
@@ -250,6 +261,7 @@ class CommandProcessor {
       {
         command: 'USERS SEARCH ',
         description: 'Busca usuarios por nombre/email',
+        requiresInput: true,
       },
       {
         command: 'USERS PASSWORD',
@@ -257,7 +269,17 @@ class CommandProcessor {
       },
     ];
 
-    return commands;
+    return commands.map((cmd) => {
+      const requiresInput =
+        typeof cmd.requiresInput === 'boolean'
+          ? cmd.requiresInput
+          : cmd.command.endsWith(' ');
+
+      return {
+        ...cmd,
+        requiresInput,
+      };
+    });
   }
 
   getCommandSuggestions(input) {
@@ -684,7 +706,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
                 );
               } else {
                 // Preparar items para el modo de selección
-                const selectionItems = businessesList.map((business) => {
+                let selectionItems = businessesList.map((business) => {
                   const businessId = business.id || business.businessID;
                   const businessName = business.business?.name || 'Sin nombre';
                   const isCurrent = businessId === this.user?.businessID;
@@ -698,34 +720,77 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
                   };
                 });
 
+                if (this.isTemporaryMode && this.originalBusinessId) {
+                  const originalBusinessData = businessesList.find(
+                    (business) =>
+                      (business.id || business.businessID) ===
+                      this.originalBusinessId,
+                  );
+                  const originalBusinessName =
+                    originalBusinessData?.business?.name ||
+                    'Mi negocio original';
+
+                  selectionItems = [
+                    {
+                      id: '__return_to_original__',
+                      display: `↩️ Volver a mi negocio (${originalBusinessName}) - ID: ${this.originalBusinessId}`,
+                      name: 'Volver a mi negocio',
+                      originalName: originalBusinessName,
+                      returnToOriginal: true,
+                    },
+                    ...selectionItems,
+                  ];
+                }
+
                 // Entrar en modo de selección
                 this.enterSelectionMode(
                   selectionItems,
                   '📋 Seleccionar Negocio:',
                   (selectedItem) => {
-                    // Callback cuando se selecciona un item
-                    if (selectedItem.isCurrent) {
-                      // Si está en modo temporal y selecciona el negocio actual (que es el original)
-                      if (
-                        this.isTemporaryMode &&
-                        selectedItem.id === this.originalBusinessId
-                      ) {
-                        this.dispatch(returnToOriginalBusiness());
-                        this.addOutput(
-                          `🔄 Regresando al negocio original: ${selectedItem.name}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DESACTIVADO`,
-                        );
-                      } else {
-                        // No está en modo temporal, solo mostrar mensaje
-                        this.addOutput(
-                          `🔄 Ya está conectado al negocio: ${selectedItem.name}\nID: ${selectedItem.id}`,
-                        );
-                      }
-                    } else {
-                      this.dispatch(switchToBusiness(selectedItem.id));
+                    if (!selectedItem) {
                       this.addOutput(
-                        `✅ Cambiado al negocio: ${selectedItem.name}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`,
+                        'No se pudo determinar la selección. Intente nuevamente.',
+                        'error',
                       );
+                      return;
                     }
+
+                    const targetName =
+                      selectedItem.name ||
+                      selectedItem.originalName ||
+                      'Sin nombre';
+
+                    if (selectedItem.returnToOriginal) {
+                      this.dispatch(returnToOriginalBusiness());
+                      this.addOutput(
+                        `🔄 Regresando al negocio original: ${targetName}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`,
+                      );
+                      return;
+                    }
+
+                    if (
+                      this.isTemporaryMode &&
+                      this.originalBusinessId &&
+                      selectedItem.id === this.originalBusinessId
+                    ) {
+                      this.dispatch(returnToOriginalBusiness());
+                      this.addOutput(
+                        `🔄 Regresando al negocio original: ${targetName}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DESACTIVADO`,
+                      );
+                      return;
+                    }
+
+                    if (selectedItem.id === this.user?.businessID) {
+                      this.addOutput(
+                        `🔄 Ya está conectado al negocio: ${targetName}\nID: ${selectedItem.id}`,
+                      );
+                      return;
+                    }
+
+                    this.dispatch(switchToBusiness(selectedItem.id));
+                    this.addOutput(
+                      `✅ Cambiado al negocio: ${targetName}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`,
+                    );
                   },
                   'business select',
                 );

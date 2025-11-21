@@ -11,8 +11,9 @@ export const SortControls = ({
   sortDirection,
   onSortChange,
   onToggleDirection,
+  label,
 }) => (
-  <FilterField label={FILTER_CONFIG.sort.label}>
+  <FilterField label={label ?? FILTER_CONFIG.sort.label}>
     <Space.Compact>
       <Select
         value={sortCriteria}

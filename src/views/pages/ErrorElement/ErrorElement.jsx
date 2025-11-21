@@ -1,5 +1,5 @@
 import { BugOutlined, HomeOutlined, RollbackOutlined } from '@ant-design/icons';
-import * as antd from 'antd';
+import { Button, Checkbox, Typography, Space, Alert } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -12,7 +12,6 @@ import { ErrorDetails } from './components/ErrorDetails';
 import { MESSAGES, ANIMATIONS } from './constants';
 import { useErrorHandling } from './hooks/useErrorHandling';
 
-const { Button, Checkbox, Typography, Space, Alert } = antd;
 const { Title: AntTitle, Text } = Typography;
 
 export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
@@ -48,7 +47,7 @@ export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
               key="alert"
               icon={<BugOutlined className="error-icon" />}
               message={
-                <AntTitle level={4} style={{ margin: 0 }}>
+                <AntTitle level={4} style={{ margin: 0, color: '#cf1322' }}>
                   {MESSAGES.ERROR_TITLE}
                 </AntTitle>
               }
@@ -107,33 +106,43 @@ ErrorElement.propTypes = {
   errorStackTrace: PropTypes.string,
 };
 
+// --- STYLED COMPONENTS ACTUALIZADOS ---
+
 const Container = styled(motion.div)`
   display: flex;
-  justify-content: center;
-  height: 100vh;
+  flex-direction: column;
+  align-items: center;      /* Centrado vertical */
+  justify-content: center;  /* Centrado horizontal */
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f8f9fa; /* Fondo gris suave para contexto */
+  padding: 20px;
   overflow-y: auto;
 `;
 
 const LogoWrapper = styled(motion.div)`
   display: flex;
   justify-content: center;
-  margin-bottom: 2.5rem;
-  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 10%));
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 10%));
 `;
 
 const StyledAlert = styled(Alert)`
-  margin: 1em 0;
-  border: 1px solid rgb(255 0 0 / 10%);
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgb(0 0 0 / 8%);
+  margin: 1.5rem 0;
+  border: none;
+  border-left: 4px solid #ff4d4f; /* Borde de acento elegante */
+  border-radius: 4px;
+  background: #fff1f0;
+  box-shadow: none; /* Eliminamos sombra para diseño plano */
 
   .error-icon {
-    font-size: 28px;
+    font-size: 24px;
     color: #ff4d4f;
+    margin-top: 4px;
   }
 
   .ant-alert-message {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 `;
 
@@ -142,15 +151,18 @@ const ReportSection = styled(Space)`
   flex-direction: column;
   gap: 8px;
   align-items: flex-start;
-  padding: 1.5rem;
-  background: var(--color-background-light);
-  border: 1px solid rgb(0 0 0 / 6%);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
+  padding: 1rem 1.5rem;
+  width: 100%;
+  
+  /* Diseño sutil y técnico */
+  background: rgba(0, 0, 0, 0.02); 
+  border: 1px dashed #d9d9d9; 
+  border-radius: 8px;
+  /* Sin sombras pesadas */
 
   .report-description {
     padding-left: 24px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0.85;
   }
 
@@ -163,30 +175,40 @@ const ButtonGroup = styled(Space)`
   gap: 16px !important;
   justify-content: center;
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap; /* Para móviles */
+
+  button {
+    height: 48px;
+    padding: 0 32px;
+    border-radius: 12px; /* Bordes más modernos */
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
 
   .back-button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #d9d9d9;
+    background: white;
+    transition: all 0.3s ease;
 
     &:hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-      transform: translateX(-2px);
+      border-color: #40a9ff;
+      color: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
   }
 
   .home-button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Gradiente sutil */
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    border: none;
+    transition: all 0.3s ease;
 
     &:hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
       transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(24, 144, 255, 0.4); /* Glow azul */
     }
-  }
-
-  button {
-    height: 44px;
-    padding: 0 24px;
-    border-radius: 8px;
   }
 `;
 

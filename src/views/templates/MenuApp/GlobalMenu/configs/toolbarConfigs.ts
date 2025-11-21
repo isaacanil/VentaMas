@@ -68,7 +68,10 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
   }),
   registerToolbar({
     id: 'account-receivable-toolbar',
-    routes: ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST,
+    routes: [
+      ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST,
+      ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_AUDIT,
+    ].filter(Boolean),
     importFn: () =>
       import('../Page/AccountReceivableToolbar/AccountReceivableToolbar'),
     exportName: 'AccountReceivableToolbar',

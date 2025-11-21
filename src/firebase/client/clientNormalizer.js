@@ -138,12 +138,14 @@ export function normalizeClientObject(client = {}) {
 export function buildClientWritePayload(client = {}) {
   const normalizedClient = normalizeClientObject(client);
 
+  const { isDeleted, deletedAt, ...clientData } = normalizedClient;
+
   const payload = {
-    client: normalizedClient,
+    client: clientData,
   };
 
   const cleanupKeys = new Set([
-    ...Object.keys(normalizedClient),
+    ...Object.keys(clientData),
     ...Object.keys(FIELD_ALIASES),
   ]);
 
@@ -151,6 +153,14 @@ export function buildClientWritePayload(client = {}) {
 
   for (const key of cleanupKeys) {
     payload[key] = deleteField();
+  }
+
+  if (isDeleted === true) {
+    payload.isDeleted = true;
+    if (deletedAt !== undefined) payload.deletedAt = deletedAt;
+  } else if (isDeleted === false) {
+    payload.isDeleted = false;
+    payload.deletedAt = deleteField();
   }
 
   return { payload, client: normalizedClient };
@@ -178,4 +188,6 @@ export function getDuplicatedRootFields(docData = {}) {
 export const CLIENT_ROOT_FIELDS = new Set([
   ...FIELDS_TO_EXTRACT,
   ...Object.keys(FIELD_ALIASES),
+  'isDeleted',
+  'deletedAt',
 ]);

@@ -2,7 +2,10 @@ import { Spin } from 'antd';
 import { memo } from 'react';
 import styled from 'styled-components';
 
-import { Client } from '../../../../../templates/system/client/Client';
+import {
+  Client,
+  clientHeaderStyles,
+} from '../../../../../templates/system/client/Client';
 
 const Body = styled.div`
   z-index: 1;
@@ -36,10 +39,22 @@ const LoadingContainer = styled.div`
 
 const ClientsList = styled.div`
   display: grid;
-  gap: 0.4em;
+  gap: 0.6em;
   align-content: start;
-  padding: 0.5em;
+  padding: 0.75em 0.6em 0.8em;
   overflow-y: auto;
+`;
+
+const ClientsHeader = styled.div`
+  ${clientHeaderStyles};
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin-bottom: 0.2em;
+
+  @media (width <= 700px) {
+    display: none;
+  }
 `;
 
 const ClientListContainerComponent = ({
@@ -61,6 +76,15 @@ const ClientListContainerComponent = ({
         </LoadingContainer>
       ) : (
         <ClientsList>
+          {paginatedClients.length > 0 && (
+            <ClientsHeader>
+              <span>#</span>
+              <span>Cliente</span>
+              <span>RNC/Cédula</span>
+              <span>Tel.</span>
+              <span className="actions-col"></span>
+            </ClientsHeader>
+          )}
           {paginatedClients.length > 0 ? (
             paginatedClients.map(({ client }, idx) => (
               <Client

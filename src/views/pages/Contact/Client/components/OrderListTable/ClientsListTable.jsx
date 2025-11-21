@@ -1,11 +1,12 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { tableConfig } from './tableConfig';
 
 export const ClientsListTable = ({ clients = [] }) => {
-  const { columns, filterConfig } = tableConfig();
+  const { columns } = tableConfig();
   const data = clients.map(({ client }) => {
     return {
       id: client.id,
@@ -13,16 +14,42 @@ export const ClientsListTable = ({ clients = [] }) => {
       phone: client.tel,
       rnc: client.personalID,
       address: client.address,
+      balance: client.pendingBalance ?? 0,
       actions: client,
     };
   });
+
+  const emptyText = (
+    <EmptyState>
+      <h4>No hay clientes</h4>
+      <p>Agrega un cliente con el botón superior derecho.</p>
+    </EmptyState>
+  );
 
   return (
     <AdvancedTable
       data={data}
       columns={columns}
-      filterUI
-      filterConfig={filterConfig}
+      rowSize="large"
+      emptyText={emptyText}
     />
   );
 };
+
+const EmptyState = styled.div`
+  padding: 16px;
+  text-align: center;
+  color: #7a7a7a;
+
+  h4 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #4c4c4c;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+`;

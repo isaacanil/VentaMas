@@ -1,6 +1,6 @@
 import { FileAddOutlined, UploadOutlined } from '@ant-design/icons';
 import * as antd from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { getAvailableHeaders } from '../../../../utils/import/product/filterEssentialHeaders';
@@ -8,7 +8,8 @@ import { productHeaderMappings } from '../../../../utils/import/product/headerMa
 
 import FieldSelector from './FieldSelector';
 
-const { Button, Upload, Modal, message, Tabs } = antd;
+const { Button, Upload, Modal, message, Tabs, Table } = antd;
+const PREVIEW_LIMIT = 20;
 
 export default function ImportModal({
   open,
@@ -18,6 +19,8 @@ export default function ImportModal({
 }) {
   const [fileList, setFileList] = useState([]);
   const [isImporting, setIsImporting] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [previewData, setPreviewData] = useState([]);
   const [activeTab, setActiveTab] = useState('import');
   const [selectedOptionalFields, setSelectedOptionalFields] = useState([]);
   const [language] = useState('es'); // Por defecto español, podría ser configurable en el futuro
@@ -34,6 +37,7 @@ export default function ImportModal({
       try {
         await onImport(fileList[0].originFileObj);
         setFileList([]);
+        setPreviewData([]);
         onClose();
         message.success('Datos importados exitosamente');
       } catch (error) {
@@ -59,12 +63,33 @@ export default function ImportModal({
     }
   };
 
+  const handlePreviewClick = async () => {
+    if (!fileList.length || !fileList[0].originFileObj) {
+      message.error('Por favor, selecciona un archivo válido para previsualizar.');
+      return;
+    }
+    setIsPreviewing(true);
+    try {
+      const data = await onImport(fileList[0].originFileObj, { dryRun: true });
+      setPreviewData(Array.isArray(data) ? data : []);
+      if (!data?.length) {
+        message.warning('El archivo no contiene filas para mostrar.');
+      }
+    } catch (error) {
+      console.error('Error al generar vista previa:', error);
+      message.error('No se pudo generar la vista previa del archivo.');
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
+
   const handleFieldsChange = (fields) => {
     setSelectedOptionalFields(fields);
   };
 
   const handleFileChange = ({ file, fileList }) => {
     setFileList(fileList);
+    setPreviewData([]);
 
     if (file.status === 'done') {
       message.success(`${file.name} se ha seleccionado correctamente.`);
@@ -76,6 +101,7 @@ export default function ImportModal({
   useEffect(() => {
     if (!open) {
       setFileList([]);
+      setPreviewData([]);
     }
   }, [open]);
 
@@ -127,6 +153,7 @@ export default function ImportModal({
   const uploadProps = {
     onRemove: () => {
       setFileList([]);
+      setPreviewData([]);
     },
     beforeUpload: (file) => {
       if (!isValidFileType(file)) {
@@ -142,6 +169,61 @@ export default function ImportModal({
     },
     fileList,
   };
+
+  const flattenObject = (obj, parentKey = '', result = {}) => {
+    if (obj === null || obj === undefined) {
+      result[parentKey || 'valor'] = obj;
+      return result;
+    }
+
+    if (Array.isArray(obj)) {
+      result[parentKey || '[]'] = obj
+        .map((item) => (typeof item === 'object' ? JSON.stringify(item) : item))
+        .join(', ');
+      return result;
+    }
+
+    if (typeof obj !== 'object') {
+      result[parentKey || 'valor'] = obj;
+      return result;
+    }
+
+    Object.entries(obj || {}).forEach(([key, value]) => {
+      const newKey = parentKey ? `${parentKey}.${key}` : key;
+
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        flattenObject(value, newKey, result);
+      } else if (Array.isArray(value)) {
+        result[newKey] = value
+          .map((item) =>
+            typeof item === 'object' ? JSON.stringify(item) : item,
+          )
+          .join(', ');
+      } else {
+        result[newKey] = value;
+      }
+    });
+
+    return result;
+  };
+
+  const previewRows = useMemo(
+    () =>
+      previewData.slice(0, PREVIEW_LIMIT).map((row, index) => ({
+        key: index,
+        ...flattenObject(row),
+      })),
+    [previewData],
+  );
+
+  const previewColumns = useMemo(() => {
+    if (!previewRows.length) return [];
+    return Object.keys(previewRows[0]).map((dataIndex) => ({
+      title: dataIndex,
+      dataIndex,
+      ellipsis: true,
+    }));
+  }, [previewRows]);
 
   const items = [
     {
@@ -165,6 +247,22 @@ export default function ImportModal({
           <Upload {...uploadProps} onChange={handleFileChange} maxCount={1}>
             <Button icon={<UploadOutlined />}>Elegir archivo</Button>
           </Upload>
+
+          {previewRows.length > 0 && (
+            <PreviewSection>
+              <p>
+                Vista previa (primeras {PREVIEW_LIMIT} filas). Confirma que los
+                datos se ven correctos antes de importar.
+              </p>
+              <Table
+                size="small"
+                pagination={false}
+                dataSource={previewRows}
+                columns={previewColumns}
+                scroll={{ x: true, y: 320 }}
+              />
+            </PreviewSection>
+          )}
         </Section>
       ),
     },
@@ -210,6 +308,14 @@ export default function ImportModal({
                 Cancelar
               </Button>,
               <Button
+                key="preview"
+                onClick={handlePreviewClick}
+                disabled={fileList.length === 0 || isImporting}
+                loading={isPreviewing}
+              >
+                Vista previa
+              </Button>,
+              <Button
                 key="import"
                 type="primary"
                 onClick={handleImportClick}
@@ -250,5 +356,13 @@ const Section = styled.div`
 
   p {
     margin-bottom: 1em;
+  }
+`;
+
+const PreviewSection = styled.div`
+  margin-top: 1.5em;
+
+  .ant-table {
+    background: #fff;
   }
 `;

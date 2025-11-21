@@ -27,6 +27,8 @@ export const InvoicesPage = () => {
     startDate: datesSelected.startDate,
     endDate: datesSelected.endDate,
     clientId: null,
+    receivablesOnly: false,
+    paymentStatus: '',
   });
 
   const { invoices } = useFbGetInvoicesWithFilters(filters);
