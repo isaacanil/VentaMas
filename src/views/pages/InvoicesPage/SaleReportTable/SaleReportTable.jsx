@@ -159,21 +159,21 @@ const ActionsMenu = ({ value }) => {
   const menuItems = useMemo(() => {
     const items = [
       {
-        key: 'print',
-        label: 'Imprimir',
-        icon: <FontAwesomeIcon icon={faPrint} />,
+        key: 'preview',
+        label: 'Ver detalle',
+        icon: icons.editingActions.show,
         disabled: false,
       },
       {
         key: 'edit',
-        label: 'Editar',
+        label: 'Editar factura',
         icon: icons.editingActions.edit,
         disabled: isEditDisabled || isProcessing,
       },
       {
-        key: 'preview',
-        label: 'Ver',
-        icon: icons.editingActions.show,
+        key: 'print',
+        label: 'Imprimir factura',
+        icon: <FontAwesomeIcon icon={faPrint} />,
         disabled: false,
       },
     ];
@@ -315,9 +315,8 @@ const columns = [
     maxWidth: '1fr',
     minWidth: '100px',
   },
-
   {
-    Header: 'Por cobrar',
+    Header: 'Estado',
     accessor: 'paymentStatus',
     align: 'right',
     maxWidth: '1fr',
@@ -329,23 +328,19 @@ const columns = [
         return <Tag>Sin datos</Tag>;
       }
 
-      if (value?.isPaidInFull) {
-        return (
-          <PaymentStatusCell>
-            <PaymentBadge $complete>Pagada</PaymentBadge>
-          </PaymentStatusCell>
-        );
-      }
-
       return (
         <PaymentStatusCell>
-          <Tooltip placement="left" title={<PendingTooltip value={value} />}>
-            <PendingChip>{pendingLabel}</PendingChip>
-          </Tooltip>
+          {value?.isPaidInFull ? (
+            <PaymentBadge $complete>Pagada</PaymentBadge>
+          ) : (
+            <Tooltip placement="left" title={<PendingTooltip value={value} />}>
+              <PendingChip>{pendingLabel}</PendingChip>
+            </Tooltip>
+          )}
         </PaymentStatusCell>
       );
     },
-    },
+  },
   {
     Header: 'Total',
     accessor: 'total',
@@ -416,6 +411,9 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       tableName={'Facturas'}
       numberOfElementsPerPage={40}
       rowSize="large"
+      enableVirtualization={true}
+      showPagination={false}
+      rowBorder={true}
       onRowClick={(row) => {
         const invoiceData =
           row?.accion?.data || row?.ver?.data || row?.data || null;
@@ -504,7 +502,6 @@ const PendingTooltip = ({ value }) => (
     <div>Total: {useFormatPrice(value?.total || 0)}</div>
   </div>
 );
-
 
 const HiddenPrintArea = styled.div`
   position: absolute;

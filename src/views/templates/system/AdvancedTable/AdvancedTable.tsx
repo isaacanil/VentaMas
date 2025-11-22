@@ -20,6 +20,7 @@ import { DatePicker } from '../Dates/DatePicker/DatePicker';
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { FilterUI } from './components/MenuFilter/MenuFilter';
 import { TableBody } from './components/Table/TableBody/TableBody';
+import { VirtualTableBody } from './components/Table/TableBody/VirtualTableBody';
 import TableFooter from './components/Table/TableFooter/TableFooter';
 import { TableHeader } from './components/Table/TableHeader/TableHeader';
 import { useColumnOrder } from './hooks/useColumnOrder';
@@ -112,6 +113,8 @@ export interface AdvancedTableProps<Row = TableRow> {
   expandedRowRender?: (row: Row) => ReactNode;
   rowExpandable?: (row: Row) => boolean;
   getRowId?: (row: Row, index: number) => string | number;
+  enableVirtualization?: boolean;
+  showPagination?: boolean;
 }
 
 interface PaginationUtilities<Row> {
@@ -225,6 +228,8 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   expandedRowRender,
   rowExpandable,
   getRowId,
+  enableVirtualization = false,
+  showPagination = true,
 }: AdvancedTableProps<Row>) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const userUid = useSelector<UserStoreState, string | undefined>(
@@ -324,10 +329,40 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const shouldGroup = Boolean(
     (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy,
   );
+
+  // Si hay virtualización, agrupamos TODO el dataset (sortedData).
+  // Si es paginación normal, agrupamos solo la página actual (currentData).
+  const dataToGroup = enableVirtualization ? sortedData : currentData;
+
   const groupedData =
     shouldGroup && groupBy
-      ? groupDataByField(currentData, groupBy)
+      ? groupDataByField(dataToGroup, groupBy)
       : sortedData;
+
+  // Preparar datos planos para GroupedVirtuoso
+  const { groupCounts, groupHeaders, flatGroupedData } = useMemo(() => {
+    if (!shouldGroup || !groupBy || !enableVirtualization) {
+      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };
+    }
+
+    // En este punto groupedData es un objeto Record<string, Row[]>
+    const groups = groupedData as Record<string, Row[]>;
+    const headers = Object.keys(groups);
+    const counts: number[] = [];
+    const flatData: Row[] = [];
+
+    headers.forEach((header) => {
+      const rows = groups[header];
+      counts.push(rows.length);
+      flatData.push(...rows);
+    });
+
+    return {
+      groupCounts: counts,
+      groupHeaders: headers,
+      flatGroupedData: flatData,
+    };
+  }, [groupedData, shouldGroup, groupBy, enableVirtualization]);
 
   const totalElements = data.length;
   const elementsShown = currentData.length;
@@ -404,6 +439,8 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     return () => resizeObserver.disconnect();
   }, [onScrollMetrics]);
 
+  const shouldUseVirtualization = enableVirtualization && !loading;
+
   return (
     <Container
       $hasTitle={!!title}
@@ -441,6 +478,11 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           ref={wrapperRef}
           isWideScreen={isWideScreen}
           onScroll={handleWrapperScroll}
+          style={
+            shouldUseVirtualization
+              ? { overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+              : undefined
+          }
         >
           <TableHeader
             columnOrder={columnOrder}
@@ -450,22 +492,43 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
             isWideLayout={isWideLayout}
             rowSize={rowSize}
           />
-          <TableBody
-            columnOrder={columnOrder}
-            currentData={currentData}
-            emptyText={emptyText}
-            groupedData={groupedData}
-            onRowClick={onRowClick}
-            shouldGroup={shouldGroup}
-            loading={loading}
-            isWideScreen={isWideScreen}
-            isWideLayout={isWideLayout}
-            expandedRowRender={expandedRowRender}
-            rowExpandable={rowExpandable}
-            getRowId={getRowId}
-            rowSize={rowSize}
-            rowBorder={rowBorder}
-          />
+          {shouldUseVirtualization ? (
+            <VirtualTableBody
+              columnOrder={columnOrder}
+              currentData={sortedData}
+              emptyText={emptyText}
+              onRowClick={onRowClick}
+              loading={loading}
+              isWideScreen={isWideScreen}
+              isWideLayout={isWideLayout}
+              expandedRowRender={expandedRowRender}
+              rowExpandable={rowExpandable}
+              getRowId={getRowId}
+              rowSize={rowSize}
+              rowBorder={rowBorder}
+              shouldGroup={shouldGroup}
+              groupCounts={groupCounts}
+              groupHeaders={groupHeaders}
+              flatGroupedData={flatGroupedData}
+            />
+          ) : (
+            <TableBody
+              columnOrder={columnOrder}
+              currentData={currentData}
+              emptyText={emptyText}
+              groupedData={groupedData}
+              onRowClick={onRowClick}
+              shouldGroup={shouldGroup}
+              loading={loading}
+              isWideScreen={isWideScreen}
+              isWideLayout={isWideLayout}
+              expandedRowRender={expandedRowRender}
+              rowExpandable={rowExpandable}
+              getRowId={getRowId}
+              rowSize={rowSize}
+              rowBorder={rowBorder}
+            />
+          )}
         </Wrapper>
         <TableFooter
           currentPage={currentPage}
@@ -480,6 +543,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           prevPage={prevPage}
           toggleReorderMenu={toggleReorderMenu}
           totalElements={totalElements}
+          showPaginationControls={!shouldUseVirtualization && showPagination}
         />
         <ColumnMenu
           resetColumnOrder={resetColumnOrder}
@@ -630,4 +694,8 @@ export const Row = styled.div<{
   align-items: center;
   width: 100%;
   min-width: fit-content;
+
+  &[data-border='on'] {
+    border-bottom: 1px solid var(--row-border-color, #f0f0f0);
+  }
 `;

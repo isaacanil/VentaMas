@@ -222,7 +222,7 @@ export default function CheckProductPriceAudit() {
             title="Cuando listPrice no existe se copia price"
             disabled={busy || missingListPriceCount === 0}
           >
-            Copiar price -> listPrice (faltantes)
+            Copiar price en listPrice (faltantes)
           </button>
           <button
             onClick={handleFixAllBusiness}

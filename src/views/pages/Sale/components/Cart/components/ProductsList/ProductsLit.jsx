@@ -30,32 +30,30 @@ const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
 ));
 VirtuosoList.displayName = 'VirtuosoList';
 
+// VirtuosoItem ahora es un contenedor simple, sin animación
 const VirtuosoItem = forwardRef(({ children, ...props }, ref) => (
-  <motion.div
-    ref={ref}
-    {...props}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
-    transition={{ duration: 0.2 }}
-  >
+  <div ref={ref} {...props}>
     {children}
-  </motion.div>
+  </div>
 ));
 VirtuosoItem.displayName = 'VirtuosoItem';
+
+
 
 export const ProductsList = () => {
   const dispatch = useDispatch();
   const ProductSelected = useSelector(SelectProduct);
+
   const insuranceEnabled = useInsuranceEnabled();
   const insuranceData = useSelector(selectInsuranceData);
-  const EMPTY_CART_MESSAGE = 'Los productos seleccionados aparecerán aquí...'; // Estado para modales globales
+  const EMPTY_CART_MESSAGE = 'Los productos seleccionados aparecerán aquí...';
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [batchInfoModalOpen, setBatchInfoModalOpen] = useState(false);
-  const [comment, setComment] = useState(''); // Handlers para abrir modales
+  const [comment, setComment] = useState('');
+
   const handleOpenCommentModal = (product) => {
     setSelectedProduct(product);
     setComment(product.comment || '');
@@ -77,7 +75,7 @@ export const ProductsList = () => {
       setBatchInfoModalOpen(true);
     }
   };
-  // Guardar comentario
+
   const handleSaveComment = () => {
     if (selectedProduct) {
       dispatch(
@@ -89,7 +87,7 @@ export const ProductsList = () => {
     }
     setCommentModalOpen(false);
   };
-  // Eliminar producto
+
   const handleDeleteProduct = () => {
     if (selectedProduct) {
       dispatch(deleteProduct(selectedProduct.cid));

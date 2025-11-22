@@ -1,4 +1,4 @@
-import { faBroom, faFilter, faSliders } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsis, faFilter, faFilterCircleXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Select,
   Space,
   Switch,
+  Tooltip,
 } from 'antd';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
@@ -332,7 +333,7 @@ export const FilterBar = ({
               {renderItems(mobileItems)}
               {showClearInDrawer && hasActiveFilters && onClearFilters ? (
                 <Button
-                  icon={<FontAwesomeIcon icon={faBroom} />}
+                  icon={<FontAwesomeIcon icon={faFilterCircleXmark} />}
                   onClick={onClearFilters}
                   type="default"
                   block
@@ -358,23 +359,27 @@ export const FilterBar = ({
 
       <DesktopActions>
         {showMoreButton ? (
-          <Button
-            icon={<FontAwesomeIcon icon={faSliders} />}
-            onClick={openModal}
-            size="middle"
-            type={hasActiveExtras || hasOverflow ? 'primary' : 'text'}
-            aria-label={labels.more ?? DEFAULT_LABELS.more}
-            {...moreButtonProps}
-          />
+          <Tooltip title={labels.more ?? DEFAULT_LABELS.more}>
+            <Button
+              icon={<FontAwesomeIcon icon={faEllipsis} />}
+              onClick={openModal}
+              size="middle"
+              type={hasActiveExtras || hasOverflow ? 'primary' : 'text'}
+              aria-label={labels.more ?? DEFAULT_LABELS.more}
+              {...moreButtonProps}
+            />
+          </Tooltip>
         ) : null}
 
         {hasActiveFilters && onClearFilters ? (
-          <Button
-            icon={<FontAwesomeIcon icon={faBroom} />}
-            onClick={onClearFilters}
-            type="text"
-            aria-label={clearButtonText}
-          />
+          <Tooltip title={clearButtonText}>
+            <Button
+              icon={<FontAwesomeIcon icon={faFilterCircleXmark} />}
+              onClick={onClearFilters}
+              type="text"
+              aria-label={clearButtonText}
+            />
+          </Tooltip>
         ) : null}
       </DesktopActions>
 
@@ -392,11 +397,13 @@ export const FilterBar = ({
               {modalFilters}
               {showClearInModal && hasActiveFilters && onClearFilters ? (
                 <Button
-                  icon={<FontAwesomeIcon icon={faBroom} />}
+                  icon={<FontAwesomeIcon icon={faFilterCircleXmark} />}
                   onClick={onClearFilters}
                   block
                   aria-label={clearButtonText}
-                />
+                >
+                  {clearButtonText}
+                </Button>
               ) : null}
             </Form>
           </ModalContent>

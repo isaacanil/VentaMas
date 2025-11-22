@@ -10,7 +10,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip, Badge, Button, Dropdown } from 'antd';
-import { motion } from 'framer-motion';
 import { useState, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -113,11 +112,7 @@ interface ProductCardForCartProps {
   onOpenBatchInfoModal: (item: CartItem) => void;
 }
 
-const variants = {
-  initial: { opacity: 0, y: -90 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 150, transition: { duration: 0.5 } },
-} as const;
+
 
 const ensureNumber = (value: number | string | undefined | null): number => {
   if (typeof value === 'number') {
@@ -363,10 +358,6 @@ export const ProductCardForCart = ({
 
   return (
     <Container
-      variants={variants}
-      initial="initial"
-      animate="animate"
-      transition={{ duration: 0.6 }}
       $expired={isExpired}
     >
       <Row>
@@ -550,7 +541,7 @@ export const ProductCardForCart = ({
   );
 };
 
-const Container = styled(motion.div)<{ $expired: boolean }>`
+const Container = styled.div<{ $expired: boolean }>`
   position: relative;
   display: grid;
   gap: 0.2em;

@@ -18,6 +18,7 @@ const TableFooter = ({
   lastPage,
   footerRightSide,
   toggleReorderMenu,
+  showPaginationControls = true,
 }) => {
   return (
     <Footer>
@@ -28,14 +29,18 @@ const TableFooter = ({
         </Counter>
         {footerLeftSide ? footerLeftSide : ''}
       </FooterLeftSide>
-      <Pagination
-        currentPage={currentPage}
-        pageCount={pageCount}
-        nextPage={nextPage}
-        prevPage={prevPage}
-        firstPage={firstPage}
-        lastPage={lastPage}
-      />
+      {showPaginationControls && (
+        <PaginationContainer>
+          <Pagination
+            currentPage={currentPage}
+            pageCount={pageCount}
+            nextPage={nextPage}
+            prevPage={prevPage}
+            firstPage={firstPage}
+            lastPage={lastPage}
+          />
+        </PaginationContainer>
+      )}
       <FooterRightSide>
         {footerRightSide && footerRightSide}
         <Button
@@ -52,7 +57,7 @@ export default TableFooter;
 const Footer = styled.div`
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   height: 3em;
   padding: 0 1em;
@@ -64,10 +69,17 @@ const FooterLeftSide = styled.div`
   gap: 1em;
   align-items: center;
   justify-self: start;
+  grid-column: 1;
+`;
+
+const PaginationContainer = styled.div`
+  grid-column: 2;
+  justify-self: center;
 `;
 
 const FooterRightSide = styled.div`
   justify-self: end;
+  grid-column: 3;
 `;
 const Counter = styled.div`
   display: flex;
