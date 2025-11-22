@@ -138,6 +138,25 @@ const OrderManagement = () => {
       return;
     }
 
+    if (!orderData?.replenishments?.length) {
+      message.error('Agrega un producto al pedido');
+      return;
+    }
+
+    const hasInvalidProducts = orderData.replenishments.some(
+      (p) =>
+        !p.name?.trim() ||
+        (Number(p.quantity) || 0) <= 0 ||
+        (Number(p.baseCost) || 0) <= 0,
+    );
+
+    if (hasInvalidProducts) {
+      message.error(
+        'Todos los productos deben tener nombre, cantidad y costo mayor a 0',
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const submitData = sanitizeData(orderData, defaultsMap);

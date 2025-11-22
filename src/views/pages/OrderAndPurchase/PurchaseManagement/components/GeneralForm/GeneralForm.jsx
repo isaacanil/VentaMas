@@ -1,10 +1,11 @@
-import { Form, Input, Select, DatePicker, message, Modal } from 'antd';
+import { Form, Input, Select, DatePicker, message, Modal, Button } from 'antd';
 import dayjs from 'dayjs';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { icons } from '../../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../../constants/modes';
 import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState';
 import { selectUser } from '../../../../../../features/auth/userSlice';
@@ -18,13 +19,14 @@ import {
   updateProduct,
   setPurchase,
   cleanPurchase,
+  SelectProduct,
 } from '../../../../../../features/purchase/addPurchaseSlice';
 import { db } from '../../../../../../firebase/firebaseconfig';
 import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders';
 import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
 import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
+import ProductModal from '../../../shared/ProductModal';
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
-import AddProductForm from '../AddProduct';
 import BackOrdersModal from '../BackOrdersModal';
 import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
 import ProductsTable from '../ProductsTable';
@@ -160,13 +162,6 @@ const GeneralForm = ({
     );
   };
 
-  const handleProductSave = (productData) => {
-    dispatch(setProductSelected(productData));
-    dispatch(AddProductToPurchase());
-  };
-
-  const clearAddProductForm = () => dispatch(clearProductSelected(null));
-
   const handleProductUpdate = ({ index, ...updatedValues }) => {
     dispatch(updateProduct({ value: updatedValues, index }));
   };
@@ -263,6 +258,12 @@ const GeneralForm = ({
     setSelectedProductForBackorders(null);
   };
 
+  const handleDirectProductAdd = (product) => {
+    dispatch(SelectProduct(product));
+    dispatch(AddProductToPurchase());
+    message.success('Producto agregado');
+  };
+
   return (
     <>
       <InvoiceDetails>
@@ -291,11 +292,19 @@ const GeneralForm = ({
           />
         </Form.Item>
       </InvoiceDetails>
-      <AddProductForm
-        onSave={handleProductSave}
-        onClear={clearAddProductForm}
-        backOrderAssociationId={backOrderAssociationId}
-      />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginBottom: '10px',
+        }}
+      >
+        <ProductModal onSelect={handleDirectProductAdd}>
+          <Button type="primary" icon={icons.operationModes.add}>
+            Agregar Producto
+          </Button>
+        </ProductModal>
+      </div>
       <ProductsTable
         products={replenishments}
         onEditProduct={handleProductUpdate}

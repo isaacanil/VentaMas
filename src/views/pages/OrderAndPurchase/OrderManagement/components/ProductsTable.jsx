@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
 import { formatMoney } from '../../../../../utils/formatters';
+import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
   editing,
@@ -26,6 +27,14 @@ const EditableCell = ({
   ...restProps
 }) => {
   const getInput = () => {
+    if (inputType === 'productModal') {
+      return (
+        <ProductModal
+          onSelect={(product) => onSave(record, dataIndex, product)}
+          selectedProduct={{ name: record[dataIndex] }}
+        />
+      );
+    }
     if (inputType === 'number') {
       return (
         <InputNumber
@@ -35,7 +44,6 @@ const EditableCell = ({
       );
     }
     if (inputType === 'date') {
-      // En lugar de mostrar el DatePicker directamente, abrimos el modal
       return children;
     }
     return (
@@ -58,8 +66,8 @@ const EditableCell = ({
   return (
     <td
       {...restProps}
-      onClick={onCellClick || handleDateCellClick} // Mover el onClick aquí
-      style={{ cursor: 'pointer' }} // Opcional: Cambiar cursor al pasar sobre la celda
+      onClick={onCellClick || handleDateCellClick}
+      style={{ cursor: 'pointer' }}
     >
       {editing ? (
         <Form.Item
@@ -105,7 +113,6 @@ const ProductsTable = ({
 
   const edit = (record, dataIndex) => {
     const value = record[dataIndex];
-    // Convertir timestamp a momento para DatePicker si es necesario
     const formValue =
       dataIndex === 'expirationDate' && value ? dayjs(value) : value;
 
@@ -114,30 +121,49 @@ const ProductsTable = ({
   };
 
   const handleSave = (record, dataIndex, value) => {
-    // Para fechas, asegurarnos de que el valor sea un timestamp
-    const finalValue =
-      dataIndex === 'expirationDate' ? (value ? Number(value) : null) : value;
+    let newData = { ...record, originalId: record.id };
 
-    const newData = { ...record, [dataIndex]: finalValue };
-    if (dataIndex === 'quantity') {
-      if (
-        !record.selectedBackOrders ||
-        record.selectedBackOrders.length === 0
+    if (dataIndex === 'name' && typeof value === 'object' && value !== null) {
+      const product = value;
+      newData = {
+        ...newData,
+        id: product.id,
+        name: product.name,
+        baseCost: product.pricing?.cost || 0,
+        purchaseQuantity: newData.purchaseQuantity || 1,
+      };
+    } else {
+      let finalValue = value;
+      if (dataIndex === 'expirationDate') {
+        finalValue = value ? Number(value) : null;
+      } else if (
+        ['quantity', 'baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(
+          dataIndex,
+        )
       ) {
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity = Number(finalValue) || 0;
+        finalValue = Number(value) || 0;
+      }
+      newData[dataIndex] = finalValue;
+    }
+
+    if (dataIndex === 'quantity') {
+      const finalQty = Number(newData.quantity) || 0;
+      if (
+        !newData.selectedBackOrders ||
+        newData.selectedBackOrders.length === 0
+      ) {
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty;
       } else {
-        const backordersQuantity = record.selectedBackOrders.reduce(
+        const backordersQuantity = newData.selectedBackOrders.reduce(
           (sum, bo) => sum + bo.quantity,
           0,
         );
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity =
-          (Number(finalValue) || 0) + backordersQuantity;
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty + backordersQuantity;
       }
-    } else {
-      newData[dataIndex] = finalValue;
     }
+
     onEditProduct({ ...newData, index: record.key });
     setEditingCell({ row: '', col: '' });
   };
@@ -155,7 +181,6 @@ const ProductsTable = ({
     {
       title: 'Producto',
       dataIndex: 'name',
-      width: 200,
       ellipsis: {
         showTitle: true,
       },
@@ -170,6 +195,7 @@ const ProductsTable = ({
           {text}
         </span>
       ),
+      editable: true,
     },
 
     {
@@ -186,20 +212,16 @@ const ProductsTable = ({
     },
 
     {
-      title: 'Costo Unitario',
-      dataIndex: 'unitCost',
-      render: (value) => formatMoney(value),
-    },
-    {
       title: 'Subtotal',
       dataIndex: 'subtotal',
       fixed: 'right',
       render: (value) => formatMoney(value),
     },
     {
-      title: 'Acciones',
+      title: '',
       key: 'actions',
       fixed: 'right',
+      width: 70,
       render: (_, record) => (
         <div
           style={{
@@ -229,20 +251,21 @@ const ProductsTable = ({
         inputType:
           col.dataIndex === 'expirationDate'
             ? 'date'
-            : [
-                  'quantity',
-                  'baseCost',
-                  'taxPercentage',
-                  'freight',
-                  'otherCosts',
-                ].includes(col.dataIndex)
-              ? 'number'
-              : 'text',
+            : col.dataIndex === 'name'
+              ? 'productModal'
+              : [
+                    'quantity',
+                    'baseCost',
+                    'taxPercentage',
+                    'freight',
+                    'otherCosts',
+                  ].includes(col.dataIndex)
+                ? 'number'
+                : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record, col.dataIndex),
         onSave: handleSave,
-        // For cantidad column: if backorders exist, run onQuantityClick; otherwise, edit inline.
         ...(col.dataIndex === 'quantity'
           ? {
               onCellClick: () => {
@@ -279,10 +302,10 @@ const ProductsTable = ({
           columns={mergedColumns}
           dataSource={products.map((product, index) => ({
             ...product,
-            key: index,
+            key: product.id || index,
           }))}
-          rowKey={(record, index) => index}
-          onRow={() => ({})} // Asegurar que no haya conflictos con eventos en las filas
+          rowKey={(record) => record.key}
+          onRow={() => ({})}
         />
       </Form>
 

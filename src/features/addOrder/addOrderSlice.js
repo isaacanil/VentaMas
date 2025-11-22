@@ -109,8 +109,9 @@ const addOrderSlice = createSlice({
     },
     updateProduct: (state, action) => {
       const { value } = action.payload;
+      const searchId = value.originalId || value.id;
       const productIndex = state.order.replenishments.findIndex(
-        (item) => item.id === value.id,
+        (item) => item.id === searchId,
       );
       if (productIndex === -1) return;
       const currentProduct = state.order.replenishments[productIndex];

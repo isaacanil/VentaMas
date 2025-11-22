@@ -267,6 +267,20 @@ const PurchaseManagement = () => {
       return;
     }
 
+    const hasInvalidProducts = purchaseData.replenishments.some(
+      (p) =>
+        !p.name?.trim() ||
+        (Number(p.purchaseQuantity) || 0) <= 0 ||
+        (Number(p.baseCost) || 0) <= 0,
+    );
+
+    if (hasInvalidProducts) {
+      message.error(
+        'Todos los productos deben tener nombre, cantidad y costo mayor a 0',
+      );
+      return;
+    }
+
     if (mode === 'complete') {
       setIsWarehouseModalOpen(true);
       return;

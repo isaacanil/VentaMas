@@ -141,9 +141,10 @@ export const addPurchaseSlice = createSlice({
     },
     updateProduct: (state, actions) => {
       const { value } = actions.payload;
-      // Buscar producto por id en lugar de usar un índice entregado
+      // Buscar producto por originalId (si se cambió el ID) o por id actual
+      const searchId = value.originalId || value.id;
       const productIndex = state.purchase.replenishments.findIndex(
-        (item) => item.id === value.id,
+        (item) => item.id === searchId,
       );
       if (productIndex === -1) return; // Si no se encuentra, no se actualiza
 

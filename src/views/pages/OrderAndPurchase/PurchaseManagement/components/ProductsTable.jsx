@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
 import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
+import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
   editing,
@@ -28,6 +29,14 @@ const EditableCell = ({
   ...restProps
 }) => {
   const getInput = () => {
+    if (inputType === 'productModal') {
+      return (
+        <ProductModal
+          onSelect={(product) => onSave(record, dataIndex, product)}
+          selectedProduct={{ name: record[dataIndex] }}
+        />
+      );
+    }
     if (inputType === 'number') {
       return (
         <InputNumber
@@ -133,33 +142,49 @@ const ProductsTable = ({
   };
 
   const handleSave = (record, dataIndex, value) => {
-    const finalValue =
-      dataIndex === 'expirationDate'
-        ? value
-          ? dayjs(value).valueOf()
-          : null
-        : value;
+    let newData = { ...record, originalId: record.id };
 
-    const newData = { ...record };
-    if (dataIndex === 'quantity') {
-      if (
-        !record.selectedBackOrders ||
-        record.selectedBackOrders.length === 0
+    if (dataIndex === 'name' && typeof value === 'object' && value !== null) {
+      const product = value;
+      newData = {
+        ...newData,
+        id: product.id,
+        name: product.name,
+        baseCost: product.pricing?.cost || 0,
+        taxPercentage: 0,
+      };
+    } else {
+      let finalValue = value;
+      if (dataIndex === 'expirationDate') {
+        finalValue = value ? dayjs(value).valueOf() : null;
+      } else if (
+        ['baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(
+          dataIndex,
+        )
       ) {
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity = Number(finalValue) || 0;
+        finalValue = Number(value) || 0;
+      }
+      newData[dataIndex] = finalValue;
+    }
+
+    if (dataIndex === 'quantity') {
+      const finalQty = Number(newData.quantity) || 0;
+      if (
+        !newData.selectedBackOrders ||
+        newData.selectedBackOrders.length === 0
+      ) {
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty;
       } else {
-        const backordersQuantity = record.selectedBackOrders.reduce(
+        const backordersQuantity = newData.selectedBackOrders.reduce(
           (sum, bo) => sum + bo.quantity,
           0,
         );
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity =
-          (Number(finalValue) || 0) + backordersQuantity;
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty + backordersQuantity;
       }
-    } else {
-      newData[dataIndex] = finalValue;
     }
+
     // Enviar directamente el objeto actualizado sin envolverlo en otra propiedad "value"
     onEditProduct(newData);
 
@@ -213,6 +238,7 @@ const ProductsTable = ({
           {text}
         </span>
       ),
+      editable: true,
     },
     {
       title: 'F. Expiración',
@@ -263,9 +289,10 @@ const ProductsTable = ({
       render: (value) => formatMoney(value),
     },
     {
-      title: 'Acciones',
+      title: '',
       key: 'actions',
       fixed: 'right',
+      width: 70,
       render: (_, record) => (
         <div
           style={{
@@ -295,15 +322,17 @@ const ProductsTable = ({
         inputType:
           col.dataIndex === 'expirationDate'
             ? 'date'
-            : [
-                  'quantity',
-                  'baseCost',
-                  'taxPercentage',
-                  'freight',
-                  'otherCosts',
-                ].includes(col.dataIndex)
-              ? 'number'
-              : 'text',
+            : col.dataIndex === 'name'
+              ? 'productModal'
+              : [
+                    'quantity',
+                    'baseCost',
+                    'taxPercentage',
+                    'freight',
+                    'otherCosts',
+                  ].includes(col.dataIndex)
+                ? 'number'
+                : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record, col.dataIndex),

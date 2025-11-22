@@ -170,7 +170,12 @@ const TooltipHighlight = styled.span`
   color: #1d39c4;
 `;
 
-const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
+const ProductModal = ({
+  onSelect,
+  selectedProduct,
+  pageSize = 14,
+  children,
+}) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
   const searchInputRef = useRef(null);
@@ -350,12 +355,16 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
 
   return (
     <div>
-      <Input
-        value={selectedProduct?.name || ''}
-        placeholder="Buscar y seleccionar producto..."
-        readOnly
-        onClick={() => setVisible(true)}
-      />
+      {children ? (
+        <div onClick={() => setVisible(true)}>{children}</div>
+      ) : (
+        <Input
+          value={selectedProduct?.name || ''}
+          placeholder="Buscar y seleccionar producto..."
+          readOnly
+          onClick={() => setVisible(true)}
+        />
+      )}
       <Drawer
         title="Lista de Productos"
         placement="bottom"
