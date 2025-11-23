@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import {
   addPropertiesToCashCount,
   selectCashCount,
@@ -10,6 +11,7 @@ import {
   updateCashCountTotals,
 } from '../../../../../../../../features/cashCount/cashCountManagementSlice';
 import { useInvoicesForCashCount } from '../../../../../../../../hooks/cashCount/useInvoicesForCashCount';
+import { usePaymentsForCashCount } from '../../../../../../../../hooks/cashCount/usePaymentsForCashCount';
 import { useExpensesForCashCount } from '../../../../../../../../hooks/expense/useExpensesForCashCount';
 import { isArrayEmpty } from '../../../../../../../../utils/array/ensureArray';
 import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator';
@@ -67,6 +69,7 @@ function useExpenseComments(expenses) {
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const cashReconciliation = useSelector(selectCashCount, shallowEqual);
   const { id, state } = cashReconciliation;
   const { banknotes, comments } = cashReconciliation.closing;
@@ -81,6 +84,14 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
 
   const { data: expenses, loading: expensesLoading } =
     useExpensesForCashCount(id);
+
+  const { data: arPayments, loading: arPaymentsLoading } =
+    usePaymentsForCashCount(
+      user,
+      cashReconciliation.opening?.employee?.id,
+      cashReconciliation.opening?.date,
+      cashReconciliation.closing?.date || null,
+    );
 
   const mergeExpenseComments = useCallback(
     (expenseBlock) => {
@@ -107,8 +118,14 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   );
 
   const metaData = useMemo(
-    () => CashCountMetaData(cashReconciliation, invoices, expenses),
-    [cashReconciliation, invoices, expenses],
+    () =>
+      CashCountMetaData(
+        cashReconciliation,
+        invoices,
+        expenses,
+        arPayments?.payments || [],
+      ),
+    [cashReconciliation, invoices, expenses, arPayments],
   );
 
   useEffect(() => {
@@ -150,9 +167,10 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
         />
       </Row>
       <CashBoxClosureDetails
-        loading={invoicesLoading || expensesLoading}
+        loading={invoicesLoading || expensesLoading || arPaymentsLoading}
         invoices={invoices}
         expenses={expenses}
+        arPayments={arPayments?.payments || []}
       />
       <Comments
         label="Comentario de cierre"
