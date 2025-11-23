@@ -60,6 +60,12 @@ export async function generateFinalInvoice(
     date: serverTimestamp(),
     userID: user.uid,
     user: userRef,
+    snapshot: {
+      initialPaymentMethods: cart.paymentMethod || [],
+      initialTotalPaid: cart.payment?.value || 0,
+      isCreditSale: !!cart.isAddedToReceivables,
+      createdAt: serverTimestamp(),
+    },
   };
 
   if (dueDate) {
@@ -118,6 +124,12 @@ export async function generateInvoiceFromPreorder(
     cashCountId,
     user: userRef,
     history: arrayUnion(historyEntry),
+    snapshot: {
+      initialPaymentMethods: cart.paymentMethod || [],
+      initialTotalPaid: cart.payment?.value || 0,
+      isCreditSale: !!cart.isAddedToReceivables,
+      createdAt: serverTimestamp(),
+    },
   };
 
   tx.set(preorderRef, { data }, { merge: true });
