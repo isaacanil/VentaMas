@@ -1,89 +1,64 @@
-# Propuesta de Solución: Corrección de Flujos Financieros (Sin Migración)
+# Propuesta de Solución: Corrección de Flujos Financieros (Estrategia Snapshot)
 
-Este documento propone una estrategia técnica para corregir las discrepancias en el Cuadre de Caja (Faltantes por ventas a crédito y Sobrantes por cobros de CXC) minimizando cambios estructurales y evitando migraciones masivas de datos históricos.
+Este documento actualiza la propuesta anterior para abordar el problema crítico de la mutación de datos en las facturas.
 
-## Principio General: "Interpretación vs. Estructura"
-En lugar de cambiar cómo se guardan los datos históricos (lo que requeriría migración), cambiaremos **cómo el sistema lee e interpreta** los datos existentes para el cálculo del cuadre.
+## Resumen del Problema
+Actualmente, cuando se paga una deuda (CXC), se sobrescribe la información de la factura original (`totalPaid`, `paymentMethod`). Esto hace que sea imposible saber cuánto se pagó *realmente* el día que se creó la factura, corrompiendo los cuadres de caja históricos.
 
----
+## Estrategia Técnica: "Snapshot + Transacciones"
 
-## 1. Problema: Falsos Faltantes (Ventas a Crédito)
+### 1. Detener la "Hemorragia" (Snapshot en Creación)
+Debemos guardar el estado financiero inicial de la factura en campos inmutables (que nunca se editen).
 
-**Situación Actual:**
-El sistema suma el `totalPurchase` de la factura al "Dinero Esperado" (System Total), ignorando que parte de ese total puede ser a crédito (no entra dinero real).
+**Backend (`createInvoiceV2`):**
+Al crear la factura, además de guardar `totalPaid` y `paymentMethod`, guardaremos:
+*   `snapshot.initialPaymentMethods`: Copia exacta de los métodos de pago al momento de la creación.
+*   `snapshot.initialTotalPaid`: Monto pagado al momento de la creación.
+*   `snapshot.isCreditSale`: Booleano para identificar fácilmente si nació como crédito.
 
-**Solución Propuesta (Frontend - `CashCountMetaData.jsx`):**
-Modificar la función `sumInvoiceMetrics`. En lugar de sumar el total de la factura, iterar sobre el array `paymentMethods` de la factura.
-
-*   **Lógica Nueva:**
-    *   Si `method === 'cash'` -> Sumar a Esperado en Efectivo.
-    *   Si `method === 'card'` -> Sumar a Esperado en Tarjeta.
-    *   Si `method === 'transfer'` -> Sumar a Esperado en Transferencia.
-    *   **Si `method === 'credit'` (o similar) -> IGNORAR.**
-
-**Impacto:**
-*   Corrige inmediatamente el cálculo para facturas nuevas y viejas.
-*   No requiere cambios en la base de datos.
+**Impacto:** Cambio menor en la estructura de la factura (campos aditivos, no rompe compatibilidad).
 
 ---
 
-## 2. Problema: Falsos Sobrantes (Cobros de CXC no detectados)
+### 2. Corrección del Cuadre de Caja (Frontend)
 
-**Situación Actual:**
-Los pagos recibidos en el módulo de Cuentas por Cobrar (`accountsReceivablePayments`) no tienen un `cashCountId` vinculado, por lo que el Cuadre de Caja los ignora.
+Modificaremos `CashCountMetaData.jsx` para que use una lógica de prioridad:
 
-**Solución Propuesta (Estrategia Híbrida):**
+**Lógica Nueva:**
+1.  **Dinero por Ventas (Invoices):**
+    *   Iterar sobre las facturas del cuadre.
+    *   **¿Tiene campos `snapshot`?**
+        *   **SÍ:** Usar `snapshot.initialTotalPaid` y `snapshot.initialPaymentMethods`.
+        *   **NO (Datos viejos):** Usar lógica de contingencia (ver abajo).
+    *   Sumar al "Dinero Esperado" según el método (Efectivo, Tarjeta, etc.). **Ignorar métodos de crédito.**
 
-### A. Para Datos Históricos y Actuales (Consulta por Tiempo)
-Como los pagos viejos no tienen el ID del cuadre, usaremos el **tiempo** y el **usuario** como vínculo.
-
-1.  **Nuevo Hook (`usePaymentsForCashCount`):**
-    *   Este hook se usará en la vista `CashReconciliation`.
-    *   **Input:** `userId` (cajero), `startDate` (apertura caja), `endDate` (cierre o *ahora*).
-    *   **Consulta Firestore:** Buscar en `accountsReceivablePayments` donde:
-        *   `createdUserId` == `userId`
-        *   `createdAt` >= `startDate`
-        *   `createdAt` <= `endDate`
-    *   **Resultado:** Una lista de pagos que el sistema asume pertenecen a ese turno.
-
-2.  **Integración en Calculadora (`CashCountMetaData.jsx`):**
-    *   Sumar estos pagos al "Dinero Esperado" (System Total) clasificados por su método de pago (Efectivo, Tarjeta, etc.).
-
-### B. Para Datos Futuros (Mejora Progresiva)
-Para hacer el sistema más robusto a futuro sin romper lo anterior:
-
-1.  **Backend (`fbPayActiveInstallmentForAccount`):**
-    *   Al registrar un nuevo pago, intentar detectar si hay un `cashCount` abierto para ese usuario.
-    *   Si existe, guardar el `cashCountId` dentro del documento del pago (`accountsReceivablePayments`).
-    *   *Nota:* Esto es opcional para que funcione la solución A, pero recomendado para trazabilidad futura.
+2.  **Dinero por Cobros (CXC Payments):**
+    *   Usar el hook `usePaymentsForCashCount` (propuesto anteriormente) para buscar pagos de CXC realizados *durante el turno*.
+    *   Sumar estos pagos al "Dinero Esperado".
 
 ---
 
-## 3. Resumen de Cambios Técnicos Requeridos
+### 3. Manejo de Datos Viejos (Contingencia)
+Para las facturas antiguas que ya fueron "mutadas" y no tienen snapshot:
 
-### Frontend (Vista `CashReconciliation`)
-1.  **`src/hooks/cashCount/usePaymentsForCashCount.js` (Nuevo Archivo):**
-    *   Implementar la lógica de consulta a Firestore filtrando por rango de fecha y usuario.
-2.  **`src/views/pages/CashReconciliation/.../RightSide.jsx`:**
-    *   Importar y usar el nuevo hook.
-    *   Pasar los pagos obtenidos (`payments`) a `CashCountMetaData`.
-3.  **`src/views/pages/CashReconciliation/.../CashCountMetaData.jsx`:**
-    *   Recibir el array `payments`.
-    *   Sumar los montos de `payments` al total esperado, respetando el método de pago.
-    *   Refinar `sumInvoiceMetrics` para que solo sume métodos reales (no crédito).
-
-### Visualización (UI)
-*   Agregar una sección o línea en el resumen del Cuadre de Caja que diga "Ingresos por CXC" para que el cajero entienda por qué se espera ese dinero.
+*   **Escenario A (Factura 100% pagada hoy):** El sistema verá `totalPaid` completo. Asumirá que se pagó el día 1. **Error inevitable sin backup.**
+*   **Mitigación:** Podemos intentar inferir si fue crédito mirando si existe un documento en `accountsReceivable` vinculado a esa factura.
+    *   Si existe `accountsReceivable` para esa factura -> Asumir que el pago inicial fue **$0** (o el `initialAmount` del AR si existe).
+    *   Esto requiere leer la colección de AR, lo cual es costoso.
+*   **Decisión Pragmática:** Aceptar que los cuadres históricos antiguos pueden tener imprecisiones, pero garantizar que **desde hoy** los cuadres sean perfectos.
 
 ---
 
-## 4. Evaluación de Riesgos
+### 4. Pasos de Implementación
 
-| Riesgo | Probabilidad | Mitigación |
-| :--- | :--- | :--- |
-| **Pagos fuera de hora:** Un pago hecho milisegundos antes de abrir o cerrar caja podría quedar fuera. | Baja | Usar rangos de fecha inclusivos. El impacto monetario es mínimo o nulo si el proceso operativo es correcto. |
-| **Performance:** Consultar pagos en cada carga del cuadre. | Media | La colección de pagos suele ser menor que la de facturas. Indexar por `createdUserId` + `createdAt` en Firestore. |
-| **Duplicidad:** Si en el futuro implementamos vinculación directa. | Baja | La lógica de consulta debe priorizar: "Si tiene ID, usar ID. Si no, usar fecha". |
+1.  **Backend (Cloud Function):**
+    *   Editar `functions/src/modules/invoice/services/invoiceGeneration.service.js` (o donde se arme el objeto) para incluir los campos `snapshot`.
+2.  **Frontend (Hook de Pagos):**
+    *   Crear `usePaymentsForCashCount` para leer `accountsReceivablePayments` por rango de fecha.
+3.  **Frontend (Calculadora):**
+    *   Editar `CashCountMetaData.jsx` para:
+        *   Implementar la lógica de prioridad (Snapshot > Actual).
+        *   Sumar los pagos provenientes del hook de CXC.
 
-## 5. Conclusión
-Esta estrategia permite solucionar el desbalance financiero **hoy mismo** modificando solo archivos del Frontend (`views`, `hooks`) y ajustando la lógica de cálculo, sin tocar la estructura de la base de datos ni realizar scripts de migración.
+## Conclusión
+Esta estrategia soluciona el problema de raíz (la pérdida de información histórica) sin requerir una migración compleja de datos antiguos, simplemente mejorando la estructura de los datos nuevos ("Schema-on-write evolution").
