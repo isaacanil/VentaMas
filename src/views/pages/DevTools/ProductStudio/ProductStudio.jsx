@@ -450,7 +450,7 @@ export default function ProductStudio() {
               open={imageDrawerVisible}
               destroyOnHidden
               onClose={() => setImageDrawerVisible(false)}
-              bodyStyle={{ padding: 0 }}
+              styles={{ body: { padding: 0 } }}
             >
               <ImageManager
                 hideImageManager={() => setImageDrawerVisible(false)}

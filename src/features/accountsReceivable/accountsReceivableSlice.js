@@ -119,8 +119,8 @@ const accountsReceivableSlice = createSlice({
         // Update info state with flattened payments
         state.info = {
           ar: accountReceivable || {},
-          client: client?.client || {},
-          invoice: invoice?.data || {},
+          client: client || {},
+          invoice: invoice || {},
           installments: installments || [],
           payments: payments, // Pagos aplanados con referencia al número de cuota
           paymentInstallment: [], // Si es necesario, podemos eliminarlo si no se usa

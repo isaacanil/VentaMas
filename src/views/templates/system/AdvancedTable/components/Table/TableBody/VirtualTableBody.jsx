@@ -266,7 +266,7 @@ const BodyCell = styled.div`
     props.fixed === 'left' &&
     `
     left: 0;
-    z-index: 1;
+    z-index: 2;
     background-color: white;
     border-right: 1px solid var(--gray-1);
   `}
@@ -274,7 +274,7 @@ const BodyCell = styled.div`
     props.fixed === 'right' &&
     `
     right: 0;
-    z-index: 1;
+    z-index: 2;
     background-color: white;
     border-left: 1px solid var(--gray-1);
   `}

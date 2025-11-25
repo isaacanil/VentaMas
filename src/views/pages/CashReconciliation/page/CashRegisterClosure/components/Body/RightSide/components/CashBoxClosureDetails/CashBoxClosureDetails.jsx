@@ -9,8 +9,13 @@ import { CashCountMetaData } from '../../CashCountMetaData';
 
 export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
   const cashCount = useSelector(selectCashCount);
-  const { totalSystem, totalCharged, totalDiscrepancy, totalExpenses } =
-    CashCountMetaData(cashCount, invoices, expenses);
+  const {
+    totalSystem,
+    totalCharged,
+    totalDiscrepancy,
+    totalExpenses,
+    totalReceivables,
+  } = CashCountMetaData(cashCount, invoices, expenses);
 
   return (
     <Spin spinning={loading}>
@@ -20,6 +25,13 @@ export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
           readOnly
           value={useFormatNumber(totalCharged)}
         />
+        {totalReceivables > 0 && (
+          <InputWithHorizontalLabel
+            label={'Total Cobrado CxC'}
+            readOnly
+            value={useFormatNumber(totalReceivables)}
+          />
+        )}
         {totalExpenses > 0 && (
           <InputWithHorizontalLabel
             label={'Total Gastos'}

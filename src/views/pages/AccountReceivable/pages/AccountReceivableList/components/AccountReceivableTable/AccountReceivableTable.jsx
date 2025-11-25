@@ -10,6 +10,7 @@ export const AccountReceivableTable = ({
   searchTerm = '',
   totalBalance,
   showInsuranceColumn, // Nueva prop para controlar la visibilidad de la columna de aseguradora
+  onRowClick,
 }) => {
   const { isPharmacy } = useBusiness();
 
@@ -27,6 +28,7 @@ export const AccountReceivableTable = ({
       searchTerm={searchTerm}
       footerLeftSide={`Total: ${totalBalance}`}
       emptyText="No hay cuentas por cobrar para mostrar"
+      onRowClick={onRowClick}
     />
   );
 };

@@ -1,8 +1,9 @@
-import { runTransaction } from 'firebase/firestore';
+import { runTransaction, doc, arrayUnion } from 'firebase/firestore';
 
 import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 
 import {
   getInstallmentsByArId,
@@ -87,6 +88,28 @@ export const fbApplyPartialPaymentToAccount = async ({
 
     const invoice = await fbGetInvoice(user.businessID, accountData.invoiceId);
 
+    let openCashCountId = null;
+    try {
+      const { state, cashCount } = await checkOpenCashReconciliation(user);
+      
+      if (state === 'closing') {
+        throw new Error('No se puede procesar el pago: La caja está en proceso de cierre.');
+      }
+      
+      if (state === 'closed') {
+        throw new Error('No se puede procesar el pago: No hay un cuadre de caja abierto.');
+      }
+
+      if (state === 'open' && cashCount?.id) {
+        openCashCountId = cashCount.id;
+      }
+    } catch (error) {
+      if (error.message.startsWith('No se puede procesar el pago')) {
+        throw error;
+      }
+      console.warn('Error checking open cash count:', error);
+    }
+
     const transactionResult = await runTransaction(db, async (transaction) => {
       let remainingAmount = totalPaid;
 
@@ -95,6 +118,29 @@ export const fbApplyPartialPaymentToAccount = async ({
         user,
         paymentDetails,
       });
+
+      if (openCashCountId) {
+        const cashCountRef = doc(
+          db,
+          'businesses',
+          user.businessID,
+          'cashCounts',
+          openCashCountId,
+        );
+        // Assuming paymentDetails.paymentMethods is an array of methods.
+        // If it's just one method object or similar, ensure consistency.
+        // The schema says 'receivablePayments' entry has: amount, method, date, paymentId.
+        transaction.update(cashCountRef, {
+          'cashCount.receivablePayments': arrayUnion({
+            paymentId,
+            amount: Number(totalPaid),
+            method: paymentMethods,
+            date: new Date().toISOString(), // Or Timestamp.now() if preferred, ensuring consistency with other files
+            clientId: clientId || null,
+            arId: arId || null,
+          }),
+        });
+      }
 
       const paidInstallments = new Set();
 

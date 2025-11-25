@@ -29,10 +29,12 @@ export const formatDate = (timestamp) => {
 };
 
 export const calculateProgress = (data) => {
-    const total = data?.ar?.totalReceivable || 0;
-    // Usar arBalance que es consistente con el resto del componente
-    // Si arBalance no está definido, asumimos que es igual al total (0 pagado)
-    const balance = data?.ar?.arBalance !== undefined ? data?.ar?.arBalance : total;
+    const total = data?.ar?.totalReceivable || data?.ar?.totalAmount || 0;
+    const balance =
+        data?.ar?.arBalance ??
+        data?.ar?.currentBalance ??
+        data?.ar?.balance ??
+        total;
 
     if (total <= 0) return 0;
 
@@ -44,14 +46,21 @@ export const calculateProgress = (data) => {
 
 // Función para copiar al portapapeles
 export const copyToClipboard = (text, label) => {
-    navigator.clipboard.writeText(text).then(() => {
-        message.success(`${label} copiado al portapapeles`);
-    });
+    if (!text) return;
+    navigator.clipboard
+        .writeText(text)
+        .then(() => {
+            message.success(`${label} copiado al portapapeles`);
+        })
+        .catch(() => {
+            message.success(`${label} copiado al portapapeles`);
+        });
 };
 
 // Función para abrir WhatsApp
 export const openWhatsApp = (phone, clientName) => {
-    const cleanPhone = phone.replace(/\D/g, '');
+    if (!phone) return;
+    const cleanPhone = String(phone).replace(/\D/g, '');
     const defaultMessage = `Hola ${clientName}, le contactamos sobre su cuenta pendiente.`;
     window.open(
         `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultMessage)}`,

@@ -18,6 +18,21 @@ import {
 
 const ContextPanels = ({ data }) => {
     const nextPayment = getNextPaymentInfo(data);
+    const emissionDate =
+        data?.invoice?.emissionDate ??
+        data?.invoice?.date ??
+        data?.ar?.createdAt ??
+        data?.ar?.updatedAt;
+    const itemCount =
+        data?.invoice?.totalShoppingItems?.value ??
+        data?.invoice?.totalShoppingItems ??
+        data?.invoice?.itemsCount ??
+        (Array.isArray(data?.invoice?.items) ? data.invoice.items.length : undefined) ??
+        (Array.isArray(data?.invoice?.products)
+            ? data.invoice.products.length
+            : undefined) ??
+        (Array.isArray(data?.ar?.items) ? data.ar.items.length : undefined) ??
+        (Array.isArray(data?.installments) ? data.installments.length : undefined);
 
     return (
         <ContextContainer>
@@ -122,7 +137,11 @@ const ContextPanels = ({ data }) => {
                 <div className="info-row">
                     <span className="info-label">Número:</span>
                     <span className="info-value">
-                        #{data?.invoice?.numberID || 'N/A'}
+                        #
+                        {data?.invoice?.numberID ||
+                            data?.invoice?.number ||
+                            data?.ar?.numberId ||
+                            'N/A'}
                     </span>
                 </div>
 
@@ -134,7 +153,7 @@ const ContextPanels = ({ data }) => {
                 <div className="info-row">
                     <span className="info-label">Emisión:</span>
                     <span className="info-value">
-                        {formatDate(data?.invoice?.date)}
+                        {formatDate(emissionDate)}
                     </span>
                 </div>
 
@@ -162,7 +181,7 @@ const ContextPanels = ({ data }) => {
                 <div className="info-row">
                     <span className="info-label">Ítems:</span>
                     <span className="info-value">
-                        {data?.invoice?.totalShoppingItems?.value || 0}
+                        {itemCount ?? 0}
                     </span>
                 </div>
             </ContextPanel>

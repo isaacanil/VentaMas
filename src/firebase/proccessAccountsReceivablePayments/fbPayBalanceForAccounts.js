@@ -1,9 +1,10 @@
-import { doc, writeBatch, getDoc } from 'firebase/firestore';
+import { doc, writeBatch, getDoc, arrayUnion } from 'firebase/firestore';
 
 import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { fbAddPayment } from '../accountsReceivable/payment/fbAddPayment';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 
 import {
   getSortedClientAccountsAR,
@@ -40,7 +41,49 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
     // Crear el pago usando fbAddPayment (igual que en fbPayActiveInstallmentForAccount)
     const payment = await fbAddPayment(user, paymentDetails);
 
+    let openCashCountId = null;
+    try {
+      const { state, cashCount } = await checkOpenCashReconciliation(user);
+      
+      if (state === 'closing') {
+        throw new Error('No se puede procesar el pago: La caja está en proceso de cierre.');
+      }
+      
+      if (state === 'closed') {
+        throw new Error('No se puede procesar el pago: No hay un cuadre de caja abierto.');
+      }
+
+      if (state === 'open' && cashCount?.id) {
+        openCashCountId = cashCount.id;
+      }
+    } catch (error) {
+      if (error.message.startsWith('No se puede procesar el pago')) {
+        throw error;
+      }
+      console.warn('Error checking open cash count:', error);
+    }
+
     const batch = writeBatch(db);
+
+    if (openCashCountId) {
+      const cashCountRef = doc(
+        db,
+        'businesses',
+        user.businessID,
+        'cashCounts',
+        openCashCountId,
+      );
+      batch.update(cashCountRef, {
+        'cashCount.receivablePayments': arrayUnion({
+          paymentId: payment.id,
+          amount: Number(totalPaidFloat),
+          method: paymentMethods,
+          date: new Date().toISOString(),
+          clientId: clientId || null,
+          arId: null, // Balance payment covers multiple ARs, so arId is null or we could list them
+        }),
+      });
+    }
 
     const paymentReceipt = {
       accounts: [],

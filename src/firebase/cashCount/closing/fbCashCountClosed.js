@@ -37,6 +37,7 @@ export const fbCashCountClosed = async (
       'cashCount.totalCard': cashCount?.totalCard,
       'cashCount.totalTransfer': cashCount?.totalTransfer,
       'cashCount.totalCharged': cashCount?.totalCharged,
+      'cashCount.totalReceivables': cashCount?.totalReceivables,
       'cashCount.totalDiscrepancy': cashCount?.totalDiscrepancy,
       'cashCount.totalRegister': cashCount?.totalRegister,
       'cashCount.totalSystem': cashCount?.totalSystem,

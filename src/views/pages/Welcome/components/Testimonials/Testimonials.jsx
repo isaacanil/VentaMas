@@ -93,12 +93,14 @@ const Testimonials = () => {
                     position: 'relative',
                     overflow: 'hidden',
                   }}
-                  bodyStyle={{
-                    padding: '32px',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
+                  styles={{
+                    body: {
+                      padding: '32px',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    },
                   }}
                 >
                   {' '}

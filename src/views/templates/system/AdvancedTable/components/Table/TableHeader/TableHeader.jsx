@@ -60,7 +60,7 @@ export const TableHeader = ({
 const Container = styled.div`
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 5;
   display: grid;
   gap: 1em;
   align-items: center;
@@ -91,6 +91,7 @@ const HeaderCell = styled.div`
   position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
   text-align: ${(props) => props.align || 'left'};
   white-space: nowrap;
+  z-index: 4;
 
     &[data-size='small'] {
     height: ${sizeHeights.small};
@@ -104,7 +105,7 @@ const HeaderCell = styled.div`
     props.fixed === 'left' &&
     `
     left: 0;
-    z-index: 2;
+    z-index: 6;
     background-color: #ffffff;
     border-right: 1px solid var(--gray-3);
   `}
@@ -112,7 +113,7 @@ const HeaderCell = styled.div`
     props.fixed === 'right' &&
     `
     right: 0;
-    z-index: 2;
+    z-index: 6;
     background-color: #ffffff;
     border-left: 1px solid var(--gray-3);
   `}

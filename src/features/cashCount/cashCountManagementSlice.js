@@ -18,9 +18,11 @@ const initialCashCount = {
   opening: initialCashBoxStatus,
   closing: initialCashBoxStatus,
   sales: [],
+  receivablePayments: [], // Added for AR integration
   totalCard: 0,
   totalTransfer: 0,
   totalCharged: 0,
+  totalReceivables: 0, // Added for AR integration
   totalDiscrepancy: 0,
   totalRegister: 0,
   totalSystem: 0,
@@ -35,6 +37,7 @@ const cashCountManagementSlice = createSlice({
         totalCard,
         totalTransfer,
         totalCharged,
+        totalReceivables,
         totalDiscrepancy,
         totalRegister,
         totalSystem,
@@ -42,6 +45,7 @@ const cashCountManagementSlice = createSlice({
       state.totalCard = totalCard || 0;
       state.totalTransfer = totalTransfer || 0;
       state.totalCharged = totalCharged || 0;
+      state.totalReceivables = totalReceivables || 0;
       state.totalDiscrepancy = totalDiscrepancy || 0;
       state.totalRegister = totalRegister || 0;
       state.totalSystem = totalSystem || 0;
@@ -100,12 +104,14 @@ const cashCountManagementSlice = createSlice({
       state.totalCard = 0;
       state.totalTransfer = 0;
       state.totalCharged = 0;
+      state.totalReceivables = 0;
       state.totalDiscrepancy = 0;
       state.totalRegister = 0;
       state.totalSystem = 0;
       state.updatedAt = null;
       state.createdAt = null;
       state.sales = [];
+      state.receivablePayments = [];
       state.state = null;
       state.id = null;
       state.incrementNumber = null;

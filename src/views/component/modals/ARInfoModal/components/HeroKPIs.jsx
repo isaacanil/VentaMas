@@ -11,11 +11,29 @@ import { HeroKPIContainer, KPICard } from '../styles';
 import { formatCurrency, getNextPaymentInfo, getDaysLate } from '../utils';
 
 const HeroKPIs = ({ data }) => {
-    const totalInvoice = data?.invoice?.totalPurchase?.value || 0;
-    const totalReceivable = data?.ar?.totalReceivable || 0;
-    const balance = data?.ar?.arBalance || 0;
-    const paidAmount = totalReceivable - balance;
-    const initialPaid = totalInvoice - totalReceivable;
+    // Calcular total de factura con fallback robusto
+    const totalInvoice =
+        data?.invoice?.totalPurchase?.value ||
+        data?.invoice?.totalPurchase ||
+        data?.invoice?.totalAmount ||
+        data?.ar?.totalAmount ||
+        data?.ar?.totalReceivable || // fallback when invoice total is missing but AR totals are present
+        0;
+    
+    // Total que se puso a crédito (si totalReceivable es 0, usar el total de factura)
+    const totalReceivable = data?.ar?.totalReceivable || totalInvoice || 0;
+    
+    const balance =
+        data?.ar?.arBalance ??
+        data?.ar?.currentBalance ??
+        data?.ar?.balance ??
+        0;
+
+    // Calculate paid amount based on AR progress
+    const paidAmount = Math.max(0, totalReceivable - balance);
+
+    // Initial payment (down payment) - lo que se pagó de contado
+    const initialPaid = Math.max(0, totalInvoice - totalReceivable);
 
     const nextPayment = getNextPaymentInfo(data);
     const daysLate = getDaysLate(nextPayment.date);

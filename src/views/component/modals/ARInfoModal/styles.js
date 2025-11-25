@@ -70,7 +70,6 @@ export const StyledTag = styled.span`
 export const StyledDivider = styled.div`
   height: 1px;
   background-color: #f0f0f0;
-  margin: 24px 0;
   width: 100%;
 `;
 
@@ -238,3 +237,92 @@ export const ActionButtonsContainer = styled.div`
   justify-content: flex-end;
   margin-top: 16px;
 `;
+
+export const TableCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  overflow: hidden;
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 600;
+    color: #595959;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    background: #fafafa;
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    font-size: 13px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  th {
+    color: #8c8c8c;
+    font-weight: 600;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .numeric {
+    text-align: right;
+  }
+`;
+
+export const HighlightCard = styled.div`
+  background: ${(props) => props.$bg || '#f9f9f9'};
+  border: 1px solid ${(props) => props.$border || '#f0f0f0'};
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  color: #262626;
+
+  .icon-area {
+    font-size: 24px;
+    color: ${(props) => props.$iconColor || '#8c8c8c'};
+    margin-top: 2px;
+  }
+
+  .content-area {
+    flex: 1;
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #262626;
+  }
+
+  .subtitle {
+    color: #8c8c8c;
+    font-size: 13px;
+  }
+`;
+

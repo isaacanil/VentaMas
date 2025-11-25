@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { getLastInstallmentAmountByArId } from '../../firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
 
-const paymentDetails = {
+const paymentDetailsTemplate = {
   paymentScope: 'balance', // Tipo de pago (cuota, balance de cuenta, abono) account
   paymentOption: 'installment', // Subtipo de pago ('cuota', 'abono' cuando tipo es 'cuenta')
   clientId: '', // ID del cliente
@@ -38,9 +38,33 @@ const paymentDetails = {
   creditNotePayment: [], // Notas de crédito aplicadas
 };
 
+const createDefaultPaymentDetails = (amount = 0) => {
+  const methods = paymentDetailsTemplate.paymentMethods.map((method) => ({
+    ...method,
+  }));
+
+  // Prefill cash with the amount to pay; keep others off
+  const cashIndex = methods.findIndex((m) => m.method === 'cash');
+  if (cashIndex !== -1) {
+    methods[cashIndex] = {
+      ...methods[cashIndex],
+      value: amount,
+      status: amount > 0,
+    };
+  }
+
+  return {
+    ...paymentDetailsTemplate,
+    totalAmount: amount,
+    totalPaid: amount > 0 ? amount : 0,
+    paymentMethods: methods,
+    creditNotePayment: [],
+  };
+};
+
 const initialState = {
   isOpen: false,
-  paymentDetails: { ...paymentDetails },
+  paymentDetails: createDefaultPaymentDetails(),
   error: null, // Para manejar errores
   isValid: true, // Para manejar validaciones
   methodErrors: {},
@@ -73,7 +97,7 @@ const accountsReceivablePaymentSlice = createSlice({
     },
     closePaymentModal: (state) => {
       state.isOpen = false;
-      state.paymentDetails = { ...paymentDetails };
+      state.paymentDetails = createDefaultPaymentDetails();
       state.error = null;
       state.isValid = true;
       state.methodErrors = {};
@@ -98,11 +122,39 @@ const accountsReceivablePaymentSlice = createSlice({
       }
     },
     setAccountPayment: (state, action) => {
-      const { isOpen, paymentDetails, error, isValid, methodErrors, extra } =
+      const {
+        isOpen,
+        paymentDetails: paymentDetailsPayload,
+        error,
+        isValid,
+        methodErrors,
+        extra,
+      } =
         action.payload;
+      const opening = isOpen === true && state.isOpen === false;
+
+      if (opening) {
+        const incomingAmount =
+          paymentDetailsPayload?.totalAmount ??
+          paymentDetailsPayload?.balance ??
+          state.extra?.installmentAmount ??
+          0;
+        state.paymentDetails = createDefaultPaymentDetails(incomingAmount);
+        state.methodErrors = {};
+        state.error = null;
+        state.isValid = true;
+      }
+
       if (isOpen !== undefined) state.isOpen = isOpen;
-      if (paymentDetails !== undefined)
-        state.paymentDetails = { ...state.paymentDetails, ...paymentDetails };
+      if (paymentDetailsPayload !== undefined) {
+        state.paymentDetails = {
+          ...state.paymentDetails,
+          ...paymentDetailsPayload,
+          paymentMethods:
+            paymentDetailsPayload.paymentMethods ||
+            state.paymentDetails.paymentMethods,
+        };
+      }
       if (extra !== undefined) state.extra = extra;
       if (error !== undefined) state.error = error;
       if (isValid !== undefined) state.isValid = isValid;
@@ -111,10 +163,18 @@ const accountsReceivablePaymentSlice = createSlice({
         state.paymentDetails.paymentScope === 'account' &&
         state.paymentDetails.paymentOption === 'installment'
       ) {
-        state.paymentDetails.totalAmount = state.extra.installmentAmount;
-      } else {
-        state.paymentDetails.totalAmount = paymentDetails.totalAmount;
+        state.paymentDetails.totalAmount =
+          state.extra?.installmentAmount || state.paymentDetails.totalAmount;
+      } else if (paymentDetailsPayload?.totalAmount !== undefined) {
+        state.paymentDetails.totalAmount = paymentDetailsPayload.totalAmount;
       }
+
+      // Recalcular total pagado con los métodos vigentes
+      state.paymentDetails.totalPaid = state.paymentDetails.paymentMethods
+        ? state.paymentDetails.paymentMethods.reduce((sum, method) => {
+            return method.status ? sum + (Number(method.value) || 0) : sum;
+          }, 0.0)
+        : 0.0;
     },
     updatePaymentMethod: (state, action) => {
       const { method, key, value } = action.payload;
