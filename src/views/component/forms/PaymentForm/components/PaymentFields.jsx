@@ -13,7 +13,7 @@ import {
 } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { formatNumber } from '../../../../../utils/formatNumber';
 
-const { Form, Input, InputNumber, Switch, message } = antd;
+const { Checkbox, Form, Input, InputNumber, message } = antd;
 export const PaymentFields = () => {
   const cashInputRef = useRef(null);
   const { methodErrors: errors, paymentDetails } = useSelector(
@@ -221,14 +221,18 @@ export const PaymentFields = () => {
         <Items>
           {visiblePaymentMethods.map((paymentMethod) => (
             <Row key={paymentMethod.method}>
-              <SwitchContainer>
-                <Switch
+              <CheckboxContainer>
+                <Checkbox
                   checked={paymentMethod.status}
-                  onChange={(checked) =>
-                    handleInputChange(paymentMethod.method, 'status', checked)
+                  onChange={(event) =>
+                    handleInputChange(
+                      paymentMethod.method,
+                      'status',
+                      event.target.checked,
+                    )
                   }
                 />
-              </SwitchContainer>
+              </CheckboxContainer>
               <FormItem
                 label={
                   paymentInfo[paymentMethod.method]?.label ||
@@ -308,11 +312,10 @@ const Container = styled.div`
   padding: 0;
 `;
 
-const SwitchContainer = styled.div`
+const CheckboxContainer = styled.div`
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
-  height: 56px;
   padding: 0 0.5em;
 `;
 

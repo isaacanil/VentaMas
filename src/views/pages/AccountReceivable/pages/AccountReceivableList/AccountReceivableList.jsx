@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { setARDetailsModal } from '../../../../../features/accountsReceivable/accountsReceivableSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { useListenAccountsReceivable } from '../../../../../firebase/accountsReceivable/accountReceivableServices';
 import { getDateRange } from '../../../../../utils/date/getDateRange';
@@ -33,6 +34,7 @@ const mapDataToAccounts = (data) => {
     const isInsurance = account?.account?.type === 'insurance';
 
     return {
+      id: account.id,
       ncf: invoiceData?.NCF || 'N/A',
       invoiceNumber: invoiceData?.numberID || 'N/A',
       client: client?.name || 'Generic Client',
@@ -74,6 +76,7 @@ export const AccountReceivableList = () => {
   const sortDirection = 'asc';
   const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
   const [statusFilter, setStatusFilter] = useState('active');
+  const dispatch = useDispatch();
 
   const accounts = useListenAccountsReceivable(
     user,
@@ -124,6 +127,12 @@ export const AccountReceivableList = () => {
     setStatusFilter(status);
   };
 
+  const handleRowClick = (row) => {
+    if (row?.id) {
+      dispatch(setARDetailsModal({ isOpen: true, arId: row.id }));
+    }
+  };
+
   return (
     <Container>
       <MenuApp
@@ -145,6 +154,7 @@ export const AccountReceivableList = () => {
         searchTerm={searchTerm}
         totalBalance={totalBalance}
         showInsuranceColumn={clientType === 'insurance'} // Mostrar columna solo cuando se selecciona aseguradora
+        onRowClick={handleRowClick}
       />
     </Container>
   );

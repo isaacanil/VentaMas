@@ -93,13 +93,15 @@ const Features = () => {
                     boxShadow:
                       '0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%)',
                   }}
-                  bodyStyle={{
-                    padding: '32px 24px',
-                    textAlign: 'center',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
+                  styles={{
+                    body: {
+                      padding: '32px 24px',
+                      textAlign: 'center',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    },
                   }}
                 >
                   <div>

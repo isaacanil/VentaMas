@@ -47,18 +47,12 @@ async function fetchAccountsReceivableDetails(user, id) {
     'arId',
     id,
   );
-  // const paymentReceipt = await
-  // const installmentPaymentsData = await fetchRelatedData('accountsReceivableInstallmentPayments', 'arId', id);
 
-  const paymentIds = installmentPaymentsData.map(
-    (installmentPayment) => installmentPayment.paymentId,
+  const paymentsData = await fetchRelatedData(
+    'accountsReceivablePayments',
+    'arId',
+    id,
   );
-
-  const paymentsData = await Promise.all(
-    paymentIds.map((paymentId) =>
-      fetchRelatedData('accountsReceivablePayments', 'paymentId', paymentId),
-    ),
-  ).then((results) => results.flat());
 
   return {
     ar: accountReceivableData,

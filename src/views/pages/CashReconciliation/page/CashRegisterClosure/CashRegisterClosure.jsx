@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import {
   clearCashCount,
   selectCashCount,
+  addPropertiesToCashCount, // Importar la acción para actualizar el estado de Redux
 } from '../../../../../features/cashCount/cashCountManagementSlice';
 import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs';
 import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed';
@@ -37,6 +38,27 @@ export const CashRegisterClosure = () => {
 
   const cashCountIsOpen = cashCount?.state === 'open';
   const cashCountIsClosed = cashCount?.state === 'closed';
+
+  const cashCountActual = useFbGetCashCount(cashCount?.id);
+
+  // Sincronizar cambios en tiempo real (especialmente receivablePayments) con el estado de Redux
+  useEffect(() => {
+    if (cashCountActual) {
+      // Solo actualizamos si hay cambios relevantes para evitar renders innecesarios
+      const hasNewPayments =
+        (cashCountActual.cashCount?.receivablePayments?.length || 0) !==
+        (cashCount.receivablePayments?.length || 0);
+
+      if (hasNewPayments) {
+        dispatch(
+          addPropertiesToCashCount({
+            receivablePayments:
+              cashCountActual.cashCount.receivablePayments || [],
+          }),
+        );
+      }
+    }
+  }, [cashCountActual, cashCount.receivablePayments, dispatch]);
 
   useEffect(() => {
     if (cashCountIsOpen)
@@ -142,8 +164,6 @@ export const CashRegisterClosure = () => {
       setShowPasswordModal(true);
     }
   };
-
-  const cashCountActual = useFbGetCashCount(cashCount?.id);
 
   return (
     <Backdrop>

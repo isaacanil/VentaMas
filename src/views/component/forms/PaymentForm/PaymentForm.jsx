@@ -1,8 +1,8 @@
-import * as antd from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
+import { Form, Checkbox, Select, Button, notification } from 'antd';
 
 import {
   closePaymentModal,
@@ -27,7 +27,6 @@ import { ShowcaseList } from '../../../templates/system/ShowCase/ShowcaseList';
 
 import { PaymentFields } from './components/PaymentFields';
 
-const { Form, Checkbox, Select, Button, notification } = antd;
 const { Option } = Select;
 
 export const PaymentForm = () => {
@@ -39,12 +38,34 @@ export const PaymentForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [receipt, setReceipt] = useState(null);
   const client = useSelector(selectClient);
+  const [printPending, setPrintPending] = useState(false);
 
   const { isOpen, paymentDetails } = useSelector(
     selectAccountsReceivablePayment,
   );
 
   const selectedCreditNotes = paymentDetails.creditNotePayment || [];
+
+  const handlePrint = useReactToPrint({
+    content: () => componentToPrintRef.current,
+    onAfterPrint: () => {
+      notification.success({
+        message: 'Pago Procesada',
+        description: 'Pago registrado e impreso con éxito',
+        duration: 4,
+      });
+      handleClear();
+    },
+  });
+
+  // Este efecto reemplaza al setTimeout.
+  // Solo se ejecuta cuando hay un recibo cargado Y se solicitó impresión.
+  useEffect(() => {
+    if (printPending && receipt) {
+      handlePrint();
+      setPrintPending(false); // Reseteamos la bandera para evitar impresiones dobles
+    }
+  }, [receipt, printPending, handlePrint]);
 
   useEffect(() => {
     if (isOpen && paymentDetails.arId) {
@@ -114,40 +135,38 @@ export const PaymentForm = () => {
     form.resetFields();
   };
 
-  const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
-    onAfterPrint: () => {
-      notification.success({
-        message: 'Pago Procesada',
-        description: 'Pago Registrado con éxito',
-        duration: 4,
-      });
-      handleClear();
-    },
-  });
+
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       validate();
       await form.validateFields();
+
       await fbProcessClientPaymentAR(user, paymentDetails, setReceipt);
       setSubmitted(true);
 
       if (paymentDetails.printReceipt) {
-        setTimeout(() => handlePrint(), 1000);
+        setPrintPending(true);
       } else {
-        dispatch(closePaymentModal());
-        form.resetFields();
+        notification.success({
+          message: 'Pago Procesado',
+          description: 'Pago registrado con éxito',
+        });
+        handleClear();
       }
     } catch (error) {
       setSubmitted(false);
-      if (error.name === 'ValidationError') {
+      if (error.errorFields) {
         console.error('Payment form validation failed:', error);
+        notification.warning({
+          message: 'Campos requeridos',
+          description: 'Por favor complete los campos obligatorios marcados en rojo.',
+        });
       } else {
-        antd.notification.error({
+        notification.error({
           message: 'Error al procesar el pago',
-          description: error.message,
+          description: error.message || 'Ocurrió un error desconocido',
         });
       }
     } finally {
@@ -259,14 +278,12 @@ export const PaymentForm = () => {
                 value: change,
                 description:
                   paymentDetails.paymentOption == 'installment' ||
-                  paymentDetails.paymentOption == 'balance'
+                    paymentDetails.paymentOption == 'balance'
                     ? 'Tiene que pagar completamente'
                     : 'No tiene que pagar el faltante completamente',
                 color:
-                  paymentDetails.paymentOption == 'installment' ||
-                  paymentDetails.paymentOption == 'balance'
-                    ? paymentDetails.totalAmount >= paymentDetails.totalPaid
-                    : null,
+                  paymentDetails.paymentOption === 'installment' ||
+                  paymentDetails.paymentOption === 'balance',
               },
             ]}
           />

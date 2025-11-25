@@ -8,6 +8,7 @@ import {
   getDoc,
   Timestamp,
   setDoc,
+  arrayUnion,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -582,7 +583,7 @@ export const updateInvoiceTotals = (
 
   const invoiceRef = doc(db, 'businesses', businessId, 'invoices', invoiceId);
   const invoiceData = invoice.data || invoice;
-  const previousPaid = invoiceData.totalPaid || invoice.totalPaid || 0;
+  
   const invoiceTotal = roundToTwoDecimals(
     invoiceData.totalAmount ??
       invoiceData.totalPurchase?.value ??
@@ -590,51 +591,41 @@ export const updateInvoiceTotals = (
       invoice.totalPurchase?.value ??
       0,
   );
-  const newTotalPaid = roundToTwoDecimals(previousPaid + amountPaid);
-  const newBalanceDue = roundToTwoDecimals(invoiceTotal - newTotalPaid);
-  const newChange = roundToTwoDecimals(newTotalPaid - invoiceTotal);
 
-  const updatedPaymentMethods = mergePaymentMethods(
-    invoiceData.paymentMethod || invoice.paymentMethod,
-    paymentMethods,
-  );
+  // Double Truth Logic:
+  // accumulatedPaid starts at totalPaid (initial) if not present.
+  const currentAccumulated = invoiceData.accumulatedPaid ?? invoiceData.totalPaid ?? 0;
+  const newAccumulatedPaid = roundToTwoDecimals(currentAccumulated + amountPaid);
+  const newBalanceDue = roundToTwoDecimals(invoiceTotal - newAccumulatedPaid);
 
-  const invoiceUpdate = {
-    totalPaid: newTotalPaid,
-    balanceDue: newBalanceDue,
-    status: newBalanceDue <= THRESHOLD,
-    'data.totalPaid': newTotalPaid,
-    'data.balanceDue': newBalanceDue,
-    'data.status': newBalanceDue <= THRESHOLD,
-    payment: {
-      ...(invoiceData.payment || invoice.payment || {}),
-      value: newTotalPaid,
-    },
-    change: {
-      ...(invoiceData.change || invoice.change || {}),
-      value: newChange,
-    },
-    'data.payment': {
-      ...(invoiceData.payment || invoice.payment || {}),
-      value: newTotalPaid,
-    },
-    'data.change': {
-      ...(invoiceData.change || invoice.change || {}),
-      value: newChange,
-    },
+  const newPaymentHistoryEntry = {
+    date: Timestamp.now(),
+    amount: amountPaid,
+    methods: paymentMethods,
+    type: 'ar_payment',
   };
 
-  if (updatedPaymentMethods.length > 0) {
-    invoiceUpdate.paymentMethod = updatedPaymentMethods;
-    invoiceUpdate['data.paymentMethod'] = updatedPaymentMethods;
-  }
+  const invoiceUpdate = {
+    accumulatedPaid: newAccumulatedPaid,
+    balanceDue: newBalanceDue,
+    status: newBalanceDue <= THRESHOLD ? 'paid' : 'partial',
+    'data.accumulatedPaid': newAccumulatedPaid,
+    'data.balanceDue': newBalanceDue,
+    'data.status': newBalanceDue <= THRESHOLD,
+    paymentHistory: arrayUnion(newPaymentHistoryEntry),
+    'data.paymentHistory': arrayUnion(newPaymentHistoryEntry),
+  };
+
+  // NOTE: We deliberately DO NOT update 'totalPaid', 'paymentMethod', or 'change'.
+  // These fields represent the immutable snapshot of the initial transaction.
 
   writer.update(invoiceRef, invoiceUpdate);
 
   return {
-    newTotalPaid,
-    newBalanceDue,
-    paymentMethod: updatedPaymentMethods,
+    ...invoiceData,
+    accumulatedPaid: newAccumulatedPaid,
+    balanceDue: newBalanceDue,
+    paymentHistory: [newPaymentHistoryEntry], // Approximation for return value
   };
 };
 

@@ -403,6 +403,11 @@ export const processInvoiceOutbox = firestore
             preferredCashCountId ||
             null;
 
+          // Logic: payment.value (cart payment) -> totalPaid (explicit) -> 0 (default)
+          // We avoid falling back to totalPurchase.value to correctly handle credit sales where paid < total.
+          const rawTotalPaid = Number(cart?.payment?.value ?? cart?.totalPaid ?? 0);
+          const initialTotalPaid = Number.isFinite(rawTotalPaid) ? rawTotalPaid : 0;
+
           const canonicalData = {
             ...cart,
             id: invoiceId,
@@ -410,6 +415,8 @@ export const processInvoiceOutbox = firestore
             userID: user.uid,
             user: userRef,
             date: resolvedDate,
+            accumulatedPaid: existingCanon.accumulatedPaid ?? initialTotalPaid,
+            paymentHistory: existingCanon.paymentHistory ?? [],
           };
 
           if (resolvedNcf) {

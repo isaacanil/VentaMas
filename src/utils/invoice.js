@@ -2,7 +2,9 @@ import DateUtils from './date/dateUtils';
 import { isReference } from './refereceUtils';
 
 export function getInvoicePaymentInfo(invoice) {
-  const paidAmount = Number(invoice?.payment?.value ?? 0);
+  const paidAmount = Number(
+    invoice?.accumulatedPaid ?? invoice?.payment?.value ?? 0,
+  );
   const totalPurchase = Number(invoice?.totalPurchase?.value ?? 0);
 
   const safePaid = Number.isFinite(paidAmount) ? paidAmount : 0;
@@ -14,7 +16,7 @@ export function getInvoicePaymentInfo(invoice) {
     total: safeTotal,
     pending,
     isPaidInFull:
-      safeTotal === 0 ? safePaid === safeTotal : safePaid >= safeTotal,
+      safeTotal === 0 ? safePaid === safeTotal : safePaid >= safeTotal - 0.01, // Tolerance
   };
 }
 

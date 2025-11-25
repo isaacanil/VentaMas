@@ -9,55 +9,37 @@ const sumExpenses = (expenses = []) =>
     .filter((e) => e?.payment?.method === 'open_cash')
     .reduce((t, expense) => t + toNumber(expense?.amount), 0);
 
-const sumARPayments = (payments = []) =>
-  payments.reduce(
-    (acc, payment) => {
-      const methods = payment.paymentMethods || [];
+const sumReceivableMetrics = (payments = []) =>
+  ensureArray(payments).reduce(
+    (acc, p) => {
+      acc.collected += toNumber(p.amount);
+      const methods = ensureArray(p.method);
       methods.forEach((m) => {
-        if (!m.status) return;
-        const val = toNumber(m.value);
-        if (m.method === 'cash') acc.cash += val;
-        if (m.method === 'card') acc.card += val;
-        if (m.method === 'transfer') acc.transfer += val;
+        if (m.method === 'card') acc.card += toNumber(m.value);
+        if (m.method === 'transfer') acc.transfer += toNumber(m.value);
       });
       return acc;
     },
-    { cash: 0, card: 0, transfer: 0 },
+    { card: 0, transfer: 0, collected: 0 },
   );
 
 const sumInvoiceMetrics = (invoices) =>
   invoices.reduce(
-    (acc, { data, snapshot }) => {
-      // STRATEGY 1: Snapshot (Golden Source for new data)
-      if (snapshot) {
-        const methods = snapshot.initialPaymentMethods || [];
-        const total = toNumber(snapshot.initialTotalPaid);
-
-        // If it was credit sale with 0 initial payment, it adds 0 to "charged"
-        acc.charged += total;
-
-        methods.forEach((p) => {
-          if (!p.status) return;
-          if (p.method === 'card') acc.card += toNumber(p.value);
-          if (p.method === 'transfer') acc.transfer += toNumber(p.value);
-          // Note: We don't explicitly sum 'cash' here for the return object,
-          // but it's implicitly part of 'charged' which feeds into 'system' total.
-        });
-        return acc;
+    (acc, { data }) => {
+      const { paymentMethod = [], totalPaid, payment, totalPurchase = {} } = data;
+      
+      // Fix: Use totalPaid (collected) instead of totalPurchase (revenue) to exclude credit
+      // Logic: totalPaid (explicit) -> payment.value (cart payment) -> totalPurchase.value (legacy/fallback)
+      let chargedAmount = 0;
+      if (totalPaid !== undefined && totalPaid !== null) {
+        chargedAmount = toNumber(totalPaid);
+      } else if (payment?.value !== undefined && payment?.value !== null) {
+        chargedAmount = toNumber(payment.value);
+      } else {
+        chargedAmount = toNumber(totalPurchase?.value);
       }
 
-      // STRATEGY 2: Old Data Heuristic (Conservative)
-      // If it's a credit sale (and no snapshot), assume $0 cash expected.
-      if (data.isAddedToReceivables) {
-        // We IGNORE this invoice for cash count purposes to avoid "Missing Cash".
-        // Any actual money collected will be picked up by sumARPayments if it's in that collection.
-        return acc;
-      }
-
-      // STRATEGY 3: Old Data Normal Sale
-      const { paymentMethod = [], totalPurchase = {} } = data;
-      // For normal sales, we assume totalPurchase is fully paid.
-      acc.charged += toNumber(totalPurchase?.value);
+      acc.charged += chargedAmount;
       paymentMethod.forEach((p) => {
         if (!p.status) return;
         if (p.method === 'card') acc.card += toNumber(p.value);
@@ -84,43 +66,28 @@ export const CashCountMetaData = (
 ) => {
   if (!cashCount) return null;
 
-  const { opening = {}, closing = {} } = cashCount;
+  const {
+    opening = {},
+    closing = {},
+    receivablePayments = [],
+  } = cashCount;
 
   const openBank = getBanknoteTotal(opening.banknotes);
   const closeBank = getBanknoteTotal(closing.banknotes);
   const totalExpenses = sumExpenses(expenses);
+  
+  const invoiceMetrics = sumInvoiceMetrics(invoices);
+  const arMetrics = sumReceivableMetrics(receivablePayments);
 
-  // 1. Invoices Metrics (Money from Direct Sales)
-  const invMetrics = sumInvoiceMetrics(invoices);
+  const totalCard = invoiceMetrics.card + arMetrics.card;
+  const totalTransfer = invoiceMetrics.transfer + arMetrics.transfer;
 
-  // 2. AR Metrics (Money from Debt Collections)
-  const arMetrics = sumARPayments(arPayments);
-
-  // 3. Aggregation
-  // Expected Cash (System) = (Sales Cash + AR Cash + Opening) - Expenses
-  // Note: invMetrics.charged includes all paid amounts (Cash + Card + Transfer).
-  // We need to isolate "System Cash" if we want to compare apples to apples,
-  // but the current logic simplifies to "Total System Value" vs "Total Register Value".
-
-  const totalCard = invMetrics.card + arMetrics.card;
-  const totalTransfer = invMetrics.transfer + arMetrics.transfer;
-
-  // "Charged" here means "Money that SHOULD be in the system from sales/collections"
-  // For invoices: calculated by sumInvoiceMetrics (excludes credit)
-  // For AR: sum of all payments
-  const totalCharged =
-    invMetrics.charged +
-    (arMetrics.cash + arMetrics.card + arMetrics.transfer);
-
-  // Register (Real World) = Cash in Drawer + Card Slips + Transfer Receipts
   const register = closeBank + totalCard + totalTransfer;
-
-  // System (Expected World) = Total Money In (Sales+AR) + Opening Cash - Cash Expenses
-  // Note: openBank is cash. totalExpenses is cash.
-  // totalCharged includes cards/transfers.
-  // So System = (CashIn + CardIn + TransferIn) + OpeningCash - CashOut
-  const system = totalCharged + openBank - totalExpenses;
-
+  
+  // System = Sales Collected + AR Collected + OpenBank - Expenses
+  const system =
+    invoiceMetrics.charged + arMetrics.collected + openBank - totalExpenses;
+    
   const discrepancy = register - system;
 
   return {
@@ -129,7 +96,8 @@ export const CashCountMetaData = (
     totalRegister: register,
     totalSystem: system,
     totalDiscrepancy: discrepancy,
-    totalCharged,
-    totalExpenses,
+    totalCharged: invoiceMetrics.charged,
+    totalReceivables: arMetrics.collected, // New field
+    totalExpenses: totalExpenses,
   };
 };
