@@ -29,17 +29,18 @@ import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';
 
 const Role = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: fit-content;
-  height: 2em;
-  padding: 0 1em;
+  padding: 0.35em 0.9em;
+  font-size: 0.8rem;
   font-weight: 600;
   color: ${(props) => props.primaryColor};
   text-transform: capitalize;
   background-color: ${(props) => props.secondaryColor};
-  border: 2px solid ${(props) => props.primaryColor};
-  border-radius: 100px;
+  border: 1px solid ${(props) => props.primaryColor};
+  border-radius: 999px;
 `;
 
 const IndexBadge = styled.div`
@@ -109,16 +110,18 @@ export const UserList = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const currentUser = useSelector(selectUser);
   const dispatch = useDispatch();
-  const { abilities } = userAccess();
+  const { abilities, loading: permissionsLoading } = userAccess();
   const canManageDynamicPermissions = abilities.can('manage', 'users');
 
   useEffect(() => {
-    fbGetUsers(currentUser, setUsers);
+    setLoading(true);
+    fbGetUsers(currentUser, setUsers, null, () => setLoading(false));
   }, [currentUser]);
 
   const data = useMemo(
@@ -314,8 +317,12 @@ export const UserList = () => {
     openStatusModal,
   ]);
 
-  // Solo mostrar la tabla si tiene permisos para ver usuarios
-  if (!abilities.can('read', 'User') && !abilities.can('manage', 'User')) {
+  // Solo mostrar la tabla si tiene permisos para ver usuarios (o si está cargando)
+  if (
+    !permissionsLoading &&
+    !abilities.can('read', 'User') &&
+    !abilities.can('manage', 'User')
+  ) {
     return <div>No tienes permisos para ver la lista de usuarios.</div>;
   }
 
@@ -342,6 +349,8 @@ export const UserList = () => {
             ? (row) => handleEditUser(row.user)
             : undefined
         }
+        loading={loading || permissionsLoading}
+        rowBorder={true}
       />
 
       <ChangeUserPasswordModal

@@ -8,7 +8,7 @@ import {
 
 import { db } from '../firebaseconfig';
 
-export const fbGetUsers = (currentUser, setUsers, onError) => {
+export const fbGetUsers = (currentUser, setUsers, onError, onLoad) => {
   if (!currentUser?.businessID) {
     return;
   }
@@ -28,6 +28,7 @@ export const fbGetUsers = (currentUser, setUsers, onError) => {
       }));
 
       setUsers(usersArray);
+      if (onLoad) onLoad();
     },
     (error) => {
       if (onError) {
@@ -35,6 +36,7 @@ export const fbGetUsers = (currentUser, setUsers, onError) => {
       } else {
         console.error('Error fetching users: ', error);
       }
+      if (onLoad) onLoad();
     },
   );
   return unsubscribe;

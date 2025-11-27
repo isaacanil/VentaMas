@@ -92,11 +92,11 @@ export const CashReconciliationTable = () => {
         dateRange,
         filterState,
         searchTerm,
+        () => setLoading(false),
       );
     } catch (error) {
       console.error('Error in date range:', error);
       setCashCounts([]);
-    } finally {
       setLoading(false);
     }
   }, [user, dateRange, filterState, searchTerm]); // dateRange is still a dependency

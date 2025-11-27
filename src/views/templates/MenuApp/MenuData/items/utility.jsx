@@ -3,7 +3,7 @@ import ROUTES_NAME from '../../../../../routes/routesName';
 
 const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
 
-const sales = [
+const utility = [
   {
     title: 'Utilidad',
     icon: icons.menu.unSelected.sale,
@@ -12,4 +12,4 @@ const sales = [
   },
 ];
 
-export default sales;
+export default utility;

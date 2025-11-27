@@ -118,7 +118,7 @@ const renderControl = (item) => {
           options={item.options}
           placeholder={item.placeholder}
           allowClear={item.allowClear !== false}
-          style={{ minWidth: item.width, ...item.controlStyle }}
+          style={{ width: '100%', minWidth: item.width, ...item.controlStyle }}
           aria-label={item.ariaLabel}
         />
       );
@@ -200,7 +200,7 @@ const renderItems = (items, { registerRef, wrapWithFormItem = true } = {}) =>
         wrapWithFormItem && item.wrap !== false ? (
           <Form.Item
             label={item.label ?? ' '}
-            style={{ marginBottom: 0, ...(item.fieldStyle || {}) }}
+            style={{ marginBottom: 0, width: '100%', ...(item.fieldStyle || {}) }}
           >
             {control}
           </Form.Item>

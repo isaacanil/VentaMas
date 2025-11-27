@@ -84,6 +84,7 @@ export const TableBody = ({
                       clickable={col?.clickable !== false ? true : false}
                       columns={activeColumns}
                       data-size={rowSize}
+                      data-row-border={rowBorder ? 'on' : 'off'}
                       onClick={(e) => handleCellClick(e, col, row)}
                     >
                       {renderCell(col, row[col.accessor])}
@@ -125,6 +126,7 @@ export const TableBody = ({
                       clickable={col?.clickable !== false ? true : false}
                       columns={activeColumns}
                       data-size={rowSize}
+                      data-row-border={rowBorder ? 'on' : 'off'}
                       onClick={(e) => handleCellClick(e, col, row)}
                     >
                       {renderCell(col, rowWithExpanderData[col.accessor])}

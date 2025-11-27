@@ -1,11 +1,9 @@
 import { filterMenuItemsByAccess } from '../../../../utils/menuAccess';
 
-import accountsReceivable from './items/accountsReceivable';
 import admin from './items/admin';
 import basic from './items/basic';
 import changelogs from './items/changelogs';
 import contacts from './items/contacts';
-import creditNote from './items/creditNote';
 import developer from './items/developer';
 import financialManagement from './items/financialManagement';
 import insurance from './items/insurance';
@@ -17,15 +15,13 @@ export const getMenuData = () => {
   const allMenuItems = [
     ...basic,
     ...sales,
-    ...insurance,
     ...inventory,
-    ...accountsReceivable,
     ...financialManagement,
-    ...utility,
+    ...insurance,
     ...contacts,
+    ...utility,
     ...admin,
     ...changelogs,
-    ...creditNote,
     ...developer,
   ];
 

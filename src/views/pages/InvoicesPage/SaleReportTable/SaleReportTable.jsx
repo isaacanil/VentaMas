@@ -361,7 +361,7 @@ const columns = [
   },
 ];
 
-const SaleReportTable = ({ bills = [], searchTerm }) => {
+const SaleReportTable = ({ bills = [], searchTerm, loading }) => {
   const dispatch = useDispatch();
   const data = bills?.map(({ data }) => {
     const invoiceDateMs = convertInvoiceDateToMillis(data?.date);
@@ -414,6 +414,7 @@ const SaleReportTable = ({ bills = [], searchTerm }) => {
       enableVirtualization={true}
       showPagination={false}
       rowBorder={true}
+      loading={loading}
       onRowClick={(row) => {
         const invoiceData =
           row?.accion?.data || row?.ver?.data || row?.data || null;

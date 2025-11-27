@@ -4,6 +4,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import accountsReceivable from './accountsReceivable';
+import creditNote from './creditNote';
 import { icons } from '../../../../../constants/icons/icons';
 import ROUTES_NAME from '../../../../../routes/routesName';
 
@@ -38,6 +40,8 @@ const financialManagement = [
       },
     ],
   },
+  ...creditNote,
+  ...accountsReceivable,
   {
     title: 'Gastos del Negocio',
     icon: icons.menu.unSelected.expenses.expenses,

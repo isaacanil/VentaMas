@@ -20,7 +20,9 @@ const Container = styled.div`
 `;
 
 const mapDataToAccounts = (data) => {
-  return data?.map((account) => {
+  if (!Array.isArray(data)) return [];
+
+  return data.map((account) => {
     const invoiceData = account?.invoice?.data;
     const client = account?.client || {};
     const paymentMethods = invoiceData?.paymentMethod || [];
@@ -67,25 +69,36 @@ const mapDataToAccounts = (data) => {
   });
 };
 
+const filterAccountsByClientType = (data, type) => {
+  if (!data) return [];
+
+  if (type === 'insurance') {
+    // Mostrar cuentas que son de tipo 'insurance'
+    return data.filter((account) => account.type === 'insurance');
+  }
+  // Para clientes normales, excluir las aseguradoras
+  return data.filter((account) => account.type !== 'insurance');
+};
+
 export const AccountReceivableList = () => {
   const user = useSelector(selectUser);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [processedAccount, setProcessedAccount] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const sortCriteria = 'defaultCriteria';
-  const sortDirection = 'asc';
+  const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
+  const [sortDirection, setSortDirection] = useState('asc');
   const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
   const [statusFilter, setStatusFilter] = useState('active');
   const dispatch = useDispatch();
 
-  const accounts = useListenAccountsReceivable(
+  const { accountsReceivable, loading } = useListenAccountsReceivable(
     user,
     datesSelected,
     statusFilter,
   );
 
   useEffect(() => {
-    const data = mapDataToAccounts(accounts);
+    const data = mapDataToAccounts(accountsReceivable);
 
     // Filtrar por tipo de cliente
     const filteredByClientType = filterAccountsByClientType(data, clientType);
@@ -96,28 +109,12 @@ export const AccountReceivableList = () => {
       sortDirection,
     );
     setProcessedAccount(sortedData);
-  }, [accounts, sortCriteria, sortDirection, clientType]);
-
-  // Filtrar cuentas por tipo de cliente: normal o insurance
-  const filterAccountsByClientType = (data, type) => {
-    if (!data) return [];
-
-    if (type === 'insurance') {
-      // Mostrar cuentas que son de tipo 'insurance'
-      return data.filter((account) => account.type === 'insurance');
-    }
-    // Para clientes normales, excluir las aseguradoras
-    return data.filter((account) => account.type !== 'insurance');
-  };
+  }, [accountsReceivable, sortCriteria, sortDirection, clientType]);
 
   // Calculate total balance
   const totalBalance = processedAccount.reduce((sum, account) => {
     return sum + (account.balance || 0);
   }, 0);
-
-  const handleSort = (sortedAccounts) => {
-    setProcessedAccount(sortedAccounts);
-  };
 
   const handleClientTypeChange = (type) => {
     setClientType(type);
@@ -125,6 +122,14 @@ export const AccountReceivableList = () => {
 
   const handleStatusFilterChange = (status) => {
     setStatusFilter(status);
+  };
+
+  const handleSortChange = (criteria) => {
+    setSortCriteria(criteria);
+  };
+
+  const handleToggleSortDirection = () => {
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
   const handleRowClick = (row) => {
@@ -141,21 +146,26 @@ export const AccountReceivableList = () => {
         setSearchData={setSearchTerm}
       />
       <FilterAccountReceivable
-        accounts={processedAccount} // Pasar processedAccount en lugar de accounts
-        onSort={handleSort}
         datesSelected={datesSelected}
         setDatesSelected={setDatesSelected}
+        clientType={clientType}
         onClientTypeChange={handleClientTypeChange}
         statusFilter={statusFilter}
         onStatusFilterChange={handleStatusFilterChange}
+        sortCriteria={sortCriteria}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
+        onToggleSortDirection={handleToggleSortDirection}
+        totalCount={processedAccount.length}
       />
       <AccountReceivableTable
         data={processedAccount}
         searchTerm={searchTerm}
-        totalBalance={totalBalance}
-        showInsuranceColumn={clientType === 'insurance'} // Mostrar columna solo cuando se selecciona aseguradora
-        onRowClick={handleRowClick}
-      />
-    </Container>
-  );
+      totalBalance={totalBalance}
+      showInsuranceColumn={clientType === 'insurance'} // Mostrar columna solo cuando se selecciona aseguradora
+      onRowClick={handleRowClick}
+      loading={loading}
+    />
+  </Container>
+);
 };

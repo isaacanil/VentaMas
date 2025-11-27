@@ -1,3 +1,4 @@
+import { SwapOutlined } from '@ant-design/icons';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as antd from 'antd';
@@ -8,8 +9,9 @@ import styled from 'styled-components';
 
 import { useDialog } from '../../../Context/Dialog';
 import { selectBusinessData } from '../../../features/auth/businessSlice';
-import { logout, selectUser } from '../../../features/auth/userSlice';
+import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../features/auth/userSlice';
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
+import ROUTES_NAME from '../../../routes/routesName';
 
 const { Tag } = antd;
 
@@ -50,6 +52,13 @@ export const UserSection = () => {
     return n ? n.charAt(0).toUpperCase() : 'U';
   };
 
+  const handleReturnToOriginalBusiness = () => {
+    dispatch(returnToOriginalBusiness());
+  };
+
+  // Mostrar botón de regresar si el usuario está en modo temporal (otro negocio)
+  const isTemporaryMode = useSelector(selectIsTemporaryMode);
+
   return (
     <Container role="group" aria-label="Usuario">
       <Left>
@@ -66,6 +75,17 @@ export const UserSection = () => {
         </Info>
       </Left>
       <Action>
+        {isTemporaryMode && (
+          <IconButton
+            type="button"
+            aria-label="Regresar al negocio original"
+            title="Regresar al negocio original"
+            onClick={handleReturnToOriginalBusiness}
+          >
+            <SwapOutlined />
+         
+          </IconButton>
+        )}
         <IconButton
           type="button"
           aria-label="Cerrar sesión"
@@ -149,6 +169,7 @@ const BusinessPill = styled(Tag)`
 
 const Action = styled.div`
   display: flex;
+  gap: 0.5em;
   align-items: center;
   justify-content: center;
 `;

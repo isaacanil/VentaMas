@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Typography, message } from 'antd';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fbUpdateUserPassword } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 
@@ -15,7 +15,7 @@ const PASSWORD_RULES = [
     message: 'Incluye al menos una letra minúscula.',
   },
   {
-    pattern: /(?=.*\\d)/,
+    pattern: /(?=.*\d)/,
     message: 'Incluye al menos un número.',
   },
 ];
@@ -23,6 +23,9 @@ const PASSWORD_RULES = [
 export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const formValues = Form.useWatch([], form);
 
   const username = useMemo(
     () => user?.name ?? user?.username ?? '',
@@ -31,8 +34,17 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
   const realName = useMemo(() => user?.realName ?? '', [user?.realName]);
   const displayName = (realName || username || 'Usuario sin nombre').trim();
 
+  // Validar el formulario cuando cambien los valores
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setIsFormValid(true))
+      .catch(() => setIsFormValid(false));
+  }, [form, formValues]);
+
   const resetAndClose = useCallback(() => {
     form.resetFields();
+    setIsFormValid(false);
     onClose?.();
   }, [form, onClose]);
 
@@ -72,6 +84,7 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
       onOk={() => form.submit()}
       onCancel={handleCancel}
       confirmLoading={isSubmitting}
+      okButtonProps={{ disabled: !isFormValid || isSubmitting }}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Typography.Title level={5}>Asignar nueva contraseña</Typography.Title>
@@ -106,7 +119,7 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
             }),
           ]}
         >
-          <Input.Password autoComplete="new-password" />
+          <Input.Password autoComplete="new-password" onPressEnter={() => form.submit()} />
         </Form.Item>
       </Form>
     </Modal>

@@ -17,7 +17,7 @@ const paths = [
     icon: icons.finances.fileInvoiceDollar,
     submenuIconOpen: ChevronLeft,
     submenuIconClose: ChevronRight,
-    group: 'accountsReceivable',
+    group: 'financialManagement',
     submenu: [
       {
         title: 'Listado',

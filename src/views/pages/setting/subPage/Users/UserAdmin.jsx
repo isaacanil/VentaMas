@@ -87,18 +87,7 @@ export const UserAdmin = () => {
     return 'Usuarios';
   }, [location.pathname, sessionLogsRoute, usersRoute]);
 
-  if (loading) {
-    return (
-      <Container>
-        <MenuApp sectionName={sectionName} />
-        <LoadingState>
-          <Spin tip="Verificando permisos..." />
-        </LoadingState>
-      </Container>
-    );
-  }
-
-  if (!canAccessUsers) {
+  if (!loading && !canAccessUsers) {
     return null;
   }
 

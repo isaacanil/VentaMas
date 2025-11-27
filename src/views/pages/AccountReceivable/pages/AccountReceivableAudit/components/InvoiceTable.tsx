@@ -15,6 +15,7 @@ interface InvoiceTableProps {
   totalItems: number;
   onChangePagination: (pagination: TablePaginationConfig) => void;
   onRecoverInvoice?: (invoiceId: string) => void;
+  onRecoverInvoiceInNewTab?: (invoiceId: string) => void;
   showRecoveryAction?: boolean;
 }
 
@@ -26,6 +27,7 @@ export const InvoiceTable = ({
   totalItems,
   onChangePagination,
   onRecoverInvoice,
+  onRecoverInvoiceInNewTab,
   showRecoveryAction = false,
 }: InvoiceTableProps) => {
   const handleCopyId = useCallback(async (invoiceId: string) => {
@@ -108,29 +110,55 @@ export const InvoiceTable = ({
               ),
             },
           ];
-          if (showRecoveryAction && typeof onRecoverInvoice === 'function') {
-            items.push({
-              key: 'recover',
-              label: (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    onRecoverInvoice(record.invoiceId);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
+          if (showRecoveryAction) {
+            if (typeof onRecoverInvoice === 'function') {
+              items.push({
+                key: 'recover',
+                label: (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(event) => {
                       event.preventDefault();
                       onRecoverInvoice(record.invoiceId);
-                    }
-                  }}
-                  style={{ display: 'block' }}
-                >
-                  Recuperar (Dev)
-                </span>
-              ),
-            });
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onRecoverInvoice(record.invoiceId);
+                      }
+                    }}
+                    style={{ display: 'block' }}
+                  >
+                    Recuperar (Dev)
+                  </span>
+                ),
+              });
+            }
+            if (typeof onRecoverInvoiceInNewTab === 'function') {
+              items.push({
+                key: 'recover-new-tab',
+                label: (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onRecoverInvoiceInNewTab(record.invoiceId);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onRecoverInvoiceInNewTab(record.invoiceId);
+                      }
+                    }}
+                    style={{ display: 'block' }}
+                  >
+                    Recuperar (Nueva pestaña)
+                  </span>
+                ),
+              });
+            }
           }
           return (
             <Dropdown menu={{ items }} trigger={['click']}>
@@ -145,7 +173,13 @@ export const InvoiceTable = ({
         },
       },
     ],
-    [handleCopyId, onRecoverInvoice, receivablesMap, showRecoveryAction],
+    [
+      handleCopyId,
+      onRecoverInvoice,
+      onRecoverInvoiceInNewTab,
+      receivablesMap,
+      showRecoveryAction,
+    ],
   );
 
   return (

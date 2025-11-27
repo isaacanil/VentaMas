@@ -71,6 +71,7 @@ export const fbListenCashCounts = (
   dateRange,
   filterState,
   searchTerm,
+  onLoad,
 ) => {
   if (!user?.businessID) return () => {};
   const ref = collection(db, 'businesses', user.businessID, 'cashCounts');
@@ -95,6 +96,7 @@ export const fbListenCashCounts = (
     async (snapshot) => {
       if (snapshot.empty) {
         setCashCounts([]);
+        if (onLoad) onLoad();
         return;
       }
       const cashCountsArray = snapshot.docs.map(async (d) => {
@@ -120,10 +122,12 @@ export const fbListenCashCounts = (
       } else {
         setCashCounts(parsed);
       }
+      if (onLoad) onLoad();
     },
     (error) => {
       console.error('Error listening to cash counts:', error);
       setCashCounts([]);
+      if (onLoad) onLoad();
     },
   );
 

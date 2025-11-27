@@ -31,7 +31,7 @@ export const InvoicesPage = () => {
     paymentStatus: '',
   });
 
-  const { invoices } = useFbGetInvoicesWithFilters(filters);
+  const { invoices, loading } = useFbGetInvoicesWithFilters(filters);
 
   const [processedInvoices, setProcessedInvoices] = useState(invoices);
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
@@ -85,6 +85,7 @@ export const InvoicesPage = () => {
             <SaleReportTable
               bills={processedInvoices}
               searchTerm={searchTerm}
+              loading={loading}
             />
           </Suspense>
         ) : (

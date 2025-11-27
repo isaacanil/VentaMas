@@ -32,7 +32,10 @@ export const AccountReceivableToolbar = ({ side = 'left', data }) => {
   const [datesSelected] = useState(getDateRange('last30Days'));
 
   // Obtener las cuentas por cobrar para mostrar en el modal
-  const accounts = useListenAccountsReceivable(user, datesSelected);
+  const { accountsReceivable: accounts } = useListenAccountsReceivable(
+    user,
+    datesSelected,
+  );
 
   useEffect(() => {
     if (!isPharmacy) {

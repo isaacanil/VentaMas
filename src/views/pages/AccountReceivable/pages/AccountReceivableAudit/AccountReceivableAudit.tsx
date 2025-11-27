@@ -257,10 +257,23 @@ export const AccountReceivableAudit = () => {
     (invoiceId: string) => {
       if (!invoiceId) return;
       navigate(
-        `/dev/tools/invoice-v2-recovery?invoiceId=${encodeURIComponent(invoiceId)}`,
+        `/dev/tools/invoice-v2-recovery?invoiceId=${encodeURIComponent(invoiceId)}&businessId=${encodeURIComponent(businessId || '')}`,
       );
     },
-    [navigate],
+    [businessId, navigate],
+  );
+
+  const handleRecoverInvoiceInNewTab = useCallback(
+    (invoiceId: string) => {
+      if (!invoiceId) return;
+      const url = `/dev/tools/invoice-v2-recovery?invoiceId=${encodeURIComponent(invoiceId)}&businessId=${encodeURIComponent(businessId || '')}`;
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+      // Try to keep focus on the current window (best effort, browser dependent)
+      if (newWindow) {
+        window.focus();
+      }
+    },
+    [businessId],
   );
 
   if (!businessId) {
@@ -366,6 +379,7 @@ export const AccountReceivableAudit = () => {
               onChangePagination={handlePaginationChange}
               showRecoveryAction={isDeveloperUser}
               onRecoverInvoice={handleRecoverInvoice}
+              onRecoverInvoiceInNewTab={handleRecoverInvoiceInNewTab}
             />
           </Space>
         </Card>

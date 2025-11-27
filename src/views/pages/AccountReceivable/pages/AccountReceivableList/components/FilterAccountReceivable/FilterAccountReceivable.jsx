@@ -1,241 +1,266 @@
-import { Button, Select } from 'antd';
-import dayjs from 'dayjs';
-import React, { useMemo, useState } from 'react';
+import { Button, Select, Space } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 
-import { DatePicker } from '../../../../../../../components/common/DatePicker';
+import { FilterBar as CommonFilterBar } from '../../../../../../../components/common/FilterBar';
 import { icons } from '../../../../../../../constants/icons/icons';
 import useBusiness from '../../../../../../../hooks/useBusiness';
-import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
-import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
+
+const DEFAULT_CLIENT_TYPE = 'normal';
+const DEFAULT_STATUS = 'active';
+
+const SORT_OPTIONS = [
+  { value: 'defaultCriteria', label: 'Por defecto' },
+  { value: 'date', label: 'Fecha' },
+  { value: 'invoiceNumber', label: 'No. Factura' },
+  { value: 'client', label: 'Cliente' },
+  { value: 'balance', label: 'Balance' },
+  { value: 'initialAmount', label: 'Monto inicial' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Activas' },
+  { value: 'inactive', label: 'Inactivas' },
+  { value: 'all', label: 'Todas' },
+];
+
+const CLIENT_TYPE_OPTIONS = [
+  { value: DEFAULT_CLIENT_TYPE, label: 'Clientes' },
+  { value: 'insurance', label: 'Aseguradoras' },
+];
+
+const normalizeDateRange = (range) => {
+  if (!range) return { startDate: null, endDate: null };
+  if (Array.isArray(range)) {
+    const [start, end] = range;
+    return { startDate: start ?? null, endDate: end ?? null };
+  }
+  return {
+    startDate: range.startDate ?? null,
+    endDate: range.endDate ?? null,
+  };
+};
+
+const isSameRange = (a, b) => {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return a.startDate === b.startDate && a.endDate === b.endDate;
+};
 
 export const FilterAccountReceivable = ({
-  datesSelected = [],
-  setDatesSelected = () => {},
-  accounts = [],
-  onSort = () => {},
-  onClientTypeChange = () => {},
-  statusFilter = 'active',
-  onStatusFilterChange = () => {},
+  datesSelected,
+  setDatesSelected,
+  clientType = DEFAULT_CLIENT_TYPE,
+  onClientTypeChange,
+  statusFilter = DEFAULT_STATUS,
+  onStatusFilterChange,
+  sortCriteria,
+  sortDirection,
+  onSortChange,
+  onToggleSortDirection,
+  totalCount = 0,
 }) => {
-  // --- LÓGICA INTACTA (NO SE HA TOCADO NADA) ---
-  const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
-  const [sortDirection, setSortDirection] = useState('asc');
   const { isPharmacy } = useBusiness();
+  const initialDateRange = useRef(
+    datesSelected ?? { startDate: null, endDate: null },
+  ).current;
 
-  const handleSort = (newCriteria) => {
-    setSortCriteria(newCriteria);
-    const sortedAccounts = sortAccounts(accounts, newCriteria, sortDirection);
-    onSort(sortedAccounts);
-  };
+  const handleDateRangeChange = useCallback(
+    (range) => {
+      setDatesSelected(normalizeDateRange(range));
+    },
+    [setDatesSelected],
+  );
 
-  const toggleSortDirection = () => {
-    const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    setSortDirection(newDirection);
-    const sortedAccounts = sortAccounts(accounts, sortCriteria, newDirection);
-    onSort(sortedAccounts);
-  };
+  const handleStatusChange = useCallback(
+    (value) => {
+      onStatusFilterChange(value || DEFAULT_STATUS);
+    },
+    [onStatusFilterChange],
+  );
 
-  const handleSortChange = (value) => {
-    handleSort(value);
-  };
+  const handleClientTypeChange = useCallback(
+    (value) => {
+      onClientTypeChange(value || DEFAULT_CLIENT_TYPE);
+    },
+    [onClientTypeChange],
+  );
 
-  const handleClientTypeChange = (value) => {
-    onClientTypeChange(value);
-  };
+  const handleSortChange = useCallback(
+    (value) => {
+      onSortChange(value);
+    },
+    [onSortChange],
+  );
 
-  const handleStatusChange = (value) => {
-    onStatusFilterChange(value);
-  };
+  const hasActiveFilters = useMemo(() => {
+    const dateChanged = !isSameRange(datesSelected, initialDateRange);
+    const statusChanged = statusFilter !== DEFAULT_STATUS;
+    const clientTypeChanged =
+      isPharmacy && clientType !== DEFAULT_CLIENT_TYPE;
+    return dateChanged || statusChanged || clientTypeChanged;
+  }, [clientType, datesSelected, initialDateRange, isPharmacy, statusFilter]);
 
-  const datePickerValue = useMemo(() => {
-    const hasStart =
-      datesSelected?.startDate || datesSelected?.startDate === 0;
-    const hasEnd = datesSelected?.endDate || datesSelected?.endDate === 0;
-    if (!hasStart && !hasEnd) return null;
+  const handleClearFilters = useCallback(() => {
+    setDatesSelected(initialDateRange);
+    onStatusFilterChange(DEFAULT_STATUS);
+    onClientTypeChange(DEFAULT_CLIENT_TYPE);
+  }, [
+    initialDateRange,
+    onClientTypeChange,
+    onStatusFilterChange,
+    setDatesSelected,
+  ]);
 
-    const startValue = hasStart ? dayjs(datesSelected.startDate) : null;
-    const endValue = hasEnd ? dayjs(datesSelected.endDate) : null;
-    return [startValue, endValue];
-  }, [datesSelected]);
+  const sortOptions = useMemo(() => {
+    if (!isPharmacy) return SORT_OPTIONS;
+    return [
+      ...SORT_OPTIONS.slice(0, 4),
+      { value: 'insurance', label: 'Aseguradora' },
+      ...SORT_OPTIONS.slice(4),
+    ];
+  }, [isPharmacy]);
 
-  const handleDateRangeChange = (range) => {
-    if (!Array.isArray(range)) {
-      setDatesSelected({ startDate: null, endDate: null });
-      return;
-    }
-    const [start, end] = range;
-    const normalizePart = (value, boundary = 'start') => {
-      if (!value || !dayjs.isDayjs(value)) return null;
-      return (boundary === 'start'
-        ? value.startOf('day')
-        : value.endOf('day')
-      ).valueOf();
-    };
-    setDatesSelected({
-      startDate: normalizePart(start, 'start'),
-      endDate: normalizePart(end, 'end'),
-    });
-  };
+  const items = useMemo(
+    () =>
+      [
+        {
+          key: 'date',
+          label: 'Fechas',
+          type: 'dateRange',
+          value: datesSelected,
+          onChange: handleDateRangeChange,
+          isActive: (value) => !isSameRange(value, initialDateRange),
+        },
+        isPharmacy
+          ? {
+              key: 'clientType',
+              label: 'Tipo',
+              type: 'select',
+              value: clientType,
+              onChange: handleClientTypeChange,
+              options: CLIENT_TYPE_OPTIONS,
+              allowClear: false,
+              controlStyle: { width: '100%' },
+              minWidth: 150,
+            }
+          : null,
+        {
+          key: 'status',
+          label: 'Estado',
+          type: 'select',
+          value: statusFilter,
+          onChange: handleStatusChange,
+          options: STATUS_OPTIONS,
+          allowClear: false,
+          controlStyle: { width: '100%' },
+          minWidth: 150,
+        },
+        {
+          key: 'sort',
+          label: 'Ordenar',
+          wrap: true,
+          render: () => (
+            <Space.Compact>
+              <Select
+                value={sortCriteria}
+                style={{ width: 160 }}
+                onChange={handleSortChange}
+                options={sortOptions}
+              />
+              <Button
+                icon={
+                  sortDirection === 'asc'
+                    ? icons.sort.sortAsc
+                    : icons.sort.sortDesc
+                }
+                onClick={onToggleSortDirection}
+                disabled={sortCriteria === 'defaultCriteria'}
+              />
+            </Space.Compact>
+          ),
+          value: { sortCriteria, sortDirection },
+          isActive: (value) =>
+            value?.sortCriteria && value.sortCriteria !== 'defaultCriteria',
+          minWidth: 220,
+          wrapperStyle: { marginLeft: 'auto' },
+        },
+      ].filter(Boolean),
+    [
+      clientType,
+      datesSelected,
+      handleClientTypeChange,
+      handleDateRangeChange,
+      handleSortChange,
+      handleStatusChange,
+      initialDateRange,
+      isPharmacy,
+      sortCriteria,
+      sortDirection,
+      sortOptions,
+      statusFilter,
+      onToggleSortDirection,
+    ],
+  );
 
-  const sortOptions = [
-    { value: 'defaultCriteria', label: 'Por defecto' },
-    { value: 'date', label: 'Fecha' },
-    { value: 'invoiceNumber', label: 'No. Factura' },
-    { value: 'client', label: 'Cliente' },
-    { value: 'balance', label: 'Balance' },
-    { value: 'initialAmount', label: 'Monto Inicial' },
-  ];
-
-  if (isPharmacy) {
-    sortOptions.splice(4, 0, { value: 'insurance', label: 'Aseguradora' });
-  }
-
-  const vw = useViewportWidth();
-  // --- FIN DE LÓGICA INTACTA ---
+  const mobileTotals = useMemo(
+    () => <TotalBadge>Total: {totalCount}</TotalBadge>,
+    [totalCount],
+  );
 
   return (
-    <ToolbarContainer>
-      {/* 1. DatePicker: Elemento principal */}
-      <DatePickerWrapper>
-        <DatePicker
-          mode="range"
-          value={datePickerValue}
-          onChange={handleDateRangeChange}
-          placeholder={['Desde', 'Hasta']}
-          allowClear
-          size="middle"
-          style={{ width: '100%' }}
-        />
-      </DatePickerWrapper>
-
-      {/* 2. Selector Cliente/Aseguradora (Condicional) */}
-      {isPharmacy && (
-        <Select
-          defaultValue="normal"
-          style={{ width: 130 }}
-          onChange={handleClientTypeChange}
-          options={[
-            { value: 'normal', label: 'Clientes' },
-            { value: 'insurance', label: 'Aseguradoras' },
-          ]}
-        />
-      )}
-
-      {/* 3. Selector de Estado */}
-      <Select
-        value={statusFilter}
-        style={{ width: 130 }}
-        onChange={handleStatusChange}
-        options={[
-          { value: 'active', label: 'Activas' },
-          { value: 'inactive', label: 'Inactivas' },
-          { value: 'all', label: 'Todas' },
-        ]}
-      />
-
-      {/* 4. Grupo de Ordenamiento (Empujado a la derecha automáticamente) */}
-      <SortControlGroup>
-        <SortLabel>Ordenar:</SortLabel>
-        <Select
-          defaultValue="defaultCriteria"
-          style={{ width: 160 }}
-          onChange={handleSortChange}
-          options={sortOptions}
-        />
-        <Button
-          icon={sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc}
-          onClick={toggleSortDirection}
-          disabled={sortCriteria === 'defaultCriteria'}
-        />
-        
-        {/* Badge de Total */}
-        {vw > 900 && (
-          <TotalBadge>
-             Total: {accounts.length}
-          </TotalBadge>
-        )}
-      </SortControlGroup>
-
-    </ToolbarContainer>
+    <CommonFilterBar
+      items={items}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={hasActiveFilters ? handleClearFilters : null}
+      mobileHeaderRight={mobileTotals}
+      labels={{
+        drawerTrigger: 'Filtros',
+        drawerTitle: 'Filtros',
+        modalTitle: 'Filtros adicionales',
+        more: 'Más filtros',
+        clear: 'Limpiar filtros',
+      }}
+    />
   );
 };
 
 FilterAccountReceivable.defaultProps = {
-  onFilter: () => { },
-  datesSelected: [],
-  setDatesSelected: () => { },
-  onReportSaleOpen: () => { },
-  processedInvoices: [],
-  setProcessedInvoices: () => { },
-  onStatusFilterChange: () => { },
+  datesSelected: { startDate: null, endDate: null },
+  setDatesSelected: () => {},
+  clientType: DEFAULT_CLIENT_TYPE,
+  onClientTypeChange: () => {},
+  statusFilter: DEFAULT_STATUS,
+  onStatusFilterChange: () => {},
+  sortCriteria: 'defaultCriteria',
+  sortDirection: 'asc',
+  onSortChange: () => {},
+  onToggleSortDirection: () => {},
+  totalCount: 0,
 };
 
-// --- STYLED COMPONENTS FLUIDOS ---
-
-const ToolbarContainer = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px; /* Espaciado uniforme entre todos los elementos */
-  width: 100%;
-  padding: 10px 16px;
-  background-color: var(--white);
-  border-bottom: 1px solid #e5e7eb;
-  
-  /* Sombra sutil para darle profundidad sobre la tabla */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: stretch; /* En móviles, que ocupen todo el ancho */
-    gap: 10px;
-  }
-`;
-
-const DatePickerWrapper = styled.div`
-  /* Ancho base cómodo, pero flexible */
-  width: 240px;
-
-  @media (max-width: 600px) {
-    width: 100%;
-  }
-`;
-
-const SortControlGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  /* LA CLAVE: Esto empuja este grupo al final si hay espacio, 
-     pero permite que fluya normal si falta espacio. */
-  margin-left: auto;
-
-  @media (max-width: 960px) {
-    /* En pantallas medianas/pequeñas, quitamos el empuje para que siga el flujo natural */
-    margin-left: 0;
-    width: 100%; /* Opcional: para que ocupe una línea propia si baja */
-    justify-content: flex-end; /* Alinearlo a la derecha visualmente si baja */
-    padding-top: 4px;
-  }
-  
-  @media (max-width: 600px) {
-    justify-content: space-between; /* En móvil, distribuir espacio */
-  }
-`;
-
-const SortLabel = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  color: #6b7280;
-  white-space: nowrap;
-`;
+FilterAccountReceivable.propTypes = {
+  datesSelected: PropTypes.shape({
+    startDate: PropTypes.number,
+    endDate: PropTypes.number,
+  }),
+  setDatesSelected: PropTypes.func,
+  clientType: PropTypes.string,
+  onClientTypeChange: PropTypes.func,
+  statusFilter: PropTypes.string,
+  onStatusFilterChange: PropTypes.func,
+  sortCriteria: PropTypes.string,
+  sortDirection: PropTypes.string,
+  onSortChange: PropTypes.func,
+  onToggleSortDirection: PropTypes.func,
+  totalCount: PropTypes.number,
+};
 
 const TotalBadge = styled.div`
-  margin-left: 8px;
-  padding: 2px 8px;
+  padding: 4px 10px;
   background-color: #f3f4f6;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   color: #4b5563;

@@ -79,6 +79,7 @@ const RowItem = React.memo(
               clickable={col?.clickable !== false}
               columns={activeColumns}
               data-size={rowSize}
+              data-row-border={rowBorder ? 'on' : 'off'}
               onClick={(e) => handleCellClick(e, col, row)}
             >
               {renderCell(

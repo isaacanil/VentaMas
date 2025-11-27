@@ -331,6 +331,21 @@ async function getActiveSessions(userId) {
     );
 }
 
+async function revokeAllUserSessions(userId, reason = 'password-changed') {
+  if (!userId) return { revoked: 0 };
+  const snapshot = await sessionsCol.where('userId', '==', userId).get();
+  if (snapshot.empty) return { revoked: 0 };
+
+  const revocations = snapshot.docs.map((doc) =>
+    terminateSession(doc, 'revoked', { reason }),
+  );
+  await Promise.allSettled(revocations);
+
+  await updateUserPresence(userId, 'offline');
+
+  return { revoked: snapshot.docs.length };
+}
+
 async function syncUserPresence(userId) {
   const sessions = await getActiveSessions(userId);
   await updateUserPresence(userId, sessions.length ? 'online' : 'offline');
@@ -885,9 +900,13 @@ export const clientChangePassword = onCall(async ({ data }) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await snap.ref.update({
     'user.password': hashedPassword,
+    'user.passwordChangedAt': Timestamp.now(),
   });
 
-  return { ok: true };
+  // Revocar todas las sesiones activas del usuario por seguridad
+  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+
+  return { ok: true, sessionsRevoked: revoked };
 });
 
 export const clientSetUserPassword = onCall(async ({ data }) => {
@@ -900,7 +919,11 @@ export const clientSetUserPassword = onCall(async ({ data }) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await usersCol.doc(userId).update({
     'user.password': hashedPassword,
+    'user.passwordChangedAt': Timestamp.now(),
   });
 
-  return { ok: true };
+  // Revocar todas las sesiones activas del usuario por seguridad
+  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+
+  return { ok: true, sessionsRevoked: revoked };
 });
