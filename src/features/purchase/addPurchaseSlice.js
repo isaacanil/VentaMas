@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { notification } from 'antd';
 import { DateTime } from 'luxon';
+import { nanoid } from 'nanoid';
 
 import {
   getDefaultTransactionCondition,
@@ -66,34 +67,21 @@ export const addPurchaseSlice = createSlice({
     SelectProduct: (state, actions) => {
       const product = actions.payload;
       let productData = {
+        key: nanoid(),
         id: product.id,
         name: product.name,
-        expirationDate: '',
-        quantity: 0,
-        purchaseQuantity: 0, // Cantidad total a comprar
+        expirationDate: product.expirationDate ?? null, // Use null for empty date
+        quantity: product.quantity ?? 1,
+        purchaseQuantity: product.purchaseQuantity ?? (product.quantity ?? 1), // Use existing purchaseQuantity or default to quantity, then 1
         selectedBackOrders: [], // BackOrders seleccionados
-        unitMeasurement: '',
-        baseCost: product.pricing?.cost || 0,
-        taxPercentage: 0,
-        freight: 0,
-        otherCosts: 0,
+        unitMeasurement: product.unitMeasurement ?? '',
+        baseCost: product.pricing?.cost ?? product.baseCost ?? 0, // Use pricing cost, then product baseCost, then 0
+        taxPercentage: product.taxPercentage ?? 0,
+        freight: product.freight ?? 0,
+        otherCosts: product.otherCosts ?? 0,
         unitCost: 0,
         subtotal: 0,
       };
-      const findProduct = state.purchase.replenishments.find(
-        (item) => item.id === productData.id,
-      );
-      if (findProduct) {
-        productData = {
-          ...productData,
-          ...findProduct,
-        };
-        notification.info({
-          message: `Edición del producto: ${product.name}`,
-          description: `Al agregar este producto, la cantidad y el costo por unidad serán actualizados con los valores ingresados.`,
-          duration: 0,
-        });
-      }
 
       // Calcular costos iniciales
       productData.unitCost = calculateUnitCost(productData);
@@ -102,20 +90,7 @@ export const addPurchaseSlice = createSlice({
       state.productSelected = productData;
     },
     AddProductToPurchase: (state) => {
-      const findProduct = state.purchase.replenishments.find(
-        (item) => item.id === state.productSelected.id,
-      );
-      const productToAdd = {
-        ...state.productSelected,
-        // quantity ya contiene la cantidad restante
-      };
-
-      if (findProduct) {
-        const index = state.purchase.replenishments.indexOf(findProduct);
-        state.purchase.replenishments[index] = productToAdd;
-      } else {
-        state.purchase.replenishments.push(productToAdd);
-      }
+      state.purchase.replenishments.push(state.productSelected);
       state.productSelected = EmptyProduct;
     },
     updateStock: (state, actions) => {
@@ -141,11 +116,14 @@ export const addPurchaseSlice = createSlice({
     },
     updateProduct: (state, actions) => {
       const { value } = actions.payload;
-      // Buscar producto por originalId (si se cambió el ID) o por id actual
-      const searchId = value.originalId || value.id;
-      const productIndex = state.purchase.replenishments.findIndex(
-        (item) => item.id === searchId,
-      );
+      // Buscar producto por key o por id (para datos antiguos sin key)
+      const productIndex = state.purchase.replenishments.findIndex((item) => {
+        const matchesKey = value?.key && item.key === value.key;
+        const matchesId = value?.id && item.id === value.id;
+        const matchesOriginalId =
+          value?.originalId && item.id === value.originalId;
+        return matchesKey || matchesId || matchesOriginalId;
+      });
       if (productIndex === -1) return; // Si no se encuentra, no se actualiza
 
       const currentProduct = state.purchase.replenishments[productIndex];
@@ -207,9 +185,13 @@ export const addPurchaseSlice = createSlice({
       state.purchase.receiptUrl = '';
     },
     deleteProductFromPurchase: (state, actions) => {
-      const { id } = actions.payload;
+      const { id, key } = actions.payload;
       state.purchase.replenishments = state.purchase.replenishments.filter(
-        (item) => item.id !== id,
+        (item) => {
+          const matchesKey = key && item.key === key;
+          const matchesId = id && item.id === id;
+          return !(matchesKey || matchesId);
+        },
       );
     },
     setSelectedBackOrders: (state, action) => {

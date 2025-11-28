@@ -35,6 +35,7 @@ const DEV_VIEW_TERM = {
     LOGIN_IMAGE: '/dev/app-config/login-image',
   } as const,
   SWITCH_BUSINESS: '/dev/business/switch',
+  AI_BUSINESS_SEEDING: '/dev/tools/ai-business-seeding',
 } as const;
 
 const UTILITY_TERM = {

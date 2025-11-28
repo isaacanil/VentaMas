@@ -94,7 +94,7 @@ export const listFirst5UserNames = async () => {
 // servicesEmulator();
 
 export const generativeModel = getGenerativeModel(vertexAI, {
-  model: 'gemini-2.5-flash-preview-04-17',
+  model: 'gemini-2.5-flash',
 });
 
 // export const getTaxes = async (setTaxes) => {

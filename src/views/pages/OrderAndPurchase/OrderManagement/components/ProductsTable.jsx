@@ -15,84 +15,83 @@ import { formatMoney } from '../../../../../utils/formatters';
 import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
-  editing,
   dataIndex,
   inputType,
   record,
-  children,
   onSave,
-  setDateModalVisible,
-  setSelectedRecord,
   onCellClick,
+  children,
   ...restProps
 }) => {
-  const getInput = () => {
-    if (inputType === 'productModal') {
+  const isProductModal = inputType === 'productModal';
+  const isNumberInput = inputType === 'number';
+  const isDatePicker = inputType === 'date';
+
+  const handleValueChange = (value) => {
+    onSave(record, dataIndex, value);
+  };
+
+  const handleProductSelect = (product) => {
+    onSave(record, dataIndex, product);
+  };
+
+  const handleDateChange = (date) => {
+    const timestamp = date ? dayjs(date).valueOf() : null;
+    onSave(record, dataIndex, timestamp);
+  };
+
+  const renderInput = () => {
+    if (isProductModal) {
       return (
         <ProductModal
-          onSelect={(product) => onSave(record, dataIndex, product)}
-          selectedProduct={{ name: record[dataIndex] }}
-        />
+          onSelect={handleProductSelect}
+          selectedProduct={{ name: record[dataIndex], id: record.id }} // Pass ID as well
+        >
+          <Input
+            value={record[dataIndex]} // Display product name
+            placeholder="Seleccionar producto"
+            readOnly
+          />
+        </ProductModal>
       );
     }
-    if (inputType === 'number') {
+    if (isNumberInput) {
       return (
         <InputNumber
-          onBlur={(e) => onSave(record, dataIndex, e.target.value)}
-          autoFocus
+          value={record[dataIndex]}
+          onChange={handleValueChange}
+          onBlur={(e) => handleValueChange(e.target.value)}
+          min={dataIndex === 'quantity' ? 1 : 0}
         />
       );
     }
-    if (inputType === 'date') {
-      return children;
+    if (isDatePicker) {
+      return (
+        <DatePicker
+          value={record[dataIndex] ? dayjs(record[dataIndex]) : null}
+          onChange={handleDateChange}
+          format="DD/MM/YY"
+          style={{ width: '100%' }}
+        />
+      );
     }
     return (
       <Input
-        onBlur={(e) => onSave(record, dataIndex, e.target.value)}
-        autoFocus
+        value={record[dataIndex]}
+        onChange={(e) => handleValueChange(e.target.value)}
+        onBlur={(e) => handleValueChange(e.target.value)}
       />
     );
   };
 
-  const handleDateCellClick = () => {
-    if (inputType === 'date' && record.editable !== false) {
-      setSelectedRecord(record);
-      setDateModalVisible(true);
-      return;
-    }
-    restProps.onClick?.();
-  };
-
   return (
-    <td
-      {...restProps}
-      onClick={onCellClick || handleDateCellClick}
-      style={{ cursor: 'pointer' }}
-    >
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{ margin: 0 }}
-          noStyle
-          rules={
-            ['freight', 'otherCosts'].includes(dataIndex)
-              ? []
-              : [{ required: true }]
-          }
-        >
-          {getInput()}
-        </Form.Item>
-      ) : (
-        <div
-          className="editable-cell-value-wrap"
-          style={{
-            paddingRight: 24,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {children}
-        </div>
-      )}
+    <td {...restProps}>
+      <Form.Item
+        style={{ margin: 0 }}
+        noStyle
+      >
+        {renderInput()}
+      </Form.Item>
     </td>
   );
 };
@@ -103,22 +102,7 @@ const ProductsTable = ({
   onEditProduct,
   onQuantityClick,
 }) => {
-  const [editingCell, setEditingCell] = useState({ row: '', col: '' });
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState(null);
   const [form] = Form.useForm();
-
-  const isEditing = (record, dataIndex) =>
-    editingCell.row === record.key && editingCell.col === dataIndex;
-
-  const edit = (record, dataIndex) => {
-    const value = record[dataIndex];
-    const formValue =
-      dataIndex === 'expirationDate' && value ? dayjs(value) : value;
-
-    form.setFieldsValue({ [dataIndex]: formValue });
-    setEditingCell({ row: record.key, col: dataIndex });
-  };
 
   const handleSave = (record, dataIndex, value) => {
     let newData = { ...record, originalId: record.id };
@@ -134,9 +118,8 @@ const ProductsTable = ({
       };
     } else {
       let finalValue = value;
-      if (dataIndex === 'expirationDate') {
-        finalValue = value ? Number(value) : null;
-      } else if (
+      // Date handling is now inside EditableCell
+      if (
         ['quantity', 'baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(
           dataIndex,
         )
@@ -165,52 +148,55 @@ const ProductsTable = ({
     }
 
     onEditProduct({ ...newData, index: record.key });
-    setEditingCell({ row: '', col: '' });
   };
 
-  const handleDateModalOk = (date) => {
-    if (selectedRecord) {
-      const timestamp = date ? date.startOf('day').valueOf() : null;
-      handleSave(selectedRecord, 'expirationDate', timestamp);
-    }
-    setDateModalVisible(false);
-    setSelectedRecord(null);
-  };
-
-  const columns = [
+  const defaultColumns = [
     {
       title: 'Producto',
       dataIndex: 'name',
       ellipsis: {
         showTitle: true,
       },
-      render: (text) => (
-        <span
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="productModal"
+          dataIndex="name"
+          onSave={handleSave}
         >
-          {text}
-        </span>
+          {record.name}
+        </EditableCell>
       ),
-      editable: true,
     },
-
     {
       title: 'Cantidad',
       dataIndex: 'quantity',
-      render: (value) => value,
-      editable: true,
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="number"
+          dataIndex="quantity"
+          onSave={handleSave}
+          onCellClick={() => onQuantityClick(record)} // Keep this for backorders modal
+        >
+          {record.quantity}
+        </EditableCell>
+      ),
     },
     {
       title: 'Costo Base',
       dataIndex: 'baseCost',
-      render: (value) => formatMoney(value),
-      editable: true,
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="number"
+          dataIndex="baseCost"
+          onSave={handleSave}
+        >
+          {formatMoney(record.baseCost)}
+        </EditableCell>
+      ),
     },
-
     {
       title: 'Subtotal',
       dataIndex: 'subtotal',
@@ -233,102 +219,62 @@ const ProductsTable = ({
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => removeProduct(record.id)}
+            onClick={() =>
+              removeProduct({ key: record.key, id: record.id || record.originalId })
+            }
           />
         </div>
       ),
     },
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType:
-          col.dataIndex === 'expirationDate'
-            ? 'date'
-            : col.dataIndex === 'name'
-              ? 'productModal'
-              : [
-                    'quantity',
-                    'baseCost',
-                    'taxPercentage',
-                    'freight',
-                    'otherCosts',
-                  ].includes(col.dataIndex)
-                ? 'number'
-                : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record, col.dataIndex),
-        onSave: handleSave,
-        ...(col.dataIndex === 'quantity'
-          ? {
-              onCellClick: () => {
-                if (
-                  onQuantityClick &&
-                  record.selectedBackOrders &&
-                  record.selectedBackOrders.length > 0
-                ) {
-                  onQuantityClick(record);
-                } else {
-                  edit(record, col.dataIndex);
-                }
-              },
-            }
-          : { onClick: () => edit(record, col.dataIndex) }),
-        setDateModalVisible,
-        setSelectedRecord,
-      }),
-    };
-  });
-
   return (
     <>
       <Form form={form} component={false}>
         <Table
-          components={{
-            body: {
-              cell: EditableCell,
-            },
-          }}
           className="editable-row-table"
           size="small"
           scroll={{ x: 1300 }}
-          columns={mergedColumns}
+          columns={defaultColumns}
           dataSource={products.map((product, index) => ({
             ...product,
-            key: product.id || index,
+            key: product.key || product.id || index,
           }))}
           rowKey={(record) => record.key}
-          onRow={() => ({})}
+          pagination={false}
+          summary={(pageData) => {
+            let totalQuantity = 0;
+            let totalBaseCost = 0;
+            let totalSubtotal = 0;
+
+            pageData.forEach(({ quantity, baseCost, subtotal }) => {
+              const q = Number(quantity) || 0;
+              const b = Number(baseCost) || 0;
+              const s = Number(subtotal) || 0;
+
+              totalQuantity += q;
+              totalBaseCost += q * b;
+              totalSubtotal += s;
+            });
+
+            return (
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>
+                  <span style={{ fontWeight: 'bold' }}>{totalQuantity}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2}>
+                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalBaseCost)}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={3}>
+                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalSubtotal)}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={4} />
+              </Table.Summary.Row>
+            );
+          }}
         />
       </Form>
-
-      <Modal
-        title="Seleccionar fecha de vencimiento"
-        open={dateModalVisible}
-        onCancel={() => {
-          setDateModalVisible(false);
-          setSelectedRecord(null);
-        }}
-        footer={null}
-      >
-        <DatePicker
-          style={{ width: '100%' }}
-          format="DD/MM/YY"
-          value={
-            selectedRecord?.expirationDate
-              ? dayjs(selectedRecord.expirationDate)
-              : null
-          }
-          onChange={handleDateModalOk}
-        />
-      </Modal>
     </>
   );
 };

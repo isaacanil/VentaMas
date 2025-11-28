@@ -1,4 +1,4 @@
-import { message, Button, Form, Modal, Select } from 'antd';
+import { message, Button, Form, Modal, Select, notification } from 'antd';
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -258,26 +258,72 @@ const PurchaseManagement = () => {
   );
 
   const handleSubmit = useCallback(async () => {
-    if (!validateFields()) {
-      message.error('Por favor complete todos los campos requeridos');
+    // 1. Validar Proveedor
+    if (!purchaseData.provider) {
+      notification.warning({
+        message: 'Falta el Proveedor',
+        description: 'Por favor, selecciona un proveedor para continuar.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, provider: true }));
       return;
     }
+
+    // 2. Validar Fecha de Entrega
+    if (!purchaseData.deliveryAt) {
+      notification.warning({
+        message: 'Falta Fecha de Entrega',
+        description: 'Por favor, selecciona la fecha de entrega.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, deliveryAt: true }));
+      return;
+    }
+
+    // 3. Validar Fecha de Pago
+    if (!purchaseData.paymentAt) {
+      notification.warning({
+        message: 'Falta Fecha de Pago',
+        description: 'Por favor, selecciona la fecha de pago.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, paymentAt: true }));
+      return;
+    }
+
+    // 4. Validar Lista de Productos
     if (!purchaseData?.replenishments?.length) {
-      message.error('Agrega un producto a la compra');
+      notification.warning({
+        message: 'Compra Vacía',
+        description: 'Debes agregar al menos un producto a la compra.',
+        duration: 5,
+      });
       return;
     }
 
-    const hasInvalidProducts = purchaseData.replenishments.some(
-      (p) =>
-        !p.name?.trim() ||
-        (Number(p.purchaseQuantity) || 0) <= 0 ||
-        (Number(p.baseCost) || 0) <= 0,
-    );
+    // 5. Validar Productos Individuales
+    const invalidProduct = purchaseData.replenishments.find((p) => {
+      const qty = Number(p.purchaseQuantity) || 0;
+      const cost = Number(p.baseCost) || 0;
+      return !p.name?.trim() || qty <= 0 || cost <= 0;
+    });
 
-    if (hasInvalidProducts) {
-      message.error(
-        'Todos los productos deben tener nombre, cantidad y costo mayor a 0',
-      );
+    if (invalidProduct) {
+      const qty = Number(invalidProduct.purchaseQuantity) || 0;
+      const cost = Number(invalidProduct.baseCost) || 0;
+
+      let description = 'Revisa los datos del producto.';
+      if (qty <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene una cantidad de 0.`;
+      } else if (cost <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene un costo base de 0.`;
+      }
+
+      notification.warning({
+        message: 'Producto Inválido',
+        description,
+        duration: 6,
+      });
       return;
     }
 
@@ -288,8 +334,7 @@ const PurchaseManagement = () => {
 
     await performSubmit();
   }, [
-    validateFields,
-    purchaseData?.replenishments?.length,
+    purchaseData,
     mode,
     performSubmit,
   ]);

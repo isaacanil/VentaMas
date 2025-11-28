@@ -26,20 +26,17 @@ const sumReceivableMetrics = (payments = []) =>
 const sumInvoiceMetrics = (invoices) =>
   invoices.reduce(
     (acc, { data }) => {
-      const { paymentMethod = [], totalPaid, payment, totalPurchase = {} } = data;
-      
-      // Fix: Use totalPaid (collected) instead of totalPurchase (revenue) to exclude credit
-      // Logic: totalPaid (explicit) -> payment.value (cart payment) -> totalPurchase.value (legacy/fallback)
-      let chargedAmount = 0;
-      if (totalPaid !== undefined && totalPaid !== null) {
-        chargedAmount = toNumber(totalPaid);
-      } else if (payment?.value !== undefined && payment?.value !== null) {
-        chargedAmount = toNumber(payment.value);
-      } else {
-        chargedAmount = toNumber(totalPurchase?.value);
-      }
+      const { paymentMethod = [], payment } = data;
 
-      acc.charged += chargedAmount;
+      // Collected Amount (Cash Flow) - What was actually paid/received
+      const collectedAmount = toNumber(payment?.value) || 0;
+
+      // Invoiced Amount (Revenue) - Total value of the invoice
+      const invoicedAmount = toNumber(payment?.value) || 0;
+
+      acc.collected += collectedAmount;
+      acc.invoiced += invoicedAmount;
+
       paymentMethod.forEach((p) => {
         if (!p.status) return;
         if (p.method === 'card') acc.card += toNumber(p.value);
@@ -47,7 +44,7 @@ const sumInvoiceMetrics = (invoices) =>
       });
       return acc;
     },
-    { card: 0, transfer: 0, charged: 0 },
+    { card: 0, transfer: 0, collected: 0, invoiced: 0 },
   );
 
 /**
@@ -75,7 +72,7 @@ export const CashCountMetaData = (
   const openBank = getBanknoteTotal(opening.banknotes);
   const closeBank = getBanknoteTotal(closing.banknotes);
   const totalExpenses = sumExpenses(expenses);
-  
+
   const invoiceMetrics = sumInvoiceMetrics(invoices);
   const arMetrics = sumReceivableMetrics(receivablePayments);
 
@@ -83,11 +80,11 @@ export const CashCountMetaData = (
   const totalTransfer = invoiceMetrics.transfer + arMetrics.transfer;
 
   const register = closeBank + totalCard + totalTransfer;
-  
+
   // System = Sales Collected + AR Collected + OpenBank - Expenses
   const system =
-    invoiceMetrics.charged + arMetrics.collected + openBank - totalExpenses;
-    
+    invoiceMetrics.collected + arMetrics.collected + openBank - totalExpenses;
+
   const discrepancy = register - system;
 
   return {
@@ -96,8 +93,8 @@ export const CashCountMetaData = (
     totalRegister: register,
     totalSystem: system,
     totalDiscrepancy: discrepancy,
-    totalCharged: invoiceMetrics.charged,
-    totalReceivables: arMetrics.collected, // New field
+    totalCharged: invoiceMetrics.invoiced, // Map Invoiced Amount to 'totalCharged' for UI 'Total Facturado'
+    totalReceivables: arMetrics.collected,
     totalExpenses: totalExpenses,
   };
 };

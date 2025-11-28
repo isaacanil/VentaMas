@@ -1,4 +1,4 @@
-import { message, Button, Form } from 'antd';
+import { message, Button, Form, notification } from 'antd';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -133,27 +133,71 @@ const OrderManagement = () => {
   }, [mode, fetchedOrder, dispatch]);
 
   const handleSubmit = useCallback(async () => {
-    if (!validateFields()) {
-      message.error('Por favor complete todos los campos requeridos');
+    // 1. Validar Proveedor
+    if (!orderData.provider) {
+      notification.warning({
+        message: 'Falta el Proveedor',
+        description: 'Por favor, selecciona un proveedor para continuar.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, provider: true }));
       return;
     }
 
+    // 2. Validar Fecha de Entrega (requerido por schema/logica anterior)
+    if (!orderData.deliveryAt) {
+      notification.warning({
+        message: 'Falta Fecha de Entrega',
+        description: 'Por favor, selecciona una fecha de entrega estimada.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, deliveryAt: true }));
+      return;
+    }
+
+    // 3. Validar Lista de Productos
     if (!orderData?.replenishments?.length) {
-      message.error('Agrega un producto al pedido');
+      notification.warning({
+        message: 'Pedido Vacío',
+        description: 'Debes agregar al menos un producto al pedido.',
+        duration: 5,
+      });
       return;
     }
 
-    const hasInvalidProducts = orderData.replenishments.some(
-      (p) =>
-        !p.name?.trim() ||
-        (Number(p.quantity) || 0) <= 0 ||
-        (Number(p.baseCost) || 0) <= 0,
-    );
+    // 4. Validar Productos Individuales (Cantidad y Costo)
+    const invalidProduct = orderData.replenishments.find((p) => {
+      const qty = Number(p.quantity) || 0;
+      const cost = Number(p.baseCost) || 0;
+      return !p.name?.trim() || qty <= 0 || cost <= 0;
+    });
 
-    if (hasInvalidProducts) {
-      message.error(
-        'Todos los productos deben tener nombre, cantidad y costo mayor a 0',
-      );
+    if (invalidProduct) {
+      const qty = Number(invalidProduct.quantity) || 0;
+      const cost = Number(invalidProduct.baseCost) || 0;
+
+      let description = 'Revisa los datos del producto.';
+      if (qty <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene una cantidad de 0.`;
+      } else if (cost <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene un costo base de 0.`;
+      }
+
+      notification.warning({
+        message: 'Producto Inválido',
+        description,
+        duration: 6,
+      });
+      return;
+    }
+
+    // Nota muy larga
+    if (orderData.note && orderData.note.length > 300) {
+      notification.warning({
+        message: 'Nota muy extensa',
+        description: 'La nota no debe exceder los 300 caracteres.',
+        duration: 5,
+      });
       return;
     }
 
@@ -180,7 +224,6 @@ const OrderManagement = () => {
     user,
     orderData,
     localFiles,
-    validateFields,
     ORDERS,
     mode,
   ]);

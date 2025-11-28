@@ -9,6 +9,7 @@ import useBusiness from '../../../../../../../hooks/useBusiness';
 
 const DEFAULT_CLIENT_TYPE = 'normal';
 const DEFAULT_STATUS = 'active';
+const DEFAULT_PAYMENT_STATUS = 'all';
 
 const SORT_OPTIONS = [
   { value: 'defaultCriteria', label: 'Por defecto' },
@@ -23,6 +24,13 @@ const STATUS_OPTIONS = [
   { value: 'active', label: 'Activas' },
   { value: 'inactive', label: 'Inactivas' },
   { value: 'all', label: 'Todas' },
+];
+
+const PAYMENT_STATUS_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'paid', label: 'Pagadas' },
+  { value: 'unpaid', label: 'No Pagadas' },
+  { value: 'partial', label: 'Parcial' },
 ];
 
 const CLIENT_TYPE_OPTIONS = [
@@ -60,6 +68,11 @@ export const FilterAccountReceivable = ({
   onSortChange,
   onToggleSortDirection,
   totalCount = 0,
+  selectedClient = 'all',
+  onClientChange,
+  clientOptions = [],
+  paymentStatusFilter = DEFAULT_PAYMENT_STATUS,
+  onPaymentStatusChange,
 }) => {
   const { isPharmacy } = useBusiness();
   const initialDateRange = useRef(
@@ -87,6 +100,20 @@ export const FilterAccountReceivable = ({
     [onClientTypeChange],
   );
 
+  const handleClientChange = useCallback(
+    (value) => {
+      onClientChange(value || 'all');
+    },
+    [onClientChange],
+  );
+
+  const handlePaymentStatusChange = useCallback(
+    (value) => {
+      onPaymentStatusChange(value || DEFAULT_PAYMENT_STATUS);
+    },
+    [onPaymentStatusChange],
+  );
+
   const handleSortChange = useCallback(
     (value) => {
       onSortChange(value);
@@ -99,17 +126,37 @@ export const FilterAccountReceivable = ({
     const statusChanged = statusFilter !== DEFAULT_STATUS;
     const clientTypeChanged =
       isPharmacy && clientType !== DEFAULT_CLIENT_TYPE;
-    return dateChanged || statusChanged || clientTypeChanged;
-  }, [clientType, datesSelected, initialDateRange, isPharmacy, statusFilter]);
+    const clientChanged = selectedClient !== 'all';
+    const paymentStatusChanged = paymentStatusFilter !== DEFAULT_PAYMENT_STATUS;
+    return (
+      dateChanged ||
+      statusChanged ||
+      clientTypeChanged ||
+      clientChanged ||
+      paymentStatusChanged
+    );
+  }, [
+    clientType,
+    datesSelected,
+    initialDateRange,
+    isPharmacy,
+    statusFilter,
+    selectedClient,
+    paymentStatusFilter,
+  ]);
 
   const handleClearFilters = useCallback(() => {
     setDatesSelected(initialDateRange);
     onStatusFilterChange(DEFAULT_STATUS);
     onClientTypeChange(DEFAULT_CLIENT_TYPE);
+    onClientChange('all');
+    onPaymentStatusChange(DEFAULT_PAYMENT_STATUS);
   }, [
     initialDateRange,
     onClientTypeChange,
     onStatusFilterChange,
+    onClientChange,
+    onPaymentStatusChange,
     setDatesSelected,
   ]);
 
@@ -135,17 +182,41 @@ export const FilterAccountReceivable = ({
         },
         isPharmacy
           ? {
-              key: 'clientType',
-              label: 'Tipo',
-              type: 'select',
-              value: clientType,
-              onChange: handleClientTypeChange,
-              options: CLIENT_TYPE_OPTIONS,
-              allowClear: false,
-              controlStyle: { width: '100%' },
-              minWidth: 150,
-            }
+            key: 'clientType',
+            label: 'Tipo',
+            type: 'select',
+            value: clientType,
+            onChange: handleClientTypeChange,
+            options: CLIENT_TYPE_OPTIONS,
+            allowClear: false,
+            controlStyle: { width: '100%' },
+            minWidth: 150,
+          }
           : null,
+        {
+          key: 'client',
+          label: 'Cliente',
+          type: 'select',
+          value: selectedClient,
+          onChange: handleClientChange,
+          options: [{ value: 'all', label: 'Todos' }, ...clientOptions],
+          allowClear: false,
+          controlStyle: { width: 200 },
+          showSearch: true,
+          filterOption: (input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+        },
+        {
+          key: 'paymentStatus',
+          label: 'Pago',
+          type: 'select',
+          value: paymentStatusFilter,
+          onChange: handlePaymentStatusChange,
+          options: PAYMENT_STATUS_OPTIONS,
+          allowClear: false,
+          controlStyle: { width: 140 },
+          minWidth: 140,
+        },
         {
           key: 'status',
           label: 'Estado',
@@ -183,7 +254,6 @@ export const FilterAccountReceivable = ({
           value: { sortCriteria, sortDirection },
           isActive: (value) =>
             value?.sortCriteria && value.sortCriteria !== 'defaultCriteria',
-          minWidth: 220,
           wrapperStyle: { marginLeft: 'auto' },
         },
       ].filter(Boolean),
@@ -201,6 +271,11 @@ export const FilterAccountReceivable = ({
       sortOptions,
       statusFilter,
       onToggleSortDirection,
+      selectedClient,
+      handleClientChange,
+      clientOptions,
+      paymentStatusFilter,
+      handlePaymentStatusChange,
     ],
   );
 
@@ -228,16 +303,21 @@ export const FilterAccountReceivable = ({
 
 FilterAccountReceivable.defaultProps = {
   datesSelected: { startDate: null, endDate: null },
-  setDatesSelected: () => {},
+  setDatesSelected: () => { },
   clientType: DEFAULT_CLIENT_TYPE,
-  onClientTypeChange: () => {},
+  onClientTypeChange: () => { },
   statusFilter: DEFAULT_STATUS,
-  onStatusFilterChange: () => {},
+  onStatusFilterChange: () => { },
   sortCriteria: 'defaultCriteria',
   sortDirection: 'asc',
-  onSortChange: () => {},
-  onToggleSortDirection: () => {},
+  onSortChange: () => { },
+  onToggleSortDirection: () => { },
   totalCount: 0,
+  selectedClient: 'all',
+  onClientChange: () => { },
+  clientOptions: [],
+  paymentStatusFilter: DEFAULT_PAYMENT_STATUS,
+  onPaymentStatusChange: () => { },
 };
 
 FilterAccountReceivable.propTypes = {
@@ -255,6 +335,11 @@ FilterAccountReceivable.propTypes = {
   onSortChange: PropTypes.func,
   onToggleSortDirection: PropTypes.func,
   totalCount: PropTypes.number,
+  selectedClient: PropTypes.string,
+  onClientChange: PropTypes.func,
+  clientOptions: PropTypes.array,
+  paymentStatusFilter: PropTypes.string,
+  onPaymentStatusChange: PropTypes.func,
 };
 
 const TotalBadge = styled.div`

@@ -90,6 +90,8 @@ const commonStyles = css`
   font-weight: 450;
   color: var(--gray-6);
   border-bottom: var(--border-primary);
+  cursor: pointer;
+  user-select: none;
 
   :last-child {
     border-bottom: none;

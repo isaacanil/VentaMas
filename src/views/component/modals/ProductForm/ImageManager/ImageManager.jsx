@@ -4,7 +4,7 @@ import {
   InboxOutlined,
   PictureOutlined,
 } from '@ant-design/icons';
-import { Button, Image, Upload, Typography, message, Progress } from 'antd';
+import { Button, Image, Upload, Typography, message, Progress, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -30,16 +30,7 @@ const Container = styled.div`
   border-radius: 8px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 12px;
-  padding-bottom: 12px;
-  margin: -20px -20px 0;
-  border-bottom: 1px solid #e5e7eb;
-  border-radius: 8px 8px 0 0;
-`;
+
 
 const MainContent = styled.div`
   display: grid;
@@ -203,7 +194,7 @@ const HelpText = styled.p`
 `;
 
 // React component
-const ImageManager = ({ hideImageManager }) => {
+const ImageManager = ({ open, onCancel }) => {
   const user = useSelector(selectUser);
   const [images, setImages] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -283,111 +274,113 @@ const ImageManager = ({ hideImageManager }) => {
   };
 
   return (
-    <Container>
-      <Header>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={hideImageManager}
-          type="default"
-        >
-          Volver
-        </Button>
-      </Header>
+    <Modal
+      title="Biblioteca de imágenes"
+      width={720}
+      open={open}
+      destroyOnClose
+      onCancel={onCancel}
+      footer={null}
+      style={{ top: 10 }}
+      styles={{ body: { padding: 0 } }}
+    >
+      <Container>
 
-      <MainContent>
-        <UploadSection>
-          <SectionTitle>
-            <InboxOutlined />
-            Cargar Imagen
-          </SectionTitle>
+        <MainContent>
+          <UploadSection>
+            <SectionTitle>
+              <InboxOutlined />
+              Cargar Imagen
+            </SectionTitle>
 
-          <UploadContainer>
-            <Upload.Dragger {...uploadProps}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">Seleccionar imagen del producto</p>
-              <p className="ant-upload-hint">JPG, PNG o GIF • Máximo 5MB</p>
-            </Upload.Dragger>
+            <UploadContainer>
+              <Upload.Dragger {...uploadProps}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">Seleccionar imagen del producto</p>
+                <p className="ant-upload-hint">JPG, PNG o GIF • Máximo 5MB</p>
+              </Upload.Dragger>
 
-            {isUploading && (
-              <ProgressContainer>
-                <Typography.Text
-                  strong
-                  style={{
-                    marginBottom: 16,
-                    color: '#374151',
-                    textAlign: 'center',
-                  }}
+              {isUploading && (
+                <ProgressContainer>
+                  <Typography.Text
+                    strong
+                    style={{
+                      marginBottom: 16,
+                      color: '#374151',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Cargando imagen...
+                  </Typography.Text>
+                  <Progress
+                    percent={Math.round(uploadProgress)}
+                    status="active"
+                    strokeColor={{
+                      '0%': '#3b82f6',
+                      '100%': '#1d4ed8',
+                    }}
+                    style={{ width: '80%' }}
+                  />
+                </ProgressContainer>
+              )}
+            </UploadContainer>
+          </UploadSection>
+
+          <PreviewSection>
+            <SectionTitle>
+              <PictureOutlined />
+              Vista Previa
+            </SectionTitle>
+
+            <PreviewCard>
+              <ImagePreview>
+                {productImg ? (
+                  <Image
+                    src={productImg}
+                    alt="Imagen del producto"
+                    width="100%"
+                    height="100%"
+                    style={{ objectFit: 'cover' }}
+                    fallback={imgFailed}
+                  />
+                ) : (
+                  <PictureOutlined className="no-image" />
+                )}
+              </ImagePreview>
+
+              <ButtonGroup>
+                <Button
+                  disabled={!productImg}
+                  onClick={handleRemoveImage}
+                  icon={<DeleteOutlined />}
+                  danger
+                  block
+                  size="small"
                 >
-                  Cargando imagen...
-                </Typography.Text>
-                <Progress
-                  percent={Math.round(uploadProgress)}
-                  status="active"
-                  strokeColor={{
-                    '0%': '#3b82f6',
-                    '100%': '#1d4ed8',
-                  }}
-                  style={{ width: '80%' }}
-                />
-              </ProgressContainer>
-            )}
-          </UploadContainer>
-        </UploadSection>
+                  Remover
+                </Button>
+              </ButtonGroup>
+            </PreviewCard>
+          </PreviewSection>
+        </MainContent>
 
-        <PreviewSection>
+        <GallerySection>
           <SectionTitle>
             <PictureOutlined />
-            Vista Previa
+            Imágenes Disponibles
           </SectionTitle>
 
-          <PreviewCard>
-            <ImagePreview>
-              {productImg ? (
-                <Image
-                  src={productImg}
-                  alt="Imagen del producto"
-                  width="100%"
-                  height="100%"
-                  style={{ objectFit: 'cover' }}
-                  fallback={imgFailed}
-                />
-              ) : (
-                <PictureOutlined className="no-image" />
-              )}
-            </ImagePreview>
-
-            <ButtonGroup>
-              <Button
-                disabled={!productImg}
-                onClick={handleRemoveImage}
-                icon={<DeleteOutlined />}
-                danger
-                block
-                size="small"
-              >
-                Remover
-              </Button>
-            </ButtonGroup>
-          </PreviewCard>
-        </PreviewSection>
-      </MainContent>
-
-      <GallerySection>
-        <SectionTitle>
-          <PictureOutlined />
-          Imágenes Disponibles
-        </SectionTitle>
-
-        <GalleryContainer>
-          <HelpText>
-            💡 Selecciona una imagen de la galería para asignarla al producto
-          </HelpText>
-          <Gallery images={images} />
-        </GalleryContainer>
-      </GallerySection>
-    </Container>
+          <GalleryContainer>
+            <HelpText>
+              💡 Selecciona una imagen de la galería para asignarla al producto
+            </HelpText>
+            <Gallery images={images} />
+          </GalleryContainer>
+        </GallerySection>
+      </Container>
+    </Modal>
   );
 };
 

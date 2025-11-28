@@ -3,6 +3,7 @@ import AppConfig from '../../views/controlPanel/AppConfig/AppConfig';
 import LoginImageConfig from '../../views/controlPanel/AppConfig/LoginImageConfig';
 import ChangeLogCreate from '../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate';
 import { BusinessControl } from '../../views/controlPanel/CreateBusinessControl/BusinessControl';
+import AiBusinessSeeding from '../../views/pages/dev/AiBusinessSeeding/AiBusinessSeeding';
 import BSeriesInvoices from '../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices';
 import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit';
 import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
@@ -26,6 +27,7 @@ const {
   SYNC_DIAGNOSTICS,
   INVOICE_V2_RECOVERY,
   PRICE_LIST_AUDIT,
+  AI_BUSINESS_SEEDING,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -111,6 +113,12 @@ const routes = [
     path: APP_CONFIG.LOGIN_IMAGE,
     element: <LoginImageConfig />,
     devOnly: true,
+  },
+  {
+    path: AI_BUSINESS_SEEDING,
+    element: <AiBusinessSeeding />,
+    devOnly: true,
+    status: ROUTE_STATUS.BETA,
   },
 ];
 export default routes;

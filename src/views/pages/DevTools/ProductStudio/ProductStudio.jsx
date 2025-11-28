@@ -1,4 +1,4 @@
-import { Drawer, Form, message, notification } from 'antd';
+import { Form, message, notification } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -238,9 +238,9 @@ export default function ProductStudio() {
           normalizedItemType === 'service'
             ? false
             : normalizeTrackInventoryValue(
-                product?.trackInventory,
-                normalizedItemType,
-              );
+              product?.trackInventory,
+              normalizedItemType,
+            );
 
         dispatch(
           ChangeProductData({
@@ -443,19 +443,10 @@ export default function ProductStudio() {
               )}
             </StudioGrid>
 
-            <Drawer
-              title="Biblioteca de imágenes"
-              placement="right"
-              width={720}
+            <ImageManager
               open={imageDrawerVisible}
-              destroyOnHidden
-              onClose={() => setImageDrawerVisible(false)}
-              styles={{ body: { padding: 0 } }}
-            >
-              <ImageManager
-                hideImageManager={() => setImageDrawerVisible(false)}
-              />
-            </Drawer>
+              onCancel={() => setImageDrawerVisible(false)}
+            />
           </StudioWrapper>
         </ScrollArea>
       </Workspace>

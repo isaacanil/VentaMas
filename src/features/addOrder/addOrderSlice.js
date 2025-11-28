@@ -1,11 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { notification } from 'antd'; // Add missing import
 import { DateTime } from 'luxon';
+import { nanoid } from 'nanoid';
 
 import {
   getDefaultTransactionCondition,
   getDefaultTransactionStatus,
 } from '../../constants/orderAndPurchaseState';
+
+// Agregar funciones auxiliares para cálculos (idénticas a las de addPurchaseSlice)
+const calculateUnitCost = (product) => {
+  const baseCost = Number(product.baseCost) || 0;
+  const tax = (baseCost * (Number(product.taxPercentage) || 0)) / 100;
+  const freight = Number(product.freight) || 0;
+  const otherCosts = Number(product.otherCosts) || 0;
+  return baseCost + tax + freight + otherCosts;
+};
+
+const calculateSubTotal = (product) => {
+  const quantity = Number(product.purchaseQuantity || product.quantity) || 0;
+  const unitCost = calculateUnitCost(product);
+  return quantity * unitCost;
+};
 
 const EmptyOrder = {
   condition: getDefaultTransactionCondition()?.id,
@@ -57,37 +73,29 @@ const addOrderSlice = createSlice({
     SelectProduct: (state, actions) => {
       const product = actions.payload;
       let productData = {
+        key: nanoid(),
         id: product.id,
         name: product.name,
-        quantity: 0,
-        baseCost: product.pricing?.cost || 0,
+        expirationDate: product.expirationDate ?? null, // Use null for empty date
+        quantity: product.quantity ?? 1,
+        purchaseQuantity: product.purchaseQuantity ?? (product.quantity ?? 1), // Use existing purchaseQuantity or default to quantity, then 1
+        selectedBackOrders: [], // BackOrders seleccionados
+        unitMeasurement: product.unitMeasurement ?? '',
+        baseCost: product.pricing?.cost ?? product.baseCost ?? 0, // Use pricing cost, then product baseCost, then 0
+        taxPercentage: product.taxPercentage ?? 0,
+        freight: product.freight ?? 0,
+        otherCosts: product.otherCosts ?? 0,
+        unitCost: 0,
+        subtotal: 0,
       };
-      const findProduct = state.order.replenishments.find(
-        (item) => item.id === productData.id,
-      );
-      if (findProduct) {
-        productData = {
-          ...productData,
-          ...findProduct,
-        };
-        notification.info({
-          message: `Edición del producto: ${product.name}`,
-          description: `Al agregar este producto, la cantidad y el costo por unidad serán actualizados con los valores ingresados.`,
-          duration: 0,
-        });
-      }
+      
+      productData.unitCost = calculateUnitCost(productData);
+      productData.subtotal = calculateSubTotal(productData);
+      
       state.productSelected = productData;
     },
     AddProductToOrder: (state) => {
-      const findProduct = state.order.replenishments.find(
-        (item) => item.id === state.productSelected.id,
-      );
-      if (findProduct) {
-        const index = state.order.replenishments.indexOf(findProduct);
-        state.order.replenishments[index] = state.productSelected;
-      } else {
-        state.order.replenishments.push(state.productSelected);
-      }
+      state.order.replenishments.push(state.productSelected);
       state.productSelected = EmptyProductSelected; // Fix reference
     },
     setOrder: (state, actions) => {
@@ -109,10 +117,13 @@ const addOrderSlice = createSlice({
     },
     updateProduct: (state, action) => {
       const { value } = action.payload;
-      const searchId = value.originalId || value.id;
-      const productIndex = state.order.replenishments.findIndex(
-        (item) => item.id === searchId,
-      );
+      const productIndex = state.order.replenishments.findIndex((item) => {
+        const matchesKey = value?.key && item.key === value.key;
+        const matchesId = value?.id && item.id === value.id;
+        const matchesOriginalId =
+          value?.originalId && item.id === value.originalId;
+        return matchesKey || matchesId || matchesOriginalId;
+      });
       if (productIndex === -1) return;
       const currentProduct = state.order.replenishments[productIndex];
       const selectedBackOrders =
@@ -160,9 +171,13 @@ const addOrderSlice = createSlice({
       state.order.receiptUrl = '';
     },
     deleteProductFromOrder: (state, actions) => {
-      const { id } = actions.payload;
+      const { id, key } = actions.payload;
       state.order.replenishments = state.order.replenishments.filter(
-        (item) => item.id !== id,
+        (item) => {
+          const matchesKey = key && item.key === key;
+          const matchesId = id && item.id === id;
+          return !(matchesKey || matchesId);
+        },
       );
     },
     setSelectedBackOrders: (state, action) => {
@@ -203,21 +218,6 @@ const addOrderSlice = createSlice({
     },
   },
 });
-
-// Agregar funciones auxiliares para cálculos (idénticas a las de addPurchaseSlice)
-const calculateUnitCost = (product) => {
-  const baseCost = Number(product.baseCost) || 0;
-  const tax = (baseCost * (Number(product.taxPercentage) || 0)) / 100;
-  const freight = Number(product.freight) || 0;
-  const otherCosts = Number(product.otherCosts) || 0;
-  return baseCost + tax + freight + otherCosts;
-};
-
-const calculateSubTotal = (product) => {
-  const quantity = Number(product.purchaseQuantity || product.quantity) || 0;
-  const unitCost = calculateUnitCost(product);
-  return quantity * unitCost;
-};
 
 export const {
   setOrder,

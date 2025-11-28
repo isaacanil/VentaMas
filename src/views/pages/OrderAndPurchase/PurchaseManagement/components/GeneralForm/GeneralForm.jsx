@@ -30,7 +30,6 @@ import ProviderSelector from '../../../components/ProviderSelector/ProviderSelec
 import BackOrdersModal from '../BackOrdersModal';
 import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
 import ProductsTable from '../ProductsTable';
-import TotalsSummary from '../TotalsSummary';
 
 import NotesInput from './components/NotesInput';
 import OrderSelector from './components/OrderSelector';
@@ -166,8 +165,8 @@ const GeneralForm = ({
     dispatch(updateProduct({ value: updatedValues, index }));
   };
 
-  const handleRemoveProduct = (productId) => {
-    dispatch(deleteProductFromPurchase({ id: productId }));
+  const handleRemoveProduct = ({ key, id }) => {
+    dispatch(deleteProductFromPurchase({ key, id }));
   };
 
   const handleInputChange = (field, value) => {
@@ -258,10 +257,13 @@ const GeneralForm = ({
     setSelectedProductForBackorders(null);
   };
 
-  const handleDirectProductAdd = (product) => {
-    dispatch(SelectProduct(product));
-    dispatch(AddProductToPurchase());
-    message.success('Producto agregado');
+  const handleDirectProductAdd = (products) => {
+    const productsToAdd = Array.isArray(products) ? products : [products];
+    productsToAdd.forEach((product) => {
+      dispatch(SelectProduct(product));
+      dispatch(AddProductToPurchase());
+    });
+    message.success(`${productsToAdd.length} producto(s) agregado(s)`);
   };
 
   return (
@@ -299,7 +301,7 @@ const GeneralForm = ({
           marginBottom: '10px',
         }}
       >
-        <ProductModal onSelect={handleDirectProductAdd}>
+        <ProductModal onSelect={handleDirectProductAdd} multiselect={true}>
           <Button type="primary" icon={icons.operationModes.add}>
             Agregar Producto
           </Button>
@@ -311,12 +313,12 @@ const GeneralForm = ({
         removeProduct={handleRemoveProduct}
         onQuantityClick={handleQuantityClick}
       />
-      <TotalsSummary replenishments={replenishments} />
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: ' repeat(auto-fit, minmax(350px, 1fr))',
           gap: '1.4em',
+          marginTop: '1.4em', // Add margin top to create separation
         }}
       >
         <div>
@@ -368,7 +370,6 @@ const GeneralForm = ({
           onRemoveFiles={onRemoveFiles}
         />
       </div>
-      {/* Agregar modal para edición de backorders desde la tabla */}
       {selectedProductForBackorders && (
         <BackOrdersModal
           backOrders={backOrders}

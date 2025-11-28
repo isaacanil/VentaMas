@@ -88,4 +88,11 @@ export const developerShortcuts = [
     route: ROUTES_NAME.DEV_VIEW_TERM.APP_CONFIG.ROOT,
     category: 'Configuración',
   },
+  {
+    id: 'ai-business-seeding',
+    title: 'AI Business Seeding',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.AI_BUSINESS_SEEDING,
+    category: 'Herramientas',
+  },
 ];

@@ -51,12 +51,11 @@ export const ProductEditorModal = ({ isOpen }) => {
       onCancel={handleCloseModal}
       footer={null}
     >
-      {view === 'product-form' && (
-        <ProductForm showImageManager={showImageManager} />
-      )}
-      {view === 'image-manager' && (
-        <ImageManager hideImageManager={hideImageManager} />
-      )}
+      <ProductForm showImageManager={showImageManager} />
+      <ImageManager
+        open={view === 'image-manager'}
+        onCancel={hideImageManager}
+      />
     </Modal>
   );
 };

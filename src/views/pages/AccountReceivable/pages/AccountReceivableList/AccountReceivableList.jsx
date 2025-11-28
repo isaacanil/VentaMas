@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -20,7 +20,10 @@ const Container = styled.div`
 `;
 
 const mapDataToAccounts = (data) => {
-  if (!Array.isArray(data)) return [];
+  if (!data || !Array.isArray(data)) {
+    console.warn('mapDataToAccounts received invalid data:', data);
+    return [];
+  }
 
   return data.map((account) => {
     const invoiceData = account?.invoice?.data;
@@ -62,15 +65,15 @@ const mapDataToAccounts = (data) => {
       type: account?.account?.type || 'normal', // Añadir explícitamente el tipo
       dateGroup: account?.createdAt?.seconds
         ? DateTime.fromMillis(account.createdAt.seconds * 1000).toLocaleString(
-            DateTime.DATE_FULL,
-          )
+          DateTime.DATE_FULL,
+        )
         : 'N/A',
     };
   });
 };
 
 const filterAccountsByClientType = (data, type) => {
-  if (!data) return [];
+  if (!data || !Array.isArray(data)) return [];
 
   if (type === 'insurance') {
     // Mostrar cuentas que son de tipo 'insurance'
@@ -89,6 +92,8 @@ export const AccountReceivableList = () => {
   const [sortDirection, setSortDirection] = useState('asc');
   const [clientType, setClientType] = useState('normal'); // 'normal' o 'insurance'
   const [statusFilter, setStatusFilter] = useState('active');
+  const [selectedClient, setSelectedClient] = useState('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const dispatch = useDispatch();
 
   const { accountsReceivable, loading } = useListenAccountsReceivable(
@@ -97,19 +102,62 @@ export const AccountReceivableList = () => {
     statusFilter,
   );
 
-  useEffect(() => {
+  const clientOptions = useMemo(() => {
     const data = mapDataToAccounts(accountsReceivable);
+    const clients = new Set();
+    data.forEach((account) => {
+      if (account.client && account.client !== 'Generic Client') {
+        clients.add(account.client);
+      }
+    });
+
+    return Array.from(clients)
+      .sort()
+      .map((client) => ({ value: client, label: client }));
+  }, [accountsReceivable]);
+
+  useEffect(() => {
+    let data = mapDataToAccounts(accountsReceivable);
 
     // Filtrar por tipo de cliente
-    const filteredByClientType = filterAccountsByClientType(data, clientType);
+    data = filterAccountsByClientType(data, clientType);
+
+    if (selectedClient !== 'all') {
+      data = data.filter((account) => account.client === selectedClient);
+    }
+
+    if (paymentStatusFilter !== 'all') {
+      data = data.filter((account) => {
+        const balance = account.balance || 0;
+        const totalPaid = account.totalPaid || 0;
+        const initialAmount = account.initialAmount || 0;
+
+        // Tolerancia pequeña para errores de punto flotante
+        const isPaid = balance <= 0.01;
+        const isUnpaid = totalPaid <= 0.01; // Asumiendo que si no ha pagado nada es unpaid
+        // O alternativamente: const isUnpaid = Math.abs(balance - initialAmount) <= 0.01;
+
+        if (paymentStatusFilter === 'paid') return isPaid;
+        if (paymentStatusFilter === 'unpaid') return isUnpaid;
+        if (paymentStatusFilter === 'partial') return !isPaid && !isUnpaid;
+        return true;
+      });
+    }
 
     const sortedData = sortAccounts(
-      filteredByClientType,
+      data,
       sortCriteria,
       sortDirection,
     );
     setProcessedAccount(sortedData);
-  }, [accountsReceivable, sortCriteria, sortDirection, clientType]);
+  }, [
+    accountsReceivable,
+    sortCriteria,
+    sortDirection,
+    clientType,
+    selectedClient,
+    paymentStatusFilter,
+  ]);
 
   // Calculate total balance
   const totalBalance = processedAccount.reduce((sum, account) => {
@@ -118,6 +166,14 @@ export const AccountReceivableList = () => {
 
   const handleClientTypeChange = (type) => {
     setClientType(type);
+  };
+
+  const handleClientChange = (client) => {
+    setSelectedClient(client);
+  };
+
+  const handlePaymentStatusChange = (status) => {
+    setPaymentStatusFilter(status);
   };
 
   const handleStatusFilterChange = (status) => {
@@ -157,15 +213,20 @@ export const AccountReceivableList = () => {
         onSortChange={handleSortChange}
         onToggleSortDirection={handleToggleSortDirection}
         totalCount={processedAccount.length}
+        selectedClient={selectedClient}
+        onClientChange={handleClientChange}
+        clientOptions={clientOptions}
+        paymentStatusFilter={paymentStatusFilter}
+        onPaymentStatusChange={handlePaymentStatusChange}
       />
       <AccountReceivableTable
         data={processedAccount}
         searchTerm={searchTerm}
-      totalBalance={totalBalance}
-      showInsuranceColumn={clientType === 'insurance'} // Mostrar columna solo cuando se selecciona aseguradora
-      onRowClick={handleRowClick}
-      loading={loading}
-    />
-  </Container>
-);
+        totalBalance={totalBalance}
+        showInsuranceColumn={clientType === 'insurance'} // Mostrar columna solo cuando se selecciona aseguradora
+        onRowClick={handleRowClick}
+        loading={loading}
+      />
+    </Container>
+  );
 };
