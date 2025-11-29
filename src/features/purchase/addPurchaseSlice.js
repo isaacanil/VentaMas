@@ -76,7 +76,8 @@ export const addPurchaseSlice = createSlice({
         selectedBackOrders: [], // BackOrders seleccionados
         unitMeasurement: product.unitMeasurement ?? '',
         baseCost: product.pricing?.cost ?? product.baseCost ?? 0, // Use pricing cost, then product baseCost, then 0
-        taxPercentage: product.taxPercentage ?? 0,
+        taxPercentage:
+          product.pricing?.tax ?? product.taxPercentage ?? 0, // Prefill ITBIS from product pricing when available
         freight: product.freight ?? 0,
         otherCosts: product.otherCosts ?? 0,
         unitCost: 0,
@@ -236,16 +237,23 @@ export const addPurchaseSlice = createSlice({
 // Funciones auxiliares para cálculos
 const calculateUnitCost = (product) => {
   const baseCost = Number(product.baseCost) || 0;
-  const tax = (baseCost * (Number(product.taxPercentage) || 0)) / 100;
-  const freight = Number(product.freight) || 0;
-  const otherCosts = Number(product.otherCosts) || 0;
+  const rawTaxPercentage = Number(product.taxPercentage) || 0;
+  const taxRate =
+    rawTaxPercentage > 1 ? rawTaxPercentage / 100 : rawTaxPercentage; // Normalizar a porcentaje
+  const tax = baseCost * taxRate;
+  const freightTotal = Number(product.freight) || 0;
+  const otherCostsTotal = Number(product.otherCosts) || 0;
+  const quantity = Number(product.quantity) || Number(product.purchaseQuantity) || 0;
+  const divisor = quantity > 0 ? quantity : 1; // Evitar divisiones por cero
 
-  return baseCost + tax + freight + otherCosts;
+  const freightPerUnit = freightTotal / divisor;
+  const otherCostsPerUnit = otherCostsTotal / divisor;
+
+  return baseCost + tax + freightPerUnit + otherCostsPerUnit;
 };
 
 const calculateSubTotal = (product) => {
-  console.log(product);
-  const quantity = Number(product.purchaseQuantity || product.quantity) || 0;
+  const quantity = Number(product.quantity) || Number(product.purchaseQuantity) || 0;
   const unitCost = calculateUnitCost(product);
   return quantity * unitCost;
 };

@@ -45,21 +45,27 @@ const TotalsSummary = ({ replenishments }) => {
   const calculateTotals = () => {
     return replenishments.reduce(
       (acc, item) => {
-        const baseCostTotal = Number(item.baseCost);
+        const baseCostTotal = Number(item.baseCost) || 0;
         const taxPercentage = Number(item.taxPercentage) || 0; // Use provided tax percentage
-        const itemITBIS = (baseCostTotal * taxPercentage) / 100; // Calculate ITBIS (tax)
-        const shippingCost = Number(item.freight) || 0; // Use provided freight or default to 0
-        const otherCosts = Number(item.otherCosts) || 0; // Use provided other costs or default to 0
-        const subTotal =
-          (baseCostTotal + itemITBIS + shippingCost + otherCosts) *
-          Number(item?.purchaseQuantity || item?.quantity);
+        const taxRate = taxPercentage > 1 ? taxPercentage / 100 : taxPercentage; // Normalize to percentage
+        const itemITBIS = baseCostTotal * taxRate; // Calculate ITBIS (tax)
+        const shippingCost = Number(item.freight) || 0; // Total freight for the lot
+        const otherCosts = Number(item.otherCosts) || 0; // Total other costs for the lot
+        const quantity = Number(item.quantity) || Number(item.purchaseQuantity) || 0;
+        const divisor = quantity > 0 ? quantity : 1;
+        const unitCost =
+          baseCostTotal +
+          itemITBIS +
+          shippingCost / divisor +
+          otherCosts / divisor;
+        const subTotal = quantity * unitCost;
 
         return {
-          totalProducts: acc.totalProducts + Number(item.quantity),
+          totalProducts: acc.totalProducts + quantity,
           totalBaseCost: acc.totalBaseCost + baseCostTotal,
-          totalItbis: acc.totalItbis + itemITBIS,
-          totalShipping: acc.totalShipping + shippingCost,
-          totalOtherCosts: acc.totalOtherCosts + otherCosts,
+          totalItbis: acc.totalItbis + quantity * itemITBIS, // ITBIS debe sumar el impuesto total por cantidad
+          totalShipping: acc.totalShipping + shippingCost, // Freight summed directly
+          totalOtherCosts: acc.totalOtherCosts + otherCosts, // Other costs summed directly
           grandTotal: acc.grandTotal + subTotal,
         };
       },

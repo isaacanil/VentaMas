@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
-import { formatMoney } from '../../../../../utils/formatters';
+import { formatMoney, formatQuantity } from '../../../../../utils/formatters';
 import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
@@ -60,8 +60,15 @@ const EditableCell = ({
         <InputNumber
           value={record[dataIndex]}
           onChange={handleValueChange}
-          onBlur={(e) => handleValueChange(e.target.value)}
+          onBlur={(e) => {
+            const val = e.target.value.replace(/,/g, '');
+            handleValueChange(val);
+          }}
           min={dataIndex === 'quantity' ? 1 : 0}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
         />
       );
     }
@@ -114,6 +121,10 @@ const ProductsTable = ({
         id: product.id,
         name: product.name,
         baseCost: product.pricing?.cost || 0,
+        taxPercentage:
+          product.pricing?.tax ??
+          product.taxPercentage ??
+          0, // Prefill ITBIS from product pricing/tax if available
         purchaseQuantity: newData.purchaseQuantity || 1,
       };
     } else {
@@ -244,16 +255,16 @@ const ProductsTable = ({
           pagination={false}
           summary={(pageData) => {
             let totalQuantity = 0;
-            let totalBaseCost = 0;
             let totalSubtotal = 0;
 
-            pageData.forEach(({ quantity, baseCost, subtotal }) => {
-              const q = Number(quantity) || 0;
+            pageData.forEach((record) => {
+              const { quantity, purchaseQuantity, baseCost, subtotal } = record;
+              const q = Number(purchaseQuantity ?? quantity) || 0;
+              const displayQty = Number(quantity) || 0;
               const b = Number(baseCost) || 0;
               const s = Number(subtotal) || 0;
 
-              totalQuantity += q;
-              totalBaseCost += q * b;
+              totalQuantity += displayQty;
               totalSubtotal += s;
             });
 
@@ -261,10 +272,11 @@ const ProductsTable = ({
               <Table.Summary.Row>
                 <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
                 <Table.Summary.Cell index={1}>
-                  <span style={{ fontWeight: 'bold' }}>{totalQuantity}</span>
+                  <span style={{ fontWeight: 'bold' }}>{formatQuantity(totalQuantity, 0)}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={2}>
-                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalBaseCost)}</span>
+                  {/* Costo Base total se muestra en blanco */}
+                  <span style={{ fontWeight: 'bold' }}>{''}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={3}>
                   <span style={{ fontWeight: 'bold' }}>{formatMoney(totalSubtotal)}</span>

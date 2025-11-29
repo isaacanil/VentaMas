@@ -11,7 +11,7 @@ import {
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
-import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
+import { formatMoney, formatPercentage, formatQuantity } from '../../../../../utils/formatters';
 import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
@@ -63,8 +63,15 @@ const EditableCell = ({
         <InputNumber
           value={record[dataIndex]}
           onChange={handleValueChange}
-          onBlur={(e) => handleValueChange(e.target.value)}
+          onBlur={(e) => {
+            const val = e.target.value.replace(/,/g, '');
+            handleValueChange(val);
+          }}
           min={dataIndex === 'quantity' ? 1 : 0}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
         />
       );
     }
@@ -118,7 +125,10 @@ const ProductsTable = ({
         id: product.id,
         name: product.name,
         baseCost: product.pricing?.cost || 0,
-        taxPercentage: 0,
+        taxPercentage:
+          product.pricing?.tax ??
+          product.taxPercentage ??
+          0, // Prefill ITBIS from product pricing/tax if available
       };
     } else {
       let finalValue = value;
@@ -326,15 +336,24 @@ const ProductsTable = ({
           pagination={false} // No pagination on this table
           summary={(pageData) => {
             let totalQuantity = 0;
-            let totalBaseCost = 0;
             let totalTax = 0;
             let totalFreight = 0;
             let totalOtherCosts = 0;
             let totalUnitCost = 0;
             let totalSubtotal = 0;
 
-            pageData.forEach(({ quantity, baseCost, taxPercentage, freight, otherCosts, unitCost, subtotal }) => {
-              const q = Number(quantity) || 0;
+            pageData.forEach((record) => {
+              const {
+                quantity,
+                baseCost,
+                taxPercentage,
+                freight,
+                otherCosts,
+                unitCost,
+                subtotal,
+              } = record;
+              const displayQty = Number(quantity) || 0;
+              const qtyForMoney = Number(quantity) || Number(record.purchaseQuantity) || 0;
               const b = Number(baseCost) || 0;
               const tPct = Number(taxPercentage) || 0;
               const f = Number(freight) || 0;
@@ -342,12 +361,14 @@ const ProductsTable = ({
               const u = Number(unitCost) || 0;
               const s = Number(subtotal) || 0;
 
-              totalQuantity += q;
-              totalBaseCost += q * b;
-              totalTax += q * (b * (tPct / 100));
-              totalFreight += q * f;
-              totalOtherCosts += q * o;
-              totalUnitCost += q * u;
+              const taxRate = tPct > 1 ? tPct / 100 : tPct; // Ensure ITBIS is treated as a percentage
+              const unitTax = b * taxRate;
+
+              totalQuantity += displayQty;
+              totalTax += qtyForMoney * unitTax; // ITBIS total should reflect quantity
+              totalFreight += f; // Freight is entered as total per lot
+              totalOtherCosts += o; // Other costs are totals per lot
+              totalUnitCost += u; // Totals should ignore quantity for unit cost
               totalSubtotal += s;
             });
 
@@ -356,10 +377,11 @@ const ProductsTable = ({
                 <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
                 <Table.Summary.Cell index={1} />
                 <Table.Summary.Cell index={2}>
-                  <span style={{ fontWeight: 'bold' }}>{totalQuantity}</span>
+                  <span style={{ fontWeight: 'bold' }}>{formatQuantity(totalQuantity, 0)}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={3}>
-                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalBaseCost)}</span>
+                  {/* Costo Base total se muestra en blanco */}
+                  <span style={{ fontWeight: 'bold' }}>{''}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={4}>
                   <span style={{ fontWeight: 'bold' }}>{formatMoney(totalTax)}</span>
@@ -371,7 +393,8 @@ const ProductsTable = ({
                   <span style={{ fontWeight: 'bold' }}>{formatMoney(totalOtherCosts)}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={7}>
-                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalUnitCost)}</span>
+                  {/* Costo Unitario total se muestra en blanco */}
+                  <span style={{ fontWeight: 'bold' }}>{''}</span>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={8}>
                   <span style={{ fontWeight: 'bold' }}>{formatMoney(totalSubtotal)}</span>
