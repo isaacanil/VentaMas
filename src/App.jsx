@@ -53,12 +53,7 @@ const NavigationTracker = () => {
 function App() {
   return (
     <Fragment>
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
+      <Router>
         <ViewportContainer>
           <BootstrapManager />
         </ViewportContainer>

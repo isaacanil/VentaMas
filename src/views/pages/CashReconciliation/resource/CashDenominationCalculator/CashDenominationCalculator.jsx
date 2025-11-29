@@ -163,11 +163,11 @@ const TotalBills = styled.div`
   border-top: 1px solid var(--gray-2);
 
   span {
-    :nth-child(2) {
+    &:nth-child(2) {
       text-align: right;
     }
 
-    :last-child {
+    &:last-child {
       text-align: right;
     }
   }

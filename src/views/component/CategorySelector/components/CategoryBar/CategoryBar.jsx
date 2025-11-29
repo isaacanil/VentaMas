@@ -119,7 +119,7 @@ const RemoveIcon = styled.span`
   /* estilos para el icono de eliminar */
   cursor: pointer;
 
-  :hover {
+  &:hover {
     color: var(--black-5);
     background-color: var(--white-5);
     border-radius: 0.4em;

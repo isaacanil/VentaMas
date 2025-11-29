@@ -47,7 +47,7 @@ const Container = styled.div`
   cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 
-  :last-child {
+  &:last-child {
     border-bottom: none;
   }
 

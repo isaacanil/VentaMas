@@ -208,7 +208,7 @@ const Row = styled.div`
   border-radius: 4px;
   transition: all 0.2s linear;
 
-  :hover {
+  &:hover {
     background-color: #f5f5f5;
   }
 `;

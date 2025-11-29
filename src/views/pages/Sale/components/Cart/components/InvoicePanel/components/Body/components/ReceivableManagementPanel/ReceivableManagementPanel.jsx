@@ -458,11 +458,11 @@ const Header = styled.div`
 `;
 
 const Footer = styled.div`
-  :nth-child(n) {
+  &:nth-child(n) {
     div {
       border-bottom: 1px solid #ccc;
 
-      :last-child {
+      &:last-child {
         border-bottom: 0;
       }
     }

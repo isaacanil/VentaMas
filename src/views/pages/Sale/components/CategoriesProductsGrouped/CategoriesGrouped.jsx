@@ -65,7 +65,7 @@ export const CategoriesGrouped = ({ products, viewRowModeRef }) => {
 };
 
 const CategoryGroup = styled(motion.div)`
-  :first-child {
+  &:first-child {
     margin-top: 0;
   }
 

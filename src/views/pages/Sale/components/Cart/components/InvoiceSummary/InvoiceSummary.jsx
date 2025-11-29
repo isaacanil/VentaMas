@@ -717,11 +717,11 @@ export const LineItem = styled.div`
   justify-content: space-between;
   padding: 2px 0;
 
-  :first-child {
+  &:first-child {
     border-bottom: 1px solid #ccc;
   }
 
-  :last-child {
+  &:last-child {
     padding: 0;
     border-top: 1px solid #ccc;
   }
@@ -750,16 +750,16 @@ const Button = styled.button`
   border: none;
   border-radius: 5px;
 
-  :disabled {
+  &:disabled {
     cursor: not-allowed;
     background-color: #8a8a8a;
 
-    :hover {
+    &:hover {
       background-color: #585858;
     }
   }
 
-  :not(:disabled):hover {
+  &:not(:disabled):hover {
     background-color: #0056b3;
   }
 `;

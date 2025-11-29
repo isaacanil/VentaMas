@@ -170,7 +170,7 @@ const Button = styled.button`
   border-radius: var(--border-radius-light);
   transition: 500ms background-color ease-in-out;
 
-  :hover {
+  &:hover {
     background-color: rgb(0 0 0 / 20%);
   }
 `;

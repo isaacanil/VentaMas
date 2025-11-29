@@ -226,7 +226,7 @@ const Button = styled.button`
     `
     background-color: #929292;
     cursor: not-allowed;
-    :hover{
+    &:hover{
         background-color: #929292;
         }
     `}

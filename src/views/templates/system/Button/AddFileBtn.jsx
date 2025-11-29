@@ -105,7 +105,7 @@ const Container = styled.div`
         return `
                 label{
                     pointer-events: none;
-                    :hover{
+                    &:hover{
                         cursor: not-allowed;
                     }
                     svg{

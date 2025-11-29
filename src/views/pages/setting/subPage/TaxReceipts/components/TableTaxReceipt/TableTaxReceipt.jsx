@@ -225,7 +225,7 @@ const Row = styled.div`
   height: 2.75em;
   position: relative;
 
-    :last-child {
+  &:last-child {
     border-bottom: 0;
   }
 
@@ -247,15 +247,15 @@ const Col = styled.div`
   padding: 0 0.6em;
   border-right: 1px solid var(--gray1);
 
-    :last-child {
+  &:last-child {
     border-right: 0;
   }
 
-    :first-child {
+  &:first-child {
     border-left: 0;
   }
 
-    input[type='text'],
+  input[type='text'],
   input[type='number'] {
     width: 100%;
     height: 100%;
@@ -263,18 +263,18 @@ const Col = styled.div`
     font-size: 12px;
     border: 0;
 
-    :focus {
+    &:focus {
       outline: none;
     }
   }
 
-    input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
     margin: 0;
     appearance: none;
   }
 
-    h4 {
+  h4 {
     width: 100%;
     padding: 0 !important;
     margin: 0;
@@ -321,7 +321,7 @@ const ActionButton = styled.button`
   &.edit-button {
     color: #474747;
 
-        &:hover {
+    &:hover {
       color: #414141;
     }
   }
@@ -329,7 +329,7 @@ const ActionButton = styled.button`
   &.delete-button {
     color: #ff4d4f;
 
-        &:hover {
+    &:hover {
       color: #ff7875;
       background-color: rgb(255 77 79 / 10%);
     }
@@ -344,13 +344,13 @@ const ActionButton = styled.button`
     box-shadow: none;
     opacity: 1 !important;
 
-        &:hover {
+    &:hover {
       color: #73d13d;
       background-color: #fff;
     }
   }
 
-    &:focus {
+  &:focus {
     outline: none;
   }
 `;

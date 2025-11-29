@@ -181,7 +181,7 @@ export const Container = styled.button`
           background-color: ${props.theme?.colors?.[props.color]['bg']};
           color: ${props.theme.colors[props.color]['text']};
           backdrop: blur(10px);
-          hover{
+          &:hover{
             background-color: ${props.theme.colors[props.color]['bg']};
             color: ${props.theme.colors[props.color]['text']};
           }
@@ -303,7 +303,7 @@ export const Container = styled.button`
             return `
               background-color: ${props.theme.colors[props.color]['bg']};
               color: ${props.theme.colors[props.color]['text']};
-              :hover{
+              &:hover{
                 background-color: ${props.theme.colors[props.color]['bg']};
                 color: ${props.theme.colors[props.color]['text']};
               }
@@ -312,7 +312,7 @@ export const Container = styled.button`
             return `
               background-color: ${props.theme.colors[props.color]['bg']};
               color: ${props.theme.colors[props.color]['text']};
-              :hover{
+              &:hover{
                 background-color: ${props.theme.colors[props.color]['bg']};
                 color: ${props.theme.colors[props.color]['text']};
               }
@@ -327,7 +327,7 @@ export const Container = styled.button`
             ? `
         background-color: #ffffff;
           color: black;
-          :hover{
+          &:hover{
             background-color: #e9e9e9;
             color: black;
           }
@@ -335,7 +335,7 @@ export const Container = styled.button`
             : `
         background-color: rgba(0, 0, 0, 0.26);
           color: white;
-          :hover{
+          &:hover{
             background-color: #e9e9e94b;
             color: black;
           }

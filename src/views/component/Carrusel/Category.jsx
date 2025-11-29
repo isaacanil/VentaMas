@@ -68,7 +68,7 @@ const Container = styled(motion.li)`
   transition: 300ms ease-in-out;
   white-space: nowrap;
 
-  :hover {
+  &:hover {
     color: rgb(83 83 83);
     background-color: #e7f0fa;
   }
@@ -82,7 +82,7 @@ const Container = styled(motion.li)`
                     ${
                       !props.selected &&
                       `
-                        :hover{
+                        &:hover{
                         background-color: var(--color-success-light);
                         color: var(--color-success-dark);
                     }`
@@ -100,7 +100,7 @@ const Container = styled(motion.li)`
         return `
                     background-color: ${props.theme.bg.color4};
                     color: white;
-                    :hover{
+                    &:hover{
                         background-color: ${props.theme.bg.color4};
                         color: white;
                     }

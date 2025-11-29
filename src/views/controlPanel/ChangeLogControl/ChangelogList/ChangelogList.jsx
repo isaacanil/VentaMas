@@ -1,10 +1,49 @@
-import { Editor } from 'draft-js';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
 import { useGetChangelogs } from '../../../../firebase/AppUpdate/useGetChangeogs';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { rawToEditorState } from '../../../templates/system/BlockEditor/rawToEditorState';
+
+const theme = {
+  paragraph: 'editor-paragraph',
+};
+
+function onError(error) {
+  console.error(error);
+}
+
+const LexicalViewer = ({ content }) => {
+  // Basic check to see if content is likely Lexical JSON (has "root")
+  // If not, it might be old DraftJS data or invalid.
+  // This is a naive check to prevent immediate crashes on old data.
+  const isLexical = typeof content === 'string' && content.includes('"root":');
+
+  if (!isLexical) {
+    return <div>(Contenido antiguo no compatible con el nuevo visualizador)</div>;
+  }
+
+  const initialConfig = {
+    namespace: 'ChangelogViewer',
+    theme,
+    onError,
+    editable: false,
+    editorState: content,
+  };
+
+  return (
+    <LexicalComposer initialConfig={initialConfig}>
+      <RichTextPlugin
+        contentEditable={<ContentEditable readOnly />}
+        placeholder={null}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+    </LexicalComposer>
+  );
+};
 
 export const ChangelogList = () => {
   const { changelogs, error } = useGetChangelogs();
@@ -37,7 +76,7 @@ export const ChangelogList = () => {
             )
             .map(({ changelog }, index) => (
               <EditorWrapper key={changelog?.id ?? index}>
-                <Editor editorState={rawToEditorState(changelog.content)} />
+                <LexicalViewer content={changelog.content} />
               </EditorWrapper>
             ))}
         </Wrapper>
@@ -67,7 +106,7 @@ const Wrapper = styled.div`
 const EditorWrapper = styled.div`
   margin-bottom: 6em;
 
-  :last-child {
+  &:last-child {
     margin-bottom: 0;
   }
 `;

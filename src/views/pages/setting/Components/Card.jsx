@@ -36,7 +36,7 @@ const Container = styled(Link)`
     box-shadow 0.25s ease,
     transform 0.25s ease;
 
-  :hover {
+  &:hover {
     color: #333;
     text-decoration: none;
     transform: translateY(-2px);

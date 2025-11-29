@@ -138,7 +138,7 @@ const PaymentOptions = styled.div`
       400ms ease-in-out,
       color 400ms ease-in-out;
 
-    :hover {
+    &:hover {
       background-color: var(--color3);
     }
   }

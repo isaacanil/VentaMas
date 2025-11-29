@@ -56,7 +56,7 @@ const Container = styled.div`
   cursor: pointer;
   border: 2px solid transparent;
   background-color: ${({ color }) => color}; /* Usamos el color dinámico */
-  :hover {
+  &:hover {
     background-color: ${({ color }) =>
       color}; /* Mantén el hover del mismo color */
   }

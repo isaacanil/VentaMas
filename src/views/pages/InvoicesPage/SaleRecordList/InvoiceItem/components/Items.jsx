@@ -29,15 +29,15 @@ const Container = styled.div`
     }
   }
 
-  :not(:first-child, :last-child) {
+  &:not(:first-child, :last-child) {
     justify-content: center;
   }
 
-  :first-child {
+  &:first-child {
     justify-content: flex-start;
   }
 
-  :last-child {
+  &:last-child {
     justify-content: flex-end;
   }
 

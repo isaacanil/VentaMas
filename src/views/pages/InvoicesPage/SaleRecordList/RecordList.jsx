@@ -5,8 +5,8 @@ import {
   faCalendarAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import { filterData } from '../../../../hooks/search/useSearch';
@@ -16,8 +16,6 @@ import { InvoiceItem } from './InvoiceItem/InvoiceItem';
 import { InvoiceItemWide } from './InvoiceItem/InvoiceItemWide';
 
 export const SaleRecordList = ({ invoices, searchTerm }) => {
-  const parentRef = useRef(null);
-
   // Detectar si la pantalla es >= 600px
   const isWideScreen = useMediaQuery('(min-width: 600px)');
 
@@ -34,16 +32,6 @@ export const SaleRecordList = ({ invoices, searchTerm }) => {
     () => React.memo(InvoiceItemWide),
     [],
   );
-
-  // Configuración del virtualizador con tamaño ajustado según el diseño
-  const virtualizer = useVirtualizer({
-    count,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => (isWideScreen ? 130 : 115), // Ajuste fino basado en medición real
-    overscan: 3, // Reducir overscan para mejorar rendimiento en listas grandes
-  });
-
-  const items = virtualizer.getVirtualItems();
 
   // Si no hay datos, mostrar mensaje vacío
   if (count === 0) {
@@ -91,28 +79,20 @@ export const SaleRecordList = ({ invoices, searchTerm }) => {
   }
 
   return (
-    <ListContainer ref={parentRef}>
-      <VirtualContent style={{ height: virtualizer.getTotalSize() }}>
-        <ItemsContainer
-          style={{
-            transform: `translateY(${items[0]?.start ?? 0}px)`,
-          }}
-        >
-          {items.map((virtualItem) => (
-            <ItemWrapper
-              key={virtualItem.key}
-              data-index={virtualItem.index}
-              ref={virtualizer.measureElement}
-            >
-              {isWideScreen ? (
-                <MemoInvoiceItemWide data={data[virtualItem.index]} />
-              ) : (
-                <MemoInvoiceItem data={data[virtualItem.index]} />
-              )}
-            </ItemWrapper>
-          ))}
-        </ItemsContainer>
-      </VirtualContent>
+    <ListContainer>
+      <Virtuoso
+        data={data}
+        style={{ height: '100%' }}
+        itemContent={(index, item) => (
+          <ItemWrapper>
+            {isWideScreen ? (
+              <MemoInvoiceItemWide data={item} />
+            ) : (
+              <MemoInvoiceItem data={item} />
+            )}
+          </ItemWrapper>
+        )}
+      />
     </ListContainer>
   );
 };
@@ -121,48 +101,20 @@ export const SaleRecordList = ({ invoices, searchTerm }) => {
 const ListContainer = styled.div`
   height: 100%;
   padding: 8px 12px 24px;
-  overflow-y: auto;
-
-  /* Scrollbar personalizado para mejor UX */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-
-    &:hover {
-      background: #a8a8a8;
-    }
-  }
+  overflow-y: hidden; /* Virtuoso handles scroll */
 
   @media (width >= 768px) {
     padding: 12px 16px 32px;
   }
 `;
 
-const VirtualContent = styled.div`
-  width: 100%;
-`;
-
-const ItemsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+const ItemWrapper = styled.div`
+  /* Contenedor para cada item virtualizado con gap simulado via margin */
+  margin-bottom: 8px;
 
   @media (width >= 768px) {
-    gap: 12px;
+    margin-bottom: 12px;
   }
-`;
-
-const ItemWrapper = styled.div`
-  /* Contenedor para cada item virtualizado */
 `;
 
 const EmptyContainer = styled.div`

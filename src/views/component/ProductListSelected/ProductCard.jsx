@@ -69,7 +69,7 @@ const Container = styled.div`
   border-bottom: var(--border-primary);
   border-radius: var(--border-radius-light);
 
-  :last-child {
+  &:last-child {
     border-bottom: none;
   }
 `;
@@ -134,7 +134,7 @@ const InputContainer = styled.input`
   border: none;
   border: 1px solid transparent;
 
-  :focus {
+  &:focus {
     border: 1px solid black;
   }
 `;

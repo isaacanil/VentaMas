@@ -93,11 +93,11 @@ const commonStyles = css`
   cursor: pointer;
   user-select: none;
 
-  :last-child {
+  &:last-child {
     border-bottom: none;
   }
 
-  :hover {
+  &:hover {
     color: ${(props) => props.theme.bg.color};
     transition: background-color 400ms ease;
 

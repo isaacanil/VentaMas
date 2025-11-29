@@ -127,7 +127,7 @@ const Container = styled.div`
   padding: 0 1em;
   font-size: 14px;
 
-  :hover {
+  &:hover {
     background-color: var(--white-2);
   }
 `;

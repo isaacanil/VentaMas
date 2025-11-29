@@ -105,11 +105,11 @@ const OptionItem = styled.div`
   padding: 0 1em;
   align-items: center;
 
-  :last-child {
+  &:last-child {
     border-bottom: none;
   }
 
-  :hover {
+  &:hover {
     background-color: #5e5e5e + cc;
   }
   ${(props) =>
@@ -131,7 +131,7 @@ const Footer = styled.div`
     background-color: gray;
     border: none;
 
-    :disabled {
+    &:disabled {
       color: #666;
       background-color: #ccc;
     }
