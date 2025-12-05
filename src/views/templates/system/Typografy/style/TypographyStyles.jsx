@@ -62,33 +62,40 @@ const boldScale = {
 };
 
 const baseTypography = css`
-  font-size: ${({ context, variant, size }) =>
-    getFontSize({ context, variant, size, variantToSizeMap, generalSize })};
-  text-align: ${({ align }) => (align ? align : 'left')};
+  font-size: ${({ $context, $variant, $size }) =>
+    getFontSize({
+      context: $context,
+      variant: $variant,
+      size: $size,
+      variantToSizeMap,
+      generalSize,
+    })};
+  text-align: ${({ $align }) => ($align ? $align : 'left')};
 
-  /* margin-bottom: ${({ gutterBottom }) => (gutterBottom ? '1rem' : '0')}; */
-  ${({ disableMargins }) => disableMargins && 'margin: 0;'}
+  /* margin-bottom: ${({ $gutterBottom }) => ($gutterBottom ? '1rem' : '0')}; */
+  ${({ $disableMargins }) => $disableMargins && 'margin: 0;'}
 
-  /* font-weight: ${({ bold }) => boldScale[String(bold)] || 'normal'}; */
-  ${({ bold }) => bold && `font-weight: ${boldScale[String(bold)]} ;`}
-  ${({ italic }) => italic && 'font-style: italic;'}
-  ${({ underline }) => underline && 'text-decoration: underline;'}
-  ${({ uppercase }) => uppercase && 'text-transform: uppercase;'}
-  ${({ capitalize }) => capitalize && 'text-transform: capitalize;'}
-  ${({ lowercase }) => lowercase && 'text-transform: lowercase;'}
-  ${({ noWrap }) => noWrap && 'white-space: nowrap;'}
+  /* font-weight: ${({ $bold }) => boldScale[String($bold)] || 'normal'}; */
+  ${({ $bold }) => $bold && `font-weight: ${boldScale[String($bold)]} ;`}
+  ${({ $italic }) => $italic && 'font-style: italic;'}
+  ${({ $underline }) => $underline && 'text-decoration: underline;'}
+  ${({ $uppercase }) => $uppercase && 'text-transform: uppercase;'}
+  ${({ $capitalize }) => $capitalize && 'text-transform: capitalize;'}
+  ${({ $lowercase }) => $lowercase && 'text-transform: lowercase;'}
+  ${({ $noWrap }) => $noWrap && 'white-space: nowrap;'}
 
-  letter-spacing: ${({ letterSpacing }) => letterSpacing || 'normal'};
-  text-transform: ${({ textTransform }) => textTransform || 'none'};
-  ${({ display }) => display && `display: ${display};`}
+  letter-spacing: ${({ $letterSpacing }) => $letterSpacing || 'normal'};
+  text-transform: ${({ $textTransform }) => $textTransform || 'none'};
+  ${({ $display }) => $display && `display: ${$display};`}
 `;
 export const TypographyStyle = styled.div`
-  ${({ variant }) => variants[variant] || variants.body1}
+  ${({ $variant }) => variants[$variant] || variants.body1}
   ${baseTypography}
-  ${({ color }) => colors[color] || colors.dark}
+  ${({ $color }) => colors[$color] || colors.dark}
       
-  ${({ strikethrough }) => strikethrough && 'text-decoration: line-through;'}
-  ${({ textShadow }) => textShadow && `text-shadow: ${textShadow};`}
+  ${({ $strikethrough }) =>
+    $strikethrough && 'text-decoration: line-through;'}
+  ${({ $textShadow }) => $textShadow && `text-shadow: ${$textShadow};`}
   ${({ as }) =>
     as === 'a' &&
     `

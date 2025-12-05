@@ -408,6 +408,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         <StyledForm
           autoComplete="off"
           form={form}
+          initialValues={{ username: '', password: '' }}
           layout="vertical"
           onFinish={(values: LoginFormValues) => {
             void handleFinish(values);

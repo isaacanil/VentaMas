@@ -288,8 +288,8 @@ const DependentSelector = ({
           setSearch('');
         }}
         open={visible}
-        height={'80%'}
         styles={{
+          wrapper: { height: '80%' },
           body: { padding: '1em' },
         }}
       >

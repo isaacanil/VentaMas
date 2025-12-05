@@ -408,20 +408,24 @@ export const InvoicePanel = () => {
   // const installments = generateInstallments({ ar: accountsReceivable, user })
 
   useEffect(() => {
-    form.setFieldsValue({
-      frequency: 'monthly',
-      totalInstallments: 1,
-      paymentDate: DateUtils.convertMillisToDayjs(Date.now()),
-    });
-  }, []);
+    if (invoicePanel) {
+      form.setFieldsValue({
+        frequency: 'monthly',
+        totalInstallments: 1,
+        paymentDate: DateUtils.convertMillisToDayjs(Date.now()),
+      });
+    }
+  }, [invoicePanel, form]);
   useEffect(() => {
-    form.setFieldsValue({
-      ...accountsReceivable,
-      paymentDate: DateUtils.convertMillisToDayjs(
-        accountsReceivable?.paymentDate,
-      ),
-    });
-  }, [accountsReceivable]);
+    if (invoicePanel) {
+      form.setFieldsValue({
+        ...accountsReceivable,
+        paymentDate: DateUtils.convertMillisToDayjs(
+          accountsReceivable?.paymentDate,
+        ),
+      });
+    }
+  }, [accountsReceivable, invoicePanel, form]);
   useEffect(() => {
     if (!invoicePanel) {
       setSubmitted(false);

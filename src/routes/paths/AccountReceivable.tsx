@@ -3,6 +3,8 @@ import AccountReceivableInfo from '../../views/pages/AccountReceivable/pages/Acc
 import { AccountReceivableList } from '../../views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList';
 import { ReceivablePaymentReceipt } from '../../views/pages/InvoicesPage/ReceivablePaymentReceipt';
 import ROUTES_NAME from '../routesName';
+import { ErrorBoundary } from '../../views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
+import { accountReceivableInfoLoader } from '../loaders/accountReceivableLoaders'; // Import loader
 
 import type { AppRoute } from '../routes';
 
@@ -15,7 +17,12 @@ const {
 
 const routes: AppRoute[] = [
   { path: ACCOUNT_RECEIVABLE_LIST, element: <AccountReceivableList /> },
-  { path: ACCOUNT_RECEIVABLE_INFO, element: <AccountReceivableInfo /> },
+  {
+    path: ACCOUNT_RECEIVABLE_INFO,
+    element: <AccountReceivableInfo />,
+    loader: accountReceivableInfoLoader, // Add loader
+    errorElement: <ErrorBoundary /> // Add errorElement
+  },
   { path: RECEIVABLE_PAYMENT_RECEIPTS, element: <ReceivablePaymentReceipt /> },
   { path: ACCOUNT_RECEIVABLE_AUDIT, element: <AccountReceivableAudit /> },
 ];

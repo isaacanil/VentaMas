@@ -134,6 +134,7 @@ export const ClientDetails = ({ mode }) => {
                 labelVariant="primary"
                 value={`${useFormatPrice(pendingBalance)}`}
                 autoComplete="off"
+                readOnly
                 buttons={[
                   {
                     name: 'Pagar',

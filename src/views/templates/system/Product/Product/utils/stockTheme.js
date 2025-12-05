@@ -22,13 +22,13 @@ export const productColorThemes = {
   },
 };
 
-export const getProductTheme = ({
-  isOutOfStock,
-  isCriticalStock,
-  isLowStock,
-  hasStrictStock,
-  isSelected,
-}) => {
+export const getProductTheme = (props) => {
+  const isOutOfStock = props.isOutOfStock || props.$isOutOfStock;
+  const isCriticalStock = props.isCriticalStock || props.$isCriticalStock;
+  const isLowStock = props.isLowStock || props.$isLowStock;
+  const hasStrictStock = props.hasStrictStock || props.$hasStrictStock;
+  const isSelected = props.isSelected || props.$isSelected;
+
   if (isOutOfStock) {
     return {
       textColor: isSelected ? '#ef5350' : '#9e9e9e',
@@ -42,8 +42,10 @@ export const getProductTheme = ({
   return productColorThemes.default;
 };
 
-export const getContainerOutline = (props) =>
-  props.isSelected ? getProductTheme(props).outlineSelected : 'none';
+export const getContainerOutline = (props) => {
+  const isSelected = props.isSelected || props.$isSelected;
+  return isSelected ? getProductTheme(props).outlineSelected : 'none';
+};
 
 export const getAmountColor = (props) => getProductTheme(props).amountColor;
 export const getPriceColor = (props) => getProductTheme(props).textColor;

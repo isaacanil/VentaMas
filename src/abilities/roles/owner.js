@@ -7,5 +7,6 @@ export function defineAbilitiesForOwner() {
   cannot('access', '/users');
   cannot('access', '/users/list');
   cannot('access', '/users/session-logs');
+  cannot('access', '/users/activity');
   return rules;
 }

@@ -20,7 +20,7 @@ function EvidenceUploadDrawer() {
       placement="right"
       onClose={handleClose}
       open={open}
-      width={720}
+      size="large"
     >
       <EvidenceUpload attachmentUrls={files} />
     </Drawer>

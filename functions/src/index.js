@@ -56,6 +56,7 @@ import { processInvoiceCompensation } from './versions/v2/invoice/triggers/compe
 import { processInvoiceOutbox } from './versions/v2/invoice/triggers/outbox.worker.js';
 import { syncRealtimePresence } from './versions/v2/auth/triggers/presenceSync.js';
 import { rebuildNcfLedger } from './versions/v2/invoice/controllers/rebuildNcfLedger.controller.js';
+import { runCashCountAudit } from './versions/v2/cashCount/controllers/runCashCountAudit.controller.js';
 
 export {
   keepSupabaseAlive,
@@ -79,6 +80,7 @@ export {
   processInvoiceOutbox,
   processInvoiceCompensation,
   rebuildNcfLedger,
+  runCashCountAudit,
   clientLogin,
   clientValidateUser,
   clientSignUp,

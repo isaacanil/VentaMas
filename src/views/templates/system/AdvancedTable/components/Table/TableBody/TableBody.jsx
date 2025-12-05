@@ -10,9 +10,9 @@ const Body = styled.div`
   position: relative;
 `;
 
-const renderCell = (col, value) => {
+const renderCell = (col, value, row) => {
   if (col.cell) {
-    return col.cell({ value });
+    return col.cell({ value, row });
   }
   return (
     <CellRenderer
@@ -87,7 +87,7 @@ export const TableBody = ({
                       data-row-border={rowBorder ? 'on' : 'off'}
                       onClick={(e) => handleCellClick(e, col, row)}
                     >
-                      {renderCell(col, row[col.accessor])}
+                      {renderCell(col, row[col.accessor], row)}
                     </BodyCell>
                   ))}
                 </Row>
@@ -129,7 +129,11 @@ export const TableBody = ({
                       data-row-border={rowBorder ? 'on' : 'off'}
                       onClick={(e) => handleCellClick(e, col, row)}
                     >
-                      {renderCell(col, rowWithExpanderData[col.accessor])}
+                      {renderCell(
+                        col,
+                        rowWithExpanderData[col.accessor],
+                        rowWithExpanderData,
+                      )}
                     </BodyCell>
                   ))}
                 </Row>

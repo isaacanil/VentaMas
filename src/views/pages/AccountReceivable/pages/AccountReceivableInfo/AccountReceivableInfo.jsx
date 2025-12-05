@@ -1,12 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
 import { DateTime } from 'luxon';
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useLoaderData } from 'react-router-dom'; // Import useLoaderData
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import fetchAccountsReceivableDetails from '../../../../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
 import Typography from '../../../../templates/system/Typografy/Typografy';
@@ -14,25 +10,10 @@ import Typography from '../../../../templates/system/Typografy/Typografy';
 // const { Header, Content } = Layout;
 
 const AccountReceivableInfo = () => {
-  const { id } = useParams();
-  const user = useSelector(selectUser);
+  // Use useLoaderData to get the pre-fetched data
+  const data = useLoaderData(); // Data is guaranteed to be available here
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['accountReceivable', id],
-    queryFn: () => fetchAccountsReceivableDetails(user, id),
-    enabled: !!user?.businessID && !!id,
-  });
-
-  useEffect(() => {
-    if (user && id) {
-      refetch();
-    }
-  }, [user, id, refetch]);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message} </div>;
-  if (!data) return <div>No data available</div>;
-  const { ar, installments, payments, installmentPayments } = data;
+  const { ar, installments, payments, installmentPayments } = data; // Destructure data directly
 
   const formatDate = (timestamp) =>
     DateTime.fromMillis(timestamp?.seconds * 1000).toFormat('dd/MM/yyyy HH:mm');

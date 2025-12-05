@@ -120,6 +120,9 @@ export const updateTaxReceipt = async (user, data) => {
 
     const normalizedData = normalizeTaxReceiptData(data);
 
+    // Asegurar que el ID siempre esté presente en los datos guardados
+    normalizedData.id = data.id;
+
     await updateDoc(receiptRef, { data: normalizedData });
     console.log(`Tax receipt ${data.id} updated successfully.`);
   } catch (error) {

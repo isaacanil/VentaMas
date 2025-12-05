@@ -26,12 +26,16 @@ export const createBusinessAction = {
           "users": [ { "realName": "...", "name": "...", "role": "admin"|"owner"|"manager"|"cashier"|"buyer", "password": "..." } ]
       }
     }
-    Reglas Users: name (minúsculas, sin espacios), password (8+ chars, 1 Mayus, 1 Minus, 1 Num).
+    Reglas Users: name (minúsculas, sin espacios), password (8+ chars, 1 Mayus, 1 Minus, 1 Num). Si no se indica rol, usar "admin".
   `,
 
   // Lógica de Ejecución
   execute: async (data, { addLog, isTestMode }) => {
     const { business, users } = data;
+    const usersWithRole = (users || []).map((user) => ({
+      ...user,
+      role: user.role || 'admin',
+    }));
     
     addLog(`🔍 Validando Negocio: "${business.name}"...`, 'info');
     
@@ -46,7 +50,7 @@ export const createBusinessAction = {
 
     // Password Validation
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    for (const user of users) {
+    for (const user of usersWithRole) {
         if (!passwordRegex.test(user.password)) {
             addLog(`❌ Pass débil: ${user.name}`, 'error');
             throw new Error(`Contraseña débil para ${user.name}`);
@@ -89,7 +93,7 @@ export const createBusinessAction = {
         return candidate;
     };
 
-    for (const user of users) {
+    for (const user of usersWithRole) {
         let finalUsername = user.name;
         if (!isTestMode) {
            finalUsername = await resolveUniqueUsername(finalUsername);
@@ -146,22 +150,54 @@ export const createBusinessAction = {
 
   // Componente de Resultado (Después de ejecutar)
   ResultComponent: ({ data, onReset }) => {
+
       const handleShareWhatsApp = () => {
         try {
-          const business = data.business;
-          const getRoleLabel = (role) => ({ admin: 'Admin', owner: 'Dueño', manager: 'Gerente', cashier: 'Caja' }[role] || role);
-          
-          const groupedUsers = data.users.reduce((acc, user) => {
-            const section = getRoleLabel(user.role);
+          const business = data.business || {};
+          const getRoleLabel = (role) => ({
+            admin: 'Administrador',
+            owner: 'Dueno',
+            manager: 'Gerente',
+            cashier: 'Caja',
+            buyer: 'Compras'
+          }[role] || role || 'Usuario');
+
+          const formatLine = (label, value) => {
+            const normalized = typeof value === 'string' ? value.trim() : value;
+            return normalized ? `${label}: ${normalized}` : null;
+          };
+
+          const businessLines = [
+            formatLine('Nombre', business.name),
+            formatLine('Tipo', business.businessType),
+            formatLine('RNC', business.rnc),
+            formatLine('Telefono', business.tel),
+            formatLine('Correo', business.email),
+            formatLine('Direccion', business.address),
+            'URL: https://ventamax.web.app'
+          ].filter(Boolean).join('\n');
+
+          const groupedUsers = (data.users || []).reduce((acc, user) => {
+            const role = user.role || 'admin';
+            const section = getRoleLabel(role);
             if (!acc[section]) acc[section] = [];
-            acc[section].push(user);
+            acc[section].push({ ...user, role });
             return acc;
           }, {});
 
-          let msg = `*Datos del Negocio*\nNombre: ${business.name}\nURL: https://ventamax.web.app\n-------------------\n`;
+          let msg = 'ALBUSINESS SEEDING - Registro listo\n\n';
+          msg += '*Datos del negocio*\n';
+          msg += `${businessLines}\n\n`;
+          msg += '*Usuarios creados*\n';
+
           Object.entries(groupedUsers).forEach(([section, users]) => {
-            msg += `*${section}*\n`;
-            users.forEach(u => msg += `👤 ${u.realName}\n🆔 ${u.name}\n🔑 ${u.password}\n\n`);
+            msg += `${section}:\n`;
+            users.forEach((u) => {
+              msg += `- Nombre completo: ${u.realName || 'Pendiente'}\n`;
+              msg += `- Nombre de usuario: ${u.name || 'Pendiente'}\n`;
+              msg += `- Contrasena: ${u.password || 'Pendiente'}\n`;
+              msg += `- Rol: ${getRoleLabel(u.role)}\n\n`;
+            });
           });
 
           window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
@@ -173,7 +209,7 @@ export const createBusinessAction = {
             <div style={{ width: 80, height: 80, background: '#52c41a', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <FontAwesomeIcon icon={faCheckCircle} style={{ fontSize: '40px', color: 'white' }} />
             </div>
-            <Title level={3} style={{ margin: 0 }}>¡Negocio Creado!</Title>
+            <Title level={3} style={{ margin: 0 }}>Negocio Creado!</Title>
             <Text type="secondary">Las credenciales se han generado exitosamente.</Text>
             
             <Button 

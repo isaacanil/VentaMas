@@ -81,7 +81,9 @@ export const Welcome = () => {
               <Suspense
                 fallback={
                   <LoadingContainer>
-                    <Spin size="large" tip="Cargando..." />
+                    <Spin size="large" tip="Cargando...">
+                      <div style={{ width: '100%', minHeight: 400 }} />
+                    </Spin>
                   </LoadingContainer>
                 }
               >

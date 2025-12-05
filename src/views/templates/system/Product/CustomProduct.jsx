@@ -15,9 +15,9 @@ export const CustomProduct = ({ product }) => {
   return (
     <ProductContainer
       onClick={() => handleGetThisProduct(product)}
-      imageHiddenRef={imageHiddenRef ? true : false}
+      $imageHiddenRef={imageHiddenRef ? true : false}
     >
-      <ProductImgWrapper imageHiddenRef={imageHiddenRef ? true : false}>
+      <ProductImgWrapper $imageHiddenRef={imageHiddenRef ? true : false}>
         <div>{<FontAwesomeIcon icon={faPizzaSlice} />}</div>
       </ProductImgWrapper>
       <Body>
@@ -39,7 +39,7 @@ const ProductContainer = styled.div`
   transition: 400ms all ease-in-out;
 
   ${(props) => {
-    switch (props.imageHiddenRef) {
+    switch (props.$imageHiddenRef) {
       case true:
         return `
                     height: 60px;
@@ -80,7 +80,7 @@ const ProductImgWrapper = styled.div`
   padding: 4px;
   transition: all 400ms ease-in-out;
   ${(props) => {
-    switch (props.imageHiddenRef) {
+    switch (props.$imageHiddenRef) {
       case false:
         return `
                 

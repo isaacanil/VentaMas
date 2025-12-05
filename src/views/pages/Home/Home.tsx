@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { Spin } from 'antd';
 
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 
@@ -11,16 +12,31 @@ import type { JSX } from 'react';
 
 type RootState = {
   user?: {
-    user?: {
-      role?: string | null;
-    } | null;
+    user?:
+      | {
+          role?: string | null;
+        }
+      | null
+      | boolean;
   };
 };
 
 export const Home = (): JSX.Element => {
-  const userRole = useSelector<RootState, string | null>((state) =>
-    typeof state.user?.user?.role === 'string' ? state.user.user.role : null,
-  );
+  const userState = useSelector<
+    RootState,
+    { role?: string | null } | null | boolean
+  >((state) => (state.user?.user === undefined ? false : state.user.user));
+
+  if (userState === false) {
+    return (
+      <LoadingContainer>
+        <Spin size="large" />
+      </LoadingContainer>
+    );
+  }
+
+  const userRole =
+    typeof userState === 'object' && userState !== null ? userState.role : null;
   const shouldShowVersionBadge = userRole === 'dev';
 
   return (
@@ -38,6 +54,15 @@ export const Home = (): JSX.Element => {
     </HomeLayout>
   );
 };
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--color2);
+`;
 
 const HomeLayout = styled.div`
   display: flex;

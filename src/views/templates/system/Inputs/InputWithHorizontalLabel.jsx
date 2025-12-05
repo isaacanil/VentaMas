@@ -14,7 +14,7 @@ export const InputWithHorizontalLabel = ({ label = null, ...props }) => {
           value={label}
         />
       )}
-      <InputNumber addonBefore={'$'} {...props} style={{ width: '100%' }} />
+      <InputNumber prefix="$" {...props} style={{ width: '100%' }} />
     </Container>
   );
 };

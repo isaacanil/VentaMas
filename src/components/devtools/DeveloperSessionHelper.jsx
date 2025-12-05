@@ -27,7 +27,7 @@ const BUTTON_SIZE = 48;
 const PANEL_MIN_WIDTH = 420;
 const PANEL_MAX_WIDTH = 720;
 
-const DeveloperSessionHelper = () => {
+export const DeveloperSessionHelper = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(selectUser);

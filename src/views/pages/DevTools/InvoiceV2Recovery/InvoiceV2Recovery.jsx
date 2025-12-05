@@ -78,7 +78,9 @@ export const InvoiceV2Recovery = () => {
         <Content>
           <ContentInner>
             <Centered>
-              <Spin size="large" tip="Verificando permisos..." />
+              <Spin size="large" tip="Verificando permisos...">
+                <div style={{ width: 200, height: 140 }} />
+              </Spin>
             </Centered>
           </ContentInner>
         </Content>

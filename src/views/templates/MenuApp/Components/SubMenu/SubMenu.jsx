@@ -15,7 +15,7 @@ export const SubMenu = ({ isOpen, item, showSubMenu }) => {
     return acc;
   }, {});
   return (
-    <Container isOpen={isOpen}>
+    <Container $isOpen={isOpen}>
       <Header>
         <Button
           startIcon={<FontAwesomeIcon icon={faArrowLeft} />}
@@ -81,8 +81,8 @@ const Container = styled.div`
   transform: translateX(-100%);
   transition: 200ms transform ease-in-out;
   color: rgb(80 80 80);
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case true:
         return `
                 transform: translateX(0px);

@@ -22,6 +22,13 @@ const HEARTBEAT_INTERVAL_MS = 20 * 1000; // Mantener actualizado el timestamp an
 export const useRealtimePresence = (user) => {
   const disconnectHandlerRef = useRef(null);
   const heartbeatRef = useRef(null);
+  const presenceRefState = useRef(null);
+  const hasConnectedRef = useRef(false);
+  const latestUserRef = useRef(user);
+
+  useEffect(() => {
+    latestUserRef.current = user;
+  }, [user]);
 
   const stopHeartbeat = () => {
     if (heartbeatRef.current) {
@@ -34,8 +41,16 @@ export const useRealtimePresence = (user) => {
     if (typeof window === 'undefined') return undefined;
     if (!user?.uid) return undefined;
     if (!realtimeDB) return undefined;
+    if (!realtimeDB.app?.options?.databaseURL) return undefined;
 
-    goOnline(realtimeDB);
+    try {
+      goOnline(realtimeDB);
+    } catch {
+      return undefined;
+    }
+
+    hasConnectedRef.current = false;
+    presenceRefState.current = null;
 
     const { sessionId } = getStoredSession();
     const deviceId = ensureDeviceId();
@@ -69,6 +84,7 @@ export const useRealtimePresence = (user) => {
       realtimeDB,
       `${PRESENCE_BASE_PATH}/${user.uid}/${connectionId}`,
     );
+    presenceRefState.current = { presenceRef, connectionId };
     const connectedRef = ref(realtimeDB, '.info/connected');
 
     const unsubscribe = onValue(connectedRef, async (snapshot) => {
@@ -78,6 +94,8 @@ export const useRealtimePresence = (user) => {
           stopHeartbeat();
           return;
         }
+
+        hasConnectedRef.current = true;
 
         if (disconnectHandlerRef.current) {
           await disconnectHandlerRef.current.cancel().catch(() => {});
@@ -93,21 +111,23 @@ export const useRealtimePresence = (user) => {
           })
           .catch(() => {});
 
+        const latestUser = latestUserRef.current || {};
         const payload = {
           state: 'online',
           updatedAt: serverTimestamp(),
           sessionId: sessionId || null,
           deviceId: deviceId || null,
-          businessId: user.businessID || null,
+          businessId: latestUser.businessID || null,
           actor: {
-            uid: user.uid,
-            role: user.role || null,
+            uid: latestUser.uid,
+            role: latestUser.role || null,
           },
         };
 
         await set(presenceRef, payload);
         if (!heartbeatRef.current) {
           heartbeatRef.current = setInterval(() => {
+            if (!hasConnectedRef.current) return;
             update(presenceRef, {
               updatedAt: serverTimestamp(),
             }).catch(() => {});
@@ -121,12 +141,17 @@ export const useRealtimePresence = (user) => {
     const forceOffline = () => {
       stopHeartbeat();
       try {
-        set(presenceRef, {
-          state: 'offline',
-          updatedAt: serverTimestamp(),
-        }).catch(() => {});
+        if (hasConnectedRef.current) {
+          set(presenceRef, {
+            state: 'offline',
+            updatedAt: serverTimestamp(),
+          }).catch(() => {});
+        }
       } finally {
-        goOffline(realtimeDB);
+        if (hasConnectedRef.current) {
+          goOffline(realtimeDB);
+          hasConnectedRef.current = false;
+        }
       }
     };
 
@@ -134,6 +159,7 @@ export const useRealtimePresence = (user) => {
     window.addEventListener('beforeunload', forceOffline, true);
 
     return () => {
+      presenceRefState.current = null;
       try {
         unsubscribe && unsubscribe();
       } catch {
@@ -147,15 +173,39 @@ export const useRealtimePresence = (user) => {
         disconnectHandler.cancel().catch(() => {});
       }
 
-      set(presenceRef, {
-        state: 'offline',
-        updatedAt: serverTimestamp(),
-      }).catch(() => {});
+      if (hasConnectedRef.current) {
+        set(presenceRef, {
+          state: 'offline',
+          updatedAt: serverTimestamp(),
+        }).catch(() => {});
+      }
 
       window.removeEventListener('pagehide', forceOffline, true);
       window.removeEventListener('beforeunload', forceOffline, true);
-      goOffline(realtimeDB);
+      if (hasConnectedRef.current) {
+        goOffline(realtimeDB);
+        hasConnectedRef.current = false;
+      }
     };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+    if (!hasConnectedRef.current) return undefined;
+
+    const presenceRef = presenceRefState.current?.presenceRef;
+    if (!presenceRef) return undefined;
+
+    update(presenceRef, {
+      businessId: user.businessID || null,
+      actor: {
+        uid: user.uid,
+        role: user.role || null,
+      },
+      updatedAt: serverTimestamp(),
+    }).catch(() => {});
+
+    return undefined;
   }, [user?.uid, user?.businessID, user?.role]);
 };
 

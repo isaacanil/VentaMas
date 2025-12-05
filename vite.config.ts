@@ -2,26 +2,11 @@ import pluginReact from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type PluginOption, type UserConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
-import { createStyleImportPlugin } from 'vite-plugin-style-import';
 // import tailwindcss from '@tailwindcss/vite'
 
 const plugins: PluginOption[] = [
   pluginReact(),
   // tailwindcss(),
-  createStyleImportPlugin({
-    libs: [
-      {
-        libraryName: 'antd',
-        esModule: true,
-        resolveStyle: (name: string) => {
-          if (name === 'auto-complete') {
-            return 'antd/es/select/style/index';
-          }
-          return `antd/es/${name}/style/index`;
-        },
-      },
-    ],
-  }),
 ];
 
 if (process.env.ANALYZE === 'true') {
@@ -64,6 +49,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id: string) {
+          if (id.includes('@ant-design/fast-color')) return 'ant-fast-color';
           if (id.includes('@fortawesome')) return 'fortawesome-bundle';
           if (id.includes('node_modules')) {
             return id.split('node_modules/')[1].split('/')[0];

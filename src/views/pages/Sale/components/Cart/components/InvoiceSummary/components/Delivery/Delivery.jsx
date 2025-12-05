@@ -9,7 +9,9 @@ import {
 } from '../../../../../../../../../features/clientCart/clientCartSlice';
 import { Label, LineItem } from '../../InvoiceSummary';
 
-export const Delivery = () => {
+export const Delivery = ({
+  inputWidth = '170px',
+}) => {
   const dispatch = useDispatch();
   const deliveryStatusInput = useRef(null);
   const client = useSelector(selectClient);
@@ -65,7 +67,7 @@ export const Delivery = () => {
           ref={deliveryStatusInput}
           placeholder="0"
           prefix="$"
-          style={{ width: '170px' }}
+          style={{ width: inputWidth }}
           min={0}
           disabled={!client?.delivery?.status}
           onChange={(e) => updateClient(e)}

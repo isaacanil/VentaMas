@@ -19,7 +19,7 @@ const Container = styled(motion.li)`
   display: flex;
   gap: 6px;
   width: 100%;
-  height: ${({ imageHiddenRef }) => (imageHiddenRef ? '60px' : '80px')};
+  height: ${({ $imageHiddenRef }) => ($imageHiddenRef ? '60px' : '80px')};
   overflow: hidden;
 
   /* El outline sólo depende de si está seleccionado o no */
@@ -71,13 +71,13 @@ const ProductComponent = memo(({ product }) => {
         initial="hidden"
         animate="visible"
         onClick={handleGetThisProduct}
-        imageHiddenRef={productState.imageHidden}
-        isSelected={isProductInCart}
-        isDisabled={isDisabled}
-        isOutOfStock={isOutOfStock}
-        isLowStock={isLowStock}
-        isCriticalStock={isCriticalStock}
-        hasStrictStock={product?.restrictSaleWithoutStock}
+        $imageHiddenRef={productState.imageHidden}
+        $isSelected={isProductInCart}
+        $isDisabled={isDisabled}
+        $isOutOfStock={isOutOfStock}
+        $isLowStock={isLowStock}
+        $isCriticalStock={isCriticalStock}
+        $hasStrictStock={product?.restrictSaleWithoutStock}
       >
         <ProductImage
           productState={productState}

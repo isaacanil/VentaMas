@@ -33,17 +33,9 @@ export function useTaxReceiptsFix() {
     const unsubscribe = onSnapshot(
       ref,
       async (snapshot) => {
-        /* ── Early-return global ─────────────────────────────── */
-        const someNonString = snapshot.docs.some(
-          (d) => typeof d.data().data?.sequence !== 'string',
-        );
-        if (someNonString) {
-          console.warn(
-            'useTaxReceiptsFix: hay recibos con sequence no-string; se omite proceso.',
-          );
-          setLoading(false);
-          return; // ⬅️   No hace nada más
-        }
+        /* ── Early-return global (REMOVED) ───────────────────── */
+        // The check that blocked non-string sequences is removed
+        // because we want to allow numbers (already migrated) or strings (to be migrated).
         /* ────────────────────────────────────────────────────── */
 
         /* 1) Primer pase: defaults + conversión */

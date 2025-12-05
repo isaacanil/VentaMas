@@ -1,6 +1,7 @@
 import {
   CheckCircleOutlined,
   EditOutlined,
+  FieldTimeOutlined,
   KeyOutlined,
   MoreOutlined,
   SettingOutlined,
@@ -9,8 +10,12 @@ import {
 import { Button, Dropdown, Input } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { onValue, ref } from 'firebase/database';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle } from '@fortawesome/free-solid-svg-icons';
 
 import {
   getRoleLabelById,
@@ -20,6 +25,8 @@ import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice';
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice';
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
+import { realtimeDB } from '../../../../../../../firebase/firebaseconfig.jsx';
+import ROUTES_NAME from '../../../../../../../routes/routesName';
 import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
@@ -106,6 +113,56 @@ const StatusPill = styled.span`
   border-radius: 999px;
 `;
 
+const PresenceBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  width: fit-content;
+  padding: 0.2em 0.45em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: ${({ $online }) => ($online ? '#0D6832' : '#4F6275')};
+  background: ${({ $online }) =>
+    $online ? 'rgba(13, 104, 50, 0.08)' : 'rgba(148, 163, 184, 0.12)'};
+  border: 1px solid
+    ${({ $online }) => ($online ? 'rgba(13, 104, 50, 0.28)' : 'rgba(148, 163, 184, 0.25)')};
+  border-radius: 12px;
+
+  .presence-dot {
+    font-size: 0.65rem;
+    color: ${({ $online }) => ($online ? '#1DB954' : '#94A3B8')};
+    filter: drop-shadow(
+      ${({ $online }) =>
+        $online ? '0 0 4px rgba(29, 185, 84, 0.5)' : 'none'}
+    );
+  }
+`;
+
+const toMillis = (value) => {
+  if (typeof value === 'number') return value;
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.seconds === 'number' &&
+    typeof value.nanoseconds === 'number'
+  ) {
+    return value.seconds * 1000 + value.nanoseconds / 1_000_000;
+  }
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value._seconds === 'number' &&
+    typeof value._nanoseconds === 'number'
+  ) {
+    return value._seconds * 1000 + value._nanoseconds / 1_000_000;
+  }
+  return null;
+};
+
+const {
+  SETTING_TERM: { USERS, USERS_ACTIVITY_DETAIL },
+} = ROUTES_NAME;
+
 export const UserList = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -114,7 +171,9 @@ export const UserList = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [presenceMap, setPresenceMap] = useState({});
   const currentUser = useSelector(selectUser);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { abilities, loading: permissionsLoading } = userAccess();
   const canManageDynamicPermissions = abilities.can('manage', 'users');
@@ -124,6 +183,68 @@ export const UserList = () => {
     fbGetUsers(currentUser, setUsers, null, () => setLoading(false));
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!realtimeDB?.app?.options?.databaseURL) return undefined;
+
+    const userIds = Array.from(
+      new Set(
+        users
+          .map(({ user }) => user?.uid || user?.id)
+          .filter(Boolean)
+          .map(String),
+      ),
+    );
+
+    if (userIds.length === 0) {
+      setPresenceMap({});
+      return undefined;
+    }
+
+    setPresenceMap((prev) => {
+      const allowed = new Set(userIds);
+      return Object.fromEntries(
+        Object.entries(prev).filter(([uid]) => allowed.has(uid)),
+      );
+    });
+
+    const unsubscribes = userIds.map((uid) => {
+      const presenceRef = ref(realtimeDB, `presence/${uid}`);
+      return onValue(presenceRef, (snapshot) => {
+        const value = snapshot?.val();
+        let state = 'offline';
+        let lastUpdated = null;
+        if (value && typeof value === 'object') {
+          const connections = Object.values(value);
+          const onlineConnection = connections.find(
+            (connection) => connection?.state === 'online',
+          );
+          state = onlineConnection ? 'online' : 'offline';
+          const timestamps = connections
+            .map((connection) => toMillis(connection?.updatedAt))
+            .filter((ts) => typeof ts === 'number');
+          if (timestamps.length) {
+            lastUpdated = Math.max(...timestamps);
+          }
+        }
+
+        setPresenceMap((prev) => ({
+          ...prev,
+          [uid]: { state, lastUpdated },
+        }));
+      });
+    });
+
+    return () => {
+      unsubscribes.forEach((unsubscribe) => {
+        try {
+          unsubscribe?.();
+        } catch {
+          /* ignore */
+        }
+      });
+    };
+  }, [realtimeDB, users]);
+
   const data = useMemo(
     () =>
       users.map(({ user }) => {
@@ -131,6 +252,8 @@ export const UserList = () => {
         const email = user?.email || user?.username || '';
         const isActive = Boolean(user?.active);
         const statusLabel = isActive ? 'Activo' : 'Inactivo';
+        const userId = user?.uid || user?.id;
+        const presence = presenceMap[userId] || { state: 'offline' };
 
         return {
           number: user?.number,
@@ -144,12 +267,59 @@ export const UserList = () => {
             active: isActive,
             label: statusLabel,
           },
+          presence,
           user,
           searchText:
-            `${name} ${email} ${statusLabel} ${getRoleLabelById(user?.role) ?? ''}`.toLowerCase(),
+            `${name} ${email} ${statusLabel} ${presence?.state ?? ''} ${
+              getRoleLabelById(user?.role) ?? ''
+            }`.toLowerCase(),
         };
       }),
-    [users],
+    [users, presenceMap],
+  );
+
+  const sortedData = useMemo(() => {
+    const getBucket = (presence) => {
+      const isOnline = presence?.state === 'online';
+      const lastSeen = typeof presence?.lastUpdated === 'number' ? presence.lastUpdated : null;
+      if (isOnline) return { bucket: 0, lastSeen };
+      if (lastSeen) return { bucket: 1, lastSeen };
+      return { bucket: 2, lastSeen: null };
+    };
+
+    const getCreatedAt = (value) => toMillis(value) ?? 0;
+
+    return [...data].sort((a, b) => {
+      const aBucket = getBucket(a.presence);
+      const bBucket = getBucket(b.presence);
+
+      if (aBucket.bucket !== bBucket.bucket) {
+        return aBucket.bucket - bBucket.bucket;
+      }
+
+      // When in the same bucket, sort by lastSeen desc if available, else by creation date desc
+      const aLast = aBucket.lastSeen ?? getCreatedAt(a.createAt);
+      const bLast = bBucket.lastSeen ?? getCreatedAt(b.createAt);
+      return bLast - aLast;
+    });
+  }, [data]);
+
+  const handleViewActivity = useCallback(
+    (user) => {
+      const userId = user?.uid || user?.id;
+      if (!userId) return;
+      const path = `${USERS}/${USERS_ACTIVITY_DETAIL.replace(
+        ':userId',
+        encodeURIComponent(userId),
+      )}`;
+      navigate(path, {
+        state: {
+          user,
+          presence: presenceMap[userId],
+        },
+      });
+    },
+    [navigate, presenceMap],
   );
 
   const handleEditUser = useCallback(
@@ -284,6 +454,35 @@ export const UserList = () => {
           );
         },
       },
+      {
+        Header: 'Conexion',
+        accessor: 'presence',
+        align: 'left',
+        maxWidth: '0.3fr',
+        minWidth: '110px',
+        cell: ({ value }) => {
+          const isOnline = value?.state === 'online';
+          const lastUpdated = value?.lastUpdated;
+          let label = isOnline ? 'En linea' : 'Sin datos';
+          if (!isOnline && lastUpdated) {
+            const date = DateTime.fromMillis(lastUpdated);
+            const diffHours = DateTime.now().diff(date, 'hours').hours;
+            label =
+              diffHours < 24
+                ? date.toRelative({ style: 'short' }) || 'Reciente'
+                : date.toFormat('dd/LL/yyyy');
+          }
+          return (
+            <PresenceBadge
+              $online={isOnline}
+              title={isOnline ? 'En linea' : `Fuera de linea · ${label}`}
+            >
+              <FontAwesomeIcon icon={faCircle} className="presence-dot" />
+              <span>{label}</span>
+            </PresenceBadge>
+          );
+        },
+      },
     ];
 
     if (abilities.can('manage', 'User')) {
@@ -301,6 +500,7 @@ export const UserList = () => {
             onChangePassword={openPasswordModal}
             onToggleStatus={openStatusModal}
             onManagePermissions={openPermissionsModal}
+            onViewActivity={handleViewActivity}
             canManageDynamicPermissions={canManageDynamicPermissions}
           />
         ),
@@ -312,6 +512,7 @@ export const UserList = () => {
     abilities,
     canManageDynamicPermissions,
     handleEditUser,
+    handleViewActivity,
     openPasswordModal,
     openPermissionsModal,
     openStatusModal,
@@ -330,7 +531,7 @@ export const UserList = () => {
     <>
       <AdvancedTable
         tableName={'Usuarios'}
-        data={data}
+        data={sortedData}
         columns={columns}
         pagination={true}
         searchTerm={searchTerm}
@@ -388,6 +589,7 @@ const ActionMenu = ({
   onChangePassword,
   onToggleStatus,
   onManagePermissions,
+  onViewActivity,
   canManageDynamicPermissions,
 }) => {
   const isActive = Boolean(user?.active);
@@ -398,38 +600,30 @@ const ActionMenu = ({
   );
 
   const items = useMemo(() => {
-    const menuItems = [
-      {
-        key: 'edit',
-        icon: <EditOutlined />,
-        label: 'Editar usuario',
-        onClick: ({ domEvent }) => {
-          domEvent?.stopPropagation();
-          onEdit?.(user);
-        },
+    const menuItems = [];
+
+    menuItems.push({
+      key: 'activity',
+      icon: <FieldTimeOutlined />,
+      label: 'Ver actividad',
+      onClick: ({ domEvent }) => {
+        domEvent?.stopPropagation();
+        onViewActivity?.(user);
       },
-      {
-        key: 'password',
-        icon: <KeyOutlined />,
-        label: 'Cambiar contraseña',
-        onClick: ({ domEvent }) => {
-          domEvent?.stopPropagation();
-          onChangePassword?.(user);
-        },
+    });
+
+    menuItems.push({
+      key: 'edit',
+      icon: <EditOutlined />,
+      label: 'Editar usuario',
+      onClick: ({ domEvent }) => {
+        domEvent?.stopPropagation();
+        onEdit?.(user);
       },
-      {
-        key: 'toggle',
-        icon: isActive ? <StopOutlined /> : <CheckCircleOutlined />,
-        label: isActive ? 'Desactivar usuario' : 'Activar usuario',
-        onClick: ({ domEvent }) => {
-          domEvent?.stopPropagation();
-          onToggleStatus?.(user);
-        },
-      },
-    ];
+    });
 
     if (canManageDynamicPermissions && hasDynamicPermissions) {
-      menuItems.splice(1, 0, {
+      menuItems.push({
         key: 'permissions',
         icon: <SettingOutlined />,
         label: 'Permisos dinámicos',
@@ -440,6 +634,26 @@ const ActionMenu = ({
       });
     }
 
+    menuItems.push({
+      key: 'password',
+      icon: <KeyOutlined />,
+      label: 'Cambiar contraseña',
+      onClick: ({ domEvent }) => {
+        domEvent?.stopPropagation();
+        onChangePassword?.(user);
+      },
+    });
+
+    menuItems.push({
+      key: 'toggle',
+      icon: isActive ? <StopOutlined /> : <CheckCircleOutlined />,
+      label: isActive ? 'Desactivar usuario' : 'Activar usuario',
+      onClick: ({ domEvent }) => {
+        domEvent?.stopPropagation();
+        onToggleStatus?.(user);
+      },
+    });
+
     return menuItems;
   }, [
     canManageDynamicPermissions,
@@ -448,6 +662,7 @@ const ActionMenu = ({
     onChangePassword,
     onEdit,
     onManagePermissions,
+    onViewActivity,
     onToggleStatus,
     user,
   ]);

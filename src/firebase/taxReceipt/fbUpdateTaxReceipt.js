@@ -30,7 +30,7 @@ export const fbUpdateTaxReceipt = async (user, taxReceiptArray) => {
         batch.set(taxReceiptRef, {
           data: {
             ...receipt.data,
-            id: serie, // Usar la serie como ID para facilitar referencias
+            id: serie, // Asegurar que el ID siempre sea la serie
           },
         });
 

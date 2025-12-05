@@ -116,20 +116,20 @@ export const PeerReviewAuthorization = ({
       ]}
     >
       <Header description={description} />
-      {loading ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 100,
-          }}
-        >
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          <Form form={form} layout="vertical" autoComplete="off">
+      <Form form={form} layout="vertical" autoComplete="off">
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 100,
+            }}
+          >
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
             <Form.Item
               name="name"
               label="Nombre de usuario"
@@ -156,10 +156,10 @@ export const PeerReviewAuthorization = ({
                 autoComplete="new-password"
               />
             </Form.Item>
-          </Form>
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-        </>
-      )}
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+          </>
+        )}
+      </Form>
     </Modal>
   );
 };

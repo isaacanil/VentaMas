@@ -94,7 +94,9 @@ const PreviewContent = ({
             style={{ maxWidth: '100%', height: 'auto' }}
             placeholder={
               <LoadingContainer>
-                <Spin size="large" tip="Cargando imagen..." />
+                <Spin size="large" tip="Cargando imagen...">
+                  <div style={{ width: '100%', minHeight: 160 }} />
+                </Spin>
               </LoadingContainer>
             }
             onError={() =>
@@ -118,7 +120,9 @@ const PreviewContent = ({
               <Spin
                 size="large"
                 tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`}
-              />
+              >
+                <div style={{ width: '100%', minHeight: 160 }} />
+              </Spin>
             </LoadingContainer>
           )}
           <embed

@@ -13,7 +13,7 @@ export const MenuComponents = () => {
         {MenuConfig.filter((item) => item.id !== 'preorder').map(
           (item, index) => {
             return (
-              <Item key={index} align={item.align}>
+              <Item key={index} $align={item.align}>
                 <Button
                   type="primary"
                   size="large"
@@ -57,8 +57,8 @@ const Items = styled.ul`
   list-style: none;
 `;
 const Item = styled.li`
-  ${(props) => (props.align === 'right' ? 'margin-left: auto;' : '')}
-  ${(props) => (props.align === 'left' ? 'margin-right: auto;' : '')}
+  ${({ $align }) => ($align === 'right' ? 'margin-left: auto;' : '')}
+  ${({ $align }) => ($align === 'left' ? 'margin-right: auto;' : '')}
     
     .ant-btn {
     height: 2.5em;

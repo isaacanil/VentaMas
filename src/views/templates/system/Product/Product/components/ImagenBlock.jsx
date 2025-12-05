@@ -20,8 +20,8 @@ const ImageWrapper = styled.div`
     transform: translate(-50%, -50%);
   }
 
-  ${({ imageHiddenRef }) =>
-    !imageHiddenRef &&
+  ${({ $imageHiddenRef }) =>
+    !$imageHiddenRef &&
     `
       position: relative;
       transform: translateX(0px) scale(1);
@@ -70,8 +70,8 @@ export const ProductImage = React.memo(
     const [imageFallback] = useImageFallback(product?.image, noImg);
 
     return (
-      <ImageWrapper imageHiddenRef={productState.imageHidden}>
-        <ImageContainer imageHiddenRef={productState.imageHidden}>
+      <ImageWrapper $imageHiddenRef={productState.imageHidden}>
+        <ImageContainer $imageHiddenRef={productState.imageHidden}>
           {!productState.isImageLoaded && <Spin />}
           <img
             src={(isConnected && imageFallback) || noImg}

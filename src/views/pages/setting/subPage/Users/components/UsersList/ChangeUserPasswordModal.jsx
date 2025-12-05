@@ -36,11 +36,13 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
 
   // Validar el formulario cuando cambien los valores
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setIsFormValid(true))
-      .catch(() => setIsFormValid(false));
-  }, [form, formValues]);
+    if (isOpen) {
+      form
+        .validateFields({ validateOnly: true })
+        .then(() => setIsFormValid(true))
+        .catch(() => setIsFormValid(false));
+    }
+  }, [form, formValues, isOpen]);
 
   const resetAndClose = useCallback(() => {
     form.resetFields();

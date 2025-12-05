@@ -9,8 +9,8 @@ export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
   const toggleMenu = () => dispatch(toggleOpenMenu());
 
   return (
-    <Container isOpen={isOpen} onClick={onClick || toggleMenu} zIndex={zIndex}>
-      <MenuIcon isOpen={isOpen}></MenuIcon>
+    <Container $isOpen={isOpen} onClick={onClick || toggleMenu} $zIndex={zIndex}>
+      <MenuIcon $isOpen={isOpen}></MenuIcon>
     </Container>
   );
 };
@@ -33,8 +33,8 @@ const Container = styled.div`
   background-color: rgb(0 0 0 / 20%);
   border-radius: var(--border-radius);
   cursor: pointer;
-  z-index: ${(props) => (props.isOpen ? 10000 : 0)};
-  transition-delay: ${(props) => !props.isOpen && '1s'};
+  z-index: ${(props) => (props.$isOpen ? 10000 : 0)};
+  transition-delay: ${(props) => !props.$isOpen && '1s'};
 
   @media (width <= 768px) {
     width: 2.3em;
@@ -89,7 +89,7 @@ const MenuIcon = styled.div`
     }
   }
   ${(props) => {
-    switch (props.isOpen) {
+    switch (props.$isOpen) {
       case true:
         return `
         position: relative;

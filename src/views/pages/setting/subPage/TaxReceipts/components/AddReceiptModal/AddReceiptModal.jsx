@@ -153,8 +153,7 @@ const AddReceiptDrawer = ({ visible, onCancel, existingReceipts = [] }) => {
       placement="bottom"
       onClose={onCancel}
       open={visible}
-      width="100%"
-      height="100%"
+      styles={{ content: { height: '100%' } }}
       footer={
         <FooterContainer>
           <SelectedCount>

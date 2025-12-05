@@ -47,6 +47,13 @@ export const developerShortcuts = [
     category: 'Precios',
   },
   {
+    id: 'cash-count-audit',
+    title: 'Auditar cuadre de caja',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.CASH_COUNT_AUDIT,
+    category: 'Caja',
+  },
+  {
     id: 'switch-business',
     title: 'Cambiar Negocio',
     icon: icons.operationModes.add,

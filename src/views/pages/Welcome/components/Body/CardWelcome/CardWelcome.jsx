@@ -55,7 +55,7 @@ export const CardWelcome = ({ welcomeData }) => {
       <MainContent>
         <HeroCard>
           <motion.div variants={itemVariants}>
-            <AppName level={1}>Ventamax</AppName>
+            <AppName>Ventamax</AppName>
           </motion.div>
 
           <motion.div variants={itemVariants}>

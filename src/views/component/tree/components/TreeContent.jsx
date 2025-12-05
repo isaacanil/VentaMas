@@ -69,7 +69,9 @@ const TreeContent = ({
   if (loading) {
     return (
       <LoadingContainer>
-        <Spin tip={loadingText} />
+        <Spin tip={loadingText}>
+          <div style={{ width: '100%', minHeight: 160 }} />
+        </Spin>
       </LoadingContainer>
     );
   }

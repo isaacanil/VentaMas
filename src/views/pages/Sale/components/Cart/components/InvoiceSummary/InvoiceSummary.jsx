@@ -62,6 +62,9 @@ const resolveAuthorizerName = (authorizer) =>
   authorizer?.uid ||
   'usuario autorizado';
 
+const SUMMARY_INPUT_WIDTH = '170px';
+const SUMMARY_INPUT_SIZE = 'large';
+
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false);
   const cart = useSelector(selectCart);
@@ -625,7 +628,9 @@ const InvoiceSummary = () => {
             justifyContent: 'center',
           }}
         >
-          <Spin tip="Cargando cotización..." size="large" />
+          <Spin tip="Cargando cotización..." size="large">
+            <div style={{ width: 160, height: 140 }} />
+          </Spin>
         </div>
       )}
       <SummaryContainer>
@@ -637,7 +642,9 @@ const InvoiceSummary = () => {
           <Label>ITBIS:</Label>
           <Label>{useFormatPrice(itbis)}</Label>
         </LineItem>
-        <Delivery />
+        <Delivery
+          inputWidth={SUMMARY_INPUT_WIDTH}
+        />
         <LineItem>
           <Label>Descuento:</Label>
           {hasIndividualDiscounts ? (
@@ -652,6 +659,7 @@ const InvoiceSummary = () => {
                 options={['10', '20', '30', '40', '50']}
                 disabled={hasIndividualDiscounts}
                 onRequestAccess={handleDiscountAccess}
+                width={SUMMARY_INPUT_WIDTH}
               />
               {shouldRequirePinForDiscount && !isDiscountAuthorized && (
                 <AuthorizationNote $tone="warning">
@@ -731,6 +739,7 @@ const DiscountInputContainer = styled.div`
   display: grid;
   gap: 4px;
   justify-items: end;
+  min-width: ${SUMMARY_INPUT_WIDTH};
 `;
 
 const AuthorizationNote = styled.span`

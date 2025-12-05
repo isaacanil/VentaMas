@@ -7,5 +7,6 @@ export function defineAbilitiesForDev() {
   can('access', '/users');
   can('access', '/users/list');
   can('access', '/users/session-logs');
+  can('access', '/users/activity');
   return rules;
 }

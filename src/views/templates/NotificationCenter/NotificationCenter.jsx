@@ -44,7 +44,7 @@ const NotificationCenter = () => {
 
   return (
     <>
-      <Backdrop isOpen={isOpen} onClick={handleClose} />
+      <Backdrop $isOpen={isOpen} onClick={handleClose} />
       <Container
         animate={isOpen ? 'open' : 'closed'}
         initial="closed"
@@ -71,9 +71,9 @@ const Backdrop = styled.div`
   position: fixed;
   inset: 0;
   z-index: 9950;
-  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  visibility: ${(props) => (props.$isOpen ? 'visible' : 'hidden')};
   background-color: rgb(0 0 0 / 35%);
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
   backdrop-filter: blur(2px);
   transition:
     visibility 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),

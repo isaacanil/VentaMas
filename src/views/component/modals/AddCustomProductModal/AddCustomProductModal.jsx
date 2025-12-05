@@ -71,7 +71,7 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
         <TitleSection>
           <h4>Características del Producto</h4>
         </TitleSection>
-        <Flex alignItems="center" justifyContent="space-between">
+        <Flex $alignItems="center" $justifyContent="space-between">
           <Group>
             <Col>
               <InputV4
@@ -93,7 +93,7 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
               />
             </Col>
           </Group>
-          <Col justifySelf="right">
+          <Col $justifySelf="right">
             <PlusIconButton fn={handleOnChange}></PlusIconButton>
           </Col>
         </Flex>
@@ -171,15 +171,15 @@ const Group = styled.div`
   align-items: center;
 `;
 const Col = styled.div`
-  justify-self: ${(props) => (props.justifySelf ? 'flex-end' : 'none')};
+  justify-self: ${({ $justifySelf }) => ($justifySelf ? 'flex-end' : 'none')};
 `;
 const Flex = styled.div`
   display: flex;
-  gap: ${(props) => (props.gap ? props.gap : '1em')};
-  align-items: ${(props) => props.alignItems};
-  justify-content: ${(props) =>
-    props.justifyContent ? props.justifyContent : 'none'};
+  gap: ${({ $gap }) => ($gap ? $gap : '1em')};
+  align-items: ${({ $alignItems }) => $alignItems};
+  justify-content: ${({ $justifyContent }) =>
+    $justifyContent ? $justifyContent : 'none'};
   width: 100%;
-  padding: ${(props) => (props.padding ? props.padding : ' 0 1em')};
-  background-color: ${(props) => props.backgroundColor};
+  padding: ${({ $padding }) => ($padding ? $padding : ' 0 1em')};
+  background-color: ${({ $backgroundColor }) => $backgroundColor};
 `;

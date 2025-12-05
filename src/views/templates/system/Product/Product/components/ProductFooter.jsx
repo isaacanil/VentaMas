@@ -17,8 +17,8 @@ const FooterWrapper = styled.div`
   width: 100%;
   padding: 0 0.4em;
   pointer-events: none;
-  border-top-left-radius: ${({ imageHiddenRef }) =>
-    imageHiddenRef === false ? '10px' : '0'};
+  border-top-left-radius: ${({ $imageHiddenRef }) =>
+    $imageHiddenRef === false ? '10px' : '0'};
   transition: 0.8s border-radius ease-in-out;
 `;
 
@@ -96,15 +96,15 @@ export const ProductFooter = ({
     hasValidStock && stockValue !== 0 ? useFormatNumber(stockValue) : '-';
 
   return (
-    <FooterWrapper imageHiddenRef={productState.imageHidden}>
+    <FooterWrapper $imageHiddenRef={productState.imageHidden}>
       <Group>
         <AmountToBuy
-          isDisabled={isDisabled}
-          isOutOfStock={isOutOfStock}
-          isCriticalStock={isCriticalStock}
-          isLowStock={isLowStock}
-          isSelected={isProductInCart}
-          hasStrictStock={product.restrictSaleWithoutStock}
+          $isDisabled={isDisabled}
+          $isOutOfStock={isOutOfStock}
+          $isCriticalStock={isCriticalStock}
+          $isLowStock={isLowStock}
+          $isSelected={isProductInCart}
+          $hasStrictStock={product.restrictSaleWithoutStock}
         >
           {isProductInCart &&
             `${useFormatNumber(productInCart.amountToBuy)} / `}
@@ -116,23 +116,23 @@ export const ProductFooter = ({
       <Group>
         {product.weightDetail?.isSoldByWeight ? (
           <Price
-            isDisabled={isDisabled}
-            isOutOfStock={isOutOfStock}
-            isCriticalStock={isCriticalStock}
-            isLowStock={isLowStock}
-            isSelected={isProductInCart}
-            hasStrictStock={product.restrictSaleWithoutStock}
+            $isDisabled={isDisabled}
+            $isOutOfStock={isOutOfStock}
+            $isCriticalStock={isCriticalStock}
+            $isLowStock={isLowStock}
+            $isSelected={isProductInCart}
+            $hasStrictStock={product.restrictSaleWithoutStock}
           >
             {useFormatPrice(price)} / {product.weightDetail.weightUnit}
           </Price>
         ) : (
           <Price
-            isDisabled={isDisabled}
-            isOutOfStock={isOutOfStock}
-            isCriticalStock={isCriticalStock}
-            isLowStock={isLowStock}
-            isSelected={isProductInCart}
-            hasStrictStock={product.restrictSaleWithoutStock}
+            $isDisabled={isDisabled}
+            $isOutOfStock={isOutOfStock}
+            $isCriticalStock={isCriticalStock}
+            $isLowStock={isLowStock}
+            $isSelected={isProductInCart}
+            $hasStrictStock={product.restrictSaleWithoutStock}
           >
             {useFormatPrice(price)}
           </Price>

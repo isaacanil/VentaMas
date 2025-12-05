@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
 import { useEffect, useMemo } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { userAccess } from '../../../../../hooks/abilities/useAbilities';
@@ -8,7 +8,13 @@ import ROUTES_NAME from '../../../../../routes/routesName';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
 const {
-  SETTING_TERM: { USERS, USERS_LIST, USERS_SESSION_LOGS },
+  SETTING_TERM: {
+    USERS,
+    USERS_LIST,
+    USERS_SESSION_LOGS,
+    USERS_ACTIVITY,
+    USERS_ACTIVITY_DETAIL,
+  },
   BASIC_TERM: { HOME },
 } = ROUTES_NAME;
 
@@ -18,15 +24,40 @@ export const UserAdmin = () => {
   const { abilities, loading } = userAccess();
   const usersRoute = `${USERS}/${USERS_LIST}`;
   const sessionLogsRoute = `${USERS}/${USERS_SESSION_LOGS}`;
+  const userActivityRoute = `${USERS}/${USERS_ACTIVITY}`;
+  const userActivityPattern = `${USERS}/${USERS_ACTIVITY_DETAIL}`;
   const canAccessUserList = abilities.can('access', usersRoute);
   const canAccessSessionLogs = abilities.can('access', sessionLogsRoute);
-  const canAccessUsers = canAccessUserList || canAccessSessionLogs;
+  const canAccessUserActivity = abilities.can('access', userActivityRoute);
+  const canAccessUsers =
+    canAccessUserList || canAccessSessionLogs || canAccessUserActivity;
   const managedRoutes = useMemo(
     () => [
-      { path: usersRoute, allowed: canAccessUserList },
-      { path: sessionLogsRoute, allowed: canAccessSessionLogs },
+      {
+        path: usersRoute,
+        allowed: canAccessUserList,
+        match: (path) => path === usersRoute,
+      },
+      {
+        path: sessionLogsRoute,
+        allowed: canAccessSessionLogs,
+        match: (path) => path === sessionLogsRoute,
+      },
+      {
+        path: userActivityPattern,
+        allowed: canAccessUserActivity,
+        match: (path) =>
+          Boolean(matchPath({ path: userActivityPattern, end: true }, path)),
+      },
     ],
-    [canAccessSessionLogs, canAccessUserList, sessionLogsRoute, usersRoute],
+    [
+      canAccessSessionLogs,
+      canAccessUserActivity,
+      canAccessUserList,
+      sessionLogsRoute,
+      userActivityPattern,
+      usersRoute,
+    ],
   );
 
   useEffect(() => {
@@ -44,17 +75,19 @@ export const UserAdmin = () => {
     };
 
     const currentPath = normalizePath(location.pathname);
-    const isKnownRoute = managedRoutes.some(({ path }) => path === currentPath);
+    const isKnownRoute = managedRoutes.some(({ match }) => match(currentPath));
+    const currentRoute = managedRoutes.find(({ match }) =>
+      match(currentPath),
+    );
 
     if (!isKnownRoute) {
       const fallback = managedRoutes.find(({ allowed }) => allowed);
-      if (fallback && fallback.path !== currentPath) {
+      if (fallback && !fallback.match(currentPath)) {
         navigate(fallback.path, { replace: true });
       }
       return;
     }
 
-    const currentRoute = managedRoutes.find(({ path }) => path === currentPath);
     if (currentRoute && !currentRoute.allowed) {
       const fallback = managedRoutes.find(({ allowed }) => allowed);
       if (fallback) {
@@ -84,8 +117,20 @@ export const UserAdmin = () => {
     if (normalizedPath === usersRoute) {
       return 'Lista de Usuarios';
     }
+    if (
+      matchPath({ path: userActivityPattern, end: true }, normalizedPath) ||
+      normalizedPath.startsWith(userActivityRoute)
+    ) {
+      return 'Actividad de usuario';
+    }
     return 'Usuarios';
-  }, [location.pathname, sessionLogsRoute, usersRoute]);
+  }, [
+    location.pathname,
+    sessionLogsRoute,
+    userActivityPattern,
+    userActivityRoute,
+    usersRoute,
+  ]);
 
   if (!loading && !canAccessUsers) {
     return null;

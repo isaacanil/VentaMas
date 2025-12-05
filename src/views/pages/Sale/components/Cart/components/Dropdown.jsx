@@ -13,7 +13,7 @@ const DropdownButton = styled.div``;
 const DropdownContent = styled.div`
   position: absolute;
   z-index: 100000;
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
+  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
   min-width: min-content;
   padding: 4px;
   background-color: #f9f9f9;
@@ -47,7 +47,7 @@ export const Dropdown = ({ menu, children }) => {
       <DropdownButton onClick={() => setIsOpen(!isOpen)}>
         {children}
       </DropdownButton>
-      <DropdownContent isOpen={isOpen}>
+      <DropdownContent $isOpen={isOpen}>
         {menu.items.map((item) => (
           <DropdownItem key={item.key} onClick={() => handleClick(item)}>
             {item.label}

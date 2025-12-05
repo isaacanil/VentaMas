@@ -595,7 +595,9 @@ export const InsuranceAuthModal = () => {
 
       {isLoading ? (
         <LoadingContainer>
-          <Spin tip="Cargando datos de autorización..." />
+          <Spin tip="Cargando datos de autorización...">
+            <div style={{ width: '100%', minHeight: 160 }} />
+          </Spin>
         </LoadingContainer>
       ) : (
         <Form

@@ -231,7 +231,9 @@ export default function ARSummaryModal() {
             padding: '64px 0',
           }}
         >
-          <Spin size="large" tip="Cargando información..." />
+          <Spin size="large" tip="Cargando información...">
+            <div style={{ width: 200, height: 140 }} />
+          </Spin>
         </div>
       ) : error ? (
         <Alert

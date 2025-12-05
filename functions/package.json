@@ -4,11 +4,14 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "rimraf lib && tsc -p tsconfig.json",
+    "prebuild": "rimraf lib",
+    "build": "tsc -p tsconfig.json",
     "clean": "rimraf lib",
     "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --only functions",
-    "shell": "npm run build && firebase functions:shell",
+    "preserve": "npm run build",
+    "serve": "firebase emulators:start --only functions",
+    "preshell": "npm run build",
+    "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"

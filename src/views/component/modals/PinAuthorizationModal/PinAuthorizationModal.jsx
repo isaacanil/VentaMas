@@ -370,20 +370,20 @@ export const PinAuthorizationModal = ({
           style={{ marginTop: 8 }}
         />
 
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 140,
-            }}
-          >
-            <Spin size="large" />
-          </div>
-        ) : (
-          <>
-            <Form form={form} layout="vertical" autoComplete="off">
+        <Form form={form} layout="vertical" autoComplete="off">
+          {loading ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 140,
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          ) : (
+            <>
               {usePassword && (
                 <Form.Item
                   name="username"
@@ -417,41 +417,41 @@ export const PinAuthorizationModal = ({
                   />
                 </Form.Item>
               ) : null}
-            </Form>
 
-            {!usePassword && (
-              <div>
-                <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                  PIN de Autorización (6 dígitos)
-                </Text>
-                <CustomPinInput
-                  value={pinValue}
-                  onChange={setPinValue}
-                  disabled={loading}
-                  maxLength={6}
-                  autoFocus={true}
-                />
-              </div>
-            )}
-
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-
-            {allowPasswordFallback && (
-              <ModeToggle>
-                <Divider plain style={{ margin: '12px 0' }}>
-                  <Text type="secondary" style={{ fontSize: '0.85em' }}>
-                    o
+              {!usePassword && (
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                    PIN de Autorización (6 dígitos)
                   </Text>
-                </Divider>
-                <Button type="link" onClick={toggleMode}>
-                  {usePassword
-                    ? '← Usar PIN de 6 dígitos'
-                    : '¿No tienes PIN? Usa tu contraseña →'}
-                </Button>
-              </ModeToggle>
-            )}
-          </>
-        )}
+                  <CustomPinInput
+                    value={pinValue}
+                    onChange={setPinValue}
+                    disabled={loading}
+                    maxLength={6}
+                    autoFocus={true}
+                  />
+                </div>
+              )}
+
+              {error && <ErrorMessage>{error}</ErrorMessage>}
+
+              {allowPasswordFallback && (
+                <ModeToggle>
+                  <Divider plain style={{ margin: '12px 0' }}>
+                    <Text type="secondary" style={{ fontSize: '0.85em' }}>
+                      o
+                    </Text>
+                  </Divider>
+                  <Button type="link" onClick={toggleMode}>
+                    {usePassword
+                      ? '← Usar PIN de 6 dígitos'
+                      : '¿No tienes PIN? Usa tu contraseña →'}
+                  </Button>
+                </ModeToggle>
+              )}
+            </>
+          )}
+        </Form>
       </div>
     </Modal>
   );

@@ -28,6 +28,7 @@ const DEV_VIEW_TERM = {
   INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
   SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
   PRICE_LIST_AUDIT: '/dev/tools/price-list-audit',
+  CASH_COUNT_AUDIT: '/dev/tools/cash-count-audit',
   CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
   CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
   APP_CONFIG: {
@@ -98,6 +99,9 @@ const SETTING_TERM = {
   SETTING: '/general-config',
   USERS: '/users',
   USERS_LIST: 'list',
+  USERS_SESSION_LOGS: 'session-logs',
+  USERS_ACTIVITY: 'activity',
+  USERS_ACTIVITY_DETAIL: 'activity/:userId',
   CREATE_USER: 'create-user/',
   UPDATE_USER: 'update-user/:id',
   APP_INFO: '/app-info',

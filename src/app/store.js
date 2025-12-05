@@ -62,6 +62,8 @@ import warehouseReducer from '../features/warehouse/warehouseSlice';
 
 import { totalsListener } from './middleware/cartTotalsListener';
 
+const isDev = import.meta.env.MODE !== 'production';
+
 export const store = configureStore({
   reducer: {
     // Core
@@ -141,8 +143,14 @@ export const store = configureStore({
     insuranceAuth: insuranceAuthReducer,
     doctors: doctorsReducer,
   },
-  middleware: (getDefault) => getDefault().prepend(totalsListener.middleware),
-  devTools: import.meta.env.MODE !== 'production',
+  middleware: (getDefault) =>
+    getDefault({
+      // Disable serializable check in dev to avoid slowdowns with large state
+      serializableCheck: false,
+      // Disable immutable check for better performance in dev
+      immutableCheck: isDev ? { warnAfter: 128 } : false,
+    }).prepend(totalsListener.middleware),
+  devTools: isDev,
 });
 
 export default store;

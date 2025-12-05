@@ -1,4 +1,5 @@
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
+import isPropValid from '@emotion/is-prop-valid';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntApp } from 'antd';
 import { StrictMode, useEffect } from 'react';
@@ -6,6 +7,7 @@ import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
+import { StyleSheetManager } from 'styled-components';
 
 import './firebase/firebaseconfig';
 import { AntConfigProvider } from './ant/AntConfigProvider';
@@ -28,6 +30,9 @@ import i18n from './i18n';
 
 const queryClient = new QueryClient();
 
+const shouldForwardProp = (prop, elementToBeStyled) =>
+  typeof elementToBeStyled === 'string' ? isPropValid(prop) : true;
+
 export const ProductionWrapper = ({ children }) => {
   useEffect(() => {
     if (import.meta.env.PROD) {
@@ -40,22 +45,24 @@ export const ProductionWrapper = ({ children }) => {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <StrictMode>
-    <Provider store={store}>
-      <AntApp>
-        <HelmetProvider>
-          <I18nextProvider i18n={i18n}>
-            <AppProviders>
-              <AntConfigProvider>
-                <QueryClientProvider client={queryClient}>
-                  <ProductionWrapper>
-                    <App />
-                  </ProductionWrapper>
-                </QueryClientProvider>
-              </AntConfigProvider>
-            </AppProviders>
-          </I18nextProvider>
-        </HelmetProvider>
-      </AntApp>
-    </Provider>
+    <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+      <Provider store={store}>
+        <AntApp>
+          <HelmetProvider>
+            <I18nextProvider i18n={i18n}>
+              <AppProviders>
+                <AntConfigProvider>
+                  <QueryClientProvider client={queryClient}>
+                    <ProductionWrapper>
+                      <App />
+                    </ProductionWrapper>
+                  </QueryClientProvider>
+                </AntConfigProvider>
+              </AppProviders>
+            </I18nextProvider>
+          </HelmetProvider>
+        </AntApp>
+      </Provider>
+    </StyleSheetManager>
   </StrictMode>,
 );

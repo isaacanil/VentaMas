@@ -31,7 +31,9 @@ export const ImageGallery = ({ images = [], loading = false }) => {
   if (loading) {
     return (
       <LoadingContainer>
-        <Spin size="large" tip="Cargando galería..." />
+        <Spin size="large" tip="Cargando galería...">
+          <div style={{ width: '100%', minHeight: 200 }} />
+        </Spin>
       </LoadingContainer>
     );
   }

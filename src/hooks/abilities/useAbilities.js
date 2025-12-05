@@ -23,7 +23,7 @@ export const useLoadUserAbilities = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user) {
+    if (user?.businessID) {
       dispatch(loadUserAbilities(user));
     }
   }, [user, dispatch]);

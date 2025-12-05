@@ -22,11 +22,8 @@ import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
 
-const databaseURL =
-  import.meta.env.VITE_FIREBASE_DATABASE_URL ||
-  (import.meta.env.VITE_FIREBASE_PROJECT_ID
-    ? `https://${import.meta.env.VITE_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`
-    : undefined);
+const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
+const hasRealtimeDatabase = Boolean(databaseURL);
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -51,7 +48,15 @@ export const db = initializeFirestore(app, {
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
-export const realtimeDB = getDatabase(app);
+const realtimeDbOptions =
+  hasRealtimeDatabase && {
+    // Auto-fallback to long polling when websockets are blocked (common in some networks/VPNs).
+    experimentalAutoDetectLongPolling: true,
+  };
+
+export const realtimeDB = hasRealtimeDatabase
+  ? getDatabase(app, databaseURL, realtimeDbOptions)
+  : null;
 export const vertexAI = getVertexAI(app);
 
 export const listFirst5UserNames = async () => {

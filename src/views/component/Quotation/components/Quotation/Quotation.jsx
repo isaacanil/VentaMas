@@ -6,8 +6,8 @@ import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
 
 const InvoiceWrapper = styled.div`
-  ${(props) =>
-    props.template === 'template2' &&
+  ${({ $template }) =>
+    $template === 'template2' &&
     `
     font-size: 12px;
     
@@ -20,8 +20,8 @@ const InvoiceWrapper = styled.div`
     }
   `}
 
-  ${(props) =>
-    props.template === 'template1' &&
+  ${({ $template }) =>
+    $template === 'template1' &&
     `
     font-size: 14px;
     
@@ -66,9 +66,7 @@ export const Quotation = React.forwardRef(
       }
     };
 
-    return (
-      <InvoiceWrapper template={template}>{renderTemplate()}</InvoiceWrapper>
-    );
+    return <InvoiceWrapper $template={template}>{renderTemplate()}</InvoiceWrapper>;
   },
 );
 

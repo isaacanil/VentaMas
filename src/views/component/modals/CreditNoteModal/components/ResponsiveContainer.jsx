@@ -16,7 +16,7 @@ export const ResponsiveContainer = ({
         placement="bottom"
         open={isOpen}
         onClose={onClose}
-        height="100%"
+        size="large"
         closable={true}
         destroyOnHidden={true}
         styles={{
@@ -25,6 +25,7 @@ export const ResponsiveContainer = ({
             borderBottom: '1px solid #f0f0f0',
             padding: '16px 24px',
           },
+          content: { height: '100%' },
         }}
       >
         <DrawerContent>{children}</DrawerContent>

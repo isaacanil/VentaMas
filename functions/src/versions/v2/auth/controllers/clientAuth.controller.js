@@ -20,6 +20,8 @@ const LOCK_DURATION_MS =
   Number(process.env.CLIENT_AUTH_LOCK_MS) || 2 * 60 * 60 * 1000; // 2 horas
 const MAX_ACTIVE_SESSIONS =
   Number(process.env.CLIENT_AUTH_MAX_ACTIVE_SESSIONS) || 10;
+const MAX_PARALLEL_ACTIVE_SESSIONS =
+  Number(process.env.CLIENT_AUTH_MAX_PARALLEL_SESSIONS) || 1;
 const SESSION_EXTENSION_MS =
   Number(process.env.CLIENT_AUTH_SESSION_EXTENSION_MS) || SESSION_DURATION_MS;
 
@@ -33,6 +35,37 @@ const MAX_SESSION_LOG_LIMIT =
 const SESSION_LOG_WHITELIST = new Set(['login', 'logout']);
 
 const normalizeName = (name) => (typeof name === 'string' ? name.trim() : '');
+
+const getNextUserNumber = async (businessID) => {
+  if (!businessID) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un ID de negocio.',
+    );
+  }
+
+  const counterRef = db.doc(`businesses/${businessID}/counters/users`);
+
+  return db.runTransaction(async (transaction) => {
+    const counterSnap = await transaction.get(counterRef);
+    const currentValue =
+      counterSnap.exists && typeof counterSnap.get('value') === 'number'
+        ? counterSnap.get('value')
+        : 0;
+    const updatedValue = currentValue + 1;
+
+    transaction.set(
+      counterRef,
+      {
+        value: updatedValue,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return updatedValue;
+  });
+};
 
 async function findUserByName(name) {
   const query = await usersCol.where('user.name', '==', name).limit(1).get();
@@ -257,7 +290,11 @@ async function terminateSession(docSnap, event = 'revoked', context = {}) {
 
 async function enforceSessionLimit(
   userDocId,
-  { allowSessions = MAX_ACTIVE_SESSIONS, skipTokenId = null } = {},
+  {
+    allowSessions = MAX_ACTIVE_SESSIONS,
+    skipTokenId = null,
+    reason = 'max-sessions-exceeded',
+  } = {},
 ) {
   if (!allowSessions || allowSessions < 1) return;
   const snapshot = await sessionsCol.where('userId', '==', userDocId).get();
@@ -312,7 +349,7 @@ async function enforceSessionLimit(
   await Promise.allSettled(
     toRevoke.map((doc) =>
       terminateSession(doc, 'auto-revoked', {
-        reason: 'max-sessions-exceeded',
+        reason,
       }),
     ),
   );
@@ -505,7 +542,10 @@ export const clientLogin = onCall(async (request) => {
     };
   });
 
-  await enforceSessionLimit(userDoc.id);
+  await enforceSessionLimit(userDoc.id, {
+    allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
+    reason: 'new-login',
+  });
   const displayName =
     user.realName || user.displayName || user.name || identifier;
   const usernameValue = user.name || identifier;
@@ -684,7 +724,7 @@ export const clientListSessions = onCall(async (request) => {
 
 export const clientRevokeSession = onCall(async (request) => {
   const { data = {} } = request || {};
-  const { sessionToken, targetToken } = data;
+  const { sessionToken, targetToken, targetUserId } = data;
 
   if (!targetToken) {
     throw new HttpsError(
@@ -696,16 +736,36 @@ export const clientRevokeSession = onCall(async (request) => {
   const actorSnap = await ensureActiveSession(sessionToken, {
     eventContext: { action: 'revoke-session', targetToken },
   });
-  const userId = actorSnap.get('userId');
+  const actorUserId = actorSnap.get('userId');
+  
   const targetSnap = await sessionsCol.doc(targetToken).get();
-
-  if (!targetSnap.exists || targetSnap.get('userId') !== userId) {
+  if (!targetSnap.exists) {
     throw new HttpsError('not-found', 'Sesión no encontrada');
   }
 
+  const sessionOwnerId = targetSnap.get('userId');
+
+  // Si el usuario intenta cerrar una sesión que no es suya
+  if (sessionOwnerId !== actorUserId) {
+    // Verificar si tiene permisos de administrador
+    // Reutilizamos la lógica de permisos de logs que permite a admins/devs/owners actuar sobre otros
+    await assertCanViewSessionLogs(actorUserId, sessionOwnerId);
+    
+    // Opcional: Verificar que el targetUserId coincida si se envió
+    if (targetUserId && targetUserId !== sessionOwnerId) {
+       throw new HttpsError('invalid-argument', 'El usuario objetivo no coincide con la sesión');
+    }
+  }
+
   const eventType = targetToken === sessionToken ? 'logout' : 'revoked';
-  await terminateSession(targetSnap, eventType, { requestedBy: sessionToken });
-  const sessions = await syncUserPresence(userId);
+  
+  // Registrar quién realizó la acción en el contexto
+  await terminateSession(targetSnap, eventType, { 
+    requestedBy: actorUserId, // Guardamos el ID del usuario que solicitó el cierre
+    adminAction: sessionOwnerId !== actorUserId // Flag para identificar cierres administrativos
+  });
+  
+  const sessions = await syncUserPresence(sessionOwnerId);
 
   return {
     ok: true,
@@ -807,26 +867,7 @@ export const clientSignUp = onCall(async ({ data }) => {
   const id = nanoid(10);
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const counterRef = db.doc(`businesses/${businessID}/counters/users`);
-  const nextSequentialNumber = await db.runTransaction(async (transaction) => {
-    const counterSnap = await transaction.get(counterRef);
-    const currentValue =
-      counterSnap.exists && typeof counterSnap.get('value') === 'number'
-        ? counterSnap.get('value')
-        : 0;
-    const updatedValue = currentValue + 1;
-
-    transaction.set(
-      counterRef,
-      {
-        value: updatedValue,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-
-    return updatedValue;
-  });
+  const nextSequentialNumber = await getNextUserNumber(businessID);
 
   const payload = {
     ...userData,
@@ -858,18 +899,47 @@ export const clientUpdateUser = onCall(async ({ data }) => {
     throw new HttpsError('invalid-argument', 'ID de usuario requerido');
   }
 
-  const name = normalizeName(payload.name);
+  const snap = await ensureUserExists(userId);
+  const currentUser = (snap.data() || {}).user || {};
+
+  const name = normalizeName(payload.name || currentUser.name);
+  if (!name) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un nombre de usuario.',
+    );
+  }
   await ensureUniqueUsername(name, userId);
 
+  const businessID = payload.businessID || currentUser.businessID || null;
+  const hasNumber = typeof currentUser.number === 'number';
+  if (!hasNumber && !businessID) {
+    throw new HttpsError(
+      'failed-precondition',
+      'No se puede asignar número de usuario sin businessID.',
+    );
+  }
+
+  const resolvedNumber = hasNumber
+    ? currentUser.number
+    : typeof payload.number === 'number'
+      ? payload.number
+      : await getNextUserNumber(businessID);
+
   const updated = {
+    ...currentUser,
     ...payload,
     name,
+    number: resolvedNumber,
     updatedAt: Timestamp.now(),
   };
 
-  await usersCol.doc(userId).update({
-    user: updated,
-  });
+  await usersCol.doc(userId).set(
+    {
+      user: updated,
+    },
+    { merge: true },
+  );
 
   return {
     ok: true,

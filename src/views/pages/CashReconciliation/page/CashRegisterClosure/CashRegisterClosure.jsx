@@ -50,10 +50,21 @@ export const CashRegisterClosure = () => {
         (cashCount.receivablePayments?.length || 0);
 
       if (hasNewPayments) {
+        const sanitizedPayments = (
+          cashCountActual.cashCount.receivablePayments || []
+        ).map((payment) => ({
+          ...payment,
+          date:
+            payment.date && typeof payment.date.toDate === 'function'
+              ? payment.date.toDate().toISOString()
+              : payment.date && typeof payment.date.toMillis === 'function'
+                ? new Date(payment.date.toMillis()).toISOString()
+                : payment.date,
+        }));
+
         dispatch(
           addPropertiesToCashCount({
-            receivablePayments:
-              cashCountActual.cashCount.receivablePayments || [],
+            receivablePayments: sanitizedPayments,
           }),
         );
       }

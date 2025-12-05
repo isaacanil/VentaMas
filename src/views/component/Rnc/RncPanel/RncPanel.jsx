@@ -216,7 +216,9 @@ export const RncPanel = ({ rncInfo, loading }) => {
     <Panel>
       {loading && (
         <LoadingOverlay>
-          <Spin tip="Consultando RNC..." />
+          <Spin tip="Consultando RNC...">
+            <div style={{ width: 140, height: 96 }} />
+          </Spin>
         </LoadingOverlay>
       )}
 

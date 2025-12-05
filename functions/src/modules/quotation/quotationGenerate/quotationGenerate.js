@@ -18,16 +18,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fontsPath = path.join(__dirname, '../../../../fonts');
 
-const fonts = {
-  Roboto: {
-    normal: readFileSync(path.join(fontsPath, 'Roboto-Regular.ttf')),
-    bold: readFileSync(path.join(fontsPath, 'Roboto-Medium.ttf')),
-    italics: readFileSync(path.join(fontsPath, 'Roboto-Italic.ttf')),
-    bolditalics: readFileSync(path.join(fontsPath, 'Roboto-MediumItalic.ttf')),
-  },
-};
+let printer = null;
 
-const printer = new PdfPrinter(fonts);
+function getPrinter() {
+  if (!printer) {
+    const fonts = {
+      Roboto: {
+        normal: readFileSync(path.join(fontsPath, 'Roboto-Regular.ttf')),
+        bold: readFileSync(path.join(fontsPath, 'Roboto-Medium.ttf')),
+        italics: readFileSync(path.join(fontsPath, 'Roboto-Italic.ttf')),
+        bolditalics: readFileSync(
+          path.join(fontsPath, 'Roboto-MediumItalic.ttf'),
+        ),
+      },
+    };
+    printer = new PdfPrinter(fonts);
+  }
+  return printer;
+}
 
 export const quotationPdf = https.onCall(async (req) => {
   const { business: biz, data: d } = req.data;
@@ -80,7 +88,7 @@ export const quotationPdf = https.onCall(async (req) => {
   };
 
   try {
-    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+    const pdfDoc = getPrinter().createPdfKitDocument(docDefinition);
     const chunks = [];
     return new Promise((res, rej) => {
       pdfDoc.on('data', (c) => chunks.push(c));

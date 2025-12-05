@@ -12,13 +12,11 @@ import styled from 'styled-components';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
 import { settingDataTaxTable } from '../../taxConfigTable';
-import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
 import TaxReceiptForm from '../TaxReceiptForm/TaxReceiptForm';
 
 export const TableTaxReceipt = ({ array, setData }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEditItem, setCurrentEditItem] = useState(null);
-  const [authModalVisible, setAuthModalVisible] = useState(false);
   const user = useSelector(selectUser);
 
   const activeReceipts = array?.filter((item) => !item.data?.disabled);
@@ -89,16 +87,6 @@ export const TableTaxReceipt = ({ array, setData }) => {
   const formatSequence = (seq, length) => {
     if (seq === undefined || length === undefined) return seq;
     return String(seq).padStart(length, '0');
-  };
-
-  const handleAuthorizationAdded = (updatedReceipt) => {
-    // Update the local state with the new authorization data
-    const newArray = array.map((item) =>
-      item.data.id === updatedReceipt.id
-        ? { ...item, data: updatedReceipt }
-        : item,
-    );
-    setData(newArray);
   };
 
   const calculateLimit = (data) => {
@@ -186,13 +174,6 @@ export const TableTaxReceipt = ({ array, setData }) => {
         editModalVisible={editModalVisible}
         setEditModalVisible={setEditModalVisible}
         currentEditItem={currentEditItem}
-      />
-      {/* Modal de autorización de comprobantes */}
-      <TaxReceiptAuthorizationModal
-        visible={authModalVisible}
-        onCancel={() => setAuthModalVisible(false)}
-        taxReceipts={array}
-        onAuthorizationAdded={handleAuthorizationAdded}
       />
     </Container>
   );

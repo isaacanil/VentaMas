@@ -84,13 +84,13 @@ const ProductExpirySelection = () => {
         </Button>,
       ]}
     >
-      <Spin spinning={loading} tip="Cargando..." size="large">
-        {loading && <div style={{ height: '400px' }}></div>}
-      </Spin>
-      {!loading && error && (
+      {loading ? (
+        <Spin tip="Cargando..." size="large">
+          <div style={{ height: '400px' }}></div>
+        </Spin>
+      ) : error ? (
         <ErrorBanner>Error al cargar inventario: {error}</ErrorBanner>
-      )}
-      {!loading && (
+      ) : (
         <StyledPageContainer>
           {Object.entries(groupedItems).map(([warehouse, warehouseItems]) => (
             <StyledCardsGroup key={warehouse}>

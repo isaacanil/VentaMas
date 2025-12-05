@@ -74,7 +74,7 @@ export const MenuApp = ({
 
   return (
     <Fragment>
-      <Backdrop isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
+      <Backdrop $isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
 
       {/* Search Panel para móviles */}
       <SearchPanel
@@ -87,9 +87,9 @@ export const MenuApp = ({
       />
 
       <Container
-        borderRadius={borderRadius}
+        $borderRadius={borderRadius}
         ref={ref}
-        isOpen={isOpenMenu ? true : false}
+        $isOpen={isOpenMenu ? true : false}
       >
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
@@ -152,8 +152,8 @@ const Backdrop = styled.div`
   z-index: 10;
   pointer-events: none;
   transition: all 1s ease;
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case true:
         return `
         z-index: 1000;
@@ -182,8 +182,8 @@ const Container = styled.div`
     padding: 0 1em;
   }
 
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case true:
         return `
         `;
@@ -196,8 +196,8 @@ const Container = styled.div`
         break;
     }
   }}
-  ${(props) => {
-    switch (props.borderRadius) {
+  ${({ $borderRadius }) => {
+    switch ($borderRadius) {
       case 'bottom-right':
         return `
          border-bottom-right-radius: var(--border-radius-light);

@@ -5,6 +5,7 @@ import ChangeLogCreate from '../../views/controlPanel/ChangeLogControl/ChangeLog
 import { BusinessControl } from '../../views/controlPanel/CreateBusinessControl/BusinessControl';
 import AiBusinessSeeding from '../../views/pages/dev/AiBusinessSeeding/AiBusinessSeeding';
 import BSeriesInvoices from '../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices';
+import CashCountAudit from '../../views/pages/DevTools/CashCountAudit/CashCountAudit';
 import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit';
 import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
 import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
@@ -28,6 +29,7 @@ const {
   INVOICE_V2_RECOVERY,
   PRICE_LIST_AUDIT,
   AI_BUSINESS_SEEDING,
+  CASH_COUNT_AUDIT,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -78,6 +80,12 @@ const routes = [
     element: <CheckProductPriceAudit />,
     devOnly: true,
     status: ROUTE_STATUS.BETA,
+  },
+  {
+    path: CASH_COUNT_AUDIT,
+    element: <CashCountAudit />,
+    devOnly: true,
+    status: ROUTE_STATUS.WIP,
   },
   {
     path: INVENTORY_MIGRATION,

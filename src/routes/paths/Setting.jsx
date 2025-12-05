@@ -10,6 +10,7 @@ import BusinessInfo from '../../views/pages/setting/subPage/BusinessEditor/Busin
 import { TaxReceiptSetting } from '../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting';
 import { UserList } from '../../views/pages/setting/subPage/Users/components/UsersList/UserList';
 import { UserAdmin } from '../../views/pages/setting/subPage/Users/UserAdmin';
+import { UserActivity } from '../../views/pages/setting/subPage/Users/UserActivity';
 import { UserSessionLogs } from '../../views/pages/setting/subPage/Users/UserSessionLogs';
 import { getRelativePath } from '../getConfigRoute';
 import ROUTES_NAME from '../routesName';
@@ -19,6 +20,7 @@ const {
   USERS,
   USERS_LIST,
   USERS_SESSION_LOGS,
+  USERS_ACTIVITY_DETAIL,
   TAX_RECEIPT,
   SETTING,
   APP_INFO,
@@ -47,6 +49,10 @@ const Routes = [
       {
         path: USERS_SESSION_LOGS,
         element: <UserSessionLogs />,
+      },
+      {
+        path: USERS_ACTIVITY_DETAIL,
+        element: <UserActivity />,
       },
     ],
   },

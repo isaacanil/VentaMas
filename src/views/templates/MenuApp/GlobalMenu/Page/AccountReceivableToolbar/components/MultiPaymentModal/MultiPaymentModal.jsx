@@ -560,7 +560,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
           </Button>
         ),
       ]}
-      destroyOnHidden
+      forceRender
     >
       <Form
         form={form}
