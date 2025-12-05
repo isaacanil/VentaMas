@@ -1,7 +1,13 @@
 import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState, useRef } from 'react';
-import { usePopper } from 'react-popper';
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  autoUpdate,
+  flip,
+  offset as floatingOffset,
+  shift,
+  useFloating,
+} from '@floating-ui/react';
 import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../hooks/useClickOutSide';
@@ -33,14 +39,23 @@ export const Selector = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
-  const referenceRef = useRef(null);
   const containerRef = useRef(null);
-  const [popperElement, setPopperElement] = useState(null);
-  const { styles, attributes } = usePopper(
-    referenceRef.current,
-    popperElement,
-    popperConfig,
+  const offsetOption = useMemo(
+    () =>
+      popperConfig?.modifiers?.find((m) => m.name === 'offset')?.options
+        ?.offset,
+    [popperConfig],
   );
+  const offsetValue = Array.isArray(offsetOption)
+    ? offsetOption[1] ?? offsetOption[0]
+    : typeof offsetOption === 'number'
+      ? offsetOption
+      : 8;
+  const { refs, floatingStyles } = useFloating({
+    placement: popperConfig?.placement ?? 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [floatingOffset(offsetValue), flip(), shift({ padding: 8 })],
+  });
 
   const filteredOptions = options.filter((option) => {
     if (!option || !option.label) return false;
@@ -85,7 +100,7 @@ export const Selector = ({
   return (
     <Container ref={containerRef}>
       <Trigger
-        ref={referenceRef}
+        ref={refs.setReference}
         onClick={() => setIsOpen(!isOpen)}
         styles={getOptionStyles(selectedOption, false)}
         $width={width}
@@ -101,11 +116,7 @@ export const Selector = ({
       </Trigger>
 
       {isOpen && (
-        <Dropdown
-          ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
-        >
+        <Dropdown ref={refs.setFloating} style={floatingStyles}>
           <SearchContainer>
             <SearchIcon icon={faSearch} />
             <SearchInput

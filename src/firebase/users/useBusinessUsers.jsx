@@ -1,4 +1,3 @@
-import { setUser } from '@sentry/react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -13,7 +12,6 @@ export function useBusinessUsers() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setUser([]);
     setError(null);
     setLoading(true);
 

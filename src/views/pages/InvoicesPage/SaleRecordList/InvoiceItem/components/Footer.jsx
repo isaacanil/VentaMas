@@ -22,7 +22,7 @@ export const Footer = ({ data }) => {
   const vw = useViewportWidth();
   const dispatch = useDispatch();
   const handleRePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
   });
   const proceedToEdit = useCallback(
     (authorization) => {

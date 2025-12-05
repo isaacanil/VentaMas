@@ -7,7 +7,7 @@ export const HandleSubmit = () => {
   const componentRef = useRef(null);
 
   const triggerPrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
   });
 
   const handleSubmit = useCallback(async () => {

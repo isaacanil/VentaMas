@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { usePopper } from 'react-popper';
+import {
+  autoUpdate,
+  flip,
+  offset as floatingOffset,
+  shift,
+  useFloating,
+} from '@floating-ui/react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../constants/icons/icons';
@@ -27,10 +33,10 @@ export const Select = ({
   const [isOpen, setIsOpen] = useState(false);
   const SelectRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [referenceElement, setReferenceElement] = useState(null);
-  const [popperElement, setPopperElement] = useState(null);
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [{ name: 'arrow' }],
+  const { refs, floatingStyles } = useFloating({
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
 
   const handleSelect = (select) => {
@@ -78,7 +84,7 @@ export const Select = ({
           <Asterisk style={{ color: 'red' }}>{icons.forms.asterisk}</Asterisk>
         )}
       </OtherContainer>
-      <Head ref={setReferenceElement}>
+      <Head ref={refs.setReference}>
         {isLoading === true ? (
           <Group>
             <h3>{'cargando ...'}</h3>
@@ -94,11 +100,7 @@ export const Select = ({
         )}
       </Head>
       {isOpen ? (
-        <Body
-          ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
-        >
+        <Body ref={refs.setFloating} style={floatingStyles}>
           {data?.length > 0 ? (
             <List>
               <SearchSection>

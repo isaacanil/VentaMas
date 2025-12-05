@@ -33,7 +33,7 @@ export const PaymentForm = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const componentToPrintRef = useRef();
+  const componentToPrintRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [receipt, setReceipt] = useState(null);
@@ -47,7 +47,7 @@ export const PaymentForm = () => {
   const selectedCreditNotes = paymentDetails.creditNotePayment || [];
 
   const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
     onAfterPrint: () => {
       notification.success({
         message: 'Pago Procesada',

@@ -1,7 +1,6 @@
 import { Spin } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useEffect, Suspense } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -44,27 +43,22 @@ export const Welcome = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Ventamax - Sistema de Punto de Venta</title>
-        <meta
-          name="description"
-          content="Ventamax es un sistema completo de punto de venta diseñado para llevar tu negocio al siguiente nivel con herramientas avanzadas y fácil de usar."
-        />
-        <meta
-          name="keywords"
-          content="punto de venta, facturación, inventario, ventas, negocio"
-        />
-        <meta
-          property="og:title"
-          content="Ventamax - Sistema de Punto de Venta"
-        />
-        <meta
-          property="og:description"
-          content="Sistema completo de punto de venta para tu negocio"
-        />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={window.location.href} />
-      </Helmet>
+      <title>Ventamax - Sistema de Punto de Venta</title>
+      <meta
+        name="description"
+        content="Ventamax es un sistema completo de punto de venta diseñado para llevar tu negocio al siguiente nivel con herramientas avanzadas y fácil de usar."
+      />
+      <meta
+        name="keywords"
+        content="punto de venta, facturación, inventario, ventas, negocio"
+      />
+      <meta property="og:title" content="Ventamax - Sistema de Punto de Venta" />
+      <meta
+        property="og:description"
+        content="Sistema completo de punto de venta para tu negocio"
+      />
+      <meta property="og:type" content="website" />
+      <link rel="canonical" href={window.location.href} />
       {/* <ChangerPasswordModal /> */}
       <AnimatePresence mode="wait">
         {' '}

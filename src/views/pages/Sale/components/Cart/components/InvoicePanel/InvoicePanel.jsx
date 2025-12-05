@@ -82,7 +82,7 @@ export const InvoicePanel = () => {
   const billing = cartSettings?.billing ?? {};
   const { duePeriod, hasDueDate } = billing;
 
-  const componentToPrintRef = useRef();
+  const componentToPrintRef = useRef(null);
   const user = useSelector(selectUser);
   const client = useSelector(selectClient);
   const ncfType = useSelector(selectNcfType);
@@ -166,7 +166,7 @@ export const InvoicePanel = () => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
     onAfterPrint: () => handleAfterPrint(),
   });
 

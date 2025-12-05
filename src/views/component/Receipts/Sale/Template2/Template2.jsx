@@ -143,10 +143,10 @@ const dataSource = [
 ];
 
 function Template2() {
-  const componentRef = useRef();
+  const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
   });
 
   return (

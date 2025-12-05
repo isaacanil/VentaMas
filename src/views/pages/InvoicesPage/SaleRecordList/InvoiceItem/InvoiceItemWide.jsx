@@ -58,7 +58,7 @@ export const InvoiceItemWide = ({ data }) => {
   };
 
   const handleRePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
   });
 
   const proceedToEdit = useCallback(

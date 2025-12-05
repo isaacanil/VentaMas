@@ -49,10 +49,36 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (id.includes('@ant-design/fast-color')) return 'ant-fast-color';
-          if (id.includes('@fortawesome')) return 'fortawesome-bundle';
+          // Librerías enormes que deben ir solas
+          if (id.includes('firebase')) return 'firebase-core';
+
+          // UI Libraries (Ant Design es gigante, lo aislamos)
+          if (id.includes('antd') || id.includes('@ant-design') || id.includes('rc-')) return 'ui-antd';
+
+          // Librerías de generación de PDFs y Excels
+          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('pdfmake')) return 'pdf-worker';
+          if (id.includes('exceljs')) return 'excel-worker';
+          
+          // Librerías de códigos de barras y QR
+          if (id.includes('bwip-js') || id.includes('react-qr-code') || id.includes('react-barcode')) return 'barcode-worker'
+          
+          // Utilidades pesadas
+          if (id.includes('lodash') || id.includes('dayjs') || id.includes('moment')) {
+            return 'utils-vendor';
+          }
+          // React Core (Lo esencial para arrancar)
+          if (id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('react-router-dom')) {
+            return 'react-core';
+          }
+
+          // Gráficas
+          if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'charts';
+
+          // El resto de node_modules
           if (id.includes('node_modules')) {
-            return id.split('node_modules/')[1].split('/')[0];
+            return 'vendor'; // O puedes dejar tu lógica anterior aquí si prefieres
           }
         },
       },

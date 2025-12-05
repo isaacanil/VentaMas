@@ -61,7 +61,7 @@ export default function InvoiceTemplates({
     billing: { invoiceType },
   } = useSelector(SelectSettingCart);
   const [selectedTemplate, setSelectedTemplate] = useState('template1');
-  const componentRef = useRef();
+  const componentRef = useRef(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function InvoiceTemplates({
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
   });
 
   const handlePreview = () => {

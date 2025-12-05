@@ -95,7 +95,7 @@ export const PreorderActionsCell = ({ value }) => {
   }, [cartSettings?.billing?.invoiceType, printablePreorder]);
 
   const triggerPrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
   });
 
   const convertTimestampsToMillis = useCallback((obj) => {

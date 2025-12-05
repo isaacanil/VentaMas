@@ -103,7 +103,7 @@ export const BarcodePrintModal = ({
   const [qty, setQty] = useState(1);
   const [labelProfile, setLabelProfile] = useState('standard');
   const [isNameVisible, setIsNameVisible] = useState(true);
-  const printRef = useRef();
+  const printRef = useRef(null);
   const [xPx, setXPx] = useState(2);
 
   const config = useMemo(() => {
@@ -160,7 +160,7 @@ export const BarcodePrintModal = ({
   };
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Etiqueta-${barcodeValue || 'Sin-Codigo'}`,
     onAfterPrint: () => {
       setQty(1);

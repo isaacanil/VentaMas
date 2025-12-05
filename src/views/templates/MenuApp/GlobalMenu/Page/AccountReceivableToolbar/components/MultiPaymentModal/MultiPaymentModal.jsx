@@ -29,7 +29,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   const [selectedAccounts, setSelectedAccounts] = useState([]);
   const [form] = Form.useForm();
   const user = useSelector(selectUser);
-  const componentToPrintRef = useRef();
+  const componentToPrintRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [receipt, setReceipt] = useState(null);
@@ -316,7 +316,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
     onAfterPrint: () => {
       notification.success({
         message: 'Pago Procesado',

@@ -1,4 +1,4 @@
-import { PureAbility } from '@casl/ability';
+import { useAbility } from '@casl/react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -9,6 +9,7 @@ import {
   loadUserAbilities,
 } from '../../features/abilities/abilitiesSlice';
 import { selectUser } from '../../features/auth/userSlice';
+import { AbilityContext } from '../../Context/AbilityContext/context';
 
 export const useAbilities = () => {
   const abilities = useSelector(selectAbilities);
@@ -30,10 +31,8 @@ export const useLoadUserAbilities = () => {
 };
 
 export function userAccess() {
-  const rules = useSelector(selectAbilities);
+  const abilities = useAbility(AbilityContext);
   const loading = useSelector(selectAbilitiesLoading);
 
-  // Crear abilities con las reglas disponibles
-  const abilities = new PureAbility(rules || []);
   return { abilities, loading };
 }

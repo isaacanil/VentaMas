@@ -1,7 +1,13 @@
 // DropdownMenu.js
 import { Button as AntButton } from 'antd';
 import React, { useRef, useState } from 'react';
-import { usePopper } from 'react-popper';
+import {
+  autoUpdate,
+  flip,
+  offset as floatingOffset,
+  shift,
+  useFloating,
+} from '@floating-ui/react';
 import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
@@ -18,12 +24,10 @@ export const DropdownMenu = ({
   const DropDownMenuRef = useRef(null);
 
   // Popper
-  const [referenceElement, setReferenceElement] = useState(null);
-  const [popperElement, setPopperElement] = useState(null);
-
-  // estilos de popper
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [{ name: 'arrow' }],
+  const { refs, floatingStyles } = useFloating({
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
 
   const toggleMenu = () => {
@@ -41,20 +45,16 @@ export const DropdownMenu = ({
       {customButton ? (
         React.cloneElement(customButton, {
           onClick: toggleMenu,
-          ref: setReferenceElement,
+          ref: refs.setReference,
         })
       ) : (
-        <AntButton ref={setReferenceElement} onClick={toggleMenu} {...props}>
+        <AntButton ref={refs.setReference} onClick={toggleMenu} {...props}>
           {title}
         </AntButton>
       )}
 
       {isOpen && (
-        <Container
-          ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
-        >
+        <Container ref={refs.setFloating} style={floatingStyles}>
           {options.map((option, index) => (
             <Option key={index} option={option} closeMenu={closeMenu} />
           ))}

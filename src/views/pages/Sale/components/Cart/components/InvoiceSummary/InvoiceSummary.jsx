@@ -83,7 +83,7 @@ const InvoiceSummary = () => {
   const subTotal = cartData?.totalPurchaseWithoutTaxes?.value;
   const itbis = cartData.totalTaxes.value;
   const discountPercent = cartData.discount.value;
-  const quotationPrintRef = useRef();
+  const quotationPrintRef = useRef(null);
   const [quotationData, _setQuotationData] = useState();
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const [isSavingPreorder, setIsSavingPreorder] = useState(false);
@@ -342,7 +342,7 @@ const InvoiceSummary = () => {
   ]);
 
   const _handlePrint = useReactToPrint({
-    content: () => quotationPrintRef.current,
+    contentRef: quotationPrintRef,
     onAfterPrint: () => {
       Modal.confirm({
         title: '¿Limpiar cotización?',

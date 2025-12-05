@@ -80,7 +80,7 @@ const ActionsMenu = ({ value }) => {
   }, [handleEdit, isEditDisabled]);
 
   const handleRePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
   });
 
   const handleInvoicePrinting = async () => {

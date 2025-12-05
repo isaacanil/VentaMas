@@ -1,20 +1,16 @@
-import { PureAbility } from '@casl/ability';
+import { useAbility } from '@casl/react';
 import { useSelector } from 'react-redux';
 
-import {
-  selectAbilities,
-  selectAbilitiesLoading,
-} from '../../features/abilities/abilitiesSlice';
+import { selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
+import { AbilityContext } from '../../Context/AbilityContext/context';
 
 /**
  * Hook mejorado para usar permisos de usuario
  * Proporciona métodos más específicos y manejo de estados de carga
  */
 export const usePermissions = () => {
-  const rules = useSelector(selectAbilities);
+  const abilities = useAbility(AbilityContext);
   const loading = useSelector(selectAbilitiesLoading);
-
-  const abilities = new PureAbility(rules || []);
 
   return {
     abilities,
