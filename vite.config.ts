@@ -2,46 +2,40 @@ import pluginReact from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type PluginOption, type UserConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
-// import tailwindcss from '@tailwindcss/vite'
 
 const plugins: PluginOption[] = [
   pluginReact(),
-  // tailwindcss(),
 ];
 
+// Configuración del analizador si lo necesitas
 if (process.env.ANALYZE === 'true') {
-  plugins.splice(
-    1,
-    0,
+  plugins.push(
     analyzer({
       analyzerMode: 'server',
       openAnalyzer: true,
       reportTitle: 'Vite Bundle Report',
       defaultSizes: 'gzip',
       analyzerPort: 8888,
-    }),
+    })
   );
 }
 
 export default defineConfig({
   optimizeDeps: {
-    include: ['classnames', 'react-is'],
+    include: ['classnames', 'react-is', 'scheduler'], // Agregamos scheduler aquí también por seguridad
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@components': fileURLToPath(
-        new URL('./src/components', import.meta.url),
-      ),
+      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
       '@constants': fileURLToPath(new URL('./src/constants', import.meta.url)),
       '@features': fileURLToPath(new URL('./src/features', import.meta.url)),
       '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
-      '@templates': fileURLToPath(
-        new URL('./src/views/templates', import.meta.url),
-      ),
+      '@templates': fileURLToPath(new URL('./src/views/templates', import.meta.url)),
       views: fileURLToPath(new URL('./src/views', import.meta.url)),
     },
-    dedupe: ['react', 'react-dom', 'styled-components'],
+    // Esto es CRUCIAL para evitar el error de createContext
+       dedupe: ['react', 'react-dom', 'scheduler', 'object-assign', 'styled-components'],
   },
   build: {
     sourcemap: false,
@@ -49,37 +43,19 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          // Librerías enormes que deben ir solas
-          if (id.includes('firebase')) return 'firebase-core';
+         // Asegurar que los helpers comunes se carguen antes
+          if (id.includes('commonjsHelpers')) return 'commonjsHelpers';
 
-          // UI Libraries (Ant Design es gigante, lo aislamos)
+          // Tus categorías de librerías
+          if (id.includes('firebase') || id.includes('@firebase')) return 'firebase-core';
           if (id.includes('antd') || id.includes('@ant-design') || id.includes('rc-')) return 'ui-antd';
+          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('pdfmake') || id.includes('exceljs')) return 'office-worker';
+          if (id.includes('bwip-js') || id.includes('react-qr-code') || id.includes('react-barcode')) return 'barcode-worker';
+          if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('lightweight-charts')) return 'charts';
+          if (id.includes('lodash') || id.includes('dayjs') || id.includes('moment')) return 'utils-vendor';
 
-          // Librerías de generación de PDFs y Excels
-          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('pdfmake')) return 'pdf-worker';
-          if (id.includes('exceljs')) return 'excel-worker';
-          
-          // Librerías de códigos de barras y QR
-          if (id.includes('bwip-js') || id.includes('react-qr-code') || id.includes('react-barcode')) return 'barcode-worker'
-          
-          // Utilidades pesadas
-          if (id.includes('lodash') || id.includes('dayjs') || id.includes('moment')) {
-            return 'utils-vendor';
-          }
-          // React Core (Lo esencial para arrancar)
-          if (id.includes('node_modules/react') ||
-            id.includes('node_modules/react-dom') ||
-            id.includes('react-router-dom')) {
-            return 'react-core';
-          }
-
-          // Gráficas
-          if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'charts';
-
-          // El resto de node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor'; // O puedes dejar tu lógica anterior aquí si prefieres
-          }
+          // El resto de los paquetes de node_modules se agrupan en vendor
+          if (id.includes('node_modules')) return 'vendor';
         },
       },
     },
