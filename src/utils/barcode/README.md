@@ -23,6 +23,7 @@ src/utils/barcode/
 ## 🚀 Uso
 
 ### Importación Modular (Recomendado)
+
 ```javascript
 // Importar solo las funciones que necesites (tree-shaking)
 import { analyzeBarcodeStructure, getBarcodeInfo } from '@/utils/barcode';
@@ -32,6 +33,7 @@ import { calculateGTIN13CheckDigit } from '@/utils/barcode/lib/digits';
 ```
 
 ### Importación Completa (Compatibilidad)
+
 ```javascript
 // Importar todo el módulo
 import * as barcode from '@/utils/barcode';
@@ -41,8 +43,14 @@ import barcode from '@/utils/barcode';
 ```
 
 ### Funciones de Conveniencia
+
 ```javascript
-import { analyze, getInfo, validateBarcode, getSuggestions } from '@/utils/barcode';
+import {
+  analyze,
+  getInfo,
+  validateBarcode,
+  getSuggestions,
+} from '@/utils/barcode';
 
 const result = analyze('7461234567890');
 const info = getInfo('7461234567890');
@@ -53,22 +61,26 @@ const suggestions = getSuggestions('746123456789');
 ## 📚 API Principal
 
 ### Análisis y Validación
+
 - `analyzeBarcodeStructure(barcode)` - Análisis completo
 - `isValidBarcode(barcode)` - Validación simple
 - `getBarcodeInfo(barcode)` - Información resumida
 
 ### Cálculo de Dígitos
+
 - `calculateGTIN13CheckDigit(code12)`
 - `calculateEAN8CheckDigit(code7)`
 - `calculateUPCACheckDigit(code11)`
 - `calculateGTIN14CheckDigit(code13)`
 
 ### Correcciones
+
 - `generateCorrectionSuggestions(barcode)`
 - `hasCorrectionSuggestions(barcode)`
 - `getBestCorrectionSuggestion(barcode)`
 
 ### Utilidades Específicas
+
 - `isGS1RDCode(barcode)` - Detecta códigos RD
 - `extractCompanyPrefix(barcode)` - Extrae prefijo empresa
 - `expandUPCEToUPCA(upce)` - Convierte UPC-E a UPC-A
@@ -77,7 +89,10 @@ const suggestions = getSuggestions('746123456789');
 ## 🧪 Pruebas
 
 ```javascript
-import { runBarcodeTests, testSpecificCode } from '@/utils/barcode/barcodeTests';
+import {
+  runBarcodeTests,
+  testSpecificCode,
+} from '@/utils/barcode/barcodeTests';
 
 // Ejecutar todas las pruebas
 runBarcodeTests();

@@ -23,7 +23,7 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
       message.success(
         hasCurrentPin
           ? 'Solicitud enviada. Un administrador regenerará el PIN pronto.'
-          : 'Solicitud enviada. Un administrador configurará el PIN pronto.'
+          : 'Solicitud enviada. Un administrador configurará el PIN pronto.',
       );
 
       form.resetFields();
@@ -43,7 +43,8 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
       confirmLoading={submitting}
       title={
         <span>
-          <KeyOutlined /> {hasCurrentPin ? 'Solicitar Regeneración de PIN' : 'Solicitar PIN'}
+          <KeyOutlined />{' '}
+          {hasCurrentPin ? 'Solicitar Regeneración de PIN' : 'Solicitar PIN'}
         </span>
       }
       okText="Enviar Solicitud"
@@ -77,7 +78,8 @@ export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
       </Form>
 
       <p style={{ fontSize: '0.9em', color: '#8c8c8c', marginTop: 16 }}>
-        Un administrador recibirá tu solicitud y configurará el PIN. Te notificaremos cuando esté listo.
+        Un administrador recibirá tu solicitud y configurará el PIN. Te
+        notificaremos cuando esté listo.
       </p>
     </Modal>
   );

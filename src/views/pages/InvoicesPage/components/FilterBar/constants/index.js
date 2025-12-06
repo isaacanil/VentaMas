@@ -14,6 +14,13 @@ export const PAYMENT_METHODS = [
   { value: 'transfer', label: 'Transferencia' },
 ];
 
+export const PAYMENT_STATUS = [
+  { value: '', label: 'Todos' },
+  { value: 'paid', label: 'Pagadas' },
+  { value: 'partial', label: 'Pago parcial' },
+  { value: 'unpaid', label: 'Sin pago' },
+];
+
 export const BREAKPOINTS = {
   mobile: 900,
   tablet: 768,
@@ -21,38 +28,50 @@ export const BREAKPOINTS = {
 };
 
 export const FILTER_CONFIG = {
-  date: { 
-    label: 'Fechas', 
+  date: {
+    label: 'Fechas',
     width: 'auto',
     type: 'dateRange',
-    required: false 
+    required: false,
   },
-  client: { 
-    label: 'Cliente', 
-    width: 180, 
+  client: {
+    label: 'Cliente',
+    width: 180,
     searchable: true,
     type: 'select',
-    required: false 
+    required: false,
   },
-  paymentMethod: { 
-    label: 'Método', 
-    width: 150, 
+  paymentMethod: {
+    label: 'Método',
+    width: 150,
     options: PAYMENT_METHODS,
     type: 'select',
-    required: false 
+    required: false,
   },
-  amount: { 
-    label: 'Monto', 
+  paymentStatus: {
+    label: 'Estado de pago',
+    width: 165,
+    options: PAYMENT_STATUS,
+    type: 'select',
+    required: false,
+  },
+  amount: {
+    label: 'Monto',
     type: 'range',
     inputWidth: 90,
-    required: false 
+    required: false,
   },
-  sort: { 
-    label: 'Ordenar', 
+  receivable: {
+    label: 'Cuenta por cobrar',
+    type: 'toggle',
+    required: false,
+  },
+  sort: {
+    label: 'Ordenar',
     options: SORT_OPTIONS,
     type: 'sort',
     width: 130,
-    required: false 
+    required: false,
   },
 };
 
@@ -60,8 +79,10 @@ export const ACCESSIBILITY_CONFIG = {
   ariaLabels: {
     clientSelect: 'Seleccionar cliente',
     paymentMethodSelect: 'Seleccionar método de pago',
+    paymentStatusSelect: 'Seleccionar estado de pago',
     minAmount: 'Monto mínimo',
     maxAmount: 'Monto máximo',
+    receivablesOnly: 'Filtrar solo facturas a crédito',
     sortCriteria: 'Criterio de ordenamiento',
     sortDirection: 'Cambiar dirección de ordenamiento',
     filterButton: 'Abrir filtros',
@@ -71,4 +92,4 @@ export const ACCESSIBILITY_CONFIG = {
     filterBar: 'toolbar',
     filtersForm: 'form',
   },
-}; 
+};

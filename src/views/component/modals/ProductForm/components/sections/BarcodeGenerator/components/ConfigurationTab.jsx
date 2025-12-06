@@ -11,53 +11,53 @@ const Label = styled.label`
 `;
 
 const ErrorMessage = styled.div`
-  color: #ff4d4f;
-  font-size: 12px;
   margin-top: 4px;
+  font-size: 12px;
+  color: #ff4d4f;
 `;
 
 export const ConfigurationTab = ({
   selectedConfig,
   handleCompanyPrefixChange,
-  companyPrefixConfigValid
+  companyPrefixConfigValid,
 }) => {
   const getValidationStatus = () => {
     const value = selectedConfig?.companyPrefix || '';
-    
+
     if (!value) return { status: '', message: '' };
-    
+
     // Solo números
     if (!/^\d+$/.test(value)) {
-      return { 
-        status: 'error', 
-        message: 'Solo se permiten números' 
+      return {
+        status: 'error',
+        message: 'Solo se permiten números',
       };
     }
-    
+
     // Longitud mínima
     if (value.length < 4) {
-      return { 
-        status: 'error', 
-        message: `Mínimo 4 dígitos (tienes ${value.length})` 
+      return {
+        status: 'error',
+        message: `Mínimo 4 dígitos (tienes ${value.length})`,
       };
     }
-    
+
     // Longitud máxima
     if (value.length > 7) {
-      return { 
-        status: 'error', 
-        message: `Máximo 7 dígitos (tienes ${value.length})` 
+      return {
+        status: 'error',
+        message: `Máximo 7 dígitos (tienes ${value.length})`,
       };
     }
-    
+
     // Válido - también verificar con la validación del padre
     if (companyPrefixConfigValid) {
-      return { 
-        status: 'success', 
-        message: `✓ Configuración válida (${value.length} dígitos)` 
+      return {
+        status: 'success',
+        message: `✓ Configuración válida (${value.length} dígitos)`,
       };
     }
-    
+
     return { status: '', message: '' };
   };
 
@@ -68,7 +68,10 @@ export const ConfigurationTab = ({
       <div style={{ marginBottom: '20px' }}>
         <Label>
           Prefijo de Empresa
-          <Tooltip title="Número de identificación de tu empresa (4-7 dígitos)" style={{ marginLeft: '4px' }} />
+          <Tooltip
+            title="Número de identificación de tu empresa (4-7 dígitos)"
+            style={{ marginLeft: '4px' }}
+          />
         </Label>
         <Input
           placeholder="Ej: 4887"
@@ -76,16 +79,18 @@ export const ConfigurationTab = ({
           onChange={handleCompanyPrefixChange}
           maxLength={7}
           status={validation.status === 'error' ? 'error' : undefined}
-          style={{ 
+          style={{
             fontFamily: 'monospace',
             fontSize: '16px',
-            padding: '8px 12px'
+            padding: '8px 12px',
           }}
         />
         {validation.message && (
-          <ErrorMessage style={{ 
-            color: validation.status === 'error' ? '#ff4d4f' : '#52c41a' 
-          }}>
+          <ErrorMessage
+            style={{
+              color: `${validation.status === 'error' ? '#ff4d4f' : '#52c41a'}`,
+            }}
+          >
             {validation.message}
           </ErrorMessage>
         )}

@@ -9,7 +9,6 @@ import DateUtils from '../../../../../utils/date/dateUtils';
 import { formatPrice } from '../../../../../utils/formatPrice';
 import { normalizeText } from '../../../../../utils/text';
 
-
 /*
   Selector de Facturas
   --------------------
@@ -17,11 +16,12 @@ import { normalizeText } from '../../../../../utils/text';
 */
 
 const Wrapper = styled.div`
-  height: 100%;
   display: grid;
+
   /* Header | List | Footer */
   grid-template-rows: min-content 1fr min-content;
   gap: 8px;
+  height: 100%;
   overflow: hidden;
 `;
 
@@ -41,38 +41,39 @@ const InvoicesContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
+  align-content: start;
   padding: 0 1em 1.5em;
   overflow-y: auto;
-  align-content: start;
 `;
 
 const InvoiceCard = styled.div`
-  background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
-  border: 1px solid ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   padding: 12px 14px;
-  border-radius: 8px;
   cursor: pointer;
+  background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
+  border: 1px solid
+    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
+  border-radius: 8px;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1890ff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
   }
 
   .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 8px;
   }
 
   .number {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     font-size: 15px;
     font-weight: 600;
     color: #262626;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .date {
@@ -104,41 +105,41 @@ const InvoiceCard = styled.div`
 `;
 
 const InvoiceInfo = styled.div`
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  background: #fff;
-  transition: border-color 0.2s;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 10px 12px;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
   opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
+  transition: border-color 0.2s;
 
   &:hover {
     border-color: ${({ $disabled }) => ($disabled ? '#d9d9d9' : '#1890ff')};
   }
 
   &.empty {
-    justify-content: center;
     align-items: center;
-    color: #8c8c8c;
+    justify-content: center;
     min-height: 64px;
+    color: #8c8c8c;
   }
 
   .invoice-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
 
   .invoice-number {
+    display: flex;
+    gap: 6px;
+    align-items: center;
     font-size: 15px;
     font-weight: 600;
     color: #262626;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
   .invoice-details {
@@ -207,20 +208,26 @@ const InvoiceSelector = ({
     ? invoices.filter((inv) =>
         [inv.numberID?.toString(), inv.ncf, inv.NCF]
           .filter(Boolean)
-          .some((field) => normalizeText(field).includes(normalizeText(search)))
+          .some((field) =>
+            normalizeText(field).includes(normalizeText(search)),
+          ),
       )
     : invoices;
 
-  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedInvoices = filteredInvoices.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   const openDrawer = () => {
     if (!disabled) setVisible(true);
   };
 
   const handleDateRangeChange = (range) => {
-    const finalRange = (!range || !range[0])
-      ? [dayjs().startOf('month'), dayjs().endOf('month')]
-      : range;
+    const finalRange =
+      !range || !range[0]
+        ? [dayjs().startOf('month'), dayjs().endOf('month')]
+        : range;
     onDateRangeChange?.(finalRange);
   };
 
@@ -240,7 +247,11 @@ const InvoiceSelector = ({
   return (
     <SelectorContainer>
       <Label>{label}</Label>
-      <InvoiceInfo onClick={openDrawer} className={!selectedInvoice ? 'empty' : ''} $disabled={disabled}>
+      <InvoiceInfo
+        onClick={openDrawer}
+        className={!selectedInvoice ? 'empty' : ''}
+        $disabled={disabled}
+      >
         {!selectedInvoice ? (
           <>
             <FileTextOutlined style={{ marginRight: 8 }} /> Seleccionar Factura
@@ -251,16 +262,29 @@ const InvoiceSelector = ({
               <span className="invoice-number">
                 <FileTextOutlined /> #{selectedInvoice.numberID}
               </span>
-              {!disabled && <CloseOutlined style={{ color: '#8c8c8c' }} onClick={clearSelection} />}
+              {!disabled && (
+                <CloseOutlined
+                  style={{ color: '#8c8c8c' }}
+                  onClick={clearSelection}
+                />
+              )}
             </div>
 
             <div className="invoice-details">
               <span className="detail-label">Fecha:</span>
-              <span>{selectedInvoice.date ? DateUtils.formatLuxonDate(selectedInvoice.date) : 'N/A'}</span>
+              <span>
+                {selectedInvoice.date
+                  ? DateUtils.formatLuxonDate(selectedInvoice.date)
+                  : 'N/A'}
+              </span>
               <span className="detail-label">NCF:</span>
-              <span className="ncf-value">{selectedInvoice.ncf || selectedInvoice.NCF || 'N/A'}</span>
+              <span className="ncf-value">
+                {selectedInvoice.ncf || selectedInvoice.NCF || 'N/A'}
+              </span>
               <span className="detail-label">Total:</span>
-              <span>{formatPrice(selectedInvoice.totalPurchase?.value || 0)}</span>
+              <span>
+                {formatPrice(selectedInvoice.totalPurchase?.value || 0)}
+              </span>
             </div>
           </>
         )}
@@ -308,25 +332,44 @@ const InvoiceSelector = ({
                   <span className="number">
                     <FileTextOutlined /> #{inv.numberID}
                   </span>
-                  <span className="date">{inv.date ? DateUtils.formatLuxonDate(inv.date) : 'Sin fecha'}</span>
+                  <span className="date">
+                    {inv.date
+                      ? DateUtils.formatLuxonDate(inv.date)
+                      : 'Sin fecha'}
+                  </span>
                 </div>
 
                 <div className="details">
                   <div>
-                    <span className="detail-label">NCF:</span> <span className="ncf">{inv.ncf || inv.NCF || 'N/A'}</span>
+                    <span className="detail-label">NCF:</span>{' '}
+                    <span className="ncf">{inv.ncf || inv.NCF || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="detail-label">Total:</span> <span className="total">{formatPrice(inv.totalPurchase?.value || 0)}</span>
+                    <span className="detail-label">Total:</span>{' '}
+                    <span className="total">
+                      {formatPrice(inv.totalPurchase?.value || 0)}
+                    </span>
                   </div>
                 </div>
 
-                <Tag color="blue" style={{ marginTop: 8 }}>{inv.products?.length || 0} productos</Tag>
+                <Tag color="blue" style={{ marginTop: 8 }}>
+                  {inv.products?.length || 0} productos
+                </Tag>
               </InvoiceCard>
             ))}
 
             {filteredInvoices.length === 0 && !loading && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#8c8c8c', padding: '1rem' }}>
-                {search ? 'No se encontraron facturas' : 'No hay facturas disponibles'}
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  color: '#8c8c8c',
+                  padding: '1rem',
+                }}
+              >
+                {search
+                  ? 'No se encontraron facturas'
+                  : 'No hay facturas disponibles'}
               </div>
             )}
 
@@ -352,4 +395,4 @@ const InvoiceSelector = ({
   );
 };
 
-export default InvoiceSelector; 
+export default InvoiceSelector;

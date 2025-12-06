@@ -1,12 +1,15 @@
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
 const toPlainObject = (value) => {
   try {
     return JSON.parse(JSON.stringify(value ?? null));
   } catch (error) {
-    console.error("No se pudo serializar el objeto para auditoría de NCF:", error);
+    console.error(
+      'No se pudo serializar el objeto para auditoría de NCF:',
+      error,
+    );
     return null;
   }
 };
@@ -27,7 +30,12 @@ export const logSequenceWarning = async ({
 }) => {
   if (!businessId || !userId) return null;
 
-  const collectionRef = collection(db, "businesses", businessId, "ncfLedgerAudit");
+  const collectionRef = collection(
+    db,
+    'businesses',
+    businessId,
+    'ncfLedgerAudit',
+  );
 
   const snapshot = toPlainObject({
     validation,

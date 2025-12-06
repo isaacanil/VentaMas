@@ -1,8 +1,16 @@
-import { useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
-import { SelectProduct, SelectSettingCart } from "../../../../../../features/cart/cartSlice";
-import { isStockExceeded, isStockRestricted, isStockZero, resolveStock } from "../utils/stock.utils";
+import {
+  SelectProduct,
+  SelectSettingCart,
+} from '../../../../../../features/cart/cartSlice';
+import {
+  isStockExceeded,
+  isStockRestricted,
+  isStockZero,
+  resolveStock,
+} from '../utils/stock.utils';
 
 /**
  * Hook personalizado para verificar si un producto está en el carrito
@@ -10,78 +18,80 @@ import { isStockExceeded, isStockRestricted, isStockZero, resolveStock } from ".
  * @returns {{status: boolean, product: object | null}} - Estado y datos del producto seleccionado
  */
 export const useProductInCart = (productId) => {
-    const productsSelected = useSelector(SelectProduct);
+  const productsSelected = useSelector(SelectProduct);
 
-    const selectedProduct = useMemo(() => {
-        if (!Array.isArray(productsSelected)) {
-            console.error('Expected an array from SelectProduct selector');
-            return null;
-        }
+  const selectedProduct = (() => {
+    if (!Array.isArray(productsSelected)) {
+      console.error('Expected an array from SelectProduct selector');
+      return null;
+    }
 
-        if (typeof productId !== 'string' && typeof productId !== 'number') {
-            console.error('Expected a string or number as the product ID');
-            return null;
-        }
+    if (typeof productId !== 'string' && typeof productId !== 'number') {
+      console.error('Expected a string or number as the product ID');
+      return null;
+    }
 
-        return productsSelected.find(item => item.id === productId) || null;
-    }, [productsSelected, productId]);
+    return productsSelected.find((item) => item.id === productId) || null;
+  })();
 
-    useEffect(() => {
-        if (selectedProduct) { 
-        //producto encontrado
-        } else {
-            // Producto no encontrado en el carrito
-        }
-    }, [selectedProduct]);
+  useEffect(() => {
+    if (selectedProduct) {
+      //producto encontrado
+    } else {
+      // Producto no encontrado en el carrito
+    }
+  }, [selectedProduct]);
 
-    return {
-        status: !!selectedProduct,
-        product: selectedProduct
-    };
+  return {
+    status: !!selectedProduct,
+    product: selectedProduct,
+  };
 };
 
 export const useProductStockStatus = (productInCart, originalProduct) => {
-    // Read dynamic stock alert settings
-    const settingsCart = useSelector(SelectSettingCart);
-    const billing = settingsCart?.billing || {};
-    const lowThreshold = useMemo(() => (
-        Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20
-    ), [billing?.stockLowThreshold]);
-    const criticalThreshold = useMemo(() => (
-        Number.isFinite(billing?.stockCriticalThreshold)
-            ? billing.stockCriticalThreshold
-            : Math.min(lowThreshold, 10)
-    ), [billing?.stockCriticalThreshold, lowThreshold]);
+  // Read dynamic stock alert settings
+  const settingsCart = useSelector(SelectSettingCart);
+  const billing = settingsCart?.billing || {};
+  const lowThreshold = Number.isFinite(billing?.stockLowThreshold)
+    ? billing.stockLowThreshold
+    : 20;
 
-    if (!productInCart && !originalProduct) {
-        return { isLowStock: false, isCriticalStock: false, isOutOfStock: false };
-    }
+  const criticalThreshold = Number.isFinite(billing?.stockCriticalThreshold)
+    ? billing.stockCriticalThreshold
+    : Math.min(lowThreshold, 10);
 
-    const productToCheck = productInCart ?? originalProduct;
-    const inCart = Boolean(productInCart);
+  if (!productInCart && !originalProduct) {
+    return { isLowStock: false, isCriticalStock: false, isOutOfStock: false };
+  }
 
-    const availableStock = resolveStock(productToCheck);
-    const remaining = availableStock - (productToCheck?.amountToBuy ?? 0);
+  const productToCheck = productInCart ?? originalProduct;
+  const inCart = Boolean(productInCart);
 
-    const criticalStock = useMemo(() => {
-        if (!isStockRestricted(productToCheck)) return false;
-        return remaining > 0 && remaining <= criticalThreshold;
-    }, [productToCheck, remaining, criticalThreshold]);
+  const availableStock = resolveStock(productToCheck);
+  const remaining = availableStock - (productToCheck?.amountToBuy ?? 0);
 
-    const lowStock = useMemo(() => {
-        if (!isStockRestricted(productToCheck)) return false;
-        // Low stock excludes critical range
-        return remaining > criticalThreshold && remaining <= lowThreshold;
-    }, [productToCheck, remaining, lowThreshold, criticalThreshold]);
+  const criticalStock = (() => {
+    if (!isStockRestricted(productToCheck)) return false;
+    return remaining > 0 && remaining <= criticalThreshold;
+  })();
 
-    // Verifica si el producto está fuera de stock o si el carrito supera el stock disponible
-    const outOfStock = useMemo(() => {
-        if (!isStockRestricted(productToCheck)) return false;
-        return (
-            isStockExceeded(inCart, productToCheck) ||
-            isStockZero(productToCheck)
-        );
-    }, [productToCheck, inCart]);
+  const lowStock = (() => {
+    if (!isStockRestricted(productToCheck)) return false;
+    // Low stock excludes critical range
+    return remaining > criticalThreshold && remaining <= lowThreshold;
+  })();
 
-    return { isLowStock: lowStock, isCriticalStock: criticalStock, isOutOfStock: outOfStock };
+  // Verifica si el producto está fuera de stock o si el carrito supera el stock disponible
+  const outOfStock = (() => {
+    if (!isStockRestricted(productToCheck)) return false;
+    return (
+      isStockExceeded(inCart, productToCheck) || isStockZero(productToCheck)
+    );
+  })();
+
+  return {
+    isLowStock: lowStock,
+    isCriticalStock: criticalStock,
+    isOutOfStock: outOfStock,
+  };
 };

@@ -25,7 +25,10 @@ export default function CheckProductPriceField() {
   const { listPrice, tax, price, currency } = product.pricing;
 
   // For visualization only; NOT assigned to pricing.price on purpose.
-  const priceWithTax = useMemo(() => toNumber(listPrice) + toNumber(tax), [listPrice, tax]);
+  const priceWithTax = useMemo(
+    () => toNumber(listPrice) + toNumber(tax),
+    [listPrice, tax],
+  );
 
   const setPricing = (updater) => {
     setProduct((prev) => ({
@@ -79,8 +82,9 @@ export default function CheckProductPriceField() {
     <div style={{ padding: 16, maxWidth: 720, margin: '0 auto' }}>
       <h2>Test: pricing.price debe ser una copia de pricing.listPrice</h2>
       <p style={{ color: '#555' }}>
-        En este entorno de prueba, <strong>pricing.price</strong> no debe incluir impuestos. Debe ser
-        exactamente igual a <strong>pricing.listPrice</strong>.
+        En este entorno de prueba, <strong>pricing.price</strong> no debe
+        incluir impuestos. Debe ser exactamente igual a{' '}
+        <strong>pricing.listPrice</strong>.
       </p>
 
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
@@ -96,7 +100,11 @@ export default function CheckProductPriceField() {
 
         <label style={{ display: 'flex', flexDirection: 'column' }}>
           <span>List Price</span>
-          <input type="number" value={listPrice} onChange={handleListPriceChange} />
+          <input
+            type="number"
+            value={listPrice}
+            onChange={handleListPriceChange}
+          />
         </label>
 
         <label style={{ display: 'flex', flexDirection: 'column' }}>
@@ -114,7 +122,14 @@ export default function CheckProductPriceField() {
         <button onClick={handleFixPrice}>Forzar price = listPrice</button>
       </div>
 
-      <div style={{ marginTop: 16, padding: 12, border: '1px solid #eee', borderRadius: 8 }}>
+      <div
+        style={{
+          marginTop: 16,
+          padding: 12,
+          border: '1px solid #eee',
+          borderRadius: 8,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div
             style={{
@@ -137,7 +152,8 @@ export default function CheckProductPriceField() {
             tax: <strong>{tax}</strong>
           </li>
           <li>
-            listPrice + tax (solo referencia visual): <strong>{priceWithTax}</strong>
+            listPrice + tax (solo referencia visual):{' '}
+            <strong>{priceWithTax}</strong>
           </li>
         </ul>
       </div>
@@ -145,8 +161,10 @@ export default function CheckProductPriceField() {
       <details style={{ marginTop: 16 }}>
         <summary>Pegar JSON de producto (opcional)</summary>
         <p style={{ color: '#555' }}>
-          Si pegas un objeto con estructura <code>{'{ pricing: { listPrice, tax, price } }'}</code>,
-          esta pantalla ajustará <code>pricing.price = pricing.listPrice</code> automáticamente al cargarlo.
+          Si pegas un objeto con estructura{' '}
+          <code>{'{ pricing: { listPrice, tax, price } }'}</code>, esta pantalla
+          ajustará <code>pricing.price = pricing.listPrice</code>{' '}
+          automáticamente al cargarlo.
         </p>
         <textarea
           onChange={handlePasteProductJson}

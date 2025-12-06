@@ -47,11 +47,11 @@ const accumulateCategoryData = (expenses) => {
 };
 
 export const CategoryExpenseBarChart = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const categoryData = useMemo(() => accumulateCategoryData(expenses), [expenses]);
+    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const categoryData = useMemo(
+        () => accumulateCategoryData(normalizedExpenses),
+        [normalizedExpenses],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(categoryData);
         const dataTotals = labels.map(label => categoryData[label]);
@@ -70,6 +70,10 @@ export const CategoryExpenseBarChart = ({ expenses }) => {
         };
     }, [categoryData]);
 
+    if (!normalizedExpenses.length) {
+        return null;  // or some fallback UI
+    }
+
     return (
         <Container>
             <Typography variant='h3'>Gastos Totales por Categoría</Typography>
@@ -79,7 +83,7 @@ export const CategoryExpenseBarChart = ({ expenses }) => {
 }
 
 const Container = styled.div`
-    height: 200px;
     display: grid;
     gap: 1em;
+    height: 200px;
 `;

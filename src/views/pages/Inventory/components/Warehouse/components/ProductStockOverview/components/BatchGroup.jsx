@@ -9,18 +9,18 @@ import styled from 'styled-components';
 import ProductStock from './ProductStock';
 
 const BatchContainer = styled.div`
-  background: #ffffff;
-  border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  margin-bottom: 0px;
-  
+  margin-bottom: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+
   .batch-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    justify-content: space-between;
     padding-bottom: 12px;
+    margin-bottom: 6px;
     border-bottom: 1px solid #f1f5f9;
 
     .batch-info {
@@ -33,30 +33,30 @@ const BatchContainer = styled.div`
 
       .batch-meta {
         display: flex;
-        align-items: center;
         gap: 12px;
-        color: #64748b;
+        align-items: center;
         font-size: 0.85rem;
+        color: #64748b;
 
         .meta-item {
           display: flex;
-          align-items: center;
           gap: 8px;
+          align-items: center;
           padding: 4px 0;
         }
       }
     }
 
     .batch-total {
-      padding: 6px 12px;
-      border-radius: 12px;
       display: inline-flex;
       align-items: center;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #0f172a;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      color: #0f172a;
-      font-weight: 500;
-      font-size: 0.8rem;
+      border-radius: 12px;
     }
   }
 
@@ -70,12 +70,12 @@ const BatchContainer = styled.div`
     grid-template-columns: minmax(200px, 3fr) minmax(120px, 1fr) 88px;
     gap: 16px;
     align-items: center;
+    padding: 0 6px;
     font-size: 0.7rem;
     font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #94a3b8;
-    padding: 0 6px;
 
     span:nth-child(2) {
       text-align: center;
@@ -92,7 +92,7 @@ const BatchContainer = styled.div`
     gap: 2px;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .locations-header {
       display: none;
     }
@@ -105,8 +105,8 @@ const BatchContainer = styled.div`
 
 const BatchActions = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const ActionMenuButton = styled.button`
@@ -115,17 +115,17 @@ const ActionMenuButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
   color: #64748b;
   cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #f1f5f9;
     color: #1f2937;
-    border-color: rgba(148, 163, 184, 0.4);
+    background: #f1f5f9;
+    border-color: rgb(148 163 184 / 40%);
   }
 
   &:active {
@@ -139,41 +139,55 @@ const BatchGroup = ({
   handleDeleteBatch,
   handleDeleteProductStock,
   handleLocationClick,
-  locationNames
+  locationNames,
 }) => {
-  const batchStatus = useMemo(() => getStockStatus(group.total), [getStockStatus, group.total]);
+  const batchStatus = useMemo(
+    () => getStockStatus(group.total),
+    [getStockStatus, group.total],
+  );
   const formattedTotal = useMemo(
     () => Number(group.total ?? 0).toLocaleString(),
-    [group.total]
+    [group.total],
   );
 
-  const menuItems = useMemo(() => ([
-    {
-      key: 'delete',
-      label: 'Eliminar lote completo',
-      danger: true,
-      icon: <DeleteOutlined />,
-    },
-  ]), []);
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'delete',
+        label: 'Eliminar lote completo',
+        danger: true,
+        icon: <DeleteOutlined />,
+      },
+    ],
+    [],
+  );
 
-  const handleMenuClick = useCallback(({ key }) => {
-    if (key === 'delete') {
-      handleDeleteBatch(group);
-    }
-  }, [group, handleDeleteBatch]);
+  const handleMenuClick = useCallback(
+    ({ key }) => {
+      if (key === 'delete') {
+        handleDeleteBatch(group);
+      }
+    },
+    [group, handleDeleteBatch],
+  );
 
   return (
     <BatchContainer $status={batchStatus}>
       <div className="batch-header">
         <div className="batch-info">
           <div className="batch-number">
-            {group.batchNumberId ? `Lote #${group.batchNumberId}` : 'Sin lote asignado'}
+            {group.batchNumberId
+              ? `Lote #${group.batchNumberId}`
+              : 'Sin lote asignado'}
           </div>
           <div className="batch-meta">
             {group.expirationDate && (
               <span className="meta-item">
                 <CalendarOutlined />
-                Vence: {new Date(group.expirationDate.seconds * 1000).toLocaleDateString()}
+                Vence:{' '}
+                {new Date(
+                  group.expirationDate.seconds * 1000,
+                ).toLocaleDateString()}
               </span>
             )}
             <span className="meta-item">
@@ -184,9 +198,7 @@ const BatchGroup = ({
         </div>
         <BatchActions>
           <Tooltip title={batchStatus.label} placement="left">
-            <div className="batch-total">
-              {formattedTotal} uds
-            </div>
+            <div className="batch-total">{formattedTotal} uds</div>
           </Tooltip>
           <Dropdown
             menu={{ items: menuItems, onClick: handleMenuClick }}

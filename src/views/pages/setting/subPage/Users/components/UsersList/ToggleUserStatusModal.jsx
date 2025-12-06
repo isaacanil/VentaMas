@@ -27,10 +27,14 @@ export const ToggleUserStatusModal = ({ isOpen, user, onClose }) => {
 
     try {
       await fbUpdateUser({ ...user, active: nextStatus });
-      message.success(`Usuario ${nextStatus ? 'activado' : 'desactivado'} correctamente.`);
+      message.success(
+        `Usuario ${nextStatus ? 'activado' : 'desactivado'} correctamente.`,
+      );
       onClose?.();
     } catch (error) {
-      message.error(error?.message || 'Error al actualizar el estado del usuario.');
+      message.error(
+        error?.message || 'Error al actualizar el estado del usuario.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -64,4 +68,3 @@ export const ToggleUserStatusModal = ({ isOpen, user, onClose }) => {
     </Modal>
   );
 };
-

@@ -2,8 +2,16 @@ import { collection, getDocs } from 'firebase/firestore';
 
 import { userRoles, getAvailableRoles } from '../../../../abilities/roles';
 import { toggleMode } from '../../../../features/appModes/appModeSlice';
-import { switchToBusiness, returnToOriginalBusiness, switchToRole, returnToOriginalRole } from '../../../../features/auth/userSlice';
-import { fbGetUsers, fbSearchUsers } from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
+import {
+  switchToBusiness,
+  returnToOriginalBusiness,
+  switchToRole,
+  returnToOriginalRole,
+} from '../../../../features/auth/userSlice';
+import {
+  fbGetUsers,
+  fbSearchUsers,
+} from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
 import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
 import { db } from '../../../../firebase/firebaseconfig';
@@ -29,13 +37,14 @@ class CommandProcessor {
     this.setBusinesses = deps.setBusinesses;
     this.businesses = deps.businesses;
     this.enterSelectionMode = deps.enterSelectionMode;
-  }  /**
+  } /**
    * Carga la lista de negocios disponibles
    */
   async loadBusinessesList() {
     try {
       const businessesList = await fbGetBusinessesList();
       this.setBusinesses(businessesList);
+      this.businesses = businessesList;
       return businessesList;
     } catch (error) {
       console.error('Error al cargar negocios:', error);
@@ -50,7 +59,7 @@ class CommandProcessor {
     try {
       const usersList = await fbGetUsers();
       // Users list processed
-      console.log(usersList)
+      console.log(usersList);
       return usersList;
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
@@ -67,11 +76,19 @@ class CommandProcessor {
     }
 
     try {
-      const productsRef = collection(db, 'businesses', this.user.businessID, 'products');
+      const productsRef = collection(
+        db,
+        'businesses',
+        this.user.businessID,
+        'products',
+      );
       const snapshot = await getDocs(productsRef);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-      console.error('Error al cargar productos para la consola de desarrollador:', error);
+      console.error(
+        'Error al cargar productos para la consola de desarrollador:',
+        error,
+      );
       throw error;
     }
   }
@@ -93,17 +110,23 @@ class CommandProcessor {
         return value.toLowerCase().includes(normalizedSearch);
       }
       if (typeof value === 'object' && value !== null) {
-        if (typeof value.name === 'string' && value.name.toLowerCase().includes(normalizedSearch)) {
+        if (
+          typeof value.name === 'string' &&
+          value.name.toLowerCase().includes(normalizedSearch)
+        ) {
           return true;
         }
-        if (typeof value.label === 'string' && value.label.toLowerCase().includes(normalizedSearch)) {
+        if (
+          typeof value.label === 'string' &&
+          value.label.toLowerCase().includes(normalizedSearch)
+        ) {
           return true;
         }
       }
       return false;
     };
 
-    return products.filter(product => {
+    return products.filter((product) => {
       const candidateValues = [
         product?.name,
         product?.displayName,
@@ -154,24 +177,45 @@ class CommandProcessor {
       // Comandos BUSINESS
       { command: 'BUSINESS', description: 'Administra negocios' },
       { command: 'BUSINESS LIST', description: 'Lista todos los negocios' },
-      { command: 'BUSINESS SELECT', description: 'Selección interactiva de negocios' },
-      { command: 'BUSINESS SWITCH ', description: 'Cambia a otro negocio por ID' },
+      {
+        command: 'BUSINESS SELECT',
+        description: 'Selección interactiva de negocios',
+      },
+      {
+        command: 'BUSINESS SWITCH ',
+        description: 'Cambia a otro negocio por ID',
+        requiresInput: true,
+      },
       { command: 'BUSINESS RETURN', description: 'Vuelve al negocio original' },
-      { command: 'BUSINESS STATUS', description: 'Estado de conexión a negocios' },
+      {
+        command: 'BUSINESS STATUS',
+        description: 'Estado de conexión a negocios',
+      },
 
       // Comandos ROLE
       { command: 'ROLE', description: 'Administra roles' },
       { command: 'ROLE LIST', description: 'Lista roles disponibles' },
       { command: 'ROLE SELECT', description: 'Selección interactiva de roles' },
-      { command: 'ROLE SWITCH ', description: 'Cambia a otro role por ID' },
+      {
+        command: 'ROLE SWITCH ',
+        description: 'Cambia a otro role por ID',
+        requiresInput: true,
+      },
       { command: 'ROLE RETURN', description: 'Vuelve al role original' },
       { command: 'ROLE STATUS', description: 'Estado actual de roles' },
 
       // Comandos NAVIGATE
       { command: 'NAVIGATE', description: 'Navega entre rutas' },
       { command: 'NAVIGATE LIST', description: 'Lista todas las rutas' },
-      { command: 'NAVIGATE SELECT', description: 'Selección interactiva de rutas' },
-      { command: 'NAVIGATE SEARCH ', description: 'Busca rutas por texto' },
+      {
+        command: 'NAVIGATE SELECT',
+        description: 'Selección interactiva de rutas',
+      },
+      {
+        command: 'NAVIGATE SEARCH ',
+        description: 'Busca rutas por texto',
+        requiresInput: true,
+      },
       { command: 'NAVIGATE /home', description: 'Navega a inicio' },
       { command: 'NAVIGATE /sales', description: 'Navega a ventas' },
       { command: 'NAVIGATE /inventory', description: 'Navega a inventario' },
@@ -197,18 +241,45 @@ class CommandProcessor {
       { command: 'REACTSCAN', description: 'Carga React Scan' },
 
       // Comandos PRODUCT
-      { command: 'PRODUCT', description: 'Comandos para buscar productos y ver sus IDs' },
-      { command: 'PRODUCT ID ', description: 'Busca productos por nombre y muestra su ID' },
+      {
+        command: 'PRODUCT',
+        description: 'Comandos para buscar productos y ver sus IDs',
+      },
+      {
+        command: 'PRODUCT ID ',
+        description: 'Busca productos por nombre y muestra su ID',
+        requiresInput: true,
+      },
 
       // Comandos USER MANAGEMENT
       { command: 'USERS', description: 'Administra usuarios' },
       { command: 'USERS LIST', description: 'Lista todos los usuarios' },
-      { command: 'USERS SELECT', description: 'Selección interactiva de usuarios' },
-      { command: 'USERS SEARCH ', description: 'Busca usuarios por nombre/email' },
-      { command: 'USERS PASSWORD', description: 'Cambiar contraseña de usuario' },
+      {
+        command: 'USERS SELECT',
+        description: 'Selección interactiva de usuarios',
+      },
+      {
+        command: 'USERS SEARCH ',
+        description: 'Busca usuarios por nombre/email',
+        requiresInput: true,
+      },
+      {
+        command: 'USERS PASSWORD',
+        description: 'Cambiar contraseña de usuario',
+      },
     ];
 
-    return commands;
+    return commands.map((cmd) => {
+      const requiresInput =
+        typeof cmd.requiresInput === 'boolean'
+          ? cmd.requiresInput
+          : cmd.command.endsWith(' ');
+
+      return {
+        ...cmd,
+        requiresInput,
+      };
+    });
   }
 
   getCommandSuggestions(input) {
@@ -219,7 +290,7 @@ class CommandProcessor {
     const searchText = input.trim().toLowerCase();
     const allCommands = this.getAllCommandSuggestions();
 
-    const suggestions = allCommands.filter(cmd => {
+    const suggestions = allCommands.filter((cmd) => {
       const command = cmd.command.toLowerCase();
       return command.startsWith(searchText) || command.includes(searchText);
     });
@@ -247,14 +318,14 @@ class CommandProcessor {
 
     // Función recursiva para extraer rutas de un objeto
     const extractRoutes = (obj, prefix = '') => {
-      Object.keys(obj).forEach(key => {
+      Object.keys(obj).forEach((key) => {
         const value = obj[key];
         if (typeof value === 'string' && value.startsWith('/')) {
           // Es una ruta
           routes.push({
             name: key,
             path: value,
-            category: prefix || 'General'
+            category: prefix || 'General',
           });
         } else if (typeof value === 'object' && value !== null) {
           // Es un objeto anidado, recursión
@@ -275,10 +346,11 @@ class CommandProcessor {
     if (!searchText) return allRoutes;
 
     const search = searchText.toLowerCase();
-    return allRoutes.filter(route =>
-      route.name.toLowerCase().includes(search) ||
-      route.path.toLowerCase().includes(search) ||
-      route.category.toLowerCase().includes(search)
+    return allRoutes.filter(
+      (route) =>
+        route.name.toLowerCase().includes(search) ||
+        route.path.toLowerCase().includes(search) ||
+        route.category.toLowerCase().includes(search),
     );
   }
 
@@ -324,7 +396,7 @@ Pulse ESC para cancelar.`;
             (selectedItem) => {
               this.addOutput(`Has seleccionado: ${selectedItem.display}`);
             },
-            'select test'
+            'select test',
           );
           break;
         }
@@ -345,9 +417,11 @@ Pulse ESC para cancelar.`;
             colorItems,
             '🎨 Selección de Color:',
             (selectedItem) => {
-              this.addOutput(`Has seleccionado: ${selectedItem.display}\nValor hexadecimal: ${selectedItem.value}`);
+              this.addOutput(
+                `Has seleccionado: ${selectedItem.display}\nValor hexadecimal: ${selectedItem.value}`,
+              );
             },
-            'select colors'
+            'select colors',
           );
           break;
         }
@@ -356,16 +430,18 @@ Pulse ESC para cancelar.`;
           const numberItems = Array.from({ length: 10 }, (_, i) => ({
             id: String(i + 1),
             display: `Número ${i + 1}`,
-            value: i + 1
+            value: i + 1,
           }));
 
           this.enterSelectionMode(
             numberItems,
             '🔢 Selección de Número:',
             (selectedItem) => {
-              this.addOutput(`Has seleccionado el número: ${selectedItem.value}`);
+              this.addOutput(
+                `Has seleccionado el número: ${selectedItem.value}`,
+              );
             },
-            'select numbers'
+            'select numbers',
           );
           break;
         }
@@ -380,7 +456,8 @@ Use uno de los siguientes comandos:
   SELECT NUMBERS    - Selecciona entre números del 1 al 10
 
 Para más información, use 'SELECT HELP'`;
-          break; case cmd === 'help':
+          break;
+        case cmd === 'help':
           result = `Para obtener más información sobre un comando específico, escriba HELP nombre-de-comando
 
 BUSINESS       Administra la conexión a negocios (listar, cambiar, volver).
@@ -443,12 +520,18 @@ Consola de desarrollador: ABIERTA`;
                   this.setReactScanLoaded(true);
                   this.addOutput('React Scan se ha cargado correctamente.');
                 })
-                .catch(() => this.addOutput('Error al cargar React Scan. Compruebe la conexión a Internet.', 'error'));
+                .catch(() =>
+                  this.addOutput(
+                    'Error al cargar React Scan. Compruebe la conexión a Internet.',
+                    'error',
+                  ),
+                );
             } else {
               result = 'React Scan ya está cargado en esta sesión.';
             }
           } else {
-            result = 'React Scan solo está disponible en el entorno de desarrollo.';
+            result =
+              'React Scan solo está disponible en el entorno de desarrollo.';
           }
           break;
 
@@ -457,7 +540,8 @@ Consola de desarrollador: ABIERTA`;
           const searchTerm = rawCommand.slice('product id '.length).trim();
 
           if (!searchTerm) {
-            result = 'Especifica el nombre de un producto. Uso: PRODUCT ID [NOMBRE]';
+            result =
+              'Especifica el nombre de un producto. Uso: PRODUCT ID [NOMBRE]';
             break;
           }
 
@@ -465,36 +549,50 @@ Consola de desarrollador: ABIERTA`;
           this.findProductsByName(searchTerm)
             .then((matches) => {
               if (matches.length === 0) {
-                this.addOutput(`No se encontró ningún producto que contenga "${searchTerm}".`, 'warning');
+                this.addOutput(
+                  `No se encontró ningún producto que contenga "${searchTerm}".`,
+                  'warning',
+                );
                 return;
               }
 
               const maxMatchesToShow = 10;
               const limitedMatches = matches.slice(0, maxMatchesToShow);
-              const header = matches.length > limitedMatches.length
-                ? `Mostrando ${limitedMatches.length} de ${matches.length} coincidencias para "${searchTerm}":\n\n`
-                : `Productos encontrados para "${searchTerm}":\n\n`;
+              const header =
+                matches.length > limitedMatches.length
+                  ? `Mostrando ${limitedMatches.length} de ${matches.length} coincidencias para "${searchTerm}":\n\n`
+                  : `Productos encontrados para "${searchTerm}":\n\n`;
 
-              const formattedMatches = limitedMatches.map((product, index) => {
-                const brandName = typeof product?.brand === 'string'
-                  ? product.brand
-                  : product?.brand?.name;
-                const code = product?.code || product?.sku || product?.barcode || product?.internalCode;
-                const lines = [
-                  `${index + 1}. ${product?.name || 'Sin nombre'}`,
-                  `   ID: ${product?.id}`
-                ];
+              const formattedMatches = limitedMatches
+                .map((product, index) => {
+                  const brandName =
+                    typeof product?.brand === 'string'
+                      ? product.brand
+                      : product?.brand?.name;
+                  const code =
+                    product?.code ||
+                    product?.sku ||
+                    product?.barcode ||
+                    product?.internalCode;
+                  const lines = [
+                    `${index + 1}. ${product?.name || 'Sin nombre'}`,
+                    `   ID: ${product?.id}`,
+                  ];
 
-                if (brandName) lines.push(`   Marca: ${brandName}`);
-                if (code) lines.push(`   Código: ${code}`);
+                  if (brandName) lines.push(`   Marca: ${brandName}`);
+                  if (code) lines.push(`   Código: ${code}`);
 
-                return lines.join('\n');
-              }).join('\n\n');
+                  return lines.join('\n');
+                })
+                .join('\n\n');
 
               this.addOutput(`${header}${formattedMatches}`);
             })
             .catch((error) => {
-              this.addOutput('Error al buscar productos: ' + error.message, 'error');
+              this.addOutput(
+                'Error al buscar productos: ' + error.message,
+                'error',
+              );
             });
           break;
         }
@@ -529,7 +627,8 @@ Estado actual: ${localStorage.getItem('debugMode') ? 'ACTIVADO' : 'DESACTIVADO'}
         case cmd === 'testmode on':
           if (!this.isTestMode) {
             this.dispatch(toggleMode());
-            result = '🧪 Modo de prueba ACTIVADO.\n\nLas facturas se procesarán en modo de prueba sin afectar la base de datos.';
+            result =
+              '🧪 Modo de prueba ACTIVADO.\n\nLas facturas se procesarán en modo de prueba sin afectar la base de datos.';
           } else {
             result = 'El modo de prueba ya está activo.';
           }
@@ -538,7 +637,8 @@ Estado actual: ${localStorage.getItem('debugMode') ? 'ACTIVADO' : 'DESACTIVADO'}
         case cmd === 'testmode off':
           if (this.isTestMode) {
             this.dispatch(toggleMode());
-            result = '✅ Modo de prueba DESACTIVADO.\n\nLas facturas volverán a guardarse en la base de datos.';
+            result =
+              '✅ Modo de prueba DESACTIVADO.\n\nLas facturas volverán a guardarse en la base de datos.';
           } else {
             result = 'El modo de prueba ya está desactivado.';
           }
@@ -547,9 +647,11 @@ Estado actual: ${localStorage.getItem('debugMode') ? 'ACTIVADO' : 'DESACTIVADO'}
         case cmd === 'testmode status':
           result = `Estado del modo de prueba: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}
 
-${this.isTestMode ?
-              'Las facturas se procesan en modo de prueba sin afectar la base de datos.' :
-              'Las facturas se guardan normalmente en la base de datos.'}`;
+${
+  this.isTestMode
+    ? 'Las facturas se procesan en modo de prueba sin afectar la base de datos.'
+    : 'Las facturas se guardan normalmente en la base de datos.'
+}`;
           break;
 
         case cmd === 'testmode':
@@ -565,90 +667,177 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
         case cmd === 'business list':
           result = 'Cargando lista de negocios...';
           // Cargar negocios de forma asíncrona
-          this.loadBusinessesList().then((businessesList) => {
-            if (businessesList.length === 0) {
-              this.addOutput('No se encontraron negocios disponibles.', 'error');
-            } else {
-              const businessListResult = `Lista de negocios disponibles:\n\n${businessesList.map(business =>
-                `${business.business?.name || 'Sin nombre'} - ID: ${business.id || business.businessID}`
-              ).join('\n')}\n\nPara cambiar de negocio use: BUSINESS SWITCH [ID]\nPara modo interactivo use: BUSINESS SELECT`;
-              this.addOutput(businessListResult);
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de negocios: ' + error.message, 'error');
-          });
+          this.loadBusinessesList()
+            .then((businessesList) => {
+              if (businessesList.length === 0) {
+                this.addOutput(
+                  'No se encontraron negocios disponibles.',
+                  'error',
+                );
+              } else {
+                const businessListResult = `Lista de negocios disponibles:\n\n${businessesList
+                  .map(
+                    (business) =>
+                      `${business.business?.name || 'Sin nombre'} - ID: ${business.id || business.businessID}`,
+                  )
+                  .join(
+                    '\n',
+                  )}\n\nPara cambiar de negocio use: BUSINESS SWITCH [ID]\nPara modo interactivo use: BUSINESS SELECT`;
+                this.addOutput(businessListResult);
+              }
+            })
+            .catch((error) => {
+              this.addOutput(
+                'Error al cargar la lista de negocios: ' + error.message,
+                'error',
+              );
+            });
           break;
 
         case cmd === 'business select':
           result = 'Cargando lista de negocios para selección...';
           // Cargar negocios y entrar en modo de selección
-          this.loadBusinessesList().then((businessesList) => {
-            if (businessesList.length === 0) {
-              this.addOutput('No se encontraron negocios disponibles.', 'error');
-            } else {              // Preparar items para el modo de selección
-              const selectionItems = businessesList.map(business => {
-                const businessId = business.id || business.businessID;
-                const businessName = business.business?.name || 'Sin nombre';
-                const isCurrent = businessId === this.user?.businessID;
+          this.loadBusinessesList()
+            .then((businessesList) => {
+              if (businessesList.length === 0) {
+                this.addOutput(
+                  'No se encontraron negocios disponibles.',
+                  'error',
+                );
+              } else {
+                // Preparar items para el modo de selección
+                let selectionItems = businessesList.map((business) => {
+                  const businessId = business.id || business.businessID;
+                  const businessName = business.business?.name || 'Sin nombre';
+                  const isCurrent = businessId === this.user?.businessID;
 
-                return {
-                  id: businessId,
-                  display: `${businessName}${isCurrent ? ' (Actual)' : ''} - ID: ${businessId}`,
-                  name: businessName,
-                  businessData: business,
-                  isCurrent: isCurrent
-                };
-              });
+                  return {
+                    id: businessId,
+                    display: `${businessName}${isCurrent ? ' (Actual)' : ''} - ID: ${businessId}`,
+                    name: businessName,
+                    businessData: business,
+                    isCurrent: isCurrent,
+                  };
+                });
 
-              // Entrar en modo de selección
-              this.enterSelectionMode(
-                selectionItems,
-                '📋 Seleccionar Negocio:', (selectedItem) => {
-                  // Callback cuando se selecciona un item
-                  if (selectedItem.isCurrent) {
-                    // Si está en modo temporal y selecciona el negocio actual (que es el original)
-                    if (this.isTemporaryMode && selectedItem.id === this.originalBusinessId) {
-                      this.dispatch(returnToOriginalBusiness());
-                      this.addOutput(`🔄 Regresando al negocio original: ${selectedItem.name}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DESACTIVADO`);
-                    } else {
-                      // No está en modo temporal, solo mostrar mensaje
-                      this.addOutput(`🔄 Ya está conectado al negocio: ${selectedItem.name}\nID: ${selectedItem.id}`);
+                if (this.isTemporaryMode && this.originalBusinessId) {
+                  const originalBusinessData = businessesList.find(
+                    (business) =>
+                      (business.id || business.businessID) ===
+                      this.originalBusinessId,
+                  );
+                  const originalBusinessName =
+                    originalBusinessData?.business?.name ||
+                    'Mi negocio original';
+
+                  selectionItems = [
+                    {
+                      id: '__return_to_original__',
+                      display: `↩️ Volver a mi negocio (${originalBusinessName}) - ID: ${this.originalBusinessId}`,
+                      name: 'Volver a mi negocio',
+                      originalName: originalBusinessName,
+                      returnToOriginal: true,
+                    },
+                    ...selectionItems,
+                  ];
+                }
+
+                // Entrar en modo de selección
+                this.enterSelectionMode(
+                  selectionItems,
+                  '📋 Seleccionar Negocio:',
+                  (selectedItem) => {
+                    if (!selectedItem) {
+                      this.addOutput(
+                        'No se pudo determinar la selección. Intente nuevamente.',
+                        'error',
+                      );
+                      return;
                     }
-                  } else {
+
+                    const targetName =
+                      selectedItem.name ||
+                      selectedItem.originalName ||
+                      'Sin nombre';
+
+                    if (selectedItem.returnToOriginal) {
+                      this.dispatch(returnToOriginalBusiness());
+                      this.addOutput(
+                        `🔄 Regresando al negocio original: ${targetName}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`,
+                      );
+                      return;
+                    }
+
+                    if (
+                      this.isTemporaryMode &&
+                      this.originalBusinessId &&
+                      selectedItem.id === this.originalBusinessId
+                    ) {
+                      this.dispatch(returnToOriginalBusiness());
+                      this.addOutput(
+                        `🔄 Regresando al negocio original: ${targetName}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DESACTIVADO`,
+                      );
+                      return;
+                    }
+
+                    if (selectedItem.id === this.user?.businessID) {
+                      this.addOutput(
+                        `🔄 Ya está conectado al negocio: ${targetName}\nID: ${selectedItem.id}`,
+                      );
+                      return;
+                    }
+
                     this.dispatch(switchToBusiness(selectedItem.id));
-                    this.addOutput(`✅ Cambiado al negocio: ${selectedItem.name}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`);
-                  }
-                },
-                'business select'
+                    this.addOutput(
+                      `✅ Cambiado al negocio: ${targetName}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`,
+                    );
+                  },
+                  'business select',
+                );
+              }
+            })
+            .catch((error) => {
+              this.addOutput(
+                'Error al cargar la lista de negocios: ' + error.message,
+                'error',
               );
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de negocios: ' + error.message, 'error');
-          });
+            });
           break;
 
         case cmd.startsWith('business switch '): {
           const targetBusinessId = cmd.replace('business switch ', '').trim();
           if (!targetBusinessId) {
-            result = 'Error: Debe especificar un ID de negocio.\nUso: BUSINESS SWITCH [ID]';
+            result =
+              'Error: Debe especificar un ID de negocio.\nUso: BUSINESS SWITCH [ID]';
           } else if (targetBusinessId === this.user?.businessID) {
             result = 'Ya está conectado a ese negocio.';
           } else {
             result = 'Verificando negocio...';
             // Cargar negocios si no están disponibles, o usar los que ya tenemos
-            const businessesToSearch = this.businesses.length > 0 ? this.businesses : await this.loadBusinessesList();
+            const businessesToSearch =
+              this.businesses.length > 0
+                ? this.businesses
+                : await this.loadBusinessesList();
 
-            const targetBusiness = businessesToSearch.find(b =>
-              (b.id || b.businessID) === targetBusinessId ||
-              b.business?.name?.toLowerCase().includes(targetBusinessId.toLowerCase())
+            const targetBusiness = businessesToSearch.find(
+              (b) =>
+                (b.id || b.businessID) === targetBusinessId ||
+                b.business?.name
+                  ?.toLowerCase()
+                  .includes(targetBusinessId.toLowerCase()),
             );
 
             setTimeout(() => {
               if (targetBusiness) {
                 this.dispatch(switchToBusiness(targetBusinessId));
-                this.addOutput(`✅ Cambiado al negocio: ${targetBusiness.business?.name || 'Sin nombre'}\nID: ${targetBusinessId}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`);
+                this.addOutput(
+                  `✅ Cambiado al negocio: ${targetBusiness.business?.name || 'Sin nombre'}\nID: ${targetBusinessId}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`,
+                );
               } else {
-                this.addOutput(`Error: No se encontró el negocio con ID "${targetBusinessId}".\nUse BUSINESS LIST para ver los negocios disponibles.`, 'error');
+                this.addOutput(
+                  `Error: No se encontró el negocio con ID "${targetBusinessId}".\nUse BUSINESS LIST para ver los negocios disponibles.`,
+                  'error',
+                );
               }
             }, 100);
 
@@ -660,9 +849,12 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
 
         case cmd === 'business return':
           if (!this.isTemporaryMode) {
-            result = 'No está en modo temporal. Ya está en su negocio original.';
+            result =
+              'No está en modo temporal. Ya está en su negocio original.';
           } else {
-            const originalBusiness = this.businesses.find(b => (b.id || b.businessID) === this.originalBusinessId);
+            const originalBusiness = this.businesses.find(
+              (b) => (b.id || b.businessID) === this.originalBusinessId,
+            );
             this.dispatch(returnToOriginalBusiness());
             result = `✅ Regresado al negocio original: ${originalBusiness?.business?.name || 'Sin nombre'}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`;
           }
@@ -675,9 +867,11 @@ Negocio actual: ${this.user?.businessID || 'No asignado'}
 Modo temporal: ${this.isTemporaryMode ? '⚠️  ACTIVADO' : '✅ DESACTIVADO'}
 Negocio original: ${this.originalBusinessId || 'N/A'}
 
-${this.isTemporaryMode ?
-              'Está trabajando temporalmente en otro negocio.\nUse BUSINESS RETURN para volver al original.' :
-              'Está trabajando en su negocio original.'}`;
+${
+  this.isTemporaryMode
+    ? 'Está trabajando temporalmente en otro negocio.\nUse BUSINESS RETURN para volver al original.'
+    : 'Está trabajando en su negocio original.'
+}`;
           break;
         case cmd === 'business':
           result = `Utilización: BUSINESS [LIST | SELECT | SWITCH | RETURN | STATUS]
@@ -700,22 +894,29 @@ Ejemplos:
           const rolesForDisplay = [...availableRolesForUser];
 
           if (this.isTemporaryRoleMode && this.originalRole) {
-            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
-            if (originalRoleData && !rolesForDisplay.some(role => role.id === originalRoleData.id)) {
+            const originalRoleData = userRoles.find(
+              (r) => r.id === this.originalRole,
+            );
+            if (
+              originalRoleData &&
+              !rolesForDisplay.some((role) => role.id === originalRoleData.id)
+            ) {
               rolesForDisplay.unshift(originalRoleData);
             }
           }
 
-          const availableRolesOutput = rolesForDisplay.map(role => {
-            const parts = [role.label];
-            if (this.user?.role === role.id) {
-              parts.push('(Actual)');
-            }
-            if (this.isTemporaryRoleMode && this.originalRole === role.id) {
-              parts.push('(Rol original)');
-            }
-            return `${parts.join(' ')} - ID: ${role.id}`;
-          }).join('\n');
+          const availableRolesOutput = rolesForDisplay
+            .map((role) => {
+              const parts = [role.label];
+              if (this.user?.role === role.id) {
+                parts.push('(Actual)');
+              }
+              if (this.isTemporaryRoleMode && this.originalRole === role.id) {
+                parts.push('(Rol original)');
+              }
+              return `${parts.join(' ')} - ID: ${role.id}`;
+            })
+            .join('\n');
 
           if (availableRolesOutput.length === 0) {
             result = 'No tiene roles disponibles para cambio temporal.';
@@ -727,15 +928,17 @@ Ejemplos:
         case cmd === 'role select': {
           // Preparar items para el modo de selección usando roles disponibles para el usuario
           const userRolesForSelection = getAvailableRoles(this.user);
-          const hasOriginalRoleOption = this.isTemporaryRoleMode && this.originalRole;
+          const hasOriginalRoleOption =
+            this.isTemporaryRoleMode && this.originalRole;
 
           if (userRolesForSelection.length === 0 && !hasOriginalRoleOption) {
             result = 'No tiene roles disponibles para cambio temporal.';
             break;
           }
-          const roleSelectionItems = userRolesForSelection.map(role => {
+          const roleSelectionItems = userRolesForSelection.map((role) => {
             const isCurrent = role.id === this.user?.role;
-            const isOriginal = hasOriginalRoleOption && this.originalRole === role.id;
+            const isOriginal =
+              hasOriginalRoleOption && this.originalRole === role.id;
             const labelParts = [role.label];
 
             if (isCurrent) {
@@ -756,8 +959,13 @@ Ejemplos:
             };
           });
 
-          if (hasOriginalRoleOption && !roleSelectionItems.some(item => item.id === this.originalRole)) {
-            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+          if (
+            hasOriginalRoleOption &&
+            !roleSelectionItems.some((item) => item.id === this.originalRole)
+          ) {
+            const originalRoleData = userRoles.find(
+              (r) => r.id === this.originalRole,
+            );
             if (originalRoleData) {
               const isCurrent = this.user?.role === originalRoleData.id;
               const displayLabel = `${originalRoleData.label} (Rol original)${isCurrent ? ' (Actual)' : ''} - ID: ${originalRoleData.id}`;
@@ -776,40 +984,53 @@ Ejemplos:
           // Entrar en modo de selección
           this.enterSelectionMode(
             roleSelectionItems,
-            '👤 Seleccionar Role:', (selectedItem) => {
+            '👤 Seleccionar Role:',
+            (selectedItem) => {
               // Callback cuando se selecciona un item
               if (selectedItem.isOriginal) {
                 this.dispatch(returnToOriginalRole());
-                this.addOutput(`🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`);
+                this.addOutput(
+                  `🔄 Regresando al role original: ${selectedItem.label}\nID: ${selectedItem.id}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`,
+                );
               } else if (selectedItem.isCurrent) {
                 // No está en modo temporal, solo mostrar mensaje
-                this.addOutput(`🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`);
+                this.addOutput(
+                  `🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`,
+                );
               } else {
                 this.dispatch(switchToRole(selectedItem.id));
-                this.addOutput(`✅ Cambiado al role: ${selectedItem.label}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`);
+                this.addOutput(
+                  `✅ Cambiado al role: ${selectedItem.label}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`,
+                );
               }
             },
-            'role select'
+            'role select',
           );
           break;
         }
         case cmd.startsWith('role switch '): {
           const targetRoleId = cmd.replace('role switch ', '').trim();
           if (!targetRoleId) {
-            result = 'Error: Debe especificar un ID de role.\nUso: ROLE SWITCH [ID]';
+            result =
+              'Error: Debe especificar un ID de role.\nUso: ROLE SWITCH [ID]';
           } else if (targetRoleId === this.user?.role) {
             result = 'Ya tiene ese role asignado.';
           } else {
             // Verificar si el role está disponible para este usuario
             const userAvailableRolesForSwitch = getAvailableRoles(this.user);
-            const targetRole = userAvailableRolesForSwitch.find(r => r.id === targetRoleId);
-            const isOriginalTarget = this.isTemporaryRoleMode && this.originalRole === targetRoleId;
+            const targetRole = userAvailableRolesForSwitch.find(
+              (r) => r.id === targetRoleId,
+            );
+            const isOriginalTarget =
+              this.isTemporaryRoleMode && this.originalRole === targetRoleId;
 
             if (targetRole) {
               this.dispatch(switchToRole(targetRoleId));
               result = `✅ Cambiado al role: ${targetRole.label}\nID: ${targetRoleId}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`;
             } else if (isOriginalTarget) {
-              const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+              const originalRoleData = userRoles.find(
+                (r) => r.id === this.originalRole,
+              );
               this.dispatch(returnToOriginalRole());
               result = `🔄 Regresando al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
             } else {
@@ -821,9 +1042,12 @@ Ejemplos:
 
         case cmd === 'role return':
           if (!this.isTemporaryRoleMode) {
-            result = 'No está en modo temporal de role. Ya está usando su role original.';
+            result =
+              'No está en modo temporal de role. Ya está usando su role original.';
           } else {
-            const originalRoleData = userRoles.find(r => r.id === this.originalRole);
+            const originalRoleData = userRoles.find(
+              (r) => r.id === this.originalRole,
+            );
             this.dispatch(returnToOriginalRole());
             result = `✅ Regresado al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
           }
@@ -836,9 +1060,11 @@ Role actual: ${this.user?.role || 'No asignado'}
 Modo temporal de role: ${this.isTemporaryRoleMode ? '⚠️  ACTIVADO' : '✅ DESACTIVADO'}
 Role original: ${this.originalRole || 'N/A'}
 
-${this.isTemporaryRoleMode ?
-              'Está usando temporalmente otro role.\nUse ROLE RETURN para volver al original.' :
-              'Está usando su role original.'}`;
+${
+  this.isTemporaryRoleMode
+    ? 'Está usando temporalmente otro role.\nUse ROLE RETURN para volver al original.'
+    : 'Está usando su role original.'
+}`;
           break;
         case cmd === 'role':
           result = `Utilización: ROLE [LIST | SELECT | SWITCH | RETURN | STATUS]
@@ -858,91 +1084,139 @@ Ejemplos:
           break;
 
         // Comandos de usuarios
-          case cmd === 'users list':
+        case cmd === 'users list':
           result = 'Cargando lista de usuarios...';
-          this.loadUsersList().then((usersList) => {
-            if (usersList.length === 0) {
-              this.addOutput('No se encontraron usuarios disponibles.', 'error');
-            } else {
-              const usersListResult = `Lista de usuarios disponibles:\n\n${usersList.map(({user}, index) =>
-                `${index + 1}. ${user.name} (${user.email})\n   Role: ${user.role} | ID: ${user?.id}`
-              ).join('\n\n')}\n\nTotal: ${usersList.length} usuarios\nPara cambiar contraseña use: USERS PASSWORD\nPara modo interactivo use: USERS SELECT`;
-              this.addOutput(usersListResult);
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de usuarios: ' + error.message, 'error');
-          });
+          this.loadUsersList()
+            .then((usersList) => {
+              if (usersList.length === 0) {
+                this.addOutput(
+                  'No se encontraron usuarios disponibles.',
+                  'error',
+                );
+              } else {
+                const usersListResult = `Lista de usuarios disponibles:\n\n${usersList
+                  .map(
+                    ({ user }, index) =>
+                      `${index + 1}. ${user.name} (${user.email})\n   Role: ${user.role} | ID: ${user?.id}`,
+                  )
+                  .join(
+                    '\n\n',
+                  )}\n\nTotal: ${usersList.length} usuarios\nPara cambiar contraseña use: USERS PASSWORD\nPara modo interactivo use: USERS SELECT`;
+                this.addOutput(usersListResult);
+              }
+            })
+            .catch((error) => {
+              this.addOutput(
+                'Error al cargar la lista de usuarios: ' + error.message,
+                'error',
+              );
+            });
           break;
 
         case cmd.startsWith('users search '): {
           const searchTerm = cmd.replace('users search ', '').trim();
           if (!searchTerm) {
-            result = 'Error: Debe especificar un término de búsqueda.\nUso: USERS SEARCH [TEXTO]';
+            result =
+              'Error: Debe especificar un término de búsqueda.\nUso: USERS SEARCH [TEXTO]';
           } else {
             result = 'Buscando usuarios...';
-            fbSearchUsers(searchTerm).then((users) => {
-              if (users.length === 0) {
-                this.addOutput(`No se encontraron usuarios que coincidan con "${searchTerm}".`, 'warning');
-              } else {
-                const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users.map(({user}, index) => `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`).join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
-                this.addOutput(searchResult);
-              }
-            }).catch((error) => {
-              this.addOutput('Error al buscar usuarios: ' + error.message, 'error');
-            });
+            fbSearchUsers(searchTerm)
+              .then((users) => {
+                if (users.length === 0) {
+                  this.addOutput(
+                    `No se encontraron usuarios que coincidan con "${searchTerm}".`,
+                    'warning',
+                  );
+                } else {
+                  const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users.map(({ user }, index) => `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`).join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
+                  this.addOutput(searchResult);
+                }
+              })
+              .catch((error) => {
+                this.addOutput(
+                  'Error al buscar usuarios: ' + error.message,
+                  'error',
+                );
+              });
           }
           break;
         }
 
         case cmd === 'users password':
           result = 'Iniciando proceso de cambio de contraseña...';
-          this.loadUsersList().then((usersList) => {
-            if (usersList.length === 0) {
-              this.addOutput('No se encontraron usuarios disponibles.', 'error');
-            } else {
-              // Preparar items para el modo de selección
-              const selectionItems = usersList.map(({ user }) => ({
-                id: user?.id,
-                display: `👤 ${user?.name} Negocio: (${user?.businessID}) - Role: ${user?.role} - Id: ${user?.id}`,
-                name: user?.name,
-                email: user?.email,
-                role: user?.role,
-                userData: user
-              }));
+          this.loadUsersList()
+            .then((usersList) => {
+              if (usersList.length === 0) {
+                this.addOutput(
+                  'No se encontraron usuarios disponibles.',
+                  'error',
+                );
+              } else {
+                // Preparar items para el modo de selección
+                const selectionItems = usersList.map(({ user }) => ({
+                  id: user?.id,
+                  display: `👤 ${user?.name} Negocio: (${user?.businessID}) - Role: ${user?.role} - Id: ${user?.id}`,
+                  name: user?.name,
+                  email: user?.email,
+                  role: user?.role,
+                  userData: user,
+                }));
 
-              // Entrar en modo de selección
-              this.enterSelectionMode(
-                selectionItems,
-                '🔑 Seleccionar Usuario para Cambiar Contraseña:',
-                (selectedItem) => {
-                  // Solicitar nueva contraseña
-                  const newPassword = prompt(`Ingrese la nueva contraseña para ${selectedItem.name}:`);
+                // Entrar en modo de selección
+                this.enterSelectionMode(
+                  selectionItems,
+                  '🔑 Seleccionar Usuario para Cambiar Contraseña:',
+                  (selectedItem) => {
+                    // Solicitar nueva contraseña
+                    const newPassword = prompt(
+                      `Ingrese la nueva contraseña para ${selectedItem.name}:`,
+                    );
 
-                  if (newPassword && newPassword.trim()) {
-                    if (newPassword.length < 6) {
-                      this.addOutput('❌ Error: La contraseña debe tener al menos 6 caracteres.', 'error');
-                      return;
+                    if (newPassword && newPassword.trim()) {
+                      if (newPassword.length < 6) {
+                        this.addOutput(
+                          '❌ Error: La contraseña debe tener al menos 6 caracteres.',
+                          'error',
+                        );
+                        return;
+                      }
+
+                      this.addOutput(
+                        `🔄 Cambiando contraseña para ${selectedItem.name}...`,
+                      );
+
+                      this.changeUserPassword(
+                        selectedItem.id,
+                        newPassword.trim(),
+                      )
+                        .then(() => {
+                          this.addOutput(
+                            `✅ Contraseña cambiada exitosamente para:\n\nUsuario: ${selectedItem.name}\nEmail: ${selectedItem.email}\nID: ${selectedItem.id}\n\n🔐 La nueva contraseña ha sido encriptada y guardada.`,
+                          );
+                        })
+                        .catch((error) => {
+                          this.addOutput(
+                            `❌ Error al cambiar la contraseña: ${error.message}`,
+                            'error',
+                          );
+                        });
+                    } else {
+                      this.addOutput(
+                        '❌ Operación cancelada. No se ingresó una contraseña válida.',
+                        'warning',
+                      );
                     }
-
-                    this.addOutput(`🔄 Cambiando contraseña para ${selectedItem.name}...`);
-
-                    this.changeUserPassword(selectedItem.id, newPassword.trim())
-                      .then(() => {
-                        this.addOutput(`✅ Contraseña cambiada exitosamente para:\n\nUsuario: ${selectedItem.name}\nEmail: ${selectedItem.email}\nID: ${selectedItem.id}\n\n🔐 La nueva contraseña ha sido encriptada y guardada.`);
-                      })
-                      .catch((error) => {
-                        this.addOutput(`❌ Error al cambiar la contraseña: ${error.message}`, 'error');
-                      });
-                  } else {
-                    this.addOutput('❌ Operación cancelada. No se ingresó una contraseña válida.', 'warning');
-                  }
-                },
-                'users password'
+                  },
+                  'users password',
+                );
+              }
+            })
+            .catch((error) => {
+              this.addOutput(
+                'Error al cargar la lista de usuarios: ' + error.message,
+                'error',
               );
-            }
-          }).catch((error) => {
-            this.addOutput('Error al cargar la lista de usuarios: ' + error.message, 'error');
-          });
+            });
           break;
 
         case cmd === 'users':

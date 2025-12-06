@@ -14,7 +14,9 @@ const StyledCard = styled.div`
 `;
 
 const BillingConfig = () => {
-  const { billing: { billingMode,  } } = useSelector(SelectSettingCart);
+  const {
+    billing: { billingMode },
+  } = useSelector(SelectSettingCart);
 
   return (
     <StyledCard title="Configuración de Ventas y Facturación" bordered={false}>
@@ -25,7 +27,7 @@ const BillingConfig = () => {
       >
         <BillingModeConfig billingMode={billingMode} />
       </BillingSection>
-      
+
       <BillingSection
         title="Configuración de Factura"
         description="Configure los detalles de su factura."
@@ -41,7 +43,6 @@ const BillingConfig = () => {
       >
         <QuoteSettingsSection />
       </BillingSection>
-      
     </StyledCard>
   );
 };

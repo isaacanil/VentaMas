@@ -1,43 +1,43 @@
-import { 
-  faChevronLeft, 
-  faChevronRight, 
-  faFilter, 
+import {
+  faChevronLeft,
+  faChevronRight,
+  faFilter,
   faSearch,
-  faStoreAlt
-} from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Input, Button } from 'antd'
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
+  faStoreAlt,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Input, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 
-import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses'
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
-import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal'
+import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses';
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal';
 
-import { BusinessCard } from './components/BusinessCard/BusinessCard'
-import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer'
+import { BusinessCard } from './components/BusinessCard/BusinessCard';
+import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer';
 
 export const BusinessControl = () => {
-  const [businesses, setBusinesses] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [businesses, setBusinesses] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);  
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
-    province: "",
-    country: "",
-    businessType: "",
+    province: '',
+    country: '',
+    businessType: '',
     hasRNC: false,
-    sortBy: "newest" // Opciones: newest, oldest
-  })
-  const [filtersVisible, setFiltersVisible] = useState(false)
-  const [availableProvinces, setAvailableProvinces] = useState([])
-  const [availableCountries, setAvailableCountries] = useState([])
-  const [availableBusinessTypes, setAvailableBusinessTypes] = useState([])
-  const itemsPerPage = 20
+    sortBy: 'newest', // Opciones: newest, oldest
+  });
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [availableProvinces, setAvailableProvinces] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [availableBusinessTypes, setAvailableBusinessTypes] = useState([]);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     const fetchBusinesses = async () => {
@@ -46,42 +46,47 @@ export const BusinessControl = () => {
       try {
         await fbGetBusinesses(setBusinesses);
       } catch (err) {
-        console.error("Error al cargar los negocios:", err);
-        setError("No se pudieron cargar los negocios. Por favor, intente de nuevo más tarde.");
+        console.error('Error al cargar los negocios:', err);
+        setError(
+          'No se pudieron cargar los negocios. Por favor, intente de nuevo más tarde.',
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchBusinesses();
-  }, [])
-  
+  }, []);
+
   // Extraer opciones disponibles de filtros de los datos de negocios
   useEffect(() => {
     if (businesses && businesses.length) {
       // Extraer provincias únicas
-      const provinces = [...new Set(businesses
-        .map(item => item.business?.province)
-        .filter(Boolean))]
-        .sort();
+      const provinces = [
+        ...new Set(
+          businesses.map((item) => item.business?.province).filter(Boolean),
+        ),
+      ].sort();
       setAvailableProvinces(provinces);
-      
+
       // Extraer países únicos
-      const countries = [...new Set(businesses
-        .map(item => item.business?.country)
-        .filter(Boolean))]
-        .sort();
+      const countries = [
+        ...new Set(
+          businesses.map((item) => item.business?.country).filter(Boolean),
+        ),
+      ].sort();
       setAvailableCountries(countries);
-      
+
       // Extraer tipos de negocio únicos
-      const businessTypes = [...new Set(businesses
-        .map(item => item.business?.businessType)
-        .filter(Boolean))]
-        .sort();
+      const businessTypes = [
+        ...new Set(
+          businesses.map((item) => item.business?.businessType).filter(Boolean),
+        ),
+      ].sort();
       setAvailableBusinessTypes(businessTypes);
     }
-  }, [businesses])
-  
+  }, [businesses]);
+
   // Implementación de debounce para la búsqueda
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -94,20 +99,20 @@ export const BusinessControl = () => {
   }, [searchTerm]);
 
   const handleFilterChange = (filterName, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterName]: value
+      [filterName]: value,
     }));
     // Regresar a la primera página al cambiar filtros
     setCurrentPage(1);
   };
   const resetFilters = () => {
     setFilters({
-      province: "",
-      country: "",
-      businessType: "",
+      province: '',
+      country: '',
+      businessType: '',
       hasRNC: false,
-      sortBy: "newest"
+      sortBy: 'newest',
     });
   };
   const showFiltersDrawer = () => {
@@ -120,68 +125,95 @@ export const BusinessControl = () => {
 
   const filteredBusinesses = businesses.filter((obj) => {
     const business = obj.business;
-    
+
     // Filtro por término de búsqueda (nombre, dirección, teléfono, email, etc.)
-    const searchMatches = !debouncedSearchTerm || 
-      (business.name && business.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-      (business.address && business.address.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-      (business.tel && business.tel.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-      (business.email && business.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-      (business.rnc && business.rnc.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
-    
+    const searchMatches =
+      !debouncedSearchTerm ||
+      (business.name &&
+        business.name
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())) ||
+      (business.address &&
+        business.address
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())) ||
+      (business.tel &&
+        business.tel
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())) ||
+      (business.email &&
+        business.email
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase())) ||
+      (business.rnc &&
+        business.rnc.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+
     // Filtro por provincia
-    const provinceMatches = !filters.province || 
+    const provinceMatches =
+      !filters.province ||
       (business.province && business.province === filters.province);
-    
+
     // Filtro por país
-    const countryMatches = !filters.country || 
+    const countryMatches =
+      !filters.country ||
       (business.country && business.country === filters.country);
-    
+
     // Filtro por tipo de negocio
-    const businessTypeMatches = !filters.businessType || 
+    const businessTypeMatches =
+      !filters.businessType ||
       (business.businessType && business.businessType === filters.businessType);
-    
+
     // Filtro por RNC (si existe o no)
-    const rncMatches = !filters.hasRNC || 
-      (business.rnc && business.rnc.trim() !== "");
-    
+    const rncMatches =
+      !filters.hasRNC || (business.rnc && business.rnc.trim() !== '');
+
     // Debe cumplir con todos los filtros
-    return searchMatches && provinceMatches && countryMatches && businessTypeMatches && rncMatches;
-  })
+    return (
+      searchMatches &&
+      provinceMatches &&
+      countryMatches &&
+      businessTypeMatches &&
+      rncMatches
+    );
+  });
   // Ordenar negocios por fecha de creación
   const sortedBusinesses = [...filteredBusinesses].sort((a, b) => {
     const dateA = a.business?.createdAt?.seconds || 0;
     const dateB = b.business?.createdAt?.seconds || 0;
-    
+
     // Ordenar por más reciente (newest) o más antiguo (oldest)
-    return filters.sortBy === "newest" ? dateB - dateA : dateA - dateB;
+    return filters.sortBy === 'newest' ? dateB - dateA : dateA - dateB;
   });
 
-  const indexOfLastBusiness = currentPage * itemsPerPage
-  const indexOfFirstBusiness = indexOfLastBusiness - itemsPerPage
-  const currentBusinesses = sortedBusinesses.slice(indexOfFirstBusiness, indexOfLastBusiness)
-  const totalPages = Math.ceil(filteredBusinesses.length / itemsPerPage)
+  const indexOfLastBusiness = currentPage * itemsPerPage;
+  const indexOfFirstBusiness = indexOfLastBusiness - itemsPerPage;
+  const currentBusinesses = sortedBusinesses.slice(
+    indexOfFirstBusiness,
+    indexOfLastBusiness,
+  );
+  const totalPages = Math.ceil(filteredBusinesses.length / itemsPerPage);
 
   const goToPrevPage = () => {
-    if(currentPage > 1) setCurrentPage(currentPage - 1)
-  }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
   const goToNextPage = () => {
-    if(currentPage < totalPages) setCurrentPage(currentPage + 1)
-  }
-  
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
   const handleEditBusiness = (business) => {
-    setSelectedBusiness(business)
-    setEditModalOpen(true)
-  }
-  
+    setSelectedBusiness(business);
+    setEditModalOpen(true);
+  };
+
   const handleCloseModal = () => {
-    setEditModalOpen(false)
-    setSelectedBusiness(null)
-  }
+    setEditModalOpen(false);
+    setSelectedBusiness(null);
+  };
   return (
     <Container>
       <Head>
-        <MenuApp sectionName={"Gestionar Negocios"} />        <SearchAndFilterContainer>
+        <MenuApp sectionName={'Gestionar Negocios'} />{' '}
+        <SearchAndFilterContainer>
           <SearchInputWrapper>
             <Input
               placeholder="Buscar por nombre, dirección, teléfono..."
@@ -189,15 +221,19 @@ export const BusinessControl = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               prefix={<FontAwesomeIcon icon={faSearch} />}
             />
-          </SearchInputWrapper>          <Button 
+          </SearchInputWrapper>{' '}
+          <Button
             icon={<FontAwesomeIcon icon={faFilter} />}
             onClick={showFiltersDrawer}
-            type={filtersVisible ? "primary" : "default"}
+            type={filtersVisible ? 'primary' : 'default'}
           >
-            Filtros {(filters.province || filters.country || filters.businessType) ? `(${filteredBusinesses.length})` : ""}
+            Filtros{' '}
+            {filters.province || filters.country || filters.businessType
+              ? `(${filteredBusinesses.length})`
+              : ''}
           </Button>
         </SearchAndFilterContainer>
-          {/* Implementación del drawer de filtros */}
+        {/* Implementación del drawer de filtros */}
         <FiltersDrawer
           visible={filtersVisible}
           onClose={closeFiltersDrawer}
@@ -209,7 +245,8 @@ export const BusinessControl = () => {
           availableBusinessTypes={availableBusinessTypes}
           resultsCount={filteredBusinesses.length}
         />
-      </Head>      <Body>
+      </Head>{' '}
+      <Body>
         {isLoading ? (
           <LoadingMessage>
             <FontAwesomeIcon icon={faStoreAlt} spin /> Cargando negocios...
@@ -218,23 +255,41 @@ export const BusinessControl = () => {
           <ErrorMessage>{error}</ErrorMessage>
         ) : currentBusinesses.length === 0 ? (
           <EmptyMessage>
-            {debouncedSearchTerm || filters.province || filters.country || filters.businessType || filters.hasRNC ? (
+            {debouncedSearchTerm ||
+            filters.province ||
+            filters.country ||
+            filters.businessType ||
+            filters.hasRNC ? (
               <>
-                <FontAwesomeIcon icon={faFilter} style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }} />
+                <FontAwesomeIcon
+                  icon={faFilter}
+                  style={{
+                    fontSize: '2rem',
+                    marginBottom: '1rem',
+                    opacity: 0.5,
+                  }}
+                />
                 <p>No se encontraron negocios con los filtros aplicados.</p>
                 <Button onClick={resetFilters}>Limpiar filtros</Button>
               </>
             ) : (
               <>
-                <FontAwesomeIcon icon={faStoreAlt} style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }} />
+                <FontAwesomeIcon
+                  icon={faStoreAlt}
+                  style={{
+                    fontSize: '2rem',
+                    marginBottom: '1rem',
+                    opacity: 0.5,
+                  }}
+                />
                 <p>No hay negocios registrados.</p>
               </>
             )}
           </EmptyMessage>
         ) : (
           currentBusinesses.map(({ business }, idx) => (
-            <BusinessCard 
-              key={idx} 
+            <BusinessCard
+              key={idx}
               business={business}
               onEditBusiness={handleEditBusiness}
             />
@@ -242,115 +297,114 @@ export const BusinessControl = () => {
         )}
       </Body>
       <Pagination>
-        <Button 
-          shape="circle" 
-          icon={<FontAwesomeIcon icon={faChevronLeft} />} 
-          onClick={goToPrevPage} 
+        <Button
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faChevronLeft} />}
+          onClick={goToPrevPage}
           disabled={currentPage === 1}
         />
-        <PageIndicator>{currentPage}/{totalPages}</PageIndicator>
-        <Button 
-          shape="circle" 
-          icon={<FontAwesomeIcon icon={faChevronRight} />} 
-          onClick={goToNextPage} 
+        <PageIndicator>
+          {currentPage}/{totalPages}
+        </PageIndicator>
+        <Button
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faChevronRight} />}
+          onClick={goToNextPage}
           disabled={currentPage === totalPages}
         />
       </Pagination>
-      
       {/* Modal centralizado para editar negocio */}
       {selectedBusiness && (
-        <BusinessEditModal 
-          isOpen={editModalOpen} 
+        <BusinessEditModal
+          isOpen={editModalOpen}
           onClose={handleCloseModal}
           business={selectedBusiness}
         />
       )}
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   height: 100vh;
   overflow: hidden;
-`
-const Head = styled.div``
-
+`;
+const Head = styled.div``;
 
 const SearchAndFilterContainer = styled.div`
   display: flex;
-  padding: 10px;
   gap: 10px;
   align-items: center;
-`
+  padding: 10px;
+`;
 
 const SearchInputWrapper = styled.div`
   width: 300px;
-`
-
+`;
 
 const Body = styled.div`
   display: grid;
-  padding: 10px;
-  gap: 10px;
-  background-color: var(--color2);
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
   align-content: start;
+  padding: 10px;
   overflow: auto;
-`
+  background-color: var(--color2);
+`;
 const Pagination = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
   gap: 15px;
-`
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+`;
 
 const PageIndicator = styled.div`
+  min-width: 40px;
   font-size: 14px;
   font-weight: 500;
   color: #595959;
-  min-width: 40px;
   text-align: center;
-`
+`;
 
 const LoadingMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  color: #595959;
-  gap: 1rem;
   font-size: 1rem;
-`
+  color: #595959;
+`;
 
 const ErrorMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
+  font-size: 1rem;
   color: #ff4d4f;
   text-align: center;
-  font-size: 1rem;
-`
+`;
 
 const EmptyMessage = styled.div`
-  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
+  grid-column: 1 / -1;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
   color: #595959;
   text-align: center;
-  
+
   p {
     margin-bottom: 1rem;
     font-size: 1rem;
   }
-`
+`;

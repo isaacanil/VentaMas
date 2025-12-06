@@ -83,11 +83,11 @@ const NotificationPanels = ({ data }) => {
 };
 
 const PanelsContainer = styled(motion.div)`
-  padding: 0;
-  background: transparent;
   display: flex;
   flex-direction: column;
-  gap: 0em;
+  gap: 0;
+  padding: 0;
+  background: transparent;
 `;
 
 const PanelItem = styled(motion.div)`

@@ -1,7 +1,6 @@
-import{
+import {
   memo,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -20,11 +19,14 @@ import { DatePicker } from '../Dates/DatePicker/DatePicker';
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { FilterUI } from './components/MenuFilter/MenuFilter';
 import { TableBody } from './components/Table/TableBody/TableBody';
+import { VirtualTableBody } from './components/Table/TableBody/VirtualTableBody';
 import TableFooter from './components/Table/TableFooter/TableFooter';
 import { TableHeader } from './components/Table/TableHeader/TableHeader';
 import { useColumnOrder } from './hooks/useColumnOrder';
 import { useTablePagination } from './hooks/usePagination';
-import useTableFiltering, { useDynamicFilterConfig } from './hooks/useTableFilter';
+import useTableFiltering, {
+  useDynamicFilterConfig,
+} from './hooks/useTableFilter';
 import useTableSorting from './hooks/useTableSorting';
 
 import type { ColumnConfig } from './types/ColumnTypes';
@@ -110,6 +112,8 @@ export interface AdvancedTableProps<Row = TableRow> {
   expandedRowRender?: (row: Row) => ReactNode;
   rowExpandable?: (row: Row) => boolean;
   getRowId?: (row: Row, index: number) => string | number;
+  enableVirtualization?: boolean;
+  showPagination?: boolean;
 }
 
 interface PaginationUtilities<Row> {
@@ -130,7 +134,11 @@ interface SortUtilities<Row> {
 
 const toGroupKey = (value: unknown): string => {
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
     return String(value);
   }
   if (value instanceof Date) return value.toISOString();
@@ -145,19 +153,21 @@ const toGroupKey = (value: unknown): string => {
   return '';
 };
 
-const groupDataByField = <Row extends TableRow>(data: Row[], field: string): Record<string, Row[]> => (
+const groupDataByField = <Row extends TableRow>(
+  data: Row[],
+  field: string,
+): Record<string, Row[]> =>
   data.reduce<Record<string, Row[]>>((acc, item) => {
     const key = toGroupKey((item as TableRow)[field]);
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);
     return acc;
-  }, {})
-);
+  }, {});
 
 const useWideLayout = (): boolean => {
-  const [isWide, setIsWide] = useState(() => (
-    typeof window === 'undefined' ? true : window.innerWidth >= 1600
-  ));
+  const [isWide, setIsWide] = useState(() =>
+    typeof window === 'undefined' ? true : window.innerWidth >= 1600,
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -173,7 +183,7 @@ const useWideLayout = (): boolean => {
 
 const selectUserUid = (state: UserStoreState): string | undefined => {
   const maybeUser = state.user?.user;
-  return (typeof maybeUser?.uid === 'string') ? maybeUser.uid : undefined;
+  return typeof maybeUser?.uid === 'string' ? maybeUser.uid : undefined;
 };
 
 const AdvancedTableInner = <Row extends TableRow = TableRow>({
@@ -217,11 +227,15 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   expandedRowRender,
   rowExpandable,
   getRowId,
+  enableVirtualization = false,
+  showPagination = true,
 }: AdvancedTableProps<Row>) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const userUid = useSelector<UserStoreState, string | undefined>(selectUserUid);
+  const userUid = useSelector<UserStoreState, string | undefined>(
+    selectUserUid,
+  );
 
-  const columnsWithExpander = useMemo<InternalColumn<Row>[]>(() => {
+  const columnsWithExpander = (() => {
     if (!expandedRowRender) return columns;
 
     const expanderCol: InternalColumn<Row> = {
@@ -234,7 +248,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
       sortable: false,
       clickable: false,
       cell: ({ value }) => {
-        const expanderValue = value as { expanded?: boolean; toggle?: () => void } | undefined;
+        const expanderValue = value as
+          | { expanded?: boolean; toggle?: () => void }
+          | undefined;
         const isExpanded = !!expanderValue?.expanded;
         const toggle = expanderValue?.toggle;
         return (
@@ -253,7 +269,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     };
 
     return [expanderCol, ...columns];
-  }, [columns, expandedRowRender]);
+  })();
 
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
   const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder(
@@ -261,41 +277,34 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     tableName,
     userUid,
   ) as [
-    InternalColumn<Row>[],
-    Dispatch<SetStateAction<InternalColumn<Row>[]>>,
-    () => void
-  ];
+      InternalColumn<Row>[],
+      Dispatch<SetStateAction<InternalColumn<Row>[]>>,
+      () => void,
+    ];
 
   const toggleReorderMenu = () => {
     setIsReorderMenuOpen((prev) => !prev);
   };
 
-  const [
-    filter,
-    setFilter,
-    setDefaultFilter,
-    defaultFilter,
-    filteredData,
-  ] = useTableFiltering(filterConfig, data) as [
-    FilterState,
-    Dispatch<SetStateAction<FilterState>>,
-    () => void,
-    FilterState,
-    Row[]
-  ];
+  const [filter, setFilter, setDefaultFilter, defaultFilter, filteredData] =
+    useTableFiltering(filterConfig, data) as [
+      FilterState,
+      Dispatch<SetStateAction<FilterState>>,
+      () => void,
+      FilterState,
+      Row[],
+    ];
 
-  const dynamicFilterConfig = useDynamicFilterConfig(filterConfig, data) as AdvancedTableFilterConfig[];
+  const dynamicFilterConfig = useDynamicFilterConfig(
+    filterConfig,
+    data,
+  ) as AdvancedTableFilterConfig[];
 
-  const searchTermFilteredData = (searchTerm
+  const searchTermFilteredData = searchTerm
     ? (filterData(filteredData, searchTerm) as Row[])
-    : filteredData
-  );
+    : filteredData;
 
-  const {
-    handleSort,
-    sortedData,
-    sortConfig,
-  } = useTableSorting(
+  const { handleSort, sortedData, sortConfig } = useTableSorting(
     searchTermFilteredData,
     columnsWithExpander,
   ) as SortUtilities<Row>;
@@ -319,9 +328,40 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const shouldGroup = Boolean(
     (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy,
   );
-  const groupedData = (shouldGroup && groupBy)
-    ? groupDataByField(currentData, groupBy)
-    : sortedData;
+
+  // Si hay virtualización, agrupamos TODO el dataset (sortedData).
+  // Si es paginación normal, agrupamos solo la página actual (currentData).
+  const dataToGroup = enableVirtualization ? sortedData : currentData;
+
+  const groupedData =
+    shouldGroup && groupBy
+      ? groupDataByField(dataToGroup, groupBy)
+      : sortedData;
+
+  // Preparar datos planos para GroupedVirtuoso
+  const { groupCounts, groupHeaders, flatGroupedData } = (() => {
+    if (!shouldGroup || !groupBy || !enableVirtualization) {
+      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };
+    }
+
+    // En este punto groupedData es un objeto Record<string, Row[]>
+    const groups = groupedData as Record<string, Row[]>;
+    const headers = Object.keys(groups);
+    const counts: number[] = [];
+    const flatData: Row[] = [];
+
+    headers.forEach((header) => {
+      const rows = groups[header];
+      counts.push(rows.length);
+      flatData.push(...rows);
+    });
+
+    return {
+      groupCounts: counts,
+      groupHeaders: headers,
+      flatGroupedData: flatData,
+    };
+  })();
 
   const totalElements = data.length;
   const elementsShown = currentData.length;
@@ -329,7 +369,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
 
-  const handleWrapperScroll = useMemo<((event: UIEvent<HTMLDivElement>) => void) | undefined>(() => {
+  const handleWrapperScroll = (() => {
     if (!onScroll && !onScrollMetrics) return undefined;
 
     return (event: UIEvent<HTMLDivElement>) => {
@@ -360,7 +400,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
         }
       }
     };
-  }, [onScroll, onScrollMetrics]);
+  })();
 
   useEffect(() => {
     if (typeof onScrollMetrics !== 'function') return undefined;
@@ -396,10 +436,14 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     return () => resizeObserver.disconnect();
   }, [onScrollMetrics]);
 
+  const shouldUseVirtualization = enableVirtualization && !loading;
+
   return (
     <Container
       $hasTitle={!!title}
-      $hasToolbar={Boolean(filterUI || datePicker || headerComponent || dateRange)}
+      $hasToolbar={Boolean(
+        filterUI || datePicker || headerComponent || dateRange,
+      )}
     >
       {title && <TableTitle>{title}</TableTitle>}
 
@@ -431,6 +475,11 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           ref={wrapperRef}
           isWideScreen={isWideScreen}
           onScroll={handleWrapperScroll}
+          style={
+            shouldUseVirtualization
+              ? { overflow: 'hidden', display: 'flex', flexDirection: 'column' }
+              : undefined
+          }
         >
           <TableHeader
             columnOrder={columnOrder}
@@ -440,22 +489,43 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
             isWideLayout={isWideLayout}
             rowSize={rowSize}
           />
-          <TableBody
-            columnOrder={columnOrder}
-            currentData={currentData}
-            emptyText={emptyText}
-            groupedData={groupedData}
-            onRowClick={onRowClick}
-            shouldGroup={shouldGroup}
-            loading={loading}
-            isWideScreen={isWideScreen}
-            isWideLayout={isWideLayout}
-            expandedRowRender={expandedRowRender}
-            rowExpandable={rowExpandable}
-            getRowId={getRowId}
-            rowSize={rowSize}
-            rowBorder={rowBorder}
-          />
+          {shouldUseVirtualization ? (
+            <VirtualTableBody
+              columnOrder={columnOrder}
+              currentData={sortedData}
+              emptyText={emptyText}
+              onRowClick={onRowClick}
+              loading={loading}
+              isWideScreen={isWideScreen}
+              isWideLayout={isWideLayout}
+              expandedRowRender={expandedRowRender}
+              rowExpandable={rowExpandable}
+              getRowId={getRowId}
+              rowSize={rowSize}
+              rowBorder={rowBorder}
+              shouldGroup={shouldGroup}
+              groupCounts={groupCounts}
+              groupHeaders={groupHeaders}
+              flatGroupedData={flatGroupedData}
+            />
+          ) : (
+            <TableBody
+              columnOrder={columnOrder}
+              currentData={currentData}
+              emptyText={emptyText}
+              groupedData={groupedData}
+              onRowClick={onRowClick}
+              shouldGroup={shouldGroup}
+              loading={loading}
+              isWideScreen={isWideScreen}
+              isWideLayout={isWideLayout}
+              expandedRowRender={expandedRowRender}
+              rowExpandable={rowExpandable}
+              getRowId={getRowId}
+              rowSize={rowSize}
+              rowBorder={rowBorder}
+            />
+          )}
         </Wrapper>
         <TableFooter
           currentPage={currentPage}
@@ -470,6 +540,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           prevPage={prevPage}
           toggleReorderMenu={toggleReorderMenu}
           totalElements={totalElements}
+          showPaginationControls={!shouldUseVirtualization && showPagination}
         />
         <ColumnMenu
           resetColumnOrder={resetColumnOrder}
@@ -484,7 +555,9 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   );
 };
 
-export const AdvancedTable = memo(AdvancedTableInner) as typeof AdvancedTableInner;
+export const AdvancedTable = memo(
+  AdvancedTableInner,
+) as typeof AdvancedTableInner;
 
 export type {
   InternalColumn as AdvancedTableColumn,
@@ -507,53 +580,54 @@ type AdvancedTheme = DefaultTheme & {
 };
 
 const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
-  border: var(--border-primary);
-  height: 100%;
   display: grid;
-  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
-  border-radius: 0.4em;
-  overflow: hidden;
-
-  grid-template-rows: ${({ $hasTitle, $hasToolbar }) => (
+  grid-template-rows: ${({ $hasTitle, $hasToolbar }) =>
     [
       $hasTitle ? 'min-content' : null,
       $hasToolbar ? 'min-content' : null,
       '1fr',
-    ].filter(Boolean).join(' ')
-  )};
+    ]
+      .filter(Boolean)
+      .join(' ')};
+  height: 100%;
+  overflow: hidden;
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
+  border: var(--border-primary);
+  border-radius: 0.4em;
 `;
 
 const TableTitle = styled.div`
+  height: min-content;
   padding: 0.8em 1em;
   font-size: 1.1em;
-  height: min-content;
   font-weight: 600;
-  background-color: ${({ theme }) => (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
   border-bottom: var(--border-primary);
 `;
 
 const TableContainer = styled.div`
+  position: relative;
   display: grid;
   grid-template-rows: 1fr min-content;
-  overflow: hidden;
-  position: relative;
   width: 100%;
+  overflow: hidden;
   isolation: isolate;
 `;
 
 const Wrapper = styled.div<{ isWideScreen: boolean }>`
+  position: relative;
   display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   height: 100%;
-  grid-template-rows: min-content 1fr;
-  overflow-y: scroll;
-  overflow-x: auto;
-  background-color: #ffffff;
-  position: relative;
+  overflow: auto scroll;
+  background-color: #fff;
 
   &::-webkit-scrollbar {
-    height: 8px;
     width: 8px;
+    height: 8px;
   }
 
   &::-webkit-scrollbar-track {
@@ -572,13 +646,13 @@ export const ExpanderButton = styled.button`
   justify-content: center;
   width: 24px;
   height: 24px;
-  border: none;
-  background: transparent;
+  color: var(--gray-7);
   cursor: pointer;
-  color: var(--Gray7);
+  background: transparent;
+  border: none;
 
   &:hover {
-    color: var(--Gray9);
+    color: var(--gray-9);
   }
 `;
 
@@ -586,9 +660,9 @@ export const ExpandedRow = styled.div`
   grid-column: 1 / -1;
   padding: 8px 12px;
   background: #fafafa;
-  border-left: 2px solid var(--Gray3);
-  border-right: 2px solid var(--Gray3);
-  border-bottom: 1px dashed var(--Gray3);
+  border-right: 2px solid var(--gray-3);
+  border-bottom: 1px dashed var(--gray-3);
+  border-left: 2px solid var(--gray-3);
 `;
 
 type StyledColumn = InternalColumn<TableRow>;
@@ -598,26 +672,27 @@ export const Row = styled.div<{
   isWideLayout: boolean;
   isWideScreen: boolean;
 }>`
+  position: relative;
   display: grid;
   grid-template-columns: ${(props) => {
     if (!props.columns.length) return '1fr';
 
-    const template = props.isWideLayout
-      ? props.columns.map((col) => (
-        col.keepWidth
-          ? `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
-          : '1fr'
-      ))
-      : props.columns.map((col) => (
-        `minmax(${col.minWidth || '100px'}, ${col.maxWidth || '1fr'})`
-      ));
+    const template = props.columns.map((col) => {
+      const minWidth = col.minWidth || '100px';
+      const maxWidth = col.maxWidth || '1fr';
+
+      return `minmax(${minWidth}, ${maxWidth})`;
+    });
 
     const value = template.join(' ');
     return value || '1fr';
   }};
-  align-items: center;
   gap: 0.6em;
-  position: relative;
-  min-width: fit-content;
+  align-items: center;
   width: 100%;
+  min-width: fit-content;
+
+  &[data-border='on'] {
+    border-bottom: 1px solid var(--row-border-color, #f0f0f0);
+  }
 `;

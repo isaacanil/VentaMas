@@ -1,4 +1,10 @@
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -23,33 +29,39 @@ export const useFbGetAvailableCreditNotes = (clientId) => {
     const q = query(
       ref,
       where('client.id', '==', clientId),
-      where('status', 'in', [CREDIT_NOTE_STATUS.ISSUED, CREDIT_NOTE_STATUS.APPLIED]),
-      orderBy('createdAt', 'desc')
+      where('status', 'in', [
+        CREDIT_NOTE_STATUS.ISSUED,
+        CREDIT_NOTE_STATUS.APPLIED,
+      ]),
+      orderBy('createdAt', 'desc'),
     );
 
     const unsub = onSnapshot(
       q,
-      snap => {
-        const list = snap.docs.map(d => {
+      (snap) => {
+        const list = snap.docs.map((d) => {
           const data = d.data();
-          return { 
-            ...data, 
-            id: d.id, 
-            availableAmount: data.availableAmount ?? (data.totalAmount || 0)
+          return {
+            ...data,
+            id: d.id,
+            availableAmount: data.availableAmount ?? (data.totalAmount || 0),
           };
         });
-        setCreditNotes(list.filter(n => n.availableAmount > 0));
+        setCreditNotes(list.filter((n) => n.availableAmount > 0));
         setLoading(false);
       },
-      err => {
+      (err) => {
         console.error('get available credit notes', err);
         setLoading(false);
-      }
+      },
     );
     return () => unsub();
   }, [clientId, user?.businessID]);
 
-  const totalAvailable = creditNotes.reduce((s, n) => s + (n.availableAmount || 0), 0);
+  const totalAvailable = creditNotes.reduce(
+    (s, n) => s + (n.availableAmount || 0),
+    0,
+  );
 
   return { creditNotes, loading, totalAvailable };
-}; 
+};

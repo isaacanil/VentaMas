@@ -5,9 +5,8 @@ import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
 
 import { FilterField } from './FilterField';
 
-
-export const PaymentMethodFilter = ({ value, onChange }) => (
-  <FilterField label={FILTER_CONFIG.paymentMethod.label}>
+export const PaymentMethodFilter = ({ value, onChange, label }) => (
+  <FilterField label={label ?? FILTER_CONFIG.paymentMethod.label}>
     <Select
       value={value || ''}
       onChange={onChange}
@@ -19,4 +18,4 @@ export const PaymentMethodFilter = ({ value, onChange }) => (
       options={FILTER_CONFIG.paymentMethod.options}
     />
   </FilterField>
-); 
+);

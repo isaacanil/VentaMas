@@ -1,11 +1,11 @@
-import { 
-  faPrint, 
-  faEdit, 
-  faEye, 
-  faUser, 
+import {
+  faPrint,
+  faEdit,
+  faEye,
+  faUser,
   faReceipt,
   faCreditCard,
-  faShoppingCart
+  faShoppingCart,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useRef } from 'react';
@@ -16,7 +16,11 @@ import styled from 'styled-components';
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
 import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { abbreviatePaymentMethods, getActivePaymentMethods, isInvoicePaidInFull } from '../../../../../utils/invoice';
+import {
+  abbreviatePaymentMethods,
+  getActivePaymentMethods,
+  getInvoicePaymentInfo,
+} from '../../../../../utils/invoice';
 import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
@@ -24,8 +28,9 @@ import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization
 export const InvoiceItem = ({ data }) => {
   const componentToPrintRef = useRef(null);
   const dispatch = useDispatch();
-  const isCredit = isInvoicePaidInFull(data);
-  
+  const paymentInfo = getInvoicePaymentInfo(data);
+  const isPaidInFull = paymentInfo.isPaidInFull;
+
   // Data extraction
   const numberID = data?.numberID;
   const ncf = data?.NCF;
@@ -44,36 +49,40 @@ export const InvoiceItem = ({ data }) => {
   const formatDate = (seconds) => {
     if (!seconds) return new Date().toLocaleDateString('es-ES');
     const date = new Date(seconds * 1000);
-    return date.toLocaleDateString('es-ES', { 
-      day: '2-digit', 
-      month: '2-digit', 
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const handleRePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
   });
 
-  const proceedToEdit = useCallback((authorization) => {
-    const preparedInvoice = prepareInvoiceForEdit(data);
-    if (preparedInvoice) {
-      dispatch(
-        addInvoice({
-          invoice: preparedInvoice,
-          mode: 'edit',
-          authorizationRequest: authorization || null,
-        })
-      );
-    }
-  }, [data, dispatch]);
+  const proceedToEdit = useCallback(
+    (authorization) => {
+      const preparedInvoice = prepareInvoiceForEdit(data);
+      if (preparedInvoice) {
+        dispatch(
+          addInvoice({
+            invoice: preparedInvoice,
+            mode: 'edit',
+            authorizationRequest: authorization || null,
+          }),
+        );
+      }
+    },
+    [data, dispatch],
+  );
 
-  const { handleEdit, authorizationModal, isProcessing } = useInvoiceEditAuthorization({
-    invoice: data,
-    onAuthorized: proceedToEdit,
-  });
+  const { handleEdit, authorizationModal, isProcessing } =
+    useInvoiceEditAuthorization({
+      invoice: data,
+      onAuthorized: proceedToEdit,
+    });
 
   const handleViewMore = () => {
     dispatch(openInvoicePreviewModal(data));
@@ -98,8 +107,8 @@ export const InvoiceItem = ({ data }) => {
           </InvoiceInfo>
           <HeaderMeta>
             <DateInfo>{formatDate(date?.seconds)}</DateInfo>
-            <StatusTag $isCredit={isCredit}>
-              {isCredit ? "Contado" : "Crédito"}
+            <StatusTag $isPaid={isPaidInFull}>
+              {isPaidInFull ? 'Pagada' : 'Pago parcial'}
             </StatusTag>
           </HeaderMeta>
         </CardHeader>
@@ -109,25 +118,27 @@ export const InvoiceItem = ({ data }) => {
           <DetailsRow>
             <DetailItem>
               <DetailLabel>Subtotal:</DetailLabel>
-              <DetailValue>{useFormatPrice(totalPurchaseWithoutTaxes?.value)}</DetailValue>
+              <DetailValue>
+                {useFormatPrice(totalPurchaseWithoutTaxes?.value)}
+              </DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Descuento:</DetailLabel>
               <DetailValue>{discount?.value || 0}%</DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Delivery:</DetailLabel>
               <DetailValue>{useFormatPrice(delivery?.value || 0)}</DetailValue>
             </DetailItem>
-            
+
             <DetailItem>
               <DetailLabel>Itbis:</DetailLabel>
               <DetailValue>{useFormatPrice(totalTaxes?.value)}</DetailValue>
             </DetailItem>
           </DetailsRow>
-          
+
           <SummaryRow>
             <SummaryInfo>
               <ItemCount>
@@ -144,9 +155,30 @@ export const InvoiceItem = ({ data }) => {
 
         {/* Total y Acciones */}
         <ActionBar>
-          <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+          <TotalsBlock>
+            <TotalLabel>Total</TotalLabel>
+            <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+            <PaymentProgress>
+              <PaymentLine>
+                <PaymentDot />
+                <span>Pagado: {useFormatPrice(paymentInfo.paid)}</span>
+              </PaymentLine>
+              {!isPaidInFull && (
+                <PaymentLine>
+                  <PaymentDot $type="pending" />
+                  <span>
+                    Pendiente: {useFormatPrice(paymentInfo.pending)}
+                  </span>
+                </PaymentLine>
+              )}
+            </PaymentProgress>
+          </TotalsBlock>
           <ActionButtons>
-            <ActionButton onClick={handleEdit} disabled={isProcessing} variant="edit">
+            <ActionButton
+              onClick={handleEdit}
+              disabled={isProcessing}
+              variant="edit"
+            >
               <FontAwesomeIcon icon={faEdit} />
             </ActionButton>
             <ActionButton onClick={handleRePrint} variant="print">
@@ -164,46 +196,47 @@ export const InvoiceItem = ({ data }) => {
 };
 
 const Card = styled.div`
-  background: #ffffff;
-  border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
   border: 1px solid #e8e8e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
   transition: all 0.2s ease;
-  
+
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  justify-content: space-between;
   padding-bottom: 8px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
 `;
 
 const InvoiceInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
   min-width: 0;
 `;
 
 const InvoiceNumber = styled.div`
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 15px;
-  color: #1a1a1a;
   flex-wrap: wrap;
-  
+  gap: 6px;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+
   svg {
     font-size: 12px;
     color: #666;
@@ -211,40 +244,40 @@ const InvoiceNumber = styled.div`
 `;
 
 const NCFNumber = styled.span`
-  font-size: 11px;
-  color: #666;
-  font-weight: 400;
-  background: #f5f5f5;
   padding: 2px 6px;
-  border-radius: 3px;
   margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 3px;
 `;
 
 const ClientName = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   font-size: 13px;
   color: #666;
-  
+
   svg {
     font-size: 11px;
     color: #999;
   }
-  
+
   span {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
 const HeaderMeta = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
   flex-shrink: 0;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
 `;
 
 const DateInfo = styled.div`
@@ -260,12 +293,15 @@ const StatusTag = styled.div`
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  
-  ${({ $isCredit }) => $isCredit ? `
+
+  ${({ $isPaid }) =>
+    $isPaid
+      ? `
     background: #f6ffed;
     color: #389e0d;
     border: 1px solid #b7eb8f;
-  ` : `
+  `
+      : `
     background: #fff7e6;
     color: #d48806;
     border: 1px solid #ffd591;
@@ -291,41 +327,41 @@ const DetailItem = styled.div`
 `;
 
 const DetailLabel = styled.span`
+  margin-bottom: 2px;
   font-size: 10px;
-  color: #999;
   font-weight: 500;
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-bottom: 2px;
 `;
 
 const DetailValue = styled.span`
   font-size: 12px;
-  color: #333;
   font-weight: 600;
+  color: #333;
 `;
 
 const SummaryRow = styled.div`
-  background: #fafafa;
   padding: 3px 10px;
-  border-radius: 6px;
+  background: #fafafa;
   border: 1px solid #f0f0f0;
+  border-radius: 6px;
 `;
 
 const SummaryInfo = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ItemCount = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   font-size: 12px;
   color: #666;
-  
+
   svg {
     font-size: 10px;
     color: #999;
@@ -334,36 +370,75 @@ const ItemCount = styled.div`
 
 const PaymentMethod = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
   font-size: 12px;
   color: #666;
-  
+
   svg {
     font-size: 10px;
     color: #52c41a;
   }
-  
+
   span {
     max-width: 120px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
 const TotalAmount = styled.div`
+  flex-shrink: 0;
   font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
   text-align: left;
-  flex-shrink: 0;
 `;
 
 const ActionBar = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+`;
+
+const TotalsBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 11px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+`;
+
+const PaymentProgress = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PaymentLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #595959;
+`;
+
+const PaymentDot = styled.span`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${({ $type }) => ($type === 'pending' ? '#d4380d' : '#52c41a')};
+  box-shadow: 0 0 0 1px
+    ${({ $type }) =>
+      $type === 'pending'
+        ? 'rgba(212, 56, 13, 0.35)'
+        : 'rgba(82, 196, 26, 0.35)'};
 `;
 
 const ActionButtons = styled.div`
@@ -381,13 +456,14 @@ const ActionButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
   }
-  
+
   ${({ variant }) => {
-    switch(variant) {
+    switch (variant) {
       case 'edit':
         return `
           background: #fff;
@@ -427,16 +503,12 @@ const ActionButton = styled.button`
         return '';
     }
   }}
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
+
   svg {
     font-size: 12px;
   }
 `;
-
-
-
-

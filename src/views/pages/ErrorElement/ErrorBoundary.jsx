@@ -6,7 +6,12 @@ export class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     // Asegúrate de inicializar el estado con error y errorInfo
-    this.state = { hasError: false, error: null, errorStackTrace: null, errorInfo: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorStackTrace: null,
+      errorInfo: null,
+    };
   }
 
   static getDerivedStateFromError(_error) {
@@ -14,7 +19,6 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-   
     const errorStackTrace = error.stack;
     errorInfo = errorInfo.componentStack;
     this.setState({ errorStackTrace, errorInfo });
@@ -22,7 +26,12 @@ export class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      return <ErrorElement errorStackTrace={this.state.errorStackTrace} errorInfo={this.state.errorInfo} />;
+      return (
+        <ErrorElement
+          errorStackTrace={this.state.errorStackTrace}
+          errorInfo={this.state.errorInfo}
+        />
+      );
     }
 
     return this.props.children;

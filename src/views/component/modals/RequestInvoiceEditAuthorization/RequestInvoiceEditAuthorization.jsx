@@ -7,15 +7,23 @@ import { requestInvoiceEditAuthorization } from '../../../../firebase/authorizat
 
 const { Paragraph } = Typography;
 
-const ReasonsList = ({ reasons }) => (
+const ReasonsList = ({ reasons }) =>
   reasons?.length ? (
-    <ul style={{ marginTop: 0, marginBottom: 0, paddingLeft: 20, lineHeight: 1.8 }}>
+    <ul
+      style={{
+        marginTop: 0,
+        marginBottom: 0,
+        paddingLeft: 20,
+        lineHeight: 1.8,
+      }}
+    >
       {reasons.map((r, idx) => (
-        <li key={idx} style={{ fontSize: 14, marginBottom: 8 }}>{r}</li>
+        <li key={idx} style={{ fontSize: 14, marginBottom: 8 }}>
+          {r}
+        </li>
       ))}
     </ul>
-  ) : null
-);
+  ) : null;
 
 export const RequestInvoiceEditAuthorization = ({
   isOpen,
@@ -44,7 +52,12 @@ export const RequestInvoiceEditAuthorization = ({
       setSubmitting(true);
       setResultMsg('');
       setErrorMsg('');
-      const res = await requestInvoiceEditAuthorization(user, invoice, reasons, values.note || '');
+      const res = await requestInvoiceEditAuthorization(
+        user,
+        invoice,
+        reasons,
+        values.note || '',
+      );
       if (res?.alreadyPending) {
         setResultMsg('Ya existe una solicitud pendiente.');
       } else {
@@ -52,7 +65,7 @@ export const RequestInvoiceEditAuthorization = ({
       }
       setSubmitting(false);
       if (onRequested) onRequested(res);
-      
+
       // Cerrar automáticamente después de 5 segundos
       setTimeout(() => {
         handleCancel();
@@ -61,7 +74,7 @@ export const RequestInvoiceEditAuthorization = ({
       if (e?.errorFields) return; // validation
       setSubmitting(false);
       setErrorMsg(e?.message || 'Error enviando solicitud');
-      console.log(e)
+      console.log(e);
     }
   };
 
@@ -71,14 +84,30 @@ export const RequestInvoiceEditAuthorization = ({
       onCancel={handleCancel}
       centered
       width={560}
-      destroyOnClose
+      destroyOnHidden
       footer={[
-        <Button key="cancel" onClick={handleCancel} disabled={submitting}>Cancelar</Button>,
-        <Button key="submit" type="primary" onClick={handleRequest} loading={submitting}>Solicitar</Button>,
+        <Button key="cancel" onClick={handleCancel} disabled={submitting}>
+          Cancelar
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          onClick={handleRequest}
+          loading={submitting}
+        >
+          Solicitar
+        </Button>,
       ]}
     >
       <div style={{ display: 'grid', gap: 20 }}>
-        <Paragraph style={{ marginBottom: 0, fontSize: 16, fontWeight: 600, lineHeight: 1.6 }}>
+        <Paragraph
+          style={{
+            marginBottom: 0,
+            fontSize: 16,
+            fontWeight: 600,
+            lineHeight: 1.6,
+          }}
+        >
           Se requiere autorización para editar esta factura.
         </Paragraph>
         <ReasonsList reasons={reasons} />
@@ -90,4 +119,3 @@ export const RequestInvoiceEditAuthorization = ({
 };
 
 export default RequestInvoiceEditAuthorization;
-

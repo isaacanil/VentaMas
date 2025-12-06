@@ -4,18 +4,18 @@ import styled from 'styled-components';
 // Styled wrapper for the warning badge
 const WarningWrapper = styled.div`
   position: absolute;
-  ${({ position }) => (position === 'top' ? 'top: 0;' : 'bottom: 0;')}
+  ${({ $position }) => ($position === 'top' ? 'top: 0;' : 'bottom: 0;')}
   left: 0;
   width: 105px;
   text-align: center;
   line-height: 1em;
   border-top-right-radius: 10px;
-  padding: ${({ position }) =>
-    position === 'top' ? '0.2em 0.4em 0.6em' : '0.6em 0.4em 0.2em'};
-  background: ${({ variant, isSelected }) => {
-    switch (variant) {
+  padding: ${({ $position }) =>
+    $position === 'top' ? '0.2em 0.4em 0.6em' : '0.6em 0.4em 0.2em'};
+  background: ${({ $variant, $isSelected }) => {
+    switch ($variant) {
       case 'outOfStock':
-        return isSelected
+        return $isSelected
           ? 'linear-gradient(180deg, rgba(239, 83, 80, 0), #ef5350 50%)'
           : 'linear-gradient(180deg, rgba(158, 158, 158, 0), #9e9e9e 50%)';
       case 'criticalStock':
@@ -29,7 +29,7 @@ const WarningWrapper = styled.div`
   }};
   transform: translateX(0) scale(1);
   transition: all 300ms ease-in-out;
-  color: #ffffff;
+  color: #fff;
   font-size: 14px;
   font-weight: 500;
   z-index: 1;
@@ -41,11 +41,21 @@ const WarningWrapper = styled.div`
  * @param {boolean} isSelected - Estado de selección (cambia degradado)
  * @param {boolean} show       - Control de visibilidad
  * @param {'outOfStock'|'lowStock'|'criticalStock'} variant - Tipo de advertencia
-*/
-export const StockWarning = ({ message, position = 'top', isSelected = false, show = false, variant = 'outOfStock' }) => {
+ */
+export const StockWarning = ({
+  message,
+  position = 'top',
+  isSelected = false,
+  show = false,
+  variant = 'outOfStock',
+}) => {
   if (!show) return null;
   return (
-    <WarningWrapper position={position} isSelected={isSelected} variant={variant}>
+    <WarningWrapper
+      $position={position}
+      $isSelected={isSelected}
+      $variant={variant}
+    >
       {message}
     </WarningWrapper>
   );

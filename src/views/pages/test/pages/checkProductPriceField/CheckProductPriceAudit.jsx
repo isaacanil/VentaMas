@@ -2,7 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbEqualizeProductPrice, fbEqualizeProductsPrice, fbEqualizeAllProductsPrice } from '../../../../../firebase/products/fbEqualizeProductPrice';
+import { fbBackfillListPriceFromPrice } from '../../../../../firebase/products/fbBackfillListPriceFromPrice';
+import {
+  fbEqualizeProductPrice,
+  fbEqualizeProductsPrice,
+  fbEqualizeAllProductsPrice,
+} from '../../../../../firebase/products/fbEqualizeProductPrice';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 
 function toNumber(n, fallback = 0) {
@@ -28,15 +33,15 @@ export default function CheckProductPriceAudit() {
     return products.map((p) => {
       const id = p.id || p._id || p.code || p.sku || 'sin-id';
       const name = p.name || p.title || 'sin-nombre';
-  const listPrice = toNumber(p?.pricing?.listPrice);
-  const price = toNumber(p?.pricing?.price);
+      const listPrice = toNumber(p?.pricing?.listPrice);
+      const price = toNumber(p?.pricing?.price);
 
       const record = {
         id,
         name,
-    listPrice,
-    price,
-    eqLPPrice: price === listPrice,
+        listPrice,
+        price,
+        eqLPPrice: price === listPrice,
       };
       record.diffLP = round2(price - listPrice);
       return record;
@@ -45,6 +50,9 @@ export default function CheckProductPriceAudit() {
 
   const equalCount = rows.filter((r) => r.eqLPPrice).length;
   const mismatchCount = rows.length - equalCount;
+  const missingListPriceCount = rows.filter(
+    (r) => r.listPrice <= 0 && r.price > 0,
+  ).length;
 
   let visible = rows;
   if (viewFilter === 'equal') {
@@ -59,9 +67,13 @@ export default function CheckProductPriceAudit() {
   };
 
   const handleFixAllMismatch = async () => {
-    const mismatches = rows.filter((r) => !r.eqLPPrice).map((r) => ({ id: r.id, listPrice: r.listPrice }));
+    const mismatches = rows
+      .filter((r) => !r.eqLPPrice)
+      .map((r) => ({ id: r.id, listPrice: r.listPrice }));
     if (mismatches.length === 0) return;
-    const confirm = window.confirm(`Se igualarán ${mismatches.length} productos (price = listPrice). ¿Deseas continuar?`);
+    const confirm = window.confirm(
+      `Se igualarán ${mismatches.length} productos (price = listPrice). ¿Deseas continuar?`,
+    );
     if (!confirm) return;
     setBusy(true);
     try {
@@ -72,12 +84,34 @@ export default function CheckProductPriceAudit() {
     }
   };
 
-  const handleFixAllBusiness = async () => {
-    const confirm = window.confirm('Esto igualará price = listPrice en TODOS los productos del negocio que no coinciden. ¿Deseas continuar?');
+  const handleBackfillListPrice = async () => {
+    const confirm = window.confirm(
+      'Copiará pricing.price -> pricing.listPrice cuando listPrice esté vacío/0. ¿Deseas continuar?',
+    );
     if (!confirm) return;
     setBusy(true);
     try {
-      const updated = await fbEqualizeAllProductsPrice(user, { onlyMismatch: true });
+      const result = await fbBackfillListPriceFromPrice(user, {
+        allowZeroPrice: false,
+      });
+      setStatusMsg(
+        `ListPrice copiado en ${result.updated}/${result.candidates} productos (escaneados ${result.scanned}).`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleFixAllBusiness = async () => {
+    const confirm = window.confirm(
+      'Esto igualará price = listPrice en TODOS los productos del negocio que no coinciden. ¿Deseas continuar?',
+    );
+    if (!confirm) return;
+    setBusy(true);
+    try {
+      const updated = await fbEqualizeAllProductsPrice(user, {
+        onlyMismatch: true,
+      });
       setStatusMsg(`Igualados ${updated} productos en todo el negocio.`);
     } finally {
       setBusy(false);
@@ -88,18 +122,42 @@ export default function CheckProductPriceAudit() {
     <div style={{ padding: 16 }}>
       <h2>Auditoría: price vs listPrice (sin impuesto)</h2>
       <p style={{ color: '#555', maxWidth: 800 }}>
-        Compara directamente <strong>pricing.price</strong> y <strong>pricing.listPrice</strong> sin calcular impuestos. 
-        Usa los controles para ver solo iguales, solo no coinciden, o todos.
+        Compara directamente <strong>pricing.price</strong> y{' '}
+        <strong>pricing.listPrice</strong> sin calcular impuestos. Usa los
+        controles para ver solo iguales, solo no coinciden, o todos.
       </p>
-      <div style={{ margin: '8px 0 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div
+        style={{
+          margin: '8px 0 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ background: '#eafaf1', color: '#0f7a3e', padding: '4px 8px', borderRadius: 6 }}>
+          <span
+            style={{
+              background: '#eafaf1',
+              color: '#0f7a3e',
+              padding: '4px 8px',
+              borderRadius: 6,
+            }}
+          >
             Iguales: <strong>{equalCount}</strong>
           </span>
-          <span style={{ background: '#fdecea', color: '#b71c1c', padding: '4px 8px', borderRadius: 6 }}>
+          <span
+            style={{
+              background: '#fdecea',
+              color: '#b71c1c',
+              padding: '4px 8px',
+              borderRadius: 6,
+            }}
+          >
             No coinciden: <strong>{mismatchCount}</strong>
           </span>
-          <span style={{ marginLeft: 8, color: '#555' }}>Total: {rows.length}</span>
+          <span style={{ marginLeft: 8, color: '#555' }}>
+            Total: {rows.length}
+          </span>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button
@@ -145,12 +203,26 @@ export default function CheckProductPriceAudit() {
               borderRadius: 6,
               border: '1px solid #ddd',
               background: '#111827',
-              color: 'white'
+              color: 'white',
             }}
             title="Igualar price=listPrice para todos los que no coinciden"
             disabled={busy || mismatchCount === 0}
           >
             Igualar todos (no coinciden)
+          </button>
+          <button
+            onClick={handleBackfillListPrice}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: '1px solid #ddd',
+              background: '#0ea5e9',
+              color: 'white',
+            }}
+            title="Cuando listPrice no existe se copia price"
+            disabled={busy || missingListPriceCount === 0}
+          >
+            Copiar price en listPrice (faltantes)
           </button>
           <button
             onClick={handleFixAllBusiness}
@@ -159,7 +231,7 @@ export default function CheckProductPriceAudit() {
               borderRadius: 6,
               border: '1px solid #ddd',
               background: '#0b5cff',
-              color: 'white'
+              color: 'white',
             }}
             title="Igualar price=listPrice en todo el negocio (solo no coinciden)"
             disabled={busy}
@@ -170,13 +242,23 @@ export default function CheckProductPriceAudit() {
       </div>
 
       {statusMsg && (
-        <div style={{ margin: '8px 0 0', color: '#111', background: '#f3f4f6', padding: '8px 12px', borderRadius: 6 }}>
+        <div
+          style={{
+            margin: '8px 0 0',
+            color: '#111',
+            background: '#f3f4f6',
+            padding: '8px 12px',
+            borderRadius: 6,
+          }}
+        >
           {statusMsg}
         </div>
       )}
 
       <div style={{ overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+        <table
+          style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}
+        >
           <thead>
             <tr>
               <th style={th}>ID</th>
@@ -190,7 +272,10 @@ export default function CheckProductPriceAudit() {
           </thead>
           <tbody>
             {visible.map((r) => (
-              <tr key={r.id} style={{ background: r.eqLPPrice ? '#f7fff7' : '#fff4f2' }}>
+              <tr
+                key={r.id}
+                style={{ background: r.eqLPPrice ? '#f7fff7' : '#fff4f2' }}
+              >
                 <td style={td}>{r.id}</td>
                 <td style={td}>{r.name}</td>
                 <td style={{ ...td, textAlign: 'right' }}>{r.listPrice}</td>
@@ -201,7 +286,11 @@ export default function CheckProductPriceAudit() {
                   {!r.eqLPPrice && (
                     <button
                       onClick={() => handleFixOne(r)}
-                      style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #ddd' }}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        border: '1px solid #ddd',
+                      }}
                       title="Igualar price=listPrice"
                     >
                       Igualar
@@ -217,8 +306,14 @@ export default function CheckProductPriceAudit() {
       <details style={{ marginTop: 16 }}>
         <summary>Notas</summary>
         <ul>
-          <li>Solo se listan productos donde price y listPrice son iguales (sin considerar impuestos).</li>
-          <li>Útil para verificar datos ya normalizados o identificar consistencias tras migraciones.</li>
+          <li>
+            Solo se listan productos donde price y listPrice son iguales (sin
+            considerar impuestos).
+          </li>
+          <li>
+            Útil para verificar datos ya normalizados o identificar
+            consistencias tras migraciones.
+          </li>
         </ul>
       </details>
     </div>

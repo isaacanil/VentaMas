@@ -15,8 +15,9 @@ export const OutputUtils = {
   },
 
   formatHelp(commandName, commands, examples = []) {
-    const commandLines = Object.entries(commands || {})
-      .map(([key, description]) => ` - ${key}: ${description}`);
+    const commandLines = Object.entries(commands || {}).map(
+      ([key, description]) => ` - ${key}: ${description}`,
+    );
     const exampleLines = (examples || []).map((example) => `   ${example}`);
     const sections = [
       `Comandos disponibles para ${commandName}:`,

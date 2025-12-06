@@ -31,7 +31,12 @@ interface RequestCardProps {
   onOpenDetails: DetailHandler;
 }
 
-export const RequestCard = ({ item, onApprove, onReject, onOpenDetails }: RequestCardProps) => {
+export const RequestCard = ({
+  item,
+  onApprove,
+  onReject,
+  onOpenDetails,
+}: RequestCardProps) => {
   const {
     key,
     moduleMeta,
@@ -170,24 +175,27 @@ const Card = styled.article`
   grid-template-rows: repeat(3, min-content) 1fr;
   gap: 14px;
   padding: 16px;
-  border-radius: 14px;
-  border: 1px solid #e4eaf5;
-  background-color: #ffffff;
-  box-shadow: 0 6px 18px rgba(15, 37, 68, 0.06);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #e4eaf5;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgb(15 37 68 / 6%);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     border-color: #c0d2f0;
-    box-shadow: 0 14px 32px rgba(15, 37, 68, 0.12);
+    box-shadow: 0 14px 32px rgb(15 37 68 / 12%);
   }
 `;
 
 const CardHeader = styled.header`
   display: grid;
   grid-template-columns: min-content 1fr min-content;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 `;
 
 const HeaderIcon = styled(FontAwesomeIcon)`
@@ -205,44 +213,44 @@ const CardTitle = styled.h3`
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.9);
+  color: rgb(0 0 0 / 90%);
 `;
 
 const CardSubtitle = styled.span`
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgb(0 0 0 / 50%);
 `;
 
 const StatusPill = styled.span<{ $status: string }>`
   justify-self: end;
   padding: 4px 10px;
-  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: ${({ $status }) => statusTheme[$status]?.color || '#434343'};
   background: ${({ $status }) => statusTheme[$status]?.bg || '#f0f0f0'};
+  border-radius: 999px;
 `;
 
 const MetaList = styled.ul`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 8px;
-  margin: 0;
   padding: 0;
+  margin: 0;
   list-style: none;
 `;
 
 const MetaItem = styled.li`
   display: grid;
   grid-template-columns: min-content 1fr;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
 `;
 
 const MetaIcon = styled(FontAwesomeIcon)`
+  margin-top: 2px;
   font-size: 14px;
   color: #8c8c8c;
-  margin-top: 2px;
 `;
 
 const MetaContent = styled.div`
@@ -254,14 +262,14 @@ const MetaContent = styled.div`
 const MetaLabel = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgb(0 0 0 / 55%);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 `;
 
 const MetaValue = styled.span`
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgb(0 0 0 / 88%);
 `;
 
 const NoteSection = styled.section`
@@ -269,15 +277,15 @@ const NoteSection = styled.section`
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border-radius: 12px;
   background-color: #f9fbff;
   border: 1px solid #e2e8f5;
+  border-radius: 12px;
 `;
 
 const NoteHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const NoteIcon = styled(FontAwesomeIcon)`
@@ -288,19 +296,19 @@ const NoteIcon = styled(FontAwesomeIcon)`
 const NoteTitle = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgb(0 0 0 / 60%);
 `;
 
 const NoteText = styled.p`
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgba(0, 0, 0, 0.78);
   display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-line-clamp: 4;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgb(0 0 0 / 78%);
+  -webkit-box-orient: vertical;
 `;
 
 const CardActions = styled.div`
@@ -310,10 +318,10 @@ const CardActions = styled.div`
 `;
 
 const ActionButton = styled(Button)`
-  height: 40px;
-  font-weight: 600;
   display: flex;
+  gap: 8px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  height: 40px;
+  font-weight: 600;
 `;

@@ -69,10 +69,21 @@ export type ProductOption = {
   label: string;
 };
 
-export type ProductBatchMap = Map<string, Map<string, { value: string; label: string; expirationDateMillis: number | null }>>;
+export type ProductBatchMap = Map<
+  string,
+  Map<
+    string,
+    { value: string; label: string; expirationDateMillis: number | null }
+  >
+>;
 
 export interface SortConfig {
-  field: 'productName' | 'batchNumberId' | 'expirationDate' | 'createdAt' | null;
+  field:
+    | 'productName'
+    | 'batchNumberId'
+    | 'expirationDate'
+    | 'createdAt'
+    | null;
   order: 'asc' | 'desc' | null;
 }
 

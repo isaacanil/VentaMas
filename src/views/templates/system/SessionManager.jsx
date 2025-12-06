@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
@@ -12,13 +12,14 @@ const STATUS_MESSAGES = {
 
 export const SessionManager = ({ status, error }) => {
   const location = useLocation();
-  const isPublicRoute = location.pathname === '/login' || location.pathname === '/';
+  const isPublicRoute =
+    location.pathname === '/login' || location.pathname === '/';
   const [shouldRender, setShouldRender] = useState(false);
   const hasShownLoaderRef = useRef(false);
   const initialCheckRef = useRef(true);
 
   const isActive = status === 'checking';
-  
+
   // Verificar si hay una sesión guardada (solo en el montaje inicial)
   const [hasStoredSession] = useState(() => {
     const { sessionToken } = getStoredSession();
@@ -50,7 +51,7 @@ export const SessionManager = ({ status, error }) => {
     }
   }, [status, hasStoredSession, isPublicRoute, shouldRender]);
 
-  const message = useMemo(() => {
+  const message = (() => {
     if (isPublicRoute) {
       return null;
     }
@@ -62,7 +63,7 @@ export const SessionManager = ({ status, error }) => {
       return null;
     }
     return STATUS_MESSAGES[status] ?? STATUS_MESSAGES.checking;
-  }, [error, status, isActive, isPublicRoute, shouldRender]);
+  })();
 
   const handleLoaderFinish = () => {
     setShouldRender(false);

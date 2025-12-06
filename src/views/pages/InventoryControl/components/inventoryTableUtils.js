@@ -3,19 +3,29 @@ import styled from 'styled-components';
 // ===== Formatting Helpers =====
 export function formatNumber(n) {
   const num = Number(n ?? 0);
-  return new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 }).format(num);
+  return new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 }).format(
+    num,
+  );
 }
 
 export function formatDate(d) {
   if (!d) return '';
   try {
     let date;
-    if (d instanceof Date) date = d; else if (d?.toDate) date = d.toDate();
-    else if (typeof d === 'object' && typeof d.seconds === 'number') date = new Date(d.seconds * 1000);
+    if (d instanceof Date) date = d;
+    else if (d?.toDate) date = d.toDate();
+    else if (typeof d === 'object' && typeof d.seconds === 'number')
+      date = new Date(d.seconds * 1000);
     else date = new Date(d);
     if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' });
-  } catch { return ''; }
+    return date.toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch {
+    return '';
+  }
 }
 
 export function formatInputDate(d) {
@@ -24,7 +34,8 @@ export function formatInputDate(d) {
     let date;
     if (d instanceof Date) date = d;
     else if (d?.toDate) date = d.toDate();
-    else if (typeof d === 'object' && typeof d.seconds === 'number') date = new Date(d.seconds * 1000);
+    else if (typeof d === 'object' && typeof d.seconds === 'number')
+      date = new Date(d.seconds * 1000);
     else if (typeof d === 'string') {
       // ISO directo
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
@@ -44,9 +55,13 @@ export function formatInputDate(d) {
       date = new Date(d);
     }
     if (isNaN(date.getTime())) return '';
-    const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const dd = String(date.getDate()).padStart(2, '0');
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${dd}`;
-  } catch { return ''; }
+  } catch {
+    return '';
+  }
 }
 
 export function shortenLocationPath(path) {
@@ -73,10 +88,13 @@ export function getTsMs(ts) {
   if (!ts) return 0;
   try {
     if (ts?.toDate) return ts.toDate().getTime();
-    if (typeof ts === 'object' && typeof ts.seconds === 'number') return ts.seconds * 1000;
+    if (typeof ts === 'object' && typeof ts.seconds === 'number')
+      return ts.seconds * 1000;
     const d = new Date(ts);
     return isNaN(d.getTime()) ? 0 : d.getTime();
-  } catch { return 0; }
+  } catch {
+    return 0;
+  }
 }
 
 export function formatUpdatedAt(value) {
@@ -97,8 +115,9 @@ export function formatUpdatedAt(value) {
 }
 
 export const Diff = styled.span`
-  color: ${({ $value }) => $value === 0 ? '#374151' : ($value > 0 ? '#059669' : '#dc2626')};
-  font-weight: ${({ $value }) => $value !== 0 ? 600 : 400};
+  font-weight: ${({ $value }) => ($value !== 0 ? 600 : 400)};
+  color: ${({ $value }) =>
+    $value === 0 ? '#374151' : $value > 0 ? '#059669' : '#dc2626'};
 `;
 
 // Contenedor de tags reutilizable

@@ -1,10 +1,14 @@
-import { Empty, message, Select, Spin, Typography } from 'antd';
+import { Button, Empty, message, Select, Spin, Typography } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { setDefaultWarehouse, useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
+import { fbRecalculateProductStockTotals } from '../../../../firebase/inventory/recalculateProductStockTotals';
+import {
+  setDefaultWarehouse,
+  useListenWarehouses,
+} from '../../../../firebase/warehouse/warehouseService';
 
 import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
@@ -35,7 +39,7 @@ const Description = styled(Paragraph)`
     margin: 0;
     font-size: 16px;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.65);
+    color: rgb(0 0 0 / 65%);
   }
 `;
 
@@ -44,8 +48,8 @@ const SectionCard = styled.section`
   gap: 1.2em;
   padding: 18px;
   background-color: #fdfdfd;
-  border-radius: 12px;
   border: 1px solid #e5e9f2;
+  border-radius: 12px;
 `;
 
 const SectionHeader = styled.div`
@@ -64,7 +68,7 @@ const SectionDescription = styled(Paragraph)`
   && {
     margin: 0;
     font-size: 14px;
-    color: rgba(31, 41, 51, 0.6);
+    color: rgb(31 41 51 / 60%);
   }
 `;
 
@@ -85,8 +89,8 @@ const StyledSelect = styled(Select)`
 
   && .ant-select-selector {
     padding: 12px;
-    border-radius: 10px;
     border-color: #e5e9f2;
+    border-radius: 10px;
   }
 
   && .ant-select-selection-item {
@@ -109,7 +113,7 @@ const OptionLabel = styled.span`
 
 const OptionMeta = styled.span`
   font-size: 13px;
-  color: rgba(31, 41, 51, 0.58);
+  color: rgb(31 41 51 / 58%);
 `;
 
 const LoadingContainer = styled.div`
@@ -119,11 +123,27 @@ const LoadingContainer = styled.div`
   padding: 24px 0;
 `;
 
+const ActionsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+`;
+
+const ActionHelper = styled(Text)`
+  && {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(31 41 51 / 60%);
+  }
+`;
+
 const InventoryConfig = () => {
   const user = useSelector(selectUser);
   const { data: warehouses = [], loading } = useListenWarehouses();
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isReconciling, setIsReconciling] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const sortedWarehouses = useMemo(() => {
@@ -140,7 +160,9 @@ const InventoryConfig = () => {
       return;
     }
 
-    const currentDefault = sortedWarehouses.find(warehouse => warehouse?.defaultWarehouse);
+    const currentDefault = sortedWarehouses.find(
+      (warehouse) => warehouse?.defaultWarehouse,
+    );
     if (currentDefault) {
       setSelectedWarehouseId(currentDefault.id);
       return;
@@ -163,10 +185,37 @@ const InventoryConfig = () => {
       setSelectedWarehouseId(value);
       messageApi.success('Almacén predeterminado actualizado.');
     } catch (error) {
-      const errorMessage = error?.message || 'Error al actualizar el almacén predeterminado.';
+      const errorMessage =
+        error?.message || 'Error al actualizar el almacén predeterminado.';
       messageApi.error(errorMessage);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleRecalculateStock = async () => {
+    if (!user?.businessID) {
+      messageApi.error('No se encontró el negocio del usuario.');
+      return;
+    }
+
+    setIsReconciling(true);
+    try {
+      const summary = await fbRecalculateProductStockTotals(user);
+      const updatedProducts = Number(summary?.productsUpdated ?? 0);
+      if (updatedProducts > 0) {
+        messageApi.success(
+          `Stock recalculado para ${updatedProducts} producto${updatedProducts === 1 ? '' : 's'}.`,
+        );
+      } else {
+        messageApi.info('No se encontraron productos para actualizar.');
+      }
+    } catch (error) {
+      const errMsg =
+        error?.message || 'No se pudo recalcular el stock agregado.';
+      messageApi.error(errMsg);
+    } finally {
+      setIsReconciling(false);
     }
   };
 
@@ -176,7 +225,8 @@ const InventoryConfig = () => {
       <Head>
         <Heading>Inventario</Heading>
         <Description>
-          Define los parámetros principales que afectan al flujo de inventario en todo el negocio.
+          Define los parámetros principales que afectan al flujo de inventario
+          en todo el negocio.
         </Description>
       </Head>
 
@@ -188,7 +238,8 @@ const InventoryConfig = () => {
         <SectionHeader>
           <SectionTitle>Almacén predeterminado</SectionTitle>
           <SectionDescription>
-            Selecciona el almacén al que se asignarán por defecto los nuevos productos, compras y movimientos.
+            Selecciona el almacén al que se asignarán por defecto los nuevos
+            productos, compras y movimientos.
           </SectionDescription>
         </SectionHeader>
 
@@ -218,10 +269,16 @@ const InventoryConfig = () => {
                 const name = warehouse?.name || 'Sin nombre';
                 const metaParts = [
                   warehouse?.shortName ? `Alias: ${warehouse.shortName}` : null,
-                  warehouse?.location ? `Ubicación: ${warehouse.location}` : null,
+                  warehouse?.location
+                    ? `Ubicación: ${warehouse.location}`
+                    : null,
                 ].filter(Boolean);
                 const metaLabel = metaParts.join(' · ');
-                const searchLabel = [name, warehouse?.shortName, warehouse?.location]
+                const searchLabel = [
+                  name,
+                  warehouse?.shortName,
+                  warehouse?.location,
+                ]
                   .filter(Boolean)
                   .join(' ');
 
@@ -246,6 +303,36 @@ const InventoryConfig = () => {
       </SectionCard>
 
       <SectionCard
+        aria-label="Recalcular stock de productos"
+        id="inventory-stock-recalc"
+        data-config-section="inventory-stock-recalc"
+      >
+        <SectionHeader>
+          <SectionTitle>Sincronizar stock agregado</SectionTitle>
+          <SectionDescription>
+            Actualiza el stock mostrado en cada producto sumando las
+            existencias activas registradas en el inventario. Úsalo cuando el
+            stock que ves en catálogos o reportes no coincide con lo que tienes
+            físicamente.
+          </SectionDescription>
+        </SectionHeader>
+
+        <ActionsRow>
+          <Button
+            type="primary"
+            onClick={handleRecalculateStock}
+            loading={isReconciling}
+            disabled={isUpdating}
+          >
+            Recalcular stock agregado
+          </Button>
+          <ActionHelper>
+            El proceso puede tardar unos segundos si tienes muchos productos.
+          </ActionHelper>
+        </ActionsRow>
+      </SectionCard>
+
+      <SectionCard
         aria-label="Reportes de inventario"
         id="inventory-stock-alerts"
         data-config-section="inventory-stock-alerts"
@@ -253,7 +340,8 @@ const InventoryConfig = () => {
         <SectionHeader>
           <SectionTitle>Reportes de inventario</SectionTitle>
           <SectionDescription>
-            Configura reportes por correo: stock (umbrales bajo/crítico) y vencimientos (días de antelación), frecuencia y hora de envío.
+            Configura reportes por correo: stock (umbrales bajo/crítico) y
+            vencimientos (días de antelación), frecuencia y hora de envío.
           </SectionDescription>
         </SectionHeader>
 

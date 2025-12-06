@@ -1,56 +1,112 @@
-import { Spin } from 'antd'
-import { memo } from 'react'
-import styled from 'styled-components'
+import { Spin } from 'antd';
+import { forwardRef, memo } from 'react';
+import { Virtuoso } from 'react-virtuoso';
+import styled from 'styled-components';
 
-import { Client } from '../../../../../templates/system/client/Client'
+import {
+  Client,
+  clientHeaderStyles,
+} from '../../../../../templates/system/client/Client';
 
 const Body = styled.div`
   z-index: 1;
-  width: 100%;
   display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  width: 100%;
   height: 100%;
-  overflow: hidden;
   padding: 0;
+  overflow: hidden;
 
   h3 {
     color: #333;
     text-align: center;
   }
-`
+`;
 
 const LoadingContainer = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
   height: 100%;
-  flex-direction: column;
-  gap: 1rem;
-  
+
   .ant-spin {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 0.5rem;
+    align-items: center;
   }
-`
+`;
 
-const ClientsList = styled.div`
-  display: grid;
-  padding: 0.5em;
-  overflow-y: auto;
-  gap: 0.4em;
-  align-content: start;
-`
+const VirtuosoContainer = styled(Virtuoso)`
+  height: 100%;
+  width: 100%;
+`;
+
+const ListWrapper = styled.div`
+  padding: 0.75em 0.6em 0.8em;
+  box-sizing: border-box;
+`;
+
+const HeaderWrapper = styled.div`
+  padding: 0.75em 0.6em 0.4em;
+  background-color: #fff;
+  box-sizing: border-box;
+`;
+
+const ItemContainer = styled.div`
+  padding-bottom: 0.6em;
+  box-sizing: border-box;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+`;
+
+const EmptyState = styled.h3`
+  color: #333;
+  text-align: center;
+  margin: 0;
+  padding: 1em 0;
+`;
+
+const ClientsHeader = styled.div`
+  ${clientHeaderStyles};
+  margin-bottom: 0.2em;
+  margin-right: 16px;
+
+  @media (width <= 700px) {
+    margin-right: 0;
+    display: none;
+  }
+`;
+
+const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
+  <ListWrapper ref={ref} style={style} {...props}>
+    {children}
+  </ListWrapper>
+));
+VirtuosoList.displayName = 'VirtuosoList';
+
+const VirtuosoItem = forwardRef(({ style, children, ...props }, ref) => (
+  <ItemContainer ref={ref} style={style} {...props}>
+    {children}
+  </ItemContainer>
+));
+VirtuosoItem.displayName = 'VirtuosoItem';
 
 const ClientListContainerComponent = ({
-  paginatedClients,
+  clients,
   loading,
   selectedClient,
   openUpdateClientModal,
   handleDeleteClient,
   onClose,
-  searchTerm
+  searchTerm,
 }) => {
+  const hasClients = clients.length > 0;
+
   return (
     <Body>
       {loading ? (
@@ -59,12 +115,21 @@ const ClientListContainerComponent = ({
             <div style={{ minHeight: '100px', minWidth: '200px' }} />
           </Spin>
         </LoadingContainer>
-      ) : (
-        <ClientsList>
-          {paginatedClients.length > 0 ? (
-            paginatedClients.map(({ client }, idx) => (
+      ) : hasClients ? (
+        <>
+          <HeaderWrapper>
+            <ClientsHeader>
+              <span>#</span>
+              <span>Cliente</span>
+              <span>RNC/Cédula</span>
+              <span>Tel.</span>
+              <span className="actions-col"></span>
+            </ClientsHeader>
+          </HeaderWrapper>
+          <VirtuosoContainer
+            data={clients}
+            itemContent={(index, { client }) => (
               <Client
-                key={idx}
                 client={client}
                 selectedClient={selectedClient}
                 updateClientMode={openUpdateClientModal}
@@ -72,15 +137,22 @@ const ClientListContainerComponent = ({
                 Close={onClose}
                 searchTerm={searchTerm}
               />
-            ))
-          ) : (
-            <h3>Cliente no encontrado</h3>
-          )}
-        </ClientsList>
+            )}
+            itemKey={(index, item) =>
+              item?.id ?? item?.client?.id ?? item?.client?.numberId ?? index
+            }
+            components={{
+              List: VirtuosoList,
+              Item: VirtuosoItem,
+            }}
+          />
+        </>
+      ) : (
+        <EmptyState>Cliente no encontrado</EmptyState>
       )}
     </Body>
-  )
-}
+  );
+};
 
-export const ClientListContainer = memo(ClientListContainerComponent)
-ClientListContainer.displayName = 'ClientListContainer'
+export const ClientListContainer = memo(ClientListContainerComponent);
+ClientListContainer.displayName = 'ClientListContainer';

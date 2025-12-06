@@ -1,9 +1,17 @@
+import { CheckCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Drawer, Input, message, Pagination, Tooltip } from 'antd';
-import { collection, count, getAggregateFromServer, query, where } from 'firebase/firestore';
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { Drawer, Input, message, Tooltip, Button } from 'antd';
+import {
+  collection,
+  count,
+  getAggregateFromServer,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useMemo, useRef, useState, useCallback, forwardRef } from 'react';
 import { useSelector } from 'react-redux';
+import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
@@ -15,43 +23,48 @@ const Header = styled.div`
   padding: 0 1em;
 `;
 
-const ProductsContainer = styled.div`
+// Styled component for VirtuosoGrid List
+const GridListContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-items: start;
-  overflow-y: auto;
-  padding: 0 1em;
-  align-content: start;
   gap: 12px;
+  align-content: start;
+  align-items: start;
+  padding: 0 1em 1em 1em; /* Added bottom padding */
+`;
+
+const ItemContainer = styled.div`
+  height: 100%;
+  display: flex; /* Ensure children expand */
 `;
 
 const ProductCard = styled.button`
-  background-color: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   width: 100%;
+  padding: 8px;
   text-align: left;
+  cursor: pointer;
+  background-color: ${({ $isSelected }) => ($isSelected ? '#e6f4ff' : '#fff')};
+  border: 1px solid ${({ $isSelected }) => ($isSelected ? '#1677ff' : '#e8e8e8')};
+  border-radius: 8px;
+  transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-color: #d9d9d9;
+    border-color: ${({ $isSelected }) => ($isSelected ? '#1677ff' : '#d9d9d9')};
+    box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
   }
 `;
 
 const ImageContainer = styled.div`
   position: relative;
+  flex-shrink: 0;
   width: 60px;
   height: 60px;
-  flex-shrink: 0;
+  overflow: hidden;
   background-color: #f5f5f5;
   border-radius: 6px;
-  overflow: hidden;
 
   img,
   .placeholder-icon {
@@ -67,8 +80,8 @@ const ImageContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #d9d9d9;
     font-size: 20px;
+    color: #d9d9d9;
   }
 `;
 
@@ -77,38 +90,38 @@ const ProductInfo = styled.div`
   min-width: 0;
 
   .name {
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 13px;
     font-weight: 500;
     color: #262626;
-    margin-bottom: 4px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .barcode {
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 11px;
     color: #8c8c8c;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 
 const Wrapper = styled.div`
-  height: 100%;
-  overflow: hidden;
   display: grid;
   grid-template-rows: min-content 1fr min-content;
   gap: 8px;
+  height: 100%;
+  overflow: hidden;
 `;
 
 const FooterRow = styled.div`
   display: flex;
   flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
   padding: 0 1em 0.2em;
 `;
 
@@ -116,28 +129,29 @@ const EmptyState = styled.div`
   display: grid;
   place-items: center;
   padding: 1.5em;
-  color: #8c8c8c;
   font-size: 0.9rem;
+  color: #8c8c8c;
+  height: 100%;
 `;
 
 const SummaryPill = styled.button`
-  border: 1px solid #d9d9d9;
-  background: #f5f5f5;
-  border-radius: 999px;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
   padding: 0.35rem 0.8rem;
   font-size: 0.85rem;
-  color: #1f1f1f;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
   line-height: 1;
+  color: #1f1f1f;
+  cursor: pointer;
+  background: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  transition: all 0.2s ease;
 
   &:hover {
+    color: #0958d9;
     background: #e6f4ff;
     border-color: #91caff;
-    color: #0958d9;
   }
 
   &:focus-visible {
@@ -155,8 +169,8 @@ const TooltipContent = styled.div`
 const TooltipRow = styled.p`
   margin: 0;
   font-size: ${({ $muted }) => ($muted ? '0.78rem' : '0.82rem')};
-  color: ${({ $muted }) => ($muted ? '#8c8c8c' : '#262626')};
   line-height: 1.35;
+  color: ${({ $muted }) => ($muted ? '#8c8c8c' : '#262626')};
 `;
 
 const TooltipHighlight = styled.span`
@@ -164,11 +178,28 @@ const TooltipHighlight = styled.span`
   color: #1d39c4;
 `;
 
-const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
+const GridList = forwardRef(({ style, children, ...props }, ref) => (
+  <GridListContainer
+    ref={ref}
+    style={style}
+    {...props}
+  >
+    {children}
+  </GridListContainer>
+));
+
+GridList.displayName = 'GridList';
+
+const ProductModal = ({
+  onSelect,
+  selectedProduct,
+  children,
+  multiselect = false,
+}) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
   const searchInputRef = useRef(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   useEffect(() => {
     if (visible && searchInputRef.current) {
@@ -180,6 +211,13 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
     return undefined;
   }, [visible]);
 
+  // Reset selection when modal opens in multiselect mode
+  useEffect(() => {
+    if (visible && multiselect) {
+      setSelectedProducts([]);
+    }
+  }, [visible, multiselect]);
+
   const user = useSelector(selectUser);
   const { products, loading } = useGetProducts(true);
 
@@ -189,29 +227,19 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const [aggregateStatus, setAggregateStatus] = useState('idle');
 
   const inventoryProducts = useMemo(
-    () => (Array.isArray(products) ? products.filter((product) => product?.trackInventory === true) : []),
-    [products]
+    () =>
+      Array.isArray(products)
+        ? products.filter((product) => product?.trackInventory === true)
+        : [],
+    [products],
   );
 
   const filteredProducts = useMemo(
     () => (search ? filterData(inventoryProducts, search) : inventoryProducts),
-    [inventoryProducts, search]
+    [inventoryProducts, search],
   );
 
   const totalFiltered = filteredProducts.length;
-
-  useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, pageSize, totalFiltered]);
-
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProducts = useMemo(
-    () => filteredProducts.slice(startIndex, startIndex + pageSize),
-    [filteredProducts, startIndex, pageSize]
-  );
 
   useEffect(() => {
     if (!visible || !user?.businessID) return;
@@ -222,14 +250,24 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
       setAggregateStatus('loading');
       try {
         const businessID = String(user.businessID);
-        const productsRef = collection(db, 'businesses', businessID, 'products');
+        const productsRef = collection(
+          db,
+          'businesses',
+          businessID,
+          'products',
+        );
         const inventoryProductsQuery = query(
           productsRef,
           where('isDeleted', '==', false),
-          where('trackInventory', '==', true)
+          where('trackInventory', '==', true),
         );
 
-        const inventorySnapshot = await getAggregateFromServer(inventoryProductsQuery, { total: count() });
+        const inventorySnapshot = await getAggregateFromServer(
+          inventoryProductsQuery,
+          {
+            total: count(),
+          },
+        );
 
         if (!isMounted) return;
 
@@ -238,7 +276,10 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
         });
         setAggregateStatus('success');
       } catch (error) {
-        console.error('[ProductModal] Error al obtener conteos de productos', error);
+        console.error(
+          '[ProductModal] Error al obtener conteos de productos',
+          error,
+        );
         if (!isMounted) return;
         setAggregateCounts({
           inventory: null,
@@ -254,9 +295,6 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
     };
   }, [visible, user?.businessID]);
 
-  const pageStart = paginatedProducts.length > 0 ? startIndex + 1 : 0;
-  const pageEnd = paginatedProducts.length > 0 ? startIndex + paginatedProducts.length : 0;
-
   const formatNumber = useCallback((value) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value.toLocaleString('es-DO');
@@ -268,62 +306,97 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
   const countsError = aggregateStatus === 'error';
   const countsSuccess = aggregateStatus === 'success';
 
-  const inventoryTotal = countsSuccess && typeof aggregateCounts.inventory === 'number'
-    ? aggregateCounts.inventory
-    : totalFiltered;
+  const inventoryTotal =
+    countsSuccess && typeof aggregateCounts.inventory === 'number'
+      ? aggregateCounts.inventory
+      : totalFiltered;
 
   const readableTotal = Math.max(inventoryTotal || 0, totalFiltered || 0);
 
-  const pillLabel =
-    pageStart === 0 && pageEnd === 0
-      ? `0 / ${readableTotal}`
-      : `${pageStart}-${pageEnd} / ${readableTotal}`;
+  const pillLabel = `${readableTotal} productos`;
 
   const formattedInventoryTotal = formatNumber(readableTotal);
 
   const tooltipContent = (
     <TooltipContent>
-      {pageStart === 0 && pageEnd === 0 ? (
-        <TooltipRow>No hay productos inventariables que coincidan con tu búsqueda.</TooltipRow>
+      {totalFiltered === 0 ? (
+        <TooltipRow>
+          No hay productos inventariables que coincidan con tu búsqueda.
+        </TooltipRow>
       ) : (
         <TooltipRow>
-          Estás viendo <TooltipHighlight>{pageStart}-{pageEnd}</TooltipHighlight> de{' '}
-          <TooltipHighlight>{formattedInventoryTotal}</TooltipHighlight> productos inventariables.
+          Mostrando <TooltipHighlight>{totalFiltered}</TooltipHighlight> de{' '}
+          <TooltipHighlight>{formattedInventoryTotal}</TooltipHighlight>{' '}
+          productos inventariables.
         </TooltipRow>
       )}
       {countsLoading && (
         <TooltipRow $muted>Calculando totales del catálogo...</TooltipRow>
       )}
-      <TooltipRow $muted>Los productos no inventariables no se listan en este selector.</TooltipRow>
+      <TooltipRow $muted>
+        Los productos no inventariables no se listan en este selector.
+      </TooltipRow>
       {countsError && (
-        <TooltipRow $muted>No se pudo obtener el conteo global. Intenta nuevamente más tarde.</TooltipRow>
+        <TooltipRow $muted>
+          No se pudo obtener el conteo global. Intenta nuevamente más tarde.
+        </TooltipRow>
       )}
     </TooltipContent>
   );
 
   const handleSelectProduct = (product) => {
-    onSelect(product);
+    if (multiselect) {
+      setSelectedProducts((prev) => {
+        const exists = prev.some((p) => p.id === product.id);
+        if (exists) {
+          return prev.filter((p) => p.id !== product.id);
+        }
+        return [...prev, product];
+      });
+    } else {
+      onSelect(product);
+      setSearch('');
+      setVisible(false);
+      message.success('Producto seleccionado');
+    }
+  };
+
+  const handleConfirmSelection = () => {
+    if (selectedProducts.length === 0) {
+      message.warning('Selecciona al menos un producto');
+      return;
+    }
+    onSelect(selectedProducts);
     setSearch('');
-    setCurrentPage(1);
     setVisible(false);
-    message.success('Producto seleccionado');
+    message.success(`${selectedProducts.length} productos seleccionados`);
   };
 
   const handleSearchChange = (event) => {
     setSearch(event.target.value);
-    setCurrentPage(1);
   };
+
+  const isSelected = (product) =>
+    multiselect && selectedProducts.some((p) => p.id === product.id);
 
   return (
     <div>
-      <Input
-        value={selectedProduct?.name || ''}
-        placeholder="Buscar y seleccionar producto..."
-        readOnly
-        onClick={() => setVisible(true)}
-      />
+      {children ? (
+        <div onClick={() => setVisible(true)}>{children}</div>
+      ) : (
+        <Input
+          value={selectedProduct?.name || ''}
+          placeholder="Buscar y seleccionar producto..."
+          readOnly
+          onClick={() => setVisible(true)}
+        />
+      )}
       <Drawer
-        title="Lista de Productos"
+        title={
+          multiselect
+            ? `Seleccionar Productos (${selectedProducts.length})`
+            : 'Lista de Productos'
+        }
         placement="bottom"
         onClose={() => setVisible(false)}
         open={visible}
@@ -340,47 +413,74 @@ const ProductModal = ({ onSelect, selectedProduct, pageSize = 14 }) => {
               value={search}
               onChange={handleSearchChange}
               allowClear
+              style={{ maxWidth: '300px' }}
+              prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
             />
           </Header>
 
-          <ProductsContainer>
-            {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} type="button" onClick={() => handleSelectProduct(product)}>
-                <ImageContainer>
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} />
-                  ) : (
-                    <div className="placeholder-icon">
-                      <FontAwesomeIcon icon={faImage} />
-                    </div>
-                  )}
-                </ImageContainer>
-                <ProductInfo>
-                  <div className="name">{product?.name}</div>
-                  <div className="barcode">{product?.barcode || 'Sin código de barras'}</div>
-                </ProductInfo>
-              </ProductCard>
-            ))}
-            {!loading && paginatedProducts.length === 0 && (
-              <EmptyState>No se encontraron productos inventariables.</EmptyState>
+          <div style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
+            {filteredProducts.length === 0 && !loading ? (
+              <EmptyState>
+                No se encontraron productos inventariables.
+              </EmptyState>
+            ) : (
+              <VirtuosoGrid
+                style={{ height: '100%' }}
+                totalCount={filteredProducts.length}
+                components={{
+                  List: GridList,
+                  Item: ItemContainer,
+                }}
+
+                itemContent={(index) => {
+                  const product = filteredProducts[index];
+                  return (
+                    <ProductCard
+                      key={product.id}
+                      type="button"
+                      onClick={() => handleSelectProduct(product)}
+                      $isSelected={isSelected(product)}
+                    >
+                      <ImageContainer>
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} />
+                        ) : (
+                          <div className="placeholder-icon">
+                            <FontAwesomeIcon icon={faImage} />
+                          </div>
+                        )}
+                      </ImageContainer>
+                      <ProductInfo>
+                        <div className="name">{product?.name}</div>
+                        <div className="barcode">
+                          {product?.barcode || 'Sin código de barras'}
+                        </div>
+                      </ProductInfo>
+                      {isSelected(product) && (
+                        <CheckCircleOutlined
+                          style={{ color: '#1677ff', fontSize: '1.2em' }}
+                        />
+                      )}
+                    </ProductCard>
+                  );
+                }}
+              />
             )}
-          </ProductsContainer>
+          </div>
 
           <FooterRow>
-            <Tooltip placement="topLeft" trigger={['hover', 'click']} title={tooltipContent}>
-              <SummaryPill type="button">
-                {pillLabel}
-              </SummaryPill>
+            <Tooltip
+              placement="topLeft"
+              trigger={['hover', 'click']}
+              title={tooltipContent}
+            >
+              <SummaryPill type="button">{pillLabel}</SummaryPill>
             </Tooltip>
-            <Pagination
-              current={currentPage}
-              pageSize={pageSize}
-              showSizeChanger={false}
-              hideOnSinglePage
-              simple={{ readOnly: true }}
-              total={totalFiltered}
-              onChange={(page) => setCurrentPage(page)}
-            />
+            {multiselect && (
+              <Button type="primary" onClick={handleConfirmSelection}>
+                Agregar ({selectedProducts.length})
+              </Button>
+            )}
           </FooterRow>
         </Wrapper>
       </Drawer>

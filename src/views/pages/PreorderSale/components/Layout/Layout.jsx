@@ -8,20 +8,18 @@ const Wrapper = styled.div`
 `;
 
 const Main = styled.main`
-  flex-grow: 1;
   display: grid;
+  flex-grow: 1;
   grid-template-rows: auto 1fr;
-  max-width: 112rem; 
+  max-width: 112rem;
   margin: 0 auto;
   overflow: auto;
 `;
 
 const Layout = ({ children }) => {
   return (
-    <Wrapper> 
-      <Main>
-        {children}
-      </Main>
+    <Wrapper>
+      <Main>{children}</Main>
     </Wrapper>
   );
 };

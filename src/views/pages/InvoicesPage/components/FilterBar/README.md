@@ -1,98 +1,66 @@
-# FilterBar - Estructura Refactorizada
+# FilterBar - Panorama actual
 
-## Descripción
-El componente `FilterBar` ha sido refactorizado y dividido en múltiples archivos para mejorar la mantenibilidad, legibilidad y reutilización del código.
+El `FilterBar` de facturas usa un contenedor reutilizable que maneja la disposición responsive (desktop + drawer móvil), el botón de “Más filtros” y el botón de limpiar. Los filtros específicos continúan encapsulados en componentes pequeños.
 
-## Estructura de Archivos
+## Piezas principales
 
-```
-src/views/pages/InvoicesPage/components/FilterBar/
-├── FilterBar.jsx                 # Componente principal (refactorizado)
-├── index.js                      # Exportaciones principales
-├── constants/
-│   └── index.js                  # Constantes y configuraciones
-├── hooks/
-│   └── index.js                  # Hooks personalizados
-├── components/
-│   ├── index.js                  # Exportaciones de componentes
-│   ├── FilterField.jsx           # Componente base para campos de filtro
-│   ├── DateRangeFilter.jsx       # Filtro de rango de fechas
-│   ├── ClientFilter.jsx          # Filtro de cliente
-│   ├── PaymentMethodFilter.jsx   # Filtro de método de pago
-│   ├── AmountRangeFilter.jsx     # Filtro de rango de montos
-│   ├── SortControls.jsx          # Controles de ordenamiento
-│   ├── ClearFiltersButton.jsx    # Botón para limpiar filtros
-│   └── TotalsDisplay.jsx         # Display de totales
-└── styles/
-    └── index.js                  # Styled-components
-```
+- `src/components/common/FilterBar/FilterBar.jsx`: contenedor genérico (drawer/modal/desktop, clear, breakpoint móvil por defecto en 900px).
+- `src/views/pages/InvoicesPage/components/FilterBar/FilterBar.jsx`: arma la configuración de filtros para facturas y se la pasa al contenedor genérico.
+- `components/`: filtros individuales (DateRangeFilter, ClientFilter, PaymentMethodFilter, AmountRangeFilter, ReceivableFilter, SortControls, TotalsDisplay).
+- `hooks/`: `useInvoiceSorting`, `useFilterHandlers`, `useClientOptions`.
+- `constants/`: opciones y textos usados por los filtros.
 
-## Características
+## Cómo se configura
 
-### 1. **Separación de Responsabilidades**
-- **Constantes**: Todas las configuraciones y constantes en un archivo separado
-- **Hooks**: Lógica de estado y efectos separada en hooks reutilizables
-- **Componentes**: Cada filtro como componente independiente
-- **Estilos**: Styled-components organizados por separado
+`FilterBar.jsx` genera un arreglo `items` donde cada entrada define:
+- `key`: identificador único.
+- `section`: `'main'` (desktop visible) o `'additional'` (va al modal/extra).
+- `render`: función que devuelve el componente del filtro. Se usa `wrap: false` porque cada filtro ya incluye su propio `Form.Item`.
+- `value` e `isActive`: alimentan el estado de filtros activos y el resaltado del botón “Más filtros”.
 
-### 2. **Hooks Personalizados**
-- `useInvoiceSorting`: Maneja la lógica de ordenamiento
-- `useFilterHandlers`: Maneja los handlers de filtros
-- `useClientOptions`: Maneja las opciones de clientes
-- `useDrawerState`: Maneja el estado del drawer
-- `useResponsiveLayout`: Maneja breakpoints responsive
-- `useFilterCollapse`: Maneja el colapso de filtros en desktop
-
-### 3. **Componentes Modulares**
-- `DateRangeFilter`: Filtro de fechas con DatePicker
-- `ClientFilter`: Select de clientes con búsqueda
-- `PaymentMethodFilter`: Select de métodos de pago
-- `AmountRangeFilter`: Inputs numéricos para rangos de monto
-- `SortControls`: Select de ordenamiento + botón de dirección
-- `ClearFiltersButton`: Botón para limpiar filtros activos
-- `TotalsDisplay`: Display de totales (solo móvil)
-
-### 4. **Sistema de Colapso Inteligente**
-- Mide dinámicamente el ancho disponible
-- Colapsa filtros progresivamente según prioridad
-- Muestra botón "Más" cuando hay overflow
-- Drawer responsive para filtros ocultos
-
-### 5. **Responsive Design**
-- **Móvil (≤ 900px)**: Botón "Filtros" + drawer bottom + totales
-- **Desktop (> 900px)**: Filtros horizontales + colapso progresivo
-
-## Uso
+Ejemplo simplificado:
 
 ```jsx
-import { FilterBar } from './components/FilterBar';
-
-<FilterBar
-  invoices={invoices}
-  datesSelected={datesSelected}
-  setDatesSelected={setDatesSelected}
-  processedInvoices={processedInvoices}
-  setProcessedInvoices={setProcessedInvoices}
-  filters={filters}
-  onFiltersChange={onFiltersChange}
-/>
+const items = [
+  {
+    key: 'date',
+    section: 'main',
+    wrap: false,
+    render: () => (
+      <DateRangeFilter
+        datesSelected={datesSelected}
+        setDatesSelected={setDatesSelected}
+      />
+    ),
+    value: datesSelected,
+    isActive: (value) => !!(value?.startDate || value?.endDate),
+  },
+  // ...
+];
 ```
 
-## Beneficios de la Refactorización
+El contenedor recibe también:
+- `hasActiveFilters` y `onClearFilters`: controlan el botón de limpiar en desktop y drawer.
+- `labels`: textos personalizables para el trigger, el modal y el botón de limpiar.
+- `mobileHeaderRight`: contenido extra en el header móvil (ej. `TotalsDisplay`).
 
-1. **Mantenibilidad**: Cada archivo tiene una responsabilidad específica
-2. **Reutilización**: Componentes y hooks pueden reutilizarse
-3. **Testabilidad**: Cada parte puede probarse de forma independiente
-4. **Legibilidad**: Código más limpio y fácil de entender
-5. **Escalabilidad**: Fácil agregar nuevos filtros o modificar existentes
+```jsx
+<CommonFilterBar
+  items={items}
+  hasActiveFilters={hasActiveFilters}
+  onClearFilters={handleClearFilters}
+  labels={{
+    drawerTrigger: 'Filtros',
+    drawerTitle: 'Filtros',
+    modalTitle: 'Filtros adicionales',
+    more: 'Más filtros',
+    clear: 'Limpiar',
+  }}
+  mobileHeaderRight={<TotalsDisplay invoices={invoices} className="mobile-extra" />}
+/>;
+```
 
-## Orden de Prioridad de Filtros
+## Comportamiento responsive
 
-1. **DateRangeFilter** - Más importante
-2. **ClientFilter**
-3. **PaymentMethodFilter** 
-4. **AmountRangeFilter**
-5. **SortControls**
-6. **ClearFiltersButton** - Menos importante
-
-Los filtros se colapsan en orden inverso de prioridad cuando no hay espacio suficiente. 
+- **Móvil (≤ 900px)**: botón “Filtros” abre un drawer bottom con todos los filtros y el botón de limpiar.
+- **Desktop**: filtros principales en línea; los adicionales se abren en un modal desde el botón “Más filtros”. Si no caben los filtros principales, los sobrantes se mueven automáticamente al modal.

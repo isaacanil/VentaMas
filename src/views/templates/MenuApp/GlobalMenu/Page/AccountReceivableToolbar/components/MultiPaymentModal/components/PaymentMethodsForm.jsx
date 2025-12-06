@@ -18,24 +18,28 @@ const PaymentMethodsForm = ({
   methodErrors,
   updatePaymentMethod,
   printReceipt,
-  setPrintReceipt
+  setPrintReceipt,
 }) => {
   // Referencias para los inputs
   const inputRefs = useRef({});
 
   // Mapping de nombres de métodos de pago a texto legible
   const getMethodDisplayName = (method) => {
-    switch(method) {
-      case 'cash': return 'Efectivo';
-      case 'card': return 'Tarjeta';
-      case 'transfer': return 'Transferencia';
-      default: return method;
+    switch (method) {
+      case 'cash':
+        return 'Efectivo';
+      case 'card':
+        return 'Tarjeta';
+      case 'transfer':
+        return 'Transferencia';
+      default:
+        return method;
     }
   };
 
   // Efecto para enfocar el primer método activo al cargar
   useEffect(() => {
-    const activeMethod = paymentMethods.find(m => m.status);
+    const activeMethod = paymentMethods.find((m) => m.status);
     if (activeMethod && inputRefs.current[activeMethod.method]) {
       setTimeout(() => {
         inputRefs.current[activeMethod.method].focus();
@@ -49,7 +53,7 @@ const PaymentMethodsForm = ({
     // Al activar un método, establecer un valor predeterminado si está vacío
     if (checked && (!method.value || method.value === 0)) {
       // Al activar, asignar el monto total si es el primer método activo
-      const activeMethodsCount = paymentMethods.filter(m => m.status).length;
+      const activeMethodsCount = paymentMethods.filter((m) => m.status).length;
       if (activeMethodsCount === 0) {
         // Buscar el valor total a pagar
         const totalField = document.querySelector('input[name="amount"]');
@@ -59,10 +63,10 @@ const PaymentMethodsForm = ({
         updatePaymentMethod(method.method, 'value', 0);
       }
     }
-    
+
     // Actualizar el estado del método
     updatePaymentMethod(method.method, 'status', checked);
-    
+
     // Enfocar el input correspondiente
     if (checked && inputRefs.current[method.method]) {
       setTimeout(() => {
@@ -75,18 +79,29 @@ const PaymentMethodsForm = ({
   return (
     <PaymentSection>
       <Title level={5}>Información del Pago</Title>
-      
-      {paymentMethods.map(paymentMethod => (
+
+      {paymentMethods.map((paymentMethod) => (
         <PaymentRefGroup key={paymentMethod.method}>
           <Form.Item
             name={paymentMethod.method}
-            validateStatus={paymentMethod.status && methodErrors[`${paymentMethod.method}_value`] ? 'error' : ''}
-            help={paymentMethod.status ? methodErrors[`${paymentMethod.method}_value`] : null}
+            validateStatus={
+              paymentMethod.status &&
+              methodErrors[`${paymentMethod.method}_value`]
+                ? 'error'
+                : ''
+            }
+            help={
+              paymentMethod.status
+                ? methodErrors[`${paymentMethod.method}_value`]
+                : null
+            }
           >
             <div className="payment-method-row">
               <Checkbox
                 checked={paymentMethod.status}
-                onChange={(e) => handleMethodStatusChange(paymentMethod, e.target.checked)}
+                onChange={(e) =>
+                  handleMethodStatusChange(paymentMethod, e.target.checked)
+                }
               >
                 {getMethodDisplayName(paymentMethod.method)}
               </Checkbox>
@@ -94,11 +109,19 @@ const PaymentMethodsForm = ({
                 style={{ width: '100%' }}
                 min={0}
                 step={0.01}
-                formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={(value) =>
+                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
                 parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 value={paymentMethod.value}
                 disabled={!paymentMethod.status}
-                onChange={(value) => updatePaymentMethod(paymentMethod.method, 'value', parseFloat(value || 0))}
+                onChange={(value) =>
+                  updatePaymentMethod(
+                    paymentMethod.method,
+                    'value',
+                    parseFloat(value || 0),
+                  )
+                }
                 ref={(el) => {
                   if (el) {
                     inputRefs.current[paymentMethod.method] = el;
@@ -112,27 +135,42 @@ const PaymentMethodsForm = ({
             <Form.Item
               name={`${paymentMethod.method}Reference`}
               label="Referencia"
-              validateStatus={paymentMethod.status && methodErrors[`${paymentMethod.method}_reference`] ? 'error' : ''}
-              help={paymentMethod.status ? methodErrors[`${paymentMethod.method}_reference`] : null}
+              validateStatus={
+                paymentMethod.status &&
+                methodErrors[`${paymentMethod.method}_reference`]
+                  ? 'error'
+                  : ''
+              }
+              help={
+                paymentMethod.status
+                  ? methodErrors[`${paymentMethod.method}_reference`]
+                  : null
+              }
             >
               <Input
                 placeholder="Referencia"
                 value={paymentMethod.reference}
                 disabled={!paymentMethod.status}
-                onChange={(e) => updatePaymentMethod(paymentMethod.method, 'reference', e.target.value)}
+                onChange={(e) =>
+                  updatePaymentMethod(
+                    paymentMethod.method,
+                    'reference',
+                    e.target.value,
+                  )
+                }
               />
             </Form.Item>
           )}
         </PaymentRefGroup>
       ))}
 
-      <Form.Item
-        name="comments"
-        label="Comentarios"
-      >
-        <Input.TextArea rows={2} placeholder="Comentarios sobre el pago (opcional)" />
+      <Form.Item name="comments" label="Comentarios">
+        <Input.TextArea
+          rows={2}
+          placeholder="Comentarios sobre el pago (opcional)"
+        />
       </Form.Item>
-      
+
       <Form.Item>
         <Checkbox
           checked={printReceipt}
@@ -154,12 +192,11 @@ const PaymentRefGroup = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.4em;
-  
+
   .payment-method-row {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  
   }
 `;
 

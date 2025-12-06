@@ -8,7 +8,10 @@ type BusinessPillProps = {
   businessName?: string | null;
 };
 
-export const BusinessPill = ({ logoUrl, businessName }: BusinessPillProps): JSX.Element => {
+export const BusinessPill = ({
+  logoUrl,
+  businessName,
+}: BusinessPillProps): JSX.Element => {
   return (
     <BusinessPillContainer>
       {logoUrl && (
@@ -24,42 +27,49 @@ export const BusinessPill = ({ logoUrl, businessName }: BusinessPillProps): JSX.
 const BusinessPillContainer = styled.div`
   display: flex;
   align-items: center;
-  background-color: rgb(255, 255, 255);
-  border-radius: 100px;
   padding: 6px 20px 6px 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-color: rgb(255 255 255);
+  border-radius: 100px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
 `;
 
 const LogoContainer = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
   max-width: 60px;
+
   /* max-height: 40px; */
   height: 50px;
   margin-right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  border-radius: 8px;
   background-color: white;
-  flex-shrink: 0;
+  border-radius: 8px;
 `;
 
 const BusinessLogo = styled.img`
   width: 100%;
-  height: 100%;
-  object-fit: contain;
   max-width: 100%;
+  height: 100%;
   max-height: 100%;
+  object-fit: contain;
 `;
 
 const BusinessNameText = styled.h2`
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--color-gray-700, #4a5568);
   margin: 0;
-  letter-spacing: -0.3px;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-gray-700, #4a5568);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
 `;

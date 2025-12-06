@@ -28,4 +28,4 @@ export const InsuranceStateIndicator = ({ state }) => {
       {text}
     </Tag>
   );
-}
+};

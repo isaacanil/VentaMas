@@ -1,27 +1,27 @@
-import { faFilter } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
-import { Button } from '../../../../../templates/system/Button/Button'
+import { Button } from '../../../../../templates/system/Button/Button';
 
-import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter'
+import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter';
 
 export const OrderFilter = () => {
-  const [MenuIsOpen, setMenuIsOpen] = useState(false)
-  const handleOpenMenu = () => setMenuIsOpen(!MenuIsOpen)
+  const [MenuIsOpen, setMenuIsOpen] = useState(false);
+  const handleOpenMenu = () => setMenuIsOpen(!MenuIsOpen);
   return (
-    <Container>      <Button
-        borderRadius='normal'
+    <Container>
+      {' '}
+      <Button
+        borderRadius="normal"
         startIcon={<FontAwesomeIcon icon={faFilter} />}
         title={`Filtros`}
-        color='gray-dark'
+        color="gray-dark"
         onClick={handleOpenMenu}
       />
-      <OrderMenuFilter MenuIsOpen={MenuIsOpen}/>
+      <OrderMenuFilter MenuIsOpen={MenuIsOpen} />
     </Container>
-  )
-}
-const Container = styled.div`
-    
-`
+  );
+};
+const Container = styled.div``;

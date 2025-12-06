@@ -1,18 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { fbGetPreorders } from '../../../firebase/invoices/fbGetPreorders';
-import { MenuApp } from '../../templates/MenuApp/MenuApp'
+import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { InvoicePanel } from '../Sale/components/Cart/components/InvoicePanel/InvoicePanel';
 
-import Layout from './components/Layout/Layout'
+import Layout from './components/Layout/Layout';
 import { PreSaleTable } from './components/PreSaleTable/PreSaleTable';
 import SearchBar from './components/SearchBar/SearchBar';
-
-
-
 
 const SearchContainer = styled.div`
   margin: 1rem;
@@ -27,10 +24,13 @@ export const Preorder = () => {
 
   useEffect(() => {
     if (!user || !user.businessID) return;
-    let unsubscribe = () => { };
-    fbGetPreorders(user, setPreorders)
-      .then((unsub) => { unsubscribe = unsub; });
-    return () => { unsubscribe() };
+    let unsubscribe = () => {};
+    fbGetPreorders(user, setPreorders).then((unsub) => {
+      unsubscribe = unsub;
+    });
+    return () => {
+      unsubscribe();
+    };
   }, [user]);
 
   const getClientIdentifier = useCallback((client = {}) => {
@@ -70,12 +70,14 @@ export const Preorder = () => {
         label: String(name),
       });
     });
-    return Array.from(uniqueClients.values()).sort((a, b) => a.label.localeCompare(b.label));
+    return Array.from(uniqueClients.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
   }, [getClientIdentifier, preorders]);
 
   const applyFilters = useCallback(() => {
     const lowerTerm = searchTerm.trim().toLowerCase();
-    const filtered = preorders.filter(preorder => {
+    const filtered = preorders.filter((preorder) => {
       const data = preorder?.data;
       if (!data) return false;
 
@@ -92,7 +94,7 @@ export const Preorder = () => {
       const clientName = normalizeString(client?.name);
       const numberID = normalizeString(data?.preorderDetails?.numberID);
       const productos = (data?.products || [])
-        .map(prod => normalizeString(prod?.name))
+        .map((prod) => normalizeString(prod?.name))
         .filter(Boolean)
         .join(' ');
 
@@ -103,7 +105,13 @@ export const Preorder = () => {
       );
     });
     setFilteredPreventas(filtered);
-  }, [getClientIdentifier, normalizeString, preorders, searchTerm, selectedClient]);
+  }, [
+    getClientIdentifier,
+    normalizeString,
+    preorders,
+    searchTerm,
+    selectedClient,
+  ]);
 
   useEffect(() => {
     applyFilters();
@@ -119,7 +127,9 @@ export const Preorder = () => {
 
   useEffect(() => {
     if (selectedClient === 'all') return;
-    const exists = clientOptions.some(option => option.value === selectedClient);
+    const exists = clientOptions.some(
+      (option) => option.value === selectedClient,
+    );
     if (!exists) {
       setSelectedClient('all');
     }
@@ -127,7 +137,7 @@ export const Preorder = () => {
 
   return (
     <Container>
-      <MenuApp sectionName={"Pre-ventas"} />
+      <MenuApp sectionName={'Pre-ventas'} />
       <Layout>
         <SearchContainer>
           <SearchBar
@@ -138,17 +148,14 @@ export const Preorder = () => {
             onClientChange={handleClientChange}
           />
         </SearchContainer>
-        <PreSaleTable
-          preSales={filteredPreventas}
-          searchTerm={searchTerm}
-        />
+        <PreSaleTable preSales={filteredPreventas} searchTerm={searchTerm} />
       </Layout>
       <InvoicePanel />
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   max-height: 100vh;
   overflow: hidden;
-`
+`;

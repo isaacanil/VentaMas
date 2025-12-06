@@ -5,8 +5,16 @@ import { calculateGTIN13CheckDigit, calculateGTIN14CheckDigit } from './digits';
  */
 export const GS1_PREFIXES = {
   // América
-  US: { prefix: '0', name: 'Estados Unidos y Canadá', region: 'América del Norte' },
-  CA: { prefix: '0', name: 'Estados Unidos y Canadá', region: 'América del Norte' },
+  US: {
+    prefix: '0',
+    name: 'Estados Unidos y Canadá',
+    region: 'América del Norte',
+  },
+  CA: {
+    prefix: '0',
+    name: 'Estados Unidos y Canadá',
+    region: 'América del Norte',
+  },
   MX: { prefix: '750', name: 'México', region: 'América del Norte' },
   DO: { prefix: '746', name: 'República Dominicana', region: 'El Caribe' },
   GT: { prefix: '740', name: 'Guatemala', region: 'América Central' },
@@ -24,7 +32,7 @@ export const GS1_PREFIXES = {
   CL: { prefix: '780', name: 'Chile', region: 'América del Sur' },
   PY: { prefix: '784', name: 'Paraguay', region: 'América del Sur' },
   BR: { prefix: '789', name: 'Brasil', region: 'América del Sur' },
-  
+
   // Europa
   DE: { prefix: '40', name: 'Alemania', region: 'Europa' },
   FR: { prefix: '30', name: 'Francia', region: 'Europa' },
@@ -37,7 +45,7 @@ export const GS1_PREFIXES = {
   NO: { prefix: '70', name: 'Noruega', region: 'Europa' },
   SE: { prefix: '73', name: 'Suecia', region: 'Europa' },
   DK: { prefix: '57', name: 'Dinamarca', region: 'Europa' },
-  
+
   // Asia
   JP: { prefix: '45', name: 'Japón', region: 'Asia' },
   CN: { prefix: '690', name: 'China', region: 'Asia' },
@@ -46,10 +54,10 @@ export const GS1_PREFIXES = {
   SG: { prefix: '888', name: 'Singapur', region: 'Asia' },
   TH: { prefix: '885', name: 'Tailandia', region: 'Asia' },
   VN: { prefix: '893', name: 'Vietnam', region: 'Asia' },
-  
+
   // Oceanía
   AU: { prefix: '93', name: 'Australia', region: 'Oceanía' },
-  NZ: { prefix: '94', name: 'Nueva Zelanda', region: 'Oceanía' }
+  NZ: { prefix: '94', name: 'Nueva Zelanda', region: 'Oceanía' },
 };
 
 /**
@@ -61,22 +69,23 @@ export const COMPANY_STRUCTURES = {
     companyPrefixLength: 6,
     itemReferenceLength: 3,
     maxProducts: 999,
-    description: 'Para empresas con pocos productos pero alta identificación global'
+    description:
+      'Para empresas con pocos productos pero alta identificación global',
   },
   medium: {
-    name: 'Empresa Mediana', 
+    name: 'Empresa Mediana',
     companyPrefixLength: 5,
     itemReferenceLength: 4,
     maxProducts: 9999,
-    description: 'Para empresas con catálogos medianos'
+    description: 'Para empresas con catálogos medianos',
   },
   small: {
     name: 'Empresa Pequeña',
     companyPrefixLength: 4,
     itemReferenceLength: 5,
     maxProducts: 99999,
-    description: 'Para empresas con grandes catálogos de productos'
-  }
+    description: 'Para empresas con grandes catálogos de productos',
+  },
 };
 
 /**
@@ -90,26 +99,32 @@ export const COMPANY_STRUCTURES = {
  * @returns {string} Código GTIN completo con dígito verificador
  */
 export function generateGTIN(config) {
-  const { 
-    country, 
-    companyPrefix, 
-    itemReference, 
+  const {
+    country,
+    companyPrefix,
+    itemReference,
     format = 'GTIN13',
-    indicator = '0'
+    indicator = '0',
   } = config;
 
   // Validaciones
   if (!country || !companyPrefix || !itemReference) {
-    throw new Error('Faltan parámetros requeridos: country, companyPrefix, itemReference');
+    throw new Error(
+      'Faltan parámetros requeridos: country, companyPrefix, itemReference',
+    );
   }
 
   if (!GS1_PREFIXES[country]) {
-    throw new Error(`País no soportado: ${country}. Usa códigos ISO de 2 letras.`);
+    throw new Error(
+      `País no soportado: ${country}. Usa códigos ISO de 2 letras.`,
+    );
   }
 
   // Validar que sean solo dígitos
   if (!/^\d+$/.test(companyPrefix) || !/^\d+$/.test(itemReference)) {
-    throw new Error('companyPrefix e itemReference deben contener solo dígitos');
+    throw new Error(
+      'companyPrefix e itemReference deben contener solo dígitos',
+    );
   }
 
   const gs1Prefix = GS1_PREFIXES[country].prefix;
@@ -119,32 +134,35 @@ export function generateGTIN(config) {
   // Validar longitud total
   if (combinedLength !== totalDataLength) {
     throw new Error(
-      `La suma de companyPrefix (${companyPrefix.length}) + itemReference (${itemReference.length}) debe ser ${totalDataLength} para ${country}`
+      `La suma de companyPrefix (${companyPrefix.length}) + itemReference (${itemReference.length}) debe ser ${totalDataLength} para ${country}`,
     );
   }
 
   // Construir el código base
   let codeBase;
-  
+
   if (format === 'GTIN14') {
     // GTIN14: Indicador + GS1Prefix + CompanyPrefix + ItemReference
     codeBase = indicator + gs1Prefix + companyPrefix + itemReference;
-    
+
     if (codeBase.length !== 13) {
-      throw new Error(`GTIN14 sin check digit debe tener 13 dígitos, tiene ${codeBase.length}`);
+      throw new Error(
+        `GTIN14 sin check digit debe tener 13 dígitos, tiene ${codeBase.length}`,
+      );
     }
-    
+
     const checkDigit = calculateGTIN14CheckDigit(codeBase);
     return codeBase + checkDigit;
-    
   } else {
     // GTIN13: GS1Prefix + CompanyPrefix + ItemReference
     codeBase = gs1Prefix + companyPrefix + itemReference;
-    
+
     if (codeBase.length !== 12) {
-      throw new Error(`GTIN13 sin check digit debe tener 12 dígitos, tiene ${codeBase.length}`);
+      throw new Error(
+        `GTIN13 sin check digit debe tener 12 dígitos, tiene ${codeBase.length}`,
+      );
     }
-    
+
     const checkDigit = calculateGTIN13CheckDigit(codeBase);
     return codeBase + checkDigit;
   }
@@ -158,7 +176,12 @@ export function generateGTIN(config) {
  * @returns {string} Código GTIN13 completo
  */
 export function generateGTIN13(country, companyPrefix, itemReference) {
-  return generateGTIN({ country, companyPrefix, itemReference, format: 'GTIN13' });
+  return generateGTIN({
+    country,
+    companyPrefix,
+    itemReference,
+    format: 'GTIN13',
+  });
 }
 
 /**
@@ -169,8 +192,19 @@ export function generateGTIN13(country, companyPrefix, itemReference) {
  * @param {string} [indicator='0'] - Indicador de empaque
  * @returns {string} Código GTIN14 completo
  */
-export function generateGTIN14(country, companyPrefix, itemReference, indicator = '0') {
-  return generateGTIN({ country, companyPrefix, itemReference, format: 'GTIN14', indicator });
+export function generateGTIN14(
+  country,
+  companyPrefix,
+  itemReference,
+  indicator = '0',
+) {
+  return generateGTIN({
+    country,
+    companyPrefix,
+    itemReference,
+    format: 'GTIN14',
+    indicator,
+  });
 }
 
 /**
@@ -178,7 +212,9 @@ export function generateGTIN14(country, companyPrefix, itemReference, indicator 
  * @deprecated Usa generateGTIN13('DO', companyPrefix, itemReference) en su lugar
  */
 export function generateGTIN13RD(companyPrefix, itemReference) {
-  console.warn('generateGTIN13RD está deprecada. Usa generateGTIN13("DO", companyPrefix, itemReference)');
+  console.warn(
+    'generateGTIN13RD está deprecada. Usa generateGTIN13("DO", companyPrefix, itemReference)',
+  );
   return generateGTIN13('DO', companyPrefix, itemReference);
 }
 
@@ -201,30 +237,34 @@ export function getRecommendedStructure(expectedProducts) {
 export function validateGenerationConfig(config) {
   const { country, companyPrefix, itemReference } = config;
   const errors = [];
-  
+
   if (!country) errors.push('País requerido');
   else if (!GS1_PREFIXES[country]) errors.push(`País ${country} no soportado`);
-  
+
   if (!companyPrefix) errors.push('Prefijo de empresa requerido');
-  else if (!/^\d+$/.test(companyPrefix)) errors.push('Prefijo de empresa debe ser numérico');
-  
+  else if (!/^\d+$/.test(companyPrefix))
+    errors.push('Prefijo de empresa debe ser numérico');
+
   if (!itemReference) errors.push('Referencia de artículo requerida');
-  else if (!/^\d+$/.test(itemReference)) errors.push('Referencia de artículo debe ser numérica');
-  
+  else if (!/^\d+$/.test(itemReference))
+    errors.push('Referencia de artículo debe ser numérica');
+
   if (country && companyPrefix && itemReference && GS1_PREFIXES[country]) {
     const gs1Prefix = GS1_PREFIXES[country].prefix;
     const totalDataLength = 12 - gs1Prefix.length;
     const combinedLength = companyPrefix.length + itemReference.length;
-    
+
     if (combinedLength !== totalDataLength) {
-      errors.push(`Longitud total debe ser ${totalDataLength}, es ${combinedLength}`);
+      errors.push(
+        `Longitud total debe ser ${totalDataLength}, es ${combinedLength}`,
+      );
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    suggestion: errors.length > 0 ? null : getRecommendedStructure(10000) // Default suggestion
+    suggestion: errors.length > 0 ? null : getRecommendedStructure(10000), // Default suggestion
   };
 }
 
@@ -248,8 +288,8 @@ export const INTERNAL_MODE_STRUCTURES = {
     companyPrefixLength: 0, // Sin company prefix ni categorías
     itemReferenceLength: 9, // Todos los dígitos para items
     maxProducts: 999999999, // 999 millones de productos
-    description: 'Máxima capacidad de productos para uso interno'
-  }
+    description: 'Máxima capacidad de productos para uso interno',
+  },
 };
 
 /**
@@ -263,12 +303,12 @@ export const INTERNAL_MODE_STRUCTURES = {
  * @returns {string} Código GTIN completo con dígito verificador
  */
 export function generateInternalGTIN(config) {
-  const { 
-    country, 
-    categoryPrefix = '', 
-    itemReference, 
+  const {
+    country,
+    categoryPrefix = '',
+    itemReference,
     format = 'GTIN13',
-    indicator = '0'
+    indicator = '0',
   } = config;
 
   // Validaciones
@@ -277,14 +317,16 @@ export function generateInternalGTIN(config) {
   }
 
   if (!GS1_PREFIXES[country]) {
-    throw new Error(`País no soportado: ${country}. Usa códigos ISO de 2 letras.`);
+    throw new Error(
+      `País no soportado: ${country}. Usa códigos ISO de 2 letras.`,
+    );
   }
 
   // Validar que sean solo dígitos
   if (categoryPrefix && !/^\d*$/.test(categoryPrefix)) {
     throw new Error('categoryPrefix debe contener solo dígitos');
   }
-  
+
   if (!/^\d+$/.test(itemReference)) {
     throw new Error('itemReference debe contener solo dígitos');
   }
@@ -296,32 +338,35 @@ export function generateInternalGTIN(config) {
   // Validar longitud total
   if (combinedLength !== totalDataLength) {
     throw new Error(
-      `La suma de categoryPrefix (${categoryPrefix.length}) + itemReference (${itemReference.length}) debe ser ${totalDataLength} para ${country}`
+      `La suma de categoryPrefix (${categoryPrefix.length}) + itemReference (${itemReference.length}) debe ser ${totalDataLength} para ${country}`,
     );
   }
 
   // Construir el código base
   let codeBase;
-  
+
   if (format === 'GTIN14') {
     // GTIN14: Indicador + GS1Prefix + CategoryPrefix + ItemReference
     codeBase = indicator + gs1Prefix + categoryPrefix + itemReference;
-    
+
     if (codeBase.length !== 13) {
-      throw new Error(`GTIN14 sin check digit debe tener 13 dígitos, tiene ${codeBase.length}`);
+      throw new Error(
+        `GTIN14 sin check digit debe tener 13 dígitos, tiene ${codeBase.length}`,
+      );
     }
-    
+
     const checkDigit = calculateGTIN14CheckDigit(codeBase);
     return codeBase + checkDigit;
-    
   } else {
     // GTIN13: GS1Prefix + CategoryPrefix + ItemReference
     codeBase = gs1Prefix + categoryPrefix + itemReference;
-    
+
     if (codeBase.length !== 12) {
-      throw new Error(`GTIN13 sin check digit debe tener 12 dígitos, tiene ${codeBase.length}`);
+      throw new Error(
+        `GTIN13 sin check digit debe tener 12 dígitos, tiene ${codeBase.length}`,
+      );
     }
-    
+
     const checkDigit = calculateGTIN13CheckDigit(codeBase);
     return codeBase + checkDigit;
   }
@@ -334,8 +379,17 @@ export function generateInternalGTIN(config) {
  * @param {string} itemReference - Referencia de artículo
  * @returns {string} Código GTIN13 completo para uso interno
  */
-export function generateInternalGTIN13(country, categoryPrefix = '', itemReference) {
-  return generateInternalGTIN({ country, categoryPrefix, itemReference, format: 'GTIN13' });
+export function generateInternalGTIN13(
+  country,
+  categoryPrefix = '',
+  itemReference,
+) {
+  return generateInternalGTIN({
+    country,
+    categoryPrefix,
+    itemReference,
+    format: 'GTIN13',
+  });
 }
 
 /**
@@ -351,7 +405,7 @@ export function generateInternalGTIN13RD(categoryPrefix = '', itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('DO', categoryPrefix, paddedItemReference);
   }
-  
+
   return generateInternalGTIN13('DO', categoryPrefix, itemReference);
 }
 

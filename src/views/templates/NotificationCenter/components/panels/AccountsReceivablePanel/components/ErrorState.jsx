@@ -8,7 +8,9 @@ const ErrorState = ({ title, icon, message }) => (
   <PanelCard>
     <PanelHeader icon={icon} title={title} badgeCount={0} showMeta={false} />
     <StateContainer>
-      <ErrorMessage>{message || 'No se pudieron cargar los datos'}</ErrorMessage>
+      <ErrorMessage>
+        {message || 'No se pudieron cargar los datos'}
+      </ErrorMessage>
     </StateContainer>
   </PanelCard>
 );
@@ -19,8 +21,8 @@ ErrorState.defaultProps = {
 };
 
 const StateContainer = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;

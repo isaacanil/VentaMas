@@ -1,1 +1,1 @@
-export const AddProvider = () => null
+export const AddProvider = () => null;

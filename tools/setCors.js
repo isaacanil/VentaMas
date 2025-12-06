@@ -20,7 +20,7 @@ async function setBucketCors() {
   console.log(`✅ CORS configurado en el bucket ${bucketName}`);
 }
 
-setBucketCors().catch(err => {
+setBucketCors().catch((err) => {
   console.error('❌ Error configurando CORS:', err);
   process.exit(1);
 });

@@ -63,25 +63,34 @@ const parseDate = (dateString) => {
 
 
 export const DailyPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+    const normalizedPurchases = Array.isArray(purchases) ? purchases : [];
 
-    const dateSpan = purchases.reduce(
-        (span, purchase) => {
-            const date = purchase.data.dates.createdAt;  // Corrección aquí
-            span.min = Math.min(span.min, date);
-            span.max = Math.max(span.max, date);
-            return span;
-        },
-        { min: Infinity, max: -Infinity }
+    const dateSpan = useMemo(
+        () =>
+            normalizedPurchases.reduce(
+                (span, purchase) => {
+                    const date = purchase.data.dates.createdAt;  // Corrección aquí
+                    return {
+                        min: Math.min(span.min, date),
+                        max: Math.max(span.max, date),
+                    };
+                },
+                { min: Infinity, max: -Infinity },
+            ),
+        [normalizedPurchases],
     );
 
-    const spanInMonths = (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
+    const spanInMonths = normalizedPurchases.length > 0
+        ? (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30)
+        : 0;
 
     const byMonth = spanInMonths > 2;
 
-    const purchasesByDay = useMemo(() => accumulatePurchaseData(purchases, byMonth), [purchases, byMonth]);    const data = useMemo(() => {
+    const purchasesByDay = useMemo(
+        () => accumulatePurchaseData(normalizedPurchases, byMonth),
+        [normalizedPurchases, byMonth],
+    );
+    const data = useMemo(() => {
         const labels = Object.keys(purchasesByDay)
             .sort((a, b) => parseDate(b) - parseDate(a));
         const dataTotals = labels.map(label => purchasesByDay[label].total);
@@ -114,7 +123,12 @@ export const DailyPurchasesBarChart = ({ purchases }) => {
             if (chartRef.current && chartRef.current instanceof Chart) {
                 chartRef.current.destroy();
             }
-        };    }, []);
+        };
+    }, []);
+
+    if (!normalizedPurchases.length) {
+        return null;
+    }
 
     return (
         <Container>
@@ -124,8 +138,8 @@ export const DailyPurchasesBarChart = ({ purchases }) => {
     )
 }
 const Container = styled.div`
-    height: 200px;
  
     display: grid;
     gap: 1em;
+    height: 200px;
 `

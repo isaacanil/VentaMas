@@ -11,8 +11,8 @@ const HeaderContainer = styled.div`
 
 const ActionsContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 `;
 
 const TreeHeader = ({
@@ -22,16 +22,19 @@ const TreeHeader = ({
   handleToggleAll,
   headerActions = [],
   showToggleAllButton = true,
-  searchPlaceholder = "Buscar por nombre o producto...",
+  searchPlaceholder = 'Buscar por nombre o producto...',
 }) => {
   const actions = Array.isArray(headerActions) ? headerActions : [];
   const hasActions = actions.length > 0 || showToggleAllButton;
-  const context = useMemo(() => ({
-    searchTerm,
-    setSearchTerm,
-    allExpanded,
-    handleToggleAll,
-  }), [searchTerm, setSearchTerm, allExpanded, handleToggleAll]);
+  const context = useMemo(
+    () => ({
+      searchTerm,
+      setSearchTerm,
+      allExpanded,
+      handleToggleAll,
+    }),
+    [searchTerm, setSearchTerm, allExpanded, handleToggleAll],
+  );
 
   return (
     <HeaderContainer>
@@ -40,7 +43,7 @@ const TreeHeader = ({
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         prefix={<SearchOutlined />}
-        style={{ marginRight: hasActions ? "10px" : 0, flex: 1 }}
+        style={{ marginRight: hasActions ? '10px' : 0, flex: 1 }}
       />
       {hasActions && (
         <ActionsContainer>
@@ -63,13 +66,13 @@ const TreeHeader = ({
               type = 'text',
               buttonProps = {},
             } = action;
-            const {
-              onClick: buttonOnClick,
-              ...restButtonProps
-            } = buttonProps || {};
+            const { onClick: buttonOnClick, ...restButtonProps } =
+              buttonProps || {};
 
-            const resolvedIcon = typeof icon === 'function' ? icon(context) : icon;
-            const resolvedLabel = typeof label === 'function' ? label(context) : label;
+            const resolvedIcon =
+              typeof icon === 'function' ? icon(context) : icon;
+            const resolvedLabel =
+              typeof label === 'function' ? label(context) : label;
 
             const buttonNode = (
               <Button
@@ -92,10 +95,17 @@ const TreeHeader = ({
             );
 
             return tooltip ? (
-              <Tooltip key={`tooltip-${key ?? index}`} title={typeof tooltip === 'function' ? tooltip(context) : tooltip}>
+              <Tooltip
+                key={`tooltip-${key ?? index}`}
+                title={
+                  typeof tooltip === 'function' ? tooltip(context) : tooltip
+                }
+              >
                 {buttonNode}
               </Tooltip>
-            ) : buttonNode;
+            ) : (
+              buttonNode
+            );
           })}
           {showToggleAllButton && (
             <Button

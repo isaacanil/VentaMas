@@ -1,17 +1,16 @@
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import * as antd from "antd";
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import styled from "styled-components";
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
+import { openSegmentForm } from '../../../../../../features/warehouse/segmentModalSlice';
+import { selectWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
 
-import { openSegmentForm } from "../../../../../../features/warehouse/segmentModalSlice";
-import { selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-
-import { ProductsSection } from "./ProductsSection";
-import { DetailContainer, DetailItem } from "./WarehouseContent";
+import { ProductsSection } from './ProductsSection';
+import { DetailContainer, DetailItem } from './WarehouseContent';
 
 const { Button, Tag } = antd;
 
@@ -29,8 +28,8 @@ const SegmentInfo = styled.div`
 
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
@@ -41,23 +40,21 @@ const SectionTitle = styled.h3`
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 export default function SegmentContent() {
   // Estado para almacenar los productos asociados con el segmento
   const dispatch = useDispatch();
-  const {segmentId} = useParams();
+  const { segmentId } = useParams();
   const location = { id: segmentId, type: 'segment' };
-  const {selectedSegment : segment} = useSelector(selectWarehouse);
-  
+  const { selectedSegment: segment } = useSelector(selectWarehouse);
 
   // Manejar la acción de editar la información del segmento
   const handleUpdateSegment = (segment) => {
     dispatch(openSegmentForm(segment));
   };
-
 
   return (
     <Container>
@@ -74,27 +71,25 @@ export default function SegmentContent() {
         </InfoHeader>
         <DetailContainer>
           <DetailItem>
-            <strong>Nombre:</strong> {segment?.name || "N/A"}
+            <strong>Nombre:</strong> {segment?.name || 'N/A'}
           </DetailItem>
           <DetailItem>
-            <strong>Nombre Corto:</strong> {segment?.shortName || "N/A"}
+            <strong>Nombre Corto:</strong> {segment?.shortName || 'N/A'}
           </DetailItem>
           <DetailItem>
-            <strong>Capacidad:</strong> <Tag >{segment?.capacity || "N/A"}</Tag>
+            <strong>Capacidad:</strong> <Tag>{segment?.capacity || 'N/A'}</Tag>
           </DetailItem>
           <DetailItem>
-            <strong>Descripción:</strong> {segment?.description || "N/A"}
+            <strong>Descripción:</strong> {segment?.description || 'N/A'}
           </DetailItem>
-   
         </DetailContainer>
-       
+
         {/* Agregar más detalles si es necesario */}
       </SegmentInfo>
 
       <Body>
         <ProductsSection location={location} />
       </Body>
-
     </Container>
   );
 }

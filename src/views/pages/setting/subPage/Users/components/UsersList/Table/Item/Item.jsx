@@ -1,52 +1,46 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice'
-import { Row } from '../../../../../../../../templates/system/Table/Row'
+import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice';
+import { Row } from '../../../../../../../../templates/system/Table/Row';
 
 export const Item = ({ data, num, colWidth }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const handleEditUser = () => {
-    navigate('/users/update-user/' + data.user.id)
-    dispatch(updateUser(data.user))
-  }
+    navigate('/users/update-user/' + data.user.id);
+    dispatch(updateUser(data.user));
+  };
   const renamedAbilities = (role) => {
     switch (role) {
       case 'owner':
-        return 'Dueño'
+        return 'Dueño';
       case 'admin':
-        return 'Admin'
+        return 'Admin';
       case 'buyer':
-        return 'Compras'
+        return 'Compras';
       case 'cashier':
-        return 'Cajero'
+        return 'Cajero';
       case 'manager':
-        return 'Gerente'
+        return 'Gerente';
       case 'dev':
-        return 'Desarrollador'
+        return 'Desarrollador';
     }
-  }
+  };
   return (
     <Container onClick={handleEditUser} role={data?.user?.role}>
       <Row col={colWidth}>
-        <Col>
-          {num + 1}
-        </Col>
-        <Col>
-          {data?.user?.name}
-        </Col>
+        <Col>{num + 1}</Col>
+        <Col>{data?.user?.name}</Col>
         <Col>
           <Role role={data?.user?.role}>
             {renamedAbilities(data?.user?.role)}
           </Role>
         </Col>
-        <Col>
-          {data?.user?.active ? "Activo" : "inactivo"}
-        </Col>
+        <Col>{data?.user?.active ? 'Activo' : 'inactivo'}</Col>
         {/* <Col>
           {abilities.can("delete", "User") && (
             <Button
@@ -59,115 +53,115 @@ export const Item = ({ data, num, colWidth }) => {
         </Col> */}
       </Row>
     </Container>
-  )
-}
+  );
+};
 
 const Role = styled.div`
-    height: 2em;
-    max-width: 120px;
-    border-radius: 100px;
-    width: 100%;
   display: flex;
-  text-transform: capitalize;
   align-items: center;
+  width: 100%;
+  max-width: 120px;
+  height: 2em;
   padding: 0 1em;
- color: ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#0072F5`
-      case 'admin':
-        return `#9750DD;`
-      case 'buyer':
-        return `#17C964;`
-      case 'cashier':
-        return `#F5A524;`
-      case 'manager':
-        return `#F31260;`
-      case 'dev':
-        return `#f312bb;`
-      default:
-    }
-  }};
-    border: 2px solid ${(props) => {
-    switch (props.role) {
-      case 'owner':
-        return `#0072F5`
-      case 'admin':
-        return `#9750DD;`
-      case 'buyer':
-        return `#17C964;`
-      case 'cashier':
-        return `#F5A524;`
-      case 'manager':
-        return `#F31260;`
-      case 'dev':
-        return `#f312bb;`
-      default:
-    }
-  }};
   font-weight: 600;
-    background-color: ${(props) => {
+  color: ${(props) => {
     switch (props.role) {
       case 'owner':
-        return `#d1dfee`
+        return `#0072F5`;
       case 'admin':
-        return `#ddd4e7;`
+        return `#9750DD;`;
       case 'buyer':
-        return `#cfe7da;`
+        return `#17C964;`;
       case 'cashier':
-        return `#e2d1b5;`
+        return `#F5A524;`;
       case 'manager':
-        return `#e9c8d3;`
+        return `#F31260;`;
       case 'dev':
-        return `#ecd8e8;`
+        return `#f312bb;`;
       default:
     }
   }};
-      `
-const Container = styled.div`
-    height: 3em;
-    width: 100%;
-    padding: 0 1em;
-    display: flex;
-
-    align-items: center;
-    font-size: 14px;
-  
-    :hover{
-        background-color: var(--White2);
+  text-transform: capitalize;
+  background-color: ${(props) => {
+    switch (props.role) {
+      case 'owner':
+        return `#d1dfee`;
+      case 'admin':
+        return `#ddd4e7;`;
+      case 'buyer':
+        return `#cfe7da;`;
+      case 'cashier':
+        return `#e2d1b5;`;
+      case 'manager':
+        return `#e9c8d3;`;
+      case 'dev':
+        return `#ecd8e8;`;
+      default:
     }
-`
-const Col = styled.div`
-width: 100%;
-padding: 0 0.4em;
+  }};
+  border: 2px solid
     ${(props) => {
+      switch (props.role) {
+        case 'owner':
+          return `#0072F5`;
+        case 'admin':
+          return `#9750DD;`;
+        case 'buyer':
+          return `#17C964;`;
+        case 'cashier':
+          return `#F5A524;`;
+        case 'manager':
+          return `#F31260;`;
+        case 'dev':
+          return `#f312bb;`;
+        default:
+      }
+    }};
+  border-radius: 100px;
+`;
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 3em;
+  padding: 0 1em;
+  font-size: 14px;
+
+  &:hover {
+    background-color: var(--white-2);
+  }
+`;
+const Col = styled.div`
+  width: 100%;
+  padding: 0 0.4em;
+  ${(props) => {
     switch (props.text) {
       case 'right':
         return `
           text-align: right;
-        `
+        `;
       case 'left':
         return `
           text-align: left;
-          `
+          `;
       default:
         break;
     }
   }}
-   ${(props) => {
+  ${(props) => {
     switch (props.align) {
       case 'right':
         return `
         display: flex;
         justify-content: flex-end;
           text-align: right;
-        `
+        `;
       case 'left':
         return `
           text-align: left;
-          `
+          `;
       default:
         break;
     }
   }}
-`
+`;

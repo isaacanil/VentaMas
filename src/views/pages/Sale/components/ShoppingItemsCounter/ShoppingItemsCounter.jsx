@@ -1,18 +1,18 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice'
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
-import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber'
+import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice';
+import { useFormatNumber } from '../../../../../hooks/useFormatNumber';
+import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
 
 export const ShoppingItemsCounter = ({ products }) => {
   const productLength = products?.length || 0;
-  const totalShoppingItems = useSelector(SelectTotalShoppingItems)
+  const totalShoppingItems = useSelector(SelectTotalShoppingItems);
 
   return (
     <Container>
-     {totalShoppingItems ? (
+      {totalShoppingItems ? (
         <>
           <AnimatedNumber value={`${useFormatNumber(totalShoppingItems)}`} />
           <Separator>/</Separator>
@@ -20,27 +20,27 @@ export const ShoppingItemsCounter = ({ products }) => {
       ) : null}
       <AnimatedNumber value={useFormatNumber(productLength)} />
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
-  background-color: var(--Gray8);
-  font-weight: 600;
-  padding: 0 1em;
+  position: absolute;
+  right: 1.2em;
+  bottom: 0.2em;
+  z-index: 100;
   display: flex;
   align-items: center;
   height: 2.2em;
-  position: absolute;
-  z-index: 100;
-  border-radius: 100px;
-  color: white;
-  bottom: 0.2em;
-  right: 1.2em;
-`
-const Separator = styled.span`
+  padding: 0 1em;
   font-weight: 600;
+  color: white;
+  background-color: var(--gray-8);
+  border-radius: 100px;
+`;
+const Separator = styled.span`
   display: flex;
   align-items: center;
+  font-weight: 600;
   color: white;
-`
-export default ShoppingItemsCounter
+`;
+export default ShoppingItemsCounter;

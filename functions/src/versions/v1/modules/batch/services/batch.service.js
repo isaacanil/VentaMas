@@ -33,7 +33,7 @@ export async function createBatch(user, batchData) {
     createdAt: now,
     createdBy: user.uid,
     updatedAt: now,
-    updatedBy: user.uid
+    updatedBy: user.uid,
   };
 
   await batchRef.set(batch);
@@ -62,12 +62,11 @@ export async function getBatchById(businessID, batchId) {
 export async function getAllBatches(user, productId = null) {
   let q = getBatchCollection(user.businessID).where('isDeleted', '==', false);
   if (productId) {
-    q = q.where('productId', '==', productId)
-         .where('status', '==', 'active');
+    q = q.where('productId', '==', productId).where('status', '==', 'active');
   }
 
   const snaps = await q.get();
-  return snaps.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return snaps.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
 /**
@@ -82,7 +81,7 @@ export async function updateBatch(user, data) {
   const updates = {
     ...rest,
     updatedAt: FieldValue.serverTimestamp(),
-    updatedBy: user.uid
+    updatedBy: user.uid,
   };
 
   await docRef.update(updates);
@@ -96,8 +95,15 @@ export async function updateBatch(user, data) {
  * @param {string} productId
  * @returns {Promise<void>}
  */
-export async function updateBatchStatusForProductStock(businessID, batchId, productId) {
-  const stockCol = db.collection('businesses').doc(businessID).collection('productsStock');
+export async function updateBatchStatusForProductStock(
+  businessID,
+  batchId,
+  productId,
+) {
+  const stockCol = db
+    .collection('businesses')
+    .doc(businessID)
+    .collection('productsStock');
   const q = stockCol
     .where('batchId', '==', batchId)
     .where('productId', '==', productId)
@@ -106,14 +112,17 @@ export async function updateBatchStatusForProductStock(businessID, batchId, prod
     .where('quantity', '>', 0);
 
   const snaps = await q.get();
-  const totalQty = snaps.docs.reduce((sum, d) => sum + (d.data().quantity || 0), 0);
+  const totalQty = snaps.docs.reduce(
+    (sum, d) => sum + (d.data().quantity || 0),
+    0,
+  );
   const batchRef = getBatchCollection(businessID).doc(batchId);
 
   if (totalQty <= 0) {
     await batchRef.update({
       quantity: 0,
       status: 'inactive',
-      updatedAt: FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp(),
     });
   }
 }
@@ -138,7 +147,7 @@ export async function deleteBatch(user, batchId, movement) {
   await batchRef.update({
     isDeleted: true,
     deletedAt: FieldValue.serverTimestamp(),
-    deletedBy: user.uid
+    deletedBy: user.uid,
   });
 
   return data;
@@ -151,7 +160,11 @@ export async function deleteBatch(user, batchId, movement) {
  * @param {FirebaseFirestore.Transaction} [transaction]
  * @returns {Promise<Object>} resultado con success y mensaje
  */
-export async function checkAndDeleteEmptyBatch(user, batchId, transaction = null) {
+export async function checkAndDeleteEmptyBatch(
+  user,
+  batchId,
+  transaction = null,
+) {
   const batchRef = getBatchCollection(user.businessID).doc(batchId);
 
   // Obtener batch y stocks en transacción o fuera
@@ -159,17 +172,23 @@ export async function checkAndDeleteEmptyBatch(user, batchId, transaction = null
     ? await Promise.all([
         transaction.get(batchRef),
         transaction.get(
-          db.collection('businesses').doc(user.businessID).collection('productsStock')
+          db
+            .collection('businesses')
+            .doc(user.businessID)
+            .collection('productsStock')
             .where('batchId', '==', batchId)
-            .where('isDeleted', '==', false)
-        )
+            .where('isDeleted', '==', false),
+        ),
       ])
     : await Promise.all([
         batchRef.get(),
-        db.collection('businesses').doc(user.businessID).collection('productsStock')
+        db
+          .collection('businesses')
+          .doc(user.businessID)
+          .collection('productsStock')
           .where('batchId', '==', batchId)
           .where('isDeleted', '==', false)
-          .get()
+          .get(),
       ]);
 
   if (!batchSnap.exists) throw new Error('Batch no encontrado');
@@ -178,7 +197,7 @@ export async function checkAndDeleteEmptyBatch(user, batchId, transaction = null
     const update = {
       isDeleted: true,
       deletedAt: FieldValue.serverTimestamp(),
-      deletedBy: user.uid
+      deletedBy: user.uid,
     };
     if (transaction) transaction.update(batchRef, update);
     else await batchRef.update(update);
@@ -186,5 +205,9 @@ export async function checkAndDeleteEmptyBatch(user, batchId, transaction = null
     return { success: true, message: 'Batch eliminado por no tener stock' };
   }
 
-  return { success: false, message: 'Batch aún tiene stock', remaining: stockDocs.size };
+  return {
+    success: false,
+    message: 'Batch aún tiene stock',
+    remaining: stockDocs.size,
+  };
 }

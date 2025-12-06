@@ -7,49 +7,56 @@ import { CustomProduct } from '../../../../../templates/system/Product/CustomPro
 import { Product } from '../../../../../templates/system/Product/Product/Product';
 
 const StyledItemRow = styled.div`
-  display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
-  gap: 0.4em;
   position: absolute;
   top: ${({ top }) => `${top}px`};
   left: 0;
+  display: grid;
+  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  gap: 0.4em;
   width: 100%;
   height: ${({ height }) => `${height}px`};
 `;
 
 const EmptyRow = styled.div`
-  display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
-  gap: 0.4em;
   position: absolute;
   top: ${({ top }) => `${top}px`};
   left: 0;
+  display: grid;
+  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  gap: 0.4em;
   width: 100%;
   height: ${({ height }) => `${height}px`};
   pointer-events: none;
 `;
 
-const ItemRow = memo(({ columns, top, height, products, virtualRow, totalRows }) => {
-  if (virtualRow.index >= totalRows) {
-    return <EmptyRow columns={columns} top={virtualRow.start} height={height} />;
-  }
-  const columnArray = useMemo(() => Array.from({ length: columns }), [columns]);
-  return (
-    <StyledItemRow columns={columns} top={top} height={height}>
-      {columnArray.map((_, columnIndex) => {
-        const itemIndex = virtualRow.index * columns + columnIndex;
-        const product = products[itemIndex];
-        if (product) {
-          if (product.custom) {
-            return <CustomProduct key={product.id} product={product} />;
+const ItemRow = memo(
+  ({ columns, top, height, products, virtualRow, totalRows }) => {
+    if (virtualRow.index >= totalRows) {
+      return (
+        <EmptyRow columns={columns} top={virtualRow.start} height={height} />
+      );
+    }
+    const columnArray = useMemo(
+      () => Array.from({ length: columns }),
+      [columns],
+    );
+    return (
+      <StyledItemRow columns={columns} top={top} height={height}>
+        {columnArray.map((_, columnIndex) => {
+          const itemIndex = virtualRow.index * columns + columnIndex;
+          const product = products[itemIndex];
+          if (product) {
+            if (product.custom) {
+              return <CustomProduct key={product.id} product={product} />;
+            }
+            return <Product key={product.id} product={product} />;
           }
-          return <Product key={product.id} product={product} />;
-        }
-        return null;
-      })}
-    </StyledItemRow>
-  );
-});
+          return null;
+        })}
+      </StyledItemRow>
+    );
+  },
+);
 
 ItemRow.displayName = 'ItemRow';
 

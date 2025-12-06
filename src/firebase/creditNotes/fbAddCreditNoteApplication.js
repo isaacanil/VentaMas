@@ -1,7 +1,7 @@
-import { doc, setDoc, Timestamp } from "firebase/firestore";
-import { nanoid } from "nanoid";
+import { doc, setDoc, Timestamp } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
-import { db } from "../firebaseconfig";
+import { db } from '../firebaseconfig';
 
 /**
  * Registra la aplicación de una nota de crédito en una factura
@@ -19,23 +19,29 @@ import { db } from "../firebaseconfig";
  * @returns {Promise<Object>} - Los datos de la aplicación guardada
  */
 export const fbAddCreditNoteApplication = async (user, applicationData) => {
-  if (!user?.businessID) throw new Error("Usuario sin businessID");
+  if (!user?.businessID) throw new Error('Usuario sin businessID');
 
   const id = nanoid();
-  
+
   const data = {
     id,
     ...applicationData,
     appliedAt: Timestamp.now(),
     appliedBy: {
       uid: user.uid,
-      displayName: user.displayName || user.name || "",
+      displayName: user.displayName || user.name || '',
     },
     createdAt: Timestamp.now(),
   };
 
-  const applicationRef = doc(db, "businesses", user.businessID, "creditNoteApplications", id);
+  const applicationRef = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'creditNoteApplications',
+    id,
+  );
   await setDoc(applicationRef, data);
 
   return data;
-}; 
+};

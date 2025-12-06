@@ -1,22 +1,18 @@
-
 export default {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    './index.html',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './index.html'],
   theme: {
     extend: {
       /* ────────────────────  Colores  ──────────────────── */
       colors: {
-        primary:  '#0066ff',
-        secondary:'#ff5577',
+        primary: '#0066ff',
+        secondary: '#ff5577',
 
-        success:  '#33d9b2',
-        warning:  '#ffaa00',
-        error:    '#ff4d4f',
+        success: '#33d9b2',
+        warning: '#ffaa00',
+        error: '#ff4d4f',
 
         /* NUEVOS estados extra */
-        info:     '#2f7cff',
+        info: '#2f7cff',
         critical: '#e03131',
 
         /* Fondo neutro para barras de progreso */
@@ -27,7 +23,7 @@ export default {
         /* Neutrales */
         text: {
           100: '#2b3043',
-          60:  '#5c667b',
+          60: '#5c667b',
         },
         bg: {
           base: '#ffffff',
@@ -51,9 +47,9 @@ export default {
         7: '48px',
       },
       fontFamily: {
-        sans:    ['Roboto', 'sans-serif'],
+        sans: ['Roboto', 'sans-serif'],
         display: ['Inter', 'sans-serif'],
-        mono:    ['Fira Code', 'monospace'],
+        mono: ['Fira Code', 'monospace'],
       },
 
       /* ────────────────────  Sombras  ──────────────────── */

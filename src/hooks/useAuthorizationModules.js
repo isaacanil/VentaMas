@@ -9,12 +9,14 @@ import { SelectSettingCart } from '../features/cart/cartSlice';
 export const useAuthorizationModules = () => {
   const settings = useSelector(SelectSettingCart) || {};
 
-  const authorizationFlowEnabled = !!settings?.billing?.authorizationFlowEnabled;
+  const authorizationFlowEnabled =
+    !!settings?.billing?.authorizationFlowEnabled;
 
   const rawModules = settings?.billing?.enabledAuthorizationModules || {};
   const normalizedModules = {
     invoices: rawModules.invoices ?? true,
-    accountsReceivable: rawModules.accountsReceivable ?? rawModules.cashRegister ?? true,
+    accountsReceivable:
+      rawModules.accountsReceivable ?? rawModules.cashRegister ?? true,
   };
 
   const enabledModules = {
@@ -52,19 +54,19 @@ export const useAuthorizationModules = () => {
    * @returns {boolean} True si hay al menos un módulo activo
    */
   const hasActiveModules = () => {
-    return Object.values(normalizedModules).some(v => v === true);
+    return Object.values(normalizedModules).some((v) => v === true);
   };
 
   return {
     // Estado general
     authorizationFlowEnabled,
     enabledModules,
-    
+
     // Funciones de verificación
     isModuleEnabled,
     shouldUsePinForModule,
     hasActiveModules,
-    
+
     // Acceso directo a módulos específicos
     isInvoicesModuleEnabled: isModuleEnabled('invoices'),
     isCashRegisterModuleEnabled: isModuleEnabled('accountsReceivable'),

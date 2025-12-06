@@ -1,4 +1,10 @@
-import { doc, writeBatch, updateDoc, collection, getDocs } from 'firebase/firestore';
+import {
+  doc,
+  writeBatch,
+  updateDoc,
+  collection,
+  getDocs,
+} from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
 
@@ -23,7 +29,8 @@ export async function fbEqualizeProductPrice(user, productID, listPrice) {
  * @returns {Promise<number>} - Cantidad actualizada
  */
 export async function fbEqualizeProductsPrice(user, items = []) {
-  if (!user?.businessID || !Array.isArray(items) || items.length === 0) return 0;
+  if (!user?.businessID || !Array.isArray(items) || items.length === 0)
+    return 0;
   const businessID = String(user.businessID);
   const batch = writeBatch(db);
   let updated = 0;

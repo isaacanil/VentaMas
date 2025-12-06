@@ -1,18 +1,21 @@
 // components/forms/SegmentForm.jsx
-import * as antd from "antd";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import * as antd from 'antd';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from "../../../../../../../features/auth/userSlice";
+import { selectUser } from '../../../../../../../features/auth/userSlice';
 import {
   clearSegmentForm,
   closeSegmentForm,
   selectSegmentState,
   setSegmentError,
   setSegmentLoading,
-  updateSegmentFormData
-} from "../../../../../../../features/warehouse/segmentModalSlice";
-import { createSegment, updateSegment } from "../../../../../../../firebase/warehouse/segmentService";
+  updateSegmentFormData,
+} from '../../../../../../../features/warehouse/segmentModalSlice';
+import {
+  createSegment,
+  updateSegment,
+} from '../../../../../../../firebase/warehouse/segmentService';
 
 const { Form, Input, Button, Modal, Spin, message } = antd;
 
@@ -49,7 +52,9 @@ export default function SegmentForm() {
       const sanitizedSegment = {
         ...formData,
         ...values,
-        capacity: Number.isNaN(parseInt(values.capacity, 10)) ? 0 : parseInt(values.capacity, 10),
+        capacity: Number.isNaN(parseInt(values.capacity, 10))
+          ? 0
+          : parseInt(values.capacity, 10),
         warehouseId,
         shelfId,
         rowShelfId,
@@ -57,22 +62,24 @@ export default function SegmentForm() {
 
       if (formData?.id) {
         await updateSegment(user, sanitizedSegment);
-        message.success("Segmento actualizado con éxito.");
+        message.success('Segmento actualizado con éxito.');
       } else {
         const payload = { ...sanitizedSegment };
         delete payload.id;
         await createSegment({
           user,
-          segmentData: payload
+          segmentData: payload,
         });
-        message.success("Segmento creado con éxito.");
+        message.success('Segmento creado con éxito.');
       }
 
       handleClose();
     } catch (error) {
-      console.error("Error al guardar el segmento:", error);
-      message.error(error.message || "Error al guardar el segmento.");
-      dispatch(setSegmentError(error.message || 'Error al guardar el segmento.'));
+      console.error('Error al guardar el segmento:', error);
+      message.error(error.message || 'Error al guardar el segmento.');
+      dispatch(
+        setSegmentError(error.message || 'Error al guardar el segmento.'),
+      );
     } finally {
       dispatch(setSegmentLoading(false));
     }
@@ -90,13 +97,16 @@ export default function SegmentForm() {
 
   return (
     <Modal
-      title={formData?.id ? "Editar Segmento" : "Añadir Segmento"}
+      title={formData?.id ? 'Editar Segmento' : 'Añadir Segmento'}
       open={isOpen}
       onCancel={handleClose}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
-      <Spin spinning={loading} tip={formData?.id ? "Actualizando segmento..." : "Creando segmento..."}>
+      <Spin
+        spinning={loading}
+        tip={formData?.id ? 'Actualizando segmento...' : 'Creando segmento...'}
+      >
         <Form
           form={form}
           layout="vertical"
@@ -107,14 +117,18 @@ export default function SegmentForm() {
           <Form.Item
             name="name"
             label="Nombre"
-            rules={[{ required: true, message: "Por favor, ingrese el nombre" }]}
+            rules={[
+              { required: true, message: 'Por favor, ingrese el nombre' },
+            ]}
           >
             <Input disabled={loading} />
           </Form.Item>
           <Form.Item
             name="shortName"
             label="Nombre Corto"
-            rules={[{ required: true, message: "Por favor, ingrese el nombre corto" }]}
+            rules={[
+              { required: true, message: 'Por favor, ingrese el nombre corto' },
+            ]}
           >
             <Input disabled={loading} />
           </Form.Item>
@@ -124,13 +138,15 @@ export default function SegmentForm() {
           <Form.Item
             name="capacity"
             label="Capacidad"
-            rules={[{ required: true, message: "Por favor, ingrese la capacidad" }]}
+            rules={[
+              { required: true, message: 'Por favor, ingrese la capacidad' },
+            ]}
           >
             <Input type="number" min="0" disabled={loading} />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} block>
-              {formData?.id ? "Actualizar" : "Crear"}
+              {formData?.id ? 'Actualizar' : 'Crear'}
             </Button>
           </Form.Item>
         </Form>

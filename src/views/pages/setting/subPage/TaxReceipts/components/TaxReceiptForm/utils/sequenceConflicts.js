@@ -1,7 +1,7 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
-import { db } from "../../../../../../../../firebase/firebaseconfig";
-import { getNcfLedgerInsights } from "../../../../../../../../firebase/taxReceipt/getNcfLedgerInsights";
+import { db } from '../../../../../../../../firebase/firebaseconfig';
+import { getNcfLedgerInsights } from '../../../../../../../../firebase/taxReceipt/getNcfLedgerInsights';
 
 import {
   MAX_IN_QUERY_VALUES,
@@ -12,29 +12,31 @@ import {
   normalizeDigits,
   resolveIncrement,
   toDigits,
-} from "./ncfUtils";
+} from './ncfUtils';
 
 const MAX_SEQUENCE_LOOKAHEAD = 150;
 const MAX_SEQUENCE_WARNING_LOOKAHEAD = 40;
 const MAX_SEQUENCE_LOOKBEHIND = 12;
 const MAX_SEQUENCE_REPORT_ITEMS = 12;
 
-const DEFAULT_RESOLVER = (normalizedDigitsLength) => normalizedDigitsLength ?? 0;
+const DEFAULT_RESOLVER = (normalizedDigitsLength) =>
+  normalizedDigitsLength ?? 0;
 
 const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
-  if (!ledgerResult || ledgerResult.source !== "ledger") {
+  if (!ledgerResult || ledgerResult.source !== 'ledger') {
     return null;
   }
 
-  const nextDigitsRaw = ledgerResult.nextDigits
-    ?? normalizeDigits((ledgerResult.nextNumber ?? "").toString());
+  const nextDigitsRaw =
+    ledgerResult.nextDigits ??
+    normalizeDigits((ledgerResult.nextNumber ?? '').toString());
   const sequenceLength = Math.max(
     sequenceLengthEstimate,
     nextDigitsRaw?.length ?? 0,
-    ledgerResult.normalizedDigits?.length ?? 0
+    ledgerResult.normalizedDigits?.length ?? 0,
   );
 
-  const nextDigits = (nextDigitsRaw ?? "").padStart(sequenceLength, "0");
+  const nextDigits = (nextDigitsRaw ?? '').padStart(sequenceLength, '0');
 
   return {
     ok: ledgerResult.ok !== false,
@@ -46,10 +48,12 @@ const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
     sequenceLength,
     hasCurrentConflict: !!ledgerResult.hasCurrentConflict,
     hasImmediateNextConflict: !!ledgerResult.hasImmediateNextConflict,
-    conflicts: Array.isArray(ledgerResult.conflicts) ? ledgerResult.conflicts : [],
+    conflicts: Array.isArray(ledgerResult.conflicts)
+      ? ledgerResult.conflicts
+      : [],
     insights: ledgerResult.insights ?? {},
     metadata: ledgerResult.metadata ?? null,
-    source: "ledger",
+    source: 'ledger',
   };
 };
 
@@ -58,8 +62,8 @@ const fetchLedgerInsightsSafe = async (payload) => {
     const result = await getNcfLedgerInsights(payload);
     return result;
   } catch (error) {
-    console.error("Error al consultar el ledger de NCF:", error);
-    return { source: "ledger-error", error: error?.message };
+    console.error('Error al consultar el ledger de NCF:', error);
+    return { source: 'ledger-error', error: error?.message };
   }
 };
 
@@ -68,9 +72,10 @@ export const createSequenceConflictChecker = ({
   userID,
   resolveSequenceLength,
 } = {}) => {
-  const resolver = typeof resolveSequenceLength === "function"
-    ? resolveSequenceLength
-    : DEFAULT_RESOLVER;
+  const resolver =
+    typeof resolveSequenceLength === 'function'
+      ? resolveSequenceLength
+      : DEFAULT_RESOLVER;
 
   return async (formValues) => {
     if (!businessID) return { ok: true };
@@ -78,12 +83,13 @@ export const createSequenceConflictChecker = ({
     const prefix = buildPrefix(formValues.type, formValues.serie);
     if (!prefix) return { ok: true };
 
-    const rawDigits = toDigits(formValues.sequence ?? "");
-    if (!rawDigits) return { ok: false, reason: "invalid-sequence" };
+    const rawDigits = toDigits(formValues.sequence ?? '');
+    if (!rawDigits) return { ok: false, reason: 'invalid-sequence' };
 
     const normalizedDigits = normalizeDigits(rawDigits);
     const baseNumber = Number(normalizedDigits);
-    if (!Number.isFinite(baseNumber)) return { ok: false, reason: "invalid-sequence" };
+    if (!Number.isFinite(baseNumber))
+      return { ok: false, reason: 'invalid-sequence' };
 
     const increment = resolveIncrement(formValues.increase);
     const nextNumber = baseNumber + increment;
@@ -92,7 +98,7 @@ export const createSequenceConflictChecker = ({
 
     const sequenceLengthEstimate = resolver(
       Math.max(normalizedDigits.length, normalizedNextDigits.length),
-      formValues.sequenceLength
+      formValues.sequenceLength,
     );
 
     const quantityNumeric = Number(formValues.quantity);
@@ -106,8 +112,8 @@ export const createSequenceConflictChecker = ({
         MAX_SEQUENCE_LOOKAHEAD,
         quantitySteps > 0
           ? Math.min(quantitySteps, MAX_SEQUENCE_WARNING_LOOKAHEAD)
-          : MAX_SEQUENCE_WARNING_LOOKAHEAD
-      )
+          : MAX_SEQUENCE_WARNING_LOOKAHEAD,
+      ),
     );
 
     const backwardSteps = Math.min(MAX_SEQUENCE_LOOKBEHIND, forwardSteps);
@@ -128,7 +134,7 @@ export const createSequenceConflictChecker = ({
       };
 
       const ledgerResult = await fetchLedgerInsightsSafe(ledgerPayload);
-      if (ledgerResult?.source === "ledger") {
+      if (ledgerResult?.source === 'ledger') {
         const adapted = adaptLedgerResponse({
           ledgerResult,
           sequenceLengthEstimate,
@@ -155,9 +161,13 @@ export const createSequenceConflictChecker = ({
       });
     };
 
-    const registerMetaCodes = (meta, { rawDigits: rawDigitsCandidate } = {}) => {
-      const normalizedDigitsForMeta = meta.normalizedDigits ?? "";
-      const rawDigitsForMeta = rawDigitsCandidate ?? meta.rawDigits ?? normalizedDigitsForMeta;
+    const registerMetaCodes = (
+      meta,
+      { rawDigits: rawDigitsCandidate } = {},
+    ) => {
+      const normalizedDigitsForMeta = meta.normalizedDigits ?? '';
+      const rawDigitsForMeta =
+        rawDigitsCandidate ?? meta.rawDigits ?? normalizedDigitsForMeta;
 
       const baseCandidates = buildCandidateCodes({
         prefix,
@@ -176,7 +186,7 @@ export const createSequenceConflictChecker = ({
 
       const digitsWithPrefix = new Set();
       candidateSet.forEach((code) => {
-        const trimmed = (code ?? "").trim();
+        const trimmed = (code ?? '').trim();
         if (!trimmed) return;
         if (trimmed.toUpperCase().startsWith(prefix)) {
           const digitsPart = trimmed.slice(prefix.length).trim();
@@ -197,7 +207,7 @@ export const createSequenceConflictChecker = ({
     const buildMeta = ({ number, step, position, rawDigitsOverride }) => {
       const digitsSource = rawDigitsOverride ?? number.toString();
       const normalized = normalizeDigits(digitsSource);
-      const paddedDigits = normalized.padStart(sequenceLengthEstimate, "0");
+      const paddedDigits = normalized.padStart(sequenceLengthEstimate, '0');
       const baseCode = `${prefix}${paddedDigits}`;
 
       const meta = {
@@ -218,7 +228,7 @@ export const createSequenceConflictChecker = ({
     const baseNumberMeta = buildMeta({
       number: baseNumber,
       step: 0,
-      position: "current",
+      position: 'current',
       rawDigitsOverride: rawDigits,
     });
 
@@ -227,7 +237,7 @@ export const createSequenceConflictChecker = ({
       const candidateNumber = baseNumber - increment * step;
       if (candidateNumber < 0) break;
       beforeMetas.push(
-        buildMeta({ number: candidateNumber, step, position: "before" })
+        buildMeta({ number: candidateNumber, step, position: 'before' }),
       );
     }
 
@@ -235,7 +245,7 @@ export const createSequenceConflictChecker = ({
     for (let step = 1; step <= forwardSteps; step += 1) {
       const candidateNumber = baseNumber + increment * step;
       afterMetas.push(
-        buildMeta({ number: candidateNumber, step, position: "after" })
+        buildMeta({ number: candidateNumber, step, position: 'after' }),
       );
     }
 
@@ -250,13 +260,13 @@ export const createSequenceConflictChecker = ({
       };
     }
 
-    const invoicesRef = collection(db, "businesses", businessID, "invoices");
+    const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
     const codeChunks = chunkArray(codesToQuery, MAX_IN_QUERY_VALUES);
 
     for (const chunk of codeChunks) {
       if (!chunk.length) continue;
 
-      const invoicesQuery = query(invoicesRef, where("data.NCF", "in", chunk));
+      const invoicesQuery = query(invoicesRef, where('data.NCF', 'in', chunk));
       const snapshot = await getDocs(invoicesQuery);
 
       snapshot.forEach((docSnap) => {
@@ -267,7 +277,8 @@ export const createSequenceConflictChecker = ({
           invoiceData?.data?.comprobante ??
           null;
         if (!invoiceNcf) return;
-        const normalizedInvoiceCode = collapseWhitespace(invoiceNcf).toUpperCase();
+        const normalizedInvoiceCode =
+          collapseWhitespace(invoiceNcf).toUpperCase();
         const meta = codeMap.get(normalizedInvoiceCode);
         if (!meta) return;
 
@@ -355,16 +366,16 @@ export const createSequenceConflictChecker = ({
     const conflictInvoices = hasCurrentConflict
       ? baseNumberMeta.invoices
       : hasImmediateNextConflict
-      ? immediateNextMeta?.invoices ?? []
-      : undefined;
+        ? (immediateNextMeta?.invoices ?? [])
+        : undefined;
 
     return {
       ok: !hasCurrentConflict && !hasImmediateNextConflict,
       reason: hasCurrentConflict
-        ? "current-sequence-used"
+        ? 'current-sequence-used'
         : hasImmediateNextConflict
-        ? "next-sequence-used"
-        : undefined,
+          ? 'next-sequence-used'
+          : undefined,
       prefix,
       nextNumber,
       nextDigits: normalizedNextDigits,

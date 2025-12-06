@@ -15,7 +15,7 @@ export const fetchAccountsReceivable = createAsyncThunk(
         onError: reject,
       });
     });
-  }
+  },
 );
 
 const clientSlice = createSlice({

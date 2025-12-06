@@ -1,7 +1,7 @@
-import { useFormatPrice } from "../../../../../../../hooks/useFormatPrice";
-import { getTimeElapsed } from "../../../../../../../hooks/useFormatTime";
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { getTimeElapsed } from '../../../../../../../hooks/useFormatTime';
 
-import AccountActionsCell from "./AccountActionsCell";
+import AccountActionsCell from './AccountActionsCell';
 
 export const getColumns = (isPharmacy) => {
   const baseColumns = [
@@ -12,7 +12,7 @@ export const getColumns = (isPharmacy) => {
       align: 'left',
       maxWidth: '1.8fr',
       minWidth: '200px',
-      fixed: 'left' // Fijar la primera columna a la izquierda
+      fixed: 'left', // Fijar la primera columna a la izquierda
     },
     {
       Header: 'Cédula/RNC',
@@ -83,8 +83,8 @@ export const getColumns = (isPharmacy) => {
       maxWidth: '1fr',
       minWidth: '120px',
       fixed: 'right', // Fijar la última columna a la derecha
-      cell: ({ value }) => <AccountActionsCell value={value} />
-    }
+      cell: ({ value }) => <AccountActionsCell value={value} />,
+    },
   ];
 
   if (isPharmacy) {
@@ -96,7 +96,7 @@ export const getColumns = (isPharmacy) => {
       align: 'left',
       maxWidth: '1.5fr',
       minWidth: '180px',
-      cell: ({ value }) => value || 'N/A'
+      cell: ({ value }) => value || 'N/A',
     });
   }
 

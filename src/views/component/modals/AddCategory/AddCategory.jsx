@@ -19,12 +19,13 @@ const AddCategoryModal = () => {
   const handleOk = async () => {
     try {
       const { name } = await form.validateFields();
-      alert(name);
       if (!name) {
-        notification.error({ message: 'El nombre de la categoría no puede estar vacío' });
+        notification.error({
+          message: 'El nombre de la categoría no puede estar vacío',
+        });
         return;
       }
-     
+
       const newCat = {
         ...category,
         name,
@@ -33,7 +34,10 @@ const AddCategoryModal = () => {
       onSubmit(newCat);
 
       notification.success({
-        message: type === 'create' ? 'Categoría creada con éxito' : 'Categoría actualizada con éxito',
+        message:
+          type === 'create'
+            ? 'Categoría creada con éxito'
+            : 'Categoría actualizada con éxito',
       });
       form.resetFields();
       onClose();
@@ -50,13 +54,18 @@ const AddCategoryModal = () => {
   return (
     <Modal
       open={isOpen}
-      title={<Title level={4}>{type === 'create' ? 'Crear Categoría' : 'Actualizar Categoría'}</Title>}
+      title={
+        <Title level={4}>
+          {type === 'create' ? 'Crear Categoría' : 'Actualizar Categoría'}
+        </Title>
+      }
       onOk={handleOk}
       onCancel={handleCancel}
       okText={type === 'create' ? 'Crear' : 'Actualizar'}
       cancelText="Cancelar"
       width={400}
       destroyOnHidden
+      zIndex={2000}
     >
       <Form
         form={form}
@@ -66,7 +75,12 @@ const AddCategoryModal = () => {
         <Form.Item
           name="name"
           label="Nombre de la Categoría"
-          rules={[{ required: true, message: 'Por favor ingresa el nombre de la categoría' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Por favor ingresa el nombre de la categoría',
+            },
+          ]}
         >
           <Input placeholder="Nombre de la Categoría" autoFocus />
         </Form.Item>

@@ -1,12 +1,11 @@
 import { faCreditCard, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Card, Tag, Tooltip } from "antd";
-import dayjs from "dayjs";
-import React from "react";
-import styled from "styled-components";
+import { Card, Tag, Tooltip } from 'antd';
+import dayjs from 'dayjs';
+import React from 'react';
+import styled from 'styled-components';
 
-import { formatPrice } from "../../../../../utils/formatPrice";
-
+import { formatPrice } from '../../../../../utils/formatPrice';
 
 export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   if (!creditNotes.length) {
@@ -14,7 +13,10 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   }
 
   // Calcular total de notas de crédito generadas
-  const totalCreditNotes = creditNotes.reduce((sum, cn) => sum + (cn.totalAmount || 0), 0);
+  const totalCreditNotes = creditNotes.reduce(
+    (sum, cn) => sum + (cn.totalAmount || 0),
+    0,
+  );
 
   return (
     <StyledCard>
@@ -36,7 +38,10 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
           <SectionTitle>
             Notas de Crédito de esta Factura
             <Tooltip title="Notas de crédito creadas desde esta factura">
-              <FontAwesomeIcon icon={faCircleInfo} style={{ marginLeft: '4px', color: '#999' }} />
+              <FontAwesomeIcon
+                icon={faCircleInfo}
+                style={{ marginLeft: '4px', color: '#999' }}
+              />
             </Tooltip>
           </SectionTitle>
           <ItemsList>
@@ -50,10 +55,11 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
                   <ItemDetail>
                     <DetailLabel>Creada:</DetailLabel>
                     <DetailValue>
-                      {cn.createdAt?.seconds 
-                        ? dayjs(new Date(cn.createdAt.seconds * 1000)).format('DD/MM/YYYY HH:mm')
-                        : dayjs(cn.createdAt).format('DD/MM/YYYY HH:mm')
-                      }
+                      {cn.createdAt?.seconds
+                        ? dayjs(new Date(cn.createdAt.seconds * 1000)).format(
+                            'DD/MM/YYYY HH:mm',
+                          )
+                        : dayjs(cn.createdAt).format('DD/MM/YYYY HH:mm')}
                     </DetailValue>
                   </ItemDetail>
                   <ItemDetail>
@@ -88,21 +94,21 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
 `;
 
 const CardTitle = styled.h3`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 `;
 
 const CardSummary = styled.div`
@@ -120,15 +126,15 @@ const SummaryItem = styled.div`
 
 const SummaryLabel = styled.span`
   font-size: 0.75rem;
-  color: #666;
   font-weight: 500;
+  color: #666;
 `;
 
 const SummaryValue = styled.span`
+  font-family: monospace;
   font-size: 0.875rem;
   font-weight: 600;
   color: #1890ff;
-  font-family: monospace;
 `;
 
 const CardContent = styled.div`
@@ -137,19 +143,19 @@ const CardContent = styled.div`
 
 const Section = styled.div`
   margin-bottom: 1.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
 `;
 
 const SectionTitle = styled.h4`
-  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  margin: 0 0 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
 `;
 
 const ItemsList = styled.div`
@@ -159,12 +165,12 @@ const ItemsList = styled.div`
 `;
 
 const CreditNoteItem = styled.div`
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #f8f9fa;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  margin-bottom: 0.75rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -172,23 +178,23 @@ const CreditNoteItem = styled.div`
 
 const ItemHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
 `;
 
 const ItemNCF = styled.span`
-  font-weight: 600;
-  color: #333;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
 `;
 
 const ItemAmount = styled.span`
-  font-weight: 600;
-  color: #1890ff;
   font-family: monospace;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #1890ff;
 `;
 
 const ItemDetails = styled.div`
@@ -204,17 +210,17 @@ const ItemDetail = styled.div`
 `;
 
 const DetailLabel = styled.span`
-  font-size: 0.75rem;
-  color: #666;
-  font-weight: 500;
   min-width: 60px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
 `;
 
 const DetailValue = styled.span`
-  font-size: 0.75rem;
-  color: #333;
-  font-weight: 500;
   display: flex;
-  align-items: center;
   gap: 0.25rem;
-`; 
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #333;
+`;

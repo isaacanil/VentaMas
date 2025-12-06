@@ -1,6 +1,6 @@
-import { CREDIT_NOTE_STATUS_LABEL } from "../../constants/creditNoteStatus";
-import { getTax, getTotalPrice } from "../../utils/pricing";
-import useFormatTimestamp from "../useFormatTimeStamp";
+import { CREDIT_NOTE_STATUS_LABEL } from '../../constants/creditNoteStatus';
+import { getTax, getTotalPrice } from '../../utils/pricing';
+import useFormatTimestamp from '../useFormatTimeStamp';
 
 /**
  * Convierte un valor a número, retornando 0 si no es válido
@@ -25,7 +25,7 @@ const formatCreditNoteResumen = (creditNote) => {
     client = {},
     items = [],
     totalAmount = 0,
-    status = "Emitida",
+    status = 'Emitida',
     invoiceNcf,
     invoiceNCF,
   } = creditNote;
@@ -34,14 +34,14 @@ const formatCreditNoteResumen = (creditNote) => {
 
   return {
     Fecha: useFormatTimestamp(createdAt || new Date()),
-    NCF: ncf || NCFUpper || "N/A",
-    "NCF Factura": invoiceNcf || invoiceNCF || "N/A",
-    Cliente: client.name || "Cliente Genérico",
-    Teléfono: client.tel || "N/A",
-    "RNC/Cédula": client.rnc || client.personalID || "N/A",
-    "Cantidad Items": items.length || 0,
-    "Total ITBIS": ensureNumber(totalItbis),
-    "Monto Total": ensureNumber(totalAmount),
+    NCF: ncf || NCFUpper || 'N/A',
+    'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
+    Cliente: client.name || 'Cliente Genérico',
+    Teléfono: client.tel || 'N/A',
+    'RNC/Cédula': client.rnc || client.personalID || 'N/A',
+    'Cantidad Items': items.length || 0,
+    'Total ITBIS': ensureNumber(totalItbis),
+    'Monto Total': ensureNumber(totalAmount),
     Estado: CREDIT_NOTE_STATUS_LABEL[status] || status,
   };
 };
@@ -57,7 +57,7 @@ const formatCreditNoteDetailed = (creditNotes) => {
       client = {},
       items = [],
       totalAmount = 0,
-      status = "Emitida",
+      status = 'Emitida',
       invoiceNcf,
       invoiceNCF,
     } = creditNote;
@@ -70,17 +70,17 @@ const formatCreditNoteDetailed = (creditNotes) => {
 
       resultados.push({
         Fecha: useFormatTimestamp(createdAt || new Date()),
-        NCF: ncf || NCFUpper || "N/A",
-        "NCF Factura": invoiceNcf || invoiceNCF || "N/A",
-        Cliente: client.name || "Cliente Genérico",
-        Producto: item.name || "N/A",
-        Categoría: item.category || "N/A",
+        NCF: ncf || NCFUpper || 'N/A',
+        'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
+        Cliente: client.name || 'Cliente Genérico',
+        Producto: item.name || 'N/A',
+        Categoría: item.category || 'N/A',
         Cantidad: ensureNumber(item.amountToBuy || 1),
-        "Precio Unitario": ensureNumber(item.pricing?.price || item.price || 0),
-        "ITBIS Item": ensureNumber(itemItbis),
-        "Total Item": ensureNumber(itemTotal),
-        "Total ITBIS NC": ensureNumber(totalItbis),
-        "Total NC": ensureNumber(totalAmount),
+        'Precio Unitario': ensureNumber(item.pricing?.price || item.price || 0),
+        'ITBIS Item': ensureNumber(itemItbis),
+        'Total Item': ensureNumber(itemTotal),
+        'Total ITBIS NC': ensureNumber(totalItbis),
+        'Total NC': ensureNumber(totalAmount),
         Estado: CREDIT_NOTE_STATUS_LABEL[status] || status,
       });
     });
@@ -98,11 +98,11 @@ const formatCreditNoteDetailed = (creditNotes) => {
  */
 export const formatCreditNote = ({ type, data }) => {
   switch (type) {
-    case "Resumen":
+    case 'Resumen':
       return Array.isArray(data)
         ? data.map((creditNote) => formatCreditNoteResumen(creditNote))
         : [formatCreditNoteResumen(data)];
-    case "Detailed":
+    case 'Detailed':
       return Array.isArray(data)
         ? formatCreditNoteDetailed(data)
         : formatCreditNoteDetailed([data]);

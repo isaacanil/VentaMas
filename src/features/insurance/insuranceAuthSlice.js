@@ -40,7 +40,7 @@ export const fetchInsuranceAuthByClientId = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const insuranceAuthSlice = createSlice({
@@ -87,9 +87,9 @@ export const insuranceAuthSlice = createSlice({
         state.loading = false;
         if (action.payload) {
           // Solo actualiza los campos específicos manteniendo el resto del estado
-          state.authData = { 
-            ...state.authData, 
-            ...action.payload
+          state.authData = {
+            ...state.authData,
+            ...action.payload,
           };
         }
       })
@@ -108,12 +108,13 @@ export const {
   setLoading,
   setError,
   openModal,
-  closeModal
+  closeModal,
 } = insuranceAuthSlice.actions;
 
 // Selectors
 export const selectInsuranceAuthData = (state) => state.insuranceAuth.authData;
-export const selectInsuranceAuthLoading = (state) => state.insuranceAuth.loading;
+export const selectInsuranceAuthLoading = (state) =>
+  state.insuranceAuth.loading;
 export const selectInsuranceAuthError = (state) => state.insuranceAuth.error;
 export const selectInsuranceModal = (state) => state.insuranceAuth.modal;
 

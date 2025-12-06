@@ -1,14 +1,23 @@
-import { DatePicker, Input, InputNumber, Select, Form, Modal } from 'antd'
+import { DatePicker, Input, InputNumber, Select, Form, Modal } from 'antd';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectAR, setAR } from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
+import {
+  selectAR,
+  setAR,
+} from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
 import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
-import { SelectCartData, toggleReceivableStatus } from '../../../../../../../../../../../features/cart/cartSlice'
+import {
+  SelectCartData,
+  toggleReceivableStatus,
+} from '../../../../../../../../../../../features/cart/cartSlice';
 import { selectClient } from '../../../../../../../../../../../features/clientCart/clientCartSlice';
-import { useGetPendingBalance, usePendingBalance } from '../../../../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import {
+  useGetPendingBalance,
+  usePendingBalance,
+} from '../../../../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
 import { calculateAmountPerInstallment } from '../../../../../../../../../../../utils/accountsReceivable/accountsReceivable';
 import { getMaxInstallments } from '../../../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
 import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
@@ -18,8 +27,6 @@ import { setNumPrecision } from '../../../../../../../../../../../utils/pricing'
 import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
 
 import usePaymentDates from './usePaymentDates';
-
-
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -31,14 +38,14 @@ export const ReceivableManagementPanel = ({
   form,
   creditLimit,
   isChangeNegative,
-  receivableStatus
+  receivableStatus,
 }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [userModifiedDate, setUserModifiedDate] = useState(false);
   const [forceRecalculate, setForceRecalculate] = useState(false);
   const [baseCalculationDate, setBaseCalculationDate] = useState(
-    DateTime.now().startOf("day").toMillis()
+    DateTime.now().startOf('day').toMillis(),
   );
 
   const handleModalClose = useCallback(() => {
@@ -59,7 +66,7 @@ export const ReceivableManagementPanel = ({
     installmentAmount,
     currentBalance,
     paymentDate,
-    comments
+    comments,
   } = useSelector(selectAR);
 
   const cartData = useSelector(SelectCartData);
@@ -67,23 +74,27 @@ export const ReceivableManagementPanel = ({
   const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
   const isReceivable = receivableStatus && isChangeNegative;
   const maxInstallments = getMaxInstallments(paymentFrequency);
-  const generalBalance = useMemo(() => getPositive(change) + currentBalance, [change, currentBalance]);
-  const isInvalidClient = !client.id || client.id === "GC-0000";
-
-
+  const generalBalance = useMemo(
+    () => getPositive(change) + currentBalance,
+    [change, currentBalance],
+  );
+  const isInvalidClient = !client.id || client.id === 'GC-0000';
 
   const updatePaymentDateInStore = useCallback(
     (value) => dispatch(setAR({ paymentDate: value })),
-    [dispatch]
+    [dispatch],
   );
 
-  const updateARConfig = useCallback((updates) => {
-    const newBase = DateTime.now().startOf("day").toMillis();
-    setBaseCalculationDate(newBase);
-    setUserModifiedDate(false);
-    setForceRecalculate(true);
-    dispatch(setAR({ ...updates, paymentDate: null }));
-  }, [dispatch]);
+  const updateARConfig = useCallback(
+    (updates) => {
+      const newBase = DateTime.now().startOf('day').toMillis();
+      setBaseCalculationDate(newBase);
+      setUserModifiedDate(false);
+      setForceRecalculate(true);
+      dispatch(setAR({ ...updates, paymentDate: null }));
+    },
+    [dispatch],
+  );
 
   const handleDateChange = useCallback(
     (date) => {
@@ -97,11 +108,11 @@ export const ReceivableManagementPanel = ({
       } else {
         setUserModifiedDate(false);
         updatePaymentDateInStore(null);
-        setBaseCalculationDate(DateTime.now().startOf("day").toMillis());
+        setBaseCalculationDate(DateTime.now().startOf('day').toMillis());
         setForceRecalculate(true);
       }
     },
-    [paymentDate, updatePaymentDateInStore]
+    [paymentDate, updatePaymentDateInStore],
   );
 
   const setInstallments = useCallback(
@@ -113,7 +124,7 @@ export const ReceivableManagementPanel = ({
         dispatch(setAR({ totalInstallments: numValue }));
       }
     },
-    [dispatch, totalInstallments, updateARConfig]
+    [dispatch, totalInstallments, updateARConfig],
   );
 
   const setFrequency = useCallback(
@@ -124,27 +135,37 @@ export const ReceivableManagementPanel = ({
         dispatch(setAR({ paymentFrequency: value }));
       }
     },
-    [dispatch, paymentFrequency, updateARConfig]
+    [dispatch, paymentFrequency, updateARConfig],
   );
 
   const setAmountPerInstallment = useCallback(
-    (value) => dispatch(setAR({ installmentAmount: getPositive(setNumPrecision(value)) })),
-    [dispatch]
+    (value) =>
+      dispatch(
+        setAR({ installmentAmount: getPositive(setNumPrecision(value)) }),
+      ),
+    [dispatch],
   );
-  const setComments = useCallback((value) => dispatch(setAR({ comments: value })), [dispatch]);
-  const setCurrentBalance = (value) => dispatch(setAR({ currentBalance: value }));
-  const setTotalReceivable = useCallback((value) => dispatch(setAR({ totalReceivable: value })), [dispatch]);
+  const setComments = useCallback(
+    (value) => dispatch(setAR({ comments: value })),
+    [dispatch],
+  );
+  const setCurrentBalance = (value) =>
+    dispatch(setAR({ currentBalance: value }));
+  const setTotalReceivable = useCallback(
+    (value) => dispatch(setAR({ totalReceivable: value })),
+    [dispatch],
+  );
 
   const { paymentDates, nextPaymentDate } = usePaymentDates(
     paymentFrequency,
     totalInstallments,
     userModifiedDate ? paymentDate : baseCalculationDate,
-    forceRecalculate
+    forceRecalculate,
   );
 
   useGetPendingBalance({
     dependencies: [user?.businessID, client?.id, isOpen],
-    onBalanceChange: setCurrentBalance
+    onBalanceChange: setCurrentBalance,
   });
 
   usePendingBalance(user?.businessID, client?.id, setCurrentBalance);
@@ -157,17 +178,17 @@ export const ReceivableManagementPanel = ({
       totalInstallments > 0 &&
       nextPaymentDate &&
       isOpen; // Solo cuando el modal está abierto
-      
+
     if (shouldAutoSet) {
       if (nextPaymentDate !== paymentDate) {
         updatePaymentDateInStore(nextPaymentDate);
         setUserModifiedDate(false);
         if (forceRecalculate) setForceRecalculate(false);
-        
+
         // Actualizar el form también
         if (form) {
-          form.setFieldsValue({ 
-            paymentDate: DateUtils.convertMillisToDayjs(nextPaymentDate) 
+          form.setFieldsValue({
+            paymentDate: DateUtils.convertMillisToDayjs(nextPaymentDate),
           });
         }
       } else if (forceRecalculate) {
@@ -186,7 +207,7 @@ export const ReceivableManagementPanel = ({
     baseCalculationDate,
     updatePaymentDateInStore,
     isOpen,
-    form
+    form,
   ]);
 
   useEffect(() => {
@@ -197,7 +218,11 @@ export const ReceivableManagementPanel = ({
   }, [change, totalInstallments, setAmountPerInstallment, setTotalReceivable]);
 
   useEffect(() => {
-    if (receivableStatus && (client?.id === "GC-0000" || !client?.id) && isReceivable) {
+    if (
+      receivableStatus &&
+      (client?.id === 'GC-0000' || !client?.id) &&
+      isReceivable
+    ) {
       dispatch(toggleReceivableStatus(false));
     }
   }, [client?.id, isReceivable, receivableStatus, dispatch]);
@@ -207,11 +232,11 @@ export const ReceivableManagementPanel = ({
       // Resetear estados locales del modal cuando se quita de CxC
       setUserModifiedDate(false);
       setForceRecalculate(false);
-      setBaseCalculationDate(DateTime.now().startOf("day").toMillis());
-      
+      setBaseCalculationDate(DateTime.now().startOf('day').toMillis());
+
       // Resetear el estado de AR completamente
       // dispatch(resetAR());
-      
+
       // Cerrar el modal si está abierto
       if (isOpen) {
         closePanel();
@@ -224,7 +249,7 @@ export const ReceivableManagementPanel = ({
       // Inicializar valores por defecto si no existen
       const defaultFrequency = paymentFrequency || 'monthly';
       const defaultInstallments = totalInstallments || 1;
-      
+
       // Si no hay valores en el store, establecer valores por defecto
       if (!paymentFrequency) {
         dispatch(setAR({ paymentFrequency: defaultFrequency }));
@@ -232,20 +257,32 @@ export const ReceivableManagementPanel = ({
       if (!totalInstallments || totalInstallments === 0) {
         dispatch(setAR({ totalInstallments: defaultInstallments }));
       }
-      
+
       // Reset form with current values when opening
       form.setFieldsValue({
         paymentFrequency: defaultFrequency,
         totalInstallments: defaultInstallments,
-        paymentDate: paymentDate ? DateUtils.convertMillisToDayjs(paymentDate) : null,
-        comments: comments || ''
+        paymentDate: paymentDate
+          ? DateUtils.convertMillisToDayjs(paymentDate)
+          : null,
+        comments: comments || '',
       });
     }
-  }, [isOpen, form, paymentFrequency, totalInstallments, paymentDate, comments, dispatch]);
+  }, [
+    isOpen,
+    form,
+    paymentFrequency,
+    totalInstallments,
+    paymentDate,
+    comments,
+    dispatch,
+  ]);
 
   useEffect(() => {
     if (form && paymentDate) {
-      form.setFieldsValue({ paymentDate: DateUtils.convertMillisToDayjs(paymentDate) });
+      form.setFieldsValue({
+        paymentDate: DateUtils.convertMillisToDayjs(paymentDate),
+      });
     }
   }, [form, paymentDate]);
 
@@ -253,10 +290,10 @@ export const ReceivableManagementPanel = ({
     if (form) {
       form.setFieldsValue({ paymentFrequency, totalInstallments });
     }
-  }, [form, paymentFrequency, totalInstallments]);  // Inicializar fecha base al abrir el modal
+  }, [form, paymentFrequency, totalInstallments]); // Inicializar fecha base al abrir el modal
   useEffect(() => {
     if (isOpen && !baseCalculationDate) {
-      const initialBase = DateTime.now().startOf("day").toMillis();
+      const initialBase = DateTime.now().startOf('day').toMillis();
       setBaseCalculationDate(initialBase);
       setForceRecalculate(true); // Forzar recálculo inicial
     }
@@ -265,17 +302,17 @@ export const ReceivableManagementPanel = ({
   useEffect(() => {
     if (isOpen && isReceivable) {
       // Solo inicializar si los valores están vacíos o son por defecto
-      const needsInitialization = 
-        !paymentFrequency || 
-        !totalInstallments || 
-        totalInstallments === 0;
-        
+      const needsInitialization =
+        !paymentFrequency || !totalInstallments || totalInstallments === 0;
+
       if (needsInitialization) {
-        dispatch(setAR({ 
-          paymentFrequency: 'monthly',
-          totalInstallments: 1,
-          paymentDate: null // Se calculará automáticamente
-        }));
+        dispatch(
+          setAR({
+            paymentFrequency: 'monthly',
+            totalInstallments: 1,
+            paymentDate: null, // Se calculará automáticamente
+          }),
+        );
         setForceRecalculate(true);
       }
     }
@@ -302,74 +339,107 @@ export const ReceivableManagementPanel = ({
           <Label>Balance pendiente</Label>
           <Label>{formatPrice(getPositive(currentBalance))}</Label>
         </Header>
-          <Form layout="vertical" form={form}>
-            <Group>
-              <FormItem
-                label="Frecuencia de Pago"
-                name="paymentFrequency"
-                rules={[{ required: true, message: 'Seleccione una frecuencia de pago' }]}
+        <Form layout="vertical" form={form}>
+          <Group>
+            <FormItem
+              label="Frecuencia de Pago"
+              name="paymentFrequency"
+              rules={[
+                {
+                  required: true,
+                  message: 'Seleccione una frecuencia de pago',
+                },
+              ]}
+            >
+              <Select
+                value={paymentFrequency}
+                style={{ width: '100%' }}
+                onChange={setFrequency}
               >
-                <Select value={paymentFrequency} style={{ width: '100%' }} onChange={setFrequency}>
-                  <Option value="monthly">Mensual</Option>
-                  <Option value="weekly">Semanal</Option>
-                </Select>
-              </FormItem>
-              <FormItem
-                label="Cuotas"
-                name="totalInstallments"
-                rules={[
-                  { required: true, message: 'Seleccione el número de cuotas' },
-                  { type: 'number', min: 1, max: maxInstallments, message: `Cuotas entre 1 y ${maxInstallments}` }
-                ]}
-              >
-                <InputNumber value={totalInstallments} onChange={setInstallments} style={{ width: '100%' }} />
-              </FormItem>
-            </Group>
-            <Group>
-              <FormItem
-                label="Fecha de Primer Pago"
-                name="paymentDate"
-                rules={[{ required: true, message: 'Seleccione una fecha de pago' }]}
-              >
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
-                  value={paymentDate ? DateUtils.convertMillisToDayjs(paymentDate) : null}
-                  onChange={handleDateChange}
-                  disabledDate={(current) =>
-                    current && current < DateUtils.convertMillisToDayjs(Date.now()).startOf('day')
-                  }
-                />
-              </FormItem>
-              <FormItem label="Monto por Cuota">
-                <div style={{ fontWeight: 600 }}>
-                  <span>{formatPrice(installmentAmount)}</span>
-                </div>
-              </FormItem>
-            </Group>
-            <FormItem label="Comentarios" name="comments">
-              <TextArea rows={3} value={comments} onChange={(e) => setComments(e.target.value)} />
+                <Option value="monthly">Mensual</Option>
+                <Option value="weekly">Semanal</Option>
+              </Select>
             </FormItem>
-            {paymentDates.length > 0 && totalInstallments > 0 && (
-              <PaymentDatesOverview
-                paymentDates={paymentDates}
-                nextPaymentDate={nextPaymentDate}
-                frequency={paymentFrequency}
-                installments={totalInstallments}
+            <FormItem
+              label="Cuotas"
+              name="totalInstallments"
+              rules={[
+                { required: true, message: 'Seleccione el número de cuotas' },
+                {
+                  type: 'number',
+                  min: 1,
+                  max: maxInstallments,
+                  message: `Cuotas entre 1 y ${maxInstallments}`,
+                },
+              ]}
+            >
+              <InputNumber
+                value={totalInstallments}
+                onChange={setInstallments}
+                style={{ width: '100%' }}
               />
-            )}
-          </Form>
-          <Footer>
-            <Header>
-              <Label>Total a Crédito.</Label>
-              <Label>{formatPrice(getPositive(change))}</Label>
-            </Header>
-            <Header>
-              <Label>Balance General</Label>
-              <Label>{formatPrice(getPositive(generalBalance))} / {formatPrice(creditLimit?.creditLimit?.value || 0)}</Label>
-            </Header>
-          </Footer>
-        </PanelContainer>
+            </FormItem>
+          </Group>
+          <Group>
+            <FormItem
+              label="Fecha de Primer Pago"
+              name="paymentDate"
+              rules={[
+                { required: true, message: 'Seleccione una fecha de pago' },
+              ]}
+            >
+              <DatePicker
+                format="DD/MM/YYYY"
+                style={{ width: '100%' }}
+                value={
+                  paymentDate
+                    ? DateUtils.convertMillisToDayjs(paymentDate)
+                    : null
+                }
+                onChange={handleDateChange}
+                disabledDate={(current) =>
+                  current &&
+                  current <
+                    DateUtils.convertMillisToDayjs(Date.now()).startOf('day')
+                }
+              />
+            </FormItem>
+            <FormItem label="Monto por Cuota">
+              <div style={{ fontWeight: 600 }}>
+                <span>{formatPrice(installmentAmount)}</span>
+              </div>
+            </FormItem>
+          </Group>
+          <FormItem label="Comentarios" name="comments">
+            <TextArea
+              rows={3}
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+            />
+          </FormItem>
+          {paymentDates.length > 0 && totalInstallments > 0 && (
+            <PaymentDatesOverview
+              paymentDates={paymentDates}
+              nextPaymentDate={nextPaymentDate}
+              frequency={paymentFrequency}
+              installments={totalInstallments}
+            />
+          )}
+        </Form>
+        <Footer>
+          <Header>
+            <Label>Total a Crédito.</Label>
+            <Label>{formatPrice(getPositive(change))}</Label>
+          </Header>
+          <Header>
+            <Label>Balance General</Label>
+            <Label>
+              {formatPrice(getPositive(generalBalance))} /{' '}
+              {formatPrice(creditLimit?.creditLimit?.value || 0)}
+            </Label>
+          </Header>
+        </Footer>
+      </PanelContainer>
     </Modal>
   );
 };
@@ -378,20 +448,21 @@ const PanelContainer = styled.div`
   padding: 6px 12px;
   background: #f4f4f4;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
 `;
 
 const Header = styled.div`
-  padding: 0.2em 0;
   display: flex;
   justify-content: space-between;
+  padding: 0.2em 0;
 `;
 
 const Footer = styled.div`
-  :nth-child(n) {
+  &:nth-child(n) {
     div {
       border-bottom: 1px solid #ccc;
-      :last-child {
+
+      &:last-child {
         border-bottom: 0;
       }
     }
@@ -399,11 +470,11 @@ const Footer = styled.div`
 `;
 
 const Label = styled.span`
-  color: #333;
-  font-weight: 600;
-  font-size: 1.1em;
   display: block;
   margin-bottom: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #333;
 `;
 
 const FormItem = styled(Form.Item)`
@@ -412,6 +483,6 @@ const FormItem = styled(Form.Item)`
 
 const Group = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: 1fr 0.8fr;
+  gap: 1em;
 `;

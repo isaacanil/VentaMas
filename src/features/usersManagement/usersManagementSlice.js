@@ -9,7 +9,7 @@ const userRegistrationSlice = createSlice({
       role: '',
       id: '',
       businessID: undefined,
-      createAt: "",
+      createAt: '',
     },
     errors: {},
     status: 'idle',
@@ -32,12 +32,11 @@ const userRegistrationSlice = createSlice({
         role: '',
         id: '',
         businessID: undefined,
-        createAt: "",
+        createAt: '',
       };
       state.errors = {};
     },
   },
- 
 });
 
 export const { updateUser, setErrors, clear } = userRegistrationSlice.actions;

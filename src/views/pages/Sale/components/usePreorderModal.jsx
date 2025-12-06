@@ -6,7 +6,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { SelectSettingCart, loadCart, selectCart, setCartId } from '../../../../features/cart/cartSlice';
+import {
+  SelectSettingCart,
+  loadCart,
+  selectCart,
+  setCartId,
+} from '../../../../features/cart/cartSlice';
 import { selectClientWithAuth } from '../../../../features/clientCart/clientCartSlice';
 import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
@@ -26,9 +31,9 @@ const ModalCard = styled.div`
 
 const ModalHeader = styled.header`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
 `;
 
 const ModalTitle = styled.h3`
@@ -45,16 +50,16 @@ const HeaderNote = styled.span`
 
 const IconButton = styled.button`
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid #cbd5f5;
-  background: #fff;
-  color: #1d4ed8;
   font-size: 0.8rem;
   font-weight: 600;
+  color: #1d4ed8;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  background: #fff;
+  border: 1px solid #cbd5f5;
+  border-radius: 999px;
   opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
   transition: all 0.18s ease;
 
@@ -68,16 +73,16 @@ const ModalBody = styled.div`
   display: grid;
   gap: 14px;
   max-height: 60vh;
-  overflow-y: auto;
   padding-right: 4px;
+  overflow-y: auto;
 `;
 
 const EmptyState = styled.div`
-  margin: 40px 0 28px;
   display: grid;
   gap: 6px;
-  text-align: center;
+  margin: 40px 0 28px;
   color: #64748b;
+  text-align: center;
 `;
 
 const SelectorRow = styled.div`
@@ -89,19 +94,19 @@ const SelectorRow = styled.div`
 `;
 
 const SelectedSummary = styled.div`
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  background: #f8fafc;
   display: grid;
   gap: 10px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 `;
 
 const SummaryRow = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 12px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const ItemTitle = styled.span`
@@ -125,12 +130,12 @@ const StatusPill = styled.span`
   align-items: center;
   justify-content: center;
   padding: 2px 10px;
-  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: capitalize;
   color: ${({ $tone }) => $tone?.text || '#0f172a'};
+  text-transform: capitalize;
   background: ${({ $tone }) => $tone?.background || '#e2e8f0'};
+  border-radius: 999px;
 `;
 
 const Amount = styled.span`
@@ -141,18 +146,20 @@ const Amount = styled.span`
 const PrimaryAction = styled.button`
   width: 100%;
   padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
+  color: #fff;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: none;
+  border-radius: 8px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
+    box-shadow: 0 12px 22px rgb(37 99 235 / 20%);
     transform: translateY(-1px) scale(1.01);
-    box-shadow: 0 12px 22px rgba(37, 99, 235, 0.2);
   }
 `;
 
@@ -161,16 +168,16 @@ const LoadingState = styled.div`
   gap: 12px;
   justify-items: center;
   padding: 40px 0;
-  color: #475569;
   font-size: 0.9rem;
+  color: #475569;
 `;
 
 const Spinner = styled.div`
   width: 36px;
   height: 36px;
-  border-radius: 50%;
   border: 4px solid #bfdbfe;
   border-top-color: #1d4ed8;
+  border-radius: 50%;
   animation: spin 0.9s linear infinite;
 
   @keyframes spin {
@@ -210,7 +217,8 @@ export const usePreorderModal = () => {
   const businessID = user?.businessID;
   const navigate = useNavigate();
   const location = useLocation();
-  const isDeferredBillingEnabled = cartSettings?.billing?.billingMode === 'deferred';
+  const isDeferredBillingEnabled =
+    cartSettings?.billing?.billingMode === 'deferred';
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -241,7 +249,8 @@ export const usePreorderModal = () => {
         setIsLoading(false);
         notification.error({
           message: 'No se pudieron cargar las preventas',
-          description: error?.message || 'Verifica tu conexión e intenta de nuevo.'
+          description:
+            error?.message || 'Verifica tu conexión e intenta de nuevo.',
         });
       }
     };
@@ -261,7 +270,8 @@ export const usePreorderModal = () => {
     if (!businessID) {
       notification.warning({
         message: 'Acción no disponible',
-        description: 'Debes seleccionar un negocio válido antes de cargar preventas.'
+        description:
+          'Debes seleccionar un negocio válido antes de cargar preventas.',
       });
       return;
     }
@@ -334,32 +344,41 @@ export const usePreorderModal = () => {
     });
   }, [entries]);
 
-  const selectorOptions = useMemo(() => (
-    entries.map((item) => ({
-      value: item.key,
-      label: `#${item.number} · ${item.client} · ${formatPrice(item.total)}`,
-      data: item,
-    }))
-  ), [entries, formatPrice]);
+  const selectorOptions = useMemo(
+    () =>
+      entries.map((item) => ({
+        value: item.key,
+        label: `#${item.number} · ${item.client} · ${formatPrice(item.total)}`,
+        data: item,
+      })),
+    [entries, formatPrice],
+  );
 
-  const selectedEntry = useMemo(() => (
-    entries.find((entry) => entry.key === selectedPreorderKey) || null
-  ), [entries, selectedPreorderKey]);
+  const selectedEntry = useMemo(
+    () => entries.find((entry) => entry.key === selectedPreorderKey) || null,
+    [entries, selectedPreorderKey],
+  );
 
   const convertTimestampsToMillis = (obj) => {
     if (!obj || typeof obj !== 'object') return obj;
-    
+
     if (Array.isArray(obj)) {
-      return obj.map(item => convertTimestampsToMillis(item));
+      return obj.map((item) => convertTimestampsToMillis(item));
     }
-    
+
     const converted = {};
     for (const key in obj) {
       const value = obj[key];
-      
+
       // Check if it's a Firestore Timestamp
-      if (value && typeof value === 'object' && value.seconds !== undefined && value.nanoseconds !== undefined) {
-        converted[key] = value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
+      if (
+        value &&
+        typeof value === 'object' &&
+        value.seconds !== undefined &&
+        value.nanoseconds !== undefined
+      ) {
+        converted[key] =
+          value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
       } else if (value && typeof value === 'object') {
         converted[key] = convertTimestampsToMillis(value);
       } else {
@@ -377,7 +396,7 @@ export const usePreorderModal = () => {
     if (!isValid) {
       notification.warning({
         message: 'No se pudo cargar la preventa',
-        description: message || 'Verifica el contenido antes de continuar.'
+        description: message || 'Verifica el contenido antes de continuar.',
       });
       return;
     }
@@ -387,7 +406,8 @@ export const usePreorderModal = () => {
 
     dispatch(loadCart(serializedPreorder));
     dispatch(setCartId());
-    const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
+    const storedTaxReceiptType =
+      resolvePreorderTaxReceiptType(serializedPreorder);
     if (storedTaxReceiptType) {
       dispatch(selectTaxReceiptType(storedTaxReceiptType));
     }
@@ -403,11 +423,17 @@ export const usePreorderModal = () => {
       params.delete('preorderId');
     }
     params.set('preserveCart', '1');
-    navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+    navigate(
+      {
+        pathname: location.pathname,
+        search: params.toString() ? `?${params.toString()}` : '',
+      },
+      { replace: true },
+    );
 
     notification.success({
       message: 'Preventa cargada',
-      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} del cliente ${serializedPreorder?.client?.name || 'sin nombre'}.`
+      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} del cliente ${serializedPreorder?.client?.name || 'sin nombre'}.`,
     });
     setIsOpen(false);
   };
@@ -418,9 +444,19 @@ export const usePreorderModal = () => {
     const mode = params.get('mode');
     const preorderIdParam = params.get('preorderId');
 
-    if (mode === 'preorder' && preorderIdParam && cart?.data?.type !== 'preorder') {
+    if (
+      mode === 'preorder' &&
+      preorderIdParam &&
+      cart?.data?.type !== 'preorder'
+    ) {
       params.delete('preorderId');
-      navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+      navigate(
+        {
+          pathname: location.pathname,
+          search: params.toString() ? `?${params.toString()}` : '',
+        },
+        { replace: true },
+      );
     }
   }, [cart?.data?.type, location.pathname, location.search, navigate]);
 
@@ -439,7 +475,7 @@ export const usePreorderModal = () => {
         title={null}
         footer={null}
         onCancel={handleClose}
-        destroyOnClose
+        destroyOnHidden
         maskClosable
         width={520}
       >
@@ -457,17 +493,27 @@ export const usePreorderModal = () => {
             ) : entries.length === 0 ? (
               <EmptyState>
                 <EmptyTitle>Sin preventas pendientes</EmptyTitle>
-                <EmptyDescription>Cuando tengas preventas activas aparecerán aquí.</EmptyDescription>
+                <EmptyDescription>
+                  Cuando tengas preventas activas aparecerán aquí.
+                </EmptyDescription>
               </EmptyState>
             ) : (
               <>
                 <SelectorRow>
                   {lastUpdatedAt && (
                     <HeaderNote>
-                      Actualizado {new Date(lastUpdatedAt).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })}
+                      Actualizado{' '}
+                      {new Date(lastUpdatedAt).toLocaleTimeString('es-DO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </HeaderNote>
                   )}
-                  <IconButton type="button" onClick={handleRetry} disabled={isLoading}>
+                  <IconButton
+                    type="button"
+                    onClick={handleRetry}
+                    disabled={isLoading}
+                  >
                     <ReloadOutlined />
                     Actualizar
                   </IconButton>
@@ -484,69 +530,89 @@ export const usePreorderModal = () => {
                     onChange={(value) => setSelectedPreorderKey(value)}
                     options={selectorOptions}
                     filterOption={(input, option) =>
-                      (option?.label || '').toLowerCase().includes(input.toLowerCase())
+                      (option?.label || '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
                     }
                     optionRender={(option) => {
                       const data = option.data?.data;
                       if (!data) return option.label;
                       return (
-                        <div style={{ 
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '4px',
-                          minWidth: 0
-                        }}>
-                          <div style={{ 
+                        <div
+                          style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '8px',
-                            alignItems: 'center'
-                          }}>
-                            <span style={{ 
-                              fontWeight: 600,
-                              fontSize: '0.9rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              flex: 1,
-                              minWidth: 0
-                            }}>
+                            flexDirection: 'column',
+                            gap: '4px',
+                            minWidth: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: '8px',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: '0.9rem',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               Preventa #{data.number}
                             </span>
-                            <span style={{ 
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              color: '#0f172a',
-                              flexShrink: 0
-                            }}>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: '0.85rem',
+                                color: '#0f172a',
+                                flexShrink: 0,
+                              }}
+                            >
                               {formatPrice(data.total)}
                             </span>
                           </div>
-                          <div style={{ 
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '8px',
-                            alignItems: 'center',
-                            minWidth: 0
-                          }}>
-                            <span style={{ 
-                              fontSize: '0.8rem',
-                              color: '#64748b',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              flex: 1,
-                              minWidth: 0
-                            }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              gap: '8px',
+                              alignItems: 'center',
+                              minWidth: 0,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: '0.8rem',
+                                color: '#64748b',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
                               {data.client}
                             </span>
                             {data.createdAt && (
-                              <span style={{ 
-                                fontSize: '0.75rem',
-                                color: '#94a3b8',
-                                flexShrink: 0
-                              }}>
-                                {data.createdAt.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              <span
+                                style={{
+                                  fontSize: '0.75rem',
+                                  color: '#94a3b8',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {data.createdAt.toLocaleDateString('es-DO', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })}
                               </span>
                             )}
                           </div>
@@ -561,7 +627,8 @@ export const usePreorderModal = () => {
                     <SummaryRow>
                       <ItemTitle>Preventa #{selectedEntry.number}</ItemTitle>
                       <StatusPill $tone={STATUS_TONES[selectedEntry.status]}>
-                        {STATUS_LABELS[selectedEntry.status] || selectedEntry.status}
+                        {STATUS_LABELS[selectedEntry.status] ||
+                          selectedEntry.status}
                       </StatusPill>
                     </SummaryRow>
                     <SummaryRow>
@@ -570,7 +637,10 @@ export const usePreorderModal = () => {
                     <SummaryRow>
                       {selectedEntry.createdAt ? (
                         <TimestampLabel>
-                          {selectedEntry.createdAt.toLocaleString('es-DO', { dateStyle: 'medium', timeStyle: 'short' })}
+                          {selectedEntry.createdAt.toLocaleString('es-DO', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })}
                         </TimestampLabel>
                       ) : (
                         <span />
@@ -582,7 +652,9 @@ export const usePreorderModal = () => {
 
                 <PrimaryAction
                   type="button"
-                  onClick={() => selectedEntry && handleLoadPreorder(selectedEntry.raw)}
+                  onClick={() =>
+                    selectedEntry && handleLoadPreorder(selectedEntry.raw)
+                  }
                   disabled={!selectedEntry}
                 >
                   Cargar
@@ -592,6 +664,6 @@ export const usePreorderModal = () => {
           </ModalBody>
         </ModalCard>
       </Modal>
-    )
+    ),
   };
 };

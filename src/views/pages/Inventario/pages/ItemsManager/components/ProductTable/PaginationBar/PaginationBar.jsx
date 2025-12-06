@@ -3,7 +3,11 @@ import styled from 'styled-components';
 
 import { Button } from '../../../../../../../templates/system/Button/Button';
 
-export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }) => {
+export const PaginationBar = ({
+  products,
+  setFilteredProducts,
+  productsPerPage,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -45,11 +49,11 @@ export const PaginationBar = ({ products, setFilteredProducts, productsPerPage }
 };
 
 const Container = styled.div`
-    height: 2.75em;
-    width: 100%;
-    background-color: var(--White);
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    justify-content: center;
-`
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 2.75em;
+  background-color: var(--white);
+`;

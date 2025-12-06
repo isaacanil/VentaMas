@@ -1,4 +1,4 @@
-import { db, serverTimestamp } from "../../../core/config/firebase.js"
+import { db, serverTimestamp } from '../../../core/config/firebase.js';
 
 /**
  * Obtiene un documento de `batches` por su ID.
@@ -12,36 +12,32 @@ import { db, serverTimestamp } from "../../../core/config/firebase.js"
 export async function getBatchById(user, batchId) {
   // — Validaciones —
   if (!user || typeof user.businessID !== 'string' || !user.businessID) {
-    throw new TypeError('getBatchById: se requiere user.businessID válido')
+    throw new TypeError('getBatchById: se requiere user.businessID válido');
   }
   if (batchId == null) {
     // No hay ID, devolvemos null
-    return null
+    return null;
   }
   if (typeof batchId !== 'string') {
-    throw new TypeError('getBatchById: batchId debe ser un string')
+    throw new TypeError('getBatchById: batchId debe ser un string');
   }
 
   try {
     // Admin SDK: usa ref.get()
-    const ref = db.doc(
-      `businesses/${user.businessID}/batches/${batchId}`
-    )
-    const snap = await ref.get()
+    const ref = db.doc(`businesses/${user.businessID}/batches/${batchId}`);
+    const snap = await ref.get();
 
     if (!snap.exists) {
-      return null
+      return null;
     }
-    return /** @type {Batch} */ (snap.data())
+    return /** @type {Batch} */ (snap.data());
   } catch (err) {
     console.error('getBatchById error:', {
       businessID: user.businessID,
       batchId,
-      message: err.message
-    })
-    throw new Error(
-      `No se pudo leer batches/${batchId}: ${err.message}`
-    )
+      message: err.message,
+    });
+    throw new Error(`No se pudo leer batches/${batchId}: ${err.message}`);
   }
 }
 
@@ -59,17 +55,23 @@ export async function getBatchById(user, batchId) {
 export async function updateBatchStatusForProductStock(
   businessID,
   batchId,
-  productId
+  productId,
 ) {
   // — Validaciones tempranas —
   if (typeof businessID !== 'string' || !businessID) {
-    throw new TypeError('updateBatchStatusForProductStock: businessID debe ser string no vacío')
+    throw new TypeError(
+      'updateBatchStatusForProductStock: businessID debe ser string no vacío',
+    );
   }
   if (typeof batchId !== 'string' || !batchId) {
-    throw new TypeError('updateBatchStatusForProductStock: batchId debe ser string no vacío')
+    throw new TypeError(
+      'updateBatchStatusForProductStock: batchId debe ser string no vacío',
+    );
   }
   if (typeof productId !== 'string' || !productId) {
-    throw new TypeError('updateBatchStatusForProductStock: productId debe ser string no vacío')
+    throw new TypeError(
+      'updateBatchStatusForProductStock: productId debe ser string no vacío',
+    );
   }
 
   try {
@@ -83,38 +85,38 @@ export async function updateBatchStatusForProductStock(
       .where('batchId', '==', batchId)
       .where('productId', '==', productId)
       .where('quantity', '>', 0)
-      .get()
+      .get();
 
-    let totalQuantity = 0
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data()
-      totalQuantity += typeof data.quantity === 'number' ? data.quantity : 0
-    })
+    let totalQuantity = 0;
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      totalQuantity += typeof data.quantity === 'number' ? data.quantity : 0;
+    });
 
     // Referencia al documento batch
     const batchRef = db
       .collection('businesses')
       .doc(businessID)
       .collection('batches')
-      .doc(batchId)
+      .doc(batchId);
 
     // Si no queda stock, marcamos el batch como inactivo
     if (totalQuantity <= 0) {
       await batchRef.update({
         quantity: 0,
         status: 'inactive',
-        updatedAt: serverTimestamp()
-      })
+        updatedAt: serverTimestamp(),
+      });
     }
   } catch (err) {
     console.error('updateBatchStatusForProductStock error:', {
       businessID,
       batchId,
       productId,
-      message: err.message
-    })
+      message: err.message,
+    });
     throw new Error(
-      `No se pudo actualizar el estado de batches/${batchId}: ${err.message}`
-    )
+      `No se pudo actualizar el estado de batches/${batchId}: ${err.message}`,
+    );
   }
 }

@@ -23,7 +23,8 @@ const pickClientField = (d, ...keys) => {
 
 export function buildClientBlock(d) {
   const rawName = pickClientField(d, 'name');
-  const normalizedName = typeof rawName === 'string' ? rawName.toLowerCase() : '';
+  const normalizedName =
+    typeof rawName === 'string' ? rawName.toLowerCase() : '';
   const hasRealName = normalizedName && normalizedName !== 'generic client';
   const name = hasRealName ? rawName : 'Cliente Genérico';
 
@@ -32,7 +33,9 @@ export function buildClientBlock(d) {
   const tel2 = pickClientField(d, 'tel2');
   const personalId = pickClientField(d, 'personalID');
 
-  const hasAnyDetail = Boolean(formatTextValue(rawName) || address || tel || tel2 || personalId);
+  const hasAnyDetail = Boolean(
+    formatTextValue(rawName) || address || tel || tel2 || personalId,
+  );
   if (!hasAnyDetail) {
     return null;
   }
@@ -41,8 +44,8 @@ export function buildClientBlock(d) {
     { label: 'Cliente', value: name },
     { label: 'Dirección', value: address },
   ]
-    .filter(detail => detail.value)
-    .map(detail => ({
+    .filter((detail) => detail.value)
+    .map((detail) => ({
       text: [
         { text: `${detail.label}:  `, bold: true },
         { text: String(detail.value), color: '#111' },
@@ -55,8 +58,8 @@ export function buildClientBlock(d) {
     { label: 'Tel 2', value: tel2 },
     { label: 'RNC/Cédula', value: personalId },
   ]
-    .filter(detail => detail.value)
-    .map(detail => ({
+    .filter((detail) => detail.value)
+    .map((detail) => ({
       text: `${detail.label}: ${detail.value}`,
       style: 'headerInfo',
       noWrap: detail.label.startsWith('Tel'),
@@ -67,5 +70,10 @@ export function buildClientBlock(d) {
 
   if (!left.length && !right.length) return null;
 
-  return { columns: [{ width: '*', stack: left }, { width: '*', stack: right }] };
+  return {
+    columns: [
+      { width: '*', stack: left },
+      { width: '*', stack: right },
+    ],
+  };
 }

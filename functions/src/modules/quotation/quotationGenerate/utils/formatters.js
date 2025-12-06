@@ -2,7 +2,7 @@ import { format as formatDateFns } from 'date-fns';
 
 export function money(n) {
   const num = Number(n) || 0;
-  const parts = num.toFixed(2).split('.')
+  const parts = num.toFixed(2).split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `RD$ ${parts.join('.')}`;
 }
@@ -12,10 +12,10 @@ export function formatDate(ts) {
     ts instanceof Date
       ? ts.getTime()
       : typeof ts.toMillis === 'function'
-      ? ts.toMillis()
-      : ts?.seconds
-      ? ts.seconds * 1000
-      : Number(ts);
+        ? ts.toMillis()
+        : ts?.seconds
+          ? ts.seconds * 1000
+          : Number(ts);
 
   if (isNaN(ms)) return '';
   return formatDateFns(new Date(ms), 'dd/MM/yyyy');
@@ -38,11 +38,11 @@ export function getDiscount(d) {
 
 export function getProductIndividualDiscount(product) {
   if (!product.discount || product.discount.value <= 0) return 0;
-  
+
   const price = +product.pricing?.price || 0;
   const quantity = +product.amountToBuy || 1;
   const subtotalBeforeDiscount = price * quantity;
-  
+
   if (product.discount.type === 'percentage') {
     return subtotalBeforeDiscount * (product.discount.value / 100);
   } else {
@@ -58,7 +58,7 @@ export function getProductsIndividualDiscounts(products) {
 }
 
 export function hasIndividualDiscounts(products) {
-  return products.some(product => 
-    product.discount && product.discount.value > 0
+  return products.some(
+    (product) => product.discount && product.discount.value > 0,
   );
 }

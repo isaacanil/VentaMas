@@ -1,6 +1,6 @@
-import { 
-  faExclamationTriangle, 
-  faCheckCircle
+import {
+  faExclamationTriangle,
+  faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
@@ -8,30 +8,38 @@ import styled from 'styled-components';
 
 const ReceiptItem = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 8px 12px;
   margin-bottom: 6px;
+  cursor: ${(props) => (props.$isClickable ? 'pointer' : 'default')};
+  background: ${(props) => {
+    switch (props.alertLevel) {
+      case 'critical':
+        return '#fff2f0';
+      case 'warning':
+        return '#fffbe6';
+      default:
+        return '#fafafa';
+    }
+  }};
+  border: 1px solid
+    ${(props) => {
+      switch (props.alertLevel) {
+        case 'critical':
+          return '#ff4d4f';
+        case 'warning':
+          return '#faad14';
+        default:
+          return '#f0f0f0';
+      }
+  }};
   border-radius: 6px;
-  border: 1px solid ${props => {
-    switch (props.alertLevel) {
-      case 'critical': return '#ff4d4f';
-      case 'warning': return '#faad14';
-      default: return '#f0f0f0';
-    }
-  }};
-  background: ${props => {
-    switch (props.alertLevel) {
-      case 'critical': return '#fff2f0';
-      case 'warning': return '#fffbe6';
-      default: return '#fafafa';
-    }
-  }};
   transition: all 0.2s;
 
   &:hover {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   &:last-child {
@@ -44,10 +52,10 @@ const ReceiptInfo = styled.div`
 `;
 
 const ReceiptName = styled.div`
+  margin-bottom: 2px;
   font-size: 13px;
   font-weight: 500;
   color: #262626;
-  margin-bottom: 2px;
 `;
 
 const ReceiptSeries = styled.div`
@@ -56,21 +64,24 @@ const ReceiptSeries = styled.div`
 `;
 
 const ReceiptStatus = styled.div`
-  text-align: right;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
   gap: 2px;
+  align-items: flex-end;
+  text-align: right;
 `;
 
 const RemainingCount = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: ${props => {
+  color: ${(props) => {
     switch (props.alertLevel) {
-      case 'critical': return '#ff4d4f';
-      case 'warning': return '#faad14';
-      default: return '#52c41a';
+      case 'critical':
+        return '#ff4d4f';
+      case 'warning':
+        return '#faad14';
+      default:
+        return '#52c41a';
     }
   }};
 `;
@@ -78,25 +89,28 @@ const RemainingCount = styled.div`
 const StatusIcon = styled.div`
   display: flex;
   align-items: center;
-  
+
   svg {
     width: 14px;
     height: 14px;
-    color: ${props => {
+    color: ${(props) => {
       switch (props.alertLevel) {
-        case 'critical': return '#ff4d4f';
-        case 'warning': return '#faad14';
-        default: return '#52c41a';
+        case 'critical':
+          return '#ff4d4f';
+        case 'warning':
+          return '#faad14';
+        default:
+          return '#52c41a';
       }
     }};
   }
 `;
 
 const EmptyState = styled.div`
-  text-align: center;
   padding: 20px;
-  color: #8c8c8c;
   font-size: 12px;
+  color: #8c8c8c;
+  text-align: center;
 `;
 
 /**
@@ -106,11 +120,7 @@ const EmptyState = styled.div`
  */
 const FiscalReceiptsList = ({ receipts = [], onReceiptClick }) => {
   if (!receipts || receipts.length === 0) {
-    return (
-      <EmptyState>
-        No hay comprobantes para mostrar
-      </EmptyState>
-    );
+    return <EmptyState>No hay comprobantes para mostrar</EmptyState>;
   }
 
   const getIcon = (alertLevel) => {
@@ -135,14 +145,16 @@ const FiscalReceiptsList = ({ receipts = [], onReceiptClick }) => {
         <ReceiptItem
           key={`${receipt.series}-${index}`}
           alertLevel={receipt.alertLevel}
-          onClick={() => onReceiptClick && onReceiptClick(receipt)}
-          style={{ cursor: onReceiptClick ? 'pointer' : 'default' }}
+          $isClickable={Boolean(onReceiptClick)}
+          onClick={
+            onReceiptClick ? () => onReceiptClick(receipt) : undefined
+          }
         >
           <ReceiptInfo>
             <ReceiptName>{receipt.name}</ReceiptName>
             <ReceiptSeries>Serie: {receipt.series}</ReceiptSeries>
           </ReceiptInfo>
-          
+
           <ReceiptStatus>
             <RemainingCount alertLevel={receipt.alertLevel}>
               {formatRemaining(receipt.remainingNumbers)}

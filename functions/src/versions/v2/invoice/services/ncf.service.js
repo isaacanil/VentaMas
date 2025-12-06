@@ -33,7 +33,10 @@ export async function reserveNcf(tx, { businessId, userId, ncfType }) {
 
   const toBigIntSafe = (value, label) => {
     try {
-      const normalized = value === undefined || value === null || value === '' ? '0' : String(value);
+      const normalized =
+        value === undefined || value === null || value === ''
+          ? '0'
+          : String(value);
       return BigInt(normalized);
     } catch {
       throw new Error(`Valor inválido para ${label}`);

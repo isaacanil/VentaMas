@@ -8,23 +8,64 @@ const USERS_COLLECTION = 'users';
 const SESSION_COLLECTION = 'sessionTokens';
 const SESSION_LOG_COLLECTION = 'sessionLogs';
 
-const SESSION_DURATION_MS = Number(process.env.CLIENT_AUTH_SESSION_DURATION_MS) || 60 * 24 * 60 * 60 * 1000; // 60 días
-const TOKEN_CLEANUP_MS = Number(process.env.CLIENT_AUTH_TOKEN_CLEANUP_MS) || 60 * 24 * 60 * 60 * 1000; // 60 días
-const SESSION_IDLE_TIMEOUT_MS = Number(process.env.CLIENT_AUTH_MAX_IDLE_MS) || SESSION_DURATION_MS;
+const SESSION_DURATION_MS =
+  Number(process.env.CLIENT_AUTH_SESSION_DURATION_MS) ||
+  60 * 24 * 60 * 60 * 1000; // 60 días
+const TOKEN_CLEANUP_MS =
+  Number(process.env.CLIENT_AUTH_TOKEN_CLEANUP_MS) || 60 * 24 * 60 * 60 * 1000; // 60 días
+const SESSION_IDLE_TIMEOUT_MS =
+  Number(process.env.CLIENT_AUTH_MAX_IDLE_MS) || SESSION_DURATION_MS;
 const MAX_LOGIN_ATTEMPTS = Number(process.env.CLIENT_AUTH_MAX_ATTEMPTS) || 5;
-const LOCK_DURATION_MS = Number(process.env.CLIENT_AUTH_LOCK_MS) || 2 * 60 * 60 * 1000; // 2 horas
-const MAX_ACTIVE_SESSIONS = Number(process.env.CLIENT_AUTH_MAX_ACTIVE_SESSIONS) || 10;
-const SESSION_EXTENSION_MS = Number(process.env.CLIENT_AUTH_SESSION_EXTENSION_MS) || SESSION_DURATION_MS;
+const LOCK_DURATION_MS =
+  Number(process.env.CLIENT_AUTH_LOCK_MS) || 2 * 60 * 60 * 1000; // 2 horas
+const MAX_ACTIVE_SESSIONS =
+  Number(process.env.CLIENT_AUTH_MAX_ACTIVE_SESSIONS) || 10;
+const MAX_PARALLEL_ACTIVE_SESSIONS =
+  Number(process.env.CLIENT_AUTH_MAX_PARALLEL_SESSIONS) || 1;
+const SESSION_EXTENSION_MS =
+  Number(process.env.CLIENT_AUTH_SESSION_EXTENSION_MS) || SESSION_DURATION_MS;
 
 const usersCol = db.collection(USERS_COLLECTION);
 const sessionsCol = db.collection(SESSION_COLLECTION);
 const sessionLogsCol = db.collection(SESSION_LOG_COLLECTION);
 
 const PRIVILEGED_SESSION_LOG_ROLES = ['admin', 'dev', 'owner'];
-const MAX_SESSION_LOG_LIMIT = Number(process.env.CLIENT_AUTH_SESSION_LOG_LIMIT) || 200;
+const MAX_SESSION_LOG_LIMIT =
+  Number(process.env.CLIENT_AUTH_SESSION_LOG_LIMIT) || 200;
 const SESSION_LOG_WHITELIST = new Set(['login', 'logout']);
 
 const normalizeName = (name) => (typeof name === 'string' ? name.trim() : '');
+
+const getNextUserNumber = async (businessID) => {
+  if (!businessID) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un ID de negocio.',
+    );
+  }
+
+  const counterRef = db.doc(`businesses/${businessID}/counters/users`);
+
+  return db.runTransaction(async (transaction) => {
+    const counterSnap = await transaction.get(counterRef);
+    const currentValue =
+      counterSnap.exists && typeof counterSnap.get('value') === 'number'
+        ? counterSnap.get('value')
+        : 0;
+    const updatedValue = currentValue + 1;
+
+    transaction.set(
+      counterRef,
+      {
+        value: updatedValue,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return updatedValue;
+  });
+};
 
 async function findUserByName(name) {
   const query = await usersCol.where('user.name', '==', name).limit(1).get();
@@ -58,7 +99,9 @@ async function cleanupOldTokens(userId, keepTokenId = null) {
       const expiresAt = doc.get('expiresAt');
       if (!expiresAt) return true;
       try {
-        const expiresMillis = expiresAt.toMillis ? expiresAt.toMillis() : Number(expiresAt);
+        const expiresMillis = expiresAt.toMillis
+          ? expiresAt.toMillis()
+          : Number(expiresAt);
         if (!Number.isFinite(expiresMillis)) {
           return true;
         }
@@ -109,7 +152,10 @@ const buildSessionLogPayload = (doc) => {
     userId: data.userId || null,
     sessionId: data.sessionId || null,
     event: data.event || null,
-    context: typeof data.context === 'object' && data.context !== null ? data.context : {},
+    context:
+      typeof data.context === 'object' && data.context !== null
+        ? data.context
+        : {},
     createdAt: toMillis(data.createdAt),
   };
 };
@@ -129,7 +175,7 @@ async function assertCanViewSessionLogs(actorUserId, targetUserId) {
   if (!PRIVILEGED_SESSION_LOG_ROLES.includes(actorRole)) {
     throw new HttpsError(
       'permission-denied',
-      'No tienes permiso para consultar los registros de sesiones de otros usuarios.'
+      'No tienes permiso para consultar los registros de sesiones de otros usuarios.',
     );
   }
 
@@ -155,12 +201,15 @@ async function logSessionEvent({ userId, sessionId, event, context = {} }) {
 async function updateUserPresence(userId, status) {
   if (!userId) return;
   try {
-    await usersCol.doc(userId).set({
-      presence: {
-        status,
-        updatedAt: FieldValue.serverTimestamp(),
+    await usersCol.doc(userId).set(
+      {
+        presence: {
+          status,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
       },
-    }, { merge: true });
+      { merge: true },
+    );
   } catch (error) {
     console.error('presence update error:', error);
   }
@@ -177,14 +226,20 @@ async function terminateSession(docSnap, event = 'revoked', context = {}) {
     username: data.username || null,
   };
   const mergedContext =
-    context && typeof context === 'object' && !Array.isArray(context) ? { ...context } : {};
+    context && typeof context === 'object' && !Array.isArray(context)
+      ? { ...context }
+      : {};
 
   const metadataFromDoc =
-    data.metadata && typeof data.metadata === 'object' && !Array.isArray(data.metadata)
+    data.metadata &&
+    typeof data.metadata === 'object' &&
+    !Array.isArray(data.metadata)
       ? data.metadata
       : {};
   const metadataFromContext =
-    mergedContext.metadata && typeof mergedContext.metadata === 'object' && !Array.isArray(mergedContext.metadata)
+    mergedContext.metadata &&
+    typeof mergedContext.metadata === 'object' &&
+    !Array.isArray(mergedContext.metadata)
       ? mergedContext.metadata
       : {};
 
@@ -195,14 +250,24 @@ async function terminateSession(docSnap, event = 'revoked', context = {}) {
 
   const ensureContextField = (field, value) => {
     if (value === undefined || value === null || value === '') return;
-    if (mergedContext[field] === undefined || mergedContext[field] === null || mergedContext[field] === '') {
+    if (
+      mergedContext[field] === undefined ||
+      mergedContext[field] === null ||
+      mergedContext[field] === ''
+    ) {
       mergedContext[field] = value;
     }
   };
 
   ensureContextField('deviceId', data.deviceId || combinedMetadata.deviceId);
-  ensureContextField('deviceLabel', data.deviceLabel || combinedMetadata.deviceLabel || combinedMetadata.label);
-  ensureContextField('label', data.deviceLabel || combinedMetadata.label || combinedMetadata.deviceLabel);
+  ensureContextField(
+    'deviceLabel',
+    data.deviceLabel || combinedMetadata.deviceLabel || combinedMetadata.label,
+  );
+  ensureContextField(
+    'label',
+    data.deviceLabel || combinedMetadata.label || combinedMetadata.deviceLabel,
+  );
   ensureContextField('platform', data.platform || combinedMetadata.platform);
   ensureContextField('userAgent', data.userAgent || combinedMetadata.userAgent);
   ensureContextField('ipAddress', data.ipAddress || combinedMetadata.ipAddress);
@@ -223,7 +288,14 @@ async function terminateSession(docSnap, event = 'revoked', context = {}) {
   }
 }
 
-async function enforceSessionLimit(userDocId, { allowSessions = MAX_ACTIVE_SESSIONS, skipTokenId = null } = {}) {
+async function enforceSessionLimit(
+  userDocId,
+  {
+    allowSessions = MAX_ACTIVE_SESSIONS,
+    skipTokenId = null,
+    reason = 'max-sessions-exceeded',
+  } = {},
+) {
   if (!allowSessions || allowSessions < 1) return;
   const snapshot = await sessionsCol.where('userId', '==', userDocId).get();
   if (snapshot.empty) return;
@@ -241,11 +313,15 @@ async function enforceSessionLimit(userDocId, { allowSessions = MAX_ACTIVE_SESSI
     const lastActivityMs = toMillis(data.lastActivity);
     const expired = !expiresAtMs || expiresAtMs <= now;
     const idleTooLong =
-      SESSION_IDLE_TIMEOUT_MS > 0 && lastActivityMs && now - lastActivityMs > SESSION_IDLE_TIMEOUT_MS;
+      SESSION_IDLE_TIMEOUT_MS > 0 &&
+      lastActivityMs &&
+      now - lastActivityMs > SESSION_IDLE_TIMEOUT_MS;
 
     if (expired || idleTooLong) {
       revocations.push(
-        terminateSession(doc, expired ? 'expired' : 'idle-timeout', { reason: 'stale-session' })
+        terminateSession(doc, expired ? 'expired' : 'idle-timeout', {
+          reason: 'stale-session',
+        }),
       );
     } else {
       active.push(doc);
@@ -263,14 +339,19 @@ async function enforceSessionLimit(userDocId, { allowSessions = MAX_ACTIVE_SESSI
   });
 
   const maxAllowedBeforeNew = allowSessions - 1;
-  const overflowCount = maxAllowedBeforeNew >= 0 ? active.length - maxAllowedBeforeNew : active.length;
+  const overflowCount =
+    maxAllowedBeforeNew >= 0
+      ? active.length - maxAllowedBeforeNew
+      : active.length;
   if (overflowCount <= 0) return;
 
   const toRevoke = active.slice(0, overflowCount);
   await Promise.allSettled(
     toRevoke.map((doc) =>
-      terminateSession(doc, 'auto-revoked', { reason: 'max-sessions-exceeded' })
-    )
+      terminateSession(doc, 'auto-revoked', {
+        reason,
+      }),
+    ),
   );
 }
 
@@ -282,7 +363,24 @@ async function getActiveSessions(userId) {
   const now = Date.now();
   return snapshot.docs
     .map((doc) => buildSessionPayload(doc))
-    .filter((session) => session && session.expiresAt && session.expiresAt > now);
+    .filter(
+      (session) => session && session.expiresAt && session.expiresAt > now,
+    );
+}
+
+async function revokeAllUserSessions(userId, reason = 'password-changed') {
+  if (!userId) return { revoked: 0 };
+  const snapshot = await sessionsCol.where('userId', '==', userId).get();
+  if (snapshot.empty) return { revoked: 0 };
+
+  const revocations = snapshot.docs.map((doc) =>
+    terminateSession(doc, 'revoked', { reason }),
+  );
+  await Promise.allSettled(revocations);
+
+  await updateUserPresence(userId, 'offline');
+
+  return { revoked: snapshot.docs.length };
 }
 
 async function syncUserPresence(userId) {
@@ -341,7 +439,11 @@ async function ensureActiveSession(tokenId, { eventContext = {} } = {}) {
   return snap;
 }
 
-async function createSessionToken(userDocId, sessionInfo = {}, userProfile = {}) {
+async function createSessionToken(
+  userDocId,
+  sessionInfo = {},
+  userProfile = {},
+) {
   const now = Timestamp.now();
   const expiresAt = Timestamp.fromMillis(now.toMillis() + SESSION_DURATION_MS);
   const tokenId = `${userDocId}_${now.toMillis()}`;
@@ -384,7 +486,10 @@ async function ensureUniqueUsername(name, excludeId = null) {
 
   const hasOther = query.docs.some((doc) => doc.id !== excludeId);
   if (hasOther) {
-    throw new HttpsError('already-exists', 'Error: Ya existe un usuario con este nombre.');
+    throw new HttpsError(
+      'already-exists',
+      'Error: Ya existe un usuario con este nombre.',
+    );
   }
 }
 
@@ -408,7 +513,7 @@ export const clientLogin = onCall(async (request) => {
     if (userData.lockUntil && nowMs < userData.lockUntil) {
       throw new HttpsError(
         'failed-precondition',
-        'This account has been temporarily locked due to too many failed login attempts. Please try again later.'
+        'This account has been temporarily locked due to too many failed login attempts. Please try again later.',
       );
     }
 
@@ -437,15 +542,23 @@ export const clientLogin = onCall(async (request) => {
     };
   });
 
-  await enforceSessionLimit(userDoc.id);
-  const displayName = user.realName || user.displayName || user.name || identifier;
+  await enforceSessionLimit(userDoc.id, {
+    allowSessions: MAX_PARALLEL_ACTIVE_SESSIONS,
+    reason: 'new-login',
+  });
+  const displayName =
+    user.realName || user.displayName || user.name || identifier;
   const usernameValue = user.name || identifier;
 
-  const { tokenId, expiresAt } = await createSessionToken(userDoc.id, sessionInfo, {
-    displayName,
-    username: usernameValue,
-    realName: user.realName || null,
-  });
+  const { tokenId, expiresAt } = await createSessionToken(
+    userDoc.id,
+    sessionInfo,
+    {
+      displayName,
+      username: usernameValue,
+      realName: user.realName || null,
+    },
+  );
   const sessionSnap = await sessionsCol.doc(tokenId).get();
   const session = buildSessionPayload(sessionSnap);
 
@@ -458,7 +571,12 @@ export const clientLogin = onCall(async (request) => {
     },
   };
 
-  await logSessionEvent({ userId: userDoc.id, sessionId: tokenId, event: 'login', context: logContext });
+  await logSessionEvent({
+    userId: userDoc.id,
+    sessionId: tokenId,
+    event: 'login',
+    context: logContext,
+  });
   const activeSessions = await syncUserPresence(userDoc.id);
 
   return {
@@ -478,7 +596,9 @@ export const clientLogin = onCall(async (request) => {
 export const clientValidateSession = onCall(async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
-  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'validate-session' } });
+  const snap = await ensureActiveSession(sessionToken, {
+    eventContext: { action: 'validate-session' },
+  });
   const session = buildSessionPayload(snap);
   return {
     ok: true,
@@ -491,7 +611,9 @@ export const clientRefreshSession = onCall(async (request) => {
   const { sessionToken, extend = true } = data;
   const sessionInfo = extractRequestInfo(request);
 
-  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'refresh-session' } });
+  const snap = await ensureActiveSession(sessionToken, {
+    eventContext: { action: 'refresh-session' },
+  });
 
   const updates = {
     lastActivity: FieldValue.serverTimestamp(),
@@ -550,7 +672,10 @@ export const clientListSessionLogs = onCall(
 
     await assertCanViewSessionLogs(actorUserId, resolvedTargetUserId);
 
-    const effectiveLimit = Math.max(1, Math.min(Number(limit) || 50, MAX_SESSION_LOG_LIMIT));
+    const effectiveLimit = Math.max(
+      1,
+      Math.min(Number(limit) || 50, MAX_SESSION_LOG_LIMIT),
+    );
 
     const query = sessionLogsCol
       .where('userId', '==', resolvedTargetUserId)
@@ -579,13 +704,15 @@ export const clientListSessionLogs = onCall(
       requestedBy: actorUserId,
       logs,
     };
-  }
+  },
 );
 
 export const clientListSessions = onCall(async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
-  const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'list-sessions' } });
+  const snap = await ensureActiveSession(sessionToken, {
+    eventContext: { action: 'list-sessions' },
+  });
   const sessions = await syncUserPresence(snap.get('userId'));
 
   return {
@@ -597,25 +724,48 @@ export const clientListSessions = onCall(async (request) => {
 
 export const clientRevokeSession = onCall(async (request) => {
   const { data = {} } = request || {};
-  const { sessionToken, targetToken } = data;
+  const { sessionToken, targetToken, targetUserId } = data;
 
   if (!targetToken) {
-    throw new HttpsError('invalid-argument', 'Token de sesión objetivo requerido');
+    throw new HttpsError(
+      'invalid-argument',
+      'Token de sesión objetivo requerido',
+    );
   }
 
   const actorSnap = await ensureActiveSession(sessionToken, {
     eventContext: { action: 'revoke-session', targetToken },
   });
-  const userId = actorSnap.get('userId');
+  const actorUserId = actorSnap.get('userId');
+  
   const targetSnap = await sessionsCol.doc(targetToken).get();
-
-  if (!targetSnap.exists || targetSnap.get('userId') !== userId) {
+  if (!targetSnap.exists) {
     throw new HttpsError('not-found', 'Sesión no encontrada');
   }
 
+  const sessionOwnerId = targetSnap.get('userId');
+
+  // Si el usuario intenta cerrar una sesión que no es suya
+  if (sessionOwnerId !== actorUserId) {
+    // Verificar si tiene permisos de administrador
+    // Reutilizamos la lógica de permisos de logs que permite a admins/devs/owners actuar sobre otros
+    await assertCanViewSessionLogs(actorUserId, sessionOwnerId);
+    
+    // Opcional: Verificar que el targetUserId coincida si se envió
+    if (targetUserId && targetUserId !== sessionOwnerId) {
+       throw new HttpsError('invalid-argument', 'El usuario objetivo no coincide con la sesión');
+    }
+  }
+
   const eventType = targetToken === sessionToken ? 'logout' : 'revoked';
-  await terminateSession(targetSnap, eventType, { requestedBy: sessionToken });
-  const sessions = await syncUserPresence(userId);
+  
+  // Registrar quién realizó la acción en el contexto
+  await terminateSession(targetSnap, eventType, { 
+    requestedBy: actorUserId, // Guardamos el ID del usuario que solicitó el cierre
+    adminAction: sessionOwnerId !== actorUserId // Flag para identificar cierres administrativos
+  });
+  
+  const sessions = await syncUserPresence(sessionOwnerId);
 
   return {
     ok: true,
@@ -632,7 +782,9 @@ export const clientLogout = onCall(async (request) => {
   }
 
   try {
-    const snap = await ensureActiveSession(sessionToken, { eventContext: { action: 'logout' } });
+    const snap = await ensureActiveSession(sessionToken, {
+      eventContext: { action: 'logout' },
+    });
     await terminateSession(snap, 'logout', { requestedBy: sessionToken });
     await syncUserPresence(snap.get('userId'));
   } catch (error) {
@@ -685,16 +837,28 @@ export const clientSignUp = onCall(async ({ data }) => {
   const { name, password, businessID, role } = userData;
 
   if (!name) {
-    throw new HttpsError('invalid-argument', 'Error: Es obligatorio proporcionar un nombre de usuario.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un nombre de usuario.',
+    );
   }
   if (!password) {
-    throw new HttpsError('invalid-argument', 'Error: Es obligatorio proporcionar una contraseña.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar una contraseña.',
+    );
   }
   if (!businessID) {
-    throw new HttpsError('invalid-argument', 'Error: Es obligatorio proporcionar un ID de negocio.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un ID de negocio.',
+    );
   }
   if (!role) {
-    throw new HttpsError('invalid-argument', 'Error: Es obligatorio seleccionar un rol.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio seleccionar un rol.',
+    );
   }
 
   const normalizedName = normalizeName(name).toLowerCase();
@@ -703,25 +867,7 @@ export const clientSignUp = onCall(async ({ data }) => {
   const id = nanoid(10);
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const counterRef = db.doc(`businesses/${businessID}/counters/users`);
-  const nextSequentialNumber = await db.runTransaction(async (transaction) => {
-    const counterSnap = await transaction.get(counterRef);
-    const currentValue = counterSnap.exists && typeof counterSnap.get('value') === 'number'
-      ? counterSnap.get('value')
-      : 0;
-    const updatedValue = currentValue + 1;
-
-    transaction.set(
-      counterRef,
-      {
-        value: updatedValue,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    );
-
-    return updatedValue;
-  });
+  const nextSequentialNumber = await getNextUserNumber(businessID);
 
   const payload = {
     ...userData,
@@ -753,18 +899,47 @@ export const clientUpdateUser = onCall(async ({ data }) => {
     throw new HttpsError('invalid-argument', 'ID de usuario requerido');
   }
 
-  const name = normalizeName(payload.name);
+  const snap = await ensureUserExists(userId);
+  const currentUser = (snap.data() || {}).user || {};
+
+  const name = normalizeName(payload.name || currentUser.name);
+  if (!name) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Error: Es obligatorio proporcionar un nombre de usuario.',
+    );
+  }
   await ensureUniqueUsername(name, userId);
 
+  const businessID = payload.businessID || currentUser.businessID || null;
+  const hasNumber = typeof currentUser.number === 'number';
+  if (!hasNumber && !businessID) {
+    throw new HttpsError(
+      'failed-precondition',
+      'No se puede asignar número de usuario sin businessID.',
+    );
+  }
+
+  const resolvedNumber = hasNumber
+    ? currentUser.number
+    : typeof payload.number === 'number'
+      ? payload.number
+      : await getNextUserNumber(businessID);
+
   const updated = {
+    ...currentUser,
     ...payload,
     name,
+    number: resolvedNumber,
     updatedAt: Timestamp.now(),
   };
 
-  await usersCol.doc(userId).update({
-    user: updated,
-  });
+  await usersCol.doc(userId).set(
+    {
+      user: updated,
+    },
+    { merge: true },
+  );
 
   return {
     ok: true,
@@ -786,15 +961,22 @@ export const clientChangePassword = onCall(async ({ data }) => {
 
   const ok = await bcrypt.compare(oldPassword, user.password);
   if (!ok) {
-    throw new HttpsError('unauthenticated', 'La contraseña antigua no es correcta');
+    throw new HttpsError(
+      'unauthenticated',
+      'La contraseña antigua no es correcta',
+    );
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await snap.ref.update({
     'user.password': hashedPassword,
+    'user.passwordChangedAt': Timestamp.now(),
   });
 
-  return { ok: true };
+  // Revocar todas las sesiones activas del usuario por seguridad
+  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+
+  return { ok: true, sessionsRevoked: revoked };
 });
 
 export const clientSetUserPassword = onCall(async ({ data }) => {
@@ -807,7 +989,11 @@ export const clientSetUserPassword = onCall(async ({ data }) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await usersCol.doc(userId).update({
     'user.password': hashedPassword,
+    'user.passwordChangedAt': Timestamp.now(),
   });
 
-  return { ok: true };
+  // Revocar todas las sesiones activas del usuario por seguridad
+  const { revoked } = await revokeAllUserSessions(userId, 'password-changed');
+
+  return { ok: true, sessionsRevoked: revoked };
 });

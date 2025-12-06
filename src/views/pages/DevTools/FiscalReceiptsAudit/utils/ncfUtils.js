@@ -52,7 +52,8 @@ export const parseInvoiceDate = (rawDate) => {
     }
   }
   if (typeof rawDate === 'object' && rawDate.seconds !== undefined) {
-    const milliseconds = rawDate.seconds * 1000 + Math.floor((rawDate.nanoseconds || 0) / 1e6);
+    const milliseconds =
+      rawDate.seconds * 1000 + Math.floor((rawDate.nanoseconds || 0) / 1e6);
     const parsed = new Date(milliseconds);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }

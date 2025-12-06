@@ -1,9 +1,22 @@
-import { Alert, Button, Input, Space, Tabs, Typography, message } from 'antd';
+import {
+  Alert,
+  Button,
+  Input,
+  Space,
+  Switch,
+  Tabs,
+  Typography,
+  message,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { fbNormalizeAllBusinessesClients } from '../../../firebase/client/fbNormalizeAllBusinessesClients';
+import {
+  fbFixExpenseTimestamps,
+  fbFixExpenseTimestampsForAll,
+} from '../../../firebase/expenses/maintenance/fbFixExpenseTimestamps';
 import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
 import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
@@ -30,17 +43,36 @@ export default function TestPlayground() {
     running: false,
     result: null,
   });
+  const [expenseTimestampFixState, setExpenseTimestampFixState] = useState({
+    businessId: '',
+    running: false,
+    result: null,
+  });
+  const [applyToAllBusinesses, setApplyToAllBusinesses] = useState(false);
 
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    if (user?.businessID && !productIdFixState.businessId) {
-      setProductIdFixState((prev) => ({
-        ...prev,
-        businessId: user.businessID,
-      }));
-    }
-  }, [user?.businessID, productIdFixState.businessId]);
+    if (!user?.businessID) return;
+
+    setProductIdFixState((prev) =>
+      prev.businessId
+        ? prev
+        : {
+            ...prev,
+            businessId: user.businessID,
+          },
+    );
+
+    setExpenseTimestampFixState((prev) =>
+      prev.businessId
+        ? prev
+        : {
+            ...prev,
+            businessId: user.businessID,
+          },
+    );
+  }, [user?.businessID]);
 
   const handleNormalizeTaxes = async () => {
     if (normalizing) return;
@@ -61,7 +93,9 @@ export default function TestPlayground() {
         success: false,
         error: error?.message || 'Ocurrió un error inesperado.',
       });
-      message.error('No se pudo normalizar el impuesto. Revisa la consola para detalles.');
+      message.error(
+        'No se pudo normalizar el impuesto. Revisa la consola para detalles.',
+      );
     } finally {
       setNormalizing(false);
     }
@@ -154,7 +188,9 @@ export default function TestPlayground() {
           error: error?.message || 'Ocurrió un error inesperado.',
         },
       });
-      message.error('No se pudo normalizar los clientes. Revisa la consola para detalles.');
+      message.error(
+        'No se pudo normalizar los clientes. Revisa la consola para detalles.',
+      );
     }
   };
 
@@ -179,11 +215,11 @@ export default function TestPlayground() {
 
     const clientsNormalized = successSummaries.reduce(
       (acc, item) => acc + (item.summary?.normalized || 0),
-      0
+      0,
     );
     const clientsTotal = successSummaries.reduce(
       (acc, item) => acc + (item.summary?.total || 0),
-      0
+      0,
     );
 
     const errorDetail =
@@ -225,7 +261,9 @@ export default function TestPlayground() {
         running: false,
         result: { success: true, data: response },
       });
-      message.success(`Productos actualizados: ${response.updated}/${response.total}.`);
+      message.success(
+        `Productos actualizados: ${response.updated}/${response.total}.`,
+      );
     } catch (error) {
       console.error('Error al corregir IDs de productos:', error);
       setProductIdFixState({
@@ -274,14 +312,164 @@ export default function TestPlayground() {
     }));
   };
 
+  const handleExpenseTimestampBusinessChange = (event) => {
+    const { value } = event.target;
+    setExpenseTimestampFixState((prev) => ({
+      ...prev,
+      businessId: value,
+    }));
+  };
+
+  const handleExpenseTimestampFix = async (dryRun) => {
+    const businessId = expenseTimestampFixState.businessId?.trim();
+    if (!applyToAllBusinesses && !businessId) {
+      message.warning('Ingresa un businessID válido.');
+      return;
+    }
+    if (expenseTimestampFixState.running) return;
+
+    setExpenseTimestampFixState((prev) => ({
+      ...prev,
+      running: true,
+      result: null,
+    }));
+
+    const isGlobal = applyToAllBusinesses;
+
+    try {
+      const response = isGlobal
+        ? await fbFixExpenseTimestampsForAll({ dryRun })
+        : await fbFixExpenseTimestamps({ businessID: businessId, dryRun });
+
+      setExpenseTimestampFixState({
+        businessId,
+        running: false,
+        result: {
+          success: true,
+          dryRun,
+          mode: isGlobal ? 'all' : 'single',
+          data: response,
+        },
+      });
+
+      const successMessage = dryRun
+        ? isGlobal
+          ? 'Análisis global completado. Revisa los resultados antes de aplicar cambios.'
+          : 'Análisis completado. Revisa los resultados antes de aplicar cambios.'
+        : isGlobal
+          ? 'Conversión global completada. Todos los gastos ahora usan Firebase Timestamp.'
+          : 'Conversión completada. Los gastos ahora usan Firebase Timestamp.';
+
+      message.success(successMessage);
+    } catch (error) {
+      console.error('Error al normalizar fechas de gastos:', error);
+      setExpenseTimestampFixState((prev) => ({
+        ...prev,
+        running: false,
+        result: {
+          success: false,
+          error: error?.message || 'Ocurrió un error inesperado.',
+        },
+      }));
+      message.error('No se pudo normalizar las fechas de los gastos.');
+    }
+  };
+
+  const renderExpenseTimestampResult = () => {
+    const { result } = expenseTimestampFixState;
+    if (!result) return null;
+
+    if (!result.success) {
+      return (
+        <Alert
+          type="error"
+          showIcon
+          message="No se pudo normalizar las fechas de los gastos"
+          description={result.error}
+        />
+      );
+    }
+
+    const { data, dryRun, mode = 'single' } = result;
+
+    if (mode === 'all') {
+      const totals = data.totals ?? {};
+      const successSummaries =
+        data.summaries?.filter((item) => item.success) ?? [];
+      const errorSummaries =
+        data.summaries?.filter((item) => !item.success) ?? [];
+
+      const sampleEntries = successSummaries
+        .flatMap((item) =>
+          (item.summary?.sample ?? []).map(
+            (sample) =>
+              `${item.businessID}/${sample.id} (${sample.fields.join(', ')})`,
+          ),
+        )
+        .slice(0, 3);
+
+      const summaryText = `Negocios procesados: ${data.processed}/${data.totalBusinesses}. Documentos evaluados: ${totals.scanned}. Con incidencias: ${totals.affected}. ${
+        dryRun
+          ? 'No se aplicaron cambios.'
+          : `Documentos actualizados: ${totals.updated}.`
+      } Campos convertidos: ${totals.fieldsConverted}.`;
+
+      const errorsText = errorSummaries.length
+        ? ` Con errores en ${errorSummaries.length} negocios: ${errorSummaries
+            .slice(0, 5)
+            .map((item) => item.businessID)
+            .join(', ')}${errorSummaries.length > 5 ? '…' : ''}.`
+        : '';
+
+      const sampleText = sampleEntries.length
+        ? ` Ejemplos: ${sampleEntries.join(' · ')}.`
+        : '';
+
+      return (
+        <Alert
+          type={dryRun ? 'info' : 'success'}
+          showIcon
+          message={
+            dryRun
+              ? 'Análisis global completado'
+              : 'Conversión global completada'
+          }
+          description={`${summaryText}${errorsText}${sampleText}`}
+        />
+      );
+    }
+
+    const summaryText = `Documentos evaluados: ${data.scanned}. Con incidencias: ${data.affected}. ${
+      dryRun
+        ? 'No se aplicaron cambios.'
+        : `Documentos actualizados: ${data.updated}.`
+    } Campos convertidos: ${data.fieldsConverted}.`;
+
+    const sampleText =
+      data.sample?.length > 0
+        ? ` Ejemplos: ${data.sample
+            .map((item) => `${item.id} (${item.fields.join(', ')})`)
+            .join(' · ')}`
+        : '';
+
+    return (
+      <Alert
+        type={dryRun ? 'info' : 'success'}
+        showIcon
+        message={dryRun ? 'Análisis completado' : 'Conversión completada'}
+        description={`${summaryText}${sampleText}`}
+      />
+    );
+  };
+
   const maintenanceToolsPanel = (
-    <Space
-      direction="vertical"
-      size="middle"
-      style={{ width: '100%' }}
-    >
+    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
       <Space size="middle" wrap>
-        <Button type="primary" onClick={handleNormalizeTaxes} loading={normalizing}>
+        <Button
+          type="primary"
+          onClick={handleNormalizeTaxes}
+          loading={normalizing}
+        >
           Normalizar ITBIS para todos los negocios
         </Button>
         {progress && (
@@ -331,6 +519,38 @@ export default function TestPlayground() {
         </Space>
         {renderProductFixResult()}
       </Space>
+      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Text strong>Normalizar timestamps de gastos</Text>
+        <Space size="middle" wrap>
+          <Input
+            placeholder="businessID"
+            value={expenseTimestampFixState.businessId}
+            onChange={handleExpenseTimestampBusinessChange}
+            disabled={applyToAllBusinesses}
+            style={{ minWidth: 260 }}
+          />
+          <Switch
+            checked={applyToAllBusinesses}
+            onChange={setApplyToAllBusinesses}
+            checkedChildren="Todos los negocios"
+            unCheckedChildren="Solo este negocio"
+          />
+          <Button
+            onClick={() => handleExpenseTimestampFix(true)}
+            loading={expenseTimestampFixState.running}
+          >
+            Detectar inconsistencias
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => handleExpenseTimestampFix(false)}
+            loading={expenseTimestampFixState.running}
+          >
+            Convertir a Timestamp real
+          </Button>
+        </Space>
+        {renderExpenseTimestampResult()}
+      </Space>
     </Space>
   );
 
@@ -355,8 +575,9 @@ export default function TestPlayground() {
           Zona de pruebas
         </Title>
         <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-          Usa este espacio para validar integraciones, componentes o flujos en desarrollo.
-          Los accesos visibles aquí son temporales y pueden cambiar sin previo aviso.
+          Usa este espacio para validar integraciones, componentes o flujos en
+          desarrollo. Los accesos visibles aquí son temporales y pueden cambiar
+          sin previo aviso.
         </Paragraph>
         <Alert
           type="info"
@@ -364,8 +585,9 @@ export default function TestPlayground() {
           message="Recomendación"
           description={
             <Text>
-              Registra brevemente los objetivos de la prueba y elimina cualquier estado temporal una vez
-              concluido para evitar confusiones en el equipo.
+              Registra brevemente los objetivos de la prueba y elimina cualquier
+              estado temporal una vez concluido para evitar confusiones en el
+              equipo.
             </Text>
           }
           style={{ marginBottom: 24 }}

@@ -55,7 +55,11 @@ export const DateCell = ({ value }) => {
 
 export const StatusCell = ({ value }) => {
   const statusLabel =
-    value === 'pending' ? 'Pendiente' : value === 'completed' ? 'Completada' : 'Cancelada';
+    value === 'pending'
+      ? 'Pendiente'
+      : value === 'completed'
+        ? 'Completada'
+        : 'Cancelada';
   return <Tag color={getColorByStatus(value)}>{statusLabel}</Tag>;
 };
 
@@ -91,7 +95,7 @@ export const PreorderActionsCell = ({ value }) => {
   }, [cartSettings?.billing?.invoiceType, printablePreorder]);
 
   const triggerPrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
   });
 
   const convertTimestampsToMillis = useCallback((obj) => {
@@ -102,8 +106,14 @@ export const PreorderActionsCell = ({ value }) => {
     const converted = {};
     Object.keys(obj).forEach((key) => {
       const value = obj[key];
-      if (value && typeof value === 'object' && value.seconds !== undefined && value.nanoseconds !== undefined) {
-        converted[key] = value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
+      if (
+        value &&
+        typeof value === 'object' &&
+        value.seconds !== undefined &&
+        value.nanoseconds !== undefined
+      ) {
+        converted[key] =
+          value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
       } else if (value && typeof value === 'object') {
         converted[key] = convertTimestampsToMillis(value);
       } else {
@@ -123,12 +133,16 @@ export const PreorderActionsCell = ({ value }) => {
     if (!printablePreorder) {
       notification.warning({
         message: 'No se puede imprimir la preventa',
-        description: 'Los datos de la preventa no están disponibles para imprimir.',
+        description:
+          'Los datos de la preventa no están disponibles para imprimir.',
       });
       return;
     }
 
-    const printableData = printableInvoiceData ?? convertTimestampsToMillis(printablePreorder) ?? printablePreorder;
+    const printableData =
+      printableInvoiceData ??
+      convertTimestampsToMillis(printablePreorder) ??
+      printablePreorder;
 
     if (resolvedInvoiceType === 'template2') {
       try {
@@ -137,21 +151,30 @@ export const PreorderActionsCell = ({ value }) => {
         console.error('[PreSaleTable] downloadInvoiceLetterPdf failed', error);
         notification.error({
           message: 'Error al imprimir',
-          description: error?.message || 'No se pudo generar el PDF de la preventa.',
+          description:
+            error?.message || 'No se pudo generar el PDF de la preventa.',
         });
       }
       return;
     }
 
     triggerPrint();
-  }, [business, convertTimestampsToMillis, printableInvoiceData, printablePreorder, resolvedInvoiceType, triggerPrint]);
+  }, [
+    business,
+    convertTimestampsToMillis,
+    printableInvoiceData,
+    printablePreorder,
+    resolvedInvoiceType,
+    triggerPrint,
+  ]);
 
   const convertToCart = useCallback(
     (source) => {
       const serializedPreorder = convertTimestampsToMillis(source);
       dispatch(loadCart(serializedPreorder));
       dispatch(setCartId());
-      const storedTaxReceiptType = resolvePreorderTaxReceiptType(serializedPreorder);
+      const storedTaxReceiptType =
+        resolvePreorderTaxReceiptType(serializedPreorder);
       if (storedTaxReceiptType) {
         dispatch(selectTaxReceiptType(storedTaxReceiptType));
       }
@@ -260,8 +283,15 @@ export const PreorderActionsCell = ({ value }) => {
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div style={{ position: 'absolute', top: -9999, left: -9999 }} aria-hidden="true">
-        <Invoice ref={printRef} data={printableInvoiceData || printablePreorder || data} ignoreHidden />
+      <div
+        style={{ position: 'absolute', top: -9999, left: -9999 }}
+        aria-hidden="true"
+      >
+        <Invoice
+          ref={printRef}
+          data={printableInvoiceData || printablePreorder || data}
+          ignoreHidden
+        />
       </div>
       <Tooltip title="Precargar en Ventas">
         <Button
@@ -284,7 +314,11 @@ export const PreorderActionsCell = ({ value }) => {
       <Dropdown menu={{ items: menuItems }} trigger={['click']}>
         <Button icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
       </Dropdown>
-      <PreorderModal preorder={data} open={isPreorderModalOpen} onCancel={() => setIsPreorderModalOpen(false)} />
+      <PreorderModal
+        preorder={data}
+        open={isPreorderModalOpen}
+        onCancel={() => setIsPreorderModalOpen(false)}
+      />
       <ConfirmModal
         open={isCancelConfirmOpen}
         onConfirm={handleCancelPreorder}

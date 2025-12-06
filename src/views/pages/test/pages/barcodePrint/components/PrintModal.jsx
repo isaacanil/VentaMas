@@ -35,7 +35,7 @@ const PrintModal = ({
       confirmLoading={isLoading}
       maskClosable={false}
       centered
-      destroyOnClose
+      destroyOnHidden
       afterClose={onClose}
       // getContainer={false}
     >
@@ -47,7 +47,8 @@ const PrintModal = ({
             style={{ marginBottom: 16 }}
             message={
               <div>
-                <strong>Producto:</strong> {selectedBarcode.name || 'Sin nombre'}
+                <strong>Producto:</strong>{' '}
+                {selectedBarcode.name || 'Sin nombre'}
               </div>
             }
             description={
@@ -72,7 +73,10 @@ const PrintModal = ({
             <Select
               value={codesPerPage}
               onChange={onCodesPerPageChange} // recibe el value de la opción (número)
-              options={[1, 2, 3, 4, 5, 6, 8, 10].map((n) => ({ label: n, value: n }))}
+              options={[1, 2, 3, 4, 5, 6, 8, 10].map((n) => ({
+                label: n,
+                value: n,
+              }))}
               disabled={isLoading}
             />
           </Form.Item>

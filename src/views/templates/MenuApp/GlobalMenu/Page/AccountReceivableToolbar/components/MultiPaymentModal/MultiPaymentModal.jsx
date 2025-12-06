@@ -10,9 +10,12 @@ import DateUtils from '../../../../../../../../utils/date/dateUtils';
 import { formatMoney } from '../../../../../../../../utils/formatters';
 import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
 
-
-import { FilterBar, AccountsTable, PaymentMethodsForm, PaymentReceipt } from './components';
-
+import {
+  FilterBar,
+  AccountsTable,
+  PaymentMethodsForm,
+  PaymentReceipt,
+} from './components';
 
 /**
  * Componente principal para el Modal de Pagos Múltiples
@@ -26,7 +29,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   const [selectedAccounts, setSelectedAccounts] = useState([]);
   const [form] = Form.useForm();
   const user = useSelector(selectUser);
-  const componentToPrintRef = useRef();
+  const componentToPrintRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [receipt, setReceipt] = useState(null);
@@ -52,13 +55,13 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   // Extraer las aseguradoras únicas al cargar los datos
   useEffect(() => {
     const uniqueInsurances = accounts
-      .filter(account => account.ver?.account?.account?.insurance?.name)
-      .map(account => ({
+      .filter((account) => account.ver?.account?.account?.insurance?.name)
+      .map((account) => ({
         name: account.ver.account.account.insurance.name,
-        id: account.ver.account.account.insurance.insuranceId
+        id: account.ver.account.account.insurance.insuranceId,
       }))
       .reduce((unique, item) => {
-        if (!unique.some(i => i.id === item.id)) {
+        if (!unique.some((i) => i.id === item.id)) {
           unique.push(item);
         }
         return unique;
@@ -71,12 +74,16 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       const firstInsuranceId = uniqueInsurances[0].id;
       setInsuranceFilter(firstInsuranceId);
 
-      const firstInsuranceAccounts = accounts.filter(account => 
-        account.ver?.account?.account?.insurance?.insuranceId === firstInsuranceId
+      const firstInsuranceAccounts = accounts.filter(
+        (account) =>
+          account.ver?.account?.account?.insurance?.insuranceId ===
+          firstInsuranceId,
       );
 
       if (firstInsuranceAccounts.length > 0) {
-        const initialSelectedAccounts = firstInsuranceAccounts.map(account => account.ver.account.id);
+        const initialSelectedAccounts = firstInsuranceAccounts.map(
+          (account) => account.ver.account.id,
+        );
         setSelectedAccounts(initialSelectedAccounts);
       }
     }
@@ -84,7 +91,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
 
   useEffect(() => {
     const total = selectedAccounts.reduce((sum, accountId) => {
-      const account = accounts.find(acc => acc.ver.account.id === accountId);
+      const account = accounts.find((acc) => acc.ver.account.id === accountId);
       return sum + (account?.balance || 0);
     }, 0);
 
@@ -100,41 +107,44 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       return sum;
     }, 0);
     setTotalPaid(total);
-  }, [paymentMethods]);  const updatePaymentMethod = (method, key, value) => {
+  }, [paymentMethods]);
+  const updatePaymentMethod = (method, key, value) => {
     // Si estamos actualizando el valor de un método de pago
     if (key === 'value') {
       // Si el campo está vacío, mantenerlo vacío (no convertir a 0)
       if (value === '' || value === null || value === undefined) {
-        setPaymentMethods(prevMethods => 
-          prevMethods.map(pm => 
-            pm.method === method ? { ...pm, value: '', status: pm.status } : pm
-          )
+        setPaymentMethods((prevMethods) =>
+          prevMethods.map((pm) =>
+            pm.method === method ? { ...pm, value: '', status: pm.status } : pm,
+          ),
         );
-      } 
+      }
       // Si es el método de efectivo y tiene un valor numérico
       else if (method === 'cash' && !isNaN(parseFloat(value))) {
         const numericValue = parseFloat(value).toFixed(2);
-        
-        setPaymentMethods(prevMethods => 
-          prevMethods.map(pm => 
-            pm.method === 'cash' ? { ...pm, value: parseFloat(numericValue), status: true } : pm
-          )
+
+        setPaymentMethods((prevMethods) =>
+          prevMethods.map((pm) =>
+            pm.method === 'cash'
+              ? { ...pm, value: parseFloat(numericValue), status: true }
+              : pm,
+          ),
         );
-      } 
+      }
       // Para otros métodos de pago o valores no numéricos
       else {
-        setPaymentMethods(prevMethods => 
-          prevMethods.map(pm => 
-            pm.method === method ? { ...pm, [key]: value } : pm
-          )
+        setPaymentMethods((prevMethods) =>
+          prevMethods.map((pm) =>
+            pm.method === method ? { ...pm, [key]: value } : pm,
+          ),
         );
       }
     } else {
       // Para otras propiedades que no son 'value'
-      setPaymentMethods(prevMethods => 
-        prevMethods.map(pm => 
-          pm.method === method ? { ...pm, [key]: value } : pm
-        )
+      setPaymentMethods((prevMethods) =>
+        prevMethods.map((pm) =>
+          pm.method === method ? { ...pm, [key]: value } : pm,
+        ),
       );
     }
 
@@ -146,22 +156,25 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   const validatePaymentMethod = (method, key, value) => {
     const updatedErrors = { ...methodErrors };
 
-    Object.keys(updatedErrors).forEach(errorKey => {
+    Object.keys(updatedErrors).forEach((errorKey) => {
       if (errorKey.startsWith(`${method}_`)) {
         delete updatedErrors[errorKey];
       }
     });
 
-    const selectedMethod = paymentMethods.find(pm => pm.method === method);
+    const selectedMethod = paymentMethods.find((pm) => pm.method === method);
 
     if ((key === 'status' && value === true) || selectedMethod.status) {
-      if ((key === 'value' && (!value || parseFloat(value) <= 0)) || 
-          (key !== 'value' && selectedMethod.value <= 0)) {
+      if (
+        (key === 'value' && (!value || parseFloat(value) <= 0)) ||
+        (key !== 'value' && selectedMethod.value <= 0)
+      ) {
         updatedErrors[`${method}_value`] = 'El valor debe ser mayor a cero';
       }
 
       if (method !== 'cash') {
-        const reference = key === 'reference' ? value : selectedMethod.reference;
+        const reference =
+          key === 'reference' ? value : selectedMethod.reference;
         if (!reference || reference.trim() === '') {
           updatedErrors[`${method}_reference`] = 'La referencia es obligatoria';
         }
@@ -169,7 +182,8 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     }
 
     setMethodErrors(updatedErrors);
-    return Object.keys(updatedErrors).length === 0;  };
+    return Object.keys(updatedErrors).length === 0;
+  };
 
   const validatePaymentForm = () => {
     let isValid = true;
@@ -186,7 +200,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       return false;
     }
 
-    const activeMethods = paymentMethods.filter(method => method.status);
+    const activeMethods = paymentMethods.filter((method) => method.status);
     if (activeMethods.length === 0) {
       message.error('Debe seleccionar al menos un método de pago');
       return false;
@@ -195,20 +209,25 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     for (const method of paymentMethods) {
       if (method.status) {
         if (!method.value || method.value <= 0) {
-          newErrors[`${method.method}_value`] = 'El valor debe ser mayor a cero';
+          newErrors[`${method.method}_value`] =
+            'El valor debe ser mayor a cero';
           isValid = false;
         }
 
         if (method.method !== 'cash') {
           if (!method.reference || method.reference.trim() === '') {
-            newErrors[`${method.method}_reference`] = 'La referencia es obligatoria';
+            newErrors[`${method.method}_reference`] =
+              'La referencia es obligatoria';
             isValid = false;
           }
         }
       }
-    }    // Usar el mismo umbral de tolerancia EPSILON para comparar valores
+    } // Usar el mismo umbral de tolerancia EPSILON para comparar valores
     const EPSILON = 0.001;
-    if (totalPaid < totalAmount && Math.abs(totalPaid - totalAmount) >= EPSILON) {
+    if (
+      totalPaid < totalAmount &&
+      Math.abs(totalPaid - totalAmount) >= EPSILON
+    ) {
       message.error('El monto pagado debe ser igual o mayor al monto total');
       return false;
     }
@@ -221,8 +240,10 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     if (insuranceFilter === 'none') return [];
     if (insuranceFilter === 'all') return accounts;
 
-    return accounts.filter(account => 
-      account.ver?.account?.account?.insurance?.insuranceId === insuranceFilter
+    return accounts.filter(
+      (account) =>
+        account.ver?.account?.account?.insurance?.insuranceId ===
+        insuranceFilter,
     );
   };
 
@@ -230,7 +251,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     if (e.target.checked) {
       setSelectedAccounts([...selectedAccounts, accountId]);
     } else {
-      setSelectedAccounts(selectedAccounts.filter(id => id !== accountId));
+      setSelectedAccounts(selectedAccounts.filter((id) => id !== accountId));
     }
   };
 
@@ -238,41 +259,51 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     const filteredAccounts = getFilteredAccounts();
     if (filteredAccounts.length === 0) return false;
 
-    return filteredAccounts.every(account => 
-      selectedAccounts.includes(account.ver.account.id)
+    return filteredAccounts.every((account) =>
+      selectedAccounts.includes(account.ver.account.id),
     );
   };
 
   const areSomeVisibleSelected = () => {
     const filteredAccounts = getFilteredAccounts();
-    return filteredAccounts.some(account => 
-      selectedAccounts.includes(account.ver.account.id)
+    return filteredAccounts.some((account) =>
+      selectedAccounts.includes(account.ver.account.id),
     );
   };
 
   const handleSelectAll = (e) => {
     const filteredAccounts = getFilteredAccounts();
     if (e.target.checked) {
-      const filteredIds = filteredAccounts.map(account => account.ver.account.id);
-      const otherSelected = selectedAccounts.filter(id => 
-        !filteredAccounts.some(account => account.ver.account.id === id)
+      const filteredIds = filteredAccounts.map(
+        (account) => account.ver.account.id,
+      );
+      const otherSelected = selectedAccounts.filter(
+        (id) =>
+          !filteredAccounts.some((account) => account.ver.account.id === id),
       );
       setSelectedAccounts([...otherSelected, ...filteredIds]);
     } else {
-      const filteredIds = filteredAccounts.map(account => account.ver.account.id);
-      setSelectedAccounts(selectedAccounts.filter(id => !filteredIds.includes(id)));
+      const filteredIds = filteredAccounts.map(
+        (account) => account.ver.account.id,
+      );
+      setSelectedAccounts(
+        selectedAccounts.filter((id) => !filteredIds.includes(id)),
+      );
     }
   };
 
   const handleInsuranceFilterChange = (value) => {
     setInsuranceFilter(value);
 
-    const filteredAccounts = accounts.filter(account => 
-      account.ver?.account?.account?.insurance?.insuranceId === value
+    const filteredAccounts = accounts.filter(
+      (account) =>
+        account.ver?.account?.account?.insurance?.insuranceId === value,
     );
 
     if (filteredAccounts.length > 0) {
-      const newSelectedAccounts = filteredAccounts.map(account => account.ver.account.id);
+      const newSelectedAccounts = filteredAccounts.map(
+        (account) => account.ver.account.id,
+      );
       setSelectedAccounts(newSelectedAccounts);
     } else {
       setSelectedAccounts([]);
@@ -285,15 +316,15 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentToPrintRef.current,
+    contentRef: componentToPrintRef,
     onAfterPrint: () => {
       notification.success({
         message: 'Pago Procesado',
         description: 'Pago de Aseguradora Registrado con éxito',
-        duration: 4
+        duration: 4,
       });
       handleCancel();
-    }
+    },
   });
 
   const handlePayment = async () => {
@@ -306,38 +337,44 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
 
       setLoading(true);
 
-      const values = form.getFieldsValue();      // Preparar datos de pago para el procesamiento
+      const values = form.getFieldsValue(); // Preparar datos de pago para el procesamiento
       const paymentData = {
-        accounts: selectedAccounts.map(id => {
-          // Buscar la cuenta usando la estructura correcta (ver.account.id en lugar de id)
-          const account = accounts.find(acc => acc.ver?.account?.id === id);
-          if (!account) {
-            console.warn(`No se encontró la cuenta con ID: ${id}`);
-            return null;
-          }
+        accounts: selectedAccounts
+          .map((id) => {
+            // Buscar la cuenta usando la estructura correcta (ver.account.id en lugar de id)
+            const account = accounts.find((acc) => acc.ver?.account?.id === id);
+            if (!account) {
+              console.warn(`No se encontró la cuenta con ID: ${id}`);
+              return null;
+            }
             // Acceder al balance correctamente - puede estar en account.balance o account.ver.account
-          
-          return {
-            id: account.ver.account.id,
-            // Usamos el balance de la ubicación correcta, con fallbacks
-            balance: account.balance || account.ver.account.arBalance || account.ver.account.balance || 0,
-            // Incluir datos adicionales que puedan ser necesarios
-            accountData: account.ver.account
-          };
-        }).filter(Boolean), // Filtrar cualquier cuenta null
+
+            return {
+              id: account.ver.account.id,
+              // Usamos el balance de la ubicación correcta, con fallbacks
+              balance:
+                account.balance ||
+                account.ver.account.arBalance ||
+                account.ver.account.balance ||
+                0,
+              // Incluir datos adicionales que puedan ser necesarios
+              accountData: account.ver.account,
+            };
+          })
+          .filter(Boolean), // Filtrar cualquier cuenta null
         paymentDetails: {
           totalAmount: form.getFieldValue('amount'),
           totalPaid,
-          paymentMethods: paymentMethods.filter(pm => pm.status),
+          paymentMethods: paymentMethods.filter((pm) => pm.status),
           comments: values.comments || '',
           printReceipt,
           paymentScope: 'insurance', // Especificar un scope similar a los que usa fbProcessClientPaymentAR
-          paymentOption: 'balance'   // Indicar que queremos pagar el balance completo
+          paymentOption: 'balance', // Indicar que queremos pagar el balance completo
         },
         insuranceId: insuranceFilter,
         date: new Date().getTime(),
         clientId: accounts[0]?.client?.id || '',
-        user
+        user,
       };
 
       try {
@@ -352,7 +389,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
           notification.success({
             message: 'Pago Procesado',
             description: 'Pago de Aseguradora Registrado con éxito',
-            duration: 4
+            duration: 4,
           });
           handleCancel();
         }
@@ -361,7 +398,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
         notification.error({
           message: 'Error en el procesamiento',
           description: error.message || 'No se pudo procesar el pago múltiple',
-          duration: 4
+          duration: 4,
         });
       } finally {
         setLoading(false);
@@ -371,7 +408,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       notification.error({
         message: 'Error en el pago',
         description: error.message || 'No se pudo procesar el pago',
-        duration: 4
+        duration: 4,
       });
       setLoading(false);
     }
@@ -394,9 +431,9 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
   };
   const totalAmount = form.getFieldValue('amount') || 0;
   // Usar una tolerancia pequeña para evitar problemas de punto flotante
-  const EPSILON = 0.001; // Umbral de 0,001 
+  const EPSILON = 0.001; // Umbral de 0,001
   let change = totalPaid - totalAmount;
-  
+
   // Si la diferencia es muy pequeña (positiva o negativa), considerarla como cero exacto
   if (Math.abs(change) < EPSILON) {
     change = 0;
@@ -409,14 +446,14 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       title: 'Seleccionar Cuentas',
       content: (
         <TableSection>
-          <FilterBar 
+          <FilterBar
             insuranceFilter={insuranceFilter}
             insuranceOptions={insuranceOptions}
             onInsuranceFilterChange={handleInsuranceFilterChange}
             onDateRangeChange={handleDateRangeChange}
           />
-          
-          <AccountsTable 
+
+          <AccountsTable
             accounts={filteredAccounts}
             allSelected={areAllVisibleSelected()}
             someSelected={areSomeVisibleSelected()}
@@ -428,7 +465,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
             insuranceFilter={insuranceFilter}
           />
         </TableSection>
-      )
+      ),
     },
     {
       title: 'Procesar Pago',
@@ -437,15 +474,15 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
           <ShowcaseList
             showcases={[
               {
-                title: "Total a pagar",
-                valueType: "price",
-                description: "Total de las cuentas seleccionadas",
+                title: 'Total a pagar',
+                valueType: 'price',
+                description: 'Total de las cuentas seleccionadas',
                 value: totalAmount,
               },
             ]}
           />
 
-          <PaymentMethodsForm 
+          <PaymentMethodsForm
             paymentMethods={paymentMethods}
             methodErrors={methodErrors}
             updatePaymentMethod={updatePaymentMethod}
@@ -456,22 +493,22 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
           <ShowcaseList
             showcases={[
               {
-                title: "Total pagado",
-                valueType: "price",
+                title: 'Total pagado',
+                valueType: 'price',
                 value: totalPaid,
               },
               {
-                title: change >= 0 ? "Devuelta" : "Faltante",
-                valueType: "price",
+                title: change >= 0 ? 'Devuelta' : 'Faltante',
+                valueType: 'price',
                 value: change,
-                description: "Debe pagar completamente el monto total",
-                color: change < 0 ? "error" : undefined
+                description: 'Debe pagar completamente el monto total',
+                color: change < 0 ? 'error' : undefined,
               },
             ]}
           />
         </>
-      )
-    }
+      ),
+    },
   ];
 
   const nextStep = () => {
@@ -503,21 +540,27 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
           </Button>
         ),
         currentStep < steps.length - 1 ? (
-          <Button key="next" type="primary" onClick={nextStep} disabled={selectedAccounts.length === 0}>
+          <Button
+            key="next"
+            type="primary"
+            onClick={nextStep}
+            disabled={selectedAccounts.length === 0}
+          >
             Siguiente
           </Button>
         ) : (
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handlePayment} 
-            loading={loading} 
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handlePayment}
+            loading={loading}
             disabled={submitted || selectedAccounts.length === 0}
           >
             Procesar Pago
-          </Button>        ),
+          </Button>
+        ),
       ]}
-      destroyOnHidden
+      forceRender
     >
       <Form
         form={form}
@@ -528,14 +571,14 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
       >
         <Steps
           current={currentStep}
-          items={steps.map(item => ({ title: item.title }))}
+          items={steps.map((item) => ({ title: item.title }))}
           style={{ marginBottom: 24 }}
         />
-        
+
         <div>{steps[currentStep].content}</div>
-        
+
         <div style={{ display: 'none' }}>
-          <PaymentReceipt 
+          <PaymentReceipt
             receipt={receipt}
             formatDate={formatDate}
             formatCurrency={formatCurrency}

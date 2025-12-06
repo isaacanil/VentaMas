@@ -8,21 +8,19 @@ import { moveProduct } from '../../../../../../../../firebase/warehouse/productM
 import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
 import Tree from '../../../../../../../component/tree/Tree';
 
-
-
 const { TextArea } = Input;
 
 const TreeContainer = styled.div`
   height: 300px;
+  padding: 8px;
   margin-top: 16px;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
-  padding: 8px;
 `;
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr); // Changed from 2 to 3 columns
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 `;
@@ -50,9 +48,14 @@ const QuantityInputWithMax = ({ maxQuantity }) => {
         help={isExceeded ? `La cantidad no puede exceder ${maxQuantity}` : ''}
         rules={[{ required: true, message: 'Por favor ingrese la cantidad' }]}
       >
-        <InputNumber addonAfter={maxQuantity} min={1} max={maxQuantity} style={{ width: '100%' }} onChange={handleQuantityChange} />
+        <InputNumber
+          addonAfter={maxQuantity}
+          min={1}
+          max={maxQuantity}
+          style={{ width: '100%' }}
+          onChange={handleQuantityChange}
+        />
       </Form.Item>
- 
     </QuantityContainer>
   );
 };
@@ -76,24 +79,22 @@ const findPathToNode = (nodes, targetId, path = []) => {
 
 // Simplify to just create location string from path
 const getLocationPath = (path) => {
-  return path
-    .map(node => node.id)
-    .join('/');
+  return path.map((node) => node.id).join('/');
 };
 
-export const ProductMovementModal = ({ 
-  visible, 
-  onCancel, 
+export const ProductMovementModal = ({
+  visible,
+  onCancel,
   onOk,
   product,
-  currentNode // Destructure currentNode
+  currentNode, // Destructure currentNode
 }) => {
   const [form] = Form.useForm();
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [loadingSubmit, setLoadingSubmit] = useState(false); // NEW loading state
   const { data: warehouseData } = useTransformedWarehouseData();
   const user = useSelector(selectUser);
-  
+
   // Limpiar formulario cuando se abre o cierra el modal
   useEffect(() => {
     if (visible) {
@@ -102,7 +103,7 @@ export const ProductMovementModal = ({
         product: product?.productName || 'Sin selección',
         destination: '',
         quantity: null,
-        comment: ''
+        comment: '',
       });
     } else {
       // Limpiar cuando se cierra
@@ -127,7 +128,10 @@ export const ProductMovementModal = ({
 
       // Get source and destination paths
       const sourcePath = findPathToNode(warehouseData, currentNode.id);
-      const destinationPath = findPathToNode(warehouseData, selectedDestination.id);
+      const destinationPath = findPathToNode(
+        warehouseData,
+        selectedDestination.id,
+      );
 
       if (!sourcePath || !destinationPath) {
         message.error('Error al obtener la ruta completa de las ubicaciones');
@@ -146,7 +150,7 @@ export const ProductMovementModal = ({
           destinationLocation: getLocationPath(destinationPath),
           comment: values.comment,
         });
-        
+
         message.success('Movimiento realizado exitosamente.');
         form.resetFields();
         onOk(values);
@@ -167,7 +171,9 @@ export const ProductMovementModal = ({
   const treeConfig = {
     onNodeClick: (node) => {
       if (node.id === currentNode.id) {
-        message.info("Esta ubicación no se puede seleccionar, pero puedes explorarla y escoger una interna.");
+        message.info(
+          'Esta ubicación no se puede seleccionar, pero puedes explorarla y escoger una interna.',
+        );
         // Still allow expansion by not returning early
       } else {
         setSelectedDestination(node);
@@ -193,27 +199,18 @@ export const ProductMovementModal = ({
           product: product?.productName || 'Sin selección', // Corrected to access productName
         }}
       >
-        <Form.Item
-          name="product"
-          label="Producto"
-        >
+        <Form.Item name="product" label="Producto">
           <Input readOnly />
         </Form.Item>
 
         <FormContainer>
           <QuantityInputWithMax maxQuantity={product?.quantity || 0} />
 
-          <Form.Item
-            name="destination"
-            label="Destino"
-          >
+          <Form.Item name="destination" label="Destino">
             <Input readOnly />
           </Form.Item>
 
-          <Form.Item
-            name="comment"
-            label="Comentario"
-          >
+          <Form.Item name="comment" label="Comentario">
             <TextArea rows={1} />
           </Form.Item>
         </FormContainer>
@@ -224,7 +221,6 @@ export const ProductMovementModal = ({
           data={warehouseData}
           config={treeConfig}
           selectedId={selectedDestination?.id}
-          
         />
       </TreeContainer>
     </Modal>

@@ -13,9 +13,10 @@ const ImportProgressModal = ({ visible, progress }) => {
     updatedIngredients,
   } = progress;
 
-  const percentage = totalProducts > 0 
-    ? Math.round((processedProducts / totalProducts) * 100) 
-    : 0;
+  const percentage =
+    totalProducts > 0
+      ? Math.round((processedProducts / totalProducts) * 100)
+      : 0;
 
   return (
     <Modal
@@ -26,9 +27,9 @@ const ImportProgressModal = ({ visible, progress }) => {
       width={600}
     >
       <ProgressContainer>
-        <Progress 
-          percent={percentage} 
-          status={percentage === 100 ? "success" : "active"}
+        <Progress
+          percent={percentage}
+          status={percentage === 100 ? 'success' : 'active'}
           size={15}
         />
         <StatsContainer>
@@ -41,7 +42,10 @@ const ImportProgressModal = ({ visible, progress }) => {
           </StyledCard>
           <StatsGrid>
             <StyledCard>
-              <Statistic title="Productos Actualizados" value={updatedProducts} />
+              <Statistic
+                title="Productos Actualizados"
+                value={updatedProducts}
+              />
             </StyledCard>
             <StyledCard>
               <Statistic title="Productos Nuevos" value={newProducts} />
@@ -53,7 +57,10 @@ const ImportProgressModal = ({ visible, progress }) => {
               <Statistic title="Ingredientes Nuevos" value={newIngredients} />
             </StyledCard>
             <StyledCard>
-              <Statistic title="Ingredientes Actualizados" value={updatedIngredients} />
+              <Statistic
+                title="Ingredientes Actualizados"
+                value={updatedIngredients}
+              />
             </StyledCard>
           </StatsGrid>
         </StatsContainer>
@@ -79,6 +86,7 @@ const StatsGrid = styled.div`
 
 const StyledCard = styled(Card)`
   text-align: center;
+
   &.ant-card {
     background: #f8f9fa;
     border-radius: 8px;

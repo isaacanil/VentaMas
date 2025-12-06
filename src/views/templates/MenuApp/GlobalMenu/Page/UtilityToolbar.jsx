@@ -10,46 +10,46 @@ const EXPORT_EVENT = 'utility-export-request';
 const AVAILABILITY_EVENT = 'utility-export-availability';
 
 export const UtilityToolbar = ({ side = 'left' }) => {
-    const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
-    const matchUtilityReport = useMatch(UTILITY_REPORT);
-    const [canExport, setCanExport] = useState(false);
+  const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
+  const matchUtilityReport = useMatch(UTILITY_REPORT);
+  const [canExport, setCanExport] = useState(false);
 
-    useEffect(() => {
-        const handleAvailability = (event) => {
-            if (typeof event?.detail?.canExport === 'boolean') {
-                setCanExport(event.detail.canExport);
-            }
-        };
+  useEffect(() => {
+    const handleAvailability = (event) => {
+      if (typeof event?.detail?.canExport === 'boolean') {
+        setCanExport(event.detail.canExport);
+      }
+    };
 
-        window.addEventListener(AVAILABILITY_EVENT, handleAvailability);
-        return () => {
-            window.removeEventListener(AVAILABILITY_EVENT, handleAvailability);
-        };
-    }, []);
+    window.addEventListener(AVAILABILITY_EVENT, handleAvailability);
+    return () => {
+      window.removeEventListener(AVAILABILITY_EVENT, handleAvailability);
+    };
+  }, []);
 
-    const handleExport = useCallback(() => {
-        const event = new CustomEvent(EXPORT_EVENT);
-        window.dispatchEvent(event);
-    }, []);
+  const handleExport = useCallback(() => {
+    const event = new CustomEvent(EXPORT_EVENT);
+    window.dispatchEvent(event);
+  }, []);
 
-    if (!matchUtilityReport || side !== 'right') {
-        return null;
-    }
+  if (!matchUtilityReport || side !== 'right') {
+    return null;
+  }
 
-    return (
-        <Container>
-            <Button
-                title="Exportar Excel"
-                startIcon={icons.finances.fileInvoiceDollar}
-                onClick={handleExport}
-                disabled={!canExport}
-            />
-        </Container>
-    );
+  return (
+    <Container>
+      <Button
+        title="Exportar Excel"
+        startIcon={icons.finances.fileInvoiceDollar}
+        onClick={handleExport}
+        disabled={!canExport}
+      />
+    </Container>
+  );
 };
 
 const Container = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 `;

@@ -1,7 +1,14 @@
 // Importa las funciones necesarias desde el SDK de Firebase Firestore
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+} from 'firebase/firestore';
 
-import { db } from "../../../../../../firebase/firebaseconfig";
+import { db } from '../../../../../../firebase/firebaseconfig';
 
 /**
  * Función para actualizar el `listPrice` de productos en Firestore de manera paralela.
@@ -9,21 +16,22 @@ import { db } from "../../../../../../firebase/firebaseconfig";
  * @param {string} userBusinessID - ID del negocio del usuario para identificar la ubicación en Firestore.
  */
 export async function updateProductListPrices(items, userBusinessID) {
-    // Crea un array de promesas para procesar en paralelo
-    const updatePromises = items.map(async (item) => {
-        try {
-            // Buscar el documento del producto usando `name` y `barCode`
-            const docSnapshot = await findProductDocument(item, userBusinessID);            if (docSnapshot) {
-                // Actualizar el `listPrice` si se encuentra el documento
-                await updateProductListPrice(docSnapshot.id, item, userBusinessID);
-            } else {
-                // Product not found - could log to a separate system if needed
-            }
-        } catch (error) {
-            console.error(`Error al actualizar el producto ${item.name}:`, error);
-        }
-    });    // Espera a que todas las actualizaciones se completen
-    await Promise.all(updatePromises);
+  // Crea un array de promesas para procesar en paralelo
+  const updatePromises = items.map(async (item) => {
+    try {
+      // Buscar el documento del producto usando `name` y `barCode`
+      const docSnapshot = await findProductDocument(item, userBusinessID);
+      if (docSnapshot) {
+        // Actualizar el `listPrice` si se encuentra el documento
+        await updateProductListPrice(docSnapshot.id, item, userBusinessID);
+      } else {
+        // Product not found - could log to a separate system if needed
+      }
+    } catch (error) {
+      console.error(`Error al actualizar el producto ${item.name}:`, error);
+    }
+  }); // Espera a que todas las actualizaciones se completen
+  await Promise.all(updatePromises);
 }
 
 /**
@@ -33,20 +41,20 @@ export async function updateProductListPrices(items, userBusinessID) {
  * @returns {DocumentSnapshot|null} - Retorna el documento encontrado o null si no se encuentra.
  */
 async function findProductDocument(item, userBusinessID) {
-    const q = query(
-        collection(db, `businesses/${userBusinessID}/products`),
-        where("name", "==", item.name),
-        where("barcode", "==", item.barCode)
-    );
+  const q = query(
+    collection(db, `businesses/${userBusinessID}/products`),
+    where('name', '==', item.name),
+    where('barcode', '==', item.barCode),
+  );
 
-    const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-        // Retorna el primer documento que coincide
-        return querySnapshot.docs[0];
-    } else {
-        return null;
-    }
+  if (!querySnapshot.empty) {
+    // Retorna el primer documento que coincide
+    return querySnapshot.docs[0];
+  } else {
+    return null;
+  }
 }
 
 /**
@@ -56,10 +64,10 @@ async function findProductDocument(item, userBusinessID) {
  * @param {string} userBusinessID - ID del negocio del usuario.
  */
 async function updateProductListPrice(docId, item, userBusinessID) {
-    const docRef = doc(db, `businesses/${userBusinessID}/products`, docId);
-    
-    await updateDoc(docRef, {
-        "pricing.listPrice": item.listPrice,
-        "pricing.price": item.listPrice, // Actualiza el precio también
-    });
+  const docRef = doc(db, `businesses/${userBusinessID}/products`, docId);
+
+  await updateDoc(docRef, {
+    'pricing.listPrice': item.listPrice,
+    'pricing.price': item.listPrice, // Actualiza el precio también
+  });
 }

@@ -1,10 +1,15 @@
 // functions/src/modules/invoice/services/invoiceGeneration.service.js
-import { https, logger } from "firebase-functions";
-import { nanoid } from "nanoid";
+import { https, logger } from 'firebase-functions';
+import { nanoid } from 'nanoid';
 
-import { db, serverTimestamp, arrayUnion, Timestamp } from "../../../core/config/firebase.js";
-import { getNextIDTransactional } from "../../../core/utils/getNextID.js";
-import { addBillToCashCountById } from "../../cashCount/services/cashCount.service.js";
+import {
+  db,
+  serverTimestamp,
+  arrayUnion,
+  Timestamp,
+} from '../../../core/config/firebase.js';
+import { getNextIDTransactional } from '../../../core/utils/getNextID.js';
+import { addBillToCashCountById } from '../../cashCount/services/cashCount.service.js';
 
 /**
  * Genera una factura final en la base de datos
@@ -23,12 +28,15 @@ export function checkIfHasDueDate({ cart, dueDate }) {
   return {
     ...cart,
     dueDate: date,
-    hasDueDate: true
-  }
+    hasDueDate: true,
+  };
 }
 
-export async function generateFinalInvoice(tx, { user, cart, clientData, ncfCode, cashCountId, dueDate, cashCountSnap }) {
-  logger.info("Generating final invoice", { user: user.uid, cartId: cart.id });
+export async function generateFinalInvoice(
+  tx,
+  { user, cart, clientData, ncfCode, cashCountId, dueDate, cashCountSnap },
+) {
+  logger.info('Generating final invoice', { user: user.uid, cartId: cart.id });
   if (!user?.businessID) {
     throw new https.HttpsError('failed-precondition', 'Usuario sin businessID');
   }
@@ -51,7 +59,13 @@ export async function generateFinalInvoice(tx, { user, cart, clientData, ncfCode
     numberID: nextNumberId,
     date: serverTimestamp(),
     userID: user.uid,
-    user: userRef
+    user: userRef,
+    snapshot: {
+      initialPaymentMethods: cart.paymentMethod || [],
+      initialTotalPaid: cart.payment?.value || 0,
+      isCreditSale: !!cart.isAddedToReceivables,
+      createdAt: serverTimestamp(),
+    },
   };
 
   if (dueDate) {
@@ -77,9 +91,12 @@ export async function generateFinalInvoice(tx, { user, cart, clientData, ncfCode
  * @param {Object} clientData - Datos del cliente
  * @returns {Promise<Object>} Factura generada
  */
-export async function generateInvoiceFromPreorder(tx, { user, cart, ncfCode, cashCountId, clientData, cashCountSnap }) {
-  if (!cart?.preorderDetails?.isOrWasPreorder || cart?.status !== "pending") {
-    throw new Error("Datos de preorden inválidos");
+export async function generateInvoiceFromPreorder(
+  tx,
+  { user, cart, ncfCode, cashCountId, clientData, cashCountSnap },
+) {
+  if (!cart?.preorderDetails?.isOrWasPreorder || cart?.status !== 'pending') {
+    throw new Error('Datos de preorden inválidos');
   }
 
   const businessId = user.businessID;
@@ -90,10 +107,10 @@ export async function generateInvoiceFromPreorder(tx, { user, cart, ncfCode, cas
   const nextNumberId = await getNextIDTransactional(tx, user, 'lastInvoiceId');
 
   const historyEntry = {
-    type: "invoice",
-    status: "completed",
+    type: 'invoice',
+    status: 'completed',
     date: serverTimestamp(),
-    userID: user.uid
+    userID: user.uid,
   };
 
   const data = {
@@ -106,11 +123,17 @@ export async function generateInvoiceFromPreorder(tx, { user, cart, ncfCode, cas
     userID: user.uid,
     cashCountId,
     user: userRef,
-    history: arrayUnion(historyEntry)
+    history: arrayUnion(historyEntry),
+    snapshot: {
+      initialPaymentMethods: cart.paymentMethod || [],
+      initialTotalPaid: cart.payment?.value || 0,
+      isCreditSale: !!cart.isAddedToReceivables,
+      createdAt: serverTimestamp(),
+    },
   };
 
   tx.set(preorderRef, { data }, { merge: true });
-  
+
   await addBillToCashCountById(tx, user, preorderRef, cashCountSnap);
 
   logger.info(`Factura generada desde preorden con ID: ${preorderRef.id}`);

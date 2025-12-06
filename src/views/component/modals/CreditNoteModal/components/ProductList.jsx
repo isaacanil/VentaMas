@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 import { ProductCard } from './ProductCard';
 
-
 export const ProductList = ({
   products,
   columns,
@@ -18,7 +17,7 @@ export const ProductList = ({
   pageSize,
   onPageChange,
   onItemChange,
-  onQuantityChange
+  onQuantityChange,
 }) => {
   if (isMobile) {
     // Render as cards in mobile
@@ -29,11 +28,14 @@ export const ProductList = ({
     return (
       <MobileContainer>
         <CardsContainer>
-          {paginatedProducts.map(product => {
+          {paginatedProducts.map((product) => {
             // Usar maxAvailableQty que ya incluye la lógica correcta para edición
             const maxQty = product.maxAvailableQty || 1;
             const originalQty = product.amountToBuy || 1;
-            const quantity = itemQuantities[product.id] || existingItemQuantities[product.id] || 1;
+            const quantity =
+              itemQuantities[product.id] ||
+              existingItemQuantities[product.id] ||
+              1;
             const isSelected = selectedItems.includes(product.id);
             const creditedByOthers = creditedQuantities[product.id] || 0;
             const existingQuantity = existingItemQuantities[product.id] || 0;
@@ -48,14 +50,16 @@ export const ProductList = ({
                 originalQuantity={originalQty}
                 isView={effectiveIsView}
                 onSelectionChange={onItemChange}
-                onQuantityChange={(value) => onQuantityChange(product.id, value)}
+                onQuantityChange={(value) =>
+                  onQuantityChange(product.id, value)
+                }
                 creditedByOthers={creditedByOthers}
                 existingQuantity={existingQuantity}
               />
             );
           })}
         </CardsContainer>
-        
+
         {products.length > pageSize && (
           <PaginationContainer>
             <Pagination
@@ -105,4 +109,4 @@ const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
   padding-top: 0.5rem;
-`; 
+`;

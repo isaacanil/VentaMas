@@ -1,49 +1,52 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
-import { createReference, getDocFromRef } from "../../utils/refereceUtils";
-import { db } from "../firebaseconfig";
+import { createReference, getDocFromRef } from '../../utils/refereceUtils';
+import { db } from '../firebaseconfig';
 
 export const convertFirestoreTimestamps = (dates, fields) => {
-    console.log(dates, fields)
-    fields.forEach((field) => {
-        const timestamp = dates[field]?.seconds;
-        if (timestamp) dates[field] = timestamp * 1000;
-    });
+  console.log(dates, fields);
+  fields.forEach((field) => {
+    const timestamp = dates[field]?.seconds;
+    if (timestamp) dates[field] = timestamp * 1000;
+  });
 };
 
 export const subscribeToPurchase = (businessID, filters, callback) => {
-    const collectionRef = collection(db, 'businesses', businessID, 'purchases');
-    let q = collectionRef;
+  const collectionRef = collection(db, 'businesses', businessID, 'purchases');
+  let q = collectionRef;
 
-    if (filters) {
-        const conditions = [];
+  if (filters) {
+    const conditions = [];
 
-        if (filters.status) {
-            conditions.push(where('status', '==', filters.status));
-        }
-        if (filters.condition) {
-            conditions.push(where('condition', '==', filters.condition));
-        }
-        if (filters.providerId) {
-            conditions.push(where('provider', '==', filters.providerId));
-        }
-
-        if (conditions.length > 0) {
-            q = query(q, ...conditions);
-        }
+    if (filters.status) {
+      conditions.push(where('status', '==', filters.status));
+    }
+    if (filters.condition) {
+      conditions.push(where('condition', '==', filters.condition));
+    }
+    if (filters.providerId) {
+      conditions.push(where('provider', '==', filters.providerId));
     }
 
-    return onSnapshot(q, callback);
+    if (conditions.length > 0) {
+      q = query(q, ...conditions);
+    }
+  }
+
+  return onSnapshot(q, callback);
 };
 
 export const getProvider = async (businessID, providerId) => {
-    if (!providerId) return {};
-    const providerRef = createReference(['businesses', businessID, 'providers'], providerId);
-    const providerDoc = await getDocFromRef(providerRef);
-    return providerDoc?.provider || {};
+  if (!providerId) return {};
+  const providerRef = createReference(
+    ['businesses', businessID, 'providers'],
+    providerId,
+  );
+  const providerDoc = await getDocFromRef(providerRef);
+  return providerDoc?.provider || {};
 };
 
 export const processPurchase = async (data, businessID) => {
-    const provider = await getProvider(businessID, data?.provider);
-    return { ...data, provider }
+  const provider = await getProvider(businessID, data?.provider);
+  return { ...data, provider };
 };

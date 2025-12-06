@@ -5,10 +5,15 @@ import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
 
 import { FilterField } from './FilterField';
 
-
-export const AmountRangeFilter = ({ minAmount, maxAmount, onMinChange, onMaxChange }) => {
+export const AmountRangeFilter = ({
+  minAmount,
+  maxAmount,
+  onMinChange,
+  onMaxChange,
+  label,
+}) => {
   const numberInputProps = {
-    size: "middle",
+    size: 'middle',
     min: 0,
     formatter: (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
     parser: (value) => value.replace(/\$\s?|(,*)/g, ''),
@@ -16,7 +21,7 @@ export const AmountRangeFilter = ({ minAmount, maxAmount, onMinChange, onMaxChan
   };
 
   return (
-    <FilterField label={FILTER_CONFIG.amount.label}>
+    <FilterField label={label ?? FILTER_CONFIG.amount.label}>
       <Space.Compact>
         <InputNumber
           {...numberInputProps}
@@ -35,4 +40,4 @@ export const AmountRangeFilter = ({ minAmount, maxAmount, onMinChange, onMaxChan
       </Space.Compact>
     </FilterField>
   );
-}; 
+};

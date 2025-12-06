@@ -1,50 +1,49 @@
-import { useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
+import { useCallback, useMemo, useState } from 'react';
+import styled from 'styled-components';
 
-import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider'
-import useFilter from '../../../../hooks/search/useSearch'
-import { useListenOrders } from '../../../../hooks/useOrders'
+import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider';
+import useFilter from '../../../../hooks/search/useSearch';
+import { useListenOrders } from '../../../../hooks/useOrders';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { FilterBar } from '../Compra/components/FilterBar/FilterBar'
+import { FilterBar } from '../Compra/components/FilterBar/FilterBar';
 
-import { OrdersTable } from './components/OrderListTable/OrdersTable'
-import createFilterConfig from './config/filterConfig'
-
+import { OrdersTable } from './components/OrderListTable/OrdersTable';
+import createFilterConfig from './config/filterConfig';
 
 export const Orders = () => {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterState, setFilterState] = useState(() => {
-    const config = createFilterConfig()
+    const config = createFilterConfig();
     return {
       filters: config.defaultValues,
       isAscending: config.defaultSort?.isAscending ?? true,
-    }
-  })
+    };
+  });
 
-  const { providers = [] } = useFbGetProviders()
-  const filterConfig = useMemo(() => createFilterConfig(), [])
+  const { providers = [] } = useFbGetProviders();
+  const filterConfig = useMemo(() => createFilterConfig(), []);
   const dataConfig = useMemo(
     () => ({
       providerId: {
         data: providers,
         accessor: (item) => {
-          if (!item) return null
+          if (!item) return null;
           return {
             value: item.provider.id || '',
             label: item.provider.name || 'Sin nombre',
-          }
+          };
         },
       },
     }),
-    [providers]
-  )
+    [providers],
+  );
 
   const handleFilterChange = useCallback((newFilterState) => {
-    setFilterState(newFilterState)
-  }, [])
+    setFilterState(newFilterState);
+  }, []);
 
-  const { orders, isLoading: isOrderLoading } = useListenOrders(filterState)
-  const filteredOrders = useFilter(orders, searchTerm)
+  const { orders, isLoading: isOrderLoading } = useListenOrders(filterState);
+  const filteredOrders = useFilter(orders, searchTerm);
 
   return (
     <Container>
@@ -57,27 +56,24 @@ export const Orders = () => {
           onSearchTermChange={setSearchTerm}
           dataConfig={dataConfig}
         />
-        <OrdersTable
-          loading={isOrderLoading}
-          orders={filteredOrders}
-        />
+        <OrdersTable loading={isOrderLoading} orders={filteredOrders} />
       </ContentArea>
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: var(--color2);
-  display: grid;
-  grid-template-rows: min-content 1fr;
-`
+`;
 
 const ContentArea = styled.div`
-  padding: 0.5;
   display: grid;
   grid-template-rows: min-content 1fr;
+  padding: 0.5;
   overflow: hidden;
-`
+`;

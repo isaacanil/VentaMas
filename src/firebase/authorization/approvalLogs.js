@@ -69,7 +69,12 @@ export const fbRecordAuthorizationApproval = async ({
   };
 
   try {
-    const collectionRef = collection(db, 'businesses', businessId, 'approvalLogs');
+    const collectionRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'approvalLogs',
+    );
     await addDoc(collectionRef, payload);
   } catch (error) {
     console.error('Error registrando aprobación con PIN:', error);
@@ -113,13 +118,24 @@ const normalizeLogEntry = (docSnap) => {
 
 export const fbListApprovalLogs = async (
   currentUser,
-  { limitCount = 150, module: moduleFilter, authorizerId, startDate, endDate } = {}
+  {
+    limitCount = 150,
+    module: moduleFilter,
+    authorizerId,
+    startDate,
+    endDate,
+  } = {},
 ) => {
   if (!currentUser?.businessID) {
     throw new Error('Falta businessID del usuario para listar la bitácora.');
   }
 
-  const colRef = collection(db, 'businesses', currentUser.businessID, 'approvalLogs');
+  const colRef = collection(
+    db,
+    'businesses',
+    currentUser.businessID,
+    'approvalLogs',
+  );
   const constraints = [];
 
   if (moduleFilter) {
@@ -131,11 +147,15 @@ export const fbListApprovalLogs = async (
   }
 
   if (startDate) {
-    constraints.push(where('createdAt', '>=', Timestamp.fromMillis(Number(startDate))));
+    constraints.push(
+      where('createdAt', '>=', Timestamp.fromMillis(Number(startDate))),
+    );
   }
 
   if (endDate) {
-    constraints.push(where('createdAt', '<=', Timestamp.fromMillis(Number(endDate))));
+    constraints.push(
+      where('createdAt', '<=', Timestamp.fromMillis(Number(endDate))),
+    );
   }
 
   constraints.push(orderBy('createdAt', 'desc'));

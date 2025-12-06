@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 
 const segmentSlice = createSlice({
@@ -13,7 +12,9 @@ const segmentSlice = createSlice({
       state.segments.push(action.payload);
     },
     updateSegment: (state, action) => {
-      const index = state.segments.findIndex(seg => seg.id === action.payload.id);
+      const index = state.segments.findIndex(
+        (seg) => seg.id === action.payload.id,
+      );
       if (index !== -1) {
         state.segments[index] = action.payload;
       }

@@ -1,32 +1,36 @@
+import { Timestamp, doc, setDoc } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
 
-import { Timestamp, doc, setDoc } from "firebase/firestore";
-import { nanoid } from "nanoid";
-
-import { db } from "../../firebaseconfig";
-
+import { db } from '../../firebaseconfig';
 
 export const fbAddExpenseCategory = async (user, category) => {
+  if (!user || !user.businessID) return false;
 
-    if (!user || !user.businessID) return false;
+  try {
+    category = {
+      ...category,
+      createdAt: Timestamp.now(),
+      id: nanoid(12),
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
+    };
+    const categoriesRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'expensesCategories',
+      category.id,
+    );
 
+    await setDoc(categoriesRef, { category });
 
-    try {
-        category = {
-            ...category,
-            createdAt: Timestamp.now(),
-            id: nanoid(12),
-        }
-        const categoriesRef = doc(db, "businesses", user.businessID, "expensesCategories", category.id);
+    console.log('Category added to expense successfully');
 
-        await setDoc(categoriesRef, { category });
+    return true;
+  } catch (error) {
+    console.error('Error adding category to expense: ', error);
 
-        console.log("Category added to expense successfully");
-
-        return true;
-
-    } catch (error) {
-        console.error("Error adding category to expense: ", error);
-
-        return false;
-    }
+    return false;
+  }
 };

@@ -9,15 +9,15 @@ import { shortenLocationPath } from '../../../InventoryControl/components/invent
 
 const Bar = styled.div`
   display: flex;
-  align-items: flex-end;
   gap: 1rem;
+  align-items: flex-end;
   padding: 0.4rem 1rem;
-  border-bottom: 1px solid var(--Gray);
-  background: var(--White);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray);
 
   .ant-form-item {
-    margin-bottom: 0 !important;
     display: inline-block;
+    margin-bottom: 0 !important;
   }
 
   .ant-form-item-label {
@@ -26,10 +26,10 @@ const Bar = styled.div`
   }
 
   .ant-form-item-label > label {
+    height: auto !important;
     font-size: 11px !important;
     font-weight: 500 !important;
     color: #666 !important;
-    height: auto !important;
   }
 `;
 
@@ -48,7 +48,8 @@ const MovementsFilterBar = ({
   type,
   onTypeChange,
 }) => {
-  const { data: hierarchy, loading: loadingHierarchy } = useWarehouseHierarchy();
+  const { data: hierarchy, loading: loadingHierarchy } =
+    useWarehouseHierarchy();
 
   // Build Cascader options from warehouse hierarchy
   const options = useMemo(() => {
@@ -86,7 +87,10 @@ const MovementsFilterBar = ({
 
   return (
     <Bar>
-      <Form layout="vertical" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+      <Form
+        layout="vertical"
+        style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}
+      >
         <Form.Item label="Fecha">
           <DatePicker
             dates={dates}

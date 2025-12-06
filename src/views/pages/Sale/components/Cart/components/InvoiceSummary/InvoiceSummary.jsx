@@ -1,5 +1,12 @@
-import { notification, Modal, Spin, message, Tooltip } from 'antd'
-import React, { Fragment, useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { notification, Modal, Spin, message, Tooltip } from 'antd';
+import React, {
+  Fragment,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -8,8 +15,22 @@ import styled from 'styled-components';
 import { icons } from '../../../../../../../constants/icons/icons';
 import { selectBusinessData } from '../../../../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { SelectCartData, SelectSettingCart, selectCart, setCartId, toggleInvoicePanelOpen, setCashPaymentToTotal, selectProductsWithIndividualDiscounts, selectTotalIndividualDiscounts, setDiscountAuthorizationContext, clearDiscountAuthorizationContext } from '../../../../../../../features/cart/cartSlice';
-import { selectNcfType, selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
+import {
+  SelectCartData,
+  SelectSettingCart,
+  selectCart,
+  setCartId,
+  toggleInvoicePanelOpen,
+  setCashPaymentToTotal,
+  selectProductsWithIndividualDiscounts,
+  selectTotalIndividualDiscounts,
+  setDiscountAuthorizationContext,
+  clearDiscountAuthorizationContext,
+} from '../../../../../../../features/cart/cartSlice';
+import {
+  selectNcfType,
+  selectTaxReceiptEnabled,
+} from '../../../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbAddPreOrder } from '../../../../../../../firebase/invoices/fbAddPreocer';
 import { fbUpdatePreOrder } from '../../../../../../../firebase/invoices/fbUpdatePreorder';
 import { downloadQuotationPdf } from '../../../../../../../firebase/quotation/downloadQuotationPDF';
@@ -33,53 +54,63 @@ import { Delivery } from './components/Delivery/Delivery';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import WarningPill from './components/WarningPill/WarningPill';
 
-
-const resolveAuthorizerName = (authorizer) => (
+const resolveAuthorizerName = (authorizer) =>
   authorizer?.displayName ||
   authorizer?.name ||
   authorizer?.username ||
   authorizer?.email ||
   authorizer?.uid ||
-  'usuario autorizado'
-);
+  'usuario autorizado';
+
+const SUMMARY_INPUT_WIDTH = '170px';
+const SUMMARY_INPUT_SIZE = 'large';
 
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false);
   const cart = useSelector(selectCart);
   const user = useSelector(selectUser);
-  const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] = useState(false);
+  const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] =
+    useState(false);
   const cartData = useSelector(SelectCartData);
   const insuranceExtra = cartData?.totalInsurance?.value || 0;
   const selectedNcfType = useSelector(selectNcfType);
   const isTaxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  const discountAuthorizationContext = cartData?.authorizationContext?.discount || null;
+  const discountAuthorizationContext =
+    cartData?.authorizationContext?.discount || null;
   const billingSettings = cart?.settings?.billing;
   const business = useSelector(selectBusinessData) || {};
   const total = cartData?.totalPurchase?.value;
   const subTotal = cartData?.totalPurchaseWithoutTaxes?.value;
   const itbis = cartData.totalTaxes.value;
   const discountPercent = cartData.discount.value;
-  const quotationPrintRef = useRef();
+  const quotationPrintRef = useRef(null);
   const [quotationData, _setQuotationData] = useState();
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const [isSavingPreorder, setIsSavingPreorder] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
   const { billing } = useSelector(SelectSettingCart);
   const { shouldUsePinForModule } = useAuthorizationModules();
-  const { openModal: openPreorderModal, Modal: PreorderModal } = usePreorderModal();
+  const { openModal: openPreorderModal, Modal: PreorderModal } =
+    usePreorderModal();
 
   // Nuevos selectores para descuentos individuales
-  const productsWithIndividualDiscounts = useSelector(selectProductsWithIndividualDiscounts);
+  const productsWithIndividualDiscounts = useSelector(
+    selectProductsWithIndividualDiscounts,
+  );
   const totalIndividualDiscounts = useSelector(selectTotalIndividualDiscounts);
   const hasIndividualDiscounts = productsWithIndividualDiscounts.length > 0;
 
   const dispatch = useDispatch();
   const insuranceEnabled = useInsuranceEnabled();
-  const { shouldDisableButton: insuranceFormIncomplete } = useInsuranceFormComplete();
+  const { shouldDisableButton: insuranceFormIncomplete } =
+    useInsuranceFormComplete();
   const isCashier = user?.role === 'cashier';
   // Solo requiere PIN si el módulo de facturación está activo y es cajero
-  const shouldRequirePinForDiscount = shouldUsePinForModule('invoices') && isCashier;
-  const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(!shouldRequirePinForDiscount);
+  const shouldRequirePinForDiscount =
+    shouldUsePinForModule('invoices') && isCashier;
+  const [isDiscountAuthorized, setIsDiscountAuthorized] = useState(
+    !shouldRequirePinForDiscount,
+  );
   const [discountAuthorizer, setDiscountAuthorizer] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const isPreorderRoute = searchParams.get('mode') === 'preorder';
@@ -87,23 +118,26 @@ const InvoiceSummary = () => {
   const isEditingPreorder = isPreorderRoute && isPreorderCart;
   const defaultMode = billing?.billingMode === 'deferred' ? 'preorder' : 'sale';
 
-  const updateMode = useCallback((modeValue, { preorderId } = {}) => {
-    const params = new URLSearchParams(searchParams);
+  const updateMode = useCallback(
+    (modeValue, { preorderId } = {}) => {
+      const params = new URLSearchParams(searchParams);
 
-    if (modeValue) {
-      params.set('mode', modeValue);
-    } else {
-      params.delete('mode');
-    }
+      if (modeValue) {
+        params.set('mode', modeValue);
+      } else {
+        params.delete('mode');
+      }
 
-    if (preorderId) {
-      params.set('preorderId', preorderId);
-    } else {
-      params.delete('preorderId');
-    }
+      if (preorderId) {
+        params.set('preorderId', preorderId);
+      } else {
+        params.delete('preorderId');
+      }
 
-    setSearchParams(params, { replace: true });
-  }, [searchParams, setSearchParams]);
+      setSearchParams(params, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
 
   const activateSaleMode = useCallback(() => {
     updateMode(defaultMode);
@@ -134,36 +168,41 @@ const InvoiceSummary = () => {
         email: user?.email || '',
       };
 
-      dispatch(setDiscountAuthorizationContext({
-        module: 'invoices',
-        action: 'invoice-discount-override',
-        description: 'Autorización para aplicar descuentos en facturación.',
-        authorizer,
-        requestedBy: requesterSnapshot,
-        targetUser: requesterSnapshot,
-        metadata: {
-          cartId,
-          clientId,
-          clientName,
-          total: cartData?.totalPurchase?.value ?? null,
-          discountPercent: cartData?.discount?.value ?? null,
-          hasIndividualDiscounts,
-          authorizedAt,
-        },
-      }));
+      dispatch(
+        setDiscountAuthorizationContext({
+          module: 'invoices',
+          action: 'invoice-discount-override',
+          description: 'Autorización para aplicar descuentos en facturación.',
+          authorizer,
+          requestedBy: requesterSnapshot,
+          targetUser: requesterSnapshot,
+          metadata: {
+            cartId,
+            clientId,
+            clientName,
+            total: cartData?.totalPurchase?.value ?? null,
+            discountPercent: cartData?.discount?.value ?? null,
+            hasIndividualDiscounts,
+            authorizedAt,
+          },
+        }),
+      );
 
-      message.success(`Descuento autorizado por ${resolveAuthorizerName(authorizer)}`);
+      message.success(
+        `Descuento autorizado por ${resolveAuthorizerName(authorizer)}`,
+      );
     },
     module: 'invoices',
     allowedRoles: ['admin', 'owner', 'manager', 'dev'],
-    description: 'Se requiere autorización con PIN para aplicar descuentos en facturas.',
+    description:
+      'Se requiere autorización con PIN para aplicar descuentos en facturas.',
     reasonList: ['Aplicar o modificar descuentos en la factura.'],
     allowPasswordFallback: false,
   });
 
   const authorizedByName = useMemo(
     () => (discountAuthorizer ? resolveAuthorizerName(discountAuthorizer) : ''),
-    [discountAuthorizer]
+    [discountAuthorizer],
   );
 
   useEffect(() => {
@@ -187,7 +226,7 @@ const InvoiceSummary = () => {
     if (!insuranceEnabled) return { isValid: true, message: null };
     const products = cartData?.products || [];
 
-    const productsWithCoverage = products.filter(product => {
+    const productsWithCoverage = products.filter((product) => {
       const insurance = product?.insurance || {};
       return insurance.mode && insurance.value > 0;
     });
@@ -195,57 +234,72 @@ const InvoiceSummary = () => {
     if (productsWithCoverage.length === 0) {
       return {
         isValid: false,
-        message: "Al menos un producto debe tener cobertura de seguro configurada",
+        message:
+          'Al menos un producto debe tener cobertura de seguro configurada',
       };
     }
 
-    const medicineCategories = ['medicamento', 'medicina', 'farmacia', 'recetado'];
-    const productsThatShouldHaveInsurance = products.filter(product => {
-      const categoryMatch = product?.category &&
-        medicineCategories.some(cat =>
-          product.category.toLowerCase().includes(cat)
+    const medicineCategories = [
+      'medicamento',
+      'medicina',
+      'farmacia',
+      'recetado',
+    ];
+    const productsThatShouldHaveInsurance = products.filter((product) => {
+      const categoryMatch =
+        product?.category &&
+        medicineCategories.some((cat) =>
+          product.category.toLowerCase().includes(cat),
         );
 
       const isMarkedForInsurance = product?.requiresInsurance === true;
 
-      return (categoryMatch || isMarkedForInsurance);
+      return categoryMatch || isMarkedForInsurance;
     });
 
     // De los productos que deberían tener seguro, verificar cuáles no tienen configuración adecuada
-    const invalidProducts = productsThatShouldHaveInsurance.filter(product => {
-      const insurance = product?.insurance || {};
-      return !insurance.mode || insurance.value <= 0;
-    });
+    const invalidProducts = productsThatShouldHaveInsurance.filter(
+      (product) => {
+        const insurance = product?.insurance || {};
+        return !insurance.mode || insurance.value <= 0;
+      },
+    );
 
     if (invalidProducts.length > 0) {
-      const productNames = invalidProducts.map(p => p.productName || 'Producto sin nombre').join(', ');
+      const productNames = invalidProducts
+        .map((p) => p.productName || 'Producto sin nombre')
+        .join(', ');
       return {
         isValid: false,
         message: `Los siguientes productos requieren configuración de seguro: ${productNames}`,
-        invalidProducts
+        invalidProducts,
       };
     }
 
-    const productsWithInvalidCoverage = products.filter(product => {
+    const productsWithInvalidCoverage = products.filter((product) => {
       const insurance = product?.insurance || {};
       const price = product?.pricing?.price ?? 0;
 
       const rules = [
         () => !insurance.mode,
         () => insurance.value <= 0,
-        () => insurance.mode === 'porcentaje' && (insurance.value < 1 || insurance.value > 100),
-        () => insurance.mode === 'monto' && insurance.value > price
-      ]
+        () =>
+          insurance.mode === 'porcentaje' &&
+          (insurance.value < 1 || insurance.value > 100),
+        () => insurance.mode === 'monto' && insurance.value > price,
+      ];
 
-      return rules.some(rule => rule());
+      return rules.some((rule) => rule());
     });
 
     if (productsWithInvalidCoverage.length > 0) {
-      const productNames = productsWithInvalidCoverage.map(p => p.productName || 'Producto sin nombre').join(', ');
+      const productNames = productsWithInvalidCoverage
+        .map((p) => p.productName || 'Producto sin nombre')
+        .join(', ');
       return {
         isValid: false,
         message: `Valor de cobertura inválido en: ${productNames}`,
-        invalidProducts: productsWithInvalidCoverage
+        invalidProducts: productsWithInvalidCoverage,
       };
     }
 
@@ -258,19 +312,19 @@ const InvoiceSummary = () => {
   }, [cartData]);
 
   const handleInvoicePanelOpen = () => {
-    const { isValid, message } = validateInvoiceCart(cartData)
+    const { isValid, message } = validateInvoiceCart(cartData);
     if (isValid) {
-      dispatch(setCashPaymentToTotal())
+      dispatch(setCashPaymentToTotal());
       if (!cart?.settings?.isInvoicePanelOpen) {
-        dispatch(toggleInvoicePanelOpen())
+        dispatch(toggleInvoicePanelOpen());
       }
-      dispatch(setCartId())
+      dispatch(setCartId());
     } else {
       notification.error({
-        description: message
-      })
+        description: message,
+      });
     }
-  }
+  };
 
   const handleDiscountAccess = useCallback(() => {
     if (!shouldRequirePinForDiscount || isDiscountAuthorized) {
@@ -280,10 +334,15 @@ const InvoiceSummary = () => {
       showDiscountPinModal();
     }
     return false;
-  }, [shouldRequirePinForDiscount, isDiscountAuthorized, isDiscountPinModalOpen, showDiscountPinModal]);
+  }, [
+    shouldRequirePinForDiscount,
+    isDiscountAuthorized,
+    isDiscountPinModalOpen,
+    showDiscountPinModal,
+  ]);
 
   const _handlePrint = useReactToPrint({
-    content: () => quotationPrintRef.current,
+    contentRef: quotationPrintRef,
     onAfterPrint: () => {
       Modal.confirm({
         title: '¿Limpiar cotización?',
@@ -295,19 +354,19 @@ const InvoiceSummary = () => {
           notification.success({
             message: 'Cotización eliminada',
             description: 'Los datos de la cotización han sido eliminados.',
-            duration: 4
+            duration: 4,
           });
         },
         onCancel: () => {
           notification.success({
             message: 'Cotización conservada',
             description: 'Los datos de la cotización se han mantenido.',
-            duration: 4
+            duration: 4,
           });
-        }
+        },
       });
-    }
-  })
+    },
+  });
 
   function showCleanQuotationModal() {
     Modal.confirm({
@@ -321,7 +380,7 @@ const InvoiceSummary = () => {
       },
       onCancel: () => {
         message.success('Se han mantenido los datos de la cotización');
-      }
+      },
     });
   }
 
@@ -332,7 +391,6 @@ const InvoiceSummary = () => {
       const data = await addQuotation(user, cartData, billingSettings);
 
       await downloadQuotationPdf(business, data, showCleanQuotationModal);
-
     } catch (error) {
       console.error('Error al descargar la cotización:', error);
     } finally {
@@ -343,12 +401,15 @@ const InvoiceSummary = () => {
   const handleSavePreOrder = async () => {
     if (isSavingPreorder) return;
 
-    const { isValid, message: validationMessage } = validateInvoiceCart(cartData);
+    const { isValid, message: validationMessage } =
+      validateInvoiceCart(cartData);
 
     if (!isValid) {
       notification.warning({
         message: 'No se puede completar la preorden',
-        description: validationMessage || 'Verifica los datos del carrito antes de continuar.'
+        description:
+          validationMessage ||
+          'Verifica los datos del carrito antes de continuar.',
       });
       return;
     }
@@ -363,13 +424,13 @@ const InvoiceSummary = () => {
       activateSaleMode();
       notification.success({
         message: 'Preorden guardada con éxito',
-        type: 'success'
+        type: 'success',
       });
     } catch (error) {
       console.error('Error al guardar la preorden:', error);
       notification.error({
         message: 'No se pudo guardar la preorden',
-        description: error?.message || 'Intenta nuevamente en unos segundos.'
+        description: error?.message || 'Intenta nuevamente en unos segundos.',
       });
     } finally {
       setIsSavingPreorder(false);
@@ -379,12 +440,15 @@ const InvoiceSummary = () => {
   const handleUpdatePreOrder = async () => {
     if (isSavingPreorder) return;
 
-    const { isValid, message: validationMessage } = validateInvoiceCart(cartData);
+    const { isValid, message: validationMessage } =
+      validateInvoiceCart(cartData);
 
     if (!isValid) {
       notification.warning({
         message: 'No se puede actualizar la preventa',
-        description: validationMessage || 'Verifica los datos del carrito antes de continuar.'
+        description:
+          validationMessage ||
+          'Verifica los datos del carrito antes de continuar.',
       });
       return;
     }
@@ -400,13 +464,13 @@ const InvoiceSummary = () => {
 
       notification.success({
         message: 'Preventa actualizada con éxito',
-        description: 'Los cambios han sido guardados.'
+        description: 'Los cambios han sido guardados.',
       });
     } catch (error) {
       console.error('Error al actualizar la preorden:', error);
       notification.error({
         message: 'No se pudo actualizar la preventa',
-        description: error?.message || 'Intenta nuevamente en unos segundos.'
+        description: error?.message || 'Intenta nuevamente en unos segundos.',
       });
     } finally {
       setIsSavingPreorder(false);
@@ -414,12 +478,16 @@ const InvoiceSummary = () => {
   };
 
   // Calculamos si el botón debe estar deshabilitado combinando las validaciones
-  const isButtonDisabled = !isCartValid || insuranceFormIncomplete || !validateInsuranceCoverage.isValid || isSavingPreorder;
+  const isButtonDisabled =
+    !isCartValid ||
+    insuranceFormIncomplete ||
+    !validateInsuranceCoverage.isValid ||
+    isSavingPreorder;
 
   // Mensaje de advertencia que incluye ambas validaciones con información más detallada
   const warningMessage = useMemo(() => {
     if (insuranceFormIncomplete) {
-      return "Complete todos los datos del formulario de autorización de seguro para continuar.";
+      return 'Complete todos los datos del formulario de autorización de seguro para continuar.';
     }
     if (!validateInsuranceCoverage.isValid) {
       return validateInsuranceCoverage.message;
@@ -431,7 +499,9 @@ const InvoiceSummary = () => {
     if (!cartData) return cartData;
 
     const basePreorderDetails = cartData?.preorderDetails ?? {};
-    const normalizedSelectedType = isTaxReceiptEnabled ? (selectedNcfType || null) : null;
+    const normalizedSelectedType = isTaxReceiptEnabled
+      ? selectedNcfType || null
+      : null;
 
     return {
       ...cartData,
@@ -447,28 +517,31 @@ const InvoiceSummary = () => {
     direct: {
       text: 'Facturar',
       action: handleInvoicePanelOpen,
-      disabled: isButtonDisabled
+      disabled: isButtonDisabled,
     },
-    deferred: isEditingPreorder ? {
-      text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
-      action: handleUpdatePreOrder,
-      disabled: isButtonDisabled
-    } : {
-      text: 'Preventa',
-      action: () => {
-        activatePreorderMode();
-        setIsOpenPreorderConfirmation(true);
-      },
-      disabled: isButtonDisabled
-    },
+    deferred: isEditingPreorder
+      ? {
+          text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
+          action: handleUpdatePreOrder,
+          disabled: isButtonDisabled,
+        }
+      : {
+          text: 'Preventa',
+          action: () => {
+            activatePreorderMode();
+            setIsOpenPreorderConfirmation(true);
+          },
+          disabled: isButtonDisabled,
+        },
     default: {
       text: 'Sin accion',
       action: undefined,
-      disabled: true
-    }
-  }
+      disabled: true,
+    },
+  };
 
-  const { text, action, disabled } = billingButtons[billing?.billingMode] || billingButtons.default;
+  const { text, action, disabled } =
+    billingButtons[billing?.billingMode] || billingButtons.default;
 
   const tooltipTitle = useMemo(() => {
     if (isSavingPreorder) {
@@ -504,20 +577,20 @@ const InvoiceSummary = () => {
         backgroundHover: '#d9f7be',
         color: '#389e0d',
         colorHover: '#237804',
-        iconColor: '#389e0d'
-      }
+        iconColor: '#389e0d',
+      },
     },
     billingSettings?.quoteEnabled && {
       text: isLoadingQuotation ? 'Cargando...' : 'Cotización',
       action: handleDownloadQuotation,
       icon: isLoadingQuotation ? <Spin size="small" /> : icons.quotation.quote,
-      disabled: isButtonDisabled || isLoadingQuotation
+      disabled: isButtonDisabled || isLoadingQuotation,
     },
     billing?.billingMode === 'deferred' && {
       text: 'Cargar Preventa',
       action: openPreorderModal,
       icon: icons.finances.fileInvoiceDollar,
-      disabled: false // Siempre habilitado - no requiere elementos en el carrito
+      disabled: false, // Siempre habilitado - no requiere elementos en el carrito
     },
     {
       text: 'Cancelar venta',
@@ -532,8 +605,8 @@ const InvoiceSummary = () => {
         backgroundHover: '#ffd4d4',
         color: '#d32f2f',
         colorHover: '#b71c1c',
-        iconColor: '#d32f2f'
-      }
+        iconColor: '#d32f2f',
+      },
     },
   ].filter(Boolean);
 
@@ -541,19 +614,23 @@ const InvoiceSummary = () => {
     <Fragment>
       {PreorderModal}
       {isLoadingQuotation && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(255,255,255,0.7)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <Spin tip="Cargando cotización..." size="large" />
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgb(255 255 255 / 70%)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spin tip="Cargando cotización..." size="large">
+            <div style={{ width: 160, height: 140 }} />
+          </Spin>
         </div>
       )}
       <SummaryContainer>
@@ -565,7 +642,9 @@ const InvoiceSummary = () => {
           <Label>ITBIS:</Label>
           <Label>{useFormatPrice(itbis)}</Label>
         </LineItem>
-        <Delivery />
+        <Delivery
+          inputWidth={SUMMARY_INPUT_WIDTH}
+        />
         <LineItem>
           <Label>Descuento:</Label>
           {hasIndividualDiscounts ? (
@@ -577,16 +656,23 @@ const InvoiceSummary = () => {
               <CustomInput
                 discount={discount}
                 value={discountPercent}
-                options={["10", "20", "30", "40", "50"]}
+                options={['10', '20', '30', '40', '50']}
                 disabled={hasIndividualDiscounts}
                 onRequestAccess={handleDiscountAccess}
+                width={SUMMARY_INPUT_WIDTH}
               />
               {shouldRequirePinForDiscount && !isDiscountAuthorized && (
-                <AuthorizationNote $tone="warning">Requiere autorización con PIN</AuthorizationNote>
+                <AuthorizationNote $tone="warning">
+                  Requiere autorización con PIN
+                </AuthorizationNote>
               )}
-              {shouldRequirePinForDiscount && isDiscountAuthorized && authorizedByName && (
-                <AuthorizationNote>Autorizado por {authorizedByName}</AuthorizationNote>
-              )}
+              {shouldRequirePinForDiscount &&
+                isDiscountAuthorized &&
+                authorizedByName && (
+                  <AuthorizationNote>
+                    Autorizado por {authorizedByName}
+                  </AuthorizationNote>
+                )}
             </DiscountInputContainer>
           )}
         </LineItem>
@@ -599,17 +685,11 @@ const InvoiceSummary = () => {
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
           <Tooltip title={tooltipTitle}>
-            <Button
-              onClick={action}
-              disabled={disabled}
-            >
+            <Button onClick={action} disabled={disabled}>
               {text}
             </Button>
           </Tooltip>
-          <ActionMenu
-            disabled={isSavingPreorder}
-            options={menuOptions}
-          />
+          <ActionMenu disabled={isSavingPreorder} options={menuOptions} />
           <Quotation ref={quotationPrintRef} data={quotationData} />
           <TotalLabel>
             <AnimatedNumber value={useFormatPrice(total)} />
@@ -634,30 +714,32 @@ const InvoiceSummary = () => {
 export default InvoiceSummary;
 
 const SummaryContainer = styled.div`
-  border-radius: 5px;
-  padding: 0px 10px;
   position: relative;
+  padding: 0 10px;
+  border-radius: 5px;
 `;
 
 export const LineItem = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 2px 0;
-  :first-child {
+
+  &:first-child {
     border-bottom: 1px solid #ccc;
   }
-  :last-child {
-    border-top: 1px solid #ccc;
+
+  &:last-child {
     padding: 0;
+    border-top: 1px solid #ccc;
   }
- 
-  align-items: center;
 `;
 
 const DiscountInputContainer = styled.div`
   display: grid;
-  justify-items: end;
   gap: 4px;
+  justify-items: end;
+  min-width: ${SUMMARY_INPUT_WIDTH};
 `;
 
 const AuthorizationNote = styled.span`
@@ -666,37 +748,41 @@ const AuthorizationNote = styled.span`
 `;
 
 const TotalLine = styled(LineItem)`
+  /* This is the total line in the invoice summary */
 `;
 
 const Button = styled.button`
-  background-color: #007bff;
+  padding: 8px 12px;
   color: white;
+  cursor: pointer;
+  background-color: #007bff;
   border: none;
   border-radius: 5px;
-  padding: 8px 12px;
-  cursor: pointer;
-  :disabled {
-    background-color: #8a8a8a;
+
+  &:disabled {
     cursor: not-allowed;
-    :hover {
+    background-color: #8a8a8a;
+
+    &:hover {
       background-color: #585858;
     }
   }
-  :not(:disabled):hover {
+
+  &:not(:disabled):hover {
     background-color: #0056b3;
   }
 `;
 
 const TotalLabel = styled.span`
-  font-weight: bold;
-  font-size: 1.2em;
-  height: 2.4em;
   display: grid;
   align-content: center;
+  height: 2.4em;
+  font-size: 1.2em;
+  font-weight: bold;
 `;
 
 export const Label = styled.span`
+  font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-  font-size: 14px;
- `
+`;

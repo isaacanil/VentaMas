@@ -12,15 +12,15 @@ export class HandlerFactoryUtils {
    */
   static validateHandlerConfig(config) {
     const { context, name, commands } = config;
-    
+
     if (!context) {
       throw new Error('El contexto del handler es requerido');
     }
-    
+
     if (!name || typeof name !== 'string') {
       throw new Error('El nombre del handler debe ser una cadena válida');
     }
-    
+
     if (commands && !Array.isArray(commands)) {
       throw new Error('Los comandos deben ser un array');
     }
@@ -37,12 +37,12 @@ export class HandlerFactoryUtils {
    */
   static createStandardHandler(config) {
     const { context, name, commandMap = {}, prefixCommands = [] } = config;
-    
+
     this.validateHandlerConfig(config);
 
     return {
       canHandle: context.createCanHandleChecker(commandMap, prefixCommands),
-      execute: context.createCommandExecutor(commandMap, prefixCommands, name)
+      execute: context.createCommandExecutor(commandMap, prefixCommands, name),
     };
   }
 
@@ -57,11 +57,11 @@ export class HandlerFactoryUtils {
    */
   static createCrudHandlers(config) {
     const { context, entityName, service, formatter } = config;
-    
+
     if (!entityName) {
       throw new Error('El nombre de la entidad es requerido');
     }
-    
+
     if (!service) {
       throw new Error('El servicio CRUD es requerido');
     }
@@ -74,10 +74,11 @@ export class HandlerFactoryUtils {
         context,
         command: `list ${entityLower}`,
         loadFunction: () => service.getAll(),
-        formatter: formatter || ((item) => item.name || item.id || String(item)),
-        itemType: entityPlural
+        formatter:
+          formatter || ((item) => item.name || item.id || String(item)),
+        itemType: entityPlural,
       }),
-      
+
       [`create${entityName}`]: this.createStandardHandler({
         context,
         name: `Create${entityName}Handler`,
@@ -88,12 +89,12 @@ export class HandlerFactoryUtils {
               command,
               `create ${entityLower}`,
               (args) => service.create(args),
-              `create ${entityLower} <datos>`
+              `create ${entityLower} <datos>`,
             );
-          }
-        }
+          },
+        },
       }),
-      
+
       [`update${entityName}`]: this.createStandardHandler({
         context,
         name: `Update${entityName}Handler`,
@@ -103,12 +104,12 @@ export class HandlerFactoryUtils {
               command,
               `update ${entityLower}`,
               (args) => service.update(args),
-              `update ${entityLower} <id> <datos>`
+              `update ${entityLower} <id> <datos>`,
             );
-          }
-        }
+          },
+        },
       }),
-      
+
       [`delete${entityName}`]: this.createStandardHandler({
         context,
         name: `Delete${entityName}Handler`,
@@ -118,11 +119,11 @@ export class HandlerFactoryUtils {
               command,
               `delete ${entityLower}`,
               (args) => service.delete(args),
-              `delete ${entityLower} <id>`
+              `delete ${entityLower} <id>`,
             );
-          }
-        }
-      })
+          },
+        },
+      }),
     };
   }
 
@@ -138,20 +139,21 @@ export class HandlerFactoryUtils {
    * @returns {Function} - Handler de lista
    */
   static createListHandler(config) {
-    const { 
-      context, 
-      loadFunction, 
-      formatter, 
+    const {
+      context,
+      loadFunction,
+      formatter,
       itemType = 'elementos',
-      title = null 
+      title = null,
     } = config;
 
     return async () => {
       return context.handleListCommand({
         loadFunction,
-        formatFunction: formatter || ((item) => item.name || item.id || String(item)),
+        formatFunction:
+          formatter || ((item) => item.name || item.id || String(item)),
         itemType,
-        title: title || `Lista de ${itemType}`
+        title: title || `Lista de ${itemType}`,
       });
     };
   }
@@ -167,19 +169,14 @@ export class HandlerFactoryUtils {
    * @returns {Function} - Handler de selección
    */
   static createSelectionHandler(config) {
-    const { 
-      context, 
-      loadFunction, 
-      onSelect, 
-      itemType = 'elementos' 
-    } = config;
+    const { context, loadFunction, onSelect, itemType = 'elementos' } = config;
 
     return async () => {
       return context.handleSelectionCommand({
         loadFunction,
         onSelect,
         itemType,
-        selectionTitle: `Seleccionar ${itemType}`
+        selectionTitle: `Seleccionar ${itemType}`,
       });
     };
   }
@@ -201,7 +198,7 @@ export class HandlerFactoryUtils {
         fullCommand,
         command,
         searchFunction,
-        itemType
+        itemType,
       );
     };
   }
@@ -216,11 +213,11 @@ export class HandlerFactoryUtils {
    * @returns {Function} - Handler de ayuda
    */
   static createHelpHandler(config) {
-    const { 
-      context, 
-      commands = [], 
-      handlerName = 'Handler', 
-      description = 'Handler de comandos' 
+    const {
+      context,
+      commands = [],
+      handlerName = 'Handler',
+      description = 'Handler de comandos',
     } = config;
 
     return async () => {
@@ -228,10 +225,10 @@ export class HandlerFactoryUtils {
         `=== ${handlerName} ===`,
         description,
         '',
-        'Comandos disponibles:'
+        'Comandos disponibles:',
       ];
 
-      commands.forEach(cmd => {
+      commands.forEach((cmd) => {
         if (typeof cmd === 'string') {
           helpText.push(`  ${cmd}`);
         } else if (cmd.command && cmd.description) {
@@ -255,12 +252,12 @@ export class HandlerFactoryUtils {
     const { context, routes = {} } = config;
 
     const commandMap = {};
-    
+
     Object.entries(routes).forEach(([command, route]) => {
       commandMap[command] = () => {
         return context.handleNavigationCommand(
-          route.path, 
-          route.successMessage || `Navegando a ${route.path}`
+          route.path,
+          route.successMessage || `Navegando a ${route.path}`,
         );
       };
     });
@@ -268,7 +265,7 @@ export class HandlerFactoryUtils {
     return this.createStandardHandler({
       context,
       name: 'NavigationHandler',
-      commandMap
+      commandMap,
     });
   }
 
@@ -283,14 +280,14 @@ export class HandlerFactoryUtils {
     const { context, toggles = {} } = config;
 
     const commandMap = {};
-    
+
     Object.entries(toggles).forEach(([command, toggleConfig]) => {
       commandMap[command] = () => {
         return context.handleToggleCommand(
           toggleConfig.setting,
           toggleConfig.getCurrentState,
           toggleConfig.toggleFunction,
-          toggleConfig.messages || {}
+          toggleConfig.messages || {},
         );
       };
     });
@@ -298,7 +295,7 @@ export class HandlerFactoryUtils {
     return this.createStandardHandler({
       context,
       name: 'ToggleHandler',
-      commandMap
+      commandMap,
     });
   }
 }

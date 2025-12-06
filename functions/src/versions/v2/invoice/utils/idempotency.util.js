@@ -1,5 +1,5 @@
 const normalizeKey = (value) => {
-  if (typeof value !== "string") return null;
+  if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
 };
@@ -14,24 +14,28 @@ const extractFromCandidates = (candidates) => {
 
 const tryParseJSON = (source) => {
   if (!source) return null;
-  if (typeof source === "string") {
+  if (typeof source === 'string') {
     try {
       return JSON.parse(source);
     } catch {
       return null;
     }
   }
-  if (typeof source === "object") {
-    if (typeof Buffer !== "undefined" && Buffer.isBuffer && Buffer.isBuffer(source)) {
+  if (typeof source === 'object') {
+    if (
+      typeof Buffer !== 'undefined' &&
+      Buffer.isBuffer &&
+      Buffer.isBuffer(source)
+    ) {
       try {
-        return JSON.parse(source.toString("utf8"));
+        return JSON.parse(source.toString('utf8'));
       } catch {
         return null;
       }
     }
     return source;
   }
-  if (typeof source === "function") return null;
+  if (typeof source === 'function') return null;
   try {
     const asString = source.toString();
     return tryParseJSON(asString);
@@ -42,9 +46,9 @@ const tryParseJSON = (source) => {
 
 export function resolveIdempotencyKey({ rawRequest, data } = {}) {
   const headerKey = extractFromCandidates([
-    rawRequest?.headers?.["idempotency-key"],
-    rawRequest?.headers?.["Idempotency-Key"],
-    rawRequest?.get?.("Idempotency-Key"),
+    rawRequest?.headers?.['idempotency-key'],
+    rawRequest?.headers?.['Idempotency-Key'],
+    rawRequest?.get?.('Idempotency-Key'),
   ]);
   if (headerKey) return headerKey;
 

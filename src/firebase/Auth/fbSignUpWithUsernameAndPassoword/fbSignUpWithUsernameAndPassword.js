@@ -1,11 +1,10 @@
-import { auth } from "../../firebaseconfig";
+import { auth } from '../../firebaseconfig';
 
-import { navigateSafely } from "./functions/navigateUser";
-import { registerUser } from "./functions/registerUser";
-import { validateInputs } from "./functions/validateInputs";
+import { navigateSafely } from './functions/navigateUser';
+import { registerUser } from './functions/registerUser';
+import { validateInputs } from './functions/validateInputs';
 
-
-export const fbSignUpUserAccount = async (user, navigate) => { 
+export const fbSignUpUserAccount = async (user, navigate) => {
   try {
     validateInputs(user);
     await registerUser(auth, user);
@@ -15,10 +14,3 @@ export const fbSignUpUserAccount = async (user, navigate) => {
     throw error;
   }
 };
-
-
-
-
-
-
-

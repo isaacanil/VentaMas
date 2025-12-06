@@ -27,14 +27,11 @@ export const SearchBar = ({
   onClientChange,
 }) => {
   const enhancedOptions = useMemo(() => {
-    const baseOptions = clients.map(client => ({
+    const baseOptions = clients.map((client) => ({
       value: client.value,
       label: client.label,
     }));
-    return [
-      { value: 'all', label: 'Todos los clientes' },
-      ...baseOptions,
-    ];
+    return [{ value: 'all', label: 'Todos los clientes' }, ...baseOptions];
   }, [clients]);
 
   return (

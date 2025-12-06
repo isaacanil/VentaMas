@@ -1,1 +1,1 @@
-export { BarcodeCorrector } from './BarcodeCorrector'
+export { BarcodeCorrector } from './BarcodeCorrector';

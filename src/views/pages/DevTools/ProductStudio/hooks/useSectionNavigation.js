@@ -21,7 +21,8 @@ export const useSectionNavigation = () => {
 
     const containerRect = container.getBoundingClientRect();
     const targetRect = target.getBoundingClientRect();
-    const offsetTop = targetRect.top - containerRect.top + container.scrollTop - SCROLL_OFFSET;
+    const offsetTop =
+      targetRect.top - containerRect.top + container.scrollTop - SCROLL_OFFSET;
 
     container.scrollTo({
       top: offsetTop,
@@ -47,13 +48,16 @@ export const useSectionNavigation = () => {
         if (!element) {
           return;
         }
-        const relativeTop = element.getBoundingClientRect().top - containerRect.top;
+        const relativeTop =
+          element.getBoundingClientRect().top - containerRect.top;
         if (relativeTop <= SECTION_ACTIVATION_THRESHOLD) {
           currentSection = section.id;
         }
       });
 
-      setActiveSection((prev) => (prev === currentSection ? prev : currentSection));
+      setActiveSection((prev) =>
+        prev === currentSection ? prev : currentSection,
+      );
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });

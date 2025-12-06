@@ -14,23 +14,29 @@ export const fbUpdateFiscalAlertsConfig = async (user, alertConfig) => {
       throw new Error('Usuario no válido');
     }
 
-    const configRef = doc(db, 'users', user.id, 'settings', 'fiscalAlertsConfig');
-    
+    const configRef = doc(
+      db,
+      'users',
+      user.id,
+      'settings',
+      'fiscalAlertsConfig',
+    );
+
     // Estructura de datos para guardar
     const configData = {
       alertsEnabled: alertConfig.alertsEnabled,
       globalThresholds: {
         warning: alertConfig.globalThresholds.warning,
-        critical: alertConfig.globalThresholds.critical
+        critical: alertConfig.globalThresholds.critical,
       },
       customThresholds: alertConfig.customThresholds || {},
       lastUpdated: new Date(),
-      version: '1.0'
+      version: '1.0',
     };
 
     // Verificar si el documento existe
     const docSnap = await getDoc(configRef);
-    
+
     if (docSnap.exists()) {
       // Actualizar documento existente
       await updateDoc(configRef, configData);
@@ -41,7 +47,6 @@ export const fbUpdateFiscalAlertsConfig = async (user, alertConfig) => {
 
     console.log('Configuración de alertas guardada exitosamente');
     return { success: true };
-    
   } catch (error) {
     console.error('Error al guardar la configuración de alertas:', error);
     throw error;

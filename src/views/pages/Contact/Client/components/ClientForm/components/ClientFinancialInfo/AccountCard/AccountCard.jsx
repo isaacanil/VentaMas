@@ -1,17 +1,22 @@
-import {
-  faCalendarAlt,
-  faReceipt
-} from '@fortawesome/free-solid-svg-icons';
+import { faCalendarAlt, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 import { formatDate } from '../../../../../../../../../utils/formatDate';
-import { formatPrice } from '../../../../../../../../../utils/formatPrice'
+import { formatPrice } from '../../../../../../../../../utils/formatPrice';
 
 import { Payment } from './components/Payment';
 
-
-export const AccountCard = ({ account, frequency, balance, installments, installmentAmount, lastPayment, lastPaymentDate, isActive }) => {
+export const AccountCard = ({
+  account,
+  frequency,
+  balance,
+  installments,
+  installmentAmount,
+  lastPayment,
+  lastPaymentDate,
+  isActive,
+}) => {
   // const formatDate = (dateValue) => {
   //   console.log(dateValue)
   //   if (!dateValue) return 'N/A';
@@ -51,7 +56,6 @@ export const AccountCard = ({ account, frequency, balance, installments, install
         </AccountInfo>
         <HeaderMeta>
           <FrequencyTag frequency={frequency}>{frequency}</FrequencyTag>
-     
         </HeaderMeta>
       </CardHeader>
 
@@ -77,10 +81,9 @@ export const AccountCard = ({ account, frequency, balance, installments, install
               <GroupItem>
                 <GroupLabel>Último Pago:</GroupLabel>
                 <GroupValue>
-                  {account?.lastPaymentDate 
+                  {account?.lastPaymentDate
                     ? `${formatPrice(account.lastPayment)} - ${formatDate(account.lastPaymentDate)}`
-                    : 'N/A'
-                  }
+                    : 'N/A'}
                 </GroupValue>
               </GroupItem>
             </GroupContent>
@@ -104,43 +107,43 @@ export const AccountCard = ({ account, frequency, balance, installments, install
 };
 
 const Card = styled.div`
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 8px ;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #fff;
   border: 1px solid #e8e8e8;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
   transition: all 0.2s ease;
-  
+
   &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   }
 `;
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 16px;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
-
 `;
 
 const AccountInfo = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const AccountNumber = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
-  font-weight: 600;
+  align-items: center;
   font-size: 15px;
+  font-weight: 600;
   color: #1a1a1a;
-  
+
   svg {
     font-size: 12px;
     color: #666;
@@ -149,11 +152,11 @@ const AccountNumber = styled.div`
 
 const AccountDate = styled.div`
   display: flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   font-size: 13px;
   color: #666;
-  
+
   svg {
     font-size: 11px;
     color: #999;
@@ -162,23 +165,21 @@ const AccountDate = styled.div`
 
 const HeaderMeta = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const FrequencyTag = styled.div`
-  font-size: 12px;
   padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   background: #f5f5f5;
-  color: #666;
+  border-radius: 4px;
 `;
 
-const FinancialDetails = styled.div`
-
-`;
+const FinancialDetails = styled.div``;
 
 const DetailsRow = styled.div`
   display: grid;
@@ -191,22 +192,21 @@ const DetailGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 4px 12px;
-  background: #fafafa;
-  border-radius: 6px;
-  border: 1px solid #f0f0f0;
-  
   justify-content: flex-start;
+  padding: 4px 12px;
+  text-align: center;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
 `;
 
 const GroupContent = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
-  text-align: center;
   gap: 12px;
+  align-items: center;
   justify-content: center;
+  text-align: center;
 `;
 
 const GroupItem = styled.div`
@@ -218,30 +218,26 @@ const GroupItem = styled.div`
 
 const GroupLabel = styled.span`
   font-size: 12px;
-  color: #666;
   font-weight: 500;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-
 `;
 
 const GroupValue = styled.span`
   font-size: 14px;
   color: #333;
   font-weight: 600;
-  
-  ${({ $isBalance, $isPaid }) => $isBalance && `
+
+  ${({ $isBalance, $isPaid }) =>
+    $isBalance &&
+    `
     color: ${$isPaid ? '#2e7d32' : '#cf1322'};
     font-weight: 700;
     font-size: 16px;
   `}
 `;
 
-const ActionBar = styled.div`
+const ActionBar = styled.div``;
 
-`;
-
-export const Payments = styled.div`
- 
-`;
-
+export const Payments = styled.div``;

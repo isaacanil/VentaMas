@@ -138,4 +138,3 @@ export function buildClientWritePayload(client = {}) {
 
   return { payload, client: normalizedClient };
 }
-

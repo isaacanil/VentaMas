@@ -1,11 +1,22 @@
-import { KeyOutlined, ReloadOutlined, ClockCircleOutlined, SafetyOutlined, LockOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  KeyOutlined,
+  ReloadOutlined,
+  ClockCircleOutlined,
+  SafetyOutlined,
+  LockOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { Button, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
-import { fbGetUserPinStatus, fbGenerateUserPin, fbDeactivateUserPin } from '../../../../firebase/authorization/pinAuth';
+import {
+  fbGetUserPinStatus,
+  fbGenerateUserPin,
+  fbDeactivateUserPin,
+} from '../../../../firebase/authorization/pinAuth';
 import { useAuthorizationModules } from '../../../../hooks/useAuthorizationModules';
 import { GeneratePinModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
 import { PinDetailsModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
@@ -27,23 +38,23 @@ const MODULE_LABELS = AVAILABLE_MODULES.reduce((acc, module) => {
 }, {});
 
 const PageContainer = styled.div`
-  max-width: 960px;
-  margin: 0 auto;
   display: grid;
   gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
 `;
 
 const PageHeader = styled.div`
   display: grid;
+  grid-template-columns: auto 1fr auto;
   gap: 16px;
   align-items: center;
-  grid-template-columns: auto 1fr auto;
   padding: 8px 0 4px;
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     grid-template-columns: 1fr;
-    justify-items: flex-start;
     gap: 12px;
+    justify-items: flex-start;
   }
 `;
 
@@ -53,16 +64,13 @@ const HeaderIcon = styled.div`
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: 16px;
-  background: #f0f5ff;
-  color: #2f54eb;
   font-size: 24px;
+  color: #2f54eb;
+  background: #f0f5ff;
+  border-radius: 16px;
 `;
 
-const SummaryCard = styled.div`
-
- 
-`;
+const SummaryCard = styled.div``;
 
 const heroTokens = {
   success: {
@@ -102,11 +110,11 @@ const HeroPanel = styled.div`
   display: grid;
   gap: 18px;
   padding: 10px 16px;
-  border-radius: 20px;
-  background: ${({ $tone }) => heroTokens[$tone]?.bg || heroTokens.muted.bg};
-  color: ${({ $tone }) => heroTokens[$tone]?.text || heroTokens.muted.text};
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
   overflow: hidden;
+  color: ${({ $tone }) => heroTokens[$tone]?.text || heroTokens.muted.text};
+  background: ${({ $tone }) => heroTokens[$tone]?.bg || heroTokens.muted.bg};
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 40%);
 
   & > * {
     position: relative;
@@ -114,11 +122,15 @@ const HeroPanel = styled.div`
   }
 
   &::after {
-    content: '';
     position: absolute;
     inset: 0;
+    content: '';
+    background: radial-gradient(
+      circle at top right,
+      rgb(255 255 255 / 100%) 0%,
+      rgb(255 255 255 / 0%) 55%
+    );
     opacity: 0.12;
-    background: radial-gradient(circle at top right, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 55%);
   }
 `;
 
@@ -131,16 +143,16 @@ const HeroLabel = styled.span`
 
 const HeroHeader = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
   flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
 `;
 
 const HeroHeaderLeft = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 12px;
-  flex: 1;
   min-width: 250px;
 `;
 
@@ -154,12 +166,13 @@ const HeroBadge = styled.span`
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  border-radius: 20px;
-  background: ${({ $tone }) => heroTokens[$tone]?.statBg || 'rgba(255,255,255,0.3)'};
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
   color: inherit;
+  letter-spacing: 0.02em;
+  background: ${({ $tone }) =>
+    heroTokens[$tone]?.statBg || 'rgba(255,255,255,0.3)'};
+  border-radius: 20px;
   opacity: 0.95;
 `;
 
@@ -176,9 +189,9 @@ const ActionsSection = styled.div`
 
 const ActionsTitle = styled(Text)`
   font-size: 14px;
+  color: #8c8c8c !important;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #8c8c8c !important;
 `;
 
 const ActionGroup = styled.div`
@@ -188,20 +201,25 @@ const ActionGroup = styled.div`
 `;
 
 const HelperAlert = styled(Alert)`
-  border-radius: 10px;
   border: none;
+  border-radius: 10px;
 `;
 
 const ModuleCard = styled.div`
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
   padding: 16px;
   background: #fff;
-  box-shadow: ${({ $active }) => ($active ? '0 0 0 2px rgba(82, 196, 26, 0.25)' : '0 8px 16px -12px rgba(0, 0, 0, 0.25)')};
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  box-shadow: ${({ $active }) =>
+    $active
+      ? '0 0 0 2px rgba(82, 196, 26, 0.25)'
+      : '0 8px 16px -12px rgba(0, 0, 0, 0.25)'};
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 
   &:hover {
-    box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 12px 20px -12px rgb(0 0 0 / 28%);
     transform: translateY(-2px);
   }
 `;
@@ -221,8 +239,8 @@ const ModuleActions = styled.div`
 
 const ModulesGrid = styled.div`
   display: grid;
-  gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 `;
 
 /**
@@ -232,7 +250,8 @@ const ModulesGrid = styled.div`
  */
 export const PersonalPinManagement = () => {
   const user = useSelector(selectUser);
-  const { enabledModules, authorizationFlowEnabled } = useAuthorizationModules();
+  const { enabledModules, authorizationFlowEnabled } =
+    useAuthorizationModules();
   const [pinStatus, setPinStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [requestModalVisible, setRequestModalVisible] = useState(false);
@@ -248,7 +267,9 @@ export const PersonalPinManagement = () => {
 
   // Filtrar solo módulos activos según configuración
   const activeAvailableModules = authorizationFlowEnabled
-    ? AVAILABLE_MODULES.filter(module => enabledModules[module.value] !== false)
+    ? AVAILABLE_MODULES.filter(
+        (module) => enabledModules[module.value] !== false,
+      )
     : [];
 
   const loadPinStatus = async () => {
@@ -290,7 +311,8 @@ export const PersonalPinManagement = () => {
   const handleDeactivatePin = () => {
     Modal.confirm({
       title: '¿Desactivar PIN?',
-      content: '¿Está seguro de desactivar el PIN? Deberás regenerarlo para volver a usarlo.',
+      content:
+        '¿Está seguro de desactivar el PIN? Deberás regenerarlo para volver a usarlo.',
       okText: 'Desactivar',
       okType: 'danger',
       cancelText: 'Cancelar',
@@ -306,7 +328,7 @@ export const PersonalPinManagement = () => {
         } finally {
           setLoading(false);
         }
-      }
+      },
     });
   };
 
@@ -335,7 +357,8 @@ export const PersonalPinManagement = () => {
       return {
         icon: <SafetyOutlined />,
         title: 'PIN activo',
-        description: 'Los PINs están listos para usarse en los módulos habilitados.',
+        description:
+          'Los PINs están listos para usarse en los módulos habilitados.',
         tone: 'success',
       };
     }
@@ -359,14 +382,14 @@ export const PersonalPinManagement = () => {
   };
 
   const statusDisplay = getStatusDisplay();
-  
+
   // Preparar badges para el header
   const heroBadges = [];
-  
-
 
   if (Array.isArray(pinStatus?.modules) && pinStatus.modules.length > 0) {
-    const activeCount = Array.isArray(pinStatus.activeModules) ? pinStatus.activeModules.length : 0;
+    const activeCount = Array.isArray(pinStatus.activeModules)
+      ? pinStatus.activeModules.length
+      : 0;
     heroBadges.push({
       key: 'modulesCount',
       label: `Módulos activos: ${activeCount}/${pinStatus.modules.length}`,
@@ -375,23 +398,28 @@ export const PersonalPinManagement = () => {
   }
 
   // Preparar lista de módulos - solo mostrar módulos que están activos en configuración Y tienen PIN activo
-  const modulesList = authorizationFlowEnabled && pinStatus?.moduleDetails
-    ? Object.entries(pinStatus.moduleDetails)
-        .filter(([moduleKey, detail]) => {
-          // Filtrar solo módulos activos en configuración Y con PIN activo
-          return enabledModules[moduleKey] !== false && detail?.isActive === true;
-        })
-        .map(([moduleKey, detail]) => {
-          const expiresDisplay = detail?.expiresAt ? formatDateTime(detail.expiresAt) : 'Sin expiración';
-          return {
-            module: moduleKey,
-            label: MODULE_LABELS[moduleKey] || moduleKey,
-            status: 'Activo',
-            tone: 'success',
-            expiresDisplay,
-          };
-        })
-    : [];
+  const modulesList =
+    authorizationFlowEnabled && pinStatus?.moduleDetails
+      ? Object.entries(pinStatus.moduleDetails)
+          .filter(([moduleKey, detail]) => {
+            // Filtrar solo módulos activos en configuración Y con PIN activo
+            return (
+              enabledModules[moduleKey] !== false && detail?.isActive === true
+            );
+          })
+          .map(([moduleKey, detail]) => {
+            const expiresDisplay = detail?.expiresAt
+              ? formatDateTime(detail.expiresAt)
+              : 'Sin expiración';
+            return {
+              module: moduleKey,
+              label: MODULE_LABELS[moduleKey] || moduleKey,
+              status: 'Activo',
+              tone: 'success',
+              expiresDisplay,
+            };
+          })
+      : [];
 
   return (
     <Spin
@@ -402,218 +430,255 @@ export const PersonalPinManagement = () => {
       style={{ width: '100%' }}
     >
       <PageContainer>
-      <PageHeader>
-        <HeaderIcon>
-          <KeyOutlined />
-        </HeaderIcon>
-        <Title level={3} style={{ marginBottom: 0 }}>
-          Mis PINs de Autorización
-        </Title>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button
-            icon={<SafetyOutlined />}
-            onClick={() => setInfoModalVisible(true)}
-          >
-            Más información
-          </Button>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={loadPinStatus}
-            loading={loading}
-          >
-            Actualizar estado
-          </Button>
-        </div>
-      </PageHeader>
+        <PageHeader>
+          <HeaderIcon>
+            <KeyOutlined />
+          </HeaderIcon>
+          <Title level={3} style={{ marginBottom: 0 }}>
+            Mis PINs de Autorización
+          </Title>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              icon={<SafetyOutlined />}
+              onClick={() => setInfoModalVisible(true)}
+            >
+              Más información
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={loadPinStatus}
+              loading={loading}
+            >
+              Actualizar estado
+            </Button>
+          </div>
+        </PageHeader>
 
-      <SummaryCard bordered={false}>
-        <HeroPanel $tone={statusDisplay.tone}>
-          <HeroHeader>
-          
+        <SummaryCard bordered={false}>
+          <HeroPanel $tone={statusDisplay.tone}>
+            <HeroHeader>
+              <HeroHeaderLeft>
+                {/* <HeroTitle level={4}>{statusTitle}</HeroTitle> */}
+                <HeroBadges>
+                  {heroBadges.map(({ key, label, tone }) => (
+                    <HeroBadge key={key} $tone={tone}>
+                      {label}
+                    </HeroBadge>
+                  ))}
+                </HeroBadges>
 
-            <HeroHeaderLeft>
-              {/* <HeroTitle level={4}>{statusTitle}</HeroTitle> */}
-              <HeroBadges>
-                {heroBadges.map(({ key, label, tone }) => (
-                  <HeroBadge key={key} $tone={tone}>
-                    {label}
-                  </HeroBadge>
-                ))}
-              </HeroBadges>
-             
-              {modulesList.length === 0 && activeAvailableModules.length === 0 && (
-                <HeroLabel style={{ opacity: 0.6 }}>No hay módulos activos en el sistema</HeroLabel>
-              )}
-              {modulesList.length === 0 && activeAvailableModules.length > 0 && (
-                <HeroLabel style={{ opacity: 0.6 }}>Sin módulos habilitados</HeroLabel>
-              )}
-            </HeroHeaderLeft>
-          </HeroHeader>
-        </HeroPanel>
+                {modulesList.length === 0 &&
+                  activeAvailableModules.length === 0 && (
+                    <HeroLabel style={{ opacity: 0.6 }}>
+                      No hay módulos activos en el sistema
+                    </HeroLabel>
+                  )}
+                {modulesList.length === 0 &&
+                  activeAvailableModules.length > 0 && (
+                    <HeroLabel style={{ opacity: 0.6 }}>
+                      Sin módulos habilitados
+                    </HeroLabel>
+                  )}
+              </HeroHeaderLeft>
+            </HeroHeader>
+          </HeroPanel>
 
-        <DetailsColumn style={{ marginTop: '24px' }}>
-          <ActionsSection>
-            <ActionsTitle strong>Acciones rápidas</ActionsTitle>
-            <ActionGroup>
-              {canSelfGenerate ? (
-                <>
+          <DetailsColumn style={{ marginTop: '24px' }}>
+            <ActionsSection>
+              <ActionsTitle strong>Acciones rápidas</ActionsTitle>
+              <ActionGroup>
+                {canSelfGenerate ? (
+                  <>
+                    <Button
+                      type="primary"
+                      icon={<KeyOutlined />}
+                      onClick={() => setGenerateModalVisible(true)}
+                      loading={loading}
+                      disabled={
+                        !authorizationFlowEnabled ||
+                        activeAvailableModules.length === 0
+                      }
+                    >
+                      {pinStatus?.hasPin ? 'Regenerar PIN' : 'Generar PIN'}
+                    </Button>
+                    {pinStatus?.hasPin && pinStatus?.isActive && (
+                      <Button
+                        danger
+                        icon={<LockOutlined />}
+                        onClick={handleDeactivatePin}
+                        loading={loading}
+                      >
+                        Desactivar PIN
+                      </Button>
+                    )}
+                  </>
+                ) : (
                   <Button
                     type="primary"
                     icon={<KeyOutlined />}
-                    onClick={() => setGenerateModalVisible(true)}
-                    loading={loading}
-                    disabled={!authorizationFlowEnabled || activeAvailableModules.length === 0}
+                    onClick={() => setRequestModalVisible(true)}
+                    disabled={
+                      !authorizationFlowEnabled ||
+                      activeAvailableModules.length === 0
+                    }
                   >
-                    {pinStatus?.hasPin ? 'Regenerar PIN' : 'Generar PIN'}
+                    {pinStatus?.hasPin
+                      ? 'Solicitar regeneración'
+                      : 'Solicitar PIN'}
                   </Button>
-                  {pinStatus?.hasPin && pinStatus?.isActive && (
-                    <Button
-                      danger
-                      icon={<LockOutlined />}
-                      onClick={handleDeactivatePin}
-                      loading={loading}
-                    >
-                      Desactivar PIN
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Button
-                  type="primary"
-                  icon={<KeyOutlined />}
-                  onClick={() => setRequestModalVisible(true)}
-                  disabled={!authorizationFlowEnabled || activeAvailableModules.length === 0}
-                >
-                  {pinStatus?.hasPin ? 'Solicitar regeneración' : 'Solicitar PIN'}
-                </Button>
+                )}
+              </ActionGroup>
+
+              {activeAvailableModules.length === 0 &&
+                authorizationFlowEnabled && (
+                  <HelperAlert
+                    showIcon
+                    type="warning"
+                    message="Sin Módulos Activos"
+                    description="No puedes generar PINs porque no hay módulos de autorización activos. Un administrador debe activar al menos un módulo desde Configuración."
+                  />
+                )}
+
+              {activeAvailableModules.length > 0 && !pinStatus?.hasPin && (
+                <HelperAlert
+                  showIcon
+                  type="info"
+                  message="No tienes PINs configurados"
+                  description={
+                    canSelfGenerate
+                      ? 'Genera PINs para autorizar operaciones sin depender de otro usuario.'
+                      : 'Envía una solicitud a tu administrador para que configure los PINs.'
+                  }
+                />
               )}
-            </ActionGroup>
 
-            {activeAvailableModules.length === 0 && authorizationFlowEnabled && (
-              <HelperAlert
-                showIcon
-                type="warning"
-                message="Sin Módulos Activos"
-                description="No puedes generar PINs porque no hay módulos de autorización activos. Un administrador debe activar al menos un módulo desde Configuración."
-              />
+              {activeAvailableModules.length > 0 &&
+                pinStatus?.hasPin &&
+                (pinStatus.isExpired || !pinStatus.isActive) && (
+                  <HelperAlert
+                    showIcon
+                    type="warning"
+                    message={
+                      pinStatus.isExpired
+                        ? 'El PIN ha expirado'
+                        : 'El PIN está inactivo'
+                    }
+                    description={
+                      canSelfGenerate
+                        ? 'Genera un nuevo PIN para volver a autorizar operaciones.'
+                        : 'Solicita una regeneración para habilitarlo nuevamente.'
+                    }
+                  />
+                )}
+            </ActionsSection>
+
+            {modulesList.length > 0 && (
+              <div>
+                <ActionsTitle
+                  strong
+                  style={{ marginBottom: 16, display: 'block' }}
+                >
+                  Mis módulos con PIN
+                </ActionsTitle>
+                <ModulesGrid>
+                  {modulesList.map((item) => {
+                    return (
+                      <ModuleCard key={item.module} $active={true}>
+                        <ModuleMeta>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Text strong style={{ fontSize: 16 }}>
+                              {item.label}
+                            </Text>
+                            <Tag color="green">Activo</Tag>
+                          </div>
+                          <Text type="secondary">Acceso: Habilitado</Text>
+                          <Text type="secondary">
+                            Expira: {item.expiresDisplay}
+                          </Text>
+                        </ModuleMeta>
+                        <ModuleActions>
+                          <Button
+                            block
+                            type="primary"
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              setSelectedModule({
+                                key: item.module,
+                                label: item.label,
+                              });
+                              setViewPinModalVisible(true);
+                            }}
+                          >
+                            Ver PIN
+                          </Button>
+                        </ModuleActions>
+                      </ModuleCard>
+                    );
+                  })}
+                </ModulesGrid>
+              </div>
             )}
+          </DetailsColumn>
+        </SummaryCard>
 
-            {activeAvailableModules.length > 0 && !pinStatus?.hasPin && (
-              <HelperAlert
-                showIcon
-                type="info"
-                message="No tienes PINs configurados"
-                description={
-                  canSelfGenerate
-                    ? 'Genera PINs para autorizar operaciones sin depender de otro usuario.'
-                    : 'Envía una solicitud a tu administrador para que configure los PINs.'
-                }
-              />
-            )}
-
-            {activeAvailableModules.length > 0 && pinStatus?.hasPin && (pinStatus.isExpired || !pinStatus.isActive) && (
-              <HelperAlert
-                showIcon
-                type="warning"
-                message={pinStatus.isExpired ? 'El PIN ha expirado' : 'El PIN está inactivo'}
-                description={
-                  canSelfGenerate
-                    ? 'Genera un nuevo PIN para volver a autorizar operaciones.'
-                    : 'Solicita una regeneración para habilitarlo nuevamente.'
-                }
-              />
-            )}
-          </ActionsSection>
-
-          {modulesList.length > 0 && (
-            <div>
-              <ActionsTitle strong style={{ marginBottom: 16, display: 'block' }}>Mis módulos con PIN</ActionsTitle>
-              <ModulesGrid>
-                {modulesList.map((item) => {
-                  return (
-                    <ModuleCard key={item.module} $active={true}>
-                      <ModuleMeta>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text strong style={{ fontSize: 16 }}>{item.label}</Text>
-                          <Tag color="green">Activo</Tag>
-                        </div>
-                        <Text type="secondary">Acceso: Habilitado</Text>
-                        <Text type="secondary">Expira: {item.expiresDisplay}</Text>
-                      </ModuleMeta>
-                      <ModuleActions>
-                        <Button
-                          block
-                          type="primary"
-                          icon={<EyeOutlined />}
-                          onClick={() => {
-                            setSelectedModule({ key: item.module, label: item.label });
-                            setViewPinModalVisible(true);
-                          }}
-                        >
-                          Ver PIN
-                        </Button>
-                      </ModuleActions>
-                    </ModuleCard>
-                  );
-                })}
-              </ModulesGrid>
-            </div>
-          )}
-        </DetailsColumn>
-      </SummaryCard>
-
-      <PinInfoModal
-        visible={infoModalVisible}
-        onClose={() => setInfoModalVisible(false)}
-        canSelfGenerate={canSelfGenerate}
-      />
-
-      <RequestPinModal
-        visible={requestModalVisible}
-        onClose={() => setRequestModalVisible(false)}
-        hasCurrentPin={pinStatus?.hasPin || false}
-      />
-
-      <GeneratePinModal
-        visible={generateModalVisible}
-        onCancel={() => setGenerateModalVisible(false)}
-        onConfirm={handleGeneratePin}
-        user={{
-          id: user?.uid,
-          name: user?.name,
-          displayName: user?.displayName || user?.name,
-          hasPin: pinStatus?.hasPin,
-          pinModules: pinStatus?.modules || [],
-        }}
-        availableModules={activeAvailableModules}
-      />
-
-      <PinDetailsModal
-        visible={detailsModalVisible}
-        onClose={() => {
-          setDetailsModalVisible(false);
-          setGeneratedPin(null);
-        }}
-        pinData={generatedPin}
-        user={{
-          id: user?.uid,
-          name: user?.name,
-          displayName: user?.displayName || user?.name,
-        }}
-      />
-
-      {selectedModule && (
-        <ViewPinModal
-          visible={viewPinModalVisible}
-          onClose={() => {
-            setViewPinModalVisible(false);
-            setSelectedModule(null);
-          }}
-          user={user}
-          moduleKey={selectedModule.key}
-          moduleLabel={selectedModule.label}
+        <PinInfoModal
+          visible={infoModalVisible}
+          onClose={() => setInfoModalVisible(false)}
+          canSelfGenerate={canSelfGenerate}
         />
-      )}
+
+        <RequestPinModal
+          visible={requestModalVisible}
+          onClose={() => setRequestModalVisible(false)}
+          hasCurrentPin={pinStatus?.hasPin || false}
+        />
+
+        <GeneratePinModal
+          visible={generateModalVisible}
+          onCancel={() => setGenerateModalVisible(false)}
+          onConfirm={handleGeneratePin}
+          user={{
+            id: user?.uid,
+            name: user?.name,
+            displayName: user?.displayName || user?.name,
+            hasPin: pinStatus?.hasPin,
+            pinModules: pinStatus?.modules || [],
+          }}
+          availableModules={activeAvailableModules}
+        />
+
+        <PinDetailsModal
+          visible={detailsModalVisible}
+          onClose={() => {
+            setDetailsModalVisible(false);
+            setGeneratedPin(null);
+          }}
+          pinData={generatedPin}
+          user={{
+            id: user?.uid,
+            name: user?.name,
+            displayName: user?.displayName || user?.name,
+          }}
+        />
+
+        {selectedModule && (
+          <ViewPinModal
+            visible={viewPinModalVisible}
+            onClose={() => {
+              setViewPinModalVisible(false);
+              setSelectedModule(null);
+            }}
+            user={user}
+            moduleKey={selectedModule.key}
+            moduleLabel={selectedModule.label}
+          />
+        )}
       </PageContainer>
     </Spin>
   );

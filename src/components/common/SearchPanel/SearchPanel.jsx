@@ -1,59 +1,59 @@
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Input } from 'antd'
-import { motion, AnimatePresence } from 'framer-motion'
-import React, { useState, useRef, useEffect } from 'react'
-import styled from 'styled-components'
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Input } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons'
-import { useClickOutSide } from '../../../hooks/useClickOutSide'
+import { icons } from '../../../constants/icons/icons';
+import { useClickOutSide } from '../../../hooks/useClickOutSide';
 
-export const SearchPanel = ({ 
-  isOpen, 
-  onClose, 
-  searchData, 
-  setSearchData, 
-  displayName = "", 
-  sectionName = "" 
+export const SearchPanel = ({
+  isOpen,
+  onClose,
+  searchData,
+  setSearchData,
+  displayName = '',
+  sectionName = '',
 }) => {
-  const searchDrawerRef = useRef(null)
-  const [tempSearchData, setTempSearchData] = useState('')
+  const searchDrawerRef = useRef(null);
+  const [tempSearchData, setTempSearchData] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setTempSearchData(searchData || '')
+      setTempSearchData(searchData || '');
       // Enfocar el input después de que se abra el panel
       setTimeout(() => {
-        const input = document.querySelector('#search-panel-input')
+        const input = document.querySelector('#search-panel-input');
         if (input) {
-          input.focus()
+          input.focus();
         }
-      }, 100)
+      }, 100);
     }
-  }, [isOpen, searchData])
+  }, [isOpen, searchData]);
 
   const handleSearchChange = (e) => {
-    const value = e.target.value
-    setTempSearchData(value)
+    const value = e.target.value;
+    setTempSearchData(value);
     if (setSearchData) {
-      setSearchData(value)
+      setSearchData(value);
     }
-  }
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      onClose()
+      onClose();
     }
-  }
+  };
 
   const handleClearSearch = () => {
-    setTempSearchData('')
+    setTempSearchData('');
     if (setSearchData) {
-      setSearchData('')
+      setSearchData('');
     }
-  }
+  };
 
-  useClickOutSide(searchDrawerRef, isOpen, onClose)
+  useClickOutSide(searchDrawerRef, isOpen, onClose);
 
   return (
     <AnimatePresence>
@@ -70,147 +70,144 @@ export const SearchPanel = ({
           <SearchPanelContainer
             ref={searchDrawerRef}
             as={motion.div}
-            initial={{ 
-              opacity: 0, 
-              y: -20, 
-              scale: 0.95
+            initial={{
+              opacity: 0,
+              y: -20,
+              scale: 0.95,
             }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
             }}
-            exit={{ 
-              opacity: 0, 
-              y: -15, 
-              scale: 0.95
+            exit={{
+              opacity: 0,
+              y: -15,
+              scale: 0.95,
             }}
             transition={{
-              type: "spring",
+              type: 'spring',
               stiffness: 300,
               damping: 30,
-              mass: 0.8
+              mass: 0.8,
             }}
           >
-          <SearchPanelContent>
-            <Input
-              id="search-panel-input"
-              prefix={icons.operationModes.search}
-              placeholder={`Buscar ${displayName || sectionName || ""}...`}
-              value={tempSearchData}
-              onChange={handleSearchChange}
-              onKeyPress={handleKeyPress}
-              size="large"
-              autoFocus
-              allowClear
-              onClear={handleClearSearch}
-            />
-            <CloseButton 
-              as={motion.div}
-              onClick={onClose}
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </CloseButton>
-          </SearchPanelContent>
-        </SearchPanelContainer>
+            <SearchPanelContent>
+              <Input
+                id="search-panel-input"
+                prefix={icons.operationModes.search}
+                placeholder={`Buscar ${displayName || sectionName || ''}...`}
+                value={tempSearchData}
+                onChange={handleSearchChange}
+                onKeyPress={handleKeyPress}
+                size="large"
+                autoFocus
+                allowClear
+                onClear={handleClearSearch}
+              />
+              <CloseButton as={motion.div} onClick={onClose}>
+                <FontAwesomeIcon icon={faTimes} />
+              </CloseButton>
+            </SearchPanelContent>
+          </SearchPanelContainer>
         </>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
 const SearchOverlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(74, 145, 226, 0.70),
-    rgba(80, 200, 120, 0.30) 10%,
-    rgba(255, 255, 255, 0.10),
-    transparent 35vh
-  );
+  inset: 0;
   z-index: 1001;
   cursor: pointer;
-`
+  background: linear-gradient(
+    180deg,
+    rgb(74 145 226 / 70%),
+    rgb(80 200 120 / 30%) 10%,
+    rgb(255 255 255 / 10%),
+    transparent 35vh
+  );
+`;
 
 const SearchPanelContainer = styled.div`
   position: fixed;
   top: 0.5em;
-  left: 3%;
   right: 3%;
-  background-color: #ffffff;
-  padding: 0.4rem 0.6rem;
-  border-radius: 50px;
-  max-width: 420px;
-  margin: 0 auto;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 2px 10px rgba(0, 0, 0, 0.08);
-  border: 2px solid rgba(0, 0, 0, 0.41);
-  backdrop-filter: blur(10px);
+  left: 3%;
   z-index: 1002;
-`
+  max-width: 420px;
+  padding: 0.4rem 0.6rem;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 2px solid rgb(0 0 0 / 41%);
+  border-radius: 50px;
+  box-shadow:
+    0 8px 25px rgb(0 0 0 / 15%),
+    0 2px 10px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(10px);
+`;
 
 const SearchPanelContent = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.6rem;
-  
+  align-items: center;
+
   .ant-input-affix-wrapper {
     flex: 1;
-    border-radius: 50px;
-    border: none;
-    background-color: transparent;
     padding: 0.2rem 0.8rem;
-    
+    background-color: transparent;
+    border: none;
+    border-radius: 50px;
+
     .ant-input {
+      padding: 0.3rem 0;
+      font-size: 1rem;
       background-color: transparent;
       border: none;
       box-shadow: none;
-      font-size: 1rem;
-      padding: 0.3rem 0;
-      
+
       &::placeholder {
-        color: rgba(0, 0, 0, 0.5);
         font-weight: 400;
+        color: rgb(0 0 0 / 50%);
       }
     }
-    
+
     .ant-input-prefix {
       margin-right: 0.5rem;
-      color: rgba(0, 0, 0, 0.45);
+      color: rgb(0 0 0 / 45%);
     }
-    
+
     .ant-input-clear-icon {
-      color: rgba(0, 0, 0, 0.35);
-      
+      color: rgb(0 0 0 / 35%);
+
       &:hover {
-        color: rgba(0, 0, 0, 0.6);
+        color: rgb(0 0 0 / 60%);
       }
     }
-    
-    &:hover, &:focus-within {
+
+    &:hover,
+    &:focus-within {
       border-color: transparent;
       box-shadow: none;
     }
   }
-`
+`;
 
 const CloseButton = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
   width: 2.2em;
   height: 2.2em;
+  cursor: pointer;
+  background-color: rgb(0 0 0 / 8%);
+  border: 1px solid rgb(0 0 0 / 10%);
   border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  
+
   svg {
     font-size: 0.9em;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgb(0 0 0 / 60%);
   }
-` 
+`;

@@ -1,4 +1,3 @@
-
 // export const useCompareObjects = (obj1, obj2) => {
 //   const isEqual = useMemo(() => {
 //     const keys1 = Object.keys(obj1).sort();
@@ -11,7 +10,6 @@
 
 //   return isEqual;
 // }
-
 
 // export const useCompareObjects = (obj1, obj2) => {
 //   const [areEqual, setAreEqual] = useState(false);
@@ -49,7 +47,8 @@ export function useCompareObjects(obj1, obj2) {
 
   if (obj1Keys.length !== obj2Keys.length) return false; // Si los objetos tienen diferente cantidad de claves, devuelve falso
 
-  for (const key of obj1Keys) { // Itera a través de cada clave de obj1
+  for (const key of obj1Keys) {
+    // Itera a través de cada clave de obj1
     if (!obj2Keys.includes(key)) return false; // Si obj2 no tiene la clave, devuelve falso
 
     if (!useCompareObjects(obj1[key], obj2[key])) return false; // Si los valores de las claves no son iguales, devuelve falso
@@ -57,19 +56,16 @@ export function useCompareObjects(obj1, obj2) {
   return true; // Si todas las comparaciones anteriores son verdaderas, devuelve verdadero
 }
 
-
 export const useCompareObjectsInState = (obj1, obj2) => {
   let areEqual = false;
-    if (typeof obj1 !== 'object' && typeof obj2 !== 'object') {
-      areEqual = false
-    }
-    if (Object.keys(obj1).length && Object.keys(obj2).length) {
-      areEqual = JSON.stringify(obj1) === JSON.stringify(obj2);
+  if (typeof obj1 !== 'object' && typeof obj2 !== 'object') {
+    areEqual = false;
+  }
+  if (Object.keys(obj1).length && Object.keys(obj2).length) {
+    areEqual = JSON.stringify(obj1) === JSON.stringify(obj2);
+  } else {
+    areEqual = false;
+  }
 
-    } else {
-      areEqual = false
-    }
- 
-  
   return areEqual;
-}
+};

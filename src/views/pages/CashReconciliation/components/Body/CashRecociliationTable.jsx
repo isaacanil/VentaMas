@@ -1,27 +1,27 @@
 // Import DateTime
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
-import { fbListenCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts'
-import { useBusinessUsers } from '../../../../../firebase/users/useBusinessUsers'
-import { FilterBar } from '../../../../component/FilterBar/FilterBar'
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable'
+import { selectUser } from '../../../../../features/auth/userSlice';
+import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice';
+import { fbListenCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts';
+import { useBusinessUsers } from '../../../../../firebase/users/useBusinessUsers';
+import { FilterBar } from '../../../../component/FilterBar/FilterBar';
+import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
 
-import { tableConfig } from './tableConfig'
+import { tableConfig } from './tableConfig';
 
 export const CashReconciliationTable = () => {
   const [dateRange, setDateRange] = useState({
     startDate: null,
-    endDate: null
+    endDate: null,
   });
-  const [searchTerm] = useState('')
-  const [cashCounts, setCashCounts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const user = useSelector(selectUser)
+  const [searchTerm] = useState('');
+  const [cashCounts, setCashCounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -35,8 +35,8 @@ export const CashReconciliationTable = () => {
     defaultSort: {
       isAscending: false,
     },
-    filters: [    
-       {
+    filters: [
+      {
         key: 'status',
         type: 'select',
         placeholder: 'Estado',
@@ -65,50 +65,55 @@ export const CashReconciliationTable = () => {
       ...cashCount,
       opening: {
         ...cashCount.opening,
-        date: JSON.stringify(cashCount.opening.date)
-      }
-    }
+        date: JSON.stringify(cashCount.opening.date),
+      },
+    };
     dispatch(setCashCount(cashCountToUpdate));
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
-  }
+  };
 
   useEffect(() => {
     setLoading(true);
     const currentFilterDateRange = filterState.filters?.createdAtDateRange;
     const newStartDate = currentFilterDateRange?.startDate ?? null; // Expecting Milliseconds
-    const newEndDate = currentFilterDateRange?.endDate ?? null;     // Expecting Milliseconds
+    const newEndDate = currentFilterDateRange?.endDate ?? null; // Expecting Milliseconds
 
-    if (newStartDate !== dateRange.startDate || newEndDate !== dateRange.endDate) {
+    if (
+      newStartDate !== dateRange.startDate ||
+      newEndDate !== dateRange.endDate
+    ) {
       setDateRange({ startDate: newStartDate, endDate: newEndDate });
     }
 
-    try{
-      fbListenCashCounts(user, setCashCounts, dateRange, filterState, searchTerm);
-    }catch (error) {
+    try {
+      fbListenCashCounts(
+        user,
+        setCashCounts,
+        dateRange,
+        filterState,
+        searchTerm,
+        () => setLoading(false),
+      );
+    } catch (error) {
       console.error('Error in date range:', error);
       setCashCounts([]);
-    } finally {
       setLoading(false);
     }
-
-  }, [user, dateRange, filterState, searchTerm]) // dateRange is still a dependency
+  }, [user, dateRange, filterState, searchTerm]); // dateRange is still a dependency
 
   const data = cashCounts.map((cashCount) => {
     return {
       incrementNumber: cashCount?.incrementNumber,
       status: cashCount?.state,
-      date: (
-        cashCount?.updatedAt ?
-          cashCount?.updatedAt : null
-      ),
+      date: cashCount?.updatedAt ? cashCount?.updatedAt : null,
       user: cashCount?.opening.employee.name,
       total: cashCount,
       discrepancy: cashCount,
       action: cashCount,
-    }
-  })
+    };
+  });
 
-  const columns = tableConfig()
+  const columns = tableConfig();
 
   const dataConfig = {
     user: {
@@ -124,7 +129,7 @@ export const CashReconciliationTable = () => {
         { label: 'Cerrando Cuadre', value: 'closing' },
         { label: 'Cerrado', value: 'closed' },
       ],
-      accessor: item => ({
+      accessor: (item) => ({
         label: item.label,
         value: item.value,
       }),
@@ -136,7 +141,7 @@ export const CashReconciliationTable = () => {
       <FilterBar
         config={filterConfig}
         dataConfig={dataConfig}
-        onChange={newFilterStateFromBar => {
+        onChange={(newFilterStateFromBar) => {
           setFilterState(newFilterStateFromBar);
         }}
       />
@@ -149,10 +154,10 @@ export const CashReconciliationTable = () => {
         loading={loading}
       />
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  `
+`;

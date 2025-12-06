@@ -39,7 +39,7 @@ const DEFAULT_ICONS = {
 };
 
 const limpiarValorCadena = (valor, type) => {
-  if(type !== 'number'){
+  if (type !== 'number') {
     return valor;
   }
   valor = valor.trim();
@@ -61,13 +61,13 @@ const limpiarValorNumero = (valor, type) => {
 
 /**
  * Componente de entrada con soporte para botones integrados
- * @param {InputV4Props} props 
+ * @param {InputV4Props} props
  * @returns {JSX.Element}
  */
 export const InputV4 = ({
   focusWhen,
   autoFocus,
-  id = "",
+  id = '',
   icon,
   label,
   labelVariant,
@@ -108,29 +108,32 @@ export const InputV4 = ({
   };
 
   const toggleShowPassword = () => {
-    setShowPassword(prevShowPassword => !prevShowPassword);
+    setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
-  const limpiarValor = useCallback((valor) => {
-    if (typeof valor === 'string') {
-      return limpiarValorCadena(valor, type) || "";
-    } else if (typeof valor === 'number') {
-      return limpiarValorNumero(valor, type) || "";
-    }
-    return valor;
-  }, [type]);
+  const limpiarValor = useCallback(
+    (valor) => {
+      if (typeof valor === 'string') {
+        return limpiarValorCadena(valor, type) || '';
+      } else if (typeof valor === 'number') {
+        return limpiarValorNumero(valor, type) || '';
+      }
+      return valor;
+    },
+    [type],
+  );
 
   return (
     <Backdrop marginBottom={marginBottom}>
       <Header>
         {label && (
-          <Label htmlFor={id} labelVariant={labelVariant}>{label}</Label>
+          <Label htmlFor={id} labelVariant={labelVariant}>
+            {label}
+          </Label>
         )}
-        {props.required && (
-          <Asterisk>{icons.forms.asterisk}</Asterisk>
-        )}
+        {props.required && <Asterisk>{icons.forms.asterisk}</Asterisk>}
       </Header>
-      
+
       <Container>
         <InputWrapper
           size={size}
@@ -140,34 +143,30 @@ export const InputV4 = ({
           hasButtons={hasButtons}
           {...props}
         >
-          {renderedIcon && (
-            <Icon>
-              {renderedIcon}
-            </Icon>
-          )}
-          
+          {renderedIcon && <Icon>{renderedIcon}</Icon>}
+
           <StyledInput
             ref={inputRef}
             id={id}
             {...props}
             type={showPassword ? 'text' : type}
-            autoComplete='off'
+            autoComplete="off"
             value={limpiarValor(value)}
             onInvalid={(e) => {
               e.preventDefault();
               e.target.setCustomValidity('Por favor, complete este campo.');
             }}
           />
-          
-          {(value && onClear) ? (
+
+          {value && onClear ? (
             <Icon
               onClick={handleClearClick}
-              style={{ 
-                cursor: 'pointer', 
-                marginLeft: '8px', 
-                position: 'relative', 
-                zIndex: '100', 
-                color: `${value ? "#999" : "transparent"}` 
+              style={{
+                cursor: 'pointer',
+                marginLeft: '8px',
+                position: 'relative',
+                zIndex: '100',
+                color: `${value ? '#999' : 'transparent'}`,
               }}
             >
               {icons.operationModes.close}
@@ -176,14 +175,16 @@ export const InputV4 = ({
 
           {type === 'password' ? (
             <PasswordToggle onClick={toggleShowPassword}>
-              {showPassword ? icons.input.password.hide : icons.input.password.show}
+              {showPassword
+                ? icons.input.password.hide
+                : icons.input.password.show}
             </PasswordToggle>
           ) : null}
         </InputWrapper>
-        
+
         {hasButtons && (
-          <ButtonsContainer 
-            alignment={buttonsAlignment} 
+          <ButtonsContainer
+            alignment={buttonsAlignment}
             style={buttonsStyle}
             size={size}
           >
@@ -192,7 +193,7 @@ export const InputV4 = ({
                 key={`btn-${index}`}
                 onClick={button.onClick}
                 disabled={button.disabled}
-                color={button.color || "primary"}
+                color={button.color || 'primary'}
                 className={button.className}
                 style={button.style}
                 isFirst={index === 0}
@@ -206,15 +207,18 @@ export const InputV4 = ({
           </ButtonsContainer>
         )}
       </Container>
-      
-      {(validate === false && errorMessage) && (
+
+      {validate === false && errorMessage && (
         <ErrorContainer>
-          {Array.isArray(errorMessage) 
-            ? errorMessage.map((message, index) => (
-                <ErrorMessage key={index} show>{message}</ErrorMessage>
-              ))
-            : <ErrorMessage show>{errorMessage}</ErrorMessage>
-          }
+          {Array.isArray(errorMessage) ? (
+            errorMessage.map((message, index) => (
+              <ErrorMessage key={index} show>
+                {message}
+              </ErrorMessage>
+            ))
+          ) : (
+            <ErrorMessage show>{errorMessage}</ErrorMessage>
+          )}
         </ErrorContainer>
       )}
     </Backdrop>
@@ -222,16 +226,20 @@ export const InputV4 = ({
 };
 
 const Asterisk = styled.span`
+
+  padding-left: 8px;
   color: red;
+
   svg {
     font-size: 0.8em;
   }
-  padding-left: 8px;
 `;
 
 const Backdrop = styled.div`
   position: relative;
-  ${props => props.marginBottom && `
+  ${(props) =>
+    props.marginBottom &&
+    `
     margin-bottom: 1em;
   `}
 `;
@@ -249,8 +257,9 @@ const Icon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2em;
   width: 1.6em;
+  height: 2em;
+
   svg {
     font-size: 18px;
     color: #999;
@@ -265,24 +274,27 @@ const ButtonIcon = styled.span`
 
 const PasswordToggle = styled.div`
   display: flex;
-  width: 2em;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 2em;
   cursor: pointer;
 `;
 
 const ButtonsContainer = styled.div`
   display: flex;
-  align-items: ${props => {
-    switch(props.alignment) {
-      case 'start': return 'flex-start';
-      case 'stretch': return 'stretch';
+  align-items: ${(props) => {
+    switch (props.alignment) {
+      case 'start':
+        return 'flex-start';
+      case 'stretch':
+        return 'stretch';
       case 'end':
-      default: return 'flex-end';
+      default:
+        return 'flex-end';
     }
   }};
-  
-  /* ${props => {
+
+  /* ${(props) => {
     switch (props.size) {
       case 'small':
         return `height: 2.4em;`;
@@ -297,41 +309,45 @@ const ButtonsContainer = styled.div`
 `;
 
 const InputWrapper = styled.div.attrs(() => ({
-  tabIndex: 0
+  tabIndex: 0,
 }))`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: rgb(51, 51, 51);
-  border: 1px solid #ccc;
-  border-radius: ${props => props.hasButtons ? '4px 0 0 4px' : '4px'};
-  
+  color: rgb(51 51 51);
+  border-radius: ${(props) => (props.hasButtons ? '4px 0 0 4px' : '4px')};
+
   &:focus-within {
-    ${props => props.disabled || props.readOnly ? null : `
+    ${(props) =>
+      props.disabled || props.readOnly
+        ? null
+        : `
     outline: 2px solid #6b93ff;
     `}
   }
-  
+
   padding: 0 2px;
   height: 2em;
   width: 100%;
-  max-width: ${props => props.search ? '280px' : null};
+  max-width: ${(props) => (props.search ? '280px' : null)};
   position: relative;
-  background: ${props => props.bgColor || 'white'};
-  transition: all 0.3s ease, width 0.300ms linear;
+  background: ${(props) => props.bgColor || 'white'};
+  transition:
+    all 0.3s ease,
+    width 0.3ms linear;
 
   /* Para Chrome, Safari y Opera */
-  input[type="number"]::-webkit-inner-spin-button, 
-  input[type="number"]::-webkit-outer-spin-button { 
-    -webkit-appearance: none;
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
     margin: 0;
+    appearance: none;
   }
 
-  input[type="date"] {
+  input[type='date'] {
     width: min-content !important;
   }
 
-  border: ${props => {
+  border: ${(props) => {
     if (props.validate === true) {
       return '1px solid #00c853';
     } else if (props.validate === false) {
@@ -340,13 +356,15 @@ const InputWrapper = styled.div.attrs(() => ({
       return '1px solid #ccc';
     }
   }};
-  
-  ${props => props.disabled && `
+
+  ${(props) =>
+    props.disabled &&
+    `
     background-color: #f8f8f8;
     color: #999;
   `}
-  
-  ${props => {
+
+  ${(props) => {
     switch (props.themeColor) {
       case 'success':
         return `
@@ -365,7 +383,7 @@ const InputWrapper = styled.div.attrs(() => ({
     }
   }}
   
-  ${props => {
+  ${(props) => {
     switch (props.size) {
       case 'small':
         return `   
@@ -402,28 +420,30 @@ const StyledInput = styled.input`
   color: inherit;
   font-weight: inherit;
   width: 100%;
-  
+
   :read-only {
     background-color: #f8f8f8;
   }
-  
+
   ::-webkit-calendar-picker-indicator {
-    width: 100%;
-    height: 100%;
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0;
     z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
   }
-  
+
   &::placeholder {
     color: #999;
   }
-  
+
   background-color: transparent;
-  
-  ${props => props.disabled && `
+
+  ${(props) =>
+    props.disabled &&
+    `
     background-color: transparent;
   `}
 `;
@@ -437,22 +457,25 @@ const InputButton = styled.button`
   cursor: pointer;
   white-space: nowrap;
   font-weight: 500;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   height: 100%;
-  
+
   /* Bordes redondeados según posición */
-  border-radius: ${props => {
+  border-radius: ${(props) => {
     if (props.isFirst && props.isLast) return '0 4px 4px 0';
     if (props.isFirst) return '0';
     if (props.isLast) return '0 4px 4px 0';
     return '0';
   }};
-  
+
   /* Separación entre botones */
-  border-left: ${props => !props.isFirst ? '1px solid rgba(0,0,0,0.1)' : 'none'};
-  
+  border-left: ${(props) =>
+    !props.isFirst ? '1px solid rgba(0,0,0,0.1)' : 'none'};
+
   /* Tamaño del texto según el tamaño del input */
-  ${props => {
+  ${(props) => {
     switch (props.size) {
       case 'small':
         return `font-size: 12px;`;
@@ -464,9 +487,9 @@ const InputButton = styled.button`
         return `font-size: 14px;`;
     }
   }}
-  
+
   /* Estilos según el color */
-  ${props => {
+  ${(props) => {
     switch (props.color) {
       case 'primary':
         return `
@@ -537,15 +560,15 @@ const InputButton = styled.button`
 
 const Label = styled.label`
   font-size: 13px;
-  color: var(--Gray5);
+  color: var(--gray-5);
   margin-bottom: 4px;
-  
-  ${props => {
+
+  ${(props) => {
     switch (props.labelVariant) {
       case 'primary':
         return `
           font-size: 11px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           position: absolute;
           z-index: 1;
           background-color: white;
@@ -562,7 +585,7 @@ const Label = styled.label`
       case 'label1':
         return `
           font-size: 14px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           margin-bottom: 4px;
         `;
       case 'label2':
@@ -587,7 +610,7 @@ const Label = styled.label`
       default:
         return `
           font-size: 13px;
-          color: var(--Gray5);
+          color: var(--gray-5);
           margin-bottom: 4px;
         `;
     }
@@ -597,26 +620,26 @@ const Label = styled.label`
 const ErrorContainer = styled.ul`
   display: grid;
   gap: 2px;
-  margin-top: 4px;
   padding: 0;
+  margin-top: 4px;
   margin-bottom: 4px;
-  list-style-type: circle !important;
   list-style-position: inside !important;
+  list-style-type: circle !important;
   background-color: var(--color-danger-light);
   border-radius: var(--border-radius-light);
 `;
 
 const ErrorMessage = styled.li`
-  color: #ff3547;
-  font-size: 14px;
+  display: ${(props) => (props.show ? 'inline' : 'hidden')};
   margin-left: 8px;
-  display: ${props => props.show ? 'inline' : 'hidden'};
-  
+  font-size: 14px;
+  color: #ff3547;
+
   ::before {
-    content: '• ';
-    font-size: large;
-    color: #ff3547;
-    font-weight: bold;
     height: 100%;
+    font-size: large;
+    font-weight: bold;
+    color: #ff3547;
+    content: '• ';
   }
 `;

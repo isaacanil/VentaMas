@@ -4,18 +4,22 @@
  * (un HEAD basta para saber si el puerto está abierto).
  */
 async function isEmulatorUp(host = '127.0.0.1', port, timeout = 1500) {
-    const url = `http://${host}:${port}/`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+  const url = `http://${host}:${port}/`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
 
-    try {
-        await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
-        return true;
-    } catch {
-        return false;
-    } finally {
-        clearTimeout(timer);
-    }
+  try {
+    await fetch(url, {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: controller.signal,
+    });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -30,25 +34,28 @@ async function isEmulatorUp(host = '127.0.0.1', port, timeout = 1500) {
  * }>
  */
 export async function connectEmulatorsIfAvailable(services) {
-    return await Promise.all(
-        services.map(async ({ name, host = '127.0.0.1', port, connect }) => {
-            let connected = false;
+  return await Promise.all(
+    services.map(async ({ name, host = '127.0.0.1', port, connect }) => {
+      let connected = false;
 
-            const up = await isEmulatorUp(host, port);
-            
-            if (up) {
-                try {
-                    await connect();
-                    console.info(`[Emulator] conectado a ${name} en ${host}:${port}`);
-                    connected = true;
-                } catch (error) {
-                    console.error(`[Emulator] Error al conectar a ${name} en ${host}:${port}`, error);
-                    return { name, connected: false };
-                }
-            } else {
-                console.info(`[Emulator] ${name} NO detectado en ${host}:${port}`);
-            }
-            return { name, connected };
-        })
-    );
+      const up = await isEmulatorUp(host, port);
+
+      if (up) {
+        try {
+          await connect();
+          console.info(`[Emulator] conectado a ${name} en ${host}:${port}`);
+          connected = true;
+        } catch (error) {
+          console.error(
+            `[Emulator] Error al conectar a ${name} en ${host}:${port}`,
+            error,
+          );
+          return { name, connected: false };
+        }
+      } else {
+        console.info(`[Emulator] ${name} NO detectado en ${host}:${port}`);
+      }
+      return { name, connected };
+    }),
+  );
 }

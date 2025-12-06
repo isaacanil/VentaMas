@@ -6,55 +6,56 @@ const RegistroContainer = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 1em;
-  form {
-      max-width: 600px;
-        width: 100%;
-        padding: 1em;
-  }
   background-color: #f2f2f2;
+
+  form {
+    width: 100%;
+    max-width: 600px;
+    padding: 1em;
+  }
 `;
 
 const Titulo = styled.h2`
   margin-bottom: 2rem;
-  color: #333;
   font-size: 1.8rem;
+  color: #333;
 `;
 
 const CampoFormulario = styled.div`
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.5rem;
   width: 100%;
+  margin-bottom: 1.5rem;
 `;
 
 const EtiquetaCampo = styled.label`
   margin-bottom: 0.5rem;
-  color: #555;
   font-size: 1.2rem;
+  color: #555;
 `;
 
 const CampoInput = styled.input`
-  padding: 0.4em;
   width: 100%;
+  padding: 0.4em;
+  font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 1rem;
 `;
 
 const MensajeError = styled.p`
-  color: red;
   margin-top: 0.5rem;
   font-size: 1rem;
+  color: red;
 `;
 
 const BotonRegistro = styled.button`
   padding: 0.8rem 1.5rem;
-  background-color: #007bff;
+  font-size: 1.2rem;
   color: #fff;
+  cursor: pointer;
+  background-color: #007bff;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
-  font-size: 1.2rem;
   transition: background-color 0.3s ease;
 
   &:hover {
@@ -96,14 +97,14 @@ const Registro = () => {
 
     if (!/[A-Z]/.test(password)) {
       setPasswordError(
-        'La contraseña debe contener al menos una letra mayúscula.'
+        'La contraseña debe contener al menos una letra mayúscula.',
       );
       return;
     }
 
     if (!/[a-z]/.test(password)) {
       setPasswordError(
-        'La contraseña debe contener al menos una letra minúscula.'
+        'La contraseña debe contener al menos una letra minúscula.',
       );
       return;
     }

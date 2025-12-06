@@ -1,4 +1,9 @@
-export function getBackOrderAssociationId({ mode, purchaseId, orderId, operationType }) {
+export function getBackOrderAssociationId({
+  mode,
+  purchaseId,
+  orderId,
+  operationType,
+}) {
   if (!mode) throw new Error('Mode is required');
   if (mode === 'create') return null;
   if (!purchaseId && operationType === 'purchase') return null;

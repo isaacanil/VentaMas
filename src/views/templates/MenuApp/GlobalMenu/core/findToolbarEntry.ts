@@ -1,6 +1,6 @@
-import { matchPath } from 'react-router-dom'
+import { matchPath } from 'react-router-dom';
 
-import type { ToolbarEntryWithMatchers } from '../types/types'
+import type { ToolbarEntryWithMatchers } from '../types/types';
 
 /**
  * Finds the toolbar entry that matches the current pathname
@@ -10,14 +10,20 @@ import type { ToolbarEntryWithMatchers } from '../types/types'
  */
 export const findToolbarEntry = (
   pathname: string,
-  toolbarEntries: ToolbarEntryWithMatchers[]
+  toolbarEntries: ToolbarEntryWithMatchers[],
 ): ToolbarEntryWithMatchers | undefined =>
-  toolbarEntries.find(({ matchers }) => matchers.some((matcher) => matcher(pathname)))
+  toolbarEntries.find(({ matchers }) =>
+    matchers.some((matcher) => matcher(pathname)),
+  );
 
 /**
  * Creates matcher functions for each pattern in a toolbar entry
  * @param entry - The toolbar registry entry
  * @returns Array of matcher functions
  */
-export const createMatchers = (entry: { matches: Array<{ path: string; end?: boolean }> }) =>
-  entry.matches.map((pattern) => (pathname: string) => Boolean(matchPath(pattern, pathname)))
+export const createMatchers = (entry: {
+  matches: Array<{ path: string; end?: boolean }>;
+}) =>
+  entry.matches.map(
+    (pattern) => (pathname: string) => Boolean(matchPath(pattern, pathname)),
+  );

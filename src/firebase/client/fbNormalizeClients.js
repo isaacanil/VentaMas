@@ -49,7 +49,7 @@ export async function fbNormalizeClients(user) {
 
     const duplicatedFields = getDuplicatedRootFields(data);
     const hasDuplicated = Array.from(duplicatedFields).some(
-      (field) => field !== 'client' && data[field] !== undefined
+      (field) => field !== 'client' && data[field] !== undefined,
     );
 
     if (clientMatches && !hasDuplicated) {
@@ -79,4 +79,3 @@ export async function fbNormalizeClients(user) {
 
   return { total: snapshot.size, normalized: normalizedCount };
 }
-

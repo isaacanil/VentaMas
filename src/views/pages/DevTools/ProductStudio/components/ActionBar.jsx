@@ -4,17 +4,12 @@ import styled from 'styled-components';
 
 const Bar = styled.div`
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
   width: 100%;
 `;
 
-export const ActionBar = ({
-  isUpdateMode,
-  submitting,
-  onReset,
-  onSubmit,
-}) => (
+export const ActionBar = ({ isUpdateMode, submitting, onReset, onSubmit }) => (
   <Bar>
     <Space size="middle" wrap>
       <Button icon={<ClearOutlined />} onClick={onReset}>

@@ -13,8 +13,8 @@ import ProductStockOverview from './components/ProductStockOverview/ProductStock
 
 const Container = styled.div`
   display: grid;
-  height: 100%;
   grid-template-rows: min-content min-content 1fr;
+  height: 100%;
   overflow: hidden;
 `;
 
@@ -24,10 +24,10 @@ const Content = styled.div`
 `;
 
 const EmptyWrapper = styled.div`
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
 `;
 
 export const WarehouseProductStock = () => {
@@ -54,12 +54,14 @@ export const WarehouseProductStock = () => {
   }, [productStats, activeFilters.length]);
 
   const handleStatsChange = useCallback((stats) => {
-    setProductStats(stats || {
-      totalProducts: 0,
-      visibleProducts: 0,
-      loading: false,
-      hasFilters: false,
-    });
+    setProductStats(
+      stats || {
+        totalProducts: 0,
+        visibleProducts: 0,
+        loading: false,
+        hasFilters: false,
+      },
+    );
   }, []);
 
   const handleFiltersChange = useCallback((filters) => {
@@ -70,15 +72,17 @@ export const WarehouseProductStock = () => {
     <Container>
       <MenuApp sectionName="Almacenes" />
       <InventoryMenu />
-      <ResizableSidebar Sidebar={(
-        <ProductStockBrowser
-          activeFilters={activeFilters}
-          onStatsChange={handleStatsChange}
-          onFiltersChange={handleFiltersChange}
-          summaryText={summaryText}
-          filterOptions={PRODUCT_STOCK_FILTER_OPTIONS}
-        />
-      )}>
+      <ResizableSidebar
+        Sidebar={
+          <ProductStockBrowser
+            activeFilters={activeFilters}
+            onStatsChange={handleStatsChange}
+            onFiltersChange={handleFiltersChange}
+            summaryText={summaryText}
+            filterOptions={PRODUCT_STOCK_FILTER_OPTIONS}
+          />
+        }
+      >
         <Content>
           {productId ? (
             <ProductStockOverview />

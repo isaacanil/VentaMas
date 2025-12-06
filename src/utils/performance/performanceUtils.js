@@ -9,18 +9,18 @@
  * @returns {number} Timer ID for cleanup
  */
 export const performantTimeout = (callback, delay = 0) => {
-    // Cap delay at 500ms to prevent violation warnings
-    const cappedDelay = Math.min(delay, 500);
-    
-    if (window.requestIdleCallback && cappedDelay > 16) {
-        // For longer delays, use requestIdleCallback to defer work
-        return window.requestIdleCallback(() => {
-            setTimeout(callback, cappedDelay);
-        });
-    } else {
-        // For short delays or browsers without requestIdleCallback
-        return setTimeout(callback, cappedDelay);
-    }
+  // Cap delay at 500ms to prevent violation warnings
+  const cappedDelay = Math.min(delay, 500);
+
+  if (window.requestIdleCallback && cappedDelay > 16) {
+    // For longer delays, use requestIdleCallback to defer work
+    return window.requestIdleCallback(() => {
+      setTimeout(callback, cappedDelay);
+    });
+  } else {
+    // For short delays or browsers without requestIdleCallback
+    return setTimeout(callback, cappedDelay);
+  }
 };
 
 /**
@@ -30,11 +30,11 @@ export const performantTimeout = (callback, delay = 0) => {
  * @returns {Function} Debounced function
  */
 export const performantDebounce = (func, delay) => {
-    let timeoutId;
-    return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = performantTimeout(() => func.apply(this, args), delay);
-    };
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = performantTimeout(() => func.apply(this, args), delay);
+  };
 };
 
 /**
@@ -44,14 +44,14 @@ export const performantDebounce = (func, delay) => {
  * @returns {Function} Throttled function
  */
 export const performantThrottle = (func, limit) => {
-    let inThrottle;
-    return function (...args) {
-        if (!inThrottle) {
-            func.apply(this, args);
-            inThrottle = true;
-            performantTimeout(() => inThrottle = false, limit);
-        }
-    };
+  let inThrottle;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      performantTimeout(() => (inThrottle = false), limit);
+    }
+  };
 };
 
 /**
@@ -60,15 +60,15 @@ export const performantThrottle = (func, limit) => {
  * @param {Function} writeCallback - Function that writes to DOM
  */
 export const batchDOMOperations = (readCallback, writeCallback) => {
+  requestAnimationFrame(() => {
+    // Batch all DOM reads first
+    const readResults = readCallback();
+
+    // Then batch all DOM writes
     requestAnimationFrame(() => {
-        // Batch all DOM reads first
-        const readResults = readCallback();
-        
-        // Then batch all DOM writes
-        requestAnimationFrame(() => {
-            writeCallback(readResults);
-        });
+      writeCallback(readResults);
     });
+  });
 };
 
 /**
@@ -77,12 +77,12 @@ export const batchDOMOperations = (readCallback, writeCallback) => {
  * @param {Object} options - Options for requestIdleCallback
  */
 export const scheduleWork = (work, options = {}) => {
-    if (window.requestIdleCallback) {
-        return window.requestIdleCallback(work, {
-            timeout: 5000, // Ensure work gets done within 5 seconds
-            ...options
-        });
-    } else {
-        return performantTimeout(work, 0);
-    }
+  if (window.requestIdleCallback) {
+    return window.requestIdleCallback(work, {
+      timeout: 5000, // Ensure work gets done within 5 seconds
+      ...options,
+    });
+  } else {
+    return performantTimeout(work, 0);
+  }
 };

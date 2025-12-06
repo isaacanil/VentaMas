@@ -1,8 +1,4 @@
-import {
-  collection,
-  getDocs,
-  writeBatch,
-} from 'firebase/firestore';
+import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '../firebaseconfig';
 
@@ -15,7 +11,10 @@ import { db } from '../firebaseconfig';
  * @param {number} [params.batchSize=400] - Número máximo de operaciones por batch.
  * @returns {Promise<{ total: number, updated: number }>}
  */
-export const fbFixMissingProductIds = async ({ businessID, batchSize = 400 } = {}) => {
+export const fbFixMissingProductIds = async ({
+  businessID,
+  batchSize = 400,
+} = {}) => {
   if (!businessID) {
     throw new Error('El businessID es requerido para corregir los productos.');
   }

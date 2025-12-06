@@ -1,32 +1,36 @@
 import { Modal, Select, Form, Spin, Alert } from 'antd';
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
 import BarcodeItem from './BarcodeItem';
 import QuantitySelector from './QuantitySelector';
 
-
 const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */
   display: grid;
   grid-template-columns: 1fr;
+  gap: 8px;
   justify-items: center;
   width: 100%;
-  gap: 8px;
-  margin: 0;
   padding: 10px;
+  margin: 0;
 
   @media print {
     /* Impresión: nada de grid/flex para que respeten los saltos */
     display: block !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin: 0;
     padding: 5px;
-    & > .barcode-item { margin-bottom: 7mm; }
-    & > .barcode-item:last-child { margin-bottom: 0; }
+    margin: 0;
+    break-inside: avoid;
+
+    & > .barcode-item {
+      margin-bottom: 7mm;
+    }
+
+    & > .barcode-item:last-child {
+      margin-bottom: 0;
+    }
   }
 `;
 
@@ -63,8 +67,7 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [printBarcodes, setPrintBarcodes] = useState([]);
 
-  const printRef = useRef();
-  const reactToPrintRef = useRef();
+  const printRef = useRef(null);
 
   const barcodeTypes = [
     { value: 'code128', label: 'Code 128' },
@@ -74,23 +77,63 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
     { value: 'upca', label: 'UPC-A' },
   ];
 
-  useLayoutEffect(() => {
-    if (printBarcodes.length > 0 && reactToPrintRef.current) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          setIsLoading(false);
-          reactToPrintRef.current?.handlePrint();
-        }, 200);
-      });
-    }
-  }, [printBarcodes]);
-
   const handleAfterPrint = () => {
     setPrintBarcodes([]);
     setPagesCount(1);
     setBarcodeType('code128');
     onClose();
   };
+
+  const pageStyle = `@page {  size: 312px 502px; margin: 0; }
+@media print {
+  html, body { height: initial !important; overflow: initial !important; margin: 0 !important; padding: 0 !important; }
+
+   .print-page { 
+    break-after: page; 
+    page-break-after: always; 
+    display: flex;
+     flex-direction: column; /* Eje principal vertical para poder empujar hacia abajo */
+     align-items: center; /* Centra horizontalmente */
+     justify-content: center; /* Alinea el contenido al fondo de la página */
+    box-sizing: border-box;
+      width: 312px;
+      height: 502px; /* Tamaño fijo del documento (alto) */
+      min-height: 502px;
+  }
+ .print-page:last-child { 
+    break-after: auto; 
+    page-break-after: auto; 
+  }
+  .barcode-grid { 
+    display: flex !important; 
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important; /* Alineado desde abajo */
+    margin: 0 !important; 
+    padding: 0 !important; 
+    width: 100%;
+    height: auto; /* Dejar que tome la altura de su contenido para que la página lo empuje abajo */
+  }
+  .barcode-item { break-inside: avoid !important; page-break-inside: avoid !important; }
+  
+}`;
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    pageStyle,
+    onAfterPrint: handleAfterPrint,
+  });
+
+  useLayoutEffect(() => {
+    if (printBarcodes.length > 0) {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          setIsLoading(false);
+          handlePrint();
+        }, 200);
+      });
+    }
+  }, [handlePrint, printBarcodes]);
 
   const handleOk = () => {
     if (!selectedBarcode) return;
@@ -124,48 +167,6 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
 
   return (
     <>
-      {/* Trigger de impresión (oculto) */}
-      <div style={{ position: 'absolute', top: -9999, left: -9999 }}>
-        <ReactToPrint
-          ref={reactToPrintRef}
-          content={() => printRef.current}
-          pageStyle={`@page {  size: 312px 502px; margin: 0; }
-@media print {
-  html, body { height: initial !important; overflow: initial !important; margin: 0 !important; padding: 0 !important; }
-
-   .print-page { 
-    break-after: page; 
-    page-break-after: always; 
-    display: flex;
-     flex-direction: column; /* Eje principal vertical para poder empujar hacia abajo */
-     align-items: center; /* Centra horizontalmente */
-     justify-content: center; /* Alinea el contenido al fondo de la página */
-    box-sizing: border-box;
-      width: 312px;
-      height: 502px; /* Tamaño fijo del documento (alto) */
-      min-height: 502px;
-  }
- .print-page:last-child { 
-    break-after: auto; 
-    page-break-after: auto; 
-  }
-  .barcode-grid { 
-    display: flex !important; 
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important; /* Alineado desde abajo */
-    margin: 0 !important; 
-    padding: 0 !important; 
-    width: 100%;
-    height: auto; /* Dejar que tome la altura de su contenido para que la página lo empuje abajo */
-  }
-  .barcode-item { break-inside: avoid !important; page-break-inside: avoid !important; }
-  
-}`}
-          onAfterPrint={handleAfterPrint}
-        />
-      </div>
-
       <Modal
         open={show}
         title="Configurar e imprimir códigos de barras"
@@ -183,8 +184,17 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
               type="info"
               showIcon
               style={{ marginBottom: 16 }}
-              message={<div><strong>Producto:</strong> {selectedBarcode.name || 'Sin nombre'}</div>}
-              description={<div><strong>Código:</strong> {selectedBarcode.number}</div>}
+              message={
+                <div>
+                  <strong>Producto:</strong>{' '}
+                  {selectedBarcode.name || 'Sin nombre'}
+                </div>
+              }
+              description={
+                <div>
+                  <strong>Código:</strong> {selectedBarcode.number}
+                </div>
+              }
             />
           )}
 
@@ -198,8 +208,6 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
                 disabled={isLoading}
               />
             </Form.Item>
-
-   
 
             <Form.Item label="Tipo de código">
               <Select

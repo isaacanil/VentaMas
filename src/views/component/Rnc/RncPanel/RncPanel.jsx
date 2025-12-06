@@ -1,52 +1,54 @@
-import { CheckCircleOutlined, WarningOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  WarningOutlined,
+  StopOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons';
 import { Spin, Button, Modal } from 'antd';
 import { DateTime } from 'luxon';
 import { createElement, useState } from 'react';
 import styled from 'styled-components';
 
 const Panel = styled.div`
+  position: sticky;
+  position: relative;
+  top: 10px;
+  height: fit-content;
   padding: 24px;
   background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  height: fit-content;
-  position: sticky;
-  top: 10px;
   border: 1px solid #f0f0f0;
-  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 `;
 
 const LoadingOverlay = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 1;
+  background: rgb(255 255 255 / 80%);
   border-radius: 4px;
 `;
 
 const Header = styled.div`
-  margin-bottom: 24px;
   padding-bottom: 16px;
+  margin-bottom: 24px;
   border-bottom: 1px solid #f0f0f0;
 `;
 
 const Title = styled.h3`
-  color: #262626;
-  font-size: 16px;
   margin: 0;
+  font-size: 16px;
   font-weight: 500;
+  color: #262626;
 `;
 
 const Subtitle = styled.p`
-  color: #8c8c8c;
+  margin: 4px 0 0;
   font-size: 13px;
-  margin: 4px 0 0 0;
+  color: #8c8c8c;
 `;
 
 const Info = styled.div`
@@ -57,26 +59,26 @@ const Info = styled.div`
 const Field = styled.div`
   display: grid;
   grid-template-columns: 120px 1fr;
-  align-items: baseline;
   gap: 12px;
+  align-items: baseline;
 
   label {
-    color: #595959;
     font-size: 13px;
+    color: #595959;
   }
 
   span {
-    color: #262626;
     font-size: 14px;
+    color: #262626;
   }
 `;
 
 const StatusBox = styled.div`
-  padding: 16px;
+  border: 1px solid;
   border-radius: 8px;
   margin-top: 16px;
+  padding: 16px;
   position: relative;
-  border: 1px solid;
 
   ${({ $status }) => {
     switch ($status) {
@@ -112,15 +114,15 @@ const StatusBox = styled.div`
   }}
 
   .details-section {
-    margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px dashed currentColor;
+    margin-top: 12px;
+    border-top: 1px dashed currentcolor;
     opacity: 0.9;
   }
 
   .details-list {
-    margin: 8px 0 0 0;
     padding-left: 16px;
+    margin: 8px 0 0;
     list-style-type: none;
 
     li {
@@ -129,10 +131,10 @@ const StatusBox = styled.div`
       margin-bottom: 4px;
       font-size: 14px;
 
-      &:before {
-        content: "•";
+      &::before {
         position: absolute;
         left: 0;
+        content: '•';
         opacity: 0.7;
       }
     }
@@ -140,16 +142,16 @@ const StatusBox = styled.div`
 `;
 
 const STATUS_INFO = {
-  'ACTIVO': {
+  ACTIVO: {
     color: 'success',
     title: 'RNC Activo',
     description: 'Contribuyente habilitado para fines tributarios.',
     details: `• Habilitado para todos los servicios de la DGII
       • Puede emitir y recibir comprobantes fiscales
       • Debe mantener sus obligaciones tributarias al día`,
-    icon: CheckCircleOutlined
+    icon: CheckCircleOutlined,
   },
-  'SUSPENDIDO': {
+  SUSPENDIDO: {
     color: 'warning',
     title: 'Estado Suspendido',
     description: 'Contribuyente en incumplimiento prolongado.',
@@ -159,7 +161,7 @@ const STATUS_INFO = {
       • Mantiene acceso a Oficina Virtual
       • Puede reactivarse presentando declaraciones pendientes
       • No requiere pago de multa para reactivación`,
-    icon: WarningOutlined
+    icon: WarningOutlined,
   },
   'DADO DE BAJA': {
     color: 'error',
@@ -169,8 +171,8 @@ const STATUS_INFO = {
       • Comprobantes fiscales inhabilitados
       • Sin obligaciones tributarias activas
       • Debe solicitar reactivación para operar`,
-    icon: StopOutlined
-  }
+    icon: StopOutlined,
+  },
 };
 
 export const RncPanel = ({ rncInfo, loading }) => {
@@ -184,8 +186,6 @@ export const RncPanel = ({ rncInfo, loading }) => {
     }
   };
 
-  if (!rncInfo && !loading) return null;
-
   const [isStatusModalVisible, setStatusModalVisible] = useState(false);
 
   const status = rncInfo?.status;
@@ -194,28 +194,39 @@ export const RncPanel = ({ rncInfo, loading }) => {
     title: 'Estado No Especificado',
     description: 'No hay información disponible',
     details: '',
-    icon: QuestionCircleOutlined
+    icon: QuestionCircleOutlined,
   };
 
+  if (!rncInfo && !loading) return null;
+
   const formatDetails = (details) => {
-    return details.split('\n').map((line, index) => {
-      const trimmedLine = line.trim();
-      if (trimmedLine.startsWith('•')) {
-        return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
-      }
-      return null;
-    }).filter(Boolean);
+    return details
+      .split('\n')
+      .map((line, index) => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('•')) {
+          return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
+        }
+        return null;
+      })
+      .filter(Boolean);
   };
 
   return (
     <Panel>
-      {loading && <LoadingOverlay><Spin tip="Consultando RNC..." /></LoadingOverlay>}
-      
+      {loading && (
+        <LoadingOverlay>
+          <Spin tip="Consultando RNC...">
+            <div style={{ width: 140, height: 96 }} />
+          </Spin>
+        </LoadingOverlay>
+      )}
+
       <Header>
         <Title>Datos Registrados DGII</Title>
         <Subtitle>Información oficial del contribuyente</Subtitle>
       </Header>
-      
+
       <Info style={{ opacity: loading ? 0.6 : 1 }}>
         <Field>
           <label>Número RNC:</label>
@@ -247,7 +258,11 @@ export const RncPanel = ({ rncInfo, loading }) => {
         </Field>
       </Info>
 
-      <Button type="link"  onClick={() => setStatusModalVisible(true)} style={{ marginTop: '12px' }}>
+      <Button
+        type="link"
+        onClick={() => setStatusModalVisible(true)}
+        style={{ marginTop: '12px' }}
+      >
         Más información
       </Button>
 
@@ -259,7 +274,9 @@ export const RncPanel = ({ rncInfo, loading }) => {
         centered
       >
         <StatusBox $status={status}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div
+            style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
+          >
             <span className="icon" style={{ fontSize: '20px' }}>
               {createElement(statusInfo.icon)}
             </span>
@@ -267,9 +284,7 @@ export const RncPanel = ({ rncInfo, loading }) => {
               <div style={{ fontWeight: 500, marginBottom: '4px' }}>
                 {statusInfo.title}
               </div>
-              <div style={{ fontSize: '14px' }}>
-                {statusInfo.description}
-              </div>
+              <div style={{ fontSize: '14px' }}>{statusInfo.description}</div>
               {statusInfo.details && (
                 <div className="details-section">
                   <ul className="details-list">

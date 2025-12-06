@@ -17,21 +17,22 @@ const TwoColumns = styled.div`
   grid-template-columns: min-content min-content;
   gap: 16px;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const ThresholdInput = styled(InputNumber)`
   width: 140px;
-  @media (max-width: 768px) {
+
+  @media (width <= 768px) {
     width: 100%;
   }
 `;
 
 const EmailInput = styled(Input)`
-  max-width: 480px;
   width: 100%;
+  max-width: 480px;
 `;
 
 const StockAlertSettingsSection = () => {
@@ -50,11 +51,21 @@ const StockAlertSettingsSection = () => {
   useEffect(() => {
     form.setFieldsValue({
       stockAlertsEnabled: !!stockAlertsEnabled,
-      stockLowThreshold: Number.isFinite(stockLowThreshold) ? stockLowThreshold : 20,
-      stockCriticalThreshold: Number.isFinite(stockCriticalThreshold) ? stockCriticalThreshold : 10,
+      stockLowThreshold: Number.isFinite(stockLowThreshold)
+        ? stockLowThreshold
+        : 20,
+      stockCriticalThreshold: Number.isFinite(stockCriticalThreshold)
+        ? stockCriticalThreshold
+        : 10,
       stockAlertEmail: stockAlertEmail || '',
     });
-  }, [form, stockAlertsEnabled, stockLowThreshold, stockCriticalThreshold, stockAlertEmail]);
+  }, [
+    form,
+    stockAlertsEnabled,
+    stockLowThreshold,
+    stockCriticalThreshold,
+    stockAlertEmail,
+  ]);
 
   const saveSetting = async (data) => {
     try {
@@ -77,10 +88,21 @@ const StockAlertSettingsSection = () => {
     }
     // Ajuste: crítico no puede ser mayor que bajo
     const currentValues = form.getFieldsValue();
-    if (field === 'stockCriticalThreshold' && value > (currentValues.stockLowThreshold ?? 0)) {
+    if (
+      field === 'stockCriticalThreshold' &&
+      value > (currentValues.stockLowThreshold ?? 0)
+    ) {
       message.info('El umbral crítico no puede ser mayor que el umbral bajo');
-      form.setFieldValue('stockCriticalThreshold', Math.max(0, (currentValues.stockLowThreshold ?? 0)));
-      await saveSetting({ stockCriticalThreshold: Math.max(0, (currentValues.stockLowThreshold ?? 0)) });
+      form.setFieldValue(
+        'stockCriticalThreshold',
+        Math.max(0, currentValues.stockLowThreshold ?? 0),
+      );
+      await saveSetting({
+        stockCriticalThreshold: Math.max(
+          0,
+          currentValues.stockLowThreshold ?? 0,
+        ),
+      });
       return;
     }
     await saveSetting({ [field]: value });
@@ -90,7 +112,7 @@ const StockAlertSettingsSection = () => {
     const raw = e?.target?.value || '';
     const parts = raw
       .split(',')
-      .map(p => p.trim())
+      .map((p) => p.trim())
       .filter(Boolean);
 
     if (parts.length === 0) {
@@ -98,28 +120,33 @@ const StockAlertSettingsSection = () => {
       return;
     }
 
-    const invalidFormat = parts.filter(p => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p));
+    const invalidFormat = parts.filter(
+      (p) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p),
+    );
     if (invalidFormat.length > 0) {
       message.error(`Correos inválidos: ${invalidFormat.join(', ')}`);
       return;
     }
 
     // Validación de dominios permitidos (frontend) usando variable de entorno VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS
-    const allowedDomainsEnv = import.meta.env.VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS || '';
+    const allowedDomainsEnv =
+      import.meta.env.VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS || '';
     let allowedDomains = allowedDomainsEnv
       .split(',')
-      .map(d => d.trim().toLowerCase())
+      .map((d) => d.trim().toLowerCase())
       .filter(Boolean);
 
     // Si incluye '*', no restringimos
     const unrestricted = allowedDomains.includes('*');
     if (!unrestricted && allowedDomains.length > 0) {
-      const invalidDomainEmails = parts.filter(email => {
+      const invalidDomainEmails = parts.filter((email) => {
         const domain = email.split('@').pop().toLowerCase();
         return !allowedDomains.includes(domain);
       });
       if (invalidDomainEmails.length > 0) {
-        message.error(`Dominios no permitidos: ${invalidDomainEmails.join(', ')}`);
+        message.error(
+          `Dominios no permitidos: ${invalidDomainEmails.join(', ')}`,
+        );
         return;
       }
     }
@@ -156,7 +183,12 @@ const StockAlertSettingsSection = () => {
                 name="stockLowThreshold"
                 tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrará alerta de stock bajo"
               >
-                <ThresholdInput min={0} onBlur={(e) => onBlurThreshold('stockLowThreshold', e.target.value)} />
+                <ThresholdInput
+                  min={0}
+                  onBlur={(e) =>
+                    onBlurThreshold('stockLowThreshold', e.target.value)
+                  }
+                />
               </Form.Item>
             </ConfigItem>
 
@@ -166,7 +198,12 @@ const StockAlertSettingsSection = () => {
                 name="stockCriticalThreshold"
                 tooltip="Cuando la cantidad sea menor o igual a este valor, se mostrará alerta crítica"
               >
-                <ThresholdInput min={0} onBlur={(e) => onBlurThreshold('stockCriticalThreshold', e.target.value)} />
+                <ThresholdInput
+                  min={0}
+                  onBlur={(e) =>
+                    onBlurThreshold('stockCriticalThreshold', e.target.value)
+                  }
+                />
               </Form.Item>
             </ConfigItem>
           </TwoColumns>
@@ -177,7 +214,10 @@ const StockAlertSettingsSection = () => {
               name="stockAlertEmail"
               tooltip="Uno o varios correos separados por coma. Ej: a@dominio.com, b@dominio.com"
             >
-              <EmailInput placeholder="correo1@dominio.com, correo2@dominio.com" onBlur={onBlurEmail} />
+              <EmailInput
+                placeholder="correo1@dominio.com, correo2@dominio.com"
+                onBlur={onBlurEmail}
+              />
             </Form.Item>
           </ConfigItem>
           {/* Campo de remitente removido: el remitente se gestiona únicamente en backend */}

@@ -9,18 +9,18 @@ import { selectTaxReceiptEnabled } from '../taxReceipt/taxReceiptSlice';
 import { setTaxReceiptEnabled } from './cartSlice';
 
 export const taxReceiptEnabledToCart = createAsyncThunk(
-    'cart/fetchAndStoreTaxReceiptEnabled',
-    async (_, { getState, dispatch }) => {
-        const state = getState();
-        const taxReceiptEnabled = state.taxReceipt.settings.taxReceiptEnabled; // Ajusta este camino según cómo esté estructurado tu estado
-        dispatch(setTaxReceiptEnabled(taxReceiptEnabled));
-    }
+  'cart/fetchAndStoreTaxReceiptEnabled',
+  async (_, { getState, dispatch }) => {
+    const state = getState();
+    const taxReceiptEnabled = state.taxReceipt.settings.taxReceiptEnabled; // Ajusta este camino según cómo esté estructurado tu estado
+    dispatch(setTaxReceiptEnabled(taxReceiptEnabled));
+  },
 );
 
 export const useTaxReceiptEnabledToCart = () => {
-    const taxReceipt = useSelector(selectTaxReceiptEnabled)
-    const dispatch = useDispatch()
-    useEffect(() => {
-        dispatch(setTaxReceiptEnabled(taxReceipt));
-    }, [taxReceipt]);
-}
+  const taxReceipt = useSelector(selectTaxReceiptEnabled);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(setTaxReceiptEnabled(taxReceipt));
+  }, [taxReceipt]);
+};

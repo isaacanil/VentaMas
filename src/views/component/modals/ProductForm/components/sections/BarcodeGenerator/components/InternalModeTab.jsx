@@ -1,5 +1,19 @@
-import { InfoCircleOutlined, ThunderboltOutlined, CheckCircleOutlined, ShopOutlined } from '@ant-design/icons';
-import { Form, Input, Button, Space, Alert, Typography, Checkbox, Tooltip } from 'antd';
+import {
+  InfoCircleOutlined,
+  ThunderboltOutlined,
+  CheckCircleOutlined,
+  ShopOutlined,
+} from '@ant-design/icons';
+import {
+  Form,
+  Input,
+  Button,
+  Space,
+  Alert,
+  Typography,
+  Checkbox,
+  Tooltip,
+} from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -12,16 +26,16 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  
-  @media (min-width: 1024px) {
+
+  @media (width >= 1024px) {
     flex-direction: row;
     gap: 24px;
   }
 `;
 
 const MainContent = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
 `;
@@ -29,8 +43,8 @@ const MainContent = styled.div`
 // Vista previa lateral removida (se usará modal externo)
 
 const FormSection = styled.div`
-  border: 1px solid #eaeaea;
   padding: 16px;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
 `;
 
@@ -50,9 +64,8 @@ export const InternalModeTab = ({
   livePreview,
   handleGenerateCode,
   loadingGenerate,
-  currentBarcode
+  currentBarcode,
 }) => {
-  
   return (
     <Container>
       <MainContent>
@@ -62,19 +75,21 @@ export const InternalModeTab = ({
           type="info"
           icon={<ShopOutlined />}
           showIcon
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: '16px' }}
         />
 
         {/* Formulario de generación simplificado */}
         <FormSection>
           <FormSectionHeader>
-            {currentBarcode ? 'Generar Nuevo Código Interno' : 'Generar Código Interno'}
+            {currentBarcode
+              ? 'Generar Nuevo Código Interno'
+              : 'Generar Código Interno'}
           </FormSectionHeader>
           <Form form={form} layout="vertical" style={{ width: '100%' }}>
             {/* Checkbox para modo automático */}
-            <Form.Item style={{ marginBottom: 16 }}>
-              <Checkbox 
-                checked={autoMode} 
+            <Form.Item style={{ marginBottom: '16px' }}>
+              <Checkbox
+                checked={autoMode}
                 onChange={(e) => setAutoMode(e.target.checked)}
               >
                 <Space>
@@ -87,22 +102,38 @@ export const InternalModeTab = ({
             </Form.Item>
 
             {/* Solo un campo para la referencia del producto */}
-            <Form.Item 
+            <Form.Item
               label="Referencia Producto"
-              validateStatus={!autoMode && itemReferenceValid === false ? 'error' : itemReferenceValid === true ? 'success' : ''}
-              help={!autoMode && itemReferenceValid === false ? 'Debe contener 9 dígitos' : ''}
+              validateStatus={
+                !autoMode && itemReferenceValid === false
+                  ? 'error'
+                  : itemReferenceValid === true
+                    ? 'success'
+                    : ''
+              }
+              help={
+                !autoMode && itemReferenceValid === false
+                  ? 'Debe contener 9 dígitos'
+                  : ''
+              }
             >
               <Input
-                value={autoMode ? nextItemReference : manualValues.itemReference}
+                value={
+                  autoMode ? nextItemReference : manualValues.itemReference
+                }
                 readOnly={autoMode}
-                onChange={!autoMode ? (e) => handleManualItemReferenceChange(e.target.value) : undefined}
+                onChange={
+                  !autoMode
+                    ? (e) => handleManualItemReferenceChange(e.target.value)
+                    : undefined
+                }
                 placeholder={autoMode ? undefined : '9 dígitos (ej: 000000001)'}
                 maxLength={9}
-                style={{ 
-                  fontFamily: 'monospace', 
-                  fontSize: '16px', 
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '16px',
                   fontWeight: 'bold',
-                  backgroundColor: autoMode ? '#f6ffed' : undefined 
+                  backgroundColor: `${autoMode ? '#f6ffed' : 'undefined'}`,
                 }}
                 suffix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
               />
@@ -110,17 +141,18 @@ export const InternalModeTab = ({
 
             {/* Previsualización del nuevo código */}
             {livePreview && (
-              <Form.Item label="Previsualización Nuevo Código" style={{ marginTop: 16 }}>
+              <Form.Item
+                label="Previsualización Nuevo Código"
+                style={{ marginTop: '16px' }}
+              >
                 <PreviewContainer>
-                  <PreviewText>
-                    {livePreview}
-                  </PreviewText>
+                  <PreviewText>{livePreview}</PreviewText>
                 </PreviewContainer>
               </Form.Item>
             )}
 
             {/* Botón de generar */}
-            <Form.Item style={{ marginTop: 24 }}>
+            <Form.Item style={{ marginTop: '24px' }}>
               <Button
                 type="primary"
                 size="large"
@@ -130,7 +162,9 @@ export const InternalModeTab = ({
                 disabled={autoMode ? false : !itemReferenceValid}
                 style={{ width: '100%' }}
               >
-                {autoMode ? 'Generar Código Automáticamente' : 'Generar Código Manual'}
+                {autoMode
+                  ? 'Generar Código Automáticamente'
+                  : 'Generar Código Manual'}
               </Button>
             </Form.Item>
           </Form>

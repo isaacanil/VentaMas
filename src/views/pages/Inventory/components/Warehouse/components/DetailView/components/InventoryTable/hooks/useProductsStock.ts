@@ -14,11 +14,12 @@ const DEFAULT_PRODUCTS_STOCK_STATE: Required<ProductsStockResponse> = {
   loading: false,
 };
 
-const isProductStockLike = (value: unknown): value is ProductStockLike => (
-  typeof value === 'object' && value !== null
-);
+const isProductStockLike = (value: unknown): value is ProductStockLike =>
+  typeof value === 'object' && value !== null;
 
-const isProductsStockResponse = (value: unknown): value is ProductsStockResponse => {
+const isProductsStockResponse = (
+  value: unknown,
+): value is ProductsStockResponse => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -26,7 +27,8 @@ const isProductsStockResponse = (value: unknown): value is ProductsStockResponse
   const candidate = value as ProductsStockResponse;
   const { data, loading } = candidate;
 
-  const dataIsValid = Array.isArray(data) || data === null || data === undefined;
+  const dataIsValid =
+    Array.isArray(data) || data === null || data === undefined;
   const loadingIsValid = typeof loading === 'boolean' || loading === undefined;
 
   return dataIsValid && loadingIsValid;
@@ -37,7 +39,9 @@ interface UseProductsStockResult {
   loading: boolean;
 }
 
-export const useProductsStock = (location: InventoryTableProps['location']): UseProductsStockResult => {
+export const useProductsStock = (
+  location: InventoryTableProps['location'],
+): UseProductsStockResult => {
   const listenResult: unknown = useListenProductsStockByLocation(location);
 
   return useMemo(() => {
@@ -45,7 +49,9 @@ export const useProductsStock = (location: InventoryTableProps['location']): Use
       ? listenResult
       : DEFAULT_PRODUCTS_STOCK_STATE;
 
-    const productsStock: ProductStockLike[] = Array.isArray(productsStockState.data)
+    const productsStock: ProductStockLike[] = Array.isArray(
+      productsStockState.data,
+    )
       ? productsStockState.data.filter(isProductStockLike)
       : [];
 

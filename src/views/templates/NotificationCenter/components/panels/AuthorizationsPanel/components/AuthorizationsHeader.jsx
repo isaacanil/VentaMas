@@ -7,7 +7,7 @@ const AuthorizationsHeader = ({ pendingCount, isAdmin, onNavigate }) => (
     <PanelTitle>
       Autorizaciones
       {isAdmin && pendingCount > 0 && (
-        <Badge count={pendingCount} style={{ marginLeft: 8 }} />
+        <Badge count={pendingCount} style={{ marginLeft: '8px' }} />
       )}
     </PanelTitle>
     {isAdmin && typeof onNavigate === 'function' && (
@@ -26,19 +26,19 @@ export default AuthorizationsHeader;
 
 const PanelHeader = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
 `;
 
 const PanelTitle = styled.h3`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  margin: 0;
   color: #1f2937;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const NavigateButton = styled.button`
@@ -47,20 +47,20 @@ const NavigateButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
   color: #1d4ed8;
   cursor: pointer;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   transition: all 0.2s ease;
 
-  &:hover {
+    &:hover {
+    color: #1d4ed8;
     background: #eff6ff;
     border-color: #93c5fd;
-    color: #1d4ed8;
   }
 
-  &:active {
+    &:active {
     transform: translateY(1px);
   }
 `;

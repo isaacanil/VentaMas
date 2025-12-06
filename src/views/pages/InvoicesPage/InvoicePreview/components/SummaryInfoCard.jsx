@@ -1,4 +1,10 @@
-import { faFileInvoice, faShoppingCart, faCalculator, faDollarSign, faTag } from '@fortawesome/free-solid-svg-icons';
+import {
+  faFileInvoice,
+  faShoppingCart,
+  faCalculator,
+  faDollarSign,
+  faTag,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Card, Divider } from 'antd';
 import React from 'react';
@@ -12,7 +18,8 @@ const SummaryInfoCard = ({ summaryData }) => {
     totalShoppingItems,
     totalPurchaseWithoutTaxes,
     totalTaxes,
-    payment
+    payment,
+    change,
   } = summaryData;
 
   return (
@@ -23,7 +30,7 @@ const SummaryInfoCard = ({ summaryData }) => {
           Resumen
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <InfoSection>
           <InfoItem>
@@ -33,7 +40,7 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{sourceOfPurchase || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faShoppingCart} />
@@ -41,17 +48,19 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{totalShoppingItems?.value || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <Divider style={{ margin: '12px 0' }} />
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faCalculator} />
               Subtotal:
             </InfoLabel>
-            <InfoValue>{useFormatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}</InfoValue>
+            <InfoValue>
+              {useFormatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}
+            </InfoValue>
           </InfoItem>
-          
+
           <InfoItem>
             <InfoLabel>
               <FontAwesomeIcon icon={faCalculator} />
@@ -59,7 +68,7 @@ const SummaryInfoCard = ({ summaryData }) => {
             </InfoLabel>
             <InfoValue>{useFormatPrice(totalTaxes?.value) || 'N/A'}</InfoValue>
           </InfoItem>
-          
+
           <TotalItem>
             <TotalLabel>
               <FontAwesomeIcon icon={faDollarSign} />
@@ -67,6 +76,16 @@ const SummaryInfoCard = ({ summaryData }) => {
             </TotalLabel>
             <TotalValue>{useFormatPrice(payment?.value) || 'N/A'}</TotalValue>
           </TotalItem>
+
+          <InfoItem>
+            <InfoLabel>
+              <FontAwesomeIcon icon={faDollarSign} />
+              Cambio / Faltante:
+            </InfoLabel>
+            <InfoValue>
+              {useFormatPrice(change?.value ?? payment?.change) || 'N/A'}
+            </InfoValue>
+          </InfoItem>
         </InfoSection>
       </CardContent>
     </StyledCard>
@@ -81,18 +100,18 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
 `;
 
 const CardTitle = styled.h3`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 `;
 
 const CardContent = styled.div`
@@ -107,53 +126,53 @@ const InfoSection = styled.div`
 
 const InfoItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const InfoLabel = styled.span`
-  font-size: 0.8rem;
-  color: #666;
-  font-weight: 500;
   display: flex;
-  align-items: center;
   gap: 0.25rem;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #666;
 `;
 
 const InfoValue = styled.span`
+  font-family: ${(props) => props.theme?.fonts?.mono || 'monospace'};
   font-size: 0.93rem;
-  color: #333;
   font-weight: 500;
-  font-family: ${props => props.theme?.fonts?.mono || 'monospace'};
+  color: #333;
 `;
 
 const TotalItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.75rem;
+  margin-top: 0.5rem;
+  background: #f8f9fa;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  background: #f8f9fa;
-  margin-top: 0.5rem;
 `;
 
 const TotalLabel = styled.span`
-  font-size: 0.93rem;
-  color: #333;
-  font-weight: 600;
   display: flex;
-  align-items: center;
   gap: 0.25rem;
+  align-items: center;
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: #333;
 `;
 
 const TotalValue = styled.span`
-  font-size: 1.05rem;
-  color: #1890ff;
-  font-weight: 700;
   font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1890ff;
 `;
 
 export default SummaryInfoCard;

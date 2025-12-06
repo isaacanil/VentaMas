@@ -14,6 +14,6 @@ export function analyzeVariableWeightCode(code) {
     itemCode: code.slice(2, 7),
     variableData: code.slice(7, 12),
     checkDigit: code.slice(12),
-    interpretation: 'Los dígitos 7-11 pueden representar peso o precio'
+    interpretation: 'Los dígitos 7-11 pueden representar peso o precio',
   };
 }

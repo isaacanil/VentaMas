@@ -25,10 +25,19 @@ export const syncNcfLedger = onDocumentWritten(
     const afterData = extractInvoiceDataFromChange(event.data?.after);
 
     try {
-      await syncLedgerForChange({ businessId, invoiceId, beforeData, afterData });
+      await syncLedgerForChange({
+        businessId,
+        invoiceId,
+        beforeData,
+        afterData,
+      });
     } catch (error) {
-      logger.error('Failed to sync NCF ledger', { businessId, invoiceId, error: error?.message });
+      logger.error('Failed to sync NCF ledger', {
+        businessId,
+        invoiceId,
+        error: error?.message,
+      });
       throw error;
     }
-  }
+  },
 );

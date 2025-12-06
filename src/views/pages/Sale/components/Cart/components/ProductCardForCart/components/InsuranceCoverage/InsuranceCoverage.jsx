@@ -1,229 +1,368 @@
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { updateProductInsurance } from '../../../../../../../../../features/cart/cartSlice';
 
-const validateNumericWithDecimal = (input) => {
-  // Si está vacío, permitirlo
-  if (input === '') return '';
-  
-  // Verificar si la entrada contiene sólo dígitos y a lo sumo un punto decimal
-  const isValid = /^(\d+)?\.?(\d+)?$/.test(input);
-  
-  if (isValid) {
-    return input;
-  } else {
-    // Si no es válido, rechazamos el cambio
-    return null;
+const INSURANCE_MODES = Object.freeze({
+  PERCENTAGE: 'porcentaje',
+  AMOUNT: 'monto',
+});
+
+const sanitizeNumericInput = (value = '') => {
+  if (value === '' || value === null || value === undefined) return '';
+
+  const normalized = String(value).replace(',', '.');
+
+  if (normalized === '.') return '0.';
+
+  const isValid = /^(\d+)?(\.\d*)?$/.test(normalized);
+  if (!isValid) return null;
+
+  return normalized.startsWith('.') ? `0${normalized}` : normalized;
+};
+
+const deriveInitialState = (product) => {
+  const mode = product?.insurance?.mode || INSURANCE_MODES.PERCENTAGE;
+  const storedValue = product?.insurance?.value;
+
+  if (storedValue === undefined || storedValue === null || storedValue === '') {
+    return { mode, rawValue: '' };
   }
+
+  const normalized = sanitizeNumericInput(String(storedValue));
+  return {
+    mode,
+    rawValue: normalized ?? String(storedValue),
+  };
+};
+
+const clampByMode = (value, mode, productPrice) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+
+  if (mode === INSURANCE_MODES.PERCENTAGE) {
+    return Math.max(0, Math.min(100, numeric));
+  }
+
+  if (productPrice > 0) {
+    return Math.max(0, Math.min(productPrice, numeric));
+  }
+
+  return Math.max(0, numeric);
+};
+
+const formatNumberForDisplay = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '';
+  return `${numeric}`;
 };
 
 export const InsuranceCoverage = ({ item }) => {
   const dispatch = useDispatch();
-  
-  // Local state for insurance mode and value
-  const [insurance, setInsurance] = useState({
-    mode: item.insurance?.mode || 'porcentaje',
-    value: item.insurance?.value 
-  });
+  const productId = item?.id ?? item?.cid;
 
-  // Update local state when item changes
+  const [insuranceState, setInsuranceState] = useState(() =>
+    deriveInitialState(item),
+  );
+
+  const productPrice = useMemo(() => {
+    const pricingPrice = Number(item?.pricing?.price);
+    if (Number.isFinite(pricingPrice)) return pricingPrice;
+    const fallbackPrice = Number(item?.price);
+    return Number.isFinite(fallbackPrice) ? fallbackPrice : 0;
+  }, [item?.price, item?.pricing?.price]);
+
   useEffect(() => {
-    setInsurance({
-      mode: item.insurance?.mode || 'porcentaje',
-      value: item.insurance?.value 
-    });
-  }, [item]);
+    const nextState = deriveInitialState(item);
+    setInsuranceState((prev) =>
+      prev.mode === nextState.mode && prev.rawValue === nextState.rawValue
+        ? prev
+        : nextState,
+    );
+  }, [
+    item?.cid,
+    item?.id,
+    item?.insurance?.mode,
+    item?.insurance?.value,
+  ]);
 
-  const handleInsuranceModeChange = (newMode) => {
-    const newInsurance = { ...insurance, mode: newMode };
-    setInsurance(newInsurance);
-    dispatch(updateProductInsurance({ 
-      id: item.id, 
-      mode: newMode, 
-      value: newInsurance.value 
-    }));
-  };
+  const dispatchInsurance = useCallback(
+    (mode, rawValue) => {
+      if (!productId) return;
 
-  const handleInsuranceValueChange = newValue => {
-    const validatedValue = validateNumericWithDecimal(newValue);
+      dispatch(
+        updateProductInsurance({
+          id: productId,
+          mode,
+          value:
+            rawValue === null || rawValue === undefined ? '' : String(rawValue),
+        }),
+      );
+    },
+    [dispatch, productId],
+  );
 
-    // Si la entrada no es válida, mantenemos el valor anterior
-    if (validatedValue === null) return;
-    
-    // Actualizamos el estado con el valor validado
-    const newInsurance = { ...insurance, value: validatedValue };
-    setInsurance(newInsurance);
-    dispatch(updateProductInsurance({ 
-      id: item.id, 
-      mode: newInsurance.mode, 
-      value: newInsurance.value 
-    }));
-  };
+  const commitValue = useCallback(
+    (mode, rawValue) => {
+      if (!productId) return;
 
-  const handleInsuranceValueBlur = e => {
-    let value = e.target.value === '' ? '' : Number(e.target.value);
+      if (rawValue === '') {
+        dispatchInsurance(mode, '');
+        return;
+      }
 
-    if (insurance.mode === 'porcentaje') {
-      if (value > 100) value = 100;
+      const clampedValue = clampByMode(rawValue, mode, productPrice);
 
-      setInsurance({ ...insurance, value });
-      dispatch(updateProductInsurance({ 
-        id: item.id, 
-        mode: insurance.mode, 
-        value 
+      if (clampedValue === null) {
+        setInsuranceState((prev) => ({ ...prev, rawValue: '' }));
+        dispatchInsurance(mode, '');
+        return;
+      }
+
+      const formattedValue = formatNumberForDisplay(clampedValue);
+      setInsuranceState((prev) => ({
+        ...prev,
+        rawValue: formattedValue,
       }));
-    }
-  };
+      dispatchInsurance(mode, formattedValue);
+    },
+    [dispatchInsurance, productId, productPrice],
+  );
+
+  const handleModeChange = useCallback(
+    (nextMode) => {
+      if (nextMode === insuranceState.mode) return;
+      setInsuranceState((prev) => ({ ...prev, mode: nextMode }));
+      commitValue(nextMode, insuranceState.rawValue);
+    },
+    [commitValue, insuranceState.mode, insuranceState.rawValue],
+  );
+
+  const handleToggleClick = useCallback(() => {
+    const nextMode =
+      insuranceState.mode === INSURANCE_MODES.PERCENTAGE
+        ? INSURANCE_MODES.AMOUNT
+        : INSURANCE_MODES.PERCENTAGE;
+
+    handleModeChange(nextMode);
+  }, [handleModeChange, insuranceState.mode]);
+
+  const handleInputChange = useCallback(
+    (event) => {
+      const sanitizedValue = sanitizeNumericInput(event.target.value);
+      if (sanitizedValue === null) return;
+
+      setInsuranceState((prev) => ({ ...prev, rawValue: sanitizedValue }));
+      dispatchInsurance(insuranceState.mode, sanitizedValue);
+    },
+    [dispatchInsurance, insuranceState.mode],
+  );
+
+  const handleInputBlur = useCallback(() => {
+    commitValue(insuranceState.mode, insuranceState.rawValue);
+  }, [commitValue, insuranceState.mode, insuranceState.rawValue]);
+
+  const isAmountMode = insuranceState.mode === INSURANCE_MODES.AMOUNT;
+
+  const placeholder = isAmountMode
+    ? productPrice > 0
+      ? `0 - ${productPrice}`
+      : 'Monto'
+    : '0 - 100';
 
   return (
     <CoveragePill
-      as={motion.div}
-      initial={{ opacity: 0, scale: 0.8 }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
+      role="group"
+      aria-label="Cobertura de seguro"
     >
       <CoverageLabel>Cobertura</CoverageLabel>
       <CoverageControls>
         <ToggleSwitch>
-          <ToggleTrack 
-            onClick={() => handleInsuranceModeChange(insurance.mode === 'porcentaje' ? 'monto' : 'porcentaje')}
-            active={insurance.mode === 'monto'}
+          <ToggleTrackButton
+            type="button"
+            onClick={handleToggleClick}
+            aria-label={
+              isAmountMode
+                ? 'Cambiar a cobertura por porcentaje'
+                : 'Cambiar a cobertura por monto'
+            }
+            aria-pressed={isAmountMode}
           >
-            <SwitchOption position="left" active={insurance.mode === 'porcentaje'}>%</SwitchOption>
-            <SwitchOption position="right" active={insurance.mode === 'monto'}>$</SwitchOption>
-            <ToggleThumb 
-              as={motion.div}
-              animate={{ 
-                x: insurance.mode === 'monto' ? 24 : -2
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            <SwitchOption $position="left" $active={!isAmountMode}>
+              %
+            </SwitchOption>
+            <SwitchOption $position="right" $active={isAmountMode}>
+              $
+            </SwitchOption>
+            <ToggleThumb
+              animate={{ x: isAmountMode ? 24 : -2 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 28 }}
             />
-          </ToggleTrack>
+          </ToggleTrackButton>
         </ToggleSwitch>
         <ValueInput
-          value={insurance.value}
-          onChange={(e) => handleInsuranceValueChange(e.target.value)}
-          onBlur={handleInsuranceValueBlur}
-          as={motion.input}
-          whileFocus={{ boxShadow: "0 0 0 2px rgba(37, 99, 235, 0.25)" }}
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*[.,]?[0-9]*"
+          value={insuranceState.rawValue}
+          placeholder={placeholder}
+          aria-label={
+            isAmountMode
+              ? 'Valor de cobertura en monto'
+              : 'Valor de cobertura en porcentaje'
+          }
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          whileFocus={{ boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.25)' }}
         />
       </CoverageControls>
     </CoveragePill>
   );
 };
 
-// Estilos
-const CoveragePill = styled.div`
+InsuranceCoverage.propTypes = {
+  item: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    cid: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    price: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    pricing: PropTypes.shape({
+      price: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    }),
+    insurance: PropTypes.shape({
+      mode: PropTypes.oneOf([
+        INSURANCE_MODES.PERCENTAGE,
+        INSURANCE_MODES.AMOUNT,
+      ]),
+      value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    }),
+  }).isRequired,
+};
+
+const CoveragePill = styled(motion.div)`
   display: inline-flex;
+  gap: 10px;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 10px;
-  background: #f9f9f9;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  transition: all 0.2s ease;
-  
+  padding: 6px 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
   &:hover {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-    border-color: #e0e0e0;
+    border-color: #d1d5db;
+    box-shadow: 0 2px 6px rgb(15 23 42 / 6%);
   }
 `;
 
 const CoverageLabel = styled.span`
   font-size: 12px;
-  font-weight: 500;
-  color: #666;
-  margin-right: 8px;
-  white-space: nowrap;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 `;
 
 const CoverageControls = styled.div`
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 6px;
+  min-width: 0;
 `;
 
 const ToggleSwitch = styled.div`
-  position: relative;
   display: flex;
-  align-items: center;
   justify-content: center;
 `;
 
-const ToggleTrack = styled.div`
-  width: 52px;
-  height: 28px;
-  background-color: #f3f3f3;
-  border-radius: 100px;
-  border: 1px solid #e0e0e0;
-  cursor: pointer;
+const ToggleTrackButton = styled.button`
+  position: relative;
   display: flex;
   align-items: center;
-  position: relative;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.151) inset;
+  width: 52px;
+  height: 28px;
   padding: 0 2px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  
+  cursor: pointer;
+  background-color: #f3f4f6;
+  border: 1px solid #e0e7ff;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 4px rgb(15 23 42 / 6%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
   &:hover {
-    border-color: #d0d0d0;
+    border-color: #c7d2fe;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
   }
 `;
 
-const ToggleThumb = styled.div`
+const ToggleThumb = styled(motion.div)`
   position: absolute;
   left: 2px;
+  z-index: 1;
   width: 24px;
   height: 24px;
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  z-index: 2;
+  box-shadow: 0 2px 4px rgb(15 23 42 / 10%);
 `;
 
-const SwitchOption = styled.div`
+const SwitchOption = styled.span`
   position: absolute;
-  left: ${props => props.position === 'left' ? '6px' : '34px'};
-  color: ${props => props.active ? 'black' : '#3b3b3b'};
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 3;
-  transition: color 0.3s ease;
+  left: ${({ $position }) => ($position === 'left' ? '10px' : '32px')};
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ $active }) => ($active ? '#111827' : '#6b7280')};
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: color 0.2s ease;
 `;
 
-const ValueInput = styled.input`
+const ValueInput = styled(motion.input)`
+  flex: 1;
   width: 100%;
-  height: 2em;
-  border-radius: 10px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  padding: 0 8px;
-  text-align: center;
+  min-width: 76px;
+  height: 32px;
+  padding: 0 10px;
   font-size: 14px;
-  color: #333;
-  transition: all 0.2s ease;
-  
-  &:hover, &:focus {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover,
+  &:focus {
     border-color: #2563eb;
+  }
+
+  &:focus {
     outline: none;
   }
-  
-  &:focus {
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-  }
-  
+
   &::placeholder {
-    color: #aaa;
+    font-weight: 500;
+    color: #9ca3af;
   }
-  
+
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
     margin: 0;
+    appearance: none;
   }
-  -moz-appearance: textfield;
 `;
 
 export default InsuranceCoverage;

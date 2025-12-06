@@ -1,7 +1,10 @@
-import { doc, getDoc } from 'firebase/firestore'
-import { useEffect, useState } from 'react'
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
-import { resolveUserDisplayNamesBatch, collectUIDsForInventoryTable } from '../../../../utils/users/resolveUserDisplayNamesBatch'
+import {
+  resolveUserDisplayNamesBatch,
+  collectUIDsForInventoryTable,
+} from '../../../../utils/users/resolveUserDisplayNamesBatch';
 
 /**
  * Hook para manejar la resolución y caché de nombres de usuarios involucrados en la tabla de inventario.
@@ -10,101 +13,128 @@ import { resolveUserDisplayNamesBatch, collectUIDsForInventoryTable } from '../.
  * - Evita solicitudes duplicadas y mantiene indicadores de carga por uid y global.
  */
 export function useUserNamesCache({ db, user, countsMeta, session }) {
-  const [currentUserResolvedName, setCurrentUserResolvedName] = useState('')
-  const [usersNameCache, setUsersNameCache] = useState({})
-  const [resolvingUIDs, setResolvingUIDs] = useState({})
-  const [namesBatchLoading, setNamesBatchLoading] = useState(false)
+  const [currentUserResolvedName, setCurrentUserResolvedName] = useState('');
+  const [usersNameCache, setUsersNameCache] = useState({});
+  const [resolvingUIDs, setResolvingUIDs] = useState({});
+  const [namesBatchLoading, setNamesBatchLoading] = useState(false);
 
   // Helper para resolver un único usuario (esquema flexible users/{uid})
   const resolveUserDisplayName = async (uid) => {
-    if (!uid) return ''
+    if (!uid) return '';
     try {
-      const ref = doc(db, 'users', uid)
-      const snap = await getDoc(ref)
+      const ref = doc(db, 'users', uid);
+      const snap = await getDoc(ref);
       if (snap.exists()) {
-        const data = snap.data() || {}
-        const nested = data.user || {}
+        const data = snap.data() || {};
+        const nested = data.user || {};
         const candidates = [
-          data.realName, nested.realName,
-          data.name, nested.name,
-          data.displayName, nested.displayName,
-          data.fullName, nested.fullName,
-          data.email, nested.email
-        ]
+          data.realName,
+          nested.realName,
+          data.name,
+          nested.name,
+          data.displayName,
+          nested.displayName,
+          data.fullName,
+          nested.fullName,
+          data.email,
+          nested.email,
+        ];
         for (const c of candidates) {
-          if (typeof c === 'string' && c.trim()) return c.trim()
+          if (typeof c === 'string' && c.trim()) return c.trim();
         }
       }
-      return uid
+      return uid;
     } catch {
-      return uid
+      return uid;
     }
-  }
+  };
 
   // Resolver nombre preferido del usuario actual
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     const run = async () => {
-      if (!user?.uid) { if (!cancelled) setCurrentUserResolvedName(''); return }
-      const name = await resolveUserDisplayName(user.uid)
-      if (!cancelled) {
-        setCurrentUserResolvedName(name || user.displayName || user.name || user.email || user.uid)
+      if (!user?.uid) {
+        if (!cancelled) setCurrentUserResolvedName('');
+        return;
       }
-    }
-    run()
-    return () => { cancelled = true }
-  }, [user?.uid])
+      const name = await resolveUserDisplayName(user.uid);
+      if (!cancelled) {
+        setCurrentUserResolvedName(
+          name || user.displayName || user.name || user.email || user.uid,
+        );
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
   // Hidratar caché en batch (countsMeta + session)
   useEffect(() => {
-    const uids = collectUIDsForInventoryTable({ countsMeta, session })
-    if (uids.length === 0) return
+    const uids = collectUIDsForInventoryTable({ countsMeta, session });
+    if (uids.length === 0) return;
 
     // Sembrar lo que ya venga con updatedByName
-    const seed = {}
+    const seed = {};
     for (const key in countsMeta) {
-      const m = countsMeta[key]
+      const m = countsMeta[key];
       if (m?.updatedBy && m?.updatedByName && !usersNameCache[m.updatedBy]) {
-        seed[m.updatedBy] = m.updatedByName
+        seed[m.updatedBy] = m.updatedByName;
       }
     }
     if (Object.keys(seed).length) {
-      setUsersNameCache(prev => ({ ...prev, ...seed }))
+      setUsersNameCache((prev) => ({ ...prev, ...seed }));
     }
 
-    const missing = uids.filter(uid => !usersNameCache[uid] && !seed[uid] && !resolvingUIDs[uid])
-    if (!missing.length) return
+    const missing = uids.filter(
+      (uid) => !usersNameCache[uid] && !seed[uid] && !resolvingUIDs[uid],
+    );
+    if (!missing.length) return;
 
-    let cancelled = false
-    setResolvingUIDs(prev => ({ ...prev, ...missing.reduce((acc, uid) => { acc[uid] = true; return acc }, {}) }))
-    setNamesBatchLoading(true)
-    ;(async () => {
+    let cancelled = false;
+    setResolvingUIDs((prev) => ({
+      ...prev,
+      ...missing.reduce((acc, uid) => {
+        acc[uid] = true;
+        return acc;
+      }, {}),
+    }));
+    setNamesBatchLoading(true);
+    (async () => {
       try {
-        const loaded = await resolveUserDisplayNamesBatch(db, missing, usersNameCache)
+        const loaded = await resolveUserDisplayNamesBatch(
+          db,
+          missing,
+          usersNameCache,
+        );
         if (!cancelled && Object.keys(loaded).length > 0) {
-          setUsersNameCache(prev => ({ ...prev, ...loaded }))
+          setUsersNameCache((prev) => ({ ...prev, ...loaded }));
         }
-      } catch { /* noop */ }
-      finally {
+      } catch {
+        /* noop */
+      } finally {
         if (!cancelled) {
-          setResolvingUIDs(prev => {
-            const clone = { ...prev }
-            missing.forEach(uid => delete clone[uid])
-            return clone
-          })
-          setNamesBatchLoading(false)
+          setResolvingUIDs((prev) => {
+            const clone = { ...prev };
+            missing.forEach((uid) => delete clone[uid]);
+            return clone;
+          });
+          setNamesBatchLoading(false);
         }
       }
-    })()
-    return () => { cancelled = true }
-  }, [countsMeta, session, usersNameCache, resolvingUIDs, db])
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [countsMeta, session, usersNameCache, resolvingUIDs, db]);
 
   return {
     currentUserResolvedName,
     usersNameCache,
     resolvingUIDs,
     namesBatchLoading,
-  }
+  };
 }
 
-export default useUserNamesCache
+export default useUserNamesCache;

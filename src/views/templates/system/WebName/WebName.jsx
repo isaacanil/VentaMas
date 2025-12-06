@@ -1,29 +1,30 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const Container = styled('div')`
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.200);
-  padding: 0 0.6em;
-  height: 2em;
   width: min-content;
+  height: 2em;
+  padding: 0 0.6em;
   white-space: nowrap;
+  background-color: rgb(0 0 0 / 20%);
   border-radius: 8px;
-  @media(width < 768px){
+
+  @media (width < 768px) {
     height: 2.3em;
     padding: 0 0.8em;
   }
-`
+`;
 const WebNameItem = styled('span')`
   font-size: 1.2em;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: bold;
   color: #f3f3f3;
-  
+
   ${(props) => {
     switch (props.size) {
-      case "large":
+      case 'large':
         return `
        display: block;
         width: 100%;
@@ -39,16 +40,14 @@ const WebNameItem = styled('span')`
           color: #f1f1f1;
         } font-size: 1.3em;
         
-      `
+      `;
     }
   }}
-  
-  
-`
-export const WebName = ({size}) => {
+`;
+export const WebName = ({ size }) => {
   return (
     <Container>
       <WebNameItem size={size}>VENTAMAX</WebNameItem>
     </Container>
-  )
-}
+  );
+};

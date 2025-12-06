@@ -1,22 +1,25 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    userInformation: {
-        
-    }
-}
+  userInformation: {},
+};
 
 export const signupSlice = createSlice({
-    name: 'dev',
-    initialState,
-    reducers: {
-        
-    }
-})
+  name: 'dev',
+  initialState,
+  reducers: {},
+});
 
-export const { handleImageHidden, toggleCategoryGrouped, ReloadImageHiddenSetting, handleRowMode, toggleFullScreen} = signupSlice.actions;
+export const {
+  handleImageHidden,
+  toggleCategoryGrouped,
+  ReloadImageHiddenSetting,
+  handleRowMode,
+  toggleFullScreen,
+} = signupSlice.actions;
 
 //selectors
-export const selectCategoryGrouped = (state) => state.setting.userPreference.view.categoryGrouped;
+export const selectCategoryGrouped = (state) =>
+  state.setting.userPreference.view.categoryGrouped;
 
-export default signupSlice.reducer
+export default signupSlice.reducer;

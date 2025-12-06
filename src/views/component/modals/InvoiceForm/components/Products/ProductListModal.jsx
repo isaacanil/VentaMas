@@ -21,12 +21,18 @@ import {
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { StyledProductTable } from './ProductTables.styles';
 
-export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, isReadOnly = false }) => {
+export const ProductListModal = ({
+  isVisible,
+  onClose,
+  products,
+  onAddProduct,
+  isReadOnly = false,
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  
+
   useEffect(() => {
     if (isReadOnly && isVisible) {
       onClose();
@@ -46,7 +52,9 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
 
   useEffect(() => {
     if (categoryFilter === 'all') return;
-    const hasSelectedCategory = categoryStats.entries.some((entry) => entry.name === categoryFilter);
+    const hasSelectedCategory = categoryStats.entries.some(
+      (entry) => entry.name === categoryFilter,
+    );
     if (!hasSelectedCategory) {
       setCategoryFilter('all');
     }
@@ -63,9 +71,12 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
         })
       : [...list];
 
-    const filtered = categoryFilter === 'all'
-      ? filteredBySearch
-      : filteredBySearch.filter((product) => getCategoryName(product?.category) === categoryFilter);
+    const filtered =
+      categoryFilter === 'all'
+        ? filteredBySearch
+        : filteredBySearch.filter(
+            (product) => getCategoryName(product?.category) === categoryFilter,
+          );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
 
@@ -74,10 +85,12 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
         case 'price':
           return (getTotalPrice(a) - getTotalPrice(b)) * directionMultiplier;
         case 'stock':
-          return (((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier);
+          return ((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier;
         case 'name':
         default:
-          return ((a?.name ?? '').localeCompare(b?.name ?? '')) * directionMultiplier;
+          return (
+            (a?.name ?? '').localeCompare(b?.name ?? '') * directionMultiplier
+          );
       }
     });
 
@@ -94,17 +107,25 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
       sorter: (a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''),
       render: (text, record) => {
         const category = getCategoryName(record?.category);
-        const activeIngredient = getPrimaryActiveIngredient(record?.activeIngredients);
+        const activeIngredient = getPrimaryActiveIngredient(
+          record?.activeIngredients,
+        );
         const hasMeta = Boolean(category || activeIngredient);
 
         return (
           <ProductName>
-            <ProductPrimaryText title={record.name}>{record.name}</ProductPrimaryText>
+            <ProductPrimaryText title={record.name}>
+              {record.name}
+            </ProductPrimaryText>
             {hasMeta && (
               <ProductMeta>
-                {category ? <CategoryPill title={category}>{category}</CategoryPill> : null}
+                {category ? (
+                  <CategoryPill title={category}>{category}</CategoryPill>
+                ) : null}
                 {activeIngredient ? (
-                  <ActiveIngredientPill title={activeIngredient}>{activeIngredient}</ActiveIngredientPill>
+                  <ActiveIngredientPill title={activeIngredient}>
+                    {activeIngredient}
+                  </ActiveIngredientPill>
                 ) : null}
               </ProductMeta>
             )}
@@ -142,7 +163,7 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
             type="button"
             onClick={() => {
               if (isReadOnly) return;
-              onAddProduct(record)
+              onAddProduct(record);
             }}
             aria-label={`Agregar ${record.name}`}
             disabled={isReadOnly}
@@ -189,7 +210,9 @@ export const ProductListModal = ({ isVisible, onClose, products, onAddProduct, i
           sortOptions={sortOptions}
           onSortFieldChange={setSortField}
           sortDirection={sortDirection}
-          onToggleSortDirection={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+          onToggleSortDirection={() =>
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+          }
         />
 
         <StyledProductTable
@@ -226,10 +249,10 @@ const StyledModal = styled(Modal)`
   top: 10px;
 
   .ant-modal-content {
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 26px 60px rgba(15, 23, 42, 0.18);
     padding: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: 0 26px 60px rgb(15 23 42 / 18%);
   }
 
   .ant-modal-body {
@@ -246,24 +269,24 @@ const ModalContent = styled.div`
 
 const Header = styled.header`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 18px;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const TitleGroup = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const HeaderIcon = styled(FontAwesomeIcon)`
+  padding: 12px;
   font-size: 32px;
   color: #1d4ed8;
-  background: rgba(29, 78, 216, 0.12);
+  background: rgb(29 78 216 / 12%);
   border-radius: 16px;
-  padding: 12px;
 `;
 
 const HeaderText = styled.div`
@@ -281,13 +304,13 @@ const Title = styled.h2`
 
 const SummaryChip = styled.div`
   display: inline-flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
   padding: 10px 18px;
-  border-radius: 999px;
-  background: #e0f2fe;
-  color: #0c4a6e;
   font-weight: 600;
+  color: #0c4a6e;
+  background: #e0f2fe;
+  border-radius: 999px;
 `;
 
 const SummaryIcon = styled(FontAwesomeIcon)`
@@ -302,11 +325,11 @@ const SummaryRow = styled.div`
 const ProductName = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
+  max-width: 100%;
   font-weight: 600;
   color: #1f2937;
-  max-width: 100%;
 `;
 
 const ProductPrimaryText = styled.span`
@@ -325,24 +348,24 @@ const ProductMeta = styled.div`
 const MetaPill = styled.span`
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
   max-width: 200px;
+  padding: 4px 10px;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
+  border-radius: 999px;
 `;
 
 const CategoryPill = styled(MetaPill)`
-  background: #eef2ff;
   color: #3730a3;
+  background: #eef2ff;
 `;
 
 const ActiveIngredientPill = styled(MetaPill)`
-  background: #ecfdf5;
   color: #047857;
+  background: #ecfdf5;
 `;
 
 const StockBadge = styled.div`
@@ -351,11 +374,11 @@ const StockBadge = styled.div`
   justify-content: center;
   min-width: 64px;
   padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 600;
   font-size: 13px;
-  background: ${({ $isLow }) => ($isLow ? '#fee2e2' : '#ecfdf5')};
+  font-weight: 600;
   color: ${({ $isLow }) => ($isLow ? '#991b1b' : '#047857')};
+  background: ${({ $isLow }) => ($isLow ? '#fee2e2' : '#ecfdf5')};
+  border-radius: 999px;
 `;
 
 const ActionButton = styled.button`
@@ -364,16 +387,21 @@ const ActionButton = styled.button`
   justify-content: center;
   width: 42px;
   height: 42px;
-  border-radius: 999px;
+  padding: 0;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   background: #f3f4f6;
   border: none;
-  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${props => (props.disabled ? 0.5 : 1)};
-  transition: background 0.2s ease, transform 0.2s ease;
-  padding: 0;
+  border-radius: 999px;
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
-    ${props => props.disabled ? '' : `
+    ${(props) =>
+      props.disabled
+        ? ''
+        : `
     background: #e5e7eb;
     transform: translateY(-1px);
     `}
@@ -385,7 +413,7 @@ const ActionButton = styled.button`
   }
 
   &:active {
-    ${props => props.disabled ? '' : 'transform: translateY(0);'}
+    ${(props) => (props.disabled ? '' : 'transform: translateY(0);')}
   }
 `;
 
@@ -396,16 +424,16 @@ const ActionIcon = styled(FontAwesomeIcon)`
 
 const ModalFooter = styled.footer`
   display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
 `;
 
 const FooterNote = styled.div`
   display: inline-flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
   font-size: 13px;
   color: #6b7280;
 `;
@@ -418,8 +446,8 @@ const NoteIcon = styled(FontAwesomeIcon)`
 const CloseButton = styled(Button)`
   && {
     display: inline-flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
     font-weight: 600;
   }
 `;

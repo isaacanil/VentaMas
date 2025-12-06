@@ -4,48 +4,62 @@ import React from 'react';
 
 const { Modal, Button } = antd;
 
-const VALID_BUTTON_TYPES = new Set(['default', 'primary', 'dashed', 'link', 'text', 'ghost']);
+const VALID_BUTTON_TYPES = new Set([
+  'default',
+  'primary',
+  'dashed',
+  'link',
+  'text',
+  'ghost',
+]);
 
 export const ConfirmModal = ({
-    open,
-    onConfirm,
-    onCancel,
-    title,
-    message,
-    danger = false,
-    type: buttonType,
-    confirmText = "Confirmar",
-    cancelText = "Cancelar",
-    data
+  open,
+  onConfirm,
+  onCancel,
+  title,
+  message,
+  danger = false,
+  type: buttonType,
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar',
+  data,
 }) => {
-    const getButtonType = () => (
-        buttonType && VALID_BUTTON_TYPES.has(buttonType) ? buttonType : 'primary'
-    );
-    const resolvedDanger = danger || buttonType === 'danger';
+  const getButtonType = () =>
+    buttonType && VALID_BUTTON_TYPES.has(buttonType) ? buttonType : 'primary';
+  const resolvedDanger = danger || buttonType === 'danger';
 
-    return (
-        <Modal
-            title={title}
-            open={open}
-            onOk={() => onConfirm(data)}
-            onCancel={onCancel}
-            footer={[
-                <Button key="cancel" onClick={onCancel}>{cancelText}</Button>,
-                <Button
-                    key="confirm"
-                    danger={resolvedDanger}
-                    type={getButtonType()}
-                    onClick={() => onConfirm(data)}
-                >{confirmText}</Button>,
-            ]}
+  return (
+    <Modal
+      title={title}
+      open={open}
+      onOk={() => onConfirm(data)}
+      onCancel={onCancel}
+      footer={[
+        <Button key="cancel" onClick={onCancel}>
+          {cancelText}
+        </Button>,
+        <Button
+          key="confirm"
+          danger={resolvedDanger}
+          type={getButtonType()}
+          onClick={() => onConfirm(data)}
         >
-            <p style={{
-                minHeight: '100px',
-                maxWidth: '400px',
-                margin: "0 10px",
-                display: "grid",
-                placeItems: "center",
-            }}>{message}</p>
-        </Modal>
-    );
+          {confirmText}
+        </Button>,
+      ]}
+    >
+      <p
+        style={{
+          minHeight: '100px',
+          maxWidth: '400px',
+          margin: '0 10px',
+          display: 'grid',
+          placeItems: 'center',
+        }}
+      >
+        {message}
+      </p>
+    </Modal>
+  );
 };

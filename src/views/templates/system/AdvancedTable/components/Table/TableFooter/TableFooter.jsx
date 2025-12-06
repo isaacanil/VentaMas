@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../../../constants/icons/icons';
@@ -18,6 +18,7 @@ const TableFooter = ({
   lastPage,
   footerRightSide,
   toggleReorderMenu,
+  showPaginationControls = true,
 }) => {
   return (
     <Footer>
@@ -28,14 +29,18 @@ const TableFooter = ({
         </Counter>
         {footerLeftSide ? footerLeftSide : ''}
       </FooterLeftSide>
-      <Pagination
-        currentPage={currentPage}
-        pageCount={pageCount}
-        nextPage={nextPage}
-        prevPage={prevPage}
-        firstPage={firstPage}
-        lastPage={lastPage}
-      />
+      {showPaginationControls && (
+        <PaginationContainer>
+          <Pagination
+            currentPage={currentPage}
+            pageCount={pageCount}
+            nextPage={nextPage}
+            prevPage={prevPage}
+            firstPage={firstPage}
+            lastPage={lastPage}
+          />
+        </PaginationContainer>
+      )}
       <FooterRightSide>
         {footerRightSide && footerRightSide}
         <Button
@@ -50,42 +55,50 @@ const TableFooter = ({
 
 export default TableFooter;
 const Footer = styled.div`
-   padding: 0 1em;
-    z-index: 1;
-    grid-template-columns: 1fr 1fr 1fr;
-    display: grid;
-    align-items: center;
-    background-color: white;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   height: 3em;
+  padding: 0 1em;
+  background-color: white;
   border-top: var(--border-primary);
 `;
 const FooterLeftSide = styled.div`
-  justify-self: start;
   display: flex;
   gap: 1em;
   align-items: center;
-`
+  justify-self: start;
+  grid-column: 1;
+`;
+
+const PaginationContainer = styled.div`
+  grid-column: 2;
+  justify-self: center;
+`;
 
 const FooterRightSide = styled.div`
   justify-self: end;
-`
+  grid-column: 3;
+`;
 const Counter = styled.div`
   display: flex;
-  white-space: nowrap;
-  align-items: center;
-  border-radius: var(--border-radius);
   gap: 0.5em;
+  align-items: center;
   padding: 0.2em 1em;
-  font-weight: 600;
   font-size: 0.9em;
-  background-color: #d3d3d3;
-`
-const ElementsName = styled.div`
   font-weight: 600;
+  white-space: nowrap;
+  background-color: #d3d3d3;
+  border-radius: var(--border-radius);
+`;
+const ElementsName = styled.div`
   font-size: 1em;
+  font-weight: 600;
   color: var(--color-gray);
   text-transform: capitalize;
-  @media (max-width: 1100px) {
+
+  @media (width <= 1100px) {
     display: none;
   }
-`
+`;

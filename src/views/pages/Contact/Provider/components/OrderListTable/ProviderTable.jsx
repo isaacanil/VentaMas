@@ -1,15 +1,14 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice'
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider'
-import { ProviderCard } from '../../ListItem/ProviderCard'
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
+import { ProviderCard } from '../../ListItem/ProviderCard';
 
 export const ProviderTable = () => {
-
   const user = useSelector(selectUser);
-  const {providers} = useFbGetProviders(user);
+  const { providers } = useFbGetProviders(user);
 
   return (
     <Container>
@@ -18,7 +17,7 @@ export const ProviderTable = () => {
           <h3>Administrar Proveedores</h3>
         </TitleContainer>
         <Table>
-          <Row fill='fill'>
+          <Row fill="fill">
             <Col>#</Col>
             <Col>Nombre</Col>
             <Col>Teléfono</Col>
@@ -27,95 +26,92 @@ export const ProviderTable = () => {
           </Row>
 
           <TableBody>
-            {
-              Array(providers).length > 0 ? (
-                providers.map(({provider}, index) => (
-                  <ProviderCard Row={Row} Col={Col} key={index} e={provider} index={index} />
+            {Array(providers).length > 0
+              ? providers.map(({ provider }, index) => (
+                  <ProviderCard
+                    Row={Row}
+                    Col={Col}
+                    key={index}
+                    e={provider}
+                    index={index}
+                  />
                 ))
-              ) : null
-              
-
-            }
+              : null}
           </TableBody>
         </Table>
       </Body>
     </Container>
-
-  )
-}
+  );
+};
 const Container = styled.div`
-    width: 100%;
-    padding: 0 1em;
-    display: flex;
-    justify-content: center;
-`
-const Body = styled.header`
-    justify-self: center;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    border-radius: 10px;
-    position: relative;
-    height: calc(100vh - 2.75em - 2.5em - 1.5em);
-    overflow: hidden;
-    //max-height: 400px;
-    width: 100%;
-    max-width: 1000px;
-    
-    display: grid;
-    grid-template-rows: min-content 1fr; 
-    background-color: #ffffff;
-    @media (max-width: 800px){
-      max-height: 100%;
-      
-  }
-`
-const Table = styled.div`
-  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 0 1em;
   width: 100%;
-  overflow: hidden;
-  overflow-x: auto;
+`;
+const Body = styled.header`
+  /* max-height: 400px; */
+  background-color: #fff;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 10px;
   display: grid;
   grid-template-rows: min-content 1fr;
-  
- 
-
-`
-const TableBody = styled.div`
-  display: grid;
-  align-items: flex-start;
-  align-content: flex-start;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  height: calc(100vh - 2.75em - 2.5em - 1.5em);
+  justify-self: center;
+  max-width: 1000px;
+  overflow: hidden;
+  position: relative;
   width: 100%;
-  color: var(--Gray10);
-  font-size: 15px;
-  
 
-`
-const TitleContainer = styled.div`
+  @media (width <= 800px) {
+    max-height: 100%;
+  }
+`;
+const Table = styled.div`
   display: grid;
+  grid-template-rows: min-content 1fr;
+  overflow: hidden;
+  overflow-x: auto;
+  position: relative;
+  width: 100%;
+`;
+const TableBody = styled.div`
+  align-content: flex-start;
+  align-items: flex-start;
+  color: var(--gray-10);
+  display: grid;
+  font-size: 15px;
+  overflow: hidden scroll;
+  width: 100%;
+`;
+const TitleContainer = styled.div`
   align-items: center;
-  justify-content: center;
   background: #3f3f3f;
+  display: grid;
   height: 2em;
-  h3{
-    margin: 0;
+  justify-content: center;
+  text-align: center;
+
+  h3 {
     color: white;
     font-weight: 500;
+    margin: 0;
   }
-  text-align: center;
-`
+`;
 const Row = styled.div`
   display: grid;
   align-items: center;
   height: 3em;
   gap: 0.6em;
-  grid-template-columns: 
-  minmax(100px, 0.1fr) //ID
-  minmax(120px, 0.6fr) //Nombre
-  minmax(148px, 0.5fr) //Telefono
-  minmax(120px, 1fr) //Direccion
-  minmax(92px, 0.2fr); //acción
-  @media (max-width: 800px){
+
+  /* id, nombre, telefono, direccion, accion */
+  grid-template-columns: minmax(100px, 0.1fr)
+    minmax(120px, 0.6fr)
+    minmax(148px, 0.5fr)
+    minmax(120px, 1fr)
+    minmax(92px, 0.2fr);
+
+  @media (width <= 800px) {
     gap: 0;
   }
   ${(props) => {
@@ -132,12 +128,11 @@ const Row = styled.div`
         }
       }
       
-      `
+      `;
       default:
-
     }
   }}
-    ${(props) => {
+  ${(props) => {
     switch (props.border) {
       case 'border-bottom':
         return `
@@ -145,7 +140,7 @@ const Row = styled.div`
               &:last-child{
                 border-bottom: none;
               }
-              `
+              `;
       default:
     }
   }}
@@ -154,11 +149,11 @@ const Row = styled.div`
       case 'header':
         return `
         background-color: #9c0e0e;
-        `
+        `;
       case 'item':
         return `
         background-color: #ebebeb;
-        `
+        `;
       default:
     }
   }}
@@ -168,23 +163,23 @@ const Row = styled.div`
         return `
           padding-right: 16px;
           height: 2em;
-          background-color: var(--White1);
-        `
+          background-color: var(--white-1);
+        `;
 
       default:
         break;
     }
   }}
-`
+`;
 const Col = styled.div`
   padding: 0 0.6em;
-  ${props => {
+  ${(props) => {
     switch (props.position) {
       case 'right':
-        return`
+        return `
           text-align: right;
         `;
-    
+
       default:
         break;
     }
@@ -201,10 +196,10 @@ const Col = styled.div`
           //white-space: nowrap;
           text-overflow: ellipsis;
           overflow: hidden;
-          `
+          `;
 
       default:
         break;
     }
   }}
-`
+`;

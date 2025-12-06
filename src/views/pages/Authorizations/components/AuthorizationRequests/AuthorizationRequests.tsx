@@ -11,7 +11,10 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { DetailModal } from './components/DetailModal';
 import { RequestCard } from './components/RequestCard';
 import { ITEMS_PER_PAGE } from './constants/constants';
-import { useAuthorizationRequests, type StatusFilterValue } from './hooks/useAuthorizationRequests';
+import {
+  useAuthorizationRequests,
+  type StatusFilterValue,
+} from './hooks/useAuthorizationRequests';
 
 import type { AppUser, AuthorizationRequestListItem } from './types';
 import type { SelectProps } from 'antd';
@@ -40,10 +43,11 @@ const STATUS_LABELS: Record<StatusFilterValue, string> = {
   all: 'Todas',
 };
 
-const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] = STATUS_VALUES.map((value) => ({
-  value,
-  label: STATUS_LABELS[value],
-}));
+const STATUS_OPTIONS: SelectProps<StatusFilterValue>['options'] =
+  STATUS_VALUES.map((value) => ({
+    value,
+    label: STATUS_LABELS[value],
+  }));
 
 const STATUS_VALUE_SET = new Set<StatusFilterValue>(STATUS_VALUES);
 const DEFAULT_STATUS: StatusFilterValue = 'pending';
@@ -51,14 +55,17 @@ const DEFAULT_STATUS: StatusFilterValue = 'pending';
 const isAppUser = (value: unknown): value is AppUser =>
   typeof value === 'object' && value !== null;
 
-export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequestsProps) => {
+export const AuthorizationRequests = ({
+  searchTerm = '',
+}: AuthorizationRequestsProps) => {
   const rawUser: unknown = useSelector(selectUser);
   const user = isAppUser(rawUser) ? rawUser : null;
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get('status');
-  const normalizedStatusParam = statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
-    ? (statusParam as StatusFilterValue)
-    : null;
+  const normalizedStatusParam =
+    statusParam && STATUS_VALUE_SET.has(statusParam as StatusFilterValue)
+      ? (statusParam as StatusFilterValue)
+      : null;
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
 
   const {
@@ -121,7 +128,10 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
   const APPROVER_ROLES = ['admin', 'owner', 'dev', 'manager'];
 
   const totalRequests = filteredRequests.length;
-  const totalPages = Math.max(1, Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((totalRequests || 1) / ITEMS_PER_PAGE),
+  );
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -149,7 +159,8 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
 
     Modal.confirm({
       title: '¿Confirmar autorización?',
-      content: 'Esta acción aprobará la solicitud y quedará registrada en el historial.',
+      content:
+        'Esta acción aprobará la solicitud y quedará registrada en el historial.',
       okText: 'Autorizar',
       cancelText: 'Cancelar',
       onOk: async () => {
@@ -245,15 +256,14 @@ export const AuthorizationRequests = ({ searchTerm = '' }: AuthorizationRequests
         onApprove={onApprove}
         onReject={handleReject}
       />
-
     </>
   );
 };
 
 const Container = styled(Card)`
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   .ant-card-body {
     display: flex;
@@ -265,15 +275,15 @@ const Container = styled(Card)`
 
 const FilterBar = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -281,11 +291,11 @@ const FilterBar = styled.div`
 
 const FilterSection = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
@@ -297,10 +307,10 @@ const FilterGroup = styled.div`
   gap: 12px;
   align-items: center;
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     flex-direction: column;
     align-items: stretch;
-    
+
     > * {
       width: 100% !important;
     }
@@ -309,21 +319,21 @@ const FilterGroup = styled.div`
 
 const FilterLabel = styled.span`
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgb(0 0 0 / 85%);
 `;
 
 const CardsSection = styled.div`
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
   gap: 16px;
   overflow: hidden;
 `;
 
 const CardsSpin = styled(Spin)`
-  width: 100%;
   display: flex;
   flex: 1;
+  width: 100%;
 
   .ant-spin-container {
     display: flex;
@@ -332,8 +342,8 @@ const CardsSpin = styled(Spin)`
 `;
 
 const CardsContent = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
 `;
 
@@ -344,13 +354,13 @@ const CardsGrid = styled.div`
 `;
 
 const EmptyState = styled.div`
-  flex: 1;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  text-align: center;
   padding: 32px 16px;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgb(0 0 0 / 45%);
+  text-align: center;
   border: 1px dashed #d9d9d9;
   border-radius: 12px;
 `;

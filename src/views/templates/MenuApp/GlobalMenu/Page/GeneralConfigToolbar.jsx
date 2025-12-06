@@ -9,25 +9,25 @@ const GeneralConfigToolbar = ({ side = 'left' }) => {
   // Objeto de configuración que mapea rutas a contenidos de toolbar
   const toolbarConfig = {
     // Billing (facturación)
-    'billing': {
+    billing: {
       leftSide: () => null,
-      rightSide: () => null
+      rightSide: () => null,
     },
     // Business info (datos de la empresa)
-    'business': {
+    business: {
       leftSide: () => null,
-      rightSide: () => null
+      rightSide: () => null,
     },
     // Tax receipt (comprobantes fiscales)
     'tax-receipt': {
       leftSide: () => null,
-      rightSide: () => null
+      rightSide: () => null,
     },
     // App info
     'app-info': {
       leftSide: () => null,
-      rightSide: () => null
-    }
+      rightSide: () => null,
+    },
   };
 
   // Determinar qué sección está activa
@@ -39,7 +39,7 @@ const GeneralConfigToolbar = ({ side = 'left' }) => {
   };
 
   const activeSection = getActiveSection();
-  
+
   // Renderizar el contenido apropiado según el lado y la sección activa
   const renderContent = () => {
     const config = toolbarConfig[activeSection];
@@ -48,17 +48,13 @@ const GeneralConfigToolbar = ({ side = 'left' }) => {
     return side === 'left' ? config.leftSide() : config.rightSide();
   };
 
-  return (
-    <Container>
-      {renderContent()}
-    </Container>
-  );
+  return <Container>{renderContent()}</Container>;
 };
 
 export default GeneralConfigToolbar;
 
 const Container = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 `;

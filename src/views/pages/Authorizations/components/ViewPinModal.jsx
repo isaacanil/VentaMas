@@ -1,4 +1,8 @@
-import { SafetyOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import {
+  SafetyOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from '@ant-design/icons';
 import { Modal, Button, message, Typography, Space } from 'antd';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
@@ -13,23 +17,30 @@ const MODULE_LABELS = {
 };
 
 const PinDisplay = styled.div`
-  margin: 12px 0;
   padding: 12px;
-  border-radius: 8px;
-  background: #001529;
-  color: #fff;
+  margin: 12px 0;
   font-family: 'Roboto Mono', monospace;
   font-size: 20px;
-  letter-spacing: 3px;
+  color: #fff;
   text-align: center;
+  letter-spacing: 3px;
+  background: #001529;
+  border-radius: 8px;
 `;
 
-export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel }) => {
+export const ViewPinModal = ({
+  visible,
+  onClose,
+  user,
+  moduleKey,
+  moduleLabel,
+}) => {
   const [loading, setLoading] = useState(false);
   const [pinValue, setPinValue] = useState(null);
   const [isPinVisible, setIsPinVisible] = useState(false);
   const pinVisibilityTimer = useRef(null);
-  const resolvedModuleLabel = moduleLabel || MODULE_LABELS[moduleKey] || moduleKey;
+  const resolvedModuleLabel =
+    moduleLabel || MODULE_LABELS[moduleKey] || moduleKey;
 
   // Reset state when modal closes
   useEffect(() => {
@@ -88,12 +99,16 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
     } else {
       // Mostrar PIN
       setIsPinVisible(true);
-  message.success(`Mostrando el PIN de ${resolvedModuleLabel} por 30 segundos`);
-      
+      message.success(
+        `Mostrando el PIN de ${resolvedModuleLabel} por 30 segundos`,
+      );
+
       // Auto-ocultar después de 30 segundos
       pinVisibilityTimer.current = setTimeout(() => {
         setIsPinVisible(false);
-  message.info(`El PIN de ${resolvedModuleLabel} se ocultó por seguridad`);
+        message.info(
+          `El PIN de ${resolvedModuleLabel} se ocultó por seguridad`,
+        );
         pinVisibilityTimer.current = null;
       }, 30000);
     }
@@ -107,8 +122,6 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
     };
   }, []);
 
-
-
   const renderView = () => (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       <div style={{ textAlign: 'center' }}>
@@ -116,36 +129,34 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
         <Title level={4} style={{ marginTop: 16 }}>
           PIN de {resolvedModuleLabel}
         </Title>
-        <Text type="secondary">
-          Módulo: {resolvedModuleLabel}
-        </Text>
+        <Text type="secondary">Módulo: {resolvedModuleLabel}</Text>
       </div>
 
-
       <div>
-        <Text strong style={{ fontSize: 16, display: 'block', marginBottom: 12 }}>
+        <Text
+          strong
+          style={{ fontSize: 16, display: 'block', marginBottom: 12 }}
+        >
           PIN del Módulo
         </Text>
         <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-          Haz clic en el botón para revelar tu PIN. Se ocultará automáticamente después de 30 segundos.
+          Haz clic en el botón para revelar tu PIN. Se ocultará automáticamente
+          después de 30 segundos.
         </Text>
-        
-       
-          {isPinVisible && pinValue ? <PinDisplay>{pinValue}</PinDisplay> : null}
-      
-            <Button
-              block
-              type={isPinVisible ? 'default' : 'primary'}
-              icon={isPinVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-              loading={loading}
-              disabled={!pinValue}
-              onClick={handleTogglePinVisibility}
-              size="large"
-            >
-              {isPinVisible ? 'Ocultar PIN' : 'Mostrar PIN'}
-            </Button>
-      
-      
+
+        {isPinVisible && pinValue ? <PinDisplay>{pinValue}</PinDisplay> : null}
+
+        <Button
+          block
+          type={isPinVisible ? 'default' : 'primary'}
+          icon={isPinVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+          loading={loading}
+          disabled={!pinValue}
+          onClick={handleTogglePinVisibility}
+          size="large"
+        >
+          {isPinVisible ? 'Ocultar PIN' : 'Mostrar PIN'}
+        </Button>
       </div>
     </Space>
   );
@@ -161,12 +172,10 @@ export const ViewPinModal = ({ visible, onClose, user, moduleKey, moduleLabel })
       ]}
       width={500}
       centered
-      destroyOnClose
+      destroyOnHidden
       title={null}
     >
-      <div style={{ padding: '8px 0' }}>
-        {renderView()}
-      </div>
+      <div style={{ padding: '8px 0' }}>{renderView()}</div>
     </Modal>
   );
 };

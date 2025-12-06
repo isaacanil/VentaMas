@@ -1,24 +1,32 @@
-import { Spin, Typography, Modal, message } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
+import { Spin, Typography, Modal, message } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { useDialog } from '../../../../../Context/Dialog'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { getTaxReceiptData, selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice'
-import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt'
-import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt'
-import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger'
-import { useCompareArrays } from '../../../../../hooks/useCompareArrays'
-import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus'
-import { serializeFirestoreDocuments } from '../../../../../utils/serialization/serializeFirestoreData'
+import { useDialog } from '../../../../../Context/Dialog';
+import { selectUser } from '../../../../../features/auth/userSlice';
+import {
+  getTaxReceiptData,
+  selectTaxReceiptEnabled,
+} from '../../../../../features/taxReceipt/taxReceiptSlice';
+import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
+import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger';
+import { useCompareArrays } from '../../../../../hooks/useCompareArrays';
+import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus';
+import { serializeFirestoreDocuments } from '../../../../../utils/serialization/serializeFirestoreData';
 
-import AddReceiptDrawer from './components/AddReceiptModal/AddReceiptModal'
-import { ReceiptSettingsSection } from './components/ReceiptSettingsSection/ReceiptSettingsSection'
-import { ReceiptTableSection } from './components/ReceiptTableSection/ReceiptTableSection'
-import { buildPrefix, sanitizePart } from './components/TaxReceiptForm/utils/ncfUtils'
-import { filterPredefinedReceipts, generateNewTaxReceipt } from './utils/taxReceiptUtils'
-
+import AddReceiptDrawer from './components/AddReceiptModal/AddReceiptModal';
+import { ReceiptSettingsSection } from './components/ReceiptSettingsSection/ReceiptSettingsSection';
+import { ReceiptTableSection } from './components/ReceiptTableSection/ReceiptTableSection';
+import {
+  buildPrefix,
+  sanitizePart,
+} from './components/TaxReceiptForm/utils/ncfUtils';
+import {
+  filterPredefinedReceipts,
+  generateNewTaxReceipt,
+} from './utils/taxReceiptUtils';
 
 const { Title, Paragraph } = Typography;
 
@@ -64,12 +72,12 @@ export const TaxReceiptSetting = () => {
   }, [taxReceiptLocal]);
 
   const isUnchanged = useCompareArrays(taxReceiptLocal, taxReceipt);
-  
+
   useEffect(() => {
     const serializedTaxReceipt = serializeFirestoreDocuments(taxReceipt);
-    dispatch(getTaxReceiptData(serializedTaxReceipt))
-    setTaxReceiptLocal(serializedTaxReceipt)
-  }, [taxReceipt, dispatch])
+    dispatch(getTaxReceiptData(serializedTaxReceipt));
+    setTaxReceiptLocal(serializedTaxReceipt);
+  }, [taxReceipt, dispatch]);
 
   const handleTaxReceiptEnabled = () => {
     if (taxReceiptEnabled) {
@@ -77,31 +85,32 @@ export const TaxReceiptSetting = () => {
         title: '¿Deshabilitar comprobantes?',
         isOpen: true,
         type: 'warning',
-        message: 'Si deshabilitas los comprobantes, no se mostrarán en el punto de venta.',
+        message:
+          'Si deshabilitas los comprobantes, no se mostrarán en el punto de venta.',
         onConfirm: () => {
-          fbEnabledTaxReceipt(user)
-          onClose()
+          fbEnabledTaxReceipt(user);
+          onClose();
         },
-      })
+      });
     } else {
-      fbEnabledTaxReceipt(user)
+      fbEnabledTaxReceipt(user);
     }
   };
 
   const handleAddNewTaxReceipt = () => {
     const newItem = generateNewTaxReceipt(taxReceiptLocal);
     setTaxReceiptLocal([...taxReceiptLocal, newItem]);
-    message.success('Nuevo comprobante agregado. No olvides guardar los cambios.');
+    message.success(
+      'Nuevo comprobante agregado. No olvides guardar los cambios.',
+    );
   };
 
   const handleOpenAddPredefinedReceipt = () => setIsAddModalVisible(true);
   const handleCloseAddPredefinedReceipt = () => setIsAddModalVisible(false);
 
   const handleAddPredefinedReceipts = (newReceipts) => {
-    const { unique, duplicateNames, duplicateSeries } = filterPredefinedReceipts(
-      newReceipts,
-      taxReceiptLocal
-    );
+    const { unique, duplicateNames, duplicateSeries } =
+      filterPredefinedReceipts(newReceipts, taxReceiptLocal);
 
     let warningMsg = '';
     if (duplicateNames.length) {
@@ -117,16 +126,20 @@ export const TaxReceiptSetting = () => {
     if (unique.length) {
       setTaxReceiptLocal([...taxReceiptLocal, ...unique]);
       message.success(
-        `${unique.length} comprobante(s) añadidos correctamente. No olvides guardar los cambios.`
+        `${unique.length} comprobante(s) añadidos correctamente. No olvides guardar los cambios.`,
       );
     } else if (!warningMsg) {
-      message.error('No se agregaron comprobantes. Todos ya existen en el sistema.');
+      message.error(
+        'No se agregaron comprobantes. Todos ya existen en el sistema.',
+      );
     }
   };
 
   const handleRebuildLedger = useCallback(() => {
     if (!user?.businessID || !userId) {
-      message.error('No pudimos identificar tu sesión para reconstruir el ledger.');
+      message.error(
+        'No pudimos identificar tu sesión para reconstruir el ledger.',
+      );
       return;
     }
 
@@ -138,19 +151,24 @@ export const TaxReceiptSetting = () => {
       content: (
         <div>
           <p>
-            Esta acción recalculará el ledger de comprobantes fiscales utilizando las facturas registradas
-            para sincronizar la numeración.
+            Esta acción recalculará el ledger de comprobantes fiscales
+            utilizando las facturas registradas para sincronizar la numeración.
           </p>
           {configuredPrefixes.length > 0 ? (
             <p>
-              Detectamos los prefijos configurados: <strong>{configuredPrefixes.join(', ')}</strong>. El backend usará la configuración oficial de la empresa.
+              Detectamos los prefijos configurados:{' '}
+              <strong>{configuredPrefixes.join(', ')}</strong>. El backend usará
+              la configuración oficial de la empresa.
             </p>
           ) : (
             <p>
-              No se detectaron prefijos específicos; se procesará el ledger completo del negocio.
+              No se detectaron prefijos específicos; se procesará el ledger
+              completo del negocio.
             </p>
           )}
-          <p style={{ marginBottom: 0 }}>El proceso puede tardar algunos segundos.</p>
+          <p style={{ marginBottom: 0 }}>
+            El proceso puede tardar algunos segundos.
+          </p>
         </div>
       ),
       onOk: () => {
@@ -161,17 +179,23 @@ export const TaxReceiptSetting = () => {
           userId,
         })
           .then((result) => {
-            const { processed = 0, written = 0, skipped = 0, emptyNcf = 0 } = result ?? {};
+            const {
+              processed = 0,
+              written = 0,
+              skipped = 0,
+              emptyNcf = 0,
+            } = result ?? {};
             const parts = [`${written} reconstruidas`];
             if (skipped) parts.push(`${skipped} omitidas`);
             if (emptyNcf) parts.push(`${emptyNcf} sin NCF`);
             message.success(
-              `Ledger sincronizado. Procesadas ${processed} facturas (${parts.join(', ')}).`
+              `Ledger sincronizado. Procesadas ${processed} facturas (${parts.join(', ')}).`,
             );
           })
           .catch((error) => {
             console.error('Error al reconstruir el ledger de NCF:', error);
-            const errorMessage = error?.message || 'No se pudo reconstruir el ledger.';
+            const errorMessage =
+              error?.message || 'No se pudo reconstruir el ledger.';
             message.error(errorMessage);
           })
           .finally(() => {
@@ -183,8 +207,14 @@ export const TaxReceiptSetting = () => {
 
   // Definimos entradas para el control de carga con valores explícitos
   const loadEntries = [
-    { loading: loadingReceipts === true, tip: 'Cargando comprobantes fiscales...' },
-    { loading: rebuildingLedger === true, tip: 'Reconstruyendo ledger de NCF...' },
+    {
+      loading: loadingReceipts === true,
+      tip: 'Cargando comprobantes fiscales...',
+    },
+    {
+      loading: rebuildingLedger === true,
+      tip: 'Reconstruyendo ledger de NCF...',
+    },
   ];
 
   // Utilizamos useLoadingStatus para centralizar la lógica de carga
@@ -193,11 +223,22 @@ export const TaxReceiptSetting = () => {
     <Spin spinning={isLoading} tip={tip}>
       <Page>
         <Head>
-          <Title level={3} style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}>
+          <Title
+            level={3}
+            style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}
+          >
             Configuración de Comprobantes
           </Title>
-          <Paragraph style={{ fontSize: '16px', margin: 0, lineHeight: '1.5', color: 'rgba(0, 0, 0, 0.65)' }}>
-            Ajusta cómo se generan y muestran los comprobantes en el punto de venta.
+          <Paragraph
+            style={{
+              fontSize: '16px',
+              margin: 0,
+              lineHeight: '1.5',
+              color: 'rgb(0 0 0 / 65%)',
+            }}
+          >
+            Ajusta cómo se generan y muestran los comprobantes en el punto de
+            venta.
           </Paragraph>
         </Head>
 
@@ -225,15 +266,15 @@ export const TaxReceiptSetting = () => {
         />
       </Page>
     </Spin>
-  )
-}
+  );
+};
 
 const Page = styled.div`
   display: grid;
   gap: 1.6em;
   padding: 1em;
-`
+`;
 const Head = styled.div`
   display: grid;
   width: 100%;
-`
+`;

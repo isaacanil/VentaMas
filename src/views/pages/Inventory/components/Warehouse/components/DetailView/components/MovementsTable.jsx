@@ -10,7 +10,6 @@ import { MovementReason } from '../../../../../../../../models/Warehouse/Movemen
 import ROUTES_NAME from '../../../../../../../../routes/routesName';
 import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 
-
 const StyledCard = styled.div`
   margin-top: 16px;
   display: grid;
@@ -25,15 +24,19 @@ const LocationCell = styled.div`
   transition: all 0.2s ease;
   background: ${({ isEntry }) =>
     isEntry
-      ? 'rgba(76, 175, 80, 0.08)'   // Verde más natural y familiar (como éxito)
-      : 'rgba(239, 83, 80, 0.08)'}; // Rojo más suave y familiar (como acción)
+      ? 'rgba(76, 175, 80, 0.08)' /* Verde más natural y familiar (como éxito) */
+      : 'rgba(239, 83, 80, 0.08)'}; /* Rojo más suave y familiar (como acción) */
+
   border-radius: 8px;
-  border: 1px solid ${({ isEntry }) =>
-    isEntry
-      ? 'rgba(76, 175, 80, 0.25)'   // Verde institucional
-      : 'rgba(239, 83, 80, 0.25)'}; // Rojo institucional
-  opacity: ${({ isExternal }) => isExternal ? 0.85 : 1};
-  ${({ isExternal }) => isExternal && `
+  border: 1px solid
+      ${({ isEntry }) =>
+        isEntry
+          ? 'rgba(76, 175, 80, 0.25)' /* Verde institucional */
+          : 'rgba(239, 83, 80, 0.25)'}; 
+  opacity: ${({ isExternal }) => (isExternal ? 0.85 : 1)};
+  ${({ isExternal }) =>
+    isExternal &&
+    `
     background: #f5f5f5;
     border: 1px dashed #bdbdbd;
     &:hover {
@@ -41,17 +44,14 @@ const LocationCell = styled.div`
       box-shadow: none;
     }
   `}
-  
+
   &:hover {
     transform: translateY(-1px);
     background: ${({ isEntry }) =>
-      isEntry
-        ? 'rgba(76, 175, 80, 0.15)'
-        : 'rgba(239, 83, 80, 0.15)'};
-    box-shadow: 0 2px 8px ${({ isEntry }) =>
-      isEntry
-        ? 'rgba(76, 175, 80, 0.2)'
-        : 'rgba(239, 83, 80, 0.2)'};
+      isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
+    box-shadow: 0 2px 8px
+      ${({ isEntry }) =>
+        isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
   }
 `;
 
@@ -88,8 +88,9 @@ const DirectionLabel = styled.span`
 const MovementTypeBadge = styled.span`
   background: ${({ isEntry }) =>
     isEntry
-      ? 'rgba(33, 150, 243, 0.1)'    // Azul corporativo (confianza y profesionalismo)
-      : 'rgba(156, 39, 176, 0.1)'};  // Púrpura (calidad y dignidad)
+      ? 'rgba(33, 150, 243, 0.1)' /* Azul corporativo (confianza y profesionalismo) */
+      : 'rgba(156, 39, 176, 0.1)'}; /* Púrpura (calidad y dignidad) */
+
   color: ${({ isEntry }) => (isEntry ? '#1976D2' : '#7B1FA2')};
   padding: 6px 12px;
   border-radius: 8px;
@@ -97,12 +98,10 @@ const MovementTypeBadge = styled.span`
   font-size: 0.9em;
   letter-spacing: -0.2px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: ${({ isEntry }) =>
-      isEntry
-        ? 'rgba(33, 150, 243, 0.15)'
-        : 'rgba(156, 39, 176, 0.15)'};
+      isEntry ? 'rgba(33, 150, 243, 0.15)' : 'rgba(156, 39, 176, 0.15)'};
   }
 `;
 
@@ -112,7 +111,7 @@ const ReasonBadge = styled.span`
   font-size: 0.85em;
   font-weight: 500;
   white-space: nowrap;
-  
+
   ${({ reasonType }) => {
     switch (reasonType) {
       case MovementReason.Purchase:
@@ -193,13 +192,17 @@ const getExternalLocationText = (movement) => {
     case 'sale':
       return 'Cliente';
     case 'return':
-      return movement.movementType === 'in' ? 'Devolución Cliente' : 'Devolución Proveedor';
+      return movement.movementType === 'in'
+        ? 'Devolución Cliente'
+        : 'Devolución Proveedor';
     case 'initial_stock':
       return 'Inventario Inicial';
     case 'adjustment':
       return 'Ajuste de Inventario';
     default:
-      return movement.movementType === 'in' ? 'Origen Externo' : 'Destino Externo';
+      return movement.movementType === 'in'
+        ? 'Origen Externo'
+        : 'Destino Externo';
   }
 };
 
@@ -213,18 +216,30 @@ const getLocationDisplay = (movement) => {
   // Ajustes: mostrar siempre la ubicación interna (la que NO es el placeholder 'adjustment')
   if (movement.movementReason === 'adjustment') {
     const internalLocationName = [
-      movement.sourceLocation === 'adjustment' ? null : movement.sourceLocationName,
-      movement.destinationLocation === 'adjustment' ? null : movement.destinationLocationName
-    ].find(name => name && !/Ubicación no encontrada|N\/A|Error/i.test(name));
+      movement.sourceLocation === 'adjustment'
+        ? null
+        : movement.sourceLocationName,
+      movement.destinationLocation === 'adjustment'
+        ? null
+        : movement.destinationLocationName,
+    ].find((name) => name && !/Ubicación no encontrada|N\/A|Error/i.test(name));
     if (internalLocationName) return internalLocationName;
     return 'Ajuste de Inventario';
   }
 
   const isEntry = movement.movementType === 'in';
-  const locationName = isEntry ? movement.sourceLocationName : movement.destinationLocationName;
-  const location = isEntry ? movement.sourceLocation : movement.destinationLocation;
+  const locationName = isEntry
+    ? movement.sourceLocationName
+    : movement.destinationLocationName;
+  const location = isEntry
+    ? movement.sourceLocation
+    : movement.destinationLocation;
 
-  if (!location || !locationName || /Ubicación no encontrada|N\/A|Error/i.test(locationName)) {
+  if (
+    !location ||
+    !locationName ||
+    /Ubicación no encontrada|N\/A|Error/i.test(locationName)
+  ) {
     return getExternalLocationText(movement);
   }
   return locationName;
@@ -232,16 +247,16 @@ const getLocationDisplay = (movement) => {
 
 const formatMovementReason = (reason) => {
   const reasonMap = {
-    'purchase': 'Compra',
-    'sale': 'Venta',
-    'adjustment': 'Ajuste',
-    'return': 'Devolución',
-    'initial_stock': 'Stock Inicial',
-    'transfer': 'Transferencia',
-    'damaged': 'Dañado',
-    'expired': 'Expirado',
-    'lost': 'Perdido',
-    'other': 'Otro'
+    purchase: 'Compra',
+    sale: 'Venta',
+    adjustment: 'Ajuste',
+    return: 'Devolución',
+    initial_stock: 'Stock Inicial',
+    transfer: 'Transferencia',
+    damaged: 'Dañado',
+    expired: 'Expirado',
+    lost: 'Perdido',
+    other: 'Otro',
   };
   return reasonMap[reason] || 'Desconocido';
 };
@@ -250,7 +265,7 @@ const formatMovementReason = (reason) => {
 const generateRoute = (isEntry, location) => {
   const loc = isEntry ? location.sourceLocation : location.destinationLocation;
   if (!loc) return null; // Return null if no location exists
-    const segments = loc.split('/');
+  const segments = loc.split('/');
   let route = '/inventory/warehouses/warehouse';
 
   if (segments[0]) {
@@ -272,17 +287,23 @@ const generateRoute = (isEntry, location) => {
 export const MovementsTable = ({ location }) => {
   const user = useSelector(selectUser);
   const navigate = useNavigate();
-  const { data: movementsData, loading } = useListenMovementsByLocation(user, location, location);
+  const { data: movementsData, loading } = useListenMovementsByLocation(
+    user,
+    location,
+    location,
+  );
   const { INVENTORY_MOVEMENTS } = ROUTES_NAME.INVENTORY_TERM;
 
   // Transform the data to include date as property
-  const transformedData = movementsData.map(mov => {
+  const transformedData = movementsData.map((mov) => {
     const dateObj = mov.createdAt?.toDate?.();
     return {
       ...mov,
       key: mov.id,
       date: dateObj ? dateObj.toLocaleDateString() : 'Sin fecha',
-      time: dateObj ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Sin hora',
+      time: dateObj
+        ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : 'Sin hora',
       product: mov.productName,
       movementType: mov.movementType,
       sourceLocationName: mov.sourceLocationName,
@@ -294,46 +315,48 @@ export const MovementsTable = ({ location }) => {
 
   const columns = [
     {
-      Header: "Hora",
-      accessor: "time",
-      minWidth: "100px",
+      Header: 'Hora',
+      accessor: 'time',
+      minWidth: '100px',
       keepWidth: true,
     },
     {
-      Header: "Producto",
-      accessor: "product",
-      minWidth: "200px",
+      Header: 'Producto',
+      accessor: 'product',
+      minWidth: '200px',
     },
     {
-      Header: "Tipo",
-      accessor: "movementType",
-      minWidth: "120px",
+      Header: 'Tipo',
+      accessor: 'movementType',
+      minWidth: '120px',
       // type: 'badge',
       cell: ({ value }) => {
         const isEntry = value === 'in';
-        return <MovementTypeBadge isEntry={isEntry}>{isEntry ? 'Entrada' : 'Salida'}</MovementTypeBadge>;
+        return (
+          <MovementTypeBadge isEntry={isEntry}>
+            {isEntry ? 'Entrada' : 'Salida'}
+          </MovementTypeBadge>
+        );
       },
     },
     {
-      Header: "Ubicación",
-      accessor: "location",
-      minWidth: "200px",
+      Header: 'Ubicación',
+      accessor: 'location',
+      minWidth: '200px',
       cell: ({ value }) => {
         const isEntry = value.movementType === 'in';
         const route = generateRoute(isEntry, value);
         const locationDisplay = getLocationDisplay(value);
         const isExternal = !route;
-        
+
         return (
-          <LocationCell 
+          <LocationCell
             isEntry={isEntry}
             isExternal={isExternal}
-            onClick={() => route ? navigate(route) : null}
+            onClick={() => (route ? navigate(route) : null)}
             style={{ cursor: route ? 'pointer' : 'default' }}
           >
-            <LocationName isEntry={isEntry}>
-              {locationDisplay}
-            </LocationName>
+            <LocationName isEntry={isEntry}>{locationDisplay}</LocationName>
             <DirectionWrapper>
               <DirectionLabel isEntry={isEntry}>
                 <DirectionArrow isEntry={isEntry}>
@@ -347,9 +370,9 @@ export const MovementsTable = ({ location }) => {
       },
     },
     {
-      Header: "Motivo",
-      accessor: "movementReason",
-      minWidth: "150px",
+      Header: 'Motivo',
+      accessor: 'movementReason',
+      minWidth: '150px',
       cell: ({ value }) => (
         <ReasonBadge reasonType={value}>
           {formatMovementReason(value)}
@@ -357,17 +380,27 @@ export const MovementsTable = ({ location }) => {
       ),
     },
     {
-      Header: "Cantidad",
-      accessor: "quantity",
-      align: "right",
-      minWidth: "100px",
+      Header: 'Cantidad',
+      accessor: 'quantity',
+      align: 'right',
+      minWidth: '100px',
       type: 'badge',
-    }
+    },
   ];
 
   const headerComponent = (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', width: '100%' }}>
-      <div style={{ fontWeight: 600, fontSize: '1rem' }}>Historial de Movimientos</div>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '12px 16px',
+        width: '100%',
+      }}
+    >
+      <div style={{ fontWeight: 600, fontSize: '1rem' }}>
+        Historial de Movimientos
+      </div>
       <Button type="link" onClick={() => navigate(INVENTORY_MOVEMENTS)}>
         Ver todos los movimientos
       </Button>

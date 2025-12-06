@@ -30,7 +30,7 @@ const Description = styled(Paragraph)`
     margin: 0;
     font-size: 16px;
     line-height: 1.5;
-    color: rgba(0, 0, 0, 0.65);
+    color: rgb(0 0 0 / 65%);
   }
 `;
 

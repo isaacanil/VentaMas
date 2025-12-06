@@ -2,7 +2,10 @@ import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '../../firebaseconfig';
 
-const clientSetUserPasswordCallable = httpsCallable(functions, 'clientSetUserPassword');
+const clientSetUserPasswordCallable = httpsCallable(
+  functions,
+  'clientSetUserPassword',
+);
 
 export const fbUpdateUserPassword = async (userId, newPassword) => {
   try {

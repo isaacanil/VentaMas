@@ -1,10 +1,6 @@
 import { getTimeElapsed } from '../../../../../hooks/useFormatTime';
 
-import {
-  PreorderActionsCell,
-  PriceCell,
-  StatusCell,
-} from './tableCells.jsx';
+import { PreorderActionsCell, PriceCell, StatusCell } from './tableCells.jsx';
 
 export const tableConfig = [
   {

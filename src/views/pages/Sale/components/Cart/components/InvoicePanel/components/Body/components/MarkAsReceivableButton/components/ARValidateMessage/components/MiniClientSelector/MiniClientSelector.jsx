@@ -13,18 +13,19 @@ const { Text } = Typography;
 export const MiniClientSelector = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen });
-  
+
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtrar clientes que no sean genéricos
-  const nonGenericClients = useMemo(() => 
-    clients.filter(({ client }) => client.name && client.name.trim() !== ''), 
-    [clients]
+  const nonGenericClients = useMemo(
+    () =>
+      clients.filter(({ client }) => client.name && client.name.trim() !== ''),
+    [clients],
   );
 
-  const filteredClients = useMemo(() => 
-    filtrarDatos(nonGenericClients, searchTerm), 
-    [nonGenericClients, searchTerm]
+  const filteredClients = useMemo(
+    () => filtrarDatos(nonGenericClients, searchTerm),
+    [nonGenericClients, searchTerm],
   );
 
   const handleSelectClient = (clientData) => {
@@ -48,7 +49,7 @@ export const MiniClientSelector = ({ isOpen, onClose }) => {
       styles={{
         header: { padding: '16px 24px' },
         body: { padding: '0' },
-        content: { padding: 0, borderRadius: 8,overflow: 'hidden'},
+        content: { padding: 0, borderRadius: 8, overflow: 'hidden' },
       }}
     >
       <div style={{ marginBottom: 16, padding: '0 16px' }}>
@@ -68,7 +69,7 @@ export const MiniClientSelector = ({ isOpen, onClose }) => {
             <Spin size="large" />
           </div>
         ) : filteredClients.length === 0 ? (
-          <Empty 
+          <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description="No se encontraron clientes"
           />
@@ -77,12 +78,12 @@ export const MiniClientSelector = ({ isOpen, onClose }) => {
             dataSource={filteredClients}
             renderItem={(clientData) => (
               <List.Item
-                style={{ 
+                style={{
                   cursor: 'pointer',
                   padding: '12px 16px',
                   borderRadius: 6,
                   marginBottom: 4,
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
                 }}
                 className="client-list-item"
                 onClick={() => handleSelectClient(clientData)}
@@ -95,8 +96,8 @@ export const MiniClientSelector = ({ isOpen, onClose }) => {
               >
                 <List.Item.Meta
                   avatar={
-                    <Avatar 
-                      icon={<UserOutlined />} 
+                    <Avatar
+                      icon={<UserOutlined />}
                       style={{ backgroundColor: '#1890ff' }}
                       size="small"
                     />
@@ -109,12 +110,18 @@ export const MiniClientSelector = ({ isOpen, onClose }) => {
                   description={
                     <div>
                       {clientData.client.phone && (
-                        <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: 12, display: 'block' }}
+                        >
                           📞 {clientData.client.phone}
                         </Text>
                       )}
                       {clientData.client.email && (
-                        <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: 12, display: 'block' }}
+                        >
                           📧 {clientData.client.email}
                         </Text>
                       )}

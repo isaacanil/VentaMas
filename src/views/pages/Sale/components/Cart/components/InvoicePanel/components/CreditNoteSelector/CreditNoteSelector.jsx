@@ -1,5 +1,16 @@
 import { CreditCardOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Card, List, Button, Typography, Tag, Skeleton, Alert, InputNumber, Space, Tooltip } from 'antd';
+import {
+  Card,
+  List,
+  Button,
+  Typography,
+  Tag,
+  Skeleton,
+  Alert,
+  InputNumber,
+  Space,
+  Tooltip,
+} from 'antd';
 import dayjs from 'dayjs';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
@@ -7,41 +18,47 @@ import styled from 'styled-components';
 import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
 import { formatPrice } from '@/utils/formatPrice';
 
-
 const { Title, Text } = Typography;
 
-const CreditNoteSelector = ({ 
-  clientId, 
-  onCreditNoteSelect, 
-  selectedCreditNotes = [], 
+const CreditNoteSelector = ({
+  clientId,
+  onCreditNoteSelect,
+  selectedCreditNotes = [],
   disabled = false,
-  totalPurchase = 0 
+  totalPurchase = 0,
 }) => {
-  const { creditNotes, loading, totalAvailable } = useFbGetAvailableCreditNotes(clientId);
+  const { creditNotes, loading, totalAvailable } =
+    useFbGetAvailableCreditNotes(clientId);
   const [localSelections, setLocalSelections] = useState({});
 
   // Sincronizar selecciones locales con las selecciones externas
   useEffect(() => {
     const newSelections = {};
-    selectedCreditNotes.forEach(selection => {
+    selectedCreditNotes.forEach((selection) => {
       newSelections[selection.id] = selection.amountToUse;
     });
     setLocalSelections(newSelections);
   }, [selectedCreditNotes]);
 
   // Calcular el total seleccionado
-  const totalSelected = Object.values(localSelections).reduce((sum, amount) => sum + (amount || 0), 0);
+  const totalSelected = Object.values(localSelections).reduce(
+    (sum, amount) => sum + (amount || 0),
+    0,
+  );
 
   const handleAmountChange = (creditNoteId, amount) => {
-    const creditNote = creditNotes.find(cn => cn.id === creditNoteId);
+    const creditNote = creditNotes.find((cn) => cn.id === creditNoteId);
     if (!creditNote) return;
 
-    const maxAmount = Math.min(creditNote.availableAmount, totalPurchase - totalSelected + (localSelections[creditNoteId] || 0));
+    const maxAmount = Math.min(
+      creditNote.availableAmount,
+      totalPurchase - totalSelected + (localSelections[creditNoteId] || 0),
+    );
     const validAmount = Math.max(0, Math.min(amount || 0, maxAmount));
 
     const newSelections = {
       ...localSelections,
-      [creditNoteId]: validAmount
+      [creditNoteId]: validAmount,
     };
 
     // Si el monto es 0, eliminar la selección
@@ -52,14 +69,16 @@ const CreditNoteSelector = ({
     setLocalSelections(newSelections);
 
     // Notificar al componente padre
-    const updatedSelections = Object.entries(newSelections).map(([id, amountToUse]) => {
-      const note = creditNotes.find(cn => cn.id === id);
-      return {
-        id,
-        creditNote: note,
-        amountToUse
-      };
-    });
+    const updatedSelections = Object.entries(newSelections).map(
+      ([id, amountToUse]) => {
+        const note = creditNotes.find((cn) => cn.id === id);
+        return {
+          id,
+          creditNote: note,
+          amountToUse,
+        };
+      },
+    );
 
     onCreditNoteSelect(updatedSelections);
   };
@@ -112,13 +131,9 @@ const CreditNoteSelector = ({
           </Title>
         </HeaderLeft>
         <HeaderRight>
-          <Tag color="blue">
-            Total: {formatPrice(totalAvailable)}
-          </Tag>
+          <Tag color="blue">Total: {formatPrice(totalAvailable)}</Tag>
           {totalSelected > 0 && (
-            <Tag color="green">
-              Seleccionado: {formatPrice(totalSelected)}
-            </Tag>
+            <Tag color="green">Seleccionado: {formatPrice(totalSelected)}</Tag>
           )}
         </HeaderRight>
       </CardHeader>
@@ -128,8 +143,8 @@ const CreditNoteSelector = ({
         renderItem={(creditNote) => {
           const selectedAmount = localSelections[creditNote.id] || 0;
           const maxUsable = Math.min(
-            creditNote.availableAmount, 
-            totalPurchase - totalSelected + selectedAmount
+            creditNote.availableAmount,
+            totalPurchase - totalSelected + selectedAmount,
           );
           const isSelected = selectedAmount > 0;
 
@@ -139,8 +154,15 @@ const CreditNoteSelector = ({
                 <ItemHeader>
                   <ItemTitle>
                     <Text strong>{creditNote.ncf || creditNote.number}</Text>
-                    <Text type="secondary" style={{ fontSize: '12px', marginLeft: '8px' }}>
-                      {dayjs(creditNote.createdAt?.seconds ? new Date(creditNote.createdAt.seconds * 1000) : creditNote.createdAt).format('DD/MM/YYYY')}
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: '12px', marginLeft: '8px' }}
+                    >
+                      {dayjs(
+                        creditNote.createdAt?.seconds
+                          ? new Date(creditNote.createdAt.seconds * 1000)
+                          : creditNote.createdAt,
+                      ).format('DD/MM/YYYY')}
                     </Text>
                   </ItemTitle>
                   <Text strong style={{ color: '#1890ff' }}>
@@ -160,14 +182,18 @@ const CreditNoteSelector = ({
                         max={maxUsable}
                         step={0.01}
                         value={selectedAmount}
-                        onChange={(value) => handleAmountChange(creditNote.id, value)}
+                        onChange={(value) =>
+                          handleAmountChange(creditNote.id, value)
+                        }
                         style={{ width: '100px' }}
                         placeholder="0.00"
                       />
                       <Button
                         size="small"
                         type="link"
-                        onClick={() => handleQuickSelect(creditNote.id, maxUsable)}
+                        onClick={() =>
+                          handleQuickSelect(creditNote.id, maxUsable)
+                        }
                         disabled={maxUsable === 0}
                       >
                         Máximo
@@ -186,7 +212,8 @@ const CreditNoteSelector = ({
                     {maxUsable < creditNote.availableAmount && (
                       <Tooltip title="El monto máximo está limitado por el total de la compra">
                         <Text type="secondary" style={{ fontSize: '11px' }}>
-                          <InfoCircleOutlined /> Máximo disponible: {formatPrice(maxUsable)}
+                          <InfoCircleOutlined /> Máximo disponible:{' '}
+                          {formatPrice(maxUsable)}
                         </Text>
                       </Tooltip>
                     )}
@@ -207,11 +234,14 @@ const CreditNoteSelector = ({
       />
 
       {totalSelected > 0 && (
-              <SummarySection>
-        <Text type="secondary">
-          Total a aplicar: <Text strong style={{ color: '#52c41a' }}>{formatPrice(totalSelected)}</Text>
-        </Text>
-      </SummarySection>
+        <SummarySection>
+          <Text type="secondary">
+            Total a aplicar:{' '}
+            <Text strong style={{ color: '#52c41a' }}>
+              {formatPrice(totalSelected)}
+            </Text>
+          </Text>
+        </SummarySection>
       )}
     </StyledCard>
   );
@@ -225,15 +255,15 @@ const StyledCard = styled(Card)`
 
 const CardHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
 `;
 
 const HeaderLeft = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const HeaderRight = styled.div`
@@ -243,15 +273,15 @@ const HeaderRight = styled.div`
 
 const CreditNoteItem = styled(List.Item)`
   padding: 12px !important;
-  border: 1px solid ${props => props.$isSelected ? '#52c41a' : '#f0f0f0'} !important;
-  border-radius: 6px;
   margin-bottom: 8px !important;
-  background-color: ${props => props.$isSelected ? '#f6ffed' : 'white'};
+  background-color: ${(props) => (props.$isSelected ? '#f6ffed' : 'white')};
+  border: 1px solid ${(props) => (props.$isSelected ? '#52c41a' : '#f0f0f0')} !important;
+  border-radius: 6px;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: #1890ff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   }
 `;
 
@@ -261,8 +291,8 @@ const ItemContent = styled.div`
 
 const ItemHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 `;
 
@@ -278,10 +308,10 @@ const ItemActions = styled.div`
 `;
 
 const SummarySection = styled.div`
-  margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 16px;
   text-align: right;
+  border-top: 1px solid #f0f0f0;
 `;
 
-export default CreditNoteSelector; 
+export default CreditNoteSelector;

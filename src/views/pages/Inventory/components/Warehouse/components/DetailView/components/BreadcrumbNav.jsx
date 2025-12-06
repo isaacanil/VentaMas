@@ -10,8 +10,8 @@ const StyledBreadcrumb = styled(Breadcrumb)`
 `;
 
 const BreadcrumbLink = styled.span`
-  cursor: pointer;
   color: #1890ff;
+  cursor: pointer;
 `;
 
 export const BreadcrumbNav = ({ breadcrumbs }) => {
@@ -22,10 +22,8 @@ export const BreadcrumbNav = ({ breadcrumbs }) => {
       <BreadcrumbLink onClick={() => dispatch(navigateToBreadcrumb(index))}>
         {item.title}
       </BreadcrumbLink>
-    )
+    ),
   }));
 
-  return breadcrumbs.length > 0 ? (
-    <StyledBreadcrumb items={items} />
-  ) : null;
+  return breadcrumbs.length > 0 ? <StyledBreadcrumb items={items} /> : null;
 };

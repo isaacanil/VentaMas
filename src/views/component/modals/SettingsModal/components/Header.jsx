@@ -1,44 +1,37 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons'
+import { icons } from '../../../../../constants/icons/icons';
 import { Button } from '../../../../templates/system/Button/Button';
-import Typography from '../../../../templates/system/Typografy/Typografy'
+import Typography from '../../../../templates/system/Typografy/Typografy';
 
 /**
  *
  *
  * @param {*} {title = "Settings"}
- * @return {*} 
+ * @return {*}
  */
 export const Header = ({ config }) => {
-    const { title = "Settings" } = config;
-    return (
-        <Container
-            
-
-        >
-            <Typography
-                variant={'h2'}
-                disableMargins
-            >
-                {title}
-            </Typography>
-            <Button
-                title={icons.operationModes.close}
-                width='icon16'
-                borderRadius='round'
-                bgcolor='neutro'
-            />
-
-        </Container>
-    )
-}
+  const { title = 'Settings' } = config;
+  return (
+    <Container>
+      <Typography variant={'h2'} disableMargins>
+        {title}
+      </Typography>
+      <Button
+        title={icons.operationModes.close}
+        width="icon16"
+        borderRadius="round"
+        bgcolor="neutro"
+      />
+    </Container>
+  );
+};
 const Container = styled.div`
-    height: 2.6em;
-    display: grid;
-    padding: 0 1em;
-    align-items: center;
-    grid-template-columns: 1fr min-content;
-    border-bottom: ${props => props.theme.border.base};
-`
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  align-items: center;
+  height: 2.6em;
+  padding: 0 1em;
+  border-bottom: ${(props) => props.theme.border.base};
+`;

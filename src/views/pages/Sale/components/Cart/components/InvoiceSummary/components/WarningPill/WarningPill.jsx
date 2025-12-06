@@ -5,10 +5,10 @@ import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../../../../../../../hooks/useClickOutSide';
 
-const WarningPill = ({ message, icon = "⚠️" }) => {
+const WarningPill = ({ message, icon = '⚠️' }) => {
   const [showMessage, setShowMessage] = useState(false);
   const messageRef = useRef(null);
-  
+
   // Fix the issue with infinite updates by passing the correct parameters
   // The second parameter should be a condition to track, not the state itself
   useClickOutSide(messageRef, () => {
@@ -16,10 +16,10 @@ const WarningPill = ({ message, icon = "⚠️" }) => {
       setShowMessage(false);
     }
   });
-  
+
   if (!message) return null;
 
-  const toggleMessage = () => setShowMessage(prev => !prev);
+  const toggleMessage = () => setShowMessage((prev) => !prev);
 
   return (
     <>
@@ -36,7 +36,7 @@ const WarningPill = ({ message, icon = "⚠️" }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <MessageContent>
               <MessageIcon>{icon}</MessageIcon>
@@ -53,24 +53,26 @@ const WarningPill = ({ message, icon = "⚠️" }) => {
 // Estilos para la píldora flotante
 const FloatingPill = styled.div`
   position: fixed;
-  bottom: 40px;
   right: 330px;
+  bottom: 40px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
+  cursor: pointer;
   background-color: #fffbe6;
   border: 1px solid #ffd666;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 2;
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
-  &:hover {
+  &&:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -82,52 +84,52 @@ const PillIcon = styled.span`
 // Estilos para el mensaje emergente
 const MessagePopup = styled(motion.div)`
   position: fixed;
-  bottom: 80px;
   right: 30px;
-  width: 320px;
-  background-color: #fffbe6;
-  border: 1px solid #ffd666;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  bottom: 80px;
   z-index: 20;
   display: flex;
   justify-content: space-between;
+  width: 320px;
+  padding: 16px;
+  background-color: #fffbe6;
+  border: 1px solid #ffd666;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 `;
 
 const MessageContent = styled.div`
   display: flex;
-  align-items: flex-start;
   flex: 1;
+  align-items: flex-start;
 `;
 
 const MessageIcon = styled.span`
+  flex-shrink: 0;
+  margin-right: 12px;
   font-size: 18px;
   color: #fa8c16;
-  margin-right: 12px;
-  flex-shrink: 0;
 `;
 
 const MessageText = styled.div`
-  color: #d48806;
   font-size: 14px;
   line-height: 1.5;
+  color: #d48806;
 `;
 
 const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: #d48806;
-  font-size: 20px;
-  cursor: pointer;
+  align-self: flex-start;
   padding: 0;
   margin-left: 8px;
+  font-size: 20px;
   line-height: 1;
-  align-self: flex-start;
+  color: #d48806;
+  cursor: pointer;
+  background: none;
+  border: none;
   opacity: 0.6;
   transition: opacity 0.2s;
-  
-  &:hover {
+
+  &&:hover {
     opacity: 1;
   }
 `;

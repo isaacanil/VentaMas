@@ -1,5 +1,14 @@
 import { KeyOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Modal, Button, Form, Input, Typography, Alert, Spin, Divider } from 'antd';
+import {
+  Modal,
+  Button,
+  Form,
+  Input,
+  Typography,
+  Alert,
+  Spin,
+  Divider,
+} from 'antd';
 import { doc, getDoc } from 'firebase/firestore';
 import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -13,71 +22,73 @@ import { db } from '../../../../firebase/firebaseconfig';
 const { Paragraph, Text } = Typography;
 
 const ErrorMessage = styled.div`
-  font-size: 0.95em;
-  min-height: 2em;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #FFEBEE;
-  color: #D32F2F;
-  border-radius: 4px;
-  border: 1px solid #EF5350;
+  min-height: 2em;
   padding: 8px 12px;
   margin-top: 0.8em;
+  font-size: 0.95em;
   font-weight: 500;
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
 `;
 
 const ModeToggle = styled.div`
-  text-align: center;
   margin-top: 16px;
+  text-align: center;
 
   button {
-    padding: 0;
     height: auto;
+    padding: 0;
     font-size: 0.9em;
   }
 `;
 
 const PinInputContainer = styled.div`
   display: flex;
-  justify-content: center;
   gap: 12px;
+  justify-content: center;
   margin: 24px 0;
 `;
 
 const PinDot = styled.div`
   width: 48px;
   height: 56px;
-  border: 2px solid ${props => props.$filled ? '#52c41a' : '#d9d9d9'};
+  border: 2px solid ${(props) => (props.$filled ? '#52c41a' : '#d9d9d9')};
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${props => props.$filled ? '#f6ffed' : '#fafafa'};
+  background-color: ${(props) => (props.$filled ? '#f6ffed' : '#fafafa')};
   transition: all 0.2s ease;
   position: relative;
-  
-  ${props => props.$active && `
+
+  ${(props) =>
+    props.$active &&
+    `
     border-color: #52c41a;
     box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
   `}
 
   &::after {
-    content: '';
     width: 12px;
     height: 12px;
+    content: '';
+    background-color: ${(props) => (props.$filled ? '#52c41a' : 'transparent')};
     border-radius: 50%;
-    background-color: ${props => props.$filled ? '#52c41a' : 'transparent'};
     transition: all 0.15s ease;
   }
 `;
 
 const HiddenInput = styled.input`
   position: absolute;
-  opacity: 0;
-  pointer-events: none;
   width: 1px;
   height: 1px;
+  pointer-events: none;
+  opacity: 0;
 `;
 
 const PinInputWrapper = styled.div`
@@ -87,7 +98,13 @@ const PinInputWrapper = styled.div`
 /**
  * Componente de input de PIN personalizado con puntos visuales
  */
-const CustomPinInput = ({ value = '', onChange, disabled, maxLength = 6, autoFocus = false }) => {
+const CustomPinInput = ({
+  value = '',
+  onChange,
+  disabled,
+  maxLength = 6,
+  autoFocus = false,
+}) => {
   const inputRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(value.length);
 
@@ -134,9 +151,7 @@ const CustomPinInput = ({ value = '', onChange, disabled, maxLength = 6, autoFoc
 
   return (
     <PinInputWrapper onClick={handleContainerClick}>
-      <PinInputContainer>
-        {dots}
-      </PinInputContainer>
+      <PinInputContainer>{dots}</PinInputContainer>
       <HiddenInput
         ref={inputRef}
         type="text"
@@ -213,13 +228,10 @@ export const PinAuthorizationModal = ({
       }
 
       // Validar PIN
-      const result = await fbValidateUserPin(
-        currentUser,
-        {
-          pin,
-          module,
-        }
-      );
+      const result = await fbValidateUserPin(currentUser, {
+        pin,
+        module,
+      });
 
       if (!result.valid) {
         setError(result.reason || 'PIN inválido');
@@ -249,7 +261,10 @@ export const PinAuthorizationModal = ({
       setLoading(true);
       setError('');
 
-      const { userData, response } = await fbValidateUser({ name: username, password });
+      const { userData, response } = await fbValidateUser({
+        name: username,
+        password,
+      });
       if (response?.error) {
         setError(response.error);
         setLoading(false);
@@ -307,12 +322,17 @@ export const PinAuthorizationModal = ({
       centered
       width={480}
       zIndex={99990}
-      destroyOnClose
+      destroyOnHidden
       footer={[
         <Button key="cancel" onClick={handleCancel} disabled={loading}>
           Cancelar
         </Button>,
-        <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
+        <Button
+          key="submit"
+          type="primary"
+          loading={loading}
+          onClick={handleSubmit}
+        >
           Autorizar
         </Button>,
       ]}
@@ -333,31 +353,44 @@ export const PinAuthorizationModal = ({
           {reasonList?.length > 0 && (
             <ul style={{ margin: 0, paddingLeft: 18 }}>
               {reasonList.map((r, idx) => (
-                <li key={idx} style={{ fontSize: 13 }}>{r}</li>
+                <li key={idx} style={{ fontSize: 13 }}>
+                  {r}
+                </li>
               ))}
             </ul>
           )}
         </div>
 
         <Alert
-          message={usePassword ? 'Modo: Contraseña Completa' : 'Modo: PIN Rápido'}
+          message={
+            usePassword ? 'Modo: Contraseña Completa' : 'Modo: PIN Rápido'
+          }
           type={usePassword ? 'info' : 'success'}
           showIcon
           style={{ marginTop: 8 }}
         />
 
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 140 }}>
-            <Spin size="large" />
-          </div>
-        ) : (
-          <>
-            <Form form={form} layout="vertical" autoComplete="off">
+        <Form form={form} layout="vertical" autoComplete="off">
+          {loading ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 140,
+              }}
+            >
+              <Spin size="large" />
+            </div>
+          ) : (
+            <>
               {usePassword && (
                 <Form.Item
                   name="username"
                   label="Nombre de Usuario"
-                  rules={[{ required: true, message: 'Ingrese el nombre de usuario' }]}
+                  rules={[
+                    { required: true, message: 'Ingrese el nombre de usuario' },
+                  ]}
                 >
                   <Input
                     prefix={<UserOutlined />}
@@ -384,39 +417,41 @@ export const PinAuthorizationModal = ({
                   />
                 </Form.Item>
               ) : null}
-            </Form>
 
-            {!usePassword && (
-              <div>
-                <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                  PIN de Autorización (6 dígitos)
-                </Text>
-                <CustomPinInput
-                  value={pinValue}
-                  onChange={setPinValue}
-                  disabled={loading}
-                  maxLength={6}
-                  autoFocus={true}
-                />
-              </div>
-            )}
+              {!usePassword && (
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                    PIN de Autorización (6 dígitos)
+                  </Text>
+                  <CustomPinInput
+                    value={pinValue}
+                    onChange={setPinValue}
+                    disabled={loading}
+                    maxLength={6}
+                    autoFocus={true}
+                  />
+                </div>
+              )}
 
-            {error && <ErrorMessage>{error}</ErrorMessage>}
+              {error && <ErrorMessage>{error}</ErrorMessage>}
 
-            {allowPasswordFallback && (
-              <ModeToggle>
-                <Divider plain style={{ margin: '12px 0' }}>
-                  <Text type="secondary" style={{ fontSize: '0.85em' }}>o</Text>
-                </Divider>
-                <Button type="link" onClick={toggleMode}>
-                  {usePassword
-                    ? '← Usar PIN de 6 dígitos'
-                    : '¿No tienes PIN? Usa tu contraseña →'}
-                </Button>
-              </ModeToggle>
-            )}
-          </>
-        )}
+              {allowPasswordFallback && (
+                <ModeToggle>
+                  <Divider plain style={{ margin: '12px 0' }}>
+                    <Text type="secondary" style={{ fontSize: '0.85em' }}>
+                      o
+                    </Text>
+                  </Divider>
+                  <Button type="link" onClick={toggleMode}>
+                    {usePassword
+                      ? '← Usar PIN de 6 dígitos'
+                      : '¿No tienes PIN? Usa tu contraseña →'}
+                  </Button>
+                </ModeToggle>
+              )}
+            </>
+          )}
+        </Form>
       </div>
     </Modal>
   );

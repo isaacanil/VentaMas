@@ -18,11 +18,9 @@ import {
   getProductsTax,
   getTotalDiscount,
   getProductIndividualDiscount,
-  getProductsIndividualDiscounts
+  getProductsIndividualDiscounts,
 } from '../../../../../../utils/pricing';
 import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
-
-
 
 // Máximo de caracteres por línea
 const CENTER_WIDTH = 40;
@@ -54,7 +52,7 @@ const wrapAndCenter = (text, maxWidth = CENTER_WIDTH) => {
   const wrapped = wrapText(text, maxWidth);
   return wrapped
     .split('\n')
-    .map(line => centerText(line, maxWidth))
+    .map((line) => centerText(line, maxWidth))
     .join('\n');
 };
 
@@ -89,9 +87,11 @@ const formatColumn = (text, width, align = 'left') => {
 
 // Concatenar nombre del producto con medida y pie
 const getFullProductName = (product) => {
-  return product.name +
+  return (
+    product.name +
     (product.measurement ? ` Medida: [${product.measurement}]` : '') +
-    (product.footer ? ` Pie: [${product.footer}]` : '');
+    (product.footer ? ` Pie: [${product.footer}]` : '')
+  );
 };
 
 /* =========================================================
@@ -119,7 +119,8 @@ const renderInvoiceHeader = (data, fechaActual) => {
   const identity = resolveDocumentIdentity(data);
   header += 'Fecha: ' + fechaActual + '\n';
   if (identity.label) {
-    header += identity.label.toUpperCase() + ': ' + (identity.value || '-') + '\n';
+    header +=
+      identity.label.toUpperCase() + ': ' + (identity.value || '-') + '\n';
   }
   header += centerText(identity.description || identity.title) + '\n';
   header += separatorLine() + '\n';
@@ -188,13 +189,15 @@ const renderProducts = (
   getTotalPrice,
   resetAmountToBuyForProduct,
   formatter,
-  NCF
+  NCF,
 ) => {
   let prodText = '';
   // Cabecera de columnas
-  prodText += formatColumn("CANT/PRICE", 13, 'center') +
-              formatColumn("ITBIS", 10, 'right') +
-              formatColumn("TOTAL", 17, 'right') + '\n';
+  prodText +=
+    formatColumn('CANT/PRICE', 13, 'center') +
+    formatColumn('ITBIS', 10, 'right') +
+    formatColumn('TOTAL', 17, 'right') +
+    '\n';
   prodText += separatorLine() + '\n';
 
   if (Array.isArray(products) && products.length > 0) {
@@ -203,36 +206,65 @@ const renderProducts = (
       let leftCol = '';
       if (product?.weightDetail?.isSoldByWeight) {
         leftCol = `${product.weightDetail.weight} ${product.weightDetail.weightUnit}x${separator(
-          getTotalPrice(resetAmountToBuyForProduct(product), taxReceipt?.enabled)
+          getTotalPrice(
+            resetAmountToBuyForProduct(product),
+            taxReceipt?.enabled,
+          ),
         )}`;
       } else {
         leftCol = `${product.amountToBuy || 0} x ${separator(
-          getTotalPrice(resetAmountToBuyForProduct(product), taxReceipt?.enabled)
+          getTotalPrice(
+            resetAmountToBuyForProduct(product),
+            taxReceipt?.enabled,
+          ),
         )}`;
       }
 
       // Construimos cada columna
       const col1 = formatColumn(leftCol, 13, 'left');
-      const col2 = formatColumn(separator(getTax(product, NCF)).toString(), 10, 'right');
-      const col3 = formatColumn(separator(getTotalPrice(product, NCF)).toString(), 17, 'right');
-      prodText += col1 + col2 + col3 + '\n';      // Nombre completo del producto (y lo partimos en líneas de máx 40)
+      const col2 = formatColumn(
+        separator(getTax(product, NCF)).toString(),
+        10,
+        'right',
+      );
+      const col3 = formatColumn(
+        separator(getTotalPrice(product, NCF)).toString(),
+        17,
+        'right',
+      );
+      prodText += col1 + col2 + col3 + '\n'; // Nombre completo del producto (y lo partimos en líneas de máx 40)
       prodText += wrapText(getFullProductName(product), CENTER_WIDTH) + '\n';
 
-      const rawBrand = typeof product?.brand === 'string' ? product.brand.trim() : '';
-      if (rawBrand && rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase()) {
+      const rawBrand =
+        typeof product?.brand === 'string' ? product.brand.trim() : '';
+      if (
+        rawBrand &&
+        rawBrand.toLowerCase() !== PRODUCT_BRAND_DEFAULT.toLowerCase()
+      ) {
         prodText += wrapText(`Marca: ${rawBrand}`, CENTER_WIDTH) + '\n';
       }
 
       // Descuento individual (si aplica)
       if (product?.discount && product?.discount?.value > 0) {
         const discountAmount = getProductIndividualDiscount(product);
-        const discountType = product.discount.type === 'percentage' ? `${product.discount.value}%` : 'Monto fijo';
-        prodText += wrapText(`Descuento: -${formatter(discountAmount)} (${discountType})`, CENTER_WIDTH) + '\n';
+        const discountType =
+          product.discount.type === 'percentage'
+            ? `${product.discount.value}%`
+            : 'Monto fijo';
+        prodText +=
+          wrapText(
+            `Descuento: -${formatter(discountAmount)} (${discountType})`,
+            CENTER_WIDTH,
+          ) + '\n';
       }
 
       // Garantía (si aplica)
       if (product?.warranty?.status) {
-        const warrantyText = convertTimeToSpanish(product.warranty.quantity, product.warranty.unit) + ' de Garantía';
+        const warrantyText =
+          convertTimeToSpanish(
+            product.warranty.quantity,
+            product.warranty.unit,
+          ) + ' de Garantía';
         prodText += wrapText(warrantyText, CENTER_WIDTH) + '\n';
       }
     });
@@ -255,36 +287,41 @@ const renderPaymentArea = (
   formatter,
   getProductsPrice,
   getProductsTax,
-  getTotalDiscount
+  getTotalDiscount,
 ) => {
   let paymentText = '';
 
   const renderSingleValueItem = (item) => {
-    const left = formatColumn((item.label || "") + ":", 20, 'left');
-    const right = formatColumn(item.value2 || "", 20, 'right');
+    const left = formatColumn((item.label || '') + ':', 20, 'left');
+    const right = formatColumn(item.value2 || '', 20, 'right');
     return left + right;
   };
 
   const renderDoubleValueItem = (item) => {
-    const left = formatColumn((item.subtitle || "") + ":", 14, 'left');
-    const mid = formatColumn(item.value1 || "", 13, 'right');
-    const right = formatColumn(item.value2 || "", 13, 'right');
+    const left = formatColumn((item.subtitle || '') + ':', 14, 'left');
+    const mid = formatColumn(item.value1 || '', 13, 'right');
+    const right = formatColumn(item.value2 || '', 13, 'right');
     return left + mid + right;
   };
 
   const formatNumber = (num) => separator(num);
   // Calculos para subtotal, itbis y descuentos
   const subtotal = getProductsPrice(data?.products || []);
-  const generalDiscount = getTotalDiscount(subtotal, data?.discount?.value || 0);
-  const individualDiscounts = getProductsIndividualDiscounts(data?.products || []);
+  const generalDiscount = getTotalDiscount(
+    subtotal,
+    data?.discount?.value || 0,
+  );
+  const individualDiscounts = getProductsIndividualDiscounts(
+    data?.products || [],
+  );
   const hasIndividualDiscounts = individualDiscounts > 0;
 
   // Etiquetas de métodos de pago
   const paymentLabel = {
-    cash: "Efectivo",
-    card: "Tarjeta",
-    transfer: "Transferencia",
-    creditNote: "Nota de Credito"
+    cash: 'Efectivo',
+    card: 'Tarjeta',
+    transfer: 'Transferencia',
+    creditNote: 'Nota de Credito',
   };
 
   // Items a mostrar en la sección de pago
@@ -292,51 +329,54 @@ const renderPaymentArea = (
     {
       label: 'ENVÍO',
       value2: formatNumber(data?.delivery?.value),
-      condition: data?.delivery?.status
+      condition: data?.delivery?.status,
     },
     {
       label: 'SUBTOTAL',
       value2: formatNumber(subtotal),
-      condition: true
-    },    {
+      condition: true,
+    },
+    {
       label: 'DESCUENTO GENERAL',
       value2: formatNumber(generalDiscount),
-      condition: !hasIndividualDiscounts && generalDiscount > 0
+      condition: !hasIndividualDiscounts && generalDiscount > 0,
     },
     {
       label: 'DESCUENTOS PRODUCTOS',
       value2: formatNumber(individualDiscounts),
-      condition: hasIndividualDiscounts
+      condition: hasIndividualDiscounts,
     },
     {
       label: 'ITBIS',
       value2: formatNumber(getProductsTax(data?.products || [])),
-      condition: true
+      condition: true,
     },
-    ...((data?.paymentMethod?.filter(item => item?.status === true)) || []).map((item) => ({
-      label: paymentLabel[item?.method],
-      value2: formatNumber(item?.value),
-      condition: true
-    })),
+    ...(data?.paymentMethod?.filter((item) => item?.status === true) || []).map(
+      (item) => ({
+        label: paymentLabel[item?.method],
+        value2: formatNumber(item?.value),
+        condition: true,
+      }),
+    ),
     {
       subtitle: 'TOTAL',
       value2: formatNumber(data?.totalPurchase?.value),
-      condition: true
+      condition: true,
     },
     {
-      label: data?.change?.value >= 0 ? "CAMBIO" : "FALTANTE",
+      label: data?.change?.value >= 0 ? 'CAMBIO' : 'FALTANTE',
       value2: formatNumber(data?.change?.value),
-      condition: true
+      condition: true,
     },
     {
       label: 'BALANCE ACTUAL',
       value2: formatNumber(data?.pendingBalance || 0),
-      condition: data?.change?.value < 0
-    }
+      condition: data?.change?.value < 0,
+    },
   ];
 
   // Renderizamos cada item
-  items.forEach(item => {
+  items.forEach((item) => {
     if (!item.condition) return;
 
     if (item.subtitle) {
@@ -352,15 +392,15 @@ const renderPaymentArea = (
     paymentText += separatorLine() + '\n';
     paymentText += centerText('NOTAS DE CREDITO APLICADAS') + '\n';
     paymentText += separatorLine() + '\n';
-    
-    creditNotes.forEach(note => {
+
+    creditNotes.forEach((note) => {
       const ncfText = `NCF: ${note.ncf}`;
       const amountText = formatNumber(note.amountUsed);
       const left = formatColumn(ncfText, 20, 'left');
       const right = formatColumn(amountText, 20, 'right');
       paymentText += left + right + '\n';
     });
-    
+
     paymentText += separatorLine() + '\n';
   }
 
@@ -371,7 +411,8 @@ const renderPaymentArea = (
 // ----------------- Footer -----------------
 const renderFooter = () => {
   let footer = '';
-  footer += wrapText('Gracias por su compra, regrese pronto.', CENTER_WIDTH) + '\n';
+  footer +=
+    wrapText('Gracias por su compra, regrese pronto.', CENTER_WIDTH) + '\n';
   footer += wrapText('   Lo Esperamos.', CENTER_WIDTH);
   return footer;
 };
@@ -379,42 +420,50 @@ const renderFooter = () => {
 /* =========================================================
    Componente principal
    ========================================================= */
-export const InvoiceTemplate4 = React.forwardRef(({ data, ignoreHidden }, ref) => {
-  const business = useSelector(selectBusinessData) || {};
-  const { taxReceipt } = useSelector(SelectSettingCart) || {};
-  const formatPhoneNumber = useFormatPhoneNumber;
+export const InvoiceTemplate4 = React.forwardRef(
+  ({ data, ignoreHidden }, ref) => {
+    const business = useSelector(selectBusinessData) || {};
+    const { taxReceipt } = useSelector(SelectSettingCart) || {};
+    const formatPhoneNumber = useFormatPhoneNumber;
 
-  // Fecha
-  const fechaActual = data?.date
-    ? DateUtils.convertMillisToISODate(
-        DateUtils.convertTimestampToMillis(data.date),
-        'dd/MM/yyyy HH:mm'
-      )
-    : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+    // Fecha
+    const fechaActual = data?.date
+      ? DateUtils.convertMillisToISODate(
+          DateUtils.convertTimestampToMillis(data.date),
+          'dd/MM/yyyy HH:mm',
+        )
+      : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
 
-  // Concatenamos todas las secciones
-  const factura =
-    renderBusinessHeader(business, formatPhoneNumber) +
-    renderInvoiceHeader(data, fechaActual) +
-    renderClientInfo(data?.client, formatPhoneNumber) +
-    renderProducts(
-      data?.products,
-      taxReceipt,
-      getTax,
-      getTotalPrice,
-      resetAmountToBuyForProduct,
-      separator,
-      data?.NCF
-    ) +
-    renderPaymentArea(data, separator, getProductsPrice, getProductsTax, getTotalDiscount) +
-    renderFooter();
+    // Concatenamos todas las secciones
+    const factura =
+      renderBusinessHeader(business, formatPhoneNumber) +
+      renderInvoiceHeader(data, fechaActual) +
+      renderClientInfo(data?.client, formatPhoneNumber) +
+      renderProducts(
+        data?.products,
+        taxReceipt,
+        getTax,
+        getTotalPrice,
+        resetAmountToBuyForProduct,
+        separator,
+        data?.NCF,
+      ) +
+      renderPaymentArea(
+        data,
+        separator,
+        getProductsPrice,
+        getProductsTax,
+        getTotalDiscount,
+      ) +
+      renderFooter();
 
-  return (
-    <HiddenPrintWrapper ignoreHidden={ignoreHidden}>
-      <pre ref={ref}>{factura}</pre>
-    </HiddenPrintWrapper>
-  );
-});
+    return (
+      <HiddenPrintWrapper ignoreHidden={ignoreHidden}>
+        <pre ref={ref}>{factura}</pre>
+      </HiddenPrintWrapper>
+    );
+  },
+);
 
 InvoiceTemplate4.displayName = 'InvoiceTemplate4';
 

@@ -11,17 +11,21 @@ function defineBaseAbilities(can, cannot) {
     INVENTORY_TERM,
     PURCHASE_TERM,
     CASH_RECONCILIATION_TERM,
-    CREDIT_NOTE_TERM
+    CREDIT_NOTE_TERM,
   } = routesName;
 
   const { CLIENTS } = CONTACT_TERM;
 
-  const { ACCOUNT_RECEIVABLE_LIST, RECEIVABLE_PAYMENT_RECEIPTS, ACCOUNT_RECEIVABLE_INFO } = ACCOUNT_RECEIVABLE;
+  const {
+    ACCOUNT_RECEIVABLE_LIST,
+    RECEIVABLE_PAYMENT_RECEIPTS,
+    ACCOUNT_RECEIVABLE_INFO,
+  } = ACCOUNT_RECEIVABLE;
 
   const {
     CASH_RECONCILIATION_CLOSURE,
     CASH_RECONCILIATION_LIST,
-    CASH_RECONCILIATION_OPENING
+    CASH_RECONCILIATION_OPENING,
   } = CASH_RECONCILIATION_TERM;
 
   const { SALES, BILLS } = SALES_TERM;
@@ -70,9 +74,9 @@ export function defineAbilitiesForCashier() {
   // Permisos adicionales que pueden ser habilitados dinámicamente
   // Estos eran los permisos de specialCashier1 y specialCashier2
   // Ahora se manejarán via sistema dinámico de permisos
-  
+
   // specialCashier1 tenía: can('read', 'PriceList')
   // specialCashier2 tenía: can('read', 'PriceList') + can('modify', 'Price')
-  
-  return rules
+
+  return rules;
 }

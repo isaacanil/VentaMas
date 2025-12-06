@@ -6,17 +6,17 @@
   Esta discrepancia se corregirá en una migración futura.
   TODO: Migrar modelo → renombrar 'type'→'serie' y 'serie'→'type' y ajustar referencias.
 */
-import { Button, Form, Grid, Input, message, Modal, Switch } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { Button, Form, Grid, Input, message, Modal, Switch } from 'antd';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { logSequenceWarning } from "../../../../../../../firebase/taxReceipt/logSequenceWarning";
-import { updateTaxReceipt } from "../../../../../../../firebase/taxReceipt/updateTaxReceipt";
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { logSequenceWarning } from '../../../../../../../firebase/taxReceipt/logSequenceWarning';
+import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
 
-import NcfSequenceSummary from "./components/NcfSequenceSummary";
-import SequenceLedgerInsights from "./components/SequenceLedgerInsights";
-import { useSequenceFinder } from "./hooks/useSequenceFinder";
+import NcfSequenceSummary from './components/NcfSequenceSummary';
+import SequenceLedgerInsights from './components/SequenceLedgerInsights';
+import { useSequenceFinder } from './hooks/useSequenceFinder';
 import {
   AsidePanel,
   DesktopOnly,
@@ -29,12 +29,12 @@ import {
   Span4,
   Span6,
   Span8,
-} from "./TaxReceiptForm.styled";
-import { confirmSequenceWarnings } from "./utils/confirmSequenceWarnings";
-import { buildPrefix, toDigits } from "./utils/ncfUtils";
-import { createSequenceConflictChecker } from "./utils/sequenceConflicts";
-import { createSequenceLengthResolver } from "./utils/sequenceLength";
-import { buildSequencePreview } from "./utils/sequencePreview";
+} from './TaxReceiptForm.styled';
+import { confirmSequenceWarnings } from './utils/confirmSequenceWarnings';
+import { buildPrefix, toDigits } from './utils/ncfUtils';
+import { createSequenceConflictChecker } from './utils/sequenceConflicts';
+import { createSequenceLengthResolver } from './utils/sequenceLength';
+import { buildSequencePreview } from './utils/sequencePreview';
 
 /* ===== Lógica original ===== */
 
@@ -47,15 +47,20 @@ export default function TaxReceiptForm({
   const user = useSelector(selectUser);
   const [isSaving, setIsSaving] = useState(false);
   const screens = Grid.useBreakpoint();
-  const [sequenceAnalysis, setSequenceAnalysis] = useState({ status: 'idle', result: null, error: null });
+  const [sequenceAnalysis, setSequenceAnalysis] = useState({
+    status: 'idle',
+    result: null,
+    error: null,
+  });
   const analysisRequestRef = useRef(0);
 
-  const normalizeDisabled = (value) => value === true || value === "true";
+  const normalizeDisabled = (value) => value === true || value === 'true';
 
   useEffect(() => {
     if (currentEditItem) {
       const sequenceValue =
-        currentEditItem.sequence === undefined || currentEditItem.sequence === null
+        currentEditItem.sequence === undefined ||
+        currentEditItem.sequence === null
           ? currentEditItem.sequence
           : String(currentEditItem.sequence);
 
@@ -71,17 +76,17 @@ export default function TaxReceiptForm({
   }, [currentEditItem, form]);
 
   const toNumberIfPossible = (value) => {
-    if (value === "" || value === null || value === undefined) return value;
+    if (value === '' || value === null || value === undefined) return value;
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : value;
   };
 
-  const serieValue = Form.useWatch("type", form);
-  const tipoValue = Form.useWatch("serie", form);
-  const sequenceValue = Form.useWatch("sequence", form);
-  const sequenceLengthValue = Form.useWatch("sequenceLength", form);
-  const increaseValue = Form.useWatch("increase", form);
-  const quantityValue = Form.useWatch("quantity", form);
+  const serieValue = Form.useWatch('type', form);
+  const tipoValue = Form.useWatch('serie', form);
+  const sequenceValue = Form.useWatch('sequence', form);
+  const sequenceLengthValue = Form.useWatch('sequenceLength', form);
+  const increaseValue = Form.useWatch('increase', form);
+  const quantityValue = Form.useWatch('quantity', form);
 
   const resolveSequenceLength = useMemo(
     () =>
@@ -89,7 +94,7 @@ export default function TaxReceiptForm({
         currentSequence: currentEditItem?.sequence,
         currentSequenceLength: currentEditItem?.sequenceLength,
       }),
-    [currentEditItem?.sequence, currentEditItem?.sequenceLength]
+    [currentEditItem?.sequence, currentEditItem?.sequenceLength],
   );
 
   const previewData = buildSequencePreview({
@@ -109,14 +114,15 @@ export default function TaxReceiptForm({
         userID: user?.uid,
         resolveSequenceLength,
       }),
-    [user?.businessID, user?.uid, resolveSequenceLength]
+    [user?.businessID, user?.uid, resolveSequenceLength],
   );
 
-  const { findingNextSequence, handleFindNextAvailableSequence } = useSequenceFinder({
-    form,
-    resolveSequenceLength,
-    checkSequenceConflicts,
-  });
+  const { findingNextSequence, handleFindNextAvailableSequence } =
+    useSequenceFinder({
+      form,
+      resolveSequenceLength,
+      checkSequenceConflicts,
+    });
 
   const currentNcfPreview = previewData.current;
   const nextNcfPreview = previewData.next;
@@ -128,7 +134,7 @@ export default function TaxReceiptForm({
     if (!checkSequenceConflicts) return undefined;
 
     const prefix = buildPrefix(serieValue, tipoValue);
-    const digits = toDigits(sequenceValue ?? "");
+    const digits = toDigits(sequenceValue ?? '');
     if (!prefix || !digits) {
       setSequenceAnalysis({ status: 'idle', result: null, error: null });
       return undefined;
@@ -147,7 +153,11 @@ export default function TaxReceiptForm({
     analysisRequestRef.current = requestId;
 
     const handle = setTimeout(() => {
-      setSequenceAnalysis((prev) => ({ status: 'loading', result: prev.result, error: null }));
+      setSequenceAnalysis((prev) => ({
+        status: 'loading',
+        result: prev.result,
+        error: null,
+      }));
 
       checkSequenceConflicts(pendingValues)
         .then((result) => {
@@ -163,7 +173,16 @@ export default function TaxReceiptForm({
     return () => {
       clearTimeout(handle);
     };
-  }, [checkSequenceConflicts, form, serieValue, tipoValue, sequenceValue, sequenceLengthValue, increaseValue, quantityValue]);
+  }, [
+    checkSequenceConflicts,
+    form,
+    serieValue,
+    tipoValue,
+    sequenceValue,
+    sequenceLengthValue,
+    increaseValue,
+    quantityValue,
+  ]);
 
   const confirmZeroQuantity = (quantity) => {
     const numericQuantity = Number(quantity);
@@ -181,17 +200,18 @@ export default function TaxReceiptForm({
       };
 
       Modal.confirm({
-        title: "Cantidad configurada en cero",
+        title: 'Cantidad configurada en cero',
         content: (
           <div>
             <p>
-              Si guardas este comprobante con cantidad 0 no estará disponible para facturación.
+              Si guardas este comprobante con cantidad 0 no estará disponible
+              para facturación.
             </p>
             <p>¿Deseas continuar de todos modos?</p>
           </div>
         ),
-        okText: "Guardar igualmente",
-        cancelText: "Cancelar",
+        okText: 'Guardar igualmente',
+        cancelText: 'Cancelar',
         centered: true,
         onOk: () => safeResolve(true),
         onCancel: () => safeResolve(false),
@@ -209,7 +229,7 @@ export default function TaxReceiptForm({
 
       const zeroQuantityConfirmed = await confirmZeroQuantity(values.quantity);
       if (!zeroQuantityConfirmed) {
-        message.info("Guardado cancelado para ajustar la cantidad.");
+        message.info('Guardado cancelado para ajustar la cantidad.');
         return;
       }
 
@@ -217,15 +237,20 @@ export default function TaxReceiptForm({
       try {
         sequenceValidation = await checkSequenceConflicts(values);
       } catch (validationError) {
-        console.error("Error al validar la secuencia con facturas: ", validationError);
-        message.error("No se pudo verificar la disponibilidad de la secuencia. Inténtalo nuevamente.");
+        console.error(
+          'Error al validar la secuencia con facturas: ',
+          validationError,
+        );
+        message.error(
+          'No se pudo verificar la disponibilidad de la secuencia. Inténtalo nuevamente.',
+        );
         return;
       }
 
       if (!sequenceValidation.ok) {
-        if (sequenceValidation.reason === "invalid-sequence") {
-          const errorMessage = "La secuencia debe contener solo dígitos.";
-          form.setFields([{ name: "sequence", errors: [errorMessage] }]);
+        if (sequenceValidation.reason === 'invalid-sequence') {
+          const errorMessage = 'La secuencia debe contener solo dígitos.';
+          form.setFields([{ name: 'sequence', errors: [errorMessage] }]);
           message.error(errorMessage);
           return;
         }
@@ -235,13 +260,16 @@ export default function TaxReceiptForm({
             ? `${sequenceValidation.prefix}${sequenceValidation.nextDigits.padStart(
                 resolveSequenceLength(
                   sequenceValidation.nextDigits.length,
-                  values.sequenceLength
+                  values.sequenceLength,
                 ),
-                "0"
+                '0',
               )}`
             : null;
 
-        if (sequenceValidation.reason === "next-sequence-used" || sequenceValidation.hasImmediateNextConflict) {
+        if (
+          sequenceValidation.reason === 'next-sequence-used' ||
+          sequenceValidation.hasImmediateNextConflict
+        ) {
           const conflictExamples = (sequenceValidation.conflicts ?? [])
             .map((c) => c.ncf)
             .filter(Boolean)
@@ -251,24 +279,23 @@ export default function TaxReceiptForm({
             conflictExamples.length === 1
               ? `El próximo NCF (${conflictExamples[0]}) ya fue emitido.`
               : conflictExamples.length > 1
-              ? `Los próximos NCF (${conflictExamples.join(", ")}) ya fueron emitidos.`
-              : nextCandidate
-              ? `El próximo NCF (${nextCandidate}) ya fue emitido.`
-              : "La secuencia indicada ya fue utilizada previamente.";
+                ? `Los próximos NCF (${conflictExamples.join(', ')}) ya fueron emitidos.`
+                : nextCandidate
+                  ? `El próximo NCF (${nextCandidate}) ya fue emitido.`
+                  : 'La secuencia indicada ya fue utilizada previamente.';
 
           const conflictMessage = `${conflictMessageBase} Ajusta la secuencia actual para que el próximo comprobante esté libre.`;
-          form.setFields([{ name: "sequence", errors: [conflictMessage] }]);
+          form.setFields([{ name: 'sequence', errors: [conflictMessage] }]);
           message.error(conflictMessage);
           return;
         }
 
-        if (sequenceValidation.reason === "current-sequence-used") {
-          form.setFields([{ name: "sequence", errors: [] }]);
+        if (sequenceValidation.reason === 'current-sequence-used') {
+          form.setFields([{ name: 'sequence', errors: [] }]);
         } else {
-          const conflictMessage =
-            nextCandidate
-              ? `El próximo NCF (${nextCandidate}) ya fue emitido. Ajusta la secuencia actual para que el próximo comprobante esté libre.`
-              : "La secuencia indicada ya fue utilizada previamente.";
+          const conflictMessage = nextCandidate
+            ? `El próximo NCF (${nextCandidate}) ya fue emitido. Ajusta la secuencia actual para que el próximo comprobante esté libre.`
+            : 'La secuencia indicada ya fue utilizada previamente.';
           message.error(conflictMessage);
           return;
         }
@@ -276,7 +303,7 @@ export default function TaxReceiptForm({
 
       const warningDecision = await confirmSequenceWarnings(sequenceValidation);
       if (!warningDecision.accepted) {
-        message.info("Guardado cancelado para revisar la secuencia.");
+        message.info('Guardado cancelado para revisar la secuencia.');
         return;
       }
 
@@ -291,7 +318,10 @@ export default function TaxReceiptForm({
             validation: sequenceValidation,
           });
         } catch (auditError) {
-          console.error("No se pudo registrar la auditoría de advertencia de NCF:", auditError);
+          console.error(
+            'No se pudo registrar la auditoría de advertencia de NCF:',
+            auditError,
+          );
         }
       }
 
@@ -300,7 +330,7 @@ export default function TaxReceiptForm({
       const finalValues = {
         ...restValues,
         disabled:
-          typeof isActive === "boolean"
+          typeof isActive === 'boolean'
             ? !isActive
             : normalizeDisabled(currentEditItem?.disabled),
         sequence: toNumberIfPossible(restValues.sequence),
@@ -311,19 +341,24 @@ export default function TaxReceiptForm({
       const data = { ...currentEditItem, ...finalValues };
 
       await updateTaxReceipt(user, data);
-      message.success("Comprobante fiscal actualizado correctamente");
+      message.success('Comprobante fiscal actualizado correctamente');
       setEditModalVisible(false);
     } catch (error) {
       if (error?.errorFields) return;
-      console.error("Error al guardar el comprobante fiscal:", error);
-      message.error("Error al actualizar el comprobante fiscal. Por favor, inténtalo de nuevo más tarde.");
+      console.error('Error al guardar el comprobante fiscal:', error);
+      message.error(
+        'Error al actualizar el comprobante fiscal. Por favor, inténtalo de nuevo más tarde.',
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   const initialFormValues = currentEditItem
-    ? { ...currentEditItem, isActive: !normalizeDisabled(currentEditItem.disabled) }
+    ? {
+        ...currentEditItem,
+        isActive: !normalizeDisabled(currentEditItem.disabled),
+      }
     : undefined;
 
   return (
@@ -332,7 +367,7 @@ export default function TaxReceiptForm({
       open={editModalVisible}
       onCancel={() => setEditModalVisible(false)}
       width={screens.lg ? 800 : 600}
-      style={{ top: 10 }}
+      style={{ top: '10px' }}
       footer={[
         <Button key="cancel" onClick={() => setEditModalVisible(false)}>
           Cancelar
@@ -347,7 +382,7 @@ export default function TaxReceiptForm({
           Guardar
         </Button>,
       ]}
-      destroyOnClose
+      destroyOnHidden
     >
       {currentEditItem && (
         <ModalLayout>
@@ -365,7 +400,12 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="name"
                     label="Nombre"
-                    rules={[{ required: true, message: "Por favor ingrese el nombre del comprobante" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Por favor ingrese el nombre del comprobante',
+                      },
+                    ]}
                   >
                     <Input placeholder="Nombre del comprobante" />
                   </Form.Item>
@@ -376,7 +416,12 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="type"
                     label="Serie"
-                    rules={[{ required: true, message: "Por favor ingrese el tipo de comprobante" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Por favor ingrese el tipo de comprobante',
+                      },
+                    ]}
                   >
                     <Input placeholder="Serie" maxLength={2} />
                   </Form.Item>
@@ -386,7 +431,9 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="serie"
                     label="Tipo"
-                    rules={[{ required: true, message: "Por favor ingrese la serie" }]}
+                    rules={[
+                      { required: true, message: 'Por favor ingrese la serie' },
+                    ]}
                   >
                     <Input placeholder="Tipo" maxLength={2} type="number" />
                   </Form.Item>
@@ -397,7 +444,12 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="sequence"
                     label="Secuencia"
-                    rules={[{ required: true, message: "Por favor ingrese la secuencia" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Por favor ingrese la secuencia',
+                      },
+                    ]}
                   >
                     <Input placeholder="Secuencia" maxLength={10} />
                   </Form.Item>
@@ -421,7 +473,12 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="increase"
                     label="Incremento"
-                    rules={[{ required: true, message: "Por favor ingrese el incremento" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Por favor ingrese el incremento',
+                      },
+                    ]}
                   >
                     <Input placeholder="Incremento" type="number" />
                   </Form.Item>
@@ -431,7 +488,12 @@ export default function TaxReceiptForm({
                   <Form.Item
                     name="quantity"
                     label="Cantidad"
-                    rules={[{ required: true, message: "Por favor ingrese la cantidad" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'Por favor ingrese la cantidad',
+                      },
+                    ]}
                   >
                     <Input placeholder="Cantidad" type="number" />
                   </Form.Item>
@@ -454,8 +516,15 @@ export default function TaxReceiptForm({
                 </Span12>
 
                 <Span6>
-                  <Form.Item name="isActive" label="Estado" valuePropName="checked">
-                    <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
+                  <Form.Item
+                    name="isActive"
+                    label="Estado"
+                    valuePropName="checked"
+                  >
+                    <Switch
+                      checkedChildren="Activo"
+                      unCheckedChildren="Inactivo"
+                    />
                   </Form.Item>
                 </Span6>
               </FormGrid>

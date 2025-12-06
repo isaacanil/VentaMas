@@ -72,7 +72,7 @@ export function AlgoliaProductsSearch() {
   const connectToAlgolia = useCallback(() => {
     if (!isConfigured) {
       setConnectionError(
-        'Faltan credenciales o el nombre del índice. Define VITE_ALGOLIA_APP_ID, VITE_ALGOLIA_SEARCH_KEY y VITE_ALGOLIA_PRODUCTS_INDEX.'
+        'Faltan credenciales o el nombre del índice. Define VITE_ALGOLIA_APP_ID, VITE_ALGOLIA_SEARCH_KEY y VITE_ALGOLIA_PRODUCTS_INDEX.',
       );
       setIndex(null);
       return;
@@ -87,7 +87,9 @@ export function AlgoliaProductsSearch() {
     } catch (error) {
       console.error('Algolia init error', error);
       setConnectionError(
-        error instanceof Error ? error.message : 'No fue posible inicializar Algolia.'
+        error instanceof Error
+          ? error.message
+          : 'No fue posible inicializar Algolia.',
       );
       setIndex(null);
     } finally {
@@ -126,14 +128,16 @@ export function AlgoliaProductsSearch() {
       } catch (error) {
         console.error('Algolia search error', error);
         setSearchError(
-          error instanceof Error ? error.message : 'Error durante la búsqueda en Algolia.'
+          error instanceof Error
+            ? error.message
+            : 'Error durante la búsqueda en Algolia.',
         );
         setHits([]);
       } finally {
         setIsSearching(false);
       }
     },
-    [index]
+    [index],
   );
 
   const debouncedSearch = useMemo(
@@ -141,7 +145,7 @@ export function AlgoliaProductsSearch() {
       debounce((value) => {
         performSearch(value);
       }, 300),
-    [performSearch]
+    [performSearch],
   );
 
   useEffect(() => {
@@ -207,7 +211,7 @@ export function AlgoliaProductsSearch() {
     } catch (error) {
       console.error('Firestore fetch error', error);
       setFirestoreError(
-        error instanceof Error ? error.message : 'Error consultando Firestore.'
+        error instanceof Error ? error.message : 'Error consultando Firestore.',
       );
     } finally {
       setFirestoreLoading(false);
@@ -232,7 +236,9 @@ export function AlgoliaProductsSearch() {
           {record?._highlightResult?.name?.value && (
             <Text
               style={{ fontSize: 12, color: '#666' }}
-              dangerouslySetInnerHTML={{ __html: record._highlightResult.name.value }}
+              dangerouslySetInnerHTML={{
+                __html: record._highlightResult.name.value,
+              }}
             />
           )}
           {record.objectID && (
@@ -292,7 +298,9 @@ export function AlgoliaProductsSearch() {
 
         return (
           <Space direction="vertical" size={0}>
-            <Tag color={isCurrentBusiness ? 'green' : 'orange'}>{businessID}</Tag>
+            <Tag color={isCurrentBusiness ? 'green' : 'orange'}>
+              {businessID}
+            </Tag>
             {isCurrentBusiness && (
               <Text type="success" style={{ fontSize: 11 }}>
                 Tu negocio activo
@@ -344,8 +352,8 @@ export function AlgoliaProductsSearch() {
             </Title>
             <Paragraph type="secondary" style={{ marginBottom: 0 }}>
               Ejecuta búsquedas en tiempo real sobre el índice{' '}
-              <Text code>{ALGOLIA_INDEX_NAME}</Text> y valida contra los datos en
-              Firestore.
+              <Text code>{ALGOLIA_INDEX_NAME}</Text> y valida contra los datos
+              en Firestore.
             </Paragraph>
           </div>
 
@@ -380,9 +388,7 @@ export function AlgoliaProductsSearch() {
                   </Tag>
                 </div>
                 {connectionError && (
-                  <Text type="danger">
-                    {connectionError}
-                  </Text>
+                  <Text type="danger">{connectionError}</Text>
                 )}
               </Space>
             }
@@ -401,7 +407,11 @@ export function AlgoliaProductsSearch() {
               />
               <Space>
                 <Button onClick={handleReset}>Limpiar</Button>
-                <Button type="primary" onClick={handleManualSearch} loading={isSearching}>
+                <Button
+                  type="primary"
+                  onClick={handleManualSearch}
+                  loading={isSearching}
+                >
                   Buscar
                 </Button>
               </Space>
@@ -472,7 +482,12 @@ export function AlgoliaProductsSearch() {
         )}
 
         {!firestoreLoading && firestoreError && (
-          <Alert type="error" showIcon message="Error" description={firestoreError} />
+          <Alert
+            type="error"
+            showIcon
+            message="Error"
+            description={firestoreError}
+          />
         )}
 
         {!firestoreLoading && !firestoreError && firestoreDoc && (

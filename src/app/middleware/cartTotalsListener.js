@@ -1,6 +1,6 @@
-import { createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
+import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
 
-import { cartSlice, recalcTotals } from "../../features/cart/cartSlice";
+import { cartSlice, recalcTotals } from '../../features/cart/cartSlice';
 
 export const totalsListener = createListenerMiddleware();
 
@@ -34,6 +34,6 @@ totalsListener.startListening({
 totalsListener.startListening({
   actionCreator: cartSlice.actions.setPaymentAmount,
   effect: async (action, listenerApi) => {
-     listenerApi.dispatch(recalcTotals(Number(action.payload)));
+    listenerApi.dispatch(recalcTotals(Number(action.payload)));
   },
 });

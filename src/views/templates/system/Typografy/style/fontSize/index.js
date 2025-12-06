@@ -1,7 +1,7 @@
-import { fontSizesApp } from "./fontSizeApp";
-import { fontSizesWeb } from "./fontSizeWeb";
+import { fontSizesApp } from './fontSizeApp';
+import { fontSizesWeb } from './fontSizeWeb';
 
 export const fontSize = {
-    app: fontSizesApp,
-    web: fontSizesWeb
-}
+  app: fontSizesApp,
+  web: fontSizesWeb,
+};

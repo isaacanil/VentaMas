@@ -25,7 +25,73 @@ const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
 const logoutCallable = httpsCallable(functions, 'clientLogout');
 
 const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
-const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart', 'visibilitychange', 'focus'];
+
+const ACTIVITY_EVENTS = [
+  'mousedown',
+  'keydown',
+  'scroll',
+  'touchstart',
+  'visibilitychange',
+  'focus',
+];
+
+const INVALID_SESSION_ERROR_CODES = [
+  'unauthenticated',
+  'permission-denied',
+  'invalid-argument',
+];
+
+const TRANSIENT_SESSION_ERROR_CODES = [
+  'deadline-exceeded',
+  'unavailable',
+  'resource-exhausted',
+  'aborted',
+  'internal',
+];
+
+const isInvalidSessionError = (error) => {
+  const code = (error?.code || '').toLowerCase();
+  const message = (error?.message || '').toLowerCase();
+
+  const hasInvalidCode = INVALID_SESSION_ERROR_CODES.some((errCode) =>
+    code.includes(errCode),
+  );
+  if (hasInvalidCode) return true;
+
+  const invalidMessageHints = [
+    'expir',
+    'inactividad',
+    'sesión no encontrada',
+    'session not found',
+    'token de sesión',
+    'token invalido',
+    'invalid token',
+  ];
+
+  return invalidMessageHints.some((hint) => message.includes(hint));
+};
+
+const isTransientSessionError = (error) => {
+  const code = (error?.code || '').toLowerCase();
+  const message = (error?.message || '').toLowerCase();
+
+  const hasTransientCode = TRANSIENT_SESSION_ERROR_CODES.some((errCode) =>
+    code.includes(errCode),
+  );
+  if (hasTransientCode) return true;
+
+  const transientMessageHints = [
+    'network',
+    'conexion',
+    'conexión',
+    'timeout',
+    'unavailable',
+    'temporarily',
+    'offline',
+  ];
+
+  return transientMessageHints.some((hint) => message.includes(hint));
+};
 
 export function useAutomaticLogin() {
   const dispatch = useDispatch();
@@ -69,7 +135,7 @@ export function useAutomaticLogin() {
         navigate('/login', { replace: true });
       }
     },
-    [dispatch, navigate]
+    [dispatch, navigate],
   );
 
   const showSessionExpiredModal = useCallback(() => {
@@ -106,7 +172,8 @@ export function useAutomaticLogin() {
     openModalOnce('inactivity-warning', (reset) => {
       Modal.confirm({
         title: 'Inactividad prolongada',
-        content: '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
+        content:
+          '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
         okText: 'Sí, mantener activa',
         cancelText: 'Cerrar sesión',
         centered: true,
@@ -131,7 +198,7 @@ export function useAutomaticLogin() {
                 displayName: userData.realName || userData.name,
                 username: userData.name,
                 realName: userData.realName,
-              })
+              }),
             );
             userIdRef.current = userId;
           }
@@ -140,7 +207,7 @@ export function useAutomaticLogin() {
         console.error('user data load error:', error?.message || error);
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const refreshSession = useCallback(
@@ -188,10 +255,20 @@ export function useAutomaticLogin() {
           sessionId: session.id,
         });
 
+        if (isMountedRef.current) {
+          setError(null);
+        }
+
         await loadUserData(session.userId);
 
-        const remaining = session.expiresAt ? session.expiresAt - Date.now() : null;
-        if (remaining !== null && remaining > 0 && remaining < EXPIRY_WARNING_WINDOW_MS) {
+        const remaining = session.expiresAt
+          ? session.expiresAt - Date.now()
+          : null;
+        if (
+          remaining !== null &&
+          remaining > 0 &&
+          remaining < EXPIRY_WARNING_WINDOW_MS
+        ) {
           showSessionExpiringWarning();
         }
 
@@ -206,14 +283,45 @@ export function useAutomaticLogin() {
           }
           return { ok: false, reason: 'logout-in-progress', error };
         }
-        showSessionExpiredModal();
-        await handleLogout({ redirect: true });
+
+        if (isTransientSessionError(error)) {
+          if (isMountedRef.current) {
+            setStatus('ready');
+            setError(
+              error instanceof Error
+                ? error
+                : new Error(
+                    'No se pudo renovar la sesión. Reintentaremos en unos minutos.',
+                  ),
+            );
+          }
+          return { ok: false, reason: 'transient-error', error };
+        }
+
+        if (isInvalidSessionError(error)) {
+          showSessionExpiredModal();
+          await handleLogout({ redirect: true });
+          return { ok: false, reason: 'invalid-session', error };
+        }
+
+        if (isMountedRef.current) {
+          setError(
+            error instanceof Error
+              ? error
+              : new Error('No se pudo renovar la sesión.'),
+          );
+        }
         return { ok: false, reason: 'error', error };
       } finally {
         refreshLockRef.current = false;
       }
     },
-    [handleLogout, loadUserData, showSessionExpiredModal, showSessionExpiringWarning]
+    [
+      handleLogout,
+      loadUserData,
+      showSessionExpiredModal,
+      showSessionExpiringWarning,
+    ],
   );
 
   const handleActivity = useCallback(() => {
@@ -244,7 +352,10 @@ export function useAutomaticLogin() {
         if (!isMountedRef.current) return;
 
         if (!result?.ok) {
-          if (result?.reason === 'error' && result.error) {
+          if (
+            ['error', 'transient-error'].includes(result?.reason) &&
+            result.error
+          ) {
             setErrorSafe(result.error);
           }
           setStatusSafe('ready');
@@ -255,7 +366,9 @@ export function useAutomaticLogin() {
         setStatusSafe('ready');
       } catch (err) {
         console.error('initial session check error:', err);
-        setErrorSafe(err instanceof Error ? err : new Error('Error de sesión desconocido'));
+        setErrorSafe(
+          err instanceof Error ? err : new Error('Error de sesión desconocido'),
+        );
         setStatusSafe('ready');
       }
     };

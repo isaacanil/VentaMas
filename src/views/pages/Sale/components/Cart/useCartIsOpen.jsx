@@ -1,8 +1,5 @@
-import React from 'react'
+import React from 'react';
 
 export const useCartIsOpen = () => {
-    
-  return (
-    <div>useCartIsOpen</div>
-  )
-}
+  return <div>useCartIsOpen</div>;
+};

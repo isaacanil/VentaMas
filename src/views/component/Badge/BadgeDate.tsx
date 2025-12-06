@@ -9,94 +9,91 @@ import type { ConfigItem } from '../../../config/statusActionConfig';
 type BadgeDateConfig = ConfigItem;
 
 interface BadgeDateProps {
-    dateTime?: DateTime | null;
-    config?: BadgeDateConfig | null | undefined;
+  dateTime?: DateTime | null;
+  config?: BadgeDateConfig | null | undefined;
 }
 
 const defaultConfig: BadgeDateConfig = {
-    bgColor: '#f5f5f5',
-    color: '#666666',
-    icon: <FontAwesomeIcon icon={faCalendar} />,
-    text: 'Fecha'
+  bgColor: '#f5f5f5',
+  color: '#666666',
+  icon: <FontAwesomeIcon icon={faCalendar} />,
+  text: 'Fecha',
 };
 
 const BadgeContainer = styled.div<{ bgColor?: string; simple?: boolean }>`
-    padding: ${props => props.simple ? '8px 16px' : '1px 8px'};
-    border-radius: 6px;
-    min-width: 115px;
-    background-color: ${props => props.simple ? '#f8f9fa' : props.bgColor || '#E3F2FD'};
-    display: ${props => props.simple ? 'flex' : 'inline-block'};
-    justify-content: ${props => props.simple ? 'center' : 'initial'};
-    align-items: ${props => props.simple ? 'center' : 'initial'};
+  display: ${(props) => (props.simple ? 'flex' : 'inline-block')};
+  align-items: ${(props) => (props.simple ? 'center' : 'initial')};
+  justify-content: ${(props) => (props.simple ? 'center' : 'initial')};
+  min-width: 115px;
+  padding: ${(props) => (props.simple ? '8px 16px' : '1px 8px')};
+  background-color: ${(props) =>
+    props.simple ? '#f8f9fa' : props.bgColor || '#E3F2FD'};
+  border-radius: 6px;
 `;
 
 const DateIconContainer = styled.div<{ simple?: boolean }>`
-    display: flex;
-    justify-content: ${props => props.simple ? 'center' : 'space-between'};
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: ${(props) => (props.simple ? 'center' : 'space-between')};
 `;
 
 const DateText = styled.span<{ color: string; simple?: boolean }>`
-    color: ${props => props.simple ? '#495057' : props.color};
-    font-size: ${props => props.simple ? '14px' : '14px'};
+  font-size: ${(props) => (props.simple ? '14px' : '14px')};
+  color: ${(props) => (props.simple ? '#495057' : props.color)};
 `;
 
 const BadgeText = styled.div<{ color: string }>`
-    color: ${props => props.color};
-    font-size: 12px;
-    font-weight: 500;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${(props) => props.color};
 `;
 
 interface IconProps {
-    style?: React.CSSProperties;
+  style?: React.CSSProperties;
 }
 
 const renderIcon = (icon: ReactNode, color: string) => {
-    if (isValidElement<IconProps>(icon)) {
-        return cloneElement(icon, {
-            style: { color } as React.CSSProperties
-        });
-    }
-    return icon;
+  if (isValidElement<IconProps>(icon)) {
+    return cloneElement(icon, {
+      style: { color } as React.CSSProperties,
+    });
+  }
+  return icon;
 };
 
 export const BadgeDate = ({
-    dateTime = DateTime.now(),
-    config
+  dateTime = DateTime.now(),
+  config,
 }: BadgeDateProps) => {
-    const finalConfig = {
-        bgColor: config?.bgColor || defaultConfig.bgColor,
-        color: config?.color || defaultConfig.color,
-        icon: config?.icon || defaultConfig.icon,
-        text: config?.text || defaultConfig.text
-    };
+  const finalConfig = {
+    bgColor: config?.bgColor || defaultConfig.bgColor,
+    color: config?.color || defaultConfig.color,
+    icon: config?.icon || defaultConfig.icon,
+    text: config?.text || defaultConfig.text,
+  };
 
-    const formattedDate = dateTime?.isValid
-        ? dateTime.toFormat('dd/MM/yyyy')
-        : DateTime.now().toFormat('dd/MM/yyyy');
+  const formattedDate = dateTime?.isValid
+    ? dateTime.toFormat('dd/MM/yyyy')
+    : DateTime.now().toFormat('dd/MM/yyyy');
 
-    if (!config) {
-        return (
-            <BadgeContainer simple>
-                <DateText simple color="">
-                    {formattedDate}
-                </DateText>
-            </BadgeContainer>
-        );
-    }
-
+  if (!config) {
     return (
-        <BadgeContainer bgColor={finalConfig.bgColor}>
-            <DateIconContainer>
-                <DateText color={finalConfig.color}>
-                    {formattedDate}
-                </DateText>
-                {renderIcon(finalConfig.icon, finalConfig.color)}
-            </DateIconContainer>
-            <BadgeText color={finalConfig.color}>
-                {finalConfig.text}
-            </BadgeText>
-        </BadgeContainer>
+      <BadgeContainer simple>
+        <DateText simple color="">
+          {formattedDate}
+        </DateText>
+      </BadgeContainer>
     );
+  }
+
+  return (
+    <BadgeContainer bgColor={finalConfig.bgColor}>
+      <DateIconContainer>
+        <DateText color={finalConfig.color}>{formattedDate}</DateText>
+        {renderIcon(finalConfig.icon, finalConfig.color)}
+      </DateIconContainer>
+      <BadgeText color={finalConfig.color}>{finalConfig.text}</BadgeText>
+    </BadgeContainer>
+  );
 };

@@ -1,9 +1,16 @@
-import { collection, onSnapshot, orderBy, query, where, Timestamp } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+  Timestamp,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { db } from "../firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 export const useFbGetCreditNotes = (filters = {}) => {
   const user = useSelector(selectUser);
@@ -18,30 +25,35 @@ export const useFbGetCreditNotes = (filters = {}) => {
 
     setLoading(true);
 
-    const creditNotesRef = collection(db, "businesses", user.businessID, "creditNotes");
-    
+    const creditNotesRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'creditNotes',
+    );
+
     // Construir la consulta con filtros dinámicos
-    let queryConstraints = [orderBy("createdAt", "desc")];
+    let queryConstraints = [orderBy('createdAt', 'desc')];
 
     // Filtro por rango de fechas
     if (filters.startDate && filters.endDate) {
       const startTimestamp = Timestamp.fromDate(filters.startDate.toDate());
       const endTimestamp = Timestamp.fromDate(filters.endDate.toDate());
-      
+
       queryConstraints.push(
-        where("createdAt", ">=", startTimestamp),
-        where("createdAt", "<=", endTimestamp)
+        where('createdAt', '>=', startTimestamp),
+        where('createdAt', '<=', endTimestamp),
       );
     }
 
     // Filtro por cliente
     if (filters.clientId) {
-      queryConstraints.push(where("client.id", "==", filters.clientId));
+      queryConstraints.push(where('client.id', '==', filters.clientId));
     }
 
     // Filtro por estado
     if (filters.status) {
-      queryConstraints.push(where("status", "==", filters.status));
+      queryConstraints.push(where('status', '==', filters.status));
     }
 
     const q = query(creditNotesRef, ...queryConstraints);
@@ -51,19 +63,25 @@ export const useFbGetCreditNotes = (filters = {}) => {
       (snapshot) => {
         const list = snapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id // Asegurar que el ID esté incluido
+          id: doc.id, // Asegurar que el ID esté incluido
         }));
         setCreditNotes(list);
         setLoading(false);
       },
       (error) => {
-        console.error("Error fetching credit notes:", error);
+        console.error('Error fetching credit notes:', error);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, filters.startDate, filters.endDate, filters.clientId, filters.status]);
+  }, [
+    user?.businessID,
+    filters.startDate,
+    filters.endDate,
+    filters.clientId,
+    filters.status,
+  ]);
 
   return { creditNotes, loading };
-}; 
+};

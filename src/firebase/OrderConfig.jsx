@@ -1,5 +1,3 @@
-
-
 // export const OrdersData = () => {
 //     const [orders, setOrders] = useState([])
 //     useEffect(() => {
@@ -13,5 +11,3 @@
 //         if (orders.length > 0) dispatch(getPendingOrdersFromDB({ optionsID: 'Pedidos', datas: orders, propertyName: 'data'}))
 //     }, [orders])
 // }
-
-

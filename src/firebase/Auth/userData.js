@@ -1,13 +1,15 @@
-import { useSelector } from "react-redux"
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice"
+import { selectUser } from '../../features/auth/userSlice';
 
 const handleNoData = (user) => {
-    if (!user || !user?.businessID) {
-        return () => { return };
-    }
-}
+  if (!user || !user?.businessID) {
+    return () => {
+      return;
+    };
+  }
+};
 export const getUser = () => {
-    const user = useSelector(selectUser)
-    return { user, handleNoData: handleNoData(user) };
-}
+  const user = useSelector(selectUser);
+  return { user, handleNoData: handleNoData(user) };
+};

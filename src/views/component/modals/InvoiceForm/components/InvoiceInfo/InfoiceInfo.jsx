@@ -1,4 +1,8 @@
-import { faBan, faTriangleExclamation, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBan,
+  faTriangleExclamation,
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Form, Input, Modal, Spin, Button, message } from 'antd';
 import { useState } from 'react';
@@ -16,12 +20,15 @@ import { TimeRemainingBadge } from '../TimeRemainingBadge/TimeRemainingBadge';
 import { InvoiceResume } from './components/InvoiceResume';
 
 export const InvoiceInfo = ({ invoice, isEditLocked }) => {
-  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] = useState(false);
+  const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] =
+    useState(false);
   const [isOpenPaymentInfoModal, setIsOpenPaymentInfoModal] = useState(false);
   const isCancelable = !invoice?.NCF;
 
-  const handleCloseCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(false);
-  const handleOpenCancelInvoiceConfirm = () => setIsOpenCancelInvoiceConfirm(true);
+  const handleCloseCancelInvoiceConfirm = () =>
+    setIsOpenCancelInvoiceConfirm(false);
+  const handleOpenCancelInvoiceConfirm = () =>
+    setIsOpenCancelInvoiceConfirm(true);
   const handleOpenPaymentInfoModal = () => {
     if (isEditLocked) {
       message.warning('La información de pago es de solo lectura.');
@@ -65,8 +72,6 @@ export const InvoiceInfo = ({ invoice, isEditLocked }) => {
   );
 };
 
-
-
 const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +106,7 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
       open={isOpen}
       footer={null}
       onCancel={handleCancel}
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Spin spinning={isLoading} tip="Cargando..." size="large">
@@ -122,32 +127,30 @@ const CancelInvoiceConfirm = ({ isOpen, invoice, handleClose }) => {
               </WarningItem>
               <WarningItem>
                 <ListIcon icon={faWarehouse} />
-                <span>Los productos de esta factura volverán al inventario.</span>
+                <span>
+                  Los productos de esta factura volverán al inventario.
+                </span>
               </WarningItem>
             </WarningList>
           </WarningCard>
 
-          <StyledForm
-            form={form}
-            layout="vertical"
-            onFinish={handleOk}
-          >
+          <StyledForm form={form} layout="vertical" onFinish={handleOk}>
             <StyledFormItem
               label="Motivo de la anulación"
               name="cancellationReason"
               help="Ejemplo: El cliente se arrepintió de la compra"
-              rules={[{ required: true, message: 'Por favor ingrese el motivo de la anulación' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingrese el motivo de la anulación',
+                },
+              ]}
             >
-              <StyledInput
-                type="text"
-                placeholder="Motivo de la anulación"
-              />
+              <StyledInput type="text" placeholder="Motivo de la anulación" />
             </StyledFormItem>
 
             <FormActions>
-              <Button onClick={handleCancel}>
-                Cancelar
-              </Button>
+              <Button onClick={handleCancel}>Cancelar</Button>
               <Button
                 type="primary"
                 danger
@@ -177,8 +180,8 @@ const ActionsRow = styled.div`
 
 const CancelButton = styled(Button)`
   display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
   font-weight: 500;
 `;
 
@@ -193,15 +196,15 @@ const WarningCard = styled.div`
   flex-direction: column;
   gap: 1rem;
   padding: 1.25rem;
-  border-radius: 12px;
   background: #fff8eb;
   border: 1px solid #fcd34d;
+  border-radius: 12px;
 `;
 
 const WarningHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: center;
 `;
 
 const WarningIcon = styled(FontAwesomeIcon)`
@@ -227,17 +230,17 @@ const WarningSubtitle = styled.span`
 `;
 
 const WarningList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
   gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
 const WarningItem = styled.li`
   display: flex;
-  align-items: flex-start;
   gap: 0.625rem;
+  align-items: flex-start;
   color: #374151;
 `;
 
@@ -263,6 +266,6 @@ const StyledInput = styled(Input)`
 
 const FormActions = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 0.75rem;
+  justify-content: flex-end;
 `;

@@ -3,11 +3,17 @@ import { nanoid } from 'nanoid';
 // import { MovementReason, MovementType } from '../../../models/Warehouse/Movement.js';
 import { db, FieldValue } from '../../../../../core/config/firebase.js';
 import { checkAndDeleteEmptyBatch } from '../../batch/services/batch.service.js';
-import { MovementReason, MovementType } from '../../inventoryMovements/types/inventoryMovements.js';
+import {
+  MovementReason,
+  MovementType,
+} from '../../inventoryMovements/types/inventoryMovements.js';
 
 // Referencia a la colección productsStock de un negocio
 function getProductStockCollection(businessID) {
-  return db.collection('businesses').doc(businessID).collection('productsStock');
+  return db
+    .collection('businesses')
+    .doc(businessID)
+    .collection('productsStock');
 }
 
 /**
@@ -31,7 +37,7 @@ export async function createProductStock(user, stockData) {
     createdAt: now,
     createdBy: user.uid,
     updatedAt: now,
-    updatedBy: user.uid
+    updatedBy: user.uid,
   };
 
   await stockRef.set(record);
@@ -46,7 +52,7 @@ export async function createProductStock(user, stockData) {
 export async function getAllProductStocks(user) {
   const col = getProductStockCollection(user.businessID);
   const snaps = await col.where('isDeleted', '==', false).get();
-  return snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snaps.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 /**
@@ -61,7 +67,7 @@ export async function updateProductStock(user, data) {
   const updates = {
     ...rest,
     updatedAt: FieldValue.serverTimestamp(),
-    updatedBy: user.uid
+    updatedBy: user.uid,
   };
   await ref.update(updates);
   return { id, ...rest };
@@ -74,9 +80,16 @@ export async function updateProductStock(user, data) {
  * @param {Object} movementInfo
  * @returns {Promise<Object>} resumen de operación
  */
-export async function deleteAllProductStocksByBatch(user, batchId, movementInfo) {
+export async function deleteAllProductStocksByBatch(
+  user,
+  batchId,
+  movementInfo,
+) {
   const col = getProductStockCollection(user.businessID);
-  const snaps = await col.where('batchId', '==', batchId).where('isDeleted', '==', false).get();
+  const snaps = await col
+    .where('batchId', '==', batchId)
+    .where('isDeleted', '==', false)
+    .get();
 
   const results = [];
   for (const doc of snaps.docs) {
@@ -85,7 +98,7 @@ export async function deleteAllProductStocksByBatch(user, batchId, movementInfo)
       ...movementInfo,
       quantity: stock.quantity,
       reason: movementInfo?.reason,
-      notes: `${movementInfo?.notes || ''} - Batch ${batchId}`
+      notes: `${movementInfo?.notes || ''} - Batch ${batchId}`,
     };
     await deleteProductStock(user, doc.id, info);
     results.push(doc.id);
@@ -93,7 +106,7 @@ export async function deleteAllProductStocksByBatch(user, batchId, movementInfo)
 
   return {
     batchId,
-    deletedCount: results.length
+    deletedCount: results.length,
   };
 }
 
@@ -111,14 +124,21 @@ export async function deleteAllProductStocksByBatch(user, batchId, movementInfo)
  * @param {Object} filters
  * @returns {Promise<Array>}
  */
-export async function getProductStockByBatch(user, { productId, batchId, location } = {}) {
-  let q = getProductStockCollection(user.businessID).where('isDeleted', '==', false);
+export async function getProductStockByBatch(
+  user,
+  { productId, batchId, location } = {},
+) {
+  let q = getProductStockCollection(user.businessID).where(
+    'isDeleted',
+    '==',
+    false,
+  );
   if (batchId) q = q.where('batchId', '==', batchId);
   if (productId) q = q.where('productId', '==', productId);
   if (location) q = q.where('location', '==', location);
 
   const snaps = await q.get();
-  return snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snaps.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 /**
@@ -134,7 +154,7 @@ export async function getProductStockByProductId(user, productId) {
     .where('status', '==', 'active');
 
   const snaps = await q.get();
-  return snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snaps.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 /**
@@ -164,7 +184,7 @@ export async function deleteProductStock(user, stockId, movementInfo = {}) {
     deletedAt: FieldValue.serverTimestamp(),
     deletedBy: user.uid,
     updatedAt: FieldValue.serverTimestamp(),
-    updatedBy: user.uid
+    updatedBy: user.uid,
   });
 
   if (stock.batchId) {

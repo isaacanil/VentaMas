@@ -29,8 +29,9 @@ type RecordAuthorizationApprovalPayload = {
   metadata?: Record<string, unknown> | null;
 };
 
-const fbRecordAuthorizationApprovalTyped =
-  fbRecordAuthorizationApproval as (payload: RecordAuthorizationApprovalPayload) => Promise<void>;
+const fbRecordAuthorizationApprovalTyped = fbRecordAuthorizationApproval as (
+  payload: RecordAuthorizationApprovalPayload,
+) => Promise<void>;
 
 const DEFAULT_COLLECTION_KEY = 'authorizationRequests';
 const LEGACY_COLLECTION_KEY = 'invoiceEditAuthorizations';
@@ -39,9 +40,10 @@ const resolveRequestModule = (request?: AuthorizationRequest | null) => {
   if (!request) return DEFAULT_COLLECTION_KEY;
 
   const metadataModule =
-    typeof request.metadata === 'object' && request.metadata !== null &&
-    typeof (request.metadata)?.['module'] === 'string'
-      ? String((request.metadata)['module'])
+    typeof request.metadata === 'object' &&
+    request.metadata !== null &&
+    typeof request.metadata?.['module'] === 'string'
+      ? String(request.metadata['module'])
       : null;
 
   return (
@@ -70,19 +72,19 @@ interface ListOptions {
 
 type ListAuthorizationRequestsFn = (
   user: AppUser | null | undefined,
-  options: ListOptions
+  options: ListOptions,
 ) => Promise<AuthorizationRequest[]>;
 
 type ApproveAuthorizationFn = (
   user: AppUser | null | undefined,
   requestId: string,
-  authorizer: AppUser
+  authorizer: AppUser,
 ) => Promise<void>;
 
 type RejectAuthorizationFn = (
   user: AppUser | null | undefined,
   requestId: string,
-  approver: AppUser | null | undefined
+  approver: AppUser | null | undefined,
 ) => Promise<void>;
 
 const listAuthorizationRequestsTyped =
@@ -95,13 +97,15 @@ const rejectAuthorizationRequestTyped =
 export const useAuthorizationRequests = (
   user: AppUser | null | undefined,
   searchTerm = '',
-  dateRange: [string, string] | null = null
+  dateRange: [string, string] | null = null,
 ) => {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<AuthorizationRequest[]>([]);
-  const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('pending');
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilterValue>('pending');
   const [pendingApproval, setPendingApproval] = useState<string | null>(null);
-  const [detailRequest, setDetailRequest] = useState<AuthorizationRequest | null>(null);
+  const [detailRequest, setDetailRequest] =
+    useState<AuthorizationRequest | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const load = useCallback(
@@ -118,8 +122,8 @@ export const useAuthorizationRequests = (
             typeof item.key === 'string' && item.key
               ? item.key
               : typeof item.id === 'string' && item.id
-              ? item.id
-              : String(item.id ?? Math.random().toString(36).slice(2)),
+                ? item.id
+                : String(item.id ?? Math.random().toString(36).slice(2)),
           ...item,
         }));
         setRows(normalized);
@@ -156,8 +160,9 @@ export const useAuthorizationRequests = (
   const performApproval = async (id: string, authorizer: AppUser) => {
     try {
       setLoading(true);
-      const requestSnapshot = rows.find((row) =>
-        row.key === id || row.id === id || String(row.id) === String(id)
+      const requestSnapshot = rows.find(
+        (row) =>
+          row.key === id || row.id === id || String(row.id) === String(id),
       );
 
       if (!requestSnapshot) {
@@ -171,15 +176,19 @@ export const useAuthorizationRequests = (
       const moduleForLog = resolveRequestModule(requestSnapshot);
       const requestedBySnapshot = requestSnapshot?.requestedBy || null;
       const requestMetadata =
-        (typeof requestSnapshot?.metadata === 'object' && requestSnapshot.metadata !== null
-          ? (requestSnapshot.metadata)
+        (typeof requestSnapshot?.metadata === 'object' &&
+        requestSnapshot.metadata !== null
+          ? requestSnapshot.metadata
           : null) || null;
 
       const isInvoiceEdit =
         requestSnapshot?.type === 'invoice-edit' ||
-        (typeof requestMetadata?.['type'] === 'string' && requestMetadata['type'] === 'invoice-edit');
+        (typeof requestMetadata?.['type'] === 'string' &&
+          requestMetadata['type'] === 'invoice-edit');
 
-      const actionForLog = isInvoiceEdit ? 'invoice-edit-approve' : 'authorization-request-approve';
+      const actionForLog = isInvoiceEdit
+        ? 'invoice-edit-approve'
+        : 'authorization-request-approve';
 
       const descriptionForLog = isInvoiceEdit
         ? requestSnapshot?.requestNote ||
@@ -195,8 +204,11 @@ export const useAuthorizationRequests = (
         ? {
             type: 'invoice',
             id:
-              (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
-              (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId']) : ''),
+              (typeof requestSnapshot?.invoiceId === 'string' &&
+                requestSnapshot.invoiceId) ||
+              (typeof requestMetadata?.['invoiceId'] === 'string'
+                ? requestMetadata['invoiceId']
+                : ''),
             name: requestSnapshot?.invoiceNumber
               ? `Factura ${requestSnapshot.invoiceNumber}`
               : requestSnapshot?.reference || requestSnapshot?.invoiceId || '',
@@ -219,18 +231,24 @@ export const useAuthorizationRequests = (
       const metadataForLog: Record<string, unknown> = {
         collectionKey: requestSnapshot?.collectionKey || null,
         module: moduleForLog,
-        reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+        reference:
+          requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
         requestId: id,
       };
 
       if (isInvoiceEdit) {
         metadataForLog.reference = null;
         metadataForLog.invoiceId =
-          (typeof requestSnapshot?.invoiceId === 'string' && requestSnapshot.invoiceId) ||
-          (typeof requestMetadata?.['invoiceId'] === 'string' ? (requestMetadata['invoiceId']) : null);
+          (typeof requestSnapshot?.invoiceId === 'string' &&
+            requestSnapshot.invoiceId) ||
+          (typeof requestMetadata?.['invoiceId'] === 'string'
+            ? requestMetadata['invoiceId']
+            : null);
         metadataForLog.invoiceNumber =
           requestSnapshot?.invoiceNumber ||
-          (typeof requestMetadata?.['invoiceNumber'] === 'string' ? (requestMetadata['invoiceNumber']) : null);
+          (typeof requestMetadata?.['invoiceNumber'] === 'string'
+            ? requestMetadata['invoiceNumber']
+            : null);
         metadataForLog.authorizationType = 'invoice-edit';
       }
 
@@ -286,12 +304,16 @@ export const useAuthorizationRequests = (
         const moduleMeta = resolveModuleMeta(record);
         const metadataSource =
           typeof record.metadata === 'object' && record.metadata !== null
-            ? (record.metadata)
+            ? record.metadata
             : {};
         const metadataReference =
-          typeof metadataSource?.['reference'] === 'string' ? (metadataSource['reference']) : '';
+          typeof metadataSource?.['reference'] === 'string'
+            ? metadataSource['reference']
+            : '';
         const metadataNote =
-          typeof metadataSource?.['note'] === 'string' ? (metadataSource['note']) : '';
+          typeof metadataSource?.['note'] === 'string'
+            ? metadataSource['note']
+            : '';
         const requestNote =
           record.requestNote ||
           record.note ||
@@ -301,7 +323,9 @@ export const useAuthorizationRequests = (
         const resolvedCollectionKey =
           record.collectionKey ||
           record.legacyCollectionKey ||
-          (record.module === 'invoices' ? DEFAULT_COLLECTION_KEY : DEFAULT_COLLECTION_KEY);
+          (record.module === 'invoices'
+            ? DEFAULT_COLLECTION_KEY
+            : DEFAULT_COLLECTION_KEY);
         const referenceValue =
           record.reference ||
           metadataReference ||
@@ -315,7 +339,8 @@ export const useAuthorizationRequests = (
             ...record,
             module: record.module || moduleMeta.moduleKey,
             collectionKey:
-              resolvedCollectionKey === LEGACY_COLLECTION_KEY && record.collectionKey === undefined
+              resolvedCollectionKey === LEGACY_COLLECTION_KEY &&
+              record.collectionKey === undefined
                 ? LEGACY_COLLECTION_KEY
                 : resolvedCollectionKey,
           },
@@ -329,7 +354,7 @@ export const useAuthorizationRequests = (
           status: record.status ?? 'pending',
         };
       }),
-    [rows]
+    [rows],
   );
 
   const filteredRequests = useMemo(() => {
@@ -338,13 +363,19 @@ export const useAuthorizationRequests = (
     // Filtro por búsqueda de texto
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(({ moduleMeta, reference, requestedByName, requestNote }) => {
-        const moduleMatch = (moduleMeta?.title || '').toLowerCase().includes(term);
-        const referenceMatch = (reference || '').toLowerCase().includes(term);
-        const requesterMatch = (requestedByName || '').toLowerCase().includes(term);
-        const noteMatch = (requestNote || '').toLowerCase().includes(term);
-        return moduleMatch || referenceMatch || requesterMatch || noteMatch;
-      });
+      filtered = filtered.filter(
+        ({ moduleMeta, reference, requestedByName, requestNote }) => {
+          const moduleMatch = (moduleMeta?.title || '')
+            .toLowerCase()
+            .includes(term);
+          const referenceMatch = (reference || '').toLowerCase().includes(term);
+          const requesterMatch = (requestedByName || '')
+            .toLowerCase()
+            .includes(term);
+          const noteMatch = (requestNote || '').toLowerCase().includes(term);
+          return moduleMatch || referenceMatch || requesterMatch || noteMatch;
+        },
+      );
     }
 
     // Filtro por rango de fechas
@@ -356,20 +387,27 @@ export const useAuthorizationRequests = (
       filtered = filtered.filter((item) => {
         const createdAt = item.raw.createdAt;
         if (!createdAt) return false;
-        
+
         // Manejar diferentes formatos de fecha (Date, Timestamp de Firebase, string, number)
         let itemDate: Date;
         if (createdAt instanceof Date) {
           itemDate = createdAt;
-        } else if (typeof createdAt === 'object' && 'toDate' in createdAt && typeof createdAt.toDate === 'function') {
+        } else if (
+          typeof createdAt === 'object' &&
+          'toDate' in createdAt &&
+          typeof createdAt.toDate === 'function'
+        ) {
           // Firebase Timestamp
           itemDate = createdAt.toDate();
-        } else if (typeof createdAt === 'string' || typeof createdAt === 'number') {
+        } else if (
+          typeof createdAt === 'string' ||
+          typeof createdAt === 'number'
+        ) {
           itemDate = new Date(createdAt);
         } else {
           return false;
         }
-        
+
         return itemDate >= startDate && itemDate <= endDate;
       });
     }

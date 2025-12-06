@@ -1,15 +1,22 @@
-import { collection, onSnapshot, runTransaction, doc, serverTimestamp, getDocs } from "firebase/firestore";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  runTransaction,
+  doc,
+  serverTimestamp,
+  getDocs,
+} from 'firebase/firestore';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { getTaxReceiptData } from "../../features/taxReceipt/taxReceiptSlice";
-import { serializeFirestoreDocuments } from "../../utils/serialization/serializeFirestoreData";
-import { validateUser } from "../../utils/userValidation";
-import { db } from "../firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { getTaxReceiptData } from '../../features/taxReceipt/taxReceiptSlice';
+import { serializeFirestoreDocuments } from '../../utils/serialization/serializeFirestoreData';
+import { validateUser } from '../../utils/userValidation';
+import { db } from '../firebaseconfig';
 
-import { removeDuplicateTaxReceipts } from "./removeDuplicateTaxReceipts";
-import { taxReceiptDefault } from "./taxReceiptsDefault";
+import { removeDuplicateTaxReceipts } from './removeDuplicateTaxReceipts';
+import { taxReceiptDefault } from './taxReceiptsDefault';
 
 export const useAutoCreateDefaultTaxReceipt = () => {
   const dispatch = useDispatch();
@@ -18,14 +25,19 @@ export const useAutoCreateDefaultTaxReceipt = () => {
   useEffect(() => {
     if (!user || !user.businessID) return;
 
-    const taxReceiptsRef = collection(db, "businesses", user.businessID, "taxReceipts");
+    const taxReceiptsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'taxReceipts',
+    );
 
     const unsubscribe = onSnapshot(taxReceiptsRef, async (snapshot) => {
       if (!snapshot.empty) {
         try {
           await removeDuplicateTaxReceipts(user.businessID);
         } catch (err) {
-          console.error("Error al eliminar duplicados:", err);
+          console.error('Error al eliminar duplicados:', err);
         }
       } else {
         try {
@@ -44,7 +56,13 @@ export const useAutoCreateDefaultTaxReceipt = () => {
             for (const item of taxReceiptDefault) {
               if (!existingReceipts.has(item.serie)) {
                 const serie = item.serie;
-                const taxReceiptRef = doc(db, "businesses", user.businessID, "taxReceipts", serie);
+                const taxReceiptRef = doc(
+                  db,
+                  'businesses',
+                  user.businessID,
+                  'taxReceipts',
+                  serie,
+                );
                 docRefs.push({ ref: taxReceiptRef, item });
                 const docSnapshot = await transaction.get(taxReceiptRef);
                 docSnapshots.push(docSnapshot);
@@ -65,15 +83,21 @@ export const useAutoCreateDefaultTaxReceipt = () => {
             });
           });
 
-          console.log("Los recibos fiscales por defecto fueron creados o ya existían.");
+          console.log(
+            'Los recibos fiscales por defecto fueron creados o ya existían.',
+          );
         } catch (err) {
-          console.error("Error en la transacción al crear los recibos por defecto:", err);
+          console.error(
+            'Error en la transacción al crear los recibos por defecto:',
+            err,
+          );
         }
         return;
       }
 
       const taxReceiptsArray = snapshot.docs.map((docItem) => docItem.data());
-      const serializedTaxReceipts = serializeFirestoreDocuments(taxReceiptsArray);
+      const serializedTaxReceipts =
+        serializeFirestoreDocuments(taxReceiptsArray);
       dispatch(getTaxReceiptData(serializedTaxReceipts));
     });
 

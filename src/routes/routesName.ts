@@ -24,8 +24,11 @@ const DEV_VIEW_TERM = {
   PRUEBA: '/prueba',
   FISCAL_RECEIPTS_AUDIT: '/dev/tools/fiscal-receipts-audit',
   B_SERIES_INVOICES: '/dev/tools/b-series-invoices',
+  INVOICE_V2_RECOVERY: '/dev/tools/invoice-v2-recovery',
   INVENTORY_MIGRATION: '/dev/tools/inventory-migration',
   SYNC_DIAGNOSTICS: '/dev/tools/sync-diagnostics',
+  PRICE_LIST_AUDIT: '/dev/tools/price-list-audit',
+  CASH_COUNT_AUDIT: '/dev/tools/cash-count-audit',
   CHANGELOG_CREATE: CHANGELOG_TERM.CHANGELOG_CREATE,
   CHANGELOG_MANAGE: CHANGELOG_TERM.CHANGELOG_MANAGE,
   APP_CONFIG: {
@@ -33,6 +36,7 @@ const DEV_VIEW_TERM = {
     LOGIN_IMAGE: '/dev/app-config/login-image',
   } as const,
   SWITCH_BUSINESS: '/dev/business/switch',
+  AI_BUSINESS_SEEDING: '/dev/tools/ai-business-seeding',
 } as const;
 
 const UTILITY_TERM = {
@@ -95,6 +99,9 @@ const SETTING_TERM = {
   SETTING: '/general-config',
   USERS: '/users',
   USERS_LIST: 'list',
+  USERS_SESSION_LOGS: 'session-logs',
+  USERS_ACTIVITY: 'activity',
+  USERS_ACTIVITY_DETAIL: 'activity/:userId',
   CREATE_USER: 'create-user/',
   UPDATE_USER: 'update-user/:id',
   APP_INFO: '/app-info',
@@ -103,6 +110,7 @@ const SETTING_TERM = {
   AUTHORIZATION_CONFIG: '/authorization-config',
   GENERAL_CONFIG_BILLING: '/general-config/billing',
   GENERAL_CONFIG_BUSINESS: '/general-config/business',
+  GENERAL_CONFIG_INVENTORY: '/general-config/inventory',
   GENERAL_CONFIG_TAX_RECEIPT: '/general-config/tax-receipt',
   GENERAL_CONFIG_USERS: '/general-config/users',
   GENERAL_CONFIG_APP_INFO: '/general-config/app-info',
@@ -129,13 +137,13 @@ const EXPENSES_TERM = {
   EXPENSES_CREATE: '/expenses/new',
   EXPENSES_UPDATE: '/expenses/update/:id',
   EXPENSES_LIST: '/expenses/list',
-  EXPENSES_CATEGORY: '/expenses/categories',
 } as const;
 
 const ACCOUNT_RECEIVABLE_TERM = {
   ACCOUNT_RECEIVABLE_LIST: '/account-receivable/list',
   ACCOUNT_RECEIVABLE_INFO: '/account-receivable/info/:id',
   RECEIVABLE_PAYMENT_RECEIPTS: '/account-receivable/receipts',
+  ACCOUNT_RECEIVABLE_AUDIT: '/account-receivable/audit',
 } as const;
 
 const CREDIT_NOTE_TERM = {

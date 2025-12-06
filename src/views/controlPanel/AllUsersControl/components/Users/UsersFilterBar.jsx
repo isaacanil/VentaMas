@@ -1,40 +1,46 @@
-import { Input, Select, Space } from 'antd'
-import { useMemo } from 'react'
+import { Input, Select, Space } from 'antd';
+import { useMemo } from 'react';
 
 const optionContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
   lineHeight: 1.2,
-}
+};
 
 const optionPrimaryStyle = {
   fontWeight: 500,
-}
+};
 
 const optionSecondaryStyle = {
   fontSize: 12,
   color: '#6b7280',
-}
+};
 
-export const UsersFilterBar = ({ filters, onFilterChange, businessOptions, roleOptions }) => {
+export const UsersFilterBar = ({
+  filters,
+  onFilterChange,
+  businessOptions,
+  roleOptions,
+}) => {
   const handleSearchChange = (event) => {
-    onFilterChange('search', event.target.value ?? '')
-  }
+    onFilterChange('search', event.target.value ?? '');
+  };
 
   const handleBusinessChange = (value) => {
-    onFilterChange('businessID', value ?? '')
-  }
+    onFilterChange('businessID', value ?? '');
+  };
 
   const handleRoleChange = (value) => {
-    onFilterChange('role', value ?? '')
-  }
+    onFilterChange('role', value ?? '');
+  };
 
   const businessSelectOptions = useMemo(
     () =>
       businessOptions.map((option) => {
-        const name = option.name ?? option.label ?? option.value
-        const id = option.id ?? option.value
-        const searchText = option.searchText ?? `${name ?? ''} ${id ?? ''}`.toLowerCase()
+        const name = option.name ?? option.label ?? option.value;
+        const id = option.id ?? option.value;
+        const searchText =
+          option.searchText ?? `${name ?? ''} ${id ?? ''}`.toLowerCase();
 
         return {
           value: option.value,
@@ -46,26 +52,26 @@ export const UsersFilterBar = ({ filters, onFilterChange, businessOptions, roleO
           ),
           name,
           searchText,
-        }
+        };
       }),
-    [businessOptions]
-  )
+    [businessOptions],
+  );
 
   const roleSelectOptions = useMemo(
     () =>
       roleOptions.map((option) => {
-        const value = option.value ?? option
-        const label = option.label ?? value
-        const searchText = option.searchText ?? String(label).toLowerCase()
+        const value = option.value ?? option;
+        const label = option.label ?? value;
+        const searchText = option.searchText ?? String(label).toLowerCase();
 
         return {
           value,
           label,
           searchText,
-        }
+        };
       }),
-    [roleOptions]
-  )
+    [roleOptions],
+  );
 
   return (
     <div style={{ margin: '16px 0', padding: '0 16px' }}>
@@ -104,5 +110,5 @@ export const UsersFilterBar = ({ filters, onFilterChange, businessOptions, roleO
         />
       </Space>
     </div>
-  )
-}
+  );
+};

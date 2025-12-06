@@ -6,9 +6,14 @@ import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
 
 import { FilterField } from './FilterField';
 
-
-export const SortControls = ({ sortCriteria, sortDirection, onSortChange, onToggleDirection }) => (
-  <FilterField label={FILTER_CONFIG.sort.label}>
+export const SortControls = ({
+  sortCriteria,
+  sortDirection,
+  onSortChange,
+  onToggleDirection,
+  label,
+}) => (
+  <FilterField label={label ?? FILTER_CONFIG.sort.label}>
     <Space.Compact>
       <Select
         value={sortCriteria}
@@ -19,7 +24,9 @@ export const SortControls = ({ sortCriteria, sortDirection, onSortChange, onTogg
         aria-label={ACCESSIBILITY_CONFIG.ariaLabels.sortCriteria}
       />
       <Button
-        icon={sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc}
+        icon={
+          sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc
+        }
         onClick={onToggleDirection}
         disabled={sortCriteria === 'defaultCriteria'}
         size="middle"
@@ -27,4 +34,4 @@ export const SortControls = ({ sortCriteria, sortDirection, onSortChange, onTogg
       />
     </Space.Compact>
   </FilterField>
-); 
+);

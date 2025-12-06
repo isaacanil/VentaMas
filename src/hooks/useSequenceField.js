@@ -1,4 +1,10 @@
-import { collection, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  updateDoc,
+  onSnapshot,
+} from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
 import { db } from '../firebase/firebaseconfig';
@@ -16,7 +22,12 @@ export function useTaxReceiptsFix(user) {
   const [error, setError] = useState(null);
 
   const businessID = user.businessID;
-  const taxReceiptsRef = collection(db, 'businesses', businessID, 'taxReceipts');
+  const taxReceiptsRef = collection(
+    db,
+    'businesses',
+    businessID,
+    'taxReceipts',
+  );
 
   // Define el esquema esperado para validar cada receipt
   const validateReceipt = (rec) => {
@@ -28,11 +39,13 @@ export function useTaxReceiptsFix(user) {
       sequenceLength: 'number',
       increase: 'number',
       quantity: 'number',
-      description: 'string'
+      description: 'string',
     };
     for (const [key, type] of Object.entries(schema)) {
       if (!(key in rec) || typeof rec[key] !== type) {
-        console.error(`Receipt inválido: campo '${key}' debe ser ${type}, se obtuvo ${typeof rec[key]}`);
+        console.error(
+          `Receipt inválido: campo '${key}' debe ser ${type}, se obtuvo ${typeof rec[key]}`,
+        );
         return false;
       }
     }
@@ -46,18 +59,20 @@ export function useTaxReceiptsFix(user) {
       taxReceiptsRef,
       (snapshot) => {
         const receipts = snapshot.docs
-          .map(docSnap => docSnap.data().data)
-          .map(raw => {
+          .map((docSnap) => docSnap.data().data)
+          .map((raw) => {
             // Convertir sequence y sequenceLength a número si vienen como string
-            const sequenceNum = typeof raw.sequence === 'string'
-              ? parseInt(raw.sequence, 10)
-              : raw.sequence;
-            const lengthNum = typeof raw.sequenceLength === 'string'
-              ? parseInt(raw.sequenceLength, 10)
-              : raw.sequenceLength;
+            const sequenceNum =
+              typeof raw.sequence === 'string'
+                ? parseInt(raw.sequence, 10)
+                : raw.sequence;
+            const lengthNum =
+              typeof raw.sequenceLength === 'string'
+                ? parseInt(raw.sequenceLength, 10)
+                : raw.sequenceLength;
             return { ...raw, sequence: sequenceNum, sequenceLength: lengthNum };
           })
-          .filter(rec => validateReceipt(rec));
+          .filter((rec) => validateReceipt(rec));
         setTaxReceipts(receipts);
         setLoading(false);
       },
@@ -65,7 +80,7 @@ export function useTaxReceiptsFix(user) {
         console.error('Snapshot error:', err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
     return () => unsubscribe();
   }, [businessID]);
@@ -83,18 +98,20 @@ export function useTaxReceiptsFix(user) {
       if (!receiptSnap.exists()) throw new Error('Receipt not found');
       const raw = receiptSnap.data().data;
       // Convertir a número si es string
-      const currentSeq = typeof raw.sequence === 'string'
-        ? parseInt(raw.sequence, 10)
-        : raw.sequence;
-      const lengthNum = typeof raw.sequenceLength === 'string'
-        ? parseInt(raw.sequenceLength, 10)
-        : raw.sequenceLength;
+      const currentSeq =
+        typeof raw.sequence === 'string'
+          ? parseInt(raw.sequence, 10)
+          : raw.sequence;
+      const lengthNum =
+        typeof raw.sequenceLength === 'string'
+          ? parseInt(raw.sequenceLength, 10)
+          : raw.sequenceLength;
       const newSequence = currentSeq + delta;
 
       // Actualiza solo la secuencia y se asegura de escribir también sequenceLength
       await updateDoc(docRef, {
         'data.sequence': newSequence,
-        'data.sequenceLength': lengthNum
+        'data.sequenceLength': lengthNum,
       });
       // onSnapshot actualizará el estado local automáticamente
     } catch (err) {

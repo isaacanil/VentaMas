@@ -16,33 +16,25 @@ export const Inventory = () => {
   return (
     <Container>
       <MenuApp
-        displayName='Productos'
+        displayName="Productos"
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
       {vw > 900 ? (
-        <ProductsTable
-          products={products}
-          searchTerm={searchTerm}
-        />
+        <ProductsTable products={products} searchTerm={searchTerm} />
       ) : (
-        <ProductRecordList
-          products={products}
-          searchTerm={searchTerm}
-        />
+        <ProductRecordList products={products} searchTerm={searchTerm} />
       )}
     </Container>
-
   );
 };
 
 const Container = styled.div`
-   display: grid;
-    position: relative;
-    grid-template-columns: auto;
-    background-color: var(--White);
-    grid-template-rows:  min-content 1fr;
-
-    height: 100%;
-   overflow: hidden;
-`
+  position: relative;
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  grid-template-columns: auto;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--white);
+`;

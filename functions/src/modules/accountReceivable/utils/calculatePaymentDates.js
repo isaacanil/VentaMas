@@ -1,5 +1,5 @@
 // date‑fns es super‑ligero y rápido
-import { startOfDay, addDays, addWeeks, addMonths, addYears } from 'date-fns'
+import { startOfDay, addDays, addWeeks, addMonths, addYears } from 'date-fns';
 
 /**
  * Calcula fechas de pago y la próxima fecha según frecuencia y número de cuotas.
@@ -9,38 +9,44 @@ import { startOfDay, addDays, addWeeks, addMonths, addYears } from 'date-fns'
  * @param {Date|number|null} [customStartDate=null]
  * @returns {{ paymentDates: number[]; nextPaymentDate: number|null }}
  */
-export function calculatePaymentDates(frequency, installments, customStartDate = null) {
-  const MAX = 3000
+export function calculatePaymentDates(
+  frequency,
+  installments,
+  customStartDate = null,
+) {
+  const MAX = 3000;
   if (installments <= 0 || installments >= MAX) {
-    return { paymentDates: [], nextPaymentDate: null }
+    return { paymentDates: [], nextPaymentDate: null };
   }
 
   // Determinar fecha de arranque al inicio del día
   const base = customStartDate
-    ? startOfDay(typeof customStartDate === 'number' 
-        ? new Date(customStartDate) 
-        : customStartDate)
-    : startOfDay(new Date())
+    ? startOfDay(
+        typeof customStartDate === 'number'
+          ? new Date(customStartDate)
+          : customStartDate,
+      )
+    : startOfDay(new Date());
 
   // Mapa de intervalos
   const intervalFns = {
-    daily:    (d,i) => addDays(d, i+1),
-    weekly:   (d,i) => addWeeks(d, i+1),
-    biweekly: (d,i) => addWeeks(d, (i+1)*2),
-    monthly:  (d,i) => addMonths(d, i+1),
-    quarterly:(d,i) => addMonths(d, (i+1)*3),
-    annual:   (d,i) => addYears(d, i+1),
-  }
-  const addInterval = intervalFns[frequency] || ((d)=>d)
+    daily: (d, i) => addDays(d, i + 1),
+    weekly: (d, i) => addWeeks(d, i + 1),
+    biweekly: (d, i) => addWeeks(d, (i + 1) * 2),
+    monthly: (d, i) => addMonths(d, i + 1),
+    quarterly: (d, i) => addMonths(d, (i + 1) * 3),
+    annual: (d, i) => addYears(d, i + 1),
+  };
+  const addInterval = intervalFns[frequency] || ((d) => d);
 
   // Generar las fechas
-  const paymentDates = Array.from({ length: installments }, (_,_i) =>
-    addInterval(base, _i).getTime()
-  )
+  const paymentDates = Array.from({ length: installments }, (_, _i) =>
+    addInterval(base, _i).getTime(),
+  );
 
   // Próxima fecha >= hoy
-  const todayTs = startOfDay(new Date()).getTime()
-  const nextPaymentDate = paymentDates.find(ts => ts >= todayTs) || null
+  const todayTs = startOfDay(new Date()).getTime();
+  const nextPaymentDate = paymentDates.find((ts) => ts >= todayTs) || null;
 
-  return { paymentDates, nextPaymentDate }
+  return { paymentDates, nextPaymentDate };
 }

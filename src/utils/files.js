@@ -4,8 +4,8 @@
  * @returns {string} The local URL for the file
  */
 export const getLocalURL = (file) => {
-    if (!file) return '';
-    return URL.createObjectURL(file);
+  if (!file) return '';
+  return URL.createObjectURL(file);
 };
 
 /**
@@ -14,8 +14,8 @@ export const getLocalURL = (file) => {
  * @returns {boolean} True if the file is an image
  */
 export const isImageFile = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    return ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
+  const extension = fileName.split('.').pop().toLowerCase();
+  return ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
 };
 
 /**
@@ -24,8 +24,8 @@ export const isImageFile = (fileName) => {
  * @returns {boolean} True if the file is a PDF
  */
 export const isPdfFile = (fileName) => {
-    const extension = fileName.split('.').pop().toLowerCase();
-    return extension === 'pdf';
+  const extension = fileName.split('.').pop().toLowerCase();
+  return extension === 'pdf';
 };
 
 /**
@@ -33,7 +33,7 @@ export const isPdfFile = (fileName) => {
  * @param {string} url - The URL to revoke
  */
 export const revokeLocalURL = (url) => {
-    if (url && url.startsWith('blob:')) {
-        URL.revokeObjectURL(url);
-    }
+  if (url && url.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
 };

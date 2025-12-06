@@ -7,7 +7,8 @@ import { canonicalizeNcf, looseCanonicalizeNcf } from './ncfUtils';
 export const sanitizeFileName = (name) => {
   const base = (name || 'negocio').toString().trim();
   return base
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9-_\s.]/g, '')
     .replace(/\s+/g, '_')
     .substring(0, 80);
@@ -26,10 +27,13 @@ export const exportBusinessWorkbook = async (result, start, end) => {
         return `id:${occ.invoiceId}`;
       }
       const ncfPart = occ.ncf ? `ncf:${occ.ncf}` : 'ncf:__';
-      const invoicePart = occ.invoiceNumber ? `inv:${occ.invoiceNumber}` : 'inv:__';
-      const datePart = occ.date instanceof Date && !Number.isNaN(occ.date.getTime())
-        ? `date:${occ.date.getTime()}`
-        : 'date:__';
+      const invoicePart = occ.invoiceNumber
+        ? `inv:${occ.invoiceNumber}`
+        : 'inv:__';
+      const datePart =
+        occ.date instanceof Date && !Number.isNaN(occ.date.getTime())
+          ? `date:${occ.date.getTime()}`
+          : 'date:__';
       return `${ncfPart}|${invoicePart}|${datePart}`;
     };
 
@@ -37,15 +41,21 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       const key = getRowKey(occ);
       let row = detailMap.get(key);
       if (!row) {
-        const lengthValue = typeof occ.length === 'number'
-          ? occ.length
-          : (occ.ncf ? occ.ncf.length : null);
+        const lengthValue =
+          typeof occ.length === 'number'
+            ? occ.length
+            : occ.ncf
+              ? occ.ncf.length
+              : null;
         row = {
           key,
           invoiceId: occ.invoiceId || null,
           invoiceNumber: occ.invoiceNumber || '',
           ncf: occ.ncf || '',
-          date: occ.date instanceof Date && !Number.isNaN(occ.date.getTime()) ? occ.date : null,
+          date:
+            occ.date instanceof Date && !Number.isNaN(occ.date.getTime())
+              ? occ.date
+              : null,
           status: occ.status || 'Sin estado',
           canonical: occ.canonical || canonicalizeNcf(occ.ncf),
           looseCanonical: occ.looseCanonical || looseCanonicalizeNcf(occ.ncf),
@@ -62,14 +72,17 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       return row;
     };
 
-    const markOccurrence = (row, {
-      detection,
-      isOriginal,
-      hasExactDuplicate,
-      hasCanonicalVariation,
-      hasLooseVariation,
-      groupSize,
-    }) => {
+    const markOccurrence = (
+      row,
+      {
+        detection,
+        isOriginal,
+        hasExactDuplicate,
+        hasCanonicalVariation,
+        hasLooseVariation,
+        groupSize,
+      },
+    ) => {
       if (detection) {
         row.detection.add(detection);
       }
@@ -100,7 +113,8 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       if (!occurrences.length) {
         return;
       }
-      const detectionLabel = group.distinctNcfs > 1 ? 'canonical_variation' : 'canonical_exact';
+      const detectionLabel =
+        group.distinctNcfs > 1 ? 'canonical_variation' : 'canonical_exact';
       const ncfCounts = occurrences.reduce((acc, occ) => {
         const ncfKey = occ.ncf || '';
         acc.set(ncfKey, (acc.get(ncfKey) || 0) + 1);
@@ -142,10 +156,14 @@ export const exportBusinessWorkbook = async (result, start, end) => {
     const rows = Array.from(detailMap.values())
       .filter((row) => row.detection.size > 0)
       .map((row) => {
-        const lengthValue = typeof row.length === 'number'
-          ? row.length
-          : (row.ncf ? row.ncf.length : null);
-        const lengthFlag = lengthValue === 11 ? '11' : lengthValue === 13 ? '13' : 'Otro';
+        const lengthValue =
+          typeof row.length === 'number'
+            ? row.length
+            : row.ncf
+              ? row.ncf.length
+              : null;
+        const lengthFlag =
+          lengthValue === 11 ? '11' : lengthValue === 13 ? '13' : 'Otro';
         const hasOriginalSource = row.originalSources.size > 0;
         const hasDuplicateSource = row.duplicateSources.size > 0;
         let classification;
@@ -174,7 +192,9 @@ export const exportBusinessWorkbook = async (result, start, end) => {
           })
           .join(', ');
 
-        const dateString = row.date ? dayjs(row.date).format('YYYY-MM-DD HH:mm') : null;
+        const dateString = row.date
+          ? dayjs(row.date).format('YYYY-MM-DD HH:mm')
+          : null;
         return {
           key: row.key,
           invoice: row.invoiceNumber || null,
@@ -195,14 +215,16 @@ export const exportBusinessWorkbook = async (result, start, end) => {
 
     const groupedByLooseCanonical = new Map();
     rows.forEach((row) => {
-      const groupKey = row.looseCanonical || row.canonical || row.ncf || row.key;
+      const groupKey =
+        row.looseCanonical || row.canonical || row.ncf || row.key;
       const grouped = groupedByLooseCanonical.get(groupKey) || [];
       grouped.push(row);
       groupedByLooseCanonical.set(groupKey, grouped);
     });
 
-    const sortedGroups = Array.from(groupedByLooseCanonical.entries())
-      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+    const sortedGroups = Array.from(groupedByLooseCanonical.entries()).sort(
+      ([keyA], [keyB]) => keyA.localeCompare(keyB),
+    );
 
     const orderedRows = [];
     sortedGroups.forEach(([, groupRows]) => {
@@ -247,18 +269,39 @@ export const exportBusinessWorkbook = async (result, start, end) => {
   const resumenRows = [
     { field: 'Negocio', value: result.businessName },
     { field: 'ID', value: result.businessId },
-    { field: 'Rango', value: start && end ? `${dayjs(start).format('YYYY-MM-DD')} a ${dayjs(end).format('YYYY-MM-DD')}` : 'Todas las fechas' },
+    {
+      field: 'Rango',
+      value:
+        start && end
+          ? `${dayjs(start).format('YYYY-MM-DD')} a ${dayjs(end).format('YYYY-MM-DD')}`
+          : 'Todas las fechas',
+    },
     { field: 'Facturas analizadas', value: String(result.totalInvoices) },
     { field: 'Facturas con NCF', value: String(result.invoicesWithNcf) },
     { field: 'NCF únicos', value: String(result.uniqueNcfCount) },
     { field: 'Comprobantes faltantes', value: String(result.missingNcf) },
     { field: 'Sin fecha', value: String(result.skippedWithoutDate || 0) },
-    { field: 'Duplicados detectados', value: String(result.duplicates?.length || 0) },
+    {
+      field: 'Duplicados detectados',
+      value: String(result.duplicates?.length || 0),
+    },
     { field: 'Longitud actual', value: result.currentLength ?? 'N/D' },
-    { field: 'Longitudes vistas', value: (result.observedLengths || []).join(', ') || '—' },
-    { field: 'Repetidos por clave normalizada', value: String(result.duplicatesNormalized?.length || 0) },
-    { field: 'Variaciones por ceros', value: String(result.zeroCollapsedDuplicates?.length || 0) },
-    { field: 'Filas detalle duplicados', value: String(duplicateDetailRows.length) },
+    {
+      field: 'Longitudes vistas',
+      value: (result.observedLengths || []).join(', ') || '—',
+    },
+    {
+      field: 'Repetidos por clave normalizada',
+      value: String(result.duplicatesNormalized?.length || 0),
+    },
+    {
+      field: 'Variaciones por ceros',
+      value: String(result.zeroCollapsedDuplicates?.length || 0),
+    },
+    {
+      field: 'Filas detalle duplicados',
+      value: String(duplicateDetailRows.length),
+    },
     { field: 'NCF longitud ≠ 11', value: String(result.non11Count || 0) },
     { field: 'Estado', value: estado },
   ];
@@ -332,5 +375,10 @@ export const exportBusinessWorkbook = async (result, start, end) => {
 
   const buffer = await wb.xlsx.writeBuffer();
   const fileName = `${sanitizeFileName(result.businessName)}_${dayjs().format('YYYYMMDD-HHmm')}.xlsx`;
-  saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), fileName);
+  saveAs(
+    new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }),
+    fileName,
+  );
 };

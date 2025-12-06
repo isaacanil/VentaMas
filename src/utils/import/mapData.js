@@ -4,7 +4,7 @@ export const mapData = ({ data, headerMapping, language = 'es' }) => {
 
   const languageMapping = headerMapping[language];
 
-  return data.map(item => {
+  return data.map((item) => {
     const mappedItem = {};
 
     Object.entries(languageMapping).forEach(([headerKey, mappedKey]) => {

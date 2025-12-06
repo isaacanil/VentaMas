@@ -1,8 +1,9 @@
 export function printPdfBase64(base64Data, options = {}) {
   // Detect mobile devices via simple UA check
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent || ""
-  );
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent || '',
+    );
 
   const defaultOptions = {
     showModal: true,
@@ -12,11 +13,11 @@ export function printPdfBase64(base64Data, options = {}) {
   const tryPrintJs = () => {
     try {
       // Dynamically import to avoid including print-js in every chunk
-      return import("print-js").then((module) => {
+      return import('print-js').then((module) => {
         const printJS = module.default || module;
         printJS({
           printable: base64Data,
-          type: "pdf",
+          type: 'pdf',
           base64: true,
           ...defaultOptions,
           ...options,
@@ -24,7 +25,7 @@ export function printPdfBase64(base64Data, options = {}) {
         return true;
       });
     } catch (e) {
-      console.warn("print-js import/print failed", e);
+      console.warn('print-js import/print failed', e);
       return Promise.resolve(false);
     }
   };
@@ -38,9 +39,9 @@ export function printPdfBase64(base64Data, options = {}) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
       const blobUrl = URL.createObjectURL(blob);
-      const newWindow = window.open(blobUrl, "_blank");
+      const newWindow = window.open(blobUrl, '_blank');
 
       if (newWindow) {
         const onLoad = () => {
@@ -48,24 +49,24 @@ export function printPdfBase64(base64Data, options = {}) {
             newWindow.focus();
             newWindow.print();
           } catch (e) {
-            console.warn("window.print() failed inside newWindow", e);
+            console.warn('window.print() failed inside newWindow', e);
           }
         };
         // Some browsers fire load immediately, others need listener
-        if (newWindow.document?.readyState === "complete") {
+        if (newWindow.document?.readyState === 'complete') {
           onLoad();
         } else {
-          newWindow.addEventListener("load", onLoad);
+          newWindow.addEventListener('load', onLoad);
         }
       } else {
         // As a last resort, trigger download
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = blobUrl;
-        link.download = "document.pdf";
+        link.download = 'document.pdf';
         link.click();
       }
     } catch (e) {
-      console.error("PDF fallback printing failed", e);
+      console.error('PDF fallback printing failed', e);
     }
   };
 
@@ -79,4 +80,4 @@ export function printPdfBase64(base64Data, options = {}) {
       }
     });
   }
-} 
+}

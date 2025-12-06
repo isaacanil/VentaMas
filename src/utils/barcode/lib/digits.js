@@ -4,7 +4,8 @@ import { GTIN_MULTIPLIERS, UPC_MULTIPLIERS } from './constants';
 export function calculateGTIN13CheckDigit(code) {
   if (code.length !== 12) return null;
   let sum = 0;
-  for (let i = 0; i < 12; i++) sum += parseInt(code[i], 10) * GTIN_MULTIPLIERS[i % 2];
+  for (let i = 0; i < 12; i++)
+    sum += parseInt(code[i], 10) * GTIN_MULTIPLIERS[i % 2];
   return ((10 - (sum % 10)) % 10).toString();
 }
 
@@ -22,7 +23,8 @@ export function calculateEAN8CheckDigit(code) {
 export function calculateUPCACheckDigit(code) {
   if (code.length !== 11) return null;
   let sum = 0;
-  for (let i = 0; i < 11; i++) sum += parseInt(code[i], 10) * UPC_MULTIPLIERS[i % 2];
+  for (let i = 0; i < 11; i++)
+    sum += parseInt(code[i], 10) * UPC_MULTIPLIERS[i % 2];
   return ((10 - (sum % 10)) % 10).toString();
 }
 
@@ -30,6 +32,7 @@ export function calculateUPCACheckDigit(code) {
 export function calculateGTIN14CheckDigit(code) {
   if (code.length !== 13) return null;
   let sum = 0;
-  for (let i = 0; i < 13; i++) sum += parseInt(code[i], 10) * GTIN_MULTIPLIERS[i % 2];
+  for (let i = 0; i < 13; i++)
+    sum += parseInt(code[i], 10) * GTIN_MULTIPLIERS[i % 2];
   return ((10 - (sum % 10)) % 10).toString();
 }

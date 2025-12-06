@@ -1,4 +1,10 @@
-import { collection, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  updateDoc,
+  onSnapshot,
+} from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -27,17 +33,9 @@ export function useTaxReceiptsFix() {
     const unsubscribe = onSnapshot(
       ref,
       async (snapshot) => {
-        /* ── Early-return global ─────────────────────────────── */
-        const someNonString = snapshot.docs.some(
-          (d) => typeof d.data().data?.sequence !== 'string'
-        );
-        if (someNonString) {
-          console.warn(
-            'useTaxReceiptsFix: hay recibos con sequence no-string; se omite proceso.'
-          );
-          setLoading(false);
-          return;       // ⬅️   No hace nada más
-        }
+        /* ── Early-return global (REMOVED) ───────────────────── */
+        // The check that blocked non-string sequences is removed
+        // because we want to allow numbers (already migrated) or strings (to be migrated).
         /* ────────────────────────────────────────────────────── */
 
         /* 1) Primer pase: defaults + conversión */
@@ -61,10 +59,10 @@ export function useTaxReceiptsFix() {
             if (Object.keys(updates).length) {
               await updateDoc(
                 doc(db, 'businesses', businessID, 'taxReceipts', docSnap.id),
-                updates
+                updates,
               );
             }
-          })
+          }),
         );
 
         /* 2) Segundo pase: lectura ya migrada */
@@ -75,7 +73,7 @@ export function useTaxReceiptsFix() {
             name: r.name,
             type: r.type,
             serie: r.serie,
-            sequence: r.sequence,          // ya número
+            sequence: r.sequence, // ya número
             sequenceLength: r.sequenceLength,
             increase: r.increase,
             quantity: r.quantity,
@@ -90,7 +88,7 @@ export function useTaxReceiptsFix() {
         console.error('Snapshot error:', err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -110,7 +108,7 @@ export function useTaxReceiptsFix() {
       const current = snap.data().data?.sequence;
       if (typeof current !== 'number') {
         console.warn('updateSequence: sequence no es numérico; se omite.');
-        return;                       // ⛔️   aborta si no es número
+        return; // ⛔️   aborta si no es número
       }
 
       const nextSeq = current + delta;

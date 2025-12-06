@@ -8,7 +8,6 @@ import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 import { Quotation } from '../Quotation/Quotation';
 
-
 const TEMPLATES_CONFIG = {
   template1: {
     format: 'THERMAL',
@@ -21,38 +20,42 @@ const TEMPLATES_CONFIG = {
     width: '210mm',
     height: '297mm',
     padding: '0mm',
-  }
+  },
 };
 
 const InvoiceContainer = styled.div`
-  width: ${props => TEMPLATES_CONFIG[props.template]?.width};
-  height: ${props => TEMPLATES_CONFIG[props.template]?.height};
-  padding: ${props => TEMPLATES_CONFIG[props.template]?.padding};
-  background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: ${(props) => TEMPLATES_CONFIG[props.template]?.width};
+  height: ${(props) => TEMPLATES_CONFIG[props.template]?.height};
+  padding: ${(props) => TEMPLATES_CONFIG[props.template]?.padding};
   margin: 20px auto;
-  
+  background: white;
+  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
+
   @media print {
-    box-shadow: none;
     margin: 0;
+    box-shadow: none;
   }
 `;
 
 const PreviewContainer = styled.div`
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: flex-start;
-  background: #f0f0f0;
-  padding: 0px;
+  justify-content: center;
+  width: 100%;
   min-height: 50vh;
-  
+  padding: 0;
+  background: #f0f0f0;
 `;
 
-export default function InvoiceTemplates({ previewInModal = true, hidePreviewButton = false }) {
-  const { billing: { invoiceType } } = useSelector(SelectSettingCart);
+export default function InvoiceTemplates({
+  previewInModal = true,
+  hidePreviewButton = false,
+}) {
+  const {
+    billing: { invoiceType },
+  } = useSelector(SelectSettingCart);
   const [selectedTemplate, setSelectedTemplate] = useState('template1');
-  const componentRef = useRef();
+  const componentRef = useRef(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
@@ -69,9 +72,10 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });    const handlePreview = () => {
-        setIsModalVisible(true);
+    contentRef: componentRef,
+  });
+  const handlePreview = () => {
+    setIsModalVisible(true);
   };
 
   const renderInvoice = (ref) => (
@@ -99,7 +103,8 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
       </div>
 
       <Modal
-        title="Previsualización de Factura"        open={isModalVisible}
+        title="Previsualización de Factura"
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         width={'1000px'}
         style={{ top: 20 }}
@@ -121,7 +126,6 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
           }}
         >
           {renderInvoice(componentRef)}
-
         </div>
       </Modal>
 

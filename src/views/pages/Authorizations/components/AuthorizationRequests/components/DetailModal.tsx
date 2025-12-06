@@ -12,7 +12,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Button, Space, Tooltip, Popconfirm } from 'antd';
 import styled from 'styled-components';
 
-import { formatDateTime, getStatusLabel, statusTheme } from '../constants/constants';
+import {
+  formatDateTime,
+  getStatusLabel,
+  statusTheme,
+} from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
 
 import type { AuthorizationRequest } from '../types';
@@ -43,21 +47,21 @@ export const DetailModal = ({
 
   const detailStatus = detailRequest.status ?? 'pending';
   const disableApprove = detailStatus !== 'pending';
-  const disableReject = detailStatus !== 'pending' || detailStatus === 'rejected';
+  const disableReject =
+    detailStatus !== 'pending' || detailStatus === 'rejected';
   const requestedBy = detailRequest.requestedBy || {};
   const moduleMeta = resolveModuleMeta(detailRequest);
   const metadataSource =
-    typeof detailRequest.metadata === 'object' && detailRequest.metadata !== null
-      ? (detailRequest.metadata)
+    typeof detailRequest.metadata === 'object' &&
+    detailRequest.metadata !== null
+      ? detailRequest.metadata
       : {};
   const metadataReference =
     typeof metadataSource?.['reference'] === 'string'
-      ? (metadataSource['reference'])
+      ? metadataSource['reference']
       : '';
   const metadataNote =
-    typeof metadataSource?.['note'] === 'string'
-      ? (metadataSource['note'])
-      : '';
+    typeof metadataSource?.['note'] === 'string' ? metadataSource['note'] : '';
   const reference =
     detailRequest.reference ||
     metadataReference ||
@@ -84,11 +88,17 @@ export const DetailModal = ({
       open={open}
       onCancel={onClose}
       title={null}
-      destroyOnClose
+      destroyOnHidden
       footer={
         <Space>
           <Button onClick={onClose}>Cerrar</Button>
-          <Tooltip title={actionsDisabled || disableApprove ? 'Acción no disponible' : 'Aprobar'}>
+          <Tooltip
+            title={
+              actionsDisabled || disableApprove
+                ? 'Acción no disponible'
+                : 'Aprobar'
+            }
+          >
             <span>
               <Button
                 type="primary"
@@ -111,7 +121,13 @@ export const DetailModal = ({
             cancelText="No"
             disabled={actionsDisabled || disableReject}
           >
-            <Tooltip title={actionsDisabled || disableReject ? 'Acción no disponible' : 'Rechazar'}>
+            <Tooltip
+              title={
+                actionsDisabled || disableReject
+                  ? 'Acción no disponible'
+                  : 'Rechazar'
+              }
+            >
               <span>
                 <Button
                   danger
@@ -131,12 +147,17 @@ export const DetailModal = ({
         <Header>
           <HeaderIcon icon={moduleMeta.icon || faClipboardList} />
           <HeaderContent>
-            <HeaderTitle>{moduleMeta.title || 'Solicitud de autorización'}</HeaderTitle>
+            <HeaderTitle>
+              {moduleMeta.title || 'Solicitud de autorización'}
+            </HeaderTitle>
             <HeaderSummary>
-              {moduleMeta.summary || 'Revisa la información antes de tomar una acción.'}
+              {moduleMeta.summary ||
+                'Revisa la información antes de tomar una acción.'}
             </HeaderSummary>
           </HeaderContent>
-          <StatusBadge $status={detailStatus}>{getStatusLabel(detailStatus)}</StatusBadge>
+          <StatusBadge $status={detailStatus}>
+            {getStatusLabel(detailStatus)}
+          </StatusBadge>
         </Header>
 
         <InfoGrid>
@@ -229,11 +250,11 @@ const Header = styled.header`
 `;
 
 const HeaderIcon = styled(FontAwesomeIcon)`
+  padding: 10px;
   font-size: 32px;
   color: #2b6cb0;
   background: #e6f4ff;
   border-radius: 14px;
-  padding: 10px;
 `;
 
 const HeaderContent = styled.div`
@@ -246,23 +267,23 @@ const HeaderTitle = styled.h3`
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.9);
+  color: rgb(0 0 0 / 90%);
 `;
 
 const HeaderSummary = styled.p`
   margin: 0;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgb(0 0 0 / 55%);
 `;
 
 const StatusBadge = styled.span<{ $status: string }>`
   justify-self: end;
   padding: 4px 12px;
-  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: ${({ $status }) => statusTheme[$status]?.color || '#434343'};
   background: ${({ $status }) => statusTheme[$status]?.bg || '#f0f0f0'};
+  border-radius: 999px;
 `;
 
 const InfoGrid = styled.div`
@@ -277,15 +298,15 @@ const InfoCard = styled.div`
   gap: 10px;
   align-items: flex-start;
   padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #edf2fb;
   background: #fbfdff;
+  border: 1px solid #edf2fb;
+  border-radius: 12px;
 `;
 
 const InfoIcon = styled(FontAwesomeIcon)`
+  margin-top: 2px;
   font-size: 16px;
   color: #2b6cb0;
-  margin-top: 2px;
 `;
 
 const InfoContent = styled.div`
@@ -297,14 +318,14 @@ const InfoContent = styled.div`
 const InfoLabel = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgb(0 0 0 / 55%);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 `;
 
 const InfoValue = styled.span`
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgb(0 0 0 / 85%);
 `;
 
 const NoteSection = styled.section`
@@ -312,15 +333,15 @@ const NoteSection = styled.section`
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #edf2fb;
   background: #f9fbff;
+  border: 1px solid #edf2fb;
+  border-radius: 12px;
 `;
 
 const NoteHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const NoteIcon = styled(FontAwesomeIcon)`
@@ -331,13 +352,13 @@ const NoteIcon = styled(FontAwesomeIcon)`
 const NoteLabel = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgb(0 0 0 / 60%);
 `;
 
 const NoteText = styled.p`
   margin: 0;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgb(0 0 0 / 75%);
   white-space: pre-wrap;
 `;
 
@@ -349,8 +370,8 @@ const ListSection = styled.section`
 
 const ListHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 `;
 
 const ListIcon = styled(FontAwesomeIcon)`
@@ -359,8 +380,8 @@ const ListIcon = styled(FontAwesomeIcon)`
 `;
 
 const ReasonList = styled.ul`
-  margin: 0;
   padding-left: 18px;
+  margin: 0;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgb(0 0 0 / 75%);
 `;

@@ -4,7 +4,11 @@ import { ProductCategoryBar } from '../../../../component/ProductCategoryBar/Pro
 
 import { ProductList } from './components/ProductList';
 
-export function ProductControlEfficient({ products, productsLoading, statusMeta = {} }) {
+export function ProductControlEfficient({
+  products,
+  productsLoading,
+  statusMeta = {},
+}) {
   return (
     <Container>
       <ProductCategoryBar />
@@ -20,17 +24,17 @@ export function ProductControlEfficient({ products, productsLoading, statusMeta 
 }
 
 const Container = styled.div`
-  flex: 1;
-  background-color: ${props => props.theme.bg.color2}; 
+  position: relative;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
-  position: relative;
-`
+  background-color: ${(props) => props.theme.bg.color2};
+`;
 
 const ProductListWrapper = styled.div`
-  flex: 1;
-  min-height: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
-`
+  min-height: 0;
+`;

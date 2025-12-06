@@ -1,53 +1,56 @@
-import { message, Button, Form, Modal, Select } from 'antd'
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import styled from 'styled-components'
+import { message, Button, Form, Modal, Select, notification } from 'antd';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
 
-
-import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { cleanPurchase, setPurchase, selectPurchaseState } from '../../../../features/purchase/addPurchaseSlice'
-import { addPurchase } from '../../../../firebase/purchase/fbAddPurchase'
-import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase'
-import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase'
-import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService'
+import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary';
+import { selectUser } from '../../../../features/auth/userSlice';
+import {
+  cleanPurchase,
+  setPurchase,
+  selectPurchaseState,
+} from '../../../../features/purchase/addPurchaseSlice';
+import { addPurchase } from '../../../../firebase/purchase/fbAddPurchase';
+import { fbCompletePurchase } from '../../../../firebase/purchase/fbCompletePurchase';
+import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase';
+import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
 import { useListenOrder } from '../../../../hooks/useOrders'; // Import the hook
-import { useListenPurchase } from '../../../../hooks/usePurchases' // Import the hook
-import ROUTES_PATH from '../../../../routes/routesName'
+import { useListenPurchase } from '../../../../hooks/usePurchases'; // Import the hook
+import ROUTES_PATH from '../../../../routes/routesName';
 import { getLocalURL } from '../../../../utils/files';
-import Loader from '../../../component/Loader/Loader'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp'
+import Loader from '../../../component/Loader/Loader';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
-import GeneralForm from './components/GeneralForm/GeneralForm'
-import { defaultsMap, sanitizeData } from './purchaseLogic'
-import { getBackOrderAssociationId } from './purchaseManagementUtils'
+import GeneralForm from './components/GeneralForm/GeneralForm';
+import { defaultsMap, sanitizeData } from './purchaseLogic';
+import { getBackOrderAssociationId } from './purchaseManagementUtils';
 
 const Container = styled.div`
   display: grid;
-  height: 100%;
   grid-template-rows: min-content 1fr min-content;
+  height: 100%;
   overflow-y: hidden;
-`
+`;
 
 const Body = styled.div`
- padding: 1em;
-  overflow-y: auto;
- width: 100%;
+  width: 100%;
+  padding: 1em;
   margin: 0 auto;
-`
+  overflow-y: auto;
+`;
 const ButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
   position: sticky;
   bottom: 0;
-  width: 100%;
+  display: flex;
   gap: 1em;
-  background-color: #ffffff;
+  justify-content: flex-end;
+  width: 100%;
   padding: 1em;
-  border-top: 1px solid #e8e8e8;
   margin-top: auto;
-`
+  background-color: #fff;
+  border-top: 1px solid #e8e8e8;
+`;
 
 const PurchaseManagement = () => {
   const dispatch = useDispatch();
@@ -63,7 +66,7 @@ const PurchaseManagement = () => {
     return 'update';
   }, [id, location]);
 
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
   const { purchase: purchaseData } = useSelector(selectPurchaseState);
 
   const backOrderAssociationId = getBackOrderAssociationId({
@@ -73,7 +76,6 @@ const PurchaseManagement = () => {
     operationType: 'purchase',
   });
 
-
   const { PURCHASES } = ROUTES_PATH.PURCHASE_TERM;
 
   const [localFiles, setLocalFiles] = useState([]);
@@ -82,15 +84,19 @@ const PurchaseManagement = () => {
     provider: false,
     deliveryAt: false,
     paymentAt: false,
-    note: false
+    note: false,
   });
 
-  const { purchase: fetchedPurchase, isLoading: purchaseLoading } = useListenPurchase(id); // Use the hook
+  const { purchase: fetchedPurchase, isLoading: purchaseLoading } =
+    useListenPurchase(id); // Use the hook
   const { order: fetchedOrder } = useListenOrder(id); // Use the hook
-  const { data: warehouses = [], loading: warehousesLoading } = useListenWarehouses();
+  const { data: warehouses = [], loading: warehousesLoading } =
+    useListenWarehouses();
   const defaultWarehouseId = useMemo(() => {
     if (!warehouses?.length) return null;
-    const defaultWarehouse = warehouses.find((warehouse) => warehouse?.defaultWarehouse);
+    const defaultWarehouse = warehouses.find(
+      (warehouse) => warehouse?.defaultWarehouse,
+    );
     return defaultWarehouse?.id || warehouses[0]?.id || null;
   }, [warehouses]);
 
@@ -104,7 +110,9 @@ const PurchaseManagement = () => {
           'Almacén sin nombre';
         return {
           value: warehouse.id,
-          label: warehouse.defaultWarehouse ? `${baseLabel} (Predeterminado)` : baseLabel,
+          label: warehouse.defaultWarehouse
+            ? `${baseLabel} (Predeterminado)`
+            : baseLabel,
         };
       }),
     [warehouses],
@@ -125,29 +133,45 @@ const PurchaseManagement = () => {
     }
   }, [defaultWarehouseId, warehouses, selectedWarehouseId]);
 
-  const updatePurchaseState = useCallback((updates) => {
-    dispatch(setPurchase(updates));
-  }, [dispatch]);
+  const updatePurchaseState = useCallback(
+    (updates) => {
+      dispatch(setPurchase(updates));
+    },
+    [dispatch],
+  );
 
-  const handleAddFiles = useCallback((newFiles) => {
-    const newAttachments = newFiles.map(file => ({
-      type: file.type,
-      url: getLocalURL(file.file),
-      location: 'local',
-      id: file.id,
-      name: file.name,
-    }));
+  const handleAddFiles = useCallback(
+    (newFiles) => {
+      const newAttachments = newFiles.map((file) => ({
+        type: file.type,
+        url: getLocalURL(file.file),
+        location: 'local',
+        id: file.id,
+        name: file.name,
+      }));
 
-    updatePurchaseState({ attachmentUrls: [...(purchaseData.attachmentUrls || []), ...newAttachments] });
-    setLocalFiles((prev) => [...prev, ...newFiles]);
-  }, [purchaseData.attachmentUrls, updatePurchaseState]);
+      updatePurchaseState({
+        attachmentUrls: [
+          ...(purchaseData.attachmentUrls || []),
+          ...newAttachments,
+        ],
+      });
+      setLocalFiles((prev) => [...prev, ...newFiles]);
+    },
+    [purchaseData.attachmentUrls, updatePurchaseState],
+  );
 
-  const handleRemoveFile = useCallback((fileId) => {
-    setLocalFiles((prev) => prev.filter(f => f.id !== fileId));
-    updatePurchaseState({
-      attachmentUrls: (purchaseData.attachmentUrls || []).filter(f => f.id !== fileId),
-    });
-  }, [purchaseData.attachmentUrls, updatePurchaseState]);
+  const handleRemoveFile = useCallback(
+    (fileId) => {
+      setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
+      updatePurchaseState({
+        attachmentUrls: (purchaseData.attachmentUrls || []).filter(
+          (f) => f.id !== fileId,
+        ),
+      });
+    },
+    [purchaseData.attachmentUrls, updatePurchaseState],
+  );
 
   const validateFields = useCallback(() => {
     const newErrors = {
@@ -158,14 +182,16 @@ const PurchaseManagement = () => {
     };
 
     setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error);
+    return !Object.values(newErrors).some((error) => error);
   }, [purchaseData]);
 
   useEffect(() => {
     if ((mode === 'update' || mode === 'complete') && fetchedPurchase) {
       dispatch(setPurchase(fetchedPurchase));
     } else if (mode === 'convert' && fetchedOrder) {
-      dispatch(setPurchase({ ...fetchedOrder, id: '', orderId: fetchedOrder.id }));
+      dispatch(
+        setPurchase({ ...fetchedOrder, id: '', orderId: fetchedOrder.id }),
+      );
     }
   }, [mode, fetchedPurchase, fetchedOrder, dispatch]);
 
@@ -190,7 +216,10 @@ const PurchaseManagement = () => {
               warehouseId: warehouseIdOverride,
             });
 
-            const destinationWarehouseId = completionResult?.destinationWarehouseId || warehouseIdOverride || null;
+            const destinationWarehouseId =
+              completionResult?.destinationWarehouseId ||
+              warehouseIdOverride ||
+              null;
             const summaryPurchase = completionResult || {
               ...submitData,
               destinationWarehouseId,
@@ -218,7 +247,7 @@ const PurchaseManagement = () => {
         }
         return true;
       } catch (error) {
-        console.error("Error al guardar la compra:", error);
+        console.error('Error al guardar la compra:', error);
         message.error('Error al guardar la compra');
         return false;
       } finally {
@@ -229,12 +258,72 @@ const PurchaseManagement = () => {
   );
 
   const handleSubmit = useCallback(async () => {
-    if (!validateFields()) {
-      message.error('Por favor complete todos los campos requeridos');
+    // 1. Validar Proveedor
+    if (!purchaseData.provider) {
+      notification.warning({
+        message: 'Falta el Proveedor',
+        description: 'Por favor, selecciona un proveedor para continuar.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, provider: true }));
       return;
     }
+
+    // 2. Validar Fecha de Entrega
+    if (!purchaseData.deliveryAt) {
+      notification.warning({
+        message: 'Falta Fecha de Entrega',
+        description: 'Por favor, selecciona la fecha de entrega.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, deliveryAt: true }));
+      return;
+    }
+
+    // 3. Validar Fecha de Pago
+    if (!purchaseData.paymentAt) {
+      notification.warning({
+        message: 'Falta Fecha de Pago',
+        description: 'Por favor, selecciona la fecha de pago.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, paymentAt: true }));
+      return;
+    }
+
+    // 4. Validar Lista de Productos
     if (!purchaseData?.replenishments?.length) {
-      message.error('Agrega un producto a la compra');
+      notification.warning({
+        message: 'Compra Vacía',
+        description: 'Debes agregar al menos un producto a la compra.',
+        duration: 5,
+      });
+      return;
+    }
+
+    // 5. Validar Productos Individuales
+    const invalidProduct = purchaseData.replenishments.find((p) => {
+      const qty = Number(p.purchaseQuantity) || 0;
+      const cost = Number(p.baseCost) || 0;
+      return !p.name?.trim() || qty <= 0 || cost <= 0;
+    });
+
+    if (invalidProduct) {
+      const qty = Number(invalidProduct.purchaseQuantity) || 0;
+      const cost = Number(invalidProduct.baseCost) || 0;
+
+      let description = 'Revisa los datos del producto.';
+      if (qty <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene una cantidad de 0.`;
+      } else if (cost <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene un costo base de 0.`;
+      }
+
+      notification.warning({
+        message: 'Producto Inválido',
+        description,
+        duration: 6,
+      });
       return;
     }
 
@@ -244,7 +333,11 @@ const PurchaseManagement = () => {
     }
 
     await performSubmit();
-  }, [validateFields, purchaseData?.replenishments?.length, mode, performSubmit]);
+  }, [
+    purchaseData,
+    mode,
+    performSubmit,
+  ]);
 
   const handleCloseSummary = useCallback(() => {
     setShowSummary(false);
@@ -287,14 +380,18 @@ const PurchaseManagement = () => {
       <MenuApp
         showBackButton={false}
         sectionName={
-          mode === 'create' ? 'Nueva Compra' :
-            mode === 'complete' ? 'Completar Compra' :
-              mode === 'convert' ? 'Convertir a Compra' :
-                'Editar Compra'
-        } />
-      <Loader loading={purchaseLoading} minHeight="200px" >
+          mode === 'create'
+            ? 'Nueva Compra'
+            : mode === 'complete'
+              ? 'Completar Compra'
+              : mode === 'convert'
+                ? 'Convertir a Compra'
+                : 'Editar Compra'
+        }
+      />
+      <Loader loading={purchaseLoading} minHeight="200px">
         <Body>
-          <Form layout='vertical'>
+          <Form layout="vertical">
             <GeneralForm
               files={localFiles}
               attachmentUrls={purchaseData.attachmentUrls || []}
@@ -307,9 +404,7 @@ const PurchaseManagement = () => {
         </Body>
       </Loader>
       <ButtonsContainer>
-        <Button onClick={handleCancel}>
-          Cancelar
-        </Button>
+        <Button onClick={handleCancel}>Cancelar</Button>
         <Button type="primary" onClick={handleSubmit} loading={loading}>
           Guardar
         </Button>
@@ -323,12 +418,16 @@ const PurchaseManagement = () => {
         cancelText="Cancelar"
         confirmLoading={loading}
         okButtonProps={{
-          disabled: !selectedWarehouseId || warehousesLoading || warehouseOptions.length === 0,
+          disabled:
+            !selectedWarehouseId ||
+            warehousesLoading ||
+            warehouseOptions.length === 0,
         }}
-        destroyOnClose={false}
+        destroyOnHidden={false}
       >
         <p style={{ marginBottom: '0.8em' }}>
-          Elige el almacén donde se registrará la recepción de esta compra. Este cambio solo aplica a esta compra.
+          Elige el almacén donde se registrará la recepción de esta compra. Este
+          cambio solo aplica a esta compra.
         </p>
         <Select
           showSearch
@@ -336,7 +435,11 @@ const PurchaseManagement = () => {
           value={selectedWarehouseId}
           onChange={setSelectedWarehouseId}
           loading={warehousesLoading}
-          placeholder={warehousesLoading ? 'Cargando almacenes...' : 'Selecciona un almacén'}
+          placeholder={
+            warehousesLoading
+              ? 'Cargando almacenes...'
+              : 'Selecciona un almacén'
+          }
           optionFilterProp="label"
           options={warehouseOptions}
         />
@@ -347,7 +450,7 @@ const PurchaseManagement = () => {
         purchase={completedPurchase}
       />
     </Container>
-  )
-}
+  );
+};
 
-export default PurchaseManagement
+export default PurchaseManagement;

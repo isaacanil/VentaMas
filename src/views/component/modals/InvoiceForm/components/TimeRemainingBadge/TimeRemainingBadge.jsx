@@ -1,4 +1,8 @@
-import { ClockCircleOutlined, InfoCircleOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  InfoCircleOutlined,
+  EditOutlined,
+} from '@ant-design/icons';
 import { Popover, Typography } from 'antd';
 import { DateTime, Duration } from 'luxon';
 import { useEffect, useState } from 'react';
@@ -31,16 +35,16 @@ export const TimeRemainingBadge = ({ invoice }) => {
     const duration = Duration.fromObject({ seconds: remainingCancelationTime });
     const hours = Math.floor(duration.as('hours'));
     const minutes = Math.floor(duration.as('minutes') % 60);
-    
+
     if (hours > 0) {
-      return { 
-        time: `${hours}h ${minutes}m`, 
-        unit: hours === 1 ? 'hora' : 'horas' 
+      return {
+        time: `${hours}h ${minutes}m`,
+        unit: hours === 1 ? 'hora' : 'horas',
       };
     } else {
-      return { 
-        time: `${minutes}m`, 
-        unit: minutes === 1 ? 'minuto' : 'minutos' 
+      return {
+        time: `${minutes}m`,
+        unit: minutes === 1 ? 'minuto' : 'minutos',
       };
     }
   };
@@ -54,12 +58,14 @@ export const TimeRemainingBadge = ({ invoice }) => {
       days: Math.floor(duration.as('days')),
       hours: Math.floor(duration.as('hours') % 24),
       minutes: Math.floor(duration.as('minutes') % 60),
-      seconds: Math.floor(duration.as('seconds') % 60)
+      seconds: Math.floor(duration.as('seconds') % 60),
     };
   };
 
   const getExpiryDate = () => {
-    return DateTime.fromMillis(invoice.date).plus({ days: 2 }).toFormat('dd/MM/yyyy HH:mm:ss');
+    return DateTime.fromMillis(invoice.date)
+      .plus({ days: 2 })
+      .toFormat('dd/MM/yyyy HH:mm:ss');
   };
 
   if (remainingCancelationTime <= 0) {
@@ -148,27 +154,30 @@ export const TimeRemainingBadge = ({ invoice }) => {
 };
 
 const Wrapper = styled.div`
-  margin-bottom: 12px;
   display: flex;
   justify-content: flex-end;
+  margin-bottom: 12px;
 `;
 
 const BadgeButton = styled.div`
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 6px 12px;
-  border-radius: 999px;
-  background: #fffaf3;
-  border: 1px solid rgba(255, 171, 64, 0.4);
-  box-shadow: 0 2px 10px rgba(255, 171, 64, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  background: #fffaf3;
+  border: 1px solid rgb(255 171 64 / 40%);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgb(255 171 64 / 15%);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 
   &:hover {
-    transform: translateY(-1px);
     background: #fff3e0;
-    box-shadow: 0 4px 14px rgba(255, 171, 64, 0.18);
+    box-shadow: 0 4px 14px rgb(255 171 64 / 18%);
+    transform: translateY(-1px);
   }
 
   &:active {
@@ -191,40 +200,40 @@ const BadgeInfo = styled.div`
 const BadgeLabel = styled.span`
   font-size: 10px;
   font-weight: 600;
+  color: #b85b00;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #b85b00;
 `;
 
 const BadgeTime = styled.span`
+  font-family: 'Courier New', monospace;
   font-size: 14px;
   font-weight: 700;
   color: #914200;
-  font-family: 'Courier New', monospace;
 `;
 
 const PopoverContent = styled.div`
-  min-width: 280px;
-  max-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 280px;
+  max-width: 320px;
 `;
 
 const PopoverHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 `;
 
 const HeaderIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(255, 152, 0, 0.12);
   display: grid;
   place-items: center;
+  width: 40px;
+  height: 40px;
   color: #f57c00;
+  background: rgb(255 152 0 / 12%);
+  border-radius: 12px;
 `;
 
 const HeaderIconSymbol = styled(EditOutlined)`
@@ -261,33 +270,33 @@ const PopoverDivider = styled.div`
 
 const CountdownGrid = styled.div`
   display: grid;
-  grid-auto-flow: column;
   grid-auto-columns: minmax(54px, auto);
+  grid-auto-flow: column;
   gap: 10px;
 `;
 
 const CountdownItem = styled.div`
   padding: 8px 10px;
-  background: #fff9e7;
-  border-radius: 10px;
   text-align: center;
-  border: 1px solid rgba(255, 152, 0, 0.25);
+  background: #fff9e7;
+  border: 1px solid rgb(255 152 0 / 25%);
+  border-radius: 10px;
 `;
 
 const CountdownValue = styled.span`
   display: block;
+  font-family: 'Courier New', monospace;
   font-size: 18px;
   font-weight: 700;
   color: #e65100;
-  font-family: 'Courier New', monospace;
 `;
 
 const CountdownLabel = styled.span`
   display: block;
   margin-top: 2px;
   font-size: 11px;
-  text-transform: uppercase;
   color: #a15b00;
+  text-transform: uppercase;
   letter-spacing: 0.4px;
 `;
 
@@ -300,8 +309,8 @@ const PopoverFooter = styled.div`
 const FooterLabel = styled(Text)`
   && {
     font-size: 12px;
-    color: #666;
     font-weight: 500;
+    color: #666;
   }
 `;
 
@@ -315,21 +324,21 @@ const FooterValue = styled(Text)`
 
 const PopoverNote = styled.div`
   display: flex;
-  align-items: flex-start;
   gap: 8px;
+  align-items: flex-start;
   padding: 10px;
+  background: rgb(255 152 0 / 8%);
   border-radius: 10px;
-  background: rgba(255, 152, 0, 0.08);
 `;
 
 const NoteIcon = styled(InfoCircleOutlined)`
+  margin-top: 2px;
   font-size: 16px;
   color: #ff9800;
-  margin-top: 2px;
 `;
 
 const NoteText = styled.span`
   font-size: 12px;
-  color: #8d6e63;
   line-height: 1.4;
+  color: #8d6e63;
 `;

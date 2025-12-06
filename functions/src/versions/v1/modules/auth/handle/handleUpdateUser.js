@@ -10,7 +10,7 @@ import {
   validateUserModificationPermissions,
   getUserById,
   ensureUniqueUsername,
-  prepareUserUpdateData
+  prepareUserUpdateData,
 } from '../utils/auth.util.js';
 import { verifyAndUpgrade } from '../utils/hash.util.js';
 
@@ -21,11 +21,11 @@ async function patchUser(tx, uid, patch) {
 }
 
 /* ─────────────────── 1. UPDATE genérico ─────────────────── */
-export const handleUpdateUser = onCall(async req => {
+export const handleUpdateUser = onCall(async (req) => {
   logger.info('Updating user', { data: req.data });
 
   const { userId, updates = {}, user: actor = {} } = req.data ?? {};
-  
+
   if (!userId) {
     throw new HttpsError('invalid-argument', 'ID obligatorio');
   }
@@ -33,7 +33,7 @@ export const handleUpdateUser = onCall(async req => {
     throw new HttpsError('invalid-argument', 'Nada que actualizar');
   }
 
-  await db.runTransaction(async tx => {
+  await db.runTransaction(async (tx) => {
     // Preparar datos de actualización
     const patch = await prepareUserUpdateData(updates, actor);
 
@@ -52,17 +52,21 @@ export const handleUpdateUser = onCall(async req => {
 
   /* revocar tokens si cambió contraseña */
   if ('password' in updates) {
-    admin.auth().revokeRefreshTokens(userId)
-      .catch(e => logger.warn(`No se pudieron revocar tokens para ${userId}`, e));
+    admin
+      .auth()
+      .revokeRefreshTokens(userId)
+      .catch((e) =>
+        logger.warn(`No se pudieron revocar tokens para ${userId}`, e),
+      );
   }
 
   return { ok: true, userId };
 });
 
 /* ─────────────────── 2. UPDATE con permisos ─────────────────── */
-export const handleUpdateUserWithPermissions = onCall(async req => {
+export const handleUpdateUserWithPermissions = onCall(async (req) => {
   const actor = req.data.user || {};
-  
+
   // Validar permisos de administrador
   validatePermissions(actor, ['admin']);
 
@@ -75,16 +79,22 @@ export const handleUpdateUserWithPermissions = onCall(async req => {
 });
 
 /* ─────────────────── 3. CAMBIO de contraseña ─────────────────── */
-export const handleChangePassword = onCall(async req => {
+export const handleChangePassword = onCall(async (req) => {
   const { userId, newPassword, currentPassword } = req.data ?? {};
   const actor = req.data.user || {};
 
   if (!userId || !newPassword) {
-    throw new HttpsError('invalid-argument', 'ID y nueva contraseña requeridos');
+    throw new HttpsError(
+      'invalid-argument',
+      'ID y nueva contraseña requeridos',
+    );
   }
 
   // Validar permisos
-  const { isAdmin, isSelf } = validateUserModificationPermissions(actor, userId);
+  const { isAdmin, isSelf } = validateUserModificationPermissions(
+    actor,
+    userId,
+  );
   if (isSelf && !isAdmin) {
     /* verificar clave actual */
     if (!currentPassword) {
@@ -106,7 +116,7 @@ export const handleChangePassword = onCall(async req => {
     data: {
       userId,
       updates: { password: newPassword },
-      user: actor
-    }
+      user: actor,
+    },
   });
 });

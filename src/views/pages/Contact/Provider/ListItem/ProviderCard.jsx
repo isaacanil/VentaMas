@@ -30,10 +30,12 @@ export const ProviderCard = ({ Row, Col, e: provider = {}, index = 0 }) => {
 
   const handleEditProvider = () => {
     if (!provider) return;
-    dispatch(toggleProviderModal({
-      mode: UPDATE_MODE,
-      data: provider,
-    }));
+    dispatch(
+      toggleProviderModal({
+        mode: UPDATE_MODE,
+        data: provider,
+      }),
+    );
   };
 
   const handleDeleteProvider = async () => {
@@ -53,24 +55,24 @@ export const ProviderCard = ({ Row, Col, e: provider = {}, index = 0 }) => {
   if (!Row || !Col) return null;
 
   return (
-    <Row border='border-bottom'>
+    <Row border="border-bottom">
       <Col>{String(index + 1).padStart(2, '0')}</Col>
-      <Col size='limit'>{provider?.name || 'Sin nombre'}</Col>
-      <Col size='limit'>{formattedPhone}</Col>
-      <Col size='limit'>{providerAddress}</Col>
-      <Col position='right'>
+      <Col size="limit">{provider?.name || 'Sin nombre'}</Col>
+      <Col size="limit">{formattedPhone}</Col>
+      <Col size="limit">{providerAddress}</Col>
+      <Col position="right">
         <ButtonGroup>
           <Button
             icon={icons.operationModes.edit}
             onClick={handleEditProvider}
             disabled={!provider?.id}
-            size='small'
+            size="small"
           />
           <Popconfirm
-            title='Eliminar proveedor'
+            title="Eliminar proveedor"
             description={`¿Eliminar a ${provider?.name || 'este proveedor'}?`}
-            okText='Eliminar'
-            cancelText='Cancelar'
+            okText="Eliminar"
+            cancelText="Cancelar"
             okButtonProps={{ danger: true, loading: isDeleting }}
             onConfirm={handleDeleteProvider}
             disabled={!provider?.id}
@@ -80,7 +82,7 @@ export const ProviderCard = ({ Row, Col, e: provider = {}, index = 0 }) => {
               icon={icons.operationModes.delete}
               loading={isDeleting}
               disabled={!provider?.id}
-              size='small'
+              size="small"
             />
           </Popconfirm>
         </ButtonGroup>

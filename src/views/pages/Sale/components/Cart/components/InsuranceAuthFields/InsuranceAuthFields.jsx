@@ -6,10 +6,14 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice';
-import { openModal, selectInsuranceAuthData, setAuthData } from '../../../../../../../features/insurance/insuranceAuthSlice';
+import {
+  openModal,
+  selectInsuranceAuthData,
+  setAuthData,
+} from '../../../../../../../features/insurance/insuranceAuthSlice';
 import {
   selectInsuranceData,
-  updateInsuranceData
+  updateInsuranceData,
 } from '../../../../../../../features/insurance/insuranceSlice';
 import { getClientInsuranceByClientId } from '../../../../../../../firebase/insurance/clientInsuranceService';
 
@@ -26,14 +30,19 @@ export const InsuranceAuthFields = () => {
   useEffect(() => {
     const fetchClientInsurance = async () => {
       if (client?.id) {
-        const insuranceData = await getClientInsuranceByClientId(user, client.id);
+        const insuranceData = await getClientInsuranceByClientId(
+          user,
+          client.id,
+        );
         if (insuranceData) {
           setClientInsurance(insuranceData);
-          dispatch(setAuthData({
-            insuranceId: insuranceData.insuranceId,
-            insuranceType: insuranceData.insuranceType,
-            birthDate: insuranceData.birthDate
-          }));
+          dispatch(
+            setAuthData({
+              insuranceId: insuranceData.insuranceId,
+              insuranceType: insuranceData.insuranceType,
+              birthDate: insuranceData.birthDate,
+            }),
+          );
         }
       }
     };
@@ -46,14 +55,17 @@ export const InsuranceAuthFields = () => {
   if (!client) return null;
 
   const handleOpenModal = () => {
-    dispatch(openModal({
-      initialValues: {
-        clientId: client?.id,
-        insuranceId: clientInsurance?.insuranceId || authData?.insuranceId,
-        insuranceType: clientInsurance?.insuranceType || authData?.insuranceType,
-        birthDate: clientInsurance?.birthDate || authData?.birthDate
-      }
-    }));
+    dispatch(
+      openModal({
+        initialValues: {
+          clientId: client?.id,
+          insuranceId: clientInsurance?.insuranceId || authData?.insuranceId,
+          insuranceType:
+            clientInsurance?.insuranceType || authData?.insuranceType,
+          birthDate: clientInsurance?.birthDate || authData?.birthDate,
+        },
+      }),
+    );
   };
 
   const handleRecurrenceChange = (e) => {
@@ -96,40 +108,43 @@ export const InsuranceAuthFields = () => {
 };
 
 const Container = styled.div`
-  box-shadow: 0 -8px 10px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.158);
   position: sticky;
   bottom: 0;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  background-color: #fff;
   padding: 0.4em;
-  border-radius: 0.4em;
-  z-index: 4;
+  background-color: #fff;
   border: 1px solid #e8e8e8;
+  border-radius: 0.4em;
+  box-shadow:
+    0 -8px 10px -1px rgb(0 0 0 / 10%),
+    0 -2px 4px -1px rgb(0 0 0 / 15.8%);
 `;
 
 const FormRow = styled.div`
-  display: flex; 
+  display: flex;
   align-items: center;
   width: 100%;
 `;
 
 const StyledCheckbox = styled(Checkbox)`
-  &.ant-checkbox-wrapper {
-    color: ${props => props.theme.text.color1};
+    &.ant-checkbox-wrapper {
+    color: ${(props) => props.theme.text.color1};
   }
 `;
 
 const InputContainer = styled.div`
   display: flex;
-  width: 100%;
   gap: 8px;
+  width: 100%;
 `;
 
 const StyledInput = styled(Input)`
   width: 100%;
-  &:hover {
+
+    &:hover {
     border-color: #40a9ff;
   }
 `;

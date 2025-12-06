@@ -1,9 +1,8 @@
-import { ClockCircleOutlined } from '@ant-design/icons'
-import { Alert, Tag } from 'antd'
-import { DateTime, Duration, } from 'luxon';
-import { useEffect, useState } from 'react'
+import { ClockCircleOutlined } from '@ant-design/icons';
+import { Alert, Tag } from 'antd';
+import { DateTime, Duration } from 'luxon';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-
 
 export const InvoiceInfoExtras = ({ invoice }) => {
   const [remainingCancelationTime, setRemainingCancelationTime] = useState(0);
@@ -36,14 +35,14 @@ export const InvoiceInfoExtras = ({ invoice }) => {
       {remainingCancelationTime > 0 && (
         <>
           <TimeBadge>
-            <Tag 
-              icon={<ClockCircleOutlined />} 
+            <Tag
+              icon={<ClockCircleOutlined />}
               color="warning"
-              style={{ 
-                fontSize: '14px', 
+              style={{
+                fontSize: '14px',
                 padding: '6px 12px',
                 borderRadius: '6px',
-                marginBottom: '12px'
+                marginBottom: '12px',
               }}
             >
               Tiempo restante: {formattedRemainingTime()}
@@ -59,17 +58,17 @@ export const InvoiceInfoExtras = ({ invoice }) => {
         </>
       )}
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-`
+`;
 
 const TimeBadge = styled.div`
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-`
+  justify-content: flex-start;
+`;

@@ -1,7 +1,7 @@
-import { 
-  collection, 
-  query, 
-  where, 
+import {
+  collection,
+  query,
+  where,
   onSnapshot,
   getDocs,
   documentId,
@@ -10,7 +10,7 @@ import {
   getAggregateFromServer,
   sum,
   average,
-  count
+  count,
 } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -38,9 +38,9 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     totalAmountDueSoon: 0,
     totalAmountOverdue: 0,
     averageAmount: 0,
-    totalAccounts: 0
+    totalAccounts: 0,
   });
-  
+
   const user = useSelector(selectUser);
 
   // Cache para datos relacionados para evitar múltiples consultas
@@ -48,7 +48,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     clients: new Map(),
     invoices: new Map(),
     accounts: new Map(),
-    lastUpdated: null
+    lastUpdated: null,
   });
 
   // Memoizar fechas para evitar recálculos innecesarios
@@ -66,111 +66,129 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
         clients: new Map(),
         invoices: new Map(),
         accounts: new Map(),
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       });
     }
   }, [dataCache.lastUpdated]);
 
   // Función optimizada para obtener datos de clientes en lote
-  const fetchClientsInBatch = useCallback(async (clientIds) => {
-    const uncachedClientIds = clientIds.filter(id => !dataCache.clients.has(id));
-    
-    if (uncachedClientIds.length === 0) return;
-
-    try {
-      // Usar documentId() para consulta eficiente de múltiples documentos
-      const clientsRef = collection(db, 'businesses', user.businessID, 'clients');
-      const clientsQuery = query(
-        clientsRef,
-        where(documentId(), 'in', uncachedClientIds.slice(0, 10)) // Firestore limita a 10 por consulta 'in'
+  const fetchClientsInBatch = useCallback(
+    async (clientIds) => {
+      const uncachedClientIds = clientIds.filter(
+        (id) => !dataCache.clients.has(id),
       );
-      
-      const clientsSnap = await getDocs(clientsQuery);
-      
-      clientsSnap.forEach(doc => {
-        const clientData = doc.data();
-        dataCache.clients.set(doc.id, clientData.client || clientData);
-      });
 
-      // Si hay más de 10 clientes, hacer consultas adicionales
-      if (uncachedClientIds.length > 10) {
-        const remainingIds = uncachedClientIds.slice(10);
-        const batches = [];
-        for (let i = 0; i < remainingIds.length; i += 10) {
-          batches.push(remainingIds.slice(i, i + 10));
-        }
+      if (uncachedClientIds.length === 0) return;
 
-        const batchPromises = batches.map(batch => {
-          const batchQuery = query(
-            clientsRef,
-            where(documentId(), 'in', batch)
-          );
-          return getDocs(batchQuery);
+      try {
+        // Usar documentId() para consulta eficiente de múltiples documentos
+        const clientsRef = collection(
+          db,
+          'businesses',
+          user.businessID,
+          'clients',
+        );
+        const clientsQuery = query(
+          clientsRef,
+          where(documentId(), 'in', uncachedClientIds.slice(0, 10)), // Firestore limita a 10 por consulta 'in'
+        );
+
+        const clientsSnap = await getDocs(clientsQuery);
+
+        clientsSnap.forEach((doc) => {
+          const clientData = doc.data();
+          dataCache.clients.set(doc.id, clientData.client || clientData);
         });
 
-        const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach(snapshot => {
-          snapshot.forEach(doc => {
-            const clientData = doc.data();
-            dataCache.clients.set(doc.id, clientData.client || clientData);
+        // Si hay más de 10 clientes, hacer consultas adicionales
+        if (uncachedClientIds.length > 10) {
+          const remainingIds = uncachedClientIds.slice(10);
+          const batches = [];
+          for (let i = 0; i < remainingIds.length; i += 10) {
+            batches.push(remainingIds.slice(i, i + 10));
+          }
+
+          const batchPromises = batches.map((batch) => {
+            const batchQuery = query(
+              clientsRef,
+              where(documentId(), 'in', batch),
+            );
+            return getDocs(batchQuery);
           });
-        });
-      }
 
-    } catch (error) {
-      console.warn('Error fetching clients in batch:', error);
-    }
-  }, [user?.businessID, dataCache.clients]);
+          const batchResults = await Promise.all(batchPromises);
+          batchResults.forEach((snapshot) => {
+            snapshot.forEach((doc) => {
+              const clientData = doc.data();
+              dataCache.clients.set(doc.id, clientData.client || clientData);
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Error fetching clients in batch:', error);
+      }
+    },
+    [user?.businessID, dataCache.clients],
+  );
 
   // Función optimizada para obtener datos de facturas en lote
-  const fetchInvoicesInBatch = useCallback(async (invoiceIds) => {
-    const uncachedInvoiceIds = invoiceIds.filter(id => !dataCache.invoices.has(id));
-    
-    if (uncachedInvoiceIds.length === 0) return;
-
-    try {
-      const invoicesRef = collection(db, 'businesses', user.businessID, 'invoices');
-      const invoicesQuery = query(
-        invoicesRef,
-        where(documentId(), 'in', uncachedInvoiceIds.slice(0, 10))
+  const fetchInvoicesInBatch = useCallback(
+    async (invoiceIds) => {
+      const uncachedInvoiceIds = invoiceIds.filter(
+        (id) => !dataCache.invoices.has(id),
       );
-      
-      const invoicesSnap = await getDocs(invoicesQuery);
-      
-      invoicesSnap.forEach(doc => {
-        const invoiceData = doc.data();
-        dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
-      });
 
-      // Manejar lotes adicionales si hay más de 10 facturas
-      if (uncachedInvoiceIds.length > 10) {
-        const remainingIds = uncachedInvoiceIds.slice(10);
-        const batches = [];
-        for (let i = 0; i < remainingIds.length; i += 10) {
-          batches.push(remainingIds.slice(i, i + 10));
-        }
+      if (uncachedInvoiceIds.length === 0) return;
 
-        const batchPromises = batches.map(batch => {
-          const batchQuery = query(
-            invoicesRef,
-            where(documentId(), 'in', batch)
-          );
-          return getDocs(batchQuery);
+      try {
+        const invoicesRef = collection(
+          db,
+          'businesses',
+          user.businessID,
+          'invoices',
+        );
+        const invoicesQuery = query(
+          invoicesRef,
+          where(documentId(), 'in', uncachedInvoiceIds.slice(0, 10)),
+        );
+
+        const invoicesSnap = await getDocs(invoicesQuery);
+
+        invoicesSnap.forEach((doc) => {
+          const invoiceData = doc.data();
+          dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
         });
 
-        const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach(snapshot => {
-          snapshot.forEach(doc => {
-            const invoiceData = doc.data();
-            dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
+        // Manejar lotes adicionales si hay más de 10 facturas
+        if (uncachedInvoiceIds.length > 10) {
+          const remainingIds = uncachedInvoiceIds.slice(10);
+          const batches = [];
+          for (let i = 0; i < remainingIds.length; i += 10) {
+            batches.push(remainingIds.slice(i, i + 10));
+          }
+
+          const batchPromises = batches.map((batch) => {
+            const batchQuery = query(
+              invoicesRef,
+              where(documentId(), 'in', batch),
+            );
+            return getDocs(batchQuery);
           });
-        });
-      }
 
-    } catch (error) {
-      console.warn('Error fetching invoices in batch:', error);
-    }
-  }, [user?.businessID, dataCache.invoices]);
+          const batchResults = await Promise.all(batchPromises);
+          batchResults.forEach((snapshot) => {
+            snapshot.forEach((doc) => {
+              const invoiceData = doc.data();
+              dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Error fetching invoices in batch:', error);
+      }
+    },
+    [user?.businessID, dataCache.invoices],
+  );
 
   useEffect(() => {
     if (!user?.businessID) {
@@ -180,19 +198,24 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
     setLoading(true);
     setError(null);
-    
+
     // Limpiar cache periódicamente
     cleanCache();
 
     const { now, futureLimit } = dateThresholds;
-    
+
     // Query optimizada con índices compuestos y ordenación
-    const installmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
+    const installmentsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'accountsReceivableInstallments',
+    );
     const installmentsQuery = query(
       installmentsRef,
       where('installmentDate', '<=', futureLimit.toJSDate()),
       where('isActive', '==', true), // Solo cuotas activas
-      orderBy('installmentDate', 'asc') // Ordenar por fecha para mejor rendimiento
+      orderBy('installmentDate', 'asc'), // Ordenar por fecha para mejor rendimiento
     );
 
     // Consulta separada para estadísticas usando agregaciones
@@ -202,7 +225,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
         const overdueQuery = query(
           installmentsRef,
           where('installmentDate', '<', now.toJSDate()),
-          where('isActive', '==', true)
+          where('isActive', '==', true),
         );
 
         // Consulta de agregación para cuentas próximas a vencer
@@ -210,27 +233,30 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           installmentsRef,
           where('installmentDate', '>=', now.toJSDate()),
           where('installmentDate', '<=', futureLimit.toJSDate()),
-          where('isActive', '==', true)
+          where('isActive', '==', true),
         );
 
         // Usar getCountFromServer para obtener conteos eficientemente
         const [overdueCount, dueSoonCount] = await Promise.all([
           getCountFromServer(overdueQuery),
-          getCountFromServer(dueSoonQuery)
+          getCountFromServer(dueSoonQuery),
         ]);
 
         // Consulta de agregación para montos (usando getAggregateFromServer)
         const installmentsForAmounts = query(
           installmentsRef,
           where('installmentDate', '<=', futureLimit.toJSDate()),
-          where('isActive', '==', true)
+          where('isActive', '==', true),
         );
 
-        const aggregateSnapshot = await getAggregateFromServer(installmentsForAmounts, {
-          totalAmount: sum('installmentBalance'),
-          averageAmount: average('installmentBalance'),
-          totalCount: count()
-        });
+        const aggregateSnapshot = await getAggregateFromServer(
+          installmentsForAmounts,
+          {
+            totalAmount: sum('installmentBalance'),
+            averageAmount: average('installmentBalance'),
+            totalCount: count(),
+          },
+        );
 
         const aggregateData = aggregateSnapshot.data();
 
@@ -239,7 +265,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           dueSoonCount: dueSoonCount.data().count,
           totalAmount: aggregateData.totalAmount || 0,
           averageAmount: aggregateData.averageAmount || 0,
-          totalCount: aggregateData.totalCount || 0
+          totalCount: aggregateData.totalCount || 0,
         };
       } catch (error) {
         console.warn('Error getting aggregated stats:', error);
@@ -261,7 +287,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
               totalAmountDueSoon: 0,
               totalAmountOverdue: 0,
               averageAmount: 0,
-              totalAccounts: 0
+              totalAccounts: 0,
             });
             setLoading(false);
             return;
@@ -276,30 +302,35 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           const arIds = new Set();
 
           // Primera pasada: recopilar IDs únicos
-          querySnapshot.forEach(docSnap => {
+          querySnapshot.forEach((docSnap) => {
             const installment = docSnap.data();
             arIds.add(installment.arId);
           });
 
           // Obtener datos de cuentas por cobrar en lote
-          const arRef = collection(db, 'businesses', user.businessID, 'accountsReceivable');
+          const arRef = collection(
+            db,
+            'businesses',
+            user.businessID,
+            'accountsReceivable',
+          );
           const arIdsArray = Array.from(arIds);
           const arBatches = [];
-          
+
           for (let i = 0; i < arIdsArray.length; i += 10) {
             arBatches.push(arIdsArray.slice(i, i + 10));
           }
 
-          const arPromises = arBatches.map(batch => {
+          const arPromises = arBatches.map((batch) => {
             const arQuery = query(arRef, where(documentId(), 'in', batch));
             return getDocs(arQuery);
           });
 
           const arResults = await Promise.all(arPromises);
-          
+
           // Procesar datos de AR y recopilar IDs de clientes e facturas
-          arResults.forEach(snapshot => {
-            snapshot.forEach(doc => {
+          arResults.forEach((snapshot) => {
+            snapshot.forEach((doc) => {
               const arData = doc.data();
               if (arData.isActive) {
                 dataCache.accounts.set(doc.id, arData);
@@ -312,13 +343,15 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           // Obtener datos de clientes e facturas en paralelo
           await Promise.all([
             fetchClientsInBatch(Array.from(clientIds)),
-            fetchInvoicesInBatch(Array.from(invoiceIds))
+            fetchInvoicesInBatch(Array.from(invoiceIds)),
           ]);
 
           // Segunda pasada: procesar cuotas con datos completos
-          querySnapshot.forEach(docSnap => {
+          querySnapshot.forEach((docSnap) => {
             const installment = docSnap.data();
-            const installmentDate = DateTime.fromJSDate(installment.installmentDate.toDate());
+            const installmentDate = DateTime.fromJSDate(
+              installment.installmentDate.toDate(),
+            );
             const daysUntilDue = installmentDate.diff(now, 'days').days;
 
             const arData = dataCache.accounts.get(installment.arId);
@@ -352,7 +385,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
                 invoiceTotal: invoiceData?.totalAmount,
                 invoiceStatus: invoiceData?.status,
                 pendingInstallments: 0,
-                paidInstallments: 0
+                paidInstallments: 0,
               });
             }
 
@@ -365,11 +398,14 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
               installmentDate: installmentDate,
               daysUntilDue: Math.ceil(daysUntilDue),
               isOverdue: daysUntilDue < 0,
-              isActive: installment.isActive
+              isActive: installment.isActive,
             });
 
             // Actualizar la fecha de vencimiento más próxima
-            if (installment.isActive && (!account.nextDueDate || installmentDate < account.nextDueDate)) {
+            if (
+              installment.isActive &&
+              (!account.nextDueDate || installmentDate < account.nextDueDate)
+            ) {
               account.nextDueDate = installmentDate;
               account.daysUntilNextDue = Math.ceil(daysUntilDue);
               account.isOverdue = daysUntilDue < 0;
@@ -377,47 +413,69 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           });
 
           // Obtener conteo completo de cuotas para cada cuenta usando una sola consulta
-          const allInstallmentsPromises = Array.from(accountsMap.keys()).map(async arId => {
-            try {
-              const allInstallmentsQuery = query(
-                collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments'),
-                where('arId', '==', arId)
-              );
-              
-              // Usar agregación para obtener conteos eficientemente
-              const activeCountQuery = query(allInstallmentsQuery, where('isActive', '==', true));
-              const inactiveCountQuery = query(allInstallmentsQuery, where('isActive', '==', false));
-              
-              const [activeCount, inactiveCount] = await Promise.all([
-                getCountFromServer(activeCountQuery),
-                getCountFromServer(inactiveCountQuery)
-              ]);
-              
-              const account = accountsMap.get(arId);
-              if (account) {
-                account.pendingInstallments = activeCount.data().count;
-                account.paidInstallments = inactiveCount.data().count;
-                account.totalInstallments = account.pendingInstallments + account.paidInstallments;
+          const allInstallmentsPromises = Array.from(accountsMap.keys()).map(
+            async (arId) => {
+              try {
+                const allInstallmentsQuery = query(
+                  collection(
+                    db,
+                    'businesses',
+                    user.businessID,
+                    'accountsReceivableInstallments',
+                  ),
+                  where('arId', '==', arId),
+                );
+
+                // Usar agregación para obtener conteos eficientemente
+                const activeCountQuery = query(
+                  allInstallmentsQuery,
+                  where('isActive', '==', true),
+                );
+                const inactiveCountQuery = query(
+                  allInstallmentsQuery,
+                  where('isActive', '==', false),
+                );
+
+                const [activeCount, inactiveCount] = await Promise.all([
+                  getCountFromServer(activeCountQuery),
+                  getCountFromServer(inactiveCountQuery),
+                ]);
+
+                const account = accountsMap.get(arId);
+                if (account) {
+                  account.pendingInstallments = activeCount.data().count;
+                  account.paidInstallments = inactiveCount.data().count;
+                  account.totalInstallments =
+                    account.pendingInstallments + account.paidInstallments;
+                }
+              } catch (error) {
+                console.warn(
+                  `Error fetching installment counts for AR ${arId}:`,
+                  error,
+                );
               }
-            } catch (error) {
-              console.warn(`Error fetching installment counts for AR ${arId}:`, error);
-            }
-          });
+            },
+          );
 
           await Promise.all(allInstallmentsPromises);
 
           // Convertir Map a Array y separar por estado
           const allAccounts = Array.from(accountsMap.values());
-          
+
           // Ordenar cuotas por fecha para cada cuenta
-          allAccounts.forEach(account => {
-            account.installments.sort((a, b) => a.installmentDate - b.installmentDate);
+          allAccounts.forEach((account) => {
+            account.installments.sort(
+              (a, b) => a.installmentDate - b.installmentDate,
+            );
           });
 
-          const dueSoon = allAccounts.filter(account => 
-            !account.isOverdue && account.daysUntilNextDue <= daysThreshold && account.daysUntilNextDue >= 0
+          const dueSoon = allAccounts.filter(
+            (account) =>
+              !account.isOverdue &&
+              account.daysUntilNextDue <= daysThreshold &&
+              account.daysUntilNextDue >= 0,
           );
-          const overdue = allAccounts.filter(account => account.isOverdue);
+          const overdue = allAccounts.filter((account) => account.isOverdue);
 
           // Ordenar por proximidad al vencimiento
           dueSoon.sort((a, b) => a.daysUntilNextDue - b.daysUntilNextDue);
@@ -428,10 +486,16 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
           // Obtener estadísticas agregadas
           const aggregatedStats = await aggregatedStatsPromise;
-          
+
           // Calcular estadísticas locales como respaldo
-          const totalAmountDueSoon = dueSoon.reduce((sum, account) => sum + (account.arBalance || 0), 0);
-          const totalAmountOverdue = overdue.reduce((sum, account) => sum + (account.arBalance || 0), 0);
+          const totalAmountDueSoon = dueSoon.reduce(
+            (sum, account) => sum + (account.arBalance || 0),
+            0,
+          );
+          const totalAmountOverdue = overdue.reduce(
+            (sum, account) => sum + (account.arBalance || 0),
+            0,
+          );
 
           setStats({
             totalDueSoon: dueSoon.length,
@@ -439,13 +503,15 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
             totalAlerts: dueSoon.length + overdue.length,
             totalAmountDueSoon,
             totalAmountOverdue,
-            averageAmount: aggregatedStats?.averageAmount || 
-              (totalAmountDueSoon + totalAmountOverdue) / (dueSoon.length + overdue.length) || 0,
-            totalAccounts: allAccounts.length
+            averageAmount:
+              aggregatedStats?.averageAmount ||
+              (totalAmountDueSoon + totalAmountOverdue) /
+                (dueSoon.length + overdue.length) ||
+              0,
+            totalAccounts: allAccounts.length,
           });
 
           setLoading(false);
-
         } catch (err) {
           console.error('Error processing due dates:', err);
           setError(err.message);
@@ -456,18 +522,25 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
         console.error('Error fetching installments:', err);
         setError(err.message);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, daysThreshold, dateThresholds, cleanCache, fetchClientsInBatch, fetchInvoicesInBatch]);
+  }, [
+    user?.businessID,
+    daysThreshold,
+    dateThresholds,
+    cleanCache,
+    fetchClientsInBatch,
+    fetchInvoicesInBatch,
+  ]);
 
   return {
     dueSoonAccounts,
     overdueAccounts,
     loading,
     error,
-    stats
+    stats,
   };
 };
 

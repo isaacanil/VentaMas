@@ -1,7 +1,6 @@
+import { https, logger } from 'firebase-functions';
 
-import { https, logger } from "firebase-functions";
-
-import { db, FieldValue } from "../config/firebase.js";
+import { db, FieldValue } from '../config/firebase.js';
 
 /**
  * Obtiene y actualiza atómicamente el siguiente ID de un contador usando Admin SDK.
@@ -13,9 +12,10 @@ import { db, FieldValue } from "../config/firebase.js";
  */
 export async function getNextID(user, name, quantity = 1) {
   // Validaciones
-  if (!name) throw new Error("No se proporcionó el nombre");
-  if (!user?.businessID) throw new Error("No se proporcionó el usuario o businessID");
-  if (quantity < 1) throw new Error("La cantidad debe ser al menos 1");
+  if (!name) throw new Error('No se proporcionó el nombre');
+  if (!user?.businessID)
+    throw new Error('No se proporcionó el usuario o businessID');
+  if (quantity < 1) throw new Error('La cantidad debe ser al menos 1');
 
   // Referencia al contador
   const counterRef = db.doc(`businesses/${user.businessID}/counters/${name}`);
@@ -28,9 +28,11 @@ export async function getNextID(user, name, quantity = 1) {
     const data = snap.data();
 
     return data?.value ?? quantity;
-
   } catch (error) {
-    console.error(`Error en getNextID para ${user?.businessID}/${name}:`, error);
+    console.error(
+      `Error en getNextID para ${user?.businessID}/${name}:`,
+      error,
+    );
     throw new Error(`Fallo al obtener el siguiente ID para ${name}.`);
   }
 }
@@ -45,19 +47,30 @@ export async function getNextID(user, name, quantity = 1) {
  * @throws {https.HttpsError}
  */
 
-
 export async function getNextIDTransactional(tx, user, name, quantity = 1) {
   if (!tx) {
-    throw new https.HttpsError('invalid-argument', 'Se requiere una transacción activa');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'Se requiere una transacción activa',
+    );
   }
   if (!user?.businessID) {
-    throw new https.HttpsError('invalid-argument', 'No se proporcionó el usuario o businessID');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'No se proporcionó el usuario o businessID',
+    );
   }
   if (!name) {
-    throw new https.HttpsError('invalid-argument', 'No se proporcionó el nombre del contador');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'No se proporcionó el nombre del contador',
+    );
   }
   if (typeof quantity !== 'number' || quantity < 1) {
-    throw new https.HttpsError('invalid-argument', 'La cantidad debe ser un número mayor o igual a 1');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'La cantidad debe ser un número mayor o igual a 1',
+    );
   }
 
   const nextIdSnap = await getNextIDTransactionalSnap(tx, user, name);
@@ -76,20 +89,18 @@ export async function getNextIDTransactional(tx, user, name, quantity = 1) {
 export async function getNextIDTransactionalSnap(tx, user, name) {
   if (!name) {
     throw new https.HttpsError(
-      "invalid-argument",
-      "No se proporcionó el nombre del contador"
+      'invalid-argument',
+      'No se proporcionó el nombre del contador',
     );
   }
   if (!user?.businessID) {
     throw new https.HttpsError(
-      "invalid-argument",
-      "No se proporcionó el usuario o businessID"
+      'invalid-argument',
+      'No se proporcionó el usuario o businessID',
     );
   }
 
-  const counterRef = db.doc(
-    `businesses/${user.businessID}/counters/${name}`
-  );
+  const counterRef = db.doc(`businesses/${user.businessID}/counters/${name}`);
   return tx.get(counterRef);
 }
 
@@ -103,20 +114,24 @@ export async function getNextIDTransactionalSnap(tx, user, name) {
  * @throws {https.HttpsError}
  */
 export function applyNextIDTransactional(tx, nextIdSnap, quantity = 1) {
-  if (typeof quantity !== "number" || quantity < 1) {
+  if (typeof quantity !== 'number' || quantity < 1) {
     throw new https.HttpsError(
-      "invalid-argument",
-      "La cantidad debe ser un número mayor o igual a 1"
+      'invalid-argument',
+      'La cantidad debe ser un número mayor o igual a 1',
     );
   }
 
   const counterRef = nextIdSnap.ref;
-  tx.set(counterRef, { value: FieldValue.increment(quantity) }, { merge: true });
+  tx.set(
+    counterRef,
+    { value: FieldValue.increment(quantity) },
+    { merge: true },
+  );
 
   const prevValue = nextIdSnap.data()?.value;
-  if (typeof prevValue !== "number") {
+  if (typeof prevValue !== 'number') {
     logger.warn(
-      `Contador ${counterRef.path} sin valor previo; devolviendo ${quantity}`
+      `Contador ${counterRef.path} sin valor previo; devolviendo ${quantity}`,
     );
     return quantity;
   }
@@ -137,7 +152,10 @@ export function applyNextIDTransactional(tx, nextIdSnap, quantity = 1) {
  */
 export async function nextSeq({ tx = null, user, name, qty = 1 }) {
   if (!user?.businessID || !name) {
-    throw new https.HttpsError('invalid-argument', 'businessID y name requeridos');
+    throw new https.HttpsError(
+      'invalid-argument',
+      'businessID y name requeridos',
+    );
   }
   if (!Number.isInteger(qty) || qty < 1) {
     throw new https.HttpsError('invalid-argument', 'qty debe ser entero ≥ 1');
@@ -145,7 +163,7 @@ export async function nextSeq({ tx = null, user, name, qty = 1 }) {
 
   const ref = db.doc(`businesses/${user.businessID}/counters/${name}`);
 
-  const run = async t => {
+  const run = async (t) => {
     const snap = await t.get(ref);
     const prev = snap.exists ? snap.data().value || 0 : 0;
     const next = prev + qty;

@@ -7,10 +7,13 @@ export async function scheduleCompensationsInTx(tx, { businessId, invoiceId }) {
 
   // Obtener tareas completadas para compensar en orden inverso
   const doneSnap = await tx.get(outboxCol.where('status', '==', 'done'));
-  const tasks = doneSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const tasks = doneSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   // Orden inverso por createdAt (aprox. orden de ejecución)
-  tasks.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  tasks.sort(
+    (a, b) =>
+      (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0),
+  );
 
   for (const t of tasks) {
     const compRef = compCol.doc();
@@ -43,9 +46,11 @@ export async function compensateAR(tx, { businessId, arId }) {
   });
   // Opcional: borrar cuotas o marcarlas voided
   // Aquí por simplicidad marcamos installments como voided si existen
-  const instCol = db.collection(`businesses/${businessId}/accountsReceivableInstallments`);
+  const instCol = db.collection(
+    `businesses/${businessId}/accountsReceivableInstallments`,
+  );
   const instSnap = await tx.get(instCol.where('arId', '==', arId));
-  instSnap.forEach(doc => {
+  instSnap.forEach((doc) => {
     tx.update(doc.ref, {
       isActive: false,
       isClosed: true,
@@ -55,7 +60,10 @@ export async function compensateAR(tx, { businessId, arId }) {
   });
 }
 
-export async function compensateCreditNotes(tx, { businessId, invoiceId, creditNotes = [], applicationIds = [] }) {
+export async function compensateCreditNotes(
+  tx,
+  { businessId, invoiceId, creditNotes = [], applicationIds = [] },
+) {
   // Reacreditar saldos y eliminar aplicaciones si las conocemos
   for (const note of creditNotes) {
     if (!note?.id || !(Number(note?.amountUsed) > 0)) continue;
@@ -63,7 +71,9 @@ export async function compensateCreditNotes(tx, { businessId, invoiceId, creditN
     const cnSnap = await tx.get(cnRef);
     if (!cnSnap.exists) continue;
     const cnData = cnSnap.data();
-    const currentAvailable = Number(cnData?.availableAmount ?? cnData?.totalAmount ?? 0);
+    const currentAvailable = Number(
+      cnData?.availableAmount ?? cnData?.totalAmount ?? 0,
+    );
     const amount = Number(note.amountUsed);
     tx.update(cnRef, {
       availableAmount: currentAvailable + amount,
@@ -74,7 +84,9 @@ export async function compensateCreditNotes(tx, { businessId, invoiceId, creditN
 
   if (Array.isArray(applicationIds) && applicationIds.length > 0) {
     for (const appId of applicationIds) {
-      const appRef = db.doc(`businesses/${businessId}/creditNoteApplications/${appId}`);
+      const appRef = db.doc(
+        `businesses/${businessId}/creditNoteApplications/${appId}`,
+      );
       const appSnap = await tx.get(appRef);
       if (appSnap.exists) {
         tx.delete(appRef);
@@ -82,9 +94,11 @@ export async function compensateCreditNotes(tx, { businessId, invoiceId, creditN
     }
   } else {
     // Fallback: borrar por consulta si no hay IDs
-    const appsCol = db.collection(`businesses/${businessId}/creditNoteApplications`);
+    const appsCol = db.collection(
+      `businesses/${businessId}/creditNoteApplications`,
+    );
     const appsSnap = await tx.get(appsCol.where('invoiceId', '==', invoiceId));
-    appsSnap.forEach(doc => tx.delete(doc.ref));
+    appsSnap.forEach((doc) => tx.delete(doc.ref));
   }
 }
 
@@ -111,17 +125,24 @@ export async function deleteCanonicalInvoice(tx, { businessId, invoiceId }) {
   }
 }
 
-export async function detachFromCashCount(tx, { businessId, invoiceId, userId }) {
+export async function detachFromCashCount(
+  tx,
+  { businessId, invoiceId, userId },
+) {
   // Find open or closing cash count for the user and remove invoice ref from sales array if present
   // We cannot query with tx for both open/closing removal, so best-effort: remove from any doc matching
   const cashCountsCol = db.collection(`businesses/${businessId}/cashCounts`);
   const userRef = db.doc(`users/${userId}`);
   const snap = await cashCountsCol
     .where('cashCount.opening.employee', '==', userRef)
-    .where('cashCount.sales', 'array_contains_any', [db.doc(`businesses/${businessId}/invoices/${invoiceId}`)])
+    .where('cashCount.sales', 'array_contains_any', [
+      db.doc(`businesses/${businessId}/invoices/${invoiceId}`),
+    ])
     .get();
-  const invoiceDocRef = db.doc(`businesses/${businessId}/invoices/${invoiceId}`);
-  snap.forEach(doc => {
+  const invoiceDocRef = db.doc(
+    `businesses/${businessId}/invoices/${invoiceId}`,
+  );
+  snap.forEach((doc) => {
     tx.update(doc.ref, {
       'cashCount.sales': FieldValue.arrayRemove(invoiceDocRef),
     });

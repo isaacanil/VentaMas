@@ -5,8 +5,8 @@ import styled from 'styled-components';
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
 const Container = styled.div`
-  height: 300px;
   position: relative;
+  height: 300px;
 `;
 
 const MonthlyExpenseBarChart = ({ expenses }) => {

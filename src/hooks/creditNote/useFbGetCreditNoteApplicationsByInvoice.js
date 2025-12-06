@@ -1,9 +1,15 @@
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { db } from "../../firebase/firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../../firebase/firebaseconfig';
 
 /**
  * Hook para obtener aplicaciones de notas de crédito por factura
@@ -24,11 +30,16 @@ export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId) => {
 
     setLoading(true);
 
-    const applicationsRef = collection(db, "businesses", user.businessID, "creditNoteApplications");
+    const applicationsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'creditNoteApplications',
+    );
     const q = query(
       applicationsRef,
-      where("invoiceId", "==", invoiceId),
-      orderBy("appliedAt", "desc")
+      where('invoiceId', '==', invoiceId),
+      orderBy('appliedAt', 'desc'),
     );
 
     const unsubscribe = onSnapshot(
@@ -36,19 +47,22 @@ export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId) => {
       (snapshot) => {
         const list = snapshot.docs.map((doc) => ({
           ...doc.data(),
-          id: doc.id
+          id: doc.id,
         }));
         setApplications(list);
         setLoading(false);
       },
       (error) => {
-        console.error("Error fetching credit note applications by invoice:", error);
+        console.error(
+          'Error fetching credit note applications by invoice:',
+          error,
+        );
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
   }, [user?.businessID, invoiceId]);
 
   return { applications, loading };
-}; 
+};

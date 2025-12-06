@@ -1,17 +1,33 @@
-import { faArrowRight, faBox, faLayerGroup, faTable, faWarehouse } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import styled from "styled-components";
+import {
+  faArrowRight,
+  faBox,
+  faLayerGroup,
+  faTable,
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styled from 'styled-components';
 
-export const LocationDisplay = ({ location, onClick, locationNames, variant = 'card' }) => {
+export const LocationDisplay = ({
+  location,
+  onClick,
+  locationNames,
+  variant = 'card',
+}) => {
   // Ensure location is a string and provide a default value
   const locationString = String(location || '');
   const getLocationIcon = (type) => {
-    switch(type) {
-      case 'warehouse': return faWarehouse;
-      case 'shelf': return faLayerGroup;
-      case 'row': return faTable;
-      case 'segment': return faBox;
-      default: return faWarehouse;
+    switch (type) {
+      case 'warehouse':
+        return faWarehouse;
+      case 'shelf':
+        return faLayerGroup;
+      case 'row':
+        return faTable;
+      case 'segment':
+        return faBox;
+      default:
+        return faWarehouse;
     }
   };
 
@@ -30,14 +46,22 @@ export const LocationDisplay = ({ location, onClick, locationNames, variant = 'c
         <div className="location-content">
           {variant === 'inline' ? (
             <div className="location-segments">
-              <span className={`segment-chip ${fullLabel ? 'full' : 'fallback'}`}>
-                <FontAwesomeIcon icon={getLocationIcon('segment')} className="icon" />
+              <span
+                className={`segment-chip ${fullLabel ? 'full' : 'fallback'}`}
+              >
+                <FontAwesomeIcon
+                  icon={getLocationIcon('segment')}
+                  className="icon"
+                />
                 <span className="text">{inlineLabel}</span>
               </span>
             </div>
           ) : (
             <div className="location-segment">
-              <FontAwesomeIcon icon={getLocationIcon('segment')} className="icon" />
+              <FontAwesomeIcon
+                icon={getLocationIcon('segment')}
+                className="icon"
+              />
               <span className="location-text">{primaryLabel}</span>
             </div>
           )}
@@ -50,10 +74,10 @@ export const LocationDisplay = ({ location, onClick, locationNames, variant = 'c
 
 const LocationPath = styled.div`
   display: flex;
-  align-items: center;
+  flex-wrap: ${(props) => (props.$variant === 'inline' ? 'wrap' : 'nowrap')};
   gap: 8px;
+  align-items: center;
   width: 100%;
-  flex-wrap: ${props => props.$variant === 'inline' ? 'wrap' : 'nowrap'};
 
   .location-content {
     flex: 1;
@@ -64,20 +88,20 @@ const LocationPath = styled.div`
     display: flex;
     align-items: flex-start;
     padding: 4px 12px;
-    background: #f8fafc;
-    border-radius: 8px;
     font-size: 0.9rem;
     color: #1e293b;
-    border: 1px solid #e2e8f0;
+    overflow-wrap: anywhere;
     white-space: normal;
-    word-break: break-word;
-    
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
     .icon {
-      color: #2563eb;
-      margin-right: 6px;
-      font-size: 0.85rem;
       flex-shrink: 0;
       margin-top: 3px;
+      margin-right: 6px;
+      font-size: 0.85rem;
+      color: #2563eb;
     }
 
     .location-text {
@@ -93,14 +117,14 @@ const LocationPath = styled.div`
 
   .segment-chip {
     display: inline-flex;
-    align-items: center;
     gap: 5px;
+    align-items: center;
     padding: 5px 10px;
-    border-radius: 999px;
-    background: #f1f5f9;
-    border: 1px solid transparent;
     font-size: 0.8rem;
     color: #1e293b;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 999px;
 
     &.fallback {
       background: #f8fafc;
@@ -112,44 +136,52 @@ const LocationPath = styled.div`
     }
 
     .icon {
-      color: #2563eb;
       font-size: 0.7rem;
+      color: #2563eb;
     }
 
     .text {
       line-height: 1.2;
-      word-break: break-word;
+      overflow-wrap: anywhere;
     }
   }
 
   .navigation-icon {
+    display: ${(props) => (props.$variant === 'inline' ? 'none' : 'block')};
+    flex-shrink: 0;
+    font-size: 0.9rem;
     color: #2563eb;
     transition: transform 0.2s ease;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-    display: ${props => props.$variant === 'inline' ? 'none' : 'block'};
   }
 `;
 
 const LocationBadge = styled.div`
   position: relative;
-  background: ${props => props.$variant === 'inline' ? 'transparent' : '#ffffff'};
-  padding: ${props => props.$variant === 'inline' ? '6px 0' : '8px'};
-  border-radius: 10px;
+  display: flex;
+  flex-direction: ${(props) =>
+    props.$variant === 'inline' ? 'row' : 'column'};
+  gap: ${(props) => (props.$variant === 'inline' ? '8px' : '6px')};
+  align-items: ${(props) =>
+    props.$variant === 'inline' ? 'center' : 'flex-start'};
+  padding: ${(props) => (props.$variant === 'inline' ? '6px 0' : '8px')};
+  margin-top: ${(props) => (props.$variant === 'inline' ? '0' : 'auto')};
   font-size: 0.9rem;
   color: #1e293b;
-  display: flex;
-  flex-direction: ${props => props.$variant === 'inline' ? 'row' : 'column'};
-  align-items: ${props => props.$variant === 'inline' ? 'center' : 'flex-start'};
-  gap: ${props => props.$variant === 'inline' ? '8px' : '6px'};
   cursor: pointer;
+  background: ${(props) =>
+    props.$variant === 'inline' ? 'transparent' : '#ffffff'};
+  border: ${(props) =>
+    props.$variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
+  border-radius: 10px;
   transition: all 0.2s ease;
-  border: ${props => props.$variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
-  margin-top: ${props => props.$variant === 'inline' ? '0' : 'auto'};
 
   &:hover {
-    border-color: ${props => props.$variant === 'inline' ? 'transparent' : '#2563eb'};
-    box-shadow: ${props => props.$variant === 'inline' ? 'none' : '0 4px 12px rgba(37, 99, 235, 0.1)'};
+    border-color: ${(props) =>
+      props.$variant === 'inline' ? 'transparent' : '#2563eb'};
+    box-shadow: ${(props) =>
+      props.$variant === 'inline'
+        ? 'none'
+        : '0 4px 12px rgba(37, 99, 235, 0.1)'};
 
     .navigation-icon {
       transform: translateX(4px);

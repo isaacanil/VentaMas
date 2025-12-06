@@ -1,8 +1,7 @@
 export interface Batch {
-  id: string;  // Document ID
-  productId: string;  // Reference to the Product
+  id: string; // Document ID
+  productId: string; // Reference to the Product
   shortName: string;
-  expirationDate?: Date;  // Optional
+  expirationDate?: Date; // Optional
   initialCount: number;
-  }
-  
+}

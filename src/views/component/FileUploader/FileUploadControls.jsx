@@ -5,16 +5,16 @@ import UploadButton from './UploadButton';
 
 const { Option } = Select;
 
-const FileUploadControls = ({ 
-  fileType, 
-  setFileType, 
-  handleFileInput, 
-  fileTypes = [], 
-  fileTypeLabels = {}, 
+const FileUploadControls = ({
+  fileType,
+  setFileType,
+  handleFileInput,
+  fileTypes = [],
+  fileTypeLabels = {},
   title = 'Adjuntar archivo',
   acceptedFileTypes = null,
   compact = false,
-  alwaysShowTypeSelector = false
+  alwaysShowTypeSelector = false,
 }) => {
   if (!handleFileInput) {
     return null;
@@ -23,13 +23,13 @@ const FileUploadControls = ({
   return (
     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
       {(fileTypes.length > 1 || alwaysShowTypeSelector) && (
-        <Form.Item label=""  style={{ marginBottom: 0 }}>
+        <Form.Item label="" style={{ marginBottom: 0 }}>
           <Select
             value={fileType}
-            style={{ width: 120 }}
-            onChange={value => setFileType(value)}
+            style={{ width: '120px' }}
+            onChange={(value) => setFileType(value)}
           >
-            {fileTypes.map(type => (
+            {fileTypes.map((type) => (
               <Option key={type} value={type}>
                 {fileTypeLabels[type] || type}
               </Option>
@@ -37,12 +37,9 @@ const FileUploadControls = ({
           </Select>
         </Form.Item>
       )}
-      <Form.Item 
-        label={compact ? null : title} 
-        style={{ marginBottom: 0 }}
-      >
-        <UploadButton 
-          onFileInput={handleFileInput} 
+      <Form.Item label={compact ? null : title} style={{ marginBottom: 0 }}>
+        <UploadButton
+          onFileInput={handleFileInput}
           acceptedFileTypes={acceptedFileTypes}
           buttonText={compact ? title : 'Cargar'}
         />

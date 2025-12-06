@@ -2,11 +2,18 @@ import { createChart, HistogramSeries } from 'lightweight-charts';
 import React, { useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 
+import { toMillis } from '@/utils/date/toMillis';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-// Helper to format UNIX seconds to date string YYYY-MM-DD
-const formatDate = (seconds) => {
-  const date = new Date(seconds * 1000);
+// Helper to format a date-like value to YYYY-MM-DD (Business Day format)
+const formatDate = (dateLike) => {
+  const millis = toMillis(dateLike);
+  if (!Number.isFinite(millis)) {
+    return null;
+  }
+
+  const date = new Date(millis);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -15,9 +22,16 @@ const formatDate = (seconds) => {
 
 // Accumulate expenses by date
 const accumulateExpenseData = (expenses) => {
-  return expenses.reduce((acc, { expense }) => {
-    const dateKey = formatDate(expense.dates.expenseDate);
-    acc[dateKey] = (acc[dateKey] || 0) + expense.amount;
+  return expenses.reduce((acc, entry = {}) => {
+    const expense = entry.expense ?? entry;
+    const dateKey = formatDate(expense?.dates?.expenseDate);
+
+    if (!dateKey) {
+      return acc;
+    }
+
+    const amount = Number(expense?.amount) || 0;
+    acc[dateKey] = (acc[dateKey] || 0) + amount;
     return acc;
   }, {});
 };
@@ -28,10 +42,11 @@ export const DailyExpenseBarChart = ({ expenses }) => {
   const seriesRef = useRef(null);
 
   const expensesByDay = useMemo(() => accumulateExpenseData(expenses), [expenses]);
-  const barData = useMemo(
-    () => Object.entries(expensesByDay).map(([date, total]) => ({ time: date, value: total })),
-    [expensesByDay]
-  );
+  const barData = useMemo(() => {
+    return Object.entries(expensesByDay)
+      .map(([date, total]) => ({ time: date, value: total }))
+      .sort((a, b) => (a.time > b.time ? 1 : -1));
+  }, [expensesByDay]);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;

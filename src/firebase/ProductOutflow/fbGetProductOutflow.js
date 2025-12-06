@@ -1,29 +1,41 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore"
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
-import { db } from "../firebaseconfig"
+import { db } from '../firebaseconfig';
 /* */
-export const fbGetProductOutflow = ({user, setOutflowList, setOutflowListLoader}) => {
-    if(!user?.businessID) return
-   
-    const productOutflowRef = collection(db,"businesses", user.businessID, 'productOutflow')
+export const fbGetProductOutflow = ({
+  user,
+  setOutflowList,
+  setOutflowListLoader,
+}) => {
+  if (!user?.businessID) return;
 
-    const q = query(productOutflowRef, where("isDeleted", "!=", true))
+  const productOutflowRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'productOutflow',
+  );
 
-    setOutflowListLoader(true)
-    onSnapshot(q, (snapshot) => {
-        if(snapshot.empty) {
-            setOutflowList([])
-            setOutflowListLoader(false)
-            return
-        }
-        const productOutflowArray = snapshot.docs.map(doc => doc.data())
-        setOutflowList(productOutflowArray)
-        setTimeout(() => {
-            setOutflowListLoader(false)
-        }, 1000)
-   
-    } , error => {
-        // maneja el error aquí
-        console.error("Error al leer de Firestore: ", error);
-    })
-}
+  const q = query(productOutflowRef, where('isDeleted', '!=', true));
+
+  setOutflowListLoader(true);
+  onSnapshot(
+    q,
+    (snapshot) => {
+      if (snapshot.empty) {
+        setOutflowList([]);
+        setOutflowListLoader(false);
+        return;
+      }
+      const productOutflowArray = snapshot.docs.map((doc) => doc.data());
+      setOutflowList(productOutflowArray);
+      setTimeout(() => {
+        setOutflowListLoader(false);
+      }, 1000);
+    },
+    (error) => {
+      // maneja el error aquí
+      console.error('Error al leer de Firestore: ', error);
+    },
+  );
+};

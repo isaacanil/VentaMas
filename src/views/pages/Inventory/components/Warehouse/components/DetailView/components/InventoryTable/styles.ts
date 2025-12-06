@@ -17,13 +17,12 @@ const iconButtonStyles = `
 `;
 
 export const Container = styled.div`
-  margin-bottom: 24px;
-  min-height: 400px;
   display: grid;
   grid-template-rows: min-content min-content 1fr;
-
-  border-radius: 8px;
+  min-height: 400px;
+  margin-bottom: 24px;
   background-color: #fff;
+  border-radius: 8px;
 `;
 
 export const Title = styled.h2`
@@ -33,22 +32,35 @@ export const Title = styled.h2`
 `;
 
 export const TitleSection = styled.div`
-  /* padding: 1em 0; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+export const TitleActions = styled.div`
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+export const ToolbarButton = styled(Button)`
+  ${iconButtonStyles};
 `;
 
 export const SearchContainer = styled(Form)`
   display: grid;
   grid-template-columns: repeat(5, min-content);
-  align-items: end;
   gap: 16px;
+  align-items: end;
 `;
 
 export const SearchInput = styled(Input)`
   width: 240px;
 
   .ant-input-prefix {
-    color: #8c8c8c;
     margin-right: 8px;
+    color: #8c8c8c;
 
     svg {
       font-size: 14px;
@@ -62,13 +74,14 @@ export const StyledDatePicker = styled(DatePicker)`
 
 export const ClearButton = styled(Button)`
   ${iconButtonStyles};
+
   background: #f5f5f5;
   border: 1px solid #d9d9d9;
-  
+
   &:hover {
+    color: #ff4d4f;
     background: #e8e8e8;
     border-color: #d9d9d9;
-    color: #ff4d4f;
   }
 `;
 
@@ -82,14 +95,14 @@ export const AdvancedFilterButton = styled(Button)`
 
 export const ActionContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
   gap: 6px;
+  justify-content: flex-end;
 `;
 
 export const ActionButton = styled(Button)`
   &.ant-btn {
     padding: 4px 8px;
-    
+
     &:hover {
       background-color: #f5f5f5;
     }
@@ -98,18 +111,18 @@ export const ActionButton = styled(Button)`
 
 export const MenuItemContent = styled.div`
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 2px 0;
-  
+
   .anticon {
     font-size: 14px;
   }
 `;
 
 export const ExpirationDateText = styled.span<{ $expired: boolean }>`
-  color: ${({ $expired }) => ($expired ? '#cf1322' : 'inherit')};
   font-weight: ${({ $expired }) => ($expired ? 600 : 400)};
+  color: ${({ $expired }) => ($expired ? '#cf1322' : 'inherit')};
 `;
 
 export const FilterModalContent = styled.div`
@@ -137,7 +150,7 @@ export const FilterSelectContainer = styled.div`
 `;
 
 export const MutedText = styled.span`
-  color: #8c8c8c;
-  font-size: 0.9em;
   display: inline-block;
+  font-size: 0.9em;
+  color: #8c8c8c;
 `;

@@ -1,23 +1,24 @@
-import { 
-  faHome, 
-  faCashRegister, 
-  faShoppingCart, 
-  faCube, 
-  faFileText, 
+import {
+  faHome,
+  faCashRegister,
+  faShoppingCart,
+  faCube,
+  faFileText,
   faCog,
   faBoxesStacked,
-  faWarehouse
-} from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
-import styled from 'styled-components'
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import styled from 'styled-components';
 
-import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent'
-import { Sidebar } from './components/Menu/Nav'
+import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent';
+import { Sidebar } from './components/Menu/Nav';
 
-export const HomeScreen = () => {  const items = [
+export const HomeScreen = () => {
+  const items = [
     {
-      icon: <FontAwesomeIcon icon={faHome}/>,
+      icon: <FontAwesomeIcon icon={faHome} />,
       label: 'Inicio',
     },
     {
@@ -29,33 +30,33 @@ export const HomeScreen = () => {  const items = [
       label: 'Compras',
     },
     {
-      icon: <FontAwesomeIcon icon={faCube}/>,
+      icon: <FontAwesomeIcon icon={faCube} />,
       label: 'Inventario',
     },
     {
-      icon: <FontAwesomeIcon icon={faBoxesStacked}/> ,
+      icon: <FontAwesomeIcon icon={faBoxesStacked} />,
       label: 'Control de Inventario',
     },
     {
-      icon: <FontAwesomeIcon icon={faWarehouse}/> ,
+      icon: <FontAwesomeIcon icon={faWarehouse} />,
       label: 'Almacenes',
     },
     {
       icon: <FontAwesomeIcon icon={faFileText} />,
-      label: 'Registro'
+      label: 'Registro',
     },
     {
       icon: <FontAwesomeIcon icon={faCog} />,
       label: 'Configuración',
     },
-  ]
+  ];
   return (
     <Container>
       <Sidebar items={items}></Sidebar>
       <HomeScreenContent />
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-display: flex;
-`
+  display: flex;
+`;

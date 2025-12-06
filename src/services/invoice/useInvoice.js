@@ -1,14 +1,14 @@
-import { useCallback, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-import { GenericClient } from "../../features/clientCart/clientCartSlice";
-import { getCashCountStrategy } from "../../notification/cashCountNotification/cashCountNotificacion";
+import { GenericClient } from '../../features/clientCart/clientCartSlice';
+import { getCashCountStrategy } from '../../notification/cashCountNotification/cashCountNotificacion';
 
 import {
   submitInvoice,
   waitForInvoiceResult,
   generateIdempotencyKey,
-} from "./invoice.service";
+} from './invoice.service';
 
 const simulateDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -21,7 +21,9 @@ const buildTestModeInvoice = async ({
   invoiceComment,
 }) => {
   const now = Date.now();
-  const mockNcfCode = taxReceiptEnabled ? `TEST-${ncfType || "NCF"}-${now}` : null;
+  const mockNcfCode = taxReceiptEnabled
+    ? `TEST-${ncfType || 'NCF'}-${now}`
+    : null;
   const mockClient = client && client.id ? client : GenericClient;
 
   const invoice = {
@@ -29,9 +31,9 @@ const buildTestModeInvoice = async ({
     id: cart?.id || `TEST-INVOICE-${now}`,
     NCF: mockNcfCode,
     client: mockClient,
-    cashCountId: "test-cash-count-id",
+    cashCountId: 'test-cash-count-id',
     createdAt: new Date(now).toISOString(),
-    status: "test-preview",
+    status: 'test-preview',
     timestamp: now,
     testMode: true,
   };
@@ -55,7 +57,38 @@ const buildTestModeInvoice = async ({
 
 /** ---- Utilidades de manejo de errores / cash count ---- */
 
-const CASH_COUNT_REGEX = /cashcount[-\s]?(none|closing|closed)/i;
+const CASH_COUNT_REGEX =
+  /cash[\s_-]*count(?:[\s_-]*(?:status|state|is|=))?[\s_-]*([a-z_]+)/i;
+
+const normalizeCashCountState = (rawState) => {
+  if (!rawState) return null;
+  const normalized = rawState.replace(/[^a-z]/gi, '').toLowerCase();
+  if (!normalized) return null;
+
+  if (
+    normalized === 'none' ||
+    normalized.startsWith('noopen') ||
+    normalized.startsWith('notfound') ||
+    normalized.startsWith('notopen') ||
+    normalized.startsWith('missing') ||
+    normalized.startsWith('absent') ||
+    normalized.startsWith('without') ||
+    normalized.startsWith('undefined')
+  ) {
+    return 'none';
+  }
+  if (normalized.startsWith('closing')) {
+    return 'closing';
+  }
+  if (normalized.startsWith('closed') || normalized === 'close') {
+    return 'closed';
+  }
+  if (normalized.startsWith('open')) {
+    return 'open';
+  }
+
+  return null;
+};
 
 const safeAssign = (error, key, value) => {
   if (!error || value === undefined) return;
@@ -72,23 +105,31 @@ const extractCashCountState = (err) => {
   if (!err) return null;
 
   const rawSegments = [
-    typeof err.message === "string" ? err.message : null,
-    typeof err.details === "string" ? err.details : null,
-    typeof err.code === "string" ? err.code : null,
+    typeof err.message === 'string' ? err.message : null,
+    typeof err.details === 'string' ? err.details : null,
+    typeof err.code === 'string' ? err.code : null,
   ].filter(Boolean);
 
   for (const segment of rawSegments) {
     const match = segment.match(CASH_COUNT_REGEX);
     if (match && match[1]) {
-      return match[1].toLowerCase();
+      const normalized = normalizeCashCountState(match[1]);
+      if (normalized) {
+        return normalized;
+      }
     }
   }
 
   // Heurísticas en español
-  const normalizedSegments = rawSegments.map((segment) => segment.toLowerCase());
-  if (normalizedSegments.some((s) => s.includes("no hay cuadre de caja"))) return "none";
-  if (normalizedSegments.some((s) => s.includes("cuadre de caja cerrado"))) return "closed";
-  if (normalizedSegments.some((s) => s.includes("proceso de cierre"))) return "closing";
+  const normalizedSegments = rawSegments.map((segment) =>
+    segment.toLowerCase(),
+  );
+  if (normalizedSegments.some((s) => s.includes('no hay cuadre de caja')))
+    return 'none';
+  if (normalizedSegments.some((s) => s.includes('cuadre de caja cerrado')))
+    return 'closed';
+  if (normalizedSegments.some((s) => s.includes('proceso de cierre')))
+    return 'closing';
 
   return null;
 };
@@ -100,14 +141,16 @@ export default function useInvoice() {
 
   const shouldRetryWithFreshInvoice = (err) => {
     if (!err) return false;
-    if (err.code !== "invoice-failed") return false;
+    if (err.code !== 'invoice-failed') return false;
     if (!err.reused) return false;
-    const message = [err.message, err.failedTask?.lastError].filter(Boolean).join(" ");
+    const message = [err.message, err.failedTask?.lastError]
+      .filter(Boolean)
+      .join(' ');
     return /value for argument "seconds" is not a valid integer/i.test(message);
   };
 
   const performInvoiceAttempt = useCallback(
-    async (params = {}, attemptLabel = "primary") => {
+    async (params = {}, attemptLabel = 'primary') => {
       let submission = null;
 
       const { signal, ...submissionPayload } = params;
@@ -126,23 +169,23 @@ export default function useInvoice() {
           invoiceMeta: result.invoiceMeta,
           canonical: result.canonical,
           invoiceId: submission.invoiceId,
-          status: result.invoiceMeta?.status || submission.status || "pending",
+          status: result.invoiceMeta?.status || submission.status || 'pending',
           reused: Boolean(submission.reused),
           idempotencyKey: submission.idempotencyKey,
           attempt: attemptLabel,
         };
       } catch (err) {
         if (submission) {
-          safeAssign(err, "invoiceId", submission.invoiceId);
-          safeAssign(err, "idempotencyKey", submission.idempotencyKey);
-          if (typeof err.reused !== "boolean") {
-            safeAssign(err, "reused", Boolean(submission.reused));
+          safeAssign(err, 'invoiceId', submission.invoiceId);
+          safeAssign(err, 'idempotencyKey', submission.idempotencyKey);
+          if (typeof err.reused !== 'boolean') {
+            safeAssign(err, 'reused', Boolean(submission.reused));
           }
         }
         throw err;
       }
     },
-    []
+    [],
   );
 
   const processInvoice = useCallback(
@@ -156,15 +199,15 @@ export default function useInvoice() {
           return {
             invoice: testResult.invoice,
             invoiceId: testResult.invoiceId,
-            invoiceMeta: { status: "test-preview", testMode: true },
-            status: "test-preview",
+            invoiceMeta: { status: 'test-preview', testMode: true },
+            status: 'test-preview',
             reused: false,
             idempotencyKey: null,
-            attempt: "test",
+            attempt: 'test',
           };
         }
 
-        const firstAttempt = await performInvoiceAttempt(params, "primary");
+        const firstAttempt = await performInvoiceAttempt(params, 'primary');
         return firstAttempt;
       } catch (err) {
         const cashCountState = extractCashCountState(err);
@@ -172,7 +215,9 @@ export default function useInvoice() {
           const strategy = getCashCountStrategy(cashCountState, dispatch);
           strategy.handleConfirm();
 
-          const formattedError = new Error("No se puede procesar la factura sin cuadre de caja");
+          const formattedError = new Error(
+            'No se puede procesar la factura sin cuadre de caja',
+          );
           formattedError.code = `cashCount-${cashCountState}`;
           formattedError.invoiceId = err.invoiceId;
           formattedError.idempotencyKey = err.idempotencyKey;
@@ -191,7 +236,7 @@ export default function useInvoice() {
                 ...params,
                 idempotencyKey: `recovery:${generateIdempotencyKey()}`,
               },
-              "recovery"
+              'recovery',
             );
             return recoveryAttempt;
           } catch (recoveryError) {
@@ -206,7 +251,7 @@ export default function useInvoice() {
         setLoading(false);
       }
     },
-    [dispatch, performInvoiceAttempt]
+    [dispatch, performInvoiceAttempt],
   );
 
   return {

@@ -20,7 +20,9 @@ const MAX_PAGE_SIZE = 1000;
 const MIN_PAGE_SIZE = 25;
 
 export const rebuildNcfLedger = onCall(async ({ data }, context) => {
-  const traceId = context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ?? null;
+  const traceId =
+    context.rawRequest?.headers?.['x-cloud-trace-context']?.split('/')?.[0] ??
+    null;
 
   const businessId =
     data?.businessId ||
@@ -45,13 +47,17 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
   const userBusinessId = resolveUserBusinessId(userSnap);
 
   if (!hasGlobalAccess && userBusinessId && userBusinessId !== businessId) {
-    throw new HttpsError('permission-denied', 'Usuario no pertenece a este negocio');
+    throw new HttpsError(
+      'permission-denied',
+      'Usuario no pertenece a este negocio',
+    );
   }
 
   const truncate = data?.truncate === true;
   const dryRun = data?.dryRun === true;
   const requestedPrefixes = normalizePrefixes(data?.prefixes);
-  const startAfterId = typeof data?.startAfterId === 'string' ? data.startAfterId : null;
+  const startAfterId =
+    typeof data?.startAfterId === 'string' ? data.startAfterId : null;
 
   logger.info('rebuildNcfLedger request received', {
     traceId,
@@ -65,7 +71,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
 
   let pageSize = Number(data?.pageSize ?? DEFAULT_PAGE_SIZE);
   if (!Number.isFinite(pageSize)) pageSize = DEFAULT_PAGE_SIZE;
-  pageSize = Math.max(MIN_PAGE_SIZE, Math.min(MAX_PAGE_SIZE, Math.floor(pageSize)));
+  pageSize = Math.max(
+    MIN_PAGE_SIZE,
+    Math.min(MAX_PAGE_SIZE, Math.floor(pageSize)),
+  );
   logger.info('rebuildNcfLedger page size resolved', {
     traceId,
     businessId,
@@ -73,7 +82,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
   });
 
   if (truncate && !dryRun) {
-    const { deleted } = await wipeLedgerPrefixes({ businessId, prefixes: requestedPrefixes });
+    const { deleted } = await wipeLedgerPrefixes({
+      businessId,
+      prefixes: requestedPrefixes,
+    });
     logger.info('rebuildNcfLedger wiped prefixes', {
       traceId,
       businessId,
@@ -82,7 +94,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
     });
   }
 
-  const invoicesRef = db.collection('businesses').doc(businessId).collection('invoices');
+  const invoicesRef = db
+    .collection('businesses')
+    .doc(businessId)
+    .collection('invoices');
   const docIdField = admin.firestore.FieldPath.documentId();
   let query = invoicesRef.orderBy(docIdField).limit(pageSize);
   if (startAfterId) {
@@ -130,7 +145,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
           continue;
         }
 
-        if (requestedPrefixes && !requestedPrefixes.includes(canonical.prefix)) {
+        if (
+          requestedPrefixes &&
+          !requestedPrefixes.includes(canonical.prefix)
+        ) {
           skipped += 1;
           continue;
         }
@@ -150,7 +168,10 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
       } else if (snap.size < pageSize) {
         hasMore = false;
       } else {
-        query = invoicesRef.orderBy(docIdField).startAfter(lastDoc.id).limit(pageSize);
+        query = invoicesRef
+          .orderBy(docIdField)
+          .startAfter(lastDoc.id)
+          .limit(pageSize);
       }
 
       logger.info('rebuildNcfLedger batch completed', {
@@ -177,7 +198,11 @@ export const rebuildNcfLedger = onCall(async ({ data }, context) => {
       userId,
       error: error?.message,
     });
-    throw new HttpsError('internal', 'Fallo reconstruyendo el ledger', error?.message);
+    throw new HttpsError(
+      'internal',
+      'Fallo reconstruyendo el ledger',
+      error?.message,
+    );
   }
 
   logger.info('rebuildNcfLedger finished', {

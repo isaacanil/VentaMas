@@ -2,10 +2,22 @@ import { logger } from 'firebase-functions';
 
 import { Timestamp, db } from '../../../../core/config/firebase.js';
 
-export const logPinAction = async ({ businessID, actor, targetUserId, targetUser, action, reason, module, modules }) => {
+export const logPinAction = async ({
+  businessID,
+  actor,
+  targetUserId,
+  targetUser,
+  action,
+  reason,
+  module,
+  modules,
+}) => {
   if (!businessID) return;
   try {
-    const logsRef = db.collection('businesses').doc(businessID).collection('pinAuthLogs');
+    const logsRef = db
+      .collection('businesses')
+      .doc(businessID)
+      .collection('pinAuthLogs');
     await logsRef.add({
       action,
       reason: reason || null,

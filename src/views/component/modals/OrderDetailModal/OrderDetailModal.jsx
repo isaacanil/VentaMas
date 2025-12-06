@@ -7,65 +7,61 @@ import { Header } from './Header';
 
 const ModalWrapper = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(0 0 0 / 50%);
 `;
 
 const ModalContent = styled.div`
-  background-color: #fff;
+  position: relative;
   width: 80%;
   height: 80%;
-  overflow-y: auto;
   padding: 1rem;
+  overflow-y: auto;
+  background-color: #fff;
   border-radius: 10px;
-  position: relative;
 `;
 
 const CloseButton = styled(Button)`
   position: absolute;
   top: 0;
   right: 0;
+  color: #333;
+  cursor: pointer;
   background-color: transparent;
   border: none;
-  cursor: pointer;
-
-  color: #333;
 `;
 
 export const OrderDetails = ({ order, onClose }) => {
-  const { note }  = order;
+  const { note } = order;
 
   return (
     <ModalWrapper>
-      <ModalContent>         
+      <ModalContent>
         <CloseButton
           title="Cerrar"
           variant="text"
           color="on-gray"
           onClick={onClose}
         />
-        <Header/>
+        <Header />
 
         {/* {Array.isArray(products) && products.length > 0 && products.map(({product})=> (
         
         ))} */}
-     {note && (
-        <NoteSection>
-          <NoteLabel>Nota</NoteLabel>
-          <NoteText>{note}</NoteText>
-        </NoteSection>
-     )}
-     
-          </ModalContent>
-</ModalWrapper>
-  )};
+        {note && (
+          <NoteSection>
+            <NoteLabel>Nota</NoteLabel>
+            <NoteText>{note}</NoteText>
+          </NoteSection>
+        )}
+      </ModalContent>
+    </ModalWrapper>
+  );
+};
 
 const NoteSection = styled.section`
   margin-top: 1rem;

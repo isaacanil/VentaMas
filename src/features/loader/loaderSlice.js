@@ -1,18 +1,18 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   show: false,
-  message: "",
+  message: '',
 };
 
 const loaderSlice = createSlice({
-  name: "loader",
+  name: 'loader',
   initialState,
   reducers: {
     toggleLoader: (state, action) => {
       const { show, message } = action.payload;
       state.show = show;
-      state.message = message || "";
+      state.message = message || '';
     },
   },
 });

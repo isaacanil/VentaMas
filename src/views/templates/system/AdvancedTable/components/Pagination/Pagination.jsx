@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../../constants/icons/icons';
@@ -15,7 +15,10 @@ export const Pagination = ({
   const validPageCount = Math.max(1, pageCount);
 
   // Asegurarse de que currentPage esté dentro de los límites válidos
-  const validCurrentPage = Math.max(0, Math.min(currentPage, validPageCount - 1));
+  const validCurrentPage = Math.max(
+    0,
+    Math.min(currentPage, validPageCount - 1),
+  );
 
   const isFirstPage = validCurrentPage === 0;
   const isLastPage = validCurrentPage === validPageCount - 1;
@@ -40,7 +43,7 @@ export const Pagination = ({
         {validCurrentPage + 1} / {validPageCount}
       </PageCount>
       <PageSwitch
-        onClick={nextPage} 
+        onClick={nextPage}
         disabled={isLastPage}
         aria-label="Página siguiente"
       >
@@ -55,28 +58,22 @@ export const Pagination = ({
         {icons.arrows.AnglesRight}
       </PageSwitch>
     </PaginationContainer>
-  )
-}
+  );
+};
 const PaginationContainer = styled.div`
   display: flex;
   gap: 0.5em;
-  justify-self: center;
-  justify-content: space-between;
   align-items: center;
-
+  justify-content: space-between;
+  justify-self: center;
   height: 100%;
- 
 `;
 
 const PageCount = styled.div`
- 
-
   display: flex;
   justify-content: center;
-`
+`;
 const PageSwitch = styled.button`
- 
-
   cursor: pointer;
   height: 2em;
   width: 2em;
@@ -85,6 +82,7 @@ const PageSwitch = styled.button`
   align-items: center;
   border-radius: 100px;
   border: none;
+
   &:hover:not(:disabled) {
     background-color: #e0e0e0;
   }
@@ -93,17 +91,16 @@ const PageSwitch = styled.button`
     cursor: not-allowed;
     opacity: 0.5;
   }
-  ${props => {
+  ${(props) => {
     switch (props.responsive) {
       case true:
         return `
         @media (max-width: 600px){
           display: none;
         }
-        `
+        `;
       default:
         break;
     }
-  }
-  }
+  }}
 `;

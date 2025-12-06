@@ -37,7 +37,8 @@ export const useCashCountClosingPrompt = () => {
     setDialogConfirm({
       ...dialogConfig,
       isOpen: true,
-      message: 'Tu cuadre de caja está en proceso de cierre. ¿Deseas reabrirlo para continuar trabajando?',
+      message:
+        'Tu cuadre de caja está en proceso de cierre. ¿Deseas reabrirlo para continuar trabajando?',
       onConfirm: async () => {
         const response = await fbCashCountChangeState(cashCount, user, 'open');
 
@@ -47,7 +48,8 @@ export const useCashCountClosingPrompt = () => {
           return;
         }
 
-        const errorMessage = response?.message || 'No se pudo reabrir el cuadre de caja.';
+        const errorMessage =
+          response?.message || 'No se pudo reabrir el cuadre de caja.';
         message.error(errorMessage);
       },
       onCancel: () => {

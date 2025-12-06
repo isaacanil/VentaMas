@@ -1,7 +1,8 @@
-import { icons } from "../../../../../constants/icons/icons";
-import ROUTES_NAME from "../../../../../routes/routesName";
+import { icons } from '../../../../../constants/icons/icons';
+import ROUTES_NAME from '../../../../../routes/routesName';
 
-const { SETTING, USERS, USERS_LIST, USERS_SESSION_LOGS } = ROUTES_NAME.SETTING_TERM;
+const { SETTING, USERS, USERS_LIST, USERS_SESSION_LOGS } =
+  ROUTES_NAME.SETTING_TERM;
 const { AUTHORIZATIONS_LIST } = ROUTES_NAME.AUTHORIZATIONS_TERM;
 
 const admin = [
@@ -25,7 +26,8 @@ const admin = [
     route: AUTHORIZATIONS_LIST,
     group: 'security',
     key: 'authorizations',
-    condition: ({ authorizationFlowEnabled }) => authorizationFlowEnabled === true,
+    condition: ({ authorizationFlowEnabled }) =>
+      authorizationFlowEnabled === true,
   },
   {
     title: 'Configuración',

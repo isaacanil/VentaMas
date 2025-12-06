@@ -2,7 +2,9 @@ import type { ProductStockLike } from '../types';
 
 export const NO_BATCH_VALUE = '__NO_BATCH__';
 
-export const getProductFilterKey = (stock?: ProductStockLike | null): string | null => {
+export const getProductFilterKey = (
+  stock?: ProductStockLike | null,
+): string | null => {
   if (!stock) return null;
   if (stock.productId) return `id-${stock.productId}`;
   if (stock.productCode) return `code-${stock.productCode}`;
@@ -13,10 +15,14 @@ export const getProductFilterKey = (stock?: ProductStockLike | null): string | n
   return null;
 };
 
-export const getProductFilterLabel = (stock?: ProductStockLike | null): string => {
-  return stock?.productName
-    || stock?.product
-    || stock?.productCode
-    || stock?.productId
-    || 'Producto sin nombre';
+export const getProductFilterLabel = (
+  stock?: ProductStockLike | null,
+): string => {
+  return (
+    stock?.productName ||
+    stock?.product ||
+    stock?.productCode ||
+    stock?.productId ||
+    'Producto sin nombre'
+  );
 };

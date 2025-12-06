@@ -38,7 +38,12 @@ export async function fbNormalizeAllBusinessesClients(options = {}) {
       });
     } catch (error) {
       processed += 1;
-      onProgress?.({ processed, total: totalBusinesses, businessID, summary: null });
+      onProgress?.({
+        processed,
+        total: totalBusinesses,
+        businessID,
+        summary: null,
+      });
 
       summaries.push({
         businessID,
@@ -53,4 +58,3 @@ export async function fbNormalizeAllBusinessesClients(options = {}) {
     summaries,
   };
 }
-

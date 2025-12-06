@@ -8,35 +8,43 @@ const { Modal, Typography } = ant;
 const { Text } = Typography;
 
 const PreviewBox = styled.div`
-  border: 1px dashed #d9d9d9;
-  padding: 16px;
-  border-radius: 6px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: 16px;
   background: #fafafa;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
 `;
 
-export const BarcodePreviewModal = ({ visible, onClose, selectedStandard = 'gs1rd', nextItemReference }) => {
+export const BarcodePreviewModal = ({
+  visible,
+  onClose,
+  selectedStandard = 'gs1rd',
+  nextItemReference,
+}) => {
   const { settings } = useBarcodeSettings();
 
-  const countryPrefix = {
-    gs1rd: '746',
-    gs1us: '0',
-    gs1mx: '750',
-    gs1co: '770',
-    gs1ar: '778',
-    gs1cl: '780',
-    gs1pe: '775'
-  }[selectedStandard] || '746';
+  const countryPrefix =
+    {
+      gs1rd: '746',
+      gs1us: '0',
+      gs1mx: '750',
+      gs1co: '770',
+      gs1ar: '778',
+      gs1cl: '780',
+      gs1pe: '775',
+    }[selectedStandard] || '746';
 
-  const previewText = settings?.companyPrefix && nextItemReference
-    ? `${countryPrefix} | ${settings.companyPrefix} | ${nextItemReference} | X`
-    : 'Completa la configuración para ver la previsualización';
+  const previewText =
+    settings?.companyPrefix && nextItemReference
+      ? `${countryPrefix} | ${settings.companyPrefix} | ${nextItemReference} | X`
+      : 'Completa la configuración para ver la previsualización';
 
-  const valueForBarcode = settings?.companyPrefix && nextItemReference
-    ? `${countryPrefix}${settings.companyPrefix}${nextItemReference}`
-    : '-';
+  const valueForBarcode =
+    settings?.companyPrefix && nextItemReference
+      ? `${countryPrefix}${settings.companyPrefix}${nextItemReference}`
+      : '-';
 
   return (
     <Modal
@@ -50,12 +58,15 @@ export const BarcodePreviewModal = ({ visible, onClose, selectedStandard = 'gs1r
         <PreviewBox>
           <Barcode width={1} height={50} value={valueForBarcode} />
         </PreviewBox>
-        <Text type="secondary" style={{ fontFamily: 'monospace', textAlign: 'center' }}>{previewText}</Text>
+        <Text
+          type="secondary"
+          style={{ fontFamily: 'monospace', textAlign: 'center' }}
+        >
+          {previewText}
+        </Text>
       </div>
     </Modal>
   );
 };
 
 export default BarcodePreviewModal;
-
-

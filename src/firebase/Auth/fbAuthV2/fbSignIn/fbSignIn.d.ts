@@ -16,7 +16,9 @@ export type FbSignInResult = {
   activeSessions: unknown[];
 };
 
-export declare const fbSignIn: (user: FbSignInOptions) => Promise<FbSignInResult>;
+export declare const fbSignIn: (
+  user: FbSignInOptions,
+) => Promise<FbSignInResult>;
 export declare const updateAppState: (
   dispatch: unknown,
   userData: FbSignInUser,

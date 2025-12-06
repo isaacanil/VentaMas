@@ -14,21 +14,20 @@ import { useProductHandling } from './hooks/useProductHandling';
 import { getContainerOutline } from './utils/stockTheme';
 import { containerVariants } from './utils/variants';
 
-
 const Container = styled(motion.li)`
-  box-shadow: 2px 2px 10px 2px rgba(0, 0, 0, 0.02);
-  width: 100%;
-  border-radius: var(--border-radius);
+  position: relative;
   display: flex;
   gap: 6px;
+  width: 100%;
+  height: ${({ $imageHiddenRef }) => ($imageHiddenRef ? '60px' : '80px')};
   overflow: hidden;
-  background-color: #ffffff;
-  position: relative;
-  transition: outline 0.4s ease-in-out;
-  height: ${({ imageHiddenRef }) => (imageHiddenRef ? '60px' : '80px')};
-  
+
   /* El outline sólo depende de si está seleccionado o no */
   outline: ${(props) => getContainerOutline(props)};
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 2px 2px 10px 2px rgb(0 0 0 / 2%);
+  transition: outline 0.4s ease-in-out;
 
   &:hover {
     img {
@@ -40,14 +39,14 @@ const Container = styled(motion.li)`
 
 const Content = styled.div`
   display: grid;
-  width: 100%;
   grid-template-rows: 1fr min-content;
+  width: 100%;
 `;
 
 const ProductComponent = memo(({ product }) => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const settingsCart = useSelector(SelectSettingCart) || {};
-  const alertsEnabled = !!(settingsCart.billing?.stockAlertsEnabled);
+  const alertsEnabled = !!settingsCart.billing?.stockAlertsEnabled;
 
   const {
     productState,
@@ -72,13 +71,13 @@ const ProductComponent = memo(({ product }) => {
         initial="hidden"
         animate="visible"
         onClick={handleGetThisProduct}
-        imageHiddenRef={productState.imageHidden}
-        isSelected={isProductInCart}
-        isDisabled={isDisabled}
-        isOutOfStock={isOutOfStock}
-        isLowStock={isLowStock}
-        isCriticalStock={isCriticalStock}
-        hasStrictStock={product?.restrictSaleWithoutStock}
+        $imageHiddenRef={productState.imageHidden}
+        $isSelected={isProductInCart}
+        $isDisabled={isDisabled}
+        $isOutOfStock={isOutOfStock}
+        $isLowStock={isLowStock}
+        $isCriticalStock={isCriticalStock}
+        $hasStrictStock={product?.restrictSaleWithoutStock}
       >
         <ProductImage
           productState={productState}
@@ -107,7 +106,9 @@ const ProductComponent = memo(({ product }) => {
           message="Stock bajo"
           position="bottom"
           isSelected={isProductInCart}
-          show={alertsEnabled && isLowStock && !isOutOfStock && !isCriticalStock}
+          show={
+            alertsEnabled && isLowStock && !isOutOfStock && !isCriticalStock
+          }
           variant="lowStock"
         />
 
@@ -121,12 +122,12 @@ const ProductComponent = memo(({ product }) => {
             productState={productState}
             productInCart={productInCart}
             product={product}
-          price={price}
-          isProductInCart={isProductInCart}
-          isLowStock={isLowStock}
-          isCriticalStock={isCriticalStock}
-          isOutOfStock={isOutOfStock}
-        />
+            price={price}
+            isProductInCart={isProductInCart}
+            isLowStock={isLowStock}
+            isCriticalStock={isCriticalStock}
+            isOutOfStock={isOutOfStock}
+          />
         </Content>
       </Container>
     </Fragment>

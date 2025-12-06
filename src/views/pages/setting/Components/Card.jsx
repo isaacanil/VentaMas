@@ -22,21 +22,23 @@ export const Card = React.forwardRef(CardComponent);
 Card.displayName = 'SettingCard';
 
 const Head = styled.div`
-  
   display: flex;
   gap: 0.6em;
-`
+`;
 const Container = styled(Link)`
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   padding: 16px;
   color: #333;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
   scroll-margin-top: 120px;
-  :hover{
-    text-decoration: none;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+
+  &:hover {
     color: #333;
+    text-decoration: none;
     transform: translateY(-2px);
   }
 
@@ -44,32 +46,24 @@ const Container = styled(Link)`
     box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
     transform: translateY(-2px);
   }
-
 `;
 const CardWrapper = styled.div`
-  background-color: #fff;
- 
   color: #333;
-  
+  background-color: #fff;
 `;
 
 const Title = styled.span`
-  font-size: 16px;
-    font-weight: 600;
+  display: block;
   margin-bottom: 6px;
-    display: block;
-
+  font-size: 16px;
+  font-weight: 600;
 `;
 
 const Description = styled.p`
+  display: block;
   font-size: 14px;
-    display: block;
-    color: #666;
+  color: #666;
 `;
-
-
-
-
 
 const Icon = styled.div`
   margin-right: 8px;

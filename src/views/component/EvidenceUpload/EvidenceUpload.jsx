@@ -6,7 +6,7 @@ import {
   revokeLocalURL,
   isImageFile,
   isPDFFile,
-  getFileTypeFromUrl
+  getFileTypeFromUrl,
 } from '../../../utils/fileUtils';
 
 import DragOverlay from './DragOverlay';
@@ -15,13 +15,12 @@ import FileUploadControls from './FileUploadControls';
 import ImageLightbox from './ImageLightbox';
 import PreviewContent from './PreviewContent';
 
-
 const EvidenceUpload = ({
   files = [],
   attachmentUrls = [],
   onAddFiles = null,
   onRemoveFiles = null,
-  showFileList = true
+  showFileList = true,
 }) => {
   const [fileType, setFileType] = useState('receipts');
   const [isDragging, setIsDragging] = useState(false);
@@ -65,12 +64,12 @@ const EvidenceUpload = ({
   };
 
   const addFiles = (newFiles) => {
-    const filesWithType = newFiles.map(file => ({
+    const filesWithType = newFiles.map((file) => ({
       file,
       type: fileType,
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
-      isLocal: true // Agregamos esta bandera para identificar archivos locales
+      isLocal: true, // Agregamos esta bandera para identificar archivos locales
     }));
     onAddFiles(filesWithType);
     message.success(`${newFiles.length} archivo(s) agregado(s)`);
@@ -84,25 +83,25 @@ const EvidenceUpload = ({
     const imageFiles = [];
 
     // Archivos locales
-    files.forEach(file => {
+    files.forEach((file) => {
       if (isImageFile(file.name)) {
         imageFiles.push({
           src: getLocalURL(file.file),
           title: file.name,
-          description: `Tipo: ${file.type}`
+          description: `Tipo: ${file.type}`,
         });
       }
     });
 
     // Solo archivos remotos de Firebase
     attachmentUrls
-      .filter(file => file.url?.includes('firebasestorage.googleapis.com'))
-      .forEach(file => {
+      .filter((file) => file.url?.includes('firebasestorage.googleapis.com'))
+      .forEach((file) => {
         if (isImageFile(file.name)) {
           imageFiles.push({
             src: file.url,
             title: file.name,
-            description: `Tipo: ${file.type}`
+            description: `Tipo: ${file.type}`,
           });
         }
       });
@@ -112,21 +111,23 @@ const EvidenceUpload = ({
 
   const allFiles = useMemo(() => {
     // Solo mapeamos los archivos locales con su vista previa
-    const localFiles = (files || []).map(file => ({
+    const localFiles = (files || []).map((file) => ({
       ...file,
       isLocal: true,
-      preview: file.file ? getLocalURL(file.file) : null
+      preview: file.file ? getLocalURL(file.file) : null,
     }));
 
     // Solo incluimos archivos remotos que ya están en Firebase
     const remoteFiles = (attachmentUrls || [])
-      .filter(attachment => attachment.url?.includes('firebasestorage.googleapis.com'))
-      .map(attachment => ({
-          id: attachment.id || Math.random().toString(36).substr(2, 9),
-          name: attachment.name || 'Archivo sin nombre',
+      .filter((attachment) =>
+        attachment.url?.includes('firebasestorage.googleapis.com'),
+      )
+      .map((attachment) => ({
+        id: attachment.id || Math.random().toString(36).substr(2, 9),
+        name: attachment.name || 'Archivo sin nombre',
         type: attachment.type || getFileTypeFromUrl(attachment.url),
         url: attachment.url,
-          isLocal: false
+        isLocal: false,
       }));
 
     return [...localFiles, ...remoteFiles];
@@ -136,32 +137,36 @@ const EvidenceUpload = ({
     // Cleanup URLs when component unmounts
     return () => {
       allFiles
-        .filter(file => file.isLocal && file.preview)
-        .forEach(file => {
+        .filter((file) => file.isLocal && file.preview)
+        .forEach((file) => {
           revokeLocalURL(file.preview);
         });
     };
   }, [allFiles]);
 
-  const handlePreview = useCallback((file) => {
-    if (!file) return;
+  const handlePreview = useCallback(
+    (file) => {
+      if (!file) return;
 
-    const isImage = isImageFile(file.name);
-    const isPDF = isPDFFile(file.name);
+      const isImage = isImageFile(file.name);
+      const isPDF = isPDFFile(file.name);
 
-    if (isImage) {
-      const images = getImageFiles();
-      const index = images.findIndex(img =>
-        img.title === file.name &&
-        img.src === (file.url || (file.file && getLocalURL(file.file)))
-      );
-      setLightboxIndex(Math.max(0, index));
-      setLightboxOpen(true);
-    } else if (isPDF) {
-      setPreviewFile(file);
-      setPreviewVisible(true);
-    }
-  }, [getImageFiles]);
+      if (isImage) {
+        const images = getImageFiles();
+        const index = images.findIndex(
+          (img) =>
+            img.title === file.name &&
+            img.src === (file.url || (file.file && getLocalURL(file.file))),
+        );
+        setLightboxIndex(Math.max(0, index));
+        setLightboxOpen(true);
+      } else if (isPDF) {
+        setPreviewFile(file);
+        setPreviewVisible(true);
+      }
+    },
+    [getImageFiles],
+  );
 
   return (
     <div>
@@ -199,7 +204,7 @@ const EvidenceUpload = ({
       <DragOverlay
         isDragging={isDragging}
         onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
         onDragLeave={(e) => {
           e.preventDefault();
           if (e.relatedTarget === null) {
@@ -211,6 +216,5 @@ const EvidenceUpload = ({
     </div>
   );
 };
-
 
 export default EvidenceUpload;

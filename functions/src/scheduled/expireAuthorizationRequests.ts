@@ -23,7 +23,10 @@ const shouldExpire = (data: any): boolean => {
     if (!Number.isNaN(parsed)) {
       expiresMillis = parsed > 1e12 ? parsed : parsed * 1000;
     }
-  } else if (typeof expiresAt === 'object' && typeof expiresAt?.seconds === 'number') {
+  } else if (
+    typeof expiresAt === 'object' &&
+    typeof expiresAt?.seconds === 'number'
+  ) {
     expiresMillis = expiresAt.seconds * 1000;
   }
 
@@ -57,6 +60,5 @@ export const expireAuthorizationRequests = onSchedule(
     }
 
     await Promise.allSettled(updates);
-  }
+  },
 );
-

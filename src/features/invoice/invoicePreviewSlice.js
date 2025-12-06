@@ -22,7 +22,8 @@ export const invoicePreviewSlice = createSlice({
   },
 });
 
-export const { openInvoicePreviewModal, closeInvoicePreviewModal } = invoicePreviewSlice.actions;
+export const { openInvoicePreviewModal, closeInvoicePreviewModal } =
+  invoicePreviewSlice.actions;
 
 export const selectInvoiceData = (state) => state.invoicePreview.data;
 export const selectInvoicePreview = (state) => state.invoicePreview;

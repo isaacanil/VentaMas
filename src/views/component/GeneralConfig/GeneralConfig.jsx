@@ -5,7 +5,7 @@ import {
   faInfoCircle,
   faQuestionCircle, // Add icon for Help/Other group
   faKey,
-  faWarehouse
+  faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
@@ -15,7 +15,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
-import { userAccess } from '../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../hooks/abilities/useAbilities';
 import ROUTES_NAME from '../../../routes/routesName';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { Nav } from '../../templates/system/Nav/Nav';
@@ -24,7 +24,8 @@ import { GeneralConfigSearch } from './components/Search/GeneralConfigSearch';
 // Import the factory instead of the direct selector
 
 // Create a specific selector instance using the factory
-const selectPreviousRouteIgnoringConfig = makeSelectPreviousRelevantRoute('/general-config');
+const selectPreviousRouteIgnoringConfig =
+  makeSelectPreviousRelevantRoute('/general-config');
 
 const TAB_ROUTES = {
   billing: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING,
@@ -39,7 +40,8 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   {
     key: 'business',
     label: 'Datos de la Empresa',
-    description: 'Mantén actualizados los datos principales de tu organización.',
+    description:
+      'Mantén actualizados los datos principales de tu organización.',
     tab: 'business',
     route: TAB_ROUTES.business,
     category: 'Pantalla',
@@ -156,10 +158,10 @@ const SearchHighlightStyles = createGlobalStyle`
   }
 
   .config-search-highlight {
-    box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
-    border-radius: 12px;
     outline: 2px solid var(--primary-color, #1677ff);
     outline-offset: 0;
+    border-radius: 12px;
+    box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
     transition: box-shadow 0.25s ease;
   }
 `;
@@ -174,12 +176,20 @@ export default function GeneralConfig() {
   const scrollRetryRef = useRef(null);
   const previousRelevantRoute = useSelector(selectPreviousRouteIgnoringConfig);
   const user = useSelector(selectUser);
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
   const abilityRules = abilities?.rules || [];
   const hasAbilityData = abilityRules.length > 0;
-  const isCashierRole = ['cashier', 'specialCashier1', 'specialCashier2'].includes(user?.role);
-  const canManageBusinessSettings = hasAbilityData && (abilities.can('manage', 'Business') || abilities.can('manage', 'business-settings'));
-  const shouldBlockGeneralConfig = isCashierRole || (hasAbilityData && !canManageBusinessSettings);
+  const isCashierRole = [
+    'cashier',
+    'specialCashier1',
+    'specialCashier2',
+  ].includes(user?.role);
+  const canManageBusinessSettings =
+    hasAbilityData &&
+    (abilities.can('manage', 'Business') ||
+      abilities.can('manage', 'business-settings'));
+  const shouldBlockGeneralConfig =
+    isCashierRole || (hasAbilityData && !canManageBusinessSettings);
 
   const clearScrollRetry = useCallback(() => {
     if (scrollRetryRef.current) {
@@ -217,7 +227,9 @@ export default function GeneralConfig() {
     };
 
     if (element.dataset.configExpandable === 'true') {
-      const header = element.querySelector('[data-role="config-section-header"]');
+      const header = element.querySelector(
+        '[data-role="config-section-header"]',
+      );
       if (header && header.getAttribute('data-expanded') === 'false') {
         header.click();
         window.setTimeout(emphasize, 220);
@@ -229,30 +241,33 @@ export default function GeneralConfig() {
     return true;
   }, []);
 
-  const startScrollRetry = useCallback((sectionId) => {
-    if (!sectionId) {
-      pendingTargetRef.current = null;
-      return;
-    }
-
-    if (scrollToSection(sectionId)) {
-      pendingTargetRef.current = null;
-      clearScrollRetry();
-      return;
-    }
-
-    clearScrollRetry();
-    let attempts = 0;
-    const maxAttempts = 20;
-
-    scrollRetryRef.current = window.setInterval(() => {
-      attempts += 1;
-      if (scrollToSection(sectionId) || attempts >= maxAttempts) {
-        clearScrollRetry();
+  const startScrollRetry = useCallback(
+    (sectionId) => {
+      if (!sectionId) {
         pendingTargetRef.current = null;
+        return;
       }
-    }, 150);
-  }, [clearScrollRetry, scrollToSection]);
+
+      if (scrollToSection(sectionId)) {
+        pendingTargetRef.current = null;
+        clearScrollRetry();
+        return;
+      }
+
+      clearScrollRetry();
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      scrollRetryRef.current = window.setInterval(() => {
+        attempts += 1;
+        if (scrollToSection(sectionId) || attempts >= maxAttempts) {
+          clearScrollRetry();
+          pendingTargetRef.current = null;
+        }
+      }, 150);
+    },
+    [clearScrollRetry, scrollToSection],
+  );
 
   useEffect(() => {
     if (shouldBlockGeneralConfig) {
@@ -270,7 +285,12 @@ export default function GeneralConfig() {
     }
 
     if (currentPath.includes('/general-config/users')) {
-      navigate(`${ROUTES_NAME.SETTING_TERM.USERS}/${ROUTES_NAME.SETTING_TERM.USERS_LIST}`, { replace: true });
+      navigate(
+        `${ROUTES_NAME.SETTING_TERM.USERS}/${ROUTES_NAME.SETTING_TERM.USERS_LIST}`,
+        {
+          replace: true,
+        },
+      );
       return;
     }
 
@@ -287,9 +307,12 @@ export default function GeneralConfig() {
       setActiveTab('authorization');
     } else if (currentPath.includes('app-info')) {
       setActiveTab('appInfo');
-    } else if (currentPath.includes('/general-config')) { // Default case if directly on /general-config
+    } else if (currentPath.includes('/general-config')) {
+      // Default case if directly on /general-config
       setActiveTab('billing');
-      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING, { replace: true });
+      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING, {
+        replace: true,
+      });
     }
   }, [canManageBusinessSettings, currentPath, navigate]);
 
@@ -299,70 +322,77 @@ export default function GeneralConfig() {
     navigate(targetPath);
   };
 
-  const handleTabChange = useCallback((key) => {
-    const targetRoute = TAB_ROUTES[key] || TAB_ROUTES.billing;
-    navigate(targetRoute);
-  }, [navigate]);
-
+  const handleTabChange = useCallback(
+    (key) => {
+      const targetRoute = TAB_ROUTES[key] || TAB_ROUTES.billing;
+      navigate(targetRoute);
+    },
+    [navigate],
+  );
 
   // Update menuItems: change group for appInfo and keep labelled grouping
-  const menuItems = useMemo(() => ([
-    {
-      key: 'business',
-      icon: <FontAwesomeIcon icon={faBuilding} />,
-      label: 'Datos de la Empresa',
-    },
-    {
-      key: 'inventory',
-      icon: <FontAwesomeIcon icon={faWarehouse} />,
-      label: 'Inventario',
-      group: 'basic',
-      groupLabel: 'Configuración Básica',
-      groupType: 'labelled'
-    },
-    {
-      key: 'billing',
-      icon: <FontAwesomeIcon icon={faCreditCard} />,
-      label: 'Ventas y Facturación',
-      group: 'basic',
-      groupLabel: 'Configuración Básica',
-      groupType: 'labelled'
-    },
-    {
-      key: 'taxReceipt',
-      icon: <FontAwesomeIcon icon={faFileInvoice} />,
-      label: 'Comprobante Fiscal',
-      group: 'basic',
-      groupLabel: 'Configuración Básica',
-      groupType: 'labelled'
-    },
-    {
-      key: 'authorization',
-      icon: <FontAwesomeIcon icon={faKey} />,
-      label: 'Flujo de Autorizaciones',
-      group: 'advanced',
-      groupLabel: 'Configuración Avanzada',
-      groupType: 'labelled'
-    },
-    // Change group for appInfo
-    {
-      key: 'appInfo',
-      icon: <FontAwesomeIcon icon={faInfoCircle} />,
-      label: 'Info de la Aplicación',
-      group: 'help', // New group key
-      groupLabel: 'Sistema', // New group label
-      groupIcon: <FontAwesomeIcon icon={faQuestionCircle} />, // Add icon for collapsible header
-      groupType: 'labelled' // Explicitly set or remove to use default collapsible
-    },
-  ]), []);
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'business',
+        icon: <FontAwesomeIcon icon={faBuilding} />,
+        label: 'Datos de la Empresa',
+      },
+      {
+        key: 'inventory',
+        icon: <FontAwesomeIcon icon={faWarehouse} />,
+        label: 'Inventario',
+        group: 'basic',
+        groupLabel: 'Configuración Básica',
+        groupType: 'labelled',
+      },
+      {
+        key: 'billing',
+        icon: <FontAwesomeIcon icon={faCreditCard} />,
+        label: 'Ventas y Facturación',
+        group: 'basic',
+        groupLabel: 'Configuración Básica',
+        groupType: 'labelled',
+      },
+      {
+        key: 'taxReceipt',
+        icon: <FontAwesomeIcon icon={faFileInvoice} />,
+        label: 'Comprobante Fiscal',
+        group: 'basic',
+        groupLabel: 'Configuración Básica',
+        groupType: 'labelled',
+      },
+      {
+        key: 'authorization',
+        icon: <FontAwesomeIcon icon={faKey} />,
+        label: 'Flujo de Autorizaciones',
+        group: 'advanced',
+        groupLabel: 'Configuración Avanzada',
+        groupType: 'labelled',
+      },
+      // Change group for appInfo
+      {
+        key: 'appInfo',
+        icon: <FontAwesomeIcon icon={faInfoCircle} />,
+        label: 'Info de la Aplicación',
+        group: 'help', // New group key
+        groupLabel: 'Sistema', // New group label
+        groupIcon: <FontAwesomeIcon icon={faQuestionCircle} />, // Add icon for collapsible header
+        groupType: 'labelled', // Explicitly set or remove to use default collapsible
+      },
+    ],
+    [],
+  );
 
   const searchEntries = useMemo(() => {
-    const availableTabs = new Set(menuItems.map(item => item.key));
-    return GENERAL_CONFIG_SEARCH_INDEX.filter(entry => availableTabs.has(entry.tab));
+    const availableTabs = new Set(menuItems.map((item) => item.key));
+    return GENERAL_CONFIG_SEARCH_INDEX.filter((entry) =>
+      availableTabs.has(entry.tab),
+    );
   }, [menuItems]);
 
   const searchRecords = useMemo(() => {
-    return searchEntries.map(entry => {
+    return searchEntries.map((entry) => {
       const tokens = [
         normalizeText(entry.label),
         normalizeText(entry.description),
@@ -381,20 +411,23 @@ export default function GeneralConfig() {
     });
   }, [searchEntries]);
 
-  const handleSearchEntrySelect = useCallback((entry) => {
-    if (!entry) return;
+  const handleSearchEntrySelect = useCallback(
+    (entry) => {
+      if (!entry) return;
 
-    pendingTargetRef.current = entry;
-    clearScrollRetry();
+      pendingTargetRef.current = entry;
+      clearScrollRetry();
 
-    if (entry.route && entry.route !== currentPath) {
-      navigate(entry.route);
-    } else if (entry.sectionId) {
-      startScrollRetry(entry.sectionId);
-    } else {
-      pendingTargetRef.current = null;
-    }
-  }, [clearScrollRetry, currentPath, navigate, startScrollRetry]);
+      if (entry.route && entry.route !== currentPath) {
+        navigate(entry.route);
+      } else if (entry.sectionId) {
+        startScrollRetry(entry.sectionId);
+      } else {
+        pendingTargetRef.current = null;
+      }
+    },
+    [clearScrollRetry, currentPath, navigate, startScrollRetry],
+  );
 
   useEffect(() => {
     const target = pendingTargetRef.current;

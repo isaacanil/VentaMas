@@ -1,14 +1,29 @@
-import { CalendarOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Form, Input, InputNumber, Modal, notification } from "antd";
-import { DateTime } from "luxon";
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import styled from "styled-components";
+import {
+  CalendarOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  notification,
+} from 'antd';
+import { DateTime } from 'luxon';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { selectUpdateProductData } from "../../../../../../features/updateProduct/updateProductSlice";
-import { createBatch, updateBatch } from "../../../../../../firebase/warehouse/batchService";
-import DateUtils from "../../../../../../utils/date/dateUtils";
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import {
+  createBatch,
+  updateBatch,
+} from '../../../../../../firebase/warehouse/batchService';
+import DateUtils from '../../../../../../utils/date/dateUtils';
 
 // Styled Components
 const StyledContainer = styled.div`
@@ -17,7 +32,7 @@ const StyledContainer = styled.div`
 
 export const BatchForm = ({
   initialData,
-  mode = "create",
+  mode = 'create',
   justIcon = false,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -27,8 +42,12 @@ export const BatchForm = ({
   const { product } = useSelector(selectUpdateProductData);
   const convertedData = {
     ...initialData,
-    expirationDate: DateUtils.convertTimestampToDayjs(initialData?.expirationDate),
-    manufacturingDate: DateUtils.convertTimestampToDayjs(initialData?.manufacturingDate),
+    expirationDate: DateUtils.convertTimestampToDayjs(
+      initialData?.expirationDate,
+    ),
+    manufacturingDate: DateUtils.convertTimestampToDayjs(
+      initialData?.manufacturingDate,
+    ),
     receivedDate: DateUtils.convertTimestampToDayjs(initialData?.receivedDate),
   };
 
@@ -57,26 +76,29 @@ export const BatchForm = ({
     const batchData = {
       ...initialData,
       ...values,
-      notes: values?.notes || "",
+      notes: values?.notes || '',
       productId: product?.id,
       expirationDate: DateUtils.convertDayjsToTimestamp(values?.expirationDate),
-      manufacturingDate: DateUtils.convertDayjsToTimestamp(values?.manufacturingDate),
-      receivedDate: DateUtils.convertDayjsToTimestamp(values?.receivedDate),    };
+      manufacturingDate: DateUtils.convertDayjsToTimestamp(
+        values?.manufacturingDate,
+      ),
+      receivedDate: DateUtils.convertDayjsToTimestamp(values?.receivedDate),
+    };
 
     try {
-      if (mode === "create") {
+      if (mode === 'create') {
         // Crear un nuevo batch
         await createBatch(user, batchData);
         notification.success({
-          message: "Lote Creado",
-          description: "El lote ha sido creado exitosamente.",
+          message: 'Lote Creado',
+          description: 'El lote ha sido creado exitosamente.',
         });
-      } else if (mode === "update") {
+      } else if (mode === 'update') {
         // Actualizar un batch existente
         await updateBatch(user, batchData);
         notification.success({
-          message: "Lote Actualizado",
-          description: "El lote ha sido actualizado exitosamente.",
+          message: 'Lote Actualizado',
+          description: 'El lote ha sido actualizado exitosamente.',
         });
       }
       setIsModalVisible(false);
@@ -84,8 +106,9 @@ export const BatchForm = ({
     } catch (error) {
       console.error('Error al procesar el lote:', error);
       notification.error({
-        message: "Error",
-        description: "Ocurrió un error al procesar el lote. Por favor, intenta nuevamente.",
+        message: 'Error',
+        description:
+          'Ocurrió un error al procesar el lote. Por favor, intenta nuevamente.',
       });
     } finally {
       setLoading(false);
@@ -94,10 +117,11 @@ export const BatchForm = ({
 
   const onFinishFailed = () => {
     notification.error({
-      message: "Error al Crear/Editar Lote",
-      description: "Por favor, revisa los errores en el formulario.",
-    });  };
-  
+      message: 'Error al Crear/Editar Lote',
+      description: 'Por favor, revisa los errores en el formulario.',
+    });
+  };
+
   const disablePastDates = (current) => {
     return current && current < DateTime.now().startOf('day');
   };
@@ -107,18 +131,16 @@ export const BatchForm = ({
       <Button
         icon={initialData ? <EditOutlined /> : <PlusOutlined />}
         onClick={showModal}
-        type={mode === "create" ? "primary" : "default"}
+        type={mode === 'create' ? 'primary' : 'default'}
       >
-        {!justIcon && (
-          initialData ? "Editar Lote" : "Crear Lote"
-        )}
+        {!justIcon && (initialData ? 'Editar Lote' : 'Crear Lote')}
       </Button>
       <Modal
-        title={initialData ? "Editar Lote" : "Crear Nuevo Lote"}
+        title={initialData ? 'Editar Lote' : 'Crear Nuevo Lote'}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText={initialData ? "Editar" : "Crear"}
+        okText={initialData ? 'Editar' : 'Crear'}
         cancelText="Cancelar"
         okButtonProps={{ loading }}
       >
@@ -133,17 +155,17 @@ export const BatchForm = ({
           >
             {/* Nombre corto del lote */}
             <Form.Item
-              label={"Nombre corto"}
+              label={'Nombre corto'}
               name="shortName"
               help="Ingrese un nombre corto para identificar el Lote."
               rules={[
                 {
                   required: true,
-                  message: "El nombre corto es obligatorio.",
+                  message: 'El nombre corto es obligatorio.',
                 },
                 {
                   min: 2,
-                  message: "El nombre corto debe tener al menos 2 caracteres.",
+                  message: 'El nombre corto debe tener al menos 2 caracteres.',
                 },
               ]}
             >
@@ -152,39 +174,38 @@ export const BatchForm = ({
 
             {/* Fecha de expiración */}
             <Form.Item
-              label={"Fecha de Expiración (opcional)"}
+              label={'Fecha de Expiración (opcional)'}
               name="expirationDate"
               help="Seleccione una fecha de expiración."
-           
             >
               <DatePicker
                 format="DD/MM/YYYY"
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 placeholder="Seleccione una fecha"
                 suffixIcon={<CalendarOutlined />}
                 disabledDate={disablePastDates}
               />
             </Form.Item>
-            
+
             <Form.Item
-              label={"Cantidad"}
+              label={'Cantidad'}
               name="quantity"
               help="Ingrese la cantidad total de productos en el lote."
               rules={[
                 {
                   required: true,
-                  message: "La cantidad es obligatoria.",
+                  message: 'La cantidad es obligatoria.',
                 },
                 {
-                  type: "number",
+                  type: 'number',
                   min: 1,
-                  message: "La cantidad debe ser al menos 1.",
+                  message: 'La cantidad debe ser al menos 1.',
                 },
               ]}
             >
               <InputNumber
                 min={1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 placeholder="Cantidad de productos en el lote"
               />
             </Form.Item>

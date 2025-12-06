@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const WarrantySignature = ({data}) => {
-  const someProductHaveWarranty = data?.products?.some((product) => product?.warranty?.status)
+export const WarrantySignature = ({ data }) => {
+  const someProductHaveWarranty = data?.products?.some(
+    (product) => product?.warranty?.status,
+  );
   if (someProductHaveWarranty) {
     return (
       <SignatureContainer>
@@ -19,8 +21,6 @@ export const WarrantySignature = ({data}) => {
   }
 };
 
-
-
 const SignatureContainer = styled.div`
   display: grid;
   gap: 2em;
@@ -30,8 +30,8 @@ const SignatureContainer = styled.div`
 
 const Line = styled.div`
   width: 100%;
-  border-bottom: 1px solid black;
   padding: 0 10px;
+  border-bottom: 1px solid black;
 `;
 
 const Text = styled.span`

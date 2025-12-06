@@ -1,28 +1,34 @@
-import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
-import * as antd from 'antd'
-import React, { useState, useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import styled from 'styled-components'
+import {
+  EditOutlined,
+  DeleteOutlined,
+  MoreOutlined,
+  PrinterOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
+import * as antd from 'antd';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { store } from '../../../../../../../app/store'
-import { icons } from '../../../../../../../constants/icons/icons'
-import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { useDialog } from '../../../../../../../Context/Dialog'
-import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
-import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
-import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
-import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
-import { filterData } from '../../../../../../../hooks/search/useSearch'
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
-import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
-import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
-import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
+import { store } from '../../../../../../../app/store';
+import { icons } from '../../../../../../../constants/icons/icons';
+import { OPERATION_MODES } from '../../../../../../../constants/modes';
+import { useDialog } from '../../../../../../../Context/Dialog';
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
+import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice';
+import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
+import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct';
+import { filterData } from '../../../../../../../hooks/search/useSearch';
+import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber';
+import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { getTax, getTotalPrice } from '../../../../../../../utils/pricing';
+import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar';
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
+import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
+import StockIndicator from '../../../../../../templates/system/labels/StockIndicator';
 
 const { Button, Dropdown } = antd;
 
@@ -31,26 +37,34 @@ export const ProductsTable = ({ products, searchTerm }) => {
   const user = useSelector(selectUser);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { setDialogConfirm } = useDialog();
-  const [isAtBottom, setIsAtBottom] = useState(false)
-  const [totalsDismissed, setTotalsDismissed] = useState(false)
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [totalsDismissed, setTotalsDismissed] = useState(false);
 
-  const handleDeleteProduct = useCallback((id) => {
-    let docId = id?.product?.id ? id?.product?.id : id?.id
-    setDialogConfirm({
-      title: 'Eliminar producto',
-      isOpen: true,
-      type: 'error',
-      message: '¿Está seguro que desea eliminar este producto?',
-      onConfirm: async () => {
-        const currentUser = selectUser(store.getState());
-        await fbDeleteProduct(currentUser, docId);
-      }
-    })
-  }, [user])
+  const handleDeleteProduct = useCallback(
+    (id) => {
+      let docId = id?.product?.id ? id?.product?.id : id?.id;
+      setDialogConfirm({
+        title: 'Eliminar producto',
+        isOpen: true,
+        type: 'error',
+        message: '¿Está seguro que desea eliminar este producto?',
+        onConfirm: async () => {
+          const currentUser = selectUser(store.getState());
+          await fbDeleteProduct(currentUser, docId);
+        },
+      });
+    },
+    [user],
+  );
 
   const handleUpdateProduct = (product) => {
     dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
+    dispatch(
+      ChangeProductData({
+        product: product,
+        status: OPERATION_MODES.UPDATE.label,
+      }),
+    );
   };
 
   const columns = [
@@ -67,7 +81,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           <ImgCell img={value.img} />
           <span>{value.name}</span>
         </ProductName>
-      )
+      ),
     },
     {
       Header: 'Stock',
@@ -77,7 +91,12 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortableValue: (value) => value.stock,
       minWidth: '80px',
       maxWidth: '140px',
-      cell: ({ value }) => <StockIndicator stock={useFormatNumber(value.stock)} trackInventory={value.trackInventory}></StockIndicator>
+      cell: ({ value }) => (
+        <StockIndicator
+          stock={useFormatNumber(value.stock)}
+          trackInventory={value.trackInventory}
+        ></StockIndicator>
+      ),
     },
     {
       Header: 'Costo',
@@ -86,7 +105,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       accessor: 'cost',
       minWidth: '120px',
       maxWidth: '0.4fr',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>,
     },
     {
       Header: 'Impuesto',
@@ -95,7 +114,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '120px',
       maxWidth: '0.4fr',
       accessor: 'tax',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => <div>{useFormatPrice(value)}</div>,
     },
     {
       Header: 'Precio',
@@ -105,16 +124,18 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '0.4fr',
       align: 'right',
       cell: ({ value }) => {
-        const price = getTotalPrice(value, taxReceiptEnabled)
-        const unit = value?.weightDetail?.weightUnit
-        const isSoldByWeight = value?.weightDetail?.isSoldByWeight
+        const price = getTotalPrice(value, taxReceiptEnabled);
+        const unit = value?.weightDetail?.weightUnit;
+        const isSoldByWeight = value?.weightDetail?.isSoldByWeight;
         if (isSoldByWeight) {
           return (
-            <div>{useFormatPrice(price)} / {unit}</div>
-          )
+            <div>
+              {useFormatPrice(price)} / {unit}
+            </div>
+          );
         }
-        return useFormatPrice(price)
-      }
+        return useFormatPrice(price);
+      },
     },
     {
       Header: 'Facturable',
@@ -122,7 +143,9 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '100px',
       maxWidth: '100px',
       align: 'center',
-      cell: ({ value }) => <div>{value === false && icons.operationModes.hide}</div>
+      cell: ({ value }) => (
+        <div>{value === false && icons.operationModes.hide}</div>
+      ),
     },
     {
       Header: 'Acción',
@@ -136,26 +159,26 @@ export const ProductsTable = ({ products, searchTerm }) => {
         const menu = {
           items: [
             {
-              label: "Editar",
+              label: 'Editar',
               key: 1,
               icon: <EditOutlined />,
-              onClick: () => handleUpdateProduct(value)
+              onClick: () => handleUpdateProduct(value),
             },
             {
-              label: "Imprimir Barcode",
+              label: 'Imprimir Barcode',
               key: 2,
               icon: <PrinterOutlined />,
-              onClick: () => dispatch(toggleBarcodeModal(value))
+              onClick: () => dispatch(toggleBarcodeModal(value)),
             },
             {
-              label: "Eliminar",
+              label: 'Eliminar',
               key: 3,
               icon: <DeleteOutlined />,
               danger: true,
-              onClick: () => handleDeleteProduct(value)
-            }
-          ]
-        }
+              onClick: () => handleDeleteProduct(value),
+            },
+          ],
+        };
 
         return (
           <ButtonGroup>
@@ -163,9 +186,9 @@ export const ProductsTable = ({ products, searchTerm }) => {
               <Button icon={<MoreOutlined />} />
             </Dropdown>
           </ButtonGroup>
-        )
-      }
-    }
+        );
+      },
+    },
   ];
 
   const data = products.map((product) => ({
@@ -183,27 +206,31 @@ export const ProductsTable = ({ products, searchTerm }) => {
   }));
 
   // Totales (filtrados por el término de búsqueda actual)
-  const filteredProducts = useMemo(() => filterData(products, searchTerm), [products, searchTerm])
+  const filteredProducts = useMemo(
+    () => filterData(products, searchTerm),
+    [products, searchTerm],
+  );
   const totals = useMemo(() => {
-    let stock = 0
-    let cost = 0
-    let listPrice = 0
+    let stock = 0;
+    let cost = 0;
+    let listPrice = 0;
     for (const p of filteredProducts) {
-      const qty = Number(p?.stock) || 0
-      const unitCost = Number(p?.pricing?.cost) || 0
+      const qty = Number(p?.stock) || 0;
+      const unitCost = Number(p?.pricing?.cost) || 0;
       // Preferir listPrice; si no hay, usar price como aproximación
-      const unitListPrice = (typeof p?.pricing?.listPrice === 'number' && p.pricing.listPrice)
-      stock += qty
-      cost += qty * unitCost
-      listPrice += qty * unitListPrice
+      const unitListPrice =
+        typeof p?.pricing?.listPrice === 'number' && p.pricing.listPrice;
+      stock += qty;
+      cost += qty * unitCost;
+      listPrice += qty * unitListPrice;
     }
-    return { stock, cost, listPrice }
-  }, [filteredProducts])
+    return { stock, cost, listPrice };
+  }, [filteredProducts]);
 
   // Recibe métricas de scroll del cuerpo de la tabla para ocultar la píldora al llegar abajo
   const handleScrollMetrics = useCallback(({ isAtBottom }) => {
-    setIsAtBottom(!!isAtBottom)
-  }, [])
+    setIsAtBottom(!!isAtBottom);
+  }, []);
 
   return (
     <>
@@ -235,27 +262,27 @@ export const ProductsTable = ({ products, searchTerm }) => {
         </TotalsContainer>
       </FloatingTotals>
     </>
-  )
-}
+  );
+};
 const ProductName = styled.div`
   display: flex;
-  align-items: center;
-  height: 100%;                     
   gap: 1.2em;
-`
+  align-items: center;
+  height: 100%;
+`;
 
 // Totales en el pie de tabla
 const TotalsContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 1em;
+  align-items: center;
   font-weight: 600;
   white-space: nowrap;
-`
+`;
 
 const Divider = styled.span`
-  color: var(--Gray6);
-`
+  color: var(--gray6);
+`;
 
 // Píldora flotante con totales
 const FloatingTotals = styled.div`
@@ -263,30 +290,33 @@ const FloatingTotals = styled.div`
   right: 16px;
   bottom: 50px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
   padding: 8px 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  opacity: ${p => p.$hidden ? 0 : 1};
-  transform: translateY(${p => p.$hidden ? '8px' : '0'});
-  transition: opacity .2s ease, transform .2s ease;
-  pointer-events: ${p => p.$hidden ? 'none' : 'auto'};
-  @media (max-width: 600px) {
+  pointer-events: ${(p) => (p.$hidden ? 'none' : 'auto')};
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+  opacity: ${(p) => (p.$hidden ? 0 : 1)};
+  backdrop-filter: blur(6px);
+  transform: translateY(${(p) => (p.$hidden ? '8px' : '0')});
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  @media (width <= 600px) {
     right: 8px;
     bottom: 8px;
     padding: 6px 10px;
     font-size: 12px;
   }
-`
+`;
 
 // Botón de cerrar con estilo mínimo (reutiliza antd Button)
 const CloseButton = styled(antd.Button)`
   margin-left: 8px;
-  color: var(--Gray6);
-  &:hover {
-    color: var(--Gray3);
+  color: var(--gray6);
+
+  &.ant-btn:hover {
+    color: var(--gray3);
   }
-`
+`;

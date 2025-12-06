@@ -1,13 +1,12 @@
-import { Dropdown, message } from "antd";
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
+import { Dropdown, message } from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { ChangeProductImage } from "../../../../../../features/updateProduct/updateProductSlice";
-import { fbDeleteProductImg } from "../../../../../../firebase/products/productsImg/fbDeleteProductImg";
-import { imgFailed } from "../ImageManager";
-
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { ChangeProductImage } from '../../../../../../features/updateProduct/updateProductSlice';
+import { fbDeleteProductImg } from '../../../../../../firebase/products/productsImg/fbDeleteProductImg';
+import { imgFailed } from '../ImageManager';
 
 export const Gallery = ({ images }) => {
   const user = useSelector(selectUser);
@@ -18,17 +17,16 @@ export const Gallery = ({ images }) => {
       label: 'Seleccionar',
       onClick: () => {
         message.success('Imagen seleccionada');
-        dispatch(ChangeProductImage(image.url))
-        
-      }
+        dispatch(ChangeProductImage(image.url));
+      },
     },
     {
       key: '3',
       label: 'Delete',
       onClick: () => {
         message.info('Delete');
-        fbDeleteProductImg(user, image)
-      }
+        fbDeleteProductImg(user, image);
+      },
     },
   ];
 
@@ -36,58 +34,51 @@ export const Gallery = ({ images }) => {
     <Container>
       {images.map((image) => (
         <Thumbnail key={image.id}>
-          <Dropdown
-            menu={{ items: itemOption(image) }}
-            trigger={['click']}
-          >
+          <Dropdown menu={{ items: itemOption(image) }} trigger={['click']}>
             <ImageContainer>
               <Image
                 preview={false}
                 src={image.url || imgFailed}
-                
                 alt={`Thumbnail ${image}`}
               />
             </ImageContainer>
           </Dropdown>
         </Thumbnail>
       ))}
-
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 10px;
-  margin-top: 20px;
   width: 100%;
+  margin-top: 20px;
 `;
 
 const Thumbnail = styled.div`
-//border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
+
   /* border: 1px solid #ccc;
   padding: 10px;
   text-align: center;
   cursor: pointer;
   */
-
 `;
 const ImageContainer = styled.div`
-    width: 100%;
-    height: 110px;
-  
-  
-    overflow: hidden;
-  `;
+  width: 100%;
+  height: 110px;
+  overflow: hidden;
+`;
 
 const Image = styled.img`
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    object-position: center;
-    ${props => {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  object-position: center;
+  ${(props) => {
     if (props.selectedImage) {
       return `
         border: 1px solid blue;
@@ -98,5 +89,4 @@ const Image = styled.img`
       `;
     }
   }}
-    
-  `;
+`;

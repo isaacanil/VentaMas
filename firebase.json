@@ -1,11 +1,9 @@
 {
   "hosting": [
-    { 
-      "target": "prod",    
+    {
+      "target": "prod",
       "public": "dist",
-      "ignore": [
-        "firebase.json", "**/.*", "**/node_modules/**"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
         {
           "source": "**",
@@ -13,15 +11,11 @@
         }
       ]
     },
-    { 
-      "target": "staging", 
+    {
+      "target": "staging",
       "public": "dist",
-      "ignore": [
-        "firebase.json", "**/.*", "**/node_modules/**"
-      ],
-       "rewrites": [
-        { "source": "**", "destination": "/index.html" }
-      ]
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [{ "source": "**", "destination": "/index.html" }]
     }
   ],
   "firestore": {
@@ -58,10 +52,7 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-    
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
     }
   ]
 }

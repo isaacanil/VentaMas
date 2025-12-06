@@ -1,7 +1,7 @@
 import {
   PlusOutlined,
   ReloadOutlined,
-  FileAddOutlined
+  FileAddOutlined,
 } from '@ant-design/icons';
 import { Button, Badge } from 'antd';
 import React, { useState } from 'react';
@@ -23,23 +23,26 @@ export const ReceiptTableSection = ({
   const [disabledModalVisible, setDisabledModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
-  const disabledReceipts = itemsLocal?.filter(item => item.data?.disabled);
+  const disabledReceipts = itemsLocal?.filter((item) => item.data?.disabled);
 
   const handleRestoreReceipt = (receiptId) => {
-    const newArray = itemsLocal.map(item =>
-      (item.data.id === receiptId)
+    const newArray = itemsLocal.map((item) =>
+      item.data.id === receiptId
         ? { ...item, data: { ...item.data, disabled: false } }
-        : item
+        : item,
     );
     setItemsLocal(newArray);
   };
 
   if (!enabled) return null;
   return (
-    <Wrapper>      <Actions>
+    <Wrapper>
+      {' '}
+      <Actions>
         <Left>
           {/* El botón de comprobantes inactivos se movió a la parte inferior */}
-        </Left>        <Right>
+        </Left>{' '}
+        <Right>
           {onRebuildLedger && (
             <Button
               icon={<ReloadOutlined />}
@@ -60,9 +63,9 @@ export const ReceiptTableSection = ({
               Plantillas
             </Button>
           )}
-          <Button 
-            icon={<FileAddOutlined />} 
-            type="primary" 
+          <Button
+            icon={<FileAddOutlined />}
+            type="primary"
             onClick={() => setAuthModalVisible(true)}
           >
             Autorización
@@ -70,26 +73,26 @@ export const ReceiptTableSection = ({
         </Right>
       </Actions>
       <TableTaxReceipt array={itemsLocal} setData={setItemsLocal} />
-      
       {/* Sección inferior para mostrar el botón de comprobantes inactivos */}
       <BottomActions>
         <Left>
           {disabledReceipts.length > 0 && (
-            <DisabledReceiptsButton onClick={() => setDisabledModalVisible(true)}>
+            <DisabledReceiptsButton
+              onClick={() => setDisabledModalVisible(true)}
+            >
               Ver Comprobantes Inactivos
               <Badge count={disabledReceipts.length} />
             </DisabledReceiptsButton>
           )}
         </Left>
       </BottomActions>
-
-      {/* Modal de comprobantes deshabilitados */}      <DisabledReceiptsModal
+      {/* Modal de comprobantes deshabilitados */}{' '}
+      <DisabledReceiptsModal
         visible={disabledModalVisible}
         onCancel={() => setDisabledModalVisible(false)}
         disabledReceipts={disabledReceipts}
         onRestore={handleRestoreReceipt}
       />
-      
       {/* Modal de autorización de comprobantes */}
       <TaxReceiptAuthorizationModal
         visible={authModalVisible}
@@ -97,10 +100,10 @@ export const ReceiptTableSection = ({
         taxReceipts={itemsLocal}
         onAuthorizationAdded={(updatedReceipt) => {
           // Actualizar el estado local con los datos de la nueva autorización
-          const newArray = itemsLocal.map(item =>
+          const newArray = itemsLocal.map((item) =>
             item.data.id === updatedReceipt.id
               ? { ...item, data: updatedReceipt }
-              : item
+              : item,
           );
           setItemsLocal(newArray);
         }}
@@ -119,8 +122,8 @@ const Actions = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0;
-  border-radius: 8px;
   margin-bottom: 10px;
+  border-radius: 8px;
 `;
 
 const Left = styled.div`
@@ -137,8 +140,8 @@ const BottomActions = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0;
-  border-radius: 8px;
   margin-top: 10px;
+  border-radius: 8px;
 `;
 
 // Botón para mostrar los comprobantes deshabilitados
@@ -147,13 +150,13 @@ const DisabledReceiptsButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #722ed1;
+  cursor: pointer;
   background-color: #f9f0ff;
   border: 1px dashed #722ed1;
   border-radius: 8px;
-  color: #722ed1;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
   transition: all 0.3s;
 
   &:hover {
@@ -161,7 +164,7 @@ const DisabledReceiptsButton = styled.button`
     border-color: #531dab;
   }
 
-  .ant-badge {
+    .ant-badge {
     margin-left: 8px;
   }
 `;

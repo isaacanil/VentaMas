@@ -1,6 +1,6 @@
-import { Modal, Typography } from "antd";
+import { Modal, Typography } from 'antd';
 
-import { normalizeDigits } from "./ncfUtils";
+import { normalizeDigits } from './ncfUtils';
 
 const { Text } = Typography;
 
@@ -12,10 +12,18 @@ const pluralize = (value, singular, plural) => {
 export const confirmSequenceWarnings = async (validationResult) => {
   const result = validationResult || {};
   const insights = result.insights || {};
-  const availableBefore = Array.isArray(insights.availableBefore) ? insights.availableBefore : [];
-  const availableAfter = Array.isArray(insights.availableAfter) ? insights.availableAfter : [];
-  const usedBefore = Array.isArray(insights.usedBefore) ? insights.usedBefore : [];
-  const usedAfterRaw = Array.isArray(insights.usedAfter) ? insights.usedAfter : [];
+  const availableBefore = Array.isArray(insights.availableBefore)
+    ? insights.availableBefore
+    : [];
+  const availableAfter = Array.isArray(insights.availableAfter)
+    ? insights.availableAfter
+    : [];
+  const usedBefore = Array.isArray(insights.usedBefore)
+    ? insights.usedBefore
+    : [];
+  const usedAfterRaw = Array.isArray(insights.usedAfter)
+    ? insights.usedAfter
+    : [];
   const lastUsed = insights.lastUsed || null;
   const hasImmediateNextConflict = Boolean(result.hasImmediateNextConflict);
 
@@ -24,14 +32,15 @@ export const confirmSequenceWarnings = async (validationResult) => {
     .sort((a, b) => (a?.step ?? 0) - (b?.step ?? 0));
 
   const showCurrentConflict = Boolean(
-    hasImmediateNextConflict && insights.currentConflict
+    hasImmediateNextConflict && insights.currentConflict,
   );
   const showFutureUsage = sortedUsedAfter.length > 0;
   const showAvailableAfter = showFutureUsage && availableAfter.length > 0;
   const showAvailableBefore = availableBefore.length > 0;
   const showUsedBefore = usedBefore.length > 0;
 
-  const prefixCandidate = typeof result.prefix === "string" ? result.prefix : "";
+  const prefixCandidate =
+    typeof result.prefix === 'string' ? result.prefix : '';
   const resolveSequenceLength = () => {
     const candidates = [
       Number(result.sequenceLength),
@@ -48,22 +57,26 @@ export const confirmSequenceWarnings = async (validationResult) => {
     if (rawDigits === undefined || rawDigits === null) return null;
     const digits = normalizeDigits(String(rawDigits));
     if (!digits) return null;
-    const length = Number.isFinite(sequenceLength) && sequenceLength > 0
-      ? sequenceLength
-      : digits.length;
-    const padded = length > 0 ? digits.padStart(length, "0") : digits;
+    const length =
+      Number.isFinite(sequenceLength) && sequenceLength > 0
+        ? sequenceLength
+        : digits.length;
+    const padded = length > 0 ? digits.padStart(length, '0') : digits;
     return prefixCandidate ? `${prefixCandidate}${padded}` : padded;
   };
 
   const extractDigitsFromItem = (item) => {
     if (!item) return null;
-    if (typeof item.normalizedDigits === "string" && item.normalizedDigits.length > 0) {
+    if (
+      typeof item.normalizedDigits === 'string' &&
+      item.normalizedDigits.length > 0
+    ) {
       return item.normalizedDigits;
     }
     if (Number.isFinite(item.number)) {
       return item.number.toString();
     }
-    if (typeof item.ncf === "string") {
+    if (typeof item.ncf === 'string') {
       const trimmed = item.ncf.trim();
       if (prefixCandidate && trimmed.startsWith(prefixCandidate)) {
         return trimmed.slice(prefixCandidate.length);
@@ -74,7 +87,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
       if (prefixCandidate && prefixIndex >= 0) {
         return trimmed.slice(prefixIndex + prefixCandidate.length);
       }
-      return trimmed.replace(/[^0-9]/g, "");
+      return trimmed.replace(/[^0-9]/g, '');
     }
     return null;
   };
@@ -83,7 +96,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     const digits = extractDigitsFromItem(item);
     const formatted = buildFromDigits(digits);
     if (formatted) return formatted;
-    return item?.ncf || "";
+    return item?.ncf || '';
   };
 
   const formatRangeLabel = (startItem, endItem) => {
@@ -103,7 +116,8 @@ export const confirmSequenceWarnings = async (validationResult) => {
   const renderInvoiceList = (items) => (
     <ul>
       {items.map((invoice) => {
-        const display = invoice.ncf ?? invoice.id ?? "Factura sin identificador";
+        const display =
+          invoice.ncf ?? invoice.id ?? 'Factura sin identificador';
         return <li key={invoice.id ?? display}>{display}</li>;
       })}
     </ul>
@@ -120,18 +134,18 @@ export const confirmSequenceWarnings = async (validationResult) => {
     <div style={{ marginTop: showCurrentConflict ? 16 : 0 }}>
       <p>
         {hasImmediateNextConflict
-          ? "El siguiente NCF en la secuencia ya está emitido:"
-          : "Se detectaron comprobantes emitidos más adelante:"}
+          ? 'El siguiente NCF en la secuencia ya está emitido:'
+          : 'Se detectaron comprobantes emitidos más adelante:'}
       </p>
       <ul>
         {sortedUsedAfter.slice(0, 5).map((item) => {
           const invoicesCount = item.invoices?.length ?? 0;
           const distanceLabel = item.step
-            ? ` · ${item.step} ${pluralize(item.step, "paso", "pasos")} después`
-            : "";
+            ? ` · ${item.step} ${pluralize(item.step, 'paso', 'pasos')} después`
+            : '';
           const invoicesLabel = invoicesCount
-            ? ` · ${invoicesCount} ${pluralize(invoicesCount, "factura", "facturas")}`
-            : "";
+            ? ` · ${invoicesCount} ${pluralize(invoicesCount, 'factura', 'facturas')}`
+            : '';
           return (
             <li key={`used-after-${item.number}`}>
               <Text strong>{formatItemNcf(item)}</Text>
@@ -145,7 +159,13 @@ export const confirmSequenceWarnings = async (validationResult) => {
       {availableAfterRange ? (
         <p style={{ marginTop: 8 }}>
           Antes de ese punto puedes utilizar{' '}
-          <strong>{formatRangeLabel(availableAfterRange.start, availableAfterRange.end)}</strong>.
+          <strong>
+            {formatRangeLabel(
+              availableAfterRange.start,
+              availableAfterRange.end,
+            )}
+          </strong>
+          .
         </p>
       ) : null}
     </div>
@@ -155,7 +175,9 @@ export const confirmSequenceWarnings = async (validationResult) => {
     <div>
       <p>
         El NCF almacenado coincide con uno ya emitido:
-        <strong style={{ display: "block" }}>{formatItemNcf(insights.currentConflict)}</strong>
+        <strong style={{ display: 'block' }}>
+          {formatItemNcf(insights.currentConflict)}
+        </strong>
       </p>
       {insights.currentConflict.invoices?.length ? (
         <div>
@@ -170,7 +192,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     <div style={{ marginTop: showCurrentConflict ? 16 : 0 }}>
       <p>
         Último comprobante emitido encontrado:
-        <strong style={{ display: "block" }}>{formatItemNcf(lastUsed)}</strong>
+        <strong style={{ display: 'block' }}>{formatItemNcf(lastUsed)}</strong>
       </p>
     </div>
   ) : null;
@@ -187,14 +209,19 @@ export const confirmSequenceWarnings = async (validationResult) => {
   ) : null;
 
   const usedBeforeBlock = showUsedBefore ? (
-    <div style={{ marginTop: showCurrentConflict || lastUsed || showAvailableBefore ? 16 : 0 }}>
+    <div
+      style={{
+        marginTop:
+          showCurrentConflict || lastUsed || showAvailableBefore ? 16 : 0,
+      }}
+    >
       <p>Ya existen facturas emitidas con estos NCF anteriores:</p>
       <ul>
         {usedBefore.map((item) => {
           const invoicesCount = item.invoices?.length ?? 0;
           const suffix = invoicesCount
-            ? ` · ${invoicesCount} ${pluralize(invoicesCount, "factura", "facturas")}`
-            : "";
+            ? ` · ${invoicesCount} ${pluralize(invoicesCount, 'factura', 'facturas')}`
+            : '';
           return (
             <li key={`used-before-${item.number}`}>
               {formatItemNcf(item)}
@@ -233,8 +260,8 @@ export const confirmSequenceWarnings = async (validationResult) => {
       title: null,
       icon: null,
       content: warningContent,
-      okText: "Guardar de todos modos",
-      cancelText: "Cancelar",
+      okText: 'Guardar de todos modos',
+      cancelText: 'Cancelar',
       centered: true,
       onOk: () => safeResolve({ accepted: true, warned: true }),
       onCancel: () => safeResolve({ accepted: false, warned: true }),

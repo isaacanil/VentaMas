@@ -44,7 +44,8 @@ const STATUS_CONFIG = {
   },
 };
 
-const getStatusConfig = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+const getStatusConfig = (status) =>
+  STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
 const toMillis = (value) => {
   if (!value) return 0;
@@ -71,7 +72,10 @@ const formatTimeAgo = (timestamp) => {
 
 const resolveReference = (auth) => {
   if (!auth) return '-';
-  const metadata = typeof auth.metadata === 'object' && auth.metadata !== null ? auth.metadata : {};
+  const metadata =
+    typeof auth.metadata === 'object' && auth.metadata !== null
+      ? auth.metadata
+      : {};
   return (
     auth.reference ||
     metadata.reference ||
@@ -88,7 +92,13 @@ const resolvePersonName = (person) => {
   return person.displayName || person.name || person.email || '';
 };
 
-const AuthorizationRow = ({ auth, isAdmin, processingId, onApprove, onReject }) => {
+const AuthorizationRow = ({
+  auth,
+  isAdmin,
+  processingId,
+  onApprove,
+  onReject,
+}) => {
   const statusConfig = getStatusConfig(auth.status);
   const isPending = auth.status === 'pending';
   const isProcessing = processingId === auth.id;
@@ -152,46 +162,49 @@ export default AuthorizationRow;
 
 const AuthorizationRowContainer = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   padding: 10px 14px;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: #f8fafc;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
-  &:hover {
-    background: #ffffff;
+    &:hover {
+    background: #fff;
     border-color: #cbd5e1;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 8px 20px rgb(15 23 42 / 12%);
   }
 
-  @media (max-width: 960px) {
+  @media (width <= 960px) {
     flex-wrap: wrap;
-    align-items: flex-start;
     row-gap: 10px;
+    align-items: flex-start;
   }
 `;
 
 const ModuleCell = styled.div`
   display: flex;
-  align-items: center;
-  gap: 12px;
   flex: 1 1 240px;
+  gap: 12px;
+  align-items: center;
   min-width: 0;
 `;
 
 const ModuleIcon = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #eff6ff;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  color: #2563eb;
+  width: 34px;
+  height: 34px;
   font-size: 16px;
-  flex-shrink: 0;
+  color: #2563eb;
+  background: #eff6ff;
+  border-radius: 10px;
 `;
 
 const ModuleInfo = styled.div`
@@ -202,24 +215,24 @@ const ModuleInfo = styled.div`
 `;
 
 const ModuleTitle = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 14px;
   font-weight: 600;
   color: #1f2937;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const ReferenceLabel = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
   color: #64748b;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 
   strong {
-    color: #0f172a;
     font-weight: 600;
+    color: #0f172a;
   }
 `;
 
@@ -230,29 +243,29 @@ const ReferenceValue = styled.span`
 
 const RequesterCell = styled.div`
   display: flex;
+  flex: 0 0 160px;
   flex-direction: column;
   gap: 2px;
-  flex: 0 0 160px;
   min-width: 120px;
 `;
 
 const StatusCell = styled.div`
   display: flex;
+  flex: 0 0 120px;
   flex-direction: column;
   gap: 4px;
   align-items: flex-start;
-  flex: 0 0 120px;
   min-width: 110px;
 `;
 
 const StatusPill = styled.span`
   padding: 3px 10px;
-  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   color: ${({ $color }) => $color || '#2563eb'};
-  background: ${({ $color }) => `${$color || '#2563eb'}1a`};
   text-transform: capitalize;
+  background: ${({ $color }) => `${$color || '#2563eb'}1a`};
+  border-radius: 999px;
 `;
 
 const TimeAgo = styled.span`
@@ -262,26 +275,26 @@ const TimeAgo = styled.span`
 
 const MetaLabel = styled.span`
   font-size: 11px;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #94a3b8;
 `;
 
 const MetaValue = styled.span`
-  font-size: 13px;
-  color: #1f2937;
-  font-weight: 500;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  white-space: nowrap;
 `;
 
 const ActionsCell = styled.div`
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
 
   button {
     min-width: 72px;

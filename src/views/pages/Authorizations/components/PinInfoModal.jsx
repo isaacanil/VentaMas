@@ -1,4 +1,8 @@
-import { SafetyOutlined, LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  SafetyOutlined,
+  LockOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { Modal, Typography, Button } from 'antd';
 import styled from 'styled-components';
 
@@ -33,20 +37,20 @@ const ModalContent = styled.div`
 const Header = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 14px;
+  align-items: center;
   text-align: center;
 `;
 
 const IconBadge = styled.div`
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #722ed1 0%, #1677ff 100%);
-  color: #fff;
+  width: 72px;
+  height: 72px;
   font-size: 34px;
+  color: #fff;
+  background: linear-gradient(135deg, #722ed1 0%, #1677ff 100%);
+  border-radius: 24px;
 `;
 
 const HeaderTitle = styled(Title)`
@@ -56,34 +60,35 @@ const HeaderTitle = styled(Title)`
 `;
 
 const Subtitle = styled(Text)`
-  color: #8c8c8c !important;
   font-size: 14px;
+  color: #8c8c8c !important;
 `;
 
 const SectionCard = styled.div`
-  background: ${({ $variant }) => sectionTokens[$variant]?.bg || '#fafafa'};
-  border: 1px solid ${({ $variant }) => sectionTokens[$variant]?.border || '#f0f0f0'};
-  border-radius: 20px;
-  padding: 22px 24px;
   display: grid;
   gap: 18px;
+  padding: 22px 24px;
+  background: ${({ $variant }) => sectionTokens[$variant]?.bg || '#fafafa'};
+  border: 1px solid
+    ${({ $variant }) => sectionTokens[$variant]?.border || '#f0f0f0'};
+  border-radius: 20px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
-  align-items: center;
   gap: 16px;
+  align-items: center;
 `;
 
 const SectionIcon = styled.div`
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
   display: grid;
   place-items: center;
-  background: ${({ $variant }) => sectionTokens[$variant]?.iconBg || '#f0f0f0'};
-  color: ${({ $variant }) => sectionTokens[$variant]?.iconColor || '#1f1f1f'};
+  width: 44px;
+  height: 44px;
   font-size: 22px;
+  color: ${({ $variant }) => sectionTokens[$variant]?.iconColor || '#1f1f1f'};
+  background: ${({ $variant }) => sectionTokens[$variant]?.iconBg || '#f0f0f0'};
+  border-radius: 14px;
 `;
 
 const SectionHeading = styled(Title)`
@@ -96,11 +101,11 @@ const SectionHeading = styled(Title)`
 
 const SectionLabel = styled.span`
   display: block;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.45);
   margin-bottom: 6px;
+  font-size: 12px;
+  color: rgb(0 0 0 / 45%);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 `;
 
 const SectionHeaderTexts = styled.div`
@@ -110,11 +115,11 @@ const SectionHeaderTexts = styled.div`
 `;
 
 const TipsList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
   gap: 14px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 `;
 
 const TipItem = styled.li`
@@ -125,15 +130,16 @@ const TipItem = styled.li`
 `;
 
 const TipBullet = styled.span`
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
   width: 28px;
   height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: ${({ $variant }) => sectionTokens[$variant]?.bulletBg || '#e6f4ff'};
-  color: ${({ $variant }) => sectionTokens[$variant]?.bulletColor || '#1677ff'};
   font-size: 16px;
-  flex-shrink: 0;
+  color: ${({ $variant }) => sectionTokens[$variant]?.bulletColor || '#1677ff'};
+  background: ${({ $variant }) =>
+    sectionTokens[$variant]?.bulletBg || '#e6f4ff'};
+  border-radius: 10px;
 `;
 
 const TipText = styled.span`
@@ -142,17 +148,17 @@ const TipText = styled.span`
 `;
 
 const Highlight = styled.span`
-  color: #1f1f1f;
   font-weight: 600;
+  color: #1f1f1f;
 `;
 
 export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
   const usageTips = [
-    (
-      <>
-        Ingresa tu <Highlight>usuario</Highlight> y tu <Highlight>PIN de 6 dígitos</Highlight> cada vez que el sistema lo solicite.
-      </>
-    ),
+    <>
+      Ingresa tu <Highlight>usuario</Highlight> y tu{' '}
+      <Highlight>PIN de 6 dígitos</Highlight> cada vez que el sistema lo
+      solicite.
+    </>,
     'Mantén los PINs en privado: cada usuario tiene sus propios códigos temporales.',
     'Los PINs expiran de forma periódica para mantener la seguridad de las operaciones.',
     'Si lo prefieres, siempre puedes usar tu contraseña completa para autorizarte.',
@@ -189,7 +195,7 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
       width={680}
       centered
       title={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <ModalContent>
         <Header>
@@ -198,7 +204,8 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
           </IconBadge>
           <HeaderTitle level={4}>Conoce cómo funcionan los PINs</HeaderTitle>
           <Subtitle>
-            Usa códigos temporales para autorizar operaciones de manera ágil, manteniendo la seguridad de tu cuenta.
+            Usa códigos temporales para autorizar operaciones de manera ágil,
+            manteniendo la seguridad de tu cuenta.
           </Subtitle>
         </Header>
 
@@ -209,7 +216,9 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
             </SectionIcon>
             <SectionHeaderTexts>
               <SectionLabel>Uso diario</SectionLabel>
-              <SectionHeading level={5}>Cómo aprovechar los PINs</SectionHeading>
+              <SectionHeading level={5}>
+                Cómo aprovechar los PINs
+              </SectionHeading>
             </SectionHeaderTexts>
           </SectionHeader>
           <TipsList>{renderTips(usageTips, 'usage')}</TipsList>

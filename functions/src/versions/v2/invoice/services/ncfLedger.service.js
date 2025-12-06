@@ -105,14 +105,18 @@ export const upsertLedgerEntry = async ({
     .doc(businessId)
     .collection('ncfLedger')
     .doc(prefix);
-  const entryRef = ledgerDoc.collection(collectionName).doc(buildEntryId(normalizedDigits));
+  const entryRef = ledgerDoc
+    .collection(collectionName)
+    .doc(buildEntryId(normalizedDigits));
 
   await db.runTransaction(async (tx) => {
     const [metaSnap, entrySnap] = await Promise.all([
       tx.get(ledgerDoc),
       tx.get(entryRef),
     ]);
-    const prevMeta = ensureMetadataShape(metaSnap.exists ? metaSnap.data() : null);
+    const prevMeta = ensureMetadataShape(
+      metaSnap.exists ? metaSnap.data() : null,
+    );
     let prevLastBigInt = null;
     if (prevMeta.lastNumberString) {
       try {
@@ -123,12 +127,16 @@ export const upsertLedgerEntry = async ({
     }
 
     const prevEntry = entrySnap.exists ? entrySnap.data() : null;
-    const prevInvoices = Array.isArray(prevEntry?.invoices) ? prevEntry.invoices : [];
+    const prevInvoices = Array.isArray(prevEntry?.invoices)
+      ? prevEntry.invoices
+      : [];
 
     const record = buildInvoiceRecord({ invoiceId, invoice });
     if (!record) return;
 
-    const nextInvoices = prevInvoices.filter((item) => item?.invoiceId !== invoiceId);
+    const nextInvoices = prevInvoices.filter(
+      (item) => item?.invoiceId !== invoiceId,
+    );
     nextInvoices.push(record);
 
     const prevActiveCount = countActiveInvoices(prevInvoices);
@@ -182,7 +190,7 @@ export const upsertLedgerEntry = async ({
     if (nextDuplicates !== prevDuplicates) {
       metaPayload.duplicatesCount = Math.max(
         prevMeta.duplicatesCount + (nextDuplicates - prevDuplicates),
-        0
+        0,
       );
     }
 
@@ -227,7 +235,9 @@ export const removeLedgerEntry = async ({
     .doc(businessId)
     .collection('ncfLedger')
     .doc(prefix);
-  const entryRef = ledgerDoc.collection(collectionName).doc(buildEntryId(normalizedDigits));
+  const entryRef = ledgerDoc
+    .collection(collectionName)
+    .doc(buildEntryId(normalizedDigits));
 
   await db.runTransaction(async (tx) => {
     const [metaSnap, entrySnap] = await Promise.all([
@@ -236,10 +246,16 @@ export const removeLedgerEntry = async ({
     ]);
     if (!entrySnap.exists) return;
 
-    const prevMeta = ensureMetadataShape(metaSnap.exists ? metaSnap.data() : null);
+    const prevMeta = ensureMetadataShape(
+      metaSnap.exists ? metaSnap.data() : null,
+    );
     const prevEntry = entrySnap.data();
-    const prevInvoices = Array.isArray(prevEntry?.invoices) ? prevEntry.invoices : [];
-    const nextInvoices = prevInvoices.filter((item) => item?.invoiceId !== invoiceId);
+    const prevInvoices = Array.isArray(prevEntry?.invoices)
+      ? prevEntry.invoices
+      : [];
+    const nextInvoices = prevInvoices.filter(
+      (item) => item?.invoiceId !== invoiceId,
+    );
 
     if (nextInvoices.length === prevInvoices.length) {
       return;
@@ -280,7 +296,7 @@ export const removeLedgerEntry = async ({
     if (nextDuplicates !== prevDuplicates) {
       metaPayload.duplicatesCount = Math.max(
         prevMeta.duplicatesCount + (nextDuplicates - prevDuplicates),
-        0
+        0,
       );
     }
 
@@ -295,22 +311,32 @@ export const canonicalizeInvoice = (invoiceData) => {
 
 export const wipeLedgerPrefixes = async ({ businessId, prefixes }) => {
   if (!businessId) return { deleted: 0 };
-  const ledgerRoot = db.collection('businesses').doc(businessId).collection('ncfLedger');
+  const ledgerRoot = db
+    .collection('businesses')
+    .doc(businessId)
+    .collection('ncfLedger');
   const targets = prefixes?.length
-    ? Array.from(new Set(prefixes.flatMap((prefix) => {
-        const normalized = sanitizePrefix(prefix);
-        const refs = [];
-        if (prefix) refs.push(ledgerRoot.doc(prefix));
-        if (normalized && normalized !== prefix) refs.push(ledgerRoot.doc(normalized));
-        return refs;
-      })))
+    ? Array.from(
+        new Set(
+          prefixes.flatMap((prefix) => {
+            const normalized = sanitizePrefix(prefix);
+            const refs = [];
+            if (prefix) refs.push(ledgerRoot.doc(prefix));
+            if (normalized && normalized !== prefix)
+              refs.push(ledgerRoot.doc(normalized));
+            return refs;
+          }),
+        ),
+      )
     : await ledgerRoot.listDocuments();
 
   if (!targets.length) {
     return { deleted: 0 };
   }
 
-  await Promise.all(targets.map((docRef) => admin.firestore().recursiveDelete(docRef)));
+  await Promise.all(
+    targets.map((docRef) => admin.firestore().recursiveDelete(docRef)),
+  );
 
   return { deleted: targets.length };
 };
@@ -335,7 +361,13 @@ export const syncLedgerForChange = async ({
       afterCanonical.prefix === beforeCanonical.prefix &&
       afterCanonical.normalizedDigits === beforeCanonical.normalizedDigits;
     if (!sameAsAfter) {
-      tasks.push(removeLedgerEntry({ businessId, invoiceId, canonical: beforeCanonical }));
+      tasks.push(
+        removeLedgerEntry({
+          businessId,
+          invoiceId,
+          canonical: beforeCanonical,
+        }),
+      );
     }
   }
 
@@ -346,7 +378,7 @@ export const syncLedgerForChange = async ({
         invoiceId,
         canonical: afterCanonical,
         invoice: afterData,
-      })
+      }),
     );
   }
 
@@ -355,7 +387,11 @@ export const syncLedgerForChange = async ({
   return { handled: true };
 };
 
-export const rebuildLedgerForInvoice = async ({ businessId, invoiceId, invoiceData }) => {
+export const rebuildLedgerForInvoice = async ({
+  businessId,
+  invoiceId,
+  invoiceData,
+}) => {
   const canonical = canonicalizeInvoice(invoiceData);
   if (!canonical) return false;
   logger.debug('rebuildLedgerForInvoice upserting entry', {
@@ -388,25 +424,27 @@ const isLedgerEntryActive = (entry) => {
 
 const buildNcfFromDigits = ({ prefix, digits, sequenceLength }) => {
   const safeDigits = normalizeDigits(digits ?? '');
-  const length = Number.isFinite(sequenceLength) && sequenceLength > 0
-    ? sequenceLength
-    : Math.max(safeDigits.length, 1);
+  const length =
+    Number.isFinite(sequenceLength) && sequenceLength > 0
+      ? sequenceLength
+      : Math.max(safeDigits.length, 1);
   return `${prefix}${safeDigits.padStart(length, '0')}`;
 };
 
-const formatLedgerEntry = ({
-  entry,
-  prefix,
-  sequenceLength,
-  step,
-}) => {
+const formatLedgerEntry = ({ entry, prefix, sequenceLength, step }) => {
   if (!entry) return null;
   const normalized = entry.normalizedDigits
     ? normalizeDigits(entry.normalizedDigits)
     : normalizeDigits(entry.sequenceNumber?.toString() ?? '');
-  const digitsLength = sequenceLength || entry.sequenceNumberString?.length || normalized.length;
-  const ncfCode = entry.ncf
-    || buildNcfFromDigits({ prefix, digits: entry.sequenceNumberString || normalized, sequenceLength: digitsLength });
+  const digitsLength =
+    sequenceLength || entry.sequenceNumberString?.length || normalized.length;
+  const ncfCode =
+    entry.ncf ||
+    buildNcfFromDigits({
+      prefix,
+      digits: entry.sequenceNumberString || normalized,
+      sequenceLength: digitsLength,
+    });
 
   return {
     number: entry.sequenceNumber,
@@ -444,12 +482,12 @@ export const getLedgerInsights = async ({
   const resolvedWindowAfter = clampWindow(
     windowAfter,
     LEDGER_DEFAULT_WINDOW_AFTER,
-    LEDGER_MAX_WINDOW_AFTER
+    LEDGER_MAX_WINDOW_AFTER,
   );
   const resolvedWindowBefore = clampWindow(
     windowBefore,
     LEDGER_DEFAULT_WINDOW_BEFORE,
-    Math.min(LEDGER_MAX_WINDOW_BEFORE, resolvedWindowAfter)
+    Math.min(LEDGER_MAX_WINDOW_BEFORE, resolvedWindowAfter),
   );
 
   const ledgerDoc = db
@@ -460,7 +498,8 @@ export const getLedgerInsights = async ({
 
   const [metaSnap, targetSnap] = await Promise.all([
     ledgerDoc.get(),
-    ledgerDoc.collection(DEFAULT_ENTRY_COLLECTION)
+    ledgerDoc
+      .collection(DEFAULT_ENTRY_COLLECTION)
       .doc(buildEntryId(normalizedDigits ?? sequenceNumeric.toString()))
       .get(),
   ]);
@@ -471,7 +510,10 @@ export const getLedgerInsights = async ({
 
   const metadata = metaSnap.data() ?? {};
 
-  const minRange = Math.max(sequenceNumeric - resolvedIncrement * resolvedWindowBefore, 0);
+  const minRange = Math.max(
+    sequenceNumeric - resolvedIncrement * resolvedWindowBefore,
+    0,
+  );
   const maxRange = sequenceNumeric + resolvedIncrement * resolvedWindowAfter;
 
   const entriesRef = ledgerDoc.collection(DEFAULT_ENTRY_COLLECTION);
@@ -506,7 +548,11 @@ export const getLedgerInsights = async ({
   const formatAvailable = ({ number, step }) => ({
     number,
     step,
-    ncf: buildNcfFromDigits({ prefix, digits: number.toString(), sequenceLength }),
+    ncf: buildNcfFromDigits({
+      prefix,
+      digits: number.toString(),
+      sequenceLength,
+    }),
   });
 
   const usedBefore = [];
@@ -516,7 +562,9 @@ export const getLedgerInsights = async ({
     if (candidateNumber < 0) break;
     const entry = entryMap.get(candidateNumber);
     if (entry && isLedgerEntryActive(entry)) {
-      usedBefore.push(formatLedgerEntry({ entry, prefix, sequenceLength, step }));
+      usedBefore.push(
+        formatLedgerEntry({ entry, prefix, sequenceLength, step }),
+      );
       break;
     }
     if (!entry) {
@@ -530,7 +578,9 @@ export const getLedgerInsights = async ({
     const candidateNumber = sequenceNumeric + resolvedIncrement * step;
     const entry = entryMap.get(candidateNumber);
     if (entry && isLedgerEntryActive(entry)) {
-      usedAfter.push(formatLedgerEntry({ entry, prefix, sequenceLength, step }));
+      usedAfter.push(
+        formatLedgerEntry({ entry, prefix, sequenceLength, step }),
+      );
       break;
     }
     if (!entry) {
@@ -544,7 +594,9 @@ export const getLedgerInsights = async ({
       const candidateNumber = sequenceNumeric + resolvedIncrement * step;
       const entry = entryMap.get(candidateNumber);
       if (entry && isLedgerEntryActive(entry)) {
-        results.push(formatLedgerEntry({ entry, prefix, sequenceLength, step }));
+        results.push(
+          formatLedgerEntry({ entry, prefix, sequenceLength, step }),
+        );
       }
     }
     return results;
@@ -557,7 +609,9 @@ export const getLedgerInsights = async ({
       if (candidateNumber < 0) break;
       const entry = entryMap.get(candidateNumber);
       if (entry && isLedgerEntryActive(entry)) {
-        results.push(formatLedgerEntry({ entry, prefix, sequenceLength, step }));
+        results.push(
+          formatLedgerEntry({ entry, prefix, sequenceLength, step }),
+        );
       }
     }
     return results;
@@ -572,10 +626,14 @@ export const getLedgerInsights = async ({
   const hasImmediateNextConflict = isLedgerEntryActive(nextEntry);
 
   const conflicts = hasCurrentConflict
-    ? Array.isArray(targetEntry?.invoices) ? targetEntry.invoices : []
+    ? Array.isArray(targetEntry?.invoices)
+      ? targetEntry.invoices
+      : []
     : hasImmediateNextConflict
-    ? (Array.isArray(nextEntry?.invoices) ? nextEntry.invoices : [])
-    : [];
+      ? Array.isArray(nextEntry?.invoices)
+        ? nextEntry.invoices
+        : []
+      : [];
 
   const currentConflict = hasCurrentConflict
     ? formatLedgerEntry({ entry: targetEntry, prefix, sequenceLength, step: 0 })
@@ -595,9 +653,13 @@ export const getLedgerInsights = async ({
       }
     }
     if (lastEntry) {
-      const stepDiff = resolvedIncrement > 0
-        ? Math.max(Math.floor((lastNumber - sequenceNumeric) / resolvedIncrement), 0)
-        : 0;
+      const stepDiff =
+        resolvedIncrement > 0
+          ? Math.max(
+              Math.floor((lastNumber - sequenceNumeric) / resolvedIncrement),
+              0,
+            )
+          : 0;
       lastUsed = formatLedgerEntry({
         entry: lastEntry,
         prefix,
@@ -630,11 +692,13 @@ export const getLedgerInsights = async ({
     reason: hasCurrentConflict
       ? 'current-sequence-used'
       : hasImmediateNextConflict
-      ? 'next-sequence-used'
-      : undefined,
+        ? 'next-sequence-used'
+        : undefined,
     prefix,
     sequenceNumber: sequenceNumeric,
-    normalizedDigits: normalizeDigits(normalizedDigits ?? sequenceNumeric.toString()),
+    normalizedDigits: normalizeDigits(
+      normalizedDigits ?? sequenceNumeric.toString(),
+    ),
     nextNumber,
     nextDigits: nextDigitsPadded,
     nextDigitsLength: nextDigitsPadded.length,

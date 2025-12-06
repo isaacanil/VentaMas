@@ -1,10 +1,16 @@
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { validateUser } from "../../utils/userValidation";
-import { db } from "../firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import { validateUser } from '../../utils/userValidation';
+import { db } from '../firebaseconfig';
 
 const getSerieBounds = (serie) => {
   if (!serie) return null;
@@ -21,9 +27,16 @@ const getSerieBounds = (serie) => {
   };
 };
 
-export const useFbGetInvoicesBySerie = (serie, { includeCancelled = false } = {}) => {
+export const useFbGetInvoicesBySerie = (
+  serie,
+  { includeCancelled = false } = {},
+) => {
   const user = useSelector(selectUser);
-  const [state, setState] = useState({ invoices: [], loading: true, error: null });
+  const [state, setState] = useState({
+    invoices: [],
+    loading: true,
+    error: null,
+  });
 
   const bounds = useMemo(() => getSerieBounds(serie), [serie]);
 
@@ -39,37 +52,47 @@ export const useFbGetInvoicesBySerie = (serie, { includeCancelled = false } = {}
     const fetchInvoices = async () => {
       try {
         validateUser(user);
-        const invoicesRef = collection(db, "businesses", user.businessID, "invoices");
+        const invoicesRef = collection(
+          db,
+          'businesses',
+          user.businessID,
+          'invoices',
+        );
 
         const q = query(
           invoicesRef,
-          where("data.NCF", ">=", bounds.start),
-          where("data.NCF", "<", bounds.end),
-          orderBy("data.NCF", "asc")
+          where('data.NCF', '>=', bounds.start),
+          where('data.NCF', '<', bounds.end),
+          orderBy('data.NCF', 'asc'),
         );
 
         unsubscribe = onSnapshot(
           q,
           (snapshot) => {
-            const rawInvoices = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            const rawInvoices = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
 
             const filtered = rawInvoices.filter((invoice) => {
-              const ncf = invoice?.data?.NCF || invoice?.NCF || "";
+              const ncf = invoice?.data?.NCF || invoice?.NCF || '';
               if (!ncf) return false;
-              if (!ncf.toUpperCase().startsWith(bounds.normalized)) return false;
-              if (!includeCancelled && invoice?.data?.status === "cancelled") return false;
+              if (!ncf.toUpperCase().startsWith(bounds.normalized))
+                return false;
+              if (!includeCancelled && invoice?.data?.status === 'cancelled')
+                return false;
               return true;
             });
 
             setState({ invoices: filtered, loading: false, error: null });
           },
           (error) => {
-            console.error("Error listening invoices by serie:", error);
+            console.error('Error listening invoices by serie:', error);
             setState({ invoices: [], loading: false, error });
-          }
+          },
         );
       } catch (error) {
-        console.error("Error fetching invoices by serie:", error);
+        console.error('Error fetching invoices by serie:', error);
         setState({ invoices: [], loading: false, error });
       }
     };
@@ -79,7 +102,14 @@ export const useFbGetInvoicesBySerie = (serie, { includeCancelled = false } = {}
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user?.businessID, bounds?.normalized, includeCancelled, bounds?.start, bounds?.end, user]);
+  }, [
+    user?.businessID,
+    bounds?.normalized,
+    includeCancelled,
+    bounds?.start,
+    bounds?.end,
+    user,
+  ]);
 
   return state;
 };

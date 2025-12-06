@@ -22,7 +22,12 @@ import { getNextID } from '../Tools/getNextID';
 // Crear un nuevo almacén
 export const createWarehouse = async (user, warehouseData) => {
   const id = nanoid();
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
   const warehouseDocReference = doc(warehouseCollectionRef, id);
 
   try {
@@ -44,7 +49,12 @@ export const createWarehouse = async (user, warehouseData) => {
 
 // Obtener todos los almacenes de un negocio
 export const getWarehouses = async (user) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
 
   try {
     const querySnapshot = await getDocs(warehouseCollectionRef);
@@ -57,8 +67,13 @@ export const getWarehouses = async (user) => {
 
 // Escuchar todos los almacenes en tiempo real
 export const listenAllWarehouses = (user, callback) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
-  
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
+
   return onSnapshot(
     warehouseCollectionRef,
     (querySnapshot) => {
@@ -67,13 +82,20 @@ export const listenAllWarehouses = (user, callback) => {
         .filter((data) => data.isDeleted !== true);
       callback(filteredData);
     },
-    (error) => console.error('Error al obtener documentos en tiempo real:', error)
+    (error) =>
+      console.error('Error al obtener documentos en tiempo real:', error),
   );
 };
 
 // Obtener un almacén específico por ID
 export const getWarehouse = async (user, id) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     const warehouseDoc = await getDoc(warehouseDocReference);
@@ -86,18 +108,30 @@ export const getWarehouse = async (user, id) => {
 
 // Escuchar un almacén específico en tiempo real
 export const listenWarehouse = (user, id, callback) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   return onSnapshot(
     warehouseDocReference,
     (docSnapshot) => callback(docSnapshot.exists() ? docSnapshot.data() : null),
-    (error) => console.error('Error al obtener el almacén:', error)
+    (error) => console.error('Error al obtener el almacén:', error),
   );
 };
 
 // Actualizar un almacén
 export const updateWarehouse = async (user, id, updatedData) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     await updateDoc(warehouseDocReference, {
@@ -114,7 +148,13 @@ export const updateWarehouse = async (user, id, updatedData) => {
 
 // Borrar un almacén (marcar como eliminado)
 export const deleteWarehouse = async (user, id) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     await updateDoc(warehouseDocReference, {
@@ -131,8 +171,16 @@ export const deleteWarehouse = async (user, id) => {
 
 // Crear un almacén por defecto si no existe
 export const getDefaultWarehouse = async (user) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
-  const defaultWarehouseQuery = query(warehouseCollectionRef, where('defaultWarehouse', '==', true));
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
+  const defaultWarehouseQuery = query(
+    warehouseCollectionRef,
+    where('defaultWarehouse', '==', true),
+  );
 
   try {
     const querySnapshot = await getDocs(defaultWarehouseQuery);
@@ -172,10 +220,16 @@ export const getDefaultWarehouse = async (user) => {
 };
 
 export const setDefaultWarehouse = async (user, warehouseId) => {
-  if (!user?.businessID) throw new Error('No se pudo identificar el negocio actual.');
+  if (!user?.businessID)
+    throw new Error('No se pudo identificar el negocio actual.');
   if (!warehouseId) throw new Error('Identificador de almacén inválido.');
 
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
   const targetWarehouseRef = doc(warehouseCollectionRef, warehouseId);
 
   const targetSnapshot = await getDoc(targetWarehouseRef);
@@ -188,10 +242,15 @@ export const setDefaultWarehouse = async (user, warehouseId) => {
   }
 
   const batch = writeBatch(db);
-  const currentDefaultsSnapshot = await getDocs(query(warehouseCollectionRef, where('defaultWarehouse', '==', true)));
+  const currentDefaultsSnapshot = await getDocs(
+    query(warehouseCollectionRef, where('defaultWarehouse', '==', true)),
+  );
 
   currentDefaultsSnapshot.forEach((docSnapshot) => {
-    if (docSnapshot.id !== warehouseId && docSnapshot.data()?.defaultWarehouse) {
+    if (
+      docSnapshot.id !== warehouseId &&
+      docSnapshot.data()?.defaultWarehouse
+    ) {
       batch.update(docSnapshot.ref, {
         defaultWarehouse: false,
         updatedAt: serverTimestamp(),
@@ -241,8 +300,16 @@ export const useDefaultWarehouse = () => {
           setDefaultWarehouseState(ensuredDefault);
         }
 
-        const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
-        const defaultWarehouseQuery = query(warehouseCollectionRef, where('defaultWarehouse', '==', true));
+        const warehouseCollectionRef = collection(
+          db,
+          'businesses',
+          user.businessID,
+          'warehouses',
+        );
+        const defaultWarehouseQuery = query(
+          warehouseCollectionRef,
+          where('defaultWarehouse', '==', true),
+        );
 
         unsubscribe = onSnapshot(
           defaultWarehouseQuery,
@@ -272,7 +339,7 @@ export const useDefaultWarehouse = () => {
             if (!isMounted) return;
             setError(snapshotError);
             setLoading(false);
-          }
+          },
         );
       } catch (fetchError) {
         if (!isMounted) return;

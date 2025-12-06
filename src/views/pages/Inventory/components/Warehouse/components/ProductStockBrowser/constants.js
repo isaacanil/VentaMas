@@ -27,7 +27,7 @@ export const PRODUCT_STOCK_FILTER_OPTIONS = [
       }
       return Array.isArray(product?.stockItems)
         ? product.stockItems.some((item) =>
-            Boolean(item?.expirationDate || item?.expDate || item?.expiration)
+            Boolean(item?.expirationDate || item?.expDate || item?.expiration),
           )
         : false;
     },

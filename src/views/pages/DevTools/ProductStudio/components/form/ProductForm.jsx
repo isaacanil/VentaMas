@@ -40,31 +40,31 @@ export const ProductForm = ({
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <IdentitySection
-          domId={sectionDomIds.identity}
-          brandMeta={brandMeta}
-          brandOptions={brandOptions}
-          categories={categories}
-          activeIngredients={activeIngredients}
-          product={product}
-          onOpenBrandModal={onOpenBrandModal}
-          onAddCategory={onAddCategory}
-          onAddActiveIngredient={onAddActiveIngredient}
-          onOpenImageManager={onOpenImageManager}
-          onResetImage={onResetImage}
-        />
+            domId={sectionDomIds.identity}
+            brandMeta={brandMeta}
+            brandOptions={brandOptions}
+            categories={categories}
+            activeIngredients={activeIngredients}
+            product={product}
+            onOpenBrandModal={onOpenBrandModal}
+            onAddCategory={onAddCategory}
+            onAddActiveIngredient={onAddActiveIngredient}
+            onOpenImageManager={onOpenImageManager}
+            onResetImage={onResetImage}
+          />
 
-        <PricingSection
-          domId={sectionDomIds.pricing}
-          pricingValues={pricingValues}
-        />
+          <PricingSection
+            domId={sectionDomIds.pricing}
+            pricingValues={pricingValues}
+          />
 
-        <InventorySection domId={sectionDomIds.inventory} />
+          <InventorySection domId={sectionDomIds.inventory} />
 
-        <WarrantySection domId={sectionDomIds.warranty} />
+          <WarrantySection domId={sectionDomIds.warranty} />
 
-        <CodesSection domId={sectionDomIds.codes} />
-      </Space>
-    </Form>
+          <CodesSection domId={sectionDomIds.codes} />
+        </Space>
+      </Form>
     </FormWrapper>
   );
 };

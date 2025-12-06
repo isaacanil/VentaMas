@@ -56,7 +56,9 @@ const formatCurrency = (amount) =>
 const buildDataset = (invoices) =>
   invoices.map((invoice) => {
     const { data = {}, id } = invoice;
-    const { serie, type, sequence } = parseNcfParts(data?.NCF || invoice?.NCF || '');
+    const { serie, type, sequence } = parseNcfParts(
+      data?.NCF || invoice?.NCF || '',
+    );
     const date = toDayjs(data?.date);
     const key = id || data?.NCF || `${serie || 'NCF'}-${sequence || 'unknown'}`;
 
@@ -152,34 +154,39 @@ export default function BSeriesInvoices() {
   }, [dataset]);
 
   const typeCounts = useMemo(() => {
-    return dataset.reduce(
-      (acc, item) => {
-        const type = item.type || '—';
-        acc[type] = (acc[type] || 0) + 1;
-        return acc;
-      },
-      {}
-    );
+    return dataset.reduce((acc, item) => {
+      const type = item.type || '—';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
   }, [dataset]);
 
   const filteredDataset = useMemo(() => {
     return dataset.filter((item) => {
-      if (selectedType !== FILTER_ALL && item.type !== selectedType) return false;
-      if (sequenceQuery && !item.sequence?.toLowerCase().includes(sequenceQuery.toLowerCase())) return false;
+      if (selectedType !== FILTER_ALL && item.type !== selectedType)
+        return false;
+      if (
+        sequenceQuery &&
+        !item.sequence?.toLowerCase().includes(sequenceQuery.toLowerCase())
+      )
+        return false;
       return true;
     });
   }, [dataset, selectedType, sequenceQuery]);
 
   const totalAmount = useMemo(
     () => filteredDataset.reduce((sum, item) => sum + item.total, 0),
-    [filteredDataset]
+    [filteredDataset],
   );
 
   const summaryCards = (
     <Row gutter={[16, 16]}>
       <Col xs={24} sm={12} md={8} lg={6}>
         <Card>
-          <Statistic title="Facturas encontradas" value={filteredDataset.length} />
+          <Statistic
+            title="Facturas encontradas"
+            value={filteredDataset.length}
+          />
         </Card>
       </Col>
       <Col xs={24} sm={12} md={8} lg={6}>
@@ -189,7 +196,10 @@ export default function BSeriesInvoices() {
       </Col>
       <Col xs={24} md={8} lg={6}>
         <Card>
-          <Statistic title="Tipos detectados" value={Object.keys(typeCounts).length} />
+          <Statistic
+            title="Tipos detectados"
+            value={Object.keys(typeCounts).length}
+          />
         </Card>
       </Col>
     </Row>
@@ -216,7 +226,8 @@ export default function BSeriesInvoices() {
         />
       </Space>
       <Text type="secondary">
-        La secuencia puede contener 8, 10 o más dígitos según el rango disponible.
+        La secuencia puede contener 8, 10 o más dígitos según el rango
+        disponible.
       </Text>
     </Space>
   );
@@ -231,14 +242,23 @@ export default function BSeriesInvoices() {
     }
 
     if (!filteredDataset.length) {
-      return <Empty description="No hay facturas que coincidan con los filtros" style={{ padding: '2rem 0' }} />;
+      return (
+        <Empty
+          description="No hay facturas que coincidan con los filtros"
+          style={{ padding: '2rem 0' }}
+        />
+      );
     }
 
     return (
       <Table
         columns={columns}
         dataSource={filteredDataset}
-        pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total) => `${total} facturas` }}
+        pagination={{
+          pageSize: 20,
+          showSizeChanger: true,
+          showTotal: (total) => `${total} facturas`,
+        }}
         scroll={{ x: true }}
       />
     );
@@ -254,8 +274,9 @@ export default function BSeriesInvoices() {
               Comprobantes activos de Serie B
             </Title>
             <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-              Se muestran todas las facturas del negocio actual cuya secuencia corresponde a la serie <Text strong>B</Text>.
-              El código NCF se descompone en serie, tipo y secuencia para facilitar el análisis.
+              Se muestran todas las facturas del negocio actual cuya secuencia
+              corresponde a la serie <Text strong>B</Text>. El código NCF se
+              descompone en serie, tipo y secuencia para facilitar el análisis.
             </Paragraph>
           </div>
 
@@ -263,20 +284,19 @@ export default function BSeriesInvoices() {
             <Alert
               type="error"
               message="No pudimos recuperar las facturas"
-              description={error.message || 'Verifica tu conexión o tus permisos e intenta nuevamente.'}
+              description={
+                error.message ||
+                'Verifica tu conexión o tus permisos e intenta nuevamente.'
+              }
               showIcon
             />
           )}
 
           {summaryCards}
 
-          <Card title="Filtros">
-            {filterControls}
-          </Card>
+          <Card title="Filtros">{filterControls}</Card>
 
-          <Card title="Detalle de facturas">
-            {tableContent}
-          </Card>
+          <Card title="Detalle de facturas">{tableContent}</Card>
         </Space>
       </div>
     </>

@@ -1,35 +1,34 @@
 {
-    
-    "pizzaSlices": [
-        {
-            "value": "complete",
-            "label": "Pizza Completa"
-        },
-        {
-            "value": "half",
-            "label": "Mitad izquierda / Mitad derecha"
-        }
-    ],
-    "sizeList": [
-        {
-            "value": "",
-            "label": "Seleccione un tamaño"
-        },
-        {
-            "value": "Familiar",
-            "label": "Familiar"
-        },
-        {
-            "value": "Grande",
-            "label": "Grande"
-        },
-        {
-            "value": "Mediana",
-            "label": "Mediana"
-        },
-        {
-            "value": "Personal",
-            "label": "Personal"
-        }
-    ]
+  "pizzaSlices": [
+    {
+      "value": "complete",
+      "label": "Pizza Completa"
+    },
+    {
+      "value": "half",
+      "label": "Mitad izquierda / Mitad derecha"
+    }
+  ],
+  "sizeList": [
+    {
+      "value": "",
+      "label": "Seleccione un tamaño"
+    },
+    {
+      "value": "Familiar",
+      "label": "Familiar"
+    },
+    {
+      "value": "Grande",
+      "label": "Grande"
+    },
+    {
+      "value": "Mediana",
+      "label": "Mediana"
+    },
+    {
+      "value": "Personal",
+      "label": "Personal"
+    }
+  ]
 }

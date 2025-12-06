@@ -11,10 +11,10 @@ const { Button } = antd;
 const HeaderContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 16px;
-  background: #ffffff;
+  background: #fff;
   border-bottom: 1px solid #f0f0f0;
 `;
 
@@ -32,40 +32,36 @@ const Controls = styled.div`
 const StyledButton = styled(Button)`
   display: flex;
   align-items: center;
-  
+
   .anticon {
     margin-right: 4px;
   }
 `;
 
 export const Header = ({ title, onSave = null }) => {
-    const navigate = useNavigate();
-    const handleBack = () => {
-        navigate(-1); // Navega hacia atrás en el historial
-    };
+  const navigate = useNavigate();
+  const handleBack = () => {
+    navigate(-1); // Navega hacia atrás en el historial
+  };
 
-    const handleSave = () => {
-        if (onSave) {
-            onSave();
-        }
-    };
-    return (
-        <HeaderContainer>
-            <StyledButton type="link" onClick={handleBack}>
-                <FontAwesomeIcon icon={faArrowLeft} /> Volver
-            </StyledButton>
-            <Title>{title}</Title>
-            <Controls>
-                {
-                    onSave && (
-                        <StyledButton type="primary" onClick={handleSave}>
-                            <FontAwesomeIcon icon={faSave} /> Guardar
-                        </StyledButton>
-                    )
-                }
-
-            </Controls>
-        </HeaderContainer>
-    );
+  const handleSave = () => {
+    if (onSave) {
+      onSave();
+    }
+  };
+  return (
+    <HeaderContainer>
+      <StyledButton type="link" onClick={handleBack}>
+        <FontAwesomeIcon icon={faArrowLeft} /> Volver
+      </StyledButton>
+      <Title>{title}</Title>
+      <Controls>
+        {onSave && (
+          <StyledButton type="primary" onClick={handleSave}>
+            <FontAwesomeIcon icon={faSave} /> Guardar
+          </StyledButton>
+        )}
+      </Controls>
+    </HeaderContainer>
+  );
 };
-

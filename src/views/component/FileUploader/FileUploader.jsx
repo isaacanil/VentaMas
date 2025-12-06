@@ -7,7 +7,7 @@ import {
   revokeLocalURL,
   isImageFile,
   isPDFFile,
-  getFileTypeFromUrl
+  getFileTypeFromUrl,
 } from '../../../utils/fileUtils';
 
 import DragOverlay from './DragOverlay';
@@ -17,10 +17,9 @@ import FileUploadControls from './FileUploadControls';
 import ImageLightbox from './ImageLightbox';
 import PreviewContent from './PreviewContent';
 
-
 /**
  * Componente FileUploader - Un uploader de archivos general y reutilizable
- * 
+ *
  * @param {Array} files - Lista de archivos locales ya subidos
  * @param {Array} attachmentUrls - Lista de archivos remotos ya guardados
  * @param {Function} onAddFiles - Función a llamar cuando se agregan archivos
@@ -48,7 +47,7 @@ const FileUploader = ({
   defaultFileType = 'document',
   fileTypes = ['document'],
   fileTypeLabels = {
-    document: 'Documento'
+    document: 'Documento',
   },
   maxFiles = null,
   acceptedFileTypes = null,
@@ -58,7 +57,7 @@ const FileUploader = ({
   errorFileTypeMessage = 'Tipo(s) de archivo no permitido(s): {files}',
   compact = false,
   alwaysShowTypeSelector = false,
-  inlineLayout = false
+  inlineLayout = false,
 }) => {
   const [fileType, setFileType] = useState(defaultFileType);
   const [isDragging, setIsDragging] = useState(false);
@@ -104,7 +103,7 @@ const FileUploader = ({
 
   const addFiles = (newFiles) => {
     // Verificar límite de archivos si existe
-    if (maxFiles && (files.length + newFiles.length > maxFiles)) {
+    if (maxFiles && files.length + newFiles.length > maxFiles) {
       message.error(errorMaxFilesMessage.replace('{max}', maxFiles));
       return;
     }
@@ -112,35 +111,37 @@ const FileUploader = ({
     // Verificar tipos de archivo aceptados si existe la restricción
     if (acceptedFileTypes) {
       const validExtensions = acceptedFileTypes.split(',');
-      const invalidFiles = newFiles.filter(file => {
+      const invalidFiles = newFiles.filter((file) => {
         const extension = '.' + file.name.split('.').pop().toLowerCase();
         return !validExtensions.includes(extension);
       });
-      
+
       if (invalidFiles.length > 0) {
-        message.error(errorFileTypeMessage.replace(
-          '{files}', 
-          invalidFiles.map(f => f.name).join(', ')
-        ));
-        
+        message.error(
+          errorFileTypeMessage.replace(
+            '{files}',
+            invalidFiles.map((f) => f.name).join(', '),
+          ),
+        );
+
         // Filtrar solo archivos válidos
-        newFiles = newFiles.filter(file => {
+        newFiles = newFiles.filter((file) => {
           const extension = '.' + file.name.split('.').pop().toLowerCase();
           return validExtensions.includes(extension);
         });
-        
+
         if (newFiles.length === 0) return;
       }
     }
 
-    const filesWithType = newFiles.map(file => ({
+    const filesWithType = newFiles.map((file) => ({
       file,
       type: fileType,
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
-      isLocal: true
+      isLocal: true,
     }));
-    
+
     if (onAddFiles) {
       onAddFiles(filesWithType);
       message.success(successMessage.replace('{count}', newFiles.length));
@@ -157,25 +158,25 @@ const FileUploader = ({
     const imageFiles = [];
 
     // Archivos locales
-    files.forEach(file => {
+    files.forEach((file) => {
       if (isImageFile(file.name)) {
         imageFiles.push({
           src: getLocalURL(file.file),
           title: file.name,
-          description: `Tipo: ${file.type}`
+          description: `Tipo: ${file.type}`,
         });
       }
     });
 
     // Solo archivos remotos de Firebase
     attachmentUrls
-      .filter(file => file.url?.includes('firebasestorage.googleapis.com'))
-      .forEach(file => {
+      .filter((file) => file.url?.includes('firebasestorage.googleapis.com'))
+      .forEach((file) => {
         if (isImageFile(file.name)) {
           imageFiles.push({
             src: file.url,
             title: file.name,
-            description: `Tipo: ${file.type}`
+            description: `Tipo: ${file.type}`,
           });
         }
       });
@@ -185,21 +186,23 @@ const FileUploader = ({
 
   const allFiles = useMemo(() => {
     // Solo mapeamos los archivos locales con su vista previa
-    const localFiles = (files || []).map(file => ({
+    const localFiles = (files || []).map((file) => ({
       ...file,
       isLocal: true,
-      preview: file.file ? getLocalURL(file.file) : null
+      preview: file.file ? getLocalURL(file.file) : null,
     }));
 
     // Solo incluimos archivos remotos que ya están en Firebase
     const remoteFiles = (attachmentUrls || [])
-      .filter(attachment => attachment.url?.includes('firebasestorage.googleapis.com'))
-      .map(attachment => ({
+      .filter((attachment) =>
+        attachment.url?.includes('firebasestorage.googleapis.com'),
+      )
+      .map((attachment) => ({
         id: attachment.id || Math.random().toString(36).substr(2, 9),
         name: attachment.name || 'Archivo sin nombre',
         type: attachment.type || getFileTypeFromUrl(attachment.url),
         url: attachment.url,
-        isLocal: false
+        isLocal: false,
       }));
 
     return [...localFiles, ...remoteFiles];
@@ -209,41 +212,45 @@ const FileUploader = ({
     // Cleanup URLs when component unmounts
     return () => {
       allFiles
-        .filter(file => file.isLocal && file.preview)
-        .forEach(file => {
+        .filter((file) => file.isLocal && file.preview)
+        .forEach((file) => {
           revokeLocalURL(file.preview);
         });
     };
   }, [allFiles]);
 
-  const handlePreview = useCallback((file) => {
-    if (!file) return;
+  const handlePreview = useCallback(
+    (file) => {
+      if (!file) return;
 
-    const isImage = isImageFile(file.name);
-    const isPDF = isPDFFile(file.name);
+      const isImage = isImageFile(file.name);
+      const isPDF = isPDFFile(file.name);
 
-    if (isImage) {
-      const images = getImageFiles();
-      const index = images.findIndex(img =>
-        img.title === file.name &&
-        img.src === (file.url || (file.file && getLocalURL(file.file)))
-      );
-      setLightboxIndex(Math.max(0, index));
-      setLightboxOpen(true);
-    } else if (isPDF) {
-      setPreviewFile(file);
-      setPreviewVisible(true);
-    }
-  }, [getImageFiles]);
+      if (isImage) {
+        const images = getImageFiles();
+        const index = images.findIndex(
+          (img) =>
+            img.title === file.name &&
+            img.src === (file.url || (file.file && getLocalURL(file.file))),
+        );
+        setLightboxIndex(Math.max(0, index));
+        setLightboxOpen(true);
+      } else if (isPDF) {
+        setPreviewFile(file);
+        setPreviewVisible(true);
+      }
+    },
+    [getImageFiles],
+  );
 
   // Renderizado condicional basado en la prop compact
   const renderFileList = () => {
     if (!showFileList) return null;
-    
+
     if (compact) {
       return (
         <FileListDrawer
-          open={fileListDrawerOpen} 
+          open={fileListDrawerOpen}
           onClose={() => setFileListDrawerOpen(false)}
           files={allFiles}
           removeFile={onRemoveFiles ? handleRemoveFile : null}
@@ -253,7 +260,7 @@ const FileUploader = ({
         />
       );
     }
-    
+
     return (
       <FileList
         files={allFiles}
@@ -266,15 +273,15 @@ const FileUploader = ({
 
   const renderFileCountButton = () => {
     if (!compact || !showFileList) return null;
-      const fileCount = allFiles.length;
+    const fileCount = allFiles.length;
     const handleOpenDrawer = () => {
       setFileListDrawerOpen(true);
     };
 
     return (
-      <Badge count={fileCount} style={{ marginLeft: 8 }}>
-        <Button 
-          icon={<FileOutlined />} 
+      <Badge count={fileCount} style={{ marginLeft: '8px' }}>
+        <Button
+          icon={<FileOutlined />}
           onClick={handleOpenDrawer}
           disabled={fileCount === 0}
         >
@@ -285,7 +292,18 @@ const FileUploader = ({
   };
 
   return (
-    <div style={inlineLayout ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' } : {}}>
+    <div
+      style={
+        inlineLayout
+          ? {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+            }
+          : {}
+      }
+    >
       {onAddFiles && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
           <FileUploadControls
@@ -323,7 +341,7 @@ const FileUploader = ({
       <DragOverlay
         isDragging={isDragging}
         onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
+        onDragOver={(e) => e.preventDefault()}
         onDragLeave={(e) => {
           e.preventDefault();
           if (e.relatedTarget === null) {

@@ -10,24 +10,26 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
   const [sortDirection, setSortDirection] = useState('asc');
 
   const sortInvoices = useCallback((arr, by, dir) => {
-  const safeArr = Array.isArray(arr) ? arr : [];
-  if (by === 'defaultCriteria') return safeArr;
+    const safeArr = Array.isArray(arr) ? arr : [];
+    if (by === 'defaultCriteria') return safeArr;
 
     return [...safeArr].sort((a, b) => {
-      const getValue = (obj) => by.split('.').reduce((x, k) => (x != null ? x[k] : ''), obj);
+      const getValue = (obj) =>
+        by.split('.').reduce((x, k) => (x != null ? x[k] : ''), obj);
       let valueA = getValue(a);
       let valueB = getValue(b);
-      
-      const isNumeric = !isNaN(parseFloat(valueA)) && !isNaN(parseFloat(valueB));
-      
+
+      const isNumeric =
+        !isNaN(parseFloat(valueA)) && !isNaN(parseFloat(valueB));
+
       if (isNumeric) {
         valueA = parseFloat(valueA);
         valueB = parseFloat(valueB);
         return dir === 'asc' ? valueA - valueB : valueB - valueA;
       }
-      
-      return dir === 'asc' 
-        ? `${valueA}`.localeCompare(`${valueB}`) 
+
+      return dir === 'asc'
+        ? `${valueA}`.localeCompare(`${valueB}`)
         : `${valueB}`.localeCompare(`${valueA}`);
     });
   }, []);
@@ -42,10 +44,16 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
     if (!isSameOrder) {
       setProcessedInvoices(sorted);
     }
-  }, [processedInvoices, sortCriteria, sortDirection, sortInvoices, setProcessedInvoices]);
+  }, [
+    processedInvoices,
+    sortCriteria,
+    sortDirection,
+    sortInvoices,
+    setProcessedInvoices,
+  ]);
 
   const toggleSortDirection = useCallback(() => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
   }, []);
 
   const handleSortChange = useCallback((value) => {
@@ -65,46 +73,70 @@ export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
 };
 
 export const useFilterHandlers = (filters, onFiltersChange) => {
-  const createFilterHandler = useCallback((filterKey) => (value) => {
-    onFiltersChange?.({ ...(filters ?? {}), [filterKey]: value ?? null });
-  }, [filters, onFiltersChange]);
+  const createFilterHandler = useCallback(
+    (filterKey) => (value) => {
+      const nextValue =
+        filterKey === 'paymentStatus' ? value || '' : value ?? null;
+      onFiltersChange?.({ ...(filters ?? {}), [filterKey]: nextValue });
+    },
+    [filters, onFiltersChange],
+  );
 
-  const handlers = useMemo(() => ({
-    clientId: createFilterHandler('clientId'),
-    paymentMethod: createFilterHandler('paymentMethod'),
-    minAmount: createFilterHandler('minAmount'),
-    maxAmount: createFilterHandler('maxAmount'),
-  }), [createFilterHandler]);
+  const handlers = useMemo(
+    () => ({
+      clientId: createFilterHandler('clientId'),
+      paymentMethod: createFilterHandler('paymentMethod'),
+      paymentStatus: createFilterHandler('paymentStatus'),
+      minAmount: createFilterHandler('minAmount'),
+      maxAmount: createFilterHandler('maxAmount'),
+      receivablesOnly: createFilterHandler('receivablesOnly'),
+    }),
+    [createFilterHandler],
+  );
 
   const handleClearFilters = useCallback(() => {
     onFiltersChange?.({
       ...(filters ?? {}),
       clientId: null,
       paymentMethod: null,
+      paymentStatus: '',
       minAmount: null,
       maxAmount: null,
+      receivablesOnly: false,
     });
   }, [filters, onFiltersChange]);
 
   const hasActiveFilters = useMemo(() => {
-    return !!(filters?.clientId || filters?.paymentMethod || filters?.minAmount || filters?.maxAmount);
+    return !!(
+      filters?.clientId ||
+      filters?.paymentMethod ||
+      filters?.paymentStatus ||
+      filters?.minAmount ||
+      filters?.maxAmount ||
+      filters?.receivablesOnly
+    );
   }, [filters]);
 
   return { handlers, handleClearFilters, hasActiveFilters };
 };
 
 export const useClientOptions = () => {
-  const { clients: fetchedClients, loading: clientsLoading } = useFbGetClientsOnOpen({ isOpen: true });
-  
+  const { clients: fetchedClients, loading: clientsLoading } =
+    useFbGetClientsOnOpen({
+      isOpen: true,
+    });
+
   const clientOptions = useMemo(() => {
-  const clients = (fetchedClients || []).map((c) => c?.client).filter(Boolean);
+    const clients = (fetchedClients || [])
+      .map((c) => c?.client)
+      .filter(Boolean);
     return [
       { value: '', label: 'Todos' },
-      ...clients.map(client => ({
+      ...clients.map((client) => ({
         value: client.id,
         label: `${client.name}${client.rnc ? ` (${client.rnc})` : ''}`,
         searchText: `${client.name} ${client.rnc || ''}`.toLowerCase(),
-      }))
+      })),
     ];
   }, [fetchedClients]);
 
@@ -114,30 +146,37 @@ export const useClientOptions = () => {
 // Hook para manejar el estado del drawer
 export const useDrawerState = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  
+
   const openDrawer = useCallback(() => setDrawerVisible(true), []);
   const closeDrawer = useCallback(() => setDrawerVisible(false), []);
-  
+
   return { drawerVisible, openDrawer, closeDrawer };
 };
 
 // Hook para manejar breakpoints de manera más dinámica
 export const useResponsiveLayout = () => {
   const vw = useViewportWidth();
-  
-  return useMemo(() => ({
-    isMobile: vw <= BREAKPOINTS.mobile,
-  isTablet: vw > BREAKPOINTS.mobile && vw <= BREAKPOINTS.desktop,
-  isDesktop: vw > BREAKPOINTS.desktop,
-    currentBreakpoint: vw <= BREAKPOINTS.mobile ? 'mobile' : 
-                      vw <= BREAKPOINTS.desktop ? 'tablet' : 'desktop'
-  }), [vw]);
+
+  return useMemo(
+    () => ({
+      isMobile: vw <= BREAKPOINTS.mobile,
+      isTablet: vw > BREAKPOINTS.mobile && vw <= BREAKPOINTS.desktop,
+      isDesktop: vw > BREAKPOINTS.desktop,
+      currentBreakpoint:
+        vw <= BREAKPOINTS.mobile
+          ? 'mobile'
+          : vw <= BREAKPOINTS.desktop
+            ? 'tablet'
+            : 'desktop',
+    }),
+    [vw],
+  );
 };
 
 // Hook de colapso para desktop
 export const useFilterCollapse = () => {
   return useOverflowCollapse({
     moreButtonWidth: 80, // Ancho estimado del botón "Más filtros"
-    gap: 16 // Gap entre elementos
+    gap: 16, // Gap entre elementos
   });
-}; 
+};

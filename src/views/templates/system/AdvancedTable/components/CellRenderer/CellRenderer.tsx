@@ -40,7 +40,8 @@ const toNumber = (input: unknown): number => {
 
 const toText = (value: unknown): string => {
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'bigint') return String(value);
+  if (typeof value === 'number' || typeof value === 'bigint')
+    return String(value);
   if (typeof value === 'boolean') return value ? 'Sí' : 'No';
   if (value instanceof Date) return value.toISOString();
   return '';
@@ -53,7 +54,10 @@ const formatValue = (value: unknown, format?: FormatOption): string => {
     case 'percentage':
       return `${toNumber(value).toFixed(2)}%`;
     case 'currency':
-      return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(toNumber(value));
+      return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+      }).format(toNumber(value));
     default:
       return toText(value);
   }
@@ -72,7 +76,7 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
   type = 'text',
   value,
   cellProps,
-  format
+  format,
 }) => {
   switch (type) {
     case 'image': {
@@ -96,11 +100,18 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
       return <Badge text={formatValue(value, format)} />;
 
     case 'custom':
-      return typeof cellProps?.render === 'function' ? cellProps.render(value) : <span>{formatValue(value, format)}</span>;
+      return typeof cellProps?.render === 'function' ? (
+        cellProps.render(value)
+      ) : (
+        <span>{formatValue(value, format)}</span>
+      );
 
     case 'date': {
       const timestamp = parseTimestamp(value);
-      const dateTime = typeof timestamp === 'number' ? DateUtils.convertMillisToLuxonDate(timestamp) : null;
+      const dateTime =
+        typeof timestamp === 'number'
+          ? DateUtils.convertMillisToLuxonDate(timestamp)
+          : null;
       return <BadgeDate dateTime={dateTime ?? null} />;
     }
 
@@ -121,11 +132,11 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
 };
 
 const ImageContainer = styled.div`
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
 `;
 
 const CellImage = styled.img`

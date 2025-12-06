@@ -51,11 +51,12 @@ const accumulatePurchaseDataByProvider = (purchases) => {
 };
 
 export const ProviderPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+    const normalizedPurchases = Array.isArray(purchases) ? purchases : [];
 
-    const purchasesByProvider = useMemo(() => accumulatePurchaseDataByProvider(purchases), [purchases]);
+    const purchasesByProvider = useMemo(
+        () => accumulatePurchaseDataByProvider(normalizedPurchases),
+        [normalizedPurchases],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(purchasesByProvider);
         const dataTotals = labels.map(label => purchasesByProvider[label].total);
@@ -76,6 +77,10 @@ export const ProviderPurchasesBarChart = ({ purchases }) => {
 
     const chartRef = useRef(null);
 
+    if (!normalizedPurchases.length) {
+        return null;
+    }
+
     return (
         <Container>
             <Typography variant='h3'>Compras Totales por Proveedor</Typography>
@@ -85,7 +90,7 @@ export const ProviderPurchasesBarChart = ({ purchases }) => {
 }
 
 const Container = styled.div`
-    height: 200px;
     display: grid;
     gap: 1em;
+    height: 200px;
 `;

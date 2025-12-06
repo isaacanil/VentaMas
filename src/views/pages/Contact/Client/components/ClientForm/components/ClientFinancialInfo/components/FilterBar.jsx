@@ -4,13 +4,18 @@ import styled from 'styled-components';
 
 const Bar = styled.div`
   display: flex;
-  align-items: center;
   gap: 1rem;
-  padding: 0rem 0em;
-  background: var(--White);
+  align-items: center;
+  padding: 0;
+  background: var(--white);
 `;
 
-export const FilterBar = ({ filterStatus, setFilterStatus, openAccountsCount = 0, closedAccountsCount = 0 }) => {
+export const FilterBar = ({
+  filterStatus,
+  setFilterStatus,
+  openAccountsCount = 0,
+  closedAccountsCount = 0,
+}) => {
   return (
     <Bar>
       <Button.Group>
@@ -29,4 +34,4 @@ export const FilterBar = ({ filterStatus, setFilterStatus, openAccountsCount = 0
       </Button.Group>
     </Bar>
   );
-}; 
+};

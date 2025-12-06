@@ -12,7 +12,8 @@ export const sanitizeFirestoreDocument = (input) => {
 
     if (value && typeof value === 'object') {
       const prototype = Object.getPrototypeOf(value);
-      const isPlainObject = prototype === Object.prototype || prototype === null;
+      const isPlainObject =
+        prototype === Object.prototype || prototype === null;
 
       if (!isPlainObject) {
         return value;

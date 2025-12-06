@@ -1,5 +1,16 @@
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { Card, Form, Input, Select, InputNumber, Button, Row, Col, DatePicker, message } from 'antd';
+import {
+  Card,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  Button,
+  Row,
+  Col,
+  DatePicker,
+  message,
+} from 'antd';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,18 +28,17 @@ export const CreditNoteCreate = () => {
   const mockClients = [
     { id: 1, name: 'Cliente Ejemplo', rncCedula: '123456789' },
     { id: 2, name: 'Otro Cliente', rncCedula: '987654321' },
-    { id: 3, name: 'Empresa ABC', rncCedula: '111222333' }
+    { id: 3, name: 'Empresa ABC', rncCedula: '111222333' },
   ];
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       // Aquí iría la lógica para guardar la nota de crédito
-  
-      
+
       // Simular guardado
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       message.success('Nota de crédito creada exitosamente');
       navigate(CREDIT_NOTE_LIST);
     } catch (error) {
@@ -48,10 +58,7 @@ export const CreditNoteCreate = () => {
       <Card
         title="Crear Nota de Crédito"
         extra={
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={handleBack}
-          >
+          <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
             Volver al Listado
           </Button>
         }
@@ -62,7 +69,7 @@ export const CreditNoteCreate = () => {
           onFinish={handleSubmit}
           initialValues={{
             date: new Date(),
-            type: 'devolucion'
+            type: 'devolucion',
           }}
         >
           <Row gutter={16}>
@@ -77,7 +84,7 @@ export const CreditNoteCreate = () => {
                   showSearch
                   optionFilterProp="children"
                 >
-                  {mockClients.map(client => (
+                  {mockClients.map((client) => (
                     <Option key={client.id} value={client.id}>
                       {client.name} ({client.rncCedula})
                     </Option>
@@ -85,7 +92,7 @@ export const CreditNoteCreate = () => {
                 </Select>
               </Form.Item>
             </Col>
-            
+
             <Col xs={24} sm={12} md={8}>
               <Form.Item
                 label="Fecha"
@@ -117,7 +124,12 @@ export const CreditNoteCreate = () => {
               <Form.Item
                 label="Factura de Referencia"
                 name="referenceInvoice"
-                rules={[{ required: true, message: 'Ingrese la factura de referencia' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Ingrese la factura de referencia',
+                  },
+                ]}
               >
                 <Input placeholder="Número de factura" />
               </Form.Item>
@@ -129,7 +141,11 @@ export const CreditNoteCreate = () => {
                 name="amount"
                 rules={[
                   { required: true, message: 'Ingrese el monto' },
-                  { type: 'number', min: 0.01, message: 'El monto debe ser mayor a 0' }
+                  {
+                    type: 'number',
+                    min: 0.01,
+                    message: 'El monto debe ser mayor a 0',
+                  },
                 ]}
               >
                 <InputNumber
@@ -137,8 +153,10 @@ export const CreditNoteCreate = () => {
                   placeholder="0.00"
                   step={0.01}
                   precision={2}
-                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                  formatter={(value) =>
+                    `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
                 />
               </Form.Item>
             </Col>
@@ -147,7 +165,9 @@ export const CreditNoteCreate = () => {
           <Form.Item
             label="Motivo/Descripción"
             name="description"
-            rules={[{ required: true, message: 'Ingrese el motivo o descripción' }]}
+            rules={[
+              { required: true, message: 'Ingrese el motivo o descripción' },
+            ]}
           >
             <Input.TextArea
               rows={4}

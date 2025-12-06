@@ -1,11 +1,14 @@
-import { collection, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { collection, onSnapshot } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice";
-import { selectNcfType, selectTaxReceiptType } from "../../features/taxReceipt/taxReceiptSlice";
-import { serializeFirestoreDocuments } from "../../utils/serialization/serializeFirestoreData";
-import { db } from "../firebaseconfig";
+import { selectUser } from '../../features/auth/userSlice';
+import {
+  selectNcfType,
+  selectTaxReceiptType,
+} from '../../features/taxReceipt/taxReceiptSlice';
+import { serializeFirestoreDocuments } from '../../utils/serialization/serializeFirestoreData';
+import { db } from '../firebaseconfig';
 
 export const fbGetTaxReceipt = () => {
   const user = useSelector(selectUser);
@@ -16,7 +19,7 @@ export const fbGetTaxReceipt = () => {
   const [isLoading, setLoading] = useState(true);
   useEffect(() => {
     let unsubscribe;
-    
+
     // Siempre iniciamos cargando
     setLoading(true);
 
@@ -27,16 +30,27 @@ export const fbGetTaxReceipt = () => {
     }
 
     try {
-      const taxReceiptsRef = collection(db, "businesses", user.businessID, "taxReceipts");
+      const taxReceiptsRef = collection(
+        db,
+        'businesses',
+        user.businessID,
+        'taxReceipts',
+      );
       unsubscribe = onSnapshot(
         taxReceiptsRef,
         (snapshot) => {
-          const taxReceiptsArray = snapshot.docs.map(item => item.data());
-          const serializedTaxReceipts = serializeFirestoreDocuments(taxReceiptsArray);
+          const taxReceiptsArray = snapshot.docs.map((item) => item.data());
+          const serializedTaxReceipts =
+            serializeFirestoreDocuments(taxReceiptsArray);
           setTaxReceipt(serializedTaxReceipts);
-          const defaultOption = serializedTaxReceipts.find(item => item.data.name === 'CONSUMIDOR FINAL');
-          const availableTypes = serializedTaxReceipts.map(item => item.data.name).filter(Boolean);
-          const fallbackType = defaultOption?.data?.name || availableTypes[0] || null;
+          const defaultOption = serializedTaxReceipts.find(
+            (item) => item.data.name === 'CONSUMIDOR FINAL',
+          );
+          const availableTypes = serializedTaxReceipts
+            .map((item) => item.data.name)
+            .filter(Boolean);
+          const fallbackType =
+            defaultOption?.data?.name || availableTypes[0] || null;
 
           const shouldSelectFallback =
             !currentNcfType ||
@@ -48,13 +62,13 @@ export const fbGetTaxReceipt = () => {
           setLoading(false); // Set loading to false after data is fetched
         },
         (error) => {
-          console.error("Error fetching tax receipts: ", error);
+          console.error('Error fetching tax receipts: ', error);
           setLoading(false);
           setTaxReceipt([]);
-        }
+        },
       );
     } catch (error) {
-      console.error("Exception in tax receipts fetch: ", error);
+      console.error('Exception in tax receipts fetch: ', error);
       setLoading(false);
       setTaxReceipt([]);
     }

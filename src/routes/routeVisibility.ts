@@ -35,14 +35,19 @@ export const registerRoutes = (routesArray: AppRoute[]): void => {
  *  - status === DISABLED (no debería existir pero por seguridad)
  *  - meta hideInMenu: true (en definición del menú o la ruta)
  */
-export const isHiddenInMenu = (path: string, menuItem?: MenuItemMeta): boolean => {
+export const isHiddenInMenu = (
+  path: string,
+  menuItem?: MenuItemMeta,
+): boolean => {
   const route = routeIndex.get(path);
   if (!route) return false; // Si no encontramos ruta no la ocultamos por defecto
   const status = route.status;
-  if (status === ROUTE_STATUS.HIDDEN || status === ROUTE_STATUS.DISABLED) return true;
+  if (status === ROUTE_STATUS.HIDDEN || status === ROUTE_STATUS.DISABLED)
+    return true;
   return Boolean(route.hideInMenu || menuItem?.hideInMenu);
 };
 
-export const getRouteMeta = (path: string): AppRoute | undefined => routeIndex.get(path);
+export const getRouteMeta = (path: string): AppRoute | undefined =>
+  routeIndex.get(path);
 
 export default isHiddenInMenu;

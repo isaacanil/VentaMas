@@ -12,9 +12,8 @@ const BarcodePrintPage = () => {
   // Simular código de barras que recibe el componente
   const mockBarcode = {
     name: 'Producto de Prueba',
-    number: '123456789012'
+    number: '123456789012',
   };
-
 
   // useLayoutEffect removido; la impresión se gestiona en el modal
 
@@ -30,14 +29,14 @@ const BarcodePrintPage = () => {
     setShowPrintModal(false);
   };
 
-
   return (
     <div>
       {/* Interfaz simple con botón de imprimir */}
       <div className="no-print">
         <div className="interface">
           <div className="mock-info">
-            <strong>Código simulado:</strong> {mockBarcode.name} - {mockBarcode.number}
+            <strong>Código simulado:</strong> {mockBarcode.name} -{' '}
+            {mockBarcode.number}
           </div>
           <button onClick={handlePrintClick} className="print-button">
             🖨️ Imprimir Códigos de Barras 2
@@ -46,11 +45,11 @@ const BarcodePrintPage = () => {
       </div>
 
       {/* Modal de configuración de impresión */}
-          <BarcodePrintModal
-            show={showPrintModal}
-            onClose={handleCancelPrint}
-            selectedBarcode={mockBarcode}
-          />
+      <BarcodePrintModal
+        show={showPrintModal}
+        onClose={handleCancelPrint}
+        selectedBarcode={mockBarcode}
+      />
     </div>
   );
 };

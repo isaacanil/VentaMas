@@ -1,15 +1,37 @@
-import { collection, query, where, onSnapshot, getDocs } from "firebase/firestore"
-import { filter } from "lodash"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useSelector } from "react-redux"
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocs,
+} from 'firebase/firestore';
+import { filter } from 'lodash';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-import { selectUser } from "../../features/auth/userSlice"
-import { SelectSettingCart } from "../../features/cart/cartSlice"
-import { SelectActiveIngredients, SelectCategories, SelectCategoryStatus } from "../../features/category/categorySlicer"
-import { DEFAULT_FILTER_CONTEXT, selectCriterio, selectInventariable, selectItbis, selectPriceStatus, selectCostStatus, selectPromotionStatus, selectOrden, selectStockAvailability, selectStockAlertLevel, selectStockRequirement, selectStockLocations } from "../../features/filterProduct/filterProductsSlice"
-import { getTax } from "../../utils/pricing"
-import { db } from "../firebaseconfig"
-
+import { selectUser } from '../../features/auth/userSlice';
+import { SelectSettingCart } from '../../features/cart/cartSlice';
+import {
+  SelectActiveIngredients,
+  SelectCategories,
+  SelectCategoryStatus,
+} from '../../features/category/categorySlicer';
+import {
+  DEFAULT_FILTER_CONTEXT,
+  selectCriterio,
+  selectInventariable,
+  selectItbis,
+  selectPriceStatus,
+  selectCostStatus,
+  selectPromotionStatus,
+  selectOrden,
+  selectStockAvailability,
+  selectStockAlertLevel,
+  selectStockRequirement,
+  selectStockLocations,
+} from '../../features/filterProduct/filterProductsSlice';
+import { getTax } from '../../utils/pricing';
+import { db } from '../firebaseconfig';
 
 const normalizeTaxValue = (value) => {
   if (value === null || value === undefined || value === '') return null;
@@ -30,14 +52,20 @@ function filterProducts(
   stockAlertLevel,
   stockRequirement,
   thresholds,
-  serverApplied = {}
+  serverApplied = {},
 ) {
   // Filtro por Inventariable
   if (!serverApplied.inventariable) {
     if (inventariable === 'si') {
-      productsArray = filter(productsArray, product => product.trackInventory === true);
+      productsArray = filter(
+        productsArray,
+        (product) => product.trackInventory === true,
+      );
     } else if (inventariable === 'no') {
-      productsArray = filter(productsArray, product => product.trackInventory === false);
+      productsArray = filter(
+        productsArray,
+        (product) => product.trackInventory === false,
+      );
     }
   }
 
@@ -57,12 +85,12 @@ function filterProducts(
   // Filtro por estado de precio
   if (!serverApplied.priceStatus) {
     if (priceStatus === 'sinPrecio') {
-      productsArray = filter(productsArray, product => {
+      productsArray = filter(productsArray, (product) => {
         const price = Number(product?.pricing?.price ?? 0);
         return !Number.isFinite(price) || price <= 0;
       });
     } else if (priceStatus === 'conPrecio') {
-      productsArray = filter(productsArray, product => {
+      productsArray = filter(productsArray, (product) => {
         const price = Number(product?.pricing?.price ?? 0);
         return Number.isFinite(price) && price > 0;
       });
@@ -72,12 +100,12 @@ function filterProducts(
   // Filtro por estado de costo
   if (!serverApplied.costStatus) {
     if (costStatus === 'sinCosto') {
-      productsArray = filter(productsArray, product => {
+      productsArray = filter(productsArray, (product) => {
         const cost = Number(product?.pricing?.cost ?? 0);
         return !Number.isFinite(cost) || cost <= 0;
       });
     } else if (costStatus === 'conCosto') {
-      productsArray = filter(productsArray, product => {
+      productsArray = filter(productsArray, (product) => {
         const cost = Number(product?.pricing?.cost ?? 0);
         return Number.isFinite(cost) && cost > 0;
       });
@@ -87,17 +115,29 @@ function filterProducts(
   // Filtro por promociones
   if (!serverApplied.promotionStatus) {
     if (promotionStatus === 'promocionActiva') {
-      productsArray = filter(productsArray, product => product?.promotions?.isActive === true);
+      productsArray = filter(
+        productsArray,
+        (product) => product?.promotions?.isActive === true,
+      );
     } else if (promotionStatus === 'sinPromocion') {
-      productsArray = filter(productsArray, product => product?.promotions?.isActive !== true);
+      productsArray = filter(
+        productsArray,
+        (product) => product?.promotions?.isActive !== true,
+      );
     }
   }
 
   // Filtro disponibilidad de stock
   if (stockAvailability === 'conStock') {
-    productsArray = filter(productsArray, product => (product.stock ?? 0) > 0);
+    productsArray = filter(
+      productsArray,
+      (product) => (product.stock ?? 0) > 0,
+    );
   } else if (stockAvailability === 'sinStock') {
-    productsArray = filter(productsArray, product => (product.stock ?? 0) === 0);
+    productsArray = filter(
+      productsArray,
+      (product) => (product.stock ?? 0) === 0,
+    );
   }
 
   // Filtro por requerimiento de stock
@@ -106,9 +146,15 @@ function filterProducts(
   //  - false | undefined => El producto permite vender sin stock ("noRequiere")
   if (!serverApplied.stockRequirement) {
     if (stockRequirement === 'requiere') {
-      productsArray = filter(productsArray, product => product.restrictSaleWithoutStock === true);
+      productsArray = filter(
+        productsArray,
+        (product) => product.restrictSaleWithoutStock === true,
+      );
     } else if (stockRequirement === 'noRequiere') {
-      productsArray = filter(productsArray, product => product.restrictSaleWithoutStock !== true); // false o undefined
+      productsArray = filter(
+        productsArray,
+        (product) => product.restrictSaleWithoutStock !== true,
+      ); // false o undefined
     }
   }
 
@@ -116,9 +162,11 @@ function filterProducts(
   if (stockAlertLevel !== 'todos') {
     const { lowThreshold, criticalThreshold } = thresholds || {};
     const low = Number.isFinite(lowThreshold) ? lowThreshold : 20;
-    const critical = Number.isFinite(criticalThreshold) ? criticalThreshold : Math.min(low, 10);
+    const critical = Number.isFinite(criticalThreshold)
+      ? criticalThreshold
+      : Math.min(low, 10);
 
-    productsArray = filter(productsArray, product => {
+    productsArray = filter(productsArray, (product) => {
       if (!product.trackInventory) return stockAlertLevel === 'normal'; // Productos sin control se consideran 'normal'
       const stock = product.stock ?? 0;
       if (stock <= 0) {
@@ -157,9 +205,7 @@ function orderingProducts(productsArray, criterio, orden) {
         }
         return 0; // Retorna 0 si no hay condiciones de ordenamiento para este caso
       });
-    }
-
-    else {
+    } else {
       const fields = field.split('.'); // Divide el campo usando el punto
 
       productsArray.sort((a, b) => {
@@ -167,18 +213,17 @@ function orderingProducts(productsArray, criterio, orden) {
         let valueB = b;
 
         // Accede a las propiedades anidadas usando los fragmentos
-        fields.forEach(f => {
+        fields.forEach((f) => {
           valueA = valueA[f];
           valueB = valueB[f];
         });
 
-
-        if (order === 'asc') return (valueA > valueB ? 1 : -1);
-        if (order === 'desc') return (valueA < valueB ? 1 : -1);
+        if (order === 'asc') return valueA > valueB ? 1 : -1;
+        if (order === 'desc') return valueA < valueB ? 1 : -1;
         if (order === 'ascNum') return valueA - valueB; // Para ascendente
         if (order === 'descNum') return valueB - valueA; // Para descendente
-        if (order === true) return (valueA === true ? -1 : 1);
-        if (order === false) return (valueA === true ? 1 : -1);
+        if (order === true) return valueA === true ? -1 : 1;
+        if (order === false) return valueA === true ? 1 : -1;
       });
     }
   };
@@ -197,18 +242,26 @@ function orderingProducts(productsArray, criterio, orden) {
 // Obtener todos los productos de la colección 'products'
 export const fbGetProducts = async (user) => {
   try {
-    if(!user?.businessID || typeof user.businessID != 'string') return [];
-    const productsRef = collection(db, "businesses", user.businessID, "products");
+    if (!user?.businessID || typeof user.businessID != 'string') return [];
+    const productsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'products',
+    );
     const snapshot = await getDocs(productsRef);
-    const allProducts = snapshot.docs.map(doc => doc.data());
+    const allProducts = snapshot.docs.map((doc) => doc.data());
     return allProducts;
   } catch (error) {
-    console.error("Error al obtener todos los productos:", error);
+    console.error('Error al obtener todos los productos:', error);
     throw error;
   }
 };
 
-export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILTER_CONTEXT) {
+export function useGetProducts(
+  trackInventory = false,
+  contextKey = DEFAULT_FILTER_CONTEXT,
+) {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
@@ -218,15 +271,31 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
   const criterio = useSelector((state) => selectCriterio(state, contextKey));
   const orden = useSelector((state) => selectOrden(state, contextKey));
 
-  const inventariable = useSelector((state) => selectInventariable(state, contextKey));
+  const inventariable = useSelector((state) =>
+    selectInventariable(state, contextKey),
+  );
   const itbis = useSelector((state) => selectItbis(state, contextKey));
-  const priceStatus = useSelector((state) => selectPriceStatus(state, contextKey));
-  const costStatus = useSelector((state) => selectCostStatus(state, contextKey));
-  const promotionStatus = useSelector((state) => selectPromotionStatus(state, contextKey));
-  const stockAvailability = useSelector((state) => selectStockAvailability(state, contextKey));
-  const stockAlertLevel = useSelector((state) => selectStockAlertLevel(state, contextKey));
-  const stockRequirement = useSelector((state) => selectStockRequirement(state, contextKey));
-  const stockLocations = useSelector((state) => selectStockLocations(state, contextKey));
+  const priceStatus = useSelector((state) =>
+    selectPriceStatus(state, contextKey),
+  );
+  const costStatus = useSelector((state) =>
+    selectCostStatus(state, contextKey),
+  );
+  const promotionStatus = useSelector((state) =>
+    selectPromotionStatus(state, contextKey),
+  );
+  const stockAvailability = useSelector((state) =>
+    selectStockAvailability(state, contextKey),
+  );
+  const stockAlertLevel = useSelector((state) =>
+    selectStockAlertLevel(state, contextKey),
+  );
+  const stockRequirement = useSelector((state) =>
+    selectStockRequirement(state, contextKey),
+  );
+  const stockLocations = useSelector((state) =>
+    selectStockLocations(state, contextKey),
+  );
   const selectedWarehouses = useMemo(
     () =>
       Array.isArray(stockLocations)
@@ -251,14 +320,23 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
   const settingsCart = useSelector(SelectSettingCart);
   const billing = settingsCart?.billing || {}; // reutilizamos estructura existente
   const thresholds = {
-    lowThreshold: Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20,
-    criticalThreshold: Number.isFinite(billing?.stockCriticalThreshold) ? billing.stockCriticalThreshold : Math.min(Number.isFinite(billing?.stockLowThreshold) ? billing.stockLowThreshold : 20, 10)
+    lowThreshold: Number.isFinite(billing?.stockLowThreshold)
+      ? billing.stockLowThreshold
+      : 20,
+    criticalThreshold: Number.isFinite(billing?.stockCriticalThreshold)
+      ? billing.stockCriticalThreshold
+      : Math.min(
+          Number.isFinite(billing?.stockLowThreshold)
+            ? billing.stockLowThreshold
+            : 20,
+          10,
+        ),
   };
 
   const activeIngredients = useSelector(SelectActiveIngredients);
   const categories = useSelector(SelectCategories);
 
-  const categoriesStatus = useSelector(SelectCategoryStatus)
+  const categoriesStatus = useSelector(SelectCategoryStatus);
 
   useEffect(() => {
     if (!stockFilterActive) {
@@ -270,7 +348,12 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
 
     if (!user?.businessID) return;
 
-    const stockRef = collection(db, "businesses", String(user.businessID), "productsStock");
+    const stockRef = collection(
+      db,
+      'businesses',
+      String(user.businessID),
+      'productsStock',
+    );
     const warehouseDocsMap = {};
     const warehouseLoaded = {};
     const expectedWarehouses = selectedWarehouses.length;
@@ -285,32 +368,37 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       const upperBound = `${warehouseId}\uf8ff`;
       const locationQuery = query(
         stockRef,
-        where("location", ">=", lowerBound),
-        where("location", "<", upperBound),
-        where("isDeleted", "==", false),
-        where("status", "==", "active")
+        where('location', '>=', lowerBound),
+        where('location', '<', upperBound),
+        where('isDeleted', '==', false),
+        where('status', '==', 'active'),
       );
 
       return onSnapshot(
         locationQuery,
         (snapshot) => {
           if (!isMounted) return;
-          warehouseDocsMap[warehouseId] = snapshot.docs.map((doc) => doc.data());
+          warehouseDocsMap[warehouseId] = snapshot.docs.map((doc) =>
+            doc.data(),
+          );
           warehouseLoaded[warehouseId] = true;
           const aggregatedMap = {};
-          Object.entries(warehouseDocsMap).forEach(([currentWarehouseId, docs]) => {
-            docs.forEach((docData) => {
-              const productId = docData?.productId;
-              if (!productId) return;
-              const quantity = Number(docData?.quantity) || 0;
-              if (quantity <= 0) return;
-              if (!aggregatedMap[productId]) {
-                aggregatedMap[productId] = {};
-              }
-              aggregatedMap[productId][currentWarehouseId] =
-                (aggregatedMap[productId][currentWarehouseId] || 0) + quantity;
-            });
-          });
+          Object.entries(warehouseDocsMap).forEach(
+            ([currentWarehouseId, docs]) => {
+              docs.forEach((docData) => {
+                const productId = docData?.productId;
+                if (!productId) return;
+                const quantity = Number(docData?.quantity) || 0;
+                if (quantity <= 0) return;
+                if (!aggregatedMap[productId]) {
+                  aggregatedMap[productId] = {};
+                }
+                aggregatedMap[productId][currentWarehouseId] =
+                  (aggregatedMap[productId][currentWarehouseId] || 0) +
+                  quantity;
+              });
+            },
+          );
           setWarehouseStockIndex(aggregatedMap);
           const allReady =
             expectedWarehouses > 0
@@ -320,18 +408,18 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
           setStockIndexVersion((prev) => prev + 1);
         },
         (error) => {
-          console.error("Error al escuchar stock filtrado por almacén:", error);
+          console.error('Error al escuchar stock filtrado por almacén:', error);
           if (isMounted) {
             setStockIndexReady(true);
           }
-        }
+        },
       );
     });
 
     return () => {
       isMounted = false;
       unsubscribes.forEach((unsubscribe) => {
-        if (typeof unsubscribe === "function") unsubscribe();
+        if (typeof unsubscribe === 'function') unsubscribe();
       });
     };
   }, [user?.businessID, stockFilterActive, selectedWarehouses]);
@@ -343,23 +431,19 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       const sanitizedSelected = Array.isArray(selectedWarehouses)
         ? selectedWarehouses.filter(Boolean)
         : [];
-      const baseMapper = (product) => {
-        const rawStock =
-          typeof product?.originalStock === 'number'
-            ? product.originalStock
-            : Number(product?.stock ?? 0);
-        const baseStock = Number.isFinite(rawStock) ? rawStock : 0;
-        const stockByLocation = stockIndex?.[product.id] || undefined;
-        return {
-          ...product,
-          originalStock: baseStock,
-          stock: baseStock,
-          globalStock: baseStock,
-          displayStock: baseStock,
-          stockSource: 'global',
-          stockByLocation,
-        };
+      const resolveBaseStock = (product) => {
+        const declaredStock = Number(product?.stock);
+        if (Number.isFinite(declaredStock)) {
+          return declaredStock;
+        }
+        const declaredOriginal = Number(product?.originalStock);
+        return Number.isFinite(declaredOriginal) ? declaredOriginal : 0;
       };
+      const withStock = (product, stockValue) => ({
+        ...product,
+        stock: stockValue,
+      });
+      const baseMapper = (product) => withStock(product, resolveBaseStock(product));
 
       if (!stockFilterActive || sanitizedSelected.length === 0) {
         return base.map(baseMapper);
@@ -369,35 +453,20 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
 
       const result = [];
       for (const product of base) {
-        const rawStock =
-          typeof product?.originalStock === 'number'
-            ? product.originalStock
-            : Number(product?.stock ?? 0);
-        const baseStock = Number.isFinite(rawStock) ? rawStock : 0;
         const stockByLocation = stockIndex?.[product.id] || {};
         const scopedStock = sanitizedSelected.reduce(
           (sum, locationId) => sum + Number(stockByLocation?.[locationId] || 0),
-          0
+          0,
         );
 
         if (scopedStock <= 0) continue;
 
-        result.push({
-          ...product,
-          originalStock: baseStock,
-          globalStock: baseStock,
-          stock: scopedStock,
-          scopedStock,
-          displayStock: scopedStock,
-          stockSource: 'location',
-          stockByLocation,
-          filteredWarehouses: sanitizedSelected,
-        });
+        result.push(withStock(product, scopedStock));
       }
 
       return result;
     },
-    [stockFilterActive, stockIndexReady, selectedWarehouses]
+    [stockFilterActive, stockIndexReady, selectedWarehouses],
   );
 
   const updateFilteredProducts = useCallback(
@@ -415,12 +484,12 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       setProducts(result);
       const total = result.reduce(
         (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
-        0
+        0,
       );
       setVisibleStockTotal(total);
       setLoading(false);
     },
-    [applyLocationFilter]
+    [applyLocationFilter],
   );
 
   const updateFilteredProductsRef = useRef(updateFilteredProducts);
@@ -432,8 +501,13 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
   useEffect(() => {
     if (!user || !user?.businessID) return;
     try {
-      setLoading(true)
-      const productsRef = collection(db, "businesses", String(user?.businessID), "products");
+      setLoading(true);
+      const productsRef = collection(
+        db,
+        'businesses',
+        String(user?.businessID),
+        'products',
+      );
 
       const constraints = [];
       const serverAppliedFilters = {
@@ -445,7 +519,14 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
         stockRequirement: false,
       };
       let inequalityField = null;
-      const inequalityOperators = new Set(['<', '<=', '>', '>=', '!=', 'not-in']);
+      const inequalityOperators = new Set([
+        '<',
+        '<=',
+        '>',
+        '>=',
+        '!=',
+        'not-in',
+      ]);
       const tryAddConstraint = (field, operator, value) => {
         if (inequalityOperators.has(operator)) {
           if (inequalityField && inequalityField !== field) {
@@ -459,11 +540,15 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
 
       const categoriesNameArray = categories.map((item) => item.name);
       if (categories.length > 0 && categoriesStatus) {
-        constraints.push(where("category", "in", categoriesNameArray));
+        constraints.push(where('category', 'in', categoriesNameArray));
       }
-      const activeIngredientsNameArray = activeIngredients.map((item) => item.name);
+      const activeIngredientsNameArray = activeIngredients.map(
+        (item) => item.name,
+      );
       if (activeIngredients.length > 0) {
-        constraints.push(where("activeIngredients", "in", activeIngredientsNameArray));
+        constraints.push(
+          where('activeIngredients', 'in', activeIngredientsNameArray),
+        );
       }
 
       if (inventariable === 'si') {
@@ -478,7 +563,10 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
 
       if (itbis !== 'todos') {
         const normalizedItbis = normalizeTaxValue(itbis);
-        if (normalizedItbis !== null && tryAddConstraint('pricing.tax', '==', normalizedItbis)) {
+        if (
+          normalizedItbis !== null &&
+          tryAddConstraint('pricing.tax', '==', normalizedItbis)
+        ) {
           serverAppliedFilters.itbis = true;
         }
       }
@@ -521,9 +609,8 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
           delete doc?.updatedAt;
           delete doc?.createdAt;
           delete doc?.createdBy;
-          return doc
-        }
-        );
+          return doc;
+        });
 
         productsArray = filterProducts(
           productsArray,
@@ -536,11 +623,13 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
           stockAlertLevel,
           stockRequirement,
           thresholds,
-          serverAppliedFilters
+          serverAppliedFilters,
         );
         productsArray = orderingProducts(productsArray, criterio, orden);
 
-        productsArray = productsArray.sort((a, _b) => a?.custom === true ? -1 : 1);
+        productsArray = productsArray.sort((a, _b) =>
+          a?.custom === true ? -1 : 1,
+        );
 
         processedProductsRef.current = productsArray;
         if (typeof updateFilteredProductsRef.current === 'function') {
@@ -552,12 +641,30 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
         unsubscribe();
       };
     } catch (error) {
-      setLoading(false)
+      setLoading(false);
       setError(error);
-      console.error("Ocurrió un error al obtener los productos:", error);
+      console.error('Ocurrió un error al obtener los productos:', error);
     }
-
-  }, [user?.businessID, trackInventory, categories, activeIngredients, categoriesStatus, criterio, orden, inventariable, itbis, priceStatus, costStatus, promotionStatus, stockAvailability, stockAlertLevel, stockRequirement, billing?.stockLowThreshold, billing?.stockCriticalThreshold, contextKey]);
+  }, [
+    user?.businessID,
+    trackInventory,
+    categories,
+    activeIngredients,
+    categoriesStatus,
+    criterio,
+    orden,
+    inventariable,
+    itbis,
+    priceStatus,
+    costStatus,
+    promotionStatus,
+    stockAvailability,
+    stockAlertLevel,
+    stockRequirement,
+    billing?.stockLowThreshold,
+    billing?.stockCriticalThreshold,
+    contextKey,
+  ]);
 
   useEffect(() => {
     if (!Array.isArray(processedProductsRef.current)) return;
@@ -571,7 +678,7 @@ export function useGetProducts(trackInventory = false, contextKey = DEFAULT_FILT
       stockIndexReady,
       visibleStockTotal,
     }),
-    [stockFilterActive, selectedWarehouses, stockIndexReady, visibleStockTotal]
+    [stockFilterActive, selectedWarehouses, stockIndexReady, visibleStockTotal],
   );
 
   return { products, error, loading, setLoading, stockMeta };

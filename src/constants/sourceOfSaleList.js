@@ -1,11 +1,11 @@
 export const sourceOfSaleList = [
-    {
-        serviceName: 'Presencial',
-    },
-    {
-        serviceName: 'WhatsApp',
-    },
-    {
-        serviceName: 'Teléfono',
-    },
+  {
+    serviceName: 'Presencial',
+  },
+  {
+    serviceName: 'WhatsApp',
+  },
+  {
+    serviceName: 'Teléfono',
+  },
 ];

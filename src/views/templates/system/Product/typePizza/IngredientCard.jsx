@@ -1,34 +1,34 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-import { deleteIngredientTypePizza } from '../../../../../firebase/firebaseconfig.jsx'
-import { ButtonGroup } from '../../Button/ButtonGroup'
-import { DeleteButton } from '../../Button/DeleteButton'
-import { EditButton } from '../../Button/EditButton'
+import { deleteIngredientTypePizza } from '../../../../../firebase/firebaseconfig.jsx';
+import { ButtonGroup } from '../../Button/ButtonGroup';
+import { DeleteButton } from '../../Button/DeleteButton';
+import { EditButton } from '../../Button/EditButton';
 
-export const IngredientCard = ({item}) => {
-    const DeleteIngredient = (item) => {
-        deleteIngredientTypePizza(item)    }
-    return (
-        <Item>
-            <span>{item.name}</span>
-            <span>{item.cost}</span>
-            <ButtonGroup>
-                <DeleteButton fn={() => DeleteIngredient(item)} />
-                <EditButton />
-            </ButtonGroup>
-        </Item>
-    )
-}
+export const IngredientCard = ({ item }) => {
+  const DeleteIngredient = (item) => {
+    deleteIngredientTypePizza(item);
+  };
+  return (
+    <Item>
+      <span>{item.name}</span>
+      <span>{item.cost}</span>
+      <ButtonGroup>
+        <DeleteButton fn={() => DeleteIngredient(item)} />
+        <EditButton />
+      </ButtonGroup>
+    </Item>
+  );
+};
 const Item = styled.div`
-    height: 2.5em;
-    background-color: #f0f0f0;
-    width: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.300);
-    border-radius: 8px;
-    display: grid;
-   
-    align-items: center;
-    padding: 0 1em;
-    grid-template-columns: 1fr 1fr min-content min-content;
-`
+  display: grid;
+  grid-template-columns: 1fr 1fr min-content min-content;
+  align-items: center;
+  width: 100%;
+  height: 2.5em;
+  padding: 0 1em;
+  background-color: #f0f0f0;
+  border: 1px solid rgb(0 0 0 / 30%);
+  border-radius: 8px;
+`;

@@ -1,4 +1,18 @@
-import { addDoc, collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, Timestamp, updateDoc, where, onSnapshot } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  Timestamp,
+  updateDoc,
+  where,
+  onSnapshot,
+} from 'firebase/firestore';
 
 import { fbGetCashCountState } from '../cashCount/fbCashCountStatus';
 import { db } from '../firebaseconfig';
@@ -12,8 +26,10 @@ const MAX_EDIT_WINDOW_SECONDS = EDIT_WINDOW_HOURS * 60 * 60;
 const COMPLETED_STATUSES = ['approved', 'rejected', 'used', 'expired'];
 const GENERIC_FETCH_MULTIPLIER = 3;
 
-const getLegacyColRef = (businessID) => collection(db, 'businesses', businessID, LEGACY_COLLECTION_NAME);
-const getGenericColRef = (businessID) => collection(db, 'businesses', businessID, GENERIC_COLLECTION_NAME);
+const getLegacyColRef = (businessID) =>
+  collection(db, 'businesses', businessID, LEGACY_COLLECTION_NAME);
+const getGenericColRef = (businessID) =>
+  collection(db, 'businesses', businessID, GENERIC_COLLECTION_NAME);
 
 const calcExpiresAt = (hours = EDIT_WINDOW_HOURS) => {
   const ms = Date.now() + hours * 60 * 60 * 1000;
@@ -83,7 +99,8 @@ const shouldExpirePending = (data) => {
 
 const normalizeModuleFromData = (data = {}) => {
   if (typeof data.module === 'string' && data.module.trim()) return data.module;
-  if (data.metadata && typeof data.metadata.module === 'string') return data.metadata.module;
+  if (data.metadata && typeof data.metadata.module === 'string')
+    return data.metadata.module;
   if (data.collectionKey === LEGACY_COLLECTION_NAME) return REQUEST_MODULE;
   if (data.invoiceId || data.invoiceNumber) return REQUEST_MODULE;
   return 'generic';
@@ -96,21 +113,46 @@ const mapDocToAuthorization = (docSnap, collectionKey) => {
     id: docSnap.id,
     ...data,
     module: moduleKey,
-    collectionKey: collectionKey || data.collectionKey || (moduleKey === REQUEST_MODULE ? GENERIC_COLLECTION_NAME : LEGACY_COLLECTION_NAME),
+    collectionKey:
+      collectionKey ||
+      data.collectionKey ||
+      (moduleKey === REQUEST_MODULE
+        ? GENERIC_COLLECTION_NAME
+        : LEGACY_COLLECTION_NAME),
   };
 };
 
 const resolveRequestDoc = async (businessID, requestId) => {
-  const genericRef = doc(db, 'businesses', businessID, GENERIC_COLLECTION_NAME, requestId);
+  const genericRef = doc(
+    db,
+    'businesses',
+    businessID,
+    GENERIC_COLLECTION_NAME,
+    requestId,
+  );
   const genericSnap = await getDoc(genericRef);
   if (genericSnap.exists()) {
-    return { ref: genericRef, snap: genericSnap, collectionKey: GENERIC_COLLECTION_NAME };
+    return {
+      ref: genericRef,
+      snap: genericSnap,
+      collectionKey: GENERIC_COLLECTION_NAME,
+    };
   }
 
-  const legacyRef = doc(db, 'businesses', businessID, LEGACY_COLLECTION_NAME, requestId);
+  const legacyRef = doc(
+    db,
+    'businesses',
+    businessID,
+    LEGACY_COLLECTION_NAME,
+    requestId,
+  );
   const legacySnap = await getDoc(legacyRef);
   if (legacySnap.exists()) {
-    return { ref: legacyRef, snap: legacySnap, collectionKey: LEGACY_COLLECTION_NAME };
+    return {
+      ref: legacyRef,
+      snap: legacySnap,
+      collectionKey: LEGACY_COLLECTION_NAME,
+    };
   }
 
   return null;
@@ -171,9 +213,15 @@ const sortRequestsByDate = (requests) => {
   return clone;
 };
 
-const fetchGenericRequests = async (businessID, { status, limitCount, modules }) => {
+const fetchGenericRequests = async (
+  businessID,
+  { status, limitCount, modules },
+) => {
   const colRef = getGenericColRef(businessID);
-  const fetchLimit = Math.max(limitCount * GENERIC_FETCH_MULTIPLIER, limitCount);
+  const fetchLimit = Math.max(
+    limitCount * GENERIC_FETCH_MULTIPLIER,
+    limitCount,
+  );
   const qy = query(colRef, orderBy('createdAt', 'desc'), limit(fetchLimit));
   const snap = await getDocs(qy);
   const items = [];
@@ -188,7 +236,11 @@ const fetchGenericRequests = async (businessID, { status, limitCount, modules })
     if (!normalized) continue;
 
     const moduleKey = normalized.module || normalizeModuleFromData(normalized);
-    if (Array.isArray(modules) && modules.length && !modules.includes(moduleKey)) {
+    if (
+      Array.isArray(modules) &&
+      modules.length &&
+      !modules.includes(moduleKey)
+    ) {
       continue;
     }
 
@@ -198,9 +250,15 @@ const fetchGenericRequests = async (businessID, { status, limitCount, modules })
   return items;
 };
 
-const fetchLegacyInvoiceRequests = async (businessID, { status, limitCount }) => {
+const fetchLegacyInvoiceRequests = async (
+  businessID,
+  { status, limitCount },
+) => {
   const colRef = getLegacyColRef(businessID);
-  const fetchLimit = Math.max(limitCount * GENERIC_FETCH_MULTIPLIER, limitCount);
+  const fetchLimit = Math.max(
+    limitCount * GENERIC_FETCH_MULTIPLIER,
+    limitCount,
+  );
   const qy = query(colRef, orderBy('createdAt', 'desc'), limit(fetchLimit));
   const snap = await getDocs(qy);
   const items = [];
@@ -223,10 +281,14 @@ const fetchLegacyInvoiceRequests = async (businessID, { status, limitCount }) =>
   return items;
 };
 
-const listRequestsInternal = async (user, { status = 'pending', limitCount = 200, modules } = {}) => {
+const listRequestsInternal = async (
+  user,
+  { status = 'pending', limitCount = 200, modules } = {},
+) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
 
-  const normalizedModules = Array.isArray(modules) && modules.length ? modules : null;
+  const normalizedModules =
+    Array.isArray(modules) && modules.length ? modules : null;
 
   const genericRequests = await fetchGenericRequests(user.businessID, {
     status,
@@ -236,7 +298,10 @@ const listRequestsInternal = async (user, { status = 'pending', limitCount = 200
 
   let legacyRequests = [];
   if (!normalizedModules || normalizedModules.includes(REQUEST_MODULE)) {
-    legacyRequests = await fetchLegacyInvoiceRequests(user.businessID, { status, limitCount });
+    legacyRequests = await fetchLegacyInvoiceRequests(user.businessID, {
+      status,
+      limitCount,
+    });
   }
 
   const combined = [...genericRequests, ...legacyRequests];
@@ -265,15 +330,23 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
     genericColRef,
     where('invoiceId', '==', invoiceId),
     where('status', '==', 'pending'),
-    limit(1)
+    limit(1),
   );
   const genericSnap = await getDocs(genericQuery);
   if (!genericSnap.empty) {
     const docSnap = genericSnap.docs[0];
     if (shouldExpirePending(docSnap.data())) {
-      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch { /* Ignore expiration errors */ }
+      try {
+        await updateDoc(docSnap.ref, { status: 'expired' });
+      } catch {
+        /* Ignore expiration errors */
+      }
     } else {
-      return { alreadyPending: true, id: docSnap.id, collectionKey: GENERIC_COLLECTION_NAME };
+      return {
+        alreadyPending: true,
+        id: docSnap.id,
+        collectionKey: GENERIC_COLLECTION_NAME,
+      };
     }
   }
 
@@ -282,15 +355,23 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
     legacyColRef,
     where('invoiceId', '==', invoiceId),
     where('status', '==', 'pending'),
-    limit(1)
+    limit(1),
   );
   const legacySnap = await getDocs(legacyQuery);
   if (!legacySnap.empty) {
     const docSnap = legacySnap.docs[0];
     if (shouldExpirePending(docSnap.data())) {
-      try { await updateDoc(docSnap.ref, { status: 'expired' }); } catch { /* Ignore expiration errors */ }
+      try {
+        await updateDoc(docSnap.ref, { status: 'expired' });
+      } catch {
+        /* Ignore expiration errors */
+      }
     } else {
-      return { alreadyPending: true, id: docSnap.id, collectionKey: LEGACY_COLLECTION_NAME };
+      return {
+        alreadyPending: true,
+        id: docSnap.id,
+        collectionKey: LEGACY_COLLECTION_NAME,
+      };
     }
   }
 
@@ -299,8 +380,13 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
 
 const validateInvoiceConstraints = async (user, invoice) => {
   const createdSeconds = resolveInvoiceTimestampSeconds(invoice);
-  if (createdSeconds && createdSeconds < (Date.now() / 1000) - MAX_EDIT_WINDOW_SECONDS) {
-    throw new Error('No puedes solicitar la autorización: la factura supera el límite de 48 horas para editarse.');
+  if (
+    createdSeconds &&
+    createdSeconds < Date.now() / 1000 - MAX_EDIT_WINDOW_SECONDS
+  ) {
+    throw new Error(
+      'No puedes solicitar la autorización: la factura supera el límite de 48 horas para editarse.',
+    );
   }
 
   const cashCountId = invoice?.cashCountId ?? invoice?.cashCountID ?? null;
@@ -308,25 +394,38 @@ const validateInvoiceConstraints = async (user, invoice) => {
     const cashCountInfo = await fbGetCashCountState(user, cashCountId);
 
     if (!cashCountInfo?.exists) {
-      throw new Error('No se encontró el cuadre de caja asociado a la factura. No es posible solicitar la autorización de edición.');
+      throw new Error(
+        'No se encontró el cuadre de caja asociado a la factura. No es posible solicitar la autorización de edición.',
+      );
     }
 
     if (cashCountInfo.state && cashCountInfo.state !== 'open') {
-      const stateMessage = cashCountInfo.state === 'closed'
-        ? 'El cuadre de caja asociado a la factura ya está cerrado.'
-        : 'El cuadre de caja asociado a la factura no está abierto.';
-      throw new Error(`${stateMessage} No es posible solicitar la autorización de edición.`);
+      const stateMessage =
+        cashCountInfo.state === 'closed'
+          ? 'El cuadre de caja asociado a la factura ya está cerrado.'
+          : 'El cuadre de caja asociado a la factura no está abierto.';
+      throw new Error(
+        `${stateMessage} No es posible solicitar la autorización de edición.`,
+      );
     }
   }
 };
 
-export const requestInvoiceEditAuthorization = async (user, invoice, reasons = [], note = '') => {
+export const requestInvoiceEditAuthorization = async (
+  user,
+  invoice,
+  reasons = [],
+  note = '',
+) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
   if (!invoice?.id) throw new Error('Falta id de la factura');
 
   await validateInvoiceConstraints(user, invoice);
 
-  const duplicate = await checkExistingPendingInvoiceRequest(user.businessID, invoice.id);
+  const duplicate = await checkExistingPendingInvoiceRequest(
+    user.businessID,
+    invoice.id,
+  );
   if (duplicate) {
     return duplicate;
   }
@@ -364,7 +463,11 @@ export const requestInvoiceEditAuthorization = async (user, invoice, reasons = [
   return { id: res.id, collectionKey: GENERIC_COLLECTION_NAME };
 };
 
-export const approveAuthorizationRequest = async (user, requestId, approver) => {
+export const approveAuthorizationRequest = async (
+  user,
+  requestId,
+  approver,
+) => {
   await updateAuthorizationRequest(user, requestId, {
     status: 'approved',
     approvedAt: serverTimestamp(),
@@ -406,7 +509,10 @@ export const markAuthorizationRequestUsed = async (user, requestId, usedBy) => {
 
 export const markAuthorizationUsed = markAuthorizationRequestUsed;
 
-export const getActiveApprovedAuthorizationForInvoice = async (user, invoice) => {
+export const getActiveApprovedAuthorizationForInvoice = async (
+  user,
+  invoice,
+) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
 
   let invoiceConstraint;
@@ -424,7 +530,7 @@ export const getActiveApprovedAuthorizationForInvoice = async (user, invoice) =>
     invoiceConstraint,
     where('status', '==', 'approved'),
     orderBy('approvedAt', 'desc'),
-    limit(1)
+    limit(1),
   );
   const genericSnap = await getDocs(genericQuery);
   if (!genericSnap.empty) {
@@ -442,7 +548,7 @@ export const getActiveApprovedAuthorizationForInvoice = async (user, invoice) =>
     invoiceConstraint,
     where('status', '==', 'approved'),
     orderBy('approvedAt', 'desc'),
-    limit(1)
+    limit(1),
   );
   const legacySnap = await getDocs(legacyQuery);
   if (!legacySnap.empty) {
@@ -465,7 +571,10 @@ export const listPendingInvoiceEditAuthorizations = async (user) => {
   });
 };
 
-export const listInvoiceEditAuthorizations = async (user, { status = 'pending', limitCount = 200 } = {}) => {
+export const listInvoiceEditAuthorizations = async (
+  user,
+  { status = 'pending', limitCount = 200 } = {},
+) => {
   return listRequestsInternal(user, {
     status,
     limitCount,
@@ -493,7 +602,7 @@ export const listenToAuthorizationsByStatus = (
   status = null,
   userId = null,
   onUpdate,
-  onError
+  onError,
 ) => {
   if (!businessID) {
     onError?.(new Error('businessID is required'));
@@ -502,7 +611,8 @@ export const listenToAuthorizationsByStatus = (
 
   const buildQuery = (colRef) => {
     const constraints = [];
-    const shouldFilterByStatus = status && status !== 'completed' && status !== 'all';
+    const shouldFilterByStatus =
+      status && status !== 'completed' && status !== 'all';
     if (shouldFilterByStatus) {
       constraints.push(where('status', '==', status));
     }
@@ -563,7 +673,7 @@ export const listenToAuthorizationsByStatus = (
     (error) => {
       console.error('Error en listener de autorizaciones genéricas:', error);
       onError?.(error);
-    }
+    },
   );
   subscriptions.push(genericUnsub);
 
@@ -583,7 +693,7 @@ export const listenToAuthorizationsByStatus = (
     (error) => {
       console.error('Error en listener de autorizaciones legacy:', error);
       onError?.(error);
-    }
+    },
   );
   subscriptions.push(legacyUnsub);
 
@@ -592,7 +702,10 @@ export const listenToAuthorizationsByStatus = (
       try {
         unsub?.();
       } catch (cleanupError) {
-        console.warn('Error limpiando listener de autorizaciones:', cleanupError);
+        console.warn(
+          'Error limpiando listener de autorizaciones:',
+          cleanupError,
+        );
       }
     });
   };

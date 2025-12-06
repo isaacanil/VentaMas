@@ -8,9 +8,10 @@ export function useBillsByMonth(bills) {
     const billCountsByMonth = {};
 
     // Iteramos sobre el array de facturas
-    bills.map(({data}) => {      // Obtenemos el mes de la factura
+    bills.map(({ data }) => {
+      // Obtenemos el mes de la factura
       const month = new Date(data.date.seconds * 1000).getMonth();
-      
+
       // Si aún no existe una propiedad para este mes, la creamos
       if (!billCountsByMonth[month]) {
         billCountsByMonth[month] = 0;
@@ -71,5 +72,3 @@ export function useBillsByDay(bills) {
   // Devolvemos el arreglo con el número de facturas por día
   return billCounts;
 }
-
-

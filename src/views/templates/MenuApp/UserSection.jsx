@@ -1,31 +1,31 @@
-import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import * as antd from 'antd'
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
+import { SwapOutlined } from '@ant-design/icons';
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import * as antd from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { useDialog } from '../../../Context/Dialog'
-import { selectBusinessData } from '../../../features/auth/businessSlice'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
+import { useDialog } from '../../../Context/Dialog';
+import { selectBusinessData } from '../../../features/auth/businessSlice';
+import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../features/auth/userSlice';
+import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
 
-
-const { Tag } = antd
+const { Tag } = antd;
 
 export const UserSection = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
     navigate('/login', { replace: true });
-  }
+  };
 
   const logoutOfApp = () => {
     // dispatch to the store with the logout action
@@ -35,19 +35,28 @@ export const UserSection = () => {
       type: 'warning',
       message: '¿Está seguro que desea cerrar sesión?',
       onConfirm: () => {
-        handleLogout()
-        onClose()
-      }
-    })
-  }
+        handleLogout();
+        onClose();
+      },
+    });
+  };
   const getDisplayName = (user) => {
-    return user?.displayName && user.displayName.trim() !== '' ? user.displayName : user?.username
-  }
+    return user?.displayName && user.displayName.trim() !== ''
+      ? user.displayName
+      : user?.username;
+  };
 
   const getInitial = (name) => {
-    const n = (name || '').trim()
-    return n ? n.charAt(0).toUpperCase() : 'U'
-  }
+    const n = (name || '').trim();
+    return n ? n.charAt(0).toUpperCase() : 'U';
+  };
+
+  const handleReturnToOriginalBusiness = () => {
+    dispatch(returnToOriginalBusiness());
+  };
+
+  // Mostrar botón de regresar si el usuario está en modo temporal (otro negocio)
+  const isTemporaryMode = useSelector(selectIsTemporaryMode);
 
   return (
     <Container role="group" aria-label="Usuario">
@@ -65,6 +74,17 @@ export const UserSection = () => {
         </Info>
       </Left>
       <Action>
+        {isTemporaryMode && (
+          <IconButton
+            type="button"
+            aria-label="Regresar al negocio original"
+            title="Regresar al negocio original"
+            onClick={handleReturnToOriginalBusiness}
+          >
+            <SwapOutlined />
+         
+          </IconButton>
+        )}
         <IconButton
           type="button"
           aria-label="Cerrar sesión"
@@ -75,84 +95,83 @@ export const UserSection = () => {
         </IconButton>
       </Action>
     </Container>
-  )
-}
-
-
+  );
+};
 
 const Container = styled.div`
   display: flex;
+  gap: 0.8em;
   align-items: center;
   justify-content: space-between;
-  gap: 0.8em;
   padding: 0.8em 1em;
-  border-radius: var(--border-radius);
   background: #fff;
   border: 1px solid #f0f0f0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-`
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+`;
 
 const Left = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.8em;
+  align-items: center;
   min-width: 0; /* enable text truncation */
-`
+`;
 
 const Info = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25em;
   min-width: 0;
-`
+`;
 
 const Username = styled.div`
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: 600;
   color: #1f1f1f;
   text-transform: capitalize;
-  max-width: 220px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`
+`;
 
 const AvatarCircle = styled.div`
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
+  width: 2rem;
+  height: 2rem;
   font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, #7C4DFF 0%, #8E2DE2 100%);
-  flex: none;
+  color: #fff;
   user-select: none;
-`
+  background: linear-gradient(135deg, #7c4dff 0%, #8e2de2 100%);
+  border-radius: 9999px;
+`;
 
 const BusinessPill = styled(Tag)`
-  white-space: nowrap;
+  align-self: flex-start;
   max-width: 240px;
+  padding: 4px 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
   line-height: 1;
-  padding: 4px 8px;
+  white-space: nowrap;
   border-radius: 9999px;
-  align-self: flex-start;
 
   span {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-`
+`;
 
 const Action = styled.div`
   display: flex;
+  gap: 0.5em;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const IconButton = styled.button`
   display: inline-flex;
@@ -160,16 +179,16 @@ const IconButton = styled.button`
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e8e8e8;
-  background: #ffffff;
   color: #595959;
   cursor: pointer;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
   transition: all 0.15s ease-in-out;
 
   &:hover {
-    background: #f5f5f5;
     color: #262626;
+    background: #f5f5f5;
   }
 
   &:active {
@@ -177,7 +196,7 @@ const IconButton = styled.button`
   }
 
   &:focus-visible {
-    outline: 2px solid #7C4DFF;
+    outline: 2px solid #7c4dff;
     outline-offset: 2px;
   }
-`
+`;

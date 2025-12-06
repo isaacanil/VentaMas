@@ -1,11 +1,11 @@
 // VentamaxLoader.js
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { SplitText } from "gsap/SplitText";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import { useGSAP } from '@gsap/react';
+import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
 
-import logo from "./ventamax.svg";
+import logo from './ventamax.svg';
 
 // registra los plugins una sola vez
 gsap.registerPlugin(SplitText);
@@ -13,13 +13,13 @@ gsap.registerPlugin(SplitText);
 const SplashWrapper = styled.div`
   position: fixed;
   inset: 0;
-  background: #000;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
   user-select: none;
+  background: #000;
 `;
 
 const Title = styled.h1`
@@ -35,65 +35,65 @@ const Subtitle = styled.h2`
   font-size: 1rem;
   font-weight: 400;
   color: #d1d1d1; /* gris suave */
-  letter-spacing: 0.25em;
   text-transform: uppercase;
+  letter-spacing: 0.25em;
 `;
 
 const getThemeStyles = (theme) => {
   const themes = {
-    dark: { textColor: "#fff" },
-    light: { textColor: "#000" },
+    dark: { textColor: '#fff' },
+    light: { textColor: '#000' },
   };
   return themes[theme] || themes.dark;
 };
 
 const SplashMessage = styled.p`
-  margin: 1.5rem 0 0;
   max-width: 320px;
-  text-align: center;
+  margin: 1.5rem 0 0;
   font-size: 1rem;
   line-height: 1.5;
   color: ${({ theme }) => getThemeStyles(theme).textColor};
+  text-align: center;
 `;
 
 const MinimalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  padding: 24px;
   z-index: 1000;
-  pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
-  opacity: ${({ $active }) => ($active ? 1 : 0)};
-  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 24px;
+  pointer-events: ${({ $active }) => ($active ? 'auto' : 'none')};
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0) 0%,
-    rgba(15, 23, 42, 0.12) 45%,
-    rgba(15, 23, 42, 0.28) 100%
+    rgb(15 23 42 / 0%) 0%,
+    rgb(15 23 42 / 12%) 45%,
+    rgb(15 23 42 / 28%) 100%
   );
+  opacity: ${({ $active }) => ($active ? 1 : 0)};
+  transition: opacity 0.3s ease;
 `;
 
 const MinimalCard = styled.div`
   display: flex;
-  align-items: center;
   gap: 12px;
-  background: rgba(15, 23, 42, 0.78);
-  backdrop-filter: blur(10px);
-  border-radius: 18px;
+  align-items: center;
+  width: 100%;
+  max-width: min(420px, calc(100vw - 48px));
   padding: 14px 20px;
   color: #fff;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
-  max-width: min(420px, calc(100vw - 48px));
-  width: 100%;
+  background: rgb(15 23 42 / 78%);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgb(15 23 42 / 35%);
+  backdrop-filter: blur(10px);
 `;
 
 const MinimalLogo = styled.img`
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
   object-fit: contain;
-  flex-shrink: 0;
 `;
 
 const MinimalMessage = styled.p`
@@ -107,18 +107,18 @@ const usePrefersReducedMotion = () => {
   const [prefers, setPrefers] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
+    if (typeof window === 'undefined' || !window.matchMedia) return;
 
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const updatePreference = (event) => {
       setPrefers(event.matches);
     };
 
     setPrefers(mediaQuery.matches);
-    mediaQuery.addEventListener("change", updatePreference);
+    mediaQuery.addEventListener('change', updatePreference);
 
     return () => {
-      mediaQuery.removeEventListener("change", updatePreference);
+      mediaQuery.removeEventListener('change', updatePreference);
     };
   }, []);
 
@@ -167,7 +167,7 @@ const VentamaxMinimalLoader = ({ active, message, onFinish, status }) => {
     return null;
   }
 
-  const statusMessage = message || "Iniciando sesión...";
+  const statusMessage = message || 'Iniciando sesión...';
 
   return (
     <MinimalOverlay
@@ -212,7 +212,7 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
     fadeTimelineRef.current = gsap.to(wrapperRef.current, {
       autoAlpha: 0,
       duration: 0.5,
-      ease: "power2.out",
+      ease: 'power2.out',
       onComplete: () => {
         fadeTimelineRef.current = null;
         onFinishRef.current?.();
@@ -229,10 +229,10 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
 
       if (!titleRef.current) return () => {};
 
-      const split = new SplitText(titleRef.current, { type: "chars" });
+      const split = new SplitText(titleRef.current, { type: 'chars' });
 
       const tl = gsap.timeline({
-        defaults: { ease: "power3.out" },
+        defaults: { ease: 'power3.out' },
         onComplete: () => {
           introCompletedRef.current = true;
           if (!activeRef.current) {
@@ -251,18 +251,18 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
           duration: 0.9,
           yoyo: true,
           repeat: 1,
-          ease: "elastic.out(1, 0.45)",
+          ease: 'elastic.out(1, 0.45)',
         },
-        "<"
+        '<',
       );
 
       tl.from(
         split.chars,
         { yPercent: 120, opacity: 0, duration: 0.6, stagger: 0.04 },
-        "+=0.2"
+        '+=0.2',
       );
 
-      tl.from(subRef.current, { y: 20, opacity: 0, duration: 0.5 }, "-=0.35");
+      tl.from(subRef.current, { y: 20, opacity: 0, duration: 0.5 }, '-=0.35');
 
       return () => {
         introCompletedRef.current = false;
@@ -270,7 +270,7 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
         split.revert();
       };
     },
-    { dependencies: [prefersReducedMotion, runFadeOut] }
+    { dependencies: [prefersReducedMotion, runFadeOut] },
   );
 
   useEffect(() => {
@@ -293,7 +293,7 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
     }
   }, [prefersReducedMotion]);
 
-  const statusMessage = message || "Cargando Ventamax...";
+  const statusMessage = message || 'Cargando Ventamax...';
 
   return (
     <SplashWrapper
@@ -312,10 +312,9 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
 };
 
 export default function VentamaxLoader(props) {
-  if (props.variant === "minimal") {
+  if (props.variant === 'minimal') {
     return <VentamaxMinimalLoader {...props} />;
   }
 
   return <VentamaxSplashLoader {...props} />;
 }
-

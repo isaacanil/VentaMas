@@ -14,11 +14,19 @@ function invoicesReducer(state, action) {
     case SORT_INVOICES:
       // Implement your sorting logic here.
       // This is just an example. Adjust it according to your needs.
-      return { ...state, invoices: action.payload.sort((a, b) => a.amount - b.amount) };
+      return {
+        ...state,
+        invoices: action.payload.sort((a, b) => a.amount - b.amount),
+      };
     case FILTER_INVOICES:
       // Implement your filtering logic here.
       // This is just an example. Adjust it according to your needs.
-      return { ...state, invoices: action.payload.filter(invoice => invoice.status === action.filter) };
+      return {
+        ...state,
+        invoices: action.payload.filter(
+          (invoice) => invoice.status === action.filter,
+        ),
+      };
     default:
       return state;
   }
@@ -40,8 +48,8 @@ export function InvoicesProvider({ children }) {
   };
 
   return (
-    <InvoicesContext.Provider value={{ state, sortInvoices, filterInvoices }}>
+    <InvoicesContext value={{ state, sortInvoices, filterInvoices }}>
       {children}
-    </InvoicesContext.Provider>
+    </InvoicesContext>
   );
 }

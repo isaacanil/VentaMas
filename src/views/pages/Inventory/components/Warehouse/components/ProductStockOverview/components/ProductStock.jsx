@@ -8,28 +8,44 @@ import styled from 'styled-components';
 
 import { LocationDisplay } from './LocationDisplay';
 
-const ProductStock = ({ stock, index, getStockStatus, handleDeleteProductStock, handleLocationClick, locationNames }) => {
-  const status = useMemo(() => getStockStatus(stock.quantity), [getStockStatus, stock.quantity]);
+const ProductStock = ({
+  stock,
+  index,
+  getStockStatus,
+  handleDeleteProductStock,
+  handleLocationClick,
+  locationNames,
+}) => {
+  const status = useMemo(
+    () => getStockStatus(stock.quantity),
+    [getStockStatus, stock.quantity],
+  );
   const lifecycleStatus = stock?.status === 'inactive' ? 'inactive' : 'active';
   const lifecycleLabel = lifecycleStatus === 'inactive' ? 'Inactivo' : 'Activo';
   const formattedQuantity = useMemo(
     () => Number(stock.quantity ?? 0).toLocaleString(),
-    [stock.quantity]
+    [stock.quantity],
   );
-  const menuItems = useMemo(() => ([
-    {
-      key: 'delete',
-      label: 'Eliminar stock de esta ubicación',
-      danger: true,
-      icon: <DeleteOutlined />,
-    },
-  ]), []);
+  const menuItems = useMemo(
+    () => [
+      {
+        key: 'delete',
+        label: 'Eliminar stock de esta ubicación',
+        danger: true,
+        icon: <DeleteOutlined />,
+      },
+    ],
+    [],
+  );
 
-  const handleMenuClick = useCallback(({ key }) => {
-    if (key === 'delete') {
-      handleDeleteProductStock(stock);
-    }
-  }, [handleDeleteProductStock, stock]);
+  const handleMenuClick = useCallback(
+    ({ key }) => {
+      if (key === 'delete') {
+        handleDeleteProductStock(stock);
+      }
+    },
+    [handleDeleteProductStock, stock],
+  );
 
   return (
     <StockRow
@@ -100,17 +116,20 @@ const StockRow = styled(motion.div)`
   grid-template-columns: minmax(220px, 3fr) minmax(120px, 1fr) 88px;
   gap: 10px;
   align-items: center;
-  background: #ffffff;
+  padding: 10px 5px;
+  background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 10px 5px;
-  box-shadow: 0 8px 14px -12px rgba(15, 23, 42, 0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 8px 14px -12px rgb(15 23 42 / 18%);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
+    border-color: rgb(37 99 235 / 18%);
+    box-shadow: 0 12px 18px -12px rgb(37 99 235 / 18%);
     transform: translateY(-1px);
-    border-color: rgba(37, 99, 235, 0.18);
-    box-shadow: 0 12px 18px -12px rgba(37, 99, 235, 0.18);
   }
 
   .cell {
@@ -128,26 +147,26 @@ const StockRow = styled(motion.div)`
   }
 
   .cell-actions {
-    justify-content: flex-end;
     gap: 6px;
+    justify-content: flex-end;
   }
 
   .status-footnote {
-    grid-column: 1 / -1;
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
     gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
     padding: 0 5px;
     margin-top: 2px;
-    flex-wrap: wrap;
   }
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     grid-template-columns: minmax(200px, 2.5fr) minmax(100px, 1fr) 80px;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 14px;
@@ -170,22 +189,22 @@ const QuantityBadge = styled.div`
   align-items: center;
   justify-content: center;
   min-width: 108px;
-  padding: 0px 14px;
-  border-radius: 16px;
-  background: ${props => props.$status.background}18;
-  border: 1px solid ${props => props.$status.color}26;
-  color: #0f172a;
+  padding: 0 14px;
   font-weight: 600;
+  color: #0f172a;
+  background: ${(props) => props.$status.background}18;
+  border: 1px solid ${(props) => props.$status.color}26;
+  border-radius: 16px;
 
   .quantity-main {
     display: inline-flex;
-    align-items: baseline;
     gap: 6px;
+    align-items: baseline;
   }
 
   .quantity-icon {
-    color: ${props => props.$status.color};
     font-size: 0.85rem;
+    color: ${(props) => props.$status.color};
   }
 
   .quantity-value {
@@ -194,38 +213,39 @@ const QuantityBadge = styled.div`
 
   .quantity-unit {
     font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #64748b;
-    letter-spacing: 0.05em;
     font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .quantity-status {
     font-size: 0.7rem;
     font-weight: 600;
+    color: ${(props) => props.$status.color};
     text-transform: uppercase;
-    color: ${props => props.$status.color};
   }
 `;
 
 const LifecycleBadge = styled.span`
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
-  background: ${props => props.$state === 'inactive' ? '#fee2e2' : '#dcfce7'};
-  color: ${props => props.$state === 'inactive' ? '#b91c1c' : '#047857'};
   font-size: 0.7rem;
   font-weight: 600;
+  color: ${(props) => (props.$state === 'inactive' ? '#b91c1c' : '#047857')};
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background: ${(props) =>
+    props.$state === 'inactive' ? '#fee2e2' : '#dcfce7'};
+  border-radius: 999px;
 
   .badge-dot {
     width: 6px;
     height: 6px;
+    background: currentcolor;
     border-radius: 50%;
-    background: currentColor;
   }
 
   .badge-text {
@@ -239,16 +259,16 @@ const ActionButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  background: transparent;
   color: #2563eb;
   cursor: pointer;
+  background: transparent;
+  border: 1px solid rgb(37 99 235 / 28%);
+  border-radius: 8px;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #dbeafe;
     color: #1d4ed8;
+    background: #dbeafe;
   }
 
   &:active {
@@ -262,17 +282,17 @@ const MenuButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
   color: #64748b;
   cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #f1f5f9;
     color: #1f2937;
-    border-color: rgba(148, 163, 184, 0.4);
+    background: #f1f5f9;
+    border-color: rgb(148 163 184 / 40%);
   }
 
   &:active {

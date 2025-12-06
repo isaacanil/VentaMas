@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../../../../../../features/auth/userSlice';
 import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
-import { useInsuranceBeneficiaries, addInsuranceBeneficiary } from '../../../../../../../../../../firebase/insurance/insuranceBeneficiaryService';
+import {
+  useInsuranceBeneficiaries,
+  addInsuranceBeneficiary,
+} from '../../../../../../../../../../firebase/insurance/insuranceBeneficiaryService';
 
 import DependentSelector from './DependentSelector';
 
@@ -15,7 +18,7 @@ const Dependent = ({ form }) => {
   const [dependentForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [selectedDependent, setSelectedDependent] = useState(null);
-  
+
   // Cargamos beneficiarios (dependientes) del usuario/cliente actual
   const beneficiaries = useInsuranceBeneficiaries(user, client.id);
 
@@ -28,7 +31,7 @@ const Dependent = ({ form }) => {
   useEffect(() => {
     const dependentId = form.getFieldValue('dependentId');
     if (dependentId) {
-      const found = beneficiaries.find(b => b.id === dependentId);
+      const found = beneficiaries.find((b) => b.id === dependentId);
       setSelectedDependent(found || null);
     } else {
       setSelectedDependent(null);
@@ -39,15 +42,15 @@ const Dependent = ({ form }) => {
     try {
       setLoading(true);
       const values = await dependentForm.validateFields();
-      
+
       // Formateamos el objeto para simplificar los nombres y añadir fecha ISO
       const formattedValues = {
         name: values.name,
         gender: values.gender,
         birthDate: values.birthDate ? values.birthDate.toISOString() : null,
-        relationship: values.relationship
+        relationship: values.relationship,
       };
-      
+
       await addInsuranceBeneficiary(user, formattedValues, client?.id);
       message.success('Dependiente agregado exitosamente');
       setShowNewDependentModal(false);
@@ -59,24 +62,23 @@ const Dependent = ({ form }) => {
       setLoading(false);
     }
   };
-  
+
   const handleEditDependent = (_dependent) => {
     // Implementar edición de dependiente
-
     // Implementar lógica de edición aquí
   };
 
   const handleDependentSelect = (dependent) => {
     if (dependent) {
-      form.setFieldsValue({ 
+      form.setFieldsValue({
         dependentId: dependent.id,
-        hasDependent: true  // Actualizamos el valor del checkbox automáticamente
+        hasDependent: true, // Actualizamos el valor del checkbox automáticamente
       });
       setSelectedDependent(dependent);
     } else {
-      form.setFieldsValue({ 
+      form.setFieldsValue({
         dependentId: null,
-        hasDependent: false  // Desmarcamos el checkbox si se elimina el dependiente
+        hasDependent: false, // Desmarcamos el checkbox si se elimina el dependiente
       });
       setSelectedDependent(null);
     }
@@ -90,13 +92,13 @@ const Dependent = ({ form }) => {
         rules={[
           {
             required: false,
-            message: 'Por favor seleccione un dependiente si aplica'
-          }
+            message: 'Por favor seleccione un dependiente si aplica',
+          },
         ]}
         hidden
       />
 
-      <DependentSelector 
+      <DependentSelector
         dependents={beneficiaries}
         selectedDependent={selectedDependent}
         onSelectDependent={handleDependentSelect}
@@ -139,11 +141,13 @@ const Dependent = ({ form }) => {
               placeholder="Seleccionar fecha (opcional)"
             />
           </Form.Item>
-          
+
           <Form.Item
             name="relationship"
             label="Parentesco"
-            rules={[{ required: true, message: 'Por favor seleccione el parentesco' }]}
+            rules={[
+              { required: true, message: 'Por favor seleccione el parentesco' },
+            ]}
           >
             <Select placeholder="Seleccione el parentesco">
               <Select.Option value="child">Hijo/a</Select.Option>
@@ -157,7 +161,9 @@ const Dependent = ({ form }) => {
           <Form.Item
             name="gender"
             label="Sexo"
-            rules={[{ required: true, message: 'Por favor seleccione el sexo' }]}
+            rules={[
+              { required: true, message: 'Por favor seleccione el sexo' },
+            ]}
           >
             <Radio.Group>
               <Radio value="M">Masculino</Radio>

@@ -13,7 +13,11 @@ import {
 } from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
 import ROUTES_PATH from '../../../../../../routes/routesName';
 
-import { LoadingState, EmptyState, AuthorizationsPanelContent } from './components';
+import {
+  LoadingState,
+  EmptyState,
+  AuthorizationsPanelContent,
+} from './components';
 
 const PRIVILEGED_ROLES = new Set(['admin', 'owner', 'dev', 'manager']);
 
@@ -21,7 +25,9 @@ const resolveRequestModule = (request) => {
   if (!request || typeof request !== 'object') return 'authorizationRequests';
 
   const metadataModule =
-    request.metadata && typeof request.metadata === 'object' && typeof request.metadata.module === 'string'
+    request.metadata &&
+    typeof request.metadata === 'object' &&
+    typeof request.metadata.module === 'string'
       ? request.metadata.module
       : null;
 
@@ -52,16 +58,14 @@ const toMillis = (value) => {
 };
 
 const sortAuthorizations = (items) =>
-  (Array.isArray(items) ? items : [])
-    .slice()
-    .sort((a, b) => {
-      if (a.status === 'pending' && b.status !== 'pending') return -1;
-      if (a.status !== 'pending' && b.status === 'pending') return 1;
+  (Array.isArray(items) ? items : []).slice().sort((a, b) => {
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
 
-      const dateA = toMillis(a.createdAt);
-      const dateB = toMillis(b.createdAt);
-      return dateB - dateA;
-    });
+    const dateA = toMillis(a.createdAt);
+    const dateB = toMillis(b.createdAt);
+    return dateB - dateA;
+  });
 
 const AuthorizationsPanel = () => {
   const user = useSelector(selectUser);
@@ -78,8 +82,12 @@ const AuthorizationsPanel = () => {
   }, [dispatch, navigate]);
 
   const pendingCount = useMemo(
-    () => authorizations.reduce((count, auth) => (auth.status === 'pending' ? count + 1 : count), 0),
-    [authorizations]
+    () =>
+      authorizations.reduce(
+        (count, auth) => (auth.status === 'pending' ? count + 1 : count),
+        0,
+      ),
+    [authorizations],
   );
 
   const isAdmin = PRIVILEGED_ROLES.has(user?.role ?? '');
@@ -102,7 +110,7 @@ const AuthorizationsPanel = () => {
       (error) => {
         console.error('Error escuchando autorizaciones:', error);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe?.();
@@ -123,7 +131,9 @@ const AuthorizationsPanel = () => {
       setProcessingId(authId);
 
       try {
-        const requestSnapshot = authorizations.find((item) => item.id === authId || item.key === authId);
+        const requestSnapshot = authorizations.find(
+          (item) => item.id === authId || item.key === authId,
+        );
         const moduleForLog = resolveRequestModule(requestSnapshot);
         const requestedBySnapshot = requestSnapshot?.requestedBy || null;
 
@@ -153,7 +163,10 @@ const AuthorizationsPanel = () => {
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
-              reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+              reference:
+                requestSnapshot?.reference ||
+                requestSnapshot?.invoiceNumber ||
+                null,
             },
           });
         } else {
@@ -182,7 +195,10 @@ const AuthorizationsPanel = () => {
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
-              reference: requestSnapshot?.reference || requestSnapshot?.invoiceNumber || null,
+              reference:
+                requestSnapshot?.reference ||
+                requestSnapshot?.invoiceNumber ||
+                null,
             },
           });
         }
@@ -194,21 +210,22 @@ const AuthorizationsPanel = () => {
         setProcessingId(null);
       }
     },
-    [authorizations, user]
+    [authorizations, user],
   );
 
   const handleApprove = useCallback(
     (authId) => {
       Modal.confirm({
         title: '¿Confirmar autorización?',
-        content: 'Esta acción aprobará la solicitud seleccionada y se registrará en el historial.',
+        content:
+          'Esta acción aprobará la solicitud seleccionada y se registrará en el historial.',
         okText: 'Autorizar',
         zIndex: 9999,
         cancelText: 'Cancelar',
         onOk: () => executeAction(authId, 'approve'),
       });
     },
-    [executeAction]
+    [executeAction],
   );
 
   const handleReject = useCallback(
@@ -223,7 +240,7 @@ const AuthorizationsPanel = () => {
         onOk: () => executeAction(authId, 'reject'),
       });
     },
-    [executeAction]
+    [executeAction],
   );
 
   if (loading) {

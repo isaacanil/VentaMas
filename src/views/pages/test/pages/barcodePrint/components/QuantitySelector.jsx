@@ -6,7 +6,12 @@ const clampInt = (n, min, max) => {
   return Math.max(min, Math.min(max, x));
 };
 
-const QuantitySelector = ({ quantity, onChange, max = 100, disabled = false }) => {
+const QuantitySelector = ({
+  quantity,
+  onChange,
+  max = 100,
+  disabled = false,
+}) => {
   const handleChange = (value) => {
     // AntD InputNumber puede entregar number o '' (string vacía) al limpiar
     // Normalizamos a entero entre 1 y max

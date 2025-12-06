@@ -1,4 +1,10 @@
-import { doc, setDoc, getDoc, onSnapshot, writeBatch } from 'firebase/firestore';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  writeBatch,
+} from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -13,14 +19,16 @@ const getStructureDoc = (businessId, type) => {
 // Función para actualizar o añadir un elemento a la estructura
 const updateStructureElement = async (user, type, elementId, data) => {
   const structureDoc = getStructureDoc(user.businessID, type);
-  
+
   try {
     const docSnapshot = await getDoc(structureDoc);
-    const existingData = docSnapshot.exists() ? docSnapshot.data().elements : {};
-    
+    const existingData = docSnapshot.exists()
+      ? docSnapshot.data().elements
+      : {};
+
     // Construir la ruta de ubicación basada en el tipo
     let location = '';
-    switch(type) {
+    switch (type) {
       case 'warehouses':
         location = elementId;
         break;
@@ -34,20 +42,24 @@ const updateStructureElement = async (user, type, elementId, data) => {
         location = `${data.warehouseId}/${data.shelfId}/${data.rowShelfId}/${elementId}`;
         break;
     }
-    
-    await setDoc(structureDoc, {
-      elements: {
-        ...existingData,
-        [elementId]: {
-          id: elementId,
-          name: data.name,
-          location,
-          updatedAt: new Date().toISOString(),
-          updatedBy: user.uid,
-          isDeleted: false
-        }
-      }
-    }, { merge: true });
+
+    await setDoc(
+      structureDoc,
+      {
+        elements: {
+          ...existingData,
+          [elementId]: {
+            id: elementId,
+            name: data.name,
+            location,
+            updatedAt: new Date().toISOString(),
+            updatedBy: user.uid,
+            isDeleted: false,
+          },
+        },
+      },
+      { merge: true },
+    );
   } catch (error) {
     console.error(`Error updating ${type} structure:`, error);
     throw error;
@@ -58,18 +70,18 @@ const updateStructureElement = async (user, type, elementId, data) => {
 export const createStructureFromExisting = async (user, structureData) => {
   try {
     const batch = writeBatch(db);
-    
+
     // Procesar almacenes
     const warehousesDoc = getStructureDoc(user.businessID, 'warehouses');
     const warehouseElements = {};
-    structureData.warehouses.forEach(warehouse => {
+    structureData.warehouses.forEach((warehouse) => {
       warehouseElements[warehouse.id] = {
         id: warehouse.id,
         name: warehouse.name,
         location: warehouse.id,
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
-        isDeleted: false
+        isDeleted: false,
       };
     });
     batch.set(warehousesDoc, { elements: warehouseElements });
@@ -77,14 +89,14 @@ export const createStructureFromExisting = async (user, structureData) => {
     // Procesar estantes
     const shelvesDoc = getStructureDoc(user.businessID, 'shelves');
     const shelfElements = {};
-    structureData.shelves.forEach(shelf => {
+    structureData.shelves.forEach((shelf) => {
       shelfElements[shelf.id] = {
         id: shelf.id,
         name: shelf.name,
         location: `${shelf.warehouseId}/${shelf.id}`,
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
-        isDeleted: false
+        isDeleted: false,
       };
     });
     batch.set(shelvesDoc, { elements: shelfElements });
@@ -92,14 +104,14 @@ export const createStructureFromExisting = async (user, structureData) => {
     // Procesar filas
     const rowsDoc = getStructureDoc(user.businessID, 'rows');
     const rowElements = {};
-    structureData.rows.forEach(row => {
+    structureData.rows.forEach((row) => {
       rowElements[row.id] = {
         id: row.id,
         name: row.name,
         location: `${row.warehouseId}/${row.shelfId}/${row.id}`,
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
-        isDeleted: false
+        isDeleted: false,
       };
     });
     batch.set(rowsDoc, { elements: rowElements });
@@ -107,14 +119,14 @@ export const createStructureFromExisting = async (user, structureData) => {
     // Procesar segmentos
     const segmentsDoc = getStructureDoc(user.businessID, 'segments');
     const segmentElements = {};
-    structureData.segments.forEach(segment => {
+    structureData.segments.forEach((segment) => {
       segmentElements[segment.id] = {
         id: segment.id,
         name: segment.name,
         location: `${segment.warehouseId}/${segment.shelfId}/${segment.rowShelfId}/${segment.id}`,
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
-        isDeleted: false
+        isDeleted: false,
       };
     });
     batch.set(segmentsDoc, { elements: segmentElements });
@@ -143,11 +155,13 @@ export const checkStructureMigration = async (user) => {
 // Función para escuchar cambios en la estructura
 const listenToStructure = (user, type, callback) => {
   const structureDoc = getStructureDoc(user.businessID, type);
-  
+
   return onSnapshot(structureDoc, (doc) => {
     if (doc.exists()) {
       const elements = doc.data().elements || {};
-      const activeElements = Object.values(elements).filter(el => !el.isDeleted);
+      const activeElements = Object.values(elements).filter(
+        (el) => !el.isDeleted,
+      );
       callback(activeElements);
     } else {
       callback([]);
@@ -176,16 +190,16 @@ const useListenStructure = (type) => {
 };
 
 // Funciones específicas para cada tipo de estructura
-export const updateWarehouse = (user, warehouseId, data) => 
+export const updateWarehouse = (user, warehouseId, data) =>
   updateStructureElement(user, 'warehouses', warehouseId, data);
 
-export const updateShelf = (user, shelfId, data) => 
+export const updateShelf = (user, shelfId, data) =>
   updateStructureElement(user, 'shelves', shelfId, data);
 
-export const updateRow = (user, rowId, data) => 
+export const updateRow = (user, rowId, data) =>
   updateStructureElement(user, 'rows', rowId, data);
 
-export const updateSegment = (user, segmentId, data) => 
+export const updateSegment = (user, segmentId, data) =>
   updateStructureElement(user, 'segments', segmentId, data);
 
 export const useListenWarehouses = () => useListenStructure('warehouses');
