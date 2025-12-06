@@ -11,7 +11,7 @@ import {
   updateUser,
 } from '../../../../../../../features/usersManagement/usersManagementSlice';
 import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import {
   Button,
   ButtonGroup,
@@ -48,7 +48,7 @@ const EditUser = () => {
   const [isOpenChangePassword, setIsOpenChangePassword] = useState(false);
   const [isOpenPermissions, setIsOpenPermissions] = useState(false);
   const { user, errors } = useSelector(selectUserManager);
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
 
   const handleIsOpenChangePassWord = () => {
     setIsOpenChangePassword(!isOpenChangePassword);

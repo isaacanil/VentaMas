@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     FileTextOutlined,
     DollarOutlined,
@@ -7,6 +6,8 @@ import {
     CheckCircleOutlined,
     ExclamationCircleOutlined,
 } from '@ant-design/icons';
+import React from 'react';
+
 import { HeroKPIContainer, KPICard } from '../styles';
 import { formatCurrency, getNextPaymentInfo, getDaysLate } from '../utils';
 

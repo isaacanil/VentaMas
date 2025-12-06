@@ -1,5 +1,5 @@
-import { createBusinessAction } from './modules/createBusiness.jsx';
 import { chatAction } from './modules/chat.jsx';
+import { createBusinessAction } from './modules/createBusiness.jsx';
 
 export const ACTIONS = {
   [createBusinessAction.id]: createBusinessAction,

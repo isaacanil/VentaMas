@@ -13,9 +13,7 @@ import { toggleProviderModal } from '../../../../../../features/modals/modalSlic
 import {
   selectPurchase,
   AddProductToPurchase,
-  setProductSelected,
   deleteProductFromPurchase,
-  clearProductSelected,
   updateProduct,
   setPurchase,
   cleanPurchase,
@@ -25,8 +23,8 @@ import { db } from '../../../../../../firebase/firebaseconfig';
 import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders';
 import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
 import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
-import ProductModal from '../../../shared/ProductModal';
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
+import ProductModal from '../../../shared/ProductModal';
 import BackOrdersModal from '../BackOrdersModal';
 import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
 import ProductsTable from '../ProductsTable';

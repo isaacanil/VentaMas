@@ -1,4 +1,4 @@
-import { DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import {
   Table,
   Button,
@@ -6,7 +6,6 @@ import {
   Form,
   InputNumber,
   DatePicker,
-  Modal,
 } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';

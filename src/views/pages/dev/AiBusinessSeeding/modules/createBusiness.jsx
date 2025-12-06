@@ -1,9 +1,10 @@
-import React from 'react';
-import { Typography, Button } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShop, faUser, faBolt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faShop, faUser, faBolt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Typography, Button } from 'antd';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import React from 'react';
+
 import { fbSignUp } from '../../../../../firebase/Auth/fbAuthV2/fbSignUp';
 import { createBusiness } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
 import { db } from '../../../../../firebase/firebaseconfig';

@@ -77,7 +77,7 @@ export const AppVersionBadge = ({
   }, []);
 
   const handleNavigate = (): void => {
-    navigate('/changelogs/list');
+    void navigate('/changelogs/list');
   };
 
   const versionLabel = timestampToVersion(appVersion?.version);

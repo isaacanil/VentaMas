@@ -1,5 +1,4 @@
 import {
-  ArrowLeftOutlined,
   DeleteOutlined,
   InboxOutlined,
   PictureOutlined,

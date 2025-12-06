@@ -86,12 +86,12 @@ const accumulatePurchaseTypeData = (sales) => {
 
 export const PurchaseTypeBarChart = ({ sales }) => {
   const isMobile = useIsMobile();
+  const normalizedSales = Array.isArray(sales) ? sales : [];
 
-  if (!sales || !Array.isArray(sales)) {
-    return null;
-  }
-
-  const salesByType = useMemo(() => accumulatePurchaseTypeData(sales), [sales]);
+  const salesByType = useMemo(
+    () => accumulatePurchaseTypeData(normalizedSales),
+    [normalizedSales],
+  );
 
   const data = useMemo(() => {
     const labels = Object.keys(salesByType);
@@ -112,6 +112,10 @@ export const PurchaseTypeBarChart = ({ sales }) => {
   }, [salesByType]);
 
   const chartOptions = useMemo(() => createChartOptions(isMobile), [isMobile]);
+
+  if (!normalizedSales.length) {
+    return null;
+  }
 
   return (
     <Container $isMobile={isMobile}>

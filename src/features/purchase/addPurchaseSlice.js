@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { notification } from 'antd';
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
 

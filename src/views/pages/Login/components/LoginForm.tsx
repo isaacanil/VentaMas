@@ -167,16 +167,20 @@ const IconInputWrapper = styled.div`
 type IconInputProps = {
   icon: IconDefinition;
   endSlot?: ReactNode;
+  ref?: React.Ref<HTMLInputElement>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-const IconInput = forwardRef<HTMLInputElement, IconInputProps>(
-  ({ icon, endSlot, ...inputProps }, ref) => (
-    <IconInputWrapper>
-      <StyledIcon icon={icon} />
-      <InputElement ref={ref} {...inputProps} />
-      {endSlot}
-    </IconInputWrapper>
-  ),
+const IconInput: FC<IconInputProps> = ({
+  icon,
+  endSlot,
+  ref,
+  ...inputProps
+}) => (
+  <IconInputWrapper>
+    <StyledIcon icon={icon} />
+    <InputElement ref={ref} {...inputProps} />
+    {endSlot}
+  </IconInputWrapper>
 );
 
 IconInput.displayName = 'IconInput';
@@ -363,7 +367,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         navigate(ROUTES_PATH.BASIC_TERM.HOME);
 
         notification.success({
-          message: 'Inicio de sesión exitoso',
+          title: 'Inicio de sesión exitoso',
           description: '¡Bienvenido!',
         });
       } catch (error: unknown) {
@@ -375,7 +379,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         setFormError(errorMessage);
 
         notification.error({
-          message: 'Error',
+          title: 'Error',
           description: errorMessage,
         });
       } finally {

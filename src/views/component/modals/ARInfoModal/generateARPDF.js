@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+
 import 'jspdf-autotable';
 import { formatCurrency, formatDate } from './utils';
 

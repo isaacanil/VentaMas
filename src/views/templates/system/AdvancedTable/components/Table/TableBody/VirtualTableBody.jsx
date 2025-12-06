@@ -1,6 +1,6 @@
-import React, { Fragment, useMemo } from 'react';
-import styled from 'styled-components';
+import React, { Fragment } from 'react';
 import { GroupedVirtuoso, Virtuoso } from 'react-virtuoso';
+import styled from 'styled-components';
 
 import Loader from '../../../../../../component/Loader/Loader';
 import { CenteredText } from '../../../../CentredText';
@@ -55,12 +55,12 @@ const RowItem = React.memo(
 
     const rowWithExpanderData = canExpand
       ? {
-          ...row,
-          _expander: {
-            expanded: isExpanded,
-            toggle: () => toggleRow(row, rowId),
-          },
-        }
+        ...row,
+        _expander: {
+          expanded: isExpanded,
+          toggle: () => toggleRow(row, rowId),
+        },
+      }
       : row;
 
     return (
@@ -99,6 +99,8 @@ const RowItem = React.memo(
   },
 );
 
+RowItem.displayName = 'RowItem';
+
 export const VirtualTableBody = ({
   loading = false,
   currentData, // En modo virtual, esto debería ser la lista COMPLETA de datos
@@ -118,10 +120,7 @@ export const VirtualTableBody = ({
   groupHeaders = [],
   flatGroupedData = [],
 }) => {
-  const activeColumns = useMemo(
-    () => columnOrder.filter((col) => col.status === 'active'),
-    [columnOrder],
-  );
+  const activeColumns = columnOrder.filter((col) => col.status === 'active');
 
   const handleCellClick = (e, col, row) => {
     if (onRowClick && col?.clickable !== false) onRowClick(row);

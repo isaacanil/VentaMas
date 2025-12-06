@@ -53,11 +53,12 @@ const accumulatePurchaseDataByCategory = (purchases) => {
 };
 
 export const CategoryPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+    const normalizedPurchases = Array.isArray(purchases) ? purchases : [];
 
-    const purchasesByCategory = useMemo(() => accumulatePurchaseDataByCategory(purchases), [purchases]);
+    const purchasesByCategory = useMemo(
+        () => accumulatePurchaseDataByCategory(normalizedPurchases),
+        [normalizedPurchases],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(purchasesByCategory);
         const dataTotals = labels.map(label => purchasesByCategory[label].total);
@@ -77,6 +78,10 @@ export const CategoryPurchasesBarChart = ({ purchases }) => {
     }, [purchasesByCategory]);
 
     const chartRef = useRef(null);
+
+    if (!normalizedPurchases.length) {
+        return null;
+    }
 
     return (
         <Container>

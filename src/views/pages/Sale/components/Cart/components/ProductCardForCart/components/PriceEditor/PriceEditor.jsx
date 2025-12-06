@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { icons } from '../../../../../../../../../constants/icons/icons';
 import { changeProductPrice } from '../../../../../../../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
 import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
 import {
   getPriceTotal,
@@ -14,7 +14,7 @@ import {
 
 export const PriceEditor = ({ item, onModalOpen }) => {
   const dispatch = useDispatch();
-  const { abilities, loading } = userAccess();
+  const { abilities, loading } = useUserAccess();
   const canModifyPrice = abilities.can('modify', 'Price');
   const canReadPriceList = abilities.can('read', 'PriceList');
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);

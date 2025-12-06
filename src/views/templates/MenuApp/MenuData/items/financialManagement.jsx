@@ -4,10 +4,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import accountsReceivable from './accountsReceivable';
-import creditNote from './creditNote';
 import { icons } from '../../../../../constants/icons/icons';
 import ROUTES_NAME from '../../../../../routes/routesName';
+
+import accountsReceivable from './accountsReceivable';
+import creditNote from './creditNote';
 
 const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM;
 const { ORDERS } = ROUTES_NAME.ORDER_TERM;

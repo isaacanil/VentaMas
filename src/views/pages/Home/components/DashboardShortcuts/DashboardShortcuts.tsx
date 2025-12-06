@@ -2,8 +2,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../../features/auth/userSlice';
-import { userAccess } from '../../../../../hooks/abilities/useAbilities';
-import { getDeveloperFeaturesData, getMenuCardData } from '../../CardData';
+import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
+import { useDeveloperFeaturesData, useMenuCardData } from '../../CardData';
 import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
 
 import type { FeatureCardData } from '../FeatureCardList/FeatureCard';
@@ -27,9 +27,9 @@ const normalizeCardData = (data: unknown): FeatureCardData[] => {
 
 export const DashboardShortcuts = (): JSX.Element => {
   const user: unknown = useSelector(selectUser);
-  const cardData = normalizeCardData(getMenuCardData(user));
-  const developer = normalizeCardData(getDeveloperFeaturesData());
-  const { abilities } = userAccess();
+  const cardData = normalizeCardData(useMenuCardData(user));
+  const developer = normalizeCardData(useDeveloperFeaturesData());
+  const { abilities, loading } = useUserAccess();
 
   return (
     <ShortcutsSection>
@@ -37,9 +37,10 @@ export const DashboardShortcuts = (): JSX.Element => {
         <FeatureCardList
           title="Funciones de desarrollador"
           cardData={developer}
+          loading={loading}
         />
       )}
-      <FeatureCardList title="Atajos" cardData={cardData} />
+      <FeatureCardList title="Atajos" cardData={cardData} loading={loading} />
     </ShortcutsSection>
   );
 };

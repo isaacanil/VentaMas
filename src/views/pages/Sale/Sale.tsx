@@ -176,7 +176,7 @@ export const Sales = (): JSX.Element => {
   const checkBarcode = (products: Product[], barcode: string) => {
     if (products.length <= 0) {
       notification.error({
-        message: 'Error al escanear',
+        title: 'Error al escanear',
         description: `Error al cargar los productos, por favor intente de nuevo.`,
         placement: 'top',
       });
@@ -190,7 +190,7 @@ export const Sales = (): JSX.Element => {
 
     if (!product) {
       notification.error({
-        message: 'Producto no encontrado',
+        title: 'Producto no encontrado',
         description: `El producto con el código de barras ${barcode} no existe.`,
         placement: 'top',
       });
@@ -211,7 +211,7 @@ export const Sales = (): JSX.Element => {
         },
       };
       notification.success({
-        message: 'Producto agregado',
+        title: 'Producto agregado',
         description: `${productData.name} ${productData.weightDetail.weight}`,
         placement: 'top',
         duration: 3,

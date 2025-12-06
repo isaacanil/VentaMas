@@ -1,6 +1,3 @@
-import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useMemo, useRef, useState } from 'react';
 import {
   autoUpdate,
   flip,
@@ -8,6 +5,9 @@ import {
   shift,
   useFloating,
 } from '@floating-ui/react';
+import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../hooks/useClickOutSide';
@@ -68,10 +68,10 @@ export const Selector = ({
   const selectedOption = value
     ? options.find((opt) => opt?.value === value)
     : {
-        label: placeholder,
-        icon: defaultStyles.icon,
-        ...defaultStyles,
-      };
+      label: placeholder,
+      icon: defaultStyles.icon,
+      ...defaultStyles,
+    };
 
   // Validación adicional para selectedOption
   if (!selectedOption || !selectedOption.label) {

@@ -6,10 +6,9 @@ import {
   Form,
   InputNumber,
   DatePicker,
-  Modal,
 } from 'antd';
 import dayjs from 'dayjs';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { formatMoney, formatQuantity } from '../../../../../utils/formatters';
 import ProductModal from '../../shared/ProductModal';

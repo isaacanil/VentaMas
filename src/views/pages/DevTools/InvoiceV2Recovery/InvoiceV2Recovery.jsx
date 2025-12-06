@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { selectBusinessData } from '../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
-import { userAccess } from '../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
 import { BulkRecoveryTab } from './components/BulkRecoveryTab';
@@ -26,7 +26,7 @@ export const InvoiceV2Recovery = () => {
   const navigate = useNavigate();
   const business = useSelector(selectBusinessData);
   const user = useSelector(selectUser);
-  const { abilities, loading: loadingAbilities } = userAccess();
+  const { abilities, loading: loadingAbilities } = useUserAccess();
 
   const individual = useIndividualInvoiceRecovery({
     initialBusinessId:

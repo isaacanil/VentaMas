@@ -1,4 +1,4 @@
-import { filterMenuItemsByAccess } from '../../../../utils/menuAccess';
+import { useFilterMenuItemsByAccess } from '../../../../utils/menuAccess';
 
 import admin from './items/admin';
 import basic from './items/basic';
@@ -11,7 +11,7 @@ import inventory from './items/inventory';
 import sales from './items/sales';
 import utility from './items/utility';
 
-export const getMenuData = () => {
+export const useMenuData = () => {
   const allMenuItems = [
     ...basic,
     ...sales,
@@ -25,5 +25,5 @@ export const getMenuData = () => {
     ...developer,
   ];
 
-  return filterMenuItemsByAccess(allMenuItems, true);
+  return useFilterMenuItemsByAccess(allMenuItems, true);
 };

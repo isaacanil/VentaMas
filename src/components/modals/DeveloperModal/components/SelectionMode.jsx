@@ -16,8 +16,6 @@ const SelectionMode = ({
   consoleOutput: _consoleOutput,
   setConsoleOutput,
 }) => {
-  // No renderizar nada si el modo de selección no está activo
-  if (!active) return null;
 
   /**
    * Muestra la lista de selección
@@ -134,6 +132,11 @@ ${items
       window.confirmSelection = undefined;
     };
   }, [active, selectedIndex, items]); // Re-renderizar cuando cambia el índice seleccionado o los items filtrados
+
+  if (!active) {
+    return null;
+  }
+
   return (
     <SelectionModeIndicator>
       <span>🎯 MODO DE SELECCIÓN ACTIVO</span>

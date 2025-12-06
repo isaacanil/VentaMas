@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
 import { db } from '../../../../firebase/firebaseconfig';
-import { userAccess } from '../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
 import { toFriendlyFirestoreError } from './utils/errors';
@@ -34,7 +34,7 @@ import { PRESETS, getRangeFromPreset } from './utils/presets';
 
 export const FiscalReceiptsAudit = () => {
   const navigate = useNavigate();
-  const { abilities, loading } = userAccess();
+  const { abilities, loading } = useUserAccess();
   const [processing, setProcessing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [progressTotal, setProgressTotal] = useState(0);

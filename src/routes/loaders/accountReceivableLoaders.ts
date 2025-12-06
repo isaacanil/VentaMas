@@ -1,13 +1,14 @@
+import { redirect } from 'react-router';
+
 import { store } from '../../app/store';
-import fetchAccountsReceivableDetails from '../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
 import { selectUser } from '../../features/auth/userSlice';
-import { redirect } from 'react-router'; // Import redirect
+import fetchAccountsReceivableDetails from '../../firebase/accountsReceivable/fetchAccountsReceivableDetails';
 
-export const accountReceivableInfoLoader = async ({ params }) => {
+export const accountReceivableInfoLoader = async ({ params }: { params: { id?: string } }) => {
   const { id } = params;
-  const user = selectUser(store.getState());
+  const user = selectUser(store.getState()) as { businessID?: string } | null;
 
-  if (!user || user === false || !user.businessID) {
+  if (!user || !user.businessID) {
     // If user is not authenticated or business ID is missing, redirect to login or show an error
     // For now, let's redirect to home or login, assuming the authentication flow handles full user object loading.
     // In a real app, you might want to redirect to a login page if this is a protected route.
@@ -18,9 +19,14 @@ export const accountReceivableInfoLoader = async ({ params }) => {
   try {
     const data = await fetchAccountsReceivableDetails(user, id);
     return data;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching account receivable details:", error);
-    // You can throw a Response with a status to be caught by errorElement
-    throw new Response("Error loading account receivable details.", { status: 500, statusText: error.message || "Internal Server Error" });
+    // Throw a proper Error object
+    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+    const err = new Error("Error loading account receivable details: " + errorMessage);
+    // Attach status information for error boundary
+    (err as Error & { status?: number; statusText?: string }).status = 500;
+    (err as Error & { status?: number; statusText?: string }).statusText = errorMessage;
+    throw err;
   }
 };

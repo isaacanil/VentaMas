@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
@@ -51,7 +51,7 @@ export const SessionManager = ({ status, error }) => {
     }
   }, [status, hasStoredSession, isPublicRoute, shouldRender]);
 
-  const message = useMemo(() => {
+  const message = (() => {
     if (isPublicRoute) {
       return null;
     }
@@ -63,7 +63,7 @@ export const SessionManager = ({ status, error }) => {
       return null;
     }
     return STATUS_MESSAGES[status] ?? STATUS_MESSAGES.checking;
-  }, [error, status, isActive, isPublicRoute, shouldRender]);
+  })();
 
   const handleLoaderFinish = () => {
     setShouldRender(false);

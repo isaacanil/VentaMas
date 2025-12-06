@@ -1,6 +1,7 @@
-import React from 'react';
 import { Typography } from 'antd';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
+
 import VentamaxLogo from '../../../../../assets/logo/ventamax.svg';
 
 const { Text } = Typography;

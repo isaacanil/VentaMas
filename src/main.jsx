@@ -1,5 +1,5 @@
-import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
 import isPropValid from '@emotion/is-prop-valid';
+import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntApp } from 'antd';
 import { StrictMode, useEffect } from 'react';

@@ -49,7 +49,7 @@ const sanitizeCashCount = ({
   closingApprovalEmployeeData,
   fallbackId,
 }) => {
-  const { stateHistory, sales, ...restCashCount } = cashCount || {};
+  const { stateHistory: _stateHistory, sales: _sales, ...restCashCount } = cashCount || {};
 
   return {
     ...restCashCount,

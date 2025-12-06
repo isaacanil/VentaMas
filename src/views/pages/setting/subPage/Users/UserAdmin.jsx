@@ -1,9 +1,8 @@
-import { Spin } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { userAccess } from '../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
 import ROUTES_NAME from '../../../../../routes/routesName';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
@@ -21,7 +20,7 @@ const {
 export const UserAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { abilities, loading } = userAccess();
+  const { abilities, loading } = useUserAccess();
   const usersRoute = `${USERS}/${USERS_LIST}`;
   const sessionLogsRoute = `${USERS}/${USERS_SESSION_LOGS}`;
   const userActivityRoute = `${USERS}/${USERS_ACTIVITY}`;

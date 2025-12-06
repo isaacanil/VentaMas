@@ -9,16 +9,19 @@ import TotalAccumulatedChart from './charts/TotalAccumulatedChart';
 import { accumulateMonthlyData } from './utils/accumulateMonthlyData';
 
 export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const { monthlyData, totalAccumulated } = useMemo(() => accumulateMonthlyData(expenses), [expenses]);
+    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const { monthlyData, totalAccumulated } = useMemo(
+        () => accumulateMonthlyData(normalizedExpenses),
+        [normalizedExpenses],
+    );
     const labels = useMemo(() => Object.keys(monthlyData), [monthlyData]);
 
+    const hasData = normalizedExpenses.length > 0 && labels.length > 0;
+
     // Calcular el valor máximo
-    const maxMonthly = Math.max(...Object.values(monthlyData));
-    const maxScaleValue = Math.max(totalAccumulated, maxMonthly);
+    const maxMonthly =
+        labels.length > 0 ? Math.max(...Object.values(monthlyData)) : 0;
+    const maxScaleValue = Math.max(totalAccumulated ?? 0, maxMonthly);
 
     const customOptions = useMemo(() => ({
         ...options,
@@ -30,6 +33,10 @@ export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
             },
         },
     }), [maxScaleValue]);
+
+    if (!hasData) {
+        return null;  // or some fallback UI
+    }
 
     return (
         <Container>

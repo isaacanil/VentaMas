@@ -47,11 +47,11 @@ const accumulateCategoryData = (expenses) => {
 };
 
 export const CategoryExpenseBarChart = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const categoryData = useMemo(() => accumulateCategoryData(expenses), [expenses]);
+    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const categoryData = useMemo(
+        () => accumulateCategoryData(normalizedExpenses),
+        [normalizedExpenses],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(categoryData);
         const dataTotals = labels.map(label => categoryData[label]);
@@ -69,6 +69,10 @@ export const CategoryExpenseBarChart = ({ expenses }) => {
             ]
         };
     }, [categoryData]);
+
+    if (!normalizedExpenses.length) {
+        return null;  // or some fallback UI
+    }
 
     return (
         <Container>

@@ -10,6 +10,8 @@ import useBusiness from '../../../../../../../hooks/useBusiness';
 const DEFAULT_CLIENT_TYPE = 'normal';
 const DEFAULT_STATUS = 'active';
 const DEFAULT_PAYMENT_STATUS = 'all';
+const NO_OP = () => { };
+const DEFAULT_DATE_RANGE = { startDate: null, endDate: null };
 
 const SORT_OPTIONS = [
   { value: 'defaultCriteria', label: 'Por defecto' },
@@ -57,22 +59,22 @@ const isSameRange = (a, b) => {
 };
 
 export const FilterAccountReceivable = ({
-  datesSelected,
-  setDatesSelected,
+  datesSelected = DEFAULT_DATE_RANGE,
+  setDatesSelected = NO_OP,
   clientType = DEFAULT_CLIENT_TYPE,
-  onClientTypeChange,
+  onClientTypeChange = NO_OP,
   statusFilter = DEFAULT_STATUS,
-  onStatusFilterChange,
-  sortCriteria,
-  sortDirection,
-  onSortChange,
-  onToggleSortDirection,
+  onStatusFilterChange = NO_OP,
+  sortCriteria = 'defaultCriteria',
+  sortDirection = 'asc',
+  onSortChange = NO_OP,
+  onToggleSortDirection = NO_OP,
   totalCount = 0,
   selectedClient = 'all',
-  onClientChange,
+  onClientChange = NO_OP,
   clientOptions = [],
   paymentStatusFilter = DEFAULT_PAYMENT_STATUS,
-  onPaymentStatusChange,
+  onPaymentStatusChange = NO_OP,
 }) => {
   const { isPharmacy } = useBusiness();
   const initialDateRange = useRef(
@@ -301,24 +303,7 @@ export const FilterAccountReceivable = ({
   );
 };
 
-FilterAccountReceivable.defaultProps = {
-  datesSelected: { startDate: null, endDate: null },
-  setDatesSelected: () => { },
-  clientType: DEFAULT_CLIENT_TYPE,
-  onClientTypeChange: () => { },
-  statusFilter: DEFAULT_STATUS,
-  onStatusFilterChange: () => { },
-  sortCriteria: 'defaultCriteria',
-  sortDirection: 'asc',
-  onSortChange: () => { },
-  onToggleSortDirection: () => { },
-  totalCount: 0,
-  selectedClient: 'all',
-  onClientChange: () => { },
-  clientOptions: [],
-  paymentStatusFilter: DEFAULT_PAYMENT_STATUS,
-  onPaymentStatusChange: () => { },
-};
+
 
 FilterAccountReceivable.propTypes = {
   datesSelected: PropTypes.shape({

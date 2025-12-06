@@ -1,6 +1,7 @@
-import React from 'react';
 import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
+import React from 'react';
+
 import { SectionTitle, TableCard, HighlightCard } from '../styles';
 import { formatCurrency, formatDate } from '../utils';
 

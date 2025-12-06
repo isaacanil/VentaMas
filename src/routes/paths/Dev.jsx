@@ -10,9 +10,9 @@ import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAu
 import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
 import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
 import SyncDiagnostics from '../../views/pages/DevTools/SyncDiagnostics';
-import CheckProductPriceAudit from '../../views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit';
 import TestPlayground from '../../views/pages/DevTools/TestPlayground';
 import BusinessCreator from '../../views/pages/setting/subPage/BusinessEditor/BusinessCreator';
+import CheckProductPriceAudit from '../../views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit';
 import { Doc } from '../../views/templates/system/AdvancedTable/Doc';
 import Menu from '../../views/templates/system/Menu/Menu';
 import { ROUTE_STATUS } from '../routeMeta';
@@ -111,11 +111,13 @@ const routes = [
     path: CHANGELOG_CREATE,
     element: <ChangeLogCreate />,
     devOnly: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: APP_CONFIG.ROOT,
     element: <AppConfig />,
     devOnly: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: APP_CONFIG.LOGIN_IMAGE,

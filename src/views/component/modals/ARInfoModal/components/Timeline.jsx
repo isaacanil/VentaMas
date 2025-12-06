@@ -1,9 +1,10 @@
-import React from 'react';
 import {
     ScheduleOutlined,
     ExclamationCircleOutlined,
     ClockCircleOutlined,
 } from '@ant-design/icons';
+import React from 'react';
+
 import {
     TimelineContainer,
     StyledProgress,

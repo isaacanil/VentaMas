@@ -1,8 +1,8 @@
+import { Form, Checkbox, Select, Button, notification } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
-import { Form, Checkbox, Select, Button, notification } from 'antd';
 
 import {
   closePaymentModal,
@@ -150,7 +150,7 @@ export const PaymentForm = () => {
         setPrintPending(true);
       } else {
         notification.success({
-          message: 'Pago Procesado',
+          title: 'Pago Procesado',
           description: 'Pago registrado con éxito',
         });
         handleClear();

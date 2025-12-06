@@ -2,9 +2,9 @@ import { doc, writeBatch, getDoc, arrayUnion } from 'firebase/firestore';
 
 import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { fbAddPayment } from '../accountsReceivable/payment/fbAddPayment';
+import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
-import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 
 import {
   getSortedClientAccountsAR,
@@ -44,11 +44,11 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
     let openCashCountId = null;
     try {
       const { state, cashCount } = await checkOpenCashReconciliation(user);
-      
+
       if (state === 'closing') {
         throw new Error('No se puede procesar el pago: La caja está en proceso de cierre.');
       }
-      
+
       if (state === 'closed') {
         throw new Error('No se puede procesar el pago: No hay un cuadre de caja abierto.');
       }

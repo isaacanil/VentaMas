@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { memo, useMemo, useState } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { BusinessInfoModal } from './BusinessInfoModal';
@@ -28,19 +28,22 @@ type BusinessInfoPillProps = {
   className?: string;
 };
 
-export const BusinessInfoPill = ({
+// Memoized selector to extract business data
+const selectBusinessData = (state: RootState): BusinessInfo | null => {
+  const data = state.business?.data;
+  return typeof data === 'object' && data !== null ? data : null;
+};
+
+export const BusinessInfoPill = memo(({
   className,
 }: BusinessInfoPillProps): JSX.Element => {
-  const business = useSelector<RootState, BusinessInfo | null>((state) =>
-    typeof state.business?.data === 'object' && state.business.data !== null
-      ? state.business.data
-      : null,
-  );
+  const business = useSelector(selectBusinessData, shallowEqual);
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const businessName =
-    (typeof business?.name === 'string' && business.name.trim()) ||
-    'Tu negocio';
+  const businessName = useMemo(
+    () => (typeof business?.name === 'string' && business.name.trim()) || 'Tu negocio',
+    [business?.name]
+  );
 
   const handleInteraction = (): void => setModalOpen(true);
 
@@ -72,7 +75,10 @@ export const BusinessInfoPill = ({
       />
     </>
   );
-};
+});
+
+BusinessInfoPill.displayName = 'BusinessInfoPill';
+
 
 const PillButton = styled.button`
   display: inline-flex;

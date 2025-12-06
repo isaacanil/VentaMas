@@ -1,6 +1,7 @@
-import React from 'react';
 import { FileTextOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
+import React from 'react';
+
 import { SectionTitle, TableCard } from '../styles';
 import { formatCurrency, formatDate } from '../utils';
 

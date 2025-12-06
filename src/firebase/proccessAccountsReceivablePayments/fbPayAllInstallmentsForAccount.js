@@ -1,8 +1,8 @@
 import { doc, runTransaction, arrayUnion } from 'firebase/firestore';
 
+import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 import { db } from '../firebaseconfig';
 import { fbGetInvoice } from '../invoices/fbGetInvoice';
-import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 
 import {
   getInstallmentsByArId,
@@ -104,11 +104,11 @@ export const fbPayAllInstallmentsForAccount = async ({
     let openCashCountId = null;
     try {
       const { state, cashCount } = await checkOpenCashReconciliation(user);
-      
+
       if (state === 'closing') {
         throw new Error('No se puede procesar el pago: La caja está en proceso de cierre.');
       }
-      
+
       if (state === 'closed') {
         throw new Error('No se puede procesar el pago: No hay un cuadre de caja abierto.');
       }

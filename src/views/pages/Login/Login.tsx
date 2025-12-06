@@ -94,6 +94,7 @@ export const Login = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
+
     void fetchLoginImage();
   }, [fetchLoginImage]);
 
@@ -120,18 +121,18 @@ export const Login = (): JSX.Element => {
   /* redirección si hay sesión */
   useEffect(() => {
     if (user) {
-      navigate(HOME_PATH, { replace: true });
+      void navigate(HOME_PATH, { replace: true });
       return;
     }
 
     const storedSession = parseStoredSession(getStoredSession() as unknown);
     if (storedSession && Date.now() < storedSession.sessionExpiresAt) {
-      navigate(HOME_PATH, { replace: true });
+      void navigate(HOME_PATH, { replace: true });
     }
   }, [user, navigate]);
 
   const goToHome = useCallback(() => {
-    navigate('/');
+    void navigate('/');
   }, [navigate]);
 
   return (

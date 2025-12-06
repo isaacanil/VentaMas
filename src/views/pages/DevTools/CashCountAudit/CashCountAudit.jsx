@@ -1,4 +1,3 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlignLeftOutlined,
   ApiOutlined,
@@ -31,14 +30,16 @@ import {
   Timestamp,
   where,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import { db } from '../../../../firebase/firebaseconfig';
-import { CashCountMetaData } from '../../CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
 import { functions } from '../../../../firebase/firebaseconfig';
-import { httpsCallable } from 'firebase/functions';
+import { CashCountMetaData } from '../../CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
+
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -367,6 +368,7 @@ const CashCountAudit = () => {
   const handleSelectAutoItem = (cashCountId) => {
     setSelectedAutoCashCount(cashCountId);
     const run = autoRuns.find((r) => r.id === selectedRun);
+    const item = run?.items?.find((i) => i.cashCountId === cashCountId);
     if (item?.businessId) {
       setBusiness(item.businessId);
     } else if (run?.businessId) {
@@ -433,16 +435,16 @@ const CashCountAudit = () => {
               >
                 Manual
               </Button>
-            <Button
-              type={mode === 'auto' ? 'primary' : 'default'}
-              icon={<ApiOutlined />}
-              onClick={() => {
-                setMode('auto');
-                if (!business) setBusiness('ALL');
-              }}
-            >
-              Autom&aacute;tico
-            </Button>
+              <Button
+                type={mode === 'auto' ? 'primary' : 'default'}
+                icon={<ApiOutlined />}
+                onClick={() => {
+                  setMode('auto');
+                  if (!business) setBusiness('ALL');
+                }}
+              >
+                Autom&aacute;tico
+              </Button>
             </Space>
           </Field>
         </Inline>

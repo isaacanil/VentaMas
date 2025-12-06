@@ -1,5 +1,4 @@
-import { faRobot, faBolt, faCheckCircle, faShop, faUser, faPaperPlane, faTrash, faHome, faEllipsisV, faTimes, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faRobot, faBolt, faCheckCircle, faShop, faUser, faPaperPlane, faHome, faEllipsisV, faTimes, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Input, message, Switch, Typography, Dropdown } from 'antd';
 import React, { useState, useRef, useEffect } from 'react';
@@ -7,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { generativeModel } from '../../../../firebase/firebaseconfig';
+
 import { ACTIONS, getSystemPrompt } from './aiActions';
 
 const { TextArea } = Input;

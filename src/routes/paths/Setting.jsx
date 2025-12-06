@@ -9,8 +9,8 @@ import BusinessCreator from '../../views/pages/setting/subPage/BusinessEditor/Bu
 import BusinessInfo from '../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile';
 import { TaxReceiptSetting } from '../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting';
 import { UserList } from '../../views/pages/setting/subPage/Users/components/UsersList/UserList';
-import { UserAdmin } from '../../views/pages/setting/subPage/Users/UserAdmin';
 import { UserActivity } from '../../views/pages/setting/subPage/Users/UserActivity';
+import { UserAdmin } from '../../views/pages/setting/subPage/Users/UserAdmin';
 import { UserSessionLogs } from '../../views/pages/setting/subPage/Users/UserSessionLogs';
 import { getRelativePath } from '../getConfigRoute';
 import ROUTES_NAME from '../routesName';

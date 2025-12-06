@@ -46,7 +46,6 @@ const BillingSection = ({
   hidden = false,
   sectionId,
 }) => {
-  if (hidden) return null;
   const [isExpanded, setIsExpanded] = useState(false);
   const sectionRef = useRef(null);
 
@@ -55,6 +54,10 @@ const BillingSection = ({
   const sectionAttributes = sectionId
     ? { id: sectionId, 'data-config-section': sectionId }
     : {};
+
+  if (hidden) {
+    return null;
+  }
 
   return (
     <Section

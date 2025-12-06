@@ -9,8 +9,8 @@ import { developerShortcuts } from '../../../constants/devtools/developerShortcu
 import { icons } from '../../../constants/icons/icons';
 import ROUTES_NAME from '../../../routes/routesName';
 import {
-  filterMenuItemsByAccess,
-  hasDeveloperAccess,
+  useFilterMenuItemsByAccess,
+  useHasDeveloperAccess,
 } from '../../../utils/menuAccess';
 
 const createMenuItems = (items) =>
@@ -162,8 +162,9 @@ const menuItems = createMenuItems([
 
 const developerItems = createMenuItems(developerShortcuts);
 
-export const getMenuCardData = (user) => {
-  return filterMenuItemsByAccess(menuItems).filter((item) => {
+export const useMenuCardData = (user) => {
+  const filteredItems = useFilterMenuItemsByAccess(menuItems);
+  return filteredItems.filter((item) => {
     // Si el item tiene roles definidos, verificar que el usuario tenga uno de esos roles
     if (item.roles && Array.isArray(item.roles)) {
       return item.roles.includes(user?.role);
@@ -172,6 +173,7 @@ export const getMenuCardData = (user) => {
   });
 };
 
-export const getDeveloperFeaturesData = () => {
-  return hasDeveloperAccess() ? developerItems : [];
+export const useDeveloperFeaturesData = () => {
+  const hasDeveloperAccess = useHasDeveloperAccess();
+  return hasDeveloperAccess ? developerItems : [];
 };

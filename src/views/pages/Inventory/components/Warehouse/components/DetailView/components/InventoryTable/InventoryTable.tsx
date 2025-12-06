@@ -175,8 +175,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
       const normalizedDates = Array.isArray(dates)
         ? (dates.map((date) =>
-            date ? normalizeToDayjs(date) : null,
-          ) as DateRangeValue)
+          date ? normalizeToDayjs(date) : null,
+        ) as DateRangeValue)
         : null;
 
       if (!normalizedDates || (!normalizedDates[0] && !normalizedDates[1])) {
@@ -202,7 +202,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   const handleViewProductStock = useCallback(
     (productId?: string) => {
       if (!productId) return;
-      navigate(`/inventory/warehouses/products-stock/${productId}`);
+      void navigate(`/inventory/warehouses/products-stock/${productId}`);
     },
     [navigate],
   );
@@ -288,7 +288,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     async (dryRun = false) => {
       if (!user?.businessID) {
         notification.error({
-          message: 'Usuario sin negocio',
+          title: 'Usuario sin negocio',
           description: 'No se pudo determinar el businessID para sincronizar.',
         });
         return;
@@ -303,14 +303,14 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         })) as ReconcileBatchStatusResult;
 
         notification.success({
-          message: dryRun
+          title: dryRun
             ? 'Simulación completada'
             : 'Lotes sincronizados correctamente',
           description: describeSyncResult(result),
         });
       } catch (err) {
         notification.error({
-          message: 'Error al sincronizar lotes',
+          title: 'Error al sincronizar lotes',
           description:
             err instanceof Error ? err.message : 'No se pudo completar la acción',
         });
@@ -505,9 +505,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           : false;
         const expiryDate = expirationDateMillis
           ? {
-              label: dayjs(expirationDateMillis).format('DD/MM/YYYY'),
-              isExpired,
-            }
+            label: dayjs(expirationDateMillis).format('DD/MM/YYYY'),
+            isExpired,
+          }
           : { label: 'N/A', isExpired: false };
 
         return {
@@ -540,7 +540,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   ]);
 
   const columns = useInventoryColumns({
-    onViewBatch: (batchId) => handleViewBatch(batchId),
+    onViewBatch: (batchId) => void handleViewBatch(batchId),
     getActionMenu,
   });
 

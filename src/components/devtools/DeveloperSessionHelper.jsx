@@ -21,7 +21,7 @@ import {
   returnToOriginalBusiness,
 } from '../../features/auth/userSlice';
 import { toggleDeveloperModal } from '../../features/modals/modalSlice';
-import { hasDeveloperAccess } from '../../utils/menuAccess';
+import { useHasDeveloperAccess } from '../../utils/menuAccess';
 
 const BUTTON_SIZE = 48;
 const PANEL_MIN_WIDTH = 420;
@@ -35,7 +35,7 @@ export const DeveloperSessionHelper = () => {
   const originalRole = useSelector(selectOriginalRole);
   const isTemporaryBusinessMode = useSelector(selectIsTemporaryMode);
   const originalBusinessId = useSelector(selectOriginalBusinessId);
-  const developerAccess = hasDeveloperAccess();
+  const developerAccess = useHasDeveloperAccess();
 
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState(() => ({ x: 0, y: 0 }));
@@ -53,8 +53,8 @@ export const DeveloperSessionHelper = () => {
   );
   const businessSectionEnabled = Boolean(
     isTemporaryBusinessMode &&
-      originalBusinessId &&
-      (originalRole === 'dev' || user?.role === 'dev'),
+    originalBusinessId &&
+    (originalRole === 'dev' || user?.role === 'dev'),
   );
   const developerOptions = useMemo(() => {
     if (!developerAccess) return [];

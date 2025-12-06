@@ -2,6 +2,7 @@ import { useAbility } from '@casl/react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { AbilityContext } from '../../Context/AbilityContext/context';
 import {
   selectAbilities,
   selectAbilitiesLoading,
@@ -9,7 +10,6 @@ import {
   loadUserAbilities,
 } from '../../features/abilities/abilitiesSlice';
 import { selectUser } from '../../features/auth/userSlice';
-import { AbilityContext } from '../../Context/AbilityContext/context';
 
 export const useAbilities = () => {
   const abilities = useSelector(selectAbilities);
@@ -21,16 +21,20 @@ export const useAbilities = () => {
 
 export const useLoadUserAbilities = () => {
   const user = useSelector(selectUser);
+  const abilities = useSelector(selectAbilities);
+  const loading = useSelector(selectAbilitiesLoading);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user?.businessID) {
+    // Only load if user exists, has businessID, and abilities haven't been loaded yet
+    // This prevents infinite loops by checking if abilities are already loaded
+    if (user?.businessID && !loading && (!abilities || abilities.length === 0)) {
       dispatch(loadUserAbilities(user));
     }
-  }, [user, dispatch]);
+  }, [user?.businessID, dispatch, loading, abilities?.length]);
 };
 
-export function userAccess() {
+export function useUserAccess() {
   const abilities = useAbility(AbilityContext);
   const loading = useSelector(selectAbilitiesLoading);
 

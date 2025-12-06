@@ -178,6 +178,18 @@ const TooltipHighlight = styled.span`
   color: #1d39c4;
 `;
 
+const GridList = forwardRef(({ style, children, ...props }, ref) => (
+  <GridListContainer
+    ref={ref}
+    style={style}
+    {...props}
+  >
+    {children}
+  </GridListContainer>
+));
+
+GridList.displayName = 'GridList';
+
 const ProductModal = ({
   onSelect,
   selectedProduct,
@@ -416,17 +428,10 @@ const ProductModal = ({
                 style={{ height: '100%' }}
                 totalCount={filteredProducts.length}
                 components={{
-                  List: forwardRef(({ style, children, ...props }, ref) => (
-                    <GridListContainer
-                      ref={ref}
-                      style={style}
-                      {...props}
-                    >
-                      {children}
-                    </GridListContainer>
-                  )),
+                  List: GridList,
                   Item: ItemContainer,
                 }}
+
                 itemContent={(index) => {
                   const product = filteredProducts[index];
                   return (

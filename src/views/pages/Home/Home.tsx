@@ -1,6 +1,6 @@
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 import { Spin } from 'antd';
+import { shallowEqual, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
 import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 
@@ -13,21 +13,27 @@ import type { JSX } from 'react';
 type RootState = {
   user?: {
     user?:
-      | {
-          role?: string | null;
-        }
-      | null
-      | boolean;
+    | {
+      role?: string | null;
+    }
+    | null
+    | boolean;
   };
 };
 
-export const Home = (): JSX.Element => {
-  const userState = useSelector<
-    RootState,
-    { role?: string | null } | null | boolean
-  >((state) => (state.user?.user === undefined ? false : state.user.user));
+// Memoized selector to extract user role
+const selectUserRole = (state: RootState): string | null | false => {
+  const user = state.user?.user;
+  if (user === undefined) return false;
+  if (user === false || user === null) return false;
+  if (typeof user === 'object') return user.role ?? null;
+  return false;
+};
 
-  if (userState === false) {
+export const Home = (): JSX.Element => {
+  const userRole = useSelector(selectUserRole, shallowEqual);
+
+  if (userRole === false) {
     return (
       <LoadingContainer>
         <Spin size="large" />
@@ -35,8 +41,6 @@ export const Home = (): JSX.Element => {
     );
   }
 
-  const userRole =
-    typeof userState === 'object' && userState !== null ? userState.role : null;
   const shouldShowVersionBadge = userRole === 'dev';
 
   return (

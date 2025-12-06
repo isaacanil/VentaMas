@@ -11,7 +11,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -33,7 +33,6 @@ import { useReceivableInvoices } from './hooks/useReceivableInvoices';
 import { formatDate, formatPrice } from './utils/formatters';
 
 import type { ReceivableInvoice } from './types';
-
 import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -125,7 +124,7 @@ export const AccountReceivableAudit = () => {
   });
 
   const totalInvoices = receivableInvoices.length;
-  const filteredInvoices = useMemo<ReceivableInvoice[]>(() => {
+  const filteredInvoices = (() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     return receivableInvoices.filter((invoice) => {
       const matchesSearch =
@@ -135,54 +134,39 @@ export const AccountReceivableAudit = () => {
           String(invoice.number).toLowerCase().includes(normalizedSearch)) ||
         invoice.clientName.toLowerCase().includes(normalizedSearch);
 
-      const hasReceivable = Boolean(receivablesByInvoice[invoice.invoiceId]);
+      const hasReceivable = !!receivablesByInvoice[invoice.invoiceId];
       const matchesFilter =
         receivableFilter === 'all' ||
         (receivableFilter === 'with' && hasReceivable) ||
         (receivableFilter === 'missing' && !hasReceivable);
+
       return matchesSearch && matchesFilter;
     });
-  }, [
-    receivableInvoices,
-    receivablesByInvoice,
-    receivableFilter,
-    searchTerm,
-  ]);
+  })();
 
-  const totalAmount = useMemo(
-    () =>
-      filteredInvoices.reduce(
-        (sum, invoice) =>
-          sum +
-          (Number.isFinite(invoice.totalAmount) ? invoice.totalAmount : 0),
-        0,
-      ),
-    [filteredInvoices],
+  const totalAmount = filteredInvoices.reduce(
+    (sum, invoice) =>
+      sum +
+      (Number.isFinite(invoice.totalAmount) ? invoice.totalAmount : 0),
+    0,
   );
   const invoicesWithReceivableCount =
     totalInvoices - missingReceivableInvoices.length;
-  const financialSummaryData = useMemo(
-    () => ({
-      totalInvoices: totalInvoices,
-      withCxC: invoicesWithReceivableCount,
-      withoutCxC: missingReceivableInvoices.length,
-      coveragePercent:
-        totalInvoices > 0
-          ? Number(
-              ((invoicesWithReceivableCount / totalInvoices) * 100).toFixed(1),
-            )
-          : 0,
-      totalAmount: formatPrice(totalAmount),
-      lastUpdate: lastUpdated ? formatDate(lastUpdated) : 'N/D',
-    }),
-    [
-      invoicesWithReceivableCount,
-      lastUpdated,
-      missingReceivableInvoices.length,
-      totalInvoices,
-      totalAmount,
-    ],
-  );
+
+  // React Compiler automatically handles memoization for this object
+  const financialSummaryData = {
+    totalInvoices: totalInvoices,
+    withCxC: invoicesWithReceivableCount,
+    withoutCxC: missingReceivableInvoices.length,
+    coveragePercent:
+      totalInvoices > 0
+        ? Number(
+          ((invoicesWithReceivableCount / totalInvoices) * 100).toFixed(1),
+        )
+        : 0,
+    totalAmount: formatPrice(totalAmount),
+    lastUpdate: lastUpdated ? formatDate(lastUpdated) : 'N/D',
+  };
 
   const handleSubmit = useCallback(
     (values: { sampleLimit?: number }) => {
@@ -238,8 +222,8 @@ export const AccountReceivableAudit = () => {
         rows,
         'Facturas CxC',
         `auditoria-cxc-${timestamp}.xlsx`,
-        (worksheet, dataSet, columns) => {
-          applyProfessionalStyling(worksheet, dataSet.length);
+        (worksheet, dataSet: unknown[], columns) => {
+          applyProfessionalStyling(worksheet, Array.isArray(dataSet) ? dataSet.length : 0);
           formatCurrencyColumns(worksheet, columns, ['Monto total']);
           addReportHeader(worksheet, 'Auditoría de Cuentas por Cobrar');
         },
@@ -256,7 +240,7 @@ export const AccountReceivableAudit = () => {
   const handleRecoverInvoice = useCallback(
     (invoiceId: string) => {
       if (!invoiceId) return;
-      navigate(
+      void navigate(
         `/dev/tools/invoice-v2-recovery?invoiceId=${encodeURIComponent(invoiceId)}&businessId=${encodeURIComponent(businessId || '')}`,
       );
     },
@@ -270,7 +254,7 @@ export const AccountReceivableAudit = () => {
       const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
       // Try to keep focus on the current window (best effort, browser dependent)
       if (newWindow) {
-        window.focus();
+        void window.focus();
       }
     },
     [businessId],
@@ -331,7 +315,7 @@ export const AccountReceivableAudit = () => {
         {error && <Alert type="error" message={error} />}
 
         <FinancialSummary data={financialSummaryData} />
-        
+
 
         <FiltersRow>
           <FilterGroup>

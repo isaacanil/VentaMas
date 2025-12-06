@@ -9,6 +9,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { setAccountPayment } from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import {
   fetchAccountReceivableDetails,
   resetAR,
@@ -18,15 +19,15 @@ import {
   selectARLoading,
   setARDetailsModal,
 } from '../../../../features/accountsReceivable/accountsReceivableSlice';
-import { setAccountPayment } from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
+
 import ActionButtons from './components/ActionButtons';
 import ContextPanels from './components/ContextPanels';
 import HeroKPIs from './components/HeroKPIs';
 import InstallmentSchedule from './components/InstallmentSchedule';
 import PaymentHistory from './components/PaymentHistory';
 import Timeline from './components/Timeline';
-import { SectionTitle, StyledDivider } from './styles';
+import { StyledDivider } from './styles';
 import { formatCurrency, formatDate, getNextPaymentInfo } from './utils';
 
 // --- Styled Components ---
@@ -163,7 +164,7 @@ export default function ARSummaryModal() {
     data.invoice?.totalPurchase?.value ||
     data.invoice?.totalPurchase ||
     0;
-  const totalInstallments = data.installments?.length || 0;
+
   const invoiceNumber =
     data.invoice?.numberID ||
     data.invoice?.number ||
@@ -172,7 +173,7 @@ export default function ARSummaryModal() {
   const invoiceDate = data.invoice?.date || data.ar?.createdAt;
   const emissionDate = data.invoice?.emissionDate || invoiceDate; // Handle specific emission date if available
   const clientName = data?.client?.name || 'Cliente Desconocido';
-  const items = data.invoice?.products || data.invoice?.items || [];
+
 
   const nextPaymentInfo = useMemo(
     () => getNextPaymentInfo(data),

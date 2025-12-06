@@ -1,7 +1,6 @@
 import {
   memo,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -236,7 +235,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     selectUserUid,
   );
 
-  const columnsWithExpander = useMemo<InternalColumn<Row>[]>(() => {
+  const columnsWithExpander = (() => {
     if (!expandedRowRender) return columns;
 
     const expanderCol: InternalColumn<Row> = {
@@ -270,7 +269,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     };
 
     return [expanderCol, ...columns];
-  }, [columns, expandedRowRender]);
+  })();
 
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
   const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder(
@@ -278,10 +277,10 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     tableName,
     userUid,
   ) as [
-    InternalColumn<Row>[],
-    Dispatch<SetStateAction<InternalColumn<Row>[]>>,
-    () => void,
-  ];
+      InternalColumn<Row>[],
+      Dispatch<SetStateAction<InternalColumn<Row>[]>>,
+      () => void,
+    ];
 
   const toggleReorderMenu = () => {
     setIsReorderMenuOpen((prev) => !prev);
@@ -340,7 +339,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
       : sortedData;
 
   // Preparar datos planos para GroupedVirtuoso
-  const { groupCounts, groupHeaders, flatGroupedData } = useMemo(() => {
+  const { groupCounts, groupHeaders, flatGroupedData } = (() => {
     if (!shouldGroup || !groupBy || !enableVirtualization) {
       return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };
     }
@@ -362,7 +361,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
       groupHeaders: headers,
       flatGroupedData: flatData,
     };
-  }, [groupedData, shouldGroup, groupBy, enableVirtualization]);
+  })();
 
   const totalElements = data.length;
   const elementsShown = currentData.length;
@@ -370,9 +369,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
 
-  const handleWrapperScroll = useMemo<
-    ((event: UIEvent<HTMLDivElement>) => void) | undefined
-  >(() => {
+  const handleWrapperScroll = (() => {
     if (!onScroll && !onScrollMetrics) return undefined;
 
     return (event: UIEvent<HTMLDivElement>) => {
@@ -403,7 +400,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
         }
       }
     };
-  }, [onScroll, onScrollMetrics]);
+  })();
 
   useEffect(() => {
     if (typeof onScrollMetrics !== 'function') return undefined;

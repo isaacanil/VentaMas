@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import { setUserDynamicPermissions } from '../../../../../../../services/dynamicPermissions';
 import { Button } from '../../../../../../templates/system/Button/Button';
 
@@ -18,7 +18,7 @@ const CashierMigrationTool = () => {
     error: null,
   });
 
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
 
   // Solo administradores pueden ejecutar la migración
   const canMigrate = abilities.can('manage', 'users');

@@ -52,13 +52,11 @@ const accumulateGenericCustomerSalesData = (sales) => {
 };
 
 export const GenericCustomerSalesChart = ({ sales }) => {
-  if (!sales || !Array.isArray(sales)) {
-    return null; // or some fallback UI
-  }
+  const normalizedSales = Array.isArray(sales) ? sales : [];
 
   const salesByGenericCustomer = useMemo(
-    () => accumulateGenericCustomerSalesData(sales),
-    [sales],
+    () => accumulateGenericCustomerSalesData(normalizedSales),
+    [normalizedSales],
   );
 
   const data = useMemo(() => {
@@ -78,6 +76,10 @@ export const GenericCustomerSalesChart = ({ sales }) => {
       ],
     };
   }, [salesByGenericCustomer]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
 
   return (
     <Container>

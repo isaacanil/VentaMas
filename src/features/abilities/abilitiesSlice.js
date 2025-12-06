@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 
 import {
   defineAbilitiesFor,
@@ -62,6 +62,20 @@ export const { setAbilities, clearAbilities } = abilitiesSlice.actions;
 
 export default abilitiesSlice.reducer;
 
-export const selectAbilities = (state) => state.abilities.abilities;
-export const selectAbilitiesLoading = (state) => state.abilities.loading;
-export const selectAbilitiesError = (state) => state.abilities.error;
+// Memoized selectors to prevent unnecessary re-renders
+const selectAbilitiesState = (state) => state.abilities;
+
+export const selectAbilities = createSelector(
+  [selectAbilitiesState],
+  (abilitiesState) => abilitiesState.abilities
+);
+
+export const selectAbilitiesLoading = createSelector(
+  [selectAbilitiesState],
+  (abilitiesState) => abilitiesState.loading
+);
+
+export const selectAbilitiesError = createSelector(
+  [selectAbilitiesState],
+  (abilitiesState) => abilitiesState.error
+);

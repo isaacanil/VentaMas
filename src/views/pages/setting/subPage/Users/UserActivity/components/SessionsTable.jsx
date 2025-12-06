@@ -3,6 +3,7 @@ import { Button, Dropdown, Tag } from 'antd';
 import { useMemo } from 'react';
 
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+
 import { DateCell } from './DateCell';
 
 export const SessionsTable = ({

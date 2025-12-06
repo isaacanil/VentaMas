@@ -1,65 +1,60 @@
-import { forwardRef } from 'react';
 import styled, { css } from 'styled-components';
 
-export const Button = forwardRef(
-  (
-    {
-      border,
-      color = 'on-gray',
-      title,
-      alignText = 'center',
-      size = 'small',
-      startIcon,
-      endIcon,
-      onClick,
-      width,
-      height,
-      hidden,
-      variant = 'contained',
-      disabled,
-      borderRadius = 'normal',
-      isActivated,
-      isActivatedColors,
-      iconOn,
-      iconOff,
-      iconColor,
-      titlePosition,
-      type = 'button',
-    },
-    ref,
-  ) => {
-    const handleClick = (e) => {
-      e.stopPropagation();
-      onClick();
-    };
-    return (
-      <Container
-        size={size}
-        color={color}
-        onClick={onClick && handleClick}
-        width={width}
-        height={height}
-        variant={variant}
-        disabled={disabled}
-        type={type}
-        borderRadius={borderRadius}
-        isActivated={isActivated}
-        titlePosition={titlePosition}
-        border={border}
-        iconColor={iconColor}
-        isActivatedColors={isActivatedColors}
-        hidden={hidden}
-        alignText={alignText}
-        ref={ref}
-      >
-        {isActivated ? iconOn : iconOff}
-        {startIcon ? startIcon : null}
-        {title ? title : null}
-        {endIcon ? endIcon : null}
-      </Container>
-    );
-  },
-);
+export const Button = ({
+  border,
+  color = 'on-gray',
+  title,
+  alignText = 'center',
+  size = 'small',
+  startIcon,
+  endIcon,
+  onClick,
+  width,
+  height,
+  hidden,
+  variant = 'contained',
+  disabled,
+  borderRadius = 'normal',
+  isActivated,
+  isActivatedColors,
+  iconOn,
+  iconOff,
+  iconColor,
+  titlePosition,
+  type = 'button',
+  ref,
+}) => {
+  const handleClick = (e) => {
+    e.stopPropagation();
+    onClick();
+  };
+  return (
+    <Container
+      size={size}
+      color={color}
+      onClick={onClick && handleClick}
+      width={width}
+      height={height}
+      variant={variant}
+      disabled={disabled}
+      type={type}
+      borderRadius={borderRadius}
+      isActivated={isActivated}
+      titlePosition={titlePosition}
+      border={border}
+      iconColor={iconColor}
+      isActivatedColors={isActivatedColors}
+      hidden={hidden}
+      alignText={alignText}
+      ref={ref}
+    >
+      {isActivated ? iconOn : iconOff}
+      {startIcon ? startIcon : null}
+      {title ? title : null}
+      {endIcon ? endIcon : null}
+    </Container>
+  );
+};
 
 Button.displayName = 'Button';
 
@@ -162,12 +157,12 @@ export const Container = styled.button`
   
   &:hover {
     ${(props) =>
-      !props.isActivated
-        ? `
+    !props.isActivated
+      ? `
       
        opacity: 0.8;
     `
-        : null}
+      : null}
   }
 
   ${(props) => props.borderRadius && borderRadius[props.borderRadius]}
@@ -175,8 +170,7 @@ export const Container = styled.button`
     switch (props.variant) {
       case 'contained':
         return `
-        ${
-          props.theme?.colors?.[props.color] &&
+        ${props.theme?.colors?.[props.color] &&
           `
           background-color: ${props.theme?.colors?.[props.color]['bg']};
           color: ${props.theme.colors[props.color]['text']};
@@ -186,7 +180,7 @@ export const Container = styled.button`
             color: ${props.theme.colors[props.color]['text']};
           }
           `
-        }
+          }
         `;
       case 'outlined':
         return `
@@ -322,8 +316,7 @@ export const Container = styled.button`
         }
         return `
         
-        ${
-          props.isActivated === true
+        ${props.isActivated === true
             ? `
         background-color: #ffffff;
           color: black;
@@ -340,7 +333,7 @@ export const Container = styled.button`
             color: black;
           }
         `
-        }
+          }
          
         `;
       case false:

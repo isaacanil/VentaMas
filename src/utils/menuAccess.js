@@ -1,4 +1,4 @@
-import { userAccess } from '../hooks/abilities/useAbilities';
+import { useUserAccess } from '../hooks/abilities/useAbilities';
 import { isHiddenInMenu, getRouteMeta } from '../routes/routeVisibility';
 
 /**
@@ -8,8 +8,8 @@ import { isHiddenInMenu, getRouteMeta } from '../routes/routeVisibility';
  * @param {boolean} hasSubmenu - Indica si los elementos tienen submenús (true) o son planos (false)
  * @return {Array} - Elementos de menú filtrados basados en permisos
  */
-export const filterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
-  const { abilities } = userAccess();
+export const useFilterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
+  const { abilities } = useUserAccess();
   const developerAccess = abilities?.can('developerAccess', 'all');
 
   if (!hasSubmenu) {
@@ -64,7 +64,7 @@ export const filterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
  *
  * @returns {boolean} - true si el usuario tiene acceso de desarrollador
  */
-export const hasDeveloperAccess = () => {
-  const { abilities } = userAccess();
+export const useHasDeveloperAccess = () => {
+  const { abilities } = useUserAccess();
   return abilities?.can('developerAccess', 'all');
 };

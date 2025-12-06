@@ -49,13 +49,11 @@ const getTop20SpendingCustomers = (sales) => {
 };
 
 export const TopSpendingCustomersChart = ({ sales }) => {
-  if (!sales || !Array.isArray(sales)) {
-    return null; // or some fallback UI
-  }
+  const normalizedSales = Array.isArray(sales) ? sales : [];
 
   const top20SpendingCustomers = useMemo(
-    () => getTop20SpendingCustomers(sales),
-    [sales],
+    () => getTop20SpendingCustomers(normalizedSales),
+    [normalizedSales],
   );
 
   const data = useMemo(() => {
@@ -75,6 +73,10 @@ export const TopSpendingCustomersChart = ({ sales }) => {
       ],
     };
   }, [top20SpendingCustomers]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
 
   return (
     <Container>

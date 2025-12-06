@@ -1,5 +1,5 @@
 import { notification } from 'antd';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
@@ -54,11 +54,8 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     ? billing.stockCriticalThreshold
     : Math.min(lowThreshold, 10);
 
-  const price = useMemo(
-    () => getTotalPrice(product, taxReceiptEnabled),
-    [product, taxReceiptEnabled],
-  );
-  const productAvailableStock = useMemo(() => resolveStock(product), [product]);
+  const price = getTotalPrice(product, taxReceiptEnabled);
+  const productAvailableStock = resolveStock(product);
   const [isFirebaseLoading, setIsFirebaseLoading] = useState(false);
 
   const normalizeExpirationDate = useCallback((value) => {

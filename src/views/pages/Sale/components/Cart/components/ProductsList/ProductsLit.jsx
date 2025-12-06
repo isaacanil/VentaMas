@@ -164,13 +164,15 @@ export const ProductsList = () => {
         onCommentChange={setComment}
         onSave={handleSaveComment}
         onDelete={() => {
-          setComment('');
-          dispatch(
-            updateProductFields({
-              id: selectedProduct.id,
-              data: { comment: '' },
-            }),
-          );
+          if (selectedProduct) {
+            setComment('');
+            dispatch(
+              updateProductFields({
+                id: selectedProduct.id,
+                data: { comment: '' },
+              }),
+            );
+          }
           setCommentModalOpen(false);
         }}
       />

@@ -10,7 +10,7 @@ import {
   recalcTotals,
 } from '../../../../../../../../../features/cart/cartSlice';
 import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
-import { userAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
 import { useCreditLimitCheck } from '../../../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable';
 import { useCreditLimitRealtime } from '../../../../../../../../../hooks/accountsReceivable/useCreditLimitRealtime';
 import useInsuranceEnabled from '../../../../../../../../../hooks/useInsuranceEnabled';
@@ -33,7 +33,7 @@ export const Body = ({ form }) => {
   const selectedCreditNotes = useSelector(selectCreditNotePayment);
   const clientId = client.id;
   const insuranceEnabled = useInsuranceEnabled();
-  const { abilities, loading: abilitiesLoading } = userAccess();
+  const { abilities, loading: abilitiesLoading } = useUserAccess();
 
   const { creditLimit, error, isLoading } = useCreditLimitRealtime(
     user,

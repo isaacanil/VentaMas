@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import {
   getUserDynamicPermissions,
   setUserDynamicPermissions,
@@ -27,7 +27,7 @@ const DynamicPermissionsManager = ({
   const [saving, setSaving] = useState(false);
   const user = useSelector(selectUser);
 
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
 
   // Verificar si el usuario actual puede gestionar permisos
   const canManagePermissions = abilities.can('manage', 'users');

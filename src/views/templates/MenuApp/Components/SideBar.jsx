@@ -9,12 +9,12 @@ import { selectBusinessData } from '../../../../features/auth/businessSlice';
 import { selectUser } from '../../../../features/auth/userSlice';
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
 import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice';
-import { userAccess } from '../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
 import ROUTES_PATH from '../../../../routes/routesName';
-import { hasDeveloperAccess } from '../../../../utils/menuAccess';
+import { useHasDeveloperAccess } from '../../../../utils/menuAccess';
 import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu';
 import { WebName } from '../../system/WebName/WebName';
-import { getMenuData } from '../MenuData/MenuData';
+import { useMenuData } from '../MenuData/MenuData';
 import { UserSection } from '../UserSection';
 
 import { MenuLink } from './MenuLink';
@@ -47,8 +47,8 @@ const useMenuFiltering = () => {
   } = settings;
   const business = useSelector(selectBusinessData);
   const businessType = business?.businessType || null;
-  const links = getMenuData();
-  const canSeeDeveloperGroup = hasDeveloperAccess();
+  const links = useMenuData();
+  const canSeeDeveloperGroup = useHasDeveloperAccess();
 
   return useMemo(() => {
     const filteredLinks = links.reduce((acc, item) => {
@@ -110,7 +110,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
   const navigate = useNavigate();
   const user = useSelector(selectUser);
   const groupedLinks = useMenuFiltering();
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
   const canAccessGeneralConfig =
     abilities.can('manage', 'Business') ||
     abilities.can('manage', 'business-settings');

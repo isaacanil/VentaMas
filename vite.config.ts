@@ -3,8 +3,14 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type PluginOption, type UserConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 
+const KB = 1024;
+
 const plugins: PluginOption[] = [
-  pluginReact(),
+  pluginReact({
+    babel: {
+      plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+    },
+  }),
 ];
 
 // Configuración del analizador si lo necesitas
@@ -35,27 +41,94 @@ export default defineConfig({
       views: fileURLToPath(new URL('./src/views', import.meta.url)),
     },
     // Esto es CRUCIAL para evitar el error de createContext
-       dedupe: ['react', 'react-dom', 'scheduler', 'object-assign', 'styled-components'],
+    dedupe: ['react', 'react-dom', 'scheduler', 'object-assign', 'styled-components'],
   },
   build: {
     sourcemap: false,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
-        manualChunks(id: string) {
-         // Asegurar que los helpers comunes se carguen antes
-          if (id.includes('commonjsHelpers')) return 'commonjsHelpers';
+        advancedChunks: {
+          // Opcional: tamaño mínimo global para que valga la pena crear chunks
+          // minSize: 20 * 1024, // 20 KB
 
-          // Tus categorías de librerías
-          if (id.includes('firebase') || id.includes('@firebase')) return 'firebase-core';
-          if (id.includes('antd') || id.includes('@ant-design') || id.includes('rc-')) return 'ui-antd';
-          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('pdfmake') || id.includes('exceljs')) return 'office-worker';
-          if (id.includes('bwip-js') || id.includes('react-qr-code') || id.includes('react-barcode')) return 'barcode-worker';
-          if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('lightweight-charts')) return 'charts';
-          if (id.includes('lodash') || id.includes('dayjs') || id.includes('moment')) return 'utils-vendor';
+          groups: [
+            // Helpers comunes de CJS (opcional, pero lo mantengo como en tu config)
+            {
+              name: 'commonjs-helpers',
+              test: (id: string) => id.includes('commonjsHelpers'),
+              priority: 50,
+            },
 
-          // El resto de los paquetes de node_modules se agrupan en vendor
-          if (id.includes('node_modules')) return 'vendor';
+            // Firebase
+            {
+              name: 'firebase-core',
+              test: (id: string) =>
+                id.includes('firebase') || id.includes('@firebase'),
+              priority: 40,
+              maxSize: 800 * KB,
+            },
+
+            // UI (Ant Design + rc-*)
+            {
+              name: 'ui-antd',
+              test: (id: string) =>
+                id.includes('antd') ||
+                id.includes('@ant-design') ||
+                id.includes('rc-'),
+              priority: 35,
+            },
+
+            // PDF / Excel
+            {
+              name: 'office-worker',
+              test: (id: string) =>
+                id.includes('jspdf') ||
+                id.includes('html2canvas') ||
+                id.includes('pdfmake') ||
+                id.includes('exceljs'),
+              priority: 30,
+            },
+
+            // Códigos de barras / QR
+            {
+              name: 'barcode-worker',
+              test: (id: string) =>
+                id.includes('bwip-js') ||
+                id.includes('react-qr-code') ||
+                id.includes('react-barcode'),
+              priority: 25,
+            },
+
+            // Gráficas
+            {
+              name: 'charts',
+              test: (id: string) =>
+                id.includes('chart.js') ||
+                id.includes('react-chartjs-2') ||
+                id.includes('lightweight-charts'),
+              priority: 20,
+            },
+
+            // Utilidades
+            {
+              name: 'utils-vendor',
+              test: (id: string) =>
+                id.includes('lodash') ||
+                id.includes('dayjs') ||
+                id.includes('moment'),
+              priority: 15,
+            },
+
+            // Fallback para el resto de node_modules
+            {
+              name: 'vendor',
+              test: /node_modules/,
+              priority: 5,
+              // Puedes poner un minSize si no quieres chunks miniatura
+              // minSize: 20 * 1024,
+            },
+          ],
         },
       },
     },

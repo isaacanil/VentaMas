@@ -35,7 +35,6 @@ const useIsMobile = () => {
 };
 
 const SalesAnalyticsPanel = ({ sales, isOpen, onOpen }) => {
-  if (!isOpen) return null;
   const componentRef = useRef(null);
   const isMobile = useIsMobile();
 
@@ -56,6 +55,10 @@ const SalesAnalyticsPanel = ({ sales, isOpen, onOpen }) => {
   };
 
   useClickOutSide(componentRef, isOpen, onOpen);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <AnimatePresence>

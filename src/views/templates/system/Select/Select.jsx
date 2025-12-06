@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import {
   autoUpdate,
   flip,
@@ -6,6 +5,7 @@ import {
   shift,
   useFloating,
 } from '@floating-ui/react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../constants/icons/icons';

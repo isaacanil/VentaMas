@@ -21,9 +21,9 @@ import { toggleProviderModal } from '../../../../../../features/modals/modalSlic
 import { db } from '../../../../../../firebase/firebaseconfig';
 import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
 import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
-import ProductModal from '../../../shared/ProductModal';
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
 import BackOrdersModal from '../../../PurchaseManagement/components/BackOrdersModal';
+import ProductModal from '../../../shared/ProductModal';
 import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
 import ProductsTable from '../ProductsTable';
 

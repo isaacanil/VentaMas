@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { Card } from 'antd';
 
 export const StyledProgress = styled.div`
   width: 100%;

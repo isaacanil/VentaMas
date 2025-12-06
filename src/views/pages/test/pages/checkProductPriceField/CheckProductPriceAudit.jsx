@@ -2,12 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../features/auth/userSlice';
+import { fbBackfillListPriceFromPrice } from '../../../../../firebase/products/fbBackfillListPriceFromPrice';
 import {
   fbEqualizeProductPrice,
   fbEqualizeProductsPrice,
   fbEqualizeAllProductsPrice,
 } from '../../../../../firebase/products/fbEqualizeProductPrice';
-import { fbBackfillListPriceFromPrice } from '../../../../../firebase/products/fbBackfillListPriceFromPrice';
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
 
 function toNumber(n, fallback = 0) {

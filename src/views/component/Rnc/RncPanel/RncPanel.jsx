@@ -186,8 +186,6 @@ export const RncPanel = ({ rncInfo, loading }) => {
     }
   };
 
-  if (!rncInfo && !loading) return null;
-
   const [isStatusModalVisible, setStatusModalVisible] = useState(false);
 
   const status = rncInfo?.status;
@@ -198,6 +196,8 @@ export const RncPanel = ({ rncInfo, loading }) => {
     details: '',
     icon: QuestionCircleOutlined,
   };
+
+  if (!rncInfo && !loading) return null;
 
   const formatDetails = (details) => {
     return details

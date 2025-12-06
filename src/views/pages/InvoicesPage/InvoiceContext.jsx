@@ -48,8 +48,8 @@ export function InvoicesProvider({ children }) {
   };
 
   return (
-    <InvoicesContext.Provider value={{ state, sortInvoices, filterInvoices }}>
+    <InvoicesContext value={{ state, sortInvoices, filterInvoices }}>
       {children}
-    </InvoicesContext.Provider>
+    </InvoicesContext>
   );
 }

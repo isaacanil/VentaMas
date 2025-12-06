@@ -51,26 +51,31 @@ const accumulateTaxedSalesData = (sales, byMonth = false) => {
 };
 
 export const TaxedSalesStackedBarChart = ({ sales }) => {
-  if (!sales || !Array.isArray(sales)) {
-    return null; // or some fallback UI
-  }
-  const dateSpan = sales.reduce(
-    (span, sale) => {
-      const date = sale.data.date.seconds * 1000;
-      span.min = Math.min(span.min, date);
-      span.max = Math.max(span.max, date);
-      return span;
-    },
-    { min: Infinity, max: -Infinity },
+  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const dateSpan = useMemo(
+    () =>
+      normalizedSales.reduce(
+        (span, sale) => {
+          const date = sale.data.date.seconds * 1000;
+          return {
+            min: Math.min(span.min, date),
+            max: Math.max(span.max, date),
+          };
+        },
+        { min: Infinity, max: -Infinity },
+      ),
+    [normalizedSales],
   );
 
   const spanInMonths =
-    (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
+    normalizedSales.length > 0
+      ? (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30)
+      : 0;
   const byMonth = spanInMonths > 2;
 
   const salesByTaxStatus = useMemo(
-    () => accumulateTaxedSalesData(sales, byMonth),
-    [sales, byMonth],
+    () => accumulateTaxedSalesData(normalizedSales, byMonth),
+    [normalizedSales, byMonth],
   );
 
   const data = useMemo(() => {
@@ -100,6 +105,10 @@ export const TaxedSalesStackedBarChart = ({ sales }) => {
       ],
     };
   }, [salesByTaxStatus]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
 
   return (
     <Container>

@@ -1,11 +1,12 @@
-import React from 'react';
 import {
     DollarOutlined,
     DownloadOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip, message } from 'antd';
-import { ActionButtonsContainer } from '../styles';
+import { Button, Tooltip } from 'antd';
+import React from 'react';
+
 import { generateARPDF } from '../generateARPDF';
+import { ActionButtonsContainer } from '../styles';
 
 const ActionButtons = ({ data, onPay }) => {
     const hasBalance = (data?.ar?.arBalance || 0) > 0;

@@ -2,6 +2,7 @@
 import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import reactCompiler from 'eslint-plugin-react-compiler';
 import storybook from 'eslint-plugin-storybook';
 import unusedImports from 'eslint-plugin-unused-imports';
 import importPlugin from 'eslint-plugin-import';
@@ -63,9 +64,12 @@ export default [
       'unused-imports': unusedImports,
       import: importPlugin,
       react,
+      react,
       'react-refresh': reactRefresh,
+      'react-compiler': reactCompiler,
     },
     rules: {
+      'react-compiler/react-compiler': 'error',
       // === Limpieza automática ===
       'no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'error',
@@ -171,9 +175,12 @@ export default [
       'unused-imports': unusedImports,
       import: importPlugin,
       react,
+      react,
       'react-refresh': reactRefresh,
+      'react-compiler': reactCompiler,
     },
     rules: {
+      'react-compiler/react-compiler': 'error',
       ...tseslint.configs['recommended-type-checked'].rules,
 
       // === Limpieza automática ===

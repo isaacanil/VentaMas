@@ -63,13 +63,11 @@ const accumulateCategorySalesData = (sales) => {
 };
 
 export const ProductCategorySalesBarChart = ({ sales }) => {
-  if (!sales || !Array.isArray(sales)) {
-    return null; // or some fallback UI
-  }
+  const normalizedSales = Array.isArray(sales) ? sales : [];
 
   const salesByCategory = useMemo(
-    () => accumulateCategorySalesData(sales),
-    [sales],
+    () => accumulateCategorySalesData(normalizedSales),
+    [normalizedSales],
   );
 
   const data = useMemo(() => {
@@ -89,6 +87,10 @@ export const ProductCategorySalesBarChart = ({ sales }) => {
       ],
     };
   }, [salesByCategory]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
 
   return (
     <Container>

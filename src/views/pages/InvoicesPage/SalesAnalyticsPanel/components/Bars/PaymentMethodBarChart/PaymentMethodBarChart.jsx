@@ -103,14 +103,11 @@ const accumulatePaymentMethodData = (sales) => {
 
 export const PaymentMethodBarChart = ({ sales }) => {
   const isMobile = useIsMobile();
-
-  if (!sales || !Array.isArray(sales)) {
-    return null;
-  }
+  const normalizedSales = Array.isArray(sales) ? sales : [];
 
   const salesByPaymentMethod = useMemo(
-    () => accumulatePaymentMethodData(sales),
-    [sales],
+    () => accumulatePaymentMethodData(normalizedSales),
+    [normalizedSales],
   );
 
   const data = useMemo(() => {
@@ -133,6 +130,10 @@ export const PaymentMethodBarChart = ({ sales }) => {
 
   // Crear opciones del gráfico dinámicamente
   const chartOptions = useMemo(() => createChartOptions(isMobile), [isMobile]);
+
+  if (!normalizedSales.length) {
+    return null;
+  }
 
   return (
     <Container $isMobile={isMobile}>

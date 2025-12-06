@@ -6,11 +6,11 @@ import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
 import { toggleSignUpUser } from '../../../../../features/modals/modalSlice';
-import { userAccess } from '../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
 
 const UsersAdminToolbar = ({ side = 'left' }) => {
   const dispatch = useDispatch();
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
 
   const handleOpenModal = () => dispatch(toggleSignUpUser({ isOpen: true }));
   const matchWithUsers = useMatch('/users/list');

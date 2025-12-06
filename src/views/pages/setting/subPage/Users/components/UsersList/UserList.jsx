@@ -7,15 +7,15 @@ import {
   SettingOutlined,
   StopOutlined,
 } from '@ant-design/icons';
+import { faCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Dropdown, Input } from 'antd';
+import { onValue, ref } from 'firebase/database';
 import { DateTime } from 'luxon';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { onValue, ref } from 'firebase/database';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle } from '@fortawesome/free-solid-svg-icons';
 
 import {
   getRoleLabelById,
@@ -24,10 +24,10 @@ import {
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice';
 import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice';
-import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
 import { realtimeDB } from '../../../../../../../firebase/firebaseconfig.jsx';
+import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
+import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import ROUTES_NAME from '../../../../../../../routes/routesName';
-import { userAccess } from '../../../../../../../hooks/abilities/useAbilities';
 import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import DynamicPermissionsManager from '../DynamicPermissionsManager';
@@ -175,7 +175,7 @@ export const UserList = () => {
   const currentUser = useSelector(selectUser);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { abilities, loading: permissionsLoading } = userAccess();
+  const { abilities, loading: permissionsLoading } = useUserAccess();
   const canManageDynamicPermissions = abilities.can('manage', 'users');
 
   useEffect(() => {

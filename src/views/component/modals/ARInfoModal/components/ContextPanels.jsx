@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     PhoneOutlined,
     WhatsAppOutlined,
@@ -7,6 +6,8 @@ import {
     FileTextOutlined,
 } from '@ant-design/icons';
 import { Tooltip, Button } from 'antd';
+import React from 'react';
+
 import { ContextContainer, ContextPanel, StyledTag } from '../styles';
 import {
     formatDate,

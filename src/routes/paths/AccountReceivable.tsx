@@ -1,10 +1,10 @@
 import AccountReceivableAudit from '../../views/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit';
 import AccountReceivableInfo from '../../views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo';
 import { AccountReceivableList } from '../../views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList';
-import { ReceivablePaymentReceipt } from '../../views/pages/InvoicesPage/ReceivablePaymentReceipt';
-import ROUTES_NAME from '../routesName';
 import { ErrorBoundary } from '../../views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
+import { ReceivablePaymentReceipt } from '../../views/pages/InvoicesPage/ReceivablePaymentReceipt';
 import { accountReceivableInfoLoader } from '../loaders/accountReceivableLoaders'; // Import loader
+import ROUTES_NAME from '../routesName';
 
 import type { AppRoute } from '../routes';
 

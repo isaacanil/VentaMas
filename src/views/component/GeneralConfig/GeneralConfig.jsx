@@ -15,7 +15,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 
 import { selectUser } from '../../../features/auth/userSlice';
 import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
-import { userAccess } from '../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../hooks/abilities/useAbilities';
 import ROUTES_NAME from '../../../routes/routesName';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { Nav } from '../../templates/system/Nav/Nav';
@@ -176,7 +176,7 @@ export default function GeneralConfig() {
   const scrollRetryRef = useRef(null);
   const previousRelevantRoute = useSelector(selectPreviousRouteIgnoringConfig);
   const user = useSelector(selectUser);
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
   const abilityRules = abilities?.rules || [];
   const hasAbilityData = abilityRules.length > 0;
   const isCashierRole = [

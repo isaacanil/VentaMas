@@ -21,7 +21,7 @@ import {
 } from '../../../../../../features/modals/modalSlice';
 import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp';
 import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
-import { userAccess } from '../../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '../../../../../../hooks/abilities/useAbilities';
 import { getAvailablePermissionsForRole } from '../../../../../../services/dynamicPermissions';
 
 import DynamicPermissionsManager from './DynamicPermissionsManager';
@@ -32,7 +32,11 @@ export const SignUpModal = () => {
   const user = useSelector(selectUser);
   const signUpModal = useSelector(SelectSignUpUserModal);
   const dispatch = useDispatch();
-  const { abilities } = userAccess();
+  const { abilities } = useUserAccess();
+
+  if (!abilities) {
+    return null;
+  }
 
   const canManageUsers = abilities.can('manage', 'User');
   const canCreateUsers = abilities.can('create', 'User') || canManageUsers;
