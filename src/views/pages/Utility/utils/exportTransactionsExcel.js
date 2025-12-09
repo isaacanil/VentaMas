@@ -1,4 +1,3 @@
-import ExcelJS from 'exceljs';
 import { DateTime } from 'luxon';
 
 import { buildTransactionRows } from './transactionRows';
@@ -47,6 +46,7 @@ export const exportTransactionsExcel = async (dailyMetrics) => {
     return;
   }
 
+  const ExcelJS = (await import('exceljs')).default;
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Detalle transacciones');
 

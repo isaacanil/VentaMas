@@ -32,13 +32,13 @@ const Tab = styled.button`
   align-items: center;
   padding: 12px 16px;
   font-size: 14px;
-  color: ${(props) => (props.active ? '#1976d2' : '#666')};
+  color: ${(props) => (props.$active ? '#1976d2' : '#666')};
   white-space: nowrap;
   cursor: pointer;
   background: none;
   border: none;
   border-bottom: 2px solid
-    ${(props) => (props.active ? '#1976d2' : 'transparent')};
+    ${(props) => (props.$active ? '#1976d2' : 'transparent')};
   transition: all 0.3s ease;
 
   &:hover {
@@ -136,22 +136,22 @@ const InventoryMenu = () => {
   return (
     <MenuContainer>
       <TabList>
-        <Tab active={value === 0} onClick={() => handleChange(0)}>
+        <Tab $active={value === 0} onClick={() => handleChange(0)}>
           Almacenes
         </Tab>
-        <Tab active={value === 1} onClick={() => handleChange(1)}>
+        <Tab $active={value === 1} onClick={() => handleChange(1)}>
           Stock
         </Tab>
-        <Tab active={value === 2} onClick={() => handleChange(2)}>
+        <Tab $active={value === 2} onClick={() => handleChange(2)}>
           Backorders
         </Tab>
-        <Tab active={value === 3} onClick={() => handleChange(3)}>
+        <Tab $active={value === 3} onClick={() => handleChange(3)}>
           Compras
           <ExternalArrow>
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
           </ExternalArrow>
         </Tab>
-        <Tab active={value === 4} onClick={() => handleChange(4)}>
+        <Tab $active={value === 4} onClick={() => handleChange(4)}>
           Pedidos
           <ExternalArrow>
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />

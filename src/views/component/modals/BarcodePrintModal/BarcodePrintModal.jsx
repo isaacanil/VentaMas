@@ -1,6 +1,4 @@
 import * as antd from 'antd';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -28,6 +26,9 @@ export const BarcodePrintModal = () => {
         const values = form.getFieldsValue();
         const desiredWidthMM = values.barcodeWidth; // Ancho deseado en milímetros.
         const quantity = parseInt(values.quantity, 10); // Cantidad de veces que se debe duplicar el código de barras.
+
+        const html2canvas = (await import('html2canvas')).default;
+        const { jsPDF } = await import('jspdf');
 
         const canvas = await html2canvas(barcodeRef.current);
         const imgData = canvas.toDataURL('image/png');

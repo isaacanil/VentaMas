@@ -1,6 +1,6 @@
 import { Modal, Alert } from 'antd';
 import { motion } from 'framer-motion';
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, memo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
@@ -23,7 +23,7 @@ import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart';
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
 
-const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
+const VirtuosoList = forwardRef(({ style, children, context, ...props }, ref) => (
   <Body ref={ref} style={style} {...props}>
     {children}
   </Body>
@@ -31,14 +31,14 @@ const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
 VirtuosoList.displayName = 'VirtuosoList';
 
 // VirtuosoItem ahora es un contenedor simple, sin animación
-const VirtuosoItem = forwardRef(({ children, ...props }, ref) => (
+const VirtuosoItem = forwardRef(({ children, context, ...props }, ref) => (
   <div ref={ref} {...props}>
     {children}
   </div>
 ));
 VirtuosoItem.displayName = 'VirtuosoItem';
 
-
+const ProductCardForCartMemo = memo(ProductCardForCart);
 
 export const ProductsList = () => {
   const dispatch = useDispatch();
@@ -54,27 +54,28 @@ export const ProductsList = () => {
   const [batchInfoModalOpen, setBatchInfoModalOpen] = useState(false);
   const [comment, setComment] = useState('');
 
-  const handleOpenCommentModal = (product) => {
+  const handleOpenCommentModal = useCallback((product) => {
     setSelectedProduct(product);
     setComment(product.comment || '');
     setCommentModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenDeleteModal = (product) => {
+  const handleOpenDeleteModal = useCallback((product) => {
     setSelectedProduct(product);
     setDeleteModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenDiscountModal = (product) => {
+  const handleOpenDiscountModal = useCallback((product) => {
     setSelectedProduct(product);
     setDiscountModalOpen(true);
-  };
-  const handleOpenBatchInfoModal = (product) => {
+  }, []);
+  
+  const handleOpenBatchInfoModal = useCallback((product) => {
     if (product) {
       setSelectedProduct(product);
       setBatchInfoModalOpen(true);
     }
-  };
+  }, []);
 
   const handleSaveComment = () => {
     if (selectedProduct) {
@@ -107,6 +108,24 @@ export const ProductsList = () => {
     dispatch(updateInsuranceData({ authNumber: e.target.value }));
   };
 
+  const itemContent = useCallback(
+    (index, item) => (
+      <ProductCardForCartMemo
+        item={item}
+        onOpenCommentModal={handleOpenCommentModal}
+        onOpenDeleteModal={handleOpenDeleteModal}
+        onOpenDiscountModal={handleOpenDiscountModal}
+        onOpenBatchInfoModal={handleOpenBatchInfoModal}
+      />
+    ),
+    [
+      handleOpenCommentModal,
+      handleOpenDeleteModal,
+      handleOpenDiscountModal,
+      handleOpenBatchInfoModal,
+    ],
+  );
+
   return (
     <Container>
       <ListContainer>
@@ -116,15 +135,7 @@ export const ProductsList = () => {
             computeItemKey={(index, item) =>
               item?.cid || item?.id || `item-${index}`
             }
-            itemContent={(index, item) => (
-              <ProductCardForCart
-                item={item}
-                onOpenCommentModal={handleOpenCommentModal}
-                onOpenDeleteModal={handleOpenDeleteModal}
-                onOpenDiscountModal={handleOpenDiscountModal}
-                onOpenBatchInfoModal={handleOpenBatchInfoModal}
-              />
-            )}
+            itemContent={itemContent}
             components={{
               List: VirtuosoList,
               Item: VirtuosoItem,

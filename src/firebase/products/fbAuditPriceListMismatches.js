@@ -1,5 +1,4 @@
 // src/lib/price-audit-export.js
-import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import {
   collection,
@@ -630,6 +629,7 @@ export async function fbExportProblemProductsAll({
   }
 
   if (format === 'xlsx' || format === 'both') {
+    const ExcelJS = (await import('exceljs')).default;
     const wb = new ExcelJS.Workbook();
     wb.creator = 'VentaMax';
     wb.created = new Date();

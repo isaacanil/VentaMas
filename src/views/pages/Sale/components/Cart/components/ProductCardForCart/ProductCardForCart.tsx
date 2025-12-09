@@ -448,7 +448,7 @@ export const ProductCardForCart = ({
                   {useFormatPrice(basePriceWithTax)}
                 </OriginalPrice>
               )}
-              <Price hasDiscount={hasDiscount}>
+              <Price $hasDiscount={hasDiscount}>
                 {useFormatPrice(finalPrice)}
               </Price>
             </PriceContainer>
@@ -692,11 +692,11 @@ const TitleLabel = styled.span`
   overflow-wrap: break-word;
 `;
 
-const Price = styled.span<{ hasDiscount: boolean }>`
+const Price = styled.span<{ $hasDiscount: boolean }>`
   padding: 0 10px;
   font-size: 14px;
   font-weight: 600;
-  color: ${(props) => (props.hasDiscount ? '#52c41a' : 'var(--gray-6)')};
+  color: ${(props) => (props.$hasDiscount ? '#52c41a' : 'var(--gray-6)')};
   white-space: nowrap;
   background-color: var(--white-1);
 `;

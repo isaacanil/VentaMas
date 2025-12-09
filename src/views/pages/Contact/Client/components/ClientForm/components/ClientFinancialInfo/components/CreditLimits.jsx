@@ -21,7 +21,7 @@ import CreditLimitModal from './CreditLimitModal';
 
 const { Alert } = antd;
 
-export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
+export const CreditLimits = ({ arBalance = 800, client }) => {
   const [creditLimitStatus, setCreditLimitStatus] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const user = useSelector(selectUser);
@@ -41,7 +41,6 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
 
   useEffect(() => {
     if (creditLimitState) {
-      creditLimitForm.setFieldsValue(creditLimitState);
       setCreditLimitStatus(creditLimitState?.creditLimit?.status);
     }
   }, [creditLimitState]);
@@ -53,7 +52,6 @@ export const CreditLimits = ({ creditLimitForm, arBalance = 800, client }) => {
   const handleModalSave = async (values) => {
     try {
       // Actualizar el formulario padre
-      creditLimitForm.setFieldsValue(values);
       setCreditLimitStatus(values.creditLimit?.status);
 
       // Invalidar la query para refrescar los datos

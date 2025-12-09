@@ -20,7 +20,6 @@ import {
 import { getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
 import { getStorage } from 'firebase/storage';
-import { getVertexAI, getGenerativeModel } from 'firebase/vertexai';
 
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 const hasRealtimeDatabase = Boolean(databaseURL);
@@ -48,16 +47,24 @@ export const db = initializeFirestore(app, {
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
-const realtimeDbOptions =
-  hasRealtimeDatabase && {
-    // Auto-fallback to long polling when websockets are blocked (common in some networks/VPNs).
-    experimentalAutoDetectLongPolling: true,
-  };
 
 export const realtimeDB = hasRealtimeDatabase
-  ? getDatabase(app, databaseURL, realtimeDbOptions)
+  ? getDatabase(app, databaseURL)
   : null;
-export const vertexAI = getVertexAI(app);
+
+let _generativeModelInstance = null;
+
+export const getLazyGenerativeModel = async () => {
+  if (!_generativeModelInstance) {
+    const { getVertexAI, getGenerativeModel } = await import('firebase/vertexai');
+    const vertexAI = getVertexAI(app);
+    _generativeModelInstance = getGenerativeModel(vertexAI, {
+      model: 'gemini-2.5-flash',
+    });
+  }
+  return _generativeModelInstance;
+};
+
 
 export const listFirst5UserNames = async () => {
   const usersRef = collection(db, 'users');
@@ -97,10 +104,6 @@ export const listFirst5UserNames = async () => {
 // };
 
 // servicesEmulator();
-
-export const generativeModel = getGenerativeModel(vertexAI, {
-  model: 'gemini-2.5-flash',
-});
 
 // export const getTaxes = async (setTaxes) => {
 //   const taxesRef = collection(db, "taxes")

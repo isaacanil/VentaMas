@@ -1,12 +1,31 @@
-import AccountReceivableAudit from '../../views/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit';
-import AccountReceivableInfo from '../../views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo';
-import { AccountReceivableList } from '../../views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList';
+import { lazy } from 'react';
+
 import { ErrorBoundary } from '../../views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
-import { ReceivablePaymentReceipt } from '../../views/pages/InvoicesPage/ReceivablePaymentReceipt';
 import { accountReceivableInfoLoader } from '../loaders/accountReceivableLoaders'; // Import loader
 import ROUTES_NAME from '../routesName';
 
 import type { AppRoute } from '../routes';
+
+const AccountReceivableAudit = lazy(() =>
+  import(
+    '../../views/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit'
+  ),
+);
+const AccountReceivableInfo = lazy(() =>
+  import(
+    '../../views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo'
+  ),
+);
+const AccountReceivableList = lazy(() =>
+  import(
+    '../../views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList'
+  ).then((module) => ({ default: module.AccountReceivableList })),
+);
+const ReceivablePaymentReceipt = lazy(() =>
+  import('../../views/pages/InvoicesPage/ReceivablePaymentReceipt').then(
+    (module) => ({ default: module.ReceivablePaymentReceipt }),
+  ),
+);
 
 const {
   ACCOUNT_RECEIVABLE_LIST,
@@ -21,7 +40,7 @@ const routes: AppRoute[] = [
     path: ACCOUNT_RECEIVABLE_INFO,
     element: <AccountReceivableInfo />,
     loader: accountReceivableInfoLoader, // Add loader
-    errorElement: <ErrorBoundary /> // Add errorElement
+    errorElement: <ErrorBoundary />, // Add errorElement
   },
   { path: RECEIVABLE_PAYMENT_RECEIPTS, element: <ReceivablePaymentReceipt /> },
   { path: ACCOUNT_RECEIVABLE_AUDIT, element: <AccountReceivableAudit /> },

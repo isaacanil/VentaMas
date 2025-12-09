@@ -3,7 +3,6 @@ import { Fragment, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { useARValidation } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/useARValidation';
 
 import {
   resetAR,
@@ -13,6 +12,8 @@ import {
   SelectCartData,
   toggleReceivableStatus,
 } from '../../../../../../../../../../../features/cart/cartSlice';
+
+import { useARValidation } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/useARValidation';
 
 export const MarkAsReceivableButton = ({ creditLimit = null, setIsOpen }) => {
   const dispatch = useDispatch();

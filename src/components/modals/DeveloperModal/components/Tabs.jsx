@@ -10,7 +10,7 @@ export const Tabs = ({ tabs, defaultTab = 0 }) => {
         {tabs.map((tab, index) => (
           <TabButton
             key={index}
-            active={activeTab === index}
+            $active={activeTab === index}
             onClick={() => setActiveTab(index)}
           >
             {tab.icon} {tab.label}
@@ -41,15 +41,15 @@ const TabsList = styled.div`
 const TabButton = styled.button`
   padding: 12px 16px;
   font-size: 13px;
-  color: ${(props) => (props.active ? '#00ff88' : '#999')};
+  color: ${(props) => (props.$active ? '#00ff88' : '#999')};
   cursor: pointer;
   background: none;
   border: none;
   border-bottom: 2px solid
-    ${(props) => (props.active ? '#00ff88' : 'transparent')};
+    ${(props) => (props.$active ? '#00ff88' : 'transparent')};
 
   &:hover {
-    color: ${(props) => (props.active ? '#00ff88' : '#fff')};
+    color: ${(props) => (props.$active ? '#00ff88' : '#fff')};
   }
 `;
 

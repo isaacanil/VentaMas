@@ -64,7 +64,6 @@ export default [
       'unused-imports': unusedImports,
       import: importPlugin,
       react,
-      react,
       'react-refresh': reactRefresh,
       'react-compiler': reactCompiler,
     },

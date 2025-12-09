@@ -1,8 +1,8 @@
 // excelReader.js
-import ExcelJS from 'exceljs';
 
 export const readExcelFile = async (file) => {
   try {
+    const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
 
     // Obtener el nombre del archivo para determinar el tipo

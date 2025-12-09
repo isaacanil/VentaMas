@@ -1,7 +1,21 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
 
-import { generativeModel } from '../../../../../../../../../firebase/firebaseconfig';
+import { getLazyGenerativeModel } from '../../../../../../../../../firebase/firebaseconfig';
+
+export const getCommentFromAI = async (productName, category, description) => {
+  try {
+    const generativeModel = await getLazyGenerativeModel();
+    const prompt = `Genera un comentario corto para el producto ${productName} de la categoría ${category}. Descripción: ${description}`;
+    const { response } = await generativeModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+    return response.text();
+  } catch (error) {
+    console.error('Error getting AI comment:', error);
+    return '';
+  }
+};
 
 export function applyCorrections(original, correctionsText) {
   let updated = original;
@@ -101,6 +115,7 @@ export function parseCorrections(rawText) {
 
 export async function fetchCorrections(text) {
   const prompt = buildSpellcheckPrompt(text);
+  const generativeModel = await getLazyGenerativeModel();
   const { response } = await generativeModel.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
   });

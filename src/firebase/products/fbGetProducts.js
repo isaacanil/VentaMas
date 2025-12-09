@@ -5,7 +5,7 @@ import {
   onSnapshot,
   getDocs,
 } from 'firebase/firestore';
-import { filter } from 'lodash';
+import filter from 'lodash/filter';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -52,6 +52,9 @@ function filterProducts(
   stockAlertLevel,
   stockRequirement,
   thresholds,
+  categories,
+  activeIngredients,
+  categoriesStatus,
   serverApplied = {},
 ) {
   // Filtro por Inventariable
@@ -141,9 +144,6 @@ function filterProducts(
   }
 
   // Filtro por requerimiento de stock
-  // Campo fuente: product.restrictSaleWithoutStock (boolean)
-  //  - true  => El producto NO se puede vender si no hay stock ("requiere")
-  //  - false | undefined => El producto permite vender sin stock ("noRequiere")
   if (!serverApplied.stockRequirement) {
     if (stockRequirement === 'requiere') {
       productsArray = filter(
@@ -154,11 +154,11 @@ function filterProducts(
       productsArray = filter(
         productsArray,
         (product) => product.restrictSaleWithoutStock !== true,
-      ); // false o undefined
+      );
     }
   }
 
-  // Filtro por nivel de alerta de stock (usa thresholds dinámicos)
+  // Filtro por nivel de alerta de stock
   if (stockAlertLevel !== 'todos') {
     const { lowThreshold, criticalThreshold } = thresholds || {};
     const low = Number.isFinite(lowThreshold) ? lowThreshold : 20;
@@ -167,7 +167,7 @@ function filterProducts(
       : Math.min(low, 10);
 
     productsArray = filter(productsArray, (product) => {
-      if (!product.trackInventory) return stockAlertLevel === 'normal'; // Productos sin control se consideran 'normal'
+      if (!product.trackInventory) return stockAlertLevel === 'normal';
       const stock = product.stock ?? 0;
       if (stock <= 0) {
         return stockAlertLevel === 'critico';
@@ -183,6 +183,24 @@ function filterProducts(
       }
       return true;
     });
+  }
+
+  // Filtro por Categoria
+  if (categories.length > 0 && categoriesStatus) {
+    const categoriesNameArray = categories.map((item) => item.name);
+    productsArray = filter(productsArray, (product) =>
+      categoriesNameArray.includes(product.category),
+    );
+  }
+
+  // Filtro por Ingredientes Activos
+  if (activeIngredients.length > 0) {
+    const activeIngredientsNameArray = activeIngredients.map(
+      (item) => item.name,
+    );
+    productsArray = filter(productsArray, (product) =>
+      activeIngredientsNameArray.includes(product.activeIngredients),
+    );
   }
 
   return productsArray;
@@ -263,7 +281,8 @@ export function useGetProducts(
   contextKey = DEFAULT_FILTER_CONTEXT,
 ) {
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
+  const [rawProducts, setRawProducts] = useState([]); // Productos sin filtrar desde Firebase
+  const [products, setProducts] = useState([]); // Productos filtrados para la UI
   const [error, setError] = useState(null);
 
   const user = useSelector(selectUser);
@@ -310,7 +329,6 @@ export function useGetProducts(
   const [stockIndexVersion, setStockIndexVersion] = useState(0);
   const [visibleStockTotal, setVisibleStockTotal] = useState(0);
   const warehouseStockIndexRef = useRef({});
-  const processedProductsRef = useRef(null);
 
   useEffect(() => {
     warehouseStockIndexRef.current = warehouseStockIndex;
@@ -338,6 +356,7 @@ export function useGetProducts(
 
   const categoriesStatus = useSelector(SelectCategoryStatus);
 
+  // Lógica de stock por almacenes (sin cambios mayores, solo integración)
   useEffect(() => {
     if (!stockFilterActive) {
       setWarehouseStockIndex({});
@@ -443,7 +462,8 @@ export function useGetProducts(
         ...product,
         stock: stockValue,
       });
-      const baseMapper = (product) => withStock(product, resolveBaseStock(product));
+      const baseMapper = (product) =>
+        withStock(product, resolveBaseStock(product));
 
       if (!stockFilterActive || sanitizedSelected.length === 0) {
         return base.map(baseMapper);
@@ -469,142 +489,33 @@ export function useGetProducts(
     [stockFilterActive, stockIndexReady, selectedWarehouses],
   );
 
-  const updateFilteredProducts = useCallback(
-    (baseProducts) => {
-      const source = Array.isArray(baseProducts)
-        ? baseProducts
-        : Array.isArray(processedProductsRef.current)
-          ? processedProductsRef.current
-          : [];
-      const result = applyLocationFilter(source);
-      if (result === null) {
-        setLoading(true);
-        return;
-      }
-      setProducts(result);
-      const total = result.reduce(
-        (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
-        0,
-      );
-      setVisibleStockTotal(total);
-      setLoading(false);
-    },
-    [applyLocationFilter],
-  );
-
-  const updateFilteredProductsRef = useRef(updateFilteredProducts);
-
-  useEffect(() => {
-    updateFilteredProductsRef.current = updateFilteredProducts;
-  }, [updateFilteredProducts]);
-
+  // 1. Obtener TODOS los productos (Listener principal)
   useEffect(() => {
     if (!user || !user?.businessID) return;
-    try {
-      setLoading(true);
-      const productsRef = collection(
-        db,
-        'businesses',
-        String(user?.businessID),
-        'products',
-      );
 
-      const constraints = [];
-      const serverAppliedFilters = {
-        inventariable: false,
-        itbis: false,
-        priceStatus: false,
-        costStatus: false,
-        promotionStatus: false,
-        stockRequirement: false,
-      };
-      let inequalityField = null;
-      const inequalityOperators = new Set([
-        '<',
-        '<=',
-        '>',
-        '>=',
-        '!=',
-        'not-in',
-      ]);
-      const tryAddConstraint = (field, operator, value) => {
-        if (inequalityOperators.has(operator)) {
-          if (inequalityField && inequalityField !== field) {
-            return false;
-          }
-          inequalityField = field;
-        }
-        constraints.push(where(field, operator, value));
-        return true;
-      };
+    setLoading(true);
+    const productsRef = collection(
+      db,
+      'businesses',
+      String(user?.businessID),
+      'products',
+    );
 
-      const categoriesNameArray = categories.map((item) => item.name);
-      if (categories.length > 0 && categoriesStatus) {
-        constraints.push(where('category', 'in', categoriesNameArray));
-      }
-      const activeIngredientsNameArray = activeIngredients.map(
-        (item) => item.name,
-      );
-      if (activeIngredients.length > 0) {
-        constraints.push(
-          where('activeIngredients', 'in', activeIngredientsNameArray),
-        );
-      }
+    // Consulta base sin filtros dinámicos del cliente
+    // Se puede agregar where('isDeleted', '==', false) si existe ese campo consistentemente,
+    // pero por ahora traemos todo y filtramos si es necesario.
+    // Dado que el código original no filtraba isDeleted en products, asumimos que se maneja de otra forma o no se usa.
+    const q = query(productsRef);
 
-      if (inventariable === 'si') {
-        if (tryAddConstraint('trackInventory', '==', true)) {
-          serverAppliedFilters.inventariable = true;
-        }
-      } else if (inventariable === 'no') {
-        if (tryAddConstraint('trackInventory', '==', false)) {
-          serverAppliedFilters.inventariable = true;
-        }
-      }
-
-      if (itbis !== 'todos') {
-        const normalizedItbis = normalizeTaxValue(itbis);
-        if (
-          normalizedItbis !== null &&
-          tryAddConstraint('pricing.tax', '==', normalizedItbis)
-        ) {
-          serverAppliedFilters.itbis = true;
-        }
-      }
-
-      if (priceStatus === 'conPrecio') {
-        if (tryAddConstraint('pricing.price', '>', 0)) {
-          serverAppliedFilters.priceStatus = true;
-        }
-      }
-
-      if (costStatus === 'conCosto') {
-        if (tryAddConstraint('pricing.cost', '>', 0)) {
-          serverAppliedFilters.costStatus = true;
-        }
-      }
-
-      if (promotionStatus === 'promocionActiva') {
-        if (tryAddConstraint('promotions.isActive', '==', true)) {
-          serverAppliedFilters.promotionStatus = true;
-        }
-      }
-
-      if (stockRequirement === 'requiere') {
-        if (tryAddConstraint('restrictSaleWithoutStock', '==', true)) {
-          serverAppliedFilters.stockRequirement = true;
-        }
-      }
-
-      const q = query(productsRef, ...constraints);
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
         if (snapshot.empty) {
-          setProducts([]);
-          setVisibleStockTotal(0);
+          setRawProducts([]);
           setLoading(false);
           return;
         }
-        let productsArray = snapshot.docs.map((item) => {
+        const productsArray = snapshot.docs.map((item) => {
           let doc = item.data();
           delete doc?.updatedAt;
           delete doc?.createdAt;
@@ -612,47 +523,74 @@ export function useGetProducts(
           return doc;
         });
 
-        productsArray = filterProducts(
-          productsArray,
-          inventariable,
-          itbis,
-          priceStatus,
-          costStatus,
-          promotionStatus,
-          stockAvailability,
-          stockAlertLevel,
-          stockRequirement,
-          thresholds,
-          serverAppliedFilters,
-        );
-        productsArray = orderingProducts(productsArray, criterio, orden);
+        setRawProducts(productsArray);
+        // No establecemos setLoading(false) aquí para evitar un "flash" de contenido vacío
+        // Esperamos a que el useEffect de filtrado procese los datos y apague el loading
+      },
+      (err) => {
+        console.error('Ocurrió un error al obtener los productos:', err);
+        setError(err);
+        setLoading(false);
+      },
+    );
 
-        productsArray = productsArray.sort((a, _b) =>
-          a?.custom === true ? -1 : 1,
-        );
+    return () => unsubscribe();
+  }, [user?.businessID]);
 
-        processedProductsRef.current = productsArray;
-        if (typeof updateFilteredProductsRef.current === 'function') {
-          updateFilteredProductsRef.current(productsArray);
-        }
-      });
-
-      return () => {
-        unsubscribe();
-      };
-    } catch (error) {
-      setLoading(false);
-      setError(error);
-      console.error('Ocurrió un error al obtener los productos:', error);
+  // 2. Aplicar filtros en memoria cuando cambian los rawProducts o los filtros
+  useEffect(() => {
+    if (loading && rawProducts.length === 0) {
+      // Si está cargando la primera vez, esperamos
+      return;
     }
+
+    let processed = [...rawProducts];
+
+    // Aplicar filtro de stock por almacén primero (si aplica)
+    const locationFiltered = applyLocationFilter(processed);
+    if (locationFiltered === null) {
+      // Esperando carga de stock
+      return;
+    }
+    processed = locationFiltered;
+
+    // Aplicar filtros de negocio
+    processed = filterProducts(
+      processed,
+      inventariable,
+      itbis,
+      priceStatus,
+      costStatus,
+      promotionStatus,
+      stockAvailability,
+      stockAlertLevel,
+      stockRequirement,
+      thresholds,
+      categories,
+      activeIngredients,
+      categoriesStatus,
+      {}, // No serverApplied
+    );
+
+    // Ordenar
+    processed = orderingProducts(processed, criterio, orden);
+
+    // Ordenar custom al final (lógica original)
+    processed = processed.sort((a, _b) => (a?.custom === true ? -1 : 1));
+
+    setProducts(processed);
+
+    // Calcular totales visibles
+    const total = processed.reduce(
+      (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
+      0,
+    );
+    setVisibleStockTotal(total);
+    setLoading(false);
   }, [
-    user?.businessID,
-    trackInventory,
-    categories,
-    activeIngredients,
-    categoriesStatus,
-    criterio,
-    orden,
+    rawProducts,
+    loading,
+    applyLocationFilter,
     inventariable,
     itbis,
     priceStatus,
@@ -661,15 +599,14 @@ export function useGetProducts(
     stockAvailability,
     stockAlertLevel,
     stockRequirement,
-    billing?.stockLowThreshold,
-    billing?.stockCriticalThreshold,
-    contextKey,
+    categories,
+    activeIngredients,
+    categoriesStatus,
+    criterio,
+    orden,
+    thresholds.lowThreshold,
+    thresholds.criticalThreshold,
   ]);
-
-  useEffect(() => {
-    if (!Array.isArray(processedProductsRef.current)) return;
-    updateFilteredProducts();
-  }, [updateFilteredProducts, stockIndexVersion]);
 
   const stockMeta = useMemo(
     () => ({

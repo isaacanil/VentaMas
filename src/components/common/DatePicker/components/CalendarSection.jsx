@@ -159,11 +159,17 @@ export const CalendarSection = ({
   return (
     <CalendarContainer>
       <CalendarHeader>
-        <NavButton onClick={() => onNavigateMonth('prev')}>
+        <NavButton
+          onClick={() => onNavigateMonth('prev')}
+          aria-label="Mes anterior"
+        >
           <LeftOutlined />
         </NavButton>
         <MonthYear>{currentDate.format('MMMM YYYY')}</MonthYear>
-        <NavButton onClick={() => onNavigateMonth('next')}>
+        <NavButton
+          onClick={() => onNavigateMonth('next')}
+          aria-label="Mes siguiente"
+        >
           <RightOutlined />
         </NavButton>
       </CalendarHeader>

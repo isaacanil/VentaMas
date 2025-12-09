@@ -10,8 +10,8 @@ import {
   Input,
   Empty,
   Spin,
-  notification,
   Checkbox,
+  App,
 } from 'antd';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -235,6 +235,7 @@ const BatchCard = styled.div`
 
 export function ProductBatchModal() {
   const dispatch = useDispatch();
+  const { notification, modal } = App.useApp();
   const { isOpen, productId, product } = useSelector(selectProductStockSimple);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -439,9 +440,7 @@ export function ProductBatchModal() {
     const numericQuantity = Number(stock.quantity) || 0;
     if (isStrictProduct && numericQuantity <= 0) {
       notification.warning({
-        message: 'Inventario agotado',
-        description:
-          'Este lote no tiene unidades disponibles. Selecciona otro lote con existencia.',
+        message: 'Este lote no tiene unidades disponibles. Selecciona otro lote con existencia.',
       });
       return;
     }
@@ -454,7 +453,7 @@ export function ProductBatchModal() {
     }
 
     if (isExpired) {
-      Modal.confirm({
+      modal.confirm({
         title: 'Producto vencido',
         icon: <ExclamationCircleOutlined style={{ color: '#dc2626' }} />,
         content: 'El lote seleccionado está vencido. ¿Desea agregarlo al carrito?',

@@ -1,19 +1,64 @@
-import AuthorizationFlowConfig from '../../views/component/GeneralConfig/configs/AuthorizationFlowConfig';
-import BillingConfig from '../../views/component/GeneralConfig/configs/BillingConfig';
-import InventoryConfig from '../../views/component/GeneralConfig/configs/InventoryConfig';
-import GeneralConfig from '../../views/component/GeneralConfig/GeneralConfig';
-import SwitchBusiness from '../../views/pages/dev/SwitchBusiness';
-import { Setting } from '../../views/pages/setting/setting';
-import AppInfo from '../../views/pages/setting/subPage/AppInfo/AppInfo';
-import BusinessCreator from '../../views/pages/setting/subPage/BusinessEditor/BusinessCreator';
-import BusinessInfo from '../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile';
-import { TaxReceiptSetting } from '../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting';
-import { UserList } from '../../views/pages/setting/subPage/Users/components/UsersList/UserList';
-import { UserActivity } from '../../views/pages/setting/subPage/Users/UserActivity';
-import { UserAdmin } from '../../views/pages/setting/subPage/Users/UserAdmin';
-import { UserSessionLogs } from '../../views/pages/setting/subPage/Users/UserSessionLogs';
+import { lazy } from 'react';
+
 import { getRelativePath } from '../getConfigRoute';
 import ROUTES_NAME from '../routesName';
+
+const AuthorizationFlowConfig = lazy(() =>
+  import(
+    '../../views/component/GeneralConfig/configs/AuthorizationFlowConfig'
+  ),
+);
+const BillingConfig = lazy(() =>
+  import('../../views/component/GeneralConfig/configs/BillingConfig'),
+);
+const InventoryConfig = lazy(() =>
+  import('../../views/component/GeneralConfig/configs/InventoryConfig'),
+);
+const GeneralConfig = lazy(() =>
+  import('../../views/component/GeneralConfig/GeneralConfig'),
+);
+const SwitchBusiness = lazy(() =>
+  import('../../views/pages/dev/SwitchBusiness'),
+);
+const Setting = lazy(() =>
+  import('../../views/pages/setting/setting').then((module) => ({
+    default: module.Setting,
+  })),
+);
+const AppInfo = lazy(() =>
+  import('../../views/pages/setting/subPage/AppInfo/AppInfo'),
+);
+const BusinessCreator = lazy(() =>
+  import('../../views/pages/setting/subPage/BusinessEditor/BusinessCreator'),
+);
+const BusinessInfo = lazy(() =>
+  import('../../views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile'),
+);
+const TaxReceiptSetting = lazy(() =>
+  import(
+    '../../views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting'
+  ).then((module) => ({ default: module.TaxReceiptSetting })),
+);
+const UserList = lazy(() =>
+  import(
+    '../../views/pages/setting/subPage/Users/components/UsersList/UserList'
+  ).then((module) => ({ default: module.UserList })),
+);
+const UserActivity = lazy(() =>
+  import('../../views/pages/setting/subPage/Users/UserActivity').then(
+    (module) => ({ default: module.UserActivity }),
+  ),
+);
+const UserAdmin = lazy(() =>
+  import('../../views/pages/setting/subPage/Users/UserAdmin').then(
+    (module) => ({ default: module.UserAdmin }),
+  ),
+);
+const UserSessionLogs = lazy(() =>
+  import('../../views/pages/setting/subPage/Users/UserSessionLogs').then(
+    (module) => ({ default: module.UserSessionLogs }),
+  ),
+);
 
 const {
   SETTINGS,

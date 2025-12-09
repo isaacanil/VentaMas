@@ -1,6 +1,3 @@
-import jsPDF from 'jspdf';
-
-import 'jspdf-autotable';
 import { resolveDocumentIdentity } from '../invoice/documentIdentity.js';
 
 // Función de formateo de precios (ajústala según necesites)
@@ -16,7 +13,9 @@ const PAYMENT_METHODS = {
   card: 'Tarjeta',
 };
 
-export function generateInvoicePDF({ business, data }) {
+export async function generateInvoicePDF({ business, data }) {
+  const { jsPDF } = await import('jspdf');
+  await import('jspdf-autotable');
   const doc = new jsPDF();
   const marginLeft = 14;
   const pageWidth = doc.internal.pageSize.getWidth();

@@ -1,14 +1,14 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { selectUser } from '@features/auth/userSlice';
+import { addClient } from '@features/clientCart/clientCartSlice';
+import { clearAuthData } from '@features/insurance/insuranceAuthSlice';
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { highlightSearch } from '@templates/system/highlight/Highlight';
 import { Button, Modal, Tag, Tooltip } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '@features/auth/userSlice';
-import { addClient } from '@features/clientCart/clientCartSlice';
-import { clearAuthData } from '@features/insurance/insuranceAuthSlice';
-import { highlightSearch } from '@templates/system/highlight/Highlight';
 
 export const clientGridTemplate =
   'minmax(80px, 0.8fr) minmax(170px, 1.8fr) minmax(130px, 1fr) minmax(130px, 1fr)';

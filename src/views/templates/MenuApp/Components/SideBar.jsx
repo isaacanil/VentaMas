@@ -13,6 +13,7 @@ import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
 import ROUTES_PATH from '../../../../routes/routesName';
 import { useHasDeveloperAccess } from '../../../../utils/menuAccess';
 import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu';
+import { OpenMenuButton } from '../../system/Button/OpenMenuButton';
 import { WebName } from '../../system/WebName/WebName';
 import { useMenuData } from '../MenuData/MenuData';
 import { UserSection } from '../UserSection';
@@ -136,6 +137,9 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
       <Wrapper>
         <Header>
           <HeaderContent>
+            <CloseButtonContainer>
+              <OpenMenuButton isOpen={isOpen} onClick={handleOpenMenu} />
+            </CloseButtonContainer>
             <LogoContainer />
             <WebName />
           </HeaderContent>
@@ -250,6 +254,13 @@ const Header = styled.div`
 const HeaderContent = styled.div`
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+`;
+
+const CloseButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const LogoContainer = styled.div`

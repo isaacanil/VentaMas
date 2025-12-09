@@ -105,7 +105,14 @@ export const SearchPanel = ({
                 allowClear
                 onClear={handleClearSearch}
               />
-              <CloseButton as={motion.div} onClick={onClose}>
+              <CloseButton
+                as={motion.div}
+                onClick={onClose}
+                role="button"
+                aria-label="Cerrar búsqueda"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onClose()}
+              >
                 <FontAwesomeIcon icon={faTimes} />
               </CloseButton>
             </SearchPanelContent>

@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 import { useMemo } from 'react';
 
 export const useCompareArrays = (array1, array2) => {
@@ -8,7 +8,7 @@ export const useCompareArrays = (array1, array2) => {
 
     // Compara cada par de objetos en los arreglos
     for (let i = 0; i < array1.length; i++) {
-      if (!_.isEqual(array1[i], array2[i])) return false;
+      if (!isEqual(array1[i], array2[i])) return false;
     }
 
     return true;

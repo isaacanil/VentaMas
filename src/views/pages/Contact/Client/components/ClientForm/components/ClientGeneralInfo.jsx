@@ -23,7 +23,6 @@ const Wrapper = styled.div`
 export const ClientGeneralInfo = ({
   form,
   customerData,
-  creditLimitForm,
   isUpdating,
   handleSubmit,
   loading: submitLoading,
@@ -74,7 +73,6 @@ export const ClientGeneralInfo = ({
           await fbDeleteClient(user.businessID, customerData.id);
 
           form.resetFields();
-          creditLimitForm.resetFields();
 
           notification.success({
             message: 'Cliente Eliminado',

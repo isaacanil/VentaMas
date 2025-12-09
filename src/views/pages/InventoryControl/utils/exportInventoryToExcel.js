@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import * as exceljs from 'exceljs';
 import { saveAs } from 'file-saver';
 
 /**
@@ -24,6 +23,7 @@ export async function exportInventoryToExcel(
   if (!Array.isArray(groups) || groups.length === 0) {
     throw new Error('No hay datos de inventario para exportar');
   }
+  const exceljs = await import('exceljs');
   const workbook = new exceljs.Workbook();
   const sheet = workbook.addWorksheet('Inventario');
 

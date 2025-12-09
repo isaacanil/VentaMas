@@ -12,7 +12,6 @@ import ProductHeader from './components/ProductHeader';
 import { StockWarning } from './components/StockWarning';
 import { useProductHandling } from './hooks/useProductHandling';
 import { getContainerOutline } from './utils/stockTheme';
-import { containerVariants } from './utils/variants';
 
 const Container = styled(motion.li)`
   position: relative;
@@ -67,9 +66,6 @@ const ProductComponent = memo(({ product }) => {
   return (
     <Fragment>
       <Container
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
         onClick={handleGetThisProduct}
         $imageHiddenRef={productState.imageHidden}
         $isSelected={isProductInCart}

@@ -41,7 +41,6 @@ const ClientFormAnt = ({
   const create = OPERATION_MODES.CREATE.id;
   const isUpdating = mode === update;
   const [form] = Form.useForm();
-  const [creditLimitForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const clientData = form.getFieldsValue();
@@ -131,7 +130,6 @@ const ClientFormAnt = ({
       // Ensure the form is reset only when the modal is still open
 
       form.resetFields();
-      creditLimitForm.resetFields();
 
       dispatch(toggleClientModal({ mode: create }));
     } catch {
@@ -159,7 +157,6 @@ const ClientFormAnt = ({
       children: (
         <ClientGeneralInfo
           form={form}
-          creditLimitForm={creditLimitForm}
           customerData={customerData}
           isUpdating={isUpdating}
           handleSubmit={handleSubmit}
@@ -173,7 +170,6 @@ const ClientFormAnt = ({
       label: 'Info. Financiera',
       children: (
         <ClientFinancialInfo
-          creditLimitForm={creditLimitForm}
           client={client}
         />
       ),

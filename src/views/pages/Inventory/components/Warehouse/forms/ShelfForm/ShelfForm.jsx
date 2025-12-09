@@ -29,8 +29,6 @@ export function ShelfForm() {
       } else {
         form.resetFields();
       }
-    } else {
-      form.resetFields();
     }
   }, [isOpen, formData, form]);
 

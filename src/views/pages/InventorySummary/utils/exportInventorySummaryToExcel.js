@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import * as exceljs from 'exceljs';
 import { saveAs } from 'file-saver';
 
 /**
@@ -21,6 +20,7 @@ export async function exportInventorySummaryToExcel(
     throw new Error('No hay datos para exportar');
   }
 
+  const exceljs = await import('exceljs');
   const workbook = new exceljs.Workbook();
   const sheet = workbook.addWorksheet('Resumen Inventario');
 

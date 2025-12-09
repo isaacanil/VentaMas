@@ -1,22 +1,69 @@
-import { AllUsersControl } from '../../views/controlPanel/AllUsersControl/AllUsersControl';
-import AppConfig from '../../views/controlPanel/AppConfig/AppConfig';
-import LoginImageConfig from '../../views/controlPanel/AppConfig/LoginImageConfig';
-import ChangeLogCreate from '../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate';
-import { BusinessControl } from '../../views/controlPanel/CreateBusinessControl/BusinessControl';
-import AiBusinessSeeding from '../../views/pages/dev/AiBusinessSeeding/AiBusinessSeeding';
-import BSeriesInvoices from '../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices';
-import CashCountAudit from '../../views/pages/DevTools/CashCountAudit/CashCountAudit';
-import { FiscalReceiptsAudit } from '../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit';
-import InventoryMigrationTool from '../../views/pages/DevTools/InventoryMigrationTool';
-import InvoiceV2Recovery from '../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery';
-import SyncDiagnostics from '../../views/pages/DevTools/SyncDiagnostics';
-import TestPlayground from '../../views/pages/DevTools/TestPlayground';
-import BusinessCreator from '../../views/pages/setting/subPage/BusinessEditor/BusinessCreator';
-import CheckProductPriceAudit from '../../views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit';
-import { Doc } from '../../views/templates/system/AdvancedTable/Doc';
-import Menu from '../../views/templates/system/Menu/Menu';
+import { lazy } from 'react';
+
 import { ROUTE_STATUS } from '../routeMeta';
 import RoutesName from '../routesName';
+
+const AllUsersControl = lazy(() =>
+  import('../../views/controlPanel/AllUsersControl/AllUsersControl').then(
+    (module) => ({ default: module.AllUsersControl }),
+  ),
+);
+const AppConfig = lazy(() =>
+  import('../../views/controlPanel/AppConfig/AppConfig'),
+);
+const LoginImageConfig = lazy(() =>
+  import('../../views/controlPanel/AppConfig/LoginImageConfig'),
+);
+const ChangeLogCreate = lazy(() =>
+  import(
+    '../../views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate'
+  ),
+);
+const BusinessControl = lazy(() =>
+  import(
+    '../../views/controlPanel/CreateBusinessControl/BusinessControl'
+  ).then((module) => ({ default: module.BusinessControl })),
+);
+const AiBusinessSeeding = lazy(() =>
+  import('../../views/pages/dev/AiBusinessSeeding/AiBusinessSeeding'),
+);
+const BSeriesInvoices = lazy(() =>
+  import('../../views/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
+);
+const CashCountAudit = lazy(() =>
+  import('../../views/pages/DevTools/CashCountAudit/CashCountAudit'),
+);
+const FiscalReceiptsAudit = lazy(() =>
+  import('../../views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit').then(
+    (module) => ({ default: module.FiscalReceiptsAudit }),
+  ),
+);
+const InventoryMigrationTool = lazy(() =>
+  import('../../views/pages/DevTools/InventoryMigrationTool'),
+);
+const InvoiceV2Recovery = lazy(() =>
+  import('../../views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
+);
+const SyncDiagnostics = lazy(() =>
+  import('../../views/pages/DevTools/SyncDiagnostics'),
+);
+const TestPlayground = lazy(() =>
+  import('../../views/pages/DevTools/TestPlayground'),
+);
+const BusinessCreator = lazy(() =>
+  import('../../views/pages/setting/subPage/BusinessEditor/BusinessCreator'),
+);
+const CheckProductPriceAudit = lazy(() =>
+  import(
+    '../../views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit'
+  ),
+);
+const Doc = lazy(() =>
+  import('../../views/templates/system/AdvancedTable/Doc').then((module) => ({
+    default: module.Doc,
+  })),
+);
+const Menu = lazy(() => import('../../views/templates/system/Menu/Menu'));
 
 const {
   CREATE_BUSINESS,

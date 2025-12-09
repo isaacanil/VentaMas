@@ -59,7 +59,7 @@ export const Counter = ({ amountToBuy, stock, id, item }) => {
   return (
     <Fragment>
       <Container>
-        <ButtonCounter onClick={handleDiminishCounter}>
+        <ButtonCounter onClick={handleDiminishCounter} aria-label="Disminuir cantidad">
           <MinusIcon>−</MinusIcon>
         </ButtonCounter>
         <CounterDisplay
@@ -68,10 +68,12 @@ export const Counter = ({ amountToBuy, stock, id, item }) => {
           pattern="[0-9]*"
           value={inputAmount}
           onChange={handleInputChange}
+          aria-label="Cantidad"
         />
         <ButtonCounter
           onClick={handleIncreaseCounter}
           disabled={item.restrictSaleWithoutStock && inputAmount >= stock}
+          aria-label="Aumentar cantidad"
         >
           <PlusIcon>+</PlusIcon>
         </ButtonCounter>

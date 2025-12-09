@@ -1,6 +1,14 @@
 import { notification } from 'antd';
 import { motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useDeferredValue,
+  memo,
+  useCallback,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -78,7 +86,8 @@ type ProductsResponse = {
   stockMeta: Record<string, unknown>;
 };
 
-const MenuAppComponent = MenuApp as ComponentType<MenuAppProps>;
+const MenuAppComponent = memo(MenuApp) as ComponentType<MenuAppProps>;
+const ProductControlEfficientMemo = memo(ProductControlEfficient);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -154,6 +163,8 @@ export const Sales = (): JSX.Element => {
   useCashCountClosingPrompt();
 
   const [searchData, setSearchData] = useState('');
+  const deferredSearchData = useDeferredValue(searchData);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     products,
@@ -173,64 +184,69 @@ export const Sales = (): JSX.Element => {
 
   const productsList = products;
 
-  const checkBarcode = (products: Product[], barcode: string) => {
-    if (products.length <= 0) {
-      notification.error({
-        title: 'Error al escanear',
-        description: `Error al cargar los productos, por favor intente de nuevo.`,
-        placement: 'top',
-      });
-      return;
-    }
+  const checkBarcode = useCallback(
+    (products: Product[], barcode: string) => {
+      if (products.length <= 0) {
+        notification.error({
+          title: 'Error al escanear',
+          description: `Error al cargar los productos, por favor intente de nuevo.`,
+          placement: 'top',
+        });
+        return;
+      }
 
-    const product = products.find(
-      (p) =>
-        p?.barcode === barcode || p?.barcode === extractProductInfo(barcode),
-    );
+      const product = products.find(
+        (p) =>
+          p?.barcode === barcode || p?.barcode === extractProductInfo(barcode),
+      );
 
-    if (!product) {
-      notification.error({
-        title: 'Producto no encontrado',
-        description: `El producto con el código de barras ${barcode} no existe.`,
-        placement: 'top',
-      });
-      return;
-    }
+      if (!product) {
+        notification.error({
+          title: 'Producto no encontrado',
+          description: `El producto con el código de barras ${barcode} no existe.`,
+          placement: 'top',
+        });
+        return;
+      }
 
-    const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
+      const isSoldByWeight = product?.weightDetail?.isSoldByWeight || false;
 
-    if (barcode.startsWith('20') && barcode.length === 13 && isSoldByWeight) {
-      const weightInfo = toWeightInfoString(extractWeightInfo(barcode));
-      const weight = toWeightValue(formatWeight(weightInfo));
+      if (barcode.startsWith('20') && barcode.length === 13 && isSoldByWeight) {
+        const weightInfo = toWeightInfoString(extractWeightInfo(barcode));
+        const weight = toWeightValue(formatWeight(weightInfo));
 
-      const productData: Product = {
-        ...product,
-        weightDetail: {
-          ...product.weightDetail,
-          weight: weight,
-        },
-      };
-      notification.success({
-        title: 'Producto agregado',
-        description: `${productData.name} ${productData.weightDetail.weight}`,
-        placement: 'top',
-        duration: 3,
-      });
-      dispatch(addProduct(productData));
-    } else {
-      dispatch(addProduct(product));
-    }
-  };
+        const productData: Product = {
+          ...product,
+          weightDetail: {
+            ...product.weightDetail,
+            weight: weight,
+          },
+        };
+        notification.success({
+          title: 'Producto agregado',
+          description: `${productData.name} ${productData.weightDetail.weight}`,
+          placement: 'top',
+          duration: 3,
+        });
+        dispatch(addProduct(productData));
+      } else {
+        dispatch(addProduct(product));
+      }
+    },
+    [dispatch],
+  );
 
   useBarcodeScanner(productsList, checkBarcode);
 
   const filteredProducts = ensureProductArray(
-    useFilter(productsList, searchData),
+    useFilter(productsList, deferredSearchData),
     productsList,
   );
-  const filterProductsByVisibility = filteredProducts.filter(
-    (product) => product.isVisible !== false,
+  const filterProductsByVisibility = useMemo(
+    () => filteredProducts.filter((product) => product.isVisible !== false),
+    [filteredProducts],
   );
+
   const filteredVisibleStockTotal = useMemo(
     () =>
       filterProductsByVisibility.reduce(
@@ -318,7 +334,7 @@ export const Sales = (): JSX.Element => {
             setSearchData={setSearchData}
             showNotificationButton={true}
           />
-          <ProductControlEfficient
+          <ProductControlEfficientMemo
             productsLoading={productsLoading}
             products={filterProductsByVisibility}
             statusMeta={statusMeta}

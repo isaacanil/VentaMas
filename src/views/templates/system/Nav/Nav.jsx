@@ -11,7 +11,7 @@ import styled from 'styled-components';
 const Sidebar = styled.div`
   position: relative;
   display: none;
-  width: ${(props) => (props.collapsed ? '60px' : '270px')};
+  width: ${(props) => (props.$collapsed ? '60px' : '270px')};
   padding: 0.6em;
   background: #fff;
   border-radius: 8px;
@@ -35,7 +35,7 @@ const SidebarTitle = styled.div`
   font-weight: 600;
   color: #444;
   white-space: nowrap;
-  opacity: ${(props) => (props.collapsed ? 0 : 1)};
+  opacity: ${(props) => (props.$collapsed ? 0 : 1)};
   transition: opacity 0.2s ease;
 `;
 
@@ -62,7 +62,7 @@ const CollapseButton = styled.button`
 
   svg {
     font-size: 16px;
-    transform: rotate(${(props) => (props.collapsed ? '0deg' : '180deg')});
+    transform: rotate(${(props) => (props.$collapsed ? '0deg' : '180deg')});
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 `;
@@ -76,7 +76,7 @@ const MenuGroupContainer = styled.div`
 
 // New styled component for the simple label
 const GroupLabel = styled.div`
-  display: ${(props) => (props.collapsed ? 'none' : 'block')};
+  display: ${(props) => (props.$collapsed ? 'none' : 'block')};
   padding: 10px 12px 4px; /* Padding: more top/bottom, less bottom */
   margin-top: 8px; /* Add some space above the label */
   overflow: hidden;
@@ -86,7 +86,7 @@ const GroupLabel = styled.div`
   color: #888; /* Grey color */
   text-transform: uppercase; /* Uppercase text */
   white-space: nowrap;
-  opacity: ${(props) => (props.collapsed ? 0 : 1)};
+  opacity: ${(props) => (props.$collapsed ? 0 : 1)};
   transition: opacity 0.2s ease;
 
   /* Add margin only if not the very first item */
@@ -115,9 +115,9 @@ const SidebarRow = styled.div`
     background: #f0f0f0;
   }
 
-  /* Active state styling (only applies if props.active is true) */
+  /* Active state styling (only applies if props.$active is true) */
   ${(props) =>
-    props.active &&
+    props.$active &&
     `
     background: #e6f7ff;
     color: #1890ff;
@@ -137,15 +137,15 @@ const SidebarRow = styled.div`
     font-size: 16px;
 
     /* Icon color based on active state */
-    color: ${(props) => (props.active ? '#1890ff' : '#666')};
+    color: ${(props) => (props.$active ? '#1890ff' : '#666')};
     text-align: center;
   }
 
   .row-label {
-    display: ${(props) => (props.collapsed ? 'none' : 'inline')};
+    display: ${(props) => (props.$collapsed ? 'none' : 'inline')};
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: ${(props) => (props.collapsed ? 0 : 1)};
+    opacity: ${(props) => (props.$collapsed ? 0 : 1)};
     transition: opacity 0.2s ease;
 
     /* Removed max-width, rely on flex overflow */
@@ -154,22 +154,22 @@ const SidebarRow = styled.div`
   .row-arrow {
     /* Only display arrow if it's a group and not collapsed */
     display: ${(props) =>
-      props.isGroup && !props.collapsed ? 'inline-block' : 'none'};
+      props.$isGroup && !props.$collapsed ? 'inline-block' : 'none'};
     padding-left: 5px; /* Add some space before arrow */
     margin-left: auto; /* Push arrow to the right */
     color: #666; /* Default arrow color */
-    transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
+    transform: rotate(${(props) => (props.$isOpen ? '180deg' : '0deg')});
     transition: transform 0.3s ease;
   }
 `;
 
 const MenuGroupItems = styled.div`
-  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 2px;
   margin-top: 2px;
   margin-left: ${(props) =>
-    props.collapsed ? '0' : '12px'}; /* Keep indentation for group items */
+    props.$collapsed ? '0' : '12px'}; /* Keep indentation for group items */
 
   transition: all 0.3s ease;
 `;
@@ -207,7 +207,7 @@ const Backdrop = styled.div`
   position: fixed;
   inset: 0;
   z-index: 998;
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
+  display: ${(props) => (props.$isOpen ? 'block' : 'none')};
   background: rgb(0 0 0 / 40%);
 `;
 
@@ -217,12 +217,12 @@ const MobileMenu = styled.div`
   right: 0;
   left: 0;
   z-index: 999;
-  pointer-events: ${(props) => (props.isOpen ? 'all' : 'none')};
+  pointer-events: ${(props) => (props.$isOpen ? 'all' : 'none')};
   background: #fff;
   border-radius: 0 0 12px 12px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-  opacity: ${(props) => (props.isOpen ? '1' : '0')};
-  transform: translateY(${(props) => (props.isOpen ? '0' : '-100%')});
+  opacity: ${(props) => (props.$isOpen ? '1' : '0')};
+  transform: translateY(${(props) => (props.$isOpen ? '0' : '-100%')});
   transition: all 0.3s ease;
 `;
 
@@ -250,7 +250,7 @@ const MobileMenuItem = styled.div`
   }
 
   ${(props) =>
-    props.active &&
+    props.$active &&
     `
     background: #e6f7ff;
     color: #1890ff;
@@ -307,13 +307,13 @@ const MobileMenuGroupHeader = styled.div`
   }
 
   .group-arrow {
-    transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
+    transform: rotate(${(props) => (props.$isOpen ? '180deg' : '0deg')});
     transition: transform 0.3s ease;
   }
 `;
 
 const MobileMenuGroupItems = styled.div`
-  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 8px;
   padding-left: 8px;
@@ -489,10 +489,10 @@ export function Nav({
   const renderSidebarItem = (item, collapsed, _isGroupItem = false) => (
     <SidebarRow
       key={item.key}
-      active={activeTab === item.key}
+      $active={activeTab === item.key}
       onClick={() => handleMenuItemClick(item.key)}
-      collapsed={collapsed}
-      isGroup={false} // Mark as not a group header
+      $collapsed={collapsed}
+      $isGroup={false} // Mark as not a group header
     >
       <div className="row-content">
         {item.icon && <div className="row-icon">{item.icon}</div>}
@@ -508,10 +508,10 @@ export function Nav({
       <MenuGroupContainer key={group.key}>
         <SidebarRow
           onClick={(e) => toggleGroup(group.key, e)}
-          isOpen={isOpen}
-          collapsed={collapsed}
-          isGroup={true} // Mark as a group header
-          active={false} // Group headers cannot be active themselves
+          $isOpen={isOpen}
+          $collapsed={collapsed}
+          $isGroup={true} // Mark as a group header
+          $active={false} // Group headers cannot be active themselves
         >
           <div className="row-content">
             {/* Collapsible groups can still show an icon in the header */}
@@ -520,7 +520,7 @@ export function Nav({
           </div>
           <FontAwesomeIcon icon={faChevronDown} className="row-arrow" />
         </SidebarRow>
-        <MenuGroupItems isOpen={isOpen} collapsed={collapsed}>
+        <MenuGroupItems $isOpen={isOpen} $collapsed={collapsed}>
           {group.items.map((item) => renderSidebarItem(item, collapsed, true))}
         </MenuGroupItems>
       </MenuGroupContainer>
@@ -530,7 +530,7 @@ export function Nav({
   const renderMobileMenuItem = (item) => (
     <MobileMenuItem
       key={item.key}
-      active={activeTab === item.key}
+      $active={activeTab === item.key}
       onClick={() => handleMenuItemClick(item.key)}
     >
       <span className="menu-icon">{item.icon}</span>
@@ -545,7 +545,7 @@ export function Nav({
       <MobileMenuGroup key={group.key}>
         <MobileMenuGroupHeader
           onClick={(e) => toggleGroup(group.key, e)}
-          isOpen={isOpen}
+          $isOpen={isOpen}
         >
           <div className="group-title">
             {group.icon && <span className="group-icon">{group.icon}</span>}
@@ -553,7 +553,7 @@ export function Nav({
           </div>
           <FontAwesomeIcon icon={faChevronDown} className="group-arrow" />
         </MobileMenuGroupHeader>
-        <MobileMenuGroupItems isOpen={isOpen}>
+        <MobileMenuGroupItems $isOpen={isOpen}>
           {group.items.map(renderMobileMenuItem)}
         </MobileMenuGroupItems>
       </MobileMenuGroup>
@@ -592,16 +592,16 @@ export function Nav({
       {header}
 
       <MainLayout>
-        <Sidebar collapsed={isCollapsed}>
+        <Sidebar $collapsed={isCollapsed}>
           <CollapseButton
-            collapsed={isCollapsed}
+            $collapsed={isCollapsed}
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             <FontAwesomeIcon icon={isCollapsed ? faAngleRight : faAngleLeft} />
           </CollapseButton>
 
           {title && (
-            <SidebarTitle collapsed={isCollapsed}>{title}</SidebarTitle>
+            <SidebarTitle $collapsed={isCollapsed}>{title}</SidebarTitle>
           )}
 
           {/* Updated Main rendering loop */}
@@ -613,7 +613,7 @@ export function Nav({
                 return (
                   // Use Fragment to group label and items without extra div
                   <Fragment key={item.key}>
-                    <GroupLabel collapsed={isCollapsed}>
+                    <GroupLabel $collapsed={isCollapsed}>
                       {item.label}
                     </GroupLabel>
                     {item.items.map((subItem) =>
@@ -650,10 +650,10 @@ export function Nav({
                 />
               </MobileButton>
               <Backdrop
-                isOpen={isMenuOpen}
+                $isOpen={isMenuOpen}
                 onClick={() => setIsMenuOpen(false)}
               />
-              <MobileMenu isOpen={isMenuOpen}>
+              <MobileMenu $isOpen={isMenuOpen}>
                 <MobileMenuContent>
                   {title && <MobileMenuTitle>{title}</MobileMenuTitle>}
                   {/* Mobile view currently doesn't differentiate group types */}

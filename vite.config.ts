@@ -28,7 +28,7 @@ if (process.env.ANALYZE === 'true') {
 
 export default defineConfig({
   optimizeDeps: {
-    include: ['classnames', 'react-is', 'scheduler'], // Agregamos scheduler aquí también por seguridad
+    include: ['react-is', 'scheduler'], // Agregamos scheduler aquí también por seguridad
   },
   resolve: {
     alias: {
@@ -60,13 +60,20 @@ export default defineConfig({
               priority: 50,
             },
 
-            // Firebase
+            // Editor (Lexical)
+            {
+              name: 'editor',
+              test: (id: string) =>
+                id.includes('lexical') || id.includes('@lexical'),
+              priority: 45,
+            },
+
+            // Firebase - NO usar maxSize para evitar romper dependencias internas
             {
               name: 'firebase-core',
               test: (id: string) =>
                 id.includes('firebase') || id.includes('@firebase'),
               priority: 40,
-              maxSize: 800 * KB,
             },
 
             // UI (Ant Design + rc-*)
@@ -77,6 +84,28 @@ export default defineConfig({
                 id.includes('@ant-design') ||
                 id.includes('rc-'),
               priority: 35,
+            },
+
+            // Animation (Framer Motion)
+            {
+              name: 'motion',
+              test: (id: string) => id.includes('framer-motion'),
+              priority: 32,
+            },
+
+            // Router
+            {
+              name: 'router',
+              test: (id: string) =>
+                id.includes('react-router') || id.includes('react-router-dom'),
+              priority: 31,
+            },
+
+             // React Query
+            {
+              name: 'react-query',
+              test: (id: string) => id.includes('@tanstack'),
+              priority: 31,
             },
 
             // PDF / Excel

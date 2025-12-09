@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -8,8 +8,9 @@ import {
   closeNotificationCenter,
 } from '../../../features/notification/notificationCenterSlice';
 import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
+import Loader from '../system/loader/Loader';
 
-import ModulesNavigator from './components/ModulesNavigator';
+const ModulesNavigator = lazy(() => import('./components/ModulesNavigator'));
 
 // Animaciones optimizadas para apertura/cierre
 const notificationVariants = {
@@ -36,6 +37,13 @@ const notificationVariants = {
 const NotificationCenter = () => {
   const { isOpen } = useSelector(selectNotificationCenter);
   const dispatch = useDispatch();
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && !hasBeenOpened) {
+      setHasBeenOpened(true);
+    }
+  }, [isOpen, hasBeenOpened]);
 
   // Usar el hook personalizado para obtener datos reales de comprobantes fiscales
   const { widgetData: fiscalReceiptsData } = useFiscalReceiptsAlerts();
@@ -60,7 +68,11 @@ const NotificationCenter = () => {
         </Header>
 
         <TabsContainer>
-          <ModulesNavigator fiscalReceiptsData={fiscalReceiptsData} />
+          {hasBeenOpened && (
+            <Suspense fallback={<Loader />}>
+              <ModulesNavigator fiscalReceiptsData={fiscalReceiptsData} />
+            </Suspense>
+          )}
         </TabsContainer>
       </Container>
     </>

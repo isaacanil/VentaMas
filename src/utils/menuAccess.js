@@ -9,8 +9,13 @@ import { isHiddenInMenu, getRouteMeta } from '../routes/routeVisibility';
  * @return {Array} - Elementos de menú filtrados basados en permisos
  */
 export const useFilterMenuItemsByAccess = (menuItems, hasSubmenu = false) => {
-  const { abilities } = useUserAccess();
+  const { abilities, loading } = useUserAccess();
   const developerAccess = abilities?.can('developerAccess', 'all');
+
+  // Si abilities no está disponible o está cargando, retornar array vacío
+  if (!abilities || loading) {
+    return [];
+  }
 
   if (!hasSubmenu) {
     // Elementos de menú planos (como en CardData.jsx)

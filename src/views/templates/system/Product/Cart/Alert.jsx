@@ -27,7 +27,7 @@ export const Alert = ({ isOpen, handleIsOpen, id }) => {
     handleIsOpen(false);
   };
   return (
-    <Component isOpen={isOpen ? 'true' : 'false'}>
+    <Component $isOpen={isOpen}>
       <h1>¿Quieres Eliminar?</h1>
       <ButtonGroup>
         <Button
@@ -66,24 +66,14 @@ const Component = styled.div`
     font-size: 1em;
     color: white;
   }
-  ${(props) => {
-    switch (props.isOpen) {
-      case 'true':
-        return `
-              
-                transition: transform 390ms ease-in-out;
-                transform: scale(1) translateY(0);
-                
-                `;
-      case 'false':
-        return `
-                transition: transform 200ms ease-in-out;
-                transform: scale(0) translateY(-200%);
-                  
-                `;
-
-      default:
-        break;
-    }
-  }}
+  ${(props) =>
+    props.$isOpen
+      ? `
+        transition: transform 390ms ease-in-out;
+        transform: scale(1) translateY(0);
+      `
+      : `
+        transition: transform 200ms ease-in-out;
+        transform: scale(0) translateY(-200%);
+      `}
 `;

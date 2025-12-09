@@ -1,4 +1,5 @@
 import { Spin } from 'antd';
+import { lazy, Suspense } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -6,9 +7,14 @@ import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
 
 import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
 import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';
-import { DashboardShortcuts } from './components/DashboardShortcuts/DashboardShortcuts';
 
 import type { JSX } from 'react';
+
+const DashboardShortcuts = lazy(() =>
+  import('./components/DashboardShortcuts/DashboardShortcuts').then(
+    (module) => ({ default: module.DashboardShortcuts }),
+  ),
+);
 
 type RootState = {
   user?: {
@@ -31,9 +37,12 @@ const selectUserRole = (state: RootState): string | null | false => {
 };
 
 export const Home = (): JSX.Element => {
-  const userRole = useSelector(selectUserRole, shallowEqual);
+  const userRole = useSelector(selectUserRole, shallowEqual) as
+    | string
+    | null
+    | false;
 
-  if (userRole === false) {
+  if (!userRole) {
     return (
       <LoadingContainer>
         <Spin size="large" />
@@ -52,7 +61,15 @@ export const Home = (): JSX.Element => {
       </TopInfoRow>
       <MainContent>
         <MainContentInner>
-          <DashboardShortcuts />
+          <Suspense
+            fallback={
+              <LoadingContainer style={{ height: '200px', background: 'none' }}>
+                <Spin />
+              </LoadingContainer>
+            }
+          >
+            <DashboardShortcuts />
+          </Suspense>
         </MainContentInner>
       </MainContent>
     </HomeLayout>

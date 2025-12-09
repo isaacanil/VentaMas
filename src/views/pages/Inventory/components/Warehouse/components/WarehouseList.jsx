@@ -1,9 +1,9 @@
+import { MenuApp } from '@templates/MenuApp/MenuApp';
 import React, { useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { MenuApp } from '@templates/MenuApp/MenuApp';
 
 import { navigateWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
 import { useListenWarehouses } from '../../../../../../firebase/warehouse/warehouseService';

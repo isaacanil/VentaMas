@@ -1,6 +1,13 @@
-import { AuthorizationsManager } from '../../views/pages/Authorizations/AuthorizationsManager';
+import { lazy } from 'react';
+
 import { ROUTE_STATUS } from '../routeMeta';
 import ROUTES_NAME from '../routesName';
+
+const AuthorizationsManager = lazy(() =>
+  import('../../views/pages/Authorizations/AuthorizationsManager').then(
+    (module) => ({ default: module.AuthorizationsManager }),
+  ),
+);
 
 const { AUTHORIZATIONS_LIST } = ROUTES_NAME.AUTHORIZATIONS_TERM;
 

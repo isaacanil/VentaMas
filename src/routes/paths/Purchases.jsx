@@ -1,10 +1,31 @@
-import BackOrders from '../../views/pages/OrderAndPurchase/BackOrders/BackOrders';
-import { Purchases } from '../../views/pages/OrderAndPurchase/Compra/Purchases';
-import { Orders } from '../../views/pages/OrderAndPurchase/Order/Orders';
-import OrderManagement from '../../views/pages/OrderAndPurchase/OrderManagement/OrderManagement';
-import PurchaseManagement from '../../views/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement';
+import { lazy } from 'react';
+
 import { ROUTE_STATUS } from '../routeMeta'; // Para usar los estados de ruta
 import ROUTES_NAME from '../routesName';
+
+const BackOrders = lazy(() =>
+  import('../../views/pages/OrderAndPurchase/BackOrders/BackOrders'),
+);
+const Purchases = lazy(() =>
+  import('../../views/pages/OrderAndPurchase/Compra/Purchases').then(
+    (module) => ({ default: module.Purchases }),
+  ),
+);
+const Orders = lazy(() =>
+  import('../../views/pages/OrderAndPurchase/Order/Orders').then((module) => ({
+    default: module.Orders,
+  })),
+);
+const OrderManagement = lazy(() =>
+  import(
+    '../../views/pages/OrderAndPurchase/OrderManagement/OrderManagement'
+  ),
+);
+const PurchaseManagement = lazy(() =>
+  import(
+    '../../views/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement'
+  ),
+);
 
 const {
   PURCHASES,

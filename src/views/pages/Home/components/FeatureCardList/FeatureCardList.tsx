@@ -1,7 +1,7 @@
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Skeleton, Typography } from 'antd';
-import { motion } from 'framer-motion';
+import { m, LazyMotion, domAnimation } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -50,37 +50,41 @@ export const FeatureCardList = ({
         />
       </Header>
       {!isCollapsed && (
-        <Wrapper>
-          {loading ? (
-            <LoadingContainer>
-              <Skeleton active />
-            </LoadingContainer>
-          ) : Object.keys(categories).length === 0 ? (
-            <EmptyMessage>No hay elementos disponibles para mostrar.</EmptyMessage>
-          ) : (
-            Object.entries(categories).map(([category, cards]) => (
-              <Category key={category}>
-                <CategoryHeader>{category}</CategoryHeader>
-                <FeatureContainer
-                  cardsCount={cards.length}
-                  variants={featureContainerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.25 }}
-                >
-                  {cards.map((card, index) => (
-                    <CardMotionWrapper
-                      key={card.id ?? `${category}-${index}`}
-                      variants={featureCardVariants}
-                    >
-                      <FeatureCard card={card} />
-                    </CardMotionWrapper>
-                  ))}
-                </FeatureContainer>
-              </Category>
-            ))
-          )}
-        </Wrapper>
+        <LazyMotion features={domAnimation}>
+          <Wrapper>
+            {loading ? (
+              <LoadingContainer>
+                <Skeleton active />
+              </LoadingContainer>
+            ) : Object.keys(categories).length === 0 ? (
+              <EmptyMessage>
+                No hay elementos disponibles para mostrar.
+              </EmptyMessage>
+            ) : (
+              Object.entries(categories).map(([category, cards]) => (
+                <Category key={category}>
+                  <CategoryHeader>{category}</CategoryHeader>
+                  <FeatureContainer
+                    cardsCount={cards.length}
+                    variants={featureContainerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.25 }}
+                  >
+                    {cards.map((card, index) => (
+                      <CardMotionWrapper
+                        key={card.id ?? `${category}-${index}`}
+                        variants={featureCardVariants}
+                      >
+                        <FeatureCard card={card} />
+                      </CardMotionWrapper>
+                    ))}
+                  </FeatureContainer>
+                </Category>
+              ))
+            )}
+          </Wrapper>
+        </LazyMotion>
       )}
     </Container>
   );
@@ -143,14 +147,14 @@ const featureCardVariants = {
   },
 };
 
-const FeatureContainer = styled(motion.div)<{ cardsCount: number }>`
+const FeatureContainer = styled(m.div)<{ cardsCount: number }>`
   display: grid;
   grid-template-columns: ${(props) =>
     props.cardsCount === 1 ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))'};
   gap: 0.4em;
 `;
 
-const CardMotionWrapper = styled(motion.div)`
+const CardMotionWrapper = styled(m.div)`
   width: 100%;
 `;
 

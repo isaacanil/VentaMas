@@ -32,7 +32,6 @@ import { DEFAULT_SAMPLE_LIMIT, MAX_SAMPLE_LIMIT } from './constants';
 import { useReceivableInvoices } from './hooks/useReceivableInvoices';
 import { formatDate, formatPrice } from './utils/formatters';
 
-import type { ReceivableInvoice } from './types';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Title, Text } = Typography;

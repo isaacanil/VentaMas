@@ -1,9 +1,8 @@
-import jsPDF from 'jspdf';
-
-import 'jspdf-autotable';
 import { formatCurrency, formatDate } from './utils';
 
-export const generateARPDF = (data) => {
+export const generateARPDF = async (data) => {
+    const { jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
     const doc = new jsPDF();
     let yPos = 15;
     const margin = 15;

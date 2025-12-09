@@ -11,7 +11,6 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-
 import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
 
 import { selectUser } from '../../../../../../../../../features/auth/userSlice.js';

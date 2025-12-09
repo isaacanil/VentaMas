@@ -242,7 +242,12 @@ const Dialog = () => {
               <Typography variant="h2" disableMargins>
                 {title}
               </Typography>
-              <CloseButton onClick={onClose} type={type} disabled={isLoading}>
+              <CloseButton
+                onClick={onClose}
+                type={type}
+                disabled={isLoading}
+                aria-label="Cerrar diálogo"
+              >
                 {icons.operationModes.close}
               </CloseButton>
             </Header>

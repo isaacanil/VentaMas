@@ -2,7 +2,6 @@ import { AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createBrowserRouter, Outlet, useLocation, useNavigate } from 'react-router';
-import { scan } from 'react-scan';
 
 import { DeveloperSessionHelper } from './components/devtools/DeveloperSessionHelper';
 import { ViewportContainer } from './components/layout/ViewportContainer/ViewportContainer';

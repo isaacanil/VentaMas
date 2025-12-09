@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import axios from 'axios';
 import { https } from 'firebase-functions';
 import PdfPrinter from 'pdfmake';
 
@@ -42,10 +41,18 @@ export const invoiceLetterPdf = https.onCall(async (req) => {
 
   const images = {};
   if (biz.logoUrl) {
-    const resp = await axios.get(biz.logoUrl, { responseType: 'arraybuffer' });
-    const ext = biz.logoUrl.split('.').pop().split(/[?#]/)[0].toLowerCase();
-    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
-    images.logo = `data:${mime};base64,${Buffer.from(resp.data).toString('base64')}`;
+    try {
+      const resp = await fetch(biz.logoUrl);
+      if (resp.ok) {
+        const arrayBuffer = await resp.arrayBuffer();
+        const ext = biz.logoUrl.split('.').pop().split(/[?#]/)[0].toLowerCase();
+        const mime =
+          ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
+        images.logo = `data:${mime};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
+      }
+    } catch (error) {
+      console.warn('Logo fetch failed:', error);
+    }
   }
 
   const top = calcHeaderHeight(biz, d);

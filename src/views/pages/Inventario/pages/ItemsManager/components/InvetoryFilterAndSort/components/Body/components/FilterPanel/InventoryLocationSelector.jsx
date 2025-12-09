@@ -1,4 +1,14 @@
-import { createPopper } from '@popperjs/core';
+import {
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  size,
+  useClick,
+  useDismiss,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
@@ -29,108 +39,45 @@ export const InventoryLocationSelector = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const containerRef = useRef(null);
   const searchInputRef = useRef(null);
-  const dropdownRef = useRef(null);
-  const popperInstanceRef = useRef(null);
 
-  const sameWidthModifier = useMemo(
-    () => ({
-      name: 'sameWidth',
-      enabled: true,
-      phase: 'beforeWrite',
-      requires: ['computeStyles'],
-      fn({ state }) {
-        state.styles.popper.width = `${state.rects.reference.width}px`;
-      },
-      effect({ state }) {
-        state.elements.popper.style.width = `${state.elements.reference.offsetWidth}px`;
-        return () => {};
-      },
-    }),
-    [],
-  );
+  const { refs, floatingStyles, context } = useFloating({
+    open,
+    onOpenChange: (nextOpen) => {
+      if (loading && nextOpen) return;
+      setOpen(nextOpen);
+      if (!nextOpen) setSearch('');
+    },
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(10),
+      flip({ fallbackPlacements: ['top-start', 'right-start', 'left-start'] }),
+      shift({ padding: 12 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
+  });
 
-  const toggleOpen = useCallback(() => {
-    if (loading) return;
-    setOpen((prev) => !prev);
-  }, [loading]);
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
 
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    click,
+    dismiss,
+  ]);
+
+  // Focus search input when opening
   useEffect(() => {
-    if (!open) return;
-    const handlePointerDown = (event) => {
-      const target = event.target;
-      if (containerRef.current?.contains(target)) return;
-      if (dropdownRef.current?.contains(target)) return;
-      setOpen(false);
-    };
-    document.addEventListener('pointerdown', handlePointerDown, {
-      capture: true,
-    });
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, {
-        capture: true,
-      });
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      setSearch('');
-      return;
+    if (open) {
+      requestAnimationFrame(() => searchInputRef.current?.focus());
     }
-    if (!containerRef.current || !dropdownRef.current) return;
-
-    const instance = createPopper(containerRef.current, dropdownRef.current, {
-      placement: 'bottom-start',
-      strategy: 'fixed',
-      modifiers: [
-        sameWidthModifier,
-        {
-          name: 'offset',
-          options: { offset: [0, 10] },
-        },
-        {
-          name: 'preventOverflow',
-          options: { padding: 12 },
-        },
-        {
-          name: 'flip',
-          options: {
-            fallbackPlacements: ['top-start', 'right-start', 'left-start'],
-          },
-        },
-      ],
-    });
-
-    popperInstanceRef.current = instance;
-    const raf = requestAnimationFrame(() => searchInputRef.current?.focus());
-
-    return () => {
-      cancelAnimationFrame(raf);
-      instance.destroy();
-      popperInstanceRef.current = null;
-    };
-  }, [open, sameWidthModifier]);
-
-  useEffect(() => {
-    if (!popperInstanceRef.current) return;
-    popperInstanceRef.current.update();
-  }, [open, search, value.length, options.length, loading]);
+  }, [open]);
 
   const handleSearchChange = useCallback((event) => {
     setSearch(event.target.value);
@@ -208,13 +155,12 @@ export const InventoryLocationSelector = ({
   const isEmptyState = !loading && !options.length;
 
   return (
-    <Wrapper ref={containerRef}>
+    <Wrapper>
       <SelectorButton
+        ref={refs.setReference}
+        {...getReferenceProps()}
         type="button"
-        onClick={toggleOpen}
         disabled={loading}
-        aria-haspopup="listbox"
-        aria-expanded={open}
         $active={isButtonActive}
       >
         <SelectorContent>
@@ -240,8 +186,9 @@ export const InventoryLocationSelector = ({
       {open &&
         createPortal(
           <Dropdown
-            ref={dropdownRef}
-            role="listbox"
+            ref={refs.setFloating}
+            style={floatingStyles}
+            {...getFloatingProps()}
             data-inventory-selector-overlay="true"
           >
             <SearchBar>

@@ -102,7 +102,7 @@ export const Selector = ({
       <Trigger
         ref={refs.setReference}
         onClick={() => setIsOpen(!isOpen)}
-        styles={getOptionStyles(selectedOption, false)}
+        $styles={getOptionStyles(selectedOption, false)}
         $width={width}
         $hasIcon={!!selectedOption.icon}
       >
@@ -110,7 +110,7 @@ export const Selector = ({
           <FontAwesomeIcon icon={selectedOption.icon} />
         ) : null}
         <span>{selectedOption.label}</span>
-        <Chevron isOpen={isOpen}>
+        <Chevron $isOpen={isOpen}>
           <FontAwesomeIcon icon={faChevronDown} />
         </Chevron>
       </Trigger>
@@ -134,12 +134,12 @@ export const Selector = ({
                 onChange(null);
                 setIsOpen(false);
               }}
-              styles={{
+              $styles={{
                 color: !value ? '#1890ff' : defaultStyles.color,
                 bgColor: !value ? '#e6f7ff' : defaultStyles.bgColor,
                 borderColor: !value ? '#91d5ff' : defaultStyles.borderColor,
               }}
-              isSelected={!value}
+              $isSelected={!value}
             >
               <span>{clearText || 'Mostrar todos'}</span>
             </DropdownItem>
@@ -151,8 +151,8 @@ export const Selector = ({
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              styles={getOptionStyles(option, value === option.value)}
-              isSelected={value === option.value}
+              $styles={getOptionStyles(option, value === option.value)}
+              $isSelected={value === option.value}
             >
               {option.icon && <FontAwesomeIcon icon={option.icon} />}
               <span>{option.label}</span>
@@ -178,10 +178,10 @@ const Trigger = styled.button`
   min-width: 160px;
   padding: 7px 12px;
   font-size: 0.9rem;
-  color: ${({ styles }) => styles.color};
+  color: ${({ $styles }) => $styles.color};
   cursor: pointer;
-  background: ${({ styles }) => styles.bgColor};
-  border: 1px solid ${({ styles }) => styles.borderColor};
+  background: ${({ $styles }) => $styles.bgColor};
+  border: 1px solid ${({ $styles }) => $styles.borderColor};
   border-radius: 6px;
 
   span {
@@ -197,7 +197,7 @@ const Trigger = styled.button`
 `;
 
 const Chevron = styled.span`
-  transform: rotate(${(props) => (props.isOpen ? '180deg' : '0deg')});
+  transform: rotate(${(props) => (props.$isOpen ? '180deg' : '0deg')});
   transition: transform 0.2s;
 `;
 
@@ -218,14 +218,14 @@ const DropdownItem = styled.li`
   gap: 8px;
   align-items: center;
   padding: 8px 12px;
-  color: ${({ styles }) => styles.color};
+  color: ${({ $styles }) => $styles.color};
   cursor: pointer;
-  background: ${({ isSelected, styles }) =>
-    isSelected ? styles.bgColor : 'white'};
+  background: ${({ $isSelected, $styles }) =>
+    $isSelected ? $styles.bgColor : 'white'};
   border-radius: 6px;
 
   &:hover {
-    background: ${({ styles }) => styles.hoverBgColor || styles.bgColor};
+    background: ${({ $styles }) => $styles.hoverBgColor || $styles.bgColor};
   }
 `;
 

@@ -47,10 +47,10 @@ const Grid = styled.div`
 
 const Card = styled.div`
   overflow: hidden;
-  background-color: ${(props) => (props.active ? '#f0f0f0' : '#d0d0d0')};
+  background-color: ${(props) => (props.$active ? '#f0f0f0' : '#d0d0d0')};
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  opacity: ${(props) => (props.active ? '1' : '0.5')};
+  opacity: ${(props) => (props.$active ? '1' : '0.5')};
 `;
 
 const CardContentWrapper = styled.div`
@@ -183,7 +183,7 @@ export default function Component() {
         <CardContentWrapper>
           <Grid>
             {saleUnits.map((unit) => (
-              <Card key={unit.id} active={unit.active}>
+              <Card key={unit.id} $active={unit.active}>
                 <CardContentWrapper>
                   <div
                     style={{

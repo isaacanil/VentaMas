@@ -10,7 +10,6 @@ import { icons } from '../../../constants/icons/icons';
 import ROUTES_NAME from '../../../routes/routesName';
 import {
   useFilterMenuItemsByAccess,
-  useHasDeveloperAccess,
 } from '../../../utils/menuAccess';
 
 const createMenuItems = (items) =>
@@ -174,6 +173,7 @@ export const useMenuCardData = (user) => {
 };
 
 export const useDeveloperFeaturesData = () => {
-  const hasDeveloperAccess = useHasDeveloperAccess();
-  return hasDeveloperAccess ? developerItems : [];
+  // We return all items here. Access control is handled by the parent component
+  // using abilities.can('developerAccess', 'all'). This prevents race conditions.
+  return developerItems;
 };

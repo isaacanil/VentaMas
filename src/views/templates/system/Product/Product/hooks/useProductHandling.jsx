@@ -1,4 +1,4 @@
-import { notification } from 'antd';
+import { App } from 'antd';
 import { useCallback, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -22,6 +22,7 @@ import {
 export const useProductHandling = (product, taxReceiptEnabled) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const { notification } = App.useApp();
   const [productState, setProductState] = useState({
     imageHidden: false,
     weightEntryModalOpen: false,
@@ -82,8 +83,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
       if (isOutOfStock) {
         if (alertsEnabled) {
           notification.warning({
-            message: 'Alerta de Stock Agotado',
-            description: `El stock de ${product.name} está agotado`,
+            title: `El stock de ${product.name} está agotado`,
           });
         }
         return;
@@ -95,8 +95,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
         !criticalStockWarningShownRef.current
       ) {
         notification.info({
-          message: 'Stock Crítico',
-          description: `Stock crítico de ${product.name}`,
+          title: `Stock crítico de ${product.name}`,
         });
         criticalStockWarningShownRef.current = true;
       } else if (
@@ -106,8 +105,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
         !lowStockWarningShownRef.current
       ) {
         notification.warning({
-          message: 'Alerta de Stock Bajo',
-          description: `El stock de ${product.name} está por debajo de ${lowThreshold} unidades`,
+          title: `El stock de ${product.name} está por debajo de ${lowThreshold} unidades`,
         });
         lowStockWarningShownRef.current = true;
       }
@@ -143,8 +141,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
       if (productStocks.length === 0 && product?.restrictSaleWithoutStock) {
         if (alertsEnabled) {
           notification.info({
-            message: 'Stock no disponible',
-            description: `Para vender ${product.name} necesitas tener stock disponible.`,
+            title: `Para vender ${product.name} necesitas tener stock disponible.`,
           });
         }
         return;
@@ -202,8 +199,7 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
       );
     } catch (error) {
       notification.error({
-        message: 'Error',
-        description: 'No se pudo agregar el producto al carrito',
+        title: 'No se pudo agregar el producto al carrito',
       });
       console.error('Error adding product:', error);
     } finally {
@@ -223,6 +219,8 @@ export const useProductHandling = (product, taxReceiptEnabled) => {
     normalizeExpirationDate,
     user,
     productAvailableStock,
+    notification,
+    isProductInCart,
   ]);
 
   const deleteProductFromCart = useCallback(

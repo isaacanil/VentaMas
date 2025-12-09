@@ -30,22 +30,22 @@ export const Button = ({
   };
   return (
     <Container
-      size={size}
-      color={color}
+      $size={size}
+      $color={color}
       onClick={onClick && handleClick}
-      width={width}
-      height={height}
-      variant={variant}
+      $width={width}
+      $height={height}
+      $variant={variant}
       disabled={disabled}
       type={type}
-      borderRadius={borderRadius}
-      isActivated={isActivated}
-      titlePosition={titlePosition}
-      border={border}
-      iconColor={iconColor}
-      isActivatedColors={isActivatedColors}
-      hidden={hidden}
-      alignText={alignText}
+      $borderRadius={borderRadius}
+      $isActivated={isActivated}
+      $titlePosition={titlePosition}
+      $border={border}
+      $iconColor={iconColor}
+      $isActivatedColors={isActivatedColors}
+      $hidden={hidden}
+      $alignText={alignText}
       ref={ref}
     >
       {isActivated ? iconOn : iconOff}
@@ -62,10 +62,10 @@ const styleByDefault = css`
   display: flex;
   gap: 0.6em;
   align-items: center;
-  justify-content: ${(props) => props.alignText || 'center'};
+  justify-content: ${(props) => props.$alignText || 'center'};
   font-size: 16px;
   font-weight: 500;
-  text-align: ${(props) => props.alignText || 'center'};
+  text-align: ${(props) => props.$alignText || 'center'};
   text-transform: capitalize;
   white-space: nowrap;
   text-decoration: none;
@@ -153,11 +153,11 @@ const borderRadius = {
 
 export const Container = styled.button`
   ${styleByDefault}
-  ${(props) => (props.size ? sizes[props.size] : sizes.medium)}
+  ${(props) => (props.$size ? sizes[props.$size] : sizes.medium)}
   
   &:hover {
     ${(props) =>
-    !props.isActivated
+    !props.$isActivated
       ? `
       
        opacity: 0.8;
@@ -165,19 +165,19 @@ export const Container = styled.button`
       : null}
   }
 
-  ${(props) => props.borderRadius && borderRadius[props.borderRadius]}
+  ${(props) => props.$borderRadius && borderRadius[props.$borderRadius]}
   ${(props) => {
-    switch (props.variant) {
+    switch (props.$variant) {
       case 'contained':
         return `
-        ${props.theme?.colors?.[props.color] &&
+        ${props.theme?.colors?.[props.$color] &&
           `
-          background-color: ${props.theme?.colors?.[props.color]['bg']};
-          color: ${props.theme.colors[props.color]['text']};
+          background-color: ${props.theme?.colors?.[props.$color]['bg']};
+          color: ${props.theme.colors[props.$color]['text']};
           backdrop: blur(10px);
           &:hover{
-            background-color: ${props.theme.colors[props.color]['bg']};
-            color: ${props.theme.colors[props.color]['text']};
+            background-color: ${props.theme.colors[props.$color]['bg']};
+            color: ${props.theme.colors[props.$color]['text']};
           }
           `
           }
@@ -185,24 +185,24 @@ export const Container = styled.button`
       case 'outlined':
         return `
             background-color: transparent;
-            color: ${props.theme.colors[props.color]['bg']};
-            border: 1px solid ${props.theme.colors[props.color]['bg']};
+            color: ${props.theme.colors[props.$color]['bg']};
+            border: 1px solid ${props.theme.colors[props.$color]['bg']};
           `;
       case 'text':
         return `
               background-color: transparent;
-              color: ${props.theme.colors[props.color]['bg']};
+              color: ${props.theme.colors[props.$color]['bg']};
             `;
       case 'textContained':
         return `
-              background-color: ${props.theme.colors[props.color]['bg']};
-              color: ${props.theme.colors[props.color]['bg']};
+              background-color: ${props.theme.colors[props.$color]['bg']};
+              color: ${props.theme.colors[props.$color]['bg']};
               border: none;
             `;
     }
   }}
   ${(props) => {
-    switch (props.width) {
+    switch (props.$width) {
       case 'w100':
         return `
         max-width: 100%;
@@ -241,7 +241,7 @@ export const Container = styled.button`
     }
   }}
    ${(props) => {
-    switch (props.height) {
+    switch (props.$height) {
       case 'small':
         return `
            height: 24px;
@@ -269,7 +269,7 @@ export const Container = styled.button`
     }
   }}
    ${(props) => {
-    switch (props.border) {
+    switch (props.$border) {
       case 'light':
         return `
           border: var(--border-primary);
@@ -290,25 +290,25 @@ export const Container = styled.button`
   }}
 
   ${(props) => {
-    switch (props.isActivatedColors) {
+    switch (props.$isActivatedColors) {
       case 'style1':
-        switch (props.isActivated) {
+        switch (props.$isActivated) {
           case true:
             return `
-              background-color: ${props.theme.colors[props.color]['bg']};
-              color: ${props.theme.colors[props.color]['text']};
+              background-color: ${props.theme.colors[props.$color]['bg']};
+              color: ${props.theme.colors[props.$color]['text']};
               &:hover{
-                background-color: ${props.theme.colors[props.color]['bg']};
-                color: ${props.theme.colors[props.color]['text']};
+                background-color: ${props.theme.colors[props.$color]['bg']};
+                color: ${props.theme.colors[props.$color]['text']};
               }
             `;
           case false:
             return `
-              background-color: ${props.theme.colors[props.color]['bg']};
-              color: ${props.theme.colors[props.color]['text']};
+              background-color: ${props.theme.colors[props.$color]['bg']};
+              color: ${props.theme.colors[props.$color]['text']};
               &:hover{
-                background-color: ${props.theme.colors[props.color]['bg']};
-                color: ${props.theme.colors[props.color]['text']};
+                background-color: ${props.theme.colors[props.$color]['bg']};
+                color: ${props.theme.colors[props.$color]['text']};
               }
             `;
           default:
@@ -316,7 +316,7 @@ export const Container = styled.button`
         }
         return `
         
-        ${props.isActivated === true
+        ${props.$isActivated === true
             ? `
         background-color: #ffffff;
           color: black;
@@ -342,9 +342,9 @@ export const Container = styled.button`
           color: white;
       
         `;
-      case props.isActivated:
+      case props.$isActivated:
         return `
-          background-color: ${props.isActivated};
+          background-color: ${props.$isActivated};
         `;
       default:
         break;
@@ -352,7 +352,7 @@ export const Container = styled.button`
   }}
 
   @media (width <= 800px) {
-    display: ${(props) => (props.hidden === true ? 'none' : 'flex')};
+    display: ${(props) => (props.$hidden === true ? 'none' : 'flex')};
   }
 `;
 export const ButtonGroup = styled.div`

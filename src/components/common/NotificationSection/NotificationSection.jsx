@@ -156,6 +156,7 @@ const NotificationSection = ({
               onClick={goToPrevious}
               disabled={currentPage === 0}
               title="Anterior"
+              aria-label="Página anterior"
             >
               <i className="fas fa-chevron-left" />
             </NavButton>
@@ -166,6 +167,7 @@ const NotificationSection = ({
               onClick={goToNext}
               disabled={currentPage === totalPages - 1}
               title="Siguiente"
+              aria-label="Página siguiente"
             >
               <i className="fas fa-chevron-right" />
             </NavButton>

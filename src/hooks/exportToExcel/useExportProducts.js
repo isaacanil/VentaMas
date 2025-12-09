@@ -1,5 +1,3 @@
-import ExcelJS from 'exceljs';
-
 import { useFormatPrice } from '../useFormatPrice';
 
 const ITEM_TYPE_LABELS = {
@@ -8,7 +6,8 @@ const ITEM_TYPE_LABELS = {
   combo: 'Combo',
 };
 
-export const ExportProducts = (products) => {
+export const ExportProducts = async (products) => {
+  const ExcelJS = (await import('exceljs')).default;
   // Crear una instancia de Workbook
   const workbook = new ExcelJS.Workbook();
 

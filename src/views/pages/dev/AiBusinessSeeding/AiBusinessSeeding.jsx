@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { generativeModel } from '../../../../firebase/firebaseconfig';
+import { getLazyGenerativeModel } from '../../../../firebase/firebaseconfig';
 
 import { ACTIONS, getSystemPrompt } from './aiActions';
 
@@ -124,13 +124,13 @@ const InputWrapper = styled.div`
   display: flex;
   gap: 10px;
   align-items: flex-end;
-  border: 1px solid ${props => props.isTestMode ? '#faad14' : '#d9d9d9'};
+  border: 1px solid ${props => props.$isTestMode ? '#faad14' : '#d9d9d9'};
   transition: all 0.2s;
 
   &:focus-within {
     background: white;
-    border-color: ${props => props.isTestMode ? '#faad14' : '#1890ff'};
-    box-shadow: ${props => props.isTestMode ? '0 0 0 2px rgba(250, 173, 20, 0.1)' : '0 0 0 2px rgba(24, 144, 255, 0.1)'};
+    border-color: ${props => props.$isTestMode ? '#faad14' : '#1890ff'};
+    box-shadow: ${props => props.$isTestMode ? '0 0 0 2px rgba(250, 173, 20, 0.1)' : '0 0 0 2px rgba(24, 144, 255, 0.1)'};
   }
 `;
 
@@ -179,7 +179,7 @@ const LogItem = styled.div`
   display: flex;
   gap: 8px;
   &:last-child { border-bottom: none; }
-  color: ${props => props.type === 'error' ? '#ff6b6b' : props.type === 'success' ? '#51cf66' : props.type === 'warning' ? '#fcc419' : '#a5b3ce'};
+  color: ${props => props.$type === 'error' ? '#ff6b6b' : props.$type === 'success' ? '#51cf66' : props.$type === 'warning' ? '#fcc419' : '#a5b3ce'};
   word-break: break-all;
 `;
 
@@ -341,6 +341,7 @@ const AiBusinessSeeding = () => {
 
     try {
       const systemPrompt = getSystemPrompt(enabledActions);
+      const generativeModel = await getLazyGenerativeModel();
       const result = await generativeModel.generateContent([systemPrompt, prompt]);
       const response = await result.response;
       let text = response.text();
@@ -530,7 +531,7 @@ const AiBusinessSeeding = () => {
 
               <BottomBar>
                   <InputContainer>
-                      <InputWrapper isTestMode={isTestMode}>
+                      <InputWrapper $isTestMode={isTestMode}>
                           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
                               <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="topRight">
                                   <Button 
@@ -622,10 +623,10 @@ const AiBusinessSeeding = () => {
                               <Text strong style={{ fontSize: 12, marginBottom: '10px' }}>SYSTEM LOGS</Text>
                               <ResultConsole>
                                   {logs.length === 0 && (
-                                      <LogItem type="info"><span style={{ opacity: 0.5 }}>Esperando actividad...</span></LogItem>
+                                      <LogItem $type="info"><span style={{ opacity: 0.5 }}>Esperando actividad...</span></LogItem>
                                   )}
                                   {logs.map((log, i) => (
-                                      <LogItem key={i} type={log.type}>
+                                      <LogItem key={i} $type={log.type}>
                                           <span style={{ opacity: 0.5 }}>{log.msg.split(']')[0]}]</span>
                                           <span>{log.msg.split(']')[1]}</span>
                                       </LogItem>

@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 import { canonicalizeNcf, looseCanonicalizeNcf } from './ncfUtils';
@@ -15,6 +14,7 @@ export const sanitizeFileName = (name) => {
 };
 
 export const exportBusinessWorkbook = async (result, start, end) => {
+  const ExcelJS = (await import('exceljs')).default;
   const wb = new ExcelJS.Workbook();
   wb.creator = 'VentaMax';
   wb.created = new Date();

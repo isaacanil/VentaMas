@@ -1,5 +1,12 @@
-import { Utility } from '../../views/pages/Utility/Utility';
+import { lazy } from 'react';
+
 import ROUTES_NAME from '../routesName';
+
+const Utility = lazy(() =>
+  import('../../views/pages/Utility/Utility').then((module) => ({
+    default: module.Utility,
+  })),
+);
 
 const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
 

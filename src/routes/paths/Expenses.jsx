@@ -1,6 +1,15 @@
-import ExpensesForm from '../../views/pages/Expenses/ExpensesForm/ExpensesForm';
-import { ExpensesList } from '../../views/pages/Expenses/ExpensesList/ExpensesList';
+import { lazy } from 'react';
+
 import ROUTES_PATH from '../routesName';
+
+const ExpensesForm = lazy(() =>
+  import('../../views/pages/Expenses/ExpensesForm/ExpensesForm'),
+);
+const ExpensesList = lazy(() =>
+  import('../../views/pages/Expenses/ExpensesList/ExpensesList').then(
+    (module) => ({ default: module.ExpensesList }),
+  ),
+);
 
 const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_PATH.EXPENSES_TERM;
 const route = [

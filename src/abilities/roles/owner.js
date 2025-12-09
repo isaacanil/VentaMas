@@ -3,6 +3,7 @@ import { AbilityBuilder, PureAbility } from '@casl/ability';
 export function defineAbilitiesForOwner() {
   const { can, cannot, rules } = new AbilityBuilder(PureAbility);
   can('manage', 'all'); // el dueño puede manejar todo
+  can('access', 'all'); // acceso a todas las rutas
   cannot('developerAccess', 'all');
   cannot('access', '/users');
   cannot('access', '/users/list');

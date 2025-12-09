@@ -1,4 +1,3 @@
-import { toCanvas } from 'bwip-js';
 import { useRef, useEffect, useState } from 'react';
 
 const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
@@ -7,57 +6,73 @@ const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (canvasRef.current && number) {
-      setIsLoading(true);
-      setError(null);
-
-      // Limpiar canvas anterior
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      try {
-        const config = {
-          bcid: barcodeType, // Tipo de código de barras dinámico
-          text: String(number), // Asegurar que sea string
-          scale: 3, // Factor de escala aumentado
-          height: 12, // Altura en mm
-          includetext: true, // Incluir texto
-          textxalign: 'center', // Alineación del texto
-          textsize: 10,
-          padding: 0, // Tamaño del texto reducido
-          textcolor: '000000', // Color del texto
-          textyoffset: 4,
-          backgroundcolor: 'FFFFFF', // Color de fondo
-          //   textgaps: 1,           // Espaciado alrededor del texto
-          //   textmargin: 6,         // Margen del texto
-        };
-
-        // Configuraciones específicas por tipo de código
-        if (barcodeType === 'qrcode') {
-          config.scale = 4;
-          config.height = 20;
-          delete config.includetext; // QR no necesita texto adicional
+    let isMounted = true;
+    const generateBarcode = async () => {
+      if (canvasRef.current && number) {
+        if (isMounted) {
+          setIsLoading(true);
+          setError(null);
         }
 
-        toCanvas(canvasRef.current, config);
-        setIsLoading(false);
-      } catch (e) {
-        console.error('Error generando código de barras:', e);
-        setError(e.message);
-        setIsLoading(false);
-
-        // Fallback: mostrar el texto si hay error
+        // Limpiar canvas anterior
         const canvas = canvasRef.current;
-        canvas.width = 200;
-        canvas.height = 50;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#000';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(`Error: ${number}`, canvas.width / 2, canvas.height / 2);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        try {
+          const { toCanvas } = await import('bwip-js');
+          if (!isMounted) return;
+
+          const config = {
+            bcid: barcodeType, // Tipo de código de barras dinámico
+            text: String(number), // Asegurar que sea string
+            scale: 3, // Factor de escala aumentado
+            height: 12, // Altura en mm
+            includetext: true, // Incluir texto
+            textxalign: 'center', // Alineación del texto
+            textsize: 10,
+            padding: 0, // Tamaño del texto reducido
+            textcolor: '000000', // Color del texto
+            textyoffset: 4,
+            backgroundcolor: 'FFFFFF', // Color de fondo
+            //   textgaps: 1,           // Espaciado alrededor del texto
+            //   textmargin: 6,         // Margen del texto
+          };
+
+          // Configuraciones específicas por tipo de código
+          if (barcodeType === 'qrcode') {
+            config.scale = 4;
+            config.height = 20;
+            delete config.includetext; // QR no necesita texto adicional
+          }
+
+          toCanvas(canvasRef.current, config);
+          if (isMounted) setIsLoading(false);
+        } catch (e) {
+          console.error('Error generando código de barras:', e);
+          if (isMounted) {
+            setError(e.message);
+            setIsLoading(false);
+          }
+
+          // Fallback: mostrar el texto si hay error
+          const canvas = canvasRef.current;
+          canvas.width = 200;
+          canvas.height = 50;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#000';
+          ctx.font = '12px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Error: ${number}`, canvas.width / 2, canvas.height / 2);
+        }
       }
-    }
+    };
+
+    generateBarcode();
+
+    return () => {
+      isMounted = false;
+    };
   }, [number, barcodeType]);
 
   return (

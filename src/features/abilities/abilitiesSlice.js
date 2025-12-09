@@ -21,6 +21,7 @@ export const loadUserAbilities = createAsyncThunk(
 const initialState = {
   abilities: [],
   loading: false,
+  status: 'idle',
   error: null,
 };
 
@@ -31,11 +32,13 @@ const abilitiesSlice = createSlice({
     setAbilities: (state, action) => {
       state.abilities = defineAbilitiesFor(action.payload);
       state.loading = false;
+      state.status = 'succeeded';
       state.error = null;
     },
     clearAbilities: (state) => {
       state.abilities = [];
       state.loading = false;
+      state.status = 'idle';
       state.error = null;
     },
   },
@@ -43,15 +46,18 @@ const abilitiesSlice = createSlice({
     builder
       .addCase(loadUserAbilities.pending, (state) => {
         state.loading = true;
+        state.status = 'loading';
         state.error = null;
       })
       .addCase(loadUserAbilities.fulfilled, (state, action) => {
         state.abilities = action.payload;
         state.loading = false;
+        state.status = 'succeeded';
         state.error = null;
       })
       .addCase(loadUserAbilities.rejected, (state, action) => {
         state.loading = false;
+        state.status = 'failed';
         state.error = action.payload;
         // Mantener abilities existentes en caso de error
       });
@@ -73,6 +79,11 @@ export const selectAbilities = createSelector(
 export const selectAbilitiesLoading = createSelector(
   [selectAbilitiesState],
   (abilitiesState) => abilitiesState.loading
+);
+
+export const selectAbilitiesStatus = createSelector(
+  [selectAbilitiesState],
+  (abilitiesState) => abilitiesState.status
 );
 
 export const selectAbilitiesError = createSelector(

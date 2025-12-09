@@ -1,5 +1,5 @@
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 

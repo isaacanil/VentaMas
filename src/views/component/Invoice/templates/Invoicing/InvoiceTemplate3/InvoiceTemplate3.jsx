@@ -71,8 +71,8 @@ export const InvoiceTemplate3 = React.forwardRef(
   ({ data, ignoreHidden }, ref) => {
     const business = useSelector(selectBusinessData) || {};
 
-    const handleGeneratePDF = () => {
-      generateInvoicePDF({ business, data });
+    const handleGeneratePDF = async () => {
+      await generateInvoicePDF({ business, data });
     };
 
     return data ? (

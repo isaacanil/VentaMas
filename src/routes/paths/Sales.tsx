@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { lazy } from 'react';
 
-import { CashReconciliation } from '../../views/pages/CashReconciliation/CashReconciliation';
-import { InvoicesPage } from '../../views/pages/InvoicesPage/InvoicesPage';
-import { Preorder } from '../../views/pages/PreorderSale/PreorderSale';
-import { Sales } from '../../views/pages/Sale/Sale';
 import ROUTES_NAME from '../routesName';
+
+// Lazy load components
+const CashReconciliation = lazy(() =>
+  import('../../views/pages/CashReconciliation/CashReconciliation').then(
+    (module) => ({ default: module.CashReconciliation }),
+  ),
+);
+const InvoicesPage = lazy(() =>
+  import('../../views/pages/InvoicesPage/InvoicesPage').then((module) => ({
+    default: module.InvoicesPage,
+  })),
+);
+const Preorder = lazy(() =>
+  import('../../views/pages/PreorderSale/PreorderSale').then((module) => ({
+    default: module.Preorder,
+  })),
+);
+const Sales = lazy(() =>
+  import('../../views/pages/Sale/Sale').then((module) => ({
+    default: module.Sales,
+  })),
+);
 
 const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
 const { CASH_RECONCILIATION_LIST: CASH_RECONCILIATION } =

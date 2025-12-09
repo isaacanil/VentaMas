@@ -10,7 +10,7 @@ export const AbilityProvider = ({ children }) => {
   const rules = useSelector(selectAbilities);
 
   useEffect(() => {
-    if (rules) {
+    if (rules && Array.isArray(rules) && rules.length > 0) {
       ability.update(rules);
     } else {
       ability.update([]);

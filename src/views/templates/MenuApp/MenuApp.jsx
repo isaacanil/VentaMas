@@ -70,7 +70,7 @@ export const MenuApp = ({
     setIsSearchPanelOpen(false);
   };
 
-  useClickOutSide(ref, !isOpenMenu, closeMenu);
+  useClickOutSide(ref, isOpenMenu, closeMenu);
 
   return (
     <Fragment>

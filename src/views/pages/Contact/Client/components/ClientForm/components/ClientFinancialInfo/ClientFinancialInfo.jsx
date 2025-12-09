@@ -19,7 +19,7 @@ import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { FilterBar } from './components/FilterBar';
 
-const ClientFinancialInfo = ({ client, creditLimitForm }) => {
+const ClientFinancialInfo = ({ client }) => {
   const user = useSelector(selectUser);
 
   const [currentPageOpen, setCurrentPageOpen] = useState(1);
@@ -81,7 +81,6 @@ const ClientFinancialInfo = ({ client, creditLimitForm }) => {
     <Container>
       <ClientBalanceInfo client={client} pendingBalance={pendingBalance} />
       <CreditLimits
-        creditLimitForm={creditLimitForm}
         client={client}
         arBalance={pendingBalance || 0}
       />

@@ -58,6 +58,7 @@ export default function TaxReceiptForm({
 
   useEffect(() => {
     if (currentEditItem) {
+      form.resetFields();
       const sequenceValue =
         currentEditItem.sequence === undefined ||
         currentEditItem.sequence === null
@@ -70,8 +71,6 @@ export default function TaxReceiptForm({
         isActive: !normalizeDisabled(currentEditItem.disabled),
       };
       form.setFieldsValue(valuesToSet);
-    } else {
-      form.resetFields();
     }
   }, [currentEditItem, form]);
 

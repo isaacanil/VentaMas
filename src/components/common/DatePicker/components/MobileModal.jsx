@@ -89,7 +89,7 @@ export const MobileModal = ({ open, onClose, title, children }) => {
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <ModalTitle>{title}</ModalTitle>
-          <CloseButton onClick={onClose}>
+          <CloseButton onClick={onClose} aria-label="Cerrar">
             <CloseOutlined />
           </CloseButton>
         </ModalHeader>

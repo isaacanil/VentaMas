@@ -1,18 +1,64 @@
-import ProductView from '../../views/component/modals/Product/ProductView';
-import { CategoryAdmin } from '../../views/pages/Category/CategoryAdmin';
-import ProductStudio from '../../views/pages/DevTools/ProductStudio/ProductStudio';
-import { Inventory } from '../../views/pages/Inventario/pages/ItemsManager/Inventario';
-import { MultimediaManager } from '../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager';
-import { ProductOutflow } from '../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow';
-import AllMovements from '../../views/pages/Inventory/components/AllMovements/AllMovements';
-import DetailView from '../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView';
-import { Warehouse } from '../../views/pages/Inventory/components/Warehouse/Warehouse';
-import WarehouseProductStock from '../../views/pages/Inventory/components/Warehouse/WarehouseProductStock';
-import { InventoryControl } from '../../views/pages/InventoryControl/InventoryControl';
-import InventorySessionsList from '../../views/pages/InventorySessionsList/InventorySessionsList';
-import { InventorySummary } from '../../views/pages/InventorySummary/InventorySummary';
+import { lazy } from 'react';
+
 import ROUTES_NAME from '../routesName';
-// import { ProductForm } from "../../views/pages/Inventario/pages/ProductForm/ProductForm";
+
+const ProductView = lazy(() =>
+  import('../../views/component/modals/Product/ProductView'),
+);
+const CategoryAdmin = lazy(() =>
+  import('../../views/pages/Category/CategoryAdmin').then((module) => ({
+    default: module.CategoryAdmin,
+  })),
+);
+const ProductStudio = lazy(() =>
+  import('../../views/pages/DevTools/ProductStudio/ProductStudio'),
+);
+const Inventory = lazy(() =>
+  import('../../views/pages/Inventario/pages/ItemsManager/Inventario').then(
+    (module) => ({ default: module.Inventory }),
+  ),
+);
+const MultimediaManager = lazy(() =>
+  import(
+    '../../views/pages/Inventario/pages/MultimediaManager/MultimediaManager'
+  ).then((module) => ({ default: module.MultimediaManager })),
+);
+const ProductOutflow = lazy(() =>
+  import(
+    '../../views/pages/Inventario/pages/ProductOutflow/ProductOutflow'
+  ).then((module) => ({ default: module.ProductOutflow })),
+);
+const AllMovements = lazy(() =>
+  import('../../views/pages/Inventory/components/AllMovements/AllMovements'),
+);
+const DetailView = lazy(() =>
+  import(
+    '../../views/pages/Inventory/components/Warehouse/components/DetailView/DetailView'
+  ),
+);
+const Warehouse = lazy(() =>
+  import('../../views/pages/Inventory/components/Warehouse/Warehouse').then(
+    (module) => ({ default: module.Warehouse }),
+  ),
+);
+const WarehouseProductStock = lazy(() =>
+  import(
+    '../../views/pages/Inventory/components/Warehouse/WarehouseProductStock'
+  ),
+);
+const InventoryControl = lazy(() =>
+  import('../../views/pages/InventoryControl/InventoryControl').then(
+    (module) => ({ default: module.InventoryControl }),
+  ),
+);
+const InventorySessionsList = lazy(() =>
+  import('../../views/pages/InventorySessionsList/InventorySessionsList'),
+);
+const InventorySummary = lazy(() =>
+  import('../../views/pages/InventorySummary/InventorySummary').then(
+    (module) => ({ default: module.InventorySummary }),
+  ),
+);
 
 const {
   INVENTORY_ITEMS,
