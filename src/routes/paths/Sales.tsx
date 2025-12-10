@@ -28,12 +28,12 @@ const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
 const { CASH_RECONCILIATION_LIST: CASH_RECONCILIATION } =
   ROUTES_NAME.CASH_RECONCILIATION_TERM;
 
-type RouteConfig = {
+interface RouteConfig {
   path: string;
   element: React.JSX.Element;
   title: string;
   metaDescription: string;
-};
+}
 
 const routes: RouteConfig[] = [
   {

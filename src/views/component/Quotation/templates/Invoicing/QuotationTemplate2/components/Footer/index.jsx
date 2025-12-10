@@ -1,20 +1,18 @@
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
-import {
-  getProductsPrice,
-  getTotalDiscount,
-} from '../../../../../../../../utils/pricing';
+import { getProductsPrice, getTotalDiscount } from '../../../../../../../../utils/pricing';
+
+import { formatPrice } from '@/utils/format';
 
 export default function Footer({ data }) {
   const subtotal = getProductsPrice(data?.products || []);
   const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);
   const totals = {
-    subtotal: useFormatPrice(data?.totalPurchaseWithoutTaxes?.value || 0),
-    discount: `-${useFormatPrice(discount || 0)}`,
-    tax: useFormatPrice(data?.totalTaxes?.value || 0),
-    delivery: useFormatPrice(data?.delivery?.value || 0),
-    total: useFormatPrice(data?.totalPurchase?.value || 0),
+    subtotal: formatPrice(data?.totalPurchaseWithoutTaxes?.value || 0),
+    discount: `-${formatPrice(discount || 0)}`,
+    tax: formatPrice(data?.totalTaxes?.value || 0),
+    delivery: formatPrice(data?.delivery?.value || 0),
+    total: formatPrice(data?.totalPurchase?.value || 0),
   };
 
   return (
@@ -37,7 +35,7 @@ export default function Footer({ data }) {
                                                 <p key={index} style={{ margin: 0 }}>
                                                     {PAYMENT_METHODS[method.method.toLowerCase()] ||
                                                         method.method}
-                                                    :  {useFormatPrice(method.value || 0)}
+                                                    :  {formatPrice(method.value || 0)}
                                                     {method.reference && ` - Ref: ${method.reference}`}
                                                 </p>
                                             )

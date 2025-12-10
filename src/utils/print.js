@@ -1,6 +1,7 @@
 // Definimos una función personalizada para mostrar mensajes en la consola
 export function print(message, type = 'info') {
   // Verificamos si estamos en modo desarrollo
+  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV === 'development') {
     const timestamp = new Date().toISOString(); // Obtenemos la fecha y hora actuales
     switch (type) {

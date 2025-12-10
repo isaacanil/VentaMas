@@ -10,10 +10,10 @@ export type ToolbarComponentProps = { side: ToolbarSide } & Record<
 
 export type ToolbarComponent = ComponentType<ToolbarComponentProps>;
 
-export type ToolbarModule = {
+export interface ToolbarModule {
   default?: unknown;
   [exportName: string]: unknown;
-};
+}
 
 export type ToolbarImportFn = () => Promise<ToolbarModule>;
 
@@ -37,5 +37,5 @@ export interface ToolbarRegistryEntry {
 }
 
 export interface ToolbarEntryWithMatchers extends ToolbarRegistryEntry {
-  matchers: Array<(pathname: string) => boolean>;
+  matchers: ((pathname: string) => boolean)[];
 }

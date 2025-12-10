@@ -606,7 +606,7 @@ export const listenToAuthorizationsByStatus = (
 ) => {
   if (!businessID) {
     onError?.(new Error('businessID is required'));
-    return () => {};
+    return undefined;
   }
 
   const buildQuery = (colRef) => {

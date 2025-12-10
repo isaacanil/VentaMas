@@ -24,8 +24,8 @@ const sanitizeFragment = (fragment) => fragment.replace(/\r?\n$/g, '');
 const measureLongFragment = (ctx, fragment, maxWidthPx) => {
   let localWidth = 0;
   let extraLines = 0;
-  for (let i = 0; i < fragment.length; i++) {
-    const charWidth = ctx.measureText(fragment[i]).width;
+  for (const char of fragment) {
+    const charWidth = ctx.measureText(char).width;
     if (localWidth + charWidth > maxWidthPx && localWidth > 0) {
       extraLines += 1;
       localWidth = charWidth;

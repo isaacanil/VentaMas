@@ -6,17 +6,17 @@ import { ClientControl } from '../../../../component/contact/ClientControl/Clien
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary';
 import { ProductsList } from './components/ProductsList/ProductsLit';
 
-type CartStateShape = {
+interface CartStateShape {
   cart?: {
     isOpen?: boolean;
   };
-};
+}
 
-type CartTheme = {
+interface CartTheme {
   bg?: {
     shade?: string;
   };
-};
+}
 
 export const Cart = () => {
   const isOpen = useSelector<CartStateShape, boolean>((state) =>

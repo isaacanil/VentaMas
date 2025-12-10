@@ -9,11 +9,11 @@ import { FeatureCard, type FeatureCardData } from './FeatureCard';
 
 import type { JSX } from 'react';
 
-type FeatureCardListProps = {
+interface FeatureCardListProps {
   title?: string;
   cardData: FeatureCardData[];
   loading?: boolean;
-};
+}
 
 export const FeatureCardList = ({
   title,

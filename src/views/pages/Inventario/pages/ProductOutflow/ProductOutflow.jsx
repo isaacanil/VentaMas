@@ -78,7 +78,7 @@ export const ProductOutflow = () => {
       setOutflowListLoader,
       dispatch,
     });
-  }, [user]);
+  }, [user, dispatch]);
 
   return (
     <Container>

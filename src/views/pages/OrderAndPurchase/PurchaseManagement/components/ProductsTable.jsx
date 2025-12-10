@@ -18,11 +18,6 @@ const EditableCell = ({
   inputType,
   record,
   onSave,
-  setDateModalVisible,
-  setSelectedRecord,
-  onCellClick,
-  loadingQuantity,
-  children, // Keep children for non-editable content or initial render of date
   ...restProps
 }) => {
   const isProductModal = inputType === 'productModal';
@@ -338,7 +333,6 @@ const ProductsTable = ({
             let totalTax = 0;
             let totalFreight = 0;
             let totalOtherCosts = 0;
-            let totalUnitCost = 0;
             let totalSubtotal = 0;
 
             pageData.forEach((record) => {
@@ -348,7 +342,6 @@ const ProductsTable = ({
                 taxPercentage,
                 freight,
                 otherCosts,
-                unitCost,
                 subtotal,
               } = record;
               const displayQty = Number(quantity) || 0;

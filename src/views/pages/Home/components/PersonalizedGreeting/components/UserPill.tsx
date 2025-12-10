@@ -3,9 +3,9 @@ import styled from 'styled-components';
 
 import type { JSX } from 'react';
 
-type UserPillProps = {
+interface UserPillProps {
   userName: string;
-};
+}
 
 export const UserPill = ({ userName }: UserPillProps): JSX.Element => {
   return (

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { formatPrice as formatCurrency } from '@/utils/format';
 
 export const formatDate = (value?: number | null) => {
   if (!value) return 'N/D';
@@ -8,4 +8,4 @@ export const formatDate = (value?: number | null) => {
 };
 
 export const formatPrice = (value?: number | null) =>
-  useFormatPrice(value || 0, 'rd');
+  formatCurrency(value || 0, 'rd');

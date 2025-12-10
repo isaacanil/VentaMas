@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectBusinessData } from '../../../../../../../../features/auth/businessSlice';
-import { useFormatPhoneNumber } from '../../../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../../../utils/date/dateUtils';
+import { formatPhoneNumber } from '../../../../../../../../utils/format/formatPhoneNumber';
 import { resolveDocumentIdentity } from '../../../../../../../../utils/invoice/documentIdentity.js';
 import { InfoItem, Spacing } from '../../Style';
 
@@ -18,6 +18,11 @@ export const Header = ({ data }) => {
         'dd/MM/yyyy HH:mm',
       )
     : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+  
+  // Formatear teléfonos
+  const formattedBusinessPhone = formatPhoneNumber(business?.tel || '');
+  const formattedClientPhone = formatPhoneNumber(data?.client?.tel || '');
+
   return (
     <Container>
       <Title>{business?.name}</Title>
@@ -28,7 +33,7 @@ export const Header = ({ data }) => {
       />
       <InfoItem
         align="center"
-        label={useFormatPhoneNumber(business?.tel)}
+        label={formattedBusinessPhone}
         justifyContent="center"
       />
 
@@ -54,7 +59,7 @@ export const Header = ({ data }) => {
           {data?.client?.tel && (
             <InfoItem
               label="TEL"
-              value={useFormatPhoneNumber(data?.client?.tel)}
+              value={formattedClientPhone}
             />
           )}
           {data?.client?.address && (

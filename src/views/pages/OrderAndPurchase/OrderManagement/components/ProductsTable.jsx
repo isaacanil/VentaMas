@@ -18,8 +18,6 @@ const EditableCell = ({
   inputType,
   record,
   onSave,
-  onCellClick,
-  children,
   ...restProps
 }) => {
   const isProductModal = inputType === 'productModal';
@@ -257,10 +255,8 @@ const ProductsTable = ({
             let totalSubtotal = 0;
 
             pageData.forEach((record) => {
-              const { quantity, purchaseQuantity, baseCost, subtotal } = record;
-              const q = Number(purchaseQuantity ?? quantity) || 0;
+              const { quantity, subtotal } = record;
               const displayQty = Number(quantity) || 0;
-              const b = Number(baseCost) || 0;
               const s = Number(subtotal) || 0;
 
               totalQuantity += displayQty;

@@ -138,52 +138,6 @@ export function useAutomaticLogin() {
     [dispatch, navigate],
   );
 
-  const showSessionExpiredModal = useCallback(() => {
-    openModalOnce('session-expired', (reset) => {
-      Modal.warning({
-        title: 'Sesión expirada',
-        content: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
-        okText: 'Aceptar',
-        centered: true,
-        maskClosable: false,
-        keyboard: false,
-        onOk: () => handleLogout({ redirect: true }),
-        afterClose: reset,
-      });
-    });
-  }, [handleLogout, openModalOnce]);
-
-  const showSessionExpiringWarning = useCallback(() => {
-    openModalOnce('session-expiring', (reset) => {
-      Modal.confirm({
-        title: 'Sesión por expirar',
-        content: 'Tu sesión expirará pronto. ¿Deseas mantenerla activa?',
-        okText: 'Mantener activa',
-        cancelText: 'Cerrar sesión',
-        centered: true,
-        onOk: () => refreshSession('manual-renew'),
-        onCancel: () => handleLogout({ redirect: true }),
-        afterClose: reset,
-      });
-    });
-  }, [handleLogout, openModalOnce]);
-
-  const showInactivityWarning = useCallback(() => {
-    openModalOnce('inactivity-warning', (reset) => {
-      Modal.confirm({
-        title: 'Inactividad prolongada',
-        content:
-          '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
-        okText: 'Sí, mantener activa',
-        cancelText: 'Cerrar sesión',
-        centered: true,
-        onOk: () => refreshSession('inactivity-extend'),
-        onCancel: () => handleLogout({ redirect: true }),
-        afterClose: reset,
-      });
-    });
-  }, [handleLogout, openModalOnce]);
-
   const loadUserData = useCallback(
     async (userId) => {
       if (!userId || userIdRef.current === userId) return;
@@ -210,6 +164,22 @@ export function useAutomaticLogin() {
     [dispatch],
   );
 
+  const showSessionExpiredModal = useCallback(() => {
+    openModalOnce('session-expired', (reset) => {
+      Modal.warning({
+        title: 'Sesión expirada',
+        content: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+        okText: 'Aceptar',
+        centered: true,
+        maskClosable: false,
+        keyboard: false,
+        onOk: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
+    });
+  }, [handleLogout, openModalOnce]);
+
+  // Define refreshSession before callbacks that use it
   const refreshSession = useCallback(
     async (source = 'auto', options = {}) => {
       if (refreshLockRef.current) {
@@ -269,7 +239,8 @@ export function useAutomaticLogin() {
           remaining > 0 &&
           remaining < EXPIRY_WARNING_WINDOW_MS
         ) {
-          showSessionExpiringWarning();
+          // Call showSessionExpiringWarning after it's defined
+          showSessionExpiringWarningRef.current?.();
         }
 
         lastActivityRef.current = Date.now();
@@ -291,8 +262,8 @@ export function useAutomaticLogin() {
               error instanceof Error
                 ? error
                 : new Error(
-                    'No se pudo renovar la sesión. Reintentaremos en unos minutos.',
-                  ),
+                  'No se pudo renovar la sesión. Reintentaremos en unos minutos.',
+                ),
             );
           }
           return { ok: false, reason: 'transient-error', error };
@@ -320,9 +291,43 @@ export function useAutomaticLogin() {
       handleLogout,
       loadUserData,
       showSessionExpiredModal,
-      showSessionExpiringWarning,
     ],
   );
+
+  const showSessionExpiringWarning = useCallback(() => {
+    openModalOnce('session-expiring', (reset) => {
+      Modal.confirm({
+        title: 'Sesión por expirar',
+        content: 'Tu sesión expirará pronto. ¿Deseas mantenerla activa?',
+        okText: 'Mantener activa',
+        cancelText: 'Cerrar sesión',
+        centered: true,
+        onOk: () => refreshSession('manual-renew'),
+        onCancel: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
+    });
+  }, [handleLogout, openModalOnce, refreshSession]);
+
+  const showInactivityWarning = useCallback(() => {
+    openModalOnce('inactivity-warning', (reset) => {
+      Modal.confirm({
+        title: 'Inactividad prolongada',
+        content:
+          '¿Deseas mantener tu sesión activa? Se cerrará por inactividad.',
+        okText: 'Sí, mantener activa',
+        cancelText: 'Cerrar sesión',
+        centered: true,
+        onOk: () => refreshSession('inactivity-extend'),
+        onCancel: () => handleLogout({ redirect: true }),
+        afterClose: reset,
+      });
+    });
+  }, [handleLogout, openModalOnce, refreshSession]);
+
+  // Store ref to showSessionExpiringWarning for use in refreshSession
+  const showSessionExpiringWarningRef = useRef(null);
+  showSessionExpiringWarningRef.current = showSessionExpiringWarning;
 
   const handleActivity = useCallback(() => {
     lastActivityRef.current = Date.now();

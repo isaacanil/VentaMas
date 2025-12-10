@@ -17,12 +17,13 @@ import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteM
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import ROUTES_NAME from '../../../../routes/routesName';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { CreditNoteFilters } from './components/CreditNoteFilters';
+
+import { formatPrice } from '@/utils/format';
 
 export const CreditNoteList = () => {
   const dispatch = useDispatch();
@@ -215,10 +216,10 @@ export const CreditNoteList = () => {
         const availableAmount = record?.availableAmount ?? value;
         return (
           <div style={{ fontFamily: 'monospace', fontWeight: 600 }}>
-            <div>{useFormatPrice(value || 0)}</div>
+            <div>{formatPrice(value || 0)}</div>
             {availableAmount !== value && (
               <div style={{ fontSize: '0.8em', color: '#666' }}>
-                Disponible: {useFormatPrice(availableAmount)}
+                Disponible: {formatPrice(availableAmount)}
               </div>
             )}
           </div>

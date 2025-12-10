@@ -9,8 +9,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
+
+import { formatPrice } from '@/utils/format';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -43,17 +44,17 @@ const createChartOptions = (isMobile, salesByDay, sortedDateKeys) => ({
             const dayData = salesByDay[dateKey];
 
             return [
-              `Total: ${useFormatPrice(dayData.total)}`,
-              `Efectivo: ${useFormatPrice(dayData.cash)}`,
-              `Tarjeta: ${useFormatPrice(dayData.card)}`,
-              `Transferencia: ${useFormatPrice(dayData.transfer)}`,
-              `Nota de Crédito: ${useFormatPrice(dayData.creditNote)}`,
+              `Total: ${formatPrice(dayData.total)}`,
+              `Efectivo: ${formatPrice(dayData.cash)}`,
+              `Tarjeta: ${formatPrice(dayData.card)}`,
+              `Transferencia: ${formatPrice(dayData.transfer)}`,
+              `Nota de Crédito: ${formatPrice(dayData.creditNote)}`,
             ];
           } else {
             // En desktop, mostrar normal
             let label = context.dataset.label || '';
             if (label) {
-              label += ': ' + useFormatPrice(context.parsed.y);
+              label += ': ' + formatPrice(context.parsed.y);
             }
             return label;
           }

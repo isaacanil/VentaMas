@@ -111,7 +111,7 @@ export async function listenInsuranceConfig(user, callback, errorCallback) {
     if (errorCallback) {
       errorCallback(error);
     }
-    return () => {}; // Retorna una función vacía en caso de error
+    return undefined;
   }
 }
 
@@ -124,7 +124,7 @@ export const useListenInsuranceConfig = () => {
   useEffect(() => {
     if (!user?.businessID) {
       setLoading(false);
-      return () => {};
+      return undefined;
     }
 
     let unsubscribe;
@@ -144,7 +144,7 @@ export const useListenInsuranceConfig = () => {
       console.error('Error al iniciar el listener:', error);
       setError(error);
       setLoading(false);
-      return () => {};
+      return undefined;
     }
 
     return () => {

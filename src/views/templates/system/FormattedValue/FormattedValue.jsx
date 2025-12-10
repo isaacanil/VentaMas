@@ -1,18 +1,22 @@
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-import { useFormatNumber } from '../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
-import { useFormatDate } from '../../../../hooks/useFormatTime';
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
+const formatDateValue = (value) => {
+  const timestamp = value || DateTime.now().toMillis();
+  return DateTime.fromMillis(timestamp).toLocaleString(DateTime.DATE_MED);
+};
 
 const formatValue = (type, value) => {
   switch (type) {
     case 'number':
-      return useFormatNumber(value);
+      return formatNumber(value);
     case 'date':
-      return useFormatDate(value || DateTime.now().toMillis());
+      return formatDateValue(value);
     case 'price':
-      return useFormatPrice(value);
+      return formatPrice(value);
     default:
       return value;
   }

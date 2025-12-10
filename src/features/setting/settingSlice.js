@@ -62,7 +62,7 @@ export const settingSlice = createSlice({
 
       state.system.fullScreen = !fullScreenMode;
     },
-    isConnected: () => {},
+    // Removido método vacío isConnected
   },
 });
 

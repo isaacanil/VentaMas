@@ -1,15 +1,16 @@
 import React from 'react';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import {
   calculateInvoicesTotal,
   countInvoices,
 } from '../../../../../../utils/invoice';
 
+import { formatPrice } from '@/utils/format';
+
 export const TotalsDisplay = ({ invoices, className }) => {
   const totalAmount = calculateInvoicesTotal(invoices);
   const totalCount = countInvoices(invoices);
-  const formattedPrice = useFormatPrice(totalAmount);
+  const formattedPrice = formatPrice(totalAmount);
 
   return (
     <div className={className}>

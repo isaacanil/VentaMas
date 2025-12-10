@@ -1,6 +1,7 @@
 import { CREDIT_NOTE_STATUS_LABEL } from '../../constants/creditNoteStatus';
 import { getTax, getTotalPrice } from '../../utils/pricing';
-import useFormatTimestamp from '../useFormatTimeStamp';
+
+import { formatTimestamp } from '@/utils/format';
 
 /**
  * Convierte un valor a número, retornando 0 si no es válido
@@ -33,7 +34,7 @@ const formatCreditNoteResumen = (creditNote) => {
   const totalItbis = calculateTotalItbis(items);
 
   return {
-    Fecha: useFormatTimestamp(createdAt || new Date()),
+    Fecha: formatTimestamp(createdAt || new Date()),
     NCF: ncf || NCFUpper || 'N/A',
     'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
     Cliente: client.name || 'Cliente Genérico',
@@ -69,7 +70,7 @@ const formatCreditNoteDetailed = (creditNotes) => {
       const itemItbis = getTax(item, true);
 
       resultados.push({
-        Fecha: useFormatTimestamp(createdAt || new Date()),
+        Fecha: formatTimestamp(createdAt || new Date()),
         NCF: ncf || NCFUpper || 'N/A',
         'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
         Cliente: client.name || 'Cliente Genérico',

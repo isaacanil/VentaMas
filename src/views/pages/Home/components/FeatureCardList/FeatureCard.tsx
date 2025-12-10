@@ -6,7 +6,7 @@ import { toggleDeveloperModal } from '../../../../../features/modals/modalSlice'
 
 import type { JSX, MouseEvent, ReactNode } from 'react';
 
-export type FeatureCardData = {
+export interface FeatureCardData {
   id?: number | string;
   title: string;
   icon: ReactNode;
@@ -14,11 +14,11 @@ export type FeatureCardData = {
   action?: string;
   category: string;
   [key: string]: unknown;
-};
+}
 
-type FeatureCardProps = {
+interface FeatureCardProps {
   card: FeatureCardData;
-};
+}
 
 export const FeatureCard = ({ card }: FeatureCardProps): JSX.Element => {
   const dispatch = useDispatch();

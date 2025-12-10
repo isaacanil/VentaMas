@@ -2,16 +2,17 @@ import { DateTime } from 'luxon';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import {
   getProductsTax,
   getProductsTotalPrice,
   getTotalItems,
 } from '../../../../../utils/pricing';
-import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal';
+import { PreorderModal } from '../../../../component/modals/PreorderModal/PreorderModal';
 import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { tableConfig } from './tableConfig.jsx';
+
+import { formatPrice } from '@/utils/format';
 
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
   const [selectedPreorder, setSelectedPreorder] = useState(null);
@@ -42,7 +43,7 @@ export const PreSaleTable = ({ preSales = [], searchTerm }) => {
     };
   });
 
-  const total = useFormatPrice(
+  const total = formatPrice(
     preSales?.reduce(
       (total, { data }) => total + data?.totalPurchase?.value,
       0,

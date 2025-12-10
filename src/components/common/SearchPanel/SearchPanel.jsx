@@ -17,8 +17,10 @@ export const SearchPanel = ({
   sectionName = '',
 }) => {
   const searchDrawerRef = useRef(null);
-  const [tempSearchData, setTempSearchData] = useState('');
+  // Derivar el estado de searchData directamente
+  const [tempSearchData, setTempSearchData] = useState(searchData || '');
 
+  // Solo actualizar el tempSearchData cuando el panel se abre
   useEffect(() => {
     if (isOpen) {
       setTempSearchData(searchData || '');

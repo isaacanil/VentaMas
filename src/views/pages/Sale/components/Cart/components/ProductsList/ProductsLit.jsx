@@ -23,7 +23,7 @@ import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart';
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
 
-const VirtuosoList = forwardRef(({ style, children, context, ...props }, ref) => (
+const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
   <Body ref={ref} style={style} {...props}>
     {children}
   </Body>
@@ -31,7 +31,7 @@ const VirtuosoList = forwardRef(({ style, children, context, ...props }, ref) =>
 VirtuosoList.displayName = 'VirtuosoList';
 
 // VirtuosoItem ahora es un contenedor simple, sin animación
-const VirtuosoItem = forwardRef(({ children, context, ...props }, ref) => (
+const VirtuosoItem = forwardRef(({ children, ...props }, ref) => (
   <div ref={ref} {...props}>
     {children}
   </div>

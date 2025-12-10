@@ -25,7 +25,7 @@ export const SearchProductBar = ({ searchData, setSearchData }) => {
       default:
         break;
     }
-  }, [searchData]);
+  }, [searchData, dispatch, navigate, setSearchData]);
   return (
     <div>
       {/* TODO: SearchClient component not found */}

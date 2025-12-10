@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, RefObject } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
+
 
 interface UseTruncateResult {
   isTruncated: boolean;
@@ -10,7 +11,7 @@ interface UseTruncateResult {
 const useTruncate = (
   text: string | null | undefined,
   containerRef: RefObject<HTMLElement>,
-  useTooltip: boolean = true,
+  useTooltip = true,
 ): UseTruncateResult => {
   const [isTruncated, setIsTruncated] = useState(false);
   const [truncatedText, setTruncatedText] = useState<string>(text || '');

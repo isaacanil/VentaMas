@@ -10,10 +10,11 @@ import {
   getOrderData,
   selectPurchase,
 } from '../../../../../../../features/purchase/addPurchaseSlice';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../../utils/date/dateUtils';
 import { normalizeText } from '../../../../../../../utils/text';
 import { calculateOrderTotals } from '../../../../OrderManagement/utils/orderCalculationsUtil';
+
+import { formatPrice } from '@/utils/format';
 
 const Wrapper = styled.div`
   display: grid;
@@ -159,7 +160,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
           ]}
           help={
             selectedOrder
-              ? `${DateUtils.convertMillisToISODate(selectedOrder?.dates?.createdAt ?? selectedOrder?.createdAt ?? 0)} | (${useFormatPrice(
+              ? `${DateUtils.convertMillisToISODate(selectedOrder?.dates?.createdAt ?? selectedOrder?.createdAt ?? 0)} | (${formatPrice(
                   calculateOrderTotals(selectedOrder.replenishments).grandTotal,
                 )}) `
               : ''
@@ -234,7 +235,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
                       )}
                     </div>
                     <div className="order-total">
-                      Total: {useFormatPrice(grandTotal)}
+                      Total: {formatPrice(grandTotal)}
                     </div>
                   </OrderCard>
                 );

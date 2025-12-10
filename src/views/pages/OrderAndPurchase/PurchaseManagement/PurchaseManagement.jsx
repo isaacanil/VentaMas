@@ -173,18 +173,6 @@ const PurchaseManagement = () => {
     [purchaseData.attachmentUrls, updatePurchaseState],
   );
 
-  const validateFields = useCallback(() => {
-    const newErrors = {
-      provider: !purchaseData.provider,
-      deliveryAt: !purchaseData.deliveryAt,
-      paymentAt: !purchaseData.paymentAt,
-      note: false, // Note is no longer required
-    };
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  }, [purchaseData]);
-
   useEffect(() => {
     if ((mode === 'update' || mode === 'complete') && fetchedPurchase) {
       dispatch(setPurchase(fetchedPurchase));

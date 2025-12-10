@@ -115,17 +115,6 @@ const OrderManagement = () => {
     [orderData.attachmentUrls, updateOrderState],
   );
 
-  const validateFields = useCallback(() => {
-    const newErrors = {
-      provider: !orderData.provider,
-      deliveryAt: !orderData.deliveryAt,
-      note: orderData.note && orderData.note.length > 300, // Solo validar longitud si hay nota
-    };
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  }, [orderData]);
-
   useEffect(() => {
     if (mode === 'update' && fetchedOrder) {
       dispatch(setOrder(fetchedOrder));

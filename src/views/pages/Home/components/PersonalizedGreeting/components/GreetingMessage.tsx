@@ -2,10 +2,10 @@ import styled from 'styled-components';
 
 import type { JSX } from 'react';
 
-type GreetingMessageProps = {
+interface GreetingMessageProps {
   greetingText: string;
   nameToDisplay: string;
-};
+}
 
 export const GreetingMessage = ({
   greetingText,

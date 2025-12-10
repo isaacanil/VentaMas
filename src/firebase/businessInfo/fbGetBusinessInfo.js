@@ -16,11 +16,11 @@ export const subscribeToBusinessInfo = (
 ) => {
   if (typeof businessID !== 'string' || !businessID.trim()) {
     console.warn('subscribeToBusinessInfo: businessID inválido');
-    return () => {};
+    return undefined;
   }
   if (typeof onNext !== 'function') {
     console.warn('subscribeToBusinessInfo: onNext no es una función');
-    return () => {};
+    return undefined;
   }
 
   const businessRef = doc(db, 'businesses', businessID);

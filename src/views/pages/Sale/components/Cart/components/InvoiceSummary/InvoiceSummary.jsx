@@ -37,7 +37,6 @@ import { downloadQuotationPdf } from '../../../../../../../firebase/quotation/do
 import { addQuotation } from '../../../../../../../firebase/quotation/quotationService';
 import { useAuthorizationModules } from '../../../../../../../hooks/useAuthorizationModules';
 import { useAuthorizationPin } from '../../../../../../../hooks/useAuthorizationPin';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
 import useInsuranceFormComplete from '../../../../../../../hooks/useInsuranceFormComplete';
 import { validateInvoiceCart } from '../../../../../../../utils/invoiceValidation';
@@ -54,6 +53,8 @@ import { Delivery } from './components/Delivery/Delivery';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import WarningPill from './components/WarningPill/WarningPill';
 
+import { formatPrice } from '@/utils/format';
+
 const resolveAuthorizerName = (authorizer) =>
   authorizer?.displayName ||
   authorizer?.name ||
@@ -63,7 +64,6 @@ const resolveAuthorizerName = (authorizer) =>
   'usuario autorizado';
 
 const SUMMARY_INPUT_WIDTH = '170px';
-const SUMMARY_INPUT_SIZE = 'large';
 
 const InvoiceSummary = () => {
   const [isCartValid, setIsCartValid] = useState(false);
@@ -636,11 +636,11 @@ const InvoiceSummary = () => {
       <SummaryContainer>
         <LineItem>
           <Label>SubTotal:</Label>
-          <Label>{useFormatPrice(subTotal)}</Label>
+          <Label>{formatPrice(subTotal)}</Label>
         </LineItem>
         <LineItem>
           <Label>ITBIS:</Label>
-          <Label>{useFormatPrice(itbis)}</Label>
+          <Label>{formatPrice(itbis)}</Label>
         </LineItem>
         <Delivery
           inputWidth={SUMMARY_INPUT_WIDTH}
@@ -649,7 +649,7 @@ const InvoiceSummary = () => {
           <Label>Descuento:</Label>
           {hasIndividualDiscounts ? (
             <Label style={{ color: '#52c41a', fontWeight: 600 }}>
-              -{useFormatPrice(totalIndividualDiscounts)}
+              -{formatPrice(totalIndividualDiscounts)}
             </Label>
           ) : (
             <DiscountInputContainer>
@@ -679,7 +679,7 @@ const InvoiceSummary = () => {
         {insuranceEnabled && (
           <LineItem>
             <Label>Cobertura:</Label>
-            <Label>{useFormatPrice(insuranceExtra)}</Label>
+            <Label>{formatPrice(insuranceExtra)}</Label>
           </LineItem>
         )}
         {warningMessage && <WarningPill message={warningMessage} />}
@@ -692,7 +692,7 @@ const InvoiceSummary = () => {
           <ActionMenu disabled={isSavingPreorder} options={menuOptions} />
           <Quotation ref={quotationPrintRef} data={quotationData} />
           <TotalLabel>
-            <AnimatedNumber value={useFormatPrice(total)} />
+            <AnimatedNumber value={formatPrice(total)} />
           </TotalLabel>
         </TotalLine>
       </SummaryContainer>

@@ -4,9 +4,10 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { addDiscount } from '../../../../features/cart/cartSlice';
-import { quitarCeros } from '../../../../hooks/quitarCeros';
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+
+import { formatPrice } from '@/utils/format';
+import { quitarCeros } from '@/utils/number/number';
 
 const { Title, Paragraph } = Typography;
 
@@ -17,7 +18,6 @@ const CustomInput = ({
   disabled = false,
   onRequestAccess,
   width = '170px',
-  size = 'middle',
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch();
@@ -115,7 +115,7 @@ const CustomInput = ({
               borderColor: '#d9d9d9',
             }}
           >
-            {'-' + useFormatPrice(discount)}
+            {'-' + formatPrice(discount)}
           </Button>
         </Space.Compact>
       </Wrapper>

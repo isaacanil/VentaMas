@@ -16,7 +16,8 @@ import {
   changeValueInvoiceForm,
   selectInvoice,
 } from '../../../../../../features/invoice/invoiceFormSlice';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+
+import { formatPrice } from '@/utils/format';
 
 const PAYMENT_METHOD_META = {
   cash: {
@@ -299,12 +300,12 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
   }, [invoice?.discount?.type, discountType]);
 
   const formattedTotalPayment = useMemo(
-    () => useFormatPrice(totalPayment),
+    () => formatPrice(totalPayment),
     [totalPayment],
   );
 
   const formattedTotalPurchase = useMemo(
-    () => useFormatPrice(totalPurchase),
+    () => formatPrice(totalPurchase),
     [totalPurchase],
   );
 
@@ -312,7 +313,7 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
   const balanceVariant = balanceIsPositive ? 'positive' : 'negative';
   const balanceLabel = balanceIsPositive ? 'Cambio' : 'Pendiente';
   const formattedBalance = useMemo(
-    () => useFormatPrice(Math.abs(changeAmount)),
+    () => formatPrice(Math.abs(changeAmount)),
     [changeAmount],
   );
 
@@ -353,7 +354,7 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
           <DiscountHelp>
             {discountType === 'percentage'
               ? 'Ingrese el porcentaje de descuento (0-100)'
-              : `Ingrese el monto fijo de descuento (máx: ${useFormatPrice(subtotal)})`}
+              : `Ingrese el monto fijo de descuento (máx: ${formatPrice(subtotal)})`}
           </DiscountHelp>
         </DiscountSection>
       </DiscountContainer>

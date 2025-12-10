@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import React from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '../../../../../utils/formatPrice';
+import { formatPrice } from '@/utils/format';
 
 const paymentmethodLabel = {
   cash: 'Efectivo',

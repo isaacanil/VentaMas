@@ -1,8 +1,7 @@
-import { monetarySymbols } from '../constants/monetarySymbols';
+import { monetarySymbols } from '@/constants/monetarySymbols';
+import { separator } from '@/utils/number/number';
 
-import { separator } from './separator';
-
-export const useFormatPrice = (value, symbol = monetarySymbols.dollarSign) => {
+export const formatPrice = (value, symbol = monetarySymbols.dollarSign) => {
   switch (symbol) {
     case 'rd':
       return `${monetarySymbols.rd}${separator(value)}`;

@@ -1,46 +1,56 @@
-import { Form, Input } from 'antd';
-import debounce from 'lodash/debounce';
-import { useState, useEffect, useCallback } from 'react';
+﻿================================================================================
+REGLA: expression
+SEVERIDAD: error
+TOTAL DE PROBLEMAS: 2
+================================================================================
 
-const { TextArea } = Input;
 
-const NotesInput = ({ initialValue = '', onNoteChange }) => {
-  const [localNote, setLocalNote] = useState(initialValue);
+FILE: NotesInput.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\pages\OrderAndPurchase\OrderManagement\components\GeneralForm\components\NotesInput.jsx
+   1 problema(s)
 
-  useEffect(() => {
-    setLocalNote(initialValue);
-  }, [initialValue]);
+   [ERROR] Linea 15:5
+      Error: Expected the first argument to be an inline function
 
-  const debouncedDispatch = useCallback(
-    debounce((value) => {
-      onNoteChange(value);
-    }, 500),
-    [onNoteChange],
-  );
+      Contexto:
+      Expected the first argument to be an inline function expression.
+        13 |
+        14 |   const debouncedDispatch = useCallback(
+      > 15 |     debounce((value) => {
+           |     ^^^^^^^^^^^^^^^^^^^^^
+      > 16 |       onNoteChange(value);
+           | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 17 |     }, 500),
+           | ^^^^^^^^^^^^ Expected the first argument to be an inline function expression
+        18 |     [onNoteChange],
+        19 |   );
+        20 |  react-hooks/use-memo
 
-  const handleChange = (e) => {
-    const { value } = e.target;
-    if (value.length <= 300) {
-      setLocalNote(value);
-      debouncedDispatch(value);
-    }
-  };
 
-  return (
-    <Form.Item label="Notas">
-      <TextArea
-        value={localNote}
-        onChange={handleChange}
-        placeholder={'Agrega notas adicionales'}
-        cols={30}
-        rows={4}
-        style={{
-          maxWidth: '1000px',
-          resize: 'none',
-        }}
-      />
-    </Form.Item>
-  );
-};
+FILE: NotesInput.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\pages\OrderAndPurchase\PurchaseManagement\components\GeneralForm\components\NotesInput.jsx
+   1 problema(s)
 
-export default NotesInput;
+   [ERROR] Linea 15:5
+      Error: Expected the first argument to be an inline function
+
+      Contexto:
+      Expected the first argument to be an inline function expression.
+        13 |
+        14 |   const debouncedDispatch = useCallback(
+      > 15 |     debounce((value) => {
+           |     ^^^^^^^^^^^^^^^^^^^^^
+      > 16 |       onNoteChange(value);
+           | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 17 |     }, 500),
+           | ^^^^^^^^^^^^ Expected the first argument to be an inline function expression
+        18 |     [onNoteChange],
+        19 |   );
+        20 |  react-hooks/use-memo
+
+
+================================================================================
+ARCHIVOS MAS AFECTADOS
+================================================================================
+  * NotesInput.jsx - 1 ocurrencias
+  * NotesInput.jsx - 1 ocurrencias

@@ -1,335 +1,214 @@
-import {
-  EyeOutlined,
-  MoreOutlined,
-  PrinterOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons';
-import { Button, Dropdown, Tooltip, notification } from 'antd';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useReactToPrint } from 'react-to-print';
+﻿================================================================================
+REGLA: declared
+SEVERIDAD: error
+TOTAL DE PROBLEMAS: 6
+================================================================================
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import {
-  SelectSettingCart,
-  loadCart,
-  setCartId,
-  toggleInvoicePanelOpen,
-} from '../../../../../features/cart/cartSlice';
-import { selectClientWithAuth } from '../../../../../features/clientCart/clientCartSlice';
-import { selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbCancelPreorder } from '../../../../../firebase/invoices/fbCancelPreorder';
-import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { getTimeElapsed } from '../../../../../hooks/useFormatTime';
-import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
-import { Invoice } from '../../../../component/Invoice/components/Invoice/Invoice';
-import { ConfirmModal } from '../../../../component/modals/ConfirmModal/ConfirmModal';
-import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal';
-import { Tag } from '../../../../templates/system/Tag/Tag';
 
-const resolvePreorderTaxReceiptType = (preorder) =>
-  preorder?.selectedTaxReceiptType ??
-  preorder?.preorderDetails?.selectedTaxReceiptType ??
-  preorder?.preorderDetails?.taxReceipt?.type ??
-  null;
+FILE: DeveloperSessionHelper.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\components\devtools\DeveloperSessionHelper.jsx
+   1 problema(s)
 
-const getColorByStatus = (status) => {
-  const statusColors = {
-    pending: 'orange',
-    completed: 'green',
-    cancelled: 'red',
-  };
-  return statusColors[status] || 'gray';
-};
+   [ERROR] Linea 137:45
+      Error: Cannot access variable before it is
 
-export const PriceCell = ({ value }) => <span>{useFormatPrice(value)}</span>;
+      Contexto:
+      `handlePointerUp` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        135 |     window.removeEventListener('pointermove', handlePointerMove);
+        136 |     // Usar removeEventListener con una referencia, no self-reference
+      > 137 |     window.removeEventListener('pointerup', handlePointerUp);
+            |                                             ^^^^^^^^^^^^^^^ `handlePointerUp` accessed before it is declared
+        138 |
+        139 |     const { moved } = dragState.current;
+        140 |     dragState.current = {
+        132 |   );
+        133 |
+      > 134 |   const handlePointerUp = useCallback(() => {
+            |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 135 |     window.removeEventListener('pointermove', handlePointerMove);
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 136 |     // Usar removeEventListener con una referencia, no self-reference
+            â€¦
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 150 |      
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 151 |   }, [handlePointerMove]);
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `handlePointerUp` is declared here
+        152 |
+        153 |   const handlePointerDown = useCallback(
+        154 |     (event) => {  react-hooks/immutability
 
-export const DateCell = ({ value }) => {
-  const time = value * 1000;
-  return <span>{getTimeElapsed(time, 0)}</span>;
-};
 
-export const StatusCell = ({ value }) => {
-  const statusLabel =
-    value === 'pending'
-      ? 'Pendiente'
-      : value === 'completed'
-        ? 'Completada'
-        : 'Cancelada';
-  return <Tag color={getColorByStatus(value)}>{statusLabel}</Tag>;
-};
+FILE: DeveloperModal.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\components\modals\DeveloperModal\DeveloperModal.jsx
+   1 problema(s)
 
-export const PreorderActionsCell = ({ value }) => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const data = value.data;
-  const user = useSelector(selectUser);
-  const business = useSelector(selectBusinessData) || {};
-  const cartSettings = useSelector(SelectSettingCart);
-  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
-  const [isPreorderModalOpen, setIsPreorderModalOpen] = useState(false);
-  const printRef = useRef(null);
+   [ERROR] Linea 219:7
+      Error: Cannot access variable before it is
 
-  const printablePreorder = useMemo(() => {
-    if (!data) return null;
-    return {
-      ...data,
-      numberID: data?.numberID || data?.preorderDetails?.numberID,
-      date: data?.date || data?.preorderDetails?.date || null,
-      copyType: data?.copyType || 'PREVENTA',
-      type: data?.type || 'preorder',
-    };
-  }, [data]);
+      Contexto:
+      `triggerCommandExecution` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        217 |
+        218 |     if (options.trigger === 'click' && !needsAdditionalInput) {
+      > 219 |       triggerCommandExecution(command);
+            |       ^^^^^^^^^^^^^^^^^^^^^^^ `triggerCommandExecution` accessed before it is declared
+        220 |       setCommandInput('');
+        221 |     }
+        222 |   };
+        402 |   };
+        403 |
+      > 404 |   const triggerCommandExecution = (command) => {
+            |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 405 |     const commandText = command?.trim();
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 406 |     if (!commandText || !commandProcessorRef.current) return;
+            â€¦
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 417 |     executeCommand();
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 418 |   };
+            | ^^^^^ `triggerCommandExecution` is declared here
+        419 |
+        420 |   // Texto de bienvenida de la consola
+        421 |   const welcomeText = `  react-hooks/immutability
 
-  const resolvedInvoiceType = useMemo(() => {
-    const type =
-      cartSettings?.billing?.invoiceType ||
-      printablePreorder?.billing?.invoiceType ||
-      printablePreorder?.invoiceType ||
-      null;
-    return type ? type.toLowerCase() : null;
-  }, [cartSettings?.billing?.invoiceType, printablePreorder]);
 
-  const triggerPrint = useReactToPrint({
-    contentRef: printRef,
-  });
+FILE: PaymentFields.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\forms\PaymentForm\components\PaymentFields.jsx
+   2 problema(s)
 
-  const convertTimestampsToMillis = useCallback((obj) => {
-    if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) {
-      return obj.map((item) => convertTimestampsToMillis(item));
-    }
-    const converted = {};
-    Object.keys(obj).forEach((key) => {
-      const value = obj[key];
-      if (
-        value &&
-        typeof value === 'object' &&
-        value.seconds !== undefined &&
-        value.nanoseconds !== undefined
-      ) {
-        converted[key] =
-          value.seconds * 1000 + Math.floor(value.nanoseconds / 1000000);
-      } else if (value && typeof value === 'object') {
-        converted[key] = convertTimestampsToMillis(value);
-      } else {
-        converted[key] = value;
-      }
-    });
-    return converted;
-  }, []);
+   [ERROR] Linea 73:9
+      Error: Cannot access variable before it is
 
-  const printableInvoiceData = useMemo(() => {
-    const source = printablePreorder || data;
-    if (!source) return null;
-    return convertTimestampsToMillis(source) ?? source;
-  }, [convertTimestampsToMillis, data, printablePreorder]);
+      Contexto:
+      `handleStatusChange` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        71 |       if (cashMethod && !cashMethod.status) {
+        72 |         // Activar efectivo automÃ¡ticamente y asignar el monto total
+      > 73 |         handleStatusChange(cashMethod, true, totalAmount);
+           |         ^^^^^^^^^^^^^^^^^^ `handleStatusChange` accessed before it is declared
+        74 |       } else if (cashMethod && cashMethod.status && cashMethod.value === 0) {
+        75 |         // Si ya estÃ¡ activo pero sin valor, asignar el monto total
+        76 |         handleValueChange(cashMethod, totalAmount);
+        106 |   };
+        107 |
+      > 108 |   const handleStatusChange = (method, status, autoValue = null) => {
+            |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 109 |     let newValue = method.value;
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 110 |
+            â€¦
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 160 |     }
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 161 |   };
+            | ^^^^^ `handleStatusChange` is declared here
+        162 |
+        163 |   const handleValueChange = (method, newValue) => {
+        164 |     // Validar que el valor no sea negativo  react-hooks/immutability
 
-  const handlePrintPreorder = useCallback(async () => {
-    if (!printablePreorder) {
-      notification.warning({
-        message: 'No se puede imprimir la preventa',
-        description:
-          'Los datos de la preventa no están disponibles para imprimir.',
-      });
-      return;
-    }
+   [ERROR] Linea 76:9
+      Error: Cannot access variable before it is
 
-    const printableData =
-      printableInvoiceData ??
-      convertTimestampsToMillis(printablePreorder) ??
-      printablePreorder;
+      Contexto:
+      `handleValueChange` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        74 |       } else if (cashMethod && cashMethod.status && cashMethod.value === 0) {
+        75 |         // Si ya estÃ¡ activo pero sin valor, asignar el monto total
+      > 76 |         handleValueChange(cashMethod, totalAmount);
+           |         ^^^^^^^^^^^^^^^^^ `handleValueChange` accessed before it is declared
+        77 |       }
+        78 |     }
+        79 |   }, [paymentDetails.totalAmount, visiblePaymentMethods.length]); // Usar visiblePaymentMethods
+        161 |   };
+        162 |
+      > 163 |   const handleValueChange = (method, newValue) => {
+            |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 164 |     // Validar que el valor no sea negativo
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 165 |     const validValue = Math.max(0, Number(newValue) || 0);
+            â€¦
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 182 |     }
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 183 |   };
+            | ^^^^^ `handleValueChange` is declared here
+        184 |
+        185 |   const handleReferenceChange = (method, newReference) => {
+        186 |     dispatch(                       react-hooks/immutability
 
-    if (resolvedInvoiceType === 'template2') {
-      try {
-        await downloadInvoiceLetterPdf(business, printableData);
-      } catch (error) {
-        console.error('[PreSaleTable] downloadInvoiceLetterPdf failed', error);
-        notification.error({
-          message: 'Error al imprimir',
-          description:
-            error?.message || 'No se pudo generar el PDF de la preventa.',
-        });
-      }
-      return;
-    }
 
-    triggerPrint();
-  }, [
-    business,
-    convertTimestampsToMillis,
-    printableInvoiceData,
-    printablePreorder,
-    resolvedInvoiceType,
-    triggerPrint,
-  ]);
+FILE: useExpandedNodes.js
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\tree\hooks\useExpandedNodes.js
+   1 problema(s)
 
-  const convertToCart = useCallback(
-    (source) => {
-      const serializedPreorder = convertTimestampsToMillis(source);
-      dispatch(loadCart(serializedPreorder));
-      dispatch(setCartId());
-      const storedTaxReceiptType =
-        resolvePreorderTaxReceiptType(serializedPreorder);
-      if (storedTaxReceiptType) {
-        dispatch(selectTaxReceiptType(storedTaxReceiptType));
-      }
-      if (serializedPreorder?.client) {
-        dispatch(selectClientWithAuth(serializedPreorder.client));
-      }
-      return serializedPreorder;
-    },
-    [convertTimestampsToMillis, dispatch],
-  );
+   [ERROR] Linea 28:23
+      Error: Cannot access variable before it is
 
-  const handlePreloadPreorder = useCallback(() => {
-    if (!data) return;
+      Contexto:
+      `findNodeById` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        26 |       }
+        27 |       if (node.children?.length) {
+      > 28 |         const found = findNodeById(node.children, id);
+           |                       ^^^^^^^^^^^^ `findNodeById` accessed before it is declared
+        29 |         if (found) {
+        30 |           return found;
+        31 |         }
+        20 |   );
+        21 |
+      > 22 |   const findNodeById = useCallback((nodes, id) => {
+           |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 23 |     for (const node of nodes || []) {
+           | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 24 |       if (node.id === id) {
+           â€¦
+           | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 34 |     return null;
+           | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 35 |   }, []);
+           | ^^^^^^^^^^ `findNodeById` is declared here
+        36 |
+        37 |   const findAllChildrenIds = useCallback(
+        38 |     (nodeId) => {  react-hooks/immutability
 
-    const { isValid, message } = validateInvoiceCart(data);
-    if (!isValid) {
-      notification.warning({
-        message: 'No se pudo precargar la preventa',
-        description: message || 'Verifica el contenido antes de continuar.',
-      });
-      return;
-    }
 
-    const serializedPreorder = convertToCart(data);
-    const params = new URLSearchParams();
-    params.set('mode', 'preorder');
-    if (serializedPreorder?.id) {
-      params.set('preorderId', serializedPreorder.id);
-    }
-    params.set('preserveCart', '1');
+FILE: tableCells.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\pages\PreorderSale\components\PreSaleTable\tableCells.jsx
+   1 problema(s)
 
-    navigate({ pathname: '/sales', search: `?${params.toString()}` });
+   [ERROR] Linea 105:32
+      Error: Cannot access variable before it is
 
-    notification.success({
-      message: 'Preventa precargada',
-      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} en ventas.`,
-    });
-  }, [convertToCart, data, navigate]);
+      Contexto:
+      `convertTimestampsToMillis` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+        103 |     if (!obj || typeof obj !== 'object') return obj;
+        104 |     if (Array.isArray(obj)) {
+      > 105 |       return obj.map((item) => convertTimestampsToMillis(item));
+            |                                ^^^^^^^^^^^^^^^^^^^^^^^^^ `convertTimestampsToMillis` accessed before it is declared
+        106 |     }
+        107 |     const converted = {};
+        108 |     Object.keys(obj).forEach((key) => {
+        100 |   });
+        101 |
+      > 102 |   const convertTimestampsToMillis = useCallback((obj) => {
+            |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 103 |     if (!obj || typeof obj !== 'object') return obj;
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 104 |     if (Array.isArray(obj)) {
+            â€¦
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 124 |     return converted;
+            | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      > 125 |   }, []);
+            | ^^^^^^^^^^ `convertTimestampsToMillis` is declared here
+        126 |
+        127 |   const printableInvoiceData = useMemo(() => {
+        128 |     const source = printablePreorder || data;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/immutability
 
-  const handleInvoicePanelOpen = useCallback(() => {
-    if (!data) return;
 
-    const { isValid, message } = validateInvoiceCart(data);
-    if (isValid) {
-      convertToCart(data);
-      dispatch(toggleInvoicePanelOpen());
-    } else {
-      notification.error({
-        description: message,
-      });
-    }
-  }, [convertToCart, data, dispatch]);
-
-  const handleCancelPreorder = async () => {
-    try {
-      await fbCancelPreorder(user, data);
-      setIsCancelConfirmOpen(false);
-    } catch (error) {
-      notification.error({
-        message: 'No se pudo cancelar la preventa',
-        description: error?.message || 'Intenta nuevamente.',
-      });
-    }
-  };
-
-  const menuItems = [
-    {
-      key: 'view',
-      label: 'Ver',
-      onClick: () => setIsPreorderModalOpen(true),
-      icon: <EyeOutlined />,
-    },
-    {
-      key: 'preload',
-      label: 'Precargar en Ventas',
-      onClick: handlePreloadPreorder,
-      icon: <ShoppingCartOutlined />,
-    },
-    {
-      key: 'complete',
-      label: 'Completar preventa',
-      onClick: handleInvoicePanelOpen,
-      icon: icons.editingActions.complete,
-    },
-    {
-      key: 'print',
-      label: 'Imprimir',
-      onClick: handlePrintPreorder,
-      icon: <PrinterOutlined />,
-    },
-    {
-      key: 'cancel',
-      label: 'Cancelar',
-      onClick: () => setIsCancelConfirmOpen(true),
-      icon: icons.editingActions.cancel,
-      danger: true,
-    },
-  ];
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '10px',
-        alignItems: 'center',
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div
-        style={{ position: 'absolute', top: -9999, left: -9999 }}
-        aria-hidden="true"
-      >
-        <Invoice
-          ref={printRef}
-          data={printableInvoiceData || printablePreorder || data}
-          ignoreHidden
-        />
-      </div>
-      <Tooltip title="Precargar en Ventas">
-        <Button
-          icon={<ShoppingCartOutlined />}
-          onClick={(e) => {
-            e.stopPropagation();
-            handlePreloadPreorder();
-          }}
-        />
-      </Tooltip>
-      <Tooltip title="Completar preventa">
-        <Button
-          icon={icons.editingActions.complete}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleInvoicePanelOpen();
-          }}
-        />
-      </Tooltip>
-      <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-        <Button icon={<MoreOutlined />} onClick={(e) => e.stopPropagation()} />
-      </Dropdown>
-      <PreorderModal
-        preorder={data}
-        open={isPreorderModalOpen}
-        onCancel={() => setIsPreorderModalOpen(false)}
-      />
-      <ConfirmModal
-        open={isCancelConfirmOpen}
-        onConfirm={handleCancelPreorder}
-        onCancel={() => setIsCancelConfirmOpen(false)}
-        title="Cancelar Preorden"
-        message={`¿Estás seguro de que deseas cancelar la preorden ${data?.preorderDetails?.numberID} para el cliente ${data?.client?.name}?`}
-        confirmText="Cancelar Preorden"
-        cancelText="Volver"
-        danger
-        data={data?.preorderDetails?.numberID}
-      />
-    </div>
-  );
-};
+================================================================================
+ARCHIVOS MAS AFECTADOS
+================================================================================
+  * PaymentFields.jsx - 2 ocurrencias
+  * useExpandedNodes.js - 1 ocurrencias
+  * tableCells.jsx - 1 ocurrencias
+  * DeveloperModal.jsx - 1 ocurrencias
+  * DeveloperSessionHelper.jsx - 1 ocurrencias

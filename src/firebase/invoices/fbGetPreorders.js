@@ -33,6 +33,6 @@ export async function fbGetPreorders(user, callback) {
     return unsubscribe;
   } catch (error) {
     console.error('Error fetching preorders: ', error);
-    return () => {};
+    return undefined;
   }
 }

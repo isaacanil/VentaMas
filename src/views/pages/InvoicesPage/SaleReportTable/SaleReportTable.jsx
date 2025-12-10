@@ -16,7 +16,6 @@ import { addInvoice } from '../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../features/invoice/invoicePreviewSlice';
 import { useFbGetAccountReceivableByInvoice } from '../../../../firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
 import { downloadInvoiceLetterPdf } from '../../../../firebase/quotation/downloadQuotationPDF';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import {
   convertInvoiceDateToMillis,
   prepareInvoiceForEdit,
@@ -27,6 +26,8 @@ import { Invoice } from '../../../component/Invoice/components/Invoice/Invoice';
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
 import { Tag } from '../../../templates/system/Tag/Tag';
 import useInvoiceEditAuthorization from '../hooks/useInvoiceEditAuthorization.jsx';
+
+import { formatPrice } from '@/utils/format';
 
 const isInvoiceEditLocked = (invoice) => {
   const timestampMs = convertInvoiceDateToMillis(invoice?.date);
@@ -303,7 +304,7 @@ const columns = [
     Header: 'ITBIS',
     accessor: 'itbis',
     align: 'right',
-    cell: ({ value }) => useFormatPrice(value),
+    cell: ({ value }) => formatPrice(value),
     maxWidth: '1fr',
     minWidth: '100px',
   },
@@ -322,7 +323,7 @@ const columns = [
     maxWidth: '1fr',
     minWidth: '200px',
     cell: ({ value }) => {
-      const pendingLabel = useFormatPrice(value?.pending || 0);
+      const pendingLabel = formatPrice(value?.pending || 0);
 
       if (!value || (!value.total && !value.paid)) {
         return <Tag>Sin datos</Tag>;
@@ -345,7 +346,7 @@ const columns = [
     Header: 'Total',
     accessor: 'total',
     align: 'right',
-    cell: ({ value }) => useFormatPrice(value),
+    cell: ({ value }) => formatPrice(value),
     description: 'Monto total de la compra',
     maxWidth: '1fr',
     minWidth: '120px',
@@ -391,7 +392,7 @@ const SaleReportTable = ({ bills = [], searchTerm, loading }) => {
 
   const total = useMemo(
     () =>
-      useFormatPrice(
+      formatPrice(
         bills.reduce(
           (total, { data }) => total + Number(data?.totalPurchase?.value || 0),
           0,
@@ -498,9 +499,9 @@ const PendingChip = styled.span`
 
 const PendingTooltip = ({ value }) => (
   <div style={{ display: 'grid', gap: 4 }}>
-    <div>Pendiente: {useFormatPrice(value?.pending || 0)}</div>
-    <div>Abono: {useFormatPrice(value?.paid || 0)}</div>
-    <div>Total: {useFormatPrice(value?.total || 0)}</div>
+    <div>Pendiente: {formatPrice(value?.pending || 0)}</div>
+    <div>Abono: {formatPrice(value?.paid || 0)}</div>
+    <div>Total: {formatPrice(value?.total || 0)}</div>
   </div>
 );
 

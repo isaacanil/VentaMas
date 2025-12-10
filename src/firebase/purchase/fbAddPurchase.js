@@ -14,10 +14,6 @@ import { getNextID } from '../Tools/getNextID';
 
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 
-const _cleanLocalAttachments = (attachments = []) => {
-  return attachments.filter((attachment) => attachment.location !== 'local');
-};
-
 export const updateLocalAttachmentsWithRemoteURLs = (
   localAttachments,
   uploadedFiles,
@@ -53,7 +49,8 @@ export async function addPurchase({
   user,
   purchase,
   localFiles = [],
-  setLoading = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setLoading = () => { },
 }) {
   try {
     const id = nanoid();

@@ -5,11 +5,11 @@ import styled from 'styled-components';
 
 const { Typography } = ant;
 
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 export const BarCode = forwardRef(({ product }, ref) => {
-  const priceWithUnit = `${useFormatPrice(product?.pricing?.price)} / ${product?.weightDetail?.weightUnit}`;
-  const priceWithoutUnit = useFormatPrice(product?.pricing?.price);
+  const priceWithUnit = `${formatPrice(product?.pricing?.price)} / ${product?.weightDetail?.weightUnit}`;
+  const priceWithoutUnit = formatPrice(product?.pricing?.price);
   const price = product?.weightDetail?.isSoldByWeight
     ? priceWithUnit
     : priceWithoutUnit;

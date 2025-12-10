@@ -80,7 +80,7 @@ export const CashRegisterClosure = () => {
     if (!cashCount?.opening?.initialized) {
       navigate('/cash-reconciliation');
     }
-  }, [cashCount]);
+  }, [cashCount, navigate]);
 
   const handleCancel = async () => {
     if (cashCount.state === 'closing' || cashCount.state === 'open') {

@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { addProduct } from '../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
-import { getTotalPrice } from '../../../../utils/pricing';
+import { formatPrice } from '@/utils/format';../../../../utils/pricing';
 
 const { Modal, Input, Form, Button } = antd;
 
@@ -115,7 +114,7 @@ export const ProductWeightEntryModal = ({
           />
         </Form.Item>
         <Form.Item label="Precio Total">
-          <span className="ant-form-text">{useFormatPrice(totalPrice)}</span>
+          <span className="ant-form-text">{formatPrice(totalPrice)}</span>
         </Form.Item>
       </Form>
     </Modal>

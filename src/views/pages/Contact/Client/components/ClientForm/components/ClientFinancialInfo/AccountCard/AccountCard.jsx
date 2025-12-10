@@ -3,9 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
 import { formatDate } from '../../../../../../../../../utils/formatDate';
-import { formatPrice } from '../../../../../../../../../utils/formatPrice';
 
 import { Payment } from './components/Payment';
+
+import { formatPrice } from '@/utils/format';
+
 
 export const AccountCard = ({
   account,

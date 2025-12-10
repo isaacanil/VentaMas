@@ -16,17 +16,17 @@ type SessionBusiness = {
   taxId?: string | null;
 } | null;
 
-type InfoRowEntry = {
+interface InfoRowEntry {
   label: string;
   value: string | number;
-};
+}
 
-type SessionInfoModalProps = {
+interface SessionInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   user?: SessionUser;
   business?: SessionBusiness;
-};
+}
 
 export const SessionInfoModal = ({
   isOpen,

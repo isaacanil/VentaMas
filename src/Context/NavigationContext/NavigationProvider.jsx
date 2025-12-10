@@ -8,6 +8,7 @@ export const NavigationProvider = ({ children }) => {
   const [pathHistory, setPathHistory] = useState([]);
 
   useEffect(() => {
+    // Solo actualizar si la ruta ha cambiado realmente
     setPathHistory((prev) => {
       if (prev.length === 0 || prev[prev.length - 1] !== location.pathname) {
         return [...prev, location.pathname].slice(-10);

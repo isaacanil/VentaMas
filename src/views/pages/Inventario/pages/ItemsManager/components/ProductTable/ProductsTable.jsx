@@ -21,14 +21,15 @@ import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceip
 import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
 import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct';
 import { filterData } from '../../../../../../../hooks/search/useSearch';
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import { getTax, getTotalPrice } from '../../../../../../../utils/pricing';
 import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar';
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 const { Button, Dropdown } = antd;
 
@@ -93,7 +94,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '140px',
       cell: ({ value }) => (
         <StockIndicator
-          stock={useFormatNumber(value.stock)}
+          stock={formatNumber(value.stock)}
           trackInventory={value.trackInventory}
         ></StockIndicator>
       ),
@@ -105,7 +106,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       accessor: 'cost',
       minWidth: '120px',
       maxWidth: '0.4fr',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>,
+      cell: ({ value }) => <div>{formatPrice(value)}</div>,
     },
     {
       Header: 'Impuesto',
@@ -114,7 +115,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '120px',
       maxWidth: '0.4fr',
       accessor: 'tax',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>,
+      cell: ({ value }) => <div>{formatPrice(value)}</div>,
     },
     {
       Header: 'Precio',
@@ -130,11 +131,11 @@ export const ProductsTable = ({ products, searchTerm }) => {
         if (isSoldByWeight) {
           return (
             <div>
-              {useFormatPrice(price)} / {unit}
+              {formatPrice(price)} / {unit}
             </div>
           );
         }
-        return useFormatPrice(price);
+        return formatPrice(price);
       },
     },
     {
@@ -247,11 +248,11 @@ export const ProductsTable = ({ products, searchTerm }) => {
       />
       <FloatingTotals $hidden={isAtBottom || totalsDismissed}>
         <TotalsContainer>
-          <span>Stock: {useFormatNumber(totals.stock)}</span>
+          <span>Stock: {formatNumber(totals.stock)}</span>
           <Divider>|</Divider>
-          <span>Costo: {useFormatPrice(totals.cost)}</span>
+          <span>Costo: {formatPrice(totals.cost)}</span>
           <Divider>|</Divider>
-          <span>Precio lista: {useFormatPrice(totals.listPrice)}</span>
+          <span>Precio lista: {formatPrice(totals.listPrice)}</span>
           <CloseButton
             type="text"
             size="small"

@@ -3,16 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../constants/icons/icons';
-import { useFormatPrice } from '../../../hooks/useFormatPrice';
-
-export const ProductListSelected = ({
-  productsSelected,
-  handleDeleteProduct,
-  handleUpdateProduct,
-}) => {
-  const columns = [
-    {
-      title: 'Producto',
+import { formatPrice } from '@/utils/format';Producto',
       dataIndex: 'productName',
       key: 'productName',
 
@@ -58,7 +49,7 @@ export const ProductListSelected = ({
       title: 'Total',
       key: 'total',
       render: (_, record) =>
-        useFormatPrice(record.initialCost * record.newStock),
+        formatPrice(record.initialCost * record.newStock),
     },
     {
       title: 'Acciones',
@@ -86,7 +77,7 @@ export const ProductListSelected = ({
         footer={() => (
           <span>
             Total:{' '}
-            {useFormatPrice(
+            {formatPrice
               productsSelected.reduce(
                 (acc, item) => acc + item.initialCost * item.newStock,
                 0,
@@ -107,7 +98,7 @@ const Container = styled.div`
 //         <Container>
 //             <Head>
 //                 <h4>Lista de productos</h4>
-//                 <span>Total: {useFormatPrice(productsTotalPrice)}</span>
+//                 <span>Total: {formatPrice(productsTotalPrice)}</span>
 //             </Head>
 //             <Body>
 //                 {

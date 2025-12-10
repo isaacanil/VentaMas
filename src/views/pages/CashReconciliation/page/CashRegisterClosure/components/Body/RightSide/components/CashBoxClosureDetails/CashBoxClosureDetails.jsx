@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { useFormatNumber } from '../../../../../../../../../../hooks/useFormatNumber';
 import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
 import { CashCountMetaData } from '../../CashCountMetaData';
+
+import { formatNumber } from '@/utils/format';
 
 export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
   const cashCount = useSelector(selectCashCount);
@@ -23,13 +24,13 @@ export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
         <InputWithHorizontalLabel
           label={'Total Facturado'}
           readOnly
-          value={useFormatNumber(totalCharged)}
+          value={formatNumber(totalCharged)}
         />
         {totalReceivables > 0 && (
           <InputWithHorizontalLabel
             label={'Total Cobrado CxC'}
             readOnly
-            value={useFormatNumber(totalReceivables)}
+            value={formatNumber(totalReceivables)}
           />
         )}
         {totalExpenses > 0 && (
@@ -37,20 +38,20 @@ export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
             label={'Total Gastos'}
             readOnly
             themeColor="warning"
-            value={useFormatNumber(totalExpenses)}
+            value={formatNumber(totalExpenses)}
           />
         )}
         <InputWithHorizontalLabel
           label={'Total sistema'}
           readOnly
-          value={useFormatNumber(totalSystem)}
+          value={formatNumber(totalSystem)}
         />
         {totalDiscrepancy !== 0 && (
           <InputWithHorizontalLabel
             themeColor={totalDiscrepancy > 0 ? 'success' : 'danger'}
             readOnly
             label={totalDiscrepancy > 0 ? 'Sobrante' : 'Faltante'}
-            value={useFormatNumber(totalDiscrepancy)}
+            value={formatNumber(totalDiscrepancy)}
           />
         )}
       </Container>

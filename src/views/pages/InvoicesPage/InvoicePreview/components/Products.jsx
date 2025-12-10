@@ -2,7 +2,7 @@ import * as antd from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 const { Table } = antd;
 
@@ -41,14 +41,14 @@ const ProductTable = ({ products }) => {
       title: 'Precio Unitario',
       dataIndex: ['pricing', 'price'],
       key: 'unitPrice',
-      render: (price) => useFormatPrice(price) ?? 'N/A',
+      render: (price) => formatPrice(price) ?? 'N/A',
     },
     {
       title: 'Total',
       dataIndex: ['pricing', 'price'],
       key: 'total',
       render: (_, record) =>
-        useFormatPrice(record.pricing.price * record.amountToBuy) ?? 'N/A',
+        formatPrice(record.pricing.price * record.amountToBuy) ?? 'N/A',
     },
     // Agrega aquí más columnas si necesitas
   ];

@@ -91,9 +91,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
 
     // Solo buscar en la ubicación específica: account.accountData.client.id
     if (accounts && accounts.length > 0) {
-      for (let i = 0; i < accounts.length; i++) {
-        const account = accounts[i];
-
+      for (const account of accounts) {
         // Buscar directamente en la ubicación específica
         if (
           account.accountData &&

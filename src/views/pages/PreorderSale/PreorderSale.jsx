@@ -24,7 +24,8 @@ export const Preorder = () => {
 
   useEffect(() => {
     if (!user || !user.businessID) return;
-    let unsubscribe = () => {};
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    let unsubscribe = () => { };
     fbGetPreorders(user, setPreorders).then((unsub) => {
       unsubscribe = unsub;
     });

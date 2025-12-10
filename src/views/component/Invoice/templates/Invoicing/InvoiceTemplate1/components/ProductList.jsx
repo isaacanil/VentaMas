@@ -4,8 +4,6 @@ import styled from 'styled-components';
 
 import { SelectSettingCart } from '../../../../../../../features/cart/cartSlice';
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../features/updateProduct/updateProductSlice';
-import { separator } from '../../../../../../../hooks/separator';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import {
   getTax,
   getTotalPrice,
@@ -16,6 +14,9 @@ import { convertTimeToSpanish } from '../../../../../../component/modals/Product
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
+
+import { formatPrice as formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
 
 export const ProductList = ({ data }) => {
   const { products, NCF } = data;
@@ -35,7 +36,7 @@ export const ProductList = ({ data }) => {
                       <div>
                         {product?.weightDetail?.weight}{' '}
                         {product?.weightDetail?.weightUnit} X{' '}
-                        {useFormatPrice(
+                        {formatPrice(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
                             taxReceipt?.enabled,
@@ -91,7 +92,7 @@ export const ProductList = ({ data }) => {
                   <Row>
                     <InsuranceCoverage>
                       Cobertura de seguro: {product.insurance.mode} -{' '}
-                      {useFormatPrice(product.insurance.value)}
+                      {formatPrice(product.insurance.value)}
                     </InsuranceCoverage>
                   </Row>
                 )}
@@ -99,7 +100,7 @@ export const ProductList = ({ data }) => {
                   <Row>
                     <ProductDiscount>
                       Descuento: -
-                      {useFormatPrice(getProductIndividualDiscount(product))}(
+                      {formatPrice(getProductIndividualDiscount(product))}(
                       {product.discount.type === 'percentage'
                         ? `${product.discount.value}%`
                         : 'Monto fijo'}

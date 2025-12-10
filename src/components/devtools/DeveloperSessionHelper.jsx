@@ -133,6 +133,7 @@ export const DeveloperSessionHelper = () => {
 
   const handlePointerUp = useCallback(() => {
     window.removeEventListener('pointermove', handlePointerMove);
+    // Usar removeEventListener con una referencia, no self-reference
     window.removeEventListener('pointerup', handlePointerUp);
 
     const { moved } = dragState.current;
@@ -146,6 +147,7 @@ export const DeveloperSessionHelper = () => {
     if (!moved) {
       setIsOpen((prev) => !prev);
     }
+     
   }, [handlePointerMove]);
 
   const handlePointerDown = useCallback(

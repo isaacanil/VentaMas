@@ -10,7 +10,7 @@ export const Category = ({
   searchTerm = '',
   color = '#f2f2f2',
   selected = false,
-  onClick = () => {},
+  onClick,
   toggleFavorite,
 }) => {
   const [isHoverFavorite, setIsHoverFavorite] = useState(false);

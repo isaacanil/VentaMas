@@ -35,7 +35,6 @@ import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGet
 import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
 import { useFbGetCreditNoteApplications } from '../../../../hooks/creditNote/useFbGetCreditNoteApplications';
-import { formatPrice } from '../../../../utils/formatPrice';
 import { getTotalPrice, getTax } from '../../../../utils/pricing';
 
 import ClientSelector from './components/ClientSelector';
@@ -43,6 +42,8 @@ import { CreditNotePanel } from './components/CreditNotePanel';
 import InvoiceSelector from './components/InvoiceSelector';
 import { ProductList } from './components/ProductList';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
+
+import { formatPrice } from '@/utils/format';
 
 const { useBreakpoint } = Grid;
 

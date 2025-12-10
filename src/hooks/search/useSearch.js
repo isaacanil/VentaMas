@@ -11,8 +11,8 @@ const createSearchPredicate = (normalizedTerm) => {
 
   const searchInArray = (array, depth) => {
     if (depth > MAX_DEPTH) return false;
-    for (let i = 0; i < array.length; i++) {
-      if (searchInItem(array[i], depth + 1)) return true;
+    for (const item of array) {
+      if (searchInItem(item, depth + 1)) return true;
     }
     return false;
   };

@@ -10,7 +10,6 @@ import { Modal, Button, Tooltip } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../../../../utils/pricing';
 
 import {
@@ -20,6 +19,10 @@ import {
 } from './productDataUtils';
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { StyledProductTable } from './ProductTables.styles';
+
+import { formatPrice } from '@/utils/format';
+
+const totalPrice = (product) => getTotalPrice(product);
 
 export const ProductListModal = ({
   isVisible,
@@ -151,7 +154,7 @@ export const ProductListModal = ({
       width: 160,
       align: 'right',
       sorter: (a, b) => getTotalPrice(a) - getTotalPrice(b),
-      render: (text, record) => useFormatPrice(getTotalPrice(record)),
+      render: (text, record) => formatPrice(totalPrice(record)),
     },
     {
       title: '',

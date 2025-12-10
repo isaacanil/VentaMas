@@ -6,11 +6,12 @@ import { icons } from '../../../../../../../../../constants/icons/icons';
 import { changeProductPrice } from '../../../../../../../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../../../../../../../features/taxReceipt/taxReceiptSlice';
 import { useUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
 import {
   getPriceTotal,
   getPriceWithoutTax,
 } from '../../../../../../../../../utils/pricing';
+
+import { formatPrice } from '@/utils/format';
 
 export const PriceEditor = ({ item, onModalOpen }) => {
   const dispatch = useDispatch();
@@ -91,7 +92,7 @@ export const PriceEditor = ({ item, onModalOpen }) => {
       <PriceInput
         disabled={!canModifyPrice || item?.weightDetail?.isSoldByWeight}
         type="text"
-        value={isEditingPrice ? inputPrice : useFormatPrice(inputPrice)}
+        value={isEditingPrice ? inputPrice : formatPrice(inputPrice)}
         onChange={handlePriceChange}
         onBlur={handlePriceBlur}
         onFocus={handlePriceFocus}

@@ -1,4 +1,4 @@
-import { useFormatPrice } from "../../../../../../../../hooks/useFormatPrice";
+import { formatPrice } from '@/utils/format';
 
 export const options = {
     responsive: true,
@@ -24,7 +24,7 @@ export const options = {
                 label: function (context) {
                     let label = context.dataset.label || '';
                     if (label) {
-                        label += ": " + useFormatPrice(context.parsed.y);
+                        label += ": " + formatPrice(context.parsed.y);
                     }
                     return label;
                 }

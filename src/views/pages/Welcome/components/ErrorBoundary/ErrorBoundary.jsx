@@ -65,6 +65,7 @@ class ErrorBoundary extends React.Component {
               </Button>,
             ]}
           />
+          {/* eslint-disable-next-line no-undef */}
           {process.env.NODE_ENV === 'development' && (
             <ErrorDetails>
               <details style={{ whiteSpace: 'pre-wrap', marginTop: '20px' }}>

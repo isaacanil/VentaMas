@@ -4,9 +4,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { useFormatNumber } from '../../../../../../../../../../hooks/useFormatNumber';
 import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
 import { CashCountMetaData } from '../../CashCountMetaData';
+
+import { formatNumber } from '@/utils/format';
 
 export const TransactionSummary = ({ invoices, loading }) => {
   const cashCount = useSelector(selectCashCount);
@@ -22,19 +23,19 @@ export const TransactionSummary = ({ invoices, loading }) => {
           label={'Total Tarjeta'}
           readOnly
           type="subtitle"
-          value={useFormatNumber(totalCard)}
+          value={formatNumber(totalCard)}
         />
         <InputWithHorizontalLabel
           label={'Total Transferencia'}
           readOnly
           type="subtitle"
-          value={useFormatNumber(totalTransfer)}
+          value={formatNumber(totalTransfer)}
         />
         <InputWithHorizontalLabel
           label={'Total en caja'}
           type="subtitle"
           readOnly
-          value={useFormatNumber(totalRegister)}
+          value={formatNumber(totalRegister)}
         />
       </Container>
     </Spin>

@@ -15,9 +15,8 @@ import { db } from '../../firebase/firebaseconfig';
 
 export const getProductsWithBatchListener = (businessID, onData, onError) => {
   if (!businessID) {
-    const error = new Error('businessID no proporcionado');
-    onError(error);
-    return () => {}; // Retorna una función vacía si no hay businessID
+    onError(new Error('businessID no proporcionado'));
+    return undefined;
   }
 
   // Referencia a la colección de productos dentro del negocio específico

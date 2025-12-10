@@ -167,8 +167,7 @@ export const listenInsuranceBeneficiaries = ({
     console.warn(
       'No se pudo escuchar beneficiarios: datos de usuario no disponibles',
     );
-    // Retornamos una función de no-op para evitar errores en el unsubscribe
-    return () => {};
+    return undefined;
   }
   let queryRef = beneficiariesCollection;
   if (clientId) {

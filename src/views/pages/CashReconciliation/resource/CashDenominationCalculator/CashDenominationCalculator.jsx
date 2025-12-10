@@ -2,13 +2,14 @@ import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import styled from 'styled-components';
 
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
 
 import { BillRow } from './components/BillRow';
 import { OpenControllerSmall } from './OpenControllerSmall';
 import { OpenControllerWithMessage } from './OpenControllerWithMessage';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 export const CashDenominationCalculator = ({
   isExpanded = null,
@@ -88,7 +89,7 @@ export const CashDenominationCalculator = ({
           size={'small'}
           align={'right'}
           type={'title'}
-          value={useFormatNumber(
+          value={formatNumber(
             bills.reduce((acc, bill) => acc + Number(bill.quantity), 0),
           )}
         />
@@ -96,7 +97,7 @@ export const CashDenominationCalculator = ({
           size={'small'}
           type={'title'}
           align={'right'}
-          value={useFormatPrice(totalAmount)}
+          value={formatPrice(totalAmount)}
         />
       </TotalBills>
     </Container>

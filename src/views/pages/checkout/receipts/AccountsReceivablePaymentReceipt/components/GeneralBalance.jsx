@@ -4,8 +4,9 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { usePendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { Subtitle } from '../../../Style';
+
+import { formatPrice } from '@/utils/format';
 
 export const GeneralBalance = ({ data }) => {
   const user = useSelector(selectUser);
@@ -18,7 +19,7 @@ export const GeneralBalance = ({ data }) => {
   return (
     <Container>
       <Subtitle>Balance General</Subtitle>
-      <Subtitle>{useFormatPrice(pendingBalance)}</Subtitle>
+      <Subtitle>{formatPrice(pendingBalance)}</Subtitle>
     </Container>
   );
 };

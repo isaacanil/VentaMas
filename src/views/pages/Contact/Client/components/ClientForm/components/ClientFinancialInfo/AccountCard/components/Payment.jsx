@@ -6,7 +6,8 @@ import styled from 'styled-components';
 
 import { setAccountPayment } from '../../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
-import { formatPrice } from '../../../../../../../../../../utils/formatPrice';
+
+import { formatPrice } from '@/utils/format';
 
 const { Button } = antd;
 

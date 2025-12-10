@@ -6,8 +6,9 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { SelectTotalShoppingItems } from '../../../../../../../features/cart/cartSlice';
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber';
 import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
+
+import { formatNumber } from '@/utils/format';
 
 export const ProductCounter = ({
   productCount = 0,
@@ -15,13 +16,13 @@ export const ProductCounter = ({
   filterActive = false,
 }) => {
   const totalShoppingItems = useSelector(SelectTotalShoppingItems);
-  const formattedProductCount = useFormatNumber(productCount);
+  const formattedProductCount = formatNumber(productCount);
   const formattedCartItems = totalShoppingItems
-    ? useFormatNumber(totalShoppingItems)
+    ? formatNumber(totalShoppingItems)
     : null;
   const showStockBadge = filterActive && Number.isFinite(visibleStockTotal);
   const formattedVisibleStock = showStockBadge
-    ? useFormatNumber(visibleStockTotal)
+    ? formatNumber(visibleStockTotal)
     : null;
 
   return (

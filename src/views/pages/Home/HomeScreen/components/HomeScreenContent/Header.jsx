@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { getBills } from '../../../../../../firebase/firebaseconfig';
-import { getSalesForCurrentDay } from '../../../../../../hooks/getDailySales';
+
+import { getSalesForCurrentDay } from '@/utils/sales';
 // Obtener la fecha y hora actual
 const today = DateTime.local();
 
@@ -22,7 +23,7 @@ export const Header = () => {
   const saleQuantity = bills.length;
   return (
     <Container>
-      {/* {useFormatPrice(salesForCurrentDay)} */}
+      {/* {formatPrice(salesForCurrentDay)} */}
       {saleQuantity}
       {' salesforCurrent==>' + salesForCurrentDay}
       {'griw ==> ' + growthPercentage}

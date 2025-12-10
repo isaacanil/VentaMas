@@ -17,7 +17,6 @@ import styled from 'styled-components';
 import { icons } from '../../../../../../../constants/icons/icons';
 import { changeProductPrice } from '../../../../../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
 import { getTotalPrice } from '../../../../../../../utils/pricing';
 import { Counter } from '../../../../../../templates/system/Counter/Counter';
@@ -29,6 +28,8 @@ import { WeightInput } from './components/WeightInput/WeightInput';
 import { extraerPreciosConImpuesto } from './utils/priceUtils';
 
 import type { MenuProps } from 'antd';
+
+import { formatPrice } from '@/utils/format';
 
 type PriceType =
   | 'listPrice'
@@ -445,11 +446,11 @@ export const ProductCardForCart = ({
             <PriceContainer>
               {hasDiscount && (
                 <OriginalPrice>
-                  {useFormatPrice(basePriceWithTax)}
+                  {formatPrice(basePriceWithTax)}
                 </OriginalPrice>
               )}
               <Price $hasDiscount={hasDiscount}>
-                {useFormatPrice(finalPrice)}
+                {formatPrice(finalPrice)}
               </Price>
             </PriceContainer>
             <TopActions>

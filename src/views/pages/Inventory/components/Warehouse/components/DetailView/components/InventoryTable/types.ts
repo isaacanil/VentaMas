@@ -64,10 +64,10 @@ export interface DraftBatchOption {
   expirationDateMillis?: number | null;
 }
 
-export type ProductOption = {
+export interface ProductOption {
   value: string;
   label: string;
-};
+}
 
 export type ProductBatchMap = Map<
   string,

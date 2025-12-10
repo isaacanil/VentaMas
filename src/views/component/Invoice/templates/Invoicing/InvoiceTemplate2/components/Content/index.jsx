@@ -2,7 +2,8 @@ import { Table } from 'antd';
 import styled from 'styled-components';
 
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
+
+import { formatPrice } from '@/utils/format';
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -130,7 +131,7 @@ export default function Content({ data }) {
                   dataIndex: 'amountUsed',
                   key: 'amountUsed',
                   align: 'right',
-                  render: (amount) => useFormatPrice(amount),
+                  render: (amount) => formatPrice(amount),
                 },
               ]}
               dataSource={creditNotes}

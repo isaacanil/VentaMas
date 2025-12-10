@@ -32,7 +32,7 @@ import {
   formatPhoneNumber,
   unformatPhoneNumber,
   isValidPhoneNumber,
-} from '../../../../../../utils/format/format';
+} from '../../../../../../utils/format';
 import { DgiiSyncAlert } from '../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '../../../../../component/Rnc/RncPanel/RncPanel';
 

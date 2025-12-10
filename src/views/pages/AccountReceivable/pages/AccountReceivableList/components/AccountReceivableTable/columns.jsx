@@ -1,7 +1,8 @@
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import { getTimeElapsed } from '../../../../../../../hooks/useFormatTime';
 
 import AccountActionsCell from './AccountActionsCell';
+
+import { formatPrice } from '@/utils/format';
 
 export const getColumns = (isPharmacy) => {
   const baseColumns = [
@@ -46,7 +47,7 @@ export const getColumns = (isPharmacy) => {
       Header: 'Monto inicial',
       accessor: 'initialAmount',
       align: 'right',
-      cell: ({ value }) => useFormatPrice(value),
+      cell: ({ value }) => formatPrice(value),
       maxWidth: '1fr',
       minWidth: '120px',
     },
@@ -64,7 +65,7 @@ export const getColumns = (isPharmacy) => {
       Header: 'Total pagado',
       accessor: 'totalPaid',
       align: 'right',
-      cell: ({ value }) => useFormatPrice(value),
+      cell: ({ value }) => formatPrice(value),
       maxWidth: '1fr',
       minWidth: '120px',
     },
@@ -72,7 +73,7 @@ export const getColumns = (isPharmacy) => {
       Header: 'Balance',
       accessor: 'balance',
       align: 'right',
-      cell: ({ value }) => useFormatPrice(value),
+      cell: ({ value }) => formatPrice(value),
       maxWidth: '1fr',
       minWidth: '120px',
     },

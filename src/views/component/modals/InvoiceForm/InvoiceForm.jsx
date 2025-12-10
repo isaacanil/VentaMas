@@ -13,11 +13,12 @@ import {
 } from '../../../../features/invoice/invoiceFormSlice';
 import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { convertInvoiceDateToMillis } from '../../../../utils/invoice';
 
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
 import { Products } from './components/Products/Products';
+
+import { formatPrice } from '@/utils/format';
 
 export const InvoiceForm = () => {
   const [form] = Form.useForm();
@@ -185,8 +186,8 @@ export const InvoiceForm = () => {
             gap: 16,
           }}
         >
-          <div>Total: {useFormatPrice(invoice.totalPurchase.value)}</div>
-          <div>Itbis: {useFormatPrice(invoice.totalTaxes.value)}</div>
+          <div>Total: {formatPrice(invoice.totalPurchase.value)}</div>
+          <div>Itbis: {formatPrice(invoice.totalTaxes.value)}</div>
           <div>Items: {invoice.totalShoppingItems.value}</div>
         </div>,
 

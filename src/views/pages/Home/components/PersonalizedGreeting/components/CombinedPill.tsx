@@ -2,10 +2,10 @@ import styled from 'styled-components';
 
 import type { KeyboardEvent, JSX } from 'react';
 
-type CombinedPillProps = {
+interface CombinedPillProps {
   userName: string;
   onClick?: () => void;
-};
+}
 
 export const CombinedPill = ({
   userName,

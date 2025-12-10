@@ -21,12 +21,13 @@ import {
 import { calculateAmountPerInstallment } from '../../../../../../../../../../../utils/accountsReceivable/accountsReceivable';
 import { getMaxInstallments } from '../../../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
 import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
-import { formatPrice } from '../../../../../../../../../../../utils/formatPrice';
 import { calculateInvoiceChange } from '../../../../../../../../../../../utils/invoice';
 import { setNumPrecision } from '../../../../../../../../../../../utils/pricing';
 import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
 
 import usePaymentDates from './usePaymentDates';
+
+import { formatPrice } from '@/utils/format';
 
 const { Option } = Select;
 const { TextArea } = Input;

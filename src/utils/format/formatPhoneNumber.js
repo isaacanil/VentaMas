@@ -1,4 +1,4 @@
-export const useFormatPhoneNumber = (input = '') => {
+export const formatPhoneNumber = (input = '') => {
   // Intentar dividir los posibles números con delimitadores comunes (comas, espacios, puntos, etc.)
   const phoneNumbers = input
     .split(/[,;.\s]+/)
@@ -16,7 +16,7 @@ export const useFormatPhoneNumber = (input = '') => {
   }
 
   // Si todos tienen la misma longitud, intentar formatearlos
-  const formatPhoneNumber = (number) => {
+  const formatSinglePhoneNumber = (number) => {
     const digits = number.replace(/\D/g, ''); // Eliminar no numéricos para el formato
 
     // Formato para números con prefijo de país (+xx)
@@ -41,7 +41,7 @@ export const useFormatPhoneNumber = (input = '') => {
   };
 
   // Formatear los números encontrados
-  const formattedNumbers = phoneNumbers.map(formatPhoneNumber);
+  const formattedNumbers = phoneNumbers.map(formatSinglePhoneNumber);
 
   // Si hay múltiples números formateados correctamente
   if (formattedNumbers.length > 1) {

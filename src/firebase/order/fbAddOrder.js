@@ -46,7 +46,7 @@ export async function addOrder({
   user,
   order,
   localFiles = [],
-  setLoading = () => {},
+  setLoading,
 }) {
   if (!user || !user.businessID) return;
   try {
@@ -121,10 +121,10 @@ export async function addOrder({
     }
 
     await setDoc(ordersRef, data);
-    setLoading(false);
+    setLoading?.(false);
     return data;
   } catch (error) {
-    setLoading(false);
+    setLoading?.(false);
     console.error('Error in addPurchase:', error);
     throw error;
   }

@@ -5,9 +5,10 @@ import styled from 'styled-components';
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
 import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
-import { separator } from '../../../../../../hooks/separator';
 import { Button } from '../../../../../templates/system/Button/Button';
 import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/IngredientCard';
+
+import { separator } from '@/utils/number/number';
 
 export const IngredientList = ({ handleIngredientOpen }) => {
   const user = useSelector(selectUser);

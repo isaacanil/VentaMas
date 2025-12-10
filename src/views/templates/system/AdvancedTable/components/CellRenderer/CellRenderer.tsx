@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../utils/date/dateUtils';
 import { Badge } from '../../../../../component/Badge/Badge';
 import { BadgeDate } from '../../../../../component/Badge/BadgeDate';
@@ -12,6 +11,8 @@ import { ShowFiles } from '../../../../../component/ShowFileButton/ShowFileButto
 
 import type { CellType } from '../../types/ColumnTypes';
 import type { ImgHTMLAttributes, ReactNode } from 'react';
+
+import { formatPrice } from '@/utils/format';
 
 type FormatOption = 'price' | 'percentage' | 'currency';
 
@@ -50,7 +51,7 @@ const toText = (value: unknown): string => {
 const formatValue = (value: unknown, format?: FormatOption): string => {
   switch (format) {
     case 'price':
-      return useFormatPrice(toNumber(value));
+      return formatPrice(toNumber(value));
     case 'percentage':
       return `${toNumber(value).toFixed(2)}%`;
     case 'currency':

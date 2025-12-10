@@ -1,125 +1,49 @@
-import React, { Fragment, useState } from 'react';
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+﻿================================================================================
+REGLA: no-undef
+SEVERIDAD: error
+TOTAL DE PROBLEMAS: 7
+================================================================================
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { usePendingBalance } from '../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
-import {
-  getProductsPrice,
-  getProductsTax,
-  getTotalDiscount,
-} from '../../../../utils/pricing';
-import { Line, SubTitle } from '../Receipt';
-import { Paragraph, Spacing, Subtitle } from '../Style';
 
-import { Col } from './Table/Col';
-import { Row } from './Table/Row';
+FILE: fbGetProducts.js
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\products\fbGetProducts.js
+   2 problema(s)
 
-export const PaymentArea = ({ data }) => {
-  const [pendingBalance, setPendingBalance] = useState(0);
-  const user = useSelector(selectUser);
-  const businessID = user?.businessID;
-  const clientId = data?.client?.id;
-  const subtotal =
-    getProductsPrice(data?.products || []) +
-    getProductsTax(data?.products || []);
-  const discount = getTotalDiscount(subtotal, data?.discount?.value || 0);
-  const formatNumber = (num) => useFormatPrice(num, '');
+   [ERROR] Linea 360:7
+      'setStockIndexVersion' is not defined
 
-  usePendingBalance(businessID, clientId, setPendingBalance);
+   [ERROR] Linea 423:11
+      'setStockIndexVersion' is not defined
 
-  const paymentLabel = {
-    cash: 'Efectivo',
-    card: 'Tarjeta',
-    transfer: 'Tranferencia',
-  };
-  const items = [
-    {
-      label: 'ENVIO',
-      value1: null,
-      value2: formatNumber(data?.delivery?.value),
-      condition: data?.delivery?.status,
-    },
-    {
-      label: 'SUBTOTAL',
-      value2: formatNumber(subtotal),
-      condition: true,
-    },
-    {
-      label: 'DESCUENTO',
-      value2: formatNumber(discount),
-      condition: discount > 0,
-    },
-    ...(data?.paymentMethod
-      ?.filter((item) => item?.status === true)
-      .map((item) => ({
-        label: paymentLabel[item?.method],
-        value2: formatNumber(item?.value),
-        condition: true,
-      })) || []),
-    {
-      subtitle: 'TOTAL',
-      value1: formatNumber(data?.totalTaxes?.value),
-      value2: formatNumber(data?.totalPurchase?.value),
-      condition: true,
-      spacingEnd: true,
-      spacingStart: true,
-    },
-    {
-      label: data?.change?.value >= 0 ? 'CAMBIO' : 'FALTANTE',
-      value2: formatNumber(data?.change?.value),
-      condition: true,
-    },
-    {
-      label: 'BALANCE ACTUAL',
-      value2: formatNumber(pendingBalance),
-      condition: data?.change?.value < 0,
-    },
-  ];
-  return (
-    <Container>
-      {items.map((row, index) => (
-        <Item key={index} row={row} />
-      ))}
-    </Container>
-  );
-};
-const Item = ({
-  row: {
-    subtitle,
-    label,
-    value1,
-    value2,
-    condition,
-    textAlign,
-    spacingEnd,
-    spacingStart,
-    line,
-  },
-}) => {
-  return (
-    <Fragment>
-      {spacingStart && <Spacing />}
-      {condition && (
-        <Row cols="3">
-          {subtitle && <SubTitle>{subtitle} : </SubTitle>}
-          {label && <Paragraph>{label} : </Paragraph>}
-          <Col textAlign={textAlign || 'right'}>{value1}</Col>
 
-          {subtitle ? (
-            <Subtitle align={textAlign || 'right'}>{value2}</Subtitle>
-          ) : (
-            <Col textAlign={textAlign || 'right'}>{value2}</Col>
-          )}
-        </Row>
-      )}
-      {spacingEnd && <Spacing />}
-      {line && <Line />}
-    </Fragment>
-  );
-};
+FILE: ProductsTable.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\pages\OrderAndPurchase\PurchaseManagement\components\ProductsTable.jsx
+   2 problema(s)
 
-const Container = styled.div`
-  padding-top: 0.6em;
-`;
+   [ERROR] Linea 353:32
+      'unitCost' is not defined
+
+   [ERROR] Linea 363:15
+      'totalUnitCost' is not defined
+
+
+FILE: PaymentArea.jsx
+   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\pages\checkout\components\PaymentArea.jsx
+   3 problema(s)
+
+   [ERROR] Linea 21:5
+      'getProductsPrice' is not defined
+
+   [ERROR] Linea 22:5
+      'getProductsTax' is not defined
+
+   [ERROR] Linea 23:20
+      'getTotalDiscount' is not defined
+
+
+================================================================================
+ARCHIVOS MAS AFECTADOS
+================================================================================
+  * PaymentArea.jsx - 3 ocurrencias
+  * fbGetProducts.js - 2 ocurrencias
+  * ProductsTable.jsx - 2 ocurrencias

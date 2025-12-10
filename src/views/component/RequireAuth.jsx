@@ -12,7 +12,7 @@ export const RequireAuth = ({ children }) => {
     if (user === null) {
       navigate('/', { replace: true });
     }
-  }, [user]);
+  }, [user, navigate]);
 
   return user ? children : null;
 };

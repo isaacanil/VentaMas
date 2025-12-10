@@ -16,7 +16,7 @@ const DashboardShortcuts = lazy(() =>
   ),
 );
 
-type RootState = {
+interface RootState {
   user?: {
     user?:
     | {
@@ -25,7 +25,7 @@ type RootState = {
     | null
     | boolean;
   };
-};
+}
 
 // Memoized selector to extract user role
 const selectUserRole = (state: RootState): string | null | false => {

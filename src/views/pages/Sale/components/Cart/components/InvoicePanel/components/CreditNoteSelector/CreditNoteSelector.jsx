@@ -16,7 +16,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
-import { formatPrice } from '@/utils/formatPrice';
+import { formatPrice } from '@/utils/format';
 
 const { Title, Text } = Typography;
 

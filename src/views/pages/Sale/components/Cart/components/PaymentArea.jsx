@@ -10,9 +10,10 @@ import {
   setPaymentAmount,
   SelectPaymentValue,
 } from '../../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import CustomInput from '../../../../../templates/system/Inputs/CustomInput';
 import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
+
+import { formatPrice } from '@/utils/format';
 
 export const PaymentArea = () => {
   const dispatch = useDispatch();
@@ -81,15 +82,15 @@ export const PaymentArea = () => {
         <LeftSide>
           <Wrapper>
             <Label>Delivery:</Label>
-            {useFormatPrice(DeliveryRef.value)}
+            {formatPrice(DeliveryRef.value)}
           </Wrapper>
           <Wrapper>
             <Label>ITBIS:</Label>
-            {useFormatPrice(TaxesRef)}
+            {formatPrice(TaxesRef)}
           </Wrapper>
           <Wrapper>
             <Label>Cambio:</Label>
-            {useFormatPrice(ChangeRef)}
+            {formatPrice(ChangeRef)}
           </Wrapper>
         </LeftSide>
         <RightSide>

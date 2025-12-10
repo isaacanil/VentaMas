@@ -1,5 +1,5 @@
 import { MenuApp } from '@templates/MenuApp/MenuApp';
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -29,11 +29,7 @@ export default function WarehouseList() {
   const dispatch = useDispatch();
   const navigation = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const {
-    data: warehouses,
-    loading: _loading,
-    error: _error,
-  } = useListenWarehouses(); // Escucha los cambios en los almacenes
+  const { data: warehouses } = useListenWarehouses();
 
   const filteredWarehouses = useMemo(() => {
     return filterData(warehouses, searchTerm);

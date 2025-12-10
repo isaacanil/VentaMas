@@ -13,7 +13,7 @@ export const PaymentInfoModal: FC<PaymentInfoModalProps> = ({
   <Modal
     open={isOpen}
     footer={null}
-    onCancel={() => {}}
+    onCancel={handleClose}
     closable={false}
     maskClosable={false}
     keyboard={false}

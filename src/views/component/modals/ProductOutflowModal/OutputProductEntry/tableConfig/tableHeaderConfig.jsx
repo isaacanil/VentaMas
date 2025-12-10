@@ -10,8 +10,7 @@ export const tableHeaderColumns = ({ Group }) => {
   const currentQuantity = () => {
     const removed = productSelected?.currentRemovedQuantity;
     const stock = productSelected?.product?.stock;
-    stock - removed;
-    if (typeof (stock && removed) !== 'number') {
+    if (typeof stock !== 'number' || typeof removed !== 'number') {
       return 0;
     }
     return stock - removed;

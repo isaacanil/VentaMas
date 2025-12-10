@@ -6,10 +6,10 @@ import { fbGetAppVersion } from '../../../../../firebase/app/fbGetAppVersion';
 
 import type { JSX } from 'react';
 
-type FirestoreTimestamp = {
+interface FirestoreTimestamp {
   seconds: number;
   nanoseconds?: number;
-};
+}
 
 type AppVersionDoc = {
   version?: FirestoreTimestamp | null;
@@ -40,10 +40,10 @@ function timestampToVersion(timestamp?: FirestoreTimestamp | null): string {
   return `Versión ${day} de ${month} ${year}`;
 }
 
-type AppVersionBadgeProps = {
+interface AppVersionBadgeProps {
   showLabel?: boolean;
   className?: string;
-};
+}
 
 export const AppVersionBadge = ({
   showLabel = true,

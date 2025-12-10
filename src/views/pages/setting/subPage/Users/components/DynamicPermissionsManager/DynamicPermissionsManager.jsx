@@ -32,11 +32,22 @@ const DynamicPermissionsManager = ({
   // Verificar si el usuario actual puede gestionar permisos
   const canManagePermissions = abilities.can('manage', 'users');
 
+  const loadUserPermissions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const userPermissions = await getUserDynamicPermissions(userId, user);
+      setPermissions(userPermissions);
+    } catch (error) {
+      console.error('Error loading user permissions:', error);
+    }
+    setLoading(false);
+  }, [userId, user]);
+
   useEffect(() => {
     if (isOpen && userId) {
       loadUserPermissions();
     }
-  }, [isOpen, userId]);
+  }, [isOpen, userId, loadUserPermissions]);
 
   const availablePermissions = useMemo(
     () => getAvailablePermissionsForRole(userRole),
@@ -76,17 +87,6 @@ const DynamicPermissionsManager = ({
       permissions: groupedPermissions,
     }));
   }, [availablePermissions]);
-
-  const loadUserPermissions = async () => {
-    setLoading(true);
-    try {
-      const userPermissions = await getUserDynamicPermissions(userId, user);
-      setPermissions(userPermissions);
-    } catch (error) {
-      console.error('Error loading user permissions:', error);
-    }
-    setLoading(false);
-  };
 
   const isPermissionEnabled = useCallback(
     (permission) =>

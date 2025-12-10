@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useListenSaleUnits } from '../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import {
   getListPriceTotal,
   getTotalPrice,
 } from '../../../../../../utils/pricing';
 
 import { extraerPreciosConImpuesto } from './ProductCardForCart/utils/priceUtils';
+
+import { formatPrice } from '@/utils/format';
 
 // Estilos
 const ModalContainer = styled.div`
@@ -323,7 +324,7 @@ const PriceAndSaleUnitsModal = ({
               <p>{item?.name || 'Unidad por defecto'}</p>
               <p>
                 Precio:{' '}
-                {useFormatPrice(getListPriceTotal({ pricing: item?.pricing }))}
+                {formatPrice(getListPriceTotal({ pricing: item?.pricing }))}
               </p>
             </div>
           </SaleUnitCard>
@@ -343,7 +344,7 @@ const PriceAndSaleUnitsModal = ({
                     <p>{unit?.unitName}</p>
                     <p>
                       Precio:{' '}
-                      {useFormatPrice(
+                      {formatPrice(
                         getListPriceTotal({ pricing: unit?.pricing }),
                       )}
                     </p>
@@ -388,7 +389,7 @@ const PriceAndSaleUnitsModal = ({
                   onClick={() => handleSelectPrice(price)}
                 >
                   <span>
-                    {price.label}: {useFormatPrice(price.valueWithTax)}
+                    {price.label}: {formatPrice(price.valueWithTax)}
                   </span>
                 </PriceOption>
               ))}

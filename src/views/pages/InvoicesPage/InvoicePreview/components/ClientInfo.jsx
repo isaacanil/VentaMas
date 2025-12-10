@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber';
+import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
 import { InfoCard } from '../../../../templates/system/InfoCard/InfoCard';
 
 export const ClientInfoCard = ({ client }) => {
   const formattedPhoneNumber = client.tel
-    ? useFormatPhoneNumber(client.tel)
+    ? formatPhoneNumber(client.tel)
     : null;
   const [showFullAddress, setShowFullAddress] = useState(false);
 

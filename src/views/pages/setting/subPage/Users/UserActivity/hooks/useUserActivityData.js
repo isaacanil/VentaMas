@@ -118,7 +118,7 @@ export const useUserActivityData = ({
     return () => {
       try {
         unsubscribe();
-      } catch (e) {
+      } catch {
         // ignore cleanup errors
       }
     };

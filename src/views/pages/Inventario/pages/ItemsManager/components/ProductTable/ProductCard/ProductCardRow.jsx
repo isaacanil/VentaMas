@@ -10,12 +10,13 @@ import { openModalUpdateProd } from '../../../../../../../../features/modals/mod
 import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
 import useImageFallback from '../../../../../../../../hooks/image/useImageFallback';
 import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
-import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
 import {
   Button,
   ButtonGroup,
 } from '../../../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
+
+import { formatPrice } from '@/utils/format';
 
 export const ProductCardRow = ({ product, Col, Row }) => {
   const dispatch = useDispatch();
@@ -63,7 +64,7 @@ export const ProductCardRow = ({ product, Col, Row }) => {
         </Col>
         <Col position="right">
           <Item position="right">
-            <span>{useFormatPrice(product?.cost?.unit)}</span>
+            <span>{formatPrice(product?.cost?.unit)}</span>
           </Item>
         </Col>
         {/* <Item>
@@ -72,13 +73,13 @@ export const ProductCardRow = ({ product, Col, Row }) => {
         <Col position="right">
           <Item position="right">
             <span>
-              {useFormatPrice(product?.tax?.value * product?.cost?.unit)}
+              {formatPrice(product?.tax?.value * product?.cost?.unit)}
             </span>
           </Item>
         </Col>
         <Col position="right">
           <Item position="right">
-            <span>{useFormatPrice(product?.price?.unit)}</span>
+            <span>{formatPrice(product?.price?.unit)}</span>
           </Item>
         </Col>
         <Col position="right">

@@ -3,10 +3,10 @@ import styled from 'styled-components';
 
 import type { JSX } from 'react';
 
-type BusinessPillProps = {
+interface BusinessPillProps {
   logoUrl?: string | null;
   businessName?: string | null;
-};
+}
 
 export const BusinessPill = ({
   logoUrl,

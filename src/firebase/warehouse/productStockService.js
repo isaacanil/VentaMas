@@ -337,7 +337,8 @@ export const deleteProductStock = async ({
 
 // Escuchar en tiempo real todos los productos en stock filtrados por productId
 export const listenAllProductStock = (user, productId, callback) => {
-  const noOp = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noOp = () => { };
 
   if (!user || !productId || !callback) {
     console.warn('Missing required parameters in listenAllProductStock');
@@ -379,7 +380,8 @@ export const listenAllProductStock = (user, productId, callback) => {
 
 // Escuchar en tiempo real todos los productos en stock por ubicación
 export const listenAllProductStockByLocation = (user, location, callback) => {
-  const noOp = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noOp = () => { };
 
   if (!user || !location || !callback) {
     console.warn(

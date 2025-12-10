@@ -5,7 +5,8 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { setAccountPayment } from '../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { useFormatPrice } from '../../../../../../../../../hooks/useFormatPrice';
+
+import { formatPrice } from '@/utils/format';
 
 export const ClientBalanceInfo = ({ client, pendingBalance }) => {
   const dispatch = useDispatch();
@@ -38,7 +39,7 @@ export const ClientBalanceInfo = ({ client, pendingBalance }) => {
           <BalanceLabel>
             <span>Balance General</span>
           </BalanceLabel>
-          <BalanceValue>{useFormatPrice(pendingBalance)}</BalanceValue>
+          <BalanceValue>{formatPrice(pendingBalance)}</BalanceValue>
         </BalanceSection>
         <PaymentSection>
           <PaymentButton type="primary" onClick={handlePayment}>

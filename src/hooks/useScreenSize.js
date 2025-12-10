@@ -30,7 +30,7 @@ export const useScreenSize = (widthRef) => {
     return () => {
       window.removeEventListener('resize', handleResizeDebounced);
     };
-  }, [widthRef]);
+  }, [widthRef, getElementWidth]);
 
   return {
     width,

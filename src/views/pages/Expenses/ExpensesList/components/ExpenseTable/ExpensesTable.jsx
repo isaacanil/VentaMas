@@ -20,7 +20,6 @@ import { openExpenseFormModal } from '../../../../../../features/expense/expense
 import { toggleImageViewer } from '../../../../../../features/imageViewer/imageViewerSlice';
 import { fbDeleteExpense } from '../../../../../../firebase/expenses/Items/fbDeleteExpense';
 import { useFbGetExpenses } from '../../../../../../firebase/expenses/Items/useFbGetExpenses';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { convertMillisToDate } from '../../../../../../hooks/useFormatTime';
 import { truncateString } from '../../../../../../utils/text/truncateString';
 import { FilterBar } from '../../../../../component/FilterBar/FilterBar';
@@ -28,6 +27,8 @@ import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/Adv
 import { Button } from '../../../../../templates/system/Button/Button';
 import { EditDelBtns } from '../../../../../templates/system/Button/EditDelBtns/EditDelBtns';
 import { ExpenseChart } from '../ExpenseReport/ExpenseReport';
+
+import { formatPrice } from '@/utils/format';
 
 const FIREBASE_INDEX_LINK_REGEX =
   /(https:\/\/console\.firebase\.google\.com\/[^\s"'`]+)/i;
@@ -313,7 +314,7 @@ export const ExpensesTable = () => {
       accessor: 'amount',
       minWidth: '50px',
       maxWidth: '1fr',
-      cell: ({ value }) => useFormatPrice(value),
+      cell: ({ value }) => formatPrice(value)
     },
     {
       Header: 'Recibo',

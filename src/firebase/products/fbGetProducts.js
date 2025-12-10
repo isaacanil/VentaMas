@@ -6,7 +6,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import filter from 'lodash/filter';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
@@ -131,16 +131,18 @@ function filterProducts(
   }
 
   // Filtro disponibilidad de stock
-  if (stockAvailability === 'conStock') {
-    productsArray = filter(
-      productsArray,
-      (product) => (product.stock ?? 0) > 0,
-    );
-  } else if (stockAvailability === 'sinStock') {
-    productsArray = filter(
-      productsArray,
-      (product) => (product.stock ?? 0) === 0,
-    );
+  if (!serverApplied.stockAvailability) {
+    if (stockAvailability === 'conStock') {
+      productsArray = filter(
+        productsArray,
+        (product) => (product.stock ?? 0) > 0,
+      );
+    } else if (stockAvailability === 'sinStock') {
+      productsArray = filter(
+        productsArray,
+        (product) => (product.stock ?? 0) === 0,
+      );
+    }
   }
 
   // Filtro por requerimiento de stock
@@ -276,14 +278,13 @@ export const fbGetProducts = async (user) => {
   }
 };
 
-export function useGetProducts(
-  trackInventory = false,
-  contextKey = DEFAULT_FILTER_CONTEXT,
-) {
+export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   const [loading, setLoading] = useState(true);
   const [rawProducts, setRawProducts] = useState([]); // Productos sin filtrar desde Firebase
-  const [products, setProducts] = useState([]); // Productos filtrados para la UI
   const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [visibleStockTotal, setVisibleStockTotal] = useState(0);
+  const [stockIndexVersion, setStockIndexVersion] = useState(0);
 
   const user = useSelector(selectUser);
 
@@ -326,30 +327,23 @@ export function useGetProducts(
 
   const [warehouseStockIndex, setWarehouseStockIndex] = useState({});
   const [stockIndexReady, setStockIndexReady] = useState(false);
-  const [stockIndexVersion, setStockIndexVersion] = useState(0);
-  const [visibleStockTotal, setVisibleStockTotal] = useState(0);
-  const warehouseStockIndexRef = useRef({});
-
-  useEffect(() => {
-    warehouseStockIndexRef.current = warehouseStockIndex;
-  }, [warehouseStockIndex]);
 
   // Thresholds desde billing settings
   const settingsCart = useSelector(SelectSettingCart);
   const billing = settingsCart?.billing || {}; // reutilizamos estructura existente
-  const thresholds = {
+  const thresholds = useMemo(() => ({
     lowThreshold: Number.isFinite(billing?.stockLowThreshold)
       ? billing.stockLowThreshold
       : 20,
     criticalThreshold: Number.isFinite(billing?.stockCriticalThreshold)
       ? billing.stockCriticalThreshold
       : Math.min(
-          Number.isFinite(billing?.stockLowThreshold)
-            ? billing.stockLowThreshold
-            : 20,
-          10,
-        ),
-  };
+        Number.isFinite(billing?.stockLowThreshold)
+          ? billing.stockLowThreshold
+          : 20,
+        10,
+      ),
+  }), [billing]);
 
   const activeIngredients = useSelector(SelectActiveIngredients);
   const categories = useSelector(SelectCategories);
@@ -380,7 +374,6 @@ export function useGetProducts(
 
     setWarehouseStockIndex({});
     setStockIndexReady(false);
-    setVisibleStockTotal(0);
 
     const unsubscribes = selectedWarehouses.map((warehouseId) => {
       const lowerBound = warehouseId;
@@ -446,7 +439,7 @@ export function useGetProducts(
   const applyLocationFilter = useCallback(
     (sourceProducts = []) => {
       const base = Array.isArray(sourceProducts) ? sourceProducts : [];
-      const stockIndex = warehouseStockIndexRef.current || {};
+      const stockIndex = warehouseStockIndex || {};
       const sanitizedSelected = Array.isArray(selectedWarehouses)
         ? selectedWarehouses.filter(Boolean)
         : [];
@@ -486,7 +479,7 @@ export function useGetProducts(
 
       return result;
     },
-    [stockFilterActive, stockIndexReady, selectedWarehouses],
+    [stockFilterActive, stockIndexReady, selectedWarehouses, warehouseStockIndex],
   );
 
   // 1. Obtener TODOS los productos (Listener principal)
@@ -516,10 +509,11 @@ export function useGetProducts(
           return;
         }
         const productsArray = snapshot.docs.map((item) => {
-          let doc = item.data();
-          delete doc?.updatedAt;
-          delete doc?.createdAt;
-          delete doc?.createdBy;
+          const doc = item.data();
+          if (doc) {
+            const { updatedAt: _, createdAt: __, createdBy: ___, ...cleanDoc } = doc;
+            return cleanDoc;
+          }
           return doc;
         });
 
@@ -535,7 +529,7 @@ export function useGetProducts(
     );
 
     return () => unsubscribe();
-  }, [user?.businessID]);
+  }, [user?.businessID, user]);
 
   // 2. Aplicar filtros en memoria cuando cambian los rawProducts o los filtros
   useEffect(() => {
@@ -576,7 +570,7 @@ export function useGetProducts(
     processed = orderingProducts(processed, criterio, orden);
 
     // Ordenar custom al final (lógica original)
-    processed = processed.sort((a, _b) => (a?.custom === true ? -1 : 1));
+    processed = processed.sort((a) => (a?.custom === true ? -1 : 1));
 
     setProducts(processed);
 
@@ -604,8 +598,8 @@ export function useGetProducts(
     categoriesStatus,
     criterio,
     orden,
-    thresholds.lowThreshold,
-    thresholds.criticalThreshold,
+    thresholds,
+    stockIndexVersion,
   ]);
 
   const stockMeta = useMemo(

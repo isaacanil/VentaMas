@@ -120,11 +120,11 @@ export const ClientControl = () => {
       default:
         break;
     }
-  }, [mode]);
+  }, [mode, closeMenu]);
 
   useEffect(() => {
     dispatch(setClientInClientCart(client));
-  }, [client]);
+  }, [client, dispatch]);
 
   useEffect(() => {
     if (!client?.id) {

@@ -22,9 +22,7 @@ export const fbAddCategory = async (user, category) => {
     'categories',
     category.id,
   );
-  await setDoc(categoryRef, { category })
-    .then(() => {})
-    .catch((error) => {
-      console.error(error);
-    });
+  await setDoc(categoryRef, { category }).catch((error) => {
+    console.error(error);
+  });
 };

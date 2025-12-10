@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useBarcodeScanner = (products, fn) => {
-  let barcode = '';
+  const barcodeRef = useRef('');
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -14,10 +14,10 @@ export const useBarcodeScanner = (products, fn) => {
       }
 
       if (event.key === 'Enter') {
-        fn(products, barcode);
-        barcode = '';
+        fn(products, barcodeRef.current);
+        barcodeRef.current = '';
       } else {
-        barcode += event.key;
+        barcodeRef.current += event.key;
       }
     };
 
@@ -25,5 +25,5 @@ export const useBarcodeScanner = (products, fn) => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [products]);
+  }, [products, fn]);
 };

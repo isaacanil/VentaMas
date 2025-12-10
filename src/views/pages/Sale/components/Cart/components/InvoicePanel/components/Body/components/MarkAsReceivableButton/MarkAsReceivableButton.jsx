@@ -42,7 +42,7 @@ export const MarkAsReceivableButton = ({ creditLimit = null, setIsOpen }) => {
     if (!cartData.isAddedToReceivables || !creditLimit) {
       dispatch(resetAR());
     }
-  }, [cartData?.isAddedToReceivables, creditLimit]);
+  }, [cartData?.isAddedToReceivables, creditLimit, dispatch]);
 
   // useEffect(() => {
   //     const fetchInvoiceAvailableCount = async () => {

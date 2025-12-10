@@ -7,26 +7,40 @@ export const useGetChangelogs = () => {
   const [changelogs, setChangelogs] = useState([]);
   const [error, setError] = useState('');
   useEffect(() => {
+    let unsubscribe;
     try {
       const changelogsRef = collection(db, 'changelogs');
-      const unsubscribe = onSnapshot(changelogsRef, (snapshot) => {
-        const changelogArray = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          const createdAt = new Date(data?.changelog?.createdAt.seconds * 1000);
-          return {
-            ...data,
-            changelog: {
-              ...data.changelog,
-              createdAt: createdAt,
-            },
-          };
-        });
-        setChangelogs(changelogArray);
-      });
-      return () => unsubscribe();
-    } catch (error) {
-      setError(error);
+      unsubscribe = onSnapshot(
+        changelogsRef,
+        (snapshot) => {
+          const changelogArray = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            const createdAt = new Date(data?.changelog?.createdAt.seconds * 1000);
+            return {
+              ...data,
+              changelog: {
+                ...data.changelog,
+                createdAt: createdAt,
+              },
+            };
+          });
+          setChangelogs(changelogArray);
+        },
+        (err) => {
+          // Manejar error en el callback de onSnapshot
+          setError(err);
+        }
+      );
+    } catch (err) {
+      // Si hay error en la inicialización, manejarlo aquí
+      setError(err);
     }
+    
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
   return { changelogs, error };
 };

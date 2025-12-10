@@ -53,7 +53,7 @@ export const PaymentFields = () => {
         cashInputRef.current.select();
       }
     }
-  }, []);
+  }, [visiblePaymentMethods]);
 
   // Auto-rellenar efectivo si no hay ningún método de pago seleccionado
   useEffect(() => {

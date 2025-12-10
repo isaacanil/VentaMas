@@ -1,20 +1,20 @@
-type FbSignInOptions = {
+interface FbSignInOptions {
   name: string;
   password: string;
-};
+}
 
-export type FbSignInUser = {
+export interface FbSignInUser {
   id: string;
   displayName?: string | null;
   realName?: string | null;
   name?: string | null;
-};
+}
 
-export type FbSignInResult = {
+export interface FbSignInResult {
   user: FbSignInUser;
   session?: unknown;
   activeSessions: unknown[];
-};
+}
 
 export declare const fbSignIn: (
   user: FbSignInOptions,

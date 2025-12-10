@@ -58,7 +58,7 @@ export const MenuApp = ({
 
   useEffect(() => {
     dispatch(toggleOpenMenu(isOpenMenu));
-  }, [isOpenMenu]);
+  }, [isOpenMenu, dispatch]);
 
   const closeMenu = () => {
     setIsOpenMenu(false);

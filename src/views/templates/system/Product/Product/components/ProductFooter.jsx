@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatNumber } from '../../../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import {
   getAmountBackground,
   getAmountColor,
   getPriceColor,
 } from '../utils/stockTheme';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 // Styled components
 const FooterWrapper = styled.div`
@@ -93,7 +94,7 @@ export const ProductFooter = ({
   const hasValidStock =
     typeof stockValue === 'number' && !Number.isNaN(stockValue);
   const formattedStock =
-    hasValidStock && stockValue !== 0 ? useFormatNumber(stockValue) : '-';
+    hasValidStock && stockValue !== 0 ? formatNumber(stockValue) : '-';
 
   return (
     <FooterWrapper $imageHiddenRef={productState.imageHidden}>
@@ -107,7 +108,7 @@ export const ProductFooter = ({
           $hasStrictStock={product.restrictSaleWithoutStock}
         >
           {isProductInCart &&
-            `${useFormatNumber(productInCart.amountToBuy)} / `}
+            `${formatNumber(productInCart.amountToBuy)} / `}
           {formattedStock}
 
         </AmountToBuy>
@@ -123,7 +124,7 @@ export const ProductFooter = ({
             $isSelected={isProductInCart}
             $hasStrictStock={product.restrictSaleWithoutStock}
           >
-            {useFormatPrice(price)} / {product.weightDetail.weightUnit}
+            {formatPrice(price)} / {product.weightDetail.weightUnit}
           </Price>
         ) : (
           <Price
@@ -134,7 +135,7 @@ export const ProductFooter = ({
             $isSelected={isProductInCart}
             $hasStrictStock={product.restrictSaleWithoutStock}
           >
-            {useFormatPrice(price)}
+            {formatPrice(price)}
           </Price>
         )}
       </Group>

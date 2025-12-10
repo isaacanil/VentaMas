@@ -6,8 +6,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { useFbGetAccountReceivablePayments } from '../../../../../firebase/accountsReceivable/useFbGetAccountReceivablePayments';
-import { formatPrice } from '../../../../../utils/formatPrice';
 import { Payment } from '../../../Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
+
+import { formatPrice } from '@/utils/format';
 
 const { Panel } = Collapse;
 

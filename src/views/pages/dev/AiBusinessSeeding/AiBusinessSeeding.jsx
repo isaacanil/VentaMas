@@ -204,13 +204,6 @@ const Tag = styled.span`
   border-radius: 10px;
 `;
 
-const ActionPanel = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
-`;
-
 const CanvasHeader = styled.div`
   display: flex;
   align-items: center;
@@ -464,7 +457,7 @@ const AiBusinessSeeding = () => {
         label: <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold' }}>HABILIDADES</Text>,
         disabled: true,
     },
-    ...Object.values(ACTIONS).map((action, index) => ({
+    ...Object.values(ACTIONS).map((action, _index) => ({
         key: `action-${action.id}`,
         label: (
             <div 
@@ -603,7 +596,7 @@ const AiBusinessSeeding = () => {
                                   onChange={(e) => {
                                       try {
                                           setActionData(JSON.parse(e.target.value));
-                                      } catch (err) { /* ignore while typing */ }
+                                      } catch { /* ignore while typing */ }
                                   }} 
                               />
                               <Button 

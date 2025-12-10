@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useLocalFbGetExpenses } from '../../../../firebase/expenses/Items/useFbGetExpenses';
 import { fbGetInvoices } from '../../../../firebase/invoices/fbGetInvoices';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { getDateRange } from '../../../../utils/date/getDateRange';
 import { DISTRIBUTION_COLORS } from '../constants/utilityConstants';
 import {
@@ -12,6 +11,8 @@ import {
   getDistributionDetails,
 } from '../utils/metrics';
 import { computePreviousRange } from '../utils/range';
+
+import { formatPrice } from '@/utils/format';
 
 const rangesAreEqual = (a, b) =>
   Boolean(a?.startDate && a?.endDate && b?.startDate && b?.endDate) &&
@@ -140,7 +141,7 @@ export const useUtilityDashboard = () => {
       : loading || previousRangeLoading;
 
   const formatCurrency = useCallback(
-    (value) => useFormatPrice(value ?? 0, 'rd'),
+    (value) => formatPrice(value ?? 0, 'rd'),
     [],
   );
   const formatPercentageValue = useCallback(

@@ -9,8 +9,9 @@ import React, { useState, memo } from 'react';
 import styled, { css } from 'styled-components';
 
 import DateUtils from '../../../../../utils/date/dateUtils';
-import { formatPrice } from '../../../../../utils/formatPrice';
 import { getTotalPrice } from '../../../../../utils/pricing';
+
+import { formatPrice } from '@/utils/format';
 
 const CreditNotePanel = memo(
   ({ creditNote, onNavigateNote, isExpanded = false, isMobile = false }) => {

@@ -23,7 +23,7 @@ export const DatePicker = ({ setDates, dates, datesDefault }) => {
     if (datesDefault === 'today') {
       setDates(getDefaultDates());
     }
-  }, [datesDefault]);
+  }, [datesDefault, setDates]);
 
   const handleRangeChange = (dates) => {
     if (dates) {

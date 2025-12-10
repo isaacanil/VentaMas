@@ -3,9 +3,10 @@ import React from 'react';
 import { useLoaderData } from 'react-router-dom'; // Import useLoaderData
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
 import Typography from '../../../../templates/system/Typografy/Typografy';
+
+import { formatPrice } from '@/utils/format';
 
 // const { Header, Content } = Layout;
 
@@ -26,9 +27,9 @@ const AccountReceivableInfo = () => {
       label: 'Estado de la Cuenta:',
       value: ar.isClosed ? 'Cerrada' : 'Abierta',
     },
-    { label: 'Monto Total:', value: useFormatPrice(ar.totalReceivable) },
-    { label: 'Ultimo Monto Pagado:', value: useFormatPrice(ar.lastPayment) },
-    { label: 'Monto Pendiente:', value: useFormatPrice(ar.currentBalance) },
+    { label: 'Monto Total:', value: formatPrice(ar.totalReceivable) },
+    { label: 'Ultimo Monto Pagado:', value: formatPrice(ar.lastPayment) },
+    { label: 'Monto Pendiente:', value: formatPrice(ar.currentBalance) },
     { label: 'Fecha de Vencimiento:', value: formatDate(ar.paymentDate) },
   ];
 
@@ -71,7 +72,7 @@ const AccountReceivableInfo = () => {
                 .map((installment, index) => (
                   <tr key={installment.id}>
                     <Td>{index + 1}</Td>
-                    <Td>{useFormatPrice(installment.installmentAmount)}</Td>
+                    <Td>{formatPrice(installment.installmentAmount)}</Td>
                     <Td>{formatDate(installment.installmentDate)}</Td>
                     <Td>{installment.isActive ? 'Pendiente' : 'Pagada'}</Td>
                   </tr>

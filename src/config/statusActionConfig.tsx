@@ -16,10 +16,10 @@ export interface ConfigItem {
   text: string;
 }
 
-type ConfigSection = {
+interface ConfigSection {
   [key: string]: ConfigItem;
   default: ConfigItem;
-};
+}
 
 const CONFIG: Record<'statuses' | 'dates', ConfigSection> = {
   statuses: {
@@ -113,7 +113,7 @@ export const getDateStatusConfig = (status: string) =>
 
 export const getDateStatus = (
   date: dayjs.ConfigType,
-  statuses: Array<'overdue' | 'today' | 'warning' | 'upcoming' | 'onTime'> = [
+  statuses: ('overdue' | 'today' | 'warning' | 'upcoming' | 'onTime')[] = [
     'overdue',
     'today',
     'warning',

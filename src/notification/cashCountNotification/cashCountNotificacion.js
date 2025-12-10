@@ -7,7 +7,10 @@ class CashCountStrategy {
     this.dispatch = dispatch;
   }
 
-  handleConfirm() {}
+  // Método base para ser sobrescrito por subclases
+  handleConfirm() {
+    // Implementación base vacía - debe ser sobrescrita
+  }
 }
 
 // Estrategia para cuando no hay cuadre abierto

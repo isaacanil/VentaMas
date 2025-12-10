@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
 } from '../../../../../../utils/invoice';
 
 import { Items } from './Items';
+
+import { formatPrice } from '@/utils/format';
 
 export const Body = ({ data }) => {
   const delivery = data?.delivery;
@@ -25,7 +26,7 @@ export const Body = ({ data }) => {
       <OrderDetails>
         <Items
           label="Subtotal"
-          value={useFormatPrice(totalPurchaseWithoutTaxes?.value)}
+          value={formatPrice(totalPurchaseWithoutTaxes?.value)}
         />
 
         <Items
@@ -37,12 +38,12 @@ export const Body = ({ data }) => {
         <Items
           abbreviate={'Deliv'}
           label="Delivery"
-          value={useFormatPrice(delivery.value)}
+          value={formatPrice(delivery.value)}
           align={'center'}
         />
         <Items
           label="Itbis"
-          value={useFormatPrice(totalTaxes?.value)}
+          value={formatPrice(totalTaxes?.value)}
           align="right"
         />
       </OrderDetails>
@@ -51,7 +52,7 @@ export const Body = ({ data }) => {
         <Items value={paymentMethods} />
         <Items
           value={
-            <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+            <TotalAmount>{formatPrice(totalPurchase?.value)}</TotalAmount>
           }
         />
       </OrderTotal>

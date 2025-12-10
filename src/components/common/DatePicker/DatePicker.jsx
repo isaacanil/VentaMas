@@ -302,7 +302,7 @@ export const DatePicker = ({
               e.stopPropagation();
               handleClear(e, finalPresets);
             }}
-            onClick={() => {}}
+            onClick={undefined}
             {...props}
           />
         </div>

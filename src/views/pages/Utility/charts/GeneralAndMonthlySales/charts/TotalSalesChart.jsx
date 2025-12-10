@@ -2,7 +2,7 @@
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 const TotalSalesChart = ({ totalSales }) => {
   // Datos para el gráfico de barras
@@ -44,7 +44,7 @@ const TotalSalesChart = ({ totalSales }) => {
           label: function (context) {
             let label = context.dataset.label || '';
             if (label) {
-              label += ' ' + useFormatPrice(context.parsed.y);
+              label += ' ' + formatPrice(context.parsed.y);
             }
             return label;
           },

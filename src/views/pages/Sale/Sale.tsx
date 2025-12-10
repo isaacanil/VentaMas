@@ -44,7 +44,7 @@ import { ProductControlEfficient } from './components/ProductControl.jsx/Product
 import type { Dispatch, SetStateAction, JSX } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 
-type Product = {
+interface Product {
   barcode?: string;
   weightDetail?: {
     isSoldByWeight?: boolean;
@@ -54,9 +54,9 @@ type Product = {
   name?: string;
   isVisible?: boolean;
   [key: string]: unknown;
-};
+}
 
-type MenuAppProps = {
+interface MenuAppProps {
   data?: unknown;
   sectionName?: ReactNode;
   sectionNameIcon?: ReactNode;
@@ -68,23 +68,23 @@ type MenuAppProps = {
   showNotificationButton?: boolean;
   onBackClick?: () => void;
   onReportSaleOpen?: () => void;
-};
+}
 
-type CartSettings = {
+interface CartSettings {
   billing?: {
     billingMode?: string | null;
   } | null;
-};
+}
 
-type CartData = {
+interface CartData {
   type?: string | null;
-};
+}
 
-type ProductsResponse = {
+interface ProductsResponse {
   products: Product[];
   loading: boolean;
   stockMeta: Record<string, unknown>;
-};
+}
 
 const MenuAppComponent = memo(MenuApp) as ComponentType<MenuAppProps>;
 const ProductControlEfficientMemo = memo(ProductControlEfficient);
@@ -170,7 +170,7 @@ export const Sales = (): JSX.Element => {
     products,
     loading: productsLoading,
     stockMeta,
-  } = parseProductsResponse(useGetProducts(false, 'sales'));
+  } = parseProductsResponse(useGetProducts('sales'));
   const cartSettingsRaw: unknown = useSelector(SelectSettingCart);
   const cartSettings = isCartSettings(cartSettingsRaw)
     ? cartSettingsRaw

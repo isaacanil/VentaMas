@@ -73,7 +73,7 @@ export const fbListenCashCounts = (
   searchTerm,
   onLoad,
 ) => {
-  if (!user?.businessID) return () => {};
+  if (!user?.businessID) return undefined;
   const ref = collection(db, 'businesses', user.businessID, 'cashCounts');
 
   const startDateJS = convertToJSDate(dateRange?.startDate);

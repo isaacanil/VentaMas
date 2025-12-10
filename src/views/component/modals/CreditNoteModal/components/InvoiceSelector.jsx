@@ -6,8 +6,9 @@ import styled from 'styled-components';
 
 import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
 import DateUtils from '../../../../../utils/date/dateUtils';
-import { formatPrice } from '../../../../../utils/formatPrice';
 import { normalizeText } from '../../../../../utils/text';
+
+import { formatPrice } from '@/utils/format';
 
 /*
   Selector de Facturas

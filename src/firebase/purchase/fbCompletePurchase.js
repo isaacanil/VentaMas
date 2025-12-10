@@ -244,7 +244,8 @@ export const fbCompletePurchase = async ({
   user,
   purchase,
   localFiles = [],
-  setLoading = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setLoading = () => { },
   warehouseId = null,
 }) => {
   try {

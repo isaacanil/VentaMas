@@ -2,8 +2,6 @@ import {
   Timestamp,
   doc,
   getDoc,
-  increment,
-  setDoc,
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -11,75 +9,6 @@ import { deleteObject, ref } from 'firebase/storage';
 
 import { db, storage } from '../firebaseconfig';
 import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-
-const _saveCurrentPurchaseVersion = async (user, currentPurchase) => {
-  const purchaseId = currentPurchase.id;
-  const previousPurchaseRef = doc(
-    db,
-    'businesses',
-    user.businessID,
-    'previousPurchases',
-    purchaseId,
-  );
-
-  // Guardar la compra actual en la colección 'previousPurchases' con una marca de tiempo
-  await setDoc(previousPurchaseRef, {
-    data: { ...currentPurchase, savedAt: Timestamp.now() },
-  });
-};
-
-const _updateProductsStockFromReplenishments = async (
-  user,
-  newPurchase,
-  previousPurchase,
-) => {
-  // Maps para los reabastecimientos de la nueva y la versión anterior de la compra
-  const newReplenishmentsMap = new Map(
-    newPurchase.replenishments.map((item) => [item.id, item]),
-  );
-  const previousReplenishmentsMap = previousPurchase
-    ? new Map(previousPurchase.replenishments.map((item) => [item.id, item]))
-    : new Map();
-
-  for (const [productId, newReplenishment] of newReplenishmentsMap) {
-    // Processing new replenishment
-    if (previousReplenishmentsMap.has(productId)) {
-      const previousReplenishment = previousReplenishmentsMap.get(productId);
-      // Processing existing product replenishment
-      let _stockChange =
-        newReplenishment.newStock - previousReplenishment.newStock;
-      // Stock change calculated for existing product
-      // await updateProductStock(user, productId, stockChange);
-    } else {
-      // New product stock established
-      // await updateProductStock(user, productId, newReplenishment.newStock);
-    }
-  }
-
-  // Procesar los productos eliminados en la nueva compra
-  for (const [productId, previousReplenishment] of previousReplenishmentsMap) {
-    if (!newReplenishmentsMap.has(productId)) {
-      // Si un producto anterior ya no está en la nueva compra, reduce el stock
-      let _stockChange = -previousReplenishment.newStock;
-      // await updateProductStock(user, productId, stockChange);
-    }
-  }
-};
-
-const _updateProductStock = async (user, productId, stockChange) => {
-  // Realizar la actualización del stock del producto en la base de datos
-  // Updating product stock
-
-  const productsRef = doc(
-    db,
-    'businesses',
-    user.businessID,
-    'products',
-    productId,
-  );
-  // Usa 'increment' para ajustar el stock en lugar de establecer un nuevo valor directamente
-  await updateDoc(productsRef, { 'product.stock': increment(stockChange) });
-};
 
 const updateLocalAttachmentsWithRemoteURLs = (
   localAttachments,
@@ -130,7 +59,8 @@ export const fbUpdatePurchase = async ({
   user,
   purchase,
   localFiles = [],
-  setLoading = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setLoading = () => { },
 }) => {
   try {
     setLoading(true);

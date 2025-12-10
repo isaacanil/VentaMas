@@ -37,7 +37,7 @@ const items = [
 export const useGetWarehouseData = () => {
   const user = useSelector(selectUser);
   const memoizedUser = useMemo(() => user, [user]);
-  const memorizedItems = useMemo(() => items, [items]);
+  const memorizedItems = useMemo(() => items, []);
 
   const [data, setData] = useState({
     warehouses: [],

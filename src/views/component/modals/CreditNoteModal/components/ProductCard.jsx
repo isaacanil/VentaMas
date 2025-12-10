@@ -3,8 +3,9 @@ import { Card, Checkbox, InputNumber, Typography, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '../../../../../utils/formatPrice';
 import { getTotalPrice } from '../../../../../utils/pricing';
+
+import { formatPrice } from '@/utils/format';
 
 const { Text } = Typography;
 

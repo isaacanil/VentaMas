@@ -41,7 +41,7 @@ export const useFbGetOrders = () => {
       setOrders(orderArray);
     });
     return unsubscribe;
-  }, [user?.businessID]);
+  }, [user?.businessID, user]);
 
   return { orders };
 };

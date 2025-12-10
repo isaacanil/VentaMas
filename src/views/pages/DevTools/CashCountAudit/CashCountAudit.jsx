@@ -325,8 +325,6 @@ const CashCountAudit = () => {
       }));
   }, [selectedRun, autoRuns]);
 
-  const manualMode = mode === 'manual';
-
   const handleRunAuto = async () => {
     const biz = business || 'ALL';
     if (!business) setBusiness('ALL');
@@ -881,13 +879,6 @@ const Value = styled.span`
 
 const ErrorText = styled.span`
   color: #b91c1c;
-`;
-
-const HelperText = styled.span`
-  display: block;
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
 `;
 
 const HistoryCard = styled.div`

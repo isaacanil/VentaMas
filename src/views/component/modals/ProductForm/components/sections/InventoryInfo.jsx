@@ -1,5 +1,5 @@
-import * as ant from 'antd';
-import React, { useState } from 'react';
+import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { unitsOfMeasure } from '../../../../../../constants/unitsOfMeasure';
@@ -7,23 +7,20 @@ import { selectUpdateProductData } from '../../../../../../features/updateProduc
 
 import AdjustInventoryModal from './AdjustInventoryModal';
 
-const { Card, InputNumber, Row, Col, Select, Checkbox, Form } = ant;
-
-export const InventoryInfo = () => {
+export const InventoryInfo = ({ onSaveAdjustments }) => {
   const { product, status } = useSelector(selectUpdateProductData);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  // Placeholder hasta implementar acciones para mostrar el modal
-  const _showModal = () => {
-    setIsModalVisible(true);
-  };
 
-  // Cierra el modal de ajuste de inventario
   const closeModal = () => {
     setIsModalVisible(false);
   };
 
-  // Guarda los cambios de ajuste de inventario
-  const saveAdjustments = (_newStock, _newTotalUnit) => {};
+  const handleSaveAdjustments = (adjustments) => {
+    if (onSaveAdjustments) {
+      onSaveAdjustments(adjustments);
+    }
+    closeModal();
+  };
   return (
     <Card title="Gestión de Inventarios" id="part-2" size="small">
       <Row gutter={16}>
@@ -104,7 +101,7 @@ export const InventoryInfo = () => {
                         { type: 'number', message: 'Introducir un número.' }
                     ]}
                 >
-                   {product.totalUnits || useFormatNumber(product.stock * product.packSize)}
+                   {product.totalUnits || formatNumber(product.stock * product.packSize)}
                 </Form.Item>
                 <Form.Item
                     label="Ajustar Inventario"
@@ -160,7 +157,7 @@ export const InventoryInfo = () => {
           onClose={closeModal}
           stock={product?.stock}
           packSize={product?.packSize}
-          onSave={saveAdjustments}
+          onSave={handleSaveAdjustments}
         />
       </Row>
     </Card>

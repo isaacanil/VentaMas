@@ -1,24 +1,29 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '../../../../../../../features/cart/cartSlice';
-import { separator } from '../../../../../../../hooks/separator';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import {
   getTax,
   getTotalPrice,
   resetAmountToBuyForProduct,
-  getProductIndividualDiscount,
 } from '../../../../../../../utils/pricing';
 import { convertTimeToSpanish } from '../../../../../modals/ProductForm/components/sections/warranty.helpers';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
 
-export const ProductList = ({ data }) => {
+import { formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
+
+const productIndividualDiscount = (product) => {
+  if (!product?.discount?.value) return 0;
+  if (product.discount.type === 'percentage') {
+    const basePrice = getTotalPrice(product, false);
+    return (basePrice * product.discount.value) / 100;
+  }
+  return product.discount.value;
+};
+
+export const ProductList = ({ data, taxReceipt }) => {
   const { products, NCF } = data;
-  const { taxReceipt } = useSelector(SelectSettingCart);
   const getFullProductName = ({ name, measurement, footer }) =>
     `${name}${measurement ? ` Medida: [${measurement}]` : ''}${footer ? ` Pie: [${footer}]` : ''}`;
   return (
@@ -33,7 +38,7 @@ export const ProductList = ({ data }) => {
                       <div>
                         {product?.weightDetail?.weight}{' '}
                         {product?.weightDetail?.weightUnit} X{' '}
-                        {useFormatPrice(
+                        {formatPrice(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
                             taxReceipt?.enabled,
@@ -73,7 +78,7 @@ export const ProductList = ({ data }) => {
                   <Row>
                     <ProductDiscount>
                       Descuento: -
-                      {useFormatPrice(getProductIndividualDiscount(product))}(
+                      {formatPrice(productIndividualDiscount(product))}(
                       {product.discount.type === 'percentage'
                         ? `${product.discount.value}%`
                         : 'Monto fijo'}

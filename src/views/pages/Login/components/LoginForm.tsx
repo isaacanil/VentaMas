@@ -34,14 +34,14 @@ import {
 } from '@/firebase/Auth/fbAuthV2/fbSignIn/fbSignIn';
 import ROUTES_PATH from '@/routes/routesName';
 
-type LoginFormValues = {
+interface LoginFormValues {
   username: string;
   password: string;
-};
+}
 
-type LoginFormProps = {
+interface LoginFormProps {
   setLoading?: (value: boolean) => void;
-};
+}
 
 const ACCENT_COLOR = '#54c0a8';
 

@@ -181,7 +181,7 @@ export const useFiscalReceiptsAlerts = () => {
       isLoading: false,
       configLoaded: true,
     };
-  }, [taxReceipt, taxReceiptEnabled, isLoading, alertConfig, loadingConfig]); // Removed lastCheck from dependencies
+  }, [taxReceipt, taxReceiptEnabled, alertConfig, loadingConfig]);
 
   // Efecto para manejar notificaciones automáticas
   useEffect(() => {

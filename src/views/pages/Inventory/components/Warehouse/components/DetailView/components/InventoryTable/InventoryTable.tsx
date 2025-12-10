@@ -8,7 +8,7 @@ import {
 import { Dropdown, notification, type MenuProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
@@ -52,20 +52,20 @@ import type {
 
 dayjs.extend(customParseFormat);
 
-type AppUser = {
+interface AppUser {
   uid?: string;
   businessID?: string | null;
   [key: string]: unknown;
-};
+}
 
 const isAppUser = (value: unknown): value is AppUser =>
   typeof value === 'object' && value !== null;
 
-type ReconcileBatchStatusResult = {
+interface ReconcileBatchStatusResult {
   batchesUpdated?: number;
   activatedBatches?: number;
   deactivatedBatches?: number;
-};
+}
 
 export const InventoryTable: React.FC<InventoryTableProps> = ({
   currentNode,

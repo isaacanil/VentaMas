@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
 import { SelectInvoiceComment } from '../../../../../../features/cart/cartSlice';
 import { selectInsuranceData } from '../../../../../../features/insurance/insuranceSlice';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
 import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 
 import { Header } from './components/Header/Header';
@@ -15,6 +14,8 @@ import { Row } from './components/Table/Row';
 import { ThankYouMessage } from './components/ThankYouMessage';
 import { WarrantySignature } from './components/WarrantySignature';
 import { Container, HiddenPrintWrapper } from './Style';
+
+import { formatPrice } from '@/utils/format'
 
 export const InvoiceTemplate1 = React.forwardRef(
   ({ data, ignoreHidden }, ref) => {
@@ -53,7 +54,7 @@ export const InvoiceTemplate1 = React.forwardRef(
               {creditNotes.map((note, index) => (
                 <Row key={index} cols="2" space>
                   <P>NCF: {note.ncf}</P>
-                  <P align="right">{useFormatPrice(note.amountUsed)}</P>
+                  <P align="right">{formatPrice(note.amountUsed)}</P>
                 </Row>
               ))}
               <Line />

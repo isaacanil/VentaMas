@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-import { useFormatNumber } from '../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 export function Showcase({
   title,
@@ -23,11 +23,11 @@ export function Showcase({
   const formatting = (value) => {
     switch (valueType) {
       case 'number':
-        return useFormatNumber(value);
+        return formatNumber(value);
       case 'percent':
         return `${value}%`;
       case 'price':
-        return useFormatPrice(value);
+        return formatPrice(value);
       default:
     }
     return value;

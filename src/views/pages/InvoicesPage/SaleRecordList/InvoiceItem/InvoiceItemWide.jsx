@@ -14,7 +14,6 @@ import styled from 'styled-components';
 
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
@@ -23,6 +22,8 @@ import {
 import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
+
+import { formatPrice } from '@/utils/format';
 
 export const InvoiceItemWide = ({ data }) => {
   const componentToPrintRef = useRef(null);
@@ -118,7 +119,7 @@ export const InvoiceItemWide = ({ data }) => {
             <DetailItem>
               <DetailLabel>Subtotal:</DetailLabel>
               <DetailValue>
-                {useFormatPrice(totalPurchaseWithoutTaxes?.value)}
+                {formatPrice(totalPurchaseWithoutTaxes?.value)}
               </DetailValue>
             </DetailItem>
 
@@ -129,12 +130,12 @@ export const InvoiceItemWide = ({ data }) => {
 
             <DetailItem>
               <DetailLabel>Delivery:</DetailLabel>
-              <DetailValue>{useFormatPrice(delivery?.value || 0)}</DetailValue>
+              <DetailValue>{formatPrice(delivery?.value || 0)}</DetailValue>
             </DetailItem>
 
             <DetailItem>
               <DetailLabel>Itbis:</DetailLabel>
-              <DetailValue>{useFormatPrice(totalTaxes?.value)}</DetailValue>
+              <DetailValue>{formatPrice(totalTaxes?.value)}</DetailValue>
             </DetailItem>
 
             <DetailItem>
@@ -149,17 +150,17 @@ export const InvoiceItemWide = ({ data }) => {
           <LeftSection>
             <TotalsBlock>
               <TotalLabel>Total</TotalLabel>
-              <TotalAmount>{useFormatPrice(totalPurchase?.value)}</TotalAmount>
+              <TotalAmount>{formatPrice(totalPurchase?.value)}</TotalAmount>
               <PaymentProgress>
                 <PaymentLine>
                   <PaymentDot />
-                  <span>Pagado: {useFormatPrice(paymentInfo.paid)}</span>
+                  <span>Pagado: {formatPrice(paymentInfo.paid)}</span>
                 </PaymentLine>
                 {!isPaidInFull && (
                   <PaymentLine>
                     <PaymentDot $type="pending" />
                     <span>
-                      Pendiente: {useFormatPrice(paymentInfo.pending)}
+                      Pendiente: {formatPrice(paymentInfo.pending)}
                     </span>
                   </PaymentLine>
                 )}

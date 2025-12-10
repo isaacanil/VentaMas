@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createBrowserRouter, Outlet, useLocation, useNavigate } from 'react-router';
 
@@ -28,26 +28,32 @@ import { ModalManager } from './views/component/modals/ModalManager';
 import NotificationCenter from './views/templates/NotificationCenter/NotificationCenter';
 import { SessionManager } from './views/templates/system/SessionManager';
 
+// Tipo básico para User (ajustar según la estructura real)
+interface User {
+  uid?: string;
+  role?: string;
+  businessID?: string;
+  [key: string]: unknown;
+}
+
+type UserState = User | null | false;
+
 const NavigationTracker = () => {
   useNavigationTracker();
   return null;
 };
 
-const AppLayout = ({ blockContent }) => {
+const GlobalListeners = ({ user }: { user: UserState }) => {
   const dispatch = useDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const user = useSelector(selectUser);
 
   // Permitir selección de texto solo para desarrolladores
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const isDev = user?.role === 'dev';
+    const isDev = user && typeof user === 'object' && user.role === 'dev';
     document.body.style.userSelect = isDev ? 'auto' : 'none';
     return () => {
       document.body.style.userSelect = '';
     };
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  }, [user?.role]);
+  }, [user]);
 
   useTaxReceiptsFix();
   useDeveloperCommands();
@@ -59,15 +65,8 @@ const AppLayout = ({ blockContent }) => {
 
   useInitializeBillingSettings();
 
-  // scan({
-  //   enabled: true,
-  //   log: true,
-    
-  // });
-
   useLoadUserAbilities();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  useUserDocListener(user?.uid);
+  useUserDocListener(user && typeof user === 'object' ? user.uid : undefined);
   useRealtimePresence(user);
   useCurrentCashDrawer();
   useAbilities();
@@ -77,6 +76,10 @@ const AppLayout = ({ blockContent }) => {
   useBusinessDataConfig();
   useCheckForInternetConnection();
 
+  return <NavigationTracker />;
+};
+
+const AppLayout = memo(({ blockContent }: { blockContent: boolean }) => {
   if (blockContent) {
     return null;
   }
@@ -84,7 +87,6 @@ const AppLayout = ({ blockContent }) => {
   return (
     <ViewportContainer>
       <DeveloperSessionHelper />
-      <NavigationTracker />
       <SEO />
       <AnimatePresence mode="wait">
         <Outlet />
@@ -95,12 +97,13 @@ const AppLayout = ({ blockContent }) => {
       <NotificationCenter />
     </ViewportContainer>
   );
-};
+});
 
+AppLayout.displayName = 'AppLayout';
 
 const RootElement = () => {
   const { status: bootStatus, error: bootError } = useAutomaticLogin();
-  const user = useSelector(selectUser) as unknown;
+  const user = useSelector(selectUser) as UserState;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -121,11 +124,11 @@ const RootElement = () => {
   return (
     <>
       <SessionManager status={bootStatus} error={bootError as Error | null} />
+      <GlobalListeners user={user} />
       <AppLayout blockContent={blockContent} />
     </>
-  )
-}
-
+  );
+};
 
 export const router = createBrowserRouter([
   {

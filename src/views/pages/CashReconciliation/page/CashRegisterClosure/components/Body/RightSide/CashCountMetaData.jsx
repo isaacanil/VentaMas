@@ -59,7 +59,7 @@ export const CashCountMetaData = (
   cashCount,
   invoices = [],
   expenses = [],
-  arPayments = [],
+  _arPayments = [],
 ) => {
   if (!cashCount) return null;
 

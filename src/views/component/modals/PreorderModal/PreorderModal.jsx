@@ -9,203 +9,11 @@ import {
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
-const IconLabel = styled.span`
-  display: inline-flex;
-  gap: 0.4rem;
-  align-items: center;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  display: grid;
-  place-items: center;
-  background: rgb(0 0 0 / 35%);
-`;
-
-const ModalCard = styled.article`
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 16px;
-  width: min(720px, 92vw);
-  max-height: 90vh;
-  padding: 20px;
-  overflow: hidden;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 18px 36px rgb(15 23 42 / 18%);
-`;
-
-const ModalHeader = styled.header`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const ModalTitle = styled.h3`
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #0f172a;
-`;
-
-const CloseButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  color: #64748b;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #0f172a;
-  }
-`;
-
-const ModalBody = styled.div`
-  display: grid;
-  gap: 14px;
-  align-content: flex-start;
-  max-height: calc(90vh - 110px);
-  padding-right: 8px;
-  overflow-y: auto;
-`;
-
-const Section = styled.section`
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-  text-align: left;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-`;
-
-const SectionTitle = styled.h4`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #0f172a;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const ToggleButton = styled.button`
-  display: inline-flex;
-  gap: 0.35rem;
-  align-items: center;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #1d4ed8;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid #cbd5f5;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #eff6ff;
-    border-color: #93c5fd;
-  }
-`;
-
-const StatusBadge = styled.span`
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: ${({ $tone }) => $tone};
-  background: ${({ $tone }) => `${$tone}1f`};
-  border-radius: 999px;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  color: #334155;
-  text-align: left;
-`;
-
-const InfoLabel = styled.span`
-  font-weight: 500;
-  color: #0f172a;
-`;
-
-const ProductsTable = styled.table`
-  width: 100%;
-  font-size: 0.85rem;
-  border-collapse: collapse;
-
-  thead th {
-    padding: 6px 10px;
-    font-weight: 600;
-    color: #475569;
-    text-align: left;
-  }
-
-  tbody tr {
-    border-top: 1px solid #e2e8f0;
-  }
-
-  tbody td {
-    padding: 8px 10px;
-    vertical-align: top;
-    color: #1f2937;
-    text-align: left;
-  }
-
-  tbody td:last-child,
-  thead th:last-child {
-    text-align: right;
-  }
-`;
-
-const PaymentRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  color: #1f2937;
-`;
-
-const PaymentTotal = styled(PaymentRow)`
-  margin-top: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-`;
-
-const Separator = styled.hr`
-  margin: 4px 0;
-  border: none;
-  border-top: 1px dashed #cbd5f5;
-`;
-
-export default function PreorderModal({ preorder, open, onCancel }) {
+export const PreorderModal = ({ preorder, visible, isReady, onCancel }) => {
   const [isClientExpanded, setIsClientExpanded] = useState(false);
-  const isReady = Boolean(preorder);
-  const visible = open ?? false;
-  const status = preorder?.status ?? '';
+  const status = preorder?.preorderDetails?.status;
   const products = preorder?.products ?? [];
   const totalPurchaseValue = Number(preorder?.totalPurchase?.value ?? 0);
   const deliveryStatus = Boolean(preorder?.delivery?.status);
@@ -341,7 +149,7 @@ export default function PreorderModal({ preorder, open, onCancel }) {
                         <td>{item?.amountToBuy ?? 0}</td>
                         <td>{item?.size || 'N/A'}</td>
                         <td>
-                          {useFormatPrice(Number(item?.pricing?.price ?? 0))}
+                          {formatPrice(Number(item?.pricing?.price ?? 0))}
                         </td>
                       </tr>
                     ))}
@@ -355,18 +163,18 @@ export default function PreorderModal({ preorder, open, onCancel }) {
                 </SectionTitle>
                 <PaymentRow>
                   <span>Subtotal</span>
-                  <span>{useFormatPrice(subtotalValue)}</span>
+                  <span>{formatPrice(subtotalValue)}</span>
                 </PaymentRow>
                 {deliveryStatus && (
                   <PaymentRow>
                     <span>Entrega</span>
-                    <span>{useFormatPrice(deliveryValue)}</span>
+                    <span>{formatPrice(deliveryValue)}</span>
                   </PaymentRow>
                 )}
                 <Separator />
                 <PaymentTotal>
                   <span>Total</span>
-                  <span>{useFormatPrice(totalPurchaseValue)}</span>
+                  <span>{formatPrice(totalPurchaseValue)}</span>
                 </PaymentTotal>
               </Section>
             </ModalBody>
@@ -376,3 +184,181 @@ export default function PreorderModal({ preorder, open, onCancel }) {
     </>
   );
 }
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+`;
+
+const IconLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #6b7280;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1f2937;
+  }
+`;
+
+const ModalBody = styled.div`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const StatusBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: ${(props) => props.$tone || '#475569'};
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SectionTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1d4ed8;
+  }
+`;
+
+const InfoGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 600;
+  color: #1f2937;
+`;
+
+const ProductsTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th {
+    text-align: left;
+    padding: 8px;
+    background: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  td {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #1f2937;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+`;
+
+const PaymentRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #374151;
+`;
+
+const Separator = styled.hr`
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 8px 0;
+`;
+
+const PaymentTotal = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+`;

@@ -4,13 +4,7 @@ import styled from 'styled-components';
 
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { usePendingBalance } from '../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import {
-  getProductsPrice,
-  getProductsTax,
-  getTotalDiscount,
-  getProductsIndividualDiscounts,
-} from '../../../../../../../utils/pricing';
+import { formatPrice } from '@/utils/format';../../../../../../../utils/pricing';
 import { Line, SubTitle } from '../InvoiceTemplate1';
 import { Paragraph, Spacing, Subtitle } from '../Style';
 
@@ -33,7 +27,7 @@ export const PaymentArea = ({ data }) => {
     data?.products || [],
   );
   const hasIndividualDiscounts = individualDiscounts > 0;
-  const formatNumber = (num) => useFormatPrice(num, '');
+  const formatNumber = (num) => formatPrice(num, '');
 
   usePendingBalance(businessID, clientId, setPendingBalance);
 

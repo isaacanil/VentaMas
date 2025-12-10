@@ -3,8 +3,9 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { SelectTotalShoppingItems } from '../../../../../features/cart/cartSlice';
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber';
 import { AnimatedNumber } from '../../../../templates/system/AnimatedNumber/AnimatedNumber';
+
+import { formatNumber } from '@/utils/format';
 
 export const ShoppingItemsCounter = ({ products }) => {
   const productLength = products?.length || 0;
@@ -14,11 +15,11 @@ export const ShoppingItemsCounter = ({ products }) => {
     <Container>
       {totalShoppingItems ? (
         <>
-          <AnimatedNumber value={`${useFormatNumber(totalShoppingItems)}`} />
+          <AnimatedNumber value={`${formatNumber(totalShoppingItems)}`} />
           <Separator>/</Separator>
         </>
       ) : null}
-      <AnimatedNumber value={useFormatNumber(productLength)} />
+      <AnimatedNumber value={formatNumber(productLength)} />
     </Container>
   );
 };

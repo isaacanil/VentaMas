@@ -15,11 +15,11 @@ type BusinessInfo = {
   [key: string]: unknown;
 } | null;
 
-type BusinessInfoModalProps = {
+interface BusinessInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   business?: BusinessInfo;
-};
+}
 
 export const BusinessInfoModal = ({
   isOpen,

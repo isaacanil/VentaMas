@@ -21,7 +21,7 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
 
   useEffect(() => {
     fbGetCustomProduct(user, setProduct);
-  }, []);
+  }, [user]);
 
   const [ingredient, setIngredient] = useState({
     name: '',

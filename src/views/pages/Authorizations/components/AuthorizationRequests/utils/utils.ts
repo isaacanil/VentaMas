@@ -7,9 +7,7 @@ import {
 
 import type { AuthorizationRequest, ModuleMeta } from '../types';
 
-interface MetadataMap {
-  [key: string]: ModuleMeta;
-}
+type MetadataMap = Record<string, ModuleMeta>;
 
 const LEGACY_COLLECTION_KEY = 'invoiceEditAuthorizations';
 

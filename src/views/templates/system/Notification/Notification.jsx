@@ -47,7 +47,7 @@ export const Notification = () => {
         handleClose();
       }, getTimerByType(6000));
     }
-  }, [visible, dispatch]);
+  }, [visible, dispatch, handleClose]);
 
   useEffect(() => {
     if (type) {

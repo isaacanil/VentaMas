@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { fbAddClient } from '../../firebase/client/fbAddClient';
 import { fbUpdateClient } from '../../firebase/client/fbUpdateClient';
-import { useCompareObjectsInState } from '../../hooks/useCompareObject';
+import { compareObjectsByJSON } from '../../utils/object/compareObjects';
 import { fetchInsuranceAuthByClientId } from '../insurance/insuranceAuthSlice';
 
 import { CLIENT_MODE_BAR } from './clientMode';
@@ -102,7 +102,7 @@ export const clientSlice = createSlice({
       if (
         state?.copyClient !== null &&
         state?.copyClient?.id === state?.client?.id &&
-        !useCompareObjectsInState(state?.client, state?.copyClient)
+        !compareObjectsByJSON(state?.client, state?.copyClient)
       ) {
         fbUpdateClient(user, state.client);
         return;

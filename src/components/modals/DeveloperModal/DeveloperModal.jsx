@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -153,10 +153,6 @@ export const DeveloperModal = () => {
     setOriginalItems([]);
     setCommandInput(''); // Limpiar el input al salir del modo selección
 
-    // Limpiar las funciones globales para evitar memory leaks
-    window.selectItem = undefined;
-    window.confirmSelection = undefined;
-
     // Enfocar el input después de salir del modo selección
     setTimeout(() => {
       const input = document.querySelector('.console-terminal input');
@@ -165,6 +161,14 @@ export const DeveloperModal = () => {
       }
     }, 100);
   };
+  
+  // Limpiar las funciones globales cuando se sale del modo selección
+  useEffect(() => {
+    if (!selectionMode.active) {
+      window.selectItem = undefined;
+      window.confirmSelection = undefined;
+    }
+  }, [selectionMode.active]);
   const handleSelectionConfirm = () => {
     const { items, selectedIndex, onSelect } = selectionMode;
     const selectedItem = items[selectedIndex];
@@ -262,50 +266,10 @@ export const DeveloperModal = () => {
     if (modalData.isOpen && !isDeveloper) {
       dispatch(toggleDeveloperModal());
     }
-  }, [modalData.isOpen, isDeveloper, dispatch]); // Agregar listener global solo para ESC cuando estamos en modo selección
-  useEffect(() => {
-    const handleGlobalKeyDown = (e) => {
-      // Solo manejar ESC globalmente si el modal está abierto
-      if (modalData.isOpen) {
-        handleKeyDown(e);
-      }
-    };
-
-    if (modalData.isOpen) {
-      document.addEventListener('keydown', handleGlobalKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleGlobalKeyDown);
-    };
-  }, [modalData.isOpen]);
-
-  // Si no es desarrollador, no renderizar nada
-  if (!isDeveloper) return null;
-
-  // Cerrar el modal
-  const handleClose = () => {
-    dispatch(toggleDeveloperModal());
-  };
-
-  const triggerCommandExecution = (command) => {
-    const commandText = command?.trim();
-    if (!commandText || !commandProcessorRef.current) return;
-
-    const executeCommand = async () => {
-      const result =
-        await commandProcessorRef.current.executeCommand(commandText);
-
-      if (result && result.clearConsole) {
-        setConsoleOutput([]);
-      }
-    };
-
-    executeCommand();
-  };
-
-  // Manejar entrada de teclado
-  const handleKeyDown = (e) => {
+  }, [modalData.isOpen, isDeveloper, dispatch]); 
+  
+  // Manejar entrada de teclado - DEBE ESTAR ANTES del useEffect que lo usa
+  const handleKeyDown = useCallback((e) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
     if (selectionMode.active) {
       if (e.key === 'Escape') {
@@ -409,7 +373,50 @@ export const DeveloperModal = () => {
       e.preventDefault();
       setConsoleOutput([]);
     }
+  }, [selectionMode.active, showAutoComplete, autoCompleteSuggestions, autoCompleteSelectedIndex, commandInput]);
+  
+  // Agregar listener global solo para ESC cuando estamos en modo selección
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      // Solo manejar ESC globalmente si el modal está abierto
+      if (modalData.isOpen) {
+        handleKeyDown(e);
+      }
+    };
+
+    if (modalData.isOpen) {
+      document.addEventListener('keydown', handleGlobalKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [modalData.isOpen, handleKeyDown]);
+
+  // Si no es desarrollador, no renderizar nada
+  if (!isDeveloper) return null;
+
+  // Cerrar el modal
+  const handleClose = () => {
+    dispatch(toggleDeveloperModal());
   };
+
+  const triggerCommandExecution = (command) => {
+    const commandText = command?.trim();
+    if (!commandText || !commandProcessorRef.current) return;
+
+    const executeCommand = async () => {
+      const result =
+        await commandProcessorRef.current.executeCommand(commandText);
+
+      if (result && result.clearConsole) {
+        setConsoleOutput([]);
+      }
+    };
+
+    executeCommand();
+  };
+
   // Texto de bienvenida de la consola
   const welcomeText = `
 VentaMax Dev Console [Versión 1.5.0]

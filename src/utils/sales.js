@@ -1,6 +1,12 @@
 import { DateTime } from 'luxon';
-import { useEffect, useState } from 'react';
 
+/**
+ * Calcula ventas para un rango de fechas dado
+ * @param {Array} transactions - Array de transacciones
+ * @param {number} startDate - Fecha de inicio en milisegundos
+ * @param {number} endDate - Fecha de fin en milisegundos
+ * @returns {number} Total de ventas en el rango
+ */
 const calculateSalesForDateRange = (transactions, startDate, endDate) => {
   return transactions.reduce((totalSales, transaction) => {
     const transactionDate = DateTime.fromMillis(
@@ -14,6 +20,9 @@ const calculateSalesForDateRange = (transactions, startDate, endDate) => {
   }, 0);
 };
 
+/**
+ * Resuelve el valor de transacción de diferentes formatos posibles
+ */
 const resolveTransactionValue = (transaction) => {
   return Number(
     transaction?.data?.totalPurchase?.value ??
@@ -23,19 +32,29 @@ const resolveTransactionValue = (transaction) => {
   );
 };
 
-export const getSalesForDateRange = (transactions, startDate, endDate) => {
-  const [sales, setSales] = useState(0);
-  useEffect(() => {
-    const totalSales = calculateSalesForDateRange(
-      transactions,
-      startDate,
-      endDate,
-    );
-    setSales(totalSales);
-  }, [transactions, startDate, endDate]);
-  return sales;
+/**
+ * Obtiene las ventas del día actual
+ * @param {Array} transactions - Array de transacciones
+ * @returns {Object} Objeto con salesForCurrentDay y growthPercentage
+ */
+export const getSalesForCurrentDay = (transactions = []) => {
+  const salesForCurrentDay = transactions.reduce(
+    (total, transaction) => total + resolveTransactionValue(transaction),
+    0,
+  );
+  return {
+    salesForCurrentDay,
+    growthPercentage: 0,
+  };
 };
 
+/**
+ * Calcula el porcentaje de crecimiento comparando períodos
+ * @param {Array} transactions - Array de transacciones
+ * @param {number} daysAgo - Número de días atrás
+ * @param {DateTime} today - Fecha de hoy (luxon DateTime)
+ * @returns {number} Porcentaje de crecimiento
+ */
 export const getGrowthPercentage = (transactions, daysAgo, today) => {
   const endToday = today.endOf('day').toMillis();
   const startDaysAgo = today.minus({ days: daysAgo }).startOf('day').toMillis();
@@ -57,15 +76,4 @@ export const getGrowthPercentage = (transactions, daysAgo, today) => {
   const growthPercentage =
     ((salesToday - salesYesterday) / salesYesterday) * 100;
   return growthPercentage;
-};
-
-export const getSalesForCurrentDay = (transactions = []) => {
-  const salesForCurrentDay = transactions.reduce(
-    (total, transaction) => total + resolveTransactionValue(transaction),
-    0,
-  );
-  return {
-    salesForCurrentDay,
-    growthPercentage: 0,
-  };
 };

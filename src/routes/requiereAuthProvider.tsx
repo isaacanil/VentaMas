@@ -3,10 +3,10 @@ import { ErrorBoundary } from '../views/pages/ErrorElement/ErrorBoundary';
 
 import type { ReactElement } from 'react';
 
-type GuardedRoute = {
+interface GuardedRoute {
   element: ReactElement;
   isPublic?: boolean;
-};
+}
 
 /**
  * Envuelve un componente en RequireAuth para protección de rutas

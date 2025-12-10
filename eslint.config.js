@@ -2,12 +2,11 @@
 import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import reactCompiler from 'eslint-plugin-react-compiler';
+import reactHooks from 'eslint-plugin-react-hooks';
 import storybook from 'eslint-plugin-storybook';
 import unusedImports from 'eslint-plugin-unused-imports';
 import importPlugin from 'eslint-plugin-import';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
@@ -26,15 +25,9 @@ export default [
   },
 
   js.configs.recommended,
-  {
-    ...react.configs.flat.recommended,
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-  },
+  react.configs.flat.recommended,
   ...storybook.configs['flat/recommended'],
+  ...tseslint.configs.stylistic,
 
   {
     files: ['src/**/*.{js,jsx,mjs,cjs}'],
@@ -65,10 +58,11 @@ export default [
       import: importPlugin,
       react,
       'react-refresh': reactRefresh,
-      'react-compiler': reactCompiler,
+      'react-hooks': reactHooks,
     },
     rules: {
-      'react-compiler/react-compiler': 'error',
+      ...reactHooks.configs.recommended.rules,
+
       // === Limpieza automática ===
       'no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'error',
@@ -147,7 +141,7 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      parser: tsParser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
         projectService: true,
@@ -170,17 +164,16 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tseslint.plugin,
       'unused-imports': unusedImports,
       import: importPlugin,
       react,
-      react,
       'react-refresh': reactRefresh,
-      'react-compiler': reactCompiler,
+      'react-hooks': reactHooks,
     },
     rules: {
-      'react-compiler/react-compiler': 'error',
-      ...tseslint.configs['recommended-type-checked'].rules,
+      ...tseslint.configs.recommendedTypeChecked.rules,
+      ...reactHooks.configs.recommended.rules,
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
@@ -249,7 +242,7 @@ export default [
     languageOptions: {
       globals: { ...globals.node },
       sourceType: 'module',
-      parser: tsParser,
+      parser: tseslint.parser,
       parserOptions: {
         projectService: false,
         tsconfigRootDir: import.meta.dirname,

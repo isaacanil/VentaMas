@@ -10,12 +10,13 @@ import {
   selectInsuranceAR,
   setInsuranceAR,
 } from '../../../../../../../../../../../features/insurance/insuranceAccountsReceivableSlice';
-import { useFormatPrice } from '../../../../../../../../../../../hooks/useFormatPrice';
 import { calculateAmountPerInstallment } from '../../../../../../../../../../../utils/accountsReceivable/accountsReceivable';
 import { getMaxInstallments } from '../../../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
 import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
 import { setNumPrecision } from '../../../../../../../../../../../utils/pricing';
 import usePaymentDates from '../ReceivableManagementPanel/usePaymentDates';
+
+import { formatPrice } from '@/utils/format';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -230,7 +231,7 @@ export const InsuranceManagementPanel = ({ form }) => {
                   fontWeight: 600,
                 }}
               >
-                <span>{useFormatPrice(installmentAmount)}</span>
+                <span>{formatPrice(installmentAmount)}</span>
               </div>
             </FormItem>
           </Group>
@@ -249,7 +250,7 @@ export const InsuranceManagementPanel = ({ form }) => {
         <Footer>
           <Header>
             <Label>Total Cobertura de Seguro</Label>
-            <Label>{useFormatPrice(insuranceCoverage)}</Label>
+            <Label>{formatPrice(insuranceCoverage)}</Label>
           </Header>
         </Footer>
       </PanelContainer>

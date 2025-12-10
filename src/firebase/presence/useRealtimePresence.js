@@ -98,7 +98,7 @@ export const useRealtimePresence = (user) => {
         hasConnectedRef.current = true;
 
         if (disconnectHandlerRef.current) {
-          await disconnectHandlerRef.current.cancel().catch(() => {});
+          await disconnectHandlerRef.current.cancel().catch(Function.prototype);
         }
 
         const disconnectHandler = onDisconnect(presenceRef);
@@ -109,7 +109,7 @@ export const useRealtimePresence = (user) => {
             state: 'offline',
             updatedAt: serverTimestamp(),
           })
-          .catch(() => {});
+          .catch(Function.prototype);
 
         const latestUser = latestUserRef.current || {};
         const payload = {
@@ -130,7 +130,7 @@ export const useRealtimePresence = (user) => {
             if (!hasConnectedRef.current) return;
             update(presenceRef, {
               updatedAt: serverTimestamp(),
-            }).catch(() => {});
+            }).catch(Function.prototype);
           }, HEARTBEAT_INTERVAL_MS);
         }
       } catch {
@@ -145,7 +145,7 @@ export const useRealtimePresence = (user) => {
           set(presenceRef, {
             state: 'offline',
             updatedAt: serverTimestamp(),
-          }).catch(() => {});
+          }).catch(Function.prototype);
         }
       } finally {
         if (hasConnectedRef.current) {

@@ -22,5 +22,5 @@ export const useTaxReceiptEnabledToCart = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(setTaxReceiptEnabled(taxReceipt));
-  }, [taxReceipt]);
+  }, [taxReceipt, dispatch]);
 };

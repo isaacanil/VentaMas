@@ -4,11 +4,11 @@ import { useCallback, useState, useEffect } from 'react';
 import { db } from '../firebaseconfig';
 
 export function fbGetPendingBalance(businessID, clientId, callback) {
-  const safeCb = typeof callback === 'function' ? callback : () => {}; // Define safeCb at the beginning
+  const safeCb = typeof callback === 'function' ? callback : () => { /* noop */ };
 
   if (!businessID || !clientId) {
-    safeCb(0); // Use safeCb here
-    return () => {};
+    safeCb(0);
+    return () => { /* noop */ };
   }
 
   const accountsReceivableRef = collection(
@@ -37,7 +37,7 @@ export function fbGetPendingBalance(businessID, clientId, callback) {
   } catch (error) {
     console.error('Error getting documents: ', error);
     safeCb(0);
-    return () => {};
+    return () => { /* noop */ };
   }
 }
 
@@ -57,7 +57,7 @@ function usePendingBalance(businessID, clientId, onBalanceChange = null) {
       onBalanceChange,
     );
     return () => unsubscribe();
-  }, [businessID, clientId]);
+  }, [businessID, clientId, onBalanceChange]);
 
   return pendingBalance;
 }

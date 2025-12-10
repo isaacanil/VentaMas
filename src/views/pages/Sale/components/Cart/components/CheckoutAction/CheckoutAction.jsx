@@ -2,9 +2,10 @@ import * as antd from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
 import { Receipt } from '../../../../../checkout/Receipt';
+
+import { formatPrice } from '@/utils/format';
 
 const { Modal } = antd;
 export const CheckoutAction = ({
@@ -38,7 +39,7 @@ export const CheckoutAction = ({
   };
   return (
     <Container>
-      <PriceContainer>{useFormatPrice(TotalPurchaseRef)}</PriceContainer>
+      <PriceContainer>{formatPrice(TotalPurchaseRef)}</PriceContainer>
       <Receipt ref={componentToPrintRef} data={bill}></Receipt>
       <ButtonGroup>
         <Button

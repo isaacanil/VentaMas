@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { changeValueInvoiceForm } from '../../../../../../../features/invoice/invoiceFormSlice';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 
 import type {
   DiscountType,
@@ -11,6 +10,9 @@ import type {
   PaymentInfoProps,
   RootState,
 } from '../types';
+
+import { formatPrice} from '@/utils/formatPrice'
+
 
 interface UsePaymentInfoArgs {
   isEditLocked?: PaymentInfoProps['isEditLocked'];
@@ -299,12 +301,12 @@ export const usePaymentInfo = ({
   }, [invoice?.discount?.type, discountType]);
 
   const formattedTotalPayment = useMemo(
-    () => useFormatPrice(totalPayment),
+    () => formatPrice(totalPayment),
     [totalPayment],
   );
 
   const formattedTotalPurchase = useMemo(
-    () => useFormatPrice(totalPurchase),
+    () => formatPrice(totalPurchase),
     [totalPurchase],
   );
 
@@ -314,7 +316,7 @@ export const usePaymentInfo = ({
     ? 'positive'
     : 'negative';
   const formattedBalance = useMemo(
-    () => useFormatPrice(Math.abs(changeAmount)),
+    () => formatPrice(Math.abs(changeAmount)),
     [changeAmount],
   );
 

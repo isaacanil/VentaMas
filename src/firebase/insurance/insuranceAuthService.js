@@ -221,8 +221,7 @@ export const listenInsuranceAuths = ({
     console.warn(
       'No se pudo escuchar autorizaciones: datos de usuario no disponibles',
     );
-    // Retornamos una función de no-op para evitar errores en el unsubscribe
-    return () => {};
+    return undefined;
   }
 
   let queryRef = authsCollection;

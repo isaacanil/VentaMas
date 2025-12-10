@@ -7,10 +7,11 @@ import { OPERATION_MODES } from '../../../../../../constants/modes';
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
 import { fbDeleteClient } from '../../../../../../firebase/client/fbDeleteClient';
-import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
 import { ButtonGroup } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
+
+import { formatPrice } from '@/utils/format';
 
 const { Button } = antd;
 
@@ -38,7 +39,7 @@ export const tableConfig = () => {
     {
       Header: 'Telefono',
       accessor: 'phone',
-      cell: ({ value }) => (value ? useFormatPhoneNumber(value) : noData),
+      cell: ({ value }) => (value ? formatPhoneNumber(value) : noData),
       minWidth: '140px',
     },
     {
@@ -61,7 +62,7 @@ export const tableConfig = () => {
       Header: 'Balance',
       accessor: 'balance',
       align: 'right',
-      cell: ({ value }) => useFormatPrice(value || 0),
+      cell: ({ value }) => formatPrice(value || 0),
       minWidth: '150px',
     },
     {

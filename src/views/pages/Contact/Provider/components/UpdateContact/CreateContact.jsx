@@ -4,10 +4,11 @@ import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { handleModalCreateClient } from '../../../../../../features/modals/modalSlice';
-import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
-import { useFormatRNC } from '../../../../../../hooks/useFormatRNC';
+import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
 import { Button } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
+
+import { formatRNC } from '@/utils/format';
 
 export const CreateContact = ({ isOpen }) => {
   const dispatch = useDispatch();
@@ -75,7 +76,7 @@ export const CreateContact = ({ isOpen }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={useFormatPhoneNumber(newClient.tel)}
+                title={formatPhoneNumber(newClient.tel)}
               ></Message>
             </label>
             <input
@@ -98,7 +99,7 @@ export const CreateContact = ({ isOpen }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={useFormatRNC(newClient.personalID)}
+                title={formatRNC(newClient.personalID)}
               ></Message>
             </label>
             <input

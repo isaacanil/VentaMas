@@ -11,7 +11,7 @@ import * as antd from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 const { Button, Tooltip } = antd;
 
@@ -52,9 +52,9 @@ export const InvoiceResume = ({
   const items = invoice?.totalShoppingItems?.value ?? 0;
   const discountPercentage = Number(invoice?.discount?.value ?? 0);
 
-  const formattedSubtotal = useFormatPrice(subtotal);
-  const formattedTaxes = useFormatPrice(taxes);
-  const formattedTotal = useFormatPrice(totalPurchase);
+  const formattedSubtotal = formatPrice(subtotal);
+  const formattedTaxes = formatPrice(taxes);
+  const formattedTotal = formatPrice(totalPurchase);
   const formattedItems = Number(items).toLocaleString();
 
   const changeLabel = changeAmount >= 0 ? 'Cambio' : 'Pendiente';
@@ -78,7 +78,7 @@ export const InvoiceResume = ({
       ? `Ahorro del ${discountPercentLabel}% sobre el total`
       : 'Ajuste aplicado al total';
   const formattedDiscount =
-    normalizedDiscount > 0 ? `-${useFormatPrice(normalizedDiscount)}` : null;
+    normalizedDiscount > 0 ? `-${formatPrice(normalizedDiscount)}` : null;
 
   const detailItems = [
     {
@@ -135,14 +135,14 @@ export const InvoiceResume = ({
     return {
       label,
       helper,
-      value: useFormatPrice(amount),
+      value: formatPrice(amount),
     };
   });
 
   const balanceSummary = {
     label: changeLabel,
     helper: changeHelper,
-    value: useFormatPrice(Math.abs(changeAmount)),
+    value: formatPrice(Math.abs(changeAmount)),
     status: changeAmount >= 0 ? 'returned' : 'pending',
   };
 

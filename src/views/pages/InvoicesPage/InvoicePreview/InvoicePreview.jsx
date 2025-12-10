@@ -12,7 +12,7 @@ import { useFbGetAccountReceivableByInvoice } from '../../../../firebase/account
 import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { syncInvoicePaymentsFromAR } from '../../../../firebase/invoices/syncInvoicePaymentsFromAR';
 import { useFbGetCreditNoteApplicationsByInvoice } from '../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
-import { formatPrice } from '../../../../utils/formatPrice';
+
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { ClientInfoCard } from './components/ClientInfo';
@@ -20,6 +20,8 @@ import { CreditNotesInfoCard } from './components/CreditNotesInfoCard';
 import { PaymentMethodInfoCard } from './components/PaymentMethodInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';
+
+import { formatPrice } from '@/utils/format';
 
 export const InvoicePreview = () => {
   const dispatch = useDispatch();

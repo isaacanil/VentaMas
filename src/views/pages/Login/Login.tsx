@@ -16,10 +16,10 @@ import { LoginForm } from './components/LoginForm';
 const HOME_PATH = '/home';
 const LOGIN_IMAGE_PATH = 'app-config/login-image';
 
-type StoredSession = {
+interface StoredSession {
   sessionToken: string;
   sessionExpiresAt: number;
-};
+}
 
 type MaybeUser = Record<string, unknown> | null;
 

@@ -7,7 +7,7 @@ import { OPERATION_MODES } from '../../../../../constants/modes';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { toggleProviderModal } from '../../../../../features/modals/modalSlice';
 import { fbDeleteProvider } from '../../../../../firebase/provider/fbDeleteProvider';
-import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber';
+import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
 import { truncateString } from '../../../../../utils/text/truncateString';
 import { ButtonGroup } from '../../../../templates/system/Button/Button';
 
@@ -20,7 +20,7 @@ export const ProviderCard = ({ Row, Col, e: provider = {}, index = 0 }) => {
 
   const formattedPhone = useMemo(() => {
     if (!provider?.tel) return 'Sin teléfono';
-    return useFormatPhoneNumber(provider.tel);
+    return formatPhoneNumber(provider.tel);
   }, [provider?.tel]);
 
   const providerAddress = useMemo(() => {

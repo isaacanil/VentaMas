@@ -64,7 +64,7 @@ function useExpenseComments(expenses) {
     return [header, ...detailLines, totalLine].join('\n');
   }, [expenses, formatter]);
 
-  return useMemo(generate, [generate]);
+  return useMemo(() => generate(), [generate]);
 }
 
 export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
@@ -109,7 +109,7 @@ export const RightSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
     (text) => {
       dispatch(setCashCountClosingComments(text));
     },
-    [dispatch, expenseBlock],
+    [dispatch],
   );
 
   const handleChangesBanknotes = useCallback(

@@ -10,11 +10,12 @@ import { selectUser } from '../../../../../../features/auth/userSlice';
 import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
 import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
 import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
-import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
-import { useFormatRNC } from '../../../../../../hooks/useFormatRNC';
+import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
 import { Button } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
+
+import { formatRNC } from '@/utils/format';
 
 export const ClientForm = ({ isOpen, mode, data }) => {
   const dispatch = useDispatch();
@@ -141,7 +142,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={useFormatPhoneNumber(client.tel, true)}
+                title={formatPhoneNumber(client.tel, true)}
               ></Message>
             </label>
             <input
@@ -164,7 +165,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={useFormatRNC(client.personalID)}
+                title={formatRNC(client.personalID)}
               ></Message>
             </label>
             <input

@@ -10,7 +10,7 @@ import { Card, Divider } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 const SummaryInfoCard = ({ summaryData }) => {
   const {
@@ -57,7 +57,7 @@ const SummaryInfoCard = ({ summaryData }) => {
               Subtotal:
             </InfoLabel>
             <InfoValue>
-              {useFormatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}
+              {formatPrice(totalPurchaseWithoutTaxes?.value) || 'N/A'}
             </InfoValue>
           </InfoItem>
 
@@ -66,7 +66,7 @@ const SummaryInfoCard = ({ summaryData }) => {
               <FontAwesomeIcon icon={faCalculator} />
               Impuestos:
             </InfoLabel>
-            <InfoValue>{useFormatPrice(totalTaxes?.value) || 'N/A'}</InfoValue>
+            <InfoValue>{formatPrice(totalTaxes?.value) || 'N/A'}</InfoValue>
           </InfoItem>
 
           <TotalItem>
@@ -74,7 +74,7 @@ const SummaryInfoCard = ({ summaryData }) => {
               <FontAwesomeIcon icon={faDollarSign} />
               Total Pagado:
             </TotalLabel>
-            <TotalValue>{useFormatPrice(payment?.value) || 'N/A'}</TotalValue>
+            <TotalValue>{formatPrice(payment?.value) || 'N/A'}</TotalValue>
           </TotalItem>
 
           <InfoItem>
@@ -83,7 +83,7 @@ const SummaryInfoCard = ({ summaryData }) => {
               Cambio / Faltante:
             </InfoLabel>
             <InfoValue>
-              {useFormatPrice(change?.value ?? payment?.change) || 'N/A'}
+              {formatPrice(change?.value ?? payment?.change) || 'N/A'}
             </InfoValue>
           </InfoItem>
         </InfoSection>

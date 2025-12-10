@@ -9,6 +9,7 @@ const consoleApi =
   typeof globalThis !== 'undefined' ? globalThis.console : undefined;
 
 const logDebug = (...args) => {
+  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV !== 'production' && consoleApi?.debug) {
     consoleApi.debug(...args);
   }
@@ -42,6 +43,7 @@ export function useInventoryStocksProducts({ db, businessID }) {
         const data = raw.filter(
           (r) => r.isDeleted !== true && r.status !== 'inactive',
         );
+        // eslint-disable-next-line no-undef
         if (process.env.NODE_ENV !== 'production') {
           const inactive = raw.filter((r) => r.status === 'inactive').length;
           logDebug(
@@ -82,6 +84,7 @@ export function useInventoryStocksProducts({ db, businessID }) {
         const data = raw.filter(
           (r) => r.isDeleted !== true && r.status !== 'inactive',
         );
+        // eslint-disable-next-line no-undef
         if (process.env.NODE_ENV !== 'production') {
           logDebug(
             '[useInventoryStocksProducts] Products:',

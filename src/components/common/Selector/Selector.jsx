@@ -65,6 +65,8 @@ export const Selector = ({
       .includes(filterText.toLowerCase());
   });
 
+  useClickOutSide(containerRef, isOpen, () => setIsOpen(false));
+
   const selectedOption = value
     ? options.find((opt) => opt?.value === value)
     : {
@@ -72,14 +74,6 @@ export const Selector = ({
       icon: defaultStyles.icon,
       ...defaultStyles,
     };
-
-  // Validación adicional para selectedOption
-  if (!selectedOption || !selectedOption.label) {
-    console.warn('Selector: Invalid option format detected');
-    return null;
-  }
-
-  useClickOutSide(containerRef, isOpen, () => setIsOpen(false));
 
   const getOptionStyles = (option, isSelected) => {
     const defaultOptionStyles = {
@@ -96,6 +90,11 @@ export const Selector = ({
       ...option,
     };
   };
+
+  if (!selectedOption || !selectedOption.label) {
+    console.warn('Selector: Invalid option format detected');
+    return null;
+  }
 
   return (
     <Container ref={containerRef}>

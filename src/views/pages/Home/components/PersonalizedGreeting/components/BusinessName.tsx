@@ -2,9 +2,9 @@ import styled from 'styled-components';
 
 import type { JSX } from 'react';
 
-type BusinessNameProps = {
+interface BusinessNameProps {
   businessName?: string | null;
-};
+}
 
 export const BusinessName = ({
   businessName,

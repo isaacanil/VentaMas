@@ -3,8 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../hooks/useFormatPrice';
-import { Button } from '../../templates/system/Button/Button';
+import { formatPrice } from '@/utils/format';../../templates/system/Button/Button';
 
 export const ProductCard = ({
   item,
@@ -33,7 +32,7 @@ export const ProductCard = ({
         <span>
           <Input
             value={item.initialCost}
-            handleBlur={(value) => useFormatPrice(value)}
+            handleBlur={(value) => formatPrice(value)}
             onChange={(e) =>
               handleUpdateProduct({
                 value: { initialCost: Number(e.target.value) },
@@ -44,7 +43,7 @@ export const ProductCard = ({
         </span>
       </Col>
       <Col>
-        <span>{useFormatPrice(item.initialCost * item.newStock)}</span>
+        <span>{formatPrice(item.initialCost * item.newStock)}</span>
       </Col>
       <Button
         title={<FontAwesomeIcon icon={faTrash} />}

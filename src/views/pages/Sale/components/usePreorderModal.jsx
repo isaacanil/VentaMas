@@ -15,8 +15,9 @@ import {
 import { selectClientWithAuth } from '../../../../features/clientCart/clientCartSlice';
 import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import { validateInvoiceCart } from '../../../../utils/invoiceValidation';
+
+import { formatPrice } from '@/utils/format';
 
 const resolvePreorderTaxReceiptType = (preorder) =>
   preorder?.selectedTaxReceiptType ??
@@ -213,7 +214,6 @@ export const usePreorderModal = () => {
   const user = useSelector(selectUser);
   const cart = useSelector(selectCart);
   const cartSettings = useSelector(SelectSettingCart);
-  const formatPrice = useFormatPrice;
   const businessID = user?.businessID;
   const navigate = useNavigate();
   const location = useLocation();
@@ -233,6 +233,7 @@ export const usePreorderModal = () => {
     }
 
     let isSubscribed = true;
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     let unsubscribe = () => {};
     const payload = { businessID };
 
@@ -351,7 +352,7 @@ export const usePreorderModal = () => {
         label: `#${item.number} · ${item.client} · ${formatPrice(item.total)}`,
         data: item,
       })),
-    [entries, formatPrice],
+    [entries],
   );
 
   const selectedEntry = useMemo(

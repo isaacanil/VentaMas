@@ -1,4 +1,4 @@
-import useFormatTimestamp from '../useFormatTimeStamp';
+import { formatTimestamp } from '@/utils/format';
 
 const unwrapInvoice = (raw) => raw?.data ?? raw?.ver?.data ?? raw ?? {};
 
@@ -61,7 +61,7 @@ const formatBillResumen = (data) => {
     totalPurchase = {},
   } = data;
   return {
-    ['Fecha']: useFormatTimestamp(date),
+    ['Fecha']: formatTimestamp(date),
     ['Comprobante']: NCF ?? 'N/A',
     ['Nombre Cliente']: client.name || 'Cliente Genérico',
     ['Teléfono Cliente']: client.tel || 'N/A',
@@ -92,7 +92,7 @@ const formatBillDetailed = (facturas) => {
 
     products.forEach((product) => {
       resultados.push({
-        Fecha: useFormatTimestamp(date),
+        Fecha: formatTimestamp(date),
         Comprobante: NCF,
         Cliente: client.name || 'Cliente Genérico',
         Producto: product.name,

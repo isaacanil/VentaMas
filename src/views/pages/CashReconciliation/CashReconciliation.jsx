@@ -15,7 +15,7 @@ export const CashReconciliation = () => {
 
   useEffect(() => {
     dispatch(clearCashCount());
-  }, []);
+  }, [dispatch]);
 
   return (
     <Container>

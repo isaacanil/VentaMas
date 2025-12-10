@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectInsuranceEnabled } from '../../../../../../../features/cart/cartSlice';
 import { usePendingBalance } from '../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import {
   getProductsPrice,
   getProductsTax,
@@ -17,6 +16,8 @@ import { Paragraph, Spacing, Subtitle } from '../Style';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
+
+import { formatPrice as formatPrice } from '@/utils/format';
 
 export const PaymentArea = ({ data }) => {
   const [pendingBalance, setPendingBalance] = useState(0);
@@ -35,7 +36,7 @@ export const PaymentArea = ({ data }) => {
     data?.products || [],
   );
   const hasIndividualDiscounts = individualDiscounts > 0;
-  const formatNumber = (num) => useFormatPrice(num, '');
+  const formatNumber = (num) => formatPrice(num, '');
 
   usePendingBalance(businessID, clientId, setPendingBalance);
 

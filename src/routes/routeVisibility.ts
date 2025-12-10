@@ -2,9 +2,9 @@ import { ROUTE_STATUS } from './routeMeta';
 
 import type { AppRoute } from './routes';
 
-type MenuItemMeta = {
+interface MenuItemMeta {
   hideInMenu?: boolean;
-};
+}
 
 // Índice path -> meta (se llena vía registerRoutes para evitar ciclos de import)
 const routeIndex = new Map<string, AppRoute>();

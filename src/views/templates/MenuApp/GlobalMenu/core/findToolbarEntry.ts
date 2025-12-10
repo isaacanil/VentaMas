@@ -22,7 +22,7 @@ export const findToolbarEntry = (
  * @returns Array of matcher functions
  */
 export const createMatchers = (entry: {
-  matches: Array<{ path: string; end?: boolean }>;
+  matches: { path: string; end?: boolean }[];
 }) =>
   entry.matches.map(
     (pattern) => (pathname: string) => Boolean(matchPath(pattern, pathname)),

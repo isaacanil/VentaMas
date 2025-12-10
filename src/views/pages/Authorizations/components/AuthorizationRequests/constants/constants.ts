@@ -1,9 +1,9 @@
 import type { AuthorizationStatus } from '../types';
 
-type StatusThemeToken = {
+interface StatusThemeToken {
   bg: string;
   color: string;
-};
+}
 
 const STATUS_THEME_BASE = {
   pending: { bg: '#fff7e6', color: '#ad6800' },

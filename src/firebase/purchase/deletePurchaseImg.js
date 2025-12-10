@@ -1,9 +1,12 @@
-import { ref } from 'firebase/storage';
+import { ref, deleteObject } from 'firebase/storage';
 
 import { storage } from '../firebaseconfig';
 
-export const deletePurchaseData = () => {};
-export const deletePurchaseImg = (purchaseId) => {
-  const _storageRef = ref(storage, `purchase/${purchaseId}`);
-  // TODO: Implementar eliminación de imagen
+export const deletePurchaseImg = async (purchaseId) => {
+  const storageRef = ref(storage, `purchase/${purchaseId}`);
+  try {
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.error('Error deleting purchase image:', error);
+  }
 };

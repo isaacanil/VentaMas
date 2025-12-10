@@ -2,7 +2,7 @@ import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { useFormatPhoneNumber } from '../../../../../../../../hooks/useFormatPhoneNumber';
+import { formatPhoneNumber } from '../../../../../../../../utils/format/formatPhoneNumber';
 import { resolveDocumentIdentity } from '../../../../../../../../utils/invoice/documentIdentity.js';
 
 const formatDate = (dateObj) => {
@@ -26,15 +26,9 @@ export default function Header({ business, data }) {
     : documentIdentity.title || 'Factura';
   const shouldShowIdentityLine = !isPreorder && documentIdentity.label;
 
-  const formattedBusinessPhone = business?.tel
-    ? useFormatPhoneNumber(business.tel)
-    : null;
-  const primaryClientPhone = data?.client?.tel
-    ? useFormatPhoneNumber(data.client.tel)
-    : null;
-  const secondaryClientPhone = data?.client?.tel2
-    ? useFormatPhoneNumber(data.client.tel2)
-    : null;
+  const formattedBusinessPhone = formatPhoneNumber(business?.tel || '');
+  const primaryClientPhone = formatPhoneNumber(data?.client?.tel || '');
+  const secondaryClientPhone = formatPhoneNumber(data?.client?.tel2 || '');
 
   const clientDetails = [
     { label: 'Cliente', value: data?.client?.name },

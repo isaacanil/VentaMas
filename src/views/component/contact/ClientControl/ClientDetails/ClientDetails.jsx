@@ -11,10 +11,11 @@ import {
 } from '../../../../../features/clientCart/clientCartSlice';
 import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance';
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
 import { updateObject } from '../../../../../utils/object/updateObject';
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
+
+import { formatPrice as formatPrice } from '@/utils/format';
 
 export const ClientDetails = ({ mode }) => {
   const dispatch = useDispatch();
@@ -132,7 +133,7 @@ export const ClientDetails = ({ mode }) => {
                 label="Bal general"
                 size="small"
                 labelVariant="primary"
-                value={`${useFormatPrice(pendingBalance)}`}
+                value={`${formatPrice(pendingBalance)}`}
                 autoComplete="off"
                 readOnly
                 buttons={[

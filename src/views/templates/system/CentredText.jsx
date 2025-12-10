@@ -23,7 +23,7 @@ export const CenteredText = ({
         setShow(true);
       }, showAfter);
     }
-  }, []);
+  }, [showAfter]);
   return (
     show && (
       <Container onContextMenu={handleButton}>

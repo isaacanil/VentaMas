@@ -37,10 +37,10 @@ const GridItem = styled.div`
   padding: 2px; 
 `;
 
-const ListComponent = forwardRef(({ context, ...props }, ref) => <GridList ref={ref} {...props} />);
+const ListComponent = forwardRef(({ ...props }, ref) => <GridList ref={ref} {...props} />);
 ListComponent.displayName = 'ProductListGrid';
 
-const ItemComponent = forwardRef(({ context, ...props }, ref) => <GridItem ref={ref} {...props} />);
+const ItemComponent = forwardRef(({ ...props }, ref) => <GridItem ref={ref} {...props} />);
 ItemComponent.displayName = 'ProductListItem';
 
 const virtuosoComponents = {

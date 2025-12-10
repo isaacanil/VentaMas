@@ -12,10 +12,11 @@ import React, { useEffect, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice.js';
 import Typography from '../../../../templates/system/Typografy/Typografy.jsx';
 
 import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils.js';
+
+import { formatPrice } from '@/utils/format';
 
 ChartJS.register(
   CategoryScale,
@@ -100,7 +101,7 @@ export const MonthlyFinancialReportChart = ({ expenses, invoices }) => {
           label: function (context) {
             let label = context.dataset.label || '';
             if (label) {
-              label += ' ' + useFormatPrice(context.parsed.y);
+              label += ' ' + formatPrice(context.parsed.y);
             }
             return label;
           },

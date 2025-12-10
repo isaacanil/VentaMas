@@ -10,12 +10,13 @@ import {
 } from '../../../../../../features/customProducts/customProductSlice';
 import { addNotification } from '../../../../../../features/notification/notificationSlice';
 import { fbGetProductsQueryByType } from '../../../../../../firebase/products/customProduct/fbGetCustomProductByType';
-import { removeMatchesString } from '../../../../../../hooks/removeMatchesString';
-import { separator } from '../../../../../../hooks/separator';
 import { getPizzaType } from '../../getPizzaType';
 import customPizzaData from '../customPizza.json';
 
 import { getPrice } from './getPrice';
+
+import { separator } from '@/utils/number/number';
+import { removeMatchesString } from '@/utils/text';
 
 const EmptyProduct = {
   id: '',
@@ -90,7 +91,7 @@ export const Header = ({
         );
       }
     }
-  }, [initialState]);
+  }, [initialState, dispatch, setInitialState, setNewProduct]);
 
   useEffect(() => {
     if (size !== '') {

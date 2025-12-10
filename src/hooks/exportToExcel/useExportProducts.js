@@ -1,4 +1,4 @@
-import { useFormatPrice } from '../useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 const ITEM_TYPE_LABELS = {
   product: 'Producto',
@@ -57,12 +57,12 @@ export const ExportProducts = async (products) => {
     product.isVisible ? 'Sí' : 'No',
     product.trackInventory ? 'Sí' : 'No',
     product.barcode,
-    useFormatPrice(product.pricing.cost),
-    useFormatPrice(product.pricing?.listPrice),
-    useFormatPrice(product.pricing?.cardPrice),
-    useFormatPrice(product.pricing?.offerPrice),
-    useFormatPrice(product.pricing?.minPrice),
-    useFormatPrice(product.pricing?.avgPrice),
+    formatPrice(product.pricing.cost),
+    formatPrice(product.pricing?.listPrice),
+    formatPrice(product.pricing?.cardPrice),
+    formatPrice(product.pricing?.offerPrice),
+    formatPrice(product.pricing?.minPrice),
+    formatPrice(product.pricing?.avgPrice),
   ]);
 
   // Agregar los datos del arreglo a la hoja

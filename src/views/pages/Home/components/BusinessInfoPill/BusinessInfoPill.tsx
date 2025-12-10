@@ -6,7 +6,7 @@ import { BusinessInfoModal } from './BusinessInfoModal';
 
 import type { JSX, KeyboardEvent } from 'react';
 
-type BusinessInfo = {
+interface BusinessInfo {
   name?: string | null;
   logoUrl?: string | null;
   description?: string | null;
@@ -16,17 +16,17 @@ type BusinessInfo = {
   rnc?: string | null;
   taxId?: string | null;
   [key: string]: unknown;
-};
+}
 
-type RootState = {
+interface RootState {
   business?: {
     data?: BusinessInfo | null;
   };
-};
+}
 
-type BusinessInfoPillProps = {
+interface BusinessInfoPillProps {
   className?: string;
-};
+}
 
 // Memoized selector to extract business data
 const selectBusinessData = (state: RootState): BusinessInfo | null => {

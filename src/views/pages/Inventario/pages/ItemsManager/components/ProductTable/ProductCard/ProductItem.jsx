@@ -15,10 +15,11 @@ import { handleDeleteProductAlert } from '../../../../../../../../features/Alert
 import { toggleBarcodeModal } from '../../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
 import { openModalUpdateProd } from '../../../../../../../../features/modals/modalSlice';
 import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import { useFormatNumber } from '../../../../../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../../../../../hooks/useFormatPrice';
 import { getTax, getTotalPrice } from '../../../../../../../../utils/pricing';
 import { ImgCell } from '../../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 export const ProductItem = ({ data, taxReceiptEnabled }) => {
   const dispatch = useDispatch();
@@ -106,12 +107,12 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
         <DetailsRow>
           <DetailItem>
             <DetailLabel>Costo:</DetailLabel>
-            <DetailValue>{useFormatPrice(cost)}</DetailValue>
+            <DetailValue>{formatPrice(cost)}</DetailValue>
           </DetailItem>
 
           <DetailItem>
             <DetailLabel>Impuesto:</DetailLabel>
-            <DetailValue>{useFormatPrice(tax)}</DetailValue>
+            <DetailValue>{formatPrice(tax)}</DetailValue>
           </DetailItem>
 
           <DetailItem>
@@ -119,7 +120,7 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
             <StockDetailValue $status={getStockStatus()}>
               <StockIcon>{getStockIcon()}</StockIcon>
               <span>
-                {trackInventory ? useFormatNumber(stock) : 'No rastrea'}
+                {trackInventory ? formatNumber(stock) : 'No rastrea'}
               </span>
             </StockDetailValue>
           </DetailItem>
@@ -133,10 +134,10 @@ export const ProductItem = ({ data, taxReceiptEnabled }) => {
           <TotalValue>
             {isSoldByWeight ? (
               <span>
-                {useFormatPrice(price)} / {unit}
+                {formatPrice(price)} / {unit}
               </span>
             ) : (
-              <span>{useFormatPrice(price)}</span>
+              <span>{formatPrice(price)}</span>
             )}
           </TotalValue>
         </TotalPriceSection>

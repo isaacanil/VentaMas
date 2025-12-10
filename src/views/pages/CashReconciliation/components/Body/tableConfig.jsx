@@ -1,8 +1,9 @@
 import { Tag } from 'antd';
 
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../utils/date/dateUtils';
 import { CashCountStateIndicator } from '../../resource/CashCountStatusIndicator/CashCountStateIndicator';
+
+import { formatPrice } from '@/utils/format';
 
 export const tableConfig = () => {
   let columns = [
@@ -52,8 +53,8 @@ export const tableConfig = () => {
             </Tag>
           );
         }
-        return value.totalSystem ? useFormatPrice(value.totalSystem) : 'Total';
-        //  return JSON.stringify(useFormatPrice(value.totalSystem))
+        return value.totalSystem ? formatPrice(value.totalSystem) : 'Total';
+        //  return JSON.stringify(formatPrice(value.totalSystem))
       },
     },
     {
@@ -85,7 +86,7 @@ export const tableConfig = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
-            {useFormatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
+            {formatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
           </Tag>
         );
       },

@@ -10,7 +10,7 @@ import { Category } from './Category';
 const { Input, Typography, Button } = antd;
 
 const DropdownMenuComponent = forwardRef(
-  ({ setOpen, sectionsConfig = {}, deleteAllItems = () => {} }, ref) => {
+  ({ setOpen, sectionsConfig = {}, deleteAllItems }, ref) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filterItems = (items) => filterData(items, searchTerm);

@@ -6,9 +6,8 @@ import styled from 'styled-components';
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
 import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice';
-import { separator } from '../../../../../../hooks/separator';
-import { useFormatPhoneNumber } from '../../../../../../hooks/useFormatPhoneNumber';
 import DateUtils from '../../../../../../utils/date/dateUtils';
+import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
 import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
 import {
   getTotalPrice,
@@ -21,6 +20,8 @@ import {
   getProductsIndividualDiscounts,
 } from '../../../../../../utils/pricing';
 import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
+
+import { separator } from '@/utils/number/number';
 
 // Máximo de caracteres por línea
 const CENTER_WIDTH = 40;
@@ -424,7 +425,7 @@ export const InvoiceTemplate4 = React.forwardRef(
   ({ data, ignoreHidden }, ref) => {
     const business = useSelector(selectBusinessData) || {};
     const { taxReceipt } = useSelector(SelectSettingCart) || {};
-    const formatPhoneNumber = useFormatPhoneNumber;
+    // formatPhoneNumber ya está importado
 
     // Fecha
     const fechaActual = data?.date

@@ -174,11 +174,4 @@ const FileList = ({
   );
 };
 
-FileList.defaultProps = {
-  files: [],
-  removeFile: () => {},
-  handlePreview: () => {},
-  fileTypeLabels: {},
-};
-
 export default FileList;

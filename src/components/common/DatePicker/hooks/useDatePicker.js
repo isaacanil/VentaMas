@@ -3,14 +3,24 @@ import { useState, useEffect, useRef } from 'react';
 
 export const useDatePicker = ({ mode, value, onChange, presets }) => {
   const [open, setOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState(dayjs());
+  // Inicializar currentDate basado en el valor
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (value) {
+      if (mode === 'range' && Array.isArray(value) && value[0]) {
+        return value[0];
+      } else if (mode === 'single' && value) {
+        return value;
+      }
+    }
+    return dayjs();
+  });
   const [hoverDate, setHoverDate] = useState(null);
   const [rangeStart, setRangeStart] = useState(null);
   const [showPresetsDropdown, setShowPresetsDropdown] = useState(false);
   const presetsDropdownRef = useRef(null);
   const initialValueRef = useRef(value);
 
-  // Sincronizar currentDate con el valor seleccionado
+  // Sincronizar currentDate con el valor seleccionado solo si cambia externamente
   useEffect(() => {
     if (value) {
       if (mode === 'range' && Array.isArray(value) && value[0]) {

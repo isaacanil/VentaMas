@@ -1,5 +1,5 @@
 import { correctDate } from '@/hooks/time/correctDate';
-import { useFormatPrice } from '@/hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 import { ActionsButtonsGroup } from '@/views/pages/OrderAndPurchase/Compra/ListItem/ActionsButtonsGroup';
 import { Button } from '@/views/templates/system/Button/Button';
 import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
@@ -30,7 +30,7 @@ export const PurchaseCard = ({
         <div>{correctDate(data.date).toLocaleDateString()}</div>
       </Col>
       <Col position="right">
-        <div>{useFormatPrice(data.totalPurchase)}</div>
+        <div>{formatPrice(data.totalPurchase)}</div>
       </Col>
       <Col>
         <ButtonGroup>

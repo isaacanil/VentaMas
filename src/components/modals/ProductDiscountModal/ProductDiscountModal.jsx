@@ -6,8 +6,9 @@ import styled from 'styled-components';
 
 import { updateProductDiscount } from '../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceiptSlice';
-import { useFormatPrice } from '../../../hooks/useFormatPrice';
 import { getTotalPrice } from '../../../utils/pricing';
+
+import { formatPrice } from '@/utils/format';
 
 const { Text } = Typography;
 
@@ -88,10 +89,10 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
     [displayPrices, discountedPrice],
   );
 
-  const formattedUnitPrice = useFormatPrice(displayPrices.unitPrice);
-  const formattedTotalPrice = useFormatPrice(displayPrices.totalPrice);
-  const formattedDiscountAmount = useFormatPrice(discountAmount);
-  const formattedDiscountedPrice = useFormatPrice(discountedPrice);
+  const formattedUnitPrice = formatPrice(displayPrices.unitPrice);
+  const formattedTotalPrice = formatPrice(displayPrices.totalPrice);
+  const formattedDiscountAmount = formatPrice(discountAmount);
+  const formattedDiscountedPrice = formatPrice(discountedPrice);
 
   const handleApply = () => {
     if (!product) {

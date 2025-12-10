@@ -130,12 +130,10 @@ export const AccountReceivableList = () => {
       data = data.filter((account) => {
         const balance = account.balance || 0;
         const totalPaid = account.totalPaid || 0;
-        const initialAmount = account.initialAmount || 0;
 
         // Tolerancia pequeña para errores de punto flotante
         const isPaid = balance <= 0.01;
         const isUnpaid = totalPaid <= 0.01; // Asumiendo que si no ha pagado nada es unpaid
-        // O alternativamente: const isUnpaid = Math.abs(balance - initialAmount) <= 0.01;
 
         if (paymentStatusFilter === 'paid') return isPaid;
         if (paymentStatusFilter === 'unpaid') return isUnpaid;

@@ -32,7 +32,7 @@ const ImageViewer = () => {
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, []);
+  }, [onClose]);
 
   if (!show) return null;
 

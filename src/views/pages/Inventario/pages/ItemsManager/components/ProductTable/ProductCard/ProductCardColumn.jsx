@@ -1,11 +1,10 @@
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@templates/system/Button/Button';
-import React from 'react';
 import styled from 'styled-components';
 
 import noImg from '@/assets/producto/noimg.png';
-import { useFormatPrice } from '@/hooks/useFormatPrice';
+import { formatPrice } from '@/utils/format';
 
 export const ProductCardColumn = ({
   handleDeleteProduct,
@@ -51,7 +50,7 @@ export const ProductCardColumn = ({
         </ProductName>
 
         <Item>
-          <span>costo: {useFormatPrice(product.cost.unit)}</span>
+          <span>costo: {formatPrice(product.cost.unit)}</span>
         </Item>
         <Item>
           <span>stock: {product.stock}</span>
@@ -61,7 +60,7 @@ export const ProductCardColumn = ({
                     <span>Contenido Neto: {product.netContent}</span>
                 </Item> */}
         <Item>
-          <span>Total: {useFormatPrice(product.price.unit)}</span>
+          <span>Total: {formatPrice(product.price.unit)}</span>
         </Item>
       </Body>
     </Container>

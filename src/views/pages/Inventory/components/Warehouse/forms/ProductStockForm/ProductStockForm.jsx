@@ -29,7 +29,8 @@ import {
 } from '../../../../../../../firebase/warehouse/productStockService';
 import { useGetProductsWithBatch } from '../../../../../../../hooks/products/useGetProductsWithBatch';
 import useListenBatches from '../../../../../../../hooks/products/useListenBatch';
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber';
+
+import { formatNumber } from '@/utils/format';
 
 const { Option } = Select;
 
@@ -122,8 +123,8 @@ export function ProductStockForm() {
     totalStockFromBatches > 0
       ? Number(((stockDifference / totalStockFromBatches) * 100).toFixed(2))
       : 0;
-  const formattedStockDifference = useFormatNumber(stockDifference);
-  const formattedTotalStock = useFormatNumber(totalStockFromBatches);
+  const formattedStockDifference = formatNumber(stockDifference);
+  const formattedTotalStock = formatNumber(totalStockFromBatches);
 
   useEffect(() => {
     if (isOpen && warehouseId) {
@@ -133,7 +134,7 @@ export function ProductStockForm() {
         }),
       );
     }
-  }, [isOpen, warehouseId, shelfId, rowId, segmentId]);
+  }, [isOpen, warehouseId, shelfId, rowId, segmentId, dispatch]);
 
   const handleProductChange = (productId) => {
     const product = productsList.find((product) => product.id === productId);

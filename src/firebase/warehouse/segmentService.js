@@ -163,12 +163,13 @@ const deleteSegment = async (
 const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, _setError] = useState();
+  const [error, setError] = useState();
   const user = useSelector(selectUser);
   useEffect(() => {
     if (!user || !warehouseId || !shelfId || !rowShelfId) {
       setData([]);
       setLoading(false);
+      return;
     }
     const unsubscribe = listenAllSegments(
       user,
@@ -182,7 +183,7 @@ const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
     );
     return () => unsubscribe();
   }, [user, warehouseId, shelfId, rowShelfId]);
-  return { data, loading, error };
+  return { data, loading, error, setError };
 };
 
 export {

@@ -6,7 +6,7 @@ import {
   FilePdfOutlined,
 } from '@ant-design/icons';
 import { Tag, Empty, Tooltip } from 'antd';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
 const FileListContainer = styled.div`
@@ -161,12 +161,6 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
       ))}
     </FileListContainer>
   );
-};
-
-FileList.defaultProps = {
-  files: [],
-  removeFile: () => {},
-  handlePreview: () => {},
 };
 
 export default FileList;

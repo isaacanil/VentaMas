@@ -1,8 +1,6 @@
 import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
 import { Header } from '../../components/Header/Header';
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 import { Row } from '../../components/Table/Row';
@@ -12,12 +10,15 @@ import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '../../Style';
 import { GeneralBalance } from './components/GeneralBalance';
 import { PaymentArea } from './components/PaymentArea';
 
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
 export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
   const statusSpanish = {
     paid: 'Pagado',
   };
   const formatReceipt = (receipt) =>
-    `Cuota #${receipt.number}, ${useFormatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`;
+    `Cuota #${receipt.number}, ${formatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`;
   return (
     <HiddenPrintWrapper>
       <Container ref={ref}>
@@ -45,18 +46,18 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
                 value={
                   account?.invoiceNumber !== undefined &&
                   account?.invoiceNumber !== null
-                    ? `#${useFormatNumber(account?.invoiceNumber)}`
+                    ? `#${formatNumber(account?.invoiceNumber)}`
                     : 'N/A'
                 }
               />
               <InfoItem
                 label={'PAGO'}
-                value={useFormatPrice(account?.totalPaid)}
+                value={formatPrice(account?.totalPaid)}
                 justifyContent="space-between"
               />
               <InfoItem
                 label={'BALANCE DE CUENTA'}
-                value={useFormatPrice(account?.arBalance)}
+                value={formatPrice(account?.arBalance)}
                 justifyContent="space-between"
               />
               <Line />

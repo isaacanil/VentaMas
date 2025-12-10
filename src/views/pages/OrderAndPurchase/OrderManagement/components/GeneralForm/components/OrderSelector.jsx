@@ -6,9 +6,10 @@ import styled from 'styled-components';
 
 import { icons } from '../../../../../../../constants/icons/icons';
 import { getOrderData } from '../../../../../../../features/purchase/addPurchaseSlice';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../../utils/date/dateUtils';
 import { normalizeText } from '../../../../../../../utils/text';
+
+import { formatPrice } from '@/utils/format';
 
 const Wrapper = styled.div`
   display: grid;
@@ -137,7 +138,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
             ]}
             help={
               selectedOrder
-                ? `${DateUtils.convertMillisToISODate(selectedOrder?.dates?.createdAt)} | (${useFormatPrice(selectedOrder.total)}) `
+                ? `${DateUtils.convertMillisToISODate(selectedOrder?.dates?.createdAt)} | (${formatPrice(selectedOrder.total)}) `
                 : ''
             }
           >
@@ -200,7 +201,7 @@ const OrderSelector = ({ orders, orderLoading }) => {
                     {DateUtils.convertMillisToISODate(order.dates.createdAt)}
                   </div>
                   <div className="order-total">
-                    Total: {useFormatPrice(order.total)}
+                    Total: {formatPrice(order.total)}
                   </div>
                 </OrderCard>
               ))

@@ -17,7 +17,7 @@ import type {
   RequestedBy,
 } from '../types';
 
-type RecordAuthorizationApprovalPayload = {
+interface RecordAuthorizationApprovalPayload {
   businessId?: string | null;
   module?: string;
   action?: string;
@@ -27,7 +27,7 @@ type RecordAuthorizationApprovalPayload = {
   targetUser?: AppUser | RequestedBy | null;
   target?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
-};
+}
 
 const fbRecordAuthorizationApprovalTyped = fbRecordAuthorizationApproval as (
   payload: RecordAuthorizationApprovalPayload,

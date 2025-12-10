@@ -15,9 +15,10 @@ import {
 } from '../../../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
 import { toggleReceivableStatus } from '../../../../../../../../../../../../../features/cart/cartSlice';
 import { SelectCartData } from '../../../../../../../../../../../../../features/cart/cartSlice';
-import { useFormatPrice } from '../../../../../../../../../../../../../hooks/useFormatPrice';
 import DateUtils from '../../../../../../../../../../../../../utils/date/dateUtils';
 import { calculateInvoiceChange } from '../../../../../../../../../../../../../utils/invoice';
+
+import { formatPrice } from '@/utils/format';
 
 const getPositive = (value) => (value < 0 ? -value : value);
 
@@ -77,7 +78,7 @@ export const ReceivableWidget = ({
         <BalanceBadge>
           <BalanceLabel>Monto Pendiente</BalanceLabel>
           <BalanceValue>
-            {useFormatPrice(getPositive(currentBalance))}
+            {formatPrice(getPositive(currentBalance))}
           </BalanceValue>
         </BalanceBadge>
       </WidgetHeader>
@@ -90,7 +91,7 @@ export const ReceivableWidget = ({
             </InfoIcon>
             <InfoDetails>
               <InfoLabel>Total a Crédito</InfoLabel>
-              <InfoValue>{useFormatPrice(getPositive(change))}</InfoValue>
+              <InfoValue>{formatPrice(getPositive(change))}</InfoValue>
             </InfoDetails>
           </InfoItem>
 
@@ -114,7 +115,7 @@ export const ReceivableWidget = ({
             </InfoIcon>
             <InfoDetails>
               <InfoLabel>Monto/Cuota</InfoLabel>
-              <InfoValue>{useFormatPrice(installmentAmount || 0)}</InfoValue>
+              <InfoValue>{formatPrice(installmentAmount || 0)}</InfoValue>
             </InfoDetails>
           </InfoItem>
           <InfoItem>

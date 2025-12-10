@@ -95,14 +95,7 @@ export const UserAdmin = () => {
         navigate(HOME, { replace: true });
       }
     }
-  }, [
-    HOME,
-    canAccessUsers,
-    loading,
-    location.pathname,
-    managedRoutes,
-    navigate,
-  ]);
+  }, [canAccessUsers, loading, location.pathname, managedRoutes, navigate]);
 
   const sectionName = useMemo(() => {
     const normalizedPath =
@@ -148,11 +141,4 @@ const Container = styled.div`
   grid-template-rows: min-content 1fr;
   height: 100%;
   overflow: hidden;
-`;
-
-const LoadingState = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
 `;

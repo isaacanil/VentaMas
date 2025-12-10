@@ -3,8 +3,6 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type PluginOption, type UserConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 
-const KB = 1024;
-
 const plugins: PluginOption[] = [
   pluginReact({
     babel: {

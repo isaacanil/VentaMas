@@ -71,7 +71,7 @@ export const PaymentForm = () => {
     if (isOpen && paymentDetails.arId) {
       dispatch(fetchLastInstallmentAmount({ user, arId: paymentDetails.arId }));
     }
-  }, [isOpen, user, paymentDetails.arId]);
+  }, [isOpen, user, paymentDetails.arId, dispatch]);
 
   useEffect(() => {
     if (!isOpen) {

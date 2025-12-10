@@ -25,9 +25,9 @@ import BarcodeFixTooltip from './BarcodeGenerator/components/BarcodeFixTooltip';
 import { BarcodeInfoModal } from './BarcodeInfoModal/BarcodeInfoModal';
 import BarcodePreviewModal from './BarcodeInfoModal/BarcodePreviewModal';
 
-// Hook para geometría GS1 precisa usando util
-const useGS1Geometry = (dpi = PRINT_DPI, barcodeType) =>
-  getGS1Geometry(dpi, barcodeType);
+// Calcular dimensiones GS1 usando util
+const getGs1GeometryForType = (barcodeType) =>
+  getGS1Geometry(PRINT_DPI, barcodeType);
 
 const { Card, Input, Form, Button, Tooltip } = ant;
 
@@ -119,7 +119,7 @@ export const BarCode = ({ product }) => {
 
   // Calcular dimensiones GS1 precisas para preview
   const getBarcodeRenderProps = useMemo(() => {
-    const geometry = useGS1Geometry(PRINT_DPI, barcodeInfo?.type);
+    const geometry = getGs1GeometryForType(barcodeInfo?.type);
 
     return {
       width: (geometry.xPx / PRINT_DPI) * 96, // bar width in screen px
@@ -135,7 +135,7 @@ export const BarCode = ({ product }) => {
   const getValidationInfo = () => {
     if (!barcodeValue || !barcodeInfo?.type) return null;
 
-    const geometry = useGS1Geometry(PRINT_DPI, barcodeInfo.type);
+    const geometry = getGs1GeometryForType(barcodeInfo.type);
     const length = barcodeValue.length;
 
     if (geometry.exactLength) {

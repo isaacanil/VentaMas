@@ -41,13 +41,16 @@ interface StoredSession {
   deviceId: string | null;
 }
 
-type FunctionsErrorResponse = {
+interface FunctionsErrorResponse {
   error?: unknown;
   message?: unknown;
   code?: unknown;
-};
+}
 
-type FunctionsError = Error & { code?: string | number; status: number };
+interface FunctionsError extends Error {
+  code?: string | number;
+  status: number;
+}
 
 const getStoredSessionSafe = (): StoredSession => {
   const session = getStoredSession() as Partial<StoredSession>;

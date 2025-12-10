@@ -3,7 +3,7 @@ import { Button, Dropdown, InputNumber } from 'antd';
 import { FC, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+import { formatPrice../../../../../../hooks/forforforforformatPrice
 
 import type { DiscountType } from '../types';
 import type { MenuProps } from 'antd';
@@ -30,7 +30,7 @@ export const DiscountSection: FC<DiscountSectionProps> = ({
   onDiscountTypeChange,
   onDiscountValueChange,
 }) => {
-  const formattedSubtotal = useMemo(() => useFormatPrice(subtotal), [subtotal]);
+  const formattedSubtotal = useMemo(() => formatPrice[subtotal]);
 
   const addonBefore = discountType === 'percentage' ? '%' : '$';
   const maxValue = discountType === 'percentage' ? 100 : subtotal;

@@ -3,8 +3,6 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import { separator } from '../../../../hooks/separator';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
 import {
   getTax,
   getTotalPrice,
@@ -14,6 +12,9 @@ import { convertTimeToSpanish } from '../../../component/modals/ProductForm/comp
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
+
+import { formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
 
 export const ProductList = ({ data }) => {
   const { products, NCF } = data;
@@ -32,7 +33,7 @@ export const ProductList = ({ data }) => {
                       <div>
                         {product?.weightDetail?.weight}{' '}
                         {product?.weightDetail?.weightUnit} X{' '}
-                        {useFormatPrice(
+                        {formatPrice(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
                             taxReceipt?.enabled,

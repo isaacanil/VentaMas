@@ -36,8 +36,8 @@ export const uploadSingleFile = async (
   storageRef,
   file,
   metadata,
-  onProgress = () => {},
-  onGlobalProgress = () => {},
+  onProgress,
+  onGlobalProgress,
 ) => {
   const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
@@ -45,8 +45,8 @@ export const uploadSingleFile = async (
     const unsubscribe = uploadTask.on(
       'state_changed',
       (snapshot) => {
-        onProgress(snapshot, file);
-        onGlobalProgress(snapshot);
+        onProgress?.(snapshot, file);
+        onGlobalProgress?.(snapshot);
       },
       (error) => reject(error),
       async () => {
@@ -88,7 +88,7 @@ export const fbUploadFile = async (user, sectionName, file, options = {}) => {
   const {
     allowedTypes = [],
     maxSizeInBytes = null,
-    onProgress = () => {},
+    onProgress,
     customMetadata = {},
     normalizeFileName = true,
   } = options;
@@ -118,8 +118,10 @@ export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
     fileProperty = null,
     allowedTypes = [],
     maxSizeInBytes = null,
-    onProgress = () => {},
-    updateGlobalProgress = () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    onProgress = () => { },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    updateGlobalProgress = () => { },
     customMetadata = {},
     normalizeFileName = true,
     handleErrorsIndividually = false,

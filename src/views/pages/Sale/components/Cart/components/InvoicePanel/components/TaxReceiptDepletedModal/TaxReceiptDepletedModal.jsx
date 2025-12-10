@@ -53,16 +53,18 @@ const Highlight = styled.span`
   font-weight: 600;
 `;
 
+/* eslint-disable @typescript-eslint/no-empty-function */
 export const TaxReceiptDepletedModal = ({
   open,
   receipts = [],
   currentReceipt = undefined,
   loading = false,
-  onSelectReceipt = () => {},
-  onRetry = () => {},
-  onContinueWithout = () => {},
-  onCancel = () => {},
+  onSelectReceipt = () => { },
+  onRetry = () => { },
+  onContinueWithout = () => { },
+  onCancel = () => { },
 }) => {
+  /* eslint-enable @typescript-eslint/no-empty-function */
   const options = buildOptions(receipts);
   const selectedOption = options.find(
     (option) => option.value === currentReceipt,
