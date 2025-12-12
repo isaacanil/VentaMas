@@ -218,7 +218,7 @@ const AddReceiptDrawer = ({ visible, onCancel, existingReceipts = [] }) => {
                         <ExclamationCircleOutlined /> Ya existe
                       </ExistingOverlay>
                     )}
-                    <CardHeader selected={selected} disabled={isExisting}>
+                    <CardHeader $selected={selected} $disabled={isExisting}>
                       <h4>{template.name}</h4>
                       <small>
                         Tipo: {template.type} | Serie: {template.serie}
@@ -357,9 +357,9 @@ const CardHeader = styled.div`
     margin: 0 0 6px;
     font-size: 16px;
     font-weight: 600;
-    color: ${(props) => {
-      if (props.disabled) return '#aaaaaa';
-      return props.selected ? '#1890ff' : 'inherit';
+    color: ${({ $disabled, $selected }) => {
+      if ($disabled) return '#aaaaaa';
+      return $selected ? '#1890ff' : 'inherit';
     }};
   }
 

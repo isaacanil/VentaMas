@@ -21,9 +21,6 @@ import {
   storeSessionLocally,
 } from '../sessionClient';
 
-const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
-const logoutCallable = httpsCallable(functions, 'clientLogout');
-
 const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
 
 const ACTIVITY_EVENTS = [
@@ -123,6 +120,7 @@ export function useAutomaticLogin() {
       const { sessionToken } = getStoredSession();
       if (sessionToken) {
         try {
+          const logoutCallable = httpsCallable(functions, 'clientLogout');
           await logoutCallable({ sessionToken });
         } catch (error) {
           console.error('logout callable error:', error?.message || error);
@@ -185,12 +183,12 @@ export function useAutomaticLogin() {
       if (refreshLockRef.current) {
         return { ok: false, reason: 'locked' };
       }
-      refreshLockRef.current = true;
-      try {
-        const { sessionToken } = getStoredSession();
-        if (!sessionToken) {
-          if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
-            if (isMountedRef.current) {
+        refreshLockRef.current = true;
+        try {
+          const { sessionToken } = getStoredSession();
+          if (!sessionToken) {
+            if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
+              if (isMountedRef.current) {
               setStatus('ready');
               setError(null);
             }
@@ -202,6 +200,7 @@ export function useAutomaticLogin() {
           return { ok: false, reason: 'missing-token' };
         }
 
+        const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
         const response = await refreshSessionCallable({
           sessionToken,
           extend: options.extend !== false,

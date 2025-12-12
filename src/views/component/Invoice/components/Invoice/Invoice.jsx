@@ -9,8 +9,8 @@ import { InvoiceTemplate3 } from '../../templates/Invoicing/InvoiceTemplate3/Inv
 import InvoiceTemplate4 from '../../templates/Invoicing/InvoiceTemplate4/InvoiceTemplate4';
 
 const InvoiceWrapper = styled.div`
-  ${(props) =>
-    props.template === 'template2' &&
+  ${({ $template }) =>
+    $template === 'template2' &&
     `
     font-size: 12px;
     
@@ -23,8 +23,8 @@ const InvoiceWrapper = styled.div`
     }
   `}
 
-  ${(props) =>
-    props.template === 'template1' &&
+  ${({ $template }) =>
+    $template === 'template1' &&
     `
     font-size: 14px;
     
@@ -85,7 +85,7 @@ export const Invoice = React.forwardRef(
     };
 
     return (
-      <InvoiceWrapper template={template}>{renderTemplate()}</InvoiceWrapper>
+      <InvoiceWrapper $template={template}>{renderTemplate()}</InvoiceWrapper>
     );
   },
 );

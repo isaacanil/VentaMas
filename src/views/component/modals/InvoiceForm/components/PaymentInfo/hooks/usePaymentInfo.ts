@@ -11,7 +11,7 @@ import type {
   RootState,
 } from '../types';
 
-import { formatPrice} from '@/utils/formatPrice'
+import { formatPrice } from '@/utils/format';
 
 
 interface UsePaymentInfoArgs {

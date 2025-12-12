@@ -6,7 +6,7 @@ import { Item } from './Item';
 export const OrderMenuFilter = ({ MenuIsOpen }) => {
   const [orderMenuData, setOrderMenuData] = useState([]);
   return (
-    <Container isOpen={MenuIsOpen ? true : false}>
+    <Container $isOpen={MenuIsOpen ? true : false}>
       <Head>
         <h3>Filtros</h3>
       </Head>
@@ -41,8 +41,8 @@ const Container = styled.div`
   transition: transform 400ms ease-in-out;
   transform: perspective();
   box-shadow: 10px 10px 10px 2px rgb(0 0 0 / 15%);
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case true:
         return `
         transform: scaleX(1) translateX(0px) translateY(0px);

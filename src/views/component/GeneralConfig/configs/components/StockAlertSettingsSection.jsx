@@ -8,7 +8,7 @@ import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const ConfigItem = styled.div`
-  padding-left: ${(props) => (props.level || 0) * 16}px;
+  padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
 
@@ -162,7 +162,7 @@ const StockAlertSettingsSection = () => {
 
   return (
     <Form layout="vertical" form={form}>
-      <ConfigItem level={0}>
+      <ConfigItem $level={0}>
         <Form.Item name="stockAlertsEnabled" valuePropName="checked">
           <Checkbox onChange={(e) => onToggleAlerts(e.target.checked)}>
             Habilitar alertas de stock
@@ -173,11 +173,11 @@ const StockAlertSettingsSection = () => {
       {alertsEnabled && (
         <>
           {/* Título de sección para agrupar los umbrales y evitar repetir la palabra "Umbral" en cada label */}
-          <ConfigItem level={1} style={{ marginTop: 8 }}>
+          <ConfigItem $level={1} style={{ marginTop: 8 }}>
             <strong>Umbrales</strong>
           </ConfigItem>
           <TwoColumns>
-            <ConfigItem level={1}>
+            <ConfigItem $level={1}>
               <Form.Item
                 label="Stock bajo"
                 name="stockLowThreshold"
@@ -192,7 +192,7 @@ const StockAlertSettingsSection = () => {
               </Form.Item>
             </ConfigItem>
 
-            <ConfigItem level={1}>
+            <ConfigItem $level={1}>
               <Form.Item
                 label="Stock crítico"
                 name="stockCriticalThreshold"
@@ -208,7 +208,7 @@ const StockAlertSettingsSection = () => {
             </ConfigItem>
           </TwoColumns>
 
-          <ConfigItem level={1}>
+          <ConfigItem $level={1}>
             <Form.Item
               label="Correos de notificación"
               name="stockAlertEmail"

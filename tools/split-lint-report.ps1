@@ -1,6 +1,6 @@
-# Script para dividir el reporte de linting en archivos de 50 errores
+# Script para dividir el reporte de linting en archivos de 10 errores
 param(
-    [int]$BatchSize = 50,
+    [int]$BatchSize = 10,
     [string]$ReportsDir = "reports",
     [string]$InputFile = "lint-report.txt"
 )

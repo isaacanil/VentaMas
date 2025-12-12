@@ -94,10 +94,10 @@ const ProgressBarContainer = styled.div`
   display: flex;
 `;
 
-const ProgressSegment = styled.div<{ width: number; color: string }>`
+const ProgressSegment = styled.div<{ $width: number; $color: string }>`
   height: 100%;
-  width: ${props => props.width}%;
-  background-color: ${props => props.color};
+  width: ${({ $width }) => $width}%;
+  background-color: ${({ $color }) => $color};
 `;
 
 const Legend = styled.div`
@@ -108,12 +108,12 @@ const Legend = styled.div`
   margin-top: 4px;
 `;
 
-const Dot = styled.span<{ color: string }>`
+const Dot = styled.span<{ $color: string }>`
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: ${props => props.color};
+  background-color: ${({ $color }) => $color};
   margin-right: 4px;
 `;
 
@@ -146,13 +146,13 @@ export const FinancialSummary = ({ data, className }: Props) => {
 
             {/* Barra Visual */}
             <ProgressBarContainer>
-              <ProgressSegment width={percentWithCxC} color="#3b82f6" /> {/* Azul: Con Deuda */}
-              <ProgressSegment width={percentWithoutCxC} color="#e5e7eb" /> {/* Gris: Sin Deuda */}
+              <ProgressSegment $width={percentWithCxC} $color="#3b82f6" /> {/* Azul: Con Deuda */}
+              <ProgressSegment $width={percentWithoutCxC} $color="#e5e7eb" /> {/* Gris: Sin Deuda */}
             </ProgressBarContainer>
 
             <Legend>
-              <span><Dot color="#3b82f6" /> {data.withCxC} Con CxC</span>
-              <span><Dot color="#e5e7eb" /> {data.withoutCxC} Sin CxC</span>
+              <span><Dot $color="#3b82f6" /> {data.withCxC} Con CxC</span>
+              <span><Dot $color="#e5e7eb" /> {data.withoutCxC} Sin CxC</span>
             </Legend>
           </div>
         </BaseCard>

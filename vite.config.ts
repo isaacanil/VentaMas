@@ -25,9 +25,6 @@ if (process.env.ANALYZE === 'true') {
 }
 
 export default defineConfig({
-  optimizeDeps: {
-    include: ['react-is', 'scheduler'], // Agregamos scheduler aquí también por seguridad
-  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -67,22 +64,41 @@ export default defineConfig({
             },
 
             // Firebase - NO usar maxSize para evitar romper dependencias internas
+           {
+              name: 'firebase-firestore',
+              test: (id) => id.includes('firebase') && id.includes('firestore'),
+              priority: 45, 
+            },
+            {
+              name: 'firebase-auth',
+              test: (id) => id.includes('firebase') && id.includes('auth'),
+              priority: 45,
+            },
+            {
+              name: 'firebase-storage',
+              test: (id) => id.includes('firebase') && id.includes('storage'),
+              priority: 45,
+            },
+            {
+              name: 'firebase-database', 
+              test: (id) => id.includes('firebase/database') || id.includes('@firebase/database'),
+              priority: 60,
+            },
             {
               name: 'firebase-core',
-              test: (id: string) =>
-                id.includes('firebase') || id.includes('@firebase'),
-              priority: 40,
+              test: (id) => id.includes('firebase') || id.includes('@firebase'),
+              priority: 40, 
             },
 
             // UI (Ant Design + rc-*)
-            {
-              name: 'ui-antd',
-              test: (id: string) =>
-                id.includes('antd') ||
-                id.includes('@ant-design') ||
-                id.includes('rc-'),
-              priority: 35,
-            },
+            // {
+            //   name: 'ui-antd',
+            //   test: (id: string) =>
+            //     id.includes('antd') ||
+            //     id.includes('@ant-design') ||
+            //     id.includes('rc-'),
+            //   priority: 35,
+            // },
 
             // Animation (Framer Motion)
             {

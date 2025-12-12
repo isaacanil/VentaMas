@@ -1,6 +1,6 @@
 # Script para dividir el reporte de linting por tipo de error y severidad
 param(
-    [int]$MaxPerFile = 50,
+    [int]$MaxPerFile = 10,
     [string]$ReportsDir = "reports",
     [string]$InputFile = "lint-report.txt"
 )

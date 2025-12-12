@@ -12,8 +12,8 @@ export const MessageAlert = ({ isOpen, data }) => {
   const closeModal = () => dispatch(toggleViewOrdersNotes({ isOpen: 'close' }));
 
   return (
-    <Backdrop isOpen={isOpen === true && data !== null ? true : false}>
-      <Container isOpen={isOpen === true ? true : false}>
+    <Backdrop $isOpen={isOpen === true && data !== null ? true : false}>
+      <Container $isOpen={isOpen === true ? true : false}>
         <Body>
           <IconContainer>
             <FontAwesomeIcon icon={faMessage} />
@@ -48,8 +48,8 @@ const Backdrop = styled.div`
   justify-content: center;
   position: absolute;
   z-index: 2;
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case false:
         return `
           transform: scale(0);
@@ -77,8 +77,8 @@ const Container = styled.div`
   align-items: center;
   padding: 0.5em 0;
 
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case false:
         return `
           transform: scale(0);

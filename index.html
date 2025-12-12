@@ -3,11 +3,18 @@
 <html lang="es">
 
 <head>
-  <script crossOrigin="anonymous" src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/ventamax.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VENTAMAX</title>
+  <script type="module">
+    if (import.meta.env.DEV) {
+      const script = document.createElement('script');
+      script.crossOrigin = 'anonymous';
+      script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
+      document.head.appendChild(script);
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style"

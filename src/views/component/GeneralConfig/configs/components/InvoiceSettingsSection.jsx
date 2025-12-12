@@ -11,7 +11,7 @@ import InvoiceTemplates from '../../../Invoice/components/InvoiceTemplates/Invoi
 import DueDateConfig from './DueDateConfig';
 
 const ConfigItem = styled.div`
-  padding-left: ${(props) => (props.level || 0) * 16}px;
+  padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
 
@@ -56,13 +56,13 @@ const InvoiceSettingsSection = () => {
   return (
     <Form layout="vertical" form={form}>
       {contextHolder}
-      <ConfigItem level={1}>
+      <ConfigItem $level={1}>
         <InvoiceTemplates previewInModal />
       </ConfigItem>
-      <ConfigItem level={1}>
+      <ConfigItem $level={1}>
         <DueDateConfig />
       </ConfigItem>
-      <ConfigItem level={1}>
+      <ConfigItem $level={1}>
         <Form.Item
           name="invoiceMessage"
           label="Mensaje en la factura"

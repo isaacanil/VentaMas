@@ -24,9 +24,9 @@ const TEMPLATES_CONFIG = {
 };
 
 const InvoiceContainer = styled.div`
-  width: ${(props) => TEMPLATES_CONFIG[props.template]?.width};
-  height: ${(props) => TEMPLATES_CONFIG[props.template]?.height};
-  padding: ${(props) => TEMPLATES_CONFIG[props.template]?.padding};
+  width: ${({ $template }) => TEMPLATES_CONFIG[$template]?.width};
+  height: ${({ $template }) => TEMPLATES_CONFIG[$template]?.height};
+  padding: ${({ $template }) => TEMPLATES_CONFIG[$template]?.padding};
   margin: 20px auto;
   background: white;
   box-shadow: 0 0 10px rgb(0 0 0 / 10%);
@@ -79,8 +79,8 @@ export default function InvoiceTemplates({
   };
 
   const renderInvoice = (ref) => (
-    <PreviewContainer template={selectedTemplate}>
-      <InvoiceContainer template={selectedTemplate}>
+    <PreviewContainer>
+      <InvoiceContainer $template={selectedTemplate}>
         <Quotation
           ref={ref}
           template={selectedTemplate}

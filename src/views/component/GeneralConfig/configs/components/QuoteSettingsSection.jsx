@@ -8,7 +8,7 @@ import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
 
 const ConfigItem = styled.div`
-  padding-left: ${(props) => (props.level || 0) * 16}px;
+  padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
 
@@ -69,7 +69,7 @@ const QuoteSettingsSection = () => {
 
   return (
     <Form layout="vertical" form={form}>
-      <ConfigItem level={0}>
+      <ConfigItem $level={0}>
         <Form.Item name="quoteEnabled" valuePropName="checked">
           <Checkbox onChange={(e) => handleQuoteEnabled(e.target.checked)}>
             Habilitar cotizaciones
@@ -79,7 +79,7 @@ const QuoteSettingsSection = () => {
 
       {quoteEnabledValue && (
         <>
-          <ConfigItem level={1}>
+          <ConfigItem $level={1}>
             <Form.Item
               label="Validez de cotización (días)"
               name="quoteValidity"
@@ -91,7 +91,7 @@ const QuoteSettingsSection = () => {
               />
             </Form.Item>
           </ConfigItem>
-          <ConfigItem level={1}>
+          <ConfigItem $level={1}>
             <Form.Item
               label="Nota predeterminada en cotizaciones"
               name="quoteDefaultNote"

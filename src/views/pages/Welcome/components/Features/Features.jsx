@@ -105,7 +105,7 @@ const Features = () => {
                   }}
                 >
                   <div>
-                    <IconContainer color={feature.color}>
+                    <IconContainer $color={feature.color}>
                       {getIcon(feature.icon)}
                     </IconContainer>
                     <Title
@@ -219,16 +219,16 @@ const IconContainer = styled.div`
   height: 64px;
   margin: 0 auto 16px;
   font-size: 28px;
-  color: ${(props) => props.color};
-  background: ${(props) =>
-    `linear-gradient(135deg, ${props.color}15 0%, ${props.color}25 100%)`};
-  border: 2px solid ${(props) => `${props.color}30`};
+  color: ${({ $color }) => $color};
+  background: ${({ $color }) =>
+    `linear-gradient(135deg, ${$color}15 0%, ${$color}25 100%)`};
+  border: 2px solid ${({ $color }) => `${$color}30`};
   border-radius: 50%;
   transition: all 0.3s ease;
 
   &:hover {
-    background: ${(props) =>
-      `linear-gradient(135deg, ${props.color}25 0%, ${props.color}35 100%)`};
+    background: ${({ $color }) =>
+      `linear-gradient(135deg, ${$color}25 0%, ${$color}35 100%)`};
     transform: rotate(5deg) scale(1.1);
   }
 `;

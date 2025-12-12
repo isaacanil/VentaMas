@@ -18,24 +18,24 @@ const StatusBadge = styled.div`
   padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  color: ${(props) =>
-    props.status === 'pending'
+  color: ${({ $status }) =>
+    $status === 'pending'
       ? '#d46b08'
-      : props.status === 'reserved'
+      : $status === 'reserved'
         ? '#096dd9'
         : '#595959'};
   text-transform: capitalize;
-  background: ${(props) =>
-    props.status === 'pending'
+  background: ${({ $status }) =>
+    $status === 'pending'
       ? '#fff7e6'
-      : props.status === 'reserved'
+      : $status === 'reserved'
         ? '#e6f7ff'
         : '#f5f5f5'};
   border: 1px solid
-    ${(props) =>
-      props.status === 'pending'
+    ${({ $status }) =>
+      $status === 'pending'
         ? '#ffd591'
-        : props.status === 'reserved'
+        : $status === 'reserved'
           ? '#91d5ff'
           : '#d9d9d9'};
   border-radius: 4px;
@@ -67,7 +67,7 @@ const BackorderCard = ({ item, index }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15, delay: index * 0.02 }}
     >
-      <StatusBadge status={item.status}>
+      <StatusBadge $status={item.status}>
         {item.status === 'pending'
           ? 'Pendiente'
           : item.status === 'reserved'

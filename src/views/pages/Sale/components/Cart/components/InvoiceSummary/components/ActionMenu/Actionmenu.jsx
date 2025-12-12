@@ -16,7 +16,7 @@ export const ActionMenu = ({ options = [], disabled }) => {
     <>
       <Container>
         <MenuButton onClick={() => setVisible(!visible)} disabled={disabled}>
-          <DotsIcon disabled={disabled}>⋮</DotsIcon>
+          <DotsIcon $disabled={disabled}>⋮</DotsIcon>
         </MenuButton>
       </Container>
       <AnimatePresence>
@@ -81,7 +81,7 @@ const DotsIcon = styled.span`
   font-size: 22px;
   font-weight: 600;
   line-height: 0;
-  color: ${(props) => (props.disabled ? '#94a3b8' : '#1e293b')};
+  color: ${({ $disabled }) => ($disabled ? '#94a3b8' : '#1e293b')};
 `;
 
 const MenuWrapper = styled(motion.div)`

@@ -58,8 +58,8 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
   }, [progress, url]);
 
   return (
-    <Container spin={progress > 0 && progress < 100}>
-      <Progress progressStatus={progress}></Progress>
+    <Container $spin={progress > 0 && progress < 100}>
+      <Progress $progressStatus={progress}></Progress>
       <label htmlFor={id}>
         {startIconBtn}
         {titleBtn}
@@ -99,8 +99,8 @@ const Container = styled.div`
       font-size: 1.2em;
     }
   }
-  ${(props) => {
-    switch (props.spin) {
+  ${({ $spin }) => {
+    switch ($spin) {
       case true:
         return `
                 label{
@@ -130,7 +130,7 @@ const Container = styled.div`
 
 const Progress = styled.div`
   position: absolute;
-  width: ${(props) => props.progressStatus}%;
+  width: ${({ $progressStatus }) => $progressStatus}%;
   height: 100%;
   pointer-events: none;
   background-color: rgb(66 164 245 / 55.5%);

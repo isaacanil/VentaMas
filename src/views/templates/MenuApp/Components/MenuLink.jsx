@@ -46,11 +46,19 @@ export const MenuLink = ({ item, onActionDone }) => {
     // Cerrar el overlay del submenu si viene callback del padre
     if (typeof onActionDone === 'function') onActionDone();
   };
+
+  const handlePrefetch = () => {
+    if (typeof item?.preload === 'function') {
+      item.preload();
+    }
+  };
   const Component = item?.route ? MenuItemLink : MenuItemDiv;
   return (
     <Fragment>
       <Component
         onClick={item.submenu ? showSubMenu : item.action ? handleAction : null}
+        onPointerEnter={handlePrefetch}
+        onFocus={handlePrefetch}
         to={item?.route || '#'}
         className={isExactMatch ? 'active' : ''}
       >

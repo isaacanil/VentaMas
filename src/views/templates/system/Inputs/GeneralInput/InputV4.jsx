@@ -630,7 +630,7 @@ const ErrorContainer = styled.ul`
 `;
 
 const ErrorMessage = styled.li`
-  display: ${(props) => (props.show ? 'inline' : 'hidden')};
+  display: ${({ $show }) => ($show ? 'inline' : 'hidden')};
   margin-left: 8px;
   font-size: 14px;
   color: #ff3547;

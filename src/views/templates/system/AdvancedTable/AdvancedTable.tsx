@@ -473,7 +473,6 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
       <TableContainer>
         <Wrapper
           ref={wrapperRef}
-          isWideScreen={isWideScreen}
           onScroll={handleWrapperScroll}
           style={
             shouldUseVirtualization
@@ -616,7 +615,7 @@ const TableContainer = styled.div`
   isolation: isolate;
 `;
 
-const Wrapper = styled.div<{ isWideScreen: boolean }>`
+const Wrapper = styled.div`
   position: relative;
   display: grid;
   grid-template-rows: min-content 1fr;
@@ -667,17 +666,13 @@ export const ExpandedRow = styled.div`
 
 type StyledColumn = InternalColumn<TableRow>;
 
-export const Row = styled.div<{
-  columns: StyledColumn[];
-  isWideLayout: boolean;
-  isWideScreen: boolean;
-}>`
+export const Row = styled.div<{ $columns: StyledColumn[] }>`
   position: relative;
   display: grid;
-  grid-template-columns: ${(props) => {
-    if (!props.columns.length) return '1fr';
+  grid-template-columns: ${({ $columns }) => {
+    if (!$columns.length) return '1fr';
 
-    const template = props.columns.map((col) => {
+    const template = $columns.map((col) => {
       const minWidth = col.minWidth || '100px';
       const maxWidth = col.maxWidth || '1fr';
 

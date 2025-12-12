@@ -213,7 +213,7 @@ const CashierMigrationTool = () => {
               <DetailsContainer>
                 <h5>Detalles de la migración:</h5>
                 {migrationStatus.results.details.map((detail, index) => (
-                  <DetailItem key={index} success={detail.status === 'success'}>
+                  <DetailItem key={index} $success={detail.status === 'success'}>
                     <span>
                       <strong>{detail.userName}</strong> ({detail.userId})
                     </span>
@@ -362,7 +362,7 @@ const DetailItem = styled.div`
   justify-content: space-between;
   padding: 0.5rem;
   margin: 0.25rem 0;
-  background: ${(props) => (props.success ? '#d4edda' : '#f8d7da')};
+  background: ${({ $success }) => ($success ? '#d4edda' : '#f8d7da')};
   border-bottom: 1px solid #eee;
   border-radius: 3px;
 

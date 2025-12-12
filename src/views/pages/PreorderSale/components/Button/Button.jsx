@@ -14,8 +14,8 @@ const StyledButton = styled.button`
     background-color 0.2s,
     color 0.2s;
 
-  ${(props) => {
-    switch (props.variant) {
+  ${({ $variant }) => {
+    switch ($variant) {
       case 'ghost':
         return css`
           color: #1e3a8a;
@@ -57,8 +57,8 @@ const StyledButton = styled.button`
     }
   }}
 
-  ${(props) => {
-    switch (props.size) {
+  ${({ $size }) => {
+    switch ($size) {
       case 'sm':
         return css`
           padding: 0.25rem 0.5rem;
@@ -86,7 +86,7 @@ const Button = ({
   style,
 }) => {
   return (
-    <StyledButton variant={variant} size={size} onClick={onClick} style={style}>
+    <StyledButton $variant={variant} $size={size} onClick={onClick} style={style}>
       {children}
     </StyledButton>
   );

@@ -24,7 +24,7 @@ const OptionContainer = styled.div`
 `;
 
 const ConfigItem = styled.div`
-  padding-left: ${(props) => (props.level || 0) * 16}px;
+  padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
 
@@ -157,7 +157,7 @@ const DueDateConfig = () => {
 
       {hasDueDate && (
         <ConfigGroupItem>
-          <ConfigItem level={2}>
+          <ConfigItem $level={2}>
             <Form.Item label="Opciones de vencimiento predefinidas">
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Select
@@ -228,7 +228,7 @@ const DueDateConfig = () => {
             </Form.Item>
           </ConfigItem>
           {useCustomConfig && (
-            <ConfigItem level={2}>
+            <ConfigItem $level={2}>
               <Form.Item label="Período de vencimiento personalizado">
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <InputNumber

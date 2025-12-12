@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 vite build",
+    "build": "vite build",
     "rollup": "npx rollup --config",
     "emulators": "firebase emulators:start --only functions,firestore",
     "preview": "vite preview",
@@ -74,7 +74,6 @@
     "exceljs": "^4.3.0",
     "file-saver": "^2.0.5",
     "firebase": "^11.0.1",
-    "firebase-functions": "^7.0.0",
     "framer-motion": "^12.23.25",
     "gsap": "^3.13.0",
     "html2canvas": "^1.4.1",

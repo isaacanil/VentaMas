@@ -116,7 +116,7 @@ const StyledInput = styled.textarea`
 `;
 
 const ErrorMessage = styled.span`
-  display: ${(props) => (props.show ? 'inline' : 'hidden')};
+  display: ${({ $show }) => ($show ? 'inline' : 'hidden')};
   margin-left: 8px;
   font-size: 12px;
   color: #ff3547;

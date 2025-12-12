@@ -38,7 +38,7 @@ export const AccountReceivableItem = ({ ar, client }) => {
                 </ItemDetail>
                 <ItemDetail>
                     <DetailLabel>Balance Pendiente:</DetailLabel>
-                    <DetailValue highlight>{formatPrice(ar.arBalance)}</DetailValue>
+                    <DetailValue $highlight>{formatPrice(ar.arBalance)}</DetailValue>
                 </ItemDetail>
                 <ItemDetail>
                     <DetailLabel>Fecha:</DetailLabel>
@@ -170,8 +170,8 @@ const DetailLabel = styled.span`
 
 const DetailValue = styled.span`
   font-size: 0.75rem;
-  font-weight: ${props => props.highlight ? '700' : '500'};
-  color: ${props => props.highlight ? '#cf1322' : '#333'};
+  font-weight: ${({ $highlight }) => $highlight ? '700' : '500'};
+  color: ${({ $highlight }) => $highlight ? '#cf1322' : '#333'};
 `;
 
 const ActionBar = styled.div`

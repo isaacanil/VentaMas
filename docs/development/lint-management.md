@@ -2,6 +2,8 @@
 
 > Sistema completo para analizar y corregir errores de linting de forma organizada y eficiente.
 
+Nota: los ejemplos de conteos usan lotes de 50 generados antes; el tamano por defecto ahora es 10 para mantener archivos mas manejables.
+
 ## 📋 Tabla de Contenidos
 
 - [Inicio Rápido](#-inicio-rápido)
@@ -316,7 +318,7 @@ code reports/by-type/errors/import-no-unresolved.txt
 
 ### Cambiar Tamaño de Lotes
 
-Por defecto, los lotes son de 50 problemas. Para cambiar:
+Por defecto, los lotes son de 10 problemas. Para cambiar:
 
 ```bash
 # Lotes de 100

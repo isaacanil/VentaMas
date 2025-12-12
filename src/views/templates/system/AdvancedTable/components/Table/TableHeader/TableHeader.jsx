@@ -16,19 +16,15 @@ export const TableHeader = ({
   const activeColumns = columnOrder.filter((col) => col.status === 'active');
 
   return (
-    <Container columns={activeColumns}>
-      <Row
-        columns={activeColumns}
-        isWideScreen={isWideScreen}
-        isWideLayout={isWideLayout}
-      >
+    <Container>
+      <Row $columns={activeColumns}>
         {activeColumns.map((col, index) => (
           <HeaderCell
             key={index}
-            align={col.align}
-            fixed={col.fixed}
-            minWidth={col.minWidth}
-            maxWidth={col.maxWidth}
+            $align={col.align}
+            $fixed={col.fixed}
+            $minWidth={col.minWidth}
+            $maxWidth={col.maxWidth}
             data-size={rowSize}
             onClick={() => (col.sortable ? handleSort(col.accessor) : null)}
           >
@@ -84,12 +80,12 @@ const HeaderCell = styled.div`
   font-weight: bold;
   gap: 0.6em;
   height: ${() => sizeHeights.medium};
-  justify-content: ${(props) => props.align || 'flex-start'};
+  justify-content: ${(props) => props.$align || 'flex-start'};
   overflow: hidden;
   min-width: 0;
   padding: 0 10px;
-  position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
-  text-align: ${(props) => props.align || 'left'};
+  position: ${(props) => (props.$fixed ? 'sticky' : 'relative')};
+  text-align: ${(props) => props.$align || 'left'};
   white-space: nowrap;
   z-index: 4;
 
@@ -102,7 +98,7 @@ const HeaderCell = styled.div`
   }
 
   ${(props) =>
-    props.fixed === 'left' &&
+    props.$fixed === 'left' &&
     `
     left: 0;
     z-index: 6;
@@ -110,7 +106,7 @@ const HeaderCell = styled.div`
     border-right: 1px solid var(--gray-3);
   `}
   ${(props) =>
-    props.fixed === 'right' &&
+    props.$fixed === 'right' &&
     `
     right: 0;
     z-index: 6;
@@ -119,8 +115,8 @@ const HeaderCell = styled.div`
   `}
 
   @media (width <= 1600px) {
-    min-width: ${(props) => props.minWidth || '100px'};
-    max-width: ${(props) => props.maxWidth || '1fr'};
+    min-width: ${(props) => props.$minWidth || '100px'};
+    max-width: ${(props) => props.$maxWidth || '1fr'};
   }
 `;
 

@@ -1,325 +1,326 @@
-﻿================================================================================
-REGLA: react-hooks/exhaustive-deps (PARTE 1 de 3)
-SEVERIDAD: warning
-TOTAL DE PROBLEMAS: 50
-================================================================================
+﻿import { Button, Input, message } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../../constants/icons/icons';
+import {
+  addProductInvoiceForm,
+  changeAmountToBuyProduct,
+  deleteProductInvoiceForm,
+} from '../../../../../../features/invoice/invoiceFormSlice';
+import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts';
+import { formatPrice } from '@/utils/format';
+import { getTotalPrice } from '../../../../../../utils/pricing';
+
+import { getCategoryName, getCategoryStats } from './productDataUtils';
+import { ProductFilterToolbar } from './ProductFilterToolbar';
+import { ProductListModal } from './ProductListModal';
+import { StyledProductTable } from './ProductTables.styles';
+
+const getProductQuantity = (product) => {
+  if (!product) return 1;
+  const { amountToBuy } = product;
+
+  if (typeof amountToBuy === 'number') {
+    return amountToBuy > 0 ? amountToBuy : 1;
+  }
+
+  if (amountToBuy && typeof amountToBuy === 'object') {
+    const total = Number(amountToBuy.total);
+    const unit = Number(amountToBuy.unit);
+
+    if (!Number.isNaN(total) && total > 0) return total;
+    if (!Number.isNaN(unit) && unit > 0) return unit;
+  }
+
+  return 1;
+};
+
+const getFormattedUnitPrice = (product) => {
+  const quantity = getProductQuantity(product);
+  const total = getTotalPrice(product);
+  const unitPrice = quantity > 0 ? total / quantity : total;
+  return formatPrice(unitPrice);
+};
+
+const getFormattedTotalPrice = (product) =>
+  formatPrice(getTotalPrice(product));
+
+export const Products = ({ invoice, isEditLocked = false }) => {
+  const dispatch = useDispatch();
+  const [isProductListModalVisible, setProductListModalVisible] =
+    useState(false);
+  const { products } = useGetProducts();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const sortOptions = useMemo(
+    () => [
+      { label: 'Producto', value: 'name' },
+      { label: 'Precio', value: 'price' },
+      { label: 'Stock', value: 'stock' },
+    ],
+    [],
+  );
+
+  const invoiceProducts = Array.isArray(invoice?.products)
+    ? invoice.products
+    : [];
+  const readOnly = isEditLocked;
+  const categoryStats = useMemo(
+    () => getCategoryStats(invoiceProducts),
+    [invoiceProducts],
+  );
+
+  useEffect(() => {
+    if (categoryFilter === 'all') return;
+    const hasSelectedCategory = categoryStats.entries.some(
+      (entry) => entry.name === categoryFilter,
+    );
+    if (!hasSelectedCategory) {
+      setCategoryFilter('all');
+    }
+  }, [categoryFilter, categoryStats]);
+
+  const displayProducts = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    const filteredBySearch = normalizedSearch
+      ? invoiceProducts.filter((product) => {
+          const name = product?.name?.toLowerCase() ?? '';
+          return name.includes(normalizedSearch);
+        })
+      : [...invoiceProducts];
+
+    const filtered =
+      categoryFilter === 'all'
+        ? filteredBySearch
+        : filteredBySearch.filter(
+            (product) => getCategoryName(product?.category) === categoryFilter,
+          );
+
+    const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortField) {
+        case 'price':
+          return (getTotalPrice(a) - getTotalPrice(b)) * directionMultiplier;
+        case 'stock':
+          return ((a?.stock ?? 0) - (b?.stock ?? 0)) * directionMultiplier;
+        case 'name':
+        default:
+          return (
+            (a?.name ?? '')?.localeCompare(b?.name ?? '') * directionMultiplier
+          );
+      }
+    });
+
+    return sorted;
+  }, [invoiceProducts, searchTerm, categoryFilter, sortField, sortDirection]);
+
+  const columns = [
+    {
+      title: 'Producto',
+      dataIndex: 'name',
+      key: 'productName',
+    },
+    {
+      title: 'Cantidad',
+      dataIndex: 'amountToBuy',
+      key: 'amountToBuy',
+      render: (_, record) => (
+        <Counter>
+          <Button
+            onClick={() => {
+              if (readOnly) {
+                message.warning(
+                  'No puedes modificar productos despu+®s de 48 horas.',
+                );
+                return;
+              }
+              dispatch(
+                changeAmountToBuyProduct({ product: record, type: 'subtract' }),
+              );
+            }}
+            icon={icons.mathOperations.subtract}
+            disabled={readOnly}
+          />
+          <Input
+            value={record.amountToBuy}
+            onChange={(e) => {
+              if (readOnly) {
+                message.warning(
+                  'No puedes modificar productos despu+®s de 48 horas.',
+                );
+                return;
+              }
+              const value = e.target.value;
+              const isValidNumber =
+                !isNaN(parseFloat(value)) && isFinite(value);
+              if (isValidNumber) {
+                dispatch(
+                  changeAmountToBuyProduct({
+                    product: record,
+                    amount: Number(value),
+                    type: 'change',
+                  }),
+                );
+              }
+            }}
+            disabled={readOnly}
+          />
+          <Button
+            onClick={() => {
+              if (readOnly) {
+                message.warning(
+                  'No puedes modificar productos despu+®s de 48 horas.',
+                );
+                return;
+              }
+              dispatch(
+                changeAmountToBuyProduct({ product: record, type: 'add' }),
+              );
+            }}
+            icon={icons.operationModes.add}
+            disabled={readOnly}
+          />
+        </Counter>
+      ),
+    },
+    {
+      title: 'Precio Unitario',
+      dataIndex: 'price',
+      key: 'unitPrice',
+      align: 'left',
+      render: (_, record) => getFormattedUnitPrice(record),
+    },
+    {
+      title: 'Precio Total',
+      key: 'totalPrice',
+      align: 'left',
+      render: (_, record) => getFormattedTotalPrice(record),
+    },
+    {
+      title: 'Acciones',
+      key: 'actions',
+      align: 'left',
+
+      render: (text, record) => (
+        <Button
+          onClick={() => {
+            if (readOnly) {
+              message.warning(
+                'No puedes modificar productos despu+®s de 48 horas.',
+              );
+              return;
+            }
+            dispatch(deleteProductInvoiceForm({ product: record }));
+          }}
+          icon={icons.operationModes.delete}
+          disabled={readOnly}
+        />
+      ),
+    },
+  ];
+  const [paginationState, setPaginationState] = useState({
+    current: 1,
+    pageSize: 5,
+  });
+
+  const paginationConfig = {
+    pageSize: paginationState.pageSize,
+    current: paginationState.current,
+    position: ['bottomCenter'],
+    showSizeChanger: false,
+    onChange: (page, pageSize) => {
+      setPaginationState({ current: page, pageSize });
+    },
+  };
+
+  useEffect(() => {
+    setPaginationState((prev) => ({
+      ...prev,
+      current: 1,
+    }));
+  }, [
+    searchTerm,
+    categoryFilter,
+    sortField,
+    sortDirection,
+    displayProducts.length,
+  ]);
+
+  const showProductListModal = () => {
+    if (readOnly) {
+      message.warning('No puedes modificar productos despu+®s de 48 horas.');
+      return;
+    }
+    setProductListModalVisible(true);
+  };
+  const handleAddProduct = (product) => {
+    if (readOnly) return;
+    dispatch(addProductInvoiceForm({ product }));
+    setProductListModalVisible(false);
+  };
+  return (
+    <Container>
+      <ActionsContainer>
+        <Button
+          type="primary"
+          onClick={showProductListModal}
+          disabled={readOnly}
+        >
+          A+¦adir Producto
+        </Button>
+      </ActionsContainer>
+      <ProductFilterToolbar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar producto"
+        categoryFilter={categoryFilter}
+        onCategoryChange={setCategoryFilter}
+        categoryStats={categoryStats}
+        sortField={sortField}
+        sortOptions={sortOptions}
+        onSortFieldChange={setSortField}
+        sortDirection={sortDirection}
+        onToggleSortDirection={() =>
+          setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+        }
+      />
+      <StyledProductTable
+        size="small"
+        dataSource={displayProducts}
+        columns={columns}
+        pagination={paginationConfig}
+        rowKey="id"
+      />
+      <ProductListModal
+        isVisible={isProductListModalVisible}
+        onClose={() => setProductListModalVisible(false)}
+        products={products}
+        onAddProduct={handleAddProduct}
+        isReadOnly={readOnly}
+      />
+    </Container>
+  );
+};
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+`;
+const Counter = styled.div`
+  display: grid;
+  gap: 1em;
+  grid-template-columns: 2em 80px 2em;
+`;
+const ActionsContainer = styled.div`
+  text-align: right; /* Esto alinea tu bot+¦n a la derecha */
+`;
 
 
-FILE: DeveloperModal.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\components\modals\DeveloperModal\DeveloperModal.jsx
-   1 problema(s)
-
-   [WARN]  Linea 376:6
-      React Hook useCallback has a missing dependency: 'handleAutoCompleteSuggestionSelect'. Either include it or remove the dependency array
-
-
-FILE: SelectionMode.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\components\modals\DeveloperModal\components\SelectionMode.jsx
-   1 problema(s)
-
-   [WARN]  Linea 134:6
-      React Hook useEffect has a missing dependency: 'displaySelectionList'. Either include it or remove the dependency array
-
-
-FILE: updateUserData.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\Auth\fbAuthV2\fbSignIn\updateUserData.js
-   1 problema(s)
-
-   [WARN]  Linea 48:6
-      React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array
-
-
-FILE: useCurrentCashDrawer.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\cashCount\useCurrentCashDrawer.js
-   1 problema(s)
-
-   [WARN]  Linea 176:6
-      React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array
-
-
-FILE: useFbGetCategories.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\categories\useFbGetCategories.js
-   1 problema(s)
-
-   [WARN]  Linea 29:6
-      React Hook useEffect has a missing dependency: 'q'. Either include it or remove the dependency array
-
-
-FILE: useFbGetClients.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\client\useFbGetClients.js
-   1 problema(s)
-
-   [WARN]  Linea 64:6
-      React Hook useEffect has a missing dependency: 'includeDeleted'. Either include it or remove the dependency array
-
-
-FILE: fbGetInvoices.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\invoices\fbGetInvoices.js
-   1 problema(s)
-
-   [WARN]  Linea 108:6
-      React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array
-
-
-FILE: useFbGetInvoicesWithFilters.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\invoices\useFbGetInvoicesWithFilters.js
-   1 problema(s)
-
-   [WARN]  Linea 180:6
-      React Hook useEffect has missing dependencies: 'filters' and 'user'. Either include them or remove the dependency array
-
-
-FILE: fbGetProducts.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\products\fbGetProducts.js
-   1 problema(s)
-
-   [WARN]  Linea 587:6
-      React Hook useEffect has a missing dependency: 'thresholds'. Either include it or remove the dependency array
-
-
-FILE: batchService.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\warehouse\batchService.js
-   1 problema(s)
-
-   [WARN]  Linea 361:6
-      React Hook useEffect has missing dependencies: 'batchIDs' and 'user'. Either include them or remove the dependency array
-
-
-FILE: productMovementService.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\warehouse\productMovementService.js
-   1 problema(s)
-
-   [WARN]  Linea 424:6
-      React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array
-
-
-FILE: warehouseNestedServise.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\firebase\warehouse\warehouseNestedServise.js
-   6 problema(s)
-
-   [WARN]  Linea 63:6
-      React Hook useEffect has a missing dependency: 'warehouseUnsubscribe'. Either include it or remove the dependency array
-
-   [WARN]  Linea 98:6
-      React Hook useEffect has a missing dependency: 'shelvesUnsubscribes'. Either include it or remove the dependency array
-
-   [WARN]  Linea 136:6
-      React Hook useEffect has a missing dependency: 'rowsUnsubscribes'. Either include it or remove the dependency array
-
-   [WARN]  Linea 175:6
-      React Hook useEffect has a missing dependency: 'segmentsUnsubscribes'. Either include it or remove the dependency array
-
-   [WARN]  Linea 222:6
-      React Hook useEffect has a missing dependency: 'productStockUnsubscribes'. Either include it or remove the dependency array
-
-   [WARN]  Linea 257:5
-      React Hook useMemo has a missing dependency: 'combineData'. Either include it or remove the dependency array
-
-
-FILE: useAbilities.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\abilities\useAbilities.js
-   1 problema(s)
-
-   [WARN]  Linea 35:6
-      React Hook useEffect has missing dependencies: 'abilities' and 'user'. Either include them or remove the dependency array
-
-
-FILE: useDueDatesReceivable.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\accountsReceivable\useDueDatesReceivable.js
-   1 problema(s)
-
-   [WARN]  Linea 529:6
-      React Hook useEffect has missing dependencies: 'dataCache.accounts', 'dataCache.clients', and 'dataCache.invoices'. Either include them or remove the dependency array
-
-
-FILE: useBarcodeSettings.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\barcode\useBarcodeSettings.js
-   1 problema(s)
-
-   [WARN]  Linea 31:6
-      React Hook useEffect has a missing dependency: 'loadSettings'. Either include it or remove the dependency array
-
-
-FILE: useSearch.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\search\useSearch.js
-   1 problema(s)
-
-   [WARN]  Linea 112:6
-      React Hook useMemo has missing dependencies: 'searchTerm' and 'trimmedTerm'. Either include them or remove the dependency array
-
-
-FILE: useFiscalReceiptsAlerts.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\useFiscalReceiptsAlerts.js
-   1 problema(s)
-
-   [WARN]  Linea 66:6
-      React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array
-
-
-FILE: usePurchases.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\usePurchases.jsx
-   1 problema(s)
-
-   [WARN]  Linea 103:6
-      React Hook useEffect has a missing dependency: 'setPurchases'. Either include it or remove the dependency array
-
-
-FILE: useScroll.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\useScroll.jsx
-   1 problema(s)
-
-   [WARN]  Linea 21:13
-      The ref value 'ref.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'ref.current' to a variable inside the effect, and use that variable in the cleanup function
-
-
-FILE: useSequenceField.js
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\hooks\useSequenceField.js
-   1 problema(s)
-
-   [WARN]  Linea 86:6
-      React Hook useEffect has a missing dependency: 'taxReceiptsRef'. Either include it or remove the dependency array
-
-
-FILE: FilterBar.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\FilterBar\FilterBar.jsx
-   2 problema(s)
-
-   [WARN]  Linea 43:8
-      React Hook useEffect has missing dependencies: 'onChange' and 'state'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback
-
-   [WARN]  Linea 155:7
-      React Hook useCallback has a missing dependency: 'updateFilter'. Either include it or remove the dependency array
-
-
-FILE: QuotationTemplate2.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\Quotation\templates\Invoicing\QuotationTemplate2\QuotationTemplate2.jsx
-   1 problema(s)
-
-   [WARN]  Linea 86:11
-      The 'business' logical expression could make the dependencies of useLayoutEffect Hook (at line 93) change on every render. To fix this, wrap the initialization of 'business' in its own useMemo() Hook
-
-
-FILE: ClienteControl.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\contact\ClientControl\ClienteControl.jsx
-   1 problema(s)
-
-   [WARN]  Linea 123:6
-      React Hook useEffect has a missing dependency: 'setSearchTerm'. Either include it or remove the dependency array
-
-
-FILE: PaymentFields.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\forms\PaymentForm\components\PaymentFields.jsx
-   1 problema(s)
-
-   [WARN]  Linea 79:6
-      React Hook useEffect has missing dependencies: 'handleStatusChange', 'handleValueChange', and 'visiblePaymentMethods'. Either include them or remove the dependency array
-
-
-FILE: ARSummaryModal.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\ARInfoModal\ARSummaryModal.jsx
-   1 problema(s)
-
-   [WARN]  Linea 180:5
-      React Hook useMemo has a missing dependency: 'data'. Either include it or remove the dependency array
-
-
-FILE: CreditNoteModal.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\CreditNoteModal\CreditNoteModal.jsx
-   1 problema(s)
-
-   [WARN]  Linea 236:6
-      React Hook useEffect has a missing dependency: 'availableInvoiceItems'. Either include it or remove the dependency array
-
-
-FILE: Header.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\CustomProduct\setCustomProduct\Components\Header.jsx
-   3 problema(s)
-
-   [WARN]  Linea 100:6
-      React Hook useEffect has a missing dependency: 'type'. Either include it or remove the dependency array
-
-   [WARN]  Linea 145:6
-      React Hook useEffect has missing dependencies: 'matchList', 'newProduct', 'setNewProduct', 'size', and 'totalIngredientPrice'. Either include them or remove the dependency array. If 'setNewProduct' changes too often, find the parent component that defines it and wrap that definition in useCallback
-
-   [WARN]  Linea 174:6
-      React Hook useEffect has missing dependencies: 'isComplete', 'newProduct', 'productSelected', 'setNewProduct', 'size', and 'totalIngredientPrice'. Either include them or remove the dependency array. If 'setNewProduct' changes too often, find the parent component that defines it and wrap that definition in useCallback
-
-
-FILE: ImportModal.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\ImportModal\ImportModal.jsx
-   1 problema(s)
-
-   [WARN]  Linea 216:5
-      React Hook useMemo has a missing dependency: 'flattenObject'. Either include it or remove the dependency array
-
-
-FILE: Client.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\InvoiceForm\components\Client\Client.jsx
-   2 problema(s)
-
-   [WARN]  Linea 45:9
-      The 'normalizedClients' conditional could make the dependencies of useMemo Hook (at line 57) change on every render. To fix this, wrap the initialization of 'normalizedClients' in its own useMemo() Hook
-
-   [WARN]  Linea 45:9
-      The 'normalizedClients' conditional could make the dependencies of useMemo Hook (at line 70) change on every render. To fix this, wrap the initialization of 'normalizedClients' in its own useMemo() Hook
-
-
-FILE: PaymentInfo.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\InvoiceForm\components\PaymentInfo\PaymentInfo.jsx
-   5 problema(s)
-
-   [WARN]  Linea 45:9
-      The 'paymentMethods' logical expression could make the dependencies of useMemo Hook (at line 64) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 45:9
-      The 'paymentMethods' logical expression could make the dependencies of useEffect Hook (at line 142) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 45:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 183) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 45:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 213) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 45:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 229) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-
-FILE: usePaymentInfo.ts
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\InvoiceForm\components\PaymentInfo\hooks\usePaymentInfo.ts
-   5 problema(s)
-
-   [WARN]  Linea 56:9
-      The 'paymentMethods' logical expression could make the dependencies of useMemo Hook (at line 72) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 56:9
-      The 'paymentMethods' logical expression could make the dependencies of useEffect Hook (at line 145) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 56:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 186) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 56:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 216) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-   [WARN]  Linea 56:9
-      The 'paymentMethods' logical expression could make the dependencies of useCallback Hook (at line 233) change on every render. To fix this, wrap the initialization of 'paymentMethods' in its own useMemo() Hook
-
-
-FILE: Products.jsx
-   C:\Users\jonat\OneDrive\Documentos\VentaMas\src\views\component\modals\InvoiceForm\components\Products\Products.jsx
-   2 problema(s)
-
-   [WARN]  Linea 70:9
-      The 'invoiceProducts' conditional could make the dependencies of useMemo Hook (at line 76) change on every render. To fix this, wrap the initialization of 'invoiceProducts' in its own useMemo() Hook
-
-   [WARN]  Linea 70:9
-      The 'invoiceProducts' conditional could make the dependencies of useMemo Hook (at line 123) change on every render. To fix this, wrap the initialization of 'invoiceProducts' in its own useMemo() Hook
-
-
-================================================================================
-ARCHIVOS MAS AFECTADOS
-================================================================================
-  * warehouseNestedServise.js - 6 ocurrencias
-  * PaymentInfo.jsx - 5 ocurrencias
-  * usePaymentInfo.ts - 5 ocurrencias
-  * Header.jsx - 3 ocurrencias
-  * FilterBar.jsx - 2 ocurrencias

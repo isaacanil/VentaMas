@@ -96,14 +96,14 @@ const SuggestionsContainer = styled.div`
 const SuggestionCard = styled.div`
   padding: 16px;
   cursor: pointer;
-  background: ${(props) => (props.selected ? '#e6f7ff' : '#fafafa')};
-  border: 1px solid ${(props) => (props.selected ? '#1890ff' : '#f0f0f0')};
+  background: ${({ $selected }) => ($selected ? '#e6f7ff' : '#fafafa')};
+  border: 1px solid ${({ $selected }) => ($selected ? '#1890ff' : '#f0f0f0')};
   border-radius: 6px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${(props) => (props.selected ? '#e6f7ff' : '#f5f5f5')};
-    border-color: ${(props) => (props.selected ? '#1890ff' : '#d9d9d9')};
+    background: ${({ $selected }) => ($selected ? '#e6f7ff' : '#f5f5f5')};
+    border-color: ${({ $selected }) => ($selected ? '#1890ff' : '#d9d9d9')};
   }
 `;
 
@@ -258,7 +258,7 @@ export const BarcodeCorrector = ({
               {suggestions.map((suggestion) => (
                 <SuggestionCard
                   key={suggestion.id}
-                  selected={selectedSuggestion?.id === suggestion.id}
+                  $selected={selectedSuggestion?.id === suggestion.id}
                   onClick={() => handleSelectSuggestion(suggestion)}
                 >
                   <SuggestionHeader>

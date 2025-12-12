@@ -105,7 +105,7 @@ export const ClientForm = ({ isOpen, mode, data }) => {
 
   return (
     <Backdrop>
-      <Container isOpen={isOpen ? true : false}>
+      <Container $isOpen={isOpen ? true : false}>
         <ToolBar>
           <Button
             color="gray"
@@ -244,8 +244,8 @@ const Container = styled.div`
   transform: translateX(600px);
   transition: transform 800ms ease-in-out 0s, box-shadow 600ms ease-in-out 700ms;
 
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen }) => {
+    switch ($isOpen) {
       case true:
         return `
                 transform: translateX(0px); 

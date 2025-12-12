@@ -11,7 +11,13 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-export const PreorderModal = ({ preorder, visible, isReady, onCancel }) => {
+export const PreorderModal = ({
+  preorder,
+  visible,
+  open,
+  isReady = true,
+  onCancel,
+}) => {
   const [isClientExpanded, setIsClientExpanded] = useState(false);
   const status = preorder?.preorderDetails?.status;
   const products = preorder?.products ?? [];
@@ -62,6 +68,8 @@ export const PreorderModal = ({ preorder, visible, isReady, onCancel }) => {
   };
 
   const statusTone = getStatusColor(status);
+  const isVisible = typeof open === 'boolean' ? open : visible;
+  const shouldRender = !!isVisible && isReady !== false;
 
   const closeModal = () => {
     setIsClientExpanded(false);
@@ -72,7 +80,7 @@ export const PreorderModal = ({ preorder, visible, isReady, onCancel }) => {
 
   return (
     <>
-      {isReady && visible && (
+      {shouldRender && (
         <ModalOverlay onClick={closeModal}>
           <ModalCard onClick={(event) => event.stopPropagation()}>
             <ModalHeader>
@@ -362,3 +370,5 @@ const PaymentTotal = styled.div`
   font-weight: 600;
   color: #1f2937;
 `;
+
+export default PreorderModal;

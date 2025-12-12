@@ -20,33 +20,33 @@ const defaultConfig: BadgeDateConfig = {
   text: 'Fecha',
 };
 
-const BadgeContainer = styled.div<{ bgColor?: string; simple?: boolean }>`
-  display: ${(props) => (props.simple ? 'flex' : 'inline-block')};
-  align-items: ${(props) => (props.simple ? 'center' : 'initial')};
-  justify-content: ${(props) => (props.simple ? 'center' : 'initial')};
+const BadgeContainer = styled.div<{ $bgColor?: string; $simple?: boolean }>`
+  display: ${({ $simple }) => ($simple ? 'flex' : 'inline-block')};
+  align-items: ${({ $simple }) => ($simple ? 'center' : 'initial')};
+  justify-content: ${({ $simple }) => ($simple ? 'center' : 'initial')};
   min-width: 115px;
-  padding: ${(props) => (props.simple ? '8px 16px' : '1px 8px')};
-  background-color: ${(props) =>
-    props.simple ? '#f8f9fa' : props.bgColor || '#E3F2FD'};
+  padding: ${({ $simple }) => ($simple ? '8px 16px' : '1px 8px')};
+  background-color: ${({ $simple, $bgColor }) =>
+    $simple ? '#f8f9fa' : $bgColor || '#E3F2FD'};
   border-radius: 6px;
 `;
 
-const DateIconContainer = styled.div<{ simple?: boolean }>`
+const DateIconContainer = styled.div<{ $simple?: boolean }>`
   display: flex;
   gap: 4px;
   align-items: center;
-  justify-content: ${(props) => (props.simple ? 'center' : 'space-between')};
+  justify-content: ${({ $simple }) => ($simple ? 'center' : 'space-between')};
 `;
 
-const DateText = styled.span<{ color: string; simple?: boolean }>`
-  font-size: ${(props) => (props.simple ? '14px' : '14px')};
-  color: ${(props) => (props.simple ? '#495057' : props.color)};
+const DateText = styled.span<{ $color: string; $simple?: boolean }>`
+  font-size: ${({ $simple }) => ($simple ? '14px' : '14px')};
+  color: ${({ $simple, $color }) => ($simple ? '#495057' : $color)};
 `;
 
-const BadgeText = styled.div<{ color: string }>`
+const BadgeText = styled.div<{ $color: string }>`
   font-size: 12px;
   font-weight: 500;
-  color: ${(props) => props.color};
+  color: ${({ $color }) => $color};
 `;
 
 interface IconProps {
@@ -79,8 +79,8 @@ export const BadgeDate = ({
 
   if (!config) {
     return (
-      <BadgeContainer simple>
-        <DateText simple color="">
+      <BadgeContainer $simple>
+        <DateText $simple $color="">
           {formattedDate}
         </DateText>
       </BadgeContainer>
@@ -88,12 +88,12 @@ export const BadgeDate = ({
   }
 
   return (
-    <BadgeContainer bgColor={finalConfig.bgColor}>
+    <BadgeContainer $bgColor={finalConfig.bgColor}>
       <DateIconContainer>
-        <DateText color={finalConfig.color}>{formattedDate}</DateText>
+        <DateText $color={finalConfig.color}>{formattedDate}</DateText>
         {renderIcon(finalConfig.icon, finalConfig.color)}
       </DateIconContainer>
-      <BadgeText color={finalConfig.color}>{finalConfig.text}</BadgeText>
+      <BadgeText $color={finalConfig.color}>{finalConfig.text}</BadgeText>
     </BadgeContainer>
   );
 };

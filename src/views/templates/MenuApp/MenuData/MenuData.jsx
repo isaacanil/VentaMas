@@ -10,6 +10,18 @@ import insurance from './items/insurance';
 import inventory from './items/inventory';
 import sales from './items/sales';
 import utility from './items/utility';
+import { routePreloaders } from '../../../../routes/routePreloaders';
+
+const attachPreloaders = (item) => {
+  const preload = item?.route ? routePreloaders[item.route] : undefined;
+  const nextItem = preload ? { ...item, preload } : { ...item };
+
+  if (nextItem.submenu && Array.isArray(nextItem.submenu)) {
+    nextItem.submenu = nextItem.submenu.map(attachPreloaders);
+  }
+
+  return nextItem;
+};
 
 export const useMenuData = () => {
   const allMenuItems = [
@@ -25,5 +37,7 @@ export const useMenuData = () => {
     ...developer,
   ];
 
-  return useFilterMenuItemsByAccess(allMenuItems, true);
+  const menuItemsWithPreloaders = allMenuItems.map(attachPreloaders);
+
+  return useFilterMenuItemsByAccess(menuItemsWithPreloaders, true);
 };

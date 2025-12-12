@@ -134,20 +134,20 @@ const CloseButton = styled(BaseButton)`
   min-width: unset;
   height: 32px;
   padding: 0;
-  color: ${(props) => dialogTheme[props.type]?.text};
+  color: ${({ $type }) => dialogTheme[$type]?.text};
   background: transparent;
-  border: 2px solid ${(props) => dialogTheme[props.type]?.border}40;
+  border: 2px solid ${({ $type }) => dialogTheme[$type]?.border}40;
   border-radius: 50%;
 
   &:hover:not(:disabled) {
-    background: ${(props) => dialogTheme[props.type]?.border}20;
+    background: ${({ $type }) => dialogTheme[$type]?.border}20;
     transform: rotate(90deg);
   }
 
   svg {
     width: 16px;
     height: 16px;
-    fill: ${(props) => dialogTheme[props.type]?.text};
+    fill: ${({ $type }) => dialogTheme[$type]?.text};
   }
 `;
 
@@ -236,15 +236,15 @@ const Dialog = () => {
             animate="visible"
             exit="hidden"
             $size={size}
-            type={type}
+            $type={type}
           >
-            <Header type={type}>
+            <Header $type={type}>
               <Typography variant="h2" disableMargins>
                 {title}
               </Typography>
               <CloseButton
                 onClick={onClose}
-                type={type}
+                $type={type}
                 disabled={isLoading}
                 aria-label="Cerrar diálogo"
               >
@@ -252,8 +252,8 @@ const Dialog = () => {
               </CloseButton>
             </Header>
             <Body>
-              <Description type={type}>
-                <IconWrapper type={type}>{iconTypes[type]}</IconWrapper>
+              <Description $type={type}>
+                <IconWrapper $type={type}>{iconTypes[type]}</IconWrapper>
                 <MessageText variant="p" color="inherit" disableMargins>
                   {dialogMessage}
                 </MessageText>
@@ -321,8 +321,8 @@ const Container = styled(motion.div)`
   ${(props) => getDialogSize(props.$size)}
 
   width: 100%;
-  background-color: ${(props) =>
-    dialogTheme[props.type]?.background || props.theme.colors.background};
+  background-color: ${({ $type, theme }) =>
+    dialogTheme[$type]?.background || theme.colors.background};
   border-radius: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 8%);
   padding: 1.75rem;
@@ -330,7 +330,7 @@ const Container = styled(motion.div)`
   grid-template-rows: min-content 1fr min-content;
   gap: 1.5rem;
   border: 2px solid
-    ${(props) => dialogTheme[props.type]?.border || 'rgba(0,0,0,0.1)'};
+    ${({ $type }) => dialogTheme[$type]?.border || 'rgba(0,0,0,0.1)'};
   transition: transform 0.15s ease;
 
   &:hover {
@@ -343,8 +343,8 @@ const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   padding-bottom: 0.5rem;
-  color: ${(props) => dialogTheme[props.type]?.text};
-  border-bottom: 1px solid ${(props) => dialogTheme[props.type]?.border}30;
+  color: ${({ $type }) => dialogTheme[$type]?.text};
+  border-bottom: 1px solid ${({ $type }) => dialogTheme[$type]?.border}30;
 `;
 
 const Body = styled.div`
@@ -358,10 +358,10 @@ const Description = styled.div`
   align-items: flex-start;
   width: 100%;
   padding: 1.5rem;
-  color: ${(props) => dialogTheme[props.type]?.text};
-  background-color: ${(props) =>
-    dialogTheme[props.type]?.iconBg || 'rgba(0,0,0,0.05)'};
-  border: 1px solid ${(props) => dialogTheme[props.type]?.border}30;
+  color: ${({ $type }) => dialogTheme[$type]?.text};
+  background-color: ${({ $type }) =>
+    dialogTheme[$type]?.iconBg || 'rgba(0,0,0,0.05)'};
+  border: 1px solid ${({ $type }) => dialogTheme[$type]?.border}30;
   border-radius: 12px;
 `;
 
@@ -371,7 +371,7 @@ const IconWrapper = styled.div`
   justify-content: center;
   width: 2em;
   height: 2em;
-  color: ${(props) => dialogTheme[props.type]?.text || 'inherit'};
+  color: ${({ $type }) => dialogTheme[$type]?.text || 'inherit'};
 `;
 
 const MessageText = styled(Typography)`

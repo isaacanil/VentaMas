@@ -1,5 +1,4 @@
 import { Spin, Empty, message } from 'antd';
-import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { AnimatePresence } from 'framer-motion';
 import React, { useState, useMemo } from 'react';
@@ -86,6 +85,7 @@ const BackOrders = () => {
 
   const handleExport = async () => {
     try {
+      const ExcelJS = (await import('exceljs')).default;
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Backorders');
 

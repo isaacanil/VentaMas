@@ -71,11 +71,11 @@ export const InvoiceTemplate2 = React.forwardRef(
     const business = useSelector(selectBusinessData) || {};
 
     return data ? (
-      <Container style={{ display: ignoreHidden ? 'block' : 'none' }}>
-        <PrintLayout ref={ref}>
-          <FixedHeader>
-            <Header business={business} data={data} />
-          </FixedHeader>
+      <Container style={{ display: ignoreHidden ? 'block' : 'none' }} ref={ref}>
+        <FixedHeader>
+          <Header business={business} data={data} />
+        </FixedHeader>
+        <PrintLayout>
           <thead>
             <tr>
               <td>
@@ -97,10 +97,10 @@ export const InvoiceTemplate2 = React.forwardRef(
               </td>
             </tr>
           </tfoot>
-          <FixedFooter>
-            <Footer business={business} data={data} />
-          </FixedFooter>
         </PrintLayout>
+        <FixedFooter>
+          <Footer business={business} data={data} />
+        </FixedFooter>
       </Container>
     ) : null;
   },

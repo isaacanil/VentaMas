@@ -1,7 +1,5 @@
-import * as antd from 'antd';
+import { ConfigProvider } from 'antd';
 import React from 'react';
-
-const { ConfigProvider } = antd;
 
 const modalCustomStyles = {
   // Estilos para el "backdrop"

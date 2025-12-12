@@ -27,7 +27,7 @@ export const Pagination = ({
       <PageSwitch
         onClick={firstPage}
         disabled={isFirstPage}
-        responsive
+        $responsive
         aria-label="Primera página"
       >
         {icons.arrows.AnglesLeft}
@@ -52,7 +52,7 @@ export const Pagination = ({
       <PageSwitch
         onClick={lastPage}
         disabled={isLastPage}
-        responsive
+        $responsive
         aria-label="Última página"
       >
         {icons.arrows.AnglesRight}
@@ -92,7 +92,7 @@ const PageSwitch = styled.button`
     opacity: 0.5;
   }
   ${(props) => {
-    switch (props.responsive) {
+    switch (props.$responsive) {
       case true:
         return `
         @media (max-width: 600px){

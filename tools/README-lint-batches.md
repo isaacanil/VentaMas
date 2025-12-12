@@ -159,7 +159,7 @@ Continúa el ciclo: revisar → corregir → auto-fix → regenerar.
 Los scripts aceptan parámetros:
 
 ```bash
-# Cambiar tamaño de lotes (default: 50)
+# Cambiar tamaño de lotes (default: 10)
 powershell -File ./tools/split-lint-by-type.ps1 -MaxPerFile 100
 
 # Usar otro archivo de reporte

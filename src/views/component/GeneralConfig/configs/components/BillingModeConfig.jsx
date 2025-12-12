@@ -9,9 +9,9 @@ import { setBillingSettings } from '../../../../../firebase/billing/billingSetti
 const InnerCard = styled(Card)`
   margin-bottom: 16px;
   cursor: pointer;
-  background-color: ${(props) => (props.selected ? '#e6f7ff' : '#ffffff')};
-  border: ${(props) =>
-    props.selected ? '2px solid #1890ff' : '1px solid #f0f0f0'};
+  background-color: ${({ $selected }) => ($selected ? '#e6f7ff' : '#ffffff')};
+  border: ${({ $selected }) =>
+    $selected ? '2px solid #1890ff' : '1px solid #f0f0f0'};
 
   &:hover {
     background-color: #e6f7ff;
@@ -20,7 +20,7 @@ const InnerCard = styled(Card)`
 `;
 
 const ConfigItem = styled.div`
-  padding-left: ${(props) => (props.level || 0) * 16}px;
+  padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
 
@@ -36,11 +36,11 @@ const BillingModeConfig = ({ billingMode }) => {
   };
 
   return (
-    <ConfigItem level={0}>
+    <ConfigItem $level={0}>
       <Radio.Group value={billingMode} style={{ width: '100%' }}>
         <InnerCard
           type="inner"
-          selected={billingMode === 'direct'}
+          $selected={billingMode === 'direct'}
           onClick={() => handleCardClick('direct')}
           hoverable
         >
@@ -54,7 +54,7 @@ const BillingModeConfig = ({ billingMode }) => {
         </InnerCard>
         <InnerCard
           type="inner"
-          selected={billingMode === 'deferred'}
+          $selected={billingMode === 'deferred'}
           onClick={() => handleCardClick('deferred')}
           hoverable
         >

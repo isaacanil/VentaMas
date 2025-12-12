@@ -22,11 +22,11 @@ const DragOverlayContainer = styled.div`
   inset: 0;
   z-index: 1000;
   display: flex;
-  visibility: ${(props) => (props.isDragging ? 'visible' : 'hidden')};
+  visibility: ${({ $isDragging }) => ($isDragging ? 'visible' : 'hidden')};
   align-items: center;
   justify-content: center;
   background: rgb(0 0 0 / 75%);
-  opacity: ${(props) => (props.isDragging ? 1 : 0)};
+  opacity: ${({ $isDragging }) => ($isDragging ? 1 : 0)};
   backdrop-filter: blur(4px);
   transition: all 0.3s ease-in-out;
   animation: ${fadeIn} 0.3s ease-in-out;
@@ -38,7 +38,7 @@ const DropMessage = styled.div`
   background: rgb(255 255 255 / 95%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
-  transform: scale(${(props) => (props.isDragging ? '1.02' : '1')});
+  transform: scale(${({ $isDragging }) => ($isDragging ? '1.02' : '1')});
   transition: transform 0.2s ease-in-out;
 
   .icon-wrapper {
@@ -79,12 +79,12 @@ const DragOverlay = ({
   fileType,
 }) => (
   <DragOverlayContainer
-    isDragging={isDragging}
+    $isDragging={isDragging}
     onDrop={onDrop}
     onDragOver={onDragOver}
     onDragLeave={onDragLeave}
   >
-    <DropMessage isDragging={isDragging}>
+    <DropMessage $isDragging={isDragging}>
       <div className="icon-wrapper">{getFileIcon(fileType)}</div>
       <h3>Arrastra y suelta tus archivos aquí</h3>
       <p>Suelta los archivos para agregarlos como {fileType}</p>

@@ -23,7 +23,7 @@ export const Item = ({ data, array, setArray, index }) => {
         <FontAwesomeIcon icon={faChevronRight} />
         <span>{data.name}</span>
       </Head>
-      <Body isOpen={isItemOpen} index={index}>
+      <Body $isOpen={isItemOpen} $index={index}>
         <Fragment>
           <Input
             data={data}
@@ -32,7 +32,7 @@ export const Item = ({ data, array, setArray, index }) => {
           />
           <Items>
             {optionsFiltered.slice(0, 3).map((item, subIndex) => (
-              <FilterOption key={subIndex} isSelected={Boolean(item.selected)}>
+              <FilterOption key={subIndex} $isSelected={Boolean(item.selected)}>
                 <input
                   type="checkbox"
                   name="selected"
@@ -69,8 +69,8 @@ const Body = styled.div`
   height: auto;
   padding: 0.4em 1em;
   transition: height, transform 2s ease-in-out;
-  ${(props) => {
-    switch (props.isOpen) {
+  ${({ $isOpen, $index }) => {
+    switch ($isOpen) {
       case true:
         return `
                 background-color: rgb(242, 242, 242);
@@ -97,7 +97,7 @@ const Body = styled.div`
                 transition-property: transform, z-index;
                 transition-timing-function: easy-in-out, lineal;
                 width: 100%;   
-                z-index: ${-(props.index + 3)};
+                z-index: ${-($index + 3)};
         `;
 
       default:
@@ -129,8 +129,8 @@ const FilterOption = styled.li`
   grid-template-columns: min-content 1fr;
   padding: 0.2em 0.6em;
   position: relative;
-  ${(props) => {
-    switch (props.isSelected) {
+  ${({ $isSelected }) => {
+    switch ($isSelected) {
       case true:
         return `
                     background-color: rgb(34, 106, 201);

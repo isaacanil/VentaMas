@@ -28,7 +28,7 @@ export const CenteredText = ({
     show && (
       <Container onContextMenu={handleButton}>
         <Wrapper>
-          <Content containerVariant={containerVariant}>
+          <Content $containerVariant={containerVariant}>
             <Typography variant={textVariant} align="center">
               {text}
             </Typography>
@@ -81,8 +81,8 @@ const Content = styled.div`
   place-items: center center;
   text-align: center;
 
-  ${({ containerVariant }) =>
-    containerVariant === 'contained' &&
+  ${({ $containerVariant }) =>
+    $containerVariant === 'contained' &&
     `
   border-radius: 10px;
   min-height: 200px;

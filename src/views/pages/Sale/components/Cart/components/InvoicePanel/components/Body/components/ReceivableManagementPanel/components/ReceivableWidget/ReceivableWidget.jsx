@@ -260,7 +260,7 @@ const InfoValue = styled.span`
   text-overflow: ellipsis;
   font-size: 12px;
   font-weight: 600;
-  color: ${(props) => (props.highlighted ? '#856404' : '#212529')};
+  color: ${({ $highlighted }) => ($highlighted ? '#856404' : '#212529')};
   white-space: nowrap;
 `;
 

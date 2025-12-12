@@ -1,9 +1,11 @@
-import { ExclamationCircleOutlined } from '@ant-design/icons';
-import * as antd from 'antd';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Form, Button, Modal, Alert, message, Tabs }from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-const { Form, Button, Modal, Alert, message } = antd;
+import { formatPrice } from '@/utils/format';
+import { convertInvoiceDateToMillis } from '../../../../utils/invoice';
+
 import { selectUser } from '../../../../features/auth/userSlice';
 import {
   changeClientInvoiceForm,
@@ -11,14 +13,13 @@ import {
   closeInvoiceForm,
   selectInvoice,
 } from '../../../../features/invoice/invoiceFormSlice';
+
 import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
 import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
-import { convertInvoiceDateToMillis } from '../../../../utils/invoice';
 
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
 import { Products } from './components/Products/Products';
 
-import { formatPrice } from '@/utils/format';
 
 export const InvoiceForm = () => {
   const [form] = Form.useForm();
@@ -60,16 +61,16 @@ export const InvoiceForm = () => {
             'No se pudo marcar la autorización como usada',
             markError,
           );
-          antd.message.warning(
+          message.warning(
             'Factura actualizada, pero la autorización no pudo marcarse como usada.',
           );
         }
       }
 
       dispatch(closeInvoiceForm());
-      antd.message.success('Factura actualizada correctamente');
+      message.success('Factura actualizada correctamente');
     } catch (info) {
-      antd.message.error('Error al actualizar factura');
+      message.error('Error al actualizar factura');
       console.error('Validate Failed or Update Failed:', info);
     } finally {
       setLoading(false);
@@ -221,7 +222,7 @@ export const InvoiceForm = () => {
         onValuesChange={handleChange}
         disabled={isEditLocked}
       >
-        <antd.Tabs defaultActiveKey="1" items={sections} />
+        <Tabs defaultActiveKey="1" items={sections} />
       </Form>
     </Modal>
   );

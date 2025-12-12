@@ -43,13 +43,13 @@ const PrintLayout = styled.div`
 
 const HeaderSpace = styled.div`
   @media print {
-    height: ${(props) => props.height}px;
+    height: ${({ $height }) => $height}px;
   }
 `;
 
 const FooterSpace = styled.div`
   @media print {
-    height: ${(props) => props.height}px;
+    height: ${({ $height }) => $height}px;
   }
 `;
 
@@ -103,7 +103,7 @@ export const QuotationTemplate2 = React.forwardRef(
           <thead>
             <tr>
               <td>
-                <HeaderSpace height={headerHeight} />
+                <HeaderSpace $height={headerHeight} />
               </td>
             </tr>
           </thead>
@@ -117,7 +117,7 @@ export const QuotationTemplate2 = React.forwardRef(
           <tfoot>
             <tr>
               <td>
-                <FooterSpace height={footerHeight} />
+                <FooterSpace $height={footerHeight} />
               </td>
             </tr>
           </tfoot>

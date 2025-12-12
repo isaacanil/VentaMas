@@ -66,18 +66,15 @@ const RowItem = React.memo(
     return (
       <Fragment>
         <Row
-          columns={activeColumns}
-          isWideScreen={isWideScreen}
-          isWideLayout={isWideLayout}
+          $columns={activeColumns}
           data-border={rowBorder ? 'on' : undefined}
         >
           {activeColumns.map((col, colIndex) => (
             <BodyCell
               key={colIndex}
-              align={col.align}
-              fixed={col.fixed}
-              clickable={col?.clickable !== false}
-              columns={activeColumns}
+              $align={col.align}
+              $fixed={col.fixed}
+              $clickable={col?.clickable !== false}
               data-size={rowSize}
               data-row-border={rowBorder ? 'on' : 'off'}
               onClick={(e) => handleCellClick(e, col, row)}
@@ -261,9 +258,9 @@ const BodyCell = styled.div`
     height: 4.6em;
   }
 
-  position: ${(props) => (props.fixed ? 'sticky' : 'relative')};
+  position: ${(props) => (props.$fixed ? 'sticky' : 'relative')};
   ${(props) =>
-    props.fixed === 'left' &&
+    props.$fixed === 'left' &&
     `
     left: 0;
     z-index: 2;
@@ -271,23 +268,18 @@ const BodyCell = styled.div`
     border-right: 1px solid var(--gray-1);
   `}
   ${(props) =>
-    props.fixed === 'right' &&
+    props.$fixed === 'right' &&
     `
     right: 0;
     z-index: 2;
     background-color: white;
     border-left: 1px solid var(--gray-1);
   `}
-  justify-content: ${(props) => props.align || 'flex-start'};
-  text-align: ${(props) => props.align || 'left'};
+  justify-content: ${(props) => props.$align || 'flex-start'};
+  text-align: ${(props) => props.$align || 'left'};
   ${(props) =>
-    props.clickable &&
+    props.$clickable &&
     `
     cursor: pointer;
-  `}
-  ${(props) =>
-    props?.columns?.minWidth &&
-    `
-    min-width: ${props?.columns?.minWidth};
   `}
 `;
