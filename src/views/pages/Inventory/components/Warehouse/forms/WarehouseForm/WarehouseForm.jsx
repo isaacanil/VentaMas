@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Button, Input, InputNumber, Form, Spin, Modal, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -14,8 +14,6 @@ import {
   createWarehouse,
   updateWarehouse,
 } from '../../../../../../../firebase/warehouse/warehouseService';
-
-const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
 
 const CardDescription = styled.p`
   margin-bottom: 20px;
@@ -86,11 +84,11 @@ export function WarehouseForm() {
         await createWarehouse(user, data); // Create new warehouse
       }
       handleClose(); // Close the modal after submission
-      antd.message.success(
+      message.success(
         `Almacén ${formData ? 'actualizado' : 'creado'} correctamente`,
       );
     } catch (error) {
-      antd.message.error('Ocurrió un error al procesar la solicitud.');
+      message.error('Ocurrió un error al procesar la solicitud.');
       dispatch(setWarehouseError(error.message));
       console.error('Ocurrió un error al procesar la solicitud.', error);
     } finally {

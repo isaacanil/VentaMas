@@ -1,5 +1,5 @@
 import { FileAddOutlined, UploadOutlined } from '@ant-design/icons';
-import * as antd from 'antd';
+import { Button, Upload, Modal, message, Tabs, Table } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -8,7 +8,6 @@ import { productHeaderMappings } from '../../../../utils/import/product/headerMa
 
 import FieldSelector from './FieldSelector';
 
-const { Button, Upload, Modal, message, Tabs, Table } = antd;
 const PREVIEW_LIMIT = 20;
 
 export default function ImportModal({

@@ -1,7 +1,5 @@
 import { createSelector, createSlice } from '@reduxjs/toolkit';
-import * as antd from 'antd';
-
-const { notification } = antd;
+import { notification } from 'antd';
 const initialState = {
   status: false,
   items: [],

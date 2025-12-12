@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Modal, Input, Button, Form, Spin } from 'antd';
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -8,8 +8,6 @@ import {
 } from '../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
 
 import { BarCode } from './Barcode';
-
-const { Modal, Input, Button, Form, Spin } = antd;
 
 export const BarcodePrintModal = () => {
   const { isOpen, product } = useSelector(SelectBarcodePrintModal);

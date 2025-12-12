@@ -1,11 +1,9 @@
 import { faArrowLeft, faSave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-
-const { Button } = antd;
 
 // Styled Components para el Header
 const HeaderContainer = styled.div`

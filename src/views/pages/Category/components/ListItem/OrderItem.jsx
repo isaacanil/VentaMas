@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Button as AntdButton, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -9,6 +9,8 @@ import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCat
 import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory';
 import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
 import { ButtonGroup } from '../../../../templates/system/Button/Button';
+
+const antd = { Button: AntdButton, message };
 
 export const OrderItem = ({ cat, Row, Col }) => {
   const user = useSelector(selectUser);

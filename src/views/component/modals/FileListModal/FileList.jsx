@@ -3,11 +3,9 @@ import {
   FileImageOutlined,
   FileOutlined,
 } from '@ant-design/icons';
-import * as antd from 'antd';
+import { Image, Card } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-
-const { Image, Card } = antd;
 
 const FileList = ({ files = [] }) => {
   const getFileTypeIcon = (type) => {

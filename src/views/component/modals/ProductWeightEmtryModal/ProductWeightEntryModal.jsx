@@ -1,11 +1,27 @@
-import * as antd from 'antd';
-import React, { useState, useEffect } from 'react';
+import { Modal, Input, Form, Button, notification } from 'antd';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { addProduct } from '../../../../features/cart/cartSlice';
-import { formatPrice } from '@/utils/format';../../../../utils/pricing';
+import { formatPrice } from '@/utils/format';
+import { getTotalPrice } from '@/utils/pricing';
 
-const { Modal, Input, Form, Button } = antd;
+import { addProduct } from '../../../../features/cart/cartSlice';
+
+const getPricePerUnit = (currentProduct) => {
+  if (!currentProduct) return 0;
+  return getTotalPrice(
+    {
+      ...currentProduct,
+      amountToBuy: 1,
+      weightDetail: {
+        ...currentProduct?.weightDetail,
+        weight: 1,
+      },
+    },
+    true,
+    false,
+  );
+};
 
 export const ProductWeightEntryModal = ({
   isVisible,
@@ -14,27 +30,37 @@ export const ProductWeightEntryModal = ({
   product,
 }) => {
   const [form] = Form.useForm();
-  const [totalPrice, setTotalPrice] = useState(0);
   const dispatch = useDispatch();
+  const watchedWeight = Form.useWatch('weight', form);
+
+  const pricePerUnit = useMemo(
+    () => getPricePerUnit(product),
+    [product],
+  );
+
+  const totalPrice = useMemo(() => {
+    const weight = Number(watchedWeight ?? 1);
+    const safeWeight = Number.isFinite(weight) ? weight : 0;
+    return safeWeight * pricePerUnit;
+  }, [pricePerUnit, watchedWeight]);
+
   useEffect(() => {
     // Asegúrate de que el input de peso esté enfocado y seleccionado al abrir el modal
     if (isVisible) {
       setTimeout(() => {
-        document.getElementById('weightInput').focus();
-        document.getElementById('weightInput').select();
+        const el = document.getElementById('weightInput');
+        el?.focus?.();
+        el?.select?.();
       }, 100);
     }
   }, [isVisible]);
-  useEffect(() => {
-    setTotalPrice(getTotalPrice(product) * 1.0);
-  }, []);
 
   const handleOk = () => {
     form.validateFields().then((values) => {
       // Ahora, "values" contiene el peso directamente bajo la clave "weight"
       const weight = values.weight;
       if (weight <= 0) {
-        antd.notification.error({
+        notification.error({
           message: 'Peso Inválido',
           description: 'El peso del producto debe ser mayor a 0.',
           placement: 'top',
@@ -58,14 +84,6 @@ export const ProductWeightEntryModal = ({
   const handleCancel = () => {
     onCancel && onCancel();
     form.resetFields();
-  };
-
-  const handleWeightChange = (e) => {
-    e.preventDefault();
-    const weight = e.target.value;
-    const pricePerUnit = getTotalPrice(product); // Asume que este valor viene del objeto del producto
-
-    setTotalPrice(weight * pricePerUnit);
   };
 
   return (
@@ -105,11 +123,9 @@ export const ProductWeightEntryModal = ({
         >
           <Input
             id="weightInput"
-            defaultValue={1.0}
             suffix={product?.weightDetail?.weightUnit}
             type="number"
             step="0.001"
-            onChange={handleWeightChange}
             autoFocus
           />
         </Form.Item>

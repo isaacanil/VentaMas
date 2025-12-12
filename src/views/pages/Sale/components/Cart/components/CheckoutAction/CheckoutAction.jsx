@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Button as AntdButton, Modal, message } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -7,7 +7,7 @@ import { Receipt } from '../../../../../checkout/Receipt';
 
 import { formatPrice } from '@/utils/format';
 
-const { Modal } = antd;
+const antd = { Button: AntdButton, message };
 export const CheckoutAction = ({
   TotalPurchaseRef,
   ProductSelected,

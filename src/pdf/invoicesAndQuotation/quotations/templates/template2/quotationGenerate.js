@@ -1,5 +1,4 @@
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { getPdfMake } from '../../../../../utils/pdf/pdfMakeLoader.js';
 
 import { buildContent } from './builders/content';
 import { buildFooter } from './builders/footer';
@@ -8,8 +7,6 @@ import {
   calcFooterHeight,
   calcHeaderHeight,
 } from './utils/documentHeightCalculator';
-
-pdfMake.vfs = pdfFonts.vfs;
 
 export const generateQuotationPdf = async (req) => {
   const { business: biz, data: d } = req.data;
@@ -54,6 +51,8 @@ export const generateQuotationPdf = async (req) => {
     content: buildContent(d),
     footer: buildFooter(biz, d),
   };
+
+  const pdfMake = await getPdfMake();
 
   try {
     const base64 = await new Promise((res, rej) =>

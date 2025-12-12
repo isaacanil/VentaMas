@@ -1,6 +1,6 @@
 import { faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Modal, Button, List, Tag, message } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -22,8 +22,6 @@ import { ProductStockForm } from '../forms/ProductStockForm/ProductStockForm';
 
 import { ProductsSection } from './ProductsSection';
 import { DetailContainer } from './WarehouseContent';
-
-const { Modal, Button, List, Tag, message } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`

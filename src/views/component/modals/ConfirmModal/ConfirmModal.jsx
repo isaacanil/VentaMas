@@ -1,8 +1,6 @@
 // ConfirmModal.jsx
-import * as antd from 'antd';
+import { Modal, Button } from 'antd';
 import React from 'react';
-
-const { Modal, Button } = antd;
 
 const VALID_BUTTON_TYPES = new Set([
   'default',

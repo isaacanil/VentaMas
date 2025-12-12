@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Input, Typography, Button } from 'antd';
 import { forwardRef, useState } from 'react';
 import styled from 'styled-components';
 
@@ -6,8 +6,6 @@ import { icons } from '../../../../../constants/icons/icons';
 import { filterData } from '../../../../../hooks/search/useSearch';
 
 import { Category } from './Category';
-
-const { Input, Typography, Button } = antd;
 
 const DropdownMenuComponent = forwardRef(
   ({ setOpen, sectionsConfig = {}, deleteAllItems }, ref) => {

@@ -1,7 +1,7 @@
 import { SwapOutlined } from '@ant-design/icons';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Tag } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -11,8 +11,6 @@ import { useDialog } from '../../../Context/Dialog';
 import { selectBusinessData } from '../../../features/auth/businessSlice';
 import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../features/auth/userSlice';
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
-
-const { Tag } = antd;
 
 export const UserSection = () => {
   const dispatch = useDispatch();

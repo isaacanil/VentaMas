@@ -1,9 +1,7 @@
-import * as antd from 'antd';
+import { Button } from 'antd';
 import React from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-
-const { Button } = antd;
 
 import { icons } from '../../../../../constants/icons/icons';
 import routesName from '../../../../../routes/routesName';

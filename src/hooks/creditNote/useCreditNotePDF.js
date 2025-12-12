@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectBusinessData } from '../../features/auth/businessSlice';
-import { generateCreditNoteLetterPdf } from '../../pdf/creditNote/templates/template1/CreditNoteLetterPdf';
 import { printPdfBase64 } from '../../utils/printPdf';
 
 export const useCreditNotePDF = () => {
@@ -64,6 +63,9 @@ export const useCreditNotePDF = () => {
     setPdfLoading(true);
 
     try {
+      const { generateCreditNoteLetterPdf } = await import(
+        '../../pdf/creditNote/templates/template1/CreditNoteLetterPdf',
+      );
       const pdfBase64 = await generateCreditNoteLetterPdf(
         business,
         creditNoteData,

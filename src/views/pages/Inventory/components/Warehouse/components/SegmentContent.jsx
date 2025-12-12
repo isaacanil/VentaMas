@@ -1,6 +1,6 @@
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button, Tag } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -11,8 +11,6 @@ import { selectWarehouse } from '../../../../../../features/warehouse/warehouseS
 
 import { ProductsSection } from './ProductsSection';
 import { DetailContainer, DetailItem } from './WarehouseContent';
-
-const { Button, Tag } = antd;
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`

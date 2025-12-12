@@ -5,10 +5,13 @@ import {
   PrinterOutlined,
   CloseOutlined,
 } from '@ant-design/icons';
-import * as antd from 'antd';
+import { Button, Dropdown } from 'antd';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 
 import { store } from '../../../../../../../app/store';
 import { icons } from '../../../../../../../constants/icons/icons';
@@ -28,22 +31,18 @@ import { ImgCell } from '../../../../../../templates/system/AdvancedTable/compon
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../../templates/system/labels/StockIndicator';
 
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
-
-const { Button, Dropdown } = antd;
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { setDialogConfirm } = useDialog();
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [totalsDismissed, setTotalsDismissed] = useState(false);
 
   const handleDeleteProduct = useCallback(
-    (id) => {
-      let docId = id?.product?.id ? id?.product?.id : id?.id;
+    (value) => {
+      const docId = value?.product?.id ?? value?.id;
+      if (!docId) return;
       setDialogConfirm({
         title: 'Eliminar producto',
         isOpen: true,
@@ -55,7 +54,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
         },
       });
     },
-    [user],
+    [setDialogConfirm],
   );
 
   const handleUpdateProduct = (product) => {
@@ -313,7 +312,7 @@ const FloatingTotals = styled.div`
 `;
 
 // Botón de cerrar con estilo mínimo (reutiliza antd Button)
-const CloseButton = styled(antd.Button)`
+const CloseButton = styled(Button)`
   margin-left: 8px;
   color: var(--gray6);
 

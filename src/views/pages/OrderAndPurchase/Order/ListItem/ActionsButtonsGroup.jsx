@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Button } from 'antd';
 import React, { Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -55,18 +55,15 @@ export const ActionsButtonsGroup = ({ orderData }) => {
     <ButtonGroup>
       <Fragment>
         {orderData.state === 'state_2' && (
-          <antd.Button
+          <Button
             icon={icons.operationModes.buy}
             onClick={handlePurchasingMode}
           />
         )}
 
-        <antd.Button
-          icon={icons.operationModes.edit}
-          onClick={handleEditMode}
-        />
+        <Button icon={icons.operationModes.edit} onClick={handleEditMode} />
         {orderData.state === 'state_2' && (
-          <antd.Button
+          <Button
             danger
             icon={icons.operationModes.delete}
             onClick={handleDeleteMode}

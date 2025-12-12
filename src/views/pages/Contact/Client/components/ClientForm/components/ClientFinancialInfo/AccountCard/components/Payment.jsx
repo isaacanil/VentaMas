@@ -1,6 +1,6 @@
 import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -8,8 +8,6 @@ import { setAccountPayment } from '../../../../../../../../../../features/accoun
 import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
 
 import { formatPrice } from '@/utils/format';
-
-const { Button } = antd;
 
 export function Payment({
   installments,

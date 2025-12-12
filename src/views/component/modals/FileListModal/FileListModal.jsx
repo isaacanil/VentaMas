@@ -1,9 +1,8 @@
-import * as antd from 'antd';
+import { Button, Modal, Typography, Empty } from 'antd';
 import { useDispatch } from 'react-redux';
 
 import FileList from './FileList';
 
-const { Button, Modal, Typography, Empty } = antd;
 const { Text } = Typography;
 
 export const FileListModal = ({ data, onClose }) => {

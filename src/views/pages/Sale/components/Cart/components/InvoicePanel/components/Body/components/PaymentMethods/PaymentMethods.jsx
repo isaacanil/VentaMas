@@ -1,5 +1,12 @@
-import * as antd from 'antd';
-import { Modal } from 'antd';
+import {
+  Modal,
+  Input,
+  Form,
+  Checkbox,
+  InputNumber,
+  message,
+  notification,
+} from 'antd';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -13,8 +20,6 @@ import {
   clearCxcAutoRemovalNotification,
   applyPricingPreset,
 } from '../../../../../../../../../../../features/cart/cartSlice';
-
-const { Input, Form, Checkbox, InputNumber, message, notification } = antd;
 
 export const PaymentMethods = () => {
   const dispatch = useDispatch();

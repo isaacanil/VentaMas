@@ -7,13 +7,11 @@ import {
   faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
-const { Button, Tooltip } = antd;
 
 const PAYMENT_LABEL_TRANSLATIONS = {
   cash: 'Efectivo',

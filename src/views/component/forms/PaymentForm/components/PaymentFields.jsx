@@ -1,4 +1,4 @@
-import * as antd from 'antd';
+import { Checkbox, Form, Input, InputNumber, message } from 'antd';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -13,7 +13,6 @@ import {
 } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { formatNumber } from '../../../../../utils/formatNumber';
 
-const { Checkbox, Form, Input, InputNumber, message } = antd;
 export const PaymentFields = () => {
   const cashInputRef = useRef(null);
   const { methodErrors: errors, paymentDetails } = useSelector(

@@ -1,6 +1,5 @@
 import { httpsCallable } from 'firebase/functions';
 
-import { generateInvoiceLetterPdf } from '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf';
 import { printPdfBase64 } from '../../utils/printPdf';
 import { functions } from '../firebaseconfig';
 // import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "../../pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
@@ -27,6 +26,9 @@ export async function downloadQuotationPdf(business, data, onDialogClose) {
 export async function downloadInvoiceLetterPdf(business, data, onDialogClose) {
   try {
     // Generating PDF for quotation
+    const { generateInvoiceLetterPdf } = await import(
+      '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf',
+    );
     const base64 = await generateInvoiceLetterPdf(business, data);
 
     printPdfBase64(base64, { onPrintDialogClose: onDialogClose });

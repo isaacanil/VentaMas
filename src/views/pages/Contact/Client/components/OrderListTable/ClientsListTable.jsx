@@ -3,10 +3,10 @@ import styled from 'styled-components';
 
 import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
 
-import { tableConfig } from './tableConfig';
+import { useTableConfig } from './tableConfig';
 
 export const ClientsListTable = ({ clients = [] }) => {
-  const { columns } = tableConfig();
+  const { columns } = useTableConfig();
   const data = clients.map(({ client }) => {
     return {
       id: client.id,

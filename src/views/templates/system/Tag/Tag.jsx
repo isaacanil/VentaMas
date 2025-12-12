@@ -1,14 +1,14 @@
-import * as antd from 'antd';
+import { Tag as AntdTag } from 'antd';
 import React from 'react';
 
 export const Tag = ({ color, children }) => {
   return (
-    <antd.Tag
+    <AntdTag
       style={{ fontSize: '16px', padding: '5px' }}
       color={color}
       title="Hola"
     >
       {children}
-    </antd.Tag>
+    </AntdTag>
   );
 };

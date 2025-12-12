@@ -7,11 +7,9 @@ import {
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button, Card, Tag } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-
-const { Button, Card, Tag } = antd;
 
 const StyledCard = styled(Card)`
   transition: box-shadow 0.3s;

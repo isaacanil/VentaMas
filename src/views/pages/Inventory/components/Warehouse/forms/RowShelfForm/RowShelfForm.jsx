@@ -1,5 +1,5 @@
 // components/forms/RowShelfForm.jsx
-import * as antd from 'antd';
+import { Form, Input, Button, Modal, Spin, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -16,8 +16,6 @@ import {
   createRowShelf,
   updateRowShelf,
 } from '../../../../../../../firebase/warehouse/RowShelfService';
-
-const { Form, Input, Button, Modal, Spin, message } = antd;
 
 export default function RowShelfForm() {
   const [form] = Form.useForm();

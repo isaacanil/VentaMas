@@ -1,6 +1,6 @@
 import { faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Tag as AntdTag } from 'antd';
 import React, { useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
@@ -93,7 +93,7 @@ const OrderActions = styled.div`
   grid-template-columns: repeat(3, min-content);
   gap: 0.6em;
 `;
-const Tag = styled(antd.Tag)`
+const Tag = styled(AntdTag)`
   padding: 0.2em 0.4em;
   font-size: 1em;
   font-weight: 500;

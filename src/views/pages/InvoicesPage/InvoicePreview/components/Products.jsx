@@ -1,10 +1,8 @@
-import * as antd from 'antd';
+import { Table } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
-const { Table } = antd;
 
 const Products = ({ products }) => {
   return (

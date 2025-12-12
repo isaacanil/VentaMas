@@ -1,5 +1,5 @@
 import { GlobalOutlined } from '@ant-design/icons';
-import * as antd from 'antd';
+import { Form, Input, Button, Modal, notification } from 'antd';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -11,8 +11,6 @@ import { fbDeleteClient } from '../../../../../../../firebase/client/fbDeleteCli
 import { useRncSearch } from '../../../../../../../hooks/useRncSearch';
 import { DgiiSyncAlert } from '../../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '../../../../../../component/Rnc/RncPanel/RncPanel';
-
-const { Form, Input, Button, notification } = antd;
 
 const Wrapper = styled.div`
   display: grid;
@@ -59,10 +57,10 @@ export const ClientGeneralInfo = ({
         consultarRNC(rnc, true); // true for silent mode
       }
     }
-  }, [customerData]);
+  }, [customerData?.personalID, consultarRNC]);
 
   const handleDeleteUser = async () => {
-    antd.Modal.confirm({
+    Modal.confirm({
       title: '¿Está seguro de eliminar este cliente?',
       content: `Se eliminará permanentemente el cliente "${customerData.name}". Esta acción no se puede deshacer.`,
       okText: 'Sí, eliminar',

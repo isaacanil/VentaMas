@@ -1,6 +1,8 @@
-import * as antd from 'antd';
+import { Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../../constants/modes';
@@ -11,11 +13,8 @@ import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNum
 import { ButtonGroup } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
 
-import { formatPrice } from '@/utils/format';
 
-const { Button } = antd;
-
-export const tableConfig = () => {
+export const useTableConfig = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 

@@ -1,13 +1,12 @@
-import * as antd from 'antd';
+import { Table, Typography, Divider, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
-
-import { getTotalPrice } from '../../../../../../utils/pricing';
 
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
 
-const { Table, Typography, Divider } = antd;
+import { getTotalPrice } from '../../../../../../utils/pricing';
+
 
 const aggregateClientData = (sales) => {
   // Agrupar ventas por cliente
@@ -134,7 +133,7 @@ export const CustomerSalesReportTable = ({ sales }) => {
           <Typography.Title level={4} style={{ margin: 0 }}>
             Reporte de venta por cliente
           </Typography.Title>
-          <antd.Tag color="orange">Beta</antd.Tag>
+          <Tag color="orange">Beta</Tag>
         </div>
       </Divider>
       <Table

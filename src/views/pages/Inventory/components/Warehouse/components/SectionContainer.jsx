@@ -1,10 +1,9 @@
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as antd from 'antd';
+import { Button, List, Pagination } from 'antd';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-const { Button, List, Pagination } = antd;
 // Estilos personalizados usando styled-components
 const Container = styled.div`
   display: grid;
