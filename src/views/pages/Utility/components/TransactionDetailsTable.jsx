@@ -4,7 +4,7 @@ import {
   faChartLine,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
@@ -19,14 +19,30 @@ export const TransactionDetailsTable = ({
     () => buildTransactionRows(dailyMetrics),
     [dailyMetrics],
   );
-  const [page, setPage] = useState(0);
   const firstRowId = rows[0]?.id ?? null;
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  
+  const resetTrigger = `${rows.length}-${firstRowId}-${pageSize}`;
+  const [{ trigger: pageTrigger, page: pageState }, setPageState] = useState(
+    () => ({ trigger: resetTrigger, page: 0 }),
+  );
 
-  useEffect(() => {
-    setPage(0);
-  }, [rows.length, firstRowId, pageSize]);
+  const page = pageTrigger === resetTrigger ? pageState : 0;
+
+  const setPage = useCallback(
+    (updater) => {
+      setPageState((prev) => {
+        const currentPage =
+          prev.trigger === resetTrigger ? prev.page : 0;
+        const nextPage =
+          typeof updater === 'function' ? updater(currentPage) : updater;
+        return { trigger: resetTrigger, page: nextPage };
+      });
+    },
+    [resetTrigger],
+  );
+  
   const currentPage = Math.min(page, totalPages - 1);
 
   const paginatedRows = useMemo(() => {

@@ -7,7 +7,7 @@ import {
   Switch,
   Alert,
 } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import {
@@ -26,34 +26,44 @@ const FiscalReceiptsAlertSettings = ({
   disabled = false,
   initialConfig = null,
 }) => {
-  const [alertsEnabled, setAlertsEnabled] = useState(true);
-  const [globalThresholds, setGlobalThresholds] = useState({
+  const [alertsEnabled, setAlertsEnabled] = useState(() => initialConfig?.alertsEnabled ?? true);
+  const [globalThresholds, setGlobalThresholds] = useState(() => initialConfig?.globalThresholds ?? {
     warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
     critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
   });
-  const [customThresholds, setCustomThresholds] = useState({});
 
-  // Cargar configuración inicial cuando esté disponible
-  useEffect(() => {
-    if (initialConfig) {
-      setAlertsEnabled(initialConfig.alertsEnabled);
-      setGlobalThresholds(initialConfig.globalThresholds);
-      setCustomThresholds(initialConfig.customThresholds);
-    }
-  }, [initialConfig]);
+  const receiptTypesKey = useMemo(() => {
+    const types = taxReceipts
+      .map((receipt) => receipt?.data?.name)
+      .filter(Boolean);
+    types.sort();
+    return types.join('|');
+  }, [taxReceipts]);
 
-  useEffect(() => {
-    // Inicializar umbrales personalizados basados en los comprobantes existentes
-    const initialCustomThresholds = {};
+  const initialCustomThresholds = useMemo(() => {
+    const thresholds = {};
     taxReceipts.forEach((receipt) => {
       if (receipt?.data?.name) {
         const receiptName = receipt.data.name;
-        const thresholds = getThresholdsForReceiptType(receiptName);
-        initialCustomThresholds[receiptName] = thresholds;
+        thresholds[receiptName] = getThresholdsForReceiptType(receiptName);
       }
     });
-    setCustomThresholds(initialCustomThresholds);
+    return thresholds;
   }, [taxReceipts]);
+
+  const [{ trigger: customTrigger, value: customValue }, setCustomThresholdState] =
+    useState(() => ({
+      trigger: receiptTypesKey,
+      value: initialConfig?.customThresholds ?? initialCustomThresholds,
+    }));
+
+  const customThresholds =
+    customTrigger === receiptTypesKey ? customValue : initialCustomThresholds;
+
+  const setCustomThresholds = useCallback(
+    (value) => setCustomThresholdState({ trigger: receiptTypesKey, value }),
+    [receiptTypesKey],
+  );
 
   const handleGlobalThresholdChange = (type, value) => {
     const newThresholds = { ...globalThresholds, [type]: value };

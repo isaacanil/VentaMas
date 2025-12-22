@@ -1,33 +1,48 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/*": ["./*"],
-      "@templates/*": ["views/templates/*"],
-      "@views/*": ["views/*"],
-      "@components/*": ["components/*"],
-      "@constants/*": ["constants/*"],
-      "@features/*": ["features/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@templates/*": [
+        "views/templates/*"
+      ],
+      "@views/*": [
+        "views/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@constants/*": [
+        "constants/*"
+      ],
+      "@features/*": [
+        "features/*"
+      ]
     },
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-
     "strict": false,
     "skipLibCheck": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
-
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-
-    "types": ["vite/client"]
+    "types": [
+      "vite/client"
+    ]
   },
   "include": [
     "src",
@@ -36,5 +51,8 @@
     "src/vite-env.d.ts",
     ".storybook"
   ],
-  "exclude": ["dist", "node_modules"]
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }

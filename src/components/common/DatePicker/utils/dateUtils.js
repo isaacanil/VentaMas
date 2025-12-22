@@ -1,15 +1,18 @@
-import dayjs from 'dayjs';
-import 'dayjs/locale/es';
-import weekday from 'dayjs/plugin/weekday';
+import { DateTime } from 'luxon';
 
-dayjs.extend(weekday);
-dayjs.locale('es');
+const DATE_LOCALE = 'es';
 
-// Configurar para que la semana empiece en domingo
-const locale = dayjs.Ls.es;
-if (locale) {
-  locale.weekStart = 0; // 0 = domingo
-}
+const toLuxonFormat = (format = 'DD/MM/YYYY') =>
+  format
+    .replace(/YYYY/g, 'yyyy')
+    .replace(/YY/g, 'yy')
+    .replace(/DD/g, 'dd')
+    .replace(/D/g, 'd')
+    .replace(/MM/g, 'LL')
+    .replace(/M/g, 'L');
+
+const startOfWeekSunday = (date) =>
+  date.minus({ days: date.weekday % 7 }).startOf('day');
 
 export const formatDisplayValue = (
   value,
@@ -17,38 +20,42 @@ export const formatDisplayValue = (
   mode = 'single',
 ) => {
   if (!value) return '';
+  const luxonFormat = toLuxonFormat(format);
+
+  const formatValue = (date) =>
+    date.setLocale(DATE_LOCALE).toFormat(luxonFormat);
 
   if (mode === 'range' && Array.isArray(value)) {
     if (
       value[0] &&
-      dayjs.isDayjs(value[0]) &&
+      DateTime.isDateTime(value[0]) &&
       value[1] &&
-      dayjs.isDayjs(value[1])
+      DateTime.isDateTime(value[1])
     ) {
-      return `${value[0].format(format)} - ${value[1].format(format)}`;
-    } else if (value[0] && dayjs.isDayjs(value[0])) {
-      return `${value[0].format(format)} - ...`;
+      return `${formatValue(value[0])} - ${formatValue(value[1])}`;
+    } else if (value[0] && DateTime.isDateTime(value[0])) {
+      return `${formatValue(value[0])} - ...`;
     }
     return '';
   }
 
-  return value && dayjs.isDayjs(value) && value.format
-    ? value.format(format)
+  return value && DateTime.isDateTime(value) && value.toFormat
+    ? formatValue(value)
     : '';
 };
 
 export const renderCalendarGrid = (currentDate) => {
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
-  const startOfWeek = startOfMonth.startOf('week');
-  const endOfWeek = endOfMonth.endOf('week');
+  const startOfWeek = startOfWeekSunday(startOfMonth);
+  const endOfWeek = startOfWeekSunday(endOfMonth).plus({ days: 6 }).endOf('day');
 
   const days = [];
   let day = startOfWeek;
 
-  while (day.isBefore(endOfWeek) || day.isSame(endOfWeek, 'day')) {
+  while (day.toMillis() <= endOfWeek.toMillis()) {
     days.push(day);
-    day = day.add(1, 'day');
+    day = day.plus({ days: 1 });
   }
 
   return days;
@@ -57,8 +64,8 @@ export const renderCalendarGrid = (currentDate) => {
 export const isPresetActive = (value, preset, mode) => {
   if (!value) return false;
 
-  if (mode === 'single' && dayjs.isDayjs(value)) {
-    return dayjs(value).isSame(preset.value, 'day');
+  if (mode === 'single' && DateTime.isDateTime(value)) {
+    return value.hasSame(preset.value, 'day');
   } else if (
     mode === 'range' &&
     Array.isArray(value) &&
@@ -69,7 +76,7 @@ export const isPresetActive = (value, preset, mode) => {
     const [vStart, vEnd] = value;
     const [pStart, pEnd] = preset.value;
     if (pStart && pEnd) {
-      return vStart.isSame(pStart, 'day') && vEnd.isSame(pEnd, 'day');
+      return vStart.hasSame(pStart, 'day') && vEnd.hasSame(pEnd, 'day');
     }
   }
 

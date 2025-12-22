@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
 
 /**
@@ -137,7 +137,7 @@ export async function exportInventoryToExcel(
       { header: 'Valor', key: 'value', width: 20 },
     ];
     const push = (metric, value) => summary.addRow({ metric, value });
-    push('Fecha Exportación', dayjs().format('YYYY-MM-DD HH:mm'));
+    push('Fecha Exportación', DateTime.local().toFormat('yyyy-LL-dd HH:mm'));
     if (sessionInfo?.name) push('Sesión', sessionInfo.name);
     if (sessionInfo?.id) push('Session ID', sessionInfo.id);
     push('Productos con filas', globalStats.products);
@@ -164,7 +164,7 @@ export async function exportInventoryToExcel(
   });
   saveAs(
     blob,
-    `${filename}_${onlyDifferences ? 'differences_' : ''}${dayjs().format('YYYY-MM-DD_HH-mm')}.xlsx`,
+    `${filename}_${onlyDifferences ? 'differences_' : ''}${DateTime.local().toFormat('yyyy-LL-dd_HH-mm')}.xlsx`,
   );
 }
 
@@ -178,7 +178,7 @@ function formatDate(d) {
       date = new Date(d.seconds * 1000);
     else date = new Date(d);
     if (isNaN(date.getTime())) return '';
-    return dayjs(date).format('YYYY-MM-DD');
+    return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd');
   } catch {
     return '';
   }
@@ -194,7 +194,7 @@ function formatDateTime(d) {
       date = new Date(d.seconds * 1000);
     else date = new Date(d);
     if (isNaN(date.getTime())) return '';
-    return dayjs(date).format('YYYY-MM-DD HH:mm');
+    return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd HH:mm');
   } catch {
     return '';
   }

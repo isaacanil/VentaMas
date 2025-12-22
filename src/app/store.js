@@ -19,7 +19,11 @@ import creditNoteModalReducer from '../features/creditNote/creditNoteModalSlice'
 import customPizzaReducer from '../features/customProducts/customPizzaSlice';
 import customProductReducer from '../features/customProducts/customProductSlice';
 import doctorsReducer from '../features/doctors/doctorsSlice';
-import * as expenseSlices from '../features/expense';
+import {
+  expenseManagement,
+  expensesList,
+  expenseUI,
+} from '../features/expense';
 import fileReducer from '../features/files/fileSlice';
 import filterProductsSliceReducer from '../features/filterProduct/filterProductsSlice';
 import addProductReducer from '../features/Firestore/products/addProductSlice';
@@ -44,7 +48,11 @@ import deleteProductStockReducer from '../features/productStock/deleteProductSto
 import productStockSimpleReducer from '../features/productStock/productStockSimpleSlice';
 import productStockReducer from '../features/productStock/productStockSlice';
 import productWeightEntryModalSlice from '../features/productWeightEntryModalSlice/productWeightEntryModalSlice';
-import * as purchaseSlices from '../features/purchase';
+import {
+  addPurchase,
+  purchases,
+  purchaseUI,
+} from '../features/purchase';
 import searchReducer from '../features/search/searchSlice';
 import settingReducer from '../features/setting/settingSlice';
 import taxReceiptReducer from '../features/taxReceipt/taxReceiptSlice';
@@ -114,8 +122,12 @@ export const store = configureStore({
     accountsReceivablePayment: accountsReceivablePaymentReducer,
     insuranceAccountsReceivable: insuranceAccountsReceivableReducer,
     creditNoteModal: creditNoteModalReducer,
-    ...expenseSlices,
-    ...purchaseSlices,
+    expenseManagement,
+    expensesList,
+    expenseUI,
+    addPurchase,
+    purchases,
+    purchaseUI,
 
     // Invoicing
     invoiceForm: invoiceFormReducer,

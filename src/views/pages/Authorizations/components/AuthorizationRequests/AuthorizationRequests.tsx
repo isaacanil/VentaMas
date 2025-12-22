@@ -1,5 +1,6 @@
 import { ReloadOutlined } from '@ant-design/icons';
 import { Button, Card, Pagination, Select, Spin, message, Modal } from 'antd';
+import { DateTime } from 'luxon';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
@@ -115,15 +116,22 @@ export const AuthorizationRequests = ({
   const handleDateRangeChange = (value: unknown) => {
     if (
       Array.isArray(value) &&
-      typeof value[0] === 'string' &&
-      typeof value[1] === 'string'
+      DateTime.isDateTime(value[0]) &&
+      DateTime.isDateTime(value[1])
     ) {
-      setDateRange([value[0], value[1]]);
+      setDateRange([value[0].toISO(), value[1].toISO()]);
       return;
     }
 
     setDateRange(null);
   };
+
+  const pickerValue = useMemo(() => {
+    if (!dateRange?.[0] || !dateRange?.[1]) return null;
+    const start = DateTime.fromISO(dateRange[0]);
+    const end = DateTime.fromISO(dateRange[1]);
+    return start.isValid && end.isValid ? [start, end] : null;
+  }, [dateRange]);
 
   const APPROVER_ROLES = ['admin', 'owner', 'dev', 'manager'];
 
@@ -190,7 +198,7 @@ export const AuthorizationRequests = ({
               <FilterLabel>Fecha:</FilterLabel>
               <DatePicker
                 mode="range"
-                value={dateRange}
+                value={pickerValue}
                 onChange={handleDateRangeChange}
                 placeholder="Seleccionar rango de fechas"
                 allowClear

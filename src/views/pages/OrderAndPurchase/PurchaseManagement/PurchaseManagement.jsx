@@ -17,7 +17,7 @@ import { fbUpdatePurchase } from '../../../../firebase/purchase/fbUpdatePurchase
 import { useListenWarehouses } from '../../../../firebase/warehouse/warehouseService';
 import { useListenOrder } from '../../../../hooks/useOrders'; // Import the hook
 import { useListenPurchase } from '../../../../hooks/usePurchases'; // Import the hook
-import ROUTES_PATH from '../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { getLocalURL } from '../../../../utils/files';
 import Loader from '../../../component/Loader/Loader';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';

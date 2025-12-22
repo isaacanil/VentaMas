@@ -1,5 +1,5 @@
 import { icons } from '../../../constants/icons/icons';
-import ROUTES_NAME from '../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const { TAX_RECEIPT, BUSINESS_INFO, APP_INFO, USERS, USERS_LIST, SETTINGS } =
   ROUTES_NAME.SETTING_TERM;

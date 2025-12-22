@@ -1,11 +1,27 @@
 import { faCreditCard, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Card, Tag, Tooltip } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
+
+const toDateTime = (value) => {
+  if (!value) return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value?.seconds) return DateTime.fromSeconds(value.seconds);
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value?.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate());
+  }
+  return null;
+};
 
 export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
   if (!creditNotes.length) {
@@ -55,11 +71,7 @@ export const CreditNotesInfoCard = ({ creditNotes = [] }) => {
                   <ItemDetail>
                     <DetailLabel>Creada:</DetailLabel>
                     <DetailValue>
-                      {cn.createdAt?.seconds
-                        ? dayjs(new Date(cn.createdAt.seconds * 1000)).format(
-                            'DD/MM/YYYY HH:mm',
-                          )
-                        : dayjs(cn.createdAt).format('DD/MM/YYYY HH:mm')}
+                      {toDateTime(cn.createdAt)?.toFormat('dd/MM/yyyy HH:mm')}
                     </DetailValue>
                   </ItemDetail>
                   <ItemDetail>

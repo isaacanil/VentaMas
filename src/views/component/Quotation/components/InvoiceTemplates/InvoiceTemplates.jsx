@@ -1,5 +1,5 @@
 import { Button, Modal } from 'antd'; // Eliminar Select de las importaciones
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
@@ -54,21 +54,26 @@ export default function InvoiceTemplates({
   const {
     billing: { invoiceType },
   } = useSelector(SelectSettingCart);
-  const [selectedTemplate, setSelectedTemplate] = useState('template1');
+  const safeInvoiceType =
+    invoiceType && TEMPLATES_CONFIG[invoiceType] ? invoiceType : 'template1';
+
+  const [templateState, setTemplateState] = useState(() => ({
+    sourceInvoiceType: safeInvoiceType,
+    selectedTemplate: safeInvoiceType,
+  }));
+
+  const selectedTemplate =
+    templateState.sourceInvoiceType === safeInvoiceType
+      ? templateState.selectedTemplate
+      : safeInvoiceType;
   const componentRef = useRef(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  useEffect(() => {
-    // Si invoiceType no existe o no es un template válido, usar template1
-    if (!invoiceType || !TEMPLATES_CONFIG[invoiceType]) {
-      setSelectedTemplate('template1');
-    } else {
-      setSelectedTemplate(invoiceType);
-    }
-  }, [invoiceType]);
-
   const handleTemplateChange = (value) => {
-    setSelectedTemplate(value);
+    setTemplateState({
+      sourceInvoiceType: safeInvoiceType,
+      selectedTemplate: value,
+    });
   };
 
   const handlePrint = useReactToPrint({
@@ -78,11 +83,11 @@ export default function InvoiceTemplates({
     setIsModalVisible(true);
   };
 
-  const renderInvoice = (ref) => (
+  const renderInvoice = () => (
     <PreviewContainer>
       <InvoiceContainer $template={selectedTemplate}>
         <Quotation
-          ref={ref}
+          ref={componentRef}
           template={selectedTemplate}
           data={{}}
           ignoreHidden={true}
@@ -125,11 +130,11 @@ export default function InvoiceTemplates({
             backgroundColor: 'red',
           }}
         >
-          {renderInvoice(componentRef)}
+          {renderInvoice()}
         </div>
       </Modal>
 
-      {!previewInModal && renderInvoice(componentRef)}
+      {!previewInModal && renderInvoice()}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { nanoid } from '@reduxjs/toolkit';
 import { Form, Input, Modal, Button, Space, message } from 'antd';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -246,16 +246,17 @@ const InsuranceConfigForm = () => {
     return `${period.value} ${period.value === 1 ? timeUnit.label : timeUnit.pluralLabel}`;
   };
 
+  const resetForm = useCallback(() => {
+    form.resetFields();
+    setInsuranceTypes([]);
+  }, [form]);
+
   useEffect(() => {
     if (!isOpen) {
       resetForm();
       setInitialized(false);
     }
-  }, [isOpen]);
-  const resetForm = () => {
-    form.resetFields();
-    setInsuranceTypes([]);
-  };
+  }, [isOpen, resetForm]);
 
   const addInsuranceType = () => {
     setInsuranceTypes([
@@ -346,12 +347,6 @@ const InsuranceConfigForm = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
-  }, [isOpen]);
 
   const openPeriodModal = (index, field) => {
     const currentType = insuranceTypes[index];

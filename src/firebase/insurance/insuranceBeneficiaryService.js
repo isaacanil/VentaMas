@@ -197,8 +197,14 @@ export const listenInsuranceBeneficiaries = ({
 export const useInsuranceBeneficiaries = (user, clientId) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
 
+  if (!user && beneficiaries.length > 0) {
+    setBeneficiaries([]);
+  }
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return undefined;
+    }
     const unsubscribe = listenInsuranceBeneficiaries({
       user,
       clientId,

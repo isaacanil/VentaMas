@@ -365,17 +365,14 @@ export const useDefaultWarehouse = () => {
 export const useListenWarehouse = (id) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(id));
   const [error] = useState(null);
 
   useEffect(() => {
     if (!id || !user) {
-      setData([]);
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const unsubscribe = listenWarehouse(user, id, (data) => {
       setData(data);
       setLoading(false);
@@ -394,12 +391,9 @@ export const useListenWarehouses = () => {
 
   useEffect(() => {
     if (!user?.businessID) {
-      setData([]);
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const unsubscribe = listenAllWarehouses(user, (data) => {
       setData(data);
       setLoading(false);

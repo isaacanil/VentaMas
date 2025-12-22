@@ -60,6 +60,7 @@ export const InvoicePanel = () => {
   const [taxReceiptModalOpen, setTaxReceiptModalOpen] = useState(false);
 
   const fallbackIdempotencyKeyRef = useRef(null);
+  const didInitPaymentMethodsRef = useRef(false);
 
   const { processInvoice: runInvoice } = useInvoice();
 
@@ -92,9 +93,13 @@ export const InvoicePanel = () => {
     settings: { taxReceiptEnabled },
   } = taxReceiptState;
   const isAddedToReceivables = cart?.isAddedToReceivables;
-  const business = useSelector(selectBusinessData) || {};
+  const businessFromStore = useSelector(selectBusinessData);
+  const business = useMemo(() => businessFromStore ?? {}, [businessFromStore]);
   const insuranceEnabled = useInsuranceEnabled();
-  const paymentMethods = cart?.paymentMethod ?? [];
+  const paymentMethods = useMemo(
+    () => cart?.paymentMethod ?? [],
+    [cart?.paymentMethod],
+  );
 
   const isAnyPaymentEnabled = useMemo(
     () => paymentMethods.some((method) => method.status),
@@ -142,7 +147,7 @@ export const InvoicePanel = () => {
   }, [cart?.id, cart?.cartId, cart?.cartIdRef]);
 
   //function para despues de imprimir la factura
-  const handleAfterPrint = () => {
+  const handleAfterPrint = useCallback(() => {
     setInvoice({});
     // Limpiamos el carrito y opcionalmente el comprobante, luego volvemos a default
     handleCancelShipping({ dispatch, viewport, clearTaxReceipt: true });
@@ -163,11 +168,11 @@ export const InvoicePanel = () => {
     setSubmitted(true);
     // Liberamos el tipo de comprobante una vez finalizado todo el flujo
     dispatch(unlockTaxReceiptType());
-  };
+  }, [dispatch, viewport, taxReceiptState?.data]);
 
   const handlePrint = useReactToPrint({
     contentRef: componentToPrintRef,
-    onAfterPrint: () => handleAfterPrint(),
+    onAfterPrint: handleAfterPrint,
   });
 
   const handleSelectTaxReceiptFromModal = useCallback(
@@ -435,49 +440,52 @@ export const InvoicePanel = () => {
   }, [invoicePanel]); // Efecto para inicializar el método de pago cuando se abre el panel
   useEffect(() => {
     // Solo se ejecuta cuando se abre el panel de factura, no en cada actualización
-    if (invoicePanel) {
-      // Asegurar al menos un método habilitado (incluso si el monto es 0 para CxC)
-      const methods = cart?.paymentMethod || [];
-      const anyEnabled = methods.some((m) => m.status);
-      const purchaseTotal = cart?.totalPurchase?.value || 0;
-      if (!anyEnabled) {
-        // Seleccionar método cash o el primero disponible
-        const defaultMethod =
-          methods.find((m) => m.method === 'cash') || methods[0];
-        if (defaultMethod) {
-          dispatch(
-            setPaymentMethod({
-              ...defaultMethod,
-              status: true,
-              value: isAddedToReceivables ? 0 : purchaseTotal,
-            }),
-          );
-        }
-      } else {
-        // Para ventas normales, si el pago total es 0 y hay un total de compra, inicializar valor
-        const totalPaymentValue = methods.reduce(
-          (sum, m) => (m.status ? sum + (Number(m.value) || 0) : sum),
-          0,
+    if (!invoicePanel) {
+      didInitPaymentMethodsRef.current = false;
+      return;
+    }
+
+    if (didInitPaymentMethodsRef.current) return;
+    didInitPaymentMethodsRef.current = true;
+
+    // Asegurar al menos un método habilitado (incluso si el monto es 0 para CxC)
+    const methods = paymentMethods;
+    const anyEnabled = methods.some((m) => m.status);
+    const purchaseTotal = cart?.totalPurchase?.value || 0;
+
+    if (!anyEnabled) {
+      // Seleccionar método cash o el primero disponible
+      const defaultMethod = methods.find((m) => m.method === 'cash') || methods[0];
+      if (defaultMethod) {
+        dispatch(
+          setPaymentMethod({
+            ...defaultMethod,
+            status: true,
+            value: isAddedToReceivables ? 0 : purchaseTotal,
+          }),
         );
-        if (
-          !isAddedToReceivables &&
-          totalPaymentValue === 0 &&
-          purchaseTotal > 0
-        ) {
-          const cashMethod = methods.find((m) => m.method === 'cash');
-          if (cashMethod) {
-            dispatch(
-              setPaymentMethod({
-                ...cashMethod,
-                status: true,
-                value: purchaseTotal,
-              }),
-            );
-          }
-        }
+      }
+      return;
+    }
+
+    // Para ventas normales, si el pago total es 0 y hay un total de compra, inicializar valor
+    const totalPaymentValue = methods.reduce(
+      (sum, m) => (m.status ? sum + (Number(m.value) || 0) : sum),
+      0,
+    );
+    if (!isAddedToReceivables && totalPaymentValue === 0 && purchaseTotal > 0) {
+      const cashMethod = methods.find((m) => m.method === 'cash');
+      if (cashMethod) {
+        dispatch(
+          setPaymentMethod({
+            ...cashMethod,
+            status: true,
+            value: purchaseTotal,
+          }),
+        );
       }
     }
-  }, [invoicePanel]);
+  }, [invoicePanel, paymentMethods, cart?.totalPurchase?.value, dispatch, isAddedToReceivables]);
 
   const retryWithTaxReceipt = () => {
     setTaxReceiptModalOpen(false);

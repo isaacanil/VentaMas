@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
 
 /**
@@ -109,7 +109,10 @@ export async function exportInventorySummaryToExcel(
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
-  saveAs(blob, `${filenamePrefix}_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+  saveAs(
+    blob,
+    `${filenamePrefix}_${DateTime.local().toFormat('yyyy-LL-dd')}.xlsx`,
+  );
 }
 
 export default exportInventorySummaryToExcel;

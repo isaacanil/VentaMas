@@ -1,7 +1,24 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
 
 import { canonicalizeNcf, looseCanonicalizeNcf } from './ncfUtils';
+
+const formatDate = (value, format) => {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return DateTime.fromJSDate(value).toFormat(format);
+  }
+  if (typeof value === 'number') {
+    return DateTime.fromMillis(value).toFormat(format);
+  }
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    if (iso.isValid) return iso.toFormat(format);
+    const parsed = DateTime.fromJSDate(new Date(value));
+    return parsed.isValid ? parsed.toFormat(format) : null;
+  }
+  return null;
+};
 
 export const sanitizeFileName = (name) => {
   const base = (name || 'negocio').toString().trim();
@@ -193,7 +210,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
           .join(', ');
 
         const dateString = row.date
-          ? dayjs(row.date).format('YYYY-MM-DD HH:mm')
+          ? formatDate(row.date, 'yyyy-LL-dd HH:mm')
           : null;
         return {
           key: row.key,
@@ -273,7 +290,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       field: 'Rango',
       value:
         start && end
-          ? `${dayjs(start).format('YYYY-MM-DD')} a ${dayjs(end).format('YYYY-MM-DD')}`
+          ? `${formatDate(start, 'yyyy-LL-dd')} a ${formatDate(end, 'yyyy-LL-dd')}`
           : 'Todas las fechas',
     },
     { field: 'Facturas analizadas', value: String(result.totalInvoices) },
@@ -320,8 +337,8 @@ export const exportBusinessWorkbook = async (result, start, end) => {
     longitudes.addRow({
       length: s.length,
       count: s.count,
-      first: s.firstDate ? dayjs(s.firstDate).format('YYYY-MM-DD HH:mm') : '—',
-      last: s.lastDate ? dayjs(s.lastDate).format('YYYY-MM-DD HH:mm') : '—',
+      first: s.firstDate ? formatDate(s.firstDate, 'yyyy-LL-dd HH:mm') : '—',
+      last: s.lastDate ? formatDate(s.lastDate, 'yyyy-LL-dd HH:mm') : '—',
       missing: s.missingDateCount || 0,
     });
   });
@@ -364,7 +381,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
         looseCanonical: occ.looseCanonical || looseCanonicalizeNcf(occ.ncf),
         invoice: occ.invoiceNumber || null,
         ncf: occ.ncf,
-        date: occ.date ? dayjs(occ.date).format('YYYY-MM-DD HH:mm') : null,
+        date: occ.date ? formatDate(occ.date, 'yyyy-LL-dd HH:mm') : null,
         status: occ.status || 'Sin estado',
         length: typeof lengthValue === 'number' ? lengthValue : null,
         idx: idx + 1,
@@ -374,7 +391,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
   });
 
   const buffer = await wb.xlsx.writeBuffer();
-  const fileName = `${sanitizeFileName(result.businessName)}_${dayjs().format('YYYYMMDD-HHmm')}.xlsx`;
+  const fileName = `${sanitizeFileName(result.businessName)}_${DateTime.local().toFormat('yyyyMMdd-HHmm')}.xlsx`;
   saveAs(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

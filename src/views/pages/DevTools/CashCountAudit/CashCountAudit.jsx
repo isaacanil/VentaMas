@@ -252,7 +252,7 @@ const CashCountAudit = () => {
       }
     };
     loadData();
-  }, [business, cashCountId]);
+  }, [business, cashCountId, user]);
 
   const businessOptions = useMemo(() => {
     const base = businesses.map((b) => ({

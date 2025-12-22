@@ -1,12 +1,13 @@
 import { Spin } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useEffect, Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import ROUTES_PATH from '@/router/routes/routesName';
+
 import { selectUser } from '../../../features/auth/userSlice';
-import ROUTES_PATH from '../../../routes/routesName';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 
 import ErrorBoundary from './components/ErrorBoundary';

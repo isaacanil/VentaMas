@@ -14,7 +14,7 @@ import {
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import ROUTES_NAME from '../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const { Option } = Select;
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;

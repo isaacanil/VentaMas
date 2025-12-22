@@ -67,18 +67,34 @@ export const useListenProduct = (productId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const [prevProductId, setPrevProductId] = useState(productId);
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+
+  if (productId !== prevProductId || user?.businessID !== prevBusinessID) {
+    setPrevProductId(productId);
+    setPrevBusinessID(user?.businessID);
+    setData(null);
+    setError(null);
     if (productId && user?.businessID) {
-      setLoading(true); // Iniciar el estado de carga
-      const unsubscribe = fbListenProduct(
-        user,
-        productId,
-        setData,
-        setError,
-        setLoading,
-      );
-      return () => unsubscribe(); // Cleanup al desmontar
+      setLoading(true);
+    } else {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (!productId || !user?.businessID) {
+      return;
+    }
+
+    const unsubscribe = fbListenProduct(
+      user,
+      productId,
+      setData,
+      setError,
+      setLoading,
+    );
+    return () => unsubscribe(); // Cleanup al desmontar
   }, [productId, user]);
 
   return { data, loading, error };

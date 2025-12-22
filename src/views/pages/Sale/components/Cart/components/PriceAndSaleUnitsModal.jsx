@@ -1,7 +1,9 @@
 import { Modal, Button } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { useListenSaleUnits } from '../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
 import {
@@ -11,7 +13,6 @@ import {
 
 import { extraerPreciosConImpuesto } from './ProductCardForCart/utils/priceUtils';
 
-import { formatPrice } from '@/utils/format';
 
 // Estilos
 const ModalContainer = styled.div`
@@ -123,7 +124,7 @@ const PriceAndSaleUnitsModal = ({
   };
 
   // Función helper para determinar qué precio es el actual del producto en el carrito
-  const getCurrentProductPrice = () => {
+  const getCurrentProductPrice = useCallback(() => {
     // Si estamos en la unidad por defecto
     if (selectedUnitId === 'default') {
       const prices = extraerPreciosConImpuesto(item.pricing) || [];
@@ -186,9 +187,9 @@ const PriceAndSaleUnitsModal = ({
 
       return 'listPrice';
     }
-  };
+  }, [item.pricing, selectedUnitId, saleUnits]);
 
-  const getDefaultPrice = (prices) => {
+  const getDefaultPrice = useCallback((prices) => {
     // Intentar determinar el tipo de precio actualmente seleccionado
     const currentPriceType = getCurrentProductPrice();
 
@@ -203,7 +204,7 @@ const PriceAndSaleUnitsModal = ({
       prices.find((price) => price.type === 'listPrice') ||
       prices[0]
     );
-  };
+  }, [getCurrentProductPrice]);
 
   const handleSelectUnit = (unit) => {
     setSelectedUnitId(unit.id);
@@ -254,19 +255,20 @@ const PriceAndSaleUnitsModal = ({
     }
   };
 
-  useEffect(() => {
-    if (!isVisible) return;
-    setSelectedUnitId(
-      selectedUnit ? selectedUnit.id : item.defaultSaleUnitId || 'default',
-    );
-  }, [
-    isVisible,
-    selectedUnit ? selectedUnit.id : undefined,
-    item.defaultSaleUnitId,
-  ]);
+  const derivedUnitId = useMemo(() => {
+    if (!isVisible) return null;
+    return selectedUnit ? selectedUnit.id : item.defaultSaleUnitId || 'default';
+  }, [isVisible, selectedUnit, item.defaultSaleUnitId]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (derivedUnitId !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to synchronize local state with derived unit ID
+      setSelectedUnitId(derivedUnitId);
+    }
+  }, [derivedUnitId, selectedUnit]);
+
+  const derivedPrices = useMemo(() => {
+    if (!isVisible) return { enabledPrices: [], defaultPrice: null };
 
     let pricingOptions = [];
 
@@ -285,11 +287,15 @@ const PriceAndSaleUnitsModal = ({
       return price?.enabled && Number.isFinite(value) && value > 0;
     });
 
-    setCombinedPrices(enabledPrices);
-
     const defaultPrice = getDefaultPrice(enabledPrices);
-    setSelectedPrice(defaultPrice);
-  }, [selectedUnitId, saleUnits, item, isVisible, prices]);
+    return { enabledPrices, defaultPrice };
+  }, [selectedUnitId, saleUnits, item, isVisible, prices, getDefaultPrice]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to synchronize local pricing states with derived data
+    setCombinedPrices(derivedPrices.enabledPrices);
+    setSelectedPrice(derivedPrices.defaultPrice);
+  }, [derivedPrices, getDefaultPrice]);
 
   const handleSelectPrice = (price) => {
     setSelectedPrice(price);

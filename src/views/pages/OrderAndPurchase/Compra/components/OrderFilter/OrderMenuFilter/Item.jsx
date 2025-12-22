@@ -4,10 +4,11 @@ import { Fragment, useState } from 'react';
 import styled from 'styled-components';
 
 
+import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
+
 import { Input } from './Input';
 import { modifyOrderMenuData } from './modifyOrderMenuData';
 
-import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
 
 export const Item = ({ data, array, setArray, index }) => {
   const [searchTerm, setSearchTerm] = useState('');

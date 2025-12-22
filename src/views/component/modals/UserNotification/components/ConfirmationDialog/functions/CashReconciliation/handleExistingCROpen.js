@@ -1,4 +1,4 @@
-import { setUserNotification } from '@features/UserNotification/UserNotificationSlice';
+import { setUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 
 export const handlerExistingCROpen = (navigate, dispatch, resolve) => {
   if (!resolve?.isExistingOpenCR) return;

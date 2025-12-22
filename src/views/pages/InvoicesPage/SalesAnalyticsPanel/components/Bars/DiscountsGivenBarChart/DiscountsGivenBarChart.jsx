@@ -49,7 +49,7 @@ const accumulateDiscountsData = (sales, byMonth = false) => {
 };
 
 export const DiscountsGivenBarChart = ({ sales }) => {
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const dateSpan = useMemo(
     () =>

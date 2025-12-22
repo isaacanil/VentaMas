@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
@@ -9,13 +9,19 @@ function usePreviousRoute() {
   const location = useLocation();
   const currentPathname = location.pathname;
 
-  const previousPathnameRef = useRef(null);
+  const [state, setState] = useState({
+    current: currentPathname,
+    previous: null,
+  });
 
-  useEffect(() => {
-    previousPathnameRef.current = currentPathname;
-  }, [currentPathname]);
+  if (state.current !== currentPathname) {
+    setState({
+      current: currentPathname,
+      previous: state.current,
+    });
+  }
 
-  return previousPathnameRef.current;
+  return state.previous;
 }
 
 export default usePreviousRoute;

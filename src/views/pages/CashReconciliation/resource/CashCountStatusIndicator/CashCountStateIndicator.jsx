@@ -16,7 +16,7 @@ const handleLabelState = (state) => {
 export const CashCountStateIndicator = ({ state }) => {
   const stateLabel = handleLabelState(state);
 
-  return <Container state={state}>{stateLabel}</Container>;
+  return <Container $state={state}>{stateLabel}</Container>;
 };
 
 const Container = styled.div`
@@ -25,7 +25,7 @@ const Container = styled.div`
   white-space: nowrap;
   width: min-content;
   ${(props) => {
-    switch (props.state) {
+    switch (props.$state) {
       case 'open':
         return `
           background-color: var(--color-success-light);

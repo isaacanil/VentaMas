@@ -1,21 +1,28 @@
 import { faCalendarXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DatePicker as AntdDatePicker } from 'antd'; // Importamos como AntdDatePicker
-import dayjs from 'dayjs';
+import AntDatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../../Button/Button';
 
-const { RangePicker } = AntdDatePicker;
+const { RangePicker } = AntDatePicker;
+const DATE_LOCALE = 'es';
 
 const getDefaultDates = () => {
-  const today = dayjs().startOf('day');
-  return [today.toISOString(), today.endOf('day').toISOString()];
+  const today = DateTime.local().setLocale(DATE_LOCALE).startOf('day');
+  return {
+    startDate: today.toMillis(),
+    endDate: today.endOf('day').toMillis(),
+  };
 };
 
 const getEmptyDates = () => {
-  return [null, null];
+  return {
+    startDate: null,
+    endDate: null,
+  };
 };
 
 export const DatePicker = ({ setDates, dates, datesDefault }) => {
@@ -28,8 +35,8 @@ export const DatePicker = ({ setDates, dates, datesDefault }) => {
   const handleRangeChange = (dates) => {
     if (dates) {
       setDates({
-        startDate: dates[0].startOf('day').valueOf(),
-        endDate: dates[1].endOf('day').valueOf(),
+        startDate: dates[0].startOf('day').toMillis(),
+        endDate: dates[1].endOf('day').toMillis(),
       });
     } else {
       setDates(getEmptyDates());
@@ -46,7 +53,10 @@ export const DatePicker = ({ setDates, dates, datesDefault }) => {
         <RangePicker
           value={
             dates?.startDate && dates?.endDate
-              ? [dayjs(dates.startDate), dayjs(dates.endDate)]
+              ? [
+                  DateTime.fromMillis(dates.startDate).setLocale(DATE_LOCALE),
+                  DateTime.fromMillis(dates.endDate).setLocale(DATE_LOCALE),
+                ]
               : null
           }
           format="DD/MM/YY"

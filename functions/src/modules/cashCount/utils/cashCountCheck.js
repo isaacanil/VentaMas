@@ -29,17 +29,17 @@ export async function checkOpenCashCount({ cashCountSnap, user }) {
         uid: user.uid,
         cashCountId: cashCount.id,
       });
-      return { state: 'open', cashCount, cashCountId: cashCount?.id };
+      return { state: 'open', cashCount, cashCountId: cashCountSnap.id || cashCount?.id };
     case 'closing':
       logger.info('Cuadre de caja en proceso de cierre', {
         uid: user.uid,
-        cashCountId: cashCount.id,
+        cashCountId: cashCountSnap.id || cashCount?.id,
       });
       throw new https.HttpsError('failed-precondition', 'cashCount-closing');
     case 'closed':
       logger.info('Cuadre de caja cerrado', {
         uid: user.uid,
-        cashCountId: cashCount.id,
+        cashCountId: cashCountSnap.id || cashCount?.id,
       });
       throw new https.HttpsError('failed-precondition', 'cashCount-closed');
     default:

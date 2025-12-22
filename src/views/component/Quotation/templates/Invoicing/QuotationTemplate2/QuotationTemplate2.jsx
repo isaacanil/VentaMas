@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -83,13 +83,17 @@ const FixedFooter = styled.div`
 
 export const QuotationTemplate2 = React.forwardRef(
   ({ data, ignoreHidden }, ref) => {
-    const business = useSelector(selectBusinessData) || {};
-    const [headerHeight, setHeaderHeight] = useState(0);
-    const [footerHeight, setFooterHeight] = useState(0);
+    const businessData = useSelector(selectBusinessData);
+    const business = useMemo(() => businessData || {}, [businessData]);
+    const [headerHeight, setHeaderHeight] = useState(() => calcHeaderHeight(business, data));
+    const [footerHeight, setFooterHeight] = useState(() => calcFooterHeight(data));
 
     useLayoutEffect(() => {
-      setHeaderHeight(calcHeaderHeight(business, data));
-      setFooterHeight(calcFooterHeight(data));
+      // Usar requestAnimationFrame para evitar renderizado síncrono
+      requestAnimationFrame(() => {
+        setHeaderHeight(calcHeaderHeight(business, data));
+        setFooterHeight(calcFooterHeight(data));
+      });
     }, [business, data]);
 
     if (!data) return null;

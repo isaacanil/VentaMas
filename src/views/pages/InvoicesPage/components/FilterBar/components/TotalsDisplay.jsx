@@ -1,11 +1,12 @@
 import React from 'react';
 
+import { formatPrice } from '@/utils/format';
+
 import {
   calculateInvoicesTotal,
   countInvoices,
 } from '../../../../../../utils/invoice';
 
-import { formatPrice } from '@/utils/format';
 
 export const TotalsDisplay = ({ invoices, className }) => {
   const totalAmount = calculateInvoicesTotal(invoices);

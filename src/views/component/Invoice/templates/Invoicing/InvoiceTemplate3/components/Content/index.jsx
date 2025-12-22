@@ -1,9 +1,10 @@
 import { Table } from 'antd';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../../features/updateProduct/updateProductSlice';
 
-import { formatPrice } from '@/utils/format';
 
 export default function Content({ data }) {
   const creditNotes = data?.creditNotePayment || [];

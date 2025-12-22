@@ -10,6 +10,8 @@ import { Modal, Button, Tooltip } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { getTotalPrice } from '../../../../../../utils/pricing';
 
 import {
@@ -20,7 +22,6 @@ import {
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { StyledProductTable } from './ProductTables.styles';
 
-import { formatPrice } from '@/utils/format';
 
 const totalPrice = (product) => getTotalPrice(product);
 
@@ -53,14 +54,12 @@ export const ProductListModal = ({
 
   const categoryStats = useMemo(() => getCategoryStats(products), [products]);
 
-  useEffect(() => {
-    if (categoryFilter === 'all') return;
+  const safeCategoryFilter = useMemo(() => {
+    if (categoryFilter === 'all') return 'all';
     const hasSelectedCategory = categoryStats.entries.some(
       (entry) => entry.name === categoryFilter,
     );
-    if (!hasSelectedCategory) {
-      setCategoryFilter('all');
-    }
+    return hasSelectedCategory ? categoryFilter : 'all';
   }, [categoryFilter, categoryStats]);
 
   const displayProducts = useMemo(() => {
@@ -75,10 +74,11 @@ export const ProductListModal = ({
       : [...list];
 
     const filtered =
-      categoryFilter === 'all'
+      safeCategoryFilter === 'all'
         ? filteredBySearch
         : filteredBySearch.filter(
-            (product) => getCategoryName(product?.category) === categoryFilter,
+            (product) =>
+              getCategoryName(product?.category) === safeCategoryFilter,
           );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
@@ -98,7 +98,7 @@ export const ProductListModal = ({
     });
 
     return sorted;
-  }, [products, searchTerm, categoryFilter, sortField, sortDirection]);
+  }, [products, searchTerm, safeCategoryFilter, sortField, sortDirection]);
 
   const columns = [
     {
@@ -206,7 +206,7 @@ export const ProductListModal = ({
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           searchPlaceholder="Buscar producto"
-          categoryFilter={categoryFilter}
+          categoryFilter={safeCategoryFilter}
           onCategoryChange={setCategoryFilter}
           categoryStats={categoryStats}
           sortField={sortField}

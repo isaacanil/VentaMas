@@ -1,63 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 
 export const applyFilters = (data, filters) => {
-  if (!data || !Array.isArray(data)) {
-    return [];
-  }
-  if (!filters) {
-    return data;
-  }
+  if (!Array.isArray(data)) return [];
+  if (!filters) return data;
 
-  return data.filter((item) => {
-    return Object.keys(filters).every((filterKey) => {
-      return item[filterKey] === filters[filterKey];
-    });
-  });
+  return data.filter((item) =>
+    Object.keys(filters).every((filterKey) => item?.[filterKey] === filters[filterKey]),
+  );
 };
 
 const generateFilterOptions = (data, accessor) => {
-  const uniqueValues = [...new Set(data.map((item) => item[accessor]))];
-  return uniqueValues.map((value) => ({ label: value, value }));
+  const uniqueValues = [...new Set(data.map((item) => item?.[accessor]))]
+    .filter((v) => v !== undefined && v !== null);
+
+  return uniqueValues.map((value) => ({ label: String(value), value }));
 };
 
 export const useDynamicFilterConfig = (initialFilterConfig = [], data = []) => {
-  if (!initialFilterConfig || !Array.isArray(initialFilterConfig)) {
+  if (!Array.isArray(initialFilterConfig)) {
     throw new Error('initialFilterConfig debe ser un array');
   }
-
-  if (!data || !Array.isArray(data)) {
+  if (!Array.isArray(data)) {
     throw new Error('data debe ser un array');
   }
 
-  const [dynamicFilterConfig, setDynamicFilterConfig] =
-    useState(initialFilterConfig);
-
-  useEffect(() => {
-    const newFilterConfig = initialFilterConfig.map((filter) => {
-      return {
-        ...filter,
-        options: generateFilterOptions(data, filter.accessor),
-      };
-    });
-
-    // Solo actualizamos el estado si newFilterConfig es diferente de dynamicFilterConfig
-    if (
-      JSON.stringify(newFilterConfig) !== JSON.stringify(dynamicFilterConfig)
-    ) {
-      setDynamicFilterConfig(newFilterConfig);
-    }
-  }, [data, initialFilterConfig]);
-
-  return dynamicFilterConfig;
+  // Derivado: no state, no effect
+  return useMemo(() => {
+    return initialFilterConfig.map((filter) => ({
+      ...filter,
+      options: generateFilterOptions(data, filter.accessor),
+    }));
+  }, [initialFilterConfig, data]);
 };
 
 const useTableFiltering = (filterConfig, data) => {
-  const defaultFilter = filterConfig.reduce((acc, curr) => {
-    if (curr.defaultValue !== undefined) {
-      acc[curr.accessor] = curr.defaultValue;
-    }
-    return acc;
-  }, {});
+  const defaultFilter = useMemo(() => {
+    return filterConfig.reduce((acc, curr) => {
+      if (curr.defaultValue !== undefined) {
+        acc[curr.accessor] = curr.defaultValue;
+      }
+      return acc;
+    }, {});
+  }, [filterConfig]);
 
   const [filter, setFilter] = useState(defaultFilter);
 
@@ -65,7 +49,7 @@ const useTableFiltering = (filterConfig, data) => {
     setFilter(defaultFilter);
   };
 
-  const filteredData = applyFilters(data, filter);
+  const filteredData = useMemo(() => applyFilters(data, filter), [data, filter]);
 
   return [filter, setFilter, setDefaultFilter, defaultFilter, filteredData];
 };

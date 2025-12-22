@@ -1,0 +1,72 @@
+PS C:\Users\jonat\OneDrive\Documentos\VentaMas> npm run build
+
+> ventamax@0.0.0 build
+> vite build
+
+rolldown-vite v7.2.10 building client environment for production...
+✗ Build failed in 2m 5s
+
+PWA v1.2.0
+mode      generateSW
+precache  419 entries (13694.52 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-8c29f6e4.js
+error during build:
+Build failed with 1 error:
+
+[plugin vite-plugin-pwa:build]
+Error: Build failed with 9 errors:
+
+[UNLOADABLE_DEPENDENCY] Error: Could not load src/views/component/modals/CreditNoteModal/components/CreditNoteSetupSection.jsx
+    ╭─[ src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx:21:40 ]
+    │
+ 21 │ import { CreditNoteSetupSection } from "./components/CreditNoteSetupSection";
+    │                                        ──────────────────┬──────────────────  
+    │                                                          ╰──────────────────── stream did not contain valid UTF-8
+────╯
+
+[UNLOADABLE_DEPENDENCY] Error: Could not load src/views/component/modals/CreditNoteModal/components/ProductsTab.jsx
+    ╭─[ src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx:22:29 ]
+    │
+ 22 │ import { ProductsTab } from "./components/ProductsTab";
+    │                             ─────────────┬────────────
+    │                                          ╰────────────── stream did not contain valid UTF-8
+────╯
+
+[UNLOADABLE_DEPENDENCY] Error: Could not load src/views/component/modals/CreditNoteModal/components/CreditNoteActions.jsx
+    ╭─[ src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx:19:35 ]
+    │
+ 19 │ import { CreditNoteActions } from "./components/CreditNoteActions";
+    │                                   ────────────────┬───────────────
+    │                                                   ╰───────────────── stream did not contain valid UTF-8
+────╯
+
+[UNLOADABLE_DEPENDENCY] Error: Could not load src/views/component/modals/CreditNoteModal/components/RelatedNotesTab.jsx
+    ╭─[ src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx:23:33 ]
+    │
+ 23 │ import { RelatedNotesTab } from "./components/RelatedNotesTab";
+    │                                 ───────────────┬──────────────
+    │                                                ╰──────────────── stream did not contain valid UTF-8
+────╯
+
+[UNLOADABLE_DEPENDENCY] Error: Could not load src/hooks/creditNote/useFbGetCreditNoteApplications.js
+    ╭─[ src/views/component/modals/CreditNoteModal/CreditNoteModal.jsx:17:48 ]
+    │
+ 17 │ import { useFbGetCreditNoteApplications } from "../../../../hooks/creditNote/useFbGetCreditNoteApplications";
+    │                                                ──────────────────────────────┬──────────────────────────────
+    │                                                                              ╰──────────────────────────────── stream did not contain valid UTF-8
+────╯
+
+...
+    at aggregateBindingErrorsIntoJsError (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/bindingify-input-options-Bk0BBr2s.mjs:56:18)
+    at plugin (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/bindingify-input-options-Bk0BBr2s.mjs:481:157)
+    at plugin.<computed> (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/bindingify-input-options-Bk0BBr2s.mjs:1008:18)
+    at aggregateBindingErrorsIntoJsError (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/bindingify-input-options-Bk0BBr2s.mjs:56:18)
+    at unwrapBindingResult (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/bindingify-input-options-Bk0BBr2s.mjs:31:128)
+    at #build (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/rolldown/dist/shared/rolldown-build-BEU8N80I.mjs:2260:34)
+    at async buildEnvironment (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/vite/dist/node/chunks/node.js:32799:64)
+    at async Object.build (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/vite/dist/node/chunks/node.js:33202:19)
+    at async Object.buildApp (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/vite/dist/node/chunks/node.js:33199:153)
+    at async CAC.<anonymous> (file:///C:/Users/jonat/OneDrive/Documentos/VentaMas/node_modules/vite/dist/node/cli.js:629:3)
+PS C:\Users\jonat\OneDrive\Documentos\VentaMas> 

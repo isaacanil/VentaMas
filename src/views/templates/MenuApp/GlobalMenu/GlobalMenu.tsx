@@ -2,12 +2,7 @@ import { Suspense, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { lazyWithRetry } from '../../../../utils/lazyWithRetry';
-
-import {
-  findToolbarEntry,
-  type ToolbarComponentProps,
-} from './GlobalMenuRegistry';
+import { findToolbarEntry, type ToolbarComponentProps } from './GlobalMenuRegistry';
 
 import type { Dispatch, FC, SetStateAction } from 'react';
 
@@ -26,31 +21,24 @@ export const GlobalMenu: FC<GlobalMenuProps> = (props) => {
     [location.pathname],
   );
 
-  const ToolbarComponent = useMemo(() => {
-    if (!activeEntry) {
-      return null;
-    }
+  if (!activeEntry) return null;
 
-    return lazyWithRetry(activeEntry.loader, `GlobalMenu:${activeEntry.id}`);
-  }, [activeEntry]);
-
-  if (!ToolbarComponent || !activeEntry) {
-    return null;
-  }
+  const ToolbarComponent = activeEntry.Component;
 
   return (
     <Container key={activeEntry.id}>
       <Suspense fallback={null}>
         <LeftSide>
-          <ToolbarComponent side="left" {...props} />
+          <ToolbarComponent {...props} side="left" />
         </LeftSide>
         <RightSide>
-          <ToolbarComponent side="right" {...props} />
+          <ToolbarComponent {...props} side="right" />
         </RightSide>
       </Suspense>
     </Container>
   );
 };
+
 const Container = styled.div`
   display: flex;
   gap: 1em;

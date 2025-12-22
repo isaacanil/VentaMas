@@ -197,8 +197,11 @@ const FileUploader = ({
       .filter((attachment) =>
         attachment.url?.includes('firebasestorage.googleapis.com'),
       )
-      .map((attachment) => ({
-        id: attachment.id || Math.random().toString(36).substr(2, 9),
+      .map((attachment, index) => ({
+        id:
+          attachment.id ||
+          attachment.url ||
+          `${attachment.name || 'attachment'}-${index}`,
         name: attachment.name || 'Archivo sin nombre',
         type: attachment.type || getFileTypeFromUrl(attachment.url),
         url: attachment.url,

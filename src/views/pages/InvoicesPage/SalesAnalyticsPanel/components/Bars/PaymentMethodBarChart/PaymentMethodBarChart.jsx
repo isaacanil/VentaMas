@@ -103,7 +103,7 @@ const accumulatePaymentMethodData = (sales) => {
 
 export const PaymentMethodBarChart = ({ sales }) => {
   const isMobile = useIsMobile();
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const salesByPaymentMethod = useMemo(
     () => accumulatePaymentMethodData(normalizedSales),

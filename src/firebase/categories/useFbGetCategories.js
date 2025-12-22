@@ -9,15 +9,15 @@ export const useFbGetCategories = () => {
   const [categories, setCategories] = useState([]);
   const user = useSelector(selectUser);
 
-  const categoriesRef = collection(
-    db,
-    'businesses',
-    String(user?.businessID),
-    'categories',
-  );
-  const q = query(categoriesRef, orderBy('category.name', 'desc'));
-
   useEffect(() => {
+    const categoriesRef = collection(
+      db,
+      'businesses',
+      String(user?.businessID),
+      'categories',
+    );
+    const q = query(categoriesRef, orderBy('category.name', 'desc'));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let categoriesArray = snapshot.docs.map((item) => item.data());
       setCategories(categoriesArray);

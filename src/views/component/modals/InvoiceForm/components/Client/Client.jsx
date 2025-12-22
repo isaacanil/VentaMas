@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Select, Modal, message } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -42,7 +42,7 @@ export const Client = ({ invoice, isEditLocked = false }) => {
     genericIds.includes(clientId) ||
     !clientId;
 
-  const normalizedClients = Array.isArray(clients) ? clients : [];
+  const normalizedClients = useMemo(() => Array.isArray(clients) ? clients : [], [clients]);
 
   const clientDictionary = useMemo(() => {
     return normalizedClients.reduce((acc, entry) => {
@@ -88,12 +88,6 @@ export const Client = ({ invoice, isEditLocked = false }) => {
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-
-  useEffect(() => {
-    if (readOnly && isModalOpen) {
-      setIsModalOpen(false);
-    }
-  }, [readOnly, isModalOpen]);
 
   const openModal = () => {
     if (readOnly) {
@@ -201,7 +195,7 @@ export const Client = ({ invoice, isEditLocked = false }) => {
 
       <Modal
         title="Seleccionar Cliente"
-        open={isModalOpen}
+        open={isModalOpen && !readOnly}
         onCancel={closeModal}
         footer={null}
         width={500}

@@ -14,7 +14,7 @@ import styled from 'styled-components';
 
 import { openCreditNoteModal } from '../../../../../features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { createProfessionalCreditNoteReportCallback } from '../../../../../hooks/exportToExcel/exportConfig';
 import { formatCreditNote } from '../../../../../hooks/exportToExcel/formatCreditNote';
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
@@ -26,7 +26,7 @@ export const CreditNoteToolbar = ({ side = 'left', data }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const navigate = useNavigate();
-  const { taxReceipt } = fbGetTaxReceipt();
+  const { taxReceipt } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
   const creditNotes = data || [];

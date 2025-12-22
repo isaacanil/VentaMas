@@ -60,7 +60,7 @@ export const PaymentMethods = () => {
       cashInputRef.current.focus();
       cashInputRef.current.select();
     }
-  }, []);
+  }, [paymentMethods]);
 
   useEffect(() => {
     const totalPaymentValue = paymentMethods.reduce((total, method) => {
@@ -75,7 +75,7 @@ export const PaymentMethods = () => {
         dispatch(setPaymentMethod({ ...cashMethod, value: totalPurchase }));
       }
     }
-  }, [totalPurchase]);
+  }, [totalPurchase, paymentMethods, dispatch]);
   useEffect(() => {
     if (cartData.isAddedToReceivables) {
       const anyEnabled = paymentMethods.some((m) => m.status);

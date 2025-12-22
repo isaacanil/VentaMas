@@ -44,7 +44,7 @@ export const processOrder = async (data, businessID) => {
   return { data: { ...data, provider } };
 };
 
-export const fbGetPendingOrders = () => {
+export const useFbGetPendingOrders = () => {
   const [pendingOrders, setPendingOrders] = useState([]);
   const user = useSelector(selectUser);
 

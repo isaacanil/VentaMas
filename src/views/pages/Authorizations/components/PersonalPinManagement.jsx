@@ -7,7 +7,7 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import { Button, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -272,7 +272,7 @@ export const PersonalPinManagement = () => {
       )
     : [];
 
-  const loadPinStatus = async () => {
+  const loadPinStatus = useCallback(async () => {
     setLoading(true);
     try {
       const status = await fbGetUserPinStatus(user, user.uid);
@@ -285,11 +285,11 @@ export const PersonalPinManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user?.uid) loadPinStatus();
-  }, [user?.uid]);
+  }, [user?.uid, loadPinStatus]);
 
   const handleGeneratePin = async (modules) => {
     setLoading(true);

@@ -1,5 +1,5 @@
 import { Modal } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 const AdjustInventoryModal = ({
   visible,
@@ -8,19 +8,24 @@ const AdjustInventoryModal = ({
   packSize,
   onSave,
 }) => {
-  const [adjustedStock, setAdjustedStock] = useState(stock);
-  const [adjustedTotalUnit, setAdjustedTotalUnit] = useState(stock * packSize);
+  const initialTrigger = `${visible}-${stock}-${packSize}`;
+  const [{ trigger: localTrigger, value: localStock }, setLocalStock] =
+    useState(() => ({ trigger: initialTrigger, value: stock }));
 
-  // Actualiza los valores del modal cuando se reciben nuevas props
-  useEffect(() => {
-    setAdjustedStock(stock);
-    setAdjustedTotalUnit(stock * packSize);
-  }, [stock, packSize]);
+  const adjustedStock = localTrigger === initialTrigger ? localStock : stock;
+  const setAdjustedStock = useCallback(
+    (value) => setLocalStock({ trigger: initialTrigger, value }),
+    [initialTrigger],
+  );
+
+  const adjustedTotalUnit = useMemo(
+    () => (Number(adjustedStock) || 0) * (Number(packSize) || 0),
+    [adjustedStock, packSize],
+  );
 
   // Maneja el cambio en el stock y recalcula el total de unidades
   const _handleStockChange = (value) => {
     setAdjustedStock(value);
-    setAdjustedTotalUnit(value * packSize);
   };
 
   // Maneja la confirmación del modal y llama a la función de guardado

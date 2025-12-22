@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { fn } from 'storybook/test';
 
 import { createDefaultPresets } from '../constants/presets';
@@ -44,7 +44,7 @@ export const Default = {
 export const WithSelectedPreset = {
   args: {
     ...Default.args,
-    value: dayjs().startOf('day'), // "Hoy" seleccionado
+    value: DateTime.local().startOf('day'), // "Hoy" seleccionado
   },
 };
 
@@ -53,7 +53,7 @@ export const RangeMode = {
     ...Default.args,
     presets: createDefaultPresets('range'),
     mode: 'range',
-    value: [dayjs().startOf('day'), dayjs().endOf('day')], // "Hoy" en modo range
+    value: [DateTime.local().startOf('day'), DateTime.local().endOf('day')], // "Hoy" en modo range
   },
 };
 

@@ -15,7 +15,7 @@ import {
 import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
 import { db } from '../../../../firebase/firebaseconfig';
-import { ROUTES } from '../../../../routes/routesName';
+import { ROUTES } from '@/router/routes/routesName';
 
 /**
  * Procesa todos los comandos ingresados en la consola de desarrollador

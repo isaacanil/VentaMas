@@ -3,9 +3,10 @@ import React, { useMemo, useRef } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 

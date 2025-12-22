@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DateTime } from 'luxon';
+import { useCallback, useMemo, useState } from 'react';
 
 import type {
   DraftBatchOption,
@@ -42,40 +42,30 @@ export const useInventoryFilters = ({
   productBatchMap,
 }: UseInventoryFiltersParams): UseInventoryFiltersResult => {
   const [showOnlyWithExpiration, setShowOnlyWithExpiration] = useState(false);
-  const [selectedProductFilter, setSelectedProductFilter] = useState<
-    string | null
-  >(null);
-  const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
+  const [rawProductFilter, setRawProductFilter] = useState<string | null>(null);
+  const [rawBatches, setRawBatches] = useState<string[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterDraft, setFilterDraft] =
     useState<FilterDraft>(DEFAULT_FILTER_DRAFT);
 
-  useEffect(() => {
-    if (!selectedProductFilter) return;
+  // Validar producto seleccionado contra opciones disponibles durante render
+  const selectedProductFilter = useMemo(() => {
+    if (!rawProductFilter) return null;
     const validValues = new Set(productOptions.map((option) => option.value));
-    if (!validValues.has(selectedProductFilter)) {
-      setSelectedProductFilter(null);
-      setSelectedBatches([]);
-    }
-  }, [productOptions, selectedProductFilter]);
+    return validValues.has(rawProductFilter) ? rawProductFilter : null;
+  }, [productOptions, rawProductFilter]);
 
-  useEffect(() => {
-    if (!selectedProductFilter || !selectedBatches.length) return;
+  // Validar batches seleccionados contra batches disponibles para el producto
+  const selectedBatches = useMemo(() => {
+    if (!selectedProductFilter || !rawBatches.length) return [];
     const batchesForProduct = productBatchMap.get(selectedProductFilter);
-    if (!batchesForProduct || !batchesForProduct.size) {
-      setSelectedBatches([]);
-      return;
-    }
+    if (!batchesForProduct || !batchesForProduct.size) return [];
+    
     const validValues = new Set(
       Array.from(batchesForProduct.values()).map((option) => option.value),
     );
-    const filteredValues = selectedBatches.filter((value) =>
-      validValues.has(value),
-    );
-    if (filteredValues.length !== selectedBatches.length) {
-      setSelectedBatches(filteredValues);
-    }
-  }, [selectedProductFilter, selectedBatches, productBatchMap]);
+    return rawBatches.filter((value) => validValues.has(value));
+  }, [productBatchMap, selectedProductFilter, rawBatches]);
 
   const hasAdvancedFilters =
     showOnlyWithExpiration ||
@@ -93,7 +83,9 @@ export const useInventoryFilters = ({
         displayLabel:
           option.label === 'Sin lote' ? 'Sin lote' : `# ${option.label}`,
         expirationText: option.expirationDateMillis
-          ? `Vence ${dayjs(option.expirationDateMillis).format('DD/MM/YYYY')}`
+          ? `Vence ${DateTime.fromMillis(option.expirationDateMillis).toFormat(
+            'dd/MM/yyyy',
+          )}`
           : 'Sin fecha de vencimiento',
       }))
       .sort((a, b) => String(a.label).localeCompare(String(b.label)));
@@ -119,16 +111,16 @@ export const useInventoryFilters = ({
 
   const applyFilterModal = useCallback(() => {
     setShowOnlyWithExpiration(filterDraft.showOnlyWithExpiration);
-    setSelectedBatches([...filterDraft.batches]);
-    setSelectedProductFilter(filterDraft.product);
+    setRawBatches([...filterDraft.batches]);
+    setRawProductFilter(filterDraft.product);
     setIsFilterModalOpen(false);
   }, [filterDraft]);
 
   const resetFilterModal = useCallback(() => {
     setFilterDraft({ ...DEFAULT_FILTER_DRAFT });
     setShowOnlyWithExpiration(false);
-    setSelectedBatches([]);
-    setSelectedProductFilter(null);
+    setRawBatches([]);
+    setRawProductFilter(null);
   }, []);
 
   const updateFilterDraft = useCallback((updater: FilterDraftUpdater) => {
@@ -137,8 +129,8 @@ export const useInventoryFilters = ({
 
   const clearAdvancedFilters = useCallback(() => {
     setShowOnlyWithExpiration(false);
-    setSelectedBatches([]);
-    setSelectedProductFilter(null);
+    setRawBatches([]);
+    setRawProductFilter(null);
     setFilterDraft({ ...DEFAULT_FILTER_DRAFT });
   }, []);
 

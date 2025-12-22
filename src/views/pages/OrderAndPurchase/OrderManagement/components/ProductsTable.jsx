@@ -5,9 +5,9 @@ import {
   Input,
   Form,
   InputNumber,
-  DatePicker,
 } from 'antd';
-import dayjs from 'dayjs';
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
 import React from 'react';
 
 import { formatMoney, formatQuantity } from '../../../../../utils/formatters';
@@ -33,7 +33,7 @@ const EditableCell = ({
   };
 
   const handleDateChange = (date) => {
-    const timestamp = date ? dayjs(date).valueOf() : null;
+    const timestamp = date ? date.toMillis() : null;
     onSave(record, dataIndex, timestamp);
   };
 
@@ -72,7 +72,9 @@ const EditableCell = ({
     if (isDatePicker) {
       return (
         <DatePicker
-          value={record[dataIndex] ? dayjs(record[dataIndex]) : null}
+          value={
+            record[dataIndex] ? DateTime.fromMillis(record[dataIndex]) : null
+          }
           onChange={handleDateChange}
           format="DD/MM/YY"
           style={{ width: '100%' }}

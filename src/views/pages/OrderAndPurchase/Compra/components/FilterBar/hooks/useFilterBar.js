@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useFilterBar = (
   defaultFilters = {},
@@ -8,21 +8,6 @@ export const useFilterBar = (
     filters: defaultFilters,
     isAscending: defaultSort.isAscending,
   });
-
-  const initialDefaultValues = useRef(defaultFilters);
-
-  useEffect(() => {
-    if (
-      JSON.stringify(defaultFilters) !==
-      JSON.stringify(initialDefaultValues.current)
-    ) {
-      setState((prev) => ({
-        ...prev,
-        filters: defaultFilters,
-      }));
-      initialDefaultValues.current = defaultFilters;
-    }
-  }, [defaultFilters]);
 
   const setFilters = useCallback((newFilters) => {
     const cleanedFilters = Object.fromEntries(

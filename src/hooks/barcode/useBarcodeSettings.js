@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
@@ -23,17 +23,10 @@ export const useBarcodeSettings = () => {
   const [error, setError] = useState(null);
   const [nextItemReference, setNextItemReference] = useState('');
 
-  // Cargar configuración al montar el componente
-  useEffect(() => {
-    if (user?.businessID) {
-      loadSettings();
-    }
-  }, [user?.businessID]);
-
   /**
    * Carga la configuración desde Firebase
    */
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -58,7 +51,14 @@ export const useBarcodeSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  // Cargar configuración al montar el componente
+  useEffect(() => {
+    if (user?.businessID) {
+      loadSettings();
+    }
+  }, [user?.businessID, loadSettings]);
 
   /**
    * Guarda la configuración en Firebase

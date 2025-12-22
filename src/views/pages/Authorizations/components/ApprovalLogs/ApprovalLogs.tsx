@@ -1,6 +1,5 @@
 import { ReloadOutlined } from '@ant-design/icons';
 import { Select, Button, Tooltip } from 'antd';
-import dayjs from 'dayjs';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -12,7 +11,6 @@ import { selectUser } from '../../../../../features/auth/userSlice';
 import { fbListApprovalLogs } from '../../../../../firebase/authorization/approvalLogs';
 import { getDateRange } from '../../../../../utils/date/getDateRange';
 
-import type { Dayjs } from 'dayjs';
 
 interface UserSnapshot {
   uid?: string;
@@ -47,7 +45,7 @@ interface ApprovalLogsProps {
   searchTerm?: string;
 }
 
-type RangeValue = [Dayjs | null, Dayjs | null];
+type RangeValue = [DateTime | null, DateTime | null];
 
 interface ApprovalLogQueryOptions {
   limitCount?: number;
@@ -100,7 +98,10 @@ const getDefaultDatePickerValue = (): RangeValue | null => {
   const rawRange: unknown = getDateRange('today');
 
   if (isDateRangeResult(rawRange)) {
-    return [dayjs(rawRange.startDate), dayjs(rawRange.endDate)];
+    return [
+      DateTime.fromMillis(rawRange.startDate),
+      DateTime.fromMillis(rawRange.endDate),
+    ];
   }
 
   return null;
@@ -502,14 +503,14 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
   );
 
   const startDateFilter = datePickerValue?.[0]
-    ? datePickerValue[0].startOf('day').valueOf()
+    ? datePickerValue[0].startOf('day').toMillis()
     : undefined;
   const endDateFilter = datePickerValue?.[1]
-    ? datePickerValue[1].endOf('day').valueOf()
+    ? datePickerValue[1].endOf('day').toMillis()
     : undefined;
 
   const handleDatePickerChange = useCallback(
-    (value: Dayjs | RangeValue | null) => {
+    (value: DateTime | RangeValue | null) => {
       if (!value) {
         setDatePickerValue(null);
         return;

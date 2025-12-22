@@ -2,9 +2,10 @@ import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 const options = {
     responsive: true,
@@ -48,7 +49,10 @@ const accumulateCategoryData = (expenses) => {
 };
 
 export const CategoryExpenseBarChart = ({ expenses }) => {
-    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const normalizedExpenses = useMemo(
+        () => Array.isArray(expenses) ? expenses : [],
+        [expenses]
+    );
     const categoryData = useMemo(
         () => accumulateCategoryData(normalizedExpenses),
         [normalizedExpenses],

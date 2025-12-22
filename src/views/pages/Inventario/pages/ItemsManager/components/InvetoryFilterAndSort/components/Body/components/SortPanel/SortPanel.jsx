@@ -1,5 +1,5 @@
 import { Button, Select, Tooltip } from 'antd';
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -15,22 +15,25 @@ import {
 import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
 
 export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
-  const [isCriterioChanged, setIsCriterioChanged] = useState(false);
-
   const dispatch = useDispatch();
   const criterio = useSelector((state) => selectCriterio(state, contextKey));
 
   // Función para manejar el cambio de criterio
   const orden = useSelector((state) => selectOrden(state, contextKey));
 
-  const handleCriterioChange = (newCriterio) => {
-    dispatch(setCriterio({ context: contextKey, value: newCriterio }));
-    setIsCriterioChanged(true);
-  };
+  const handleCriterioChange = useCallback(
+    (newCriterio) => {
+      dispatch(setCriterio({ context: contextKey, value: newCriterio }));
+    },
+    [contextKey, dispatch],
+  );
 
-  const handleOrdenChange = (nuevoOrden) => {
-    dispatch(setOrden({ context: contextKey, value: nuevoOrden }));
-  };
+  const handleOrdenChange = useCallback(
+    (nuevoOrden) => {
+      dispatch(setOrden({ context: contextKey, value: nuevoOrden }));
+    },
+    [contextKey, dispatch],
+  );
 
   useEffect(() => {
     const ordenPorCriterio = {
@@ -42,11 +45,8 @@ export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
       precio: 'ascNum',
       inventariable: true,
     };
-    if (isCriterioChanged) {
-      handleOrdenChange(ordenPorCriterio[criterio]);
-      setIsCriterioChanged(false); // Restablece la bandera para futuros cambios
-    }
-  }, [criterio, isCriterioChanged]);
+    handleOrdenChange(ordenPorCriterio[criterio]);
+  }, [criterio, handleOrdenChange]);
 
   const criterioOptions = opcionesCriterio.map((o) => ({
     value: o.valor,

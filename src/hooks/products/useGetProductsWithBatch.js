@@ -47,15 +47,13 @@ export const getProductsWithBatchListener = (businessID, onData, onError) => {
 
 export const useGetProductsWithBatch = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado de carga
-  const [error, setError] = useState(null); // Estado de error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const user = useSelector(selectUser);
 
   useEffect(() => {
     if (!user || !user.businessID) {
-      setProducts([]);
-      setLoading(false);
       return;
     }
 

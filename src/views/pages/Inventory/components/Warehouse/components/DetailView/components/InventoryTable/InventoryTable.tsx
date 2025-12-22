@@ -1,4 +1,4 @@
-import {
+﻿import {
   DeleteOutlined,
   MoreOutlined,
   SwapOutlined,
@@ -6,12 +6,12 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Dropdown, notification, type MenuProps } from 'antd';
-import dayjs, { type Dayjs } from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { AdvancedTable } from 'views/templates/system/AdvancedTable/AdvancedTable.js';
+
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { selectUser } from '../../../../../../../../../features/auth/userSlice.js';
 import { openDeleteModal } from '../../../../../../../../../features/productStock/deleteProductStockSlice.js';
@@ -34,7 +34,7 @@ import {
   TitleSection,
   ToolbarButton,
 } from './styles';
-import { normalizeToDayjs, toMillis } from './utils/dateUtils';
+import { normalizeToDateTime, toMillis } from './utils/dateUtils';
 import {
   NO_BATCH_VALUE,
   getProductFilterKey,
@@ -49,8 +49,6 @@ import type {
   SortConfig,
   SortMenuItems,
 } from './types';
-
-dayjs.extend(customParseFormat);
 
 interface AppUser {
   uid?: string;
@@ -117,28 +115,31 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       { label: 'Sin filtro', value: null },
       {
         label: 'Hoy',
-        value: [dayjs().startOf('day'), dayjs().endOf('day')] as [Dayjs, Dayjs],
+        value: [
+          DateTime.now().startOf('day'),
+          DateTime.now().endOf('day'),
+        ] as [DateTime, DateTime],
       },
       {
         label: 'Últimos 7 días',
         value: [
-          dayjs().subtract(6, 'day').startOf('day'),
-          dayjs().endOf('day'),
-        ] as [Dayjs, Dayjs],
+          DateTime.now().minus({ days: 6 }).startOf('day'),
+          DateTime.now().endOf('day'),
+        ] as [DateTime, DateTime],
       },
       {
         label: 'Este mes',
-        value: [dayjs().startOf('month'), dayjs().endOf('month')] as [
-          Dayjs,
-          Dayjs,
+        value: [DateTime.now().startOf('month'), DateTime.now().endOf('month')] as [
+          DateTime,
+          DateTime,
         ],
       },
       {
         label: 'Próximo mes',
         value: [
-          dayjs().add(1, 'month').startOf('month'),
-          dayjs().add(1, 'month').endOf('month'),
-        ] as [Dayjs, Dayjs],
+          DateTime.now().plus({ months: 1 }).startOf('month'),
+          DateTime.now().plus({ months: 1 }).endOf('month'),
+        ] as [DateTime, DateTime],
       },
     ],
     [],
@@ -150,8 +151,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     }
 
     return {
-      start: dateFilter[0].startOf('day').valueOf(),
-      end: dateFilter[1].endOf('day').valueOf(),
+      start: dateFilter[0].startOf('day').toMillis(),
+      end: dateFilter[1].endOf('day').toMillis(),
     };
   }, [dateFilter]);
 
@@ -174,7 +175,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
       const normalizedDates = Array.isArray(dates)
         ? (dates.map((date) =>
-          date ? normalizeToDayjs(date) : null,
+          date ? normalizeToDateTime(date) : null,
         ) as DateRangeValue)
         : null;
 
@@ -499,12 +500,17 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       })
       .map((stock): InventoryRow => {
         const expirationDateMillis = toMillis(stock.expirationDate);
+        const todayStartMillis = DateTime.now().startOf('day').toMillis();
         const isExpired = expirationDateMillis
-          ? dayjs(expirationDateMillis).isBefore(dayjs(), 'day')
+          ? DateTime.fromMillis(expirationDateMillis)
+              .startOf('day')
+              .toMillis() < todayStartMillis
           : false;
         const expiryDate = expirationDateMillis
           ? {
-            label: dayjs(expirationDateMillis).format('DD/MM/YYYY'),
+            label: DateTime.fromMillis(expirationDateMillis).toFormat(
+              'dd/MM/yyyy',
+            ),
             isExpired,
           }
           : { label: 'N/A', isExpired: false };
@@ -634,3 +640,5 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     </>
   );
 };
+
+

@@ -32,7 +32,7 @@ export const useLoadUserAbilities = () => {
     if (user?.businessID && !loading && (!abilities || abilities.length === 0)) {
       dispatch(loadUserAbilities(user));
     }
-  }, [user?.businessID, dispatch, loading, abilities?.length]);
+  }, [user?.businessID, dispatch, loading, abilities?.length, user, abilities]);
 };
 
 export function useUserAccess() {

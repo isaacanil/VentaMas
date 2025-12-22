@@ -5,7 +5,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -30,39 +30,37 @@ const getTimerByType = (type) => {
 };
 
 export const Notification = () => {
-  const [icon, setIcon] = useState(null);
-
   const currentNotification = useSelector(selectCurrentNotification);
   const { title, message, type, visible } = currentNotification;
 
   const dispatch = useDispatch();
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     dispatch(removeNotification());
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     if (visible) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         handleClose();
-      }, getTimerByType(6000));
+      }, getTimerByType(type));
+      return () => clearTimeout(timer);
     }
-  }, [visible, dispatch, handleClose]);
+  }, [visible, type, handleClose]);
 
-  useEffect(() => {
-    if (type) {
-      switch (type) {
-        case 'error':
-          return setIcon(<FontAwesomeIcon icon={faExclamationCircle} />);
-        case 'success':
-          return setIcon(<FontAwesomeIcon icon={faCheckCircle} />);
-        case 'info':
-          return setIcon(<FontAwesomeIcon icon={faInfoCircle} />);
-        case 'warning':
-          return setIcon(<FontAwesomeIcon icon={faExclamationCircle} />);
-        default:
-          return setIcon(null);
-      }
+  const icon = useMemo(() => {
+    if (!type) return null;
+    switch (type) {
+      case 'error':
+        return <FontAwesomeIcon icon={faExclamationCircle} />;
+      case 'success':
+        return <FontAwesomeIcon icon={faCheckCircle} />;
+      case 'info':
+        return <FontAwesomeIcon icon={faInfoCircle} />;
+      case 'warning':
+        return <FontAwesomeIcon icon={faExclamationCircle} />;
+      default:
+        return null;
     }
   }, [type]);
 

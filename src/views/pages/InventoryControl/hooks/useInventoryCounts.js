@@ -14,7 +14,6 @@ const consoleApi =
   typeof globalThis !== 'undefined' ? globalThis.console : undefined;
 
 const logDebug = (...args) => {
-  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV !== 'production' && consoleApi?.debug) {
     consoleApi.debug(...args);
   }
@@ -65,7 +64,6 @@ export function useInventoryCounts({ db, user, sessionId }) {
             manualExpirationDate: data.manualExpirationDate ?? null,
           };
         });
-        // eslint-disable-next-line no-undef
         if (process.env.NODE_ENV !== 'production') {
           logDebug(
             '[useInventoryCounts] Counts docs:',

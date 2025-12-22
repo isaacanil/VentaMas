@@ -1,5 +1,5 @@
 import { Button, Modal } from 'antd'; // Eliminar Select de las importaciones
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
@@ -60,18 +60,17 @@ export default function InvoiceTemplates({
   const {
     billing: { invoiceType },
   } = useSelector(SelectSettingCart);
-  const [selectedTemplate, setSelectedTemplate] = useState('template1');
+
+  // Derive selectedTemplate from invoiceType
+  const derivedTemplate =
+    invoiceType && TEMPLATES_CONFIG[invoiceType] ? invoiceType : 'template1';
+  // Allow local override via state, initialized from derived value
+  const [selectedTemplate, setSelectedTemplate] = useState(derivedTemplate);
+  // Use derived template if invoiceType matches a config, otherwise use local state
+  const effectiveTemplate =
+    invoiceType && TEMPLATES_CONFIG[invoiceType] ? invoiceType : selectedTemplate;
   const componentRef = useRef(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  useEffect(() => {
-    // Si invoiceType no existe o no es un template válido, usar template1
-    if (!invoiceType || !TEMPLATES_CONFIG[invoiceType]) {
-      setSelectedTemplate('template1');
-    } else {
-      setSelectedTemplate(invoiceType);
-    }
-  }, [invoiceType]);
 
   const handleTemplateChange = (value) => {
     setSelectedTemplate(value);
@@ -85,12 +84,12 @@ export default function InvoiceTemplates({
     setIsModalVisible(true);
   };
 
-  const renderInvoice = (ref) => (
+  const renderInvoice = () => (
     <PreviewContainer>
-      <InvoiceContainer $template={selectedTemplate}>
+      <InvoiceContainer $template={effectiveTemplate}>
         <Invoice
-          ref={ref}
-          template={selectedTemplate}
+          ref={componentRef}
+          template={effectiveTemplate}
           data={{}}
           ignoreHidden={true}
         />
@@ -103,7 +102,7 @@ export default function InvoiceTemplates({
       <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
         <InvoiceTemplateSelector
           onSave={handleTemplateChange}
-          template={selectedTemplate}
+          template={effectiveTemplate}
           onPreview={handlePreview}
           hidePreviewButton={hidePreviewButton}
         />
@@ -132,11 +131,11 @@ export default function InvoiceTemplates({
             backgroundColor: 'red',
           }}
         >
-          {renderInvoice(componentRef)}
+          {renderInvoice()}
         </div>
       </Modal>
 
-      {!previewInModal && renderInvoice(componentRef)}
+      {!previewInModal && renderInvoice()}
     </div>
   );
 }

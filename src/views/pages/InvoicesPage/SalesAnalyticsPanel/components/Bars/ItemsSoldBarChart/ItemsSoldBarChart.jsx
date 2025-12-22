@@ -44,7 +44,7 @@ const accumulateItemsSoldData = (sales) => {
 };
 
 export const ItemsSoldBarChart = ({ sales }) => {
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const itemsSoldByCategory = useMemo(
     () => accumulateItemsSoldData(normalizedSales),

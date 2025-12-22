@@ -1,7 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../templates/system/Typografy/Typografy';
 
 const PaymentDetailsContainer = styled.div`

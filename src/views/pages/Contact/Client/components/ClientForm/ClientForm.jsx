@@ -1,9 +1,11 @@
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { nanoid } from 'nanoid';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatRNC } from '@/utils/format';
 
 import { OPERATION_MODES } from '../../../../../../constants/modes';
 import { selectUser } from '../../../../../../features/auth/userSlice';
@@ -15,7 +17,6 @@ import { Button } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
 import Typography from '../../../../../templates/system/Typografy/Typografy';
 
-import { formatRNC } from '@/utils/format';
 
 export const ClientForm = ({ isOpen, mode, data }) => {
   const dispatch = useDispatch();
@@ -23,30 +24,32 @@ export const ClientForm = ({ isOpen, mode, data }) => {
   const update = OPERATION_MODES.UPDATE.id;
   const user = useSelector(selectUser);
 
-  const [client, setClient] = useState({
-    name: '',
-    address: '',
-    tel: '',
-    personalID: '',
-    delivery: {
-      status: false,
-      value: '',
-    },
-  });
-
-  useEffect(() => {
+  const getInitialClient = () => {
     if (mode === update && data) {
-      setClient(data);
+      return data;
     }
     if (mode === create && !data) {
-      setClient({
+      return {
         id: nanoid(8),
         name: '',
         address: '',
         tel: '',
-      });
+      };
     }
-  }, [mode, data]);
+    return {
+      name: '',
+      address: '',
+      tel: '',
+      personalID: '',
+      delivery: {
+        status: false,
+        value: '',
+      },
+    };
+  };
+
+  const [client, setClient] = useState(getInitialClient);
+
   function validateClient(client) {
     if (client.name === '' || client.personalID === '') {
       alert('El nombre y el ID personal son obligatorios');

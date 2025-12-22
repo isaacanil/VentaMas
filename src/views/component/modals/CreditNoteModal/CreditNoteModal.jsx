@@ -1,24 +1,10 @@
-import {
-  SearchOutlined,
-  PrinterOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
-import {
-  Button,
-  Checkbox,
-  Alert,
-  message,
-  Input,
-  InputNumber,
-  Grid,
-  Skeleton,
-  Tooltip,
-  Tabs,
-} from 'antd';
-import dayjs from 'dayjs';
+import { message, Grid, Skeleton, Tabs } from 'antd';
+import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+import { getTotalPrice, getTax } from '@/utils/pricing';
 
 import { selectUser } from '../../../../features/auth/userSlice';
 import {
@@ -32,18 +18,21 @@ import { fbAddCreditNote } from '../../../../firebase/creditNotes/fbAddCreditNot
 import { fbUpdateCreditNote } from '../../../../firebase/creditNotes/fbUpdateCreditNote';
 import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGetInvoicesByClient';
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
 import { useFbGetCreditNoteApplications } from '../../../../hooks/creditNote/useFbGetCreditNoteApplications';
-import { getTotalPrice, getTax } from '../../../../utils/pricing';
 
-import ClientSelector from './components/ClientSelector';
-import { CreditNotePanel } from './components/CreditNotePanel';
-import InvoiceSelector from './components/InvoiceSelector';
-import { ProductList } from './components/ProductList';
+
+import { ApplicationHistoryTab } from './components/ApplicationHistoryTab';
+import { CreditNoteActions } from './components/CreditNoteActions';
+import { Container, TitleRow } from './components/CreditNoteModalLayout';
+import { CreditNoteSetupSection } from './components/CreditNoteSetupSection';
+import { ProductsTab } from './components/ProductsTab';
+import { RelatedNotesTab } from './components/RelatedNotesTab';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
+import { useCreditNoteColumns } from './hooks/useCreditNoteColumns';
+import { useCreditNoteSelection } from './hooks/useCreditNoteSelection';
 
-import { formatPrice } from '@/utils/format';
 
 const { useBreakpoint } = Grid;
 
@@ -55,21 +44,18 @@ export const CreditNoteModal = () => {
   const { clients: fetchedClients, loading: clientsLoading } =
     useFbGetClientsOnOpen({ isOpen });
   const { pdfLoading, handlePrintPdf } = useCreditNotePDF();
-  const { taxReceipt } = fbGetTaxReceipt();
+  const { taxReceipt } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
   const clients = fetchedClients.map((c) => c.client);
 
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [itemQuantities, setItemQuantities] = useState({});
-  const [selectAll, setSelectAll] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState(
     selectedClient?.id || null,
   );
   const [dateRange, setDateRange] = useState([
-    dayjs().startOf('month'),
-    dayjs().endOf('month'),
+    DateTime.now().startOf('month'),
+    DateTime.now().endOf('month'),
   ]);
   const { invoices, loading: invoicesLoading } = useFbGetInvoicesByClient(
     selectedClientId,
@@ -160,9 +146,6 @@ export const CreditNoteModal = () => {
     (cn) => cn.invoiceId === selectedInvoiceId && cn.id !== creditNoteData?.id,
   );
 
-  const [searchText, setSearchText] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
   const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
@@ -193,126 +176,56 @@ export const CreditNoteModal = () => {
     if (mode !== 'create' && creditNoteData) {
       setSelectedClientId(creditNoteData.client?.id || null);
       setSelectedInvoiceId(creditNoteData.invoiceId || null);
-      const ids = creditNoteData.items?.map((i) => i.id) || [];
-      setSelectedItems(ids);
-      const qtyMap = {};
-      (creditNoteData.items || []).forEach((it) => {
-        qtyMap[it.id] = it.amountToBuy || 1;
-      });
-      setItemQuantities(qtyMap);
-      setSelectAll(false);
     } else {
-      setSelectedClientId(null);
-      setSelectedInvoiceId(null);
-      setSelectedItems([]);
-      setItemQuantities({});
-      setSelectAll(false);
+      setSelectedClientId(selectedClient?.id || null);
+      setSelectedInvoiceId(selectedInvoice?.id || null);
     }
-  }, [isOpen, mode, creditNoteData]);
+  }, [isOpen, mode, creditNoteData, selectedClient, selectedInvoice]);
 
-  useEffect(() => {
-    if (!selectedInvoiceId || clientsLoading || invoicesLoading) {
-      setSelectedItems([]);
-      setItemQuantities({});
-      setSelectAll(false);
-      setFilteredProducts([]);
-      return;
-    }
-
-    const initialSelection = availableInvoiceItems.map((item) => item.id);
-    setSelectedItems(initialSelection);
-    const qtyMap = {};
-    availableInvoiceItems.forEach((it) => {
-      qtyMap[it.id] = existingItemQuantities[it.id] || it.maxAvailableQty;
-    });
-    setItemQuantities(qtyMap);
-    setSelectAll(
-      initialSelection.length > 0 &&
-        initialSelection.length === availableInvoiceItems.length,
-    );
-    setFilteredProducts(availableInvoiceItems);
-    setSearchText('');
-    setCurrentPage(1);
-  }, [
+  const {
+    selectedItems,
+    itemQuantities,
+    selectAll,
+    searchText,
+    filteredProducts,
+    currentPage,
+    setCurrentPage,
+    handleSearchTextChange,
+    handleSelectAll,
+    handleItemChange,
+    resetSelection,
+    setItemQuantities,
+  } = useCreditNoteSelection({
+    isOpen,
+    mode,
+    creditNoteData,
     selectedInvoiceId,
-    creditedQuantities,
+    availableInvoiceItems,
     existingItemQuantities,
     clientsLoading,
     invoicesLoading,
-  ]);
-
-  useEffect(() => {
-    const baseList = availableInvoiceItems;
-
-    if (!searchText.trim()) {
-      setFilteredProducts(baseList);
-      return;
-    }
-
-    const searchLower = searchText.toLowerCase().trim();
-    const filtered = baseList.filter((item) =>
-      item.name?.toLowerCase().includes(searchLower),
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [searchText, availableInvoiceItems]);
+  });
 
   const handleClose = () => {
     dispatch(closeCreditNoteModal());
-    setSelectedItems([]);
-    setItemQuantities({});
-    setSelectAll(false);
+    resetSelection();
     setSelectedClientId(null);
     setSelectedInvoiceId(null);
   };
 
-  const handleClientChange = (clientId) => {
-    setSelectedClientId(clientId);
-    setSelectedItems([]);
-    setItemQuantities({});
-    setSelectAll(false);
+  const handleClientChange = (client) => {
+    setSelectedClientId(client?.id || null);
+    resetSelection();
     setSelectedInvoiceId(null);
   };
 
-  const handleInvoiceChange = (invoiceId) => {
-    setSelectedInvoiceId(invoiceId);
-    setSelectedItems([]);
-    setItemQuantities({});
-    setSelectAll(false);
+  const handleInvoiceChange = (invoice) => {
+    setSelectedInvoiceId(invoice?.id || null);
+    resetSelection();
   };
 
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    if (checked) {
-      const ids = filteredProducts.map((item) => item.id);
-      setSelectedItems(ids);
-      const qtyMap = {};
-      filteredProducts.forEach((item) => {
-        qtyMap[item.id] =
-          existingItemQuantities[item.id] || item.maxAvailableQty;
-      });
-      setItemQuantities(qtyMap);
-    } else {
-      setSelectedItems([]);
-      setItemQuantities({});
-    }
-  };
-
-  const handleItemChange = (itemId, checked) => {
-    if (checked) {
-      setSelectedItems((prev) => [...prev, itemId]);
-      const item = availableInvoiceItems.find((it) => it.id === itemId);
-      const defaultQty =
-        existingItemQuantities[itemId] || item?.maxAvailableQty || 1;
-      setItemQuantities((prev) => ({ ...prev, [itemId]: defaultQty }));
-    } else {
-      setSelectedItems((prev) => prev.filter((id) => id !== itemId));
-      setItemQuantities((prev) => {
-        const { [itemId]: _, ...rest } = prev;
-        return rest;
-      });
-      setSelectAll(false);
-    }
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
   };
 
   const handleSubmit = async () => {
@@ -337,9 +250,7 @@ export const CreditNoteModal = () => {
 
       if (invalidItems.length > 0) {
         const itemNames = invalidItems.map((item) => item.name).join(', ');
-        message.error(
-          `Las siguientes cantidades exceden lo disponible: ${itemNames}`,
-        );
+        message.error(`Las siguientes cantidades exceden lo disponible: ${itemNames}`);
         setLoading(false);
         return;
       }
@@ -381,7 +292,7 @@ export const CreditNoteModal = () => {
     if (!item) return sum;
     const qty = itemQuantities[id] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
-    return sum + getTotalPrice(itemCopy);
+    return sum + getTotalPrice(itemCopy, taxReceiptEnabled);
   }, 0);
 
   // Calcular ITBIS total correctamente
@@ -390,180 +301,17 @@ export const CreditNoteModal = () => {
     if (!item) return sum;
     const qty = itemQuantities[id] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
-    return sum + getTax(itemCopy, true);
+    return sum + getTax(itemCopy, taxReceiptEnabled);
   }, 0);
 
   // Calcular subtotal (total sin impuestos)
   const subtotal = totalAmount - totalItbis;
 
-  const columns = [
-    {
-      title: '',
-      dataIndex: 'select',
-      width: '50px',
-      render: (_, record) => (
-        <Checkbox
-          checked={selectedItems.includes(record.id)}
-          disabled={effectiveIsView}
-          onChange={(e) => handleItemChange(record.id, e.target.checked)}
-        />
-      ),
-    },
-    {
-      title: 'Producto',
-      dataIndex: 'name',
-      key: 'name',
-      width: isMobile ? '30px' : '35%',
-      ellipsis: isMobile ? { showTitle: true } : false,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-    },
-    {
-      title: 'Cantidad',
-      dataIndex: 'creditQty',
-      key: 'creditQty',
-      width: isMobile ? '90px' : '110px',
-      render: (_, record) => {
-        const maxQty = record.maxAvailableQty < 0 ? 0 : record.maxAvailableQty;
-        const originalQty = record.amountToBuy || 1;
-        const creditedByOthers = creditedQuantities[record.id] || 0;
-        const selected = selectedItems.includes(record.id);
-        const value =
-          itemQuantities[record.id] || existingItemQuantities[record.id] || 1;
-
-        const qtyDisplay = (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontWeight: '500' }}>{value}</span>
-            <span style={{ fontSize: '11px', color: '#999' }}>/{maxQty}</span>
-          </div>
-        );
-
-        if (effectiveIsView || !selected) {
-          return qtyDisplay;
-        }
-
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <InputNumber
-              min={1}
-              max={maxQty}
-              value={value}
-              onChange={(val) => handleQuantityChange(record.id, val)}
-              size="small"
-              style={{ width: '60px' }}
-            />
-            <Tooltip
-              title={
-                <div>
-                  <div>
-                    <strong>Cálculo de Cantidad Máxima</strong>
-                  </div>
-                  <div style={{ marginBottom: '4px' }}>
-                    • Factura Original: {originalQty}
-                  </div>
-                  <div style={{ marginBottom: '4px' }}>
-                    • Acreditado en otras NC: {creditedByOthers}
-                  </div>
-                  <div
-                    style={{
-                      borderTop: '1px solid #ddd',
-                      paddingTop: '4px',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <strong>Máximo disponible: {maxQty}</strong>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '11px',
-                      color: '#999',
-                      marginTop: '4px',
-                    }}
-                  >
-                    Fórmula: {originalQty} - {creditedByOthers} = {maxQty}
-                  </div>
-                </div>
-              }
-              placement="topLeft"
-            >
-              <span style={{ fontSize: '11px', color: '#999', cursor: 'help' }}>
-                /{maxQty} <InfoCircleOutlined />
-              </span>
-            </Tooltip>
-          </div>
-        );
-      },
-    },
-    {
-      title: 'Precio',
-      dataIndex: 'pricing',
-      key: 'price',
-      width: '120px',
-      align: 'right',
-      responsive: ['md'],
-      render: (_, record) => {
-        const unitPrice = getTotalPrice(record, true, false);
-        return memoizedFormatPrice(unitPrice);
-      },
-      sorter: (a, b) =>
-        getTotalPrice(a, true, false) - getTotalPrice(b, true, false),
-    },
-    {
-      title: 'ITBIS',
-      dataIndex: 'itbis',
-      key: 'itbis',
-      width: '120px',
-      align: 'right',
-      responsive: ['lg'],
-      render: (_, record) => {
-        const qty =
-          itemQuantities[record.id] ||
-          existingItemQuantities[record.id] ||
-          record.amountToBuy ||
-          1;
-        const tempItem = { ...record, amountToBuy: qty };
-        const itbis = getTax(tempItem, true);
-        return memoizedFormatPrice(itbis);
-      },
-    },
-    {
-      title: 'Total',
-      dataIndex: 'total',
-      key: 'total',
-      width: '120px',
-      align: 'right',
-      responsive: ['sm'],
-      render: (_, record) => {
-        const qty =
-          itemQuantities[record.id] ||
-          existingItemQuantities[record.id] ||
-          record.amountToBuy ||
-          1;
-        const tempItem = { ...record, amountToBuy: qty };
-        return memoizedFormatPrice(getTotalPrice(tempItem));
-      },
-      sorter: (a, b) => {
-        const qtyA =
-          itemQuantities[a.id] ||
-          existingItemQuantities[a.id] ||
-          a.amountToBuy ||
-          1;
-        const qtyB =
-          itemQuantities[b.id] ||
-          existingItemQuantities[b.id] ||
-          b.amountToBuy ||
-          1;
-        return (
-          getTotalPrice({ ...a, amountToBuy: qtyA }) -
-          getTotalPrice({ ...b, amountToBuy: qtyB })
-        );
-      },
-    },
-  ];
 
   const handleNavigateNote = (note, e) => {
     if (e) e.stopPropagation();
     if (!note) return;
-    dispatch(openCreditNoteModal({ mode, creditNoteData: note }));
+    dispatch(openCreditNoteModal({ mode: 'view', creditNoteData: note }));
   };
 
   const handleQuantityChange = (itemId, value) => {
@@ -582,8 +330,8 @@ export const CreditNoteModal = () => {
               <strong>Cantidad excede el máximo disponible</strong>
             </div>
             <div style={{ fontSize: '12px', marginTop: '4px' }}>
-              • Factura original: {originalQty}
-              <br />• Otras notas de crédito: {creditedByOthers}
+              Factura original: {originalQty}
+              <br /> Otras notas de crédito: {creditedByOthers}
               <br />
               <strong>Máximo permitido: {item.maxAvailableQty}</strong>
             </div>
@@ -596,6 +344,18 @@ export const CreditNoteModal = () => {
 
     setItemQuantities((prev) => ({ ...prev, [itemId]: value }));
   };
+
+  const columns = useCreditNoteColumns({
+    isMobile,
+    selectedItems,
+    itemQuantities,
+    existingItemQuantities,
+    creditedQuantities,
+    effectiveIsView,
+    handleItemChange,
+    handleQuantityChange,
+    formatPrice: memoizedFormatPrice,
+  });
 
   if (clientsLoading && isOpen) {
     return (
@@ -628,67 +388,25 @@ export const CreditNoteModal = () => {
       }
     >
       <Container isMobile={isMobile}>
-        {!canUseCreditNotes && (
-          <Alert
-            message={
-              !taxReceiptEnabled
-                ? 'Comprobantes Fiscales Deshabilitados'
-                : 'Comprobante de Notas de Crédito no configurado'
-            }
-            description={
-              !taxReceiptEnabled
-                ? 'Los comprobantes fiscales están deshabilitados en la configuración. Para crear o editar notas de crédito, debe habilitar los comprobantes fiscales y configurar el comprobante correspondiente (serie 04 - NOTAS DE CRÉDITO).'
-                : 'Para crear o editar notas de crédito, debe configurar el comprobante fiscal correspondiente (serie 04 - NOTAS DE CRÉDITO).'
-            }
-            type="warning"
-            showIcon
-            style={{ marginBottom: '1rem' }}
-          />
-        )}
-
-        {(effectiveIsView || effectiveIsEdit) && creditNoteData && (
-          <NCFContainer>
-            <NCFLabel>NCF</NCFLabel>
-            <NCFValue>{creditNoteData.ncf || 'N/A'}</NCFValue>
-          </NCFContainer>
-        )}
-        {mode === 'create' && (
-          <Description>
-            Complete los detalles para generar una nueva nota de crédito.
-          </Description>
-        )}
-
-        {canUseCreditNotes && (
-          <FormSection>
-            <FormRow>
-              <FormField>
-                <ClientSelector
-                  clients={clients}
-                  selectedClient={currentClient}
-                  onSelectClient={(client) =>
-                    handleClientChange(client?.id || null)
-                  }
-                  loading={clientsLoading}
-                  disabled={effectiveIsView}
-                />
-              </FormField>
-
-              <FormField>
-                <InvoiceSelector
-                  invoices={invoices}
-                  selectedInvoice={currentInvoice}
-                  onSelectInvoice={(invoice) =>
-                    handleInvoiceChange(invoice?.id || null)
-                  }
-                  loading={invoicesLoading}
-                  disabled={!selectedClientId || effectiveIsView}
-                  dateRange={dateRange}
-                  onDateRangeChange={setDateRange}
-                />
-              </FormField>
-            </FormRow>
-          </FormSection>
-        )}
+        <CreditNoteSetupSection
+          canUseCreditNotes={canUseCreditNotes}
+          taxReceiptEnabled={taxReceiptEnabled}
+          effectiveIsView={effectiveIsView}
+          effectiveIsEdit={effectiveIsEdit}
+          creditNoteData={creditNoteData}
+          mode={mode}
+          clients={clients}
+          currentClient={currentClient}
+          onSelectClient={handleClientChange}
+          clientsLoading={clientsLoading}
+          invoices={invoices}
+          currentInvoice={currentInvoice}
+          onSelectInvoice={handleInvoiceChange}
+          invoicesLoading={invoicesLoading}
+          selectedClientId={selectedClientId}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+        />
 
         {canUseCreditNotes && (
           <Tabs
@@ -698,177 +416,47 @@ export const CreditNoteModal = () => {
           >
             {/* TAB: Productos */}
             <Tabs.TabPane tab="Productos" key="productos">
-              {currentInvoice && hasAvailableProducts && (
-                <ProductsSection>
-                  <SectionHeader>
-                    <div>
-                      <SectionTitle>Productos a Acreditar</SectionTitle>
-                      <SelectAllContainer>
-                        <Checkbox
-                          checked={selectAll}
-                          disabled={effectiveIsView}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                        >
-                          Seleccionar todos los productos
-                        </Checkbox>
-                      </SelectAllContainer>
-                    </div>
-                    <SearchContainer>
-                      <Input
-                        placeholder="Buscar producto..."
-                        prefix={<SearchOutlined />}
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        style={{ width: isMobile ? '100%' : 200 }}
-                        disabled={effectiveIsView}
-                      />
-                    </SearchContainer>
-                  </SectionHeader>
-
-                  <ProductList
-                    key={selectedInvoiceId}
-                    products={filteredProducts}
-                    columns={columns}
-                    selectedItems={selectedItems}
-                    itemQuantities={itemQuantities}
-                    existingItemQuantities={existingItemQuantities}
-                    creditedQuantities={creditedQuantities}
-                    isMobile={isMobile}
-                    effectiveIsView={effectiveIsView}
-                    currentPage={currentPage}
-                    pageSize={isMobile ? 3 : pageSize}
-                    onPageChange={(page) => setCurrentPage(page)}
-                    onItemChange={handleItemChange}
-                    onQuantityChange={handleQuantityChange}
-                  />
-
-                  {selectedItems.length > 0 && (
-                    <>
-                      <TotalSection>
-                        <TotalInfo>
-                          <InfoRow>
-                            <InfoLabel>Items Seleccionados:</InfoLabel>
-                            <InfoValue>
-                              {selectedItems.length} productos
-                            </InfoValue>
-                          </InfoRow>
-                          <InfoRow>
-                            <InfoLabel>Subtotal:</InfoLabel>
-                            <InfoValue>
-                              {memoizedFormatPrice(subtotal)}
-                            </InfoValue>
-                          </InfoRow>
-                          <InfoRow>
-                            <InfoLabel>ITBIS:</InfoLabel>
-                            <InfoValue>
-                              {memoizedFormatPrice(totalItbis)}
-                            </InfoValue>
-                          </InfoRow>
-                          <InfoRow className="total">
-                            <InfoLabel>Total a Acreditar:</InfoLabel>
-                            <InfoValue>
-                              {memoizedFormatPrice(totalAmount)}
-                            </InfoValue>
-                          </InfoRow>
-                        </TotalInfo>
-                      </TotalSection>
-                    </>
-                  )}
-                </ProductsSection>
-              )}
-
-              {currentInvoice && !hasAvailableProducts && (
-                <NoProductsMessage>
-                  <Alert
-                    type="info"
-                    showIcon
-                    message="Sin productos disponibles"
-                    description="Todos los productos de esta factura ya han sido acreditados en otras notas de crédito."
-                  />
-                </NoProductsMessage>
-              )}
+              <ProductsTab
+                currentInvoice={currentInvoice}
+                hasAvailableProducts={hasAvailableProducts}
+                selectAll={selectAll}
+                effectiveIsView={effectiveIsView}
+                onSelectAll={handleSelectAll}
+                searchText={searchText}
+                onSearchTextChange={handleSearchTextChange}
+                isMobile={isMobile}
+                filteredProducts={filteredProducts}
+                columns={columns}
+                selectedInvoiceId={selectedInvoiceId}
+                selectedItems={selectedItems}
+                itemQuantities={itemQuantities}
+                existingItemQuantities={existingItemQuantities}
+                creditedQuantities={creditedQuantities}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+                onItemChange={handleItemChange}
+                onQuantityChange={handleQuantityChange}
+                subtotal={subtotal}
+                totalItbis={totalItbis}
+                totalAmount={totalAmount}
+                formatPrice={memoizedFormatPrice}
+              />
             </Tabs.TabPane>
 
             {/* TAB: Historial de Aplicaciones */}
             {(effectiveIsView || effectiveIsEdit) &&
               creditNoteApplications?.length > 0 && (
                 <Tabs.TabPane
-                  tab={`Historial (${creditNoteApplications.length})`}
+                  tab={`Historial (${creditNoteApplications?.length || 0})`}
                   key="historial"
                 >
-                  <ApplicationHistorySection>
-                    <ApplicationHistoryTitle>
-                      Historial de Aplicaciones
-                    </ApplicationHistoryTitle>
-                    {applicationsLoading ? (
-                      <div>Cargando historial...</div>
-                    ) : (
-                      <>
-                        <ApplicationHistoryList>
-                          {creditNoteApplications.map((app, index) => (
-                            <ApplicationHistoryItem key={app.id || index}>
-                              <ApplicationHistoryHeader>
-                                <ApplicationHistoryDate>
-                                  {app.appliedAt?.seconds
-                                    ? dayjs(
-                                        new Date(app.appliedAt.seconds * 1000),
-                                      ).format('DD/MM/YYYY HH:mm')
-                                    : dayjs(app.appliedAt).format(
-                                        'DD/MM/YYYY HH:mm',
-                                      )}
-                                </ApplicationHistoryDate>
-                                <ApplicationHistoryAmount>
-                                  {memoizedFormatPrice(app.amountApplied)}
-                                </ApplicationHistoryAmount>
-                              </ApplicationHistoryHeader>
-                              <ApplicationHistoryDetails>
-                                <ApplicationHistoryDetail>
-                                  <strong>Factura Aplicada:</strong>{' '}
-                                  {app.invoiceNcf || app.invoiceId}
-                                </ApplicationHistoryDetail>
-                                {app.invoiceNumber && (
-                                  <ApplicationHistoryDetail>
-                                    <strong>Número:</strong> {app.invoiceNumber}
-                                  </ApplicationHistoryDetail>
-                                )}
-                                <ApplicationHistoryDetail>
-                                  <strong>Saldo Anterior:</strong>{' '}
-                                  {memoizedFormatPrice(app.previousBalance)}
-                                  {' → '}
-                                  <strong>Saldo Nuevo:</strong>{' '}
-                                  {memoizedFormatPrice(app.newBalance)}
-                                </ApplicationHistoryDetail>
-                                {app.appliedBy && (
-                                  <ApplicationHistoryDetail>
-                                    <strong>Aplicado por:</strong>{' '}
-                                    {app.appliedBy.displayName || 'Usuario'}
-                                  </ApplicationHistoryDetail>
-                                )}
-                              </ApplicationHistoryDetails>
-                            </ApplicationHistoryItem>
-                          ))}
-                        </ApplicationHistoryList>
-                        <ApplicationHistorySummary>
-                          <ApplicationHistorySummaryItem>
-                            <strong>Total Aplicado:</strong>{' '}
-                            {memoizedFormatPrice(
-                              creditNoteApplications.reduce(
-                                (sum, app) => sum + (app.amountApplied || 0),
-                                0,
-                              ),
-                            )}
-                          </ApplicationHistorySummaryItem>
-                          <ApplicationHistorySummaryItem>
-                            <strong>Saldo Disponible:</strong>{' '}
-                            {memoizedFormatPrice(
-                              creditNoteData?.availableAmount ??
-                                (creditNoteData?.totalAmount || 0),
-                            )}
-                          </ApplicationHistorySummaryItem>
-                        </ApplicationHistorySummary>
-                      </>
-                    )}
-                  </ApplicationHistorySection>
+                  <ApplicationHistoryTab
+                    creditNoteApplications={creditNoteApplications}
+                    applicationsLoading={applicationsLoading}
+                    formatPrice={memoizedFormatPrice}
+                    creditNoteData={creditNoteData}
+                  />
                 </Tabs.TabPane>
               )}
 
@@ -877,353 +465,35 @@ export const CreditNoteModal = () => {
               tab={`Notas Relacionadas (${relatedCreditNotes.length})`}
               key="relacionadas"
             >
-              {relatedCreditNotes.length > 0 ? (
-                <RelatedNCSection>
-                  {relatedCreditNotes.map((cn) => (
-                    <CreditNotePanel
-                      key={cn.id}
-                      creditNote={cn}
-                      onNavigateNote={handleNavigateNote}
-                      isExpanded={false}
-                      isMobile={isMobile}
-                    />
-                  ))}
-                </RelatedNCSection>
-              ) : (
-                <Alert
-                  type="info"
-                  showIcon
-                  message="Sin notas de crédito relacionadas"
-                  description="No existen notas de crédito asociadas a esta factura."
-                />
-              )}
+              <RelatedNotesTab
+                relatedCreditNotes={relatedCreditNotes}
+                onNavigateNote={handleNavigateNote}
+                isMobile={isMobile}
+              />
             </Tabs.TabPane>
           </Tabs>
         )}
 
-        <ActionButtons>
-          <Button onClick={handleClose}>Cancelar</Button>
-          {(effectiveIsView || effectiveIsEdit) && (
-            <Button
-              icon={<PrinterOutlined />}
-              onClick={() => handlePrintPdf(creditNoteData)}
-              loading={pdfLoading}
-              disabled={!creditNoteData}
-            >
-              Imprimir
-            </Button>
-          )}
-          {!effectiveIsView && canUseCreditNotes && (
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              disabled={!selectedInvoiceId || selectedItems.length === 0}
-              loading={loading}
-            >
-              {effectiveIsEdit ? 'Guardar Cambios' : 'Crear Nota de Crédito'}
-            </Button>
-          )}
-        </ActionButtons>
-        {effectiveIsEdit && (
-          <CountdownText>
-            {isTimeAllowed && !hasApplications
-              ? `Tiempo restante para editar: ${Math.max(0, Math.floor((ALLOWED_EDIT_MS - (Date.now() - createdAtDate.getTime())) / (60 * 60 * 1000)))}h`
-              : hasApplications
-                ? 'No se puede editar: nota ya aplicada'
-                : 'Edición expirada'}
-          </CountdownText>
-        )}
+        <CreditNoteActions
+          onClose={handleClose}
+          effectiveIsView={effectiveIsView}
+          effectiveIsEdit={effectiveIsEdit}
+          canUseCreditNotes={canUseCreditNotes}
+          onPrint={handlePrintPdf}
+          pdfLoading={pdfLoading}
+          creditNoteData={creditNoteData}
+          onSubmit={handleSubmit}
+          selectedInvoiceId={selectedInvoiceId}
+          selectedItems={selectedItems}
+          loading={loading}
+          isTimeAllowed={isTimeAllowed}
+          hasApplications={hasApplications}
+          createdAtDate={createdAtDate}
+          allowedEditMs={ALLOWED_EDIT_MS}
+        />
       </Container>
     </ResponsiveContainer>
   );
 };
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${(props) => (props.isMobile ? '1rem' : '1.5rem')};
-  height: ${(props) => (props.isMobile ? '100%' : 'auto')};
-`;
-
-const Description = styled.p`
-  margin: 0;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-`;
-
-const FormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const FormRow = styled.div`
-  display: flex;
-  gap: 1rem;
-
-  @media (width <= 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-`;
-
-const FormField = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const ProductsSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-
-  @media (width <= 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-`;
-
-const SectionTitle = styled.h3`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-
-  @media (width <= 768px) {
-    font-size: 0.9rem;
-  }
-`;
-
-const SelectAllContainer = styled.div`
-  margin-top: 0.5rem;
-`;
-
-const SearchContainer = styled.div`
-  display: flex;
-  align-items: center;
-
-  @media (width <= 768px) {
-    width: 100%;
-  }
-`;
-
-const TotalSection = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  padding: 0.5rem 0;
-
-  @media (width <= 768px) {
-    justify-content: center;
-  }
-`;
-
-const TotalInfo = styled.div`
-  min-width: 300px;
-  padding: 1rem;
-  background-color: ${(props) =>
-    props.theme?.background?.secondary || '#fafafa'};
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
-
-  @media (width <= 768px) {
-    min-width: 100%;
-    padding: 0.75rem;
-  }
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.25rem 0;
-
-  &.total {
-    padding-top: 0.5rem;
-    margin-top: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  }
-`;
-
-const InfoLabel = styled.span`
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-`;
-
-const InfoValue = styled.span`
-  font-family: monospace;
-  font-weight: 500;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  padding-top: 1rem;
-  border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-
-  @media (width <= 768px) {
-    position: sticky;
-    bottom: 0;
-    flex-direction: column-reverse;
-    gap: 0.75rem;
-    padding: 1rem 16px;
-    margin: 1rem -16px -20px;
-    background: white;
-    border-top: 1px solid #f0f0f0;
-    box-shadow: 0 -2px 8px rgb(0 0 0 / 10%);
-
-    button {
-      width: 100%;
-      height: 44px;
-      font-size: 16px;
-    }
-  }
-`;
-
-const CountdownText = styled.div`
-  margin-top: -0.5rem;
-  font-size: 0.75rem;
-  color: ${(props) => props.theme?.text?.secondary || '#888'};
-  text-align: right;
-`;
-
-const RelatedNCSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1.5rem;
-`;
-
-const NoProductsMessage = styled.div`
-  margin-top: 1rem;
-`;
-
-const TitleRow = styled.span`
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  font-weight: 600;
-`;
-
-const NCFContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: 300px;
-  padding: 12px 16px;
-  background-color: ${(props) =>
-    props.theme?.background?.secondary || '#fafafa'};
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
-`;
-
-const NCFLabel = styled.span`
-  margin-bottom: 4px;
-  font-size: 0.75rem;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-`;
-
-const NCFValue = styled.span`
-  font-size: 1em;
-  font-weight: 600;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-  word-break: break-all;
-`;
-
-// Estilos para el historial de aplicaciones
-const ApplicationHistorySection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-`;
-
-const ApplicationHistoryTitle = styled.h3`
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-`;
-
-const ApplicationHistoryList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const ApplicationHistoryItem = styled.div`
-  padding: 1rem;
-  background-color: ${(props) =>
-    props.theme?.background?.secondary || '#fafafa'};
-  border: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-  border-radius: 8px;
-`;
-
-const ApplicationHistoryHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-`;
-
-const ApplicationHistoryDate = styled.span`
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-`;
-
-const ApplicationHistoryAmount = styled.span`
-  font-family: monospace;
-  font-size: 1rem;
-  font-weight: 600;
-  color: ${(props) => props.theme?.text?.primary || '#333'};
-`;
-
-const ApplicationHistoryDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-const ApplicationHistoryDetail = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme?.text?.secondary || '#666'};
-
-  strong {
-    color: ${(props) => props.theme?.text?.primary || '#333'};
-  }
-`;
-
-const ApplicationHistorySummary = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  margin-top: 1rem;
-  border-top: 1px solid ${(props) => props.theme?.border?.color || '#d9d9d9'};
-`;
-
-const ApplicationHistorySummaryItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.875rem;
-
-  strong {
-    color: ${(props) => props.theme?.text?.primary || '#333'};
-  }
-`;
 
 export default CreditNoteModal;

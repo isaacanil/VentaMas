@@ -246,16 +246,15 @@ export const useListenMovementsByLocation = (
   currentLocationId,
 ) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Boolean(user?.businessID && locationId),
+  );
 
   useEffect(() => {
     if (!user || !user.businessID || !locationId) {
-      setData([]);
-      setLoading(false);
-      return;
+      return undefined;
     }
 
-    setLoading(true);
     const movementsRef = collection(
       db,
       'businesses',
@@ -348,7 +347,9 @@ export const useListenMovementsByLocation = (
 // Nuevo: Hook para escuchar todos los movimientos por rango de fechas (empresa completa)
 export const useListenAllMovementsByDateRange = (user, range = {}) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Boolean(user?.businessID && range?.startDate && range?.endDate),
+  );
   const { startDate, endDate } = range || {};
 
   useEffect(() => {
@@ -359,12 +360,9 @@ export const useListenAllMovementsByDateRange = (user, range = {}) => {
       !Number.isNaN(startDate) &&
       !Number.isNaN(endDate);
     if (!hasValidUser || !hasValidDates) {
-      setData([]);
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const movementsRef = collection(
       db,
       'businesses',
@@ -421,7 +419,7 @@ export const useListenAllMovementsByDateRange = (user, range = {}) => {
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, startDate, endDate]);
+  }, [user, startDate, endDate]);
 
   return { data, loading };
 };

@@ -1,7 +1,8 @@
+import { formatTimestamp } from '@/utils/format';
+
 import { CREDIT_NOTE_STATUS_LABEL } from '../../constants/creditNoteStatus';
 import { getTax, getTotalPrice } from '../../utils/pricing';
 
-import { formatTimestamp } from '@/utils/format';
 
 /**
  * Convierte un valor a número, retornando 0 si no es válido

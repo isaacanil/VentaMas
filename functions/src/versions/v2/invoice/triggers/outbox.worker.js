@@ -613,9 +613,9 @@ export const processInvoiceOutbox = firestore
               const canonicalData = canonicalSnap.data()?.data || {};
               candidateIdsRaw.push(
                 canonicalData?.cashCountId ||
-                  canonicalData?.cashCountID ||
-                  canonicalData?.cashCount?.id ||
-                  null,
+                canonicalData?.cashCountID ||
+                canonicalData?.cashCount?.id ||
+                null,
               );
             }
           } catch (canonError) {
@@ -692,7 +692,7 @@ export const processInvoiceOutbox = firestore
           const ccPayload = ccData?.cashCount || {};
           const ccState = ccPayload?.state || null;
           const resolvedCashCountId =
-            ccPayload?.id || ccPayload?.cashCountId || ccRef.id;
+            ccRef.id || ccPayload?.id || ccPayload?.cashCountId;
           const sales = ccPayload?.sales || [];
           const already =
             Array.isArray(sales) &&

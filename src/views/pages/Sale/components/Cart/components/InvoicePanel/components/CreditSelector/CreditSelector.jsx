@@ -4,13 +4,29 @@ import {
   CheckOutlined,
 } from '@ant-design/icons';
 import { Modal, Skeleton, Alert } from 'antd';
-import dayjs from 'dayjs';
-import React, { useEffect, useRef, useState } from 'react';
+import { DateTime } from 'luxon';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { useFbGetAvailableCreditNotes } from '../../../../../../../../../hooks/creditNote/useFbGetAvailableCreditNotes';
 
-import { formatPrice } from '@/utils/format';
+const toDateTime = (value) => {
+  if (!value) return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value?.seconds) return DateTime.fromSeconds(value.seconds);
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value?.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate());
+  }
+  return null;
+};
 
 /**
  * CreditSelector component
@@ -31,16 +47,15 @@ const CreditSelector = ({
   // Local state
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
-  const [localSelections, setLocalSelections] = useState({});
   const searchInputRef = useRef(null);
-
-  // Initialise local selections from parent
-  useEffect(() => {
+  
+  // Derivar selecciones locales directamente del prop
+  const localSelections = useMemo(() => {
     const map = {};
     selectedCreditNotes.forEach((sel) => {
       map[sel.id] = sel.amountUsed;
     });
-    setLocalSelections(map);
+    return map;
   }, [selectedCreditNotes]);
 
   // Focus search input when modal opens
@@ -107,7 +122,6 @@ const CreditSelector = ({
 
     const newSel = { ...localSelections, [noteId]: valid };
     if (valid === 0) delete newSel[noteId];
-    setLocalSelections(newSel);
     propagate(newSel);
   };
 
@@ -223,11 +237,7 @@ const CreditSelector = ({
                         <div className="info">
                           <div className="ncf">{note.ncf || note.number}</div>
                           <div className="date">
-                            {dayjs(
-                              note.createdAt?.seconds
-                                ? new Date(note.createdAt.seconds * 1000)
-                                : note.createdAt,
-                            ).format('DD/MM/YYYY')}
+                            {toDateTime(note.createdAt)?.toFormat('dd/MM/yyyy')}
                           </div>
                         </div>
                       </ItemContent>

@@ -8,10 +8,11 @@ import { Button } from 'antd';
 import React, { useState, memo } from 'react';
 import styled, { css } from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import DateUtils from '../../../../../utils/date/dateUtils';
 import { getTotalPrice } from '../../../../../utils/pricing';
 
-import { formatPrice } from '@/utils/format';
 
 const CreditNotePanel = memo(
   ({ creditNote, onNavigateNote, isExpanded = false, isMobile = false }) => {

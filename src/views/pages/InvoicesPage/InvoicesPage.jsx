@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Fragment, useEffect, useState, Suspense } from 'react';
+import { Fragment, useMemo, useState, Suspense } from 'react';
 import styled from 'styled-components';
 
 import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters';
@@ -22,32 +22,29 @@ export const InvoicesPage = () => {
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Estado para los filtros (similar a CreditNoteList)
-  const [filters, setFilters] = useState({
-    startDate: datesSelected.startDate,
-    endDate: datesSelected.endDate,
+  // Estado base de filtros (sin fechas, se derivarán después)
+  const [baseFilters, setBaseFilters] = useState({
     clientId: null,
     receivablesOnly: false,
     paymentStatus: '',
   });
 
-  const { invoices, loading } = useFbGetInvoicesWithFilters(filters);
-
-  const [processedInvoices, setProcessedInvoices] = useState(invoices);
-  const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
-
-  useEffect(() => {
-    setProcessedInvoices([...invoices]);
-  }, [invoices]);
-
-  // Sincronizar filtros cuando cambian las fechas seleccionadas
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
+  // Derivar filtros completos durante render - incluye fechas actualizadas
+  const filters = useMemo(
+    () => ({
+      ...baseFilters,
       startDate: datesSelected.startDate,
       endDate: datesSelected.endDate,
-    }));
-  }, [datesSelected]);
+    }),
+    [baseFilters, datesSelected.startDate, datesSelected.endDate],
+  );
+
+  const { invoices, loading } = useFbGetInvoicesWithFilters(filters);
+
+  // processedInvoices es simplemente una copia de invoices
+  const processedInvoices = useMemo(() => [...invoices], [invoices]);
+
+  const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
 
   const vw = useViewportWidth();
 
@@ -65,14 +62,13 @@ export const InvoicesPage = () => {
         <FilterBar
           invoices={invoices}
           processedInvoices={processedInvoices}
-          setProcessedInvoices={setProcessedInvoices}
           datesSelected={datesSelected}
           setDatesSelected={setDatesSelected}
           onReportSaleOpen={onReportSaleOpen}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           filters={filters}
-          onFiltersChange={setFilters}
+          onFiltersChange={setBaseFilters}
         />{' '}
         {vw > 900 ? (
           <Suspense

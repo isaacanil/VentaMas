@@ -177,7 +177,7 @@ export default function ARSummaryModal() {
 
   const nextPaymentInfo = useMemo(
     () => getNextPaymentInfo(data),
-    [data.installments, data.ar],
+    [data],
   );
 
   const arStatus = data.ar?.isActive

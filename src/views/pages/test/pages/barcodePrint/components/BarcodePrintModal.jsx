@@ -36,23 +36,26 @@ const BarcodeGrid = styled.div`
 
 /** Portal para montar el contenido de impresión fuera del Modal */
 const PrintPortal = ({ children }) => {
-  const containerRef = useRef(null);
-
-  useEffect(() => {
+  const [containerEl] = useState(() => {
+    if (typeof document === 'undefined') return null;
     const el = document.createElement('div');
     el.id = 'barcode-print-root';
     el.style.position = 'absolute';
     el.style.top = '-9999px';
     el.style.left = '-9999px';
-    document.body.appendChild(el);
-    containerRef.current = el;
-    return () => {
-      if (containerRef.current) document.body.removeChild(containerRef.current);
-    };
-  }, []);
+    return el;
+  });
 
-  if (!containerRef.current) return null;
-  return createPortal(children, containerRef.current);
+  useEffect(() => {
+    if (!containerEl || typeof document === 'undefined') return undefined;
+    document.body.appendChild(containerEl);
+    return () => {
+      document.body.removeChild(containerEl);
+    };
+  }, [containerEl]);
+
+  if (!containerEl) return null;
+  return createPortal(children, containerEl);
 };
 
 const clampInt = (n, min, max) => {

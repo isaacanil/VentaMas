@@ -6,7 +6,7 @@ import {
   Button,
   Tooltip,
 } from 'antd';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -37,7 +37,7 @@ import {
   selectTaxReceiptType,
   selectNcfTypeLocked,
 } from '../../../../features/taxReceipt/taxReceiptSlice.js';
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js';
+import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js';
 import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
 import { useWindowWidth } from '../../../../hooks/useWindowWidth';
 import { updateObject } from '../../../../utils/object/updateObject';
@@ -52,13 +52,23 @@ export const ClientControl = () => {
   const taxReceipt = useSelector(selectTaxReceipt);
   const taxReceiptSettingEnabled = taxReceipt?.settings?.taxReceiptEnabled;
   const searchTerm = useSelector(selectClientSearchTerm);
-  const [inputIcon, setInputIcon] = useState();
-  const taxReceiptData = fbGetTaxReceipt();
+  const taxReceiptData = useFbGetTaxReceipt();
   const nfcType = useSelector(selectNcfType);
   const ncfTypeLocked = useSelector(selectNcfTypeLocked);
   const insuranceEnabled = useInsuranceEnabled();
-  const closeMenu = () => dispatch(setIsOpen(false));
-  const setSearchTerm = (e) => dispatch(setClientSearchTerm(e));
+
+  const inputIcon = useMemo(() => {
+    switch (mode) {
+      case CLIENT_MODE_BAR.SEARCH.id:
+        return CLIENT_MODE_BAR.SEARCH.icon;
+      case CLIENT_MODE_BAR.UPDATE.id:
+        return CLIENT_MODE_BAR.UPDATE.icon;
+      case CLIENT_MODE_BAR.CREATE.id:
+        return CLIENT_MODE_BAR.CREATE.icon;
+      default:
+        return undefined;
+    }
+  }, [mode]);
   const openAddClientModal = () =>
     dispatch(
       toggleClientModal({
@@ -85,7 +95,7 @@ export const ClientControl = () => {
 
   const handleChangeClient = (e) => {
     if (mode === CLIENT_MODE_BAR.SEARCH.id) {
-      setSearchTerm(e.target.value);
+      dispatch(setClientSearchTerm(e.target.value));
     }
     if (
       mode === CLIENT_MODE_BAR.UPDATE.id ||
@@ -101,26 +111,15 @@ export const ClientControl = () => {
   };
 
   useEffect(() => {
-    switch (mode) {
-      case CLIENT_MODE_BAR.SEARCH.id:
-        setInputIcon(CLIENT_MODE_BAR.SEARCH.icon);
-        setSearchTerm('');
-        break;
-
-      case CLIENT_MODE_BAR.UPDATE.id:
-        setInputIcon(CLIENT_MODE_BAR.UPDATE.icon);
-        closeMenu();
-        break;
-
-      case CLIENT_MODE_BAR.CREATE.id:
-        setInputIcon(CLIENT_MODE_BAR.CREATE.icon);
-        closeMenu();
-        break;
-
-      default:
-        break;
+    if (mode === CLIENT_MODE_BAR.SEARCH.id) {
+      dispatch(setClientSearchTerm(''));
+      return;
     }
-  }, [mode, closeMenu]);
+
+    if (mode === CLIENT_MODE_BAR.UPDATE.id || mode === CLIENT_MODE_BAR.CREATE.id) {
+      dispatch(setIsOpen(false));
+    }
+  }, [mode, dispatch]);
 
   useEffect(() => {
     dispatch(setClientInClientCart(client));
@@ -137,7 +136,7 @@ export const ClientControl = () => {
   const OpenClientList = () => {
     switch (mode) {
       case CLIENT_MODE_BAR.CREATE.id:
-        closeMenu();
+        dispatch(setIsOpen(false));
         break;
       case CLIENT_MODE_BAR.SEARCH.id:
         dispatch(setIsOpen(true));

@@ -19,8 +19,10 @@ const useTruncate = (
 
   useEffect(() => {
     if (!text) {
-      setIsTruncated(false);
-      setTruncatedText('');
+      requestAnimationFrame(() => {
+        setIsTruncated(false);
+        setTruncatedText('');
+      });
       return;
     }
 

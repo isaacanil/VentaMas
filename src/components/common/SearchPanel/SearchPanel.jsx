@@ -21,9 +21,21 @@ export const SearchPanel = ({
   const [tempSearchData, setTempSearchData] = useState(searchData || '');
 
   // Solo actualizar el tempSearchData cuando el panel se abre
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [prevSearchData, setPrevSearchData] = useState(searchData);
+
+  // Sincronizar tempSearchData cuando el panel se abre o searchData cambia
+  if (isOpen !== prevIsOpen || searchData !== prevSearchData) {
+    setPrevIsOpen(isOpen);
+    setPrevSearchData(searchData);
+
     if (isOpen) {
       setTempSearchData(searchData || '');
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
       // Enfocar el input después de que se abra el panel
       setTimeout(() => {
         const input = document.querySelector('#search-panel-input');
@@ -32,7 +44,7 @@ export const SearchPanel = ({
         }
       }, 100);
     }
-  }, [isOpen, searchData]);
+  }, [isOpen]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;

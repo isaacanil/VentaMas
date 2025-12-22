@@ -3,12 +3,14 @@ import { useEffect, useState } from 'react';
 
 export const useFirestoreRealtime = (collectionRef, filters = []) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!collectionRef);
+
+  // Derive safe values: if no collectionRef, data is [] and loading is false
+  const safeData = collectionRef ? data : [];
+  const safeLoading = collectionRef ? loading : false;
 
   useEffect(() => {
     if (!collectionRef) {
-      setData([]);
-      setLoading(false);
       return;
     }
     let qRef = collectionRef;
@@ -22,5 +24,5 @@ export const useFirestoreRealtime = (collectionRef, filters = []) => {
     return () => unsubscribe();
   }, [collectionRef, filters]);
 
-  return { data, loading };
+  return { data: safeData, loading: safeLoading };
 };

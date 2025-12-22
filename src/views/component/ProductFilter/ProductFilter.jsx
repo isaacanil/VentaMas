@@ -1,7 +1,7 @@
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Input } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { useGetProducts } from '../../../firebase/products/fbGetProducts';
@@ -16,7 +16,15 @@ export const ProductFilter = ({
   setIsOpen,
   handleSelectProduct,
 }) => {
-  const [searchTerm, setSearchTerm] = useState(productName || null);
+  const productSeed = typeof productName === 'string' ? productName : '';
+  const [searchState, setSearchState] = useState(() => ({
+    seed: productSeed,
+    value: productSeed,
+  }));
+
+  const searchTerm =
+    searchState.seed === productSeed ? searchState.value : productSeed;
+
   const close = () => {
     setIsOpen(false);
   };
@@ -25,17 +33,10 @@ export const ProductFilter = ({
   const { products } = useGetProducts(true);
   const productsTrackInventoryFilter =
     products.filter((product) => product.trackInventory === true) || [];
+  
   const productsFiltered =
     typeof searchTerm == 'string' &&
     filterData(productsTrackInventoryFilter, searchTerm);
-  useEffect(() => {
-    if (!productName) {
-      setSearchTerm('');
-    }
-    if (productName) {
-      setSearchTerm(productName);
-    }
-  }, [productName]);
 
   useClickOutSide(productListRef, isOpen, close);
 
@@ -44,7 +45,9 @@ export const ProductFilter = ({
       <Input
         value={searchTerm}
         placeholder="Buscar..."
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={(e) =>
+          setSearchState({ seed: productSeed, value: e.target.value })
+        }
         onFocus={() => setIsOpen(true)}
       />
       {isOpen ? (

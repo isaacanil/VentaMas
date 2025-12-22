@@ -4,9 +4,10 @@ import {
   faArrowDownAZ,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Tooltip, Input, Drawer, DatePicker } from 'antd'; // Added DatePicker
-import dayjs from 'dayjs';
-import { useCallback, useMemo, useState, useEffect, memo } from 'react';
+import { Button, Tooltip, Input, Drawer } from 'antd'; // Added DatePicker
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
+import { useCallback, useMemo, useState, useEffect, memo, useRef } from 'react';
 import styled from 'styled-components';
 
 import { Selector } from '../../../components/common/Selector/Selector';
@@ -38,9 +39,14 @@ export const FilterBar = memo(
     const [isDrawerVisible, setIsDrawerVisible] = useState(false);
 
     // When component mounts, notify parent of initial state
+    // Using ref to call onChange only once on mount
+    const initializedRef = useRef(false);
     useEffect(() => {
-      onChange?.(state);
-    }, []);
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        onChange?.(state);
+      }
+    }, [onChange, state]);
 
     const handleFiltersChange = useCallback(
       (newFilters) => {
@@ -69,10 +75,14 @@ export const FilterBar = memo(
       });
     }, [config.defaultValues, config.defaultSort, onChange, resetAll]);
 
-    const updateFilter = (key, value) => {
-      const newFilters = { ...state.filters, [key]: value };
-      handleFiltersChange(newFilters);
-    };
+    const updateFilter = useCallback(
+      (key, value) => {
+        const newFilters = { ...state.filters, [key]: value };
+        handleFiltersChange(newFilters);
+      },
+      [state.filters, handleFiltersChange],
+    );
+
     const renderFilter = useCallback(
       (filterConfig, isInDrawer) => {
         if (filterConfig.type === 'search') return null;
@@ -124,16 +134,20 @@ export const FilterBar = memo(
                     state.filters[filterConfig.key]?.startDate &&
                     state.filters[filterConfig.key]?.endDate
                       ? [
-                          dayjs(state.filters[filterConfig.key].startDate),
-                          dayjs(state.filters[filterConfig.key].endDate),
+                          DateTime.fromMillis(
+                            state.filters[filterConfig.key].startDate,
+                          ),
+                          DateTime.fromMillis(
+                            state.filters[filterConfig.key].endDate,
+                          ),
                         ]
                       : null
                   }
                   onChange={(dates) => {
                     if (dates && dates.length === 2) {
                       updateFilter(filterConfig.key, {
-                        startDate: dates[0].startOf('day').valueOf(),
-                        endDate: dates[1].endOf('day').valueOf(),
+                        startDate: dates[0].startOf('day').toMillis(),
+                        endDate: dates[1].endOf('day').toMillis(),
                       });
                     } else {
                       updateFilter(filterConfig.key, null); // Clear the filter if dates are cleared
@@ -152,7 +166,7 @@ export const FilterBar = memo(
             return null;
         }
       },
-      [state.filters, dataConfig],
+      [state.filters, updateFilter, dataConfig],
     );
 
     const searchInput = (
@@ -241,7 +255,7 @@ export const FilterBar = memo(
             placement="bottom"
             onClose={() => setIsDrawerVisible(false)}
             open={isDrawerVisible}
-            width="100%"
+            size="large"
           >
             <MobileFilterWrapper>
               {config.filters?.map((filterConfig) =>

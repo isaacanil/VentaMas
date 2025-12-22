@@ -90,11 +90,10 @@ export const AuthorizationsManager = () => {
 
   const [activeTab, setActiveTab] = useState(resolvedActiveTab);
 
+  // Sincronizar activeTab cuando resolvedActiveTab cambia
   useEffect(() => {
-    if (resolvedActiveTab && resolvedActiveTab !== activeTab) {
-      setActiveTab(resolvedActiveTab);
-    }
-  }, [resolvedActiveTab, activeTab]);
+    setActiveTab(resolvedActiveTab);
+  }, [resolvedActiveTab]);
 
   useEffect(() => {
     if (!resolvedActiveTab) return;

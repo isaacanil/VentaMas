@@ -8,17 +8,17 @@ import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons';
-import { useCategoryState } from '../../../Context/CategoryContext';
-import { SelectCategoryList } from '../../../features/category/categorySlicer';
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
-import { useScreenSize } from '../../../hooks/useScreenSize';
+import { icons } from '@/constants/icons/icons';
+import { useCategoryState } from '@/Context/CategoryContext';
+import { SelectCategoryList } from '@/features/category/categorySlicer';
+import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import { useElementSize } from '@/hooks/useElementSize';
 
 import { Category } from './Category';
 
 export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
   const categoriesRef = useRef(null);
-  const { width } = useScreenSize(categoriesRef);
+  const { width } = useElementSize(categoriesRef);
   const { categories } = useFbGetCategories();
   const categorySelected = useSelector(SelectCategoryList);
 
@@ -50,7 +50,7 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
       if (
         measurements &&
         measurements.scrollLeft <
-          measurements.scrollWidth - measurements.clientWidth
+        measurements.scrollWidth - measurements.clientWidth
       ) {
         categoriesRef.current.scrollTo({
           top: 0,
@@ -116,14 +116,14 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
 
           {categories.length > 0
             ? categories.map(({ category }, index) => (
-                <Category
-                  themeColor={themeColor ? themeColor : null}
-                  category={category}
-                  selected={findElementInArray(categorySelected, category.name)}
-                  key={category.name}
-                  index={index}
-                />
-              ))
+              <Category
+                themeColor={themeColor ? themeColor : null}
+                category={category}
+                selected={findElementInArray(categorySelected, category.name)}
+                key={category.name}
+                index={index}
+              />
+            ))
             : null}
         </Categories>
         <Button

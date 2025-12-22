@@ -2,6 +2,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import noImg from '../../../../../../../../assets/producto/noimg.png';
 import { icons } from '../../../../../../../../constants/icons/icons';
 import { OPERATION_MODES } from '../../../../../../../../constants/modes';
@@ -16,7 +18,6 @@ import {
 } from '../../../../../../../templates/system/Button/Button';
 import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
 
-import { formatPrice } from '@/utils/format';
 
 export const ProductCardRow = ({ product, Col, Row }) => {
   const dispatch = useDispatch();

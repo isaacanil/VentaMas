@@ -9,7 +9,6 @@ const consoleApi =
   typeof globalThis !== 'undefined' ? globalThis.console : undefined;
 
 const logDebug = (...args) => {
-  // eslint-disable-next-line no-undef
   if (process.env.NODE_ENV !== 'production' && consoleApi?.debug) {
     consoleApi.debug(...args);
   }
@@ -24,16 +23,13 @@ const logError = (...args) => {
 export function useInventoryStocksProducts({ db, businessID }) {
   const [stocks, setStocks] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loadingStocks, setLoadingStocks] = useState(false);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [stocksLoaded, setStocksLoaded] = useState(false);
+  const [productsLoaded, setProductsLoaded] = useState(false);
 
   // Stocks listener
   useEffect(() => {
-    if (!db || !businessID) {
-      setStocks([]);
-      return;
-    }
-    setLoadingStocks(true);
+    if (!db || !businessID) return;
+
     const ref = collection(db, 'businesses', businessID, 'productsStock');
     const q = query(ref, orderBy('updatedAt', 'desc'));
     const unsub = onSnapshot(
@@ -43,7 +39,6 @@ export function useInventoryStocksProducts({ db, businessID }) {
         const data = raw.filter(
           (r) => r.isDeleted !== true && r.status !== 'inactive',
         );
-        // eslint-disable-next-line no-undef
         if (process.env.NODE_ENV !== 'production') {
           const inactive = raw.filter((r) => r.status === 'inactive').length;
           logDebug(
@@ -56,14 +51,14 @@ export function useInventoryStocksProducts({ db, businessID }) {
           );
         }
         setStocks(data);
-        setLoadingStocks(false);
+        setStocksLoaded(true);
       },
       (error) => {
         logError(
           '[useInventoryStocksProducts] Error listener productsStock:',
           error,
         );
-        setLoadingStocks(false);
+        setStocksLoaded(true);
       },
     );
     return () => unsub();
@@ -71,11 +66,8 @@ export function useInventoryStocksProducts({ db, businessID }) {
 
   // Products listener (para entradas sintéticas)
   useEffect(() => {
-    if (!db || !businessID) {
-      setProducts([]);
-      return;
-    }
-    setLoadingProducts(true);
+    if (!db || !businessID) return;
+
     const ref = collection(db, 'businesses', businessID, 'products');
     const unsub = onSnapshot(
       ref,
@@ -84,7 +76,6 @@ export function useInventoryStocksProducts({ db, businessID }) {
         const data = raw.filter(
           (r) => r.isDeleted !== true && r.status !== 'inactive',
         );
-        // eslint-disable-next-line no-undef
         if (process.env.NODE_ENV !== 'production') {
           logDebug(
             '[useInventoryStocksProducts] Products:',
@@ -94,14 +85,14 @@ export function useInventoryStocksProducts({ db, businessID }) {
           );
         }
         setProducts(data);
-        setLoadingProducts(false);
+        setProductsLoaded(true);
       },
       (error) => {
         logError(
           '[useInventoryStocksProducts] Error listener products:',
           error,
         );
-        setLoadingProducts(false);
+        setProductsLoaded(true);
       },
     );
     return () => unsub();
@@ -133,11 +124,13 @@ export function useInventoryStocksProducts({ db, businessID }) {
     return [...stocks, ...synthetic];
   }, [stocks, products]);
 
+  const loading = !stocksLoaded || !productsLoaded;
+
   return {
     stocks,
     products,
     augmentedStocks,
-    loading: loadingStocks || loadingProducts,
+    loading,
   };
 }
 

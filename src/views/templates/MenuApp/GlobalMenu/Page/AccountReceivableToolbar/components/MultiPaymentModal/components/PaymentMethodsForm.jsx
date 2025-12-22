@@ -46,7 +46,7 @@ const PaymentMethodsForm = ({
         inputRefs.current[activeMethod.method].select();
       }, 100);
     }
-  }, []);
+  }, [paymentMethods]);
 
   // Manejar cambio de estado de un método de pago
   const handleMethodStatusChange = (method, checked) => {

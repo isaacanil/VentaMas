@@ -12,18 +12,24 @@ import { selectUser } from '../../features/auth/userSlice';
 import { validateUser } from '../../utils/userValidation';
 import { db } from '../firebaseconfig';
 
-export const fbGetInvoices = (time) => {
-  const [loading, setLoading] = useState(true);
+export const useFbGetInvoices = (time) => {
+  const [loading, setLoading] = useState(
+    () => Boolean(time?.startDate && time?.endDate),
+  );
   const [invoices, setInvoices] = useState([]);
   const user = useSelector(selectUser);
+
+   
+  if ((!time?.startDate || !time?.endDate || !user?.businessID) && (invoices.length > 0 || loading)) {
+    if (invoices.length > 0) setInvoices([]);
+    if (loading) setLoading(false);
+  }
 
   useEffect(() => {
     const hasValidRange = Boolean(time?.startDate && time?.endDate);
     const hasValidUser = Boolean(user?.businessID);
 
     if (!hasValidRange || !hasValidUser) {
-      setInvoices([]);
-      setLoading(false);
       return undefined;
     }
 
@@ -97,7 +103,6 @@ export const fbGetInvoices = (time) => {
       }
     };
 
-    setLoading(true);
     const unsubscribe = fetchInvoices();
 
     return () => {
@@ -105,7 +110,7 @@ export const fbGetInvoices = (time) => {
         unsubscribe();
       }
     };
-  }, [time?.startDate, time?.endDate, user?.businessID, user?.uid, user?.role]);
+  }, [time?.startDate, time?.endDate, user?.businessID, user?.uid, user?.role, user]);
 
   return { invoices, loading };
 };

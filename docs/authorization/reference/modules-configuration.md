@@ -20,7 +20,7 @@ Cuando módulos están desactivados, se muestran alertas informativas:
 - **Fallback seguro**: Si no hay configuración, ambos módulos están activos por defecto
 - **Autorización requerida**: Incluso con módulos desactivados, se requiere contraseña para acciones críticas
 
-## � Integración con Descuentos en Cart
+## Integración con Descuentos en Cart
 
 El sistema de descuentos en el carrito también depende del módulo de facturación:
 
@@ -38,7 +38,7 @@ const shouldRequirePinForDiscount =
   shouldUsePinForModule('invoices') && isCashier;
 ```
 
-## �🐛 Debugging
+## 🐛 Debugging
 
 Si los módulos no se comportan como esperado:
 

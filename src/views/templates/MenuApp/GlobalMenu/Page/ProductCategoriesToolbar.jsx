@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
 import { useCategoryState } from '../../../../../Context/CategoryContext';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { Button } from '../../../system/Button/Button';
 
 export const ProductCategoriesToolbar = ({ side = 'left' }) => {

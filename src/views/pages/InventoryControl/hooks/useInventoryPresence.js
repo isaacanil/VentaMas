@@ -67,6 +67,7 @@ export function useInventoryPresence({
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       deleteDoc(presenceRef).catch(() => {});
     };
   }, [
@@ -75,6 +76,10 @@ export function useInventoryPresence({
     sessionId,
     user?.businessID,
     user?.uid,
+    user?.displayName,
+    user?.email,
+    user?.name,
+    user?.photoURL,
     currentUserResolvedName,
     intervalMs,
   ]);
@@ -113,6 +118,9 @@ export function useInventoryPresence({
     sessionId,
     user?.businessID,
     user?.uid,
+    user?.displayName,
+    user?.email,
+    user?.name,
     currentUserResolvedName,
   ]);
 }

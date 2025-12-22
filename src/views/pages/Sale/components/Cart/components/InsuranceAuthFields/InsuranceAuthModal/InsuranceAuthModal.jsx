@@ -1,6 +1,7 @@
 import { UserOutlined } from '@ant-design/icons';
-import { Modal, Form, Input, DatePicker, Select, message, Spin } from 'antd';
-import dayjs from 'dayjs'; // Import dayjs for date handling
+import { Modal, Form, Input, Select, message, Spin } from 'antd';
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -300,7 +301,7 @@ export const InsuranceAuthModal = () => {
         }
       }
 
-      // Convert ISO date strings to dayjs objects for DatePicker
+      // Convert ISO date strings to Luxon DateTime for DatePicker
       const formattedValues = { ...formValues };
 
       // Properly format dates for the form
@@ -309,12 +310,14 @@ export const InsuranceAuthModal = () => {
           '📅 Fecha de nacimiento encontrada:',
           formattedValues.birthDate,
         );
-        formattedValues.birthDate = dayjs(formattedValues.birthDate);
+        formattedValues.birthDate = DateTime.fromISO(formattedValues.birthDate);
       } else {
         console.log('❌ No se encontró fecha de nacimiento');
       }
       if (formattedValues.indicationDate) {
-        formattedValues.indicationDate = dayjs(formattedValues.indicationDate);
+        formattedValues.indicationDate = DateTime.fromISO(
+          formattedValues.indicationDate,
+        );
       }
 
       console.log('✍️ Estableciendo valores en formulario:', formattedValues);
@@ -379,8 +382,8 @@ export const InsuranceAuthModal = () => {
 
   // Validamos las fechas para que no sean del futuro
   const disabledFutureDate = (current) => {
-    // Use the dayjs object provided by the DatePicker
-    return current && current > dayjs();
+    // Use the DateTime object provided by the DatePicker
+    return current && current.toMillis() > DateTime.local().toMillis();
   };
 
   // Función para manejar la adición de archivos de receta

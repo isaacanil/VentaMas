@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { monetarySymbols } from '../../../../../../constants/monetarySymbols';
 import {
   SelectDelivery,
@@ -13,7 +15,6 @@ import {
 import CustomInput from '../../../../../templates/system/Inputs/CustomInput';
 import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
 
-import { formatPrice } from '@/utils/format';
 
 export const PaymentArea = () => {
   const dispatch = useDispatch();

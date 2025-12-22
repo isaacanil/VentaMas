@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import PropTypes from 'prop-types';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -64,8 +64,33 @@ export const InsuranceCoverage = ({ item }) => {
   const dispatch = useDispatch();
   const productId = item?.id ?? item?.cid;
 
-  const [insuranceState, setInsuranceState] = useState(() =>
-    deriveInitialState(item),
+  const derivedState = useMemo(() => deriveInitialState(item), [item]);
+  const derivedKey = useMemo(
+    () => `${derivedState.mode}|${derivedState.rawValue}`,
+    [derivedState.mode, derivedState.rawValue],
+  );
+
+  const [{ trigger: localTrigger, value: localValue }, setLocalState] =
+    useState(() => {
+      const initial = deriveInitialState(item);
+      return {
+        trigger: `${initial.mode}|${initial.rawValue}`,
+        value: initial,
+      };
+    });
+
+  const insuranceState = localTrigger === derivedKey ? localValue : derivedState;
+
+  const updateInsuranceState = useCallback(
+    (updater) => {
+      setLocalState((prev) => {
+        const base = prev.trigger === derivedKey ? prev.value : derivedState;
+        const nextValue =
+          typeof updater === 'function' ? updater(base) : updater;
+        return { trigger: derivedKey, value: nextValue };
+      });
+    },
+    [derivedKey, derivedState],
   );
 
   const productPrice = useMemo(() => {
@@ -74,20 +99,6 @@ export const InsuranceCoverage = ({ item }) => {
     const fallbackPrice = Number(item?.price);
     return Number.isFinite(fallbackPrice) ? fallbackPrice : 0;
   }, [item?.price, item?.pricing?.price]);
-
-  useEffect(() => {
-    const nextState = deriveInitialState(item);
-    setInsuranceState((prev) =>
-      prev.mode === nextState.mode && prev.rawValue === nextState.rawValue
-        ? prev
-        : nextState,
-    );
-  }, [
-    item?.cid,
-    item?.id,
-    item?.insurance?.mode,
-    item?.insurance?.value,
-  ]);
 
   const dispatchInsurance = useCallback(
     (mode, rawValue) => {
@@ -117,28 +128,28 @@ export const InsuranceCoverage = ({ item }) => {
       const clampedValue = clampByMode(rawValue, mode, productPrice);
 
       if (clampedValue === null) {
-        setInsuranceState((prev) => ({ ...prev, rawValue: '' }));
+        updateInsuranceState((prev) => ({ ...prev, rawValue: '' }));
         dispatchInsurance(mode, '');
         return;
       }
 
       const formattedValue = formatNumberForDisplay(clampedValue);
-      setInsuranceState((prev) => ({
+      updateInsuranceState((prev) => ({
         ...prev,
         rawValue: formattedValue,
       }));
       dispatchInsurance(mode, formattedValue);
     },
-    [dispatchInsurance, productId, productPrice],
+    [dispatchInsurance, productId, productPrice, updateInsuranceState],
   );
 
   const handleModeChange = useCallback(
     (nextMode) => {
       if (nextMode === insuranceState.mode) return;
-      setInsuranceState((prev) => ({ ...prev, mode: nextMode }));
+      updateInsuranceState((prev) => ({ ...prev, mode: nextMode }));
       commitValue(nextMode, insuranceState.rawValue);
     },
-    [commitValue, insuranceState.mode, insuranceState.rawValue],
+    [commitValue, insuranceState.mode, insuranceState.rawValue, updateInsuranceState],
   );
 
   const handleToggleClick = useCallback(() => {
@@ -155,10 +166,10 @@ export const InsuranceCoverage = ({ item }) => {
       const sanitizedValue = sanitizeNumericInput(event.target.value);
       if (sanitizedValue === null) return;
 
-      setInsuranceState((prev) => ({ ...prev, rawValue: sanitizedValue }));
+      updateInsuranceState((prev) => ({ ...prev, rawValue: sanitizedValue }));
       dispatchInsurance(insuranceState.mode, sanitizedValue);
     },
-    [dispatchInsurance, insuranceState.mode],
+    [dispatchInsurance, insuranceState.mode, updateInsuranceState],
   );
 
   const handleInputBlur = useCallback(() => {

@@ -5,13 +5,14 @@ import {
   Chart,
   Tooltip,
 } from 'chart.js';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -195,32 +196,39 @@ const useIsMobile = () => {
 
 export const DailySalesBarChart = ({ sales }) => {
   const [periodType, setPeriodType] = useState('monthly'); // 'monthly' o 'quarterly'
-  const [currentPeriodIndex, setCurrentPeriodIndex] = useState(0);
+  const [rawPeriodIndex, setRawPeriodIndex] = useState(0);
   const isMobile = useIsMobile();
-
-  if (!sales || !Array.isArray(sales)) {
-    return null;
-  }
+  
+  const salesArray = useMemo(
+    () => (Array.isArray(sales) ? sales : []),
+    [sales],
+  );
 
   // Obtener períodos disponibles
   const availablePeriods = useMemo(
-    () => getAvailablePeriods(sales, periodType),
-    [sales, periodType],
+    () => getAvailablePeriods(salesArray, periodType),
+    [salesArray, periodType],
   );
 
-  // Establecer el período actual (el más reciente por defecto)
-  useEffect(() => {
-    if (availablePeriods.length > 0) {
-      setCurrentPeriodIndex(availablePeriods.length - 1);
+  // Derivar índice válido: si es 0, usar el último periodo; si está fuera de rango, ajustar
+  const currentPeriodIndex = useMemo(() => {
+    if (availablePeriods.length === 0) return 0;
+    
+    // Si rawPeriodIndex es 0, usar el último periodo (el más reciente)
+    if (rawPeriodIndex === 0) {
+      return availablePeriods.length - 1;
     }
-  }, [availablePeriods]);
+    
+    // Si está fuera de rango, ajustar
+    return Math.min(rawPeriodIndex, availablePeriods.length - 1);
+  }, [availablePeriods.length, rawPeriodIndex]);
 
   // Filtrar ventas por período actual
   const currentPeriod = availablePeriods[currentPeriodIndex];
   const filteredSales = useMemo(() => {
     if (!currentPeriod) return [];
-    return filterSalesByPeriod(sales, currentPeriod, periodType);
-  }, [sales, currentPeriod, periodType]);
+    return filterSalesByPeriod(salesArray, currentPeriod, periodType);
+  }, [salesArray, currentPeriod, periodType]);
 
   // Determinar si mostrar por mes basado en el span de fechas del período actual
   const byMonth = useMemo(() => {
@@ -331,31 +339,25 @@ export const DailySalesBarChart = ({ sales }) => {
     [isMobile, salesByDay, data.sortedDateKeys],
   );
 
-  const chartRef = useRef(null);
-
-  useEffect(() => {
-    return () => {
-      if (chartRef.current && chartRef.current instanceof Chart) {
-        chartRef.current.destroy();
-      }
-    };
-  }, []);
-
   // Handlers para navegación
   const handlePreviousPeriod = () => {
-    setCurrentPeriodIndex((prev) => Math.max(0, prev - 1));
+    setRawPeriodIndex((prev) => Math.max(0, prev - 1));
   };
 
   const handleNextPeriod = () => {
-    setCurrentPeriodIndex((prev) =>
+    setRawPeriodIndex((prev) =>
       Math.min(availablePeriods.length - 1, prev + 1),
     );
   };
 
   const handlePeriodTypeChange = (newPeriodType) => {
     setPeriodType(newPeriodType);
-    setCurrentPeriodIndex(0); // Reset to first period when changing type
+    setRawPeriodIndex(0); // Reset to first period when changing type
   };
+
+  if (salesArray.length === 0) {
+    return null;
+  }
 
   return (
     <Container>
@@ -407,7 +409,7 @@ export const DailySalesBarChart = ({ sales }) => {
       </Header>
 
       <ChartContainer>
-        <Bar ref={chartRef} data={data} options={chartOptions} />
+        <Bar data={data} options={chartOptions} />
       </ChartContainer>
     </Container>
   );

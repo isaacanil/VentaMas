@@ -1,5 +1,5 @@
 import { Table, Typography, Divider, Tag } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 
 import { formatNumber } from '@/utils/format';
@@ -26,7 +26,7 @@ const aggregateClientData = (sales) => {
     clientGroup.total += sale.data.totalPurchase.value;
     clientGroup.facturas.push({
       numberID: sale.data.numberID,
-      fecha: dayjs.unix(sale.data.date.seconds).format('DD/MM/YYYY'),
+      fecha: DateTime.fromSeconds(sale.data.date.seconds).toFormat('dd/MM/yyyy'),
       productos: sale.data.products.map((product) => {
         const taxPercent = product.pricing.tax;
         const price = product.pricing.price;

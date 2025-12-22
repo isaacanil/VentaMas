@@ -144,13 +144,15 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
     // Verificar que user y user.businessID estén definidos
     if (!user || !user.businessID) {
       console.error('User o user.businessID no están definidos');
-      return () => {}; // Retorna una función de limpieza vacía
+       
+      return undefined; // Retorna una función de limpieza vacía
     }
 
     // Verificar que batchIDs es un array válido y no está vacío
     if (!Array.isArray(batchIDs) || batchIDs.length === 0) {
       console.warn('No se proporcionaron batch IDs para escuchar');
-      return () => {};
+       
+      return undefined;
     }
 
     const unsubscribeFuncs = [];
@@ -314,51 +316,46 @@ export const deleteBatch = async ({ user, batchId, movement }) => {
 export const useListenBatchesByIds = (batchIDs = []) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Array.isArray(batchIDs) && batchIDs.length > 0 && Boolean(user?.businessID),
+  );
   const [error, setError] = useState(null);
 
-  const memorizedBatchIDs = useMemo(() => batchIDs, [batchIDs]);
-  const memorizedUser = useMemo(() => user, [user]);
+  const stableBatchIDs = useMemo(
+    () => (Array.isArray(batchIDs) ? batchIDs : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(batchIDs)],
+  );
 
   useEffect(() => {
-    try {
-      // Validaciones iniciales
-      if (
-        !Array.isArray(batchIDs) ||
-        batchIDs.length === 0 ||
-        !user.businessID
-      ) {
-        setData([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      // Escuchar en tiempo real los IDs de batches
-      const unsubscribe = listenAllBatchesByIds(
-        user,
-        batchIDs,
-        (updatedBatches) => {
-          try {
-            setData(updatedBatches);
-            setLoading(false);
-          } catch (callbackError) {
-            console.error('Error en el callback de onSnapshot:', callbackError);
-            setError(callbackError);
-          }
-        },
-      );
-
-      // Cleanup
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Error en useListenBatchesByIds:', error);
-      setError(error);
+    // Validaciones iniciales
+    if (stableBatchIDs.length === 0 || !user?.businessID) {
+      setData([]);
       setLoading(false);
+      return undefined;
     }
-  }, [memorizedUser, memorizedBatchIDs]);
+
+    setLoading(true);
+    setError(null);
+
+    // Escuchar en tiempo real los IDs de batches
+    const unsubscribe = listenAllBatchesByIds(
+      user,
+      stableBatchIDs,
+      (updatedBatches) => {
+        try {
+          setData(updatedBatches);
+          setLoading(false);
+        } catch (callbackError) {
+          console.error('Error en el callback de onSnapshot:', callbackError);
+          setError(callbackError);
+        }
+      },
+    );
+
+    // Cleanup
+    return () => unsubscribe?.();
+  }, [stableBatchIDs, user]);
 
   return { data, loading, error };
 };

@@ -161,7 +161,7 @@ export const DeveloperModal = () => {
       }
     }, 100);
   };
-  
+
   // Limpiar las funciones globales cuando se sale del modo selección
   useEffect(() => {
     if (!selectionMode.active) {
@@ -199,7 +199,23 @@ export const DeveloperModal = () => {
     setAutoCompleteSelectedIndex(-1);
   };
 
-  const handleAutoCompleteSuggestionSelect = (
+  const triggerCommandExecution = useCallback((command) => {
+    const commandText = command?.trim();
+    if (!commandText || !commandProcessorRef.current) return;
+
+    const executeCommand = async () => {
+      const result =
+        await commandProcessorRef.current.executeCommand(commandText);
+
+      if (result && result.clearConsole) {
+        setConsoleOutput([]);
+      }
+    };
+
+    executeCommand();
+  }, []);
+
+  const handleAutoCompleteSuggestionSelect = useCallback((
     suggestion,
     options = { trigger: 'keyboard' },
   ) => {
@@ -219,7 +235,7 @@ export const DeveloperModal = () => {
       triggerCommandExecution(command);
       setCommandInput('');
     }
-  };
+  }, [triggerCommandExecution]);
 
   const handleAutoCompleteSelectedIndexChange = (index) => {
     setAutoCompleteSelectedIndex(index);
@@ -266,8 +282,8 @@ export const DeveloperModal = () => {
     if (modalData.isOpen && !isDeveloper) {
       dispatch(toggleDeveloperModal());
     }
-  }, [modalData.isOpen, isDeveloper, dispatch]); 
-  
+  }, [modalData.isOpen, isDeveloper, dispatch]);
+
   // Manejar entrada de teclado - DEBE ESTAR ANTES del useEffect que lo usa
   const handleKeyDown = useCallback((e) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
@@ -373,8 +389,8 @@ export const DeveloperModal = () => {
       e.preventDefault();
       setConsoleOutput([]);
     }
-  }, [selectionMode.active, showAutoComplete, autoCompleteSuggestions, autoCompleteSelectedIndex, commandInput]);
-  
+  }, [selectionMode.active, showAutoComplete, autoCompleteSuggestions, autoCompleteSelectedIndex, commandInput, handleAutoCompleteSuggestionSelect, triggerCommandExecution]);
+
   // Agregar listener global solo para ESC cuando estamos en modo selección
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
@@ -401,7 +417,7 @@ export const DeveloperModal = () => {
     dispatch(toggleDeveloperModal());
   };
 
-  const triggerCommandExecution = (command) => {
+  const _triggerCommandExecution = (command) => {
     const commandText = command?.trim();
     if (!commandText || !commandProcessorRef.current) return;
 

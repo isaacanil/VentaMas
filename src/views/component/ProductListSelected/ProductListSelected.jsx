@@ -2,11 +2,22 @@ import { Table, Input, Button } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { icons } from '../../../constants/icons/icons';
-import { formatPrice } from '@/utils/format';Producto',
+
+export const ProductListSelected = ({
+  productsSelected = [],
+  handleDeleteProduct,
+  handleUpdateProduct,
+}) => {
+  const rows = Array.isArray(productsSelected) ? productsSelected : [];
+
+  const columns = [
+    {
+      title: 'Producto',
       dataIndex: 'productName',
       key: 'productName',
-
       width: 250,
     },
     {
@@ -19,7 +30,7 @@ import { formatPrice } from '@/utils/format';Producto',
           type="number"
           value={text}
           onChange={(e) =>
-            handleUpdateProduct({
+            handleUpdateProduct?.({
               value: { newStock: Number(e.target.value) },
               productID: record.id,
             })
@@ -30,14 +41,14 @@ import { formatPrice } from '@/utils/format';Producto',
     {
       title: 'Costo Inicial',
       dataIndex: 'initialCost',
-      width: 150,
       key: 'initialCost',
+      width: 150,
       render: (text, record) => (
         <Input
           type="number"
           value={text}
           onChange={(e) =>
-            handleUpdateProduct({
+            handleUpdateProduct?.({
               value: { initialCost: Number(e.target.value) },
               productID: record.id,
             })
@@ -49,7 +60,9 @@ import { formatPrice } from '@/utils/format';Producto',
       title: 'Total',
       key: 'total',
       render: (_, record) =>
-        formatPrice(record.initialCost * record.newStock),
+        formatPrice(
+          (Number(record?.initialCost) || 0) * (Number(record?.newStock) || 0),
+        ),
     },
     {
       title: 'Acciones',
@@ -59,38 +72,38 @@ import { formatPrice } from '@/utils/format';Producto',
       render: (_, record) => (
         <Button
           icon={icons.operationModes.delete}
-          onClick={() => handleDeleteProduct(record)}
+          onClick={() => handleDeleteProduct?.(record)}
         />
       ),
     },
   ];
 
+  const total = rows.reduce(
+    (acc, item) =>
+      acc +
+      (Number(item?.initialCost) || 0) * (Number(item?.newStock) || 0),
+    0,
+  );
+
   return (
     <Container>
       <h4>Lista de productos</h4>
       <Table
-        dataSource={productsSelected}
+        dataSource={rows}
         bordered
         columns={columns}
+        rowKey={(record) => record?.id ?? record?.key ?? record?.productID}
         size="small"
         pagination={{ pageSize: 5 }}
-        footer={() => (
-          <span>
-            Total:{' '}
-            {formatPrice
-              productsSelected.reduce(
-                (acc, item) => acc + item.initialCost * item.newStock,
-                0,
-              ),
-            )}
-          </span>
-        )}
+        footer={() => <span>Total: {formatPrice(total)}</span>}
       />
     </Container>
   );
 };
+
 const Container = styled.div`
   display: grid;
+  gap: 8px;
 `;
 
 // export const ProductListSelected = ({ productsSelected, productsTotalPrice, handleDeleteProduct, handleUpdateProduct }) => {

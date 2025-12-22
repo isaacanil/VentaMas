@@ -170,6 +170,7 @@ export const useRealtimePresence = (user) => {
       const disconnectHandler = disconnectHandlerRef.current;
       disconnectHandlerRef.current = null;
       if (disconnectHandler) {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         disconnectHandler.cancel().catch(() => {});
       }
 
@@ -177,6 +178,7 @@ export const useRealtimePresence = (user) => {
         set(presenceRef, {
           state: 'offline',
           updatedAt: serverTimestamp(),
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         }).catch(() => {});
       }
 
@@ -203,6 +205,7 @@ export const useRealtimePresence = (user) => {
         role: user.role || null,
       },
       updatedAt: serverTimestamp(),
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     }).catch(() => {});
 
     return undefined;

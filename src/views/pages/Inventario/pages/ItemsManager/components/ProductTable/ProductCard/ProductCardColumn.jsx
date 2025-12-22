@@ -1,10 +1,10 @@
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from '@templates/system/Button/Button';
 import styled from 'styled-components';
 
 import noImg from '@/assets/producto/noimg.png';
 import { formatPrice } from '@/utils/format';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const ProductCardColumn = ({
   handleDeleteProduct,

@@ -63,16 +63,28 @@ export const useFbGetPendingOrdersByProvider = (providerId) => {
   const [error, setError] = useState(null);
   const user = useSelector(selectUser);
 
-  useEffect(() => {
-    if (!user?.businessID || !providerId) {
+  const businessID = user?.businessID;
+  const [prevBusinessID, setPrevBusinessID] = useState(businessID);
+  const [prevProviderId, setPrevProviderId] = useState(providerId);
+
+  if (businessID !== prevBusinessID || providerId !== prevProviderId) {
+    setPrevBusinessID(businessID);
+    setPrevProviderId(providerId);
+    setData([]);
+    setError(null);
+    if (businessID && providerId) {
+      setLoading(true);
+    } else {
       setLoading(false);
-      setData([]);
-      return;
+    }
+  }
+
+  useEffect(() => {
+    if (!businessID || !providerId) {
+      return undefined;
     }
 
-    setLoading(true);
-
-    const orderRef = collection(db, 'businesses', user.businessID, 'orders');
+    const orderRef = collection(db, 'businesses', businessID, 'orders');
     const q = query(
       orderRef,
       where('provider', '==', providerId),
@@ -106,7 +118,7 @@ export const useFbGetPendingOrdersByProvider = (providerId) => {
     );
 
     return unsubscribe;
-  }, [user?.businessID, providerId]);
+  }, [businessID, providerId]);
   console.log(
     ' -------------------------- data',
     data,

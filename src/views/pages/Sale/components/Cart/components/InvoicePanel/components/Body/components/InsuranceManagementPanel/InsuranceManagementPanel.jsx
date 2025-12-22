@@ -1,8 +1,11 @@
-import { InputNumber, Select, Form, DatePicker, Input } from 'antd';
+import { InputNumber, Select, Form, Input } from 'antd';
+import DatePicker from '@/components/DatePicker';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { SelectCartData } from '../../../../../../../../../../../features/cart/cartSlice';
 import { selectClient } from '../../../../../../../../../../../features/clientCart/clientCartSlice';
@@ -16,7 +19,6 @@ import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
 import { setNumPrecision } from '../../../../../../../../../../../utils/pricing';
 import usePaymentDates from '../ReceivableManagementPanel/usePaymentDates';
 
-import { formatPrice } from '@/utils/format';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -70,21 +72,36 @@ export const InsuranceManagementPanel = ({ form }) => {
   );
 
   // Manejadores de cambios en el formulario - usando setInsuranceAR con el objeto correcto
-  const setFrequency = (value) =>
-    dispatch(setInsuranceAR({ paymentFrequency: value }));
-  const setInstallments = (value) =>
-    dispatch(setInsuranceAR({ totalInstallments: Number(value) || 1 }));
-  const setAmountPerInstallment = (value) =>
-    dispatch(
-      setInsuranceAR({
-        installmentAmount: getPositive(setNumPrecision(value)),
-      }),
-    );
-  const setTotalReceivable = (value) =>
-    dispatch(setInsuranceAR({ totalReceivable: value }));
-  const setPaymentDate = (value) =>
-    dispatch(setInsuranceAR({ paymentDate: value }));
-  const setComments = (value) => dispatch(setInsuranceAR({ comments: value }));
+  const setFrequency = useCallback(
+    (value) => dispatch(setInsuranceAR({ paymentFrequency: value })),
+    [dispatch],
+  );
+  const setInstallments = useCallback(
+    (value) =>
+      dispatch(setInsuranceAR({ totalInstallments: Number(value) || 1 })),
+    [dispatch],
+  );
+  const setAmountPerInstallment = useCallback(
+    (value) =>
+      dispatch(
+        setInsuranceAR({
+          installmentAmount: getPositive(setNumPrecision(value)),
+        }),
+      ),
+    [dispatch],
+  );
+  const setTotalReceivable = useCallback(
+    (value) => dispatch(setInsuranceAR({ totalReceivable: value })),
+    [dispatch],
+  );
+  const setPaymentDate = useCallback(
+    (value) => dispatch(setInsuranceAR({ paymentDate: value })),
+    [dispatch],
+  );
+  const setComments = useCallback(
+    (value) => dispatch(setInsuranceAR({ comments: value })),
+    [dispatch],
+  );
 
   // Actualizar el monto por cuota cuando cambie el número de cuotas o el monto del seguro
   useEffect(() => {
@@ -96,7 +113,13 @@ export const InsuranceManagementPanel = ({ form }) => {
         setAmountPerInstallment(calculateInsuranceAmountPerInstallment);
       }
     }
-  }, [calculateInsuranceAmountPerInstallment]); // Simplified dependencies
+  }, [
+    insuranceCoverage,
+    totalInstallments,
+    calculateInsuranceAmountPerInstallment,
+    installmentAmount,
+    setAmountPerInstallment,
+  ]);
 
   // Establecer el monto total del seguro
   useEffect(() => {
@@ -106,7 +129,7 @@ export const InsuranceManagementPanel = ({ form }) => {
     ) {
       setTotalReceivable(insuranceCoverage);
     }
-  }, [insuranceCoverage]); // Remove totalReceivable from dependencies
+  }, [insuranceCoverage, totalReceivable, setTotalReceivable]);
 
   // Actualizar el clientId en el estado
   useEffect(() => {
@@ -120,7 +143,7 @@ export const InsuranceManagementPanel = ({ form }) => {
     if (nextPaymentDate && nextPaymentDate !== paymentDate) {
       setPaymentDate(nextPaymentDate);
     }
-  }, [nextPaymentDate]); // Remove paymentDate from dependencies
+  }, [nextPaymentDate, paymentDate, setPaymentDate]);
 
   // Pasar al formulario los datos del seguro para ser accesibles en el envío
   useEffect(() => {
@@ -220,7 +243,7 @@ export const InsuranceManagementPanel = ({ form }) => {
                 format={'DD/MM/YYYY'}
                 style={{ width: '100%' }}
                 onChange={(date) =>
-                  setPaymentDate(date ? date.valueOf() : null)
+                  setPaymentDate(date ? date.toMillis() : null)
                 }
               />
             </FormItem>

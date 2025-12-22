@@ -10,39 +10,43 @@ export const useFbGetDoctors = () => {
   const [loading, setLoading] = useState(true);
   const user = useSelector(selectUser);
 
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+  if (user?.businessID !== prevBusinessID) {
+    setPrevBusinessID(user?.businessID);
+    setDoctors([]);
+    if (user?.businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
+
+
   useEffect(() => {
     if (!user || !user?.businessID) {
-      setLoading(false);
-      return;
+      return undefined;
     }
 
     const doctorsRef = collection(db, 'businesses', user.businessID, 'doctors');
     const activeQuery = query(doctorsRef, where('status', '==', 'active'));
 
-    setLoading(true);
+    const unsubscribe = onSnapshot(
+      activeQuery,
+      (snapshot) => {
+        let doctorsArray = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setDoctors(doctorsArray);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching doctors:', error);
+        setLoading(false);
+      },
+    );
 
-    try {
-      const unsubscribe = onSnapshot(
-        activeQuery,
-        (snapshot) => {
-          let doctorsArray = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setDoctors(doctorsArray);
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error fetching doctors:', error);
-          setLoading(false);
-        },
-      );
-
-      return unsubscribe;
-    } catch (error) {
-      console.error('Error setting up doctors listener:', error);
-      setLoading(false);
-    }
+    return unsubscribe;
   }, [user]);
 
   return { doctors, loading };

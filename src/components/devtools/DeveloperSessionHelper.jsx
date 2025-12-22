@@ -98,11 +98,9 @@ export const DeveloperSessionHelper = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!shouldRender) {
-      setIsOpen(false);
-    }
-  }, [shouldRender]);
+  if (!shouldRender && isOpen) {
+    setIsOpen(false);
+  }
 
   useEffect(() => {
     if (hasInitialPosition || typeof window === 'undefined') {
@@ -113,8 +111,13 @@ export const DeveloperSessionHelper = () => {
     const initialX = window.innerWidth - BUTTON_SIZE - padding;
     const initialY = window.innerHeight - BUTTON_SIZE - padding;
 
-    setPosition({ x: initialX, y: initialY });
-    setHasInitialPosition(true);
+    // Usar setTimeout para evitar setState síncrono
+    const timeoutId = setTimeout(() => {
+      setPosition({ x: initialX, y: initialY });
+      setHasInitialPosition(true);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [hasInitialPosition]);
 
   const handlePointerMove = useCallback(
@@ -133,8 +136,6 @@ export const DeveloperSessionHelper = () => {
 
   const handlePointerUp = useCallback(() => {
     window.removeEventListener('pointermove', handlePointerMove);
-    // Usar removeEventListener con una referencia, no self-reference
-    window.removeEventListener('pointerup', handlePointerUp);
 
     const { moved } = dragState.current;
     dragState.current = {
@@ -147,7 +148,7 @@ export const DeveloperSessionHelper = () => {
     if (!moved) {
       setIsOpen((prev) => !prev);
     }
-     
+
   }, [handlePointerMove]);
 
   const handlePointerDown = useCallback(
@@ -169,7 +170,7 @@ export const DeveloperSessionHelper = () => {
       };
 
       window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointerup', handlePointerUp, { once: true });
     },
     [handlePointerMove, handlePointerUp, position.x, position.y, shouldRender],
   );

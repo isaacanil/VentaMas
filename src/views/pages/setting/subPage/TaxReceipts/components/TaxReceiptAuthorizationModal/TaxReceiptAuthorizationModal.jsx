@@ -1,4 +1,4 @@
-import {
+﻿import {
   FileAddOutlined,
   NumberOutlined,
   CheckCircleOutlined,
@@ -9,18 +9,18 @@ import {
   Input,
   Button,
   Select,
-  DatePicker,
   message,
   Typography,
   Divider,
   Row,
   Col,
 } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import DatePicker from '@/components/DatePicker';
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
 
@@ -49,7 +49,7 @@ const TaxReceiptAuthorizationModal = ({
   // Update form when receipt is selected
   useEffect(() => {
     if (selectedReceipt) {
-      const expirationDate = dayjs().add(1, 'year'); // Por defecto, fecha vencimiento 1 año
+      const expirationDate = DateTime.now().plus({ years: 1 }); // Por defecto, fecha vencimiento 1 año
       form.setFieldsValue({
         authorizationNumber: '',
         requestNumber: '',
@@ -108,8 +108,8 @@ const TaxReceiptAuthorizationModal = ({
         startSequence: values.startSequence,
         endSequence: String(endSequence),
         approvedQuantity: values.approvedQuantity,
-        expirationDate: values.expirationDate.format('YYYY-MM-DD'),
-        authorizationDate: dayjs().format('YYYY-MM-DD'),
+        expirationDate: values.expirationDate.toFormat('yyyy-MM-dd'),
+        authorizationDate: DateTime.now().toFormat('yyyy-MM-dd'),
       }; // Actualizar el comprobante con la nueva autorización
       const receiptData = selectedReceipt.data;
       const authorizations = receiptData.authorizations || [];
@@ -433,3 +433,4 @@ const ReceiptDetailItem = styled.div`
 `;
 
 export default TaxReceiptAuthorizationModal;
+

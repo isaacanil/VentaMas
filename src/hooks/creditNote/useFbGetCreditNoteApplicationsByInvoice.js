@@ -19,16 +19,14 @@ import { db } from '../../firebase/firebaseconfig';
 export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId) => {
   const user = useSelector(selectUser);
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    () => Boolean(user?.businessID && invoiceId),
+  );
 
   useEffect(() => {
     if (!user?.businessID || !invoiceId) {
-      setApplications([]);
-      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     const applicationsRef = collection(
       db,

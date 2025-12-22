@@ -1,5 +1,5 @@
 import { Tag } from 'antd';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink, useLocation, useMatch } from 'react-router-dom';
 import styled, { css } from 'styled-components';
@@ -10,7 +10,6 @@ import { SubMenu } from './SubMenu/SubMenu';
 
 export const MenuLink = ({ item, onActionDone }) => {
   const dispatch = useDispatch();
-  const [isOpenSubMenu, setIsOpenSubMenu] = useState(false);
   const location = useLocation();
 
   const isExactMatch = useMatch({
@@ -27,23 +26,24 @@ export const MenuLink = ({ item, onActionDone }) => {
     isRouteActive(subItem.route),
   );
 
-  useEffect(() => {
-    if (isCurrentRoute) {
-      setIsOpenSubMenu(true);
-    }
-  }, [isCurrentRoute]);
+  // Inicializar abierto si la ruta coincide
+  const [isOpenSubMenu, setIsOpenSubMenu] = useState(() => !!isCurrentRoute);
 
-  const showSubMenu = () => {
-    setIsOpenSubMenu(!isOpenSubMenu);
+  const toggleSubMenu = (e) => {
+    e?.preventDefault?.();
+    setIsOpenSubMenu((prev) => !prev);
+  };
+
+  const closeSubMenu = () => {
+    setIsOpenSubMenu(false);
   };
 
   const handleAction = (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (!item?.action) return;
     if (item.action === 'openDeveloperModal') {
       dispatch(toggleDeveloperModal());
     }
-    // Cerrar el overlay del submenu si viene callback del padre
     if (typeof onActionDone === 'function') onActionDone();
   };
 
@@ -52,15 +52,19 @@ export const MenuLink = ({ item, onActionDone }) => {
       item.preload();
     }
   };
-  const Component = item?.route ? MenuItemLink : MenuItemDiv;
+
+  const isSubmenuItem = Boolean(item?.submenu);
+  const Component = item?.route && !isSubmenuItem ? MenuItemLink : MenuItemDiv;
+  const componentProps = Component === MenuItemLink ? { to: item?.route } : {};
+
   return (
     <Fragment>
       <Component
-        onClick={item.submenu ? showSubMenu : item.action ? handleAction : null}
+        onClick={isSubmenuItem ? toggleSubMenu : item.action ? handleAction : null}
         onPointerEnter={handlePrefetch}
         onFocus={handlePrefetch}
-        to={item?.route || '#'}
         className={isExactMatch ? 'active' : ''}
+        {...componentProps}
       >
         <Group>
           <Icon color={item.color}>{item.icon}</Icon>
@@ -78,12 +82,7 @@ export const MenuLink = ({ item, onActionDone }) => {
             : null}
       </Component>
       {isOpenSubMenu && (
-        <SubMenu
-          showSubMenu={showSubMenu}
-          isOpen={isOpenSubMenu}
-          item={item}
-          MenuItemsLink={MenuItemLink}
-        />
+        <SubMenu onClose={closeSubMenu} isOpen={isOpenSubMenu} item={item} />
       )}
     </Fragment>
   );

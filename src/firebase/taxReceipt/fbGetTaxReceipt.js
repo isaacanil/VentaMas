@@ -10,72 +10,85 @@ import {
 import { serializeFirestoreDocuments } from '../../utils/serialization/serializeFirestoreData';
 import { db } from '../firebaseconfig';
 
-export const fbGetTaxReceipt = () => {
+// NOTE: This function uses React hooks; keep the `use*` prefix so tools like
+// React Compiler and hook linting can reliably treat it as a hook.
+export const useFbGetTaxReceipt = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const currentNcfType = useSelector(selectNcfType);
 
   const [taxReceipt, setTaxReceipt] = useState([]);
   const [isLoading, setLoading] = useState(true);
+
+  const businessID = user?.businessID;
+  const [prevBusinessID, setPrevBusinessID] = useState(businessID);
+
+  // PATRÓN RECOMENDADO REACT: Ajustar estado durante render al cambiar businessID
+  if (businessID !== prevBusinessID) {
+    setPrevBusinessID(businessID);
+    setTaxReceipt([]);
+    if (businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    let unsubscribe;
-
-    // Siempre iniciamos cargando
-    setLoading(true);
-
-    if (!user || !user.businessID) {
-      setTaxReceipt([]);
-      setLoading(false);
-      return;
+    if (!businessID) {
+      return undefined;
     }
 
-    try {
-      const taxReceiptsRef = collection(
-        db,
-        'businesses',
-        user.businessID,
-        'taxReceipts',
-      );
-      unsubscribe = onSnapshot(
-        taxReceiptsRef,
-        (snapshot) => {
-          const taxReceiptsArray = snapshot.docs.map((item) => item.data());
-          const serializedTaxReceipts =
-            serializeFirestoreDocuments(taxReceiptsArray);
-          setTaxReceipt(serializedTaxReceipts);
-          const defaultOption = serializedTaxReceipts.find(
-            (item) => item.data.name === 'CONSUMIDOR FINAL',
-          );
-          const availableTypes = serializedTaxReceipts
-            .map((item) => item.data.name)
-            .filter(Boolean);
-          const fallbackType =
-            defaultOption?.data?.name || availableTypes[0] || null;
+    const taxReceiptsRef = collection(
+      db,
+      'businesses',
+      businessID,
+      'taxReceipts',
+    );
 
-          const shouldSelectFallback =
-            !currentNcfType ||
-            (currentNcfType && !availableTypes.includes(currentNcfType));
+    const unsubscribe = onSnapshot(
+      taxReceiptsRef,
+      (snapshot) => {
+        const taxReceiptsArray = snapshot.docs.map((item) => item.data());
+        const serializedTaxReceipts =
+          serializeFirestoreDocuments(taxReceiptsArray);
+        setTaxReceipt(serializedTaxReceipts);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching tax receipts: ', error);
+        setLoading(false);
+        setTaxReceipt([]);
+      },
+    );
 
-          if (shouldSelectFallback && fallbackType) {
-            dispatch(selectTaxReceiptType(fallbackType));
-          }
-          setLoading(false); // Set loading to false after data is fetched
-        },
-        (error) => {
-          console.error('Error fetching tax receipts: ', error);
-          setLoading(false);
-          setTaxReceipt([]);
-        },
-      );
-    } catch (error) {
-      console.error('Exception in tax receipts fetch: ', error);
-      setLoading(false);
-      setTaxReceipt([]);
+    return () => unsubscribe();
+  }, [businessID]);
+
+  useEffect(() => {
+    if (!taxReceipt?.length) return;
+
+    const defaultOption = taxReceipt.find(
+      (item) => item.data?.name === 'CONSUMIDOR FINAL',
+    );
+
+    const availableTypes = taxReceipt
+      .map((item) => item.data?.name)
+      .filter(Boolean);
+
+    const fallbackType = defaultOption?.data?.name || availableTypes[0] || null;
+
+    const shouldSelectFallback =
+      !currentNcfType ||
+      (currentNcfType && !availableTypes.includes(currentNcfType));
+
+    if (shouldSelectFallback && fallbackType) {
+      dispatch(selectTaxReceiptType(fallbackType));
     }
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [user, dispatch, currentNcfType]);
+  }, [taxReceipt, currentNcfType, dispatch]);
 
   return { taxReceipt, isLoading };
 };
+
+// Backwards-compat export (deprecated). Prefer `useFbGetTaxReceipt`.
+export const fbGetTaxReceipt = useFbGetTaxReceipt;

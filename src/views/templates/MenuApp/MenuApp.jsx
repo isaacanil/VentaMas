@@ -1,12 +1,14 @@
 import { Input } from 'antd';
-import { useState, Fragment, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, Fragment, useRef, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SearchPanel } from '../../../components/common/SearchPanel/SearchPanel';
-import { icons } from '../../../constants/icons/icons';
-import { toggleOpenMenu } from '../../../features/nav/navSlice';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
+
+import { SearchPanel } from '@/components/common/SearchPanel/SearchPanel';
+import { icons } from '@/constants/icons/icons';
+import { toggleMenu, closeMenu, selectMenuOpenStatus } from '@/features/nav/navSlice';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+
 import { ButtonIconMenu } from '../system/Button/ButtonIconMenu';
 import { GoBackButton } from '../system/Button/GoBackButton';
 import { OpenMenuButton } from '../system/Button/OpenMenuButton';
@@ -49,34 +51,26 @@ export const MenuApp = ({
   const dispatch = useDispatch();
   const ref = useRef(null);
 
-  const [isOpenMenu, setIsOpenMenu] = useState(false);
+  const isOpenMenu = useSelector(selectMenuOpenStatus);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
-  const handledMenu = () => {
-    setIsOpenMenu(!isOpenMenu);
-  };
+  const handledMenu = useCallback(() => {
+    dispatch(toggleMenu());
+  }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(toggleOpenMenu(isOpenMenu));
-  }, [isOpenMenu, dispatch]);
+  const handleCloseMenu = useCallback(() => {
+    dispatch(closeMenu());
+  }, [dispatch]);
 
-  const closeMenu = () => {
-    setIsOpenMenu(false);
-  };
-  const openSearchPanel = () => {
-    setIsSearchPanelOpen(true);
-  };
-  const closeSearchPanel = () => {
-    setIsSearchPanelOpen(false);
-  };
+  const openSearchPanel = useCallback(() => setIsSearchPanelOpen(true), []);
+  const closeSearchPanel = useCallback(() => setIsSearchPanelOpen(false), []);
 
-  useClickOutSide(ref, isOpenMenu, closeMenu);
+  useClickOutSide(ref, isOpenMenu, handleCloseMenu);
 
   return (
     <Fragment>
-      <Backdrop $isOpen={isOpenMenu ? true : false} onClick={closeMenu} />
+      <Backdrop $isOpen={isOpenMenu ? true : false} onClick={handleCloseMenu} />
 
-      {/* Search Panel para móviles */}
       <SearchPanel
         isOpen={isSearchPanelOpen}
         onClose={closeSearchPanel}
@@ -93,9 +87,11 @@ export const MenuApp = ({
       >
         <Group>
           <OpenMenuButton isOpen={isOpenMenu} onClick={handledMenu} />
+
           {showBackButton && <GoBackButton onClick={onBackClick} />}
+
           {showNotificationButton && (
-            <NotificationButton handleCloseMenu={closeMenu} />
+            <NotificationButton handleCloseMenu={handleCloseMenu} />
           )}
 
           {sectionName && (
@@ -104,6 +100,7 @@ export const MenuApp = ({
               {sectionName}
             </SectionName>
           )}
+
           {sectionStatus && <StatusBadge>{sectionStatus}</StatusBadge>}
 
           {/* Botón de búsqueda para móviles */}

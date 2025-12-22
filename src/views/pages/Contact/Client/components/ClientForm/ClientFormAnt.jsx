@@ -1,5 +1,5 @@
-import * as ant from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Modal, Form, Button, Tabs, notification, message } from 'antd';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { OPERATION_MODES } from '../../../../../../constants/modes';
@@ -16,20 +16,6 @@ import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';
 
-const { Modal, Form, Button, Tabs, notification, message } = ant;
-/**
- *
- *
- * @param {*} {
- *     visible,
- *     onCreate,
- *     onUpdate,
- *     onCancel,
- *     customerData,
- *     isUpdating = false
- * }
- * @return {*}
- */
 const ClientFormAnt = ({
   isOpen,
   mode,
@@ -74,7 +60,7 @@ const ClientFormAnt = ({
     if (mode === create && !data) {
       form.resetFields();
     }
-  }, [mode, data]);
+  }, [mode, data, update, create, form]);
 
   // useEffect(() => {
   //     if (isUpdating && customerData) {

@@ -6,7 +6,7 @@ import {
   SyncOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React from 'react';
 
 export interface ConfigItem {
@@ -112,7 +112,7 @@ export const getDateStatusConfig = (status: string) =>
   getConfigItem('dates', status);
 
 export const getDateStatus = (
-  date: dayjs.ConfigType,
+  date: unknown,
   statuses: ('overdue' | 'today' | 'warning' | 'upcoming' | 'onTime')[] = [
     'overdue',
     'today',
@@ -123,9 +123,24 @@ export const getDateStatus = (
 ) => {
   if (!date) return { status: 'invalid', text: 'Sin fecha' };
 
-  const today = dayjs();
-  const targetDate = dayjs(date);
-  const daysUntil = targetDate.diff(today, 'day');
+  const toDateTime = (value: unknown) => {
+    if (DateTime.isDateTime(value)) return value;
+    if (value instanceof Date) return DateTime.fromJSDate(value);
+    if (typeof value === 'number') return DateTime.fromMillis(value);
+    if (typeof value === 'string') {
+      const iso = DateTime.fromISO(value);
+      return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+    }
+    if (typeof value?.toDate === 'function') {
+      return DateTime.fromJSDate(value.toDate());
+    }
+    return null;
+  };
+
+  const today = DateTime.local().startOf('day');
+  const targetDate = toDateTime(date)?.startOf('day');
+  if (!targetDate?.isValid) return { status: 'invalid', text: 'Sin fecha' };
+  const daysUntil = Math.floor(targetDate.diff(today, 'days').days);
 
   if (statuses.includes('overdue') && daysUntil < 0) {
     return { status: 'overdue', text: 'Vencido' };

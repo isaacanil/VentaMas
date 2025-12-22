@@ -6,6 +6,7 @@ import { useDialog } from '../../../../../Context/Dialog';
 import { addNotification } from '../../../../../features/notification/notificationSlice';
 import { ButtonGroup } from '../Button';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 export const EditDelBtns = ({ onUpdate, onDelete = async () => {} }) => {
   const dispatch = useDispatch();
   const { dialog, setDialogConfirm, onClose } = useDialog();

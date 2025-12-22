@@ -1,8 +1,8 @@
 import { faTicket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { icons } from '../../../../../constants/icons/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import { icons } from '@/constants/icons/icons';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
 

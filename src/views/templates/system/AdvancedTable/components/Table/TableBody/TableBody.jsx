@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import styled from 'styled-components';
 
 import Loader from '../../../../../../component/Loader/Loader';
@@ -32,8 +32,8 @@ export const TableBody = ({
   columnOrder,
   onRowClick,
   emptyText,
-  isWideScreen,
-  isWideLayout,
+  isWideScreen: _isWideScreen,
+  isWideLayout: _isWideLayout,
   expandedRowRender,
   rowExpandable,
   getRowId,
@@ -47,7 +47,7 @@ export const TableBody = ({
   };
 
   // Estado local de filas expandidas
-  const [expanded, setExpanded] = React.useState({});
+  const [expanded, setExpanded] = useState({});
   const toggleRow = (row) => {
     const id = getRowId ? getRowId(row) : (row?.id ?? row?.key);
     if (id == null) return;
@@ -62,77 +62,77 @@ export const TableBody = ({
     <Container data-border={rowBorder ? 'on' : 'off'} style={containerStyle}>
       {shouldGroup
         ? Object.entries(groupedData).map(([groupKey, groupItems]) => (
-            <Fragment key={groupKey}>
-              <GroupHeader>{groupKey}</GroupHeader>
-              {groupItems.map((row, rowIndex) => (
-                <Row
-                  key={rowIndex}
-                  $columns={activeColumns}
-                  data-border={rowBorder ? 'on' : undefined}
-                >
-                  {activeColumns.map((col, colIndex) => (
-                    <BodyCell
-                      key={colIndex}
-                      $align={col.align}
-                      $fixed={col.fixed}
-                      $clickable={col?.clickable !== false}
-                      data-size={rowSize}
-                      data-row-border={rowBorder ? 'on' : 'off'}
-                      onClick={(e) => handleCellClick(e, col, row)}
-                    >
-                      {renderCell(col, row[col.accessor], row)}
-                    </BodyCell>
-                  ))}
-                </Row>
-              ))}
-            </Fragment>
-          ))
+          <Fragment key={groupKey}>
+            <GroupHeader>{groupKey}</GroupHeader>
+            {groupItems.map((row, rowIndex) => (
+              <Row
+                key={rowIndex}
+                $columns={activeColumns}
+                data-border={rowBorder ? 'on' : undefined}
+              >
+                {activeColumns.map((col, colIndex) => (
+                  <BodyCell
+                    key={colIndex}
+                    $align={col.align}
+                    $fixed={col.fixed}
+                    $clickable={col?.clickable !== false}
+                    data-size={rowSize}
+                    data-row-border={rowBorder ? 'on' : 'off'}
+                    onClick={(e) => handleCellClick(e, col, row)}
+                  >
+                    {renderCell(col, row[col.accessor], row)}
+                  </BodyCell>
+                ))}
+              </Row>
+            ))}
+          </Fragment>
+        ))
         : currentData.map((row, rowIndex) => {
-            const rowId = getRowId
-              ? getRowId(row, rowIndex)
-              : (row?.id ?? row?.key ?? rowIndex);
-            const canExpand =
-              !!expandedRowRender &&
-              (rowExpandable ? rowExpandable(row) : true);
-            const rowWithExpanderData = canExpand
-              ? {
-                  ...row,
-                  _expander: {
-                    expanded: !!expanded[rowId],
-                    toggle: () => toggleRow(row),
-                  },
-                }
-              : row;
-            return (
-              <Fragment key={rowId}>
-                <Row
-                  $columns={activeColumns}
-                  data-border={rowBorder ? 'on' : undefined}
-                >
-                  {activeColumns.map((col, colIndex) => (
-                    <BodyCell
-                      key={colIndex}
-                      $align={col.align}
-                      $fixed={col.fixed}
-                      $clickable={col?.clickable !== false}
-                      data-size={rowSize}
-                      data-row-border={rowBorder ? 'on' : 'off'}
-                      onClick={(e) => handleCellClick(e, col, row)}
-                    >
-                      {renderCell(
-                        col,
-                        rowWithExpanderData[col.accessor],
-                        rowWithExpanderData,
-                      )}
-                    </BodyCell>
-                  ))}
-                </Row>
-                {canExpand && expanded[rowId] && (
-                  <ExpandedRow>{expandedRowRender(row)}</ExpandedRow>
-                )}
-              </Fragment>
-            );
-          })}
+          const rowId = getRowId
+            ? getRowId(row, rowIndex)
+            : (row?.id ?? row?.key ?? rowIndex);
+          const canExpand =
+            !!expandedRowRender &&
+            (rowExpandable ? rowExpandable(row) : true);
+          const rowWithExpanderData = canExpand
+            ? {
+              ...row,
+              _expander: {
+                expanded: !!expanded[rowId],
+                toggle: () => toggleRow(row),
+              },
+            }
+            : row;
+          return (
+            <Fragment key={rowId}>
+              <Row
+                $columns={activeColumns}
+                data-border={rowBorder ? 'on' : undefined}
+              >
+                {activeColumns.map((col, colIndex) => (
+                  <BodyCell
+                    key={colIndex}
+                    $align={col.align}
+                    $fixed={col.fixed}
+                    $clickable={col?.clickable !== false}
+                    data-size={rowSize}
+                    data-row-border={rowBorder ? 'on' : 'off'}
+                    onClick={(e) => handleCellClick(e, col, row)}
+                  >
+                    {renderCell(
+                      col,
+                      rowWithExpanderData[col.accessor],
+                      rowWithExpanderData,
+                    )}
+                  </BodyCell>
+                ))}
+              </Row>
+              {canExpand && expanded[rowId] && (
+                <ExpandedRow>{expandedRowRender(row)}</ExpandedRow>
+              )}
+            </Fragment>
+          );
+        })}
       {!currentData.length && <CenteredText text={emptyText} />}
     </Container>
   );

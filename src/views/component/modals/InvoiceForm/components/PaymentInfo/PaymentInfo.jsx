@@ -7,9 +7,11 @@ import {
   Modal,
   Select,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../../constants/icons/icons';
 import {
@@ -17,7 +19,6 @@ import {
   selectInvoice,
 } from '../../../../../../features/invoice/invoiceFormSlice';
 
-import { formatPrice } from '@/utils/format';
 
 const PAYMENT_METHOD_META = {
   cash: {
@@ -42,14 +43,14 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
   const dispatch = useDispatch();
   const { invoice } = useSelector(selectInvoice);
 
-  const paymentMethods = invoice?.paymentMethod ?? [];
+  const paymentMethods = useMemo(() => invoice?.paymentMethod ?? [], [invoice?.paymentMethod]);
   const totalPurchase = Number(invoice?.totalPurchase?.value) || 0;
   const readOnly = isEditLocked;
 
-  // Estado para el tipo de descuento (percentage o fixed)
-  const [discountType, setDiscountType] = useState(
-    invoice?.discount?.type || 'percentage',
-  );
+  const discountType = useMemo(() => {
+    const type = invoice?.discount?.type;
+    return type === 'fixed' || type === 'percentage' ? type : 'percentage';
+  }, [invoice?.discount?.type]);
 
   // Obtener el subtotal sin impuestos para validaciones
   const subtotal = Number(invoice?.totalPurchaseWithoutTaxes?.value) || 0;
@@ -232,7 +233,6 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
   const handleDiscountTypeChange = useCallback(
     (newType) => {
       if (readOnly) return;
-      setDiscountType(newType);
 
       // Resetear el valor del descuento al cambiar de tipo
       dispatch(
@@ -291,13 +291,6 @@ export const PaymentInfo = ({ isEditLocked = false, onContinue = null }) => {
     },
     [dispatch, discountType, subtotal, readOnly],
   );
-
-  // Sincronizar el tipo de descuento con el estado del invoice
-  useEffect(() => {
-    if (invoice?.discount?.type && invoice.discount.type !== discountType) {
-      setDiscountType(invoice.discount.type);
-    }
-  }, [invoice?.discount?.type, discountType]);
 
   const formattedTotalPayment = useMemo(
     () => formatPrice(totalPayment),
@@ -480,6 +473,7 @@ export const PaymentInfoModal = ({
   <Modal
     open={isOpen}
     footer={null}
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     onCancel={() => {}} // Deshabilitar cierre por X o escape
     closable={false} // Ocultar botón de cerrar
     maskClosable={false} // Deshabilitar cierre al hacer click fuera

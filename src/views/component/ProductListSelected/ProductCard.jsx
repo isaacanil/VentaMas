@@ -3,7 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';../../templates/system/Button/Button';
+import { formatPrice } from '@/utils/format';
+
+import { Button } from '../../templates/system/Button/Button';
 
 export const ProductCard = ({
   item,

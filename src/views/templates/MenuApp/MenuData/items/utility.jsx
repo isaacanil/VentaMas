@@ -1,5 +1,5 @@
 import { icons } from '../../../../../constants/icons/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const { UTILITY_REPORT } = ROUTES_NAME.UTILITY_TERM;
 

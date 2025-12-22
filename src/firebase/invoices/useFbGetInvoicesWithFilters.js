@@ -67,16 +67,29 @@ export const useFbGetInvoicesWithFilters = (filters = {}) => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  if (!user?.businessID) {
+    if (invoices.length > 0) setInvoices([]);
+    if (loading) setLoading(false);
+  }
+
+  // Detect changes in filter prerequisites to reset state during render
+  const queryKey = `${user?.businessID}-${JSON.stringify(filters)}`;
+  const [prevQueryKey, setPrevQueryKey] = useState(queryKey);
+
+  if (queryKey !== prevQueryKey) {
+    setPrevQueryKey(queryKey);
+    setLoading(true);
+  }
+
   useEffect(() => {
     if (!user?.businessID) {
-      setInvoices([]);
-      setLoading(false);
-      return;
+      return undefined;
     }
 
-    setLoading(true);
+    // Loading is set to true via the render-phase state update above
 
-    const fetchInvoices = async () => {
+
+    const fetchInvoices = () => {
       try {
         validateUser(user);
         const { businessID, uid, role } = user;
@@ -169,14 +182,18 @@ export const useFbGetInvoicesWithFilters = (filters = {}) => {
           },
         );
 
-        return () => unsubscribe();
+        return unsubscribe;
       } catch (error) {
         console.error('Error setting up invoices listener:', error);
         setLoading(false);
+        return undefined;
       }
     };
 
-    fetchInvoices();
+    const unsubscribe = fetchInvoices();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [
     user?.businessID,
     filters.startDate,
@@ -189,6 +206,8 @@ export const useFbGetInvoicesWithFilters = (filters = {}) => {
     filters.receivablesOnly,
     user?.uid,
     user?.role,
+    filters,
+    user,
   ]);
 
   return { invoices, loading };

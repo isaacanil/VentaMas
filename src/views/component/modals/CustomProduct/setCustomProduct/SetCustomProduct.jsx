@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { separator } from '@/utils/number/number';
+
 import { addProduct } from '../../../../../features/cart/cartSlice';
 import { formatData } from '../../../../../features/customProducts/customProductSlice';
 import { handleModalSetCustomPizza } from '../../../../../features/modals/modalSlice';
@@ -13,7 +15,6 @@ import { Modal } from '../../Modal';
 import { Header } from './Components/Header.jsx';
 import { IngredientList } from './Components/IngredientList.jsx';
 
-import { separator } from '@/utils/number/number';
 
 const EmptyNewProduct = {
   name: '',

@@ -52,6 +52,100 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     return DateUtils.convertMillisToFriendlyDate(date).split(' ')[0];
   };
 
+  const validatePaymentMethod = React.useCallback(
+    (method, key, value) => {
+      setMethodErrors((prevErrors) => {
+        const updatedErrors = { ...prevErrors };
+
+        Object.keys(updatedErrors).forEach((errorKey) => {
+          if (errorKey.startsWith(`${method}_`)) {
+            delete updatedErrors[errorKey];
+          }
+        });
+
+        setPaymentMethods((currentMethods) => {
+          const selectedMethod = currentMethods.find(
+            (pm) => pm.method === method,
+          );
+
+          if ((key === 'status' && value === true) || selectedMethod?.status) {
+            if (
+              (key === 'value' && (!value || parseFloat(value) <= 0)) ||
+              (key !== 'value' && selectedMethod?.value <= 0)
+            ) {
+              updatedErrors[`${method}_value`] =
+                'El valor debe ser mayor a cero';
+            }
+
+            if (method !== 'cash') {
+              const reference =
+                key === 'reference' ? value : selectedMethod?.reference;
+              if (!reference || reference.trim() === '') {
+                updatedErrors[`${method}_reference`] =
+                  'La referencia es obligatoria';
+              }
+            }
+          }
+
+          return currentMethods; // No modificar, solo leer
+        });
+
+        return updatedErrors;
+      });
+    },
+    [],
+  );
+
+  const updatePaymentMethod = React.useCallback(
+    (method, key, value) => {
+      // Si estamos actualizando el valor de un método de pago
+      if (key === 'value') {
+        // Si el campo está vacío, mantenerlo vacío (no convertir a 0)
+        if (value === '' || value === null || value === undefined) {
+          setPaymentMethods((prevMethods) =>
+            prevMethods.map((pm) =>
+              pm.method === method
+                ? { ...pm, value: '', status: pm.status }
+                : pm,
+            ),
+          );
+        }
+        // Si es el método de efectivo y tiene un valor numérico
+        else if (method === 'cash' && !isNaN(parseFloat(value))) {
+          const numericValue = parseFloat(value).toFixed(2);
+
+          setPaymentMethods((prevMethods) =>
+            prevMethods.map((pm) =>
+              pm.method === 'cash'
+                ? { ...pm, value: parseFloat(numericValue), status: true }
+                : pm,
+            ),
+          );
+        }
+        // Para otros métodos de pago o valores no numéricos
+        else {
+          setPaymentMethods((prevMethods) =>
+            prevMethods.map((pm) =>
+              pm.method === method ? { ...pm, [key]: value } : pm,
+            ),
+          );
+        }
+      } else {
+        // Para otras propiedades que no son 'value'
+        setPaymentMethods((prevMethods) =>
+          prevMethods.map((pm) =>
+            pm.method === method ? { ...pm, [key]: value } : pm,
+          ),
+        );
+      }
+
+      if (key === 'status' || key === 'value') {
+        validatePaymentMethod(method, key, value);
+      }
+    },
+    [validatePaymentMethod],
+  );
+
   // Extraer las aseguradoras únicas al cargar los datos
   useEffect(() => {
     const uniqueInsurances = accounts
@@ -97,7 +191,7 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
 
     form.setFieldsValue({ amount: total });
     updatePaymentMethod('cash', 'value', total);
-  }, [selectedAccounts, accounts, form]);
+  }, [selectedAccounts, accounts, form, updatePaymentMethod]);
 
   useEffect(() => {
     const total = paymentMethods.reduce((sum, method) => {
@@ -108,82 +202,8 @@ export const MultiPaymentModal = ({ visible, onCancel, accounts = [] }) => {
     }, 0);
     setTotalPaid(total);
   }, [paymentMethods]);
-  const updatePaymentMethod = (method, key, value) => {
-    // Si estamos actualizando el valor de un método de pago
-    if (key === 'value') {
-      // Si el campo está vacío, mantenerlo vacío (no convertir a 0)
-      if (value === '' || value === null || value === undefined) {
-        setPaymentMethods((prevMethods) =>
-          prevMethods.map((pm) =>
-            pm.method === method ? { ...pm, value: '', status: pm.status } : pm,
-          ),
-        );
-      }
-      // Si es el método de efectivo y tiene un valor numérico
-      else if (method === 'cash' && !isNaN(parseFloat(value))) {
-        const numericValue = parseFloat(value).toFixed(2);
 
-        setPaymentMethods((prevMethods) =>
-          prevMethods.map((pm) =>
-            pm.method === 'cash'
-              ? { ...pm, value: parseFloat(numericValue), status: true }
-              : pm,
-          ),
-        );
-      }
-      // Para otros métodos de pago o valores no numéricos
-      else {
-        setPaymentMethods((prevMethods) =>
-          prevMethods.map((pm) =>
-            pm.method === method ? { ...pm, [key]: value } : pm,
-          ),
-        );
-      }
-    } else {
-      // Para otras propiedades que no son 'value'
-      setPaymentMethods((prevMethods) =>
-        prevMethods.map((pm) =>
-          pm.method === method ? { ...pm, [key]: value } : pm,
-        ),
-      );
-    }
-
-    if (key === 'status' || key === 'value') {
-      validatePaymentMethod(method, key, value);
-    }
-  };
-
-  const validatePaymentMethod = (method, key, value) => {
-    const updatedErrors = { ...methodErrors };
-
-    Object.keys(updatedErrors).forEach((errorKey) => {
-      if (errorKey.startsWith(`${method}_`)) {
-        delete updatedErrors[errorKey];
-      }
-    });
-
-    const selectedMethod = paymentMethods.find((pm) => pm.method === method);
-
-    if ((key === 'status' && value === true) || selectedMethod.status) {
-      if (
-        (key === 'value' && (!value || parseFloat(value) <= 0)) ||
-        (key !== 'value' && selectedMethod.value <= 0)
-      ) {
-        updatedErrors[`${method}_value`] = 'El valor debe ser mayor a cero';
-      }
-
-      if (method !== 'cash') {
-        const reference =
-          key === 'reference' ? value : selectedMethod.reference;
-        if (!reference || reference.trim() === '') {
-          updatedErrors[`${method}_reference`] = 'La referencia es obligatoria';
-        }
-      }
-    }
-
-    setMethodErrors(updatedErrors);
-    return Object.keys(updatedErrors).length === 0;
-  };
+  
 
   const validatePaymentForm = () => {
     let isValid = true;

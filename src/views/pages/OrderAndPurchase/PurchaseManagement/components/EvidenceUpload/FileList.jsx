@@ -165,7 +165,9 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
 
 FileList.defaultProps = {
   files: [],
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   removeFile: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   handlePreview: () => {},
 };
 

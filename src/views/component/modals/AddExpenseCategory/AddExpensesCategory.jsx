@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -28,16 +28,18 @@ const ContainerVariants = {
 
 const EmptyCategory = { id: '', name: '' };
 const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
-  const [category, setCategory] = useState(categoryToUpdate || EmptyCategory);
+  const [category, setCategory] = useState(() => categoryToUpdate || EmptyCategory);
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
 
-  useEffect(() => {
-    if (categoryToUpdate) {
-      setCategory(categoryToUpdate);
-    }
-  }, [categoryToUpdate]);
+  const [prevCategoryToUpdate, setPrevCategoryToUpdate] = useState(categoryToUpdate);
+
+  // PATRÓN RECOMENDADO REACT: Ajustar estado durante render al cambiar props
+  if (categoryToUpdate !== prevCategoryToUpdate) {
+    setPrevCategoryToUpdate(categoryToUpdate);
+    setCategory(categoryToUpdate || EmptyCategory);
+  }
 
   const onClose = () => {
     dispatch(toggleAddCategory({ isOpen: false, data: null }));

@@ -3,9 +3,10 @@ import React, { useMemo, useRef } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -52,7 +53,7 @@ const accumulatePurchaseDataByProvider = (purchases) => {
 };
 
 export const ProviderPurchasesBarChart = ({ purchases }) => {
-    const normalizedPurchases = Array.isArray(purchases) ? purchases : [];
+    const normalizedPurchases = useMemo(() => Array.isArray(purchases) ? purchases : [], [purchases]);
 
     const purchasesByProvider = useMemo(
         () => accumulatePurchaseDataByProvider(normalizedPurchases),

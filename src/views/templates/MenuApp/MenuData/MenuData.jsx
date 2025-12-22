@@ -1,4 +1,5 @@
-import { useFilterMenuItemsByAccess } from '../../../../utils/menuAccess';
+import { routePreloaders } from '@/router/routes/routePreloaders';
+import { useFilterMenuItemsByAccess } from '@/utils/menuAccess';
 
 import admin from './items/admin';
 import basic from './items/basic';
@@ -10,7 +11,7 @@ import insurance from './items/insurance';
 import inventory from './items/inventory';
 import sales from './items/sales';
 import utility from './items/utility';
-import { routePreloaders } from '../../../../routes/routePreloaders';
+
 
 const attachPreloaders = (item) => {
   const preload = item?.route ? routePreloaders[item.route] : undefined;

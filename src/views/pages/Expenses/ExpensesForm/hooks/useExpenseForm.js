@@ -1,6 +1,6 @@
 // src/features/expense/ExpensesForm/useExpensesForm.js
 import { message } from 'antd';
-import { useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../features/auth/userSlice';
@@ -28,7 +28,60 @@ export default function useExpensesForm(dispatch) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState({ isOpen: false, message: '' });
   const [files, setFiles] = useState([]);
-  const [attachmentUrls, setUrls] = useState([]);
+  const expenseAttachments = useMemo(
+    () => expense?.attachments ?? [],
+    [expense?.attachments],
+  );
+
+  const initialAttachmentUrls = useMemo(() => {
+    if (!expenseAttachments.length) {
+      return [];
+    }
+
+    return expenseAttachments
+      .filter((att) => att?.url)
+      .map((att) => ({
+        ...att,
+        url: typeof att.url === 'string' ? att.url : att.url?.url,
+      }));
+  }, [expenseAttachments]);
+
+  const expenseKey =
+    expense?.id ??
+    expense?.expenseId ??
+    expense?._id ??
+    (isAddMode ? 'add' : 'edit');
+
+  const attachmentsKey = useMemo(() => {
+    if (!expenseAttachments.length) return '';
+    return expenseAttachments
+      .map((att) => {
+        const id = att?.id ?? att?.name ?? '';
+        const url =
+          typeof att?.url === 'string' ? att.url : att?.url?.url ?? '';
+        return `${id}:${url}`;
+      })
+      .join('|');
+  }, [expenseAttachments]);
+
+  const urlsTrigger = `${isOpen}-${expenseKey}-${attachmentsKey}`;
+  const [{ trigger: urlsStateTrigger, value: urlsState }, setUrlsState] =
+    useState(() => ({ trigger: urlsTrigger, value: initialAttachmentUrls }));
+
+  const attachmentUrls =
+    urlsStateTrigger === urlsTrigger ? urlsState : initialAttachmentUrls;
+
+  const setUrls = useCallback(
+    (updater) => {
+      setUrlsState((prev) => {
+        const current =
+          prev.trigger === urlsTrigger ? prev.value : initialAttachmentUrls;
+        const next = typeof updater === 'function' ? updater(current) : updater;
+        return { trigger: urlsTrigger, value: next };
+      });
+    },
+    [initialAttachmentUrls, urlsTrigger],
+  );
   const [removedAttachments, setRemoved] = useState([]);
 
   // Obtener los cuadres de caja abiertos
@@ -40,22 +93,7 @@ export default function useExpensesForm(dispatch) {
   );
   const showCashRegister = expense?.payment?.method === 'open_cash';
 
-  // Cargar los archivos adjuntos existentes
-  useEffect(() => {
-    if (!expense?.attachments?.length) {
-      setUrls([]);
-      return;
-    }
-
-    const remotes = expense.attachments
-      .filter((att) => att.url)
-      .map((att) => ({
-        ...att,
-        url: typeof att.url === 'string' ? att.url : att.url.url,
-      }));
-
-    setUrls(remotes);
-  }, [expense?.attachments]);
+  // attachmentUrls se inicializan desde `expense.attachments` sin usar `useEffect`
 
   // Manejar actualización de campos del formulario
   const updateField = useCallback(
@@ -87,7 +125,7 @@ export default function useExpensesForm(dispatch) {
     setFiles([]);
     setUrls([]);
     setRemoved([]);
-  }, [dispatch]);
+  }, [dispatch, setUrls]);
 
   // Manejar envío del formulario
   const handleSubmit = useCallback(async () => {
@@ -151,7 +189,7 @@ export default function useExpensesForm(dispatch) {
         setUrls((prev) => prev.filter((file) => file.id !== fileId));
       }
     },
-    [files, attachmentUrls],
+    [files, attachmentUrls, setUrls],
   );
 
   return {

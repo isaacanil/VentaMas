@@ -30,10 +30,11 @@ const MonthlySalesChart = ({ invoices }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
+    const chart = chartRef.current;
     return () => {
       // Cleanup chart instance on unmount
-      if (chartRef.current) {
-        chartRef.current.destroy();
+      if (chart) {
+        chart.destroy();
       }
     };
   }, []);

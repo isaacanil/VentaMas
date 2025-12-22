@@ -1,20 +1,20 @@
-﻿import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const LoaderContainer = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   z-index: 9999;
-  opacity: ${props => props.$isExiting ? 0 : 1};
-  transition: opacity 0.3s ease-out;
+
+  opacity: ${p => (p.$open ? 1 : 0)};
+  transition: opacity 300ms ease-out;
+
+  /* Importante: cuando está cerrando/oculto, no debe interceptar clicks */
+  pointer-events: ${p => (p.$open ? 'auto' : 'none')};
 `;
 
 const Spinner = styled.div`
@@ -75,58 +75,29 @@ const RetryButton = styled.button`
 `;
 
 export const SessionManager = ({ status, error }) => {
-   const [isExiting, setIsExiting] = useState(false);
-   const [hasShownLoader, setHasShownLoader] = useState(false);
+  const open = status === 'checking' || status === 'error';
 
-   const shouldRender = status === 'checking' || status === 'error';
+  const handleRetry = () => {
+    window.location.reload();
+  };
 
-   useEffect(() => {
-      if (shouldRender) {
-         setHasShownLoader(true);
-         setIsExiting(false);
-      } else if (hasShownLoader) {
-         // Start exit animation
-         setIsExiting(true);
-         // Remove from DOM after animation
-         const timer = setTimeout(() => {
-            setHasShownLoader(false);
-         }, 300);
-         return () => clearTimeout(timer);
-      }
-   }, [shouldRender, hasShownLoader]);
-
-   // Don't render if we haven't shown the loader yet and shouldn't render
-   if (!hasShownLoader && !shouldRender) {
-      return null;
-   }
-
-   // Don't render if we've shown the loader and it's done exiting
-   if (hasShownLoader && !shouldRender && !isExiting) {
-      return null;
-   }
-
-   const handleRetry = () => {
-      window.location.reload();
-   };
-
-   return (
-      <LoaderContainer $isExiting={isExiting}>
-         {status === 'error' ? (
-            <ErrorContainer>
-               <ErrorTitle>Error de Sesión</ErrorTitle>
-               <ErrorMessage>
-                  {error?.message || 'Ha ocurrido un error al iniciar sesión. Por favor, intenta nuevamente.'}
-               </ErrorMessage>
-               <RetryButton onClick={handleRetry}>
-                  Reintentar
-               </RetryButton>
-            </ErrorContainer>
-         ) : (
-            <>
-               <Spinner />
-               <LoadingText>Cargando sesión...</LoadingText>
-            </>
-         )}
-      </LoaderContainer>
-   );
+  return (
+    <LoaderContainer $open={open} aria-hidden={!open} >
+      {status === 'error' ? (
+        <ErrorContainer>
+          <ErrorTitle>Error de Sesión</ErrorTitle>
+          <ErrorMessage>
+            {error?.message ||
+              'Ha ocurrido un error al iniciar sesión. Por favor, intenta nuevamente.'}
+          </ErrorMessage>
+          <RetryButton onClick={handleRetry}>Reintentar</RetryButton>
+        </ErrorContainer>
+      ) : (
+        <>
+          <Spinner />
+          <LoadingText>Cargando sesión...</LoadingText>
+        </>
+      )}
+    </LoaderContainer>
+  );
 };

@@ -13,7 +13,7 @@ import { Button } from '../../../../templates/system/Button/Button';
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
 import { ProductFilter } from '../../../ProductFilter/ProductFilter';
 
-import { tableHeaderColumns } from './tableConfig/tableHeaderConfig';
+import { useTableHeaderColumns } from './tableConfig/tableHeaderConfig';
 
 export const OutputProductEntry = () => {
   const dispatch = useDispatch();
@@ -57,7 +57,7 @@ export const OutputProductEntry = () => {
     }
   };
 
-  const tableColumns = tableHeaderColumns({ Group });
+  const tableColumns = useTableHeaderColumns({ Group });
 
   return (
     <Container>

@@ -1,5 +1,5 @@
 import { InputNumber, Table, Form } from 'antd';
-import { useEffect, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
@@ -59,10 +59,9 @@ const columns = [
 
 export const PriceCalculator = () => {
   const { product } = useSelector(selectUpdateProductData);
-  const [tableData, setTableData] = useState([]);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
-  const calculateTableData = (productData) => {
+  const calculateTableData = useCallback((productData) => {
     const prices = [
       {
         key: '1',
@@ -142,21 +141,12 @@ export const PriceCalculator = () => {
         percentBenefits: `${isCalculationValid ? percentBenefits.toFixed(1) : '0'}%`,
       };
     });
-  };
+  }, [taxReceiptEnabled]);
 
-  useEffect(() => {
-    const newTableData = calculateTableData(product);
-    setTableData(newTableData);
-  }, [
-    product.pricing.cost,
-    product.pricing.tax,
-    product.pricing.listPrice,
-    product.pricing.avgPrice,
-    product.pricing.minPrice,
-    product.pricing.cardPrice,
-    product.pricing.offerPrice,
-    taxReceiptEnabled,
-  ]);
+  const tableData = useMemo(
+    () => calculateTableData(product),
+    [product, calculateTableData],
+  );
   // Nota: Ya no sincronizamos pricing.price con el precio final (con ITBIS).
   // El campo pricing.price debe almacenar exclusivamente el listPrice (sin impuestos).
   // La sincronización a listPrice ocurre en el reducer changeProductPrice cuando cambia pricing.listPrice.

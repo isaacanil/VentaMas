@@ -19,7 +19,7 @@ const useExpandedNodes = (data) => {
     [manualExpandedNodes, searchExpandedNodes, manuallyClosedNodes],
   );
 
-  const findNodeById = useCallback((nodes, id) => {
+  const findNodeById = useCallback(function findNodeById(nodes, id) {
     for (const node of nodes || []) {
       if (node.id === id) {
         return node;

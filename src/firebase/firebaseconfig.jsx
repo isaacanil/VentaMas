@@ -15,7 +15,7 @@ import {
   arrayRemove,
   initializeFirestore,
   persistentLocalCache,
-  persistentSingleTabManager,
+  persistentMultipleTabManager,
 } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
@@ -39,7 +39,7 @@ const app = initializeApp(firebaseConfig);
 
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager(),
+    tabManager: persistentMultipleTabManager(),
   }),
 });
 // export const db = getFirestore(app);

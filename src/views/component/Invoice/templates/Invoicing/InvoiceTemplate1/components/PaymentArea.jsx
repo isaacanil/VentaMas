@@ -2,6 +2,8 @@ import React, { Fragment, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice as formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectInsuranceEnabled } from '../../../../../../../features/cart/cartSlice';
 import { usePendingBalance } from '../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
@@ -17,7 +19,6 @@ import { Paragraph, Spacing, Subtitle } from '../Style';
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
 
-import { formatPrice as formatPrice } from '@/utils/format';
 
 export const PaymentArea = ({ data }) => {
   const [pendingBalance, setPendingBalance] = useState(0);

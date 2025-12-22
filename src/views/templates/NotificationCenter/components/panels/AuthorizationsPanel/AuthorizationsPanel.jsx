@@ -11,7 +11,7 @@ import {
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
 } from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
-import ROUTES_PATH from '../../../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 
 import {
   LoadingState,

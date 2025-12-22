@@ -3,10 +3,8 @@ import { forwardRef, memo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import {
-  Client,
-  clientHeaderStyles,
-} from '../../../../../templates/system/client/Client';
+import { Client } from '../../../../../templates/system/client/Client';
+import { clientHeaderStyles } from '../../../../../templates/system/client/Client.styles';
 
 const Body = styled.div`
   z-index: 1;

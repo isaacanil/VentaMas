@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useRef, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import AutoComplete from './AutoComplete';
@@ -38,7 +38,13 @@ const Console = ({
   onFilterSelection,
 }) => {
   const inputRef = useRef(null);
+  const [inputElement, setInputElement] = useState(null);
   const terminalRef = useRef(null);
+
+  const setInputRef = useCallback((node) => {
+    inputRef.current = node;
+    setInputElement(node);
+  }, []);
 
   // (Removed auto-scroll logic as requested)  // Enfocar el input cuando el componente se monta y asegurar que capture eventos de teclado
   useEffect(() => {
@@ -131,19 +137,21 @@ const Console = ({
 
       {/* Input fijo en la parte inferior */}
       <FixedInputContainer>
-        <AutoComplete
-          inputValue={commandInput}
-          suggestions={autoCompleteSuggestions}
-          onSuggestionSelect={onAutoCompleteSuggestionSelect}
-          isVisible={showAutoComplete && !selectionMode.active}
-          selectedIndex={autoCompleteSelectedIndex}
-          onSelectedIndexChange={onAutoCompleteSelectedIndexChange}
-          inputElement={inputRef.current}
-        />
+        {inputElement && (
+          <AutoComplete
+            inputValue={commandInput}
+            suggestions={autoCompleteSuggestions}
+            onSuggestionSelect={onAutoCompleteSuggestionSelect}
+            isVisible={showAutoComplete && !selectionMode.active}
+            selectedIndex={autoCompleteSelectedIndex}
+            onSelectedIndexChange={onAutoCompleteSelectedIndexChange}
+            inputElement={inputElement}
+          />
+        )}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <ConsolePrompt>C:\\VentaMax&gt;</ConsolePrompt>
           <ConsoleInput
-            ref={inputRef}
+            ref={setInputRef}
             value={commandInput}
             onChange={(e) => {
               setCommandInput(e.target.value);

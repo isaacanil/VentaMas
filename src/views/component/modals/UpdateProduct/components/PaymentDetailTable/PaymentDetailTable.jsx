@@ -1,4 +1,4 @@
-import * as ant from 'antd';
+import { Table } from 'antd';
 import React from 'react';
 
 const columns = [
@@ -66,7 +66,7 @@ const data = [
 export const PaymentDetailTable = () => {
   return (
     <div>
-      <ant.Table dataSource={data} columns={columns} />
+      <Table dataSource={data} columns={columns} />
     </div>
   );
 };

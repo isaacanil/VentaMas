@@ -9,7 +9,8 @@ const handleNoData = (user) => {
     };
   }
 };
-export const getUser = () => {
+
+export const useGetUser = () => {
   const user = useSelector(selectUser);
   return { user, handleNoData: handleNoData(user) };
 };

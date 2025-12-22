@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
 
 export const useDatePicker = ({ mode, value, onChange, presets }) => {
@@ -12,7 +12,7 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
         return value;
       }
     }
-    return dayjs();
+    return DateTime.local();
   });
   const [hoverDate, setHoverDate] = useState(null);
   const [rangeStart, setRangeStart] = useState(null);
@@ -20,16 +20,23 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
   const presetsDropdownRef = useRef(null);
   const initialValueRef = useRef(value);
 
-  // Sincronizar currentDate con el valor seleccionado solo si cambia externamente
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState(value);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value) {
-      if (mode === 'range' && Array.isArray(value) && value[0]) {
-        setCurrentDate(value[0]);
-      } else if (mode === 'single' && value) {
-        setCurrentDate(value);
+      const nextDate =
+        mode === 'range' && Array.isArray(value) && value[0]
+          ? value[0]
+          : mode === 'single'
+            ? value
+            : null;
+
+      if (nextDate) {
+        setCurrentDate(nextDate);
       }
     }
-  }, [value, mode]);
+  }
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -77,8 +84,9 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
         onChange([date, null]);
       } else {
         // Complete range
-        const start = rangeStart.isBefore(date) ? rangeStart : date;
-        const end = rangeStart.isBefore(date) ? date : rangeStart;
+        const isBefore = rangeStart.toMillis() < date.toMillis();
+        const start = isBefore ? rangeStart : date;
+        const end = isBefore ? date : rangeStart;
         onChange([start, end]);
         setRangeStart(null);
       }
@@ -87,7 +95,9 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
 
   const navigateMonth = (direction) => {
     setCurrentDate((prev) =>
-      direction === 'prev' ? prev.subtract(1, 'month') : prev.add(1, 'month'),
+      direction === 'prev'
+        ? prev.minus({ months: 1 })
+        : prev.plus({ months: 1 }),
     );
   };
 

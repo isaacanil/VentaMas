@@ -194,7 +194,7 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }) => {
       setIsOpen={setIsModalOpen}
       invoice={invoice}
       reasons={reasons}
-      onRequested={() => {}}
+      onRequested={() => undefined}
     />
   ) : null;
 

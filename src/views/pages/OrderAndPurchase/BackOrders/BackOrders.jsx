@@ -1,7 +1,7 @@
-import { Spin, Empty, message } from 'antd';
+﻿import { Spin, Empty, message } from 'antd';
 import { saveAs } from 'file-saver';
 import { AnimatePresence } from 'framer-motion';
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -63,7 +63,7 @@ const BackOrders = () => {
         ? item.productName.toLowerCase().includes(searchText.toLowerCase())
         : true;
 
-      // Robust date handling for dayjs/moment/Date
+      // Robust date handling for luxon/Date
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const createdMs = new Date(item.createdAt).getTime();
@@ -159,7 +159,7 @@ const BackOrders = () => {
         ? item.productName.toLowerCase().includes(searchText.toLowerCase())
         : true;
 
-      // Robust date handling for dayjs/moment/Date
+      // Robust date handling for luxon/Date
       let matchesDate = true;
       if (dateRange && dateRange[0] && dateRange[1]) {
         const createdMs = new Date(item.createdAt).getTime();
@@ -223,7 +223,7 @@ const BackOrders = () => {
       acc[key].progress = Math.round(
         ((acc[key].totalQuantity - acc[key].pendingQuantity) /
           acc[key].totalQuantity) *
-          100,
+        100,
       );
       return acc;
     }, {});
@@ -272,7 +272,7 @@ const BackOrders = () => {
         sectionName="BackOrders"
         sectionNameIcon="📦"
         displayName="Back Orders"
-        onBackClick={() => {}}
+        onBackClick={() => undefined}
       />
       <InventoryMenu />
       <Content>
@@ -412,3 +412,4 @@ const BackOrders = () => {
 };
 
 export default BackOrders;
+

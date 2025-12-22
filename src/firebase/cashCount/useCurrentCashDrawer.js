@@ -173,5 +173,5 @@ export const useCurrentCashDrawer = () => {
 
       console.error('useCurrentCashDrawer error:', error);
     }
-  }, [user]);
+  }, [user, dispatch]);
 };

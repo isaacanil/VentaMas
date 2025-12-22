@@ -9,8 +9,8 @@ export const TableHeader = ({
   handleSort,
   columnOrder,
   sortConfig,
-  isWideScreen,
-  isWideLayout,
+  isWideScreen: _isWideScreen,
+  isWideLayout: _isWideLayout,
   rowSize = 'medium',
 }) => {
   const activeColumns = columnOrder.filter((col) => col.status === 'active');

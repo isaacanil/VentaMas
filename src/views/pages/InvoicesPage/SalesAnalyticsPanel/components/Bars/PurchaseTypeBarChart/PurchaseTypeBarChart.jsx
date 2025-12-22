@@ -86,7 +86,7 @@ const accumulatePurchaseTypeData = (sales) => {
 
 export const PurchaseTypeBarChart = ({ sales }) => {
   const isMobile = useIsMobile();
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const salesByType = useMemo(
     () => accumulatePurchaseTypeData(normalizedSales),

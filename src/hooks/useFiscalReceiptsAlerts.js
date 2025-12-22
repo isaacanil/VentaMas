@@ -5,7 +5,7 @@ import { FISCAL_RECEIPTS_ALERT_CONFIG } from '../config/fiscalReceiptsAlertConfi
 import { selectUser } from '../features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '../features/taxReceipt/taxReceiptSlice';
 import { fbGetFiscalAlertsConfig } from '../firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
-import { fbGetTaxReceipt } from '../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFbGetTaxReceipt } from '../firebase/taxReceipt/fbGetTaxReceipt';
 import {
   generateFiscalReceiptsWidgetData,
   processFiscalReceipts,
@@ -16,9 +16,10 @@ import {
  * @returns {Object} Estado y funciones para manejar alertas de comprobantes
  */
 export const useFiscalReceiptsAlerts = () => {
-  const { taxReceipt, isLoading } = fbGetTaxReceipt();
+  const { taxReceipt, isLoading } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const user = useSelector(selectUser);
+  const userId = user?.id ?? null;
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const [alertConfig, setAlertConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -29,10 +30,10 @@ export const useFiscalReceiptsAlerts = () => {
   // Cargar configuración de alertas personalizada
   useEffect(() => {
     const loadAlertConfig = async () => {
-      if (user?.id) {
+      if (userId) {
         try {
           setLoadingConfig(true);
-          const config = await fbGetFiscalAlertsConfig(user);
+          const config = await fbGetFiscalAlertsConfig({ id: userId });
           setAlertConfig(config);
         } catch (error) {
           console.error('Error al cargar configuración de alertas:', error);
@@ -63,7 +64,7 @@ export const useFiscalReceiptsAlerts = () => {
     };
 
     loadAlertConfig();
-  }, [user?.id]); // Only depend on user.id to avoid unnecessary reloads
+  }, [userId]);
 
   // Procesar datos de comprobantes fiscales con configuración personalizada
   const fiscalData = useMemo(() => {

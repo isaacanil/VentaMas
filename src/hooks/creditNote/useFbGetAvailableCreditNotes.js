@@ -15,15 +15,14 @@ import { db } from '../../firebase/firebaseconfig';
 export const useFbGetAvailableCreditNotes = (clientId) => {
   const user = useSelector(selectUser);
   const [creditNotes, setCreditNotes] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    () => Boolean(user?.businessID && clientId),
+  );
 
   useEffect(() => {
     if (!user?.businessID || !clientId) {
-      setCreditNotes([]);
-      setLoading(false);
       return;
     }
-    setLoading(true);
 
     const ref = collection(db, 'businesses', user.businessID, 'creditNotes');
     const q = query(

@@ -16,7 +16,7 @@ import {
   Card,
   Statistic,
 } from 'antd';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -73,7 +73,7 @@ export const AuthorizationConfig = () => {
 
   const allowed = ['admin', 'owner', 'dev'].includes(user?.role);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     if (!allowed) return;
     setLoading(true);
     try {
@@ -85,11 +85,11 @@ export const AuthorizationConfig = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [allowed, user]);
 
   useEffect(() => {
     if (allowed) loadUsers();
-  }, [user?.businessID, allowed]);
+  }, [allowed, loadUsers]);
 
   const handleGeneratePin = (userRecord) => {
     setSelectedUser(userRecord);

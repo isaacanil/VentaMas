@@ -7,7 +7,7 @@ import {
   useFloating,
 } from '@floating-ui/react';
 import { Button as AntButton } from 'antd';
-import React, { useRef, useState } from 'react';
+import { useCallback, useRef, useState, cloneElement } from 'react';
 import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
@@ -29,6 +29,8 @@ export const DropdownMenu = ({
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
+  const setReference = useCallback((node) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -43,18 +45,18 @@ export const DropdownMenu = ({
   return (
     <div ref={DropDownMenuRef}>
       {customButton ? (
-        React.cloneElement(customButton, {
+        cloneElement(customButton, {
           onClick: toggleMenu,
-          ref: refs.setReference,
+          ref: setReference,
         })
       ) : (
-        <AntButton ref={refs.setReference} onClick={toggleMenu} {...props}>
+        <AntButton ref={setReference} onClick={toggleMenu} {...props}>
           {title}
         </AntButton>
       )}
 
       {isOpen && (
-        <Container ref={refs.setFloating} style={floatingStyles}>
+        <Container ref={setFloating} style={floatingStyles}>
           {options.map((option, index) => (
             <Option key={index} option={option} closeMenu={closeMenu} />
           ))}

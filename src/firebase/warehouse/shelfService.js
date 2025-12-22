@@ -141,12 +141,11 @@ const deleteShelf = async (user, id) => {
 const useListenShelves = (warehouseId) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(warehouseId));
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (warehouseId && user?.businessID) {
-      setLoading(true); // Iniciar el estado de carga
       const unsubscribe = listenAllShelves(
         user,
         warehouseId,

@@ -7,7 +7,7 @@ import {
   Select,
   Space,
 } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { PAYMENT_TERMS, TIME_UNITS } from '../constants';
 
@@ -18,30 +18,52 @@ export const PeriodSelectionModal = ({
   title,
   currentValue,
 }) => {
-  const [isCustom, setIsCustom] = useState(false);
-  const [customValue, setCustomValue] = useState(1);
-  const [customUnit, setCustomUnit] = useState(1);
-  const [selectedPeriod, setSelectedPeriod] = useState(null);
-
-  useEffect(() => {
-    if (!visible) {
-      setIsCustom(false);
-      setCustomValue(1);
-      setCustomUnit(1);
-      setSelectedPeriod(null);
-    } else if (currentValue) {
-      if (currentValue.isPredefined) {
-        setIsCustom(false);
-        setSelectedPeriod(currentValue.days);
-      } else {
-        setIsCustom(true);
-        setCustomValue(currentValue.value || 1);
-        setCustomUnit(
-          TIME_UNITS.find((u) => u.unit === currentValue.timeUnit)?.value || 1,
-        );
-      }
+  // Derivar estado inicial desde currentValue
+  const getInitialState = () => {
+    if (!visible || !currentValue) {
+      return {
+        isCustom: false,
+        customValue: 1,
+        customUnit: 1,
+        selectedPeriod: null,
+      };
     }
-  }, [visible, currentValue]);
+
+    if (currentValue.isPredefined) {
+      return {
+        isCustom: false,
+        customValue: 1,
+        customUnit: 1,
+        selectedPeriod: currentValue.days,
+      };
+    }
+
+    return {
+      isCustom: true,
+      customValue: currentValue.value || 1,
+      customUnit:
+        TIME_UNITS.find((u) => u.unit === currentValue.timeUnit)?.value || 1,
+      selectedPeriod: null,
+    };
+  };
+
+  const initialState = getInitialState();
+
+  const [isCustom, setIsCustom] = useState(initialState.isCustom);
+  const [customValue, setCustomValue] = useState(initialState.customValue);
+  const [customUnit, setCustomUnit] = useState(initialState.customUnit);
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    initialState.selectedPeriod,
+  );
+
+  const handleClose = () => {
+    // Resetear estados al cerrar
+    setIsCustom(false);
+    setCustomValue(1);
+    setCustomUnit(1);
+    setSelectedPeriod(null);
+    onClose();
+  };
 
   const handleConfirm = () => {
     if (isCustom) {
@@ -68,17 +90,17 @@ export const PeriodSelectionModal = ({
         isPredefined: true,
       });
     }
-    onClose();
+    handleClose();
   };
 
   return (
     <Modal
       title={title}
       open={visible}
-      onCancel={onClose}
+      onCancel={handleClose}
       width={400}
       footer={[
-        <Button key="cancel" onClick={onClose}>
+        <Button key="cancel" onClick={handleClose}>
           Cancelar
         </Button>,
         <Button

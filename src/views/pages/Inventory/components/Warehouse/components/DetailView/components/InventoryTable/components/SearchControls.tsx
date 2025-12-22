@@ -18,11 +18,11 @@ import {
 } from '../styles';
 
 import type { DateRangeValue, SortMenuItems } from '../types';
-import type { Dayjs } from 'dayjs';
+import type { DateTime } from 'luxon';
 
 interface DateRangePreset {
   label: string;
-  value: [Dayjs, Dayjs] | null;
+  value: [DateTime, DateTime] | null;
 }
 
 interface SearchControlsProps {

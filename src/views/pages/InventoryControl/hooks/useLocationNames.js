@@ -20,10 +20,7 @@ export function useLocationNames({ businessID, filteredItems }) {
       if (key) uniqueKeys.add(key);
     }
     const keys = Array.from(uniqueKeys);
-    if (keys.length === 0) {
-      setLocationNames({});
-      return;
-    }
+    if (keys.length === 0) return;
 
     let cancelled = false;
     const cache = { ...locationNames };
@@ -61,7 +58,7 @@ export function useLocationNames({ businessID, filteredItems }) {
     return () => {
       cancelled = true;
     };
-  }, [businessID, filteredItems]);
+  }, [businessID, filteredItems, locationNames]);
 
   return { locationNames, resolvingLocations };
 }

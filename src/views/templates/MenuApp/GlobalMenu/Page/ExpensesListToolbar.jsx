@@ -12,7 +12,7 @@ import {
   openExpenseFormModal,
   toggleExpenseChartModal,
 } from '../../../../../features/expense/expenseUISlice';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { Button } from '../../../system/Button/Button';
 
 export const ExpensesListToolbar = ({ side = 'left' }) => {

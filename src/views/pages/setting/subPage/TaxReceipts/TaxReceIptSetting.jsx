@@ -1,4 +1,4 @@
-﻿import { Spin, Typography, Modal, message } from 'antd';
+import { Spin, Typography, Modal, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -10,7 +10,7 @@ import {
   selectTaxReceiptEnabled,
 } from '../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbEnabledTaxReceipt } from '../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
-import { fbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { rebuildNcfLedger } from '../../../../../firebase/taxReceipt/rebuildNcfLedger';
 import { useCompareArrays } from '../../../../../hooks/useCompareArrays';
 import { useLoadingStatus } from '../../../../../hooks/useLoadingStatus';
@@ -34,7 +34,7 @@ export const TaxReceiptSetting = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  const { taxReceipt, isLoading: loadingReceipts } = fbGetTaxReceipt();
+  const { taxReceipt, isLoading: loadingReceipts } = useFbGetTaxReceipt();
   const { setDialogConfirm, onClose } = useDialog();
 
   const [taxReceiptLocal, setTaxReceiptLocal] = useState([]);
@@ -76,17 +76,18 @@ export const TaxReceiptSetting = () => {
   useEffect(() => {
     const serializedTaxReceipt = serializeFirestoreDocuments(taxReceipt);
     dispatch(getTaxReceiptData(serializedTaxReceipt));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to synchronize local state with Redux/Firebase derived data
     setTaxReceiptLocal(serializedTaxReceipt);
   }, [taxReceipt, dispatch]);
 
   const handleTaxReceiptEnabled = () => {
     if (taxReceiptEnabled) {
       setDialogConfirm({
-        title: '┬┐Deshabilitar comprobantes?',
+        title: '¿Deshabilitar comprobantes?',
         isOpen: true,
         type: 'warning',
         message:
-          'Si deshabilitas los comprobantes, no se mostrar├ín en el punto de venta.',
+          'Si deshabilitas los comprobantes, no se mostrarán en el punto de venta.',
         onConfirm: () => {
           fbEnabledTaxReceipt(user);
           onClose();
@@ -126,7 +127,7 @@ export const TaxReceiptSetting = () => {
     if (unique.length) {
       setTaxReceiptLocal([...taxReceiptLocal, ...unique]);
       message.success(
-        `${unique.length} comprobante(s) a├▒adidos correctamente. No olvides guardar los cambios.`,
+        `${unique.length} comprobante(s) añadidos correctamente. No olvides guardar los cambios.`,
       );
     } else if (!warningMsg) {
       message.error(
@@ -138,7 +139,7 @@ export const TaxReceiptSetting = () => {
   const handleRebuildLedger = useCallback(() => {
     if (!user?.businessID || !userId) {
       message.error(
-        'No pudimos identificar tu sesi├│n para reconstruir el ledger.',
+        'No pudimos identificar tu sesión para reconstruir el ledger.',
       );
       return;
     }
@@ -151,18 +152,18 @@ export const TaxReceiptSetting = () => {
       content: (
         <div>
           <p>
-            Esta acci├│n recalcular├í el ledger de comprobantes fiscales
-            utilizando las facturas registradas para sincronizar la numeraci├│n.
+            Esta acción recalculará el ledger de comprobantes fiscales
+            utilizando las facturas registradas para sincronizar la numeración.
           </p>
           {configuredPrefixes.length > 0 ? (
             <p>
               Detectamos los prefijos configurados:{' '}
-              <strong>{configuredPrefixes.join(', ')}</strong>. El backend usar├í
-              la configuraci├│n oficial de la empresa.
+              <strong>{configuredPrefixes.join(', ')}</strong>. El backend usará
+              la configuración oficial de la empresa.
             </p>
           ) : (
             <p>
-              No se detectaron prefijos espec├¡ficos; se procesar├í el ledger
+              No se detectaron prefijos específicos; se procesará el ledger
               completo del negocio.
             </p>
           )}
@@ -203,9 +204,9 @@ export const TaxReceiptSetting = () => {
           });
       },
     });
-  }, [configuredPrefixes, user?.businessID, userId]);
+  }, [configuredPrefixes, user, userId]);
 
-  // Definimos entradas para el control de carga con valores expl├¡citos
+  // Definimos entradas para el control de carga con valores explícitos
   const loadEntries = [
     {
       loading: loadingReceipts === true,
@@ -217,7 +218,7 @@ export const TaxReceiptSetting = () => {
     },
   ];
 
-  // Utilizamos useLoadingStatus para centralizar la l├│gica de carga
+  // Utilizamos useLoadingStatus para centralizar la lógica de carga
   const { isLoading, tip } = useLoadingStatus(loadEntries);
   return (
     <Spin spinning={isLoading} tip={tip}>
@@ -227,7 +228,7 @@ export const TaxReceiptSetting = () => {
             level={3}
             style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}
           >
-            Configuraci├│n de Comprobantes
+            Configuración de Comprobantes
           </Title>
           <Paragraph
             style={{
@@ -237,7 +238,7 @@ export const TaxReceiptSetting = () => {
               color: 'rgb(0 0 0 / 65%)',
             }}
           >
-            Ajusta c├│mo se generan y muestran los comprobantes en el punto de
+            Ajusta cómo se generan y muestran los comprobantes en el punto de
             venta.
           </Paragraph>
         </Head>

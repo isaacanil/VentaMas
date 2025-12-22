@@ -1,4 +1,4 @@
-import {
+﻿import {
   collection,
   doc,
   setDoc,
@@ -47,8 +47,10 @@ const toFirestoreTimestamp = (dateValue) => {
   if (typeof dateValue === 'string')
     return Timestamp.fromDate(new Date(dateValue));
 
-  // Si es un objeto dayjs (verificar propiedad común de dayjs)
-  if (dateValue.$d) return Timestamp.fromDate(dateValue.$d);
+  // Si es un objeto luxon DateTime (verificar propiedad común de luxon)
+  if (typeof dateValue?.toJSDate === 'function') {
+    return Timestamp.fromDate(dateValue.toJSDate());
+  }
 
   return null;
 };
@@ -260,8 +262,14 @@ export const listenInsuranceAuths = ({
 export const useInsuranceAuths = (user, clientId) => {
   const [auths, setAuths] = useState([]);
 
+  if (!user && auths.length > 0) {
+    setAuths([]);
+  }
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return undefined;
+    }
 
     const unsubscribe = listenInsuranceAuths({
       user,
@@ -336,3 +344,4 @@ export const searchInsuranceAuthGlobally = async (insuranceId, authNumber) => {
   if (snapshot.empty) return [];
   return snapshot.docs.map((doc) => doc.data());
 };
+

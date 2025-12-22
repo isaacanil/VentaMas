@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 
 export function money(n) {
   return Number(n).toFixed(2);
@@ -7,7 +7,7 @@ export function money(n) {
 export function formatDate(ts) {
   if (!ts) return '';
   const date = ts?.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
-  return dayjs(date).format('DD/MM/YYYY');
+  return DateTime.fromJSDate(date).toFormat('dd/MM/yyyy');
 }
 
 export function getDiscount(d) {

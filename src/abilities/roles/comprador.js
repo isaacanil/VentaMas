@@ -1,6 +1,6 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability';
 
-import routesName from '../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 
 export function defineAbilitiesForBuyer() {
   const { can, rules } = new AbilityBuilder(PureAbility);

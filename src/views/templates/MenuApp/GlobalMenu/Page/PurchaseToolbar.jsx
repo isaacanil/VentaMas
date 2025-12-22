@@ -8,7 +8,7 @@ import styled from 'styled-components';
 // import { Button } from '../../../system/Button/Button'
 
 import { togglePurchaseChartModal } from '../../../../../features/purchase/purchaseUISlice';
-import routesName from '../../../../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 import { ButtonGroup } from '../../../system/Button/ButtonGroup';
 
 export const PurchaseToolbar = ({ side = 'left' }) => {

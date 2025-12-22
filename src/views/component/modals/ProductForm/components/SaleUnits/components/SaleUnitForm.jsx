@@ -1,4 +1,4 @@
-﻿import {
+import {
   DollarCircleOutlined,
   RiseOutlined,
   FallOutlined,
@@ -12,14 +12,15 @@ import {
   Checkbox,
   message,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
 import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
-import { formatPrice } from '@/utils/format';
 
 const FormContainer = styled.div``;
 
@@ -43,21 +44,9 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     },
   };
 
-  const [cardData, setCardData] = useState([]);
   const {
     product: { id: productId },
   } = useSelector(selectUpdateProductData);
-
-  useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-      // Actualizamos los datos de las tarjetas al inicializar
-      updateCardData(initialValues);
-    } else {
-      form.resetFields();
-      setCardData([]); // Reiniciar los datos de la tarjeta si no hay valores iniciales
-    }
-  }, [initialValues, form]);
 
   const handleFinish = (values) => {
     try {
@@ -77,10 +66,6 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     } catch (error) {
       console.error(error);
     }
-  };
-
-  const handleValuesChange = (changedValues, allValues) => {
-    updateCardData(allValues);
   };
 
   const updateCardData = (values) => {
@@ -130,13 +115,28 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     if (minPriceEnabled) {
       newCardData.push({
         key: '3',
-        tipoPrecio: 'Precio M+¡nimo',
+        tipoPrecio: 'Precio Mínimo',
         ...calculateRow(minPrice),
       });
     }
 
-    setCardData(newCardData);
+    return newCardData;
   };
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+      // Actualizamos los datos de las tarjetas al inicializar
+    } else {
+      form.resetFields();
+    }
+  }, [initialValues, form]);
+
+  const pricing = Form.useWatch('pricing', form);
+  const cardData = useMemo(
+    () => updateCardData({ pricing: pricing || {} }),
+    [pricing],
+  );
 
   return (
     <Modal
@@ -164,7 +164,6 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
           layout="vertical"
           initialValues={initialData}
           onFinish={handleFinish}
-          onValuesChange={handleValuesChange}
         >
           <FormContainer>
             <Form.Item
@@ -239,7 +238,7 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
                         <Checkbox>Precio de Lista</Checkbox>
                       </Form.Item>
                     }
-                    tooltip="El precio de lista es el precio sugerido para la venta al  p+¦blico."
+                    tooltip="El precio de lista es el precio sugerido para la venta al  público."
                     name={['pricing', 'listPrice']}
                     rules={[
                       {
@@ -301,7 +300,7 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               }}
             </Form.Item>
 
-            {/* Precio M+¡nimo */}
+            {/* Precio Mínimo */}
             <Form.Item
               shouldUpdate={(prevValues, currentValues) =>
                 prevValues !== currentValues
@@ -320,15 +319,15 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
                         valuePropName="checked"
                         noStyle
                       >
-                        <Checkbox>Precio M+¡nimo</Checkbox>
+                        <Checkbox>Precio Mínimo</Checkbox>
                       </Form.Item>
                     }
-                    tooltip="El precio m+¡nimo es el precio m+ís bajo al que se puede vender el producto."
+                    tooltip="El precio mínimo es el precio más bajo al que se puede vender el producto."
                     name={['pricing', 'minPrice']}
                     rules={[
                       {
                         required: minPriceEnabled,
-                        message: 'Por favor ingresa el precio m+¡nimo',
+                        message: 'Por favor ingresa el precio mínimo',
                       },
                     ]}
                   >
@@ -454,5 +453,3 @@ const Option = ({ title, value }) => {
     </OptionContainer>
   );
 };
-
-

@@ -11,8 +11,7 @@ import {
   Tooltip,
   Space,
 } from 'antd';
-import flags from 'country-flag-icons/react/3x2';
-import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
+import { getCountries, getCountryCallingCode } from 'libphonenumber-js/min';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -51,22 +50,18 @@ const Wrapper = styled.div`
 `;
 
 // Generate country options
-const countryOptions = getCountries().map((country) => {
-  const FlagComponent = flags[country];
-  return {
-    value: country,
-    label: (
-      <Space>
-        {FlagComponent && <FlagComponent style={{ width: '1em' }} />}
-        <span>{country}</span>
-        <span style={{ color: '#888', fontSize: '0.9em' }}>
-          (+{getCountryCallingCode(country)})
-        </span>
-      </Space>
-    ),
-    searchText: `${country} +${getCountryCallingCode(country)}`,
-  };
-});
+const countryOptions = getCountries().map((country) => ({
+  value: country,
+  label: (
+    <Space>
+      <span>{country}</span>
+      <span style={{ color: '#888', fontSize: '0.9em' }}>
+        (+{getCountryCallingCode(country)})
+      </span>
+    </Space>
+  ),
+  searchText: `${country} +${getCountryCallingCode(country)}`,
+}));
 
 const OptionalLabel = ({ children }) => (
   <span>
@@ -117,7 +112,7 @@ export const ProviderForm = () => {
         notes: '',
       });
     }
-  }, [mode, data, form]);
+  }, [mode, data, form, consultarRNC]);
 
   const handleOpenModal = () => {
     dispatch(toggleProviderModal({ mode: createMode }));

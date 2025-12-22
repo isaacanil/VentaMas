@@ -1,16 +1,18 @@
-import dayjs, { Dayjs } from 'dayjs';
+import { DateTime } from 'luxon';
 
-export const normalizeToDayjs = (value: unknown): Dayjs | null => {
+const CUSTOM_FORMATS = ['dd/MM/yyyy', 'dd-MM-yyyy', 'yyyy-MM-dd', 'yyyy/MM/dd'];
+
+export const normalizeToDateTime = (value: unknown): DateTime | null => {
   if (value === null || value === undefined || value === '') return null;
-  if (dayjs.isDayjs(value)) return value;
+  if (DateTime.isDateTime(value)) return value;
 
   if (value instanceof Date) {
-    return dayjs(value.getTime());
+    return DateTime.fromJSDate(value);
   }
 
   if (typeof value === 'number') {
     const isSeconds = value < 1e12;
-    return dayjs(isSeconds ? value * 1000 : value);
+    return isSeconds ? DateTime.fromSeconds(value) : DateTime.fromMillis(value);
   }
 
   if (typeof value === 'object') {
@@ -27,22 +29,22 @@ export const normalizeToDayjs = (value: unknown): Dayjs | null => {
       if (typeof maybeValue.seconds === 'number') {
         const millis =
           maybeValue.seconds * 1000 + (maybeValue.nanoseconds || 0) / 1_000_000;
-        return dayjs(millis);
+        return DateTime.fromMillis(millis);
       }
 
       if (typeof maybeValue._seconds === 'number') {
         const millis =
           maybeValue._seconds * 1000 +
           (maybeValue._nanoseconds || 0) / 1_000_000;
-        return dayjs(millis);
+        return DateTime.fromMillis(millis);
       }
 
       if (typeof maybeValue.toMillis === 'function') {
-        return dayjs(maybeValue.toMillis());
+        return DateTime.fromMillis(maybeValue.toMillis());
       }
 
       if (typeof maybeValue.toDate === 'function') {
-        return dayjs(maybeValue.toDate().getTime());
+        return DateTime.fromJSDate(maybeValue.toDate());
       }
     }
   }
@@ -51,19 +53,19 @@ export const normalizeToDayjs = (value: unknown): Dayjs | null => {
     const numericValue = Number(value);
     if (!Number.isNaN(numericValue)) {
       const isSeconds = numericValue < 1e12;
-      return dayjs(isSeconds ? numericValue * 1000 : numericValue);
+      return isSeconds
+        ? DateTime.fromSeconds(numericValue)
+        : DateTime.fromMillis(numericValue);
     }
 
     const trimmed = value.trim();
-    const directParse = dayjs(trimmed);
-    if (directParse.isValid()) return directParse;
+    const isoParse = DateTime.fromISO(trimmed);
+    if (isoParse.isValid) return isoParse;
 
-    const customParse = dayjs(
-      trimmed,
-      ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD', 'YYYY/MM/DD'],
-      true,
-    );
-    if (customParse.isValid()) return customParse;
+    for (const format of CUSTOM_FORMATS) {
+      const parsed = DateTime.fromFormat(trimmed, format);
+      if (parsed.isValid) return parsed;
+    }
 
     return null;
   }
@@ -72,6 +74,6 @@ export const normalizeToDayjs = (value: unknown): Dayjs | null => {
 };
 
 export const toMillis = (value: unknown): number | null => {
-  const normalized = normalizeToDayjs(value);
-  return normalized ? normalized.valueOf() : null;
+  const normalized = normalizeToDateTime(value);
+  return normalized ? normalized.toMillis() : null;
 };

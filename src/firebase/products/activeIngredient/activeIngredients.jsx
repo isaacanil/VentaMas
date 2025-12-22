@@ -43,7 +43,7 @@ export const useListenActiveIngredients = () => {
   return { data, loading, error };
 };
 
-const listenActiveIngredients = async (user, setData) => {
+const listenActiveIngredients = (user, setData) => {
   const query = collection(
     db,
     `businesses/${user.businessID}/activeIngredients`,

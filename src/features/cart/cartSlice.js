@@ -118,9 +118,9 @@ export const cartSlice = createSlice({
       state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen;
     },
     setCartId: (state) => {
-      const id = state.data.id;
-      if (!id) {
-        state.data.id = nanoid();
+      if (!state.data.id) {
+        const fallbackId = state.data.cartId || state.data.cartIdRef || null;
+        state.data.id = fallbackId || nanoid();
       }
     },
     addPaymentMethod: (state, actions) => {

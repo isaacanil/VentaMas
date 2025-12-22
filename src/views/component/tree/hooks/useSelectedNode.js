@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 import { findPathToNode } from '../utils/nodeUtils';
 
@@ -8,11 +8,11 @@ const useSelectedNode = (
   manuallyClosedNodes,
   setManualExpandedNodes,
 ) => {
-  const [selectedNode, setSelectedNode] = useState(selectedId);
+  const prevSelectedId = useRef(selectedId);
 
   useEffect(() => {
-    if (selectedId && selectedId !== selectedNode) {
-      // Solo ejecutar si el ID seleccionado cambia
+    if (selectedId && selectedId !== prevSelectedId.current) {
+      prevSelectedId.current = selectedId;
       const path = findPathToNode(data, selectedId);
       if (path) {
         setManualExpandedNodes((prev) => {
@@ -26,11 +26,10 @@ const useSelectedNode = (
           return newExpanded;
         });
       }
-      setSelectedNode(selectedId);
     }
-  }, [selectedId, data]);
+  }, [selectedId, data, manuallyClosedNodes, setManualExpandedNodes]);
 
-  return { selectedNode, setSelectedNode };
+  return { selectedNode: selectedId, setSelectedNode: () => undefined };
 };
 
 export default useSelectedNode;

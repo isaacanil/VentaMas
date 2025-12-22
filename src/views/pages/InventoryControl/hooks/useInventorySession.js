@@ -5,10 +5,8 @@ export function useInventorySession({ db, businessID, sessionId }) {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    if (!db || !businessID || !sessionId) {
-      setSession(null);
-      return;
-    }
+    if (!db || !businessID || !sessionId) return;
+    
     const sessionRef = doc(
       db,
       'businesses',

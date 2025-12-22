@@ -29,18 +29,19 @@ const ActionButton = styled.button`
 
 const ActionButtons = ({ node, actions, level, path }) => {
   // Agregar 'path' como prop
-  const safeActions = Array.isArray(actions) ? actions : [];
   const visibleActions = useMemo(
-    () =>
-      safeActions.filter((action) => {
+    () => {
+      const safeActions = Array.isArray(actions) ? actions : [];
+      return safeActions.filter((action) => {
         if (!action) return false;
         if (action.show && !action.show(node, level)) return false;
         if (action.type === 'dropdown') {
           return !!action.items;
         }
         return typeof action.handler === 'function';
-      }),
-    [safeActions, level, node],
+      });
+    },
+    [actions, level, node],
   );
 
   return (

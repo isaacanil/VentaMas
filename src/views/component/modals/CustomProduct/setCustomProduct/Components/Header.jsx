@@ -1,7 +1,10 @@
 import { nanoid } from 'nanoid';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { separator } from '@/utils/number/number';
+import { removeMatchesString } from '@/utils/text';
 
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import {
@@ -15,8 +18,6 @@ import customPizzaData from '../customPizza.json';
 
 import { getPrice } from './getPrice';
 
-import { separator } from '@/utils/number/number';
-import { removeMatchesString } from '@/utils/text';
 
 const EmptyProduct = {
   id: '',
@@ -64,7 +65,10 @@ export const Header = ({
   const [product, setProduct] = useState(EmptyProduct);
   const [productSelected, setProductSelected] = useState(EmptyProductSelected);
 
-  const matchList = /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g;
+  const matchList = useMemo(
+    () => /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g,
+    [],
+  );
 
   const totalIngredientPrice = useSelector(selectTotalIngredientPrice);
   const IngredientListNameSelected = useSelector(SelectIngredientsListName);
@@ -97,7 +101,7 @@ export const Header = ({
     if (size !== '') {
       fbGetProductsQueryByType(setProducts, type, size, user);
     }
-  }, [size, user]);
+  }, [size, user, type]);
 
   useEffect(() => {
     if (isComplete === 'complete' && productSelected.a !== '') {
@@ -142,7 +146,7 @@ export const Header = ({
         console.error('Error updating product:', error);
       }
     }
-  }, [productSelected, IngredientListNameSelected, isComplete]);
+  }, [productSelected, IngredientListNameSelected, isComplete, matchList, newProduct, setNewProduct, size, totalIngredientPrice]);
 
   useEffect(() => {
     if (isComplete === 'complete') {
@@ -171,7 +175,7 @@ export const Header = ({
         id: nanoid(8),
       });
     }
-  }, [product?.pricing?.price]);
+  }, [product?.pricing?.price, isComplete, newProduct, productSelected, setNewProduct, size, totalIngredientPrice]);
 
   return (
     <Container>

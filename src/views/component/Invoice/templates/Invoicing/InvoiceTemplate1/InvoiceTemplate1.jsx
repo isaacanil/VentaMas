@@ -2,6 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format'
+
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
 import { SelectInvoiceComment } from '../../../../../../features/cart/cartSlice';
 import { selectInsuranceData } from '../../../../../../features/insurance/insuranceSlice';
@@ -15,7 +17,6 @@ import { ThankYouMessage } from './components/ThankYouMessage';
 import { WarrantySignature } from './components/WarrantySignature';
 import { Container, HiddenPrintWrapper } from './Style';
 
-import { formatPrice } from '@/utils/format'
 
 export const InvoiceTemplate1 = React.forwardRef(
   ({ data, ignoreHidden }, ref) => {

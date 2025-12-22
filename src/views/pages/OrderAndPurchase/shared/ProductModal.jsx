@@ -211,12 +211,14 @@ const ProductModal = ({
     return undefined;
   }, [visible]);
 
-  // Reset selection when modal opens in multiselect mode
-  useEffect(() => {
-    if (visible && multiselect) {
-      setSelectedProducts([]);
-    }
-  }, [visible, multiselect]);
+  const handleAfterOpenChange = useCallback(
+    (open) => {
+      if (open && multiselect) {
+        setSelectedProducts([]);
+      }
+    },
+    [multiselect],
+  );
 
   const user = useSelector(selectUser);
   const { products, loading } = useGetProducts(true);
@@ -400,6 +402,7 @@ const ProductModal = ({
         placement="bottom"
         onClose={() => setVisible(false)}
         open={visible}
+        afterOpenChange={handleAfterOpenChange}
         loading={loading}
         height="80%"
         styles={{ body: { padding: '1em' } }}

@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
@@ -8,7 +10,6 @@ import {
 
 import { Items } from './Items';
 
-import { formatPrice } from '@/utils/format';
 
 export const Body = ({ data }) => {
   const delivery = data?.delivery;

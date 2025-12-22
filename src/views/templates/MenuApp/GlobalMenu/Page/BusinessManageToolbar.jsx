@@ -4,7 +4,7 @@ import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
-import ROUTES_PATH from '../../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 
 const BusinessManagerToolbar = ({ side = 'left' }) => {
   const navigate = useNavigate();

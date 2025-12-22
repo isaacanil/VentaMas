@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
 import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
-import { ROUTES } from '../../../../../routes/routesName';
+import { ROUTES } from '@/router/routes/routesName';
 
 const AVAILABLE_MODULES = [
   {

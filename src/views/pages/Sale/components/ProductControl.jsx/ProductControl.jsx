@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { selectIsRow } from '../../../../../features/setting/settingSlice';
 import useScroll from '../../../../../hooks/useScroll';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { Carrusel } from '../../../../component/Carrusel/Carrusel';
 import { CenteredText } from '../../../../templates/system/CentredText';
 import { Grid } from '../../../../templates/system/Grid/Grid';
@@ -48,7 +48,7 @@ export const ProductControl = ({
     setTimeout(() => {
       setProductsLoading(false);
     }, 1000);
-  }, [isProductGrouped]);
+  }, [isProductGrouped, setProductsLoading]);
 
   const handlerProducts = () => {
     const { INVENTORY_ITEMS } = ROUTES_NAME.INVENTORY_TERM;

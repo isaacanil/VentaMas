@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import { getRoleLabelById } from '../../../../../abilities/roles';
 import { fbRevokeSession } from '../../../../../firebase/Auth/fbAuthV2/fbRevokeSession';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 import { SessionsTable } from './UserActivity/components/SessionsTable';
 import { UserActivityCharts } from './UserActivity/components/UserActivityCharts';

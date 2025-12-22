@@ -13,7 +13,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
 
 import { useFbGetInvoicesBySerie } from '../../../../firebase/invoices/useFbGetInvoicesBySerie';
@@ -34,16 +34,23 @@ const parseNcfParts = (ncf) => {
   return { serie, type, sequence };
 };
 
-const toDayjs = (value) => {
+const toDateTime = (value) => {
   if (!value) return null;
-  if (dayjs.isDayjs(value)) return value;
+  if (DateTime.isDateTime(value)) return value;
   if (value.seconds) {
-    return dayjs.unix(value.seconds);
+    return DateTime.fromSeconds(value.seconds);
   }
   if (value instanceof Date) {
-    return dayjs(value);
+    return DateTime.fromJSDate(value);
   }
-  return dayjs(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value === 'number') {
+    return DateTime.fromMillis(value);
+  }
+  return null;
 };
 
 const formatCurrency = (amount) =>
@@ -59,7 +66,7 @@ const buildDataset = (invoices) =>
     const { serie, type, sequence } = parseNcfParts(
       data?.NCF || invoice?.NCF || '',
     );
-    const date = toDayjs(data?.date);
+    const date = toDateTime(data?.date);
     const key = id || data?.NCF || `${serie || 'NCF'}-${sequence || 'unknown'}`;
 
     return {
@@ -110,12 +117,12 @@ const columns = [
     title: 'Fecha',
     dataIndex: 'createdAt',
     key: 'createdAt',
-    render: (value) => (value ? value.format('DD/MM/YYYY HH:mm') : '—'),
+    render: (value) => (value ? value.toFormat('dd/MM/yyyy HH:mm') : '—'),
     sorter: (a, b) => {
       if (!a.createdAt && !b.createdAt) return 0;
       if (!a.createdAt) return -1;
       if (!b.createdAt) return 1;
-      return a.createdAt.valueOf() - b.createdAt.valueOf();
+      return a.createdAt.toMillis() - b.createdAt.toMillis();
     },
     defaultSortOrder: 'descend',
   },

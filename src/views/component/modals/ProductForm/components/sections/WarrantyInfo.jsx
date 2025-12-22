@@ -1,10 +1,9 @@
-import * as ant from 'antd';
+import { Card, InputNumber, Form, Checkbox, Select } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { warrantyOptions } from './warranty.helpers';
 
-const { Card, InputNumber, Form, Checkbox, Select } = ant;
 export const WarrantyInfo = () => {
   return (
     <Card title="Garantía" size="small">

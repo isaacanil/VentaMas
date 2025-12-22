@@ -2,11 +2,12 @@ import { faCalendarAlt, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { formatDate } from '../../../../../../../../../utils/formatDate';
 
 import { Payment } from './components/Payment';
 
-import { formatPrice } from '@/utils/format';
 
 
 export const AccountCard = ({

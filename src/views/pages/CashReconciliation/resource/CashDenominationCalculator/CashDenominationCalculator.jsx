@@ -2,14 +2,15 @@ import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import styled from 'styled-components';
 
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
 import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
 
 import { BillRow } from './components/BillRow';
 import { OpenControllerSmall } from './OpenControllerSmall';
 import { OpenControllerWithMessage } from './OpenControllerWithMessage';
 
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
 
 export const CashDenominationCalculator = ({
   isExpanded = null,

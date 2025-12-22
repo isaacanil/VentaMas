@@ -1,6 +1,9 @@
 import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
 import { Header } from '../../components/Header/Header';
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 import { Row } from '../../components/Table/Row';
@@ -10,8 +13,6 @@ import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '../../Style';
 import { GeneralBalance } from './components/GeneralBalance';
 import { PaymentArea } from './components/PaymentArea';
 
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
 
 export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
   const statusSpanish = {

@@ -1,17 +1,22 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 
 export const parseTimestamp = (value) => {
   if (!value) return null;
-  if (dayjs.isDayjs(value)) return value;
-  if (typeof value === 'number') return dayjs(value);
-  if (value.seconds) return dayjs.unix(value.seconds);
-  if (value._seconds) return dayjs.unix(value._seconds);
-  if (typeof value === 'string') return dayjs(value);
-  if (value.toDate instanceof Function) return dayjs(value.toDate());
+  if (DateTime.isDateTime(value)) return value;
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (value.seconds) return DateTime.fromSeconds(value.seconds);
+  if (value._seconds) return DateTime.fromSeconds(value._seconds);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (value.toDate instanceof Function) {
+    return DateTime.fromJSDate(value.toDate());
+  }
   return null;
 };
 
-export const formatDateTime = (value, fallback = '—') => {
+export const formatDateTime = (value, fallback = 'ƒ?"') => {
   const parsed = parseTimestamp(value);
-  return parsed ? parsed.format('DD/MM/YYYY HH:mm:ss') : fallback;
+  return parsed ? parsed.toFormat('dd/MM/yyyy HH:mm:ss') : fallback;
 };

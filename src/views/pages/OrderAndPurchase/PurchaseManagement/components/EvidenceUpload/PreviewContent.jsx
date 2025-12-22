@@ -158,7 +158,7 @@ const PreviewContent = ({
   useEffect(() => {
     let localUrl;
     if (previewFile) {
-      setIsLoading(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to clear error when a new preview file is provided
       setError(null);
 
       if (previewFile.file instanceof File) {
@@ -168,9 +168,19 @@ const PreviewContent = ({
 
     return () => {
       if (localUrl) URL.revokeObjectURL(localUrl);
+       
       setError(null);
-      setIsLoading(false);
     };
+  }, [previewFile]);
+
+  useEffect(() => {
+    if (previewFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to set loading state when a new preview file is available
+      setIsLoading(true);
+    } else {
+       
+      setIsLoading(false);
+    }
   }, [previewFile]);
 
   useEffect(() => {

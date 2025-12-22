@@ -7,9 +7,13 @@ export const toMillis = (d) => {
     return Number.isNaN(int) ? new Date(d).getTime() : int;
   }
 
+  if (typeof d?.toDate === 'function') return d.toDate().getTime(); // Firebase Timestamp-like
   if (typeof d?.toMillis === 'function') return d.toMillis(); // Luxon / Firebase Timestamp
   if (typeof d?.valueOf === 'function') return d.valueOf(); // Dayjs / native Date
-  if (typeof d?.seconds === 'number') return d.seconds * 1000;
+  if (typeof d?.seconds === 'number') {
+    const nanos = typeof d?.nanoseconds === 'number' ? d.nanoseconds : 0;
+    return d.seconds * 1000 + nanos / 1e6;
+  }
 
   return new Date(d).getTime();
 };

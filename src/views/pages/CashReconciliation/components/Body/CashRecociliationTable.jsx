@@ -1,5 +1,5 @@
 // Import DateTime
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -14,10 +14,6 @@ import { AdvancedTable } from '../../../../templates/system/AdvancedTable/Advanc
 import { tableConfig } from './tableConfig';
 
 export const CashReconciliationTable = () => {
-  const [dateRange, setDateRange] = useState({
-    startDate: null,
-    endDate: null,
-  });
   const [searchTerm] = useState('');
   const [cashCounts, setCashCounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,34 +68,67 @@ export const CashReconciliationTable = () => {
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
   };
 
-  useEffect(() => {
-    setLoading(true);
+  // Derivar dateRange usando useMemo en vez de useState + useEffect
+  const dateRange = useMemo(() => {
     const currentFilterDateRange = filterState.filters?.createdAtDateRange;
-    const newStartDate = currentFilterDateRange?.startDate ?? null; // Expecting Milliseconds
-    const newEndDate = currentFilterDateRange?.endDate ?? null; // Expecting Milliseconds
+    return {
+      startDate: currentFilterDateRange?.startDate ?? null,
+      endDate: currentFilterDateRange?.endDate ?? null,
+    };
+  }, [filterState.filters?.createdAtDateRange]);
 
-    if (
-      newStartDate !== dateRange.startDate ||
-      newEndDate !== dateRange.endDate
-    ) {
-      setDateRange({ startDate: newStartDate, endDate: newEndDate });
-    }
+  // Unificar dependencias en una clave para facilitar la comparación
+  const subscriptionKey = useMemo(() => {
+    return JSON.stringify({
+      userId: user?.id,
+      dateRange,
+      filters: filterState.filters,
+      isAscending: filterState.isAscending,
+      searchTerm,
+    });
+  }, [user?.id, dateRange, filterState, searchTerm]);
 
+  // Estado para la clave anterior
+  const [prevSubscriptionKey, setPrevSubscriptionKey] = useState(subscriptionKey);
+
+  // PATRÓN RECOMENDADO REACT: Ajustar estado durante render cuando cambian props/dependencias
+  if (subscriptionKey !== prevSubscriptionKey) {
+    setPrevSubscriptionKey(subscriptionKey);
+    setLoading(true);
+  }
+
+  // Suscripción a Firebase listener
+  useEffect(() => {
+    const handleLoadComplete = () => {
+      setLoading(false);
+    };
+
+    let unsubscribe;
     try {
-      fbListenCashCounts(
+      unsubscribe = fbListenCashCounts(
         user,
         setCashCounts,
         dateRange,
         filterState,
         searchTerm,
-        () => setLoading(false),
+        handleLoadComplete,
       );
     } catch (error) {
       console.error('Error in date range:', error);
-      setCashCounts([]);
-      setLoading(false);
+      // Hacemos esto asíncrono para evitar 'setState in effect' si el error es síncrono
+      setTimeout(() => {
+        setCashCounts([]);
+        handleLoadComplete();
+      }, 0);
     }
-  }, [user, dateRange, filterState, searchTerm]); // dateRange is still a dependency
+
+    return () => {
+      // Cleanup: cancelar suscripción si existe
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user, dateRange, filterState, searchTerm]);
 
   const data = cashCounts.map((cashCount) => {
     return {

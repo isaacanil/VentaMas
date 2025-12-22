@@ -3,10 +3,11 @@ import React from 'react';
 import { useLoaderData } from 'react-router-dom'; // Import useLoaderData
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { DetailSummary } from '../../../../component/DetailSummary/DetailSummary';
 import Typography from '../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 // const { Header, Content } = Layout;
 

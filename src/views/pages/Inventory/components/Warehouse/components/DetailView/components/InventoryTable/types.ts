@@ -1,7 +1,7 @@
 import type { MenuProps } from 'antd';
-import type { Dayjs } from 'dayjs';
+import type { DateTime } from 'luxon';
 
-export type DateRangeValue = [Dayjs | null, Dayjs | null] | null;
+export type DateRangeValue = [DateTime | null, DateTime | null] | null;
 
 export interface InventoryTableProps {
   currentNode: unknown;

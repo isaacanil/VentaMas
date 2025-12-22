@@ -17,13 +17,13 @@ export const useOverflowCollapse = ({
   const containerRef = useRef(null);
   const itemRefs = useRef([]); // refs individuales
   const [visibleCount, setVisibleCount] = useState(Infinity);
+  const [itemCount, setItemCount] = useState(0);
 
   // Registrar refs de cada item
   const register = useCallback(
     (index) => (node) => {
-      if (node) {
-        itemRefs.current[index] = node;
-      }
+      itemRefs.current[index] = node;
+      setItemCount(itemRefs.current.filter(Boolean).length);
     },
     [],
   );
@@ -98,6 +98,6 @@ export const useOverflowCollapse = ({
     visibleCount,
     hasOverflow:
       visibleCount !== Infinity &&
-      visibleCount < itemRefs.current.filter(Boolean).length,
+      visibleCount < itemCount,
   };
 };

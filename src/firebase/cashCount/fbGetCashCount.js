@@ -39,10 +39,13 @@ export const useFbGetCashCount = (id) => {
   const [cashCount, setCashCount] = useState(null);
   const user = useSelector(selectUser);
 
+  if ((!id || !user?.businessID) && cashCount !== null) {
+    setCashCount(null);
+  }
+
   useEffect(() => {
     if (!id || !user?.businessID) {
-      setCashCount(null);
-      return;
+      return undefined;
     }
 
     const onError = (error) => {

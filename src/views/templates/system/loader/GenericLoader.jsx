@@ -1,9 +1,11 @@
-ï»¿// VentamaxLoader.js
+// VentamaxLoader.js
 import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+
+import { usePrefersReducedMotion } from '../../../../hooks/usePrefersReducedMotion';
 
 import logo from './ventamax.svg';
 
@@ -103,79 +105,51 @@ const MinimalMessage = styled.p`
   color: #ebf4ff;
 `;
 
-const usePrefersReducedMotion = () => {
-  const [prefers, setPrefers] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const updatePreference = (event) => {
-      setPrefers(event.matches);
-    };
-
-    setPrefers(mediaQuery.matches);
-    mediaQuery.addEventListener('change', updatePreference);
-
-    return () => {
-      mediaQuery.removeEventListener('change', updatePreference);
-    };
-  }, []);
-
-  return prefers;
-};
-
-const MINIMAL_FADE_DURATION = 260;
-
 const VentamaxMinimalLoader = ({ active, message, onFinish, status }) => {
-  const [isRendered, setIsRendered] = useState(active);
-  const timeoutRef = useRef(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const onFinishRef = useRef(onFinish);
+  const finishCalledRef = useRef(false);
+  const wasActiveRef = useRef(active);
 
   useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
+
+  useEffect(() => {
+    const wasActive = wasActiveRef.current;
+    wasActiveRef.current = active;
+
     if (active) {
-      setIsRendered(true);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
+      finishCalledRef.current = false;
       return;
     }
 
-    timeoutRef.current = setTimeout(() => {
-      setIsRendered(false);
-      timeoutRef.current = null;
-      onFinish?.();
-    }, MINIMAL_FADE_DURATION);
+    // Solo finalizar si realmente veníamos de activo -> inactivo
+    if (wasActive && prefersReducedMotion && !finishCalledRef.current) {
+      finishCalledRef.current = true;
+      onFinishRef.current?.();
+    }
+  }, [active, prefersReducedMotion]);
 
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [active, onFinish]);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  if (!isRendered && !active) {
-    return null;
-  }
-
-  const statusMessage = message || 'Iniciando sesiâ”œâ”‚n...';
+  const statusMessage = message || 'Iniciando sesión...';
 
   return (
     <MinimalOverlay
       $active={active}
-      aria-live="assertive"
+      aria-live={active ? 'polite' : 'off'}
       aria-busy={active}
-      role="status"
+      aria-hidden={!active}
+      role={active ? 'status' : undefined}
       data-status={status}
+      style={{ transition: prefersReducedMotion ? 'none' : undefined }}
+      onTransitionEnd={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.propertyName !== 'opacity') return;
+        if (active) return;
+        if (finishCalledRef.current) return;
+        finishCalledRef.current = true;
+        onFinishRef.current?.();
+      }}
     >
       <MinimalCard>
         <MinimalLogo src={logo} alt="Ventamax logo" />
@@ -224,9 +198,11 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
     () => {
       if (prefersReducedMotion) {
         introCompletedRef.current = true;
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return () => {};
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       if (!titleRef.current) return () => {};
 
       const split = new SplitText(titleRef.current, { type: 'chars' });

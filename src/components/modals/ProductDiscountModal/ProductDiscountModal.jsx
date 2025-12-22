@@ -1,14 +1,15 @@
 import { PercentageOutlined, DollarOutlined } from '@ant-design/icons';
 import { Modal, Radio, InputNumber, Button, Typography } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { updateProductDiscount } from '../../../features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceiptSlice';
 import { getTotalPrice } from '../../../utils/pricing';
 
-import { formatPrice } from '@/utils/format';
 
 const { Text } = Typography;
 
@@ -29,22 +30,27 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
   ];
 
   // Reiniciar valores cuando se abre el modal
-  useEffect(() => {
-    if (!visible || !product) {
-      return;
-    }
+  // State for synchronization
+  const [prevVisible, setPrevVisible] = useState(false);
+  const [prevProduct, setPrevProduct] = useState(null);
 
-    if (product.discount) {
+  // Synchronize state with props during render
+  if (visible && (!prevVisible || product !== prevProduct)) {
+    setPrevVisible(visible);
+    setPrevProduct(product);
+
+    if (product?.discount) {
       setDiscountType(product.discount.type);
       setDiscountValue(product.discount.value);
       setPresetDiscount(null);
-      return;
+    } else {
+      setDiscountType('percentage');
+      setDiscountValue(0);
+      setPresetDiscount(null);
     }
-
-    setDiscountType('percentage');
-    setDiscountValue(0);
-    setPresetDiscount(null);
-  }, [visible, product]);
+  } else if (!visible && prevVisible) {
+    setPrevVisible(false);
+  }
 
   const displayPrices = React.useMemo(() => {
     if (!product) {

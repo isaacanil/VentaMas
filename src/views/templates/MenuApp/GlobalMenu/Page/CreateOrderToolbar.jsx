@@ -2,7 +2,7 @@ import React from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import routesName from '../../../../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 import { AddProductButton } from '../../../system/Button/AddProductButton';
 import { ButtonGroup } from '../../../system/Button/Button';
 

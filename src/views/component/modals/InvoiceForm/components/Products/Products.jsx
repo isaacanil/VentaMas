@@ -1,7 +1,9 @@
-﻿import { Button, Input, message } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Button, Input, message } from 'antd';
+import React, { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../../constants/icons/icons';
 import {
@@ -10,7 +12,6 @@ import {
   deleteProductInvoiceForm,
 } from '../../../../../../features/invoice/invoiceFormSlice';
 import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts';
-import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '../../../../../../utils/pricing';
 
 import { getCategoryName, getCategoryStats } from './productDataUtils';
@@ -66,23 +67,22 @@ export const Products = ({ invoice, isEditLocked = false }) => {
     [],
   );
 
-  const invoiceProducts = Array.isArray(invoice?.products)
-    ? invoice.products
-    : [];
+  const invoiceProducts = useMemo(
+    () => Array.isArray(invoice?.products) ? invoice.products : [],
+    [invoice]
+  );
   const readOnly = isEditLocked;
   const categoryStats = useMemo(
     () => getCategoryStats(invoiceProducts),
     [invoiceProducts],
   );
 
-  useEffect(() => {
-    if (categoryFilter === 'all') return;
+  const safeCategoryFilter = useMemo(() => {
+    if (categoryFilter === 'all') return 'all';
     const hasSelectedCategory = categoryStats.entries.some(
       (entry) => entry.name === categoryFilter,
     );
-    if (!hasSelectedCategory) {
-      setCategoryFilter('all');
-    }
+    return hasSelectedCategory ? categoryFilter : 'all';
   }, [categoryFilter, categoryStats]);
 
   const displayProducts = useMemo(() => {
@@ -90,17 +90,18 @@ export const Products = ({ invoice, isEditLocked = false }) => {
 
     const filteredBySearch = normalizedSearch
       ? invoiceProducts.filter((product) => {
-          const name = product?.name?.toLowerCase() ?? '';
-          return name.includes(normalizedSearch);
-        })
+        const name = product?.name?.toLowerCase() ?? '';
+        return name.includes(normalizedSearch);
+      })
       : [...invoiceProducts];
 
     const filtered =
-      categoryFilter === 'all'
+      safeCategoryFilter === 'all'
         ? filteredBySearch
         : filteredBySearch.filter(
-            (product) => getCategoryName(product?.category) === categoryFilter,
-          );
+          (product) =>
+            getCategoryName(product?.category) === safeCategoryFilter,
+        );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
 
@@ -119,7 +120,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
     });
 
     return sorted;
-  }, [invoiceProducts, searchTerm, categoryFilter, sortField, sortDirection]);
+  }, [invoiceProducts, searchTerm, safeCategoryFilter, sortField, sortDirection]);
 
   const columns = [
     {
@@ -136,9 +137,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
           <Button
             onClick={() => {
               if (readOnly) {
-                message.warning(
-                  'No puedes modificar productos despu+®s de 48 horas.',
-                );
+                message.warning('No puedes modificar productos después de 48 horas.');
                 return;
               }
               dispatch(
@@ -152,9 +151,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
             value={record.amountToBuy}
             onChange={(e) => {
               if (readOnly) {
-                message.warning(
-                  'No puedes modificar productos despu+®s de 48 horas.',
-                );
+                message.warning('No puedes modificar productos después de 48 horas.');
                 return;
               }
               const value = e.target.value;
@@ -175,9 +172,7 @@ export const Products = ({ invoice, isEditLocked = false }) => {
           <Button
             onClick={() => {
               if (readOnly) {
-                message.warning(
-                  'No puedes modificar productos despu+®s de 48 horas.',
-                );
+                message.warning('No puedes modificar productos después de 48 horas.');
                 return;
               }
               dispatch(
@@ -225,37 +220,30 @@ export const Products = ({ invoice, isEditLocked = false }) => {
       ),
     },
   ];
-  const [paginationState, setPaginationState] = useState({
+  const paginationSeed = `${searchTerm}|${safeCategoryFilter}|${sortField}|${sortDirection}|${invoiceProducts.length}`;
+  const [paginationState, setPaginationState] = useState(() => ({
+    seed: paginationSeed,
     current: 1,
     pageSize: 5,
-  });
+  }));
+
+  const currentPage =
+    paginationState.seed === paginationSeed ? paginationState.current : 1;
+  const pageSize = paginationState.pageSize;
 
   const paginationConfig = {
-    pageSize: paginationState.pageSize,
-    current: paginationState.current,
+    pageSize,
+    current: currentPage,
     position: ['bottomCenter'],
     showSizeChanger: false,
     onChange: (page, pageSize) => {
-      setPaginationState({ current: page, pageSize });
+      setPaginationState({ seed: paginationSeed, current: page, pageSize });
     },
   };
 
-  useEffect(() => {
-    setPaginationState((prev) => ({
-      ...prev,
-      current: 1,
-    }));
-  }, [
-    searchTerm,
-    categoryFilter,
-    sortField,
-    sortDirection,
-    displayProducts.length,
-  ]);
-
   const showProductListModal = () => {
     if (readOnly) {
-      message.warning('No puedes modificar productos despu+®s de 48 horas.');
+      message.warning('No puedes modificar productos después de 48 horas.');
       return;
     }
     setProductListModalVisible(true);
@@ -273,14 +261,14 @@ export const Products = ({ invoice, isEditLocked = false }) => {
           onClick={showProductListModal}
           disabled={readOnly}
         >
-          A+¦adir Producto
+          Añadir Producto
         </Button>
       </ActionsContainer>
       <ProductFilterToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="Buscar producto"
-        categoryFilter={categoryFilter}
+        categoryFilter={safeCategoryFilter}
         onCategoryChange={setCategoryFilter}
         categoryStats={categoryStats}
         sortField={sortField}
@@ -320,7 +308,5 @@ const Counter = styled.div`
   grid-template-columns: 2em 80px 2em;
 `;
 const ActionsContainer = styled.div`
-  text-align: right; /* Esto alinea tu bot+¦n a la derecha */
+  text-align: right; /* Esto alinea tu botón a la derecha */
 `;
-
-

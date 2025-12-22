@@ -1,6 +1,6 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability';
 
-import routesName from '../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 
 function defineBaseAbilities(can, cannot) {
   const {

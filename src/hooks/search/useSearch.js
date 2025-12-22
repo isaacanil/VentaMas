@@ -95,13 +95,12 @@ export const filterData = (array, searchTerm) => {
 const useFilter = (data = [], searchTerm = '') => {
   // Ensure data and searchTerm have default values
 
-  const trimmedTerm = searchTerm.trim();
-  const normalizedTerm = removeAccents(trimmedTerm.toLowerCase());
-
   return useMemo(() => {
+    const trimmedTerm = searchTerm.trim();
     if (!validateFilterDataParams(data, searchTerm)) return data;
     if (!trimmedTerm) return data;
 
+    const normalizedTerm = removeAccents(trimmedTerm.toLowerCase());
     try {
       const searchPredicate = createSearchPredicate(normalizedTerm);
       return data.filter(searchPredicate);
@@ -109,7 +108,7 @@ const useFilter = (data = [], searchTerm = '') => {
       console.warn('useFilter: Error in filter operation', e);
       return data;
     }
-  }, [data, normalizedTerm]); // Dependencies are now always defined
+  }, [data, searchTerm]); // Dependencies are now always defined
 };
 
 export default useFilter;

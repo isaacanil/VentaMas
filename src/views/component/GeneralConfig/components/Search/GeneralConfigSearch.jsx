@@ -39,10 +39,7 @@ export const GeneralConfigSearch = ({
       .slice(0, 10);
   }, [inputValue, records]);
 
-  const activeOptionId =
-    activeIndex >= 0 && filteredOptions[activeIndex]
-      ? `general-config-search-option-${filteredOptions[activeIndex].key}`
-      : undefined;
+
 
   const handleSelect = useCallback(
     (entry) => {
@@ -105,7 +102,13 @@ export const GeneralConfigSearch = ({
 
       if (event.key === 'Enter') {
         event.preventDefault();
-        const selected = filteredOptions[activeIndex >= 0 ? activeIndex : 0];
+        // Usar índice seguro para selección
+        const effectiveIndex =
+          activeIndex >= filteredOptions.length
+            ? filteredOptions.length - 1
+            : activeIndex;
+
+        const selected = filteredOptions[effectiveIndex >= 0 ? effectiveIndex : 0];
         if (selected) {
           handleSelect(selected.entry);
         }
@@ -121,20 +124,32 @@ export const GeneralConfigSearch = ({
     [activeIndex, filteredOptions, handleSelect],
   );
 
-  useEffect(() => {
-    if (!isOpen) return;
+  // Estado para trackear cambio de dependencia
+  const [prevDependencyKey, setPrevDependencyKey] = useState(dependencyKey);
 
-    if (!filteredOptions.length) {
-      if (activeIndex !== -1) {
-        setActiveIndex(-1);
-      }
-      return;
-    }
+  // PATRÓN RECOMENDADO REACT: Resetear estado al cambiar dependencyKey
+  if (dependencyKey !== prevDependencyKey) {
+    setPrevDependencyKey(dependencyKey);
+    setInputValue('');
+    setIsOpen(false);
+    setActiveIndex(-1);
+  }
 
-    if (activeIndex >= filteredOptions.length) {
-      setActiveIndex(filteredOptions.length - 1);
-    }
-  }, [activeIndex, filteredOptions, isOpen]);
+  // Opción A: No cambiar el estado, solo clampa al leer (Estado derivado seguro)
+  // Si activeIndex se pasa de opciones, usamos el último; si no hay opciones, -1.
+  // Pero visualmente, si el usuario filtró y redujo opciones, el foco debería estar en una opción válida o ninguna.
+  // Para activeDescendant y selección:
+  const safeIndex =
+    filteredOptions.length === 0
+      ? -1
+      : activeIndex >= filteredOptions.length
+        ? filteredOptions.length - 1
+        : activeIndex;
+
+  const activeOptionId =
+    safeIndex >= 0 && filteredOptions[safeIndex]
+      ? `general-config-search-option-${filteredOptions[safeIndex].key}`
+      : undefined;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -147,12 +162,6 @@ export const GeneralConfigSearch = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    setInputValue('');
-    setIsOpen(false);
-    setActiveIndex(-1);
-  }, [dependencyKey]);
 
   if (!records.length) {
     return null;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const _updateNCF = (comprobante) => {
+export const useUpdateNCF = (comprobante) => {
   const [_RNC, _setRNC] = useState('');
   const {
     name: _name,

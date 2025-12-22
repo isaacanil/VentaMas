@@ -4,7 +4,7 @@ import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
-import routesName from '../../../../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 import { Tooltip } from '../../../system/Button/Tooltip';
 
 export const OrderToolbar = ({ side = 'left' }) => {

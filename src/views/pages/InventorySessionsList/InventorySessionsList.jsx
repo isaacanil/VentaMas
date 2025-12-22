@@ -1,5 +1,5 @@
 import { Button, Select, Space, Skeleton } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import {
   collection,
   addDoc,
@@ -13,7 +13,7 @@ import {
   getDoc,
   updateDoc,
 } from 'firebase/firestore';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -33,15 +33,20 @@ export default function InventorySessionsList() {
   // const [activeEditors, setActiveEditors] = useState({}) // removido: conteo de usuarios activos en tiempo real
   const [openSessionId, setOpenSessionId] = useState(null);
   const [userNameCache, setUserNameCache] = useState({});
+  const userNameCacheRef = useRef(userNameCache);
   const [sessionEditors, setSessionEditors] = useState({}); // { sessionId: Array<{uid,name}> }
   const [resolvingUIDs, setResolvingUIDs] = useState({}); // { [uid]: true }
   const [loadingEditorsBySession, setLoadingEditorsBySession] = useState({}); // { [sessionId]: true }
+
+  useEffect(() => {
+    userNameCacheRef.current = userNameCache;
+  }, [userNameCache]);
   // Filters
   const [statusFilter, setStatusFilter] = useState('all'); // all | open | closed
   const [creatorFilter, setCreatorFilter] = useState('all');
   const [dateRange, setDateRange] = useState([
-    dayjs().startOf('month'),
-    dayjs().endOf('month'),
+    DateTime.local().startOf('month'),
+    DateTime.local().endOf('month'),
   ]); // rango por defecto: mes actual
   // Cargar sesiones (sin listeners por subcolección de editingUsers)
   useEffect(() => {
@@ -71,7 +76,7 @@ export default function InventorySessionsList() {
       () => setLoading(false),
     );
     return () => unsub();
-  }, [user?.businessID]);
+  }, [user?.businessID, resolveMissingCreatorNames]);
 
   // Cargar editores (usuarios que actualizaron algún conteo) por sesión (lazy, sólo una vez por sesión)
   useEffect(() => {
@@ -119,21 +124,65 @@ export default function InventorySessionsList() {
         });
       }
     });
-  }, [sessions, user?.businessID, sessionEditors, userNameCache]);
+  }, [sessions, user?.businessID, sessionEditors, userNameCache, formatUserDisplay]);
 
   // Eliminado listener de usuarios activos a pedido del usuario
 
+  const formatUserDisplay = useCallback((raw) => {
+    if (!raw) return '';
+    const val = String(raw).trim();
+    if (val.includes('@') || /\s/.test(val)) return val;
+    if (val.length > 18) {
+      return `${val.slice(0, 6)}…${val.slice(-4)}`;
+    }
+    return val;
+  }, []);
+
+  const fetchUserDisplayName = useCallback(
+    async (uid, businessID) => {
+      const tryPaths = [
+        ['businesses', businessID, 'users', uid],
+        ['businesses', businessID, 'staff', uid],
+        ['users', uid],
+        ['profiles', uid],
+      ];
+      for (const parts of tryPaths) {
+        try {
+          const ref = doc(db, ...parts);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const data = snap.data() || {};
+            const nested = data.user || {};
+            const realName = (nested.realName || data.realName || '').trim();
+            const resolved =
+              realName ||
+              nested.name ||
+              nested.displayName ||
+              data.displayName ||
+              data.name ||
+              uid;
+            return formatUserDisplay(resolved);
+          }
+        } catch {
+          /* ignore lookup errors */
+        }
+      }
+      return formatUserDisplay(uid);
+    },
+    [formatUserDisplay],
+  );
+
   // Helper para elegir nombre desde un objeto user embebido
-  const pickEmbeddedUserName = (u, fallbackUid) => {
+  const pickEmbeddedUserName = useCallback((u, fallbackUid) => {
     if (!u) return '';
     const candidates = [u.realName, u.name, u.displayName, u.fullName, u.email];
     for (const c of candidates) {
       if (typeof c === 'string' && c.trim()) return c.trim();
     }
     return fallbackUid || '';
-  };
+  }, []);
 
-  const resolveMissingCreatorNames = async (list) => {
+  const resolveMissingCreatorNames = useCallback(async (list) => {
     if (!user?.businessID) return;
     const updates = [];
     for (const s of list) {
@@ -158,7 +207,7 @@ export default function InventorySessionsList() {
         // Ya tenemos el mejor nombre posible; evitamos fetch adicional
         continue;
       }
-      let display = userNameCache[uid];
+      let display = userNameCacheRef.current[uid];
       if (!display) {
         // marcar loading por-UID
         setResolvingUIDs((prev) => ({ ...prev, [uid]: true }));
@@ -197,9 +246,9 @@ export default function InventorySessionsList() {
         }),
       );
     }
-  };
+  }, [fetchUserDisplayName, pickEmbeddedUserName, user?.businessID]);
 
-  const fetchUserDisplayName = async (uid, businessID) => {
+  const _fetchUserDisplayNameLegacy = async (uid, businessID) => {
     // Única ruta confirmada: users/{uid}. Se dejan otras rutas como fallback por si existen en algunos tenants.
     const tryPaths = [
       ['businesses', businessID, 'users', uid],
@@ -223,16 +272,16 @@ export default function InventorySessionsList() {
             data.displayName ||
             data.name ||
             uid;
-          return formatUserDisplay(resolved);
+          return _formatUserDisplayLegacy(resolved);
         }
       } catch {
         /* ignore lookup errors */
       }
     }
-    return formatUserDisplay(uid);
+    return _formatUserDisplayLegacy(uid);
   };
 
-  const formatUserDisplay = (raw) => {
+  const _formatUserDisplayLegacy = (raw) => {
     if (!raw) return '';
     const val = String(raw).trim();
     // If it already looks like a proper name (contains space) or an email, keep it.
@@ -365,7 +414,7 @@ export default function InventorySessionsList() {
       value,
       label,
     }));
-  }, [sessions, userNameCache]);
+  }, [sessions, userNameCache, formatUserDisplay]);
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((s) => {
@@ -380,8 +429,8 @@ export default function InventorySessionsList() {
       ) {
         if (!s.createdAt?.seconds) return false;
         const ts = s.createdAt.seconds * 1000;
-        const start = dateRange[0].startOf('day').valueOf();
-        const end = dateRange[1].endOf('day').valueOf();
+        const start = dateRange[0].startOf('day').toMillis();
+        const end = dateRange[1].endOf('day').toMillis();
         if (ts < start || ts > end) return false;
       }
       return true;

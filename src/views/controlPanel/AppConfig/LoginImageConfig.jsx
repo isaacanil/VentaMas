@@ -12,7 +12,7 @@ import {
   deleteObject,
   listAll,
 } from 'firebase/storage';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -37,11 +37,7 @@ const LoginImageConfig = () => {
 
   const loginImageRef = ref(storage, 'app-config/login-image');
 
-  useEffect(() => {
-    fetchCurrentImage();
-  }, []);
-
-  const fetchCurrentImage = async () => {
+  const fetchCurrentImage = useCallback(async () => {
     try {
       const files = await listAll(loginImageRef);
       if (files.items.length > 0) {
@@ -54,7 +50,11 @@ const LoginImageConfig = () => {
     } finally {
       setLoadingFetch(false);
     }
-  };
+  }, [loginImageRef]);
+
+  useEffect(() => {
+    fetchCurrentImage();
+  }, [fetchCurrentImage]);
 
   const compressImageIterative = async (file) => {
     const baseOptions = {

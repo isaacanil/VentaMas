@@ -3,18 +3,44 @@ import styled from 'styled-components';
 
 import { FormattedValue } from '../FormattedValue/FormattedValue';
 
-export const InputWithHorizontalLabel = ({ label = null, ...props }) => {
+const THEME_COLOR_TO_CSS_VAR = {
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger: 'var(--error)',
+  error: 'var(--error)',
+  info: 'var(--info)',
+  primary: 'var(--primary)',
+  secondary: 'var(--secondary)',
+};
+
+const resolveThemeColor = (themeColor) => {
+  if (!themeColor) return undefined;
+  return THEME_COLOR_TO_CSS_VAR[themeColor] ?? themeColor;
+};
+
+export const InputWithHorizontalLabel = ({
+  label = null,
+  themeColor,
+  style,
+  ...inputProps
+}) => {
+  const resolvedColor = resolveThemeColor(themeColor);
+
   return (
-    <Container label={label}>
+    <Container $hasLabel={Boolean(label)}>
       {label && (
         <FormattedValue
           size={'small'}
           type={'title'}
-          {...props}
           value={label}
+          color={resolvedColor}
         />
       )}
-      <InputNumber prefix="$" {...props} style={{ width: '100%' }} />
+      <InputNumber
+        prefix="$"
+        {...inputProps}
+        style={{ width: '100%', ...(style ?? {}) }}
+      />
     </Container>
   );
 };
@@ -24,8 +50,8 @@ const Container = styled.div`
   align-content: center;
   padding: 0 0.4em;
   gap: 1em;
-  ${(label) =>
-    label &&
+  ${({ $hasLabel }) =>
+    $hasLabel &&
     `
         grid-template-columns: 10em 1fr;
     `}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 
 export const useFilterBar = (
   defaultFilters = {},
@@ -9,20 +9,19 @@ export const useFilterBar = (
     isAscending: defaultSort.isAscending,
   });
 
-  const initialDefaultValues = useRef(defaultFilters);
+  const [prevDefaultFiltersSerialized, setPrevDefaultFiltersSerialized] = useState(
+    JSON.stringify(defaultFilters)
+  );
 
-  useEffect(() => {
-    if (
-      JSON.stringify(defaultFilters) !==
-      JSON.stringify(initialDefaultValues.current)
-    ) {
-      setState((prev) => ({
-        ...prev,
-        filters: defaultFilters,
-      }));
-      initialDefaultValues.current = defaultFilters;
-    }
-  }, [defaultFilters]);
+  // PATRÓN RECOMENDADO REACT: Ajustar estado durante render al cambiar props
+  const currentDefaultFiltersSerialized = JSON.stringify(defaultFilters);
+  if (currentDefaultFiltersSerialized !== prevDefaultFiltersSerialized) {
+    setPrevDefaultFiltersSerialized(currentDefaultFiltersSerialized);
+    setState((prev) => ({
+      ...prev,
+      filters: defaultFilters,
+    }));
+  }
 
   const setFilters = useCallback((newFilters) => {
     const cleanedFilters = Object.fromEntries(

@@ -9,7 +9,7 @@ import {
   Badge,
   Typography,
 } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 // Importar Redux y la función para agregar a Firebase
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -41,12 +41,11 @@ const AddReceiptDrawer = ({ visible, onCancel, existingReceipts = [] }) => {
     existingReceipts.map((receipt) => receipt.data?.serie || ''),
   );
 
-  // Limpiar selecciones cuando se cierra el drawer
-  useEffect(() => {
-    if (!visible) {
+  const handleAfterOpenChange = useCallback((open) => {
+    if (!open) {
       setSelectedTemplates([]);
     }
-  }, [visible]);
+  }, []);
 
   // Función para verificar si un comprobante ya existe
   const isTemplateExisting = (template) => {
@@ -153,6 +152,7 @@ const AddReceiptDrawer = ({ visible, onCancel, existingReceipts = [] }) => {
       placement="bottom"
       onClose={onCancel}
       open={visible}
+      afterOpenChange={handleAfterOpenChange}
       styles={{ content: { height: '100%' } }}
       footer={
         <FooterContainer>

@@ -14,10 +14,13 @@ export const useFbGetClients = ({ includeDeleted = false } = {}) => {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = useSelector(selectUser);
+  if ((!user || !user.businessID) && loading) {
+    setLoading(false);
+  }
+
   useEffect(() => {
     if (!user || !user.businessID) {
-      setLoading(false);
-      return;
+      return undefined;
     }
 
     const { businessID } = user;
@@ -61,7 +64,7 @@ export const useFbGetClients = ({ includeDeleted = false } = {}) => {
     return () => {
       unsubscribe();
     };
-  }, [user]);
+  }, [user, includeDeleted]);
 
   return { clients, loading };
 };

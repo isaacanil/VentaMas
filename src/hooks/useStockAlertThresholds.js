@@ -8,7 +8,10 @@ const DEFAULT_CRITICAL_THRESHOLD = 10;
 
 export const useStockAlertThresholds = () => {
   const settingsCart = useSelector(SelectSettingCart) || {};
-  const billing = settingsCart.billing || {};
+  const billing = useMemo(
+    () => settingsCart.billing || {},
+    [settingsCart.billing],
+  );
 
   const { lowThreshold, criticalThreshold } = useMemo(() => {
     const resolvedLow = Number.isFinite(billing?.stockLowThreshold)
@@ -23,7 +26,7 @@ export const useStockAlertThresholds = () => {
       lowThreshold: resolvedLow,
       criticalThreshold: resolvedCritical,
     };
-  }, [billing?.stockLowThreshold, billing?.stockCriticalThreshold]);
+  }, [billing]);
 
   const alertsEnabled = !!billing.stockAlertsEnabled;
 

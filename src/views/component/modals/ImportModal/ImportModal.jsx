@@ -1,6 +1,6 @@
 import { FileAddOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, Upload, Modal, message, Tabs, Table } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { getAvailableHeaders } from '../../../../utils/import/product/filterEssentialHeaders';
@@ -169,7 +169,11 @@ export default function ImportModal({
     fileList,
   };
 
-  const flattenObject = (obj, parentKey = '', result = {}) => {
+  const flattenObject = useCallback(function flattenObjectInner(
+    obj,
+    parentKey = '',
+    result = {},
+  ) {
     if (obj === null || obj === undefined) {
       result[parentKey || 'valor'] = obj;
       return result;
@@ -191,7 +195,7 @@ export default function ImportModal({
       const newKey = parentKey ? `${parentKey}.${key}` : key;
 
       if (value && typeof value === 'object' && !Array.isArray(value)) {
-        flattenObject(value, newKey, result);
+        flattenObjectInner(value, newKey, result);
       } else if (Array.isArray(value)) {
         result[newKey] = value
           .map((item) =>
@@ -204,7 +208,7 @@ export default function ImportModal({
     });
 
     return result;
-  };
+  }, []);
 
   const previewRows = useMemo(
     () =>
@@ -212,7 +216,7 @@ export default function ImportModal({
         key: index,
         ...flattenObject(row),
       })),
-    [previewData],
+    [previewData, flattenObject],
   );
 
   const previewColumns = useMemo(() => {

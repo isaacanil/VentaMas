@@ -1,7 +1,7 @@
-import { useScreenSize } from '../../hooks/useScreenSize';
+import { useElementSize } from '../../hooks/useElementSize';
 
 export const useMoveScroll = (ref) => {
-  const { width } = useScreenSize(ref);
+  const { width } = useElementSize(ref);
 
   const toStart = () => {
     if (ref.current && ref.current.scrollLeft > 0) {

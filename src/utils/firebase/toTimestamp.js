@@ -37,7 +37,7 @@ const normalizeMillisInput = (value) => {
 };
 
 /**
- * Acepta millis, Date, dayjs, Timestamp o un objeto {seconds, nanoseconds} y lo devuelve como Timestamp.
+ * Acepta millis, Date, Luxon DateTime, Timestamp o un objeto {seconds, nanoseconds} y lo devuelve como Timestamp.
  */
 export const toTimestamp = (input, fallback = undefined) => {
   if (input instanceof Timestamp) return input;

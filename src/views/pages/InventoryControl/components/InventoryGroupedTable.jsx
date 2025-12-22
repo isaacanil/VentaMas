@@ -9,8 +9,8 @@ import {
   Dropdown,
   Modal,
 } from 'antd';
-import dayjs from 'dayjs';
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { DateTime } from 'luxon';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
@@ -68,16 +68,16 @@ export default function InventoryGroupedTable({
   // Eliminado noExpDetails y modal asociado; ya no se muestran detalles separados para "sin vencimiento".
   const CLEAR_SENTINEL = '__REMOVE__';
   // Baseline para mantener indicador de cambios incluso tras guardar
-  const baselineRef = useRef({ counts: {}, expirations: {} });
+  // Derivar baseline usando useMemo en lugar de useState+useEffect
+  const baselineSnapshot = useMemo(() => {
+    if (!groups || !groups.length) {
+      return { counts: {}, expirations: {} };
+    }
 
-  // Inicializar baseline una sola vez (cuando llegan grupos por primera vez)
-  useEffect(() => {
-    if (!groups || !groups.length) return;
-    const hasBaseline = Object.keys(baselineRef.current.counts).length > 0;
-    if (hasBaseline) return;
     const countsBase = {};
     const expBase = {};
     const norm = (d) => formatInputDate(d) || '';
+    
     groups.forEach((g) => {
       (g._children || []).forEach((ch) => {
         const key = ch.key;
@@ -144,7 +144,8 @@ export default function InventoryGroupedTable({
         }
       }
     });
-    baselineRef.current = { counts: countsBase, expirations: expBase };
+    
+    return { counts: countsBase, expirations: expBase };
   }, [groups, serverCounts, countsMeta]);
 
   // Mapear a columnas de AdvancedTable
@@ -333,7 +334,7 @@ export default function InventoryGroupedTable({
             : Number(child.stock ?? 0);
         const effectiveCount =
           counts[childKey] !== undefined ? counts[childKey] : persistedCount;
-        const baseCount = baselineRef.current.counts[childKey];
+        const baseCount = baselineSnapshot.counts[childKey];
         if (
           baseCount !== undefined &&
           Number(effectiveCount) !== Number(baseCount)
@@ -358,7 +359,7 @@ export default function InventoryGroupedTable({
               ? formatInputDate(child.expirationDate)
               : '';
         persistedExp = normExp(persistedExp);
-        const baseExp = baselineRef.current.expirations[childKey];
+        const baseExp = baselineSnapshot.expirations[childKey];
         if (baseExp !== undefined && persistedExp !== baseExp) {
           isModified = true;
           break;
@@ -378,7 +379,7 @@ export default function InventoryGroupedTable({
                 : Number(src.stock ?? src.quantity ?? 0);
             const srcEffective =
               counts[skey] !== undefined ? counts[skey] : srcPersisted;
-            const baseSrcCount = baselineRef.current.counts[skey];
+            const baseSrcCount = baselineSnapshot.counts[skey];
             if (
               baseSrcCount !== undefined &&
               Number(srcEffective) !== Number(baseSrcCount)
@@ -403,7 +404,7 @@ export default function InventoryGroupedTable({
                     ? formatInputDate(child.expirationDate)
                     : '';
             sExp = normExp(sExp);
-            const baseSExp = baselineRef.current.expirations[skey];
+            const baseSExp = baselineSnapshot.expirations[skey];
             if (baseSExp !== undefined && sExp !== baseSExp) {
               isModified = true;
               break;
@@ -433,7 +434,7 @@ export default function InventoryGroupedTable({
           if (metaTop && metaTop !== CLEAR_SENTINEL) return normExp(metaTop);
           return originalTop || '';
         })();
-        const baseTop = baselineRef.current.expirations[g.topKey];
+        const baseTop = baselineSnapshot.expirations[g.topKey];
         if (baseTop !== undefined) {
           if (currentTop !== baseTop) isModified = true;
         } else {
@@ -581,7 +582,7 @@ export default function InventoryGroupedTable({
             serverCounts[g.topKey] !== undefined
               ? Number(serverCounts[g.topKey])
               : Number(child.stock ?? 0);
-          const baselineTop = baselineRef.current.counts[g.topKey];
+          const baselineTop = baselineSnapshot.counts[g.topKey];
           if (
             baselineTop !== undefined &&
             Number(currentPersistedTop) !== Number(baselineTop)
@@ -597,7 +598,7 @@ export default function InventoryGroupedTable({
             serverCounts[ch.key] !== undefined
               ? Number(serverCounts[ch.key])
               : Number(ch.stock ?? 0);
-          const baselineChild = baselineRef.current.counts[ch.key];
+          const baselineChild = baselineSnapshot.counts[ch.key];
           if (
             baselineChild !== undefined &&
             Number(currentPersistedChild) !== Number(baselineChild)
@@ -612,7 +613,7 @@ export default function InventoryGroupedTable({
               serverCounts[skey] !== undefined
                 ? Number(serverCounts[skey])
                 : Number(src.stock ?? src.quantity ?? 0);
-            const baselineSrc = baselineRef.current.counts[skey];
+            const baselineSrc = baselineSnapshot.counts[skey];
             if (
               baselineSrc !== undefined &&
               Number(currentPersistedSrc) !== Number(baselineSrc)
@@ -655,7 +656,9 @@ export default function InventoryGroupedTable({
             // No hay estado de edición: usar valores persistidos/originales
             currentStr = manualVal || originalVal || '';
           }
-          const valueDay = currentStr ? dayjs(currentStr) : null;
+          const valueDay = currentStr
+            ? DateTime.fromISO(currentStr)
+            : null;
           expirationSortValue = currentStr || '';
           const hasOriginal = !!originalVal;
           // Mostrar DatePicker
@@ -666,7 +669,9 @@ export default function InventoryGroupedTable({
               allowClear
               placeholder={hasOriginal ? 'Sin fecha' : 'Sin asignar'}
               disabledDate={(d) =>
-                d && d.endOf('day').isBefore(dayjs().startOf('day'))
+                d &&
+                d.endOf('day').toMillis() <
+                  DateTime.local().startOf('day').toMillis()
               }
               onChange={(date) => {
                 if (!date) {
@@ -868,7 +873,7 @@ export default function InventoryGroupedTable({
             serverCounts[ch.key] !== undefined
               ? Number(serverCounts[ch.key])
               : Number(ch.stock ?? 0);
-          const baselineChild = baselineRef.current.counts[ch.key];
+          const baselineChild = baselineSnapshot.counts[ch.key];
           if (
             baselineChild !== undefined &&
             Number(currentPersistedChild) !== Number(baselineChild)
@@ -888,7 +893,7 @@ export default function InventoryGroupedTable({
               serverCounts[skey] !== undefined
                 ? Number(serverCounts[skey])
                 : Number(src.stock ?? src.quantity ?? 0);
-            const baselineSrc = baselineRef.current.counts[skey];
+            const baselineSrc = baselineSnapshot.counts[skey];
             if (
               baselineSrc !== undefined &&
               Number(currentPersistedSrc) !== Number(baselineSrc)
@@ -1105,6 +1110,7 @@ export default function InventoryGroupedTable({
   }, [
     groups,
     counts,
+    baselineSnapshot,
     onChangeCount,
     countsMeta,
     usersNameCache,
@@ -1113,6 +1119,8 @@ export default function InventoryGroupedTable({
     onChangeExpiration,
     resolvingUIDs,
     serverCounts,
+    locationNamesMap,
+    resolvingLocations,
   ]);
 
   if (!loading && (!groups || groups.length === 0)) {
@@ -1165,7 +1173,7 @@ export default function InventoryGroupedTable({
         serverCounts={serverCounts}
         saving={saving}
         readOnly={readOnly}
-        baselineSnapshot={baselineRef.current}
+        baselineSnapshot={baselineSnapshot}
       />
     </Wrapper>
   );

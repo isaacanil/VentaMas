@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -86,7 +86,6 @@ const filterAccountsByClientType = (data, type) => {
 export const AccountReceivableList = () => {
   const user = useSelector(selectUser);
   const [datesSelected, setDatesSelected] = useState(getDateRange('today'));
-  const [processedAccount, setProcessedAccount] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
   const [sortDirection, setSortDirection] = useState('asc');
@@ -116,7 +115,7 @@ export const AccountReceivableList = () => {
       .map((client) => ({ value: client, label: client }));
   }, [accountsReceivable]);
 
-  useEffect(() => {
+  const processedAccount = useMemo(() => {
     let data = mapDataToAccounts(accountsReceivable);
 
     // Filtrar por tipo de cliente
@@ -147,7 +146,7 @@ export const AccountReceivableList = () => {
       sortCriteria,
       sortDirection,
     );
-    setProcessedAccount(sortedData);
+    return sortedData;
   }, [
     accountsReceivable,
     sortCriteria,

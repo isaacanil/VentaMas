@@ -1,77 +1,77 @@
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../firebaseconfig';
 
+const toMs = (v) => {
+  if (v == null) return null;
+  if (typeof v?.toMillis === 'function') return v.toMillis(); // Firestore Timestamp
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string') {
+    const ms = Date.parse(v);
+    return Number.isNaN(ms) ? null : ms;
+  }
+  return null;
+};
+
 export const useFbGetInvoicesByClient = (clientId, dateRange = null) => {
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const user = useSelector(selectUser);
+  const businessID = useSelector((s) => selectUser(s)?.businessID);
+
+  const startMs = toMs(dateRange?.[0]);
+  const endMs = toMs(dateRange?.[1]);
+
+  // Construimos queryKey actual fuera del efecto para determinar loading
+  const queryKey = (!businessID || !clientId)
+    ? ''
+    : `${businessID}|${clientId}|${startMs ?? ''}|${endMs ?? ''}`;
+
+  const [invoicesState, setInvoicesState] = useState([]);
+  const [resolvedKey, setResolvedKey] = useState(''); // último snapshot aplicado
 
   useEffect(() => {
-    if (!user?.businessID || !clientId) {
-      setInvoices([]);
-      return;
+    if (!businessID || !clientId) return undefined;
+
+    // Calculamos queryKeyLocal dentro para asegurar coincidencia con el ciclo actual del efecto
+    const queryKeyLocal = `${businessID}|${clientId}|${startMs ?? ''}|${endMs ?? ''}`;
+
+    const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
+
+    const constraints = [where('data.client.id', '==', clientId)];
+
+    if (startMs != null && endMs != null) {
+      constraints.push(where('data.date', '>=', new Date(startMs)));
+      constraints.push(where('data.date', '<=', new Date(endMs)));
     }
 
-    setLoading(true);
+    constraints.push(orderBy('data.date', 'desc'));
 
-    const invoicesRef = collection(
-      db,
-      'businesses',
-      user.businessID,
-      'invoices',
-    );
-    let q;
-    if (dateRange && Array.isArray(dateRange) && dateRange[0] && dateRange[1]) {
-      const [startDate, endDate] = dateRange;
-      q = query(
-        invoicesRef,
-        where('data.client.id', '==', clientId),
-        where(
-          'data.date',
-          '>=',
-          startDate.toDate ? startDate.toDate() : startDate,
-        ),
-        where('data.date', '<=', endDate.toDate ? endDate.toDate() : endDate),
-        orderBy('data.date', 'desc'),
-      );
-    } else {
-      q = query(
-        invoicesRef,
-        where('data.client.id', '==', clientId),
-        orderBy('data.date', 'desc'),
-      );
-    }
+    const q = query(invoicesRef, ...constraints);
 
-    const unsubscribe = onSnapshot(
+    return onSnapshot(
       q,
       (snapshot) => {
-        if (snapshot.empty) {
-          setInvoices([]);
-          setLoading(false);
-          return;
-        }
-        const invoicesData = snapshot.docs.map((doc) => doc.data().data);
-        setInvoices(invoicesData);
-        setLoading(false);
+        const invoicesData = snapshot.empty
+          ? []
+          : snapshot.docs.map((doc) => doc.data().data);
+
+        setInvoicesState(invoicesData);
+        setResolvedKey(queryKeyLocal);
       },
       (error) => {
         console.error('Error fetching invoices by client:', error);
-        setLoading(false);
+        setInvoicesState([]);
+        setResolvedKey(queryKeyLocal);
       },
     );
+  }, [businessID, clientId, startMs, endMs]);
 
-    return () => unsubscribe();
-  }, [user?.businessID, clientId, dateRange]);
+  const isResolved = queryKey && resolvedKey === queryKey;
 
-  return { invoices, loading };
+  return {
+    invoices: isResolved ? invoicesState : [],
+    loading: Boolean(queryKey && !isResolved),
+  };
 };

@@ -1,6 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import {
   addIngredient,
@@ -9,7 +11,6 @@ import {
   deleteIngredient,
   selectIngredientList,
 } from '../../../../../features/customProducts/customProductSlice';
-import { formatPrice } from '@/utils/format';
 
 export const IngredientCard = ({ item, index }) => {
   const dispatch = useDispatch();

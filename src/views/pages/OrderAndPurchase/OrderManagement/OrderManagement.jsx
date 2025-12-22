@@ -13,7 +13,7 @@ import { selectUser } from '../../../../features/auth/userSlice';
 import { addOrder } from '../../../../firebase/order/fbAddOrder';
 import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder';
 import { useListenOrder } from '../../../../hooks/useOrders';
-import ROUTES_PATH from '../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { getLocalURL } from '../../../../utils/files';
 import Loader from '../../../component/Loader/Loader';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';

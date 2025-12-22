@@ -4,16 +4,14 @@ import {
   BulbOutlined,
   CopyOutlined,
 } from '@ant-design/icons';
-import * as ant from 'antd';
-import React, { useState, useEffect } from 'react';
+import { Modal, Space, Button, Alert, message, notification } from 'antd';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import {
   getBarcodeInfo,
   generateCorrectionSuggestions,
 } from '../../../../../../../utils/barcode/barcode';
-
-const { Modal, Space, Button, Alert } = ant;
 
 // Styled Components
 const WorkingCodeSection = styled.div`
@@ -141,45 +139,47 @@ export const BarcodeCorrector = ({
   currentBarcode,
   onApplyCorrection,
 }) => {
-  const [workingCode, setWorkingCode] = useState(currentBarcode || '');
-  const [suggestions, setSuggestions] = useState([]);
-  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const workingCode = currentBarcode || '';
+  const selectionTrigger = `${visible}-${workingCode}`;
+  const [{ trigger: selectedTrigger, value: selectedValue }, setSelection] =
+    useState(() => ({ trigger: selectionTrigger, value: null }));
 
-  useEffect(() => {
-    setWorkingCode(currentBarcode || '');
-    setSelectedSuggestion(null);
-  }, [currentBarcode, visible]);
+  const selectedSuggestion =
+    selectedTrigger === selectionTrigger ? selectedValue : null;
 
-  useEffect(() => {
-    if (workingCode) {
-      const allSuggestions = generateCorrectionSuggestions(workingCode);
-      // Filtrar solo las sugerencias relacionadas con dígitos verificadores
-      const checkDigitSuggestions = allSuggestions.filter(
-        (suggestion) =>
-          suggestion.reason === 'fix' || suggestion.reason === 'complete',
-      );
+  const setSelectedSuggestion = useCallback(
+    (updater) => {
+      setSelection((prev) => {
+        const current = prev.trigger === selectionTrigger ? prev.value : null;
+        const next =
+          typeof updater === 'function' ? updater(current) : updater;
+        return { trigger: selectionTrigger, value: next };
+      });
+    },
+    [selectionTrigger],
+  );
 
-      // Convertir el formato de las sugerencias para que coincida con el UI
-      const uiSuggestions = checkDigitSuggestions.map((suggestion) => ({
-        ...suggestion,
-        icon:
-          suggestion.reason === 'fix' ? (
-            <ExclamationCircleOutlined />
-          ) : (
-            <BulbOutlined />
-          ),
-      }));
-      setSuggestions(uiSuggestions);
-    } else {
-      setSuggestions([]);
-    }
-    setSelectedSuggestion(null);
+  const suggestions = useMemo(() => {
+    if (!workingCode) return [];
+
+    const allSuggestions = generateCorrectionSuggestions(workingCode);
+    const checkDigitSuggestions = allSuggestions.filter(
+      (suggestion) => suggestion.reason === 'fix' || suggestion.reason === 'complete',
+    );
+
+    return checkDigitSuggestions.map((suggestion) => ({
+      ...suggestion,
+      icon:
+        suggestion.reason === 'fix' ? (
+          <ExclamationCircleOutlined />
+        ) : (
+          <BulbOutlined />
+        ),
+    }));
   }, [workingCode]);
 
   const handleSelectSuggestion = (suggestion) => {
-    setSelectedSuggestion(
-      selectedSuggestion?.id === suggestion.id ? null : suggestion,
-    );
+    setSelectedSuggestion((prev) => (prev?.id === suggestion.id ? null : suggestion));
   };
 
   const handleApplyCorrection = () => {
@@ -187,7 +187,7 @@ export const BarcodeCorrector = ({
       ? selectedSuggestion.code
       : workingCode;
     onApplyCorrection(codeToApply);
-    ant.notification.success({
+    notification.success({
       message: 'Código Aplicado',
       description: `Se aplicó el código: ${codeToApply}`,
       duration: 3,
@@ -197,7 +197,7 @@ export const BarcodeCorrector = ({
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
-    ant.message.success('Código copiado al portapapeles');
+    message.success('Código copiado al portapapeles');
   };
 
   const barcodeInfo = workingCode ? getBarcodeInfo(workingCode) : null;

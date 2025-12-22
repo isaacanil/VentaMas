@@ -44,11 +44,14 @@ export function fbGetPendingBalance(businessID, clientId, callback) {
 function usePendingBalance(businessID, clientId, onBalanceChange = null) {
   const [pendingBalance, setPendingBalance] = useState(0);
 
+  if ((!businessID || !clientId) && pendingBalance !== 0) {
+    setPendingBalance(0);
+    if (onBalanceChange) onBalanceChange(0);
+  }
+
   useEffect(() => {
     if (!businessID || !clientId) {
-      setPendingBalance(0);
-      if (onBalanceChange) onBalanceChange(0);
-      return;
+      return undefined;
     }
 
     const unsubscribe = fbGetPendingBalance(

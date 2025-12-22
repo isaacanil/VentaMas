@@ -16,7 +16,7 @@ import { createProfessionalReportCallback } from '../../../../../hooks/exportToE
 import { formatBill } from '../../../../../hooks/exportToExcel/formatBill';
 import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
 import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
-import routesName from '../../../../../routes/routesName';
+import routesName from '@/router/routes/routesName';
 import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu';
 
 export const RegistroToolbar = ({ side = 'left', data, onReportSaleOpen }) => {

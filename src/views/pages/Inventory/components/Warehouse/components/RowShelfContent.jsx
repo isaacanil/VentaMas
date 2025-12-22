@@ -100,7 +100,7 @@ export default function RowShelfContent() {
     [navigate, dispatch],
   );
 
-  const handleDeleteSegment = async (segment) => {
+  const handleDeleteSegment = useCallback(async (segment) => {
     try {
       await deleteSegment(user, warehouseId, shelfId, rowId, segment.id);
       message.success('Segmento eliminado correctamente');
@@ -108,15 +108,15 @@ export default function RowShelfContent() {
       console.error('Error al eliminar el segmento: ', error);
       message.error('Error al eliminar el segmento');
     }
-  };
+  }, [user, warehouseId, shelfId, rowId]);
 
   const handleAddSegment = () => {
     dispatch(openSegmentForm());
   };
 
-  const handleUpdateSegment = (segment) => {
+  const handleUpdateSegment = useCallback((segment) => {
     dispatch(openSegmentForm(segment));
-  };
+  }, [dispatch]);
 
   const renderActions = useCallback(
     (segment) => [

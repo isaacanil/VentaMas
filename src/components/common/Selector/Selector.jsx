@@ -7,7 +7,7 @@ import {
 } from '@floating-ui/react';
 import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { useClickOutSide } from '../../../hooks/useClickOutSide';
@@ -56,6 +56,8 @@ export const Selector = ({
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(offsetValue), flip(), shift({ padding: 8 })],
   });
+  const setReference = useCallback((node) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
 
   const filteredOptions = options.filter((option) => {
     if (!option || !option.label) return false;
@@ -99,7 +101,7 @@ export const Selector = ({
   return (
     <Container ref={containerRef}>
       <Trigger
-        ref={refs.setReference}
+        ref={setReference}
         onClick={() => setIsOpen(!isOpen)}
         $styles={getOptionStyles(selectedOption, false)}
         $width={width}
@@ -115,7 +117,12 @@ export const Selector = ({
       </Trigger>
 
       {isOpen && (
-        <Dropdown ref={refs.setFloating} style={floatingStyles}>
+        <Dropdown
+          ref={setFloating}
+          style={floatingStyles}
+          role="listbox"
+          aria-label="Options"
+        >
           <SearchContainer>
             <SearchIcon icon={faSearch} />
             <SearchInput

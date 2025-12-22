@@ -10,7 +10,7 @@ import { selectUser } from '../../../../features/auth/userSlice';
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
 import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice';
 import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
-import ROUTES_PATH from '../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { useHasDeveloperAccess } from '../../../../utils/menuAccess';
 import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu';
 import { OpenMenuButton } from '../../system/Button/OpenMenuButton';

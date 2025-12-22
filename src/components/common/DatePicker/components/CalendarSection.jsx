@@ -1,21 +1,10 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import weekday from 'dayjs/plugin/weekday';
 import React from 'react';
 import styled from 'styled-components';
-
-import 'dayjs/locale/es';
+import { DateTime } from 'luxon';
 import { WEEK_DAYS } from '../constants/presets';
 import { renderCalendarGrid } from '../utils/dateUtils';
-
-dayjs.extend(weekday);
-dayjs.locale('es');
-
-// Configurar para que la semana empiece en domingo
-const locale = dayjs.Ls.es;
-if (locale) {
-  locale.weekStart = 0; // 0 = domingo
-}
+const DATE_LOCALE = 'es';
 
 const CalendarContainer = styled.div`
   display: flex;
@@ -155,6 +144,7 @@ export const CalendarSection = ({
   hoverDate,
 }) => {
   const days = renderCalendarGrid(currentDate);
+  const today = DateTime.local().setLocale(DATE_LOCALE);
 
   return (
     <CalendarContainer>
@@ -165,7 +155,11 @@ export const CalendarSection = ({
         >
           <LeftOutlined />
         </NavButton>
-        <MonthYear>{currentDate.format('MMMM YYYY')}</MonthYear>
+        <MonthYear>
+          {currentDate
+            .setLocale(DATE_LOCALE)
+            .toFormat('LLLL yyyy')}
+        </MonthYear>
         <NavButton
           onClick={() => onNavigateMonth('next')}
           aria-label="Mes siguiente"
@@ -182,34 +176,40 @@ export const CalendarSection = ({
 
       <CalendarGrid>
         {days.map((date, index) => {
-          const isCurrentMonth = date.month() === currentDate.month();
-          const isToday = date.isSame(dayjs(), 'day');
+          const isCurrentMonth = date.month === currentDate.month;
+          const isToday = date.hasSame(today, 'day');
           const isSelected =
             mode === 'single'
-              ? value && dayjs.isDayjs(value) && date.isSame(value, 'day')
-              : (currentRangeStart && date.isSame(currentRangeStart, 'day')) ||
-                (currentRangeEnd && date.isSame(currentRangeEnd, 'day'));
+              ? value &&
+                DateTime.isDateTime(value) &&
+                date.hasSame(value, 'day')
+              : (currentRangeStart &&
+                  date.hasSame(currentRangeStart, 'day')) ||
+                (currentRangeEnd && date.hasSame(currentRangeEnd, 'day'));
 
           let isInRange = false;
           if (mode === 'range') {
             if (currentRangeStart && (currentRangeEnd || hoverDate)) {
               const start = currentRangeStart;
               const end = currentRangeEnd || hoverDate;
-              const s = start.isBefore(end) ? start : end;
-              const e = start.isBefore(end) ? end : start;
+              const isBefore = start.toMillis() < end.toMillis();
+              const s = isBefore ? start : end;
+              const e = isBefore ? end : start;
+              const dayMillis = date.startOf('day').toMillis();
               isInRange =
-                date.isSameOrAfter(s, 'day') && date.isSameOrBefore(e, 'day');
+                dayMillis >= s.startOf('day').toMillis() &&
+                dayMillis <= e.startOf('day').toMillis();
             }
           }
 
           const isRangeStart =
             mode === 'range' &&
             currentRangeStart &&
-            date.isSame(currentRangeStart, 'day');
+            date.hasSame(currentRangeStart, 'day');
           const isRangeEnd =
             mode === 'range' &&
             currentRangeEnd &&
-            date.isSame(currentRangeEnd, 'day');
+            date.hasSame(currentRangeEnd, 'day');
 
           return (
             <CalendarDay
@@ -224,7 +224,7 @@ export const CalendarSection = ({
               onMouseEnter={() => mode === 'range' && onDateHover(date)}
               onMouseLeave={() => mode === 'range' && onDateHover(null)}
             >
-              {date.date()}
+              {date.day}
             </CalendarDay>
           );
         })}

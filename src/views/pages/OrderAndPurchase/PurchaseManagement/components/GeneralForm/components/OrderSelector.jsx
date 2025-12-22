@@ -1,9 +1,11 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Form, Input, Drawer, message, Button, Space, Empty } from 'antd';
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../../../constants/icons/icons';
 import {
@@ -14,7 +16,6 @@ import DateUtils from '../../../../../../../utils/date/dateUtils';
 import { normalizeText } from '../../../../../../../utils/text';
 import { calculateOrderTotals } from '../../../../OrderManagement/utils/orderCalculationsUtil';
 
-import { formatPrice } from '@/utils/format';
 
 const Wrapper = styled.div`
   display: grid;
@@ -95,7 +96,6 @@ const OrderSelector = ({ orders, orderLoading }) => {
   const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const searchInputRef = useRef(null);
   const { orderId } = useSelector(selectPurchase);
   const navigate = useNavigate();
@@ -108,14 +108,22 @@ const OrderSelector = ({ orders, orderLoading }) => {
     }
   }, [visible]);
 
-  useEffect(() => {
-    if (orderId && orders?.length) {
-      const match = orders.find((order) => order.id === orderId);
-      if (match) {
-        setSelectedOrder(match);
-      }
-    }
+  const matchedOrder = useMemo(() => {
+    if (!orderId || !orders?.length) return null;
+    return orders.find((order) => order?.id === orderId) ?? null;
   }, [orderId, orders]);
+
+  const selectionTrigger = `${orderId ?? ''}-${orders?.length ?? 0}`;
+  const [{ trigger: selectedTrigger, value: selectedValue }, setSelectedState] =
+    useState(() => ({ trigger: selectionTrigger, value: matchedOrder }));
+
+  const selectedOrder =
+    selectedTrigger === selectionTrigger ? selectedValue : matchedOrder;
+
+  const setSelectedOrder = useCallback(
+    (value) => setSelectedState({ trigger: selectionTrigger, value }),
+    [selectionTrigger],
+  );
 
   const filteredOrders = (
     search

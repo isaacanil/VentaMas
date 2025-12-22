@@ -2,9 +2,16 @@ import React, { Fragment, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { usePendingBalance } from '../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import { formatPrice } from '@/utils/format';../../../../../../../utils/pricing';
+import {
+  getProductsIndividualDiscounts,
+  getProductsPrice,
+  getProductsTax,
+  getTotalDiscount,
+} from '../../../../../../../utils/pricing';
 import { Line, SubTitle } from '../InvoiceTemplate1';
 import { Paragraph, Spacing, Subtitle } from '../Style';
 

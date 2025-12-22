@@ -1,5 +1,5 @@
 import { doc, onSnapshot } from 'firebase/firestore';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 import { db } from '../../firebase/firebaseconfig';
 
@@ -11,25 +11,16 @@ import { db } from '../../firebase/firebaseconfig';
  */
 export const useCreditLimitRealtime = (user, clientId) => {
   const [creditLimit, setCreditLimit] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(
+    () => Boolean(user?.businessID && clientId),
+  );
   const [error, setError] = useState(null);
 
-  const resetState = useCallback(() => {
-    setCreditLimit(null);
-    setIsLoading(true);
-    setError(null);
-  }, []);
-
   useEffect(() => {
-    // Si no hay user o clientId, resetear estado
+    // Si no hay user o clientId, no hacer nada (lazy init ya puso loading=false)
     if (!user?.businessID || !clientId) {
-      resetState();
-      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
 
     const creditLimitRef = doc(
       db,
@@ -62,7 +53,7 @@ export const useCreditLimitRealtime = (user, clientId) => {
     return () => {
       unsubscribe();
     };
-  }, [user?.businessID, clientId, resetState]);
+  }, [user?.businessID, clientId]);
 
   return { creditLimit, isLoading, error };
 };

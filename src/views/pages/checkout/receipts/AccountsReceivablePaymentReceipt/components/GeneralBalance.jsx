@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { usePendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
 import { Subtitle } from '../../../Style';
 
-import { formatPrice } from '@/utils/format';
 
 export const GeneralBalance = ({ data }) => {
   const user = useSelector(selectUser);

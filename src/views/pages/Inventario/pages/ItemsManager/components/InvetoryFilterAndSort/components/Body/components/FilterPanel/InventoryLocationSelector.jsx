@@ -63,6 +63,8 @@ export const InventoryLocationSelector = ({
       }),
     ],
   });
+  const setReference = useCallback((node) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
 
   const click = useClick(context);
   const dismiss = useDismiss(context);
@@ -157,7 +159,7 @@ export const InventoryLocationSelector = ({
   return (
     <Wrapper>
       <SelectorButton
-        ref={refs.setReference}
+        ref={setReference}
         {...getReferenceProps()}
         type="button"
         disabled={loading}
@@ -186,7 +188,7 @@ export const InventoryLocationSelector = ({
       {open &&
         createPortal(
           <Dropdown
-            ref={refs.setFloating}
+            ref={setFloating}
             style={floatingStyles}
             {...getFloatingProps()}
             data-inventory-selector-overlay="true"

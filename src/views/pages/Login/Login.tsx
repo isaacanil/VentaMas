@@ -64,59 +64,40 @@ export const Login = (): JSX.Element => {
 
   /* ---------- imagen de fondo ---------- */
   const [loginImage, setLoginImage] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoadState, setImageLoadState] = useState<'loading' | 'loaded' | 'idle'>('loading');
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   /* ---------- usuario ---------- */
   const user = useSelector(selectUser) as MaybeUser;
 
   /* ---------- descarga de la imagen ---------- */
-  const fetchLoginImage = useCallback(async () => {
-    setImageLoading(true);
-    setImageLoaded(false);
-    setLoginImage(null);
+  useEffect(() => {
+    let cancelled = false;
+    const loginImageRef = ref(storage, LOGIN_IMAGE_PATH);
 
-    try {
-      const loginImageRef = ref(storage, LOGIN_IMAGE_PATH);
-      const files = await listAll(loginImageRef);
+    listAll(loginImageRef)
+      .then((files) => {
+        if (cancelled) return undefined;
+        if (!files.items.length) {
+          setImageLoadState('idle');
+          return undefined;
+        }
+        return getDownloadURL(files.items[0]).then((url) => {
+          if (cancelled) return;
+          setLoginImage(url);
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('Error al cargar la imagen de login:', err);
+        setLoginImage(null);
+        setImageLoadState('idle');
+      });
 
-      if (files.items.length > 0) {
-        const url = await getDownloadURL(files.items[0]);
-        setLoginImage(url);
-      } else {
-        setImageLoading(false);
-      }
-    } catch (err) {
-      console.error('Error al cargar la imagen de login:', err);
-      setImageLoading(false);
-    }
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  useEffect(() => {
-
-    void fetchLoginImage();
-  }, [fetchLoginImage]);
-
-  /* reinicio de flags si cambia la URL */
-  useEffect(() => {
-    if (loginImage) {
-      setImageLoading(true);
-      setImageLoaded(false);
-    }
-  }, [loginImage]);
-
-  /* imagen ya en caché */
-  useEffect(() => {
-    if (
-      imgRef.current &&
-      imgRef.current.complete &&
-      imgRef.current.naturalWidth > 0
-    ) {
-      setImageLoaded(true);
-      setImageLoading(false);
-    }
-  }, [loginImage]);
 
   /* redirección si hay sesión */
   useEffect(() => {
@@ -150,11 +131,11 @@ export const Login = (): JSX.Element => {
               <motion.div
                 key={loginImage}
                 initial="hidden"
-                animate={imageLoaded ? 'visible' : 'hidden'}
+                animate={imageLoadState === 'loaded' ? 'visible' : 'hidden'}
                 variants={imageVariants}
                 style={{ height: '100%', position: 'relative' }}
               >
-                {imageLoading && (
+                {imageLoadState === 'loading' && (
                   <Skeleton.Image
                     style={{
                       position: 'absolute',
@@ -175,21 +156,20 @@ export const Login = (): JSX.Element => {
                     src={loginImage}
                     alt="Login visual"
                     onLoad={() => {
-                      setImageLoaded(true);
-                      setImageLoading(false);
+                      setImageLoadState('loaded');
                     }}
                     onError={() => {
                       console.error('No se pudo cargar la imagen:', loginImage);
                       setLoginImage(null);
-                      setImageLoading(false);
+                      setImageLoadState('idle');
                     }}
-                    style={{ visibility: imageLoaded ? 'visible' : 'hidden' }}
+                    style={{ visibility: imageLoadState === 'loaded' ? 'visible' : 'hidden' }}
                   />
                 </Imagen>
               </motion.div>
             )}
 
-            {!loginImage && imageLoading && (
+            {!loginImage && imageLoadState === 'loading' && (
               <Skeleton.Image
                 style={{
                   width: '100%',
@@ -201,7 +181,7 @@ export const Login = (): JSX.Element => {
               />
             )}
 
-            {!loginImage && !imageLoading && (
+            {!loginImage && imageLoadState !== 'loading' && (
               <NoImageMsg>No hay imagen de fondo disponible.</NoImageMsg>
             )}
           </ImagenContainer>

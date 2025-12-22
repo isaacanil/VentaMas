@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const buildLocalStorageName = (userId, tableName) =>
   `tableColumnsOrder_${userId}_${tableName}`;
@@ -37,7 +37,7 @@ const getInitialColumnOrder = (columns, tableName, localStorageName) => {
     }
 
     const validColumns = filterInvalidColumns(parsedColumns);
-    const updatedColumns = mergeColumns(columns, validColumns);
+    const updatedColumns = mergeColumns(defaultColumns, validColumns);
     return updatedColumns;
   } catch (error) {
     console.error('Error al cargar la configuración de columnas:', error);
@@ -86,19 +86,29 @@ export const useColumnOrder = (columns = [], tableName, userId) => {
 
   const [columnOrder, setColumnOrder] = useState(getColumnOrderFromStorage);
 
-  // Efecto para detectar cambios en las columnas
-  useEffect(() => {
-    const currentOrder = getColumnOrderFromStorage();
-    if (hasConfigurationChanged(columns, columnOrder)) {
-      setColumnOrder(currentOrder);
+  const resolvedColumnOrder = useMemo(() => {
+    const defaultColumns = columns.map((col) => ({
+      ...col,
+      status: col.status || 'active',
+    }));
+
+    if (!Array.isArray(columnOrder) || columnOrder.length === 0) {
+      return defaultColumns;
     }
-  }, [columns, getColumnOrderFromStorage]);
+
+    if (hasConfigurationChanged(defaultColumns, columnOrder)) {
+      return defaultColumns;
+    }
+
+    const validColumns = filterInvalidColumns(columnOrder);
+    return mergeColumns(defaultColumns, validColumns);
+  }, [columns, columnOrder]);
 
   useEffect(() => {
     if (tableName) {
-      localStorage.setItem(localStorageName, JSON.stringify(columnOrder));
+      localStorage.setItem(localStorageName, JSON.stringify(resolvedColumnOrder));
     }
-  }, [columnOrder, localStorageName, tableName]);
+  }, [resolvedColumnOrder, localStorageName, tableName]);
 
   const resetColumnOrder = useCallback(() => {
     if (tableName) {
@@ -107,5 +117,5 @@ export const useColumnOrder = (columns = [], tableName, userId) => {
     }
   }, [tableName, columns, localStorageName]);
 
-  return [columnOrder, setColumnOrder, resetColumnOrder];
+  return [resolvedColumnOrder, setColumnOrder, resetColumnOrder];
 };

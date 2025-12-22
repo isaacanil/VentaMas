@@ -4,7 +4,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import ROUTES_NAME from '../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
+
 
 const Container = styled.div`
   display: flex;

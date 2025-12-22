@@ -135,15 +135,48 @@ export async function collectInventoryPrereqs(tx, { user, products }) {
       Boolean(prod?.restrictSaleWithoutStock) ||
       Boolean(productSnap.get('restrictSaleWithoutStock'));
 
-    const productStockId = prod.productStockId;
-    const batchId = prod.batchId;
+    let productStockId = prod.productStockId;
+    let batchId = prod.batchId;
+
+    if (!productStockId || !batchId) {
+      if (restrictSale) {
+        // Attempt to auto-resolve stock if missing and sale is restricted
+        try {
+          const stockQuery = db
+            .collection(`businesses/${user.businessID}/productsStock`)
+            .where('productId', '==', productId)
+            .where('status', '==', 'active')
+            .limit(5); // Fetch a few to filter in memory
+
+          const stockSnap = await tx.get(stockQuery);
+          // Find first valid stock (quantity > 0, not deleted)
+          // Ideally sort by createdAt ASC for FIFO, but we avoid extra index dependencies here
+          const validStock = stockSnap.docs.find((doc) => {
+            const data = doc.data();
+            return !data.isDeleted && data.quantity > 0 && data.batchId;
+          });
+
+          if (validStock) {
+            const data = validStock.data();
+            productStockId = validStock.id;
+            batchId = data.batchId;
+            // Pre-fill cache since we already fetched it
+            stockCache.set(productStockId, validStock);
+          }
+        } catch (err) {
+          console.warn(
+            `[collectInventoryPrereqs] Failed to auto-resolve stock for ${productId}`,
+            err,
+          );
+        }
+      }
+    }
 
     if (!productStockId || !batchId) {
       if (restrictSale) {
         throw new https.HttpsError(
           'failed-precondition',
-          `El producto ${
-            prod?.name || productId
+          `El producto ${prod?.name || productId
           } requiere seleccionar una existencia física antes de facturar.`,
         );
       }

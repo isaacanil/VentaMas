@@ -2,10 +2,11 @@ import { Button as AntdButton, Modal, message } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
 import { Receipt } from '../../../../../checkout/Receipt';
 
-import { formatPrice } from '@/utils/format';
 
 const antd = { Button: AntdButton, message };
 export const CheckoutAction = ({
@@ -40,7 +41,7 @@ export const CheckoutAction = ({
   return (
     <Container>
       <PriceContainer>{formatPrice(TotalPurchaseRef)}</PriceContainer>
-      <Receipt ref={componentToPrintRef} data={bill}></Receipt>
+      <Receipt ref={componentToPrintRef} data={bill} />
       <ButtonGroup>
         <Button
           borderRadius="normal"

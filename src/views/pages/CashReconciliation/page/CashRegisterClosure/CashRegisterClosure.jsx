@@ -74,7 +74,7 @@ export const CashRegisterClosure = () => {
   useEffect(() => {
     if (cashCountIsOpen)
       fbCashCountChangeState(cashCount, actualUser, 'closing');
-  }, []);
+  }, [cashCountIsOpen, cashCount, actualUser]);
 
   useEffect(() => {
     if (!cashCount?.opening?.initialized) {

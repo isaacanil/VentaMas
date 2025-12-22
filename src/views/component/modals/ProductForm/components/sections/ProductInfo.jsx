@@ -107,7 +107,7 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
     }
 
     return options;
-  }, [productBrands, product?.brand, product?.brandId]);
+  }, [productBrands, product]);
 
   const itemTypeOptions = PRODUCT_ITEM_TYPE_OPTIONS;
 

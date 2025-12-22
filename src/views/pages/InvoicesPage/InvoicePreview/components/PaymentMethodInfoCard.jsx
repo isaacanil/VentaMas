@@ -1,5 +1,5 @@
 import { Card, Divider } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -10,6 +10,22 @@ const paymentmethodLabel = {
   card: 'Tarjeta',
   transfer: 'Transferencia',
   creditNote: 'Nota de Crédito',
+};
+
+const toDateTime = (value) => {
+  if (!value) return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value?.seconds) return DateTime.fromSeconds(value.seconds);
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value?.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate());
+  }
+  return null;
 };
 
 export const PaymentMethodInfoCard = ({
@@ -62,11 +78,7 @@ export const PaymentMethodInfoCard = ({
                   <CreditNoteDetail>
                     <DetailLabel>Aplicado:</DetailLabel>
                     <DetailValue>
-                      {app.appliedAt?.seconds
-                        ? dayjs(new Date(app.appliedAt.seconds * 1000)).format(
-                            'DD/MM/YYYY HH:mm',
-                          )
-                        : dayjs(app.appliedAt).format('DD/MM/YYYY HH:mm')}
+                      {toDateTime(app.appliedAt)?.toFormat('dd/MM/yyyy HH:mm')}
                     </DetailValue>
                   </CreditNoteDetail>
 

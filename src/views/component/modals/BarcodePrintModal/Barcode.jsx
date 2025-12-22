@@ -1,9 +1,7 @@
-import * as ant from 'antd';
-import React, { forwardRef } from 'react';
+import { Typography } from 'antd';
+import { forwardRef } from 'react';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
-
-const { Typography } = ant;
 
 import { formatPrice } from '@/utils/format';
 

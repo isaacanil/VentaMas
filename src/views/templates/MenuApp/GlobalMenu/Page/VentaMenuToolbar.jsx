@@ -11,7 +11,7 @@ import {
   toggleFullScreen,
 } from '../../../../../features/setting/settingSlice';
 import { useAppNavigation } from '../../../../../hooks/useAppNavigation';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
 import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu';
 

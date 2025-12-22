@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { separator } from '@/utils/number/number';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
 import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { Button } from '../../../../../templates/system/Button/Button';
 import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/IngredientCard';
 
-import { separator } from '@/utils/number/number';
 
 export const IngredientList = ({ handleIngredientOpen }) => {
   const user = useSelector(selectUser);

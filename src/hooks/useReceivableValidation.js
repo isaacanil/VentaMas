@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectAR } from '../features/accountsReceivable/accountsReceivableSlice';
@@ -9,13 +9,9 @@ import { fbGetActiveARCount } from '../firebase/accountsReceivable/fbGetActiveAR
 import { calculateInvoiceChange } from '../utils/invoice';
 
 export const useReceivableValidation = (creditLimit) => {
-  const [isValid, setIsValid] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] =
     useState(0);
-  const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
   const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
-  const [creditLimitValue, setCreditLimitValue] = useState(0);
 
   const cartData = useSelector(SelectCartData);
   const client = useSelector(selectClient);
@@ -46,19 +42,20 @@ export const useReceivableValidation = (creditLimit) => {
     fetchInvoiceAvailableCount();
   }, [clientId, user, creditLimit]);
 
-  useEffect(() => {
+  // Derive credit limit validation values instead of using useEffect + setState
+  const { isWithinCreditLimit, creditLimitValue } = useMemo(() => {
     if (creditLimit?.creditLimit?.status && currentBalance !== null) {
       const adjustedCreditLimit = currentBalance + -change;
-      setIsWithinCreditLimit(
-        adjustedCreditLimit <= creditLimit?.creditLimit?.value,
-      );
-      setCreditLimitValue(adjustedCreditLimit);
-    } else {
-      setIsWithinCreditLimit(true);
+      return {
+        isWithinCreditLimit:
+          adjustedCreditLimit <= creditLimit?.creditLimit?.value,
+        creditLimitValue: adjustedCreditLimit,
+      };
     }
+    return { isWithinCreditLimit: true, creditLimitValue: 0 };
   }, [creditLimit, currentBalance, change]);
 
-  useEffect(() => {
+  const { isValid, errorMessage } = useMemo(() => {
     let newErrorMessage = '';
     let newIsValid = true;
 
@@ -84,8 +81,7 @@ export const useReceivableValidation = (creditLimit) => {
       newIsValid = false;
     }
 
-    setIsValid(newIsValid);
-    setErrorMessage(newErrorMessage);
+    return { isValid: newIsValid, errorMessage: newErrorMessage };
   }, [
     isGenericClient,
     clientId,

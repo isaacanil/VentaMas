@@ -237,7 +237,7 @@ export function ProductBatchModal() {
   const dispatch = useDispatch();
   const { notification, modal } = App.useApp();
   const { isOpen, productId, product } = useSelector(selectProductStockSimple);
-  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [rawSelectedBatch, setRawSelectedBatch] = useState(null);
   const [searchText, setSearchText] = useState('');
   const { products } = useSelector(SelectCartData);
   const inventoryLocations = useSelector((state) =>
@@ -318,24 +318,24 @@ export function ProductBatchModal() {
     };
   }, [filteredBySearch]);
 
-  const isInSelectedLocations = (locationId, selectedList) => {
-    if (
-      !locationId ||
-      !Array.isArray(selectedList) ||
-      selectedList.length === 0
-    ) {
-      return false;
-    }
-    return selectedList.some((rawSelected) => {
-      const selectedId = normalizeLocationId(rawSelected);
-      if (!selectedId) return false;
-      if (locationId === selectedId) return true;
-      return locationId.startsWith(`${selectedId}/`);
-    });
-  };
-
   const { prioritizedBatches, otherLocationBatches, hasLocationFilter } =
     useMemo(() => {
+      const isInSelectedLocations = (locationId, selectedList) => {
+        if (
+          !locationId ||
+          !Array.isArray(selectedList) ||
+          selectedList.length === 0
+        ) {
+          return false;
+        }
+        return selectedList.some((rawSelected) => {
+          const selectedId = normalizeLocationId(rawSelected);
+          if (!selectedId) return false;
+          if (locationId === selectedId) return true;
+          return locationId.startsWith(`${selectedId}/`);
+        });
+      };
+
       const sanitizedSelected = (selectedLocations || [])
         .map(normalizeLocationId)
         .filter(Boolean);
@@ -379,21 +379,15 @@ export function ProductBatchModal() {
     });
   }, [filteredBySearch, locationNames, fetchLocationName]);
 
-  useEffect(() => {
-    if (products.length === 0) {
-      setSelectedBatch(null);
-    }
-  }, [products.length]);
-
-  useEffect(() => {
-    if (!selectedBatch) return;
+  // Validar selectedBatch durante render: solo es válido si hay productos y existe en la lista
+  const selectedBatch = useMemo(() => {
+    if (products.length === 0) return null;
+    if (!rawSelectedBatch) return null;
     const exists = sanitizedProductStocks.some(
-      (stock) => stock.id === selectedBatch,
+      (stock) => stock.id === rawSelectedBatch,
     );
-    if (!exists) {
-      setSelectedBatch(null);
-    }
-  }, [sanitizedProductStocks, selectedBatch]);
+    return exists ? rawSelectedBatch : null;
+  }, [products.length, rawSelectedBatch, sanitizedProductStocks]);
 
   // Modificar la función formatLocation
   function formatLocation(locationId) {
@@ -448,7 +442,7 @@ export function ProductBatchModal() {
     const isCurrentlySelected = selectedBatch === stock.id;
 
     if (isCurrentlySelected) {
-      setSelectedBatch(null);
+      setRawSelectedBatch(null);
       return;
     }
 
@@ -464,7 +458,7 @@ export function ProductBatchModal() {
       return;
     }
 
-    setSelectedBatch(stock.id);
+    setRawSelectedBatch(stock.id);
   };
 
   const handleConfirm = () => {

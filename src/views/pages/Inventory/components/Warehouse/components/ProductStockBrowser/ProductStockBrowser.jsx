@@ -8,8 +8,8 @@ import {
   useInventoryProductIds,
   useListenAllActiveProductsStock,
 } from '../../../../../../../firebase/warehouse/productStockService';
-import { replacePathParams } from '../../../../../../../routes/replacePathParams';
-import ROUTES_PATH from '../../../../../../../routes/routesName';
+import { replacePathParams } from '@/router/routes/replacePathParams';
+import ROUTES_PATH from '@/router/routes/routesName';
 import Tree from '../../../../../../component/tree/Tree';
 
 import { PRODUCT_STOCK_FILTER_OPTIONS as BASE_PRODUCT_STOCK_FILTER_OPTIONS } from './constants';

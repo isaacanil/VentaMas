@@ -8,7 +8,7 @@ import {
   message,
   Tooltip,
 } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -256,8 +256,8 @@ export function GroupedLotsModal({
                       baseStr = formatInputDate(record.expirationDate);
                   }
                   if (baseStr) {
-                    const d = dayjs(baseStr);
-                    if (d.isValid()) dateValue = d;
+                    const d = DateTime.fromISO(baseStr);
+                    if (d.isValid) dateValue = d;
                   }
                   const originalDateStr =
                     record.type === 'batch'
@@ -266,7 +266,7 @@ export function GroupedLotsModal({
                   const currentEditStr = isMarkedForRemoval
                     ? CLEAR_SENTINEL
                     : dateValue
-                      ? dateValue.format('YYYY-MM-DD')
+                      ? dateValue.toFormat('yyyy-LL-dd')
                       : '';
                   const isDifferentFromOriginal =
                     record.type === 'batch' &&
@@ -372,7 +372,7 @@ export function GroupedLotsModal({
                           srcBaseStr = formatInputDate(record.expirationDate);
                       }
                       if (srcBaseStr) {
-                        const d = dayjs(srcBaseStr);
+                        const d = DateTime.fromISO(srcBaseStr);
                         if (d.isValid()) sourceDateValue = d;
                       }
 

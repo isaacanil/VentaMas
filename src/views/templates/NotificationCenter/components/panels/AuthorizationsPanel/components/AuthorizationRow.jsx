@@ -6,15 +6,10 @@ import {
 } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-import 'dayjs/locale/es';
 import { resolveModuleMeta } from '../../../../../../pages/Authorizations/components/AuthorizationRequests/utils/utils';
-
-dayjs.extend(relativeTime);
-dayjs.locale('es');
 
 const STATUS_CONFIG = {
   pending: {
@@ -67,7 +62,7 @@ const toMillis = (value) => {
 const formatTimeAgo = (timestamp) => {
   const millis = toMillis(timestamp);
   if (!millis) return '';
-  return dayjs(millis).fromNow();
+  return DateTime.fromMillis(millis).setLocale('es').toRelative() || '';
 };
 
 const resolveReference = (auth) => {

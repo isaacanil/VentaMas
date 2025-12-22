@@ -2,7 +2,7 @@ import {
   parsePhoneNumberFromString,
   isValidPhoneNumber as isValidNumber,
   getCountryCallingCode,
-} from 'libphonenumber-js';
+} from 'libphonenumber-js/min';
 
 export * from './formatPrice';
 

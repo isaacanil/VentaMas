@@ -21,11 +21,13 @@ export const CashupInvoicesOverview = memo(
       <Drawer
         open={isOpen}
         onClose={onClose}
-        width={'100%'}
-        height={'100%'}
+        size="large"
         placement="bottom"
         extra={<ExportInvoice invoices={invoices} />}
         styles={{
+          wrapper: {
+            height: '100vh',
+          },
           header: {
             paddingBlock: 0,
           },

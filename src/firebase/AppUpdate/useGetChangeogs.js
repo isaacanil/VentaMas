@@ -32,8 +32,7 @@ export const useGetChangelogs = () => {
         }
       );
     } catch (err) {
-      // Si hay error en la inicialización, manejarlo aquí
-      setError(err);
+      console.error('Error al inicializar changelogs:', err);
     }
     
     return () => {

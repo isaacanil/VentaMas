@@ -19,6 +19,7 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
   const [progress, setProgress] = useState(0);
   const [titleBtn, setTitleBtn] = useState(title);
   const [startIconBtn, setStartIconBtn] = useState(startIcon);
+  const [endIconBtn, setEndIconBtn] = useState(endIcon);
   const dispatch = useDispatch();
   const handleOnchange = async (e) => {
     fn(e.target.files[0]);
@@ -32,6 +33,8 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
     if (progress === 0 && loading === true) {
       dispatch(toggleLoader({ show: true, message: '0' }));
       setTitleBtn(title);
+      setStartIconBtn(startIcon);
+      setEndIconBtn(endIcon);
     }
     if (progress > 0 && progress < 100) {
       dispatch(
@@ -42,20 +45,23 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
       );
       setTitleBtn(`cargando...`);
       setStartIconBtn(<FontAwesomeIcon icon={faSpinner} spin />);
-      endIcon = null;
+      setEndIconBtn(null);
     }
     if (progress === 100) {
-      startIcon = null;
       setStartIconBtn(null);
+      setEndIconBtn(null);
       setTitleBtn('Listo');
       dispatch(toggleLoader({ show: true, message: `Listo` }));
-      setTimeout(() => {
+
+      const timer = setTimeout(() => {
         dispatch(toggleLoader({ show: false, message: '' }));
         setTitleBtn('Cambiar');
         dispatch(toggleImageViewer({ show: true, url }));
       }, 2500);
+      return () => clearTimeout(timer);
     }
-  }, [progress, url]);
+    return undefined;
+  }, [progress, url, loading, title, dispatch, endIcon, startIcon]);
 
   return (
     <Container $spin={progress > 0 && progress < 100}>
@@ -63,13 +69,13 @@ export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
       <label htmlFor={id}>
         {startIconBtn}
         {titleBtn}
-        {endIcon}
+        {endIconBtn}
         <input
           type="file"
           name=""
           id={id}
           onChange={(e) => handleOnchange(e)}
-          accept="/imagen/*a"
+          accept="imagen/*"
         />
       </label>
     </Container>

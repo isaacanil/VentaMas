@@ -1,6 +1,6 @@
 import { ClearOutlined, FilterOutlined } from '@ant-design/icons';
 import { Select, Button, Drawer } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
@@ -12,6 +12,12 @@ import {
 import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
 
 const { Option } = Select;
+const DATE_LOCALE = 'es';
+
+const startOfWeekSunday = (date) =>
+  date.minus({ days: date.weekday % 7 }).startOf('day');
+const endOfWeekSunday = (date) =>
+  startOfWeekSunday(date).plus({ days: 6 }).endOf('day');
 
 export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
   const { clients: fetchedClients, loading: clientsLoading } =
@@ -35,21 +41,21 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
   }, []);
 
   const handleDateRangeChange = (dates) => {
-    // 1) El usuario limpió el selector -> volver a "Hoy"
+    // 1) El usuario limpiИ el selector -> volver a "Hoy"
     if (!dates || !dates[0]) {
       setDraftRange(null);
       onFiltersChange({
         ...filters,
-        startDate: dayjs().startOf('day'),
-        endDate: dayjs().endOf('day'),
+        startDate: DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+        endDate: DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
       });
       return;
     }
 
-    // 2) Sólo eligió la primera fecha
+    // 2) SИlo eligiИ la primera fecha
     if (dates[0] && !dates[1]) {
       setDraftRange(dates[0]);
-      return; // no aplicamos filtro aún
+      return; // no aplicamos filtro aカn
     }
 
     // 3) Ya hay start & end -> aplicamos filtro y limpiamos draft
@@ -77,8 +83,8 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
 
   const handleClearFilters = () => {
     onFiltersChange({
-      startDate: dayjs().startOf('day'),
-      endDate: dayjs().endOf('day'),
+      startDate: DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+      endDate: DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
       clientId: null,
       status: null,
     });
@@ -107,39 +113,65 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
               presets={[
                 {
                   label: 'Hoy',
-                  value: [dayjs().startOf('day'), dayjs().endOf('day')],
+                  value: [
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+                  ],
                 },
                 {
                   label: 'Ayer',
                   value: [
-                    dayjs().subtract(1, 'day').startOf('day'),
-                    dayjs().subtract(1, 'day').endOf('day'),
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 1 })
+                      .startOf('day'),
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 1 })
+                      .endOf('day'),
                   ],
                 },
                 {
                   label: 'Esta semana',
-                  value: [dayjs().startOf('week'), dayjs().endOf('week')],
-                },
-                {
-                  label: 'Este mes',
-                  value: [dayjs().startOf('month'), dayjs().endOf('month')],
-                },
-                {
-                  label: 'Este año',
-                  value: [dayjs().startOf('year'), dayjs().endOf('year')],
-                },
-                {
-                  label: 'Últimos 7 días',
                   value: [
-                    dayjs().subtract(6, 'day').startOf('day'),
-                    dayjs().endOf('day'),
+                    startOfWeekSunday(
+                      DateTime.local().setLocale(DATE_LOCALE),
+                    ),
+                    endOfWeekSunday(DateTime.local().setLocale(DATE_LOCALE)),
                   ],
                 },
                 {
-                  label: 'Últimos 30 días',
+                  label: 'Este mes',
                   value: [
-                    dayjs().subtract(29, 'day').startOf('day'),
-                    dayjs().endOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('month'),
+                  ],
+                },
+                {
+                  label: 'Este aヵo',
+                  value: [
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
+                  ],
+                },
+                {
+                  label: 'れltimos 7 dヴas',
+                  value: [
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 6 })
+                      .startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+                  ],
+                },
+                {
+                  label: 'れltimos 30 dヴas',
+                  value: [
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 29 })
+                      .startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
                   ],
                 },
               ]}
@@ -216,39 +248,65 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
               presets={[
                 {
                   label: 'Hoy',
-                  value: [dayjs().startOf('day'), dayjs().endOf('day')],
+                  value: [
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+                  ],
                 },
                 {
                   label: 'Ayer',
                   value: [
-                    dayjs().subtract(1, 'day').startOf('day'),
-                    dayjs().subtract(1, 'day').endOf('day'),
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 1 })
+                      .startOf('day'),
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 1 })
+                      .endOf('day'),
                   ],
                 },
                 {
                   label: 'Esta semana',
-                  value: [dayjs().startOf('week'), dayjs().endOf('week')],
-                },
-                {
-                  label: 'Este mes',
-                  value: [dayjs().startOf('month'), dayjs().endOf('month')],
-                },
-                {
-                  label: 'Este año',
-                  value: [dayjs().startOf('year'), dayjs().endOf('year')],
-                },
-                {
-                  label: 'Últimos 7 días',
                   value: [
-                    dayjs().subtract(6, 'day').startOf('day'),
-                    dayjs().endOf('day'),
+                    startOfWeekSunday(
+                      DateTime.local().setLocale(DATE_LOCALE),
+                    ),
+                    endOfWeekSunday(DateTime.local().setLocale(DATE_LOCALE)),
                   ],
                 },
                 {
-                  label: 'Últimos 30 días',
+                  label: 'Este mes',
                   value: [
-                    dayjs().subtract(29, 'day').startOf('day'),
-                    dayjs().endOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('month'),
+                  ],
+                },
+                {
+                  label: 'Este aヵo',
+                  value: [
+                    DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
+                  ],
+                },
+                {
+                  label: 'れltimos 7 dヴas',
+                  value: [
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 6 })
+                      .startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+                  ],
+                },
+                {
+                  label: 'れltimos 30 dヴas',
+                  value: [
+                    DateTime.local()
+                      .setLocale(DATE_LOCALE)
+                      .minus({ days: 29 })
+                      .startOf('day'),
+                    DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
                   ],
                 },
               ]}

@@ -1,5 +1,5 @@
 import { icons } from '../../../../../constants/icons/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const { SETTING, USERS, USERS_LIST, USERS_SESSION_LOGS } =
   ROUTES_NAME.SETTING_TERM;

@@ -1,9 +1,10 @@
 import { Tag } from 'antd';
 
+import { formatPrice } from '@/utils/format';
+
 import DateUtils from '../../../../../utils/date/dateUtils';
 import { CashCountStateIndicator } from '../../resource/CashCountStatusIndicator/CashCountStateIndicator';
 
-import { formatPrice } from '@/utils/format';
 
 export const tableConfig = () => {
   let columns = [

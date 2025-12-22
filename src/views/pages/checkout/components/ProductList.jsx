@@ -2,6 +2,9 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
+
 import { SelectSettingCart } from '../../../../features/cart/cartSlice';
 import {
   getTax,
@@ -13,8 +16,6 @@ import { convertTimeToSpanish } from '../../../component/modals/ProductForm/comp
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
 
-import { formatPrice } from '@/utils/format';
-import { separator } from '@/utils/number/number';
 
 export const ProductList = ({ data }) => {
   const { products, NCF } = data;

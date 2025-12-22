@@ -1,26 +1,19 @@
 import { DateTime } from 'luxon';
-import { useState, useLayoutEffect } from 'react';
+import { useMemo } from 'react';
 
 export default function usePaymentDates(
   frequency = 'monthly',
   installments = 1,
   userStartDate = null,
-  forceRecalculate = false,
 ) {
-  const [paymentDates, setPaymentDates] = useState([]);
-  const [nextPaymentDate, setNextPaymentDate] = useState(null);
-
-  useLayoutEffect(() => {
+  const paymentDates = useMemo(() => {
     if (installments < 1 || installments > 36) {
-      setPaymentDates([]);
-      setNextPaymentDate(null);
-      return;
+      return [];
     }
 
-    const baseDate =
-      forceRecalculate || !userStartDate
-        ? DateTime.now().startOf('day')
-        : DateTime.fromMillis(userStartDate).startOf('day');
+    const baseDate = userStartDate
+      ? DateTime.fromMillis(userStartDate).startOf('day')
+      : DateTime.now().startOf('day');
 
     const dates = [];
     for (let i = 0; i < installments; i++) {
@@ -35,9 +28,10 @@ export default function usePaymentDates(
       dates.push(installmentDate.toMillis());
     }
 
-    setPaymentDates(dates);
-    setNextPaymentDate(dates[0] || null);
-  }, [frequency, installments, userStartDate, forceRecalculate]);
+    return dates;
+  }, [frequency, installments, userStartDate]);
+
+  const nextPaymentDate = useMemo(() => paymentDates[0] || null, [paymentDates]);
 
   return { paymentDates, nextPaymentDate };
 }

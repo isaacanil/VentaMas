@@ -86,5 +86,3 @@ export const SimpleTypography = ({
 );
 
 SimpleTypography.displayName = 'SimpleTypography';
-
-export default SimpleTypography;

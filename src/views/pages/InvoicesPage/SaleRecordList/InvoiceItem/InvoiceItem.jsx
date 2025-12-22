@@ -13,6 +13,8 @@ import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
 import {
@@ -24,7 +26,6 @@ import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
 import { Receipt } from '../../../checkout/Receipt';
 import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
 
-import { formatPrice } from '@/utils/format';
 
 export const InvoiceItem = ({ data }) => {
   const componentToPrintRef = useRef(null);
@@ -93,7 +94,6 @@ export const InvoiceItem = ({ data }) => {
     <>
       <Receipt ref={componentToPrintRef} data={data} />
       <Card>
-        {/* Header profesional */}
         <CardHeader>
           <InvoiceInfo>
             <InvoiceNumber>
@@ -114,7 +114,6 @@ export const InvoiceItem = ({ data }) => {
           </HeaderMeta>
         </CardHeader>
 
-        {/* Detalles financieros */}
         <FinancialDetails>
           <DetailsRow>
             <DetailItem>
@@ -154,7 +153,6 @@ export const InvoiceItem = ({ data }) => {
           </SummaryRow>
         </FinancialDetails>
 
-        {/* Total y Acciones */}
         <ActionBar>
           <TotalsBlock>
             <TotalLabel>Total</TotalLabel>

@@ -45,7 +45,7 @@ export const FormattedValue = ({
       color={color}
       noWrap={noWrap}
       type={type}
-      align={align}
+      $align={align}
     >
       {formattedValue}
     </Text>
@@ -100,8 +100,8 @@ ${({ type }) =>
   ${({ noWrap }) => noWrap && `white-space: nowrap;`}
 
   ${({ bold }) => bold && 'font-weight: bold;'}
-  ${({ align }) => {
-    switch (align) {
+  ${({ $align }) => {
+    switch ($align) {
       case 'center':
         return 'text-align: center;';
       case 'right':

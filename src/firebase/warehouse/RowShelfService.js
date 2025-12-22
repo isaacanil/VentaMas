@@ -150,11 +150,12 @@ const deleteRowShelf = async (user, warehouseId, shelfId, rowId) => {
 const useListenRowShelves = (warehouseId, shelfId) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Boolean(warehouseId && shelfId),
+  );
   const [error, setError] = useState(null);
   useEffect(() => {
     if (warehouseId && shelfId && user?.businessID) {
-      setLoading(true); // Iniciar el estado de carga
       const unsubscribe = listenAllRowShelves(
         user,
         warehouseId,

@@ -2,6 +2,8 @@ import { DateTime } from 'luxon';
 import { useState } from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import {
   getProductsTax,
   getProductsTotalPrice,
@@ -12,7 +14,6 @@ import { AdvancedTable } from '../../../../templates/system/AdvancedTable/Advanc
 
 import { tableConfig } from './tableConfig.jsx';
 
-import { formatPrice } from '@/utils/format';
 
 export const PreSaleTable = ({ preSales = [], searchTerm }) => {
   const [selectedPreorder, setSelectedPreorder] = useState(null);

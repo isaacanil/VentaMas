@@ -1,10 +1,11 @@
-﻿import React from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
+
+import { formatPrice } from '@/utils/format';
 
 import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState';
 import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice';
 import { correctDate } from '../../../../../hooks/date/correctDate';
-import { formatPrice } from '@/utils/format';
 import { Button } from '../../../../templates/system/Button/Button';
 import { Tooltip } from '../../../../templates/system/Button/Tooltip';
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot';

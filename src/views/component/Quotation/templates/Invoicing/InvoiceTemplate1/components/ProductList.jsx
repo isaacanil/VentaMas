@@ -1,5 +1,8 @@
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
+
 import {
   getTax,
   getTotalPrice,
@@ -10,8 +13,6 @@ import { convertTimeToSpanish } from '../../../../../modals/ProductForm/componen
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
 
-import { formatPrice } from '@/utils/format';
-import { separator } from '@/utils/number/number';
 
 const productIndividualDiscount = (product) => {
   if (!product?.discount?.value) return 0;

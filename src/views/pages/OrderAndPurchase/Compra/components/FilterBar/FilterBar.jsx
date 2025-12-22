@@ -9,12 +9,13 @@ import { useCallback, useMemo, useState, useEffect, memo } from 'react';
 import styled from 'styled-components';
 
 
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+
 import { Selector } from '../../../../../../components/common/Selector/Selector';
 
 import { StatusSelector } from './components/StatusSelector';
 import { useFilterBar } from './hooks/useFilterBar';
 
-import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
 
 export const FilterBar = memo(
   ({
@@ -34,7 +35,7 @@ export const FilterBar = memo(
     // When component mounts, notify parent of initial state
     useEffect(() => {
       onChange?.(state);
-    }, []);
+    }, [onChange, state]);
 
     const handleFiltersChange = useCallback(
       (newFilters) => {
@@ -63,10 +64,13 @@ export const FilterBar = memo(
       });
     }, [config.defaultValues, config.defaultSort, onChange, resetAll]);
 
-    const updateFilter = (key, value) => {
-      const newFilters = { ...state.filters, [key]: value };
-      handleFiltersChange(newFilters);
-    };
+    const updateFilter = useCallback(
+      (key, value) => {
+        const newFilters = { ...state.filters, [key]: value };
+        handleFiltersChange(newFilters);
+      },
+      [handleFiltersChange, state.filters],
+    );
 
     const renderFilter = useCallback(
       (filterConfig, isInDrawer) => {
@@ -113,7 +117,7 @@ export const FilterBar = memo(
             return null;
         }
       },
-      [state.filters, dataConfig],
+      [state.filters, updateFilter, dataConfig],
     );
 
     const searchInput = (
@@ -202,7 +206,7 @@ export const FilterBar = memo(
             placement="bottom"
             onClose={() => setIsDrawerVisible(false)}
             open={isDrawerVisible}
-            width="100%"
+            size="large"
           >
             <MobileFilterWrapper>
               {config.filters?.map((filterConfig) =>

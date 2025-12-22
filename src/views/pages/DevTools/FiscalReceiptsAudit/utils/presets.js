@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 
 export const PRESETS = [
   { label: 'Hoy', value: 'today' },
@@ -17,77 +17,77 @@ export const PRESETS = [
 ];
 
 export const getRangeFromPreset = (preset) => {
-  const now = dayjs();
+  const now = DateTime.local();
   switch (preset) {
     case 'today':
       return { start: now.startOf('day'), end: now.endOf('day') };
     case 'yesterday': {
-      const y = now.subtract(1, 'day');
+      const y = now.minus({ days: 1 });
       return { start: y.startOf('day'), end: y.endOf('day') };
     }
     case 'this_month':
       return { start: now.startOf('month'), end: now.endOf('month') };
     case 'last_month': {
-      const lm = now.subtract(1, 'month');
+      const lm = now.minus({ months: 1 });
       return { start: lm.startOf('month'), end: lm.endOf('month') };
     }
     case 'last_3_months':
       return {
-        start: now.subtract(3, 'month').startOf('day'),
+        start: now.minus({ months: 3 }).startOf('day'),
         end: now.endOf('day'),
       };
     case 'last_90_days':
       return {
-        start: now.subtract(90, 'day').startOf('day'),
+        start: now.minus({ days: 90 }).startOf('day'),
         end: now.endOf('day'),
       };
     case 'q1': {
-      const year = now.year();
+      const year = now.year;
       return {
-        start: dayjs(`${year}-01-01`).startOf('day'),
-        end: dayjs(`${year}-03-31`).endOf('day'),
+        start: DateTime.fromISO(`${year}-01-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-03-31`).endOf('day'),
       };
     }
     case 'q2': {
-      const year = now.year();
+      const year = now.year;
       return {
-        start: dayjs(`${year}-04-01`).startOf('day'),
-        end: dayjs(`${year}-06-30`).endOf('day'),
+        start: DateTime.fromISO(`${year}-04-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-06-30`).endOf('day'),
       };
     }
     case 'q3': {
-      const year = now.year();
+      const year = now.year;
       return {
-        start: dayjs(`${year}-07-01`).startOf('day'),
-        end: dayjs(`${year}-09-30`).endOf('day'),
+        start: DateTime.fromISO(`${year}-07-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-09-30`).endOf('day'),
       };
     }
     case 'q4': {
-      const year = now.year();
+      const year = now.year;
       return {
-        start: dayjs(`${year}-10-01`).startOf('day'),
-        end: dayjs(`${year}-12-31`).endOf('day'),
+        start: DateTime.fromISO(`${year}-10-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-12-31`).endOf('day'),
       };
     }
     case 'this_year': {
-      const year = now.year();
+      const year = now.year;
       return {
-        start: dayjs(`${year}-01-01`).startOf('day'),
-        end: dayjs(`${year}-12-31`).endOf('day'),
+        start: DateTime.fromISO(`${year}-01-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-12-31`).endOf('day'),
       };
     }
     case 'last_year': {
-      const year = now.year() - 1;
+      const year = now.year - 1;
       return {
-        start: dayjs(`${year}-01-01`).startOf('day'),
-        end: dayjs(`${year}-12-31`).endOf('day'),
+        start: DateTime.fromISO(`${year}-01-01`).startOf('day'),
+        end: DateTime.fromISO(`${year}-12-31`).endOf('day'),
       };
     }
     case 'all':
       return { start: null, end: null };
     default:
       return {
-        start: now.subtract(90, 'day').startOf('day'),
+        start: now.minus({ days: 90 }).startOf('day'),
         end: now.endOf('day'),
       };
   }

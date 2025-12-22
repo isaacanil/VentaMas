@@ -163,11 +163,14 @@ export const useListenSaleUnits = (productId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  if ((!user || !productId) && (loading || error)) {
+    if (loading) setLoading(false);
+    if (!error) setError('Parámetros insuficientes para escuchar las unidades de venta.');
+  }
+
   useEffect(() => {
     if (!user || !productId) {
-      setError('Parámetros insuficientes para escuchar las unidades de venta.');
-      setLoading(false);
-      return;
+      return undefined;
     }
 
     // Referencia a la subcolección saleUnits dentro del producto específico

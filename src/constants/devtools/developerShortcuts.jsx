@@ -1,6 +1,6 @@
 import { BugOutlined } from '@ant-design/icons';
 
-import ROUTES_NAME from '../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { icons } from '../icons/icons';
 
 export const developerShortcuts = [

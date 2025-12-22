@@ -1,6 +1,8 @@
 import { message } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+import { formatPrice } from '@/utils/format';
 
 import { changeValueInvoiceForm } from '../../../../../../../features/invoice/invoiceFormSlice';
 
@@ -11,7 +13,6 @@ import type {
   RootState,
 } from '../types';
 
-import { formatPrice } from '@/utils/format';
 
 
 interface UsePaymentInfoArgs {
@@ -53,14 +54,15 @@ export const usePaymentInfo = ({
 
   const { invoice } = useSelector((state: RootState) => state.invoiceForm);
 
-  const paymentMethods = invoice?.paymentMethod ?? [];
+  const paymentMethods = useMemo(() => invoice?.paymentMethod ?? [], [invoice?.paymentMethod]);
   const totalPurchase = asNumber(invoice?.totalPurchase?.value);
   const subtotal = asNumber(invoice?.totalPurchaseWithoutTaxes?.value);
   const readOnly = Boolean(isEditLocked);
 
-  const [discountType, setDiscountType] = useState<DiscountType>(
-    invoice?.discount?.type ?? 'percentage',
-  );
+  const discountType = useMemo<DiscountType>(() => {
+    const type = invoice?.discount?.type;
+    return type === 'fixed' || type === 'percentage' ? type : 'percentage';
+  }, [invoice?.discount?.type]);
 
   const totalPayment = useMemo(
     () =>
@@ -237,8 +239,6 @@ export const usePaymentInfo = ({
     (type: DiscountType) => {
       if (readOnly) return;
 
-      setDiscountType(type);
-
       dispatch(
         changeValueInvoiceForm({
           invoice: {
@@ -293,12 +293,6 @@ export const usePaymentInfo = ({
     },
     [dispatch, discountType, subtotal, readOnly],
   );
-
-  useEffect(() => {
-    if (invoice?.discount?.type && invoice.discount.type !== discountType) {
-      setDiscountType(invoice.discount.type);
-    }
-  }, [invoice?.discount?.type, discountType]);
 
   const formattedTotalPayment = useMemo(
     () => formatPrice(totalPayment),

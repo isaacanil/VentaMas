@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import ROUTES_NAME from '../../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { CenteredText } from '../../../../../templates/system/CentredText';
 import { CustomProduct } from '../../../../../templates/system/Product/CustomProduct';
 import { Product } from '../../../../../templates/system/Product/Product/Product';

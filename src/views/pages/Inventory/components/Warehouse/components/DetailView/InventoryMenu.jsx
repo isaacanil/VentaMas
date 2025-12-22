@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import ROUTES_PATH from '../../../../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 
 const MenuContainer = styled.div`
   margin-bottom: 0;

@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../features/auth/userSlice';
 import {
   SelectSettingCart,
@@ -17,7 +19,6 @@ import { selectTaxReceiptType } from '../../../../features/taxReceipt/taxReceipt
 import { fbGetPreorders } from '../../../../firebase/invoices/fbGetPreorders';
 import { validateInvoiceCart } from '../../../../utils/invoiceValidation';
 
-import { formatPrice } from '@/utils/format';
 
 const resolvePreorderTaxReceiptType = (preorder) =>
   preorder?.selectedTaxReceiptType ??
@@ -262,7 +263,7 @@ export const usePreorderModal = () => {
       isSubscribed = false;
       unsubscribe?.();
     };
-  }, [isOpen, businessID, reloadToken]);
+  }, [isOpen, businessID, reloadToken, notification]);
 
   const handleOpen = () => {
     if (!isDeferredBillingEnabled) {
@@ -331,19 +332,26 @@ export const usePreorderModal = () => {
     return mappedEntries;
   }, [preorders]);
 
-  useEffect(() => {
+  const derivedSelectedKey = useMemo(() => {
     if (entries.length === 0) {
-      setSelectedPreorderKey((current) => (current === null ? current : null));
-      return;
+      return null;
     }
+    // Mantener la clave actual si existe en entries, sino usar la primera
+    return entries[0].key;
+  }, [entries]);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to synchronize the selected preorder key when the list of preorders changes
     setSelectedPreorderKey((current) => {
+      if (entries.length === 0) {
+        return current === null ? current : null;
+      }
       if (current && entries.some((entry) => entry.key === current)) {
         return current;
       }
-      return entries[0].key;
+      return derivedSelectedKey;
     });
-  }, [entries]);
+  }, [entries, derivedSelectedKey]);
 
   const selectorOptions = useMemo(
     () =>
@@ -459,13 +467,14 @@ export const usePreorderModal = () => {
         { replace: true },
       );
     }
-  }, [cart?.data?.type, location.pathname, location.search, navigate]);
+  }, [cart?.data?.type, location.pathname, location.search, navigate, notification]);
 
   useEffect(() => {
-    if (!isDeferredBillingEnabled && isOpen) {
+    if (!isDeferredBillingEnabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to close the modal when deferred billing is disabled
       setIsOpen(false);
     }
-  }, [isDeferredBillingEnabled, isOpen]);
+  }, [isDeferredBillingEnabled]);
 
   return {
     openModal: handleOpen,

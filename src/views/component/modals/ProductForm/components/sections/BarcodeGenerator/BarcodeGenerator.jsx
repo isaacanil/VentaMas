@@ -1,6 +1,6 @@
 import { CalculatorOutlined, DisconnectOutlined } from '@ant-design/icons';
 import { Modal, Form, Button, Space, Typography, notification } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../../../../../../features/auth/userSlice';
@@ -160,7 +160,7 @@ export const BarcodeGenerator = ({
       setManualValues((prev) => ({ ...prev, itemReference: '' }));
       setInternalManualValues({ itemReference: '' });
     }
-  }, [visible]);
+  }, [visible, currentBarcode]);
 
   // Cargar configuración guardada al abrir el modal (evitar sobreescribir mientras se edita)
   React.useEffect(() => {
@@ -266,6 +266,7 @@ export const BarcodeGenerator = ({
     visible,
     status,
     lastKnownBarcode,
+    realtimeProduct,
     currentBarcode,
     onGenerate,
     hasManualChanges,
@@ -280,7 +281,7 @@ export const BarcodeGenerator = ({
       setCurrentDisplayBarcode(currentBarcode);
       setHasManualChanges(false);
     }
-  }, [visible]);
+  }, [visible, currentBarcode]);
 
   // Mostrar errores del listener en tiempo real
   useEffect(() => {
@@ -296,10 +297,10 @@ export const BarcodeGenerator = ({
         });
       }
     }
-  }, [realtimeError, visible]);
+  }, [realtimeError, visible, realtimeProduct]);
 
   // Función para crear previsualización en tiempo real
-  const createLivePreview = (companyPrefix, itemReference) => {
+  const createLivePreview = useCallback((companyPrefix, itemReference) => {
     if (!companyPrefix || !itemReference) {
       return '';
     }
@@ -325,10 +326,10 @@ export const BarcodeGenerator = ({
     } catch {
       return '';
     }
-  };
+  }, [selectedStandard]);
 
   // Función para crear previsualización en modo interno
-  const createInternalLivePreview = (itemReference) => {
+  const createInternalLivePreview = useCallback((itemReference) => {
     if (!itemReference) {
       return '';
     }
@@ -354,7 +355,7 @@ export const BarcodeGenerator = ({
     } catch {
       return '';
     }
-  };
+  }, [selectedStandard]);
 
   const validateItemReference = (value, config) => {
     if (!value) return null;
@@ -704,7 +705,16 @@ export const BarcodeGenerator = ({
         setLivePreview('');
       }
     }
-  }, [selectedStandard, useCompanyPrefix]);
+  }, [
+    selectedStandard,
+    useCompanyPrefix,
+    autoMode,
+    internalManualValues?.itemReference,
+    manualValues.itemReference,
+    selectedConfig?.companyPrefix,
+    createInternalLivePreview,
+    createLivePreview,
+  ]);
 
   // Actualizar previsualización al cambiar configuración o valores
   useEffect(() => {
@@ -748,6 +758,8 @@ export const BarcodeGenerator = ({
     selectedConfig?.companyPrefix,
     manualValues.itemReference,
     internalManualValues?.itemReference,
+    createInternalLivePreview,
+    createLivePreview,
   ]);
 
   return (

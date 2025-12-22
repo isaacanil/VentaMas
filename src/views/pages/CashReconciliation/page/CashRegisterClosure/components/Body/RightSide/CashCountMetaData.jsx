@@ -23,25 +23,63 @@ const sumReceivableMetrics = (payments = []) =>
     { card: 0, transfer: 0, collected: 0 },
   );
 
+const invoiceTotalFromData = (data) =>
+  toNumber(
+    data?.totalPurchase?.value ??
+      data?.totalPurchase ??
+      data?.snapshot?.cart?.totalPurchase?.value ??
+      data?.snapshot?.cart?.totalPurchase ??
+      0,
+  );
+
+const invoiceChangeFromData = (data) =>
+  toNumber(
+    data?.change?.value ??
+      data?.change ??
+      data?.snapshot?.cart?.change?.value ??
+      data?.snapshot?.cart?.change ??
+      0,
+  );
+
 const sumInvoiceMetrics = (invoices) =>
-  invoices.reduce(
-    (acc, { data }) => {
-      const { paymentMethod = [], payment } = data;
+  ensureArray(invoices).reduce(
+    (acc, invoiceDoc) => {
+      const data = invoiceDoc?.data ?? invoiceDoc ?? null;
+      if (!data) return acc;
 
-      // Collected Amount (Cash Flow) - What was actually paid/received
-      const collectedAmount = toNumber(payment?.value) || 0;
+      const paymentMethods = ensureArray(
+        data?.paymentMethod ?? data?.payment?.paymentMethod ?? [],
+      );
 
-      // Invoiced Amount (Revenue) - Total value of the invoice
-      const invoicedAmount = toNumber(payment?.value) || 0;
+      const impactsRegister = (method) =>
+        method === 'cash' || method === 'card' || method === 'transfer';
+
+      const paidGross = paymentMethods.reduce((sum, method) => {
+        if (!method?.status) return sum;
+        if (!impactsRegister(method.method)) return sum;
+        return sum + toNumber(method.value);
+      }, 0);
+
+      const invoiceTotal = invoiceTotalFromData(data);
+      const change = invoiceChangeFromData(data);
+      const paidNet = Math.max(0, paidGross - Math.max(0, change));
+
+      const collectedAmount =
+        paidGross > 0 || data?.isAddedToReceivables ? paidNet : invoiceTotal;
+
+      const invoicedAmount =
+        invoiceTotal > 0 ? invoiceTotal : Math.max(0, paidGross - change);
 
       acc.collected += collectedAmount;
       acc.invoiced += invoicedAmount;
 
-      paymentMethod.forEach((p) => {
-        if (!p.status) return;
+      paymentMethods.forEach((p) => {
+        if (!p?.status) return;
+        if (!impactsRegister(p.method)) return;
         if (p.method === 'card') acc.card += toNumber(p.value);
         if (p.method === 'transfer') acc.transfer += toNumber(p.value);
       });
+
       return acc;
     },
     { card: 0, transfer: 0, collected: 0, invoiced: 0 },
@@ -59,7 +97,7 @@ export const CashCountMetaData = (
   cashCount,
   invoices = [],
   expenses = [],
-  _arPayments = [],
+  arPayments = [],
 ) => {
   if (!cashCount) return null;
 
@@ -74,7 +112,10 @@ export const CashCountMetaData = (
   const totalExpenses = sumExpenses(expenses);
 
   const invoiceMetrics = sumInvoiceMetrics(invoices);
-  const arMetrics = sumReceivableMetrics(receivablePayments);
+  const paymentsSource = ensureArray(arPayments).length
+    ? arPayments
+    : receivablePayments;
+  const arMetrics = sumReceivableMetrics(paymentsSource);
 
   const totalCard = invoiceMetrics.card + arMetrics.card;
   const totalTransfer = invoiceMetrics.transfer + arMetrics.transfer;

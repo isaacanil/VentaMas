@@ -11,6 +11,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
 import {
   setExpense,
@@ -28,7 +30,6 @@ import { Button } from '../../../../../templates/system/Button/Button';
 import { EditDelBtns } from '../../../../../templates/system/Button/EditDelBtns/EditDelBtns';
 import { ExpenseChart } from '../ExpenseReport/ExpenseReport';
 
-import { formatPrice } from '@/utils/format';
 
 const FIREBASE_INDEX_LINK_REGEX =
   /(https:\/\/console\.firebase\.google\.com\/[^\s"'`]+)/i;

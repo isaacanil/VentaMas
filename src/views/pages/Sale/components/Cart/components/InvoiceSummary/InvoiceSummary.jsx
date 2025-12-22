@@ -10,7 +10,8 @@ import React, {
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
-import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../../../constants/icons/icons';
 import { selectBusinessData } from '../../../../../../../features/auth/businessSlice';
@@ -52,8 +53,17 @@ import { ActionMenu } from './components/ActionMenu/Actionmenu';
 import { Delivery } from './components/Delivery/Delivery';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import WarningPill from './components/WarningPill/WarningPill';
+import {
+  SummaryContainer,
+  LineItem,
+  DiscountInputContainer,
+  AuthorizationNote,
+  TotalLine,
+  TotalLabel,
+  Label,
+  ActionButton,
+} from './InvoiceSummary.styles';
 
-import { formatPrice } from '@/utils/format';
 
 const resolveAuthorizerName = (authorizer) =>
   authorizer?.displayName ||
@@ -521,18 +531,18 @@ const InvoiceSummary = () => {
     },
     deferred: isEditingPreorder
       ? {
-          text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
-          action: handleUpdatePreOrder,
-          disabled: isButtonDisabled,
-        }
+        text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
+        action: handleUpdatePreOrder,
+        disabled: isButtonDisabled,
+      }
       : {
-          text: 'Preventa',
-          action: () => {
-            activatePreorderMode();
-            setIsOpenPreorderConfirmation(true);
-          },
-          disabled: isButtonDisabled,
+        text: 'Preventa',
+        action: () => {
+          activatePreorderMode();
+          setIsOpenPreorderConfirmation(true);
         },
+        disabled: isButtonDisabled,
+      },
     default: {
       text: 'Sin accion',
       action: undefined,
@@ -685,9 +695,9 @@ const InvoiceSummary = () => {
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
           <Tooltip title={tooltipTitle}>
-            <Button onClick={action} disabled={disabled}>
+            <ActionButton onClick={action} disabled={disabled}>
               {text}
-            </Button>
+            </ActionButton>
           </Tooltip>
           <ActionMenu disabled={isSavingPreorder} options={menuOptions} />
           <Quotation ref={quotationPrintRef} data={quotationData} />
@@ -712,77 +722,3 @@ const InvoiceSummary = () => {
 };
 
 export default InvoiceSummary;
-
-const SummaryContainer = styled.div`
-  position: relative;
-  padding: 0 10px;
-  border-radius: 5px;
-`;
-
-export const LineItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2px 0;
-
-  &:first-child {
-    border-bottom: 1px solid #ccc;
-  }
-
-  &:last-child {
-    padding: 0;
-    border-top: 1px solid #ccc;
-  }
-`;
-
-const DiscountInputContainer = styled.div`
-  display: grid;
-  gap: 4px;
-  justify-items: end;
-  min-width: ${SUMMARY_INPUT_WIDTH};
-`;
-
-const AuthorizationNote = styled.span`
-  font-size: 0.75rem;
-  color: ${({ $tone }) => ($tone === 'warning' ? '#d48806' : '#595959')};
-`;
-
-const TotalLine = styled(LineItem)`
-  /* This is the total line in the invoice summary */
-`;
-
-const Button = styled.button`
-  padding: 8px 12px;
-  color: white;
-  cursor: pointer;
-  background-color: #007bff;
-  border: none;
-  border-radius: 5px;
-
-  &:disabled {
-    cursor: not-allowed;
-    background-color: #8a8a8a;
-
-    &:hover {
-      background-color: #585858;
-    }
-  }
-
-  &:not(:disabled):hover {
-    background-color: #0056b3;
-  }
-`;
-
-const TotalLabel = styled.span`
-  display: grid;
-  align-content: center;
-  height: 2.4em;
-  font-size: 1.2em;
-  font-weight: bold;
-`;
-
-export const Label = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-`;

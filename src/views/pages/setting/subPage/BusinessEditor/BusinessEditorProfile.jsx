@@ -1,6 +1,6 @@
 import { Form, message } from 'antd';
 import isEqual from 'lodash/isEqual';
-import React, { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
@@ -33,10 +33,44 @@ const BusinessProfileEditor = () => {
   const business = useSelector(selectBusinessData);
   const [form] = Form.useForm();
   const user = useSelector(selectUser);
-  const [imageUrl, setImageUrl] = useState(business?.logoUrl || null);
   const [loading, setLoading] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const initialValuesRef = useRef(normalizeFormValues());
+
+  const businessFormValues = useMemo(() => {
+    if (!business) return normalizeFormValues();
+    return mapBusinessDataToFormValues(business);
+  }, [business]);
+
+  const businessTrigger = useMemo(
+    () => `${JSON.stringify(businessFormValues)}|${business?.logoUrl || ''}`,
+    [businessFormValues, business?.logoUrl],
+  );
+
+  const [{ trigger: logoTrigger, value: logoOverride }, setLogoOverrideState] =
+    useState(() => ({ trigger: businessTrigger, value: undefined }));
+
+  const logoOverrideValue =
+    logoTrigger === businessTrigger ? logoOverride : undefined;
+
+  const imageUrl =
+    logoOverrideValue === undefined ? business?.logoUrl || null : logoOverrideValue;
+
+  const setImageUrl = useCallback(
+    (value) => setLogoOverrideState({ trigger: businessTrigger, value }),
+    [businessTrigger],
+  );
+
+  const [{ trigger: dirtyTrigger, value: dirtyValue }, setDirtyState] = useState(
+    () => ({ trigger: businessTrigger, value: false }),
+  );
+
+  const hasUnsavedChanges =
+    dirtyTrigger === businessTrigger ? dirtyValue : false;
+
+  const setHasUnsavedChanges = useCallback(
+    (value) => setDirtyState({ trigger: businessTrigger, value }),
+    [businessTrigger],
+  );
 
   useUnsavedChangesPrompt(hasUnsavedChanges);
 
@@ -45,12 +79,9 @@ const BusinessProfileEditor = () => {
       return;
     }
 
-    const normalizedValues = mapBusinessDataToFormValues(business);
-    setImageUrl(business.logoUrl || null);
-    form.setFieldsValue(normalizedValues);
-    initialValuesRef.current = normalizedValues;
-    setHasUnsavedChanges(false);
-  }, [business, form]);
+    form.setFieldsValue(businessFormValues);
+    initialValuesRef.current = businessFormValues;
+  }, [business, form, businessFormValues]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) {

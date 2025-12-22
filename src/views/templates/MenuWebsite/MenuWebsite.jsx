@@ -6,7 +6,7 @@ import { icons } from '../../../constants/icons/icons';
 import { useDialog } from '../../../Context/Dialog';
 import { logout, selectUser } from '../../../features/auth/userSlice';
 import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
-import ROUTES_PATH from '../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import PersonalizedGreeting from '../../pages/Home/components/PersonalizedGreeting/PersonalizedGreeting';
 import { NotificationButton } from '../MenuApp/Components/NotificationButton/NotificationButton';
 

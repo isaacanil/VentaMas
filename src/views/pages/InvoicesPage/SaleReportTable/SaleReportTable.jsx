@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { icons } from '../../../../constants/icons/icons';
 import { setAccountPayment } from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectBusinessData } from '../../../../features/auth/businessSlice';
@@ -27,7 +29,6 @@ import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedT
 import { Tag } from '../../../templates/system/Tag/Tag';
 import useInvoiceEditAuthorization from '../hooks/useInvoiceEditAuthorization.jsx';
 
-import { formatPrice } from '@/utils/format';
 
 const isInvoiceEditLocked = (invoice) => {
   const timestampMs = convertInvoiceDateToMillis(invoice?.date);
@@ -48,7 +49,7 @@ const ActionsMenu = ({ value }) => {
 
   const isEditDisabled = useMemo(() => {
     return isInvoiceEditLocked(data);
-  }, [data?.date]);
+  }, [data]);
 
   const proceedToEdit = useCallback(
     (authorization) => {

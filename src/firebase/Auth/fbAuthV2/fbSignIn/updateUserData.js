@@ -45,5 +45,5 @@ export function useUserDocListener(userId) {
 
       return () => unsubscribe();
     }
-  }, [userId]);
+  }, [userId, dispatch]);
 }

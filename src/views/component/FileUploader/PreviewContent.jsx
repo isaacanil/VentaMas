@@ -157,9 +157,6 @@ const PreviewContent = ({
   useEffect(() => {
     let localUrl;
     if (previewFile) {
-      setIsLoading(true);
-      setError(null);
-
       if (previewFile.file instanceof File) {
         localUrl = URL.createObjectURL(previewFile.file);
       }
@@ -167,8 +164,6 @@ const PreviewContent = ({
 
     return () => {
       if (localUrl) URL.revokeObjectURL(localUrl);
-      setError(null);
-      setIsLoading(false);
     };
   }, [previewFile]);
 

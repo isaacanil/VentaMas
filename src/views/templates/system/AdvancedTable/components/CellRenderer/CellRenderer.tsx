@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import DateUtils from '../../../../../../utils/date/dateUtils';
 import { Badge } from '../../../../../component/Badge/Badge';
 import { BadgeDate } from '../../../../../component/Badge/BadgeDate';
@@ -12,7 +14,6 @@ import { ShowFiles } from '../../../../../component/ShowFileButton/ShowFileButto
 import type { CellType } from '../../types/ColumnTypes';
 import type { ImgHTMLAttributes, ReactNode } from 'react';
 
-import { formatPrice } from '@/utils/format';
 
 type FormatOption = 'price' | 'percentage' | 'currency';
 

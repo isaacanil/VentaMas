@@ -42,7 +42,7 @@ export const BusinessInfoPill = memo(({
 
   const businessName = useMemo(
     () => (typeof business?.name === 'string' && business.name.trim()) || 'Tu negocio',
-    [business?.name]
+    [business]
   );
 
   const handleInteraction = (): void => setModalOpen(true);

@@ -1,7 +1,22 @@
 import { Modal, Table, Checkbox, InputNumber, Alert, message } from 'antd';
-import dayjs from 'dayjs';
-import { useState, useEffect } from 'react';
+import { DateTime } from 'luxon';
+import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
+
+const toDateTime = (value) => {
+  if (!value) return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value?.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate());
+  }
+  return null;
+};
 
 const BackOrdersModal = ({
   backOrders,
@@ -13,8 +28,71 @@ const BackOrdersModal = ({
   productId,
   backOrderAssociationId,
 }) => {
-  const [localSelectedBackOrders, setLocalSelectedBackOrders] = useState([]);
-  const [purchaseQuantity, setPurchaseQuantity] = useState(0);
+  const initialSelectedKey = useMemo(
+    () =>
+      initialSelectedBackOrders
+        .map((order) => `${order?.id ?? ''}:${order?.quantity ?? ''}`)
+        .join('|'),
+    [initialSelectedBackOrders],
+  );
+
+  const openTrigger = `${isVisible}-${initialPurchaseQuantity}-${initialSelectedKey}`;
+  const [{ trigger, selectedBackOrders, purchaseQuantity: purchaseQuantityState }, setLocalState] =
+    useState(() => ({
+      trigger: openTrigger,
+      selectedBackOrders: initialSelectedBackOrders,
+      purchaseQuantity: initialPurchaseQuantity,
+    }));
+
+  const localSelectedBackOrders =
+    trigger === openTrigger ? selectedBackOrders : initialSelectedBackOrders;
+  const purchaseQuantity =
+    trigger === openTrigger ? purchaseQuantityState : initialPurchaseQuantity;
+
+  const setLocalSelectedBackOrders = useCallback(
+    (updater) => {
+      setLocalState((prev) => {
+        const currentSelected =
+          prev.trigger === openTrigger
+            ? prev.selectedBackOrders
+            : initialSelectedBackOrders;
+        const currentQty =
+          prev.trigger === openTrigger
+            ? prev.purchaseQuantity
+            : initialPurchaseQuantity;
+        const nextSelected =
+          typeof updater === 'function' ? updater(currentSelected) : updater;
+        return {
+          trigger: openTrigger,
+          selectedBackOrders: nextSelected,
+          purchaseQuantity: currentQty,
+        };
+      });
+    },
+    [initialPurchaseQuantity, initialSelectedBackOrders, openTrigger],
+  );
+
+  const setPurchaseQuantity = useCallback(
+    (updater) => {
+      setLocalState((prev) => {
+        const currentSelected =
+          prev.trigger === openTrigger
+            ? prev.selectedBackOrders
+            : initialSelectedBackOrders;
+        const currentQty =
+          prev.trigger === openTrigger
+            ? prev.purchaseQuantity
+            : initialPurchaseQuantity;
+        const nextQty = typeof updater === 'function' ? updater(currentQty) : updater;
+        return {
+          trigger: openTrigger,
+          selectedBackOrders: currentSelected,
+          purchaseQuantity: nextQty,
+        };
+      });
+    },
+    [initialPurchaseQuantity, initialSelectedBackOrders, openTrigger],
+  );
   const totalBackordersQuantity = localSelectedBackOrders.reduce(
     (sum, order) => sum + order.quantity,
     0,
@@ -23,13 +101,6 @@ const BackOrdersModal = ({
     0,
     purchaseQuantity - totalBackordersQuantity,
   );
-
-  useEffect(() => {
-    if (isVisible) {
-      setLocalSelectedBackOrders(initialSelectedBackOrders);
-      setPurchaseQuantity(initialPurchaseQuantity);
-    }
-  }, [isVisible]);
 
   const handleBackOrderSelect = (e, record) => {
     if (e.target.checked) {
@@ -136,7 +207,10 @@ const BackOrdersModal = ({
       title: 'Fecha',
       dataIndex: 'createdAt',
       width: 120,
-      render: (date) => dayjs(date).format('DD/MM/YY'),
+      render: (date) => {
+        const parsed = toDateTime(date);
+        return parsed ? parsed.toFormat('dd/MM/yy') : '—';
+      },
     },
     {
       title: 'Estado',

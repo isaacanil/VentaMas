@@ -7,7 +7,7 @@ import {
   selectClient,
   setClient,
 } from '../../../../../../../../../features/clientCart/clientCartSlice';
-import { Label, LineItem } from '../../InvoiceSummary';
+import { Label, LineItem } from '../../InvoiceSummary.styles';
 
 export const Delivery = ({
   inputWidth = '170px',

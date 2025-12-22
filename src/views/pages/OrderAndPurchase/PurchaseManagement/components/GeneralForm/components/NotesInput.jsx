@@ -1,6 +1,6 @@
-﻿import { Form, Input } from 'antd';
+import { Form, Input } from 'antd';
 import debounce from 'lodash/debounce';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 const { TextArea } = Input;
 
@@ -11,12 +11,15 @@ const NotesInput = ({ initialValue = '', onNoteChange }) => {
     setLocalNote(initialValue);
   }, [initialValue]);
 
-  const debouncedDispatch = useCallback(
-    debounce((value) => {
-      onNoteChange(value);
-    }, 500),
+  const debouncedDispatch = useMemo(
+    () =>
+      debounce((value) => {
+        onNoteChange(value);
+      }, 500),
     [onNoteChange],
   );
+
+  useEffect(() => () => debouncedDispatch.cancel(), [debouncedDispatch]);
 
   const handleChange = (e) => {
     const { value } = e.target;

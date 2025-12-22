@@ -17,8 +17,7 @@ const SearchContainer = styled.div`
 
 export const Preorder = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedClient, setSelectedClient] = useState('all');
-  const [filteredPreventas, setFilteredPreventas] = useState([]);
+  const [selectedClientState, setSelectedClientState] = useState('all');
   const [preorders, setPreorders] = useState([]);
   const user = useSelector(selectUser);
 
@@ -76,9 +75,23 @@ export const Preorder = () => {
     );
   }, [getClientIdentifier, preorders]);
 
-  const applyFilters = useCallback(() => {
+  const clientOptionsKey = useMemo(() => {
+    const values = clientOptions.map((option) => option.value);
+    values.sort();
+    return values.join('|');
+  }, [clientOptions]);
+
+  const selectedClient = useMemo(() => {
+    if (selectedClientState === 'all') return 'all';
+    const exists = clientOptions.some(
+      (option) => option.value === selectedClientState,
+    );
+    return exists ? selectedClientState : 'all';
+  }, [clientOptions, selectedClientState]);
+
+  const filteredPreventas = useMemo(() => {
     const lowerTerm = searchTerm.trim().toLowerCase();
-    const filtered = preorders.filter((preorder) => {
+    return preorders.filter((preorder) => {
       const data = preorder?.data;
       if (!data) return false;
 
@@ -105,7 +118,6 @@ export const Preorder = () => {
         productos.includes(lowerTerm)
       );
     });
-    setFilteredPreventas(filtered);
   }, [
     getClientIdentifier,
     normalizeString,
@@ -114,27 +126,13 @@ export const Preorder = () => {
     selectedClient,
   ]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
-
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
   }, []);
 
   const handleClientChange = useCallback((clientId) => {
-    setSelectedClient(clientId ?? 'all');
+    setSelectedClientState(clientId ?? 'all');
   }, []);
-
-  useEffect(() => {
-    if (selectedClient === 'all') return;
-    const exists = clientOptions.some(
-      (option) => option.value === selectedClient,
-    );
-    if (!exists) {
-      setSelectedClient('all');
-    }
-  }, [clientOptions, selectedClient]);
 
   return (
     <Container>
@@ -147,6 +145,7 @@ export const Preorder = () => {
             clients={clientOptions}
             selectedClient={selectedClient}
             onClientChange={handleClientChange}
+            key={clientOptionsKey}
           />
         </SearchContainer>
         <PreSaleTable preSales={filteredPreventas} searchTerm={searchTerm} />

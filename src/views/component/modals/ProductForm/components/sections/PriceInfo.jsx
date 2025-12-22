@@ -1,5 +1,4 @@
-import * as ant from 'antd';
-import React from 'react';
+import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useSelector } from 'react-redux';
 
 import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
@@ -8,7 +7,6 @@ import {
   taxLabel,
 } from '../../../../../component/modals/UpdateProduct/InitializeData';
 
-const { Card, InputNumber, Row, Col, Select, Checkbox, Form } = ant;
 
 export const PriceInfo = () => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);

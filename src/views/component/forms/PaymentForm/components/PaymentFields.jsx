@@ -1,5 +1,5 @@
 import { Checkbox, Form, Input, InputNumber, message } from 'antd';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -18,10 +18,14 @@ export const PaymentFields = () => {
   const { methodErrors: errors, paymentDetails } = useSelector(
     selectAccountsReceivablePayment,
   );
-  const paymentMethods = paymentDetails.paymentMethods || [];
+  const paymentMethods = useMemo(
+    () => paymentDetails.paymentMethods ?? [],
+    [paymentDetails.paymentMethods],
+  );
   // Filtrar creditNote de la interfaz (se maneja por separado con CreditSelector)
-  const visiblePaymentMethods = paymentMethods.filter(
-    (method) => method.method !== 'creditNote',
+  const visiblePaymentMethods = useMemo(
+    () => paymentMethods.filter((method) => method.method !== 'creditNote'),
+    [paymentMethods],
   );
   const dispatch = useDispatch();
 
@@ -69,13 +73,32 @@ export const PaymentFields = () => {
       );
       if (cashMethod && !cashMethod.status) {
         // Activar efectivo automáticamente y asignar el monto total
-        handleStatusChange(cashMethod, true, totalAmount);
+        dispatch(
+          updatePaymentMethod({
+            method: cashMethod.method,
+            key: 'status',
+            value: true,
+          }),
+        );
+        dispatch(
+          updatePaymentMethod({
+            method: cashMethod.method,
+            key: 'value',
+            value: totalAmount,
+          }),
+        );
       } else if (cashMethod && cashMethod.status && cashMethod.value === 0) {
         // Si ya está activo pero sin valor, asignar el monto total
-        handleValueChange(cashMethod, totalAmount);
+        dispatch(
+          updatePaymentMethod({
+            method: cashMethod.method,
+            key: 'value',
+            value: totalAmount,
+          }),
+        );
       }
     }
-  }, [paymentDetails.totalAmount, visiblePaymentMethods.length]); // Usar visiblePaymentMethods
+  }, [dispatch, paymentDetails.totalAmount, visiblePaymentMethods]); // Usar visiblePaymentMethods
 
   const setErrors = (method, key, error) => {
     dispatch(setMethodError({ method, key, error }));
@@ -104,7 +127,7 @@ export const PaymentFields = () => {
     return error;
   };
 
-  const handleStatusChange = (method, status, autoValue = null) => {
+  function handleStatusChange(method, status, autoValue = null) {
     let newValue = method.value;
 
     if (status && (!newValue || newValue === 0 || autoValue)) {
@@ -157,9 +180,9 @@ export const PaymentFields = () => {
         );
       }
     }
-  };
+  }
 
-  const handleValueChange = (method, newValue) => {
+  function handleValueChange(method, newValue) {
     // Validar que el valor no sea negativo
     const validValue = Math.max(0, Number(newValue) || 0);
 
@@ -179,7 +202,7 @@ export const PaymentFields = () => {
     if (method.status) {
       validateField(method.method, 'value', validValue, method.status);
     }
-  };
+  }
 
   const handleReferenceChange = (method, newReference) => {
     dispatch(

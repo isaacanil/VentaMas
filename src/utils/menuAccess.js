@@ -1,5 +1,5 @@
 import { useUserAccess } from '../hooks/abilities/useAbilities';
-import { isHiddenInMenu, getRouteMeta } from '../routes/routeVisibility';
+import { isHiddenInMenu, getRouteMeta } from '@/router/routes/routeVisibility';
 
 /**
  * Función centralizada para filtrar elementos de menú basados en permisos de usuario

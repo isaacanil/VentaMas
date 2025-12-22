@@ -3,7 +3,7 @@ import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
 const {

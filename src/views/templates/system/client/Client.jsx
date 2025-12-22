@@ -1,4 +1,4 @@
-﻿import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Modal, Tooltip } from 'antd';
@@ -10,26 +10,7 @@ import { addClient } from '../../../../features/clientCart/clientCartSlice';
 import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice';
 import { highlightSearch } from '../highlight/Highlight';
 
-export const clientGridTemplate = '45px  1fr 120px 120px';
-export const clientGridTemplateWithActions = `${clientGridTemplate} 60px`;
-
-export const clientHeaderStyles = css`
-  display: grid;
-  grid-template-columns: ${clientGridTemplateWithActions};
-  column-gap: 0.5em;
-  align-items: center;
-  padding: 0.65em 1em;
-  border-radius: 10px;
-  background-color: #f8fafc;
-  border: 1px solid #e5e7eb;
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: #475569;
-
-  .actions-col {
-    justify-self: end;
-  }
-`;
+import { clientGridTemplateWithActions } from './Client.styles';
 
 const desktopCardStyles = css`
   display: grid;
@@ -208,7 +189,7 @@ const ClientInfo = styled.div`
     gap: 0.8em 0;
     grid-column: 1 / 2;
     width: 100%;
-    /* Aseguramos que el contenedor padre tambi├®n maneje el ancho correctamente */
+    /* Aseguramos que el contenedor padre también maneje el ancho correctamente */
     min-width: 0; 
 
     .client-number {
@@ -220,7 +201,7 @@ const ClientInfo = styled.div`
       /* Calcula el espacio restante */
       flex: 1 1 calc(100% - 70px);
       min-height: auto;
-      /* Refuerzo para m├│vil */
+      /* Refuerzo para móvil */
       min-width: 0; 
     }
 
@@ -304,11 +285,11 @@ export const Client = ({
     e.stopPropagation();
 
     Modal.confirm({
-      title: '┬┐Eliminar cliente?',
+      title: '¿Eliminar cliente?',
       icon: <ExclamationCircleOutlined />,
       content:
-        '┬┐Est├ís seguro que deseas eliminar este cliente? Esta acci├│n no se puede deshacer.',
-      okText: 'S├¡, eliminar',
+        '¿Estás seguro que deseas eliminar este cliente? Esta acción no se puede deshacer.',
+      okText: 'Sí, eliminar',
       cancelText: 'No, cancelar',
       okButtonProps: { danger: true },
       zIndex: 10000000,
@@ -326,7 +307,7 @@ export const Client = ({
       isSelected={selectedClient?.id === client.id}
     >
       <ClientInfo>
-        <div className="client-number">{client?.numberId ?? 'ÔÇö'}</div>
+        <div className="client-number">{client?.numberId ?? '—'}</div>
         <div className="client-name">
           {client.name ? (
             <div>{highlightSearch(client.name, searchTerm)}</div>
@@ -337,11 +318,11 @@ export const Client = ({
         <div className="client-detail">
           {client.personalID ? (
             <>
-              <div className="detail-label">RNC/C├®dula</div>
+              <div className="detail-label">RNC/Cédula</div>
               <div>{client.personalID}</div>
             </>
           ) : (
-            <MissingValue>ÔÇö</MissingValue>
+            <MissingValue>—</MissingValue>
           )}
         </div>
         <div className="client-detail">
@@ -351,7 +332,7 @@ export const Client = ({
               <div>{client.tel}</div>
             </>
           ) : (
-            <MissingValue>ÔÇö</MissingValue>
+            <MissingValue>—</MissingValue>
           )}
         </div>
       </ClientInfo>

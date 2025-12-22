@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { SelectProductSelected } from '../../../../../../features/productOutflow/productOutflow';
 import { Button } from '../../../../../templates/system/Button/Button';
 
-export const tableHeaderColumns = ({ Group }) => {
+export const useTableHeaderColumns = ({ Group }) => {
   const productSelected = useSelector(SelectProductSelected);
   const currentQuantity = () => {
     const removed = productSelected?.currentRemovedQuantity;

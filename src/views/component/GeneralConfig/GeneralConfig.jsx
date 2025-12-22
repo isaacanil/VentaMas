@@ -8,7 +8,7 @@ import {
   faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux'; // Import useSelector
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
@@ -16,7 +16,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import { selectUser } from '../../../features/auth/userSlice';
 import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
 import { useUserAccess } from '../../../hooks/abilities/useAbilities';
-import ROUTES_NAME from '../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { MenuApp } from '../../templates/MenuApp/MenuApp';
 import { Nav } from '../../templates/system/Nav/Nav';
 
@@ -170,7 +170,22 @@ export default function GeneralConfig() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-  const [activeTab, setActiveTab] = useState('billing');
+  // Derivar activeTab directamente de la ruta actual
+  let activeTab = 'billing';
+  if (currentPath.includes('business')) {
+    activeTab = 'business';
+  } else if (currentPath.includes('inventory')) {
+    activeTab = 'inventory';
+  } else if (currentPath.includes('billing')) {
+    activeTab = 'billing';
+  } else if (currentPath.includes('tax-receipt')) {
+    activeTab = 'taxReceipt';
+  } else if (currentPath.includes('authorization')) {
+    activeTab = 'authorization';
+  } else if (currentPath.includes('app-info')) {
+    activeTab = 'appInfo';
+  }
+
   const highlightTimersRef = useRef({});
   const pendingTargetRef = useRef(null);
   const scrollRetryRef = useRef(null);
@@ -278,41 +293,24 @@ export default function GeneralConfig() {
     }
   }, [shouldBlockGeneralConfig, currentPath, navigate, previousRelevantRoute]);
 
-  // Effect to determine the active tab based on current path
+  // Redirección si estamos en la ruta base
   useEffect(() => {
-    if (!canManageBusinessSettings) {
-      return;
+    if (currentPath.endsWith('/general-config') || currentPath.endsWith('/general-config/')) {
+      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING, {
+        replace: true,
+      });
     }
+  }, [currentPath, navigate]);
 
-    if (currentPath.includes('/general-config/users')) {
+  // Redirección usuarios
+  useEffect(() => {
+    if (canManageBusinessSettings && currentPath.includes('/general-config/users')) {
       navigate(
         `${ROUTES_NAME.SETTING_TERM.USERS}/${ROUTES_NAME.SETTING_TERM.USERS_LIST}`,
         {
           replace: true,
         },
       );
-      return;
-    }
-
-    // Sincronizar activeTab con la ruta actual
-    if (currentPath.includes('business')) {
-      setActiveTab('business');
-    } else if (currentPath.includes('inventory')) {
-      setActiveTab('inventory');
-    } else if (currentPath.includes('billing')) {
-      setActiveTab('billing');
-    } else if (currentPath.includes('tax-receipt')) {
-      setActiveTab('taxReceipt');
-    } else if (currentPath.includes('authorization')) {
-      setActiveTab('authorization');
-    } else if (currentPath.includes('app-info')) {
-      setActiveTab('appInfo');
-    } else if (currentPath.includes('/general-config')) {
-      // Default case if directly on /general-config
-      setActiveTab('billing');
-      navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING, {
-        replace: true,
-      });
     }
   }, [canManageBusinessSettings, currentPath, navigate]);
 

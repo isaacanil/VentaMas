@@ -1,10 +1,9 @@
-import * as ant from 'antd';
+import { Modal, Typography } from 'antd';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
 import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
 
-const { Modal, Typography } = ant;
 const { Text } = Typography;
 
 const PreviewBox = styled.div`

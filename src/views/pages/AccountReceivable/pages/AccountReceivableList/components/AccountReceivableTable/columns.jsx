@@ -1,8 +1,9 @@
+import { formatPrice } from '@/utils/format';
+
 import { getTimeElapsed } from '../../../../../../../hooks/useFormatTime';
 
 import AccountActionsCell from './AccountActionsCell';
 
-import { formatPrice } from '@/utils/format';
 
 export const getColumns = (isPharmacy) => {
   const baseColumns = [

@@ -10,13 +10,25 @@ export const useFbGetCreditNotesByInvoice = (invoiceId) => {
   const [creditNotes, setCreditNotes] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const queryKey = `${user?.businessID}-${invoiceId}`;
+  const [prevQueryKey, setPrevQueryKey] = useState(queryKey);
+
+  if (queryKey !== prevQueryKey) {
+    setPrevQueryKey(queryKey);
+    if (user?.businessID && invoiceId) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+      setCreditNotes([]);
+    }
+  }
+
   useEffect(() => {
     if (!user?.businessID || !invoiceId) {
-      setCreditNotes([]);
-      return;
+      return undefined;
     }
 
-    setLoading(true);
+    // setLoading(true) handled by derived state above
 
     const ref = collection(db, 'businesses', user.businessID, 'creditNotes');
     const q = query(ref, where('invoiceId', '==', invoiceId));

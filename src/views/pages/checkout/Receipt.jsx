@@ -13,12 +13,14 @@ import { ThankYouMessage } from './components/ThankYouMessage';
 import { WarrantySignature } from './components/WarrantySignature';
 import { Container, HiddenPrintWrapper } from './Style';
 
-export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
+export const Receipt = ({ data, ignoreHidden, ref }) => {
   const business = useSelector(selectBusinessData) || '';
   const documentIdentity = resolveDocumentIdentity(data);
   const ncfType = documentIdentity.description;
 
-  return data ? (
+  if (!data) return null;
+
+  return (
     <HiddenPrintWrapper ignoreHidden={ignoreHidden}>
       <Container ref={ref}>
         <Header data={data} Space={Space} SubTitle={SubTitle} P={P} />
@@ -42,8 +44,8 @@ export const Receipt = React.forwardRef(({ data, ignoreHidden }, ref) => {
         {/* <WarrantyArea data={data} /> */}
       </Container>
     </HiddenPrintWrapper>
-  ) : null;
-});
+  );
+};
 
 Receipt.displayName = 'Receipt';
 

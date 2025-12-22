@@ -58,7 +58,6 @@ export const useListenPurchases = (filterState) => {
   const dispatch = useDispatch();
   const purchases = useSelector(selectPurchaseList);
   const user = useSelector(selectUser);
-  const setPurchases = (purchase) => dispatch(updatePurchases(purchase));
   const [isLoading, setIsLoading] = useState(false);
 
   const sortedPurchases = useMemo(() => {
@@ -78,16 +77,15 @@ export const useListenPurchases = (filterState) => {
       filterState?.filters,
       async (snapshot) => {
         try {
-          const purchases = await Promise.all(
+          const purchasesList = await Promise.all(
             snapshot.docs.map(async (doc) => {
               const purchaseData = doc.data();
-              // Convertir timestamps
               const processedData = convertTimestamps(purchaseData);
               return processPurchase(processedData, user.businessID);
             }),
           );
 
-          setPurchases(purchases);
+          dispatch(updatePurchases(purchasesList));
         } catch (error) {
           console.error('Error fetching purchases:', error);
         } finally {
@@ -100,7 +98,7 @@ export const useListenPurchases = (filterState) => {
       unsubscribe();
       setIsLoading(false);
     };
-  }, [user, filterState.filters]);
+  }, [user?.businessID, filterState?.filters, dispatch]);
 
   return {
     purchases: sortedPurchases,

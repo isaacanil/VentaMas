@@ -1,10 +1,8 @@
-import * as ant from 'antd';
-import { useState, useRef, useLayoutEffect, useMemo } from 'react';
+import { Modal, InputNumber, Select, Checkbox, message } from 'antd';
+import { useMemo, useRef, useState } from 'react';
 import Barcode from 'react-barcode';
 import { useReactToPrint } from 'react-to-print';
 import styled, { createGlobalStyle } from 'styled-components';
-
-const { Modal, InputNumber, Select, Checkbox } = ant;
 
 const STD_CONFIG = {
   HEIGHT_FACTOR: 0.4,
@@ -104,7 +102,6 @@ export const BarcodePrintModal = ({
   const [labelProfile, setLabelProfile] = useState('standard');
   const [isNameVisible, setIsNameVisible] = useState(true);
   const printRef = useRef(null);
-  const [xPx, setXPx] = useState(2);
 
   const config = useMemo(() => {
     if (labelProfile === 'variable') {
@@ -135,8 +132,8 @@ export const BarcodePrintModal = ({
     return { isVariable: false, ...STD_CONFIG };
   }, [labelProfile, isNameVisible, barcodeValue]);
 
-  useLayoutEffect(() => {
-    if (!visible) return;
+  const xPx = useMemo(() => {
+    if (!visible) return 2;
     const quietZoneMm = config.X_MM * config.QUIET_MULT * 2;
     const availableMm =
       config.LABEL_WIDTH_MM - config.MARGIN_MM * 2 - quietZoneMm;
@@ -146,16 +143,23 @@ export const BarcodePrintModal = ({
     const theoretical =
       totalModules > 0 ? Math.floor(availablePx / totalModules) : 2;
     const nominal = mmToPx(config.X_MM);
-    setXPx(Math.max(1, Math.min(nominal, theoretical)));
+    return Math.max(1, Math.min(nominal, theoretical));
   }, [visible, config, barcodeValue]);
 
   const validate = () => {
-    if (!barcodeValue) return 'Código vacío';
-    const need = { 'UPC-A': 12, 'EAN-13': 13, 'EAN-8': 8, 'GTIN-14': 14 }[
-      barcodeInfo?.type
-    ];
-    if (need && barcodeValue.length !== need)
-      return `Debe tener ${need} dígitos`;
+    const code = String(barcodeValue ?? '').trim();
+    if (!code) return 'Ingresa un código de barras';
+
+    const expectedLengthByType = {
+      'EAN-13': 13,
+      'GTIN-13': 13,
+      'UPC-A': 12,
+      'EAN-8': 8,
+      'GTIN-14': 14,
+    };
+
+    const need = expectedLengthByType[barcodeInfo?.type] ?? null;
+    if (need && code.length !== need) return `Debe tener ${need} dígitos`;
     return null;
   };
 
@@ -166,12 +170,12 @@ export const BarcodePrintModal = ({
       setQty(1);
       onClose();
     },
-    onPrintError: (e) => ant.message.error('Error al imprimir: ' + e.message),
+    onPrintError: (e) => message.error('Error al imprimir: ' + e.message),
   });
 
   const handleOk = () => {
     const err = validate();
-    if (err) return ant.message.error(err);
+    if (err) return message.error(err);
     handlePrint();
   };
 

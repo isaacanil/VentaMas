@@ -10,7 +10,7 @@ import { accumulatePurchaseData } from './utils/accumulatePurchaseData';
 
 
 export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
-    const normalizedPurchases = Array.isArray(purchases) ? purchases : [];
+    const normalizedPurchases = useMemo(() => Array.isArray(purchases) ? purchases : [], [purchases]);
 
     const { monthlyData, totalAccumulated } = useMemo(
         () => accumulatePurchaseData(normalizedPurchases),

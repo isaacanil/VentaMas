@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { selectUser } from '../../../../../../../../features/auth/userSlice';
 import { useListenMovementsByLocation } from '../../../../../../../../firebase/warehouse/productMovementService';
 import { MovementReason } from '../../../../../../../../models/Warehouse/Movement';
-import ROUTES_NAME from '../../../../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
 
 const StyledCard = styled.div`

@@ -3,11 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+import { quitarCeros } from '@/utils/number/number';
+
 import { addDiscount } from '../../../../features/cart/cartSlice';
 import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 
-import { formatPrice } from '@/utils/format';
-import { quitarCeros } from '@/utils/number/number';
 
 const { Title, Paragraph } = Typography;
 

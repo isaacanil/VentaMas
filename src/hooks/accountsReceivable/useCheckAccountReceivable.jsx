@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
@@ -13,9 +13,7 @@ export const useCreditLimitCheck = (
   const { currentBalance } = useSelector(selectAR);
   const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] =
     useState(0);
-  const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
   const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
-  const [creditLimitValue, setCreditLimitValue] = useState(0);
 
   useEffect(() => {
     const fetchInvoiceAvailableCount = async () => {
@@ -36,16 +34,19 @@ export const useCreditLimitCheck = (
     fetchInvoiceAvailableCount();
   }, [clientId, userBusinessId, creditLimit]);
 
-  useEffect(() => {
+  // Derivar isWithinCreditLimit y creditLimitValue con useMemo en lugar de effect
+  const { isWithinCreditLimit, creditLimitValue } = useMemo(() => {
     if (creditLimit?.creditLimit?.status && currentBalance !== null) {
       const adjustedCreditLimit = currentBalance + -change;
-      setIsWithinCreditLimit(
-        adjustedCreditLimit <= creditLimit?.creditLimit?.value,
-      );
-      setCreditLimitValue(adjustedCreditLimit);
-    } else {
-      setIsWithinCreditLimit(true);
+      return {
+        isWithinCreditLimit: adjustedCreditLimit <= creditLimit?.creditLimit?.value,
+        creditLimitValue: adjustedCreditLimit,
+      };
     }
+    return {
+      isWithinCreditLimit: true,
+      creditLimitValue: 0,
+    };
   }, [creditLimit, currentBalance, change]);
 
   return {

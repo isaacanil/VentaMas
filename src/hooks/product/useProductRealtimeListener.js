@@ -1,5 +1,5 @@
 import { doc, onSnapshot } from 'firebase/firestore';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 import { db } from '../../firebase/firebaseconfig.jsx';
 
@@ -15,114 +15,94 @@ export const useProductRealtimeListener = (
   productId,
   enabled = true,
 ) => {
-  const [productData, setProductData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const unsubscribeRef = useRef(null);
+  const shouldListen = Boolean(enabled && businessId && productId);
+  const listenerKey = shouldListen ? `${businessId}:${productId}` : null;
+
+  const [snapshot, setSnapshot] = useState(() => ({
+    key: null,
+    productData: null,
+    error: null,
+    isConnected: false,
+  }));
 
   useEffect(() => {
-    // Solo crear el listener si tenemos los datos necesarios y está habilitado
-    if (!businessId || !productId || !enabled) {
-      setProductData(null);
-      setLoading(false);
-      setError(null);
-      setIsConnected(false);
-      return;
-    }
+    if (!shouldListen) return;
 
-    setLoading(true);
-    setError(null);
+    let isActive = true;
+    const key = `${businessId}:${productId}`;
 
-    try {
-      const productRef = doc(
-        db,
-        'businesses',
-        businessId,
-        'products',
-        productId,
-      );
+    const productRef = doc(db, 'businesses', businessId, 'products', productId);
 
-      // Crear el listener en tiempo real
-      const unsubscribe = onSnapshot(
-        productRef,
-        {
-          includeMetadataChanges: false, // Solo cambios de datos, no de metadata
-        },
-        (docSnapshot) => {
-          setLoading(false);
-          setIsConnected(true);
+    const unsubscribe = onSnapshot(
+      productRef,
+      { includeMetadataChanges: false },
+      (docSnapshot) => {
+        if (!isActive) return;
 
-          if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            setProductData({
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          setSnapshot({
+            key,
+            isConnected: true,
+            error: null,
+            productData: {
               id: docSnapshot.id,
               ...data,
-              // Agregar metadata útil
               _metadata: {
                 lastUpdated: data.updatedAt || data.createdAt,
                 exists: true,
                 hasPendingWrites: docSnapshot.metadata.hasPendingWrites,
               },
-            });
-            setError(null);
-          } else {
-            setProductData(null);
-            setError({
-              type: 'not_found',
-              message: 'El producto no fue encontrado',
-            });
-          }
-        },
-        (error) => {
-          console.error('Error en listener de producto:', error);
-          setLoading(false);
-          setIsConnected(false);
-          setError({
+            },
+          });
+          return;
+        }
+
+        setSnapshot({
+          key,
+          isConnected: true,
+          productData: null,
+          error: {
+            type: 'not_found',
+            message: 'El producto no fue encontrado',
+          },
+        });
+      },
+      (error) => {
+        if (!isActive) return;
+
+        console.error('Error en listener de producto:', error);
+        setSnapshot({
+          key,
+          isConnected: false,
+          productData: null,
+          error: {
             type: 'listener_error',
             message: 'Error al escuchar cambios del producto',
             details: error.message,
-          });
-        },
-      );
+          },
+        });
+      },
+    );
 
-      // Guardar referencia para cleanup
-      unsubscribeRef.current = unsubscribe;
-
-      // Cleanup function
-      return () => {
-        if (unsubscribeRef.current) {
-          unsubscribeRef.current();
-          unsubscribeRef.current = null;
-        }
-      };
-    } catch (error) {
-      console.error('Error al crear listener:', error);
-      setLoading(false);
-      setError({
-        type: 'setup_error',
-        message: 'Error al configurar el listener',
-        details: error.message,
-      });
-    }
-  }, [businessId, productId, enabled]);
-
-  // Cleanup cuando el componente se desmonta
-  useEffect(() => {
     return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
-      }
+      isActive = false;
+      unsubscribe();
     };
-  }, []);
+  }, [businessId, productId, shouldListen]);
+
+  const { productData, error, isConnected } =
+    shouldListen && snapshot.key === listenerKey
+      ? snapshot
+      : { productData: null, error: null, isConnected: false };
+
+  const loading = shouldListen && snapshot.key !== listenerKey;
 
   return {
     productData,
     loading,
     error,
     isConnected,
-    // Funciones de utilidad
     hasBarcode: productData?.barcode ? true : false,
     currentBarcode: productData?.barcode || null,
     productName: productData?.name || '',

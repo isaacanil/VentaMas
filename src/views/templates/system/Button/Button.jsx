@@ -151,7 +151,7 @@ const borderRadius = {
   `,
 };
 
-export const Container = styled.button`
+const Container = styled.button`
   ${styleByDefault}
   ${(props) => (props.$size ? sizes[props.$size] : sizes.medium)}
   

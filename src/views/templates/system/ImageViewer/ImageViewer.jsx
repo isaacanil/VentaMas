@@ -1,7 +1,7 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'; // <-- Importa aquí
 import styled from 'styled-components';
@@ -22,7 +22,9 @@ const ImageViewer = () => {
   const url = useSelector(selectImageViewerURL);
   const imgRef = useRef(null);
 
-  const onClose = () => dispatch(toggleImageViewer({ show: false, url: '' }));
+  const onClose = useCallback(() => {
+    dispatch(toggleImageViewer({ show: false, url: '' }));
+  }, [dispatch]);
 
   useClickOutSide(imgRef, show, onClose);
 

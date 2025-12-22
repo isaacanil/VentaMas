@@ -10,6 +10,9 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
 import { OPERATION_MODES } from '../../../../../../../../constants/modes';
 import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
 import { toggleBarcodeModal } from '../../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
@@ -18,8 +21,6 @@ import { ChangeProductData } from '../../../../../../../../features/updateProduc
 import { getTax, getTotalPrice } from '../../../../../../../../utils/pricing';
 import { ImgCell } from '../../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
 
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
 
 export const ProductItem = ({ data, taxReceiptEnabled }) => {
   const dispatch = useDispatch();

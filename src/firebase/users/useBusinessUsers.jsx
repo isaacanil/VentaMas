@@ -5,31 +5,58 @@ import { selectUser } from '../../features/auth/userSlice';
 
 import { fbGetUsers } from './fbGetUsers';
 
+const makeBaseState = (businessID) => ({
+  businessID: businessID ?? null,
+  users: [],
+  loading: Boolean(businessID),
+  error: null,
+});
+
 export function useBusinessUsers() {
   const currentUser = useSelector(selectUser);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const businessID = currentUser?.businessID ?? null;
+
+  const [snapshot, setSnapshot] = useState(() => makeBaseState(businessID));
+
+  const isSameBusiness = snapshot.businessID === businessID;
+
+  const users = !businessID ? [] : isSameBusiness ? snapshot.users : [];
+  const loading = !businessID ? false : isSameBusiness ? snapshot.loading : true;
+  const error = !businessID ? null : isSameBusiness ? snapshot.error : null;
 
   useEffect(() => {
-    setError(null);
-    setLoading(true);
+    if (!businessID) return undefined;
 
-    if (!currentUser?.businessID) {
-      setLoading(false);
-      return;
-    }
+    let unsubscribe;
+    let cancelled = false;
 
-    let _unsubscribe;
-    try {
-      _unsubscribe = fbGetUsers(currentUser, (usersArray) => {
-        setUsers(usersArray);
-        setLoading(false);
-      });
-    } catch (error) {
-      setError(error);
-      setLoading(false);
-    }
-  }, [currentUser]);
+      unsubscribe = fbGetUsers(
+        { businessID },
+        (usersArray) => {
+          if (cancelled) return;
+          setSnapshot({
+            businessID,
+            users: usersArray,
+            loading: false,
+            error: null,
+          });
+        },
+        (err) => {
+          if (cancelled) return;
+          setSnapshot((prevState) => ({
+            ...prevState,
+            loading: false,
+            error: err,
+          }));
+        },
+      );
+  
+
+    return () => {
+      cancelled = true;
+       unsubscribe?.();
+    };
+  }, [businessID]);
+  
   return { users, loading, error };
 }

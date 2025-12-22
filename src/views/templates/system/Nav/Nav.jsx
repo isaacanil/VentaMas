@@ -5,7 +5,7 @@ import {
   faChevronDown,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState, Fragment, useEffect, useMemo } from 'react'; // Add Fragment
+import { useState, Fragment, useMemo } from 'react';
 import styled from 'styled-components';
 
 const Sidebar = styled.div`
@@ -411,7 +411,9 @@ export function Nav({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState({});
+  // Track only user-initiated toggles (explicit: true = open, false = closed, undefined = auto)
+  const [userToggledGroups, setUserToggledGroups] = useState({});
+  
   const groupedItemsByGroupKey = useMemo(
     () =>
       menuItems.reduce((acc, item) => {
@@ -433,11 +435,31 @@ export function Nav({
     [menuItems],
   );
 
+  // Compute effective open state: merge auto-open (based on activeTab) with user toggles
+  const openGroups = useMemo(() => {
+    const computed = {};
+    
+    Object.entries(groupedItemsByGroupKey).forEach(([groupKey, groupInfo]) => {
+      // Check if user explicitly toggled this group
+      if (userToggledGroups[groupKey] !== undefined) {
+        computed[groupKey] = userToggledGroups[groupKey];
+        return;
+      }
+      
+      // Auto-open collapsible groups containing the active tab
+      if (groupInfo.type !== 'labelled' && groupInfo.items.includes(activeTab)) {
+        computed[groupKey] = true;
+      }
+    });
+    
+    return computed;
+  }, [groupedItemsByGroupKey, activeTab, userToggledGroups]);
+
   const toggleGroup = (groupKey, event) => {
     event.stopPropagation();
-    setOpenGroups((prev) => ({
+    setUserToggledGroups((prev) => ({
       ...prev,
-      [groupKey]: !prev[groupKey],
+      [groupKey]: !openGroups[groupKey],
     }));
   };
 
@@ -559,33 +581,6 @@ export function Nav({
       </MobileMenuGroup>
     );
   };
-
-  useEffect(() => {
-    const groupEntry = Object.entries(groupedItemsByGroupKey).find(
-      ([, group]) => group.items.includes(activeTab),
-    );
-
-    if (!groupEntry) {
-      return;
-    }
-
-    const [groupKey, groupInfo] = groupEntry;
-
-    if (groupInfo.type === 'labelled') {
-      return;
-    }
-
-    setOpenGroups((prev) => {
-      if (prev[groupKey]) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        [groupKey]: true,
-      };
-    });
-  }, [activeTab, groupedItemsByGroupKey]);
 
   return (
     <AppLayout>

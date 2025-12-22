@@ -83,10 +83,7 @@ export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({
   const invoiceDate = typeof invoice?.date === 'number' ? invoice.date : null;
 
   useEffect(() => {
-    if (invoiceDate === null) {
-      setRemainingCancelationTime(0);
-      return;
-    }
+    if (invoiceDate === null) return undefined;
 
     const updateRemainingTime = () => {
       const now = DateTime.now();
@@ -98,10 +95,11 @@ export const TimeRemainingBadge: FC<TimeRemainingBadgeProps> = ({
       setRemainingCancelationTime(Math.max(0, remaining));
     };
 
-    updateRemainingTime();
+    const initialTimeout = window.setTimeout(updateRemainingTime, 0);
     const timer = window.setInterval(updateRemainingTime, 1000);
 
     return () => {
+      window.clearTimeout(initialTimeout);
       window.clearInterval(timer);
     };
   }, [invoiceDate]);

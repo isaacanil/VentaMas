@@ -1,3 +1,5 @@
+import { lazyWithRetry } from '../../../../utils/lazyWithRetry';
+
 import { toolbarConfigs } from './configs/toolbarConfigs';
 import {
   createMatchers,
@@ -7,7 +9,7 @@ import {
 import type {
   ToolbarEntryWithMatchers,
   ToolbarRegistryEntry,
-} from './types/types';
+} from './types';
 
 /**
  * Main toolbar registry with all configured toolbars
@@ -16,19 +18,16 @@ export const toolbarRegistry: ToolbarRegistryEntry[] = toolbarConfigs;
 
 /**
  * Toolbar entries with matcher functions for route matching
+ * + Component is created ONCE here (module scope), not during render.
  */
 const toolbarEntries: ToolbarEntryWithMatchers[] = toolbarRegistry.map(
   (entry) => ({
     ...entry,
     matchers: createMatchers(entry),
+    Component: lazyWithRetry(entry.loader, `GlobalMenu:${entry.id}`),
   }),
 );
 
-/**
- * Finds the toolbar entry that matches the current pathname
- * @param pathname - The current route pathname
- * @returns The matching toolbar entry or undefined
- */
 export const findToolbarEntry = (
   pathname: string,
 ): ToolbarEntryWithMatchers | undefined => findEntry(pathname, toolbarEntries);
@@ -41,4 +40,5 @@ export type {
   ToolbarComponentProps,
   ToolbarComponent,
   ToolbarRegistryEntry,
-} from './types/types';
+  ToolbarEntryWithMatchers,
+} from './types';

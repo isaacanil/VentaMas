@@ -15,11 +15,14 @@ import { db } from '../firebaseconfig';
 export function useClientPendingBalance({ user, clientId }) {
   const [balance, setBalance] = useState(null); // null = loading
 
+  if ((!user?.businessID || !clientId) && balance !== 0) {
+    setBalance(0);
+  }
+
   useEffect(() => {
     // Validación rápida
     if (!user?.businessID || !clientId) {
-      setBalance(0);
-      return;
+      return undefined;
     }
 
     // Referencia al doc businesses/{bid}/clients/{clientId}

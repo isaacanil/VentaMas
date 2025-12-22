@@ -5,9 +5,9 @@ import {
   Input,
   Form,
   InputNumber,
-  DatePicker,
 } from 'antd';
-import dayjs from 'dayjs';
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 
 import { formatMoney, formatPercentage, formatQuantity } from '../../../../../utils/formatters';
@@ -33,7 +33,7 @@ const EditableCell = ({
   };
 
   const handleDateChange = (date) => {
-    const timestamp = date ? dayjs(date).valueOf() : null;
+    const timestamp = date ? date.toMillis() : null;
     onSave(record, dataIndex, timestamp);
   };
 
@@ -72,7 +72,9 @@ const EditableCell = ({
     if (isDatePicker) {
       return (
         <DatePicker
-          value={record[dataIndex] ? dayjs(record[dataIndex]) : null}
+          value={
+            record[dataIndex] ? DateTime.fromMillis(record[dataIndex]) : null
+          }
           onChange={handleDateChange}
           format="DD/MM/YY"
           style={{ width: '100%' }}
@@ -350,7 +352,6 @@ const ProductsTable = ({
               const tPct = Number(taxPercentage) || 0;
               const f = Number(freight) || 0;
               const o = Number(otherCosts) || 0;
-              const u = Number(unitCost) || 0;
               const s = Number(subtotal) || 0;
 
               const taxRate = tPct > 1 ? tPct / 100 : tPct; // Ensure ITBIS is treated as a percentage
@@ -360,7 +361,6 @@ const ProductsTable = ({
               totalTax += qtyForMoney * unitTax; // ITBIS total should reflect quantity
               totalFreight += f; // Freight is entered as total per lot
               totalOtherCosts += o; // Other costs are totals per lot
-              totalUnitCost += u; // Totals should ignore quantity for unit cost
               totalSubtotal += s;
             });
 

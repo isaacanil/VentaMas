@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const LoaderWrapper = styled.div`
@@ -50,41 +50,39 @@ const ContentWrapper = styled.div`
 `;
 
 const Loader = ({ loading = false, children, minHeight, overlay = true }) => {
-  const [showLoader, setShowLoader] = useState(false);
+  const [showLoader, setShowLoader] = useState(loading);
   const [fadeOut, setFadeOut] = useState(false);
-  const loadingStartTime = useRef(null);
+
   useEffect(() => {
-    let timer;
     if (loading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowLoader(true);
       setFadeOut(false);
-      loadingStartTime.current = Date.now();
     } else {
-      const loadingEndTime = Date.now();
-      const loadingDuration = loadingEndTime - loadingStartTime.current;
-      // Limit maximum fade duration to prevent long blocking
-      const fadeOutDuration = Math.max(200, Math.min(loadingDuration, 500)); // Reduced max from 1000 to 500
-
+      // Start fade out sequence
       setFadeOut(true);
-      if (loadingDuration > 300) {
-        // Reduced from 500 to 300
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
-          timer = setTimeout(() => {
-            setShowLoader(false);
-          }, fadeOutDuration);
-        });
-      } else {
-        setShowLoader(false);
-      }
     }
-    return () => clearTimeout(timer);
   }, [loading]);
+
+  const handleTransitionEnd = (e) => {
+    // Only handle opacity transitions on the overlay itself
+    if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return;
+
+    // If we finished fading out and are still not loading, unmount
+    if (!loading) {
+      setShowLoader(false);
+      setFadeOut(false);
+    }
+  };
 
   return (
     <LoaderWrapper minHeight={minHeight}>
       {showLoader && overlay && (
-        <LoadingOverlay $fadeOut={fadeOut}>
+        <LoadingOverlay
+          $fadeOut={fadeOut}
+          onTransitionEnd={handleTransitionEnd}
+          style={{ pointerEvents: fadeOut ? 'none' : 'auto' }}
+        >
           <Spinner />
         </LoadingOverlay>
       )}

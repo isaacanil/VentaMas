@@ -1,5 +1,5 @@
 import { doc, getDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   resolveUserDisplayNamesBatch,
@@ -19,7 +19,7 @@ export function useUserNamesCache({ db, user, countsMeta, session }) {
   const [namesBatchLoading, setNamesBatchLoading] = useState(false);
 
   // Helper para resolver un único usuario (esquema flexible users/{uid})
-  const resolveUserDisplayName = async (uid) => {
+  const resolveUserDisplayName = useCallback(async (uid) => {
     if (!uid) return '';
     try {
       const ref = doc(db, 'users', uid);
@@ -47,7 +47,7 @@ export function useUserNamesCache({ db, user, countsMeta, session }) {
     } catch {
       return uid;
     }
-  };
+  }, [db]);
 
   // Resolver nombre preferido del usuario actual
   useEffect(() => {
@@ -68,7 +68,7 @@ export function useUserNamesCache({ db, user, countsMeta, session }) {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid]);
+  }, [user?.uid, user?.displayName, user?.email, user?.name, resolveUserDisplayName]);
 
   // Hidratar caché en batch (countsMeta + session)
   useEffect(() => {

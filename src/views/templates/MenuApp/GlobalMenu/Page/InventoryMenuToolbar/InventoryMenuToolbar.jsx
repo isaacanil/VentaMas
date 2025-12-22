@@ -18,7 +18,7 @@ import { useGetProducts } from '../../../../../../firebase/products/fbGetProduct
 import { normalizeProductTaxes } from '../../../../../../firebase/products/fbNormalizeProductTaxes';
 import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts';
 import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
-import ROUTES_NAME from '../../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import {
   createProductTemplate,
   importProductData,

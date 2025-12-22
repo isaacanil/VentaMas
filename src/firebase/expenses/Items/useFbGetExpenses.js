@@ -39,22 +39,31 @@ export const useFbGetExpenses = (range, options = {}) => {
 
   const setExpensesByScope = useCallback(
     (list) => {
-      if (scope === SHARED_SCOPE) {
-        setSharedExpenses(list);
-      } else {
-        setLocalExpenses(list);
-      }
+      if (scope === SHARED_SCOPE) setSharedExpenses(list);
+      else setLocalExpenses(list);
     },
     [scope, setSharedExpenses],
   );
 
-  useEffect(() => {
+  // ✅ “Key” reactiva para detectar cambios (business/range/scope)
+  const queryKey = `${user?.businessID ?? ''}|${rangeStart}|${rangeEnd}|${scope}`;
+  const [prevKey, setPrevKey] = useState(queryKey);
+
+  // ✅ Patrón de la doc: setState condicional basado en “prev vs current”
+  if (queryKey !== prevKey) {
+    setPrevKey(queryKey);
+    setError(null);
+
     if (!user?.businessID) {
       setLoading(false);
-      setError(null);
-      setExpensesByScope([]);
-      return undefined;
+      if (scope === LOCAL_SCOPE) setLocalExpenses([]);
+    } else {
+      setLoading(true);
     }
+  }
+
+  useEffect(() => {
+    if (!user?.businessID) return;
 
     const expensesRef = collection(
       db,
@@ -75,21 +84,15 @@ export const useFbGetExpenses = (range, options = {}) => {
       ? query(expensesRef, ...constraints)
       : query(expensesRef);
 
-    if (scope === LOCAL_SCOPE) {
-      setLocalExpenses([]);
-    }
-    setLoading(true);
-
     const normalizeDate = (...candidates) => {
       for (const candidate of candidates) {
         const millis = toMillis(candidate);
-        if (Number.isFinite(millis)) {
-          return millis;
-        }
+        if (Number.isFinite(millis)) return millis;
       }
       return null;
     };
 
+    // ✅ setState solo dentro del callback del listener (external system)
     const unsubscribe = onSnapshot(
       expensesQuery,
       (snapshot) => {
@@ -113,7 +116,6 @@ export const useFbGetExpenses = (range, options = {}) => {
                   dates.createdAt,
                   expense.expenseDate,
                   expense.createdAt,
-                  doc.createTime?.toMillis?.(),
                 ),
               },
             },
@@ -131,14 +133,18 @@ export const useFbGetExpenses = (range, options = {}) => {
       },
     );
 
-    return () => {
-      unsubscribe();
-    };
-  }, [user?.businessID, rangeStart, rangeEnd, scope, setExpensesByScope]);
+    return unsubscribe;
+  }, [user?.businessID, rangeStart, rangeEnd, setExpensesByScope]);
 
   const expenses = scope === SHARED_SCOPE ? sharedExpenses : localExpenses;
 
-  return { expenses, loading, error };
+  // ✅ si no hay business, no “toques” estado: solo devuelve vacío
+  const hasBusiness = Boolean(user?.businessID);
+  return {
+    expenses: hasBusiness ? (loading ? [] : expenses) : [],
+    loading: hasBusiness ? loading : false,
+    error: hasBusiness ? error : null,
+  };
 };
 
 export const useLocalFbGetExpenses = (range) =>

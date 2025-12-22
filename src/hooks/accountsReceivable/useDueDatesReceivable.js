@@ -13,7 +13,7 @@ import {
   count,
 } from 'firebase/firestore';
 import { DateTime } from 'luxon';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
@@ -43,14 +43,6 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
   const user = useSelector(selectUser);
 
-  // Cache para datos relacionados para evitar múltiples consultas
-  const [dataCache, setDataCache] = useState({
-    clients: new Map(),
-    invoices: new Map(),
-    accounts: new Map(),
-    lastUpdated: null,
-  });
-
   // Memoizar fechas para evitar recálculos innecesarios
   const dateThresholds = useMemo(() => {
     const now = DateTime.now().startOf('day');
@@ -58,22 +50,31 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     return { now, futureLimit };
   }, [daysThreshold]);
 
+  // Cache para datos relacionados - usar useRef para evitar problemas de dependencias
+  const dataCacheRef = useRef({
+    clients: new Map(),
+    invoices: new Map(),
+    accounts: new Map(),
+    lastUpdated: null,
+  });
+
   // Función para limpiar cache cada 5 minutos
   const cleanCache = useCallback(() => {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    if (!dataCache.lastUpdated || dataCache.lastUpdated < fiveMinutesAgo) {
-      setDataCache({
+    if (!dataCacheRef.current.lastUpdated || dataCacheRef.current.lastUpdated < fiveMinutesAgo) {
+      dataCacheRef.current = {
         clients: new Map(),
         invoices: new Map(),
         accounts: new Map(),
         lastUpdated: Date.now(),
-      });
+      };
     }
-  }, [dataCache.lastUpdated]);
+  }, []);
 
   // Función optimizada para obtener datos de clientes en lote
   const fetchClientsInBatch = useCallback(
     async (clientIds) => {
+      const dataCache = dataCacheRef.current;
       const uncachedClientIds = clientIds.filter(
         (id) => !dataCache.clients.has(id),
       );
@@ -128,12 +129,13 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
         console.warn('Error fetching clients in batch:', error);
       }
     },
-    [user?.businessID, dataCache.clients],
+    [user],
   );
 
   // Función optimizada para obtener datos de facturas en lote
   const fetchInvoicesInBatch = useCallback(
     async (invoiceIds) => {
+      const dataCache = dataCacheRef.current;
       const uncachedInvoiceIds = invoiceIds.filter(
         (id) => !dataCache.invoices.has(id),
       );
@@ -187,17 +189,14 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
         console.warn('Error fetching invoices in batch:', error);
       }
     },
-    [user?.businessID, dataCache.invoices],
+    [user],
   );
 
   useEffect(() => {
     if (!user?.businessID) {
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError(null);
 
     // Limpiar cache periódicamente
     cleanCache();
@@ -276,6 +275,8 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     const unsubscribe = onSnapshot(
       installmentsQuery,
       async (querySnapshot) => {
+        const dataCache = dataCacheRef.current;
+        setError(null);
         try {
           if (querySnapshot.empty) {
             setDueSoonAccounts([]);

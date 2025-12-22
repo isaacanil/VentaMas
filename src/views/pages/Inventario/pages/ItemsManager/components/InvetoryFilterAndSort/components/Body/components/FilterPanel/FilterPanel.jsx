@@ -174,7 +174,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
     return () => {
       isMounted = false;
     };
-  }, [user?.businessID, warehouseIds]);
+  }, [user, warehouseIds]);
 
   const handleItbisChange = (newItbis) => {
     dispatch(setItbis({ context: contextKey, value: newItbis }));

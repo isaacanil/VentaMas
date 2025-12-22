@@ -10,7 +10,7 @@ import {
   selectTaxReceiptEnabled,
 } from '../../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbEnabledTaxReceipt } from '../../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
-import { fbGetTaxReceipt } from '../../../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { useFbGetTaxReceipt } from '../../../../../../firebase/taxReceipt/fbGetTaxReceipt';
 import { fbUpdateTaxReceipt } from '../../../../../../firebase/taxReceipt/fbUpdateTaxReceipt';
 import { useCompareArrays } from '../../../../../../hooks/useCompareArrays';
 import { serializeFirestoreDocuments } from '../../../../../../utils/serialization/serializeFirestoreData';
@@ -18,7 +18,7 @@ import { serializeFirestoreDocuments } from '../../../../../../utils/serializati
 export function useTaxReceiptSetting() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { taxReceipt } = fbGetTaxReceipt();
+  const { taxReceipt } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const [taxReceiptLocal, setTaxReceiptLocal] = useState([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -27,6 +27,7 @@ export function useTaxReceiptSetting() {
   useEffect(() => {
     const serializedTaxReceipt = serializeFirestoreDocuments(taxReceipt);
     dispatch(getTaxReceiptData(serializedTaxReceipt));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to synchronize local state with Redux/Firebase derived data
     setTaxReceiptLocal(serializedTaxReceipt);
   }, [taxReceipt, dispatch]);
 

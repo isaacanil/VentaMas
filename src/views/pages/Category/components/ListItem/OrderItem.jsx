@@ -1,5 +1,5 @@
 import { Button as AntdButton, message } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -31,12 +31,6 @@ export const OrderItem = ({ cat, Row, Col }) => {
     setShowConfirmBtn(false);
     setMode(null);
   };
-  useEffect(() => {
-    setCategory({
-      name: cat.name,
-      id: cat.id,
-    });
-  }, [cat]);
 
   const handleEdit = () => {
     setCategory({

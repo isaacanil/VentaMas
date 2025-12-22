@@ -1,14 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
 
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
 import {
   getAmountBackground,
   getAmountColor,
   getPriceColor,
 } from '../utils/stockTheme';
-
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
 
 // Styled components
 const FooterWrapper = styled.div`

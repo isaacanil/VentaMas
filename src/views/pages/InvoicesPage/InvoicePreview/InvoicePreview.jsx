@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../features/auth/userSlice';
 import {
   closeInvoicePreviewModal,
@@ -21,7 +23,6 @@ import { PaymentMethodInfoCard } from './components/PaymentMethodInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';
 
-import { formatPrice } from '@/utils/format';
 
 export const InvoicePreview = () => {
   const dispatch = useDispatch();

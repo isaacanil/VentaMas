@@ -83,7 +83,7 @@ export function useTaxReceiptsFix(user) {
       },
     );
     return () => unsubscribe();
-  }, [businessID]);
+  }, [businessID, taxReceiptsRef]);
 
   /**
    * Actualiza la secuencia de un taxReceipt en Firestore e inserta sequenceLength si no existe.

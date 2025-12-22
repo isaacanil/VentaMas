@@ -6,8 +6,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { ActionIcon } from '../../../../../../components/common/ActionIcon';
-import { replacePathParams } from '../../../../../../routes/replacePathParams';
-import { ROUTES } from '../../../../../../routes/routesName';
+import { replacePathParams } from '@/router/routes/replacePathParams';
+import { ROUTES } from '@/router/routes/routesName';
 import TextCell from '../../../../../templates/system/AdvancedTable/components/Cells/Text/TextCerll';
 
 export function ProviderCell({ value }) {

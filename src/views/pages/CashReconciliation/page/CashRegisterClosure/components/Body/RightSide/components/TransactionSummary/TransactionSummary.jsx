@@ -3,18 +3,17 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
-import { CashCountMetaData } from '../../CashCountMetaData';
-
 import { formatNumber } from '@/utils/format';
 
-export const TransactionSummary = ({ invoices, loading }) => {
+import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
+import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
+
+
+export const TransactionSummary = ({ loading }) => {
   const cashCount = useSelector(selectCashCount);
-  const { totalCard, totalRegister, totalTransfer } = CashCountMetaData(
-    cashCount,
-    invoices,
-  );
+  const totalCard = cashCount?.totalCard ?? 0;
+  const totalTransfer = cashCount?.totalTransfer ?? 0;
+  const totalRegister = cashCount?.totalRegister ?? 0;
 
   return (
     <Spin spinning={loading}>

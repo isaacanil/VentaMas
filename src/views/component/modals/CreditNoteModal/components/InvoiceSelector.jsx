@@ -1,14 +1,15 @@
-import { FileTextOutlined, CloseOutlined } from '@ant-design/icons';
+﻿import { FileTextOutlined, CloseOutlined } from '@ant-design/icons';
 import { Input, Drawer, Tag, Pagination } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
 import DateUtils from '../../../../../utils/date/dateUtils';
 import { normalizeText } from '../../../../../utils/text';
 
-import { formatPrice } from '@/utils/format';
 
 /*
   Selector de Facturas
@@ -191,19 +192,25 @@ const InvoiceSelector = ({
 }) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const paginationSeed = `${visible ? 'open' : 'closed'}:${search}`;
+  const [paginationState, setPaginationState] = useState(() => ({
+    seed: paginationSeed,
+    currentPage: 1,
+  }));
+
+  const currentPage =
+    paginationState.seed === paginationSeed ? paginationState.currentPage : 1;
   const pageSize = 10;
   const searchRef = useRef(null);
 
   useEffect(() => {
-    if (visible && searchRef.current) {
-      setTimeout(() => searchRef.current.focus(), 120);
-    }
-  }, [visible]);
+    if (!visible) return undefined;
+    const inputEl = searchRef.current;
+    if (!inputEl) return undefined;
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, visible]);
+    const timeoutId = window.setTimeout(() => inputEl.focus(), 120);
+    return () => window.clearTimeout(timeoutId);
+  }, [visible]);
 
   const filteredInvoices = search
     ? invoices.filter((inv) =>
@@ -227,7 +234,7 @@ const InvoiceSelector = ({
   const handleDateRangeChange = (range) => {
     const finalRange =
       !range || !range[0]
-        ? [dayjs().startOf('month'), dayjs().endOf('month')]
+        ? [DateTime.now().startOf('month'), DateTime.now().endOf('month')]
         : range;
     onDateRangeChange?.(finalRange);
   };
@@ -384,7 +391,9 @@ const InvoiceSelector = ({
                 current={currentPage}
                 pageSize={pageSize}
                 total={filteredInvoices.length}
-                onChange={(page) => setCurrentPage(page)}
+                onChange={(page) =>
+                  setPaginationState({ seed: paginationSeed, currentPage: page })
+                }
                 size="small"
                 showSizeChanger={false}
               />
@@ -397,3 +406,5 @@ const InvoiceSelector = ({
 };
 
 export default InvoiceSelector;
+
+

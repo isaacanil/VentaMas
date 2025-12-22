@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useCallback, useMemo } from 'react';
 
 import { DatePicker } from '../../../../../../components/common/DatePicker/DatePicker';
@@ -10,13 +10,13 @@ export const DateRangeFilter = ({ datesSelected, setDatesSelected, label }) => {
     (value) => {
       if (Array.isArray(value)) {
         setDatesSelected({
-          startDate: value[0] ? value[0].startOf('day').valueOf() : null,
-          endDate: value[1] ? value[1].endOf('day').valueOf() : null,
+          startDate: value[0] ? value[0].startOf('day').toMillis() : null,
+          endDate: value[1] ? value[1].endOf('day').toMillis() : null,
         });
       } else if (value) {
         setDatesSelected({
-          startDate: value.startOf('day').valueOf(),
-          endDate: value.endOf('day').valueOf(),
+          startDate: value.startOf('day').toMillis(),
+          endDate: value.endOf('day').toMillis(),
         });
       } else {
         setDatesSelected({ startDate: null, endDate: null });
@@ -28,8 +28,10 @@ export const DateRangeFilter = ({ datesSelected, setDatesSelected, label }) => {
   const dateValue = useMemo(() => {
     if (!datesSelected?.startDate && !datesSelected?.endDate) return null;
     return [
-      datesSelected?.startDate ? dayjs(datesSelected.startDate) : null,
-      datesSelected?.endDate ? dayjs(datesSelected.endDate) : null,
+      datesSelected?.startDate
+        ? DateTime.fromMillis(datesSelected.startDate)
+        : null,
+      datesSelected?.endDate ? DateTime.fromMillis(datesSelected.endDate) : null,
     ];
   }, [datesSelected]);
 

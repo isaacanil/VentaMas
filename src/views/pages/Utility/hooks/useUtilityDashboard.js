@@ -1,8 +1,10 @@
 import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 
+import { formatPrice } from '@/utils/format';
+
 import { useLocalFbGetExpenses } from '../../../../firebase/expenses/Items/useFbGetExpenses';
-import { fbGetInvoices } from '../../../../firebase/invoices/fbGetInvoices';
+import { useFbGetInvoices } from '../../../../firebase/invoices/fbGetInvoices';
 import { getDateRange } from '../../../../utils/date/getDateRange';
 import { DISTRIBUTION_COLORS } from '../constants/utilityConstants';
 import {
@@ -12,7 +14,6 @@ import {
 } from '../utils/metrics';
 import { computePreviousRange } from '../utils/range';
 
-import { formatPrice } from '@/utils/format';
 
 const rangesAreEqual = (a, b) =>
   Boolean(a?.startDate && a?.endDate && b?.startDate && b?.endDate) &&
@@ -80,22 +81,22 @@ export const useUtilityDashboard = () => {
 
   const { expenses, loading: expensesLoading } =
     useLocalFbGetExpenses(datesSelected);
-  const { invoices, loading: invoicesLoading } = fbGetInvoices(datesSelected);
+  const { invoices, loading: invoicesLoading } = useFbGetInvoices(datesSelected);
 
   const { expenses: previousExpenses, loading: prevExpensesLoading } =
     useLocalFbGetExpenses(previousRange);
   const { invoices: previousInvoices, loading: prevInvoicesLoading } =
-    fbGetInvoices(previousRange);
+    useFbGetInvoices(previousRange);
 
   const { expenses: weekExpenses, loading: weekExpensesLoading } =
     useLocalFbGetExpenses(thisWeekRange);
   const { invoices: weekInvoices, loading: weekInvoicesLoading } =
-    fbGetInvoices(thisWeekRange);
+    useFbGetInvoices(thisWeekRange);
 
   const { expenses: lastWeekExpenses, loading: lastWeekExpensesLoading } =
     useLocalFbGetExpenses(lastWeekRange);
   const { invoices: lastWeekInvoices, loading: lastWeekInvoicesLoading } =
-    fbGetInvoices(lastWeekRange);
+    useFbGetInvoices(lastWeekRange);
   const currentMetrics = useMemo(
     () => buildFinancialMetrics(invoices, expenses, datesSelected),
     [invoices, expenses, datesSelected],

@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
 import { openInsuranceConfigModal } from '../../../../../features/insurance/insuranceConfigModalSlice';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { Button } from '../../../system/Button/Button';
 
 export const InsuranceConfigToolbar = ({ side = 'left' }) => {

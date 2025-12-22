@@ -81,7 +81,7 @@ export const getInsurance = async (user, insuranceId) => {
   }
 };
 
-export async function listenInsuranceConfig(user, callback, errorCallback) {
+export function listenInsuranceConfig(user, callback, errorCallback) {
   if (!user.businessID) {
     throw new Error('No se encontró un ID de negocio');
   }
@@ -121,31 +121,33 @@ export const useListenInsuranceConfig = () => {
   const [error, setError] = useState(null);
   const user = useSelector(selectUser);
 
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+
+  if (user?.businessID !== prevBusinessID) {
+    setPrevBusinessID(user?.businessID);
+    setLoading(true);
+  }
+
+  if (!user?.businessID && loading) {
+    setLoading(false);
+  }
+
   useEffect(() => {
     if (!user?.businessID) {
-      setLoading(false);
       return undefined;
     }
 
-    let unsubscribe;
-    try {
-      unsubscribe = listenInsuranceConfig(
-        user,
-        (data) => {
-          setData(data);
-          setLoading(false);
-        },
-        (error) => {
-          setError(error);
-          setLoading(false);
-        },
-      );
-    } catch (error) {
-      console.error('Error al iniciar el listener:', error);
-      setError(error);
-      setLoading(false);
-      return undefined;
-    }
+    const unsubscribe = listenInsuranceConfig(
+      user,
+      (data) => {
+        setData(data);
+        setLoading(false);
+      },
+      (error) => {
+        setError(error);
+        setLoading(false);
+      },
+    );
 
     return () => {
       if (typeof unsubscribe === 'function') {

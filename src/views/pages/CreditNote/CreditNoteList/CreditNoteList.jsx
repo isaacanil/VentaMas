@@ -5,25 +5,26 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { Button, Space, Tooltip, Tag } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
 
 import { CREDIT_NOTE_STATUS } from '../../../../constants/creditNoteStatus';
 import { useBusinessDataConfig } from '../../../../features/auth/useBusinessDataConfig';
 import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
 import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
-import { fbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import ROUTES_NAME from '../../../../routes/routesName';
+import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
 
 import { CreditNoteFilters } from './components/CreditNoteFilters';
 
-import { formatPrice } from '@/utils/format';
 
 export const CreditNoteList = () => {
   const dispatch = useDispatch();
@@ -32,15 +33,15 @@ export const CreditNoteList = () => {
 
   // Estado para los filtros
   const [filters, setFilters] = useState({
-    startDate: dayjs().startOf('day'),
-    endDate: dayjs().endOf('day'),
+    startDate: DateTime.local().startOf('day'),
+    endDate: DateTime.local().endOf('day'),
     clientId: null,
     status: null,
   });
 
   const { creditNotes, loading: creditNotesLoading } =
     useFbGetCreditNotes(filters);
-  const { taxReceipt, isLoading: taxReceiptLoading } = fbGetTaxReceipt();
+  const { taxReceipt, isLoading: taxReceiptLoading } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
 
   const isOverallLoading = creditNotesLoading || taxReceiptLoading;
@@ -306,7 +307,7 @@ export const CreditNoteList = () => {
     handleView(record);
   };
 
-  const HeaderComponent = () => (
+  const headerComponent = (
     <HeaderContainer>
       <HeaderTitle>Notas de Crédito</HeaderTitle>
     </HeaderContainer>
@@ -377,7 +378,7 @@ export const CreditNoteList = () => {
           columns={columns}
           loading={isOverallLoading}
           searchTerm={searchTerm}
-          headerComponent={<HeaderComponent />}
+          headerComponent={headerComponent}
           tableName="creditNotes"
           elementName="nota de crédito"
           onRowClick={handleRowClick}

@@ -1,4 +1,4 @@
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { registerToolbar } from '../core/registerToolbar';
 
 import type { ToolbarRegistryEntry } from '../types/types';

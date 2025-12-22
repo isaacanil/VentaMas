@@ -1,15 +1,14 @@
-import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleOpenMenu } from '../../../../features/nav/navSlice';
+import { toggleMenu } from '../../../../features/nav/navSlice';
 
 export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
   const dispatch = useDispatch();
-  const toggleMenu = () => dispatch(toggleOpenMenu());
+  const handleToggleMenu = () => dispatch(toggleMenu());
 
   return (
-    <Container $isOpen={isOpen} onClick={onClick || toggleMenu} $zIndex={zIndex}>
+    <Container $isOpen={isOpen} onClick={onClick || handleToggleMenu} $zIndex={zIndex}>
       <MenuIcon $isOpen={isOpen}></MenuIcon>
     </Container>
   );
@@ -33,7 +32,6 @@ const Container = styled.div`
   background-color: rgb(0 0 0 / 20%);
   border-radius: var(--border-radius);
   cursor: pointer;
-  z-index: ${(props) => (props.$isOpen ? 10000 : 0)};
   transition-delay: ${(props) => !props.$isOpen && '1s'};
 
   @media (width <= 768px) {

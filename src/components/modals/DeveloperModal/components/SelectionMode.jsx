@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 
 /**
@@ -20,7 +20,7 @@ const SelectionMode = ({
   /**
    * Muestra la lista de selección
    */
-  const displaySelectionList = () => {
+  const displaySelectionList = useCallback(() => {
     // Eliminar la lista anterior si existe
     setConsoleOutput((prev) =>
       prev.filter(
@@ -36,18 +36,18 @@ const SelectionMode = ({
       content: `<div style="color:#66d9ef;font-weight:bold;margin-bottom:10px;">${title}</div>
 <div style="margin-left:4px;margin-bottom:10px;">
 ${items
-  .map((item, index) => {
-    const isSelected = index === selectedIndex;
-    const itemClass = isSelected ? 'selection-active' : 'selection-inactive';
-    const icon = isSelected ? '🔹' : '▫️'; // Hacer cada elemento clicable - ahora solo requiere un clic para confirmar si ya está seleccionado
-    return `<div style="padding:4px 0;cursor:pointer;margin-bottom:2px;" 
+          .map((item, index) => {
+            const isSelected = index === selectedIndex;
+            const itemClass = isSelected ? 'selection-active' : 'selection-inactive';
+            const icon = isSelected ? '🔹' : '▫️'; // Hacer cada elemento clicable - ahora solo requiere un clic para confirmar si ya está seleccionado
+            return `<div style="padding:4px 0;cursor:pointer;margin-bottom:2px;" 
       onclick="window.selectItem(${index}, event)" 
       data-index="${index}" 
       class="selectable-item ${isSelected ? 'selected' : ''}">
       <span class="${itemClass}">${icon} ${item.display || item.name || item}</span>
   </div>`;
-  })
-  .join('')}
+          })
+          .join('')}
 </div>
 <div style="color:#888;font-size:12px;margin-top:5px;border-top:1px solid #333;padding-top:8px;">
 🔸 <strong>Filtrar:</strong> Escribe en la consola para filtrar opciones<br/>
@@ -119,7 +119,7 @@ ${items
       ]);
     }; // Eliminar la función de confirmSelection ya que ahora se maneja en selectItem
     window.confirmSelection = undefined;
-  }; // Mostrar la lista de selección al montar el componente
+  }, [command, items, onSelectIndex, onSelectionConfirm, selectedIndex, setConsoleOutput, title]); // Mostrar la lista de selección al montar el componente
   useEffect(() => {
     if (active) {
       console.log('SelectionMode - Rendering with items:', items);
@@ -131,7 +131,7 @@ ${items
       window.selectItem = undefined;
       window.confirmSelection = undefined;
     };
-  }, [active, selectedIndex, items]); // Re-renderizar cuando cambia el índice seleccionado o los items filtrados
+  }, [active, selectedIndex, items, displaySelectionList]); // Re-renderizar cuando cambia el índice seleccionado o los items filtrados
 
   if (!active) {
     return null;

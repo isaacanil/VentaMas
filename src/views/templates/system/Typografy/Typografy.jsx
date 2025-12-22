@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { TypographyStyle } from './style/TypographyStyles';
 
 /**

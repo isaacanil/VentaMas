@@ -9,10 +9,11 @@ import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import { getTotalPrice } from '../../../../../../../utils/pricing';
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -64,7 +65,7 @@ const accumulateCategorySalesData = (sales) => {
 };
 
 export const ProductCategorySalesBarChart = ({ sales }) => {
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const salesByCategory = useMemo(
     () => accumulateCategorySalesData(normalizedSales),

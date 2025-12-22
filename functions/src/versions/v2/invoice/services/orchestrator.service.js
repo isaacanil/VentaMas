@@ -1,13 +1,13 @@
-import { addDays, addWeeks, addMonths } from 'date-fns';
-import { https } from 'firebase-functions';
-import { nanoid } from 'nanoid';
+import { addDays, addWeeks, addMonths } from "date-fns";
+import { https } from "firebase-functions";
+import { nanoid } from "nanoid";
 
-import { db, FieldValue, Timestamp } from '../../../../core/config/firebase.js';
-import { stableHash } from '../utils/hash.util.js';
+import { db, FieldValue, Timestamp } from "../../../../core/config/firebase.js";
+import { stableHash } from "../utils/hash.util.js";
 
-import { auditTx } from './audit.service.js';
-import { getIdempotencyRef } from './idempotency.service.js';
-import { reserveNcf } from './ncf.service.js';
+import { auditTx } from "./audit.service.js";
+import { getIdempotencyRef } from "./idempotency.service.js";
+import { reserveNcf } from "./ncf.service.js";
 
 /**
  * Crea una factura V2 en estado 'pending' y registra la clave de idempotencia.
@@ -36,14 +36,15 @@ export async function createPendingInvoice({
       payload?.preorder?.isPreorder ||
       payload?.cart?.preorderDetails?.isOrWasPreorder
     );
-    const preorderCartId = isPreorder
-      ? payload?.cart?.id ||
-        payload?.cart?.cartId ||
-        payload?.cart?.cartIdRef ||
-        payload?.cartId ||
-        null
-      : null;
-    const newInvoiceId = preorderCartId || nanoid();
+    const cartPayload = payload?.cart || {};
+    const cartId = cartPayload?.id || null;
+    const preorderCartId = isPreorder ? cartId : null;
+    const newInvoiceId =
+      preorderCartId ||
+      cartId ||
+      payload?.invoiceId ||
+      payload?.id ||
+      nanoid();
     const invoiceRef = db.doc(
       `businesses/${businessId}/invoicesV2/${newInvoiceId}`,
     );
@@ -73,7 +74,7 @@ export async function createPendingInvoice({
         const comments = payload.cart.products
           .filter((p) => p?.comment)
           .map((p) => `${p?.name || p?.id}: ${p.comment}`);
-        if (comments.length) derivedInvoiceComment = comments.join('; ');
+        if (comments.length) derivedInvoiceComment = comments.join("; ");
       }
     } catch {
       /* noop - comment aggregation is optional */
@@ -86,6 +87,9 @@ export async function createPendingInvoice({
     const canonicalCartPayload = payload?.cart
       ? { ...payload.cart }
       : {};
+    if (newInvoiceId && !canonicalCartPayload.id) {
+      canonicalCartPayload.id = newInvoiceId;
+    }
     if (preferredCashCountId && !canonicalCartPayload.cashCountId) {
       canonicalCartPayload.cashCountId = preferredCashCountId;
     }
@@ -102,7 +106,7 @@ export async function createPendingInvoice({
 
     const baseDoc = {
       version: 2,
-      status: 'pending',
+      status: "pending",
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       businessId,
@@ -110,7 +114,7 @@ export async function createPendingInvoice({
       idempotencyKey,
       requestHash,
       cartHash,
-      statusTimeline: [{ status: 'pending', at: Timestamp.now() }],
+      statusTimeline: [{ status: "pending", at: Timestamp.now() }],
       snapshot: {
         ncf: payload?.ncf || null,
         client: payload?.client || null,
@@ -128,9 +132,9 @@ export async function createPendingInvoice({
     if (ncfEnabled) {
       if (!ncfType) {
         throw new https.HttpsError(
-          'invalid-argument',
-          'ncfType requerido cuando ncf.enabled=true',
-          { reason: 'missing-ncf-type' },
+          "invalid-argument",
+          "ncfType requerido cuando ncf.enabled=true",
+          { reason: "missing-ncf-type" },
         );
       }
       ncfReservation = await reserveNcf(tx, { businessId, userId, ncfType });
@@ -139,10 +143,10 @@ export async function createPendingInvoice({
         type: ncfType,
         code: ncfReservation.ncfCode,
         usageId: ncfReservation.usageId,
-        status: 'reserved',
+        status: "reserved",
       };
       baseDoc.statusTimeline.push({
-        status: 'ncf_reserved',
+        status: "ncf_reserved",
         at: Timestamp.now(),
       });
     }
@@ -151,7 +155,7 @@ export async function createPendingInvoice({
     auditTx(tx, {
       businessId,
       invoiceId: newInvoiceId,
-      event: 'invoice_init',
+      event: "invoice_init",
       data: { idempotencyKey, ncfReserved: !!ncfReservation, cartHash },
     });
 
@@ -162,19 +166,19 @@ export async function createPendingInvoice({
     );
     const products = Array.isArray(payload?.cart?.products)
       ? payload.cart.products.map((p) => ({
-          id: p.id,
-          name: p.name,
-          amountToBuy: p.amountToBuy,
-          trackInventory: !!p.trackInventory,
-          productStockId: p.productStockId,
-          batchId: p.batchId,
-        }))
+        id: p.id,
+        name: p.name,
+        amountToBuy: p.amountToBuy,
+        trackInventory: !!p.trackInventory,
+        productStockId: p.productStockId,
+        batchId: p.batchId,
+      }))
       : [];
 
     tx.set(outboxRef, {
       id: taskId,
-      type: 'updateInventory',
-      status: 'pending',
+      type: "updateInventory",
+      status: "pending",
       attempts: 0,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -187,8 +191,8 @@ export async function createPendingInvoice({
     auditTx(tx, {
       businessId,
       invoiceId: newInvoiceId,
-      event: 'task_scheduled',
-      data: { type: 'updateInventory', products: { count: products.length } },
+      event: "task_scheduled",
+      data: { type: "updateInventory", products: { count: products.length } },
     });
 
     // Crear tarea de outbox: crear factura canónica (Fase 7)
@@ -198,8 +202,8 @@ export async function createPendingInvoice({
     );
     tx.set(canonOutboxRef, {
       id: canonTaskId,
-      type: 'createCanonicalInvoice',
-      status: 'pending',
+      type: "createCanonicalInvoice",
+      status: "pending",
       attempts: 0,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -216,8 +220,8 @@ export async function createPendingInvoice({
     auditTx(tx, {
       businessId,
       invoiceId: newInvoiceId,
-      event: 'task_scheduled',
-      data: { type: 'createCanonicalInvoice' },
+      event: "task_scheduled",
+      data: { type: "createCanonicalInvoice" },
     });
 
     // Crear tarea de outbox: attach a cash count abierto (Fase 7)
@@ -227,8 +231,8 @@ export async function createPendingInvoice({
     );
     tx.set(ccOutboxRef, {
       id: ccTaskId,
-      type: 'attachToCashCount',
-      status: 'pending',
+      type: "attachToCashCount",
+      status: "pending",
       attempts: 0,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -241,8 +245,8 @@ export async function createPendingInvoice({
     auditTx(tx, {
       businessId,
       invoiceId: newInvoiceId,
-      event: 'task_scheduled',
-      data: { type: 'attachToCashCount' },
+      event: "task_scheduled",
+      data: { type: "attachToCashCount" },
     });
 
     // Crear tarea de outbox: cerrar preorden (Fase Preorden)
@@ -253,8 +257,8 @@ export async function createPendingInvoice({
       );
       tx.set(prOutboxRef, {
         id: prTaskId,
-        type: 'closePreorder',
-        status: 'pending',
+        type: "closePreorder",
+        status: "pending",
         attempts: 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -266,8 +270,8 @@ export async function createPendingInvoice({
       auditTx(tx, {
         businessId,
         invoiceId: newInvoiceId,
-        event: 'task_scheduled',
-        data: { type: 'closePreorder' },
+        event: "task_scheduled",
+        data: { type: "closePreorder" },
       });
     }
 
@@ -282,9 +286,9 @@ export async function createPendingInvoice({
         totalInstallments <= 0
       ) {
         throw new https.HttpsError(
-          'invalid-argument',
-          'accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true',
-          { reason: 'invalid-accounts-receivable' },
+          "invalid-argument",
+          "accountsReceivable.totalInstallments es requerido cuando isAddedToReceivables=true",
+          { reason: "invalid-accounts-receivable" },
         );
       }
     }
@@ -300,8 +304,8 @@ export async function createPendingInvoice({
       const nowMs = Date.now();
       tx.set(arOutboxRef, {
         id: arTaskId,
-        type: 'setupAR',
-        status: 'pending',
+        type: "setupAR",
+        status: "pending",
         attempts: 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -319,8 +323,8 @@ export async function createPendingInvoice({
       auditTx(tx, {
         businessId,
         invoiceId: newInvoiceId,
-        event: 'task_scheduled',
-        data: { type: 'setupAR' },
+        event: "task_scheduled",
+        data: { type: "setupAR" },
       });
     }
 
@@ -335,8 +339,8 @@ export async function createPendingInvoice({
       );
       tx.set(cnOutboxRef, {
         id: cnTaskId,
-        type: 'consumeCreditNotes',
-        status: 'pending',
+        type: "consumeCreditNotes",
+        status: "pending",
         attempts: 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -354,9 +358,9 @@ export async function createPendingInvoice({
       auditTx(tx, {
         businessId,
         invoiceId: newInvoiceId,
-        event: 'task_scheduled',
+        event: "task_scheduled",
         data: {
-          type: 'consumeCreditNotes',
+          type: "consumeCreditNotes",
           creditNotes: { count: creditNotes.length },
         },
       });
@@ -379,8 +383,8 @@ export async function createPendingInvoice({
       const nowMs = Date.now();
       tx.set(insOutboxRef, {
         id: insTaskId,
-        type: 'setupInsuranceAR',
-        status: 'pending',
+        type: "setupInsuranceAR",
+        status: "pending",
         attempts: 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -403,7 +407,7 @@ export async function createPendingInvoice({
       key: idempotencyKey,
       invoiceId: newInvoiceId,
       payloadHash: requestHash,
-      status: 'pending',
+      status: "pending",
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -411,5 +415,5 @@ export async function createPendingInvoice({
     return { invoiceId: newInvoiceId, alreadyExists: false };
   });
 
-  return { invoiceId, status: 'pending', alreadyExists };
+  return { invoiceId, status: "pending", alreadyExists };
 }

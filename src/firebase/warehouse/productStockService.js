@@ -424,20 +424,36 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
 };
 
 // Hook para escuchar productos en stock por ubicación
+// Hook para escuchar productos en stock por ubicación
 export const useListenProductsStockByLocation = (location = null) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Inicializar loading basado en si tenemos las dependencias necesarias
+  const [loading, setLoading] = useState(!!(location && user?.businessID));
+
+  // Estado para detectar cambios en dependencias
+  const [prevLocation, setPrevLocation] = useState(location);
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+
+  // Ajustar estado durante render si cambian dependencias
+  if (location !== prevLocation || user?.businessID !== prevBusinessID) {
+    setPrevLocation(location);
+    setPrevBusinessID(user?.businessID);
+    // Data se limpia o se mantiene según preferencia, aquí limpiamos
+    setData([]);
+    // Si hay datos válidos, ponemos loading true. Si no, false.
+    if (location && user?.businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    // Si no hay location, user o businessID, limpiamos y salimos.
-    if (!location || !user || !user.businessID) {
-      setData([]);
-      setLoading(false);
+    // Si no tenemos datos válidos, el render ya reseteó el estado. Salimos.
+    if (!location || !user?.businessID) {
       return;
     }
-
-    setLoading(true);
 
     const unsubscribe = listenAllProductStockByLocation(
       user,
@@ -450,7 +466,7 @@ export const useListenProductsStockByLocation = (location = null) => {
 
     // Limpiamos el listener al desmontar
     return () => unsubscribe();
-  }, [user, location]);
+  }, [user, location]); // Dependencias del efecto se mantienen
 
   return { data, loading };
 };
@@ -460,16 +476,26 @@ export const useListenProductsStock = (productId = null) => {
   const user = useSelector(selectUser);
   const stableUser = useMemo(() => user, [user]);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!(productId && stableUser?.businessID));
+
+  const [prevProductId, setPrevProductId] = useState(productId);
+  const [prevBusinessID, setPrevBusinessID] = useState(stableUser?.businessID);
+
+  if (productId !== prevProductId || stableUser?.businessID !== prevBusinessID) {
+    setPrevProductId(productId);
+    setPrevBusinessID(stableUser?.businessID);
+    setData([]);
+    if (productId && stableUser?.businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (!productId || !stableUser || !stableUser.businessID) {
-      setData([]);
-      setLoading(false);
+    if (!productId || !stableUser?.businessID) {
       return;
     }
-
-    setLoading(true);
 
     const unsubscribe = listenAllProductStock(
       stableUser,
@@ -487,6 +513,231 @@ export const useListenProductsStock = (productId = null) => {
 
     return () => unsubscribe();
   }, [stableUser, productId]);
+
+  return { data, loading };
+};
+
+
+// Hook para escuchar TODOS los productos en stock activos y agruparlos por producto
+export const useListenAllActiveProductsStock = () => {
+  const user = useSelector(selectUser);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(!!user?.businessID);
+
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+
+  if (user?.businessID !== prevBusinessID) {
+    setPrevBusinessID(user?.businessID);
+    setData([]);
+    if (user?.businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!user?.businessID) {
+      return;
+    }
+
+    try {
+      const productStockCollectionRef = getProductStockCollectionRef(
+        user.businessID,
+      );
+      if (!productStockCollectionRef) {
+        // Si falla la ref, reseteamos asíncronamente o dejamos como está (render lo manejó si businessID era null, pero si businessID existe y esto falla...)
+        // getProductStockCollectionRef solo falla si businessID es empty, cubierto por el check anterior.
+        return;
+      }
+
+      const q = query(
+        productStockCollectionRef,
+        where('status', '==', 'active'),
+        where('isDeleted', '==', false),
+      );
+
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const stockItems = querySnapshot.docs.map((doc) => doc.data());
+
+          // Agrupar por productId y agregar información
+          const groupedByProduct = stockItems.reduce((acc, stock) => {
+            const productId = stock.productId;
+            if (!productId) return acc;
+
+            if (!acc[productId]) {
+              acc[productId] = {
+                id: productId,
+                name: stock.productName || 'Producto sin nombre',
+                productName: stock.productName || 'Producto sin nombre',
+                totalStock: 0,
+                locations: [],
+                batches: new Set(),
+                stockItems: [],
+                hasExpiration: false,
+              };
+            }
+
+            acc[productId].totalStock += Number(stock.quantity) || 0;
+            acc[productId].locations.push(stock.location);
+            acc[productId].stockItems.push(stock);
+
+            const expirationDate =
+              normalizeToDate(stock.expirationDate) ||
+              normalizeToDate(stock.expDate) ||
+              normalizeToDate(stock.expiration);
+            if (expirationDate) {
+              acc[productId].hasExpiration = true;
+            }
+
+            // Agregar batchId al Set si existe
+            if (stock.batchId) {
+              acc[productId].batches.add(stock.batchId);
+            }
+
+            return acc;
+          }, {});
+
+          // Convertir a array, calcular agregados y ordenar por nombre
+          const productsArray = Object.values(groupedByProduct)
+            .map((product) => {
+              const uniqueLocations = [...new Set(product.locations)];
+              const uniqueBatches = product.batches.size;
+              const stockRecords = product.stockItems.length;
+
+              return {
+                ...product,
+                batches: undefined, // Remover el Set
+                stockRecords, // Cantidad de registros de stock
+                uniqueBatches, // Cantidad de lotes únicos
+                uniqueLocations: uniqueLocations.length, // Cantidad de ubicaciones únicas
+                // Agregar stockSummary compatible con el Tree NodeName
+                hasExpiration: product.hasExpiration,
+                hasExpired: product.hasExpired,
+                stockSummary: {
+                  totalLots: uniqueBatches,
+                  totalUnits: product.totalStock,
+                  directLots: uniqueBatches,
+                  directUnits: product.totalStock,
+                },
+              };
+            })
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+          setData(productsArray);
+          setLoading(false);
+        },
+        (error) => {
+          console.error(
+            'Error al escuchar todos los productos en stock:',
+            error,
+          );
+          setData([]);
+          setLoading(false);
+        },
+      );
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error al configurar listener de productos stock:', error);
+    }
+  }, [user?.businessID]);
+
+  return { data, loading };
+};
+
+export const useInventoryProductIds = () => {
+  const user = useSelector(selectUser);
+  const [data, setData] = useState(new Set());
+  const [loading, setLoading] = useState(!!user?.businessID);
+
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+
+  if (user?.businessID !== prevBusinessID) {
+    setPrevBusinessID(user?.businessID);
+    setData(new Set());
+    if (user?.businessID) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!user?.businessID) {
+      return;
+    }
+
+    try {
+      const productsRef = collection(
+        db,
+        'businesses',
+        user.businessID,
+        'products',
+      );
+      const unsubscribe = onSnapshot(
+        productsRef,
+        (snapshot) => {
+          const ids = new Set(
+            snapshot.docs.reduce((acc, doc) => {
+              const productData = doc.data();
+              if (!productData || productData?.isDeleted === true) {
+                return acc;
+              }
+
+              const rawTrack = productData.trackInventory;
+
+              // Excluir explícitamente si trackInventory es false
+              if (
+                rawTrack === false ||
+                rawTrack === 0 ||
+                rawTrack === 'false'
+              ) {
+                return acc;
+              }
+
+              // Incluir solo si trackInventory es explícitamente true
+              const isInventoried =
+                rawTrack === true ||
+                rawTrack === 1 ||
+                (typeof rawTrack === 'string' &&
+                  [
+                    'true',
+                    'True',
+                    'TRUE',
+                    'si',
+                    'Si',
+                    'SI',
+                    'sí',
+                    'Sí',
+                  ].includes(rawTrack.trim()));
+
+              if (isInventoried) {
+                acc.push(doc.id);
+              }
+              return acc;
+            }, []),
+          );
+          setData(ids);
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error al escuchar productos inventariables:', error);
+          setData(new Set());
+          setLoading(false);
+        },
+      );
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error(
+        'Error al configurar listener de productos inventariables:',
+        error,
+      );
+    }
+  }, [user?.businessID]);
 
   return { data, loading };
 };
@@ -694,216 +945,4 @@ export const getStockAggregatesByLocationPaths = async (
     acc[path] = summary;
     return acc;
   }, {});
-};
-
-// Hook para escuchar TODOS los productos en stock activos y agruparlos por producto
-export const useListenAllActiveProductsStock = () => {
-  const user = useSelector(selectUser);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user?.businessID) {
-      setData([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const productStockCollectionRef = getProductStockCollectionRef(
-        user.businessID,
-      );
-      if (!productStockCollectionRef) {
-        setData([]);
-        setLoading(false);
-        return;
-      }
-
-      const q = query(
-        productStockCollectionRef,
-        where('status', '==', 'active'),
-        where('isDeleted', '==', false),
-      );
-
-      const unsubscribe = onSnapshot(
-        q,
-        (querySnapshot) => {
-          const stockItems = querySnapshot.docs.map((doc) => doc.data());
-
-          // Agrupar por productId y agregar información
-          const groupedByProduct = stockItems.reduce((acc, stock) => {
-            const productId = stock.productId;
-            if (!productId) return acc;
-
-            if (!acc[productId]) {
-              acc[productId] = {
-                id: productId,
-                name: stock.productName || 'Producto sin nombre',
-                productName: stock.productName || 'Producto sin nombre',
-                totalStock: 0,
-                locations: [],
-                batches: new Set(),
-                stockItems: [],
-                hasExpiration: false,
-              };
-            }
-
-            acc[productId].totalStock += Number(stock.quantity) || 0;
-            acc[productId].locations.push(stock.location);
-            acc[productId].stockItems.push(stock);
-
-            const expirationDate =
-              normalizeToDate(stock.expirationDate) ||
-              normalizeToDate(stock.expDate) ||
-              normalizeToDate(stock.expiration);
-            if (expirationDate) {
-              acc[productId].hasExpiration = true;
-            }
-
-            // Agregar batchId al Set si existe
-            if (stock.batchId) {
-              acc[productId].batches.add(stock.batchId);
-            }
-
-            return acc;
-          }, {});
-
-          // Convertir a array, calcular agregados y ordenar por nombre
-          const productsArray = Object.values(groupedByProduct)
-            .map((product) => {
-              const uniqueLocations = [...new Set(product.locations)];
-              const uniqueBatches = product.batches.size;
-              const stockRecords = product.stockItems.length;
-
-              return {
-                ...product,
-                batches: undefined, // Remover el Set
-                stockRecords, // Cantidad de registros de stock
-                uniqueBatches, // Cantidad de lotes únicos
-                uniqueLocations: uniqueLocations.length, // Cantidad de ubicaciones únicas
-                // Agregar stockSummary compatible con el Tree NodeName
-                hasExpiration: product.hasExpiration,
-                hasExpired: product.hasExpired,
-                stockSummary: {
-                  totalLots: uniqueBatches,
-                  totalUnits: product.totalStock,
-                  directLots: uniqueBatches,
-                  directUnits: product.totalStock,
-                },
-              };
-            })
-            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-          setData(productsArray);
-          setLoading(false);
-        },
-        (error) => {
-          console.error(
-            'Error al escuchar todos los productos en stock:',
-            error,
-          );
-          setData([]);
-          setLoading(false);
-        },
-      );
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Error al configurar listener de productos stock:', error);
-      setData([]);
-      setLoading(false);
-    }
-  }, [user?.businessID]);
-
-  return { data, loading };
-};
-
-export const useInventoryProductIds = () => {
-  const user = useSelector(selectUser);
-  const [data, setData] = useState(new Set());
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user?.businessID) {
-      setData(new Set());
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const productsRef = collection(
-        db,
-        'businesses',
-        user.businessID,
-        'products',
-      );
-      const unsubscribe = onSnapshot(
-        productsRef,
-        (snapshot) => {
-          const ids = new Set(
-            snapshot.docs.reduce((acc, doc) => {
-              const productData = doc.data();
-              if (!productData || productData?.isDeleted === true) {
-                return acc;
-              }
-
-              const rawTrack = productData.trackInventory;
-
-              // Excluir explícitamente si trackInventory es false
-              if (
-                rawTrack === false ||
-                rawTrack === 0 ||
-                rawTrack === 'false'
-              ) {
-                return acc;
-              }
-
-              // Incluir solo si trackInventory es explícitamente true
-              const isInventoried =
-                rawTrack === true ||
-                rawTrack === 1 ||
-                (typeof rawTrack === 'string' &&
-                  [
-                    'true',
-                    'True',
-                    'TRUE',
-                    'si',
-                    'Si',
-                    'SI',
-                    'sí',
-                    'Sí',
-                  ].includes(rawTrack.trim()));
-
-              if (isInventoried) {
-                acc.push(doc.id);
-              }
-              return acc;
-            }, []),
-          );
-          setData(ids);
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error al escuchar productos inventariables:', error);
-          setData(new Set());
-          setLoading(false);
-        },
-      );
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error(
-        'Error al configurar listener de productos inventariables:',
-        error,
-      );
-      setData(new Set());
-      setLoading(false);
-    }
-  }, [user?.businessID]);
-
-  return { data, loading };
 };

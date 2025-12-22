@@ -12,7 +12,7 @@ import {
   Switch,
   Tooltip,
 } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -78,23 +78,37 @@ const getNumberRange = (value) => {
 
 const getDateRangeValue = (item) => {
   if (!item?.value) return null;
+  const toDateTime = (value) => {
+    if (!value) return null;
+    if (DateTime.isDateTime(value)) return value;
+    if (value instanceof Date) return DateTime.fromJSDate(value);
+    if (typeof value?.toDate === 'function') {
+      return DateTime.fromJSDate(value.toDate());
+    }
+    if (typeof value === 'number') return DateTime.fromMillis(value);
+    if (typeof value === 'string') {
+      const parsed = DateTime.fromISO(value);
+      return parsed.isValid ? parsed : null;
+    }
+    return null;
+  };
   if (Array.isArray(item.value)) {
-    return item.value.map((v) => (v ? dayjs(v) : null));
+    return item.value.map((v) => toDateTime(v));
   }
   return [
-    item.value?.startDate ? dayjs(item.value.startDate) : null,
-    item.value?.endDate ? dayjs(item.value.endDate) : null,
+    item.value?.startDate ? toDateTime(item.value.startDate) : null,
+    item.value?.endDate ? toDateTime(item.value.endDate) : null,
   ];
 };
 
 const handleDateChange = (item, range) => {
   if (!item?.onChange) return;
-  if (item.valueFormat === 'dayjs') {
+  if (item.valueFormat === 'luxon') {
     item.onChange(range);
     return;
   }
-  const start = range?.[0] ? range[0].startOf('day').valueOf() : null;
-  const end = range?.[1] ? range[1].endOf('day').valueOf() : null;
+  const start = range?.[0] ? range[0].startOf('day').toMillis() : null;
+  const end = range?.[1] ? range[1].endOf('day').toMillis() : null;
   if (item.valueAsArray) {
     item.onChange([start, end]);
   } else {
@@ -321,7 +335,12 @@ export const FilterBar = ({
           placement="bottom"
           onClose={closeDrawer}
           open={drawerVisible}
-          height="100vh"
+          size="large"
+          styles={{
+            wrapper: {
+              height: '100vh',
+            },
+          }}
           {...drawerProps}
         >
           <DrawerContent>

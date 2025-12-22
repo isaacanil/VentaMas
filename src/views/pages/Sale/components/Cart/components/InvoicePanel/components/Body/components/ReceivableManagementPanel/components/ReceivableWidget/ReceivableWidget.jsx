@@ -9,6 +9,8 @@ import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import {
   selectAR,
   resetAR,
@@ -18,7 +20,6 @@ import { SelectCartData } from '../../../../../../../../../../../../../features/
 import DateUtils from '../../../../../../../../../../../../../utils/date/dateUtils';
 import { calculateInvoiceChange } from '../../../../../../../../../../../../../utils/invoice';
 
-import { formatPrice } from '@/utils/format';
 
 const getPositive = (value) => (value < 0 ? -value : value);
 
@@ -68,7 +69,7 @@ export const ReceivableWidget = ({
 
   const getNextPaymentText = () => {
     if (!paymentDate) return 'No configurado';
-    return DateUtils.convertMillisToDayjs(paymentDate).format('DD/MM/YYYY');
+    return DateUtils.convertMillisToDayjs(paymentDate).toFormat('dd/MM/yyyy');
   };
 
   return (

@@ -117,7 +117,7 @@ const BackOrderList = ({ productId }) => {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { backOrders, loading, error } = useBackOrdersByProduct(productId);
+  const { data: backOrders, loading, error } = useBackOrdersByProduct(productId);
 
   if (loading) return <Spin size="small" />;
   if (error || !backOrders?.length) return null;
@@ -179,7 +179,7 @@ const BackOrderList = ({ productId }) => {
             const orderProgress = Math.round(
               ((order.initialQuantity - order.pendingQuantity) /
                 order.initialQuantity) *
-                100,
+              100,
             );
             return (
               <DetailItem key={order.id}>

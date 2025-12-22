@@ -8,15 +8,26 @@ import { db } from '../firebaseconfig';
 export const useFbGetAccountReceivableByInvoice = (invoiceId) => {
     const user = useSelector(selectUser);
     const [accountsReceivable, setAccountsReceivable] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const deps = [user?.businessID, invoiceId];
+    const [prevDeps, setPrevDeps] = useState(deps);
+
+    if (!user?.businessID || !invoiceId) {
+        if (accountsReceivable.length > 0) setAccountsReceivable([]);
+        if (loading) setLoading(false);
+    } else {
+        const depsChanged = deps.some((d, i) => d !== prevDeps[i]);
+        if (depsChanged) {
+            setPrevDeps(deps);
+            setLoading(true);
+        }
+    }
 
     useEffect(() => {
         if (!user?.businessID || !invoiceId) {
-            setAccountsReceivable([]);
-            return;
+            return undefined;
         }
-
-        setLoading(true);
 
         const ref = collection(
             db,

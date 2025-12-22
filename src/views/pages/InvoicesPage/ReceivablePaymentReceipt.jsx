@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Fragment, useEffect, useState, Suspense } from 'react';
+import { Fragment, useMemo, useState, Suspense } from 'react';
 import styled from 'styled-components';
 
 import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts';
@@ -22,15 +22,14 @@ export const ReceivablePaymentReceipt = () => {
 
   const [isReportSaleOpen, setIsReportSaleOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [processedInvoices, setProcessedInvoices] = useState(
-    paymentReceipts || [],
+
+  // Derivar processedInvoices durante render, no en efecto
+  const processedInvoices = useMemo(
+    () => paymentReceipts || [],
+    [paymentReceipts],
   );
 
   const onReportSaleOpen = () => setIsReportSaleOpen(!isReportSaleOpen);
-
-  useEffect(() => {
-    setProcessedInvoices(paymentReceipts);
-  }, [paymentReceipts]);
 
   return (
     <Fragment>
@@ -47,7 +46,6 @@ export const ReceivablePaymentReceipt = () => {
         <FilterBar
           invoices={paymentReceipts}
           processedInvoices={processedInvoices}
-          setProcessedInvoices={setProcessedInvoices}
           datesSelected={datesSelected}
           setDatesSelected={setDatesSelected}
           onReportSaleOpen={onReportSaleOpen}

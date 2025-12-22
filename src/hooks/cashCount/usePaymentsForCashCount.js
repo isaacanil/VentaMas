@@ -1,7 +1,9 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { db } from '../../firebase/firebaseconfig';
+import { toValidDate } from '../../utils/date/toValidDate';
+
 
 /**
  * Hook to listen for AR payments made by a specific user within a date range.
@@ -9,9 +11,9 @@ import { db } from '../../firebase/firebaseconfig';
  *
  * @param {Object} user - The current user (must have businessID).
  * @param {string|null} targetUserId - The UID of the cashier to filter by.
- * @param {number|null} startDate - Start timestamp (ms).
- * @param {number|null} endDate - End timestamp (ms).
- * @returns {Object} { payments: Array, loading: boolean, error: string|null }
+ * @param {number|string|Date|Object|null} startDate - Start date (ms, ISO string, Date, Firestore Timestamp, Luxon DateTime).
+ * @param {number|string|Date|Object|null} endDate - End date (ms, ISO string, Date, Firestore Timestamp, Luxon DateTime).
+ * @returns {Object} { data: Array, payments: Array, loading: boolean, error: string|null }
  */
 export const usePaymentsForCashCount = (
   user,
@@ -19,73 +21,93 @@ export const usePaymentsForCashCount = (
   startDate,
   endDate,
 ) => {
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const businessId = user?.businessID ?? null;
+
+  const startAsDate = useMemo(() => toValidDate(startDate), [startDate]);
+  const endAsDate = useMemo(() => toValidDate(endDate), [endDate]);
+
+  const startMs = startAsDate?.getTime?.() ?? null;
+  const endMs = endAsDate?.getTime?.() ?? null;
+
+  const queryKey = useMemo(() => {
+    if (!businessId || !targetUserId || startMs === null) return null;
+    return `${businessId}:${targetUserId}:${startMs}:${endMs ?? 'open'}`;
+  }, [businessId, targetUserId, startMs, endMs]);
+
+  const [snapshotState, setSnapshotState] = useState(() => ({
+    key: null,
+    payments: [],
+    error: null,
+  }));
 
   useEffect(() => {
-    if (!user?.businessID || !targetUserId || !startDate) {
-      setPayments([]);
-      setLoading(false);
-      return;
-    }
+    if (!queryKey) return;
 
-    setLoading(true);
-    setError(null);
+    const paymentsRef = collection(
+      db,
+      'businesses',
+      businessId,
+      'accountsReceivablePayments',
+    );
 
-    try {
-      const paymentsRef = collection(
-        db,
-        'businesses',
-        user.businessID,
-        'accountsReceivablePayments',
-      );
+    // Note: Firestore range queries on different fields usually require an index.
+    // Ideally: where('createdUserId', '==', targetUserId).where('createdAt', '>=', start).where('createdAt', '<=', end)
 
-      // Note: Firestore range queries on different fields usually require an index.
-      // However, here we might filter in memory if the volume is low,
-      // or rely on a composite index (createdUserId + createdAt).
-      // For now, we query by user and filter dates client-side if index is missing,
-      // or use 'where' for dates if possible.
-      // Ideally: where('createdUserId', '==', targetUserId).where('createdAt', '>=', start).where('createdAt', '<=', end)
+    const startTimestamp = new Date(startMs);
+    const endTimestamp = endMs === null ? new Date() : new Date(endMs); // Default to "now" if open
+    const normalizedEnd =
+      endTimestamp < startTimestamp ? new Date() : endTimestamp;
 
-      // Converting ms to Firestore Timestamp (if stored as Timestamp) or keeping as map?
-      // Based on 'addAccountReceivable', createdAt is stored as Timestamp.
-      // We need to pass Firestore Timestamp objects for comparison.
+    const q = query(
+      paymentsRef,
+      where('createdUserId', '==', targetUserId),
+      where('createdAt', '>=', startTimestamp),
+      where('createdAt', '<=', normalizedEnd),
+    );
 
-      const startTimestamp = new Date(startDate);
-      const endTimestamp = endDate ? new Date(endDate) : new Date(); // Default to now if open
+    let active = true;
 
-      const q = query(
-        paymentsRef,
-        where('createdUserId', '==', targetUserId),
-        where('createdAt', '>=', startTimestamp),
-        where('createdAt', '<=', endTimestamp),
-      );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!active) return;
+        const loadedPayments = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setSnapshotState({ key: queryKey, payments: loadedPayments, error: null });
+      },
+      (err) => {
+        if (!active) return;
+        console.error('Error fetching AR payments for cash count:', err);
+        setSnapshotState({
+          key: queryKey,
+          payments: [],
+          error: err?.message || String(err),
+        });
+      },
+    );
 
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          const loadedPayments = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setPayments(loadedPayments);
-          setLoading(false);
-        },
-        (err) => {
-          console.error('Error fetching AR payments for cash count:', err);
-          setError(err.message);
-          setLoading(false);
-        },
-      );
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [businessId, targetUserId, startMs, endMs, queryKey]);
 
-      return () => unsubscribe();
-    } catch (err) {
-      console.error('Error setting up AR payments listener:', err);
-      setError(err.message);
-      setLoading(false);
-    }
-  }, [user, targetUserId, startDate, endDate]);
+  const invalidStartDate =
+    startDate !== null && startDate !== undefined && startAsDate === null;
 
-  return { payments, loading, error };
+  const isReady = Boolean(businessId && targetUserId && startMs !== null);
+  const hasCurrentSnapshot =
+    queryKey !== null && snapshotState.key === queryKey;
+
+  const payments = isReady && hasCurrentSnapshot ? snapshotState.payments : [];
+  const loading = isReady && !hasCurrentSnapshot;
+  const error = invalidStartDate
+    ? 'Invalid start date'
+    : isReady && hasCurrentSnapshot
+      ? snapshotState.error
+      : null;
+
+  return { data: payments, payments, loading, error };
 };

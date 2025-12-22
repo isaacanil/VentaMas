@@ -3,6 +3,8 @@ import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatPrice as formatPrice } from '@/utils/format';
+
 import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import {
@@ -15,7 +17,6 @@ import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
 import { updateObject } from '../../../../../utils/object/updateObject';
 import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
 
-import { formatPrice as formatPrice } from '@/utils/format';
 
 export const ClientDetails = ({ mode }) => {
   const dispatch = useDispatch();

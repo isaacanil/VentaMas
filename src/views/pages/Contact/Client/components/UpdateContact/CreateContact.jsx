@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatRNC } from '@/utils/format';
+
 import { handleModalCreateClient } from '../../../../../../features/modals/modalSlice';
 import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
 import { Button } from '../../../../../templates/system/Button/Button';
 import { Message } from '../../../../../templates/system/message/Message';
 
-import { formatRNC } from '@/utils/format';
 
 export const CreateContact = ({ isOpen }) => {
   const dispatch = useDispatch();

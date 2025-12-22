@@ -197,7 +197,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
             ? new Date(entry.expiresAt)
             : null,
     }));
-  }, [pinData?.pins, moduleNames]);
+  }, [pinData, moduleNames]);
 
   const togglePinVisibility = (moduleKey) => {
     setVisiblePins((prev) => ({

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
-import { replacePathParams } from '../routes/replacePathParams';
-import ROUTES_NAME from '../routes/routesName';
+import { replacePathParams } from '@/router/routes/replacePathParams';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 export function useAppNavigation() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { Button, Select, Space } from 'antd';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { FilterBar as CommonFilterBar } from '../../../../../../../components/common/FilterBar';
@@ -10,6 +10,7 @@ import useBusiness from '../../../../../../../hooks/useBusiness';
 const DEFAULT_CLIENT_TYPE = 'normal';
 const DEFAULT_STATUS = 'active';
 const DEFAULT_PAYMENT_STATUS = 'all';
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const NO_OP = () => { };
 const DEFAULT_DATE_RANGE = { startDate: null, endDate: null };
 
@@ -77,9 +78,9 @@ export const FilterAccountReceivable = ({
   onPaymentStatusChange = NO_OP,
 }) => {
   const { isPharmacy } = useBusiness();
-  const initialDateRange = useRef(
-    datesSelected ?? { startDate: null, endDate: null },
-  ).current;
+  const [initialDateRange] = useState(
+    () => datesSelected ?? { startDate: null, endDate: null },
+  );
 
   const handleDateRangeChange = useCallback(
     (range) => {

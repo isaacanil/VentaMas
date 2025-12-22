@@ -1,35 +1,51 @@
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Timestamp } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 
 import { toMillis } from './toMillis';
 
-dayjs.extend(customParseFormat);
+const toLuxonFormat = (format = 'DD-MM-YYYY') =>
+  format
+    .replace(/YYYY/g, 'yyyy')
+    .replace(/YY/g, 'yy')
+    .replace(/DD/g, 'dd')
+    .replace(/D/g, 'd')
+    .replace(/MM/g, 'LL')
+    .replace(/M/g, 'L');
 
 const DateUtils = {
-  // Convert Day.js to Milliseconds
-  convertDayjsToMillis: (dateObj) => (dateObj ? dateObj.valueOf() : null),
+  // Convert Date-like to Milliseconds
+  convertDayjsToMillis: (dateObj) => {
+    if (!dateObj) return null;
+    if (typeof dateObj?.toMillis === 'function') return dateObj.toMillis();
+    if (dateObj instanceof Date) return dateObj.getTime();
+    if (typeof dateObj?.valueOf === 'function') return dateObj.valueOf();
+    return null;
+  },
 
-  // Convert Day.js to Firestore Timestamp
-  convertDayjsToTimestamp: (dateObj) =>
-    dateObj ? Timestamp.fromMillis(dateObj.valueOf()) : null,
+  // Convert Date-like to Firestore Timestamp
+  convertDayjsToTimestamp: (dateObj) => {
+    const millis = DateUtils.convertDayjsToMillis(dateObj);
+    return millis ? Timestamp.fromMillis(millis) : null;
+  },
 
   // Convert Milliseconds to Firestore Timestamp
   convertMillisToTimestamp: (millis) =>
     millis ? Timestamp.fromMillis(millis) : null,
 
-  // Convert Firestore Timestamp to Day.js
+  // Convert Firestore Timestamp to Luxon DateTime
   convertTimestampToDayjs: (timestamp) =>
-    timestamp?.seconds ? dayjs(timestamp.seconds * 1000) : null,
+    timestamp?.seconds ? DateTime.fromMillis(timestamp.seconds * 1000) : null,
 
-  // Convert Milliseconds to Day.js
+  // Convert Milliseconds to Luxon DateTime
   convertMillisToDayjs: (input, dateFormat = 'DD-MM-YYYY') => {
     if (typeof input === 'string' && /^\d+$/.test(input)) input = Number(input);
-    if (typeof input === 'number') return dayjs(input);
+    if (typeof input === 'number') return DateTime.fromMillis(input);
     if (typeof input === 'string') {
-      const parsedDate = dayjs(input, dateFormat);
-      return parsedDate.isValid() ? parsedDate : null;
+      const parsedDate = DateTime.fromFormat(
+        input,
+        toLuxonFormat(dateFormat),
+      );
+      return parsedDate.isValid ? parsedDate : null;
     }
     return null;
   },

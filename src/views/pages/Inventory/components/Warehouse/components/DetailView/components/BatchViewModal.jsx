@@ -16,7 +16,7 @@ import {
   Col,
   Progress,
 } from 'antd';
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;
@@ -74,9 +74,21 @@ const BatchViewModal = ({ visible, onClose, batchData }) => {
   const formatDate = (dateObj) => {
     if (!dateObj) return '-';
     if (typeof dateObj === 'object' && dateObj.seconds) {
-      return dayjs.unix(dateObj.seconds).format('DD/MM/YYYY HH:mm');
+      return DateTime.fromSeconds(dateObj.seconds).toFormat('dd/MM/yyyy HH:mm');
     }
-    return dayjs(dateObj).format('DD/MM/YYYY HH:mm');
+    if (dateObj instanceof Date) {
+      return DateTime.fromJSDate(dateObj).toFormat('dd/MM/yyyy HH:mm');
+    }
+    if (typeof dateObj === 'number') {
+      return DateTime.fromMillis(dateObj).toFormat('dd/MM/yyyy HH:mm');
+    }
+    if (typeof dateObj === 'string') {
+      const parsed = DateTime.fromISO(dateObj);
+      if (parsed.isValid) return parsed.toFormat('dd/MM/yyyy HH:mm');
+    }
+
+    const fallback = DateTime.fromJSDate(new Date(dateObj));
+    return fallback.isValid ? fallback.toFormat('dd/MM/yyyy HH:mm') : '-';
   };
 
   const getStatusColor = (status) => {

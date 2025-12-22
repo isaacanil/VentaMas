@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
@@ -17,48 +17,36 @@ function useNavigationHistory(options = {}) {
   const { maxLength = 10, skipKey = null } = options;
   const location = useLocation();
 
-  const previousLocationRef = useRef(location);
+  const [previousLocation, setPreviousLocation] = useState(location);
   const [history, setHistory] = useState([location]); // Empezar con la ubicación inicial
-  const [previousRelevantRoute, setPreviousRelevantRoute] = useState(null);
 
-  // Efecto para actualizar el historial cuando cambia la ubicación
-  useEffect(() => {
-    const previousLocation = previousLocationRef.current;
-    if (
-      location.key !== previousLocation.key ||
-      location.pathname !== previousLocation.pathname
-    ) {
-      setHistory((prevHistory) => {
-        const newHistory = [...prevHistory, location];
-        if (maxLength && newHistory.length > maxLength) {
-          return newHistory.slice(newHistory.length - maxLength);
-        }
-        return newHistory;
-      });
-    }
-
-    previousLocationRef.current = location;
-  }, [location, maxLength]); // Dependencias: location y maxLength
-
-  // Efecto para calcular la ruta anterior relevante cuando cambia el historial o skipKey
-  useEffect(() => {
-    if (history.length < 2) {
-      setPreviousRelevantRoute(null); // No hay suficiente historial
-      return;
-    }
-
-    let foundRoute = null;
+  const previousRelevantRoute = useMemo(() => {
+    if (history.length < 2) return null;
 
     for (let i = history.length - 2; i >= 0; i--) {
       const routeToCheck = history[i];
       if (!skipKey || !routeToCheck.pathname.includes(skipKey)) {
-        foundRoute = routeToCheck;
-        break;
+        return routeToCheck;
       }
     }
 
-    setPreviousRelevantRoute(foundRoute);
+    return null;
   }, [history, skipKey]);
+
+  // Actualizar historial durante el render si la ubicación ha cambiado
+  if (
+    location.key !== previousLocation.key ||
+    location.pathname !== previousLocation.pathname
+  ) {
+    setHistory((prevHistory) => {
+      const newHistory = [...prevHistory, location];
+      if (maxLength && newHistory.length > maxLength) {
+        return newHistory.slice(newHistory.length - maxLength);
+      }
+      return newHistory;
+    });
+    setPreviousLocation(location);
+  }
 
   return { history, previousRelevantRoute };
 }

@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { DateTime } from 'luxon';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { DatePicker } from '../../../../components/common/DatePicker/DatePicker';
@@ -37,16 +37,24 @@ export const UtilityHeader = ({
   selectedRange,
   onPresetSelect,
 }) => {
-  const [draftRange, setDraftRange] = useState(null);
+  const rangeTrigger = `${selectedRange?.startDate}-${selectedRange?.endDate}`;
+  const [{ trigger: draftTrigger, value: draftValue }, setDraftState] =
+    useState(() => ({ trigger: rangeTrigger, value: null }));
 
-  useEffect(() => {
-    setDraftRange(null);
-  }, [selectedRange?.startDate, selectedRange?.endDate]);
+  const draftRange = draftTrigger === rangeTrigger ? draftValue : null;
+
+  const setDraftRange = useCallback(
+    (value) => setDraftState({ trigger: rangeTrigger, value }),
+    [rangeTrigger],
+  );
 
   const pickerValue = useMemo(() => {
     if (draftRange) return draftRange;
     if (!selectedRange?.startDate || !selectedRange?.endDate) return null;
-    return [dayjs(selectedRange.startDate), dayjs(selectedRange.endDate)];
+    return [
+      DateTime.fromMillis(selectedRange.startDate),
+      DateTime.fromMillis(selectedRange.endDate),
+    ];
   }, [draftRange, selectedRange]);
 
   const handleDateChange = useCallback(
@@ -77,8 +85,8 @@ export const UtilityHeader = ({
 
       setDraftRange(null);
 
-      const start = startValue.startOf('day').valueOf();
-      const end = endValue.endOf('day').valueOf();
+      const start = startValue.startOf('day').toMillis();
+      const end = endValue.endOf('day').toMillis();
 
       const detectedPreset = detectPresetKey(start, end);
       if (detectedPreset) {
@@ -88,7 +96,7 @@ export const UtilityHeader = ({
 
       onPresetSelect('custom', { startDate: start, endDate: end });
     },
-    [onPresetSelect],
+    [onPresetSelect, setDraftRange],
   );
 
   return (

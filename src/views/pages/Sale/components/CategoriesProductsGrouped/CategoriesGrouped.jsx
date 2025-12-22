@@ -1,7 +1,8 @@
-﻿import { Grid } from '@views/templates/system/Grid/Grid';
 import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
+
+import { Grid } from '@/views/templates/system/Grid/Grid';
 
 
 import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';

@@ -282,9 +282,6 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   const [loading, setLoading] = useState(true);
   const [rawProducts, setRawProducts] = useState([]); // Productos sin filtrar desde Firebase
   const [error, setError] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [visibleStockTotal, setVisibleStockTotal] = useState(0);
-  const [stockIndexVersion, setStockIndexVersion] = useState(0);
 
   const user = useSelector(selectUser);
 
@@ -331,35 +328,54 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   // Thresholds desde billing settings
   const settingsCart = useSelector(SelectSettingCart);
   const billing = settingsCart?.billing || {}; // reutilizamos estructura existente
+  const stockLowThreshold = billing?.stockLowThreshold;
+  const stockCriticalThreshold = billing?.stockCriticalThreshold;
+
   const thresholds = useMemo(() => ({
-    lowThreshold: Number.isFinite(billing?.stockLowThreshold)
-      ? billing.stockLowThreshold
+    lowThreshold: Number.isFinite(stockLowThreshold)
+      ? stockLowThreshold
       : 20,
-    criticalThreshold: Number.isFinite(billing?.stockCriticalThreshold)
-      ? billing.stockCriticalThreshold
+    criticalThreshold: Number.isFinite(stockCriticalThreshold)
+      ? stockCriticalThreshold
       : Math.min(
-        Number.isFinite(billing?.stockLowThreshold)
-          ? billing.stockLowThreshold
+        Number.isFinite(stockLowThreshold)
+          ? stockLowThreshold
           : 20,
         10,
       ),
-  }), [billing]);
+  }), [stockLowThreshold, stockCriticalThreshold]);
 
   const activeIngredients = useSelector(SelectActiveIngredients);
   const categories = useSelector(SelectCategories);
 
   const categoriesStatus = useSelector(SelectCategoryStatus);
 
+  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+  const [prevStockFilterActive, setPrevStockFilterActive] = useState(stockFilterActive);
+
+  // PATRÓN RECOMENDADO REACT: Resetear estado durante render al cambiar dependencias
+
+  // 1. Reset loading si cambia el negocio
+  if (user?.businessID !== prevBusinessID) {
+    setPrevBusinessID(user?.businessID);
+    setLoading(true);
+  }
+
+  // 2. Reset stock state si cambia el filtro activo
+  if (stockFilterActive !== prevStockFilterActive) {
+    setPrevStockFilterActive(stockFilterActive);
+    // Si se desactiva, ready = true. Si se activa, ready = false (esperando carga)
+    setStockIndexReady(!stockFilterActive);
+    setWarehouseStockIndex({});
+  }
+
   // Lógica de stock por almacenes (sin cambios mayores, solo integración)
   useEffect(() => {
     if (!stockFilterActive) {
-      setWarehouseStockIndex({});
-      setStockIndexReady(true);
-      setStockIndexVersion((prev) => prev + 1);
-      return;
+      return undefined;
     }
 
-    if (!user?.businessID) return;
+    if (!user?.businessID) return undefined;
 
     const stockRef = collection(
       db,
@@ -371,9 +387,6 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     const warehouseLoaded = {};
     const expectedWarehouses = selectedWarehouses.length;
     let isMounted = true;
-
-    setWarehouseStockIndex({});
-    setStockIndexReady(false);
 
     const unsubscribes = selectedWarehouses.map((warehouseId) => {
       const lowerBound = warehouseId;
@@ -417,7 +430,6 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
               ? Object.keys(warehouseLoaded).length >= expectedWarehouses
               : true;
           setStockIndexReady(allReady);
-          setStockIndexVersion((prev) => prev + 1);
         },
         (error) => {
           console.error('Error al escuchar stock filtrado por almacén:', error);
@@ -462,6 +474,8 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
         return base.map(baseMapper);
       }
 
+      // Si no tenemos index listo, devolvemos null para indicar loading o base vacía?
+      // Mejor devolver null para indicar que espere
       if (!stockIndexReady) return null;
 
       const result = [];
@@ -484,9 +498,8 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
 
   // 1. Obtener TODOS los productos (Listener principal)
   useEffect(() => {
-    if (!user || !user?.businessID) return;
+    if (!user || !user?.businessID) return undefined;
 
-    setLoading(true);
     const productsRef = collection(
       db,
       'businesses',
@@ -494,10 +507,6 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       'products',
     );
 
-    // Consulta base sin filtros dinámicos del cliente
-    // Se puede agregar where('isDeleted', '==', false) si existe ese campo consistentemente,
-    // pero por ahora traemos todo y filtramos si es necesario.
-    // Dado que el código original no filtraba isDeleted en products, asumimos que se maneja de otra forma o no se usa.
     const q = query(productsRef);
 
     const unsubscribe = onSnapshot(
@@ -518,8 +527,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
         });
 
         setRawProducts(productsArray);
-        // No establecemos setLoading(false) aquí para evitar un "flash" de contenido vacío
-        // Esperamos a que el useEffect de filtrado procese los datos y apague el loading
+        setLoading(false);
       },
       (err) => {
         console.error('Ocurrió un error al obtener los productos:', err);
@@ -531,20 +539,20 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     return () => unsubscribe();
   }, [user?.businessID, user]);
 
-  // 2. Aplicar filtros en memoria cuando cambian los rawProducts o los filtros
-  useEffect(() => {
+  // 2. Derivar processedData usando useMemo en lugar de useEffect
+  const processedData = useMemo(() => {
+    // Si está cargando rawProducts (primera vez), devolver vacío
     if (loading && rawProducts.length === 0) {
-      // Si está cargando la primera vez, esperamos
-      return;
+      return { products: [], total: 0 };
     }
 
     let processed = [...rawProducts];
 
     // Aplicar filtro de stock por almacén primero (si aplica)
+    // Si retorna null es que faltan datos de stock
     const locationFiltered = applyLocationFilter(processed);
     if (locationFiltered === null) {
-      // Esperando carga de stock
-      return;
+      return { products: [], total: 0 };
     }
     processed = locationFiltered;
 
@@ -572,15 +580,13 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     // Ordenar custom al final (lógica original)
     processed = processed.sort((a) => (a?.custom === true ? -1 : 1));
 
-    setProducts(processed);
-
     // Calcular totales visibles
     const total = processed.reduce(
       (sum, product) => sum + (Number(product?.stock ?? 0) || 0),
       0,
     );
-    setVisibleStockTotal(total);
-    setLoading(false);
+
+    return { products: processed, total };
   }, [
     rawProducts,
     loading,
@@ -599,18 +605,24 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
     criterio,
     orden,
     thresholds,
-    stockIndexVersion,
   ]);
+
+  // Derivar loading final
+  // Estamos cargando si:
+  // 1. El fetch inicial de products está en proceso (loading state)
+  // 2. El filtro de stock está activo pero el index no está listo
+  const isStockLoading = stockFilterActive && !stockIndexReady;
+  const derivedLoading = loading || isStockLoading;
 
   const stockMeta = useMemo(
     () => ({
       filterActive: stockFilterActive,
       selectedWarehouses,
       stockIndexReady,
-      visibleStockTotal,
+      visibleStockTotal: processedData.total,
     }),
-    [stockFilterActive, selectedWarehouses, stockIndexReady, visibleStockTotal],
+    [stockFilterActive, selectedWarehouses, stockIndexReady, processedData.total],
   );
 
-  return { products, error, loading, setLoading, stockMeta };
+  return { products: processedData.products, error, loading: derivedLoading, setLoading, stockMeta };
 }

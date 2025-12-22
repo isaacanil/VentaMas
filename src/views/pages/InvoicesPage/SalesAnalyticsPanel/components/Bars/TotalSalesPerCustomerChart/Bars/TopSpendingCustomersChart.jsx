@@ -49,7 +49,7 @@ const getTop20SpendingCustomers = (sales) => {
 };
 
 export const TopSpendingCustomersChart = ({ sales }) => {
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
 
   const top20SpendingCustomers = useMemo(
     () => getTop20SpendingCustomers(normalizedSales),

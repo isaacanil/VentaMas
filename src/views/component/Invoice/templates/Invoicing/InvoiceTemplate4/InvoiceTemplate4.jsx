@@ -3,6 +3,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { separator } from '@/utils/number/number';
+
 import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
 import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
 import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice';
@@ -21,7 +23,6 @@ import {
 } from '../../../../../../utils/pricing';
 import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
 
-import { separator } from '@/utils/number/number';
 
 // Máximo de caracteres por línea
 const CENTER_WIDTH = 40;

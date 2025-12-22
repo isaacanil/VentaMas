@@ -9,7 +9,10 @@ import TotalAccumulatedChart from './charts/TotalAccumulatedChart';
 import { accumulateMonthlyData } from './utils/accumulateMonthlyData';
 
 export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
-    const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
+    const normalizedExpenses = useMemo(
+        () => Array.isArray(expenses) ? expenses : [],
+        [expenses]
+    );
     const { monthlyData, totalAccumulated } = useMemo(
         () => accumulateMonthlyData(normalizedExpenses),
         [normalizedExpenses],

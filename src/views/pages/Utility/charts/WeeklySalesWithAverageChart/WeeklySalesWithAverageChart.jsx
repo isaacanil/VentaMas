@@ -13,9 +13,10 @@ import React, { useEffect, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../templates/system/Typografy/Typografy';
 
-import { formatPrice } from '@/utils/format';
 
 ChartJS.register(
   CategoryScale,
@@ -31,10 +32,11 @@ const WeeklySalesWithAverageChart = ({ invoices }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
+    const chart = chartRef.current;
     return () => {
       // Cleanup chart instance on unmount
-      if (chartRef.current) {
-        chartRef.current.destroy();
+      if (chart) {
+        chart.destroy();
       }
     };
   }, []);

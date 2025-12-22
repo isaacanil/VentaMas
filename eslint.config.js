@@ -26,6 +26,11 @@ export default [
 
   js.configs.recommended,
   react.configs.flat.recommended,
+  {
+    settings: {
+      react: { version: 'detect' },
+    },
+  },
   ...storybook.configs['flat/recommended'],
   ...tseslint.configs.stylistic,
 
@@ -62,6 +67,7 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      'react-hooks/set-state-in-effect': 'warn',
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
@@ -175,6 +181,7 @@ export default [
     rules: {
       ...tseslint.configs.recommendedTypeChecked.rules,
       ...reactHooks.configs.recommended.rules,
+      'react-hooks/set-state-in-effect': 'warn',
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',

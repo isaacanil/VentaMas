@@ -1,4 +1,4 @@
-﻿import {
+import {
   collection,
   onSnapshot,
   orderBy,
@@ -12,8 +12,8 @@ import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../../firebase/firebaseconfig';
 
 /**
- * Hook para obtener aplicaciones de notas de cr├®dito
- * Estructura simplificada de aplicaci├│n:
+ * Hook para obtener aplicaciones de notas de crédito
+ * Estructura simplificada de aplicación:
  * {
  *   creditNoteId, creditNoteNcf,
  *   invoiceId, invoiceNcf, invoiceNumber,
@@ -22,7 +22,7 @@ import { db } from '../../firebase/firebaseconfig';
  *   appliedAt, appliedBy
  * }
  * @param {Object} filters - Filtros para la consulta
- * @param {string} filters.creditNoteId - ID de la nota de cr├®dito
+ * @param {string} filters.creditNoteId - ID de la nota de crédito
  * @param {string} filters.invoiceId - ID de la factura
  * @param {string} filters.clientId - ID del cliente
  * @returns {Object} - { applications, loading }
@@ -30,23 +30,19 @@ import { db } from '../../firebase/firebaseconfig';
 export const useFbGetCreditNoteApplications = (filters = {}) => {
   const user = useSelector(selectUser);
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(
+    () => Boolean(user?.businessID && (filters.creditNoteId || filters.invoiceId || filters.clientId)),
+  );
 
   useEffect(() => {
     if (!user?.businessID) {
-      setApplications([]);
-      setLoading(false);
       return;
     }
 
     // Si no hay filtros, no hacer consulta
     if (!filters.creditNoteId && !filters.invoiceId && !filters.clientId) {
-      setApplications([]);
-      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     const applicationsRef = collection(
       db,
@@ -55,10 +51,10 @@ export const useFbGetCreditNoteApplications = (filters = {}) => {
       'creditNoteApplications',
     );
 
-    // Construir la consulta con filtros din├ímicos
+    // Construir la consulta con filtros dinámicos
     let queryConstraints = [orderBy('appliedAt', 'desc')];
 
-    // Filtro por nota de cr├®dito
+    // Filtro por nota de crédito
     if (filters.creditNoteId) {
       queryConstraints.push(where('creditNoteId', '==', filters.creditNoteId));
     }

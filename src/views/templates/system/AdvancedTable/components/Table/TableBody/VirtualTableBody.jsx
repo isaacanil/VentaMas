@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import { Fragment, useState, memo } from 'react';
 import { GroupedVirtuoso, Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
@@ -28,13 +28,13 @@ const renderCell = (col, value, row, rowIndex) => {
 };
 
 // Componente de fila memoizado para evitar re-renders innecesarios
-const RowItem = React.memo(
+const RowItem = memo(
   ({
     row,
     rowIndex,
     activeColumns,
-    isWideScreen,
-    isWideLayout,
+    isWideScreen: _isWideScreen,
+    isWideLayout: _isWideLayout,
     rowBorder,
     rowSize,
     handleCellClick,
@@ -124,7 +124,7 @@ export const VirtualTableBody = ({
   };
 
   // Estado local de filas expandidas
-  const [expanded, setExpanded] = React.useState({});
+  const [expanded, setExpanded] = useState({});
 
   const toggleRow = (row, id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));

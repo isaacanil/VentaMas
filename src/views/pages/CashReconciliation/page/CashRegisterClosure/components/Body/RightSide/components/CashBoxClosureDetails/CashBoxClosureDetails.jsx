@@ -2,21 +2,19 @@ import { Spin } from 'antd';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
-import { CashCountMetaData } from '../../CashCountMetaData';
-
 import { formatNumber } from '@/utils/format';
 
-export const CashBoxClosureDetails = ({ invoices, loading, expenses = [] }) => {
+import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
+import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
+
+
+export const CashBoxClosureDetails = ({ loading }) => {
   const cashCount = useSelector(selectCashCount);
-  const {
-    totalSystem,
-    totalCharged,
-    totalDiscrepancy,
-    totalExpenses,
-    totalReceivables,
-  } = CashCountMetaData(cashCount, invoices, expenses);
+  const totalSystem = cashCount?.totalSystem ?? 0;
+  const totalCharged = cashCount?.totalCharged ?? 0;
+  const totalDiscrepancy = cashCount?.totalDiscrepancy ?? 0;
+  const totalExpenses = cashCount?.totalExpenses ?? 0;
+  const totalReceivables = cashCount?.totalReceivables ?? 0;
 
   return (
     <Spin spinning={loading}>

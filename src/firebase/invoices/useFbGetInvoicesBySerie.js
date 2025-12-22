@@ -1,15 +1,8 @@
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
-import { validateUser } from '../../utils/userValidation';
 import { db } from '../firebaseconfig';
 
 const getSerieBounds = (serie) => {
@@ -31,85 +24,80 @@ export const useFbGetInvoicesBySerie = (
   serie,
   { includeCancelled = false } = {},
 ) => {
-  const user = useSelector(selectUser);
-  const [state, setState] = useState({
-    invoices: [],
-    loading: true,
-    error: null,
-  });
+  const businessID = useSelector((s) => selectUser(s)?.businessID);
 
   const bounds = useMemo(() => getSerieBounds(serie), [serie]);
 
+  // Primitives for dependencies
+  const boundsNormalized = bounds?.normalized;
+  const boundsStart = bounds?.start;
+  const boundsEnd = bounds?.end;
+
+  // Outer queryKey for loading derived state
+  const queryKey = (!businessID || !boundsNormalized)
+    ? ''
+    : `${businessID}|${boundsNormalized}|${includeCancelled}`;
+
+  const [state, setState] = useState({
+    invoices: [],
+  });
+  const [resolvedKey, setResolvedKey] = useState('');
+
   useEffect(() => {
-    if (!user?.businessID || !bounds?.normalized) {
-      setState({ invoices: [], loading: false, error: null });
-      return;
-    }
+    if (!businessID || !boundsNormalized) return undefined;
 
-    let unsubscribe = null;
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    // Local queryKey to match effect cycle
+    const queryKeyLocal = `${businessID}|${boundsNormalized}|${includeCancelled}`;
 
-    const fetchInvoices = async () => {
-      try {
-        validateUser(user);
-        const invoicesRef = collection(
-          db,
-          'businesses',
-          user.businessID,
-          'invoices',
-        );
+    const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
 
-        const q = query(
-          invoicesRef,
-          where('data.NCF', '>=', bounds.start),
-          where('data.NCF', '<', bounds.end),
-          orderBy('data.NCF', 'asc'),
-        );
+    const q = query(
+      invoicesRef,
+      where('data.NCF', '>=', boundsStart),
+      where('data.NCF', '<', boundsEnd),
+      orderBy('data.NCF', 'asc'),
+    );
 
-        unsubscribe = onSnapshot(
-          q,
-          (snapshot) => {
-            const rawInvoices = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const rawInvoices = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-            const filtered = rawInvoices.filter((invoice) => {
-              const ncf = invoice?.data?.NCF || invoice?.NCF || '';
-              if (!ncf) return false;
-              if (!ncf.toUpperCase().startsWith(bounds.normalized))
-                return false;
-              if (!includeCancelled && invoice?.data?.status === 'cancelled')
-                return false;
-              return true;
-            });
+        const filtered = rawInvoices.filter((invoice) => {
+          const ncf = invoice?.data?.NCF || invoice?.NCF || '';
+          if (!ncf) return false;
+          // Validación extra aunque la query ya filtra por rango
+          if (!ncf.toUpperCase().startsWith(boundsNormalized)) return false;
+          if (!includeCancelled && invoice?.data?.status === 'cancelled')
+            return false;
+          return true;
+        });
 
-            setState({ invoices: filtered, loading: false, error: null });
-          },
-          (error) => {
-            console.error('Error listening invoices by serie:', error);
-            setState({ invoices: [], loading: false, error });
-          },
-        );
-      } catch (error) {
-        console.error('Error fetching invoices by serie:', error);
-        setState({ invoices: [], loading: false, error });
-      }
-    };
-
-    fetchInvoices();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+        setState({ invoices: filtered });
+        setResolvedKey(queryKeyLocal);
+      },
+      (error) => {
+        console.error('Error listening invoices by serie:', error);
+        setState({ invoices: [] });
+        setResolvedKey(queryKeyLocal);
+      },
+    );
   }, [
-    user?.businessID,
-    bounds?.normalized,
+    businessID,
+    boundsStart,
+    boundsEnd,
+    boundsNormalized,
     includeCancelled,
-    bounds?.start,
-    bounds?.end,
-    user,
   ]);
 
-  return state;
+  const isResolved = queryKey && resolvedKey === queryKey;
+
+  return {
+    invoices: isResolved ? state.invoices : [],
+    loading: Boolean(queryKey && !isResolved),
+    error: null,
+  };
 };

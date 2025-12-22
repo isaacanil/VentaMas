@@ -1,4 +1,4 @@
-﻿import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { memo } from 'react';
 import { useMemo } from 'react';
 import styled from 'styled-components';
@@ -31,15 +31,15 @@ const EmptyRow = styled.div`
 
 const ItemRow = memo(
   ({ columns, top, height, products, virtualRow, totalRows }) => {
+    const columnArray = useMemo(
+      () => Array.from({ length: columns }),
+      [columns],
+    );
     if (virtualRow.index >= totalRows) {
       return (
         <EmptyRow columns={columns} top={virtualRow.start} height={height} />
       );
     }
-    const columnArray = useMemo(
-      () => Array.from({ length: columns }),
-      [columns],
-    );
     return (
       <StyledItemRow columns={columns} top={top} height={height}>
         {columnArray.map((_, columnIndex) => {

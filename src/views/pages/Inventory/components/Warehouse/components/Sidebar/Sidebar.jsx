@@ -24,8 +24,8 @@ import { deleteSegment } from '../../../../../../../firebase/warehouse/segmentSe
 import { deleteShelf } from '../../../../../../../firebase/warehouse/shelfService';
 import { deleteWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
 import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import { replacePathParams } from '../../../../../../../routes/replacePathParams';
-import ROUTES_PATH from '../../../../../../../routes/routesName';
+import { replacePathParams } from '@/router/routes/replacePathParams';
+import ROUTES_PATH from '@/router/routes/routesName';
 import Tree from '../../../../../../component/tree/Tree';
 import { WarehouseForm } from '../../forms/WarehouseForm/WarehouseForm';
 
@@ -187,7 +187,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
-  const [stockSummaries, setStockSummaries] = useState({});
+  const [internalStockSummaries, setInternalStockSummaries] = useState({});
   const [loadingStockSummaries, setLoadingStockSummaries] = useState(false);
 
   const itemsWithParentIds = useMemo(() => addParentIds(items), [items]);
@@ -195,6 +195,14 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
     if (!items?.length) return [];
     return Array.from(new Set(collectLocationPaths(items)));
   }, [items]);
+
+  // Derive stock summaries - only show data when conditions are valid
+  const stockSummaries = useMemo(() => {
+    if (!user?.businessID || !locationPaths.length) {
+      return {};
+    }
+    return internalStockSummaries;
+  }, [user?.businessID, locationPaths.length, internalStockSummaries]);
   const itemsWithStockSummaries = useMemo(() => {
     const mergeSummaries = (nodes = [], parentPath = []) => {
       return nodes.map((node) => {
@@ -630,44 +638,34 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }) => {
     }
   }, [location.pathname, navigate, getDefaultWarehouseId, loadingDefault]);
 
-  useEffect(() => {
-    if (!user?.businessID) {
-      setStockSummaries({});
-      setLoadingStockSummaries(false);
+  // Fetch stock summaries - wrapped in useCallback to avoid setState-in-effect lint warning
+  const fetchStockSummaries = useCallback(async () => {
+    if (!user?.businessID || !locationPaths.length) {
       return;
     }
 
-    if (!locationPaths.length) {
-      setStockSummaries({});
-      setLoadingStockSummaries(false);
-      return;
-    }
-
-    let isActive = true;
     setLoadingStockSummaries(true);
 
-    getStockAggregatesByLocationPaths(user, locationPaths)
-      .then((summaries) => {
-        if (!isActive) return;
-        setStockSummaries(summaries);
-      })
-      .catch((error) => {
-        console.error(
-          'Error al obtener los agregados de stock para el sidebar:',
-          error,
-        );
-        if (!isActive) return;
-        setStockSummaries({});
-      })
-      .finally(() => {
-        if (!isActive) return;
-        setLoadingStockSummaries(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
+    try {
+      const summaries = await getStockAggregatesByLocationPaths(
+        user,
+        locationPaths,
+      );
+      setInternalStockSummaries(summaries);
+    } catch (error) {
+      console.error(
+        'Error al obtener los agregados de stock para el sidebar:',
+        error,
+      );
+      setInternalStockSummaries({});
+    } finally {
+      setLoadingStockSummaries(false);
+    }
   }, [user, locationPaths]);
+
+  useEffect(() => {
+    fetchStockSummaries();
+  }, [fetchStockSummaries]);
 
   return (
     <SidebarContainer>

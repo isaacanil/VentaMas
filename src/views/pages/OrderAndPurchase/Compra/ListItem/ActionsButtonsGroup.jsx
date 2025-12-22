@@ -8,7 +8,7 @@ import {
   setAddPurchaseMode,
   setPurchase,
 } from '../../../../../features/purchase/addPurchaseSlice';
-import ROUTES_PATH from '../../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup';
 
 export const ActionsButtonsGroup = ({ purchaseData }) => {

@@ -4,8 +4,8 @@ import {
   ExclamationCircleOutlined,
   PrinterOutlined,
 } from '@ant-design/icons';
-import * as ant from 'antd';
-import { useMemo, useState, useEffect } from 'react';
+import { Card, Input, Form, Button, Tooltip, message } from 'antd';
+import { useMemo, useState } from 'react';
 import Barcode from 'react-barcode';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -28,8 +28,6 @@ import BarcodePreviewModal from './BarcodeInfoModal/BarcodePreviewModal';
 // Calcular dimensiones GS1 usando util
 const getGs1GeometryForType = (barcodeType) =>
   getGS1Geometry(PRINT_DPI, barcodeType);
-
-const { Card, Input, Form, Button, Tooltip } = ant;
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -98,11 +96,11 @@ const FooterButton = styled(Button)`
 
 export const BarCode = ({ product }) => {
   const [showGenerator, setShowGenerator] = useState(false);
-  const [showFixTooltip, setShowFixTooltip] = useState(false);
   const [inputHasFocus, setInputHasFocus] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [isFixTooltipDismissed, setIsFixTooltipDismissed] = useState(false);
   const [barcodeValue, setBarcodeValue] = useState(
     String(product?.barcode || ''),
   );
@@ -110,10 +108,6 @@ export const BarCode = ({ product }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { isConfigured } = useBarcodeSettings();
-
-  useEffect(() => {
-    setBarcodeValue(String(product?.barcode || ''));
-  }, [product?.barcode]);
 
   const barcodeInfo = barcodeValue ? getBarcodeInfo(barcodeValue) : null;
 
@@ -196,19 +190,21 @@ export const BarCode = ({ product }) => {
         product: { barcode: code },
       }),
     );
+    setIsFixTooltipDismissed(false);
   };
 
   const handleCorrectedCode = (code) => {
     setBarcodeValue(code);
     dispatch(ChangeProductData({ product: { barcode: code } }));
-    setShowFixTooltip(false);
-    ant.message.success('Código corregido aplicado');
+    setIsFixTooltipDismissed(true);
+    message.success('Código corregido aplicado');
   };
 
   const handleBarcodeChange = (e) => {
     const val = e.target.value;
     setBarcodeValue(val);
     dispatch(ChangeProductData({ product: { barcode: val } }));
+    setIsFixTooltipDismissed(false);
   };
 
   const getValidationIcon = () => {
@@ -308,13 +304,7 @@ export const BarCode = ({ product }) => {
     return null;
   }, [barcodeInfo, barcodeValue]);
 
-  useEffect(() => {
-    if (inputHasFocus && correction) {
-      setShowFixTooltip(true);
-    } else {
-      setShowFixTooltip(false);
-    }
-  }, [correction, inputHasFocus]);
+  const showFixTooltip = inputHasFocus && !!correction && !isFixTooltipDismissed;
 
   return (
     <>
@@ -405,7 +395,7 @@ export const BarCode = ({ product }) => {
                   currentCode={barcodeValue}
                   suggestion={correction}
                   onApply={(code) => handleCorrectedCode(code)}
-                  onClose={() => setShowFixTooltip(false)}
+                  onClose={() => setIsFixTooltipDismissed(true)}
                   placement="center"
                 />
               </InputWrapper>

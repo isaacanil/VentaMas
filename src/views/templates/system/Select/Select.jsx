@@ -1,11 +1,11 @@
-﻿import {
+import {
   autoUpdate,
   flip,
   offset as floatingOffset,
   shift,
   useFloating,
 } from '@floating-ui/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../constants/icons/icons';
@@ -38,6 +38,8 @@ export const Select = ({
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
+  const setReference = useCallback((node) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
 
   const handleSelect = (select) => {
     setIsOpen(false);
@@ -56,19 +58,19 @@ export const Select = ({
     : [];
 
   const handleReset = () => {
-    setSearchTerm(''); // Si quieres reiniciar el t├®rmino de b├║squeda tambi├®n
+    setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
     setIsOpen(false);
-    onChange({ target: { value: null } }); // Aqu├¡ puedes enviar un valor nulo para indicar que se ha reseteado
+    onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
     onNoneOptionSelected && onNoneOptionSelected();
   };
 
   useEffect(() => {
     if (!value) {
-      setSearchTerm(''); // Si quieres reiniciar el t├®rmino de b├║squeda tambi├®n
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary for synchronizing internal state (searchTerm, isOpen) with the 'value' prop
+      setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
       setIsOpen(false);
-      onChange({ target: { value: null } }); // Aqu├¡ puedes enviar un valor nulo para indicar que se ha reseteado
     }
-  }, []);
+  }, [value]);
 
   useClickOutSide(SelectRef, isOpen, () => {
     setIsOpen(false);
@@ -84,7 +86,7 @@ export const Select = ({
           <Asterisk style={{ color: 'red' }}>{icons.forms.asterisk}</Asterisk>
         )}
       </OtherContainer>
-      <Head ref={refs.setReference}>
+      <Head ref={setReference}>
         {isLoading === true ? (
           <Group>
             <h3>{'cargando ...'}</h3>
@@ -100,7 +102,7 @@ export const Select = ({
         )}
       </Head>
       {isOpen ? (
-        <Body ref={refs.setFloating} style={floatingStyles}>
+        <Body ref={setFloating} style={floatingStyles}>
           {data?.length > 0 ? (
             <List>
               <SearchSection>

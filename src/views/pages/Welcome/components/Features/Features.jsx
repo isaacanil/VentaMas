@@ -1,7 +1,15 @@
-import * as Icons from '@ant-design/icons';
+import {
+  ShopOutlined,
+  DollarOutlined,
+  BarChartOutlined,
+  TeamOutlined,
+  SafetyOutlined,
+  CustomerServiceOutlined,
+  StarOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { Card, Row, Col, Typography } from 'antd';
 import { motion } from 'framer-motion';
-import React from 'react';
 import styled from 'styled-components';
 
 import welcomeData from '../../WelcomeData.json';
@@ -34,8 +42,16 @@ const Features = () => {
   };
 
   const getIcon = (iconName) => {
-    const IconComponent = Icons[iconName];
-    return IconComponent ? <IconComponent /> : <Icons.StarOutlined />;
+    const iconsMap = {
+      ShopOutlined,
+      DollarOutlined,
+      BarChartOutlined,
+      TeamOutlined,
+      SafetyOutlined,
+      CustomerServiceOutlined,
+    };
+    const IconComponent = iconsMap[iconName];
+    return IconComponent ? <IconComponent /> : <StarOutlined />;
   };
 
   return (
@@ -145,7 +161,7 @@ const Features = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Icons.CheckCircleOutlined
+                <CheckCircleOutlined
                   style={{
                     color: '#52c41a',
                     marginRight: '12px',
@@ -228,7 +244,7 @@ const IconContainer = styled.div`
 
   &:hover {
     background: ${({ $color }) =>
-      `linear-gradient(135deg, ${$color}25 0%, ${$color}35 100%)`};
+    `linear-gradient(135deg, ${$color}25 0%, ${$color}35 100%)`};
     transform: rotate(5deg) scale(1.1);
   }
 `;

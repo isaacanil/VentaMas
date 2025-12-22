@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { createBusiness } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import ROUTES_PATH from '../../../../../routes/routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
 
 import { countries } from './countries.json';

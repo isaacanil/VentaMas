@@ -1,5 +1,5 @@
 import { InfoCircleOutlined } from '@ant-design/icons';
-import * as ant from 'antd';
+import { Modal, Button } from 'antd';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
@@ -7,8 +7,6 @@ import {
   getBarcodeInfo,
   isGS1RDCode,
 } from '../../../../../../../utils/barcode/barcode';
-
-const { Modal, Button } = ant;
 
 const HeaderContainer = styled.div`
   display: flex;

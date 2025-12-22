@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import { DateTime } from 'luxon';
 import { fn } from 'storybook/test';
 
 import { CalendarSection } from './CalendarSection';
@@ -20,7 +20,7 @@ export default {
   },
 };
 
-const today = dayjs();
+const today = DateTime.local();
 
 export const Default = {
   args: {
@@ -47,9 +47,9 @@ export const RangeMode = {
   args: {
     ...Default.args,
     mode: 'range',
-    value: [today.startOf('day'), today.add(7, 'day').endOf('day')],
+    value: [today.startOf('day'), today.plus({ days: 7 }).endOf('day')],
     currentRangeStart: today.startOf('day'),
-    currentRangeEnd: today.add(7, 'day').endOf('day'),
+    currentRangeEnd: today.plus({ days: 7 }).endOf('day'),
   },
 };
 
@@ -60,22 +60,22 @@ export const RangeInProgress = {
     value: [today.startOf('day'), null],
     currentRangeStart: today.startOf('day'),
     currentRangeEnd: null,
-    hoverDate: today.add(5, 'day'),
+    hoverDate: today.plus({ days: 5 }),
   },
 };
 
 export const PreviousMonth = {
   args: {
     ...Default.args,
-    currentDate: today.subtract(1, 'month'),
-    value: today.subtract(1, 'month').date(15),
+    currentDate: today.minus({ months: 1 }),
+    value: today.minus({ months: 1 }).set({ day: 15 }),
   },
 };
 
 export const NextMonth = {
   args: {
     ...Default.args,
-    currentDate: today.add(1, 'month'),
-    value: today.add(1, 'month').date(10),
+    currentDate: today.plus({ months: 1 }),
+    value: today.plus({ months: 1 }).set({ day: 10 }),
   },
 };

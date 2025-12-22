@@ -1,4 +1,4 @@
-﻿import {
+import {
   EyeOutlined,
   MoreOutlined,
   PrinterOutlined,
@@ -9,6 +9,8 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
+
+import { formatPrice } from '@/utils/format';
 
 import { icons } from '../../../../../constants/icons/icons';
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
@@ -23,7 +25,6 @@ import { selectClientWithAuth } from '../../../../../features/clientCart/clientC
 import { selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice';
 import { fbCancelPreorder } from '../../../../../firebase/invoices/fbCancelPreorder';
 import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
-import { formatPrice } from '@/utils/format';
 import { getTimeElapsed } from '../../../../../hooks/useFormatTime';
 import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
 import { Invoice } from '../../../../component/Invoice/components/Invoice/Invoice';
@@ -68,7 +69,8 @@ export const PreorderActionsCell = ({ value }) => {
   const navigate = useNavigate();
   const data = value.data;
   const user = useSelector(selectUser);
-  const business = useSelector(selectBusinessData) || {};
+  const businessData = useSelector(selectBusinessData);
+  const business = useMemo(() => businessData || {}, [businessData]);
   const cartSettings = useSelector(SelectSettingCart);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [isPreorderModalOpen, setIsPreorderModalOpen] = useState(false);
@@ -98,7 +100,7 @@ export const PreorderActionsCell = ({ value }) => {
     contentRef: printRef,
   });
 
-  const convertTimestampsToMillis = useCallback((obj) => {
+  const convertTimestampsToMillis = useCallback(function convertTimestampsToMillis(obj) {
     if (!obj || typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) {
       return obj.map((item) => convertTimestampsToMillis(item));
@@ -134,7 +136,7 @@ export const PreorderActionsCell = ({ value }) => {
       notification.warning({
         message: 'No se puede imprimir la preventa',
         description:
-          'Los datos de la preventa no est+ín disponibles para imprimir.',
+          'Los datos de la preventa no están disponibles para imprimir.',
       });
       return;
     }
@@ -210,7 +212,7 @@ export const PreorderActionsCell = ({ value }) => {
 
     notification.success({
       message: 'Preventa precargada',
-      description: `Se carg+¦ la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} en ventas.`,
+      description: `Se cargó la preventa ${serializedPreorder?.preorderDetails?.numberID || ''} en ventas.`,
     });
   }, [convertToCart, data, navigate]);
 
@@ -324,7 +326,7 @@ export const PreorderActionsCell = ({ value }) => {
         onConfirm={handleCancelPreorder}
         onCancel={() => setIsCancelConfirmOpen(false)}
         title="Cancelar Preorden"
-        message={`-+Est+ís seguro de que deseas cancelar la preorden ${data?.preorderDetails?.numberID} para el cliente ${data?.client?.name}?`}
+        message={`¿Estás seguro de que deseas cancelar la preorden ${data?.preorderDetails?.numberID} para el cliente ${data?.client?.name}?`}
         confirmText="Cancelar Preorden"
         cancelText="Volver"
         danger
@@ -333,5 +335,3 @@ export const PreorderActionsCell = ({ value }) => {
     </div>
   );
 };
-
-

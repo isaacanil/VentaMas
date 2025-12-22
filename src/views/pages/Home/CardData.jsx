@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { developerShortcuts } from '../../../constants/devtools/developerShortcuts.jsx';
 import { icons } from '../../../constants/icons/icons';
-import ROUTES_NAME from '../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import {
   useFilterMenuItemsByAccess,
 } from '../../../utils/menuAccess';

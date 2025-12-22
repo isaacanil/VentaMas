@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
@@ -319,9 +319,9 @@ const InputWrapper = styled.div.attrs(() => ({
 
   &:focus-within {
     ${(props) =>
-      props.disabled || props.readOnly
-        ? null
-        : `
+    props.disabled || props.readOnly
+      ? null
+      : `
     outline: 2px solid #6b93ff;
     `}
   }

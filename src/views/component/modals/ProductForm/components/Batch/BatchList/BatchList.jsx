@@ -33,18 +33,9 @@ const BatchList = () => {
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    let unsubscribe;
+    if (!user || !product?.id) return;
 
-    const fetchData = async () => {
-      try {
-        if (!user || !product?.id) return;
-        unsubscribe = await listenAllBatches(user, product?.id, setBatches);
-      } catch (error) {
-        console.error('Error al obtener lotes:', error);
-      }
-    };
-
-    fetchData();
+    const unsubscribe = listenAllBatches(user, product?.id, setBatches);
 
     return () => {
       if (unsubscribe) unsubscribe();

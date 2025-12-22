@@ -17,13 +17,30 @@ export const useFbGetCreditNotes = (filters = {}) => {
   const [creditNotes, setCreditNotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const deps = [
+    user?.businessID,
+    filters?.startDate,
+    filters?.endDate,
+    filters?.clientId,
+    filters?.status,
+  ];
+  const [prevDeps, setPrevDeps] = useState(deps);
+
+  if (!user?.businessID) {
+    if (creditNotes.length > 0) setCreditNotes([]);
+    if (loading) setLoading(false);
+  } else {
+    const depsChanged = deps.some((d, i) => d !== prevDeps[i]);
+    if (depsChanged) {
+      setPrevDeps(deps);
+      setLoading(true);
+    }
+  }
+
   useEffect(() => {
     if (!user?.businessID) {
-      setCreditNotes([]);
-      return;
+      return undefined;
     }
-
-    setLoading(true);
 
     const creditNotesRef = collection(
       db,
@@ -37,8 +54,14 @@ export const useFbGetCreditNotes = (filters = {}) => {
 
     // Filtro por rango de fechas
     if (filters.startDate && filters.endDate) {
-      const startTimestamp = Timestamp.fromDate(filters.startDate.toDate());
-      const endTimestamp = Timestamp.fromDate(filters.endDate.toDate());
+      const toDate = (value) => {
+        if (value instanceof Date) return value;
+        if (typeof value?.toJSDate === 'function') return value.toJSDate();
+        if (typeof value?.toDate === 'function') return value.toDate();
+        return new Date(value);
+      };
+      const startTimestamp = Timestamp.fromDate(toDate(filters.startDate));
+      const endTimestamp = Timestamp.fromDate(toDate(filters.endDate));
 
       queryConstraints.push(
         where('createdAt', '>=', startTimestamp),

@@ -44,7 +44,7 @@ export const useListenProductBrands = () => {
   return { data, loading, error };
 };
 
-const listenProductBrands = async (user, setData) => {
+const listenProductBrands = (user, setData) => {
   const brandsRef = collection(
     db,
     `businesses/${user.businessID}/productBrands`,

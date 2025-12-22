@@ -39,13 +39,14 @@ const DynamicPermissionsManager = ({
       setPermissions(userPermissions);
     } catch (error) {
       console.error('Error loading user permissions:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [userId, user]);
 
   useEffect(() => {
     if (isOpen && userId) {
-      loadUserPermissions();
+      void loadUserPermissions();
     }
   }, [isOpen, userId, loadUserPermissions]);
 

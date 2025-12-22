@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 
 const SectionContainer = styled.div`
@@ -102,12 +102,12 @@ const NotificationSection = ({
   data = [],
   children,
 }) => {
-  const [currentPage, setCurrentPage] = React.useState(0);
-  const [containerWidth, setContainerWidth] = React.useState(0);
-  const containerRef = React.useRef(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef(null);
 
   // Auto-dividir data en páginas si no se proporcionan páginas específicas
-  const finalPages = React.useMemo(() => {
+  const finalPages = useMemo(() => {
     if (pages.length > 0) return pages;
     if (data.length === 0) return [children];
 
@@ -120,7 +120,7 @@ const NotificationSection = ({
 
   const totalPages = finalPages.length;
 
-  React.useEffect(() => {
+  useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.offsetWidth);

@@ -1,7 +1,8 @@
-import { Form, Input, Select, DatePicker, message, Modal, Button } from 'antd';
-import dayjs from 'dayjs';
+import { Form, Input, Select, message, Modal, Button } from 'antd';
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
 import { onSnapshot, doc } from 'firebase/firestore';
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -22,7 +23,9 @@ import {
 import { db } from '../../../../../../firebase/firebaseconfig';
 import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders';
 import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
-import { useBackOrdersByProduct } from '../../../../../../firebase/warehouse/backOrderService';
+import {
+  getBackOrdersByProduct,
+} from '../../../../../../firebase/warehouse/backOrderService';
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
 import ProductModal from '../../../shared/ProductModal';
 import BackOrdersModal from '../BackOrdersModal';
@@ -45,14 +48,13 @@ const GeneralForm = ({
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [selectedProvider, setSelectedProvider] = useState(null);
-  const unsubscribeRef = useRef(null);
+  const [prevProviderId, setPrevProviderId] = useState(null);
+
   const { providers = [] } = useFbGetProviders();
   const [isBackOrderModalVisible, setIsBackOrderModalVisible] = useState(false);
   const [selectedProductForBackorders, setSelectedProductForBackorders] =
     useState(null);
-  const { backOrders = [] } = useBackOrdersByProduct(
-    selectedProductForBackorders?.id,
-  );
+  const [backOrders, setBackOrders] = useState([]);
 
   const {
     invoiceNumber,
@@ -73,8 +75,12 @@ const GeneralForm = ({
     value: item.id,
   }));
 
-  useEffect(() => {
-    if (providerId) {
+  // Adjust state during rendering when providerId changes
+  if (providerId !== prevProviderId) {
+    setPrevProviderId(providerId);
+    if (!providerId) {
+      // logic if provider is cleared?
+    } else {
       const providerFromState = providers.find(
         (p) => p.provider.id === providerId,
       );
@@ -82,45 +88,37 @@ const GeneralForm = ({
         setSelectedProvider(providerFromState.provider);
       }
     }
-  }, [providers, providerId]);
+  }
 
   useEffect(() => {
-    if (selectedProvider?.id) {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
+    const businessID = user?.businessID;
+    const providerID = selectedProvider?.id;
 
-      unsubscribeRef.current = onSnapshot(
-        doc(
-          db,
-          'businesses',
-          user.businessID,
-          'providers',
-          selectedProvider.id,
-        ),
-        (docSnapshot) => {
-          if (docSnapshot.exists()) {
-            const updatedProvider = {
-              ...selectedProvider,
-              ...docSnapshot.data().provider,
-            };
-            setSelectedProvider(updatedProvider);
-            dispatch(setPurchase({ provider: selectedProvider.id }));
-          }
-        },
-        (error) => {
-          console.error('Error observando proveedor:', error);
-          message.error('Error al sincronizar datos del proveedor');
-        },
-      );
-    }
+    if (!businessID || !providerID) return;
 
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
-    };
-  }, [selectedProvider?.id]);
+    const ref = doc(db, 'businesses', businessID, 'providers', providerID);
+
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        if (!snap.exists()) return;
+        const next = snap.data()?.provider;
+        if (!next) return;
+
+        setSelectedProvider((prev) => ({
+          ...(prev ?? {}),
+          ...next,
+          id: providerID,
+        }));
+      },
+      (error) => {
+        console.error('Error observando proveedor:', error);
+        message.error('Error al sincronizar datos del proveedor');
+      },
+    );
+
+    return () => unsub();
+  }, [user?.businessID, selectedProvider?.id]);
 
   const handleProviderSelect = (providerData) => {
     if (
@@ -159,9 +157,9 @@ const GeneralForm = ({
     );
   };
 
-  const handleProductUpdate = ({ index, ...updatedValues }) => {
+  const handleProductUpdate = useCallback(({ index, ...updatedValues }) => {
     dispatch(updateProduct({ value: updatedValues, index }));
-  };
+  }, [dispatch]);
 
   const handleRemoveProduct = ({ key, id }) => {
     dispatch(deleteProductFromPurchase({ key, id }));
@@ -174,7 +172,7 @@ const GeneralForm = ({
   const handleDateChange = (field, value) => {
     dispatch(
       setPurchase({
-        [field]: value ? dayjs(value).valueOf() : null,
+        [field]: value ? value.toMillis() : null,
       }),
     );
   };
@@ -191,41 +189,37 @@ const GeneralForm = ({
   );
 
   const handleQuantityClick = async (record) => {
-    // Asegurarse de que el registro tenga toda la información necesaria
     const fullProduct = replenishments.find((p) => p.id === record.id);
-    if (!fullProduct) {
-      console.error('No se encontró el producto completo:', record);
-      return false;
-    }
+    if (!fullProduct) return false;
 
-    setSelectedProductForBackorders(fullProduct);
-
-    // Si ya tiene backorders seleccionados, mostrar modal directamente
-    if (fullProduct.selectedBackOrders?.length > 0) {
-      setIsBackOrderModalVisible(true);
-      return true;
-    }
+    if (!user?.businessID) return false;
 
     try {
-      const existingBackorders = backOrders.filter(
-        (bo) => bo.productId === fullProduct.id,
+      const fetchedBackOrders = await getBackOrdersByProduct(
+        user.businessID,
+        fullProduct.id,
       );
+      const hasBackOrders = fetchedBackOrders.length > 0;
 
-      if (existingBackorders && existingBackorders.length > 0) {
+      if (hasBackOrders || fullProduct.selectedBackOrders?.length) {
+        setBackOrders(fetchedBackOrders);
+        setSelectedProductForBackorders(fullProduct);
         setIsBackOrderModalVisible(true);
-        return true;
+      } else {
+        handleProductUpdate({
+          index: fullProduct.key,
+          purchaseQuantity: fullProduct.quantity || 0,
+          selectedBackOrders: [],
+        });
+        // Ensure modal/selection is clear
+        setSelectedProductForBackorders(null);
       }
     } catch (error) {
-      console.error('Error al verificar backorders:', error);
+      console.error('Error fetching backorders', error);
       message.error('Error al verificar backorders');
     }
 
-    const updatedValues = {
-      purchaseQuantity: fullProduct.quantity || 0,
-      selectedBackOrders: [],
-    };
-    handleProductUpdate({ index: fullProduct.key, ...updatedValues });
-    return false;
+    return true;
   };
 
   const handleBackOrderModalConfirm = (backOrderData) => {
@@ -243,6 +237,7 @@ const GeneralForm = ({
       selectedBackOrders: backOrderData.selectedBackOrders,
       purchaseQuantity: purchaseQuantity,
       quantity: quantity,
+      index: selectedProductForBackorders?.key,
     };
 
     handleProductUpdate({ ...updatedValues });
@@ -337,7 +332,9 @@ const GeneralForm = ({
               }
             >
               <DatePicker
-                value={deliveryAt ? dayjs(deliveryAt) : null}
+                value={
+                  deliveryAt ? DateTime.fromMillis(deliveryAt) : null
+                }
                 onChange={(value) => handleDateChange('deliveryAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}
@@ -351,7 +348,7 @@ const GeneralForm = ({
               help={errors?.paymentAt ? 'La fecha de pago es requerida' : ''}
             >
               <DatePicker
-                value={paymentAt ? dayjs(paymentAt) : null}
+                value={paymentAt ? DateTime.fromMillis(paymentAt) : null}
                 onChange={(value) => handleDateChange('paymentAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}
@@ -391,8 +388,10 @@ const GeneralForm = ({
 GeneralForm.defaultProps = {
   files: [],
   attachmentUrls: [],
-  onAddFiles: () => {},
-  onRemoveFiles: () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onAddFiles: () => { },
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onRemoveFiles: () => { },
   errors: {},
 };
 

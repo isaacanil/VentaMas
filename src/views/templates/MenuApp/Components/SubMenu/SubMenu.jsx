@@ -5,15 +5,15 @@ import styled from 'styled-components';
 
 import { Button } from '../../../system/Button/Button';
 import { MenuLink } from '../MenuLink';
-// import { Group, MenuLinkList } from '../SideBar';
 
-export const SubMenu = ({ isOpen, item, showSubMenu }) => {
+export const SubMenu = ({ isOpen, item, onClose }) => {
   const submenuItems = item.submenu || [];
 
   const groupedSubmenus = submenuItems.reduce((acc, submenu) => {
     (acc[submenu.group] = acc[submenu.group] || []).push(submenu);
     return acc;
   }, {});
+
   return (
     <Container $isOpen={isOpen}>
       <Header>
@@ -21,7 +21,7 @@ export const SubMenu = ({ isOpen, item, showSubMenu }) => {
           startIcon={<FontAwesomeIcon icon={faArrowLeft} />}
           title="atrás"
           variant="contained"
-          onClick={showSubMenu}
+          onClick={onClose}
         />
         <span>{item.title}</span>
       </Header>
@@ -29,14 +29,9 @@ export const SubMenu = ({ isOpen, item, showSubMenu }) => {
         {isOpen
           ? Object.keys(groupedSubmenus).map((group) => (
               <Group key={group}>
-                {/* <GroupTitle>{group}</GroupTitle>  */}
                 <MenuLinkList>
                   {groupedSubmenus[group].map((submenu, index) => (
-                    <MenuLink
-                      item={submenu}
-                      key={index}
-                      onActionDone={showSubMenu}
-                    />
+                    <MenuLink item={submenu} key={index} onActionDone={onClose} />
                   ))}
                 </MenuLinkList>
               </Group>
@@ -63,7 +58,6 @@ const Body = styled.div`
   align-content: start;
   padding: 0.8em;
 
-  /* position: relative; */
   background-color: var(--color2);
 `;
 

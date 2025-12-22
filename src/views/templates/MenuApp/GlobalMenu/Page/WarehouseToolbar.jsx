@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { icons } from '../../../../../constants/icons/icons';
 import { selectUser } from '../../../../../features/auth/userSlice';
 import { openWarehouseForm } from '../../../../../features/warehouse/warehouseModalSlice';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu';
 
 export const WarehouseToolbar = ({ side = 'left' }) => {

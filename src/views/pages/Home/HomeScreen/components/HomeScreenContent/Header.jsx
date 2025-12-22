@@ -2,9 +2,10 @@ import { DateTime } from 'luxon';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+import { getSalesForCurrentDay } from '@/utils/sales';
+
 import { getBills } from '../../../../../../firebase/firebaseconfig';
 
-import { getSalesForCurrentDay } from '@/utils/sales';
 // Obtener la fecha y hora actual
 const today = DateTime.local();
 
@@ -18,7 +19,7 @@ export const Header = () => {
   const [date] = useState({ startDate, endDate });
   useEffect(() => {
     getBills(setBills, date);
-  }, []);
+  }, [date]);
   const { salesForCurrentDay, growthPercentage } = getSalesForCurrentDay(bills);
   const saleQuantity = bills.length;
   return (

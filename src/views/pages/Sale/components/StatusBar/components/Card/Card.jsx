@@ -5,10 +5,11 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { formatNumber } from '@/utils/format';
+
 import { SelectTotalShoppingItems } from '../../../../../../../features/cart/cartSlice';
 import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
 
-import { formatNumber } from '@/utils/format';
 
 export const ProductCounter = ({
   productCount = 0,

@@ -3,7 +3,7 @@ import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { icons } from '../../../../../constants/icons/icons';
-import ROUTES_NAME from '../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { Button } from '../../../system/Button/Button';
 
 const EXPORT_EVENT = 'utility-export-request';

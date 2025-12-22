@@ -101,6 +101,7 @@ const PinInputWrapper = styled.div`
 const CustomPinInput = ({
   value = '',
   onChange,
+  onEnter,
   disabled,
   maxLength = 6,
   autoFocus = false,
@@ -137,6 +138,12 @@ const CustomPinInput = ({
   const handleKeyDown = (e) => {
     if (e.key === 'Backspace' && value.length > 0) {
       onChange?.(value.slice(0, -1));
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      onEnter?.();
       e.preventDefault();
     }
   };
@@ -198,6 +205,9 @@ export const PinAuthorizationModal = ({
   const [usePassword, setUsePassword] = useState(false);
   const [pinValue, setPinValue] = useState('');
 
+  const usernameInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
+
   const resetAndClose = () => {
     form.resetFields();
     setError('');
@@ -206,6 +216,18 @@ export const PinAuthorizationModal = ({
     setPinValue('');
     setIsOpen(false);
   };
+
+  useEffect(() => {
+    if (!isOpen || loading) return;
+
+    const timer = setTimeout(() => {
+      if (usePassword) {
+        usernameInputRef.current?.focus?.();
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, usePassword, loading]);
 
   const fetchUserById = async (uid) => {
     const userRef = doc(db, 'users', uid);
@@ -216,18 +238,15 @@ export const PinAuthorizationModal = ({
   };
 
   const handleSubmitPin = async (pin) => {
-    try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
-      // Validar que el PIN tenga 6 dígitos
+    try {
       if (!pin || pin.length !== 6) {
         setError('El PIN debe tener 6 dígitos');
-        setLoading(false);
         return;
       }
 
-      // Validar PIN
       const result = await fbValidateUserPin(currentUser, {
         pin,
         module,
@@ -235,63 +254,57 @@ export const PinAuthorizationModal = ({
 
       if (!result.valid) {
         setError(result.reason || 'PIN inválido');
-        setLoading(false);
         return;
       }
 
-      // Verificar rol
       const role = result.user?.role;
       if (!allowedRoles.includes(role)) {
         setError('Usuario no autorizado para aprobar esta acción.');
-        setLoading(false);
         return;
       }
 
-      // Autorización exitosa
       onAuthorized(result.user);
       resetAndClose();
     } catch (e) {
-      setError(e.message || 'Error validando PIN');
+      setError(e?.message || 'Error validando PIN');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleSubmitPassword = async ({ username, password }) => {
-    try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
+    try {
       const { userData, response } = await fbValidateUser({
         name: username,
         password,
       });
+
       if (response?.error) {
         setError(response.error);
-        setLoading(false);
         return;
       }
 
-      try {
-        const approver = await fetchUserById(userData.uid);
-        const role = approver?.role;
-        if (!allowedRoles.includes(role)) {
-          setError('Usuario no autorizado para aprobar esta acción.');
-          setLoading(false);
-          return;
-        }
-        onAuthorized(approver);
-        resetAndClose();
-      } catch (e) {
-        setError(e.message || 'Error obteniendo datos del usuario.');
-        setLoading(false);
+      const approver = await fetchUserById(userData.uid);
+      const role = approver?.role;
+      if (!allowedRoles.includes(role)) {
+        setError('Usuario no autorizado para aprobar esta acción.');
+        return;
       }
-    } catch {
-      // keep modal open for user to correct inputs
+
+      onAuthorized(approver);
+      resetAndClose();
+    } catch (e) {
+      setError(e?.message || 'Error obteniendo datos del usuario.');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
+    if (loading) return;
     try {
       if (usePassword) {
         const values = await form.validateFields(['username', 'password']);
@@ -309,10 +322,18 @@ export const PinAuthorizationModal = ({
   };
 
   const toggleMode = () => {
+    if (loading) return;
     setUsePassword(!usePassword);
     setError('');
     setPinValue('');
     form.resetFields(['password', 'username']);
+
+    // Asegurar foco rápido al cambiar modo
+    setTimeout(() => {
+      if (!usePassword) {
+        usernameInputRef.current?.focus?.();
+      }
+    }, 0);
   };
 
   return (
@@ -331,6 +352,7 @@ export const PinAuthorizationModal = ({
           key="submit"
           type="primary"
           loading={loading}
+          disabled={loading}
           onClick={handleSubmit}
         >
           Autorizar
@@ -371,85 +393,87 @@ export const PinAuthorizationModal = ({
         />
 
         <Form form={form} layout="vertical" autoComplete="off">
-          {loading ? (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: 140,
-              }}
+          {usePassword && (
+            <Form.Item
+              name="username"
+              label="Nombre de Usuario"
+              rules={[{ required: true, message: 'Ingrese el nombre de usuario' }]}
             >
-              <Spin size="large" />
-            </div>
-          ) : (
-            <>
-              {usePassword && (
-                <Form.Item
-                  name="username"
-                  label="Nombre de Usuario"
-                  rules={[
-                    { required: true, message: 'Ingrese el nombre de usuario' },
-                  ]}
-                >
-                  <Input
-                    prefix={<UserOutlined />}
-                    placeholder="Usuario"
-                    disabled={loading}
-                    autoComplete="off"
-                    size="large"
-                  />
-                </Form.Item>
-              )}
+              <Input
+                ref={usernameInputRef}
+                prefix={<UserOutlined />}
+                placeholder="Usuario"
+                disabled={loading}
+                autoComplete="off"
+                size="large"
+                onPressEnter={() => {
+                  if (loading) return;
+                  passwordInputRef.current?.focus?.();
+                }}
+              />
+            </Form.Item>
+          )}
 
-              {usePassword ? (
-                <Form.Item
-                  name="password"
-                  label="Contraseña"
-                  rules={[{ required: true, message: 'Ingrese la contraseña' }]}
-                >
-                  <Input.Password
-                    prefix={<LockOutlined />}
-                    placeholder="Contraseña"
-                    disabled={loading}
-                    autoComplete="new-password"
-                    size="large"
-                  />
-                </Form.Item>
-              ) : null}
+          {usePassword ? (
+            <Form.Item
+              name="password"
+              label="Contraseña"
+              rules={[{ required: true, message: 'Ingrese la contraseña' }]}
+            >
+              <Input.Password
+                ref={passwordInputRef}
+                prefix={<LockOutlined />}
+                placeholder="Contraseña"
+                disabled={loading}
+                autoComplete="new-password"
+                size="large"
+                onPressEnter={() => {
+                  if (loading) return;
+                  handleSubmit();
+                }}
+              />
+            </Form.Item>
+          ) : null}
 
-              {!usePassword && (
-                <div>
-                  <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                    PIN de Autorización (6 dígitos)
-                  </Text>
-                  <CustomPinInput
-                    value={pinValue}
-                    onChange={setPinValue}
-                    disabled={loading}
-                    maxLength={6}
-                    autoFocus={true}
-                  />
+          {!usePassword && (
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                PIN de Autorización (6 dígitos)
+              </Text>
+              <CustomPinInput
+                value={pinValue}
+                onChange={setPinValue}
+                onEnter={() => {
+                  if (loading) return;
+                  handleSubmit();
+                }}
+                disabled={loading}
+                maxLength={6}
+                autoFocus={true}
+              />
+              {loading && (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <Spin size="small" style={{ marginTop: 8 }} />
                 </div>
               )}
+            </div>
+          )}
 
-              {error && <ErrorMessage>{error}</ErrorMessage>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
 
-              {allowPasswordFallback && (
-                <ModeToggle>
-                  <Divider plain style={{ margin: '12px 0' }}>
-                    <Text type="secondary" style={{ fontSize: '0.85em' }}>
-                      o
-                    </Text>
-                  </Divider>
-                  <Button type="link" onClick={toggleMode}>
-                    {usePassword
-                      ? '← Usar PIN de 6 dígitos'
-                      : '¿No tienes PIN? Usa tu contraseña →'}
-                  </Button>
-                </ModeToggle>
-              )}
-            </>
+          {allowPasswordFallback && (
+            <ModeToggle>
+              <Divider plain style={{ margin: '12px 0' }}>
+                <Text type="secondary" style={{ fontSize: '0.85em' }}>
+                  o
+                </Text>
+              </Divider>
+              <Button type="link" onClick={toggleMode} disabled={loading}>
+                {usePassword
+                  ? '← Usar PIN de 6 dígitos'
+                  : '¿No tienes PIN? Usa tu contraseña →'}
+              </Button>
+            </ModeToggle>
           )}
         </Form>
       </div>

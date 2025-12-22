@@ -8,15 +8,26 @@ import { db } from '../firebaseconfig';
 export const useFbGetAccountReceivablePayments = (arId) => {
     const user = useSelector(selectUser);
     const [payments, setPayments] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const deps = [user?.businessID, arId];
+    const [prevDeps, setPrevDeps] = useState(deps);
+
+    if ((!user?.businessID || !arId)) {
+        if (payments.length > 0) setPayments([]);
+        if (loading) setLoading(false);
+    } else {
+        const depsChanged = deps.some((d, i) => d !== prevDeps[i]);
+        if (depsChanged) {
+            setPrevDeps(deps);
+            setLoading(true);
+        }
+    }
 
     useEffect(() => {
         if (!user?.businessID || !arId) {
-            setPayments([]);
-            return;
+            return undefined;
         }
-
-        setLoading(true);
 
         const ref = collection(
             db,

@@ -4,7 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import ROUTES_NAME from '../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup';
 import WelcomeData from '../WelcomeData.json';
 

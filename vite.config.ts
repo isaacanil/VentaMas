@@ -201,7 +201,7 @@ export default defineConfig({
               name: 'utils-vendor',
               test: (id: string) =>
                 id.includes('lodash') ||
-                id.includes('dayjs') ||
+                id.includes('luxon') ||
                 id.includes('moment'),
               priority: 15,
             },

@@ -69,7 +69,7 @@ export const ProductOutflow = () => {
         }
       });
     }
-  }, [outflowList]);
+  }, [outflowList, dispatch, outflowProduct.mode, outflowProduct.data.id]);
 
   useEffect(() => {
     fbGetProductOutflow({

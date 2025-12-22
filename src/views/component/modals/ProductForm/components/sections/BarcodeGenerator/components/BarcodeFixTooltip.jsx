@@ -1,4 +1,4 @@
-import * as ant from 'antd';
+import { Button, message } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -31,8 +31,6 @@ import styled from 'styled-components';
  *    />
  *  </InputWrapper>
  */
-
-const { Button, message } = ant;
 
 // ----- styled components -----
 const Container = styled.div`

@@ -88,6 +88,7 @@ const listenAllSegments = (
       _shelfId,
       _rowShelfId,
     );
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
   const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
@@ -162,13 +163,13 @@ const deleteSegment = async (
 
 const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Boolean(warehouseId && shelfId && rowShelfId),
+  );
   const [error, setError] = useState();
   const user = useSelector(selectUser);
   useEffect(() => {
     if (!user || !warehouseId || !shelfId || !rowShelfId) {
-      setData([]);
-      setLoading(false);
       return;
     }
     const unsubscribe = listenAllSegments(

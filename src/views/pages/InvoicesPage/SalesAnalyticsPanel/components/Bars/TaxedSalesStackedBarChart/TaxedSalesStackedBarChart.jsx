@@ -51,7 +51,7 @@ const accumulateTaxedSalesData = (sales, byMonth = false) => {
 };
 
 export const TaxedSalesStackedBarChart = ({ sales }) => {
-  const normalizedSales = Array.isArray(sales) ? sales : [];
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
   const dateSpan = useMemo(
     () =>
       normalizedSales.reduce(

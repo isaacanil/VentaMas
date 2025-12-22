@@ -1,7 +1,7 @@
 import { shouldPolyfill } from '@formatjs/intl-segmenter/should-polyfill';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntApp } from 'antd';
-import { StrictMode, useEffect } from 'react';
+import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
@@ -27,17 +27,13 @@ import i18n from './i18n';
 
 const queryClient = new QueryClient();
 
-export const ProductionWrapper = ({ children }) => {
-  useEffect(() => {
-    if (import.meta.env.PROD) {
-      document.body.classList.add('production-mode');
-    }
-  }, []);
-  return children;
-};
+if (import.meta.env.PROD) {
+  document.body.classList.add('production-mode');
+}
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+const root = document.getElementById('root');
+
+ReactDOM.createRoot(root).render(
   <StrictMode>
     <Provider store={store}>
       <AntApp>
@@ -45,9 +41,7 @@ root.render(
           <AppProviders>
             <AntConfigProvider>
               <QueryClientProvider client={queryClient}>
-                <ProductionWrapper>
-                  <App />
-                </ProductionWrapper>
+                <App />
               </QueryClientProvider>
             </AntConfigProvider>
           </AppProviders>

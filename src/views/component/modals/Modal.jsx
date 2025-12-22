@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '../../../constants/icons/icons';
@@ -18,19 +18,26 @@ export const Modal = ({
   width,
 }) => {
   const [modalContent, setModalContent] = useState(false);
+  const timeoutRef = useRef(null);
 
   const done = async () => {
     await handleSubmit?.();
     close();
   };
+
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
+      timeoutRef.current = window.setTimeout(() => {
         setModalContent(true);
       }, 300);
-    } else {
-      setModalContent(false);
     }
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setModalContent(false);
+    };
   }, [isOpen]);
   const backdropVariants = {
     open: {

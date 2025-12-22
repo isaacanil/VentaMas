@@ -11,14 +11,30 @@ import {
   Space,
   Tooltip,
 } from 'antd';
-import dayjs from 'dayjs';
-import React, { useState, useEffect } from 'react';
+import { DateTime } from 'luxon';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
 import { formatPrice } from '@/utils/format';
 
 const { Title, Text } = Typography;
+
+const toDateTime = (value) => {
+  if (!value) return null;
+  if (DateTime.isDateTime(value)) return value;
+  if (value?.seconds) return DateTime.fromSeconds(value.seconds);
+  if (value instanceof Date) return DateTime.fromJSDate(value);
+  if (typeof value === 'number') return DateTime.fromMillis(value);
+  if (typeof value === 'string') {
+    const iso = DateTime.fromISO(value);
+    return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
+  }
+  if (typeof value?.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate());
+  }
+  return null;
+};
 
 const CreditNoteSelector = ({
   clientId,
@@ -29,15 +45,14 @@ const CreditNoteSelector = ({
 }) => {
   const { creditNotes, loading, totalAvailable } =
     useFbGetAvailableCreditNotes(clientId);
-  const [localSelections, setLocalSelections] = useState({});
-
-  // Sincronizar selecciones locales con las selecciones externas
-  useEffect(() => {
+  
+  // Derivar selecciones locales directamente del prop
+  const localSelections = useMemo(() => {
     const newSelections = {};
     selectedCreditNotes.forEach((selection) => {
       newSelections[selection.id] = selection.amountToUse;
     });
-    setLocalSelections(newSelections);
+    return newSelections;
   }, [selectedCreditNotes]);
 
   // Calcular el total seleccionado
@@ -66,9 +81,7 @@ const CreditNoteSelector = ({
       delete newSelections[creditNoteId];
     }
 
-    setLocalSelections(newSelections);
-
-    // Notificar al componente padre
+    // Notificar al componente padre directamente
     const updatedSelections = Object.entries(newSelections).map(
       ([id, amountToUse]) => {
         const note = creditNotes.find((cn) => cn.id === id);
@@ -158,11 +171,7 @@ const CreditNoteSelector = ({
                       type="secondary"
                       style={{ fontSize: '12px', marginLeft: '8px' }}
                     >
-                      {dayjs(
-                        creditNote.createdAt?.seconds
-                          ? new Date(creditNote.createdAt.seconds * 1000)
-                          : creditNote.createdAt,
-                      ).format('DD/MM/YYYY')}
+                      {toDateTime(creditNote.createdAt)?.toFormat('dd/MM/yyyy')}
                     </Text>
                   </ItemTitle>
                   <Text strong style={{ color: '#1890ff' }}>

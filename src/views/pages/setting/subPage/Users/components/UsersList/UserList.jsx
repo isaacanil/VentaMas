@@ -1,4 +1,4 @@
-﻿import {
+import {
   CheckCircleOutlined,
   EditOutlined,
   FieldTimeOutlined,
@@ -27,7 +27,7 @@ import { updateUser } from '../../../../../../../features/usersManagement/usersM
 import { realtimeDB } from '../../../../../../../firebase/firebaseconfig.jsx';
 import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
 import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
-import ROUTES_NAME from '../../../../../../../routes/routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
 import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
 import DynamicPermissionsManager from '../DynamicPermissionsManager';
@@ -178,34 +178,51 @@ export const UserList = () => {
   const { abilities, loading: permissionsLoading } = useUserAccess();
   const canManageDynamicPermissions = abilities.can('manage', 'users');
 
+  const userIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          users
+            .map(({ user }) => user?.uid || user?.id)
+            .filter(Boolean)
+            .map(String),
+        ),
+      ),
+    [users],
+  );
+
+  const presenceMapForUsers = useMemo(() => {
+    if (userIds.length === 0) return {};
+    const allowed = new Set(userIds);
+    return Object.fromEntries(
+      Object.entries(presenceMap).filter(([uid]) => allowed.has(String(uid))),
+    );
+  }, [presenceMap, userIds]);
+
   useEffect(() => {
-    setLoading(true);
-    fbGetUsers(currentUser, setUsers, null, () => setLoading(false));
+    let mounted = true;
+    const loadUsers = () => {
+      if (mounted) {
+        setLoading(true);
+      }
+      fbGetUsers(currentUser, setUsers, null, () => {
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+    };
+    loadUsers();
+    return () => {
+      mounted = false;
+    };
   }, [currentUser]);
 
   useEffect(() => {
     if (!realtimeDB?.app?.options?.databaseURL) return undefined;
 
-    const userIds = Array.from(
-      new Set(
-        users
-          .map(({ user }) => user?.uid || user?.id)
-          .filter(Boolean)
-          .map(String),
-      ),
-    );
-
     if (userIds.length === 0) {
-      setPresenceMap({});
       return undefined;
     }
-
-    setPresenceMap((prev) => {
-      const allowed = new Set(userIds);
-      return Object.fromEntries(
-        Object.entries(prev).filter(([uid]) => allowed.has(uid)),
-      );
-    });
 
     const unsubscribes = userIds.map((uid) => {
       const presenceRef = ref(realtimeDB, `presence/${uid}`);
@@ -243,7 +260,7 @@ export const UserList = () => {
         }
       });
     };
-  }, [realtimeDB, users]);
+  }, [userIds]);
 
   const data = useMemo(
     () =>
@@ -253,7 +270,7 @@ export const UserList = () => {
         const isActive = Boolean(user?.active);
         const statusLabel = isActive ? 'Activo' : 'Inactivo';
         const userId = user?.uid || user?.id;
-        const presence = presenceMap[userId] || { state: 'offline' };
+        const presence = presenceMapForUsers[userId] || { state: 'offline' };
 
         return {
           number: user?.number,
@@ -275,7 +292,7 @@ export const UserList = () => {
             }`.toLowerCase(),
         };
       }),
-    [users, presenceMap],
+    [users, presenceMapForUsers],
   );
 
   const sortedData = useMemo(() => {
@@ -401,7 +418,7 @@ export const UserList = () => {
         ),
       },
       {
-        Header: 'Fecha de Creaci├│n',
+        Header: 'Fecha de Creación',
         accessor: 'createAt',
         align: 'left',
         maxWidth: '0.8fr',
@@ -442,7 +459,7 @@ export const UserList = () => {
         Header: 'Estado',
         accessor: 'status',
         align: 'left',
-        description: '┬┐Esta Activo?',
+        description: '¿Esta Activo?',
         maxWidth: '0.4fr',
         minWidth: '100px',
         cell: ({ value }) => {
@@ -475,7 +492,7 @@ export const UserList = () => {
           return (
             <PresenceBadge
               $online={isOnline}
-              title={isOnline ? 'En linea' : `Fuera de linea ┬À ${label}`}
+              title={isOnline ? 'En linea' : `Fuera de linea · ${label}`}
             >
               <FontAwesomeIcon icon={faCircle} className="presence-dot" />
               <span>{label}</span>
@@ -518,7 +535,7 @@ export const UserList = () => {
     openStatusModal,
   ]);
 
-  // Solo mostrar la tabla si tiene permisos para ver usuarios (o si est├í cargando)
+  // Solo mostrar la tabla si tiene permisos para ver usuarios (o si está cargando)
   if (
     !permissionsLoading &&
     !abilities.can('read', 'User') &&
@@ -626,7 +643,7 @@ const ActionMenu = ({
       menuItems.push({
         key: 'permissions',
         icon: <SettingOutlined />,
-        label: 'Permisos din├ímicos',
+        label: 'Permisos dinámicos',
         onClick: ({ domEvent }) => {
           domEvent?.stopPropagation();
           onManagePermissions?.(user);
@@ -637,7 +654,7 @@ const ActionMenu = ({
     menuItems.push({
       key: 'password',
       icon: <KeyOutlined />,
-      label: 'Cambiar contrase├▒a',
+      label: 'Cambiar contraseña',
       onClick: ({ domEvent }) => {
         domEvent?.stopPropagation();
         onChangePassword?.(user);
