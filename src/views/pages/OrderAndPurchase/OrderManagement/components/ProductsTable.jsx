@@ -1,160 +1,211 @@
-import React, { useState } from 'react';
-import { Table, Button, Input, Form, InputNumber, DatePicker, Modal } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { formatMoney, formatPercentage } from '../../../../../utils/formatters';
-import dayjs from 'dayjs';
+import {
+  Table,
+  Button,
+  Input,
+  Form,
+  InputNumber,
+} from 'antd';
+import DatePicker from '@/components/DatePicker';
+import { DateTime } from 'luxon';
+import React from 'react';
+
+import { formatMoney, formatQuantity } from '../../../../../utils/formatters';
+import ProductModal from '../../shared/ProductModal';
 
 const EditableCell = ({
-  editing,
   dataIndex,
-  title,
   inputType,
   record,
-  index,
-  children,
   onSave,
-  onCloseEdit,
-  setDateModalVisible,
-  setSelectedRecord,
-  onCellClick,
   ...restProps
 }) => {
-  const getInput = () => {
-    if (inputType === 'number') {
-      return <InputNumber onBlur={(e) => onSave(record, dataIndex, e.target.value)} autoFocus />;
-    }
-    if (inputType === 'date') {
-      // En lugar de mostrar el DatePicker directamente, abrimos el modal
-      return children;
-    }
-    return <Input onBlur={(e) => onSave(record, dataIndex, e.target.value)} autoFocus />;
+  const isProductModal = inputType === 'productModal';
+  const isNumberInput = inputType === 'number';
+  const isDatePicker = inputType === 'date';
+
+  const handleValueChange = (value) => {
+    onSave(record, dataIndex, value);
   };
 
-  const handleDateCellClick = () => {
-    if (inputType === 'date' && record.editable !== false) {
-      setSelectedRecord(record);
-      setDateModalVisible(true);
-      return;
+  const handleProductSelect = (product) => {
+    onSave(record, dataIndex, product);
+  };
+
+  const handleDateChange = (date) => {
+    const timestamp = date ? date.toMillis() : null;
+    onSave(record, dataIndex, timestamp);
+  };
+
+  const renderInput = () => {
+    if (isProductModal) {
+      return (
+        <ProductModal
+          onSelect={handleProductSelect}
+          selectedProduct={{ name: record[dataIndex], id: record.id }} // Pass ID as well
+        >
+          <Input
+            value={record[dataIndex]} // Display product name
+            placeholder="Seleccionar producto"
+            readOnly
+          />
+        </ProductModal>
+      );
     }
-    restProps.onClick?.();
+    if (isNumberInput) {
+      return (
+        <InputNumber
+          value={record[dataIndex]}
+          onChange={handleValueChange}
+          onBlur={(e) => {
+            const val = e.target.value.replace(/,/g, '');
+            handleValueChange(val);
+          }}
+          min={dataIndex === 'quantity' ? 1 : 0}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+        />
+      );
+    }
+    if (isDatePicker) {
+      return (
+        <DatePicker
+          value={
+            record[dataIndex] ? DateTime.fromMillis(record[dataIndex]) : null
+          }
+          onChange={handleDateChange}
+          format="DD/MM/YY"
+          style={{ width: '100%' }}
+        />
+      );
+    }
+    return (
+      <Input
+        value={record[dataIndex]}
+        onChange={(e) => handleValueChange(e.target.value)}
+        onBlur={(e) => handleValueChange(e.target.value)}
+      />
+    );
   };
 
   return (
-    <td
-      {...restProps}
-      onClick={onCellClick || handleDateCellClick} // Mover el onClick aquí
-      style={{ cursor: 'pointer' }} // Opcional: Cambiar cursor al pasar sobre la celda
-    >
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{ margin: 0 }}
-          noStyle
-          rules={['freight', 'otherCosts'].includes(dataIndex) ? [] : [
-            { required: true }
-          ]}
-        >
-          {getInput()}
-        </Form.Item>
-      ) : (
-        <div 
-          className="editable-cell-value-wrap"
-          style={{ 
-            paddingRight: 24,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {children}
-        </div>
-      )}
+    <td {...restProps}>
+      <Form.Item
+        style={{ margin: 0 }}
+        noStyle
+      >
+        {renderInput()}
+      </Form.Item>
     </td>
   );
 };
 
-const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick }) => {
-  const [editingCell, setEditingCell] = useState({ row: '', col: '' });
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState(null);
+const ProductsTable = ({
+  products,
+  removeProduct,
+  onEditProduct,
+  onQuantityClick,
+}) => {
   const [form] = Form.useForm();
 
-  const isEditing = (record, dataIndex) => 
-    editingCell.row === record.key && editingCell.col === dataIndex;
-
-  const edit = (record, dataIndex) => {
-    const value = record[dataIndex];
-    // Convertir timestamp a momento para DatePicker si es necesario
-    const formValue = dataIndex === 'expirationDate' && value 
-      ? dayjs(value) 
-      : value;
-      
-    form.setFieldsValue({ [dataIndex]: formValue });
-    setEditingCell({ row: record.key, col: dataIndex });
-  };
-
   const handleSave = (record, dataIndex, value) => {
-    // Para fechas, asegurarnos de que el valor sea un timestamp
-    const finalValue = dataIndex === 'expirationDate' 
-      ? (value ? Number(value) : null)
-      : value;
+    let newData = { ...record, originalId: record.id };
 
-    const newData = { ...record, [dataIndex]: finalValue };
-    if (dataIndex === 'quantity') {
-      if (!record.selectedBackOrders || record.selectedBackOrders.length === 0) {
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity = Number(finalValue) || 0;
-      } else {
-        const backordersQuantity = record.selectedBackOrders.reduce((sum, bo) => sum + bo.quantity, 0);
-        newData.quantity = Number(finalValue) || 0;
-        newData.purchaseQuantity = (Number(finalValue) || 0) + backordersQuantity;
-      }
+    if (dataIndex === 'name' && typeof value === 'object' && value !== null) {
+      const product = value;
+      newData = {
+        ...newData,
+        id: product.id,
+        name: product.name,
+        baseCost: product.pricing?.cost || 0,
+        taxPercentage:
+          product.pricing?.tax ??
+          product.taxPercentage ??
+          0, // Prefill ITBIS from product pricing/tax if available
+        purchaseQuantity: newData.purchaseQuantity || 1,
+      };
     } else {
+      let finalValue = value;
+      // Date handling is now inside EditableCell
+      if (
+        ['quantity', 'baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(
+          dataIndex,
+        )
+      ) {
+        finalValue = Number(value) || 0;
+      }
       newData[dataIndex] = finalValue;
     }
-    onEditProduct({ ...newData, index: record.key });
-    setEditingCell({ row: '', col: '' });
-  };
 
-  const handleDateModalOk = (date) => {
-    if (selectedRecord) {
-      const timestamp = date ? date.startOf('day').valueOf() : null;
-      handleSave(selectedRecord, 'expirationDate', timestamp);
+    if (dataIndex === 'quantity') {
+      const finalQty = Number(newData.quantity) || 0;
+      if (
+        !newData.selectedBackOrders ||
+        newData.selectedBackOrders.length === 0
+      ) {
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty;
+      } else {
+        const backordersQuantity = newData.selectedBackOrders.reduce(
+          (sum, bo) => sum + bo.quantity,
+          0,
+        );
+        newData.quantity = finalQty;
+        newData.purchaseQuantity = finalQty + backordersQuantity;
+      }
     }
-    setDateModalVisible(false);
-    setSelectedRecord(null);
+
+    onEditProduct({ ...newData, index: record.key });
   };
 
-  const columns = [
-    { 
-      title: 'Producto', 
+  const defaultColumns = [
+    {
+      title: 'Producto',
       dataIndex: 'name',
-      width: 200,
       ellipsis: {
         showTitle: true,
       },
-      render: (text) => (
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {text}
-        </span>
-      )
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="productModal"
+          dataIndex="name"
+          onSave={handleSave}
+        >
+          {record.name}
+        </EditableCell>
+      ),
     },
-
     {
       title: 'Cantidad',
       dataIndex: 'quantity',
-      render: (value) => value,
-      editable: true,
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="number"
+          dataIndex="quantity"
+          onSave={handleSave}
+          onCellClick={() => onQuantityClick(record)} // Keep this for backorders modal
+        >
+          {record.quantity}
+        </EditableCell>
+      ),
     },
     {
       title: 'Costo Base',
       dataIndex: 'baseCost',
-      render: (value) => formatMoney(value),      editable: true,
-    },
-
-    {
-      title: 'Costo Unitario',
-      dataIndex: 'unitCost',
-      render: (value) => formatMoney(value),
-
+      render: (_, record) => (
+        <EditableCell
+          record={record}
+          inputType="number"
+          dataIndex="baseCost"
+          onSave={handleSave}
+        >
+          {formatMoney(record.baseCost)}
+        </EditableCell>
+      ),
     },
     {
       title: 'Subtotal',
@@ -163,102 +214,76 @@ const ProductsTable = ({ products, removeProduct, onEditProduct, onQuantityClick
       render: (value) => formatMoney(value),
     },
     {
-      title: 'Acciones',
+      title: '',
       key: 'actions',
       fixed: 'right',
+      width: 70,
       render: (_, record) => (
         <div
           style={{
             width: '100%',
             display: 'flex',
-            justifyContent: 'end'
+            justifyContent: 'end',
           }}
         >
           <Button
             icon={<DeleteOutlined />}
             danger
-            onClick={() => removeProduct(record.id)}
+            onClick={() =>
+              removeProduct({ key: record.key, id: record.id || record.originalId })
+            }
           />
         </div>
       ),
     },
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: col.dataIndex === 'expirationDate' ? 'date' : 
-                  ['quantity', 'baseCost', 'taxPercentage', 'freight', 'otherCosts'].includes(col.dataIndex) ? 'number' : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record, col.dataIndex),
-        onSave: handleSave,
-        // For cantidad column: if backorders exist, run onQuantityClick; otherwise, edit inline.
-        ...(col.dataIndex === 'quantity'
-          ? {
-              onCellClick: () => {
-                if (
-                  onQuantityClick &&
-                  record.selectedBackOrders &&
-                  record.selectedBackOrders.length > 0
-                ) {
-                  onQuantityClick(record);
-                } else {
-                  edit(record, col.dataIndex);
-                }
-              }
-            }
-          : { onClick: () => edit(record, col.dataIndex) }),
-        onCloseEdit: () => setEditingCell({ row: '', col: '' }),
-        setDateModalVisible,
-        setSelectedRecord,
-      }),
-    };
-  });
-
   return (
     <>
       <Form form={form} component={false}>
         <Table
-          components={{
-            body: {
-              cell: EditableCell,
-            },
-          }}
           className="editable-row-table"
-          size='small'
+          size="small"
           scroll={{ x: 1300 }}
-          columns={mergedColumns}
+          columns={defaultColumns}
           dataSource={products.map((product, index) => ({
             ...product,
-            key: index
+            key: product.key || product.id || index,
           }))}
-          rowKey={(record, index) => index}
-          onRow={() => ({})} // Asegurar que no haya conflictos con eventos en las filas
+          rowKey={(record) => record.key}
+          pagination={false}
+          summary={(pageData) => {
+            let totalQuantity = 0;
+            let totalSubtotal = 0;
+
+            pageData.forEach((record) => {
+              const { quantity, subtotal } = record;
+              const displayQty = Number(quantity) || 0;
+              const s = Number(subtotal) || 0;
+
+              totalQuantity += displayQty;
+              totalSubtotal += s;
+            });
+
+            return (
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+                <Table.Summary.Cell index={1}>
+                  <span style={{ fontWeight: 'bold' }}>{formatQuantity(totalQuantity, 0)}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2}>
+                  {/* Costo Base total se muestra en blanco */}
+                  <span style={{ fontWeight: 'bold' }}>{''}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={3}>
+                  <span style={{ fontWeight: 'bold' }}>{formatMoney(totalSubtotal)}</span>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={4} />
+              </Table.Summary.Row>
+            );
+          }}
         />
       </Form>
-      
-      <Modal
-        title="Seleccionar fecha de vencimiento"
-        open={dateModalVisible}
-        onCancel={() => {
-          setDateModalVisible(false);
-          setSelectedRecord(null);
-        }}
-        footer={null}
-      >
-        <DatePicker
-          style={{ width: '100%' }}
-          format="DD/MM/YY"
-          value={selectedRecord?.expirationDate ? dayjs(selectedRecord.expirationDate) : null}
-          onChange={handleDateModalOk}
-        />
-      </Modal>
     </>
   );
 };

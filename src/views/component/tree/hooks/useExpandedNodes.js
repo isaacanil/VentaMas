@@ -1,6 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
-import { expandMatchingNodes } from "../utils/expandUtils";
-import { traverse } from "../utils/traverseUtils";
+import { useState, useCallback, useMemo } from 'react';
 
 const useExpandedNodes = (data) => {
   const [manualExpandedNodes, setManualExpandedNodes] = useState({});
@@ -8,59 +6,87 @@ const useExpandedNodes = (data) => {
   const [manuallyClosedNodes, setManuallyClosedNodes] = useState({});
   const [explicitlyClosedNodes, setExplicitlyClosedNodes] = useState(new Set());
 
-  const expandedNodes = useMemo(() => ({
-    ...manualExpandedNodes,
-    ...Object.keys(searchExpandedNodes).reduce((acc, key) => {
-      if (!manuallyClosedNodes[key]) {
-        acc[key] = true;
-      }
-      return acc;
-    }, {}),
-  }), [manualExpandedNodes, searchExpandedNodes, manuallyClosedNodes]);
+  const expandedNodes = useMemo(
+    () => ({
+      ...manualExpandedNodes,
+      ...Object.keys(searchExpandedNodes).reduce((acc, key) => {
+        if (!manuallyClosedNodes[key]) {
+          acc[key] = true;
+        }
+        return acc;
+      }, {}),
+    }),
+    [manualExpandedNodes, searchExpandedNodes, manuallyClosedNodes],
+  );
 
-  const findAllChildrenIds = useCallback((nodeId) => {
-    const childrenIds = [];
-    const findChildren = (searchId) => {
-      const node = traverse(data, (n) => n.id === searchId);
-      if (node?.children) {
-        node.children.forEach(child => {
-          childrenIds.push(child.id);
-          if (child.children) {
-            findChildren(child.id);
-          }
-        });
+  const findNodeById = useCallback(function findNodeById(nodes, id) {
+    for (const node of nodes || []) {
+      if (node.id === id) {
+        return node;
       }
-    };
-    findChildren(nodeId);
-    return childrenIds;
-  }, [data]);
+      if (node.children?.length) {
+        const found = findNodeById(node.children, id);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  }, []);
 
-  const handleToggleNode = useCallback((nodeId) => {
-    setManualExpandedNodes(prev => {
-      const newExpanded = { ...prev };
-      if (prev[nodeId]) {
-        delete newExpanded[nodeId];
-        const childrenIds = findAllChildrenIds(nodeId);
-        childrenIds.forEach(childId => {
-          delete newExpanded[childId];
-        });
-      } else {
-        newExpanded[nodeId] = true;
+  const findAllChildrenIds = useCallback(
+    (nodeId) => {
+      const target = findNodeById(data, nodeId);
+      if (!target?.children?.length) {
+        return [];
       }
-      return newExpanded;
-    });
 
-    setExplicitlyClosedNodes(prev => {
-      const newSet = new Set(prev);
-      if (manualExpandedNodes[nodeId]) {
-        newSet.add(nodeId);
-        findAllChildrenIds(nodeId).forEach(id => newSet.add(id));
-      } else {
-        newSet.delete(nodeId);
+      const stack = [...target.children];
+      const childrenIds = [];
+
+      while (stack.length) {
+        const current = stack.pop();
+        if (!current) continue;
+        childrenIds.push(current.id);
+        if (current.children?.length) {
+          stack.push(...current.children);
+        }
       }
-      return newSet;
-    });
-  }, [findAllChildrenIds, manualExpandedNodes]);
+
+      return childrenIds;
+    },
+    [data, findNodeById],
+  );
+
+  const handleToggleNode = useCallback(
+    (nodeId) => {
+      setManualExpandedNodes((prev) => {
+        const newExpanded = { ...prev };
+        if (prev[nodeId]) {
+          delete newExpanded[nodeId];
+          const childrenIds = findAllChildrenIds(nodeId);
+          childrenIds.forEach((childId) => {
+            delete newExpanded[childId];
+          });
+        } else {
+          newExpanded[nodeId] = true;
+        }
+        return newExpanded;
+      });
+
+      setExplicitlyClosedNodes((prev) => {
+        const newSet = new Set(prev);
+        if (manualExpandedNodes[nodeId]) {
+          newSet.add(nodeId);
+          findAllChildrenIds(nodeId).forEach((id) => newSet.add(id));
+        } else {
+          newSet.delete(nodeId);
+        }
+        return newSet;
+      });
+    },
+    [findAllChildrenIds, manualExpandedNodes],
+  );
 
   const handleToggleAll = useCallback(() => {
     if (Object.keys(manualExpandedNodes).length > 0) {
@@ -78,7 +104,7 @@ const useExpandedNodes = (data) => {
       };
       collectNodeIds(data);
       setManualExpandedNodes(
-        Object.fromEntries([...allNodeIds].map((id) => [id, true]))
+        Object.fromEntries([...allNodeIds].map((id) => [id, true])),
       );
       setManuallyClosedNodes({});
     }

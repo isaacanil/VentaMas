@@ -1,35 +1,20 @@
-import React, { Fragment, useState } from 'react'
-import Style from './ProductControl.module.scss'
-import { useMatch } from 'react-router-dom'
-import { Carrusel } from '../Carrusel/Carrusel'
+import React, { Fragment } from 'react';
+import { useMatch } from 'react-router-dom';
 
+import { Carrusel } from '../Carrusel/Carrusel';
 
-export const ControlSearchProduct = ({ searchData, setSearchData }) => {
+import Style from './ProductControl.module.scss';
 
-  const matchWithInventory = useMatch('/app/inventario/items')
-  const matchWithVenta = useMatch('/app/venta/:id')
+export const ControlSearchProduct = () => {
+  const matchWithInventory = useMatch('/app/inventario/items');
+  const matchWithVenta = useMatch('/app/venta/:id');
 
   return (
     <Fragment>
       <div className={Style.Container}>
-        {
-          matchWithVenta ? <Carrucel/> : null
-        }
-        {
-          matchWithInventory ? (
-            <Fragment>
-              
-              
-             
-            </Fragment>
-          ) : null
-        }
-
+        {matchWithVenta ? <Carrusel /> : null}
+        {matchWithInventory ? <Fragment></Fragment> : null}
       </div>
-
-
     </Fragment>
-
-  )
-}
-
+  );
+};

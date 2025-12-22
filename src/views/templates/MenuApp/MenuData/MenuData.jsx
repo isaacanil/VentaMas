@@ -1,48 +1,44 @@
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import basic from './items/basic'
-import sales from './items/sales'
-import financialManagement from './items/financialManagement'
-import inventory from './items/inventory'
-import admin from './items/admin'
-import contacts from './items/contacts'
-import changelogs from './items/changelogs'
-import utility from './items/utility'
-import accountsReceivable from './items/accountsReceivable'
-import { userAccess } from '../../../../hooks/abilities/useAbilities'
+import { routePreloaders } from '@/router/routes/routePreloaders';
+import { useFilterMenuItemsByAccess } from '@/utils/menuAccess';
 
-export const ChevronRight = <FontAwesomeIcon icon={faChevronRight} />
-export const ChevronLeft = <FontAwesomeIcon icon={faChevronLeft} />
+import admin from './items/admin';
+import basic from './items/basic';
+import changelogs from './items/changelogs';
+import contacts from './items/contacts';
+import developer from './items/developer';
+import financialManagement from './items/financialManagement';
+import insurance from './items/insurance';
+import inventory from './items/inventory';
+import sales from './items/sales';
+import utility from './items/utility';
 
-export const getMenuData = () => {
-    const { abilities } = userAccess()
 
-    const filterSubmenu = (submenu) => submenu.filter(subItem => abilities.can('access', subItem.route));
+const attachPreloaders = (item) => {
+  const preload = item?.route ? routePreloaders[item.route] : undefined;
+  const nextItem = preload ? { ...item, preload } : { ...item };
 
-    const allMenuItems = [
-        ...basic,
-        ...sales,
-        ...inventory,
-        ...accountsReceivable,
-        ...financialManagement,
-        ...utility,
-        ...contacts,
-        ...admin,
-        ...changelogs,
-    ]
+  if (nextItem.submenu && Array.isArray(nextItem.submenu)) {
+    nextItem.submenu = nextItem.submenu.map(attachPreloaders);
+  }
 
-    const accessibleMenuItems = allMenuItems.map(item => {
-        if (item.submenu && item.submenu.length > 0) {
-            const filteredSubmenu = filterSubmenu(item.submenu);
-            if (filteredSubmenu.length > 0) {
-                return { ...item, submenu: filteredSubmenu };
-            } else {
-                return null;
-            }
-        } else {
-            return abilities.can('access', item.route) ? item : null;
-        }
-    }).filter(item => item !== null);
+  return nextItem;
+};
 
-    return accessibleMenuItems
-}
+export const useMenuData = () => {
+  const allMenuItems = [
+    ...basic,
+    ...sales,
+    ...inventory,
+    ...financialManagement,
+    ...insurance,
+    ...contacts,
+    ...utility,
+    ...admin,
+    ...changelogs,
+    ...developer,
+  ];
+
+  const menuItemsWithPreloaders = allMenuItems.map(attachPreloaders);
+
+  return useFilterMenuItemsByAccess(menuItemsWithPreloaders, true);
+};

@@ -1,204 +1,231 @@
-import { collection, query, where, orderBy, getDocs, doc, setDoc, Timestamp, writeBatch, getDoc } from "firebase/firestore";
-import { nanoid } from "nanoid";
+import { doc, writeBatch, getDoc, arrayUnion } from 'firebase/firestore';
+
+import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
+import { fbAddPayment } from '../accountsReceivable/payment/fbAddPayment';
+import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
 import { db } from '../firebaseconfig';
-import { defaultInstallmentPaymentsAR } from "../../schema/accountsReceivable/installmentPaymentsAR";
-import { defaultPaymentsAR } from "../../schema/accountsReceivable/paymentAR";
-import { fbAddAccountReceivablePaymentReceipt } from "../accountsReceivable/fbAddAccountReceivablePaymentReceipt";
-import { fbGetInvoice } from "../invoices/fbGetInvoice";
+import { fbGetInvoice } from '../invoices/fbGetInvoice';
 
-const THRESHOLD = 1e-10;
-const roundToTwoDecimals = (num) => Math.round(num * 100) / 100;
-
-const getSortedClientAccountsAR = async (user, clientId) => {
-    const accountsRef = collection(db, 'businesses', user.businessID, 'accountsReceivable');
-    const q = query(accountsRef, where('clientId', '==', clientId), orderBy('createdAt', 'asc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
-
-const getInstallmentsByArId = async (user, arId) => {
-    const installmentsRef = collection(db, 'businesses', user.businessID, 'accountsReceivableInstallments');
-    const q = query(
-        installmentsRef, 
-        where('arId', '==', arId), 
-        where('isActive', '==', true), 
-        orderBy('installmentDate', 'asc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data());
-};
-
-const createPayment = async (user, paymentDetails) => {
-    const { totalPaid, paymentMethods, comments } = paymentDetails;
-    const paymentId = nanoid();
-    const paymentsRef = doc(db, "businesses", user.businessID, "accountsReceivablePayments", paymentId);
-    const paymentData = {
-        ...defaultPaymentsAR,
-        paymentId,
-        paymentMethods,
-        totalPaid,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-        comments,
-        createdUserId: user?.uid,
-        updatedUserId: user?.uid,
-        isActive: true
-    };
-    await setDoc(paymentsRef, paymentData);
-    return paymentId;
-};
-
-const processInstallment = async (batch, user, installment, remainingAmount, paymentId, clientId, account) => {
-    const amountToApply = Math.min(remainingAmount, installment.installmentBalance);
-    const newInstallmentBalance = roundToTwoDecimals(installment.installmentBalance - amountToApply);
-    const newAccountBalance = roundToTwoDecimals(account.arBalance - amountToApply);
-
-    const installmentRef = doc(db, "businesses", user.businessID, "accountsReceivableInstallments", installment.id);
-    const installmentDoc = await getDoc(installmentRef);
-    if (!installmentDoc.exists()) {
-        console.error(`Installment document ${installment.id} does not exist.`);
-        return null;
-    }
-
-    const installmentPaymentRef = doc(collection(db, "businesses", user.businessID, "accountsReceivableInstallmentPayments"));
-
-    batch.update(installmentRef, {
-        installmentBalance: newInstallmentBalance,
-        isActive: newInstallmentBalance > THRESHOLD
-    });
-
-    batch.set(installmentPaymentRef, {
-        ...defaultInstallmentPaymentsAR,
-        installmentPaymentId: nanoid(),
-        installmentId: installment.id,
-        paymentId,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-        paymentAmount: roundToTwoDecimals(amountToApply),
-        createdBy: user.uid,
-        updatedBy: user.uid,
-        isActive: true,
-        clientId: clientId,
-        arId: account.id,
-    });
-
-    return { amountToApply, newAccountBalance, newInstallmentBalance };
-};
-
-const updateAccount = async (batch, user, account) => {
-    const accountRef = doc(db, "businesses", user.businessID, "accountsReceivable", account.id)
-    const accountDoc = await getDoc(accountRef);
-
-    if (!accountDoc.exists()) {
-        console.error(`Account document ${account.id} does not exist.`);
-        return null;
-    }
-
-    batch.update(accountRef, {
-        arBalance: account.arBalance,
-        lastPaymentDate: Timestamp.now(),
-        isActive: account.arBalance > THRESHOLD,
-        isClosed: account.arBalance <= THRESHOLD
-    });
-};
+import {
+  getSortedClientAccountsAR,
+  getActiveInstallmentsByArId,
+  processInstallmentPayment,
+  updateAccountReceivableState,
+  updateInvoiceTotals,
+  validateBasicPaymentParams,
+  validateAccountHasPendingBalance,
+} from './arPaymentUtils';
+import { roundToTwoDecimals } from './financeUtils';
 
 export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
-    const { clientId, paymentMethods } = paymentDetails;
-    const totalPaid = parseFloat(paymentDetails.totalPaid);
-    if (isNaN(totalPaid)) {
-        throw new Error('Invalid totalPaid amount');
-    }
-    let remainingAmount = totalPaid;
+  const { clientId, paymentMethods } = paymentDetails;
 
-    if (!user || !clientId || totalPaid <= 0 || !paymentMethods) {
-        throw new Error('Invalid input parameters');
-    }
+  // Validar parámetros básicos usando la utilidad
+  const validation = validateBasicPaymentParams({
+    user,
+    clientId,
+    totalPaid: paymentDetails.totalPaid,
+    paymentMethods,
+  });
 
+  if (!validation.isValid) {
+    throw new Error(validation.error);
+  }
+
+  const { totalPaidFloat } = validation;
+  let remainingAmount = totalPaidFloat;
+
+  try {
+    const accounts = await getSortedClientAccountsAR(user, clientId);
+
+    // Crear el pago usando fbAddPayment (igual que en fbPayActiveInstallmentForAccount)
+    const payment = await fbAddPayment(user, paymentDetails);
+
+    let openCashCountId = null;
     try {
-        const accounts = await getSortedClientAccountsAR(user, clientId);
+      const { state, cashCount } = await checkOpenCashReconciliation(user);
 
-        const paymentId = await createPayment(user, paymentDetails);
+      if (state === 'closing') {
+        throw new Error('No se puede procesar el pago: La caja está en proceso de cierre.');
+      }
 
-        const batch = writeBatch(db);
+      if (state === 'closed') {
+        throw new Error('No se puede procesar el pago: No hay un cuadre de caja abierto.');
+      }
 
-        const paymentReceipt = {
-            accounts: [],
-            totalAmount: totalPaid,
-            paymentMethod: paymentMethods,
-            change: 0
-        };
+      if (state === 'open' && cashCount?.id) {
+        openCashCountId = cashCount.id;
+      }
+    } catch (error) {
+      if (error.message.startsWith('No se puede procesar el pago')) {
+        throw error;
+      }
+      console.warn('Error checking open cash count:', error);
+    }
 
-        for (let account of accounts) {
-            if (remainingAmount <= 0) break;
-            console.log(`Processing account ${account.id} - remainingAmount: ${remainingAmount}`);
+    const batch = writeBatch(db);
 
-            const accountInstallments = await getInstallmentsByArId(user, account.id);
-            console.log(`Account ${account.id} has ${accountInstallments.length} installments, accountInstallments: `, accountInstallments);
-            let accountTotalPaid = 0;
-            const paidInstallments = [];
+    if (openCashCountId) {
+      const cashCountRef = doc(
+        db,
+        'businesses',
+        user.businessID,
+        'cashCounts',
+        openCashCountId,
+      );
+      batch.update(cashCountRef, {
+        'cashCount.receivablePayments': arrayUnion({
+          paymentId: payment.id,
+          amount: Number(totalPaidFloat),
+          method: paymentMethods,
+          date: new Date().toISOString(),
+          clientId: clientId || null,
+          arId: null, // Balance payment covers multiple ARs, so arId is null or we could list them
+        }),
+      });
+    }
 
-            for (let installment of accountInstallments) {
-                console.log(`Processing installment ${installment.id} - remainingAmount: ${remainingAmount}`);
-                if (remainingAmount <= 0) break;
+    const paymentReceipt = {
+      accounts: [],
+      totalAmount: totalPaidFloat,
+      paymentMethod: paymentMethods,
+      change: 0,
+    };
 
-                const processedInstallment = await processInstallment(batch, user, installment, remainingAmount, paymentId, clientId, account);
+    for (let account of accounts) {
+      if (remainingAmount <= 0) break;
 
-                if(!processedInstallment) {
-                    console.error(`Error processing installment ${installment.id}`);
-                    continue;
-                }
+      // 🔍 VALIDACIÓN: Verificar que cada cuenta tenga balance pendiente
+      const accountValidation = await validateAccountHasPendingBalance(
+        user,
+        account.id,
+      );
 
-                const { amountToApply, newAccountBalance, newInstallmentBalance } = processedInstallment;
-                console.log(` ---- > remainingAmount: ${isNaN(remainingAmount) ? 'NaN' : remainingAmount} - amountToApply: ${amountToApply} - newAccountBalance: ${newAccountBalance} - newInstallmentBalance: ${newInstallmentBalance}`);
-                remainingAmount = roundToTwoDecimals(remainingAmount - amountToApply);
-                accountTotalPaid = roundToTwoDecimals(accountTotalPaid + amountToApply);
-                account.arBalance = newAccountBalance;
+      if (!accountValidation.isValid) {
+        console.warn(
+          `⚠️ Skipping account ${account.id}: ${accountValidation.error}`,
+        );
+        continue; // Continuar con la siguiente cuenta en lugar de fallar
+      }
 
-                paidInstallments.push({
-                    number: installment.installmentNumber,
-                    id: installment.id,
-                    amount: roundToTwoDecimals(amountToApply),
-                    status: newInstallmentBalance <= THRESHOLD ? 'paid' : 'partial',
-                    remainingBalance: newInstallmentBalance
-                });
-            }
+      console.log(
+        `✅ Account ${account.id} has pending balance: ${accountValidation.balance}`,
+      );
 
-           await updateAccount(batch, user, account);
+      const accountInstallments = await getActiveInstallmentsByArId(
+        user,
+        account.id,
+      );
+      let accountTotalPaid = 0;
+      const paidInstallments = [];
+      const paidInstallmentIds = []; // Para rastrear IDs de cuotas pagadas completamente
 
-            const invoice = await fbGetInvoice(user.businessID, account.invoiceId);
-            // Actualizar la factura con los pagos realizados
-            if (invoice) {
-                const invoiceRef = doc(db, "businesses", user.businessID, "invoices", account.invoiceId);
-                const invoiceData = invoice.data;
-                console.log("invoice data: ", invoiceData)
-                invoiceData.totalPaid = roundToTwoDecimals((invoiceData.totalPaid || 0) + accountTotalPaid);
-                invoiceData.balanceDue = roundToTwoDecimals(invoiceData.totalAmount - invoiceData.totalPaid);
-                invoiceData.status = invoiceData.balanceDue <= THRESHOLD ? true : false;
+      for (let installment of accountInstallments) {
+        if (remainingAmount <= 0) break;
 
-                batch.update(invoiceRef, invoiceData);
-            }
-
-            paymentReceipt.accounts.push({
-                arNumber: account.numberId,
-                arId: account.id,
-                invoiceNumber: invoice?.data?.numberID,
-                invoiceId: invoice?.data?.id,
-                paidInstallments,
-                remainingInstallments: account?.totalInstallments - paidInstallments.length,
-                totalInstallments: account?.totalInstallments,
-                totalPaid: accountTotalPaid,
-                arBalance: account?.arBalance,
-            });
+        // Verificar que la cuota existe
+        const installmentRef = doc(
+          db,
+          'businesses',
+          user.businessID,
+          'accountsReceivableInstallments',
+          installment.id,
+        );
+        const installmentDoc = await getDoc(installmentRef);
+        if (!installmentDoc.exists()) {
+          console.error(
+            `Installment document ${installment.id} does not exist.`,
+          );
+          continue;
         }
 
-        await batch.commit();
+        // Usar la utilidad para procesar el pago de la cuota
+        const result = processInstallmentPayment(batch, {
+          user,
+          installment,
+          remainingAmount,
+          paymentId: payment.id,
+          clientId,
+          arId: account.id,
+        });
 
-        paymentReceipt.change = remainingAmount > 0 ? remainingAmount : 0;
+        remainingAmount = roundToTwoDecimals(
+          remainingAmount - result.amountToApply,
+        );
+        accountTotalPaid = roundToTwoDecimals(
+          accountTotalPaid + result.amountToApply,
+        );
+        account.arBalance = roundToTwoDecimals(
+          account.arBalance - result.amountToApply,
+        );
 
-        return fbAddAccountReceivablePaymentReceipt({ user, clientId, paymentReceipt });
+        // Si la cuota fue pagada completamente, agregar su ID
+        if (result.isPaid) {
+          paidInstallmentIds.push(installment.id);
+        }
 
-    } catch (error) {
-        console.error('Error processing payment:', error);
-        throw error; // O manejar el error de otra manera
+        paidInstallments.push({
+          number: installment.installmentNumber,
+          id: installment.id,
+          amount: roundToTwoDecimals(result.amountToApply),
+          status: result.isPaid ? 'paid' : 'partial',
+          remainingBalance: result.newInstallmentBalance,
+        });
+      }
+
+      // Actualizar la cuenta usando updateAccountReceivableState para incluir paidInstallments
+      updateAccountReceivableState(batch, {
+        businessId: user.businessID,
+        arId: account.id,
+        totalPaid: accountTotalPaid,
+        newArBalance: account.arBalance,
+        paidInstallmentIds,
+        existingPaidInstallments: account.paidInstallments || [],
+      });
+
+      const invoice = await fbGetInvoice(user.businessID, account.invoiceId);
+      // Actualizar la factura con los pagos realizados
+      if (invoice) {
+        updateInvoiceTotals(batch, {
+          businessId: user.businessID,
+          invoiceId: account.invoiceId,
+          amountPaid: accountTotalPaid,
+          invoice,
+          paymentMethods,
+        });
+      }
+
+      const invoiceNumber =
+        invoice?.data?.numberID ||
+        invoice?.numberID ||
+        account?.invoiceNumber ||
+        null;
+
+      paymentReceipt.accounts.push({
+        arNumber: account.numberId,
+        arId: account.id,
+        invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
+        invoiceId: account.invoiceId || invoice?.data?.id || invoice?.id,
+        paidInstallments,
+        remainingInstallments:
+          account?.totalInstallments - paidInstallments.length,
+        totalInstallments: account?.totalInstallments,
+        totalPaid: accountTotalPaid,
+        arBalance: account?.arBalance,
+      });
     }
+
+    await batch.commit();
+
+    paymentReceipt.change = remainingAmount > 0 ? remainingAmount : 0;
+
+    return fbAddAccountReceivablePaymentReceipt({
+      user,
+      clientId,
+      paymentReceipt,
+    });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    throw error;
+  }
 };

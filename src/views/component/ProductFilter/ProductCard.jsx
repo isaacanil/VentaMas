@@ -1,35 +1,27 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
-import { useMatch } from 'react-router-dom'
-import styled from 'styled-components'
-import { SelectProduct } from '../../../features/addOrder/addOrderSlice'
+import React from 'react';
+import styled from 'styled-components';
 
 export const ProductCard = ({ data, fn, close }) => {
-
   const handleProductSelected = async () => {
     try {
-
       fn(data);
       close();
-    } catch (error) {
-      console.log(error)
+    } catch {
+      // Handle error appropriately
     }
-  }
+  };
   return (
     <Container onClick={handleProductSelected}>
-      <span>
-        {data.name}
-      </span>
+      <span>{data.name}</span>
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-    min-height: 2.4em;
-    height: min-content;
-    display: flex;
-    align-items: center;
-    padding: 0 0.6em;
-    background-color: var(--White);
-    border-radius: var(--border-radius-light);
-    
-`
+  display: flex;
+  align-items: center;
+  height: min-content;
+  min-height: 2.4em;
+  padding: 0 0.6em;
+  background-color: var(--white);
+  border-radius: var(--border-radius-light);
+`;

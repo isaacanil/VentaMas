@@ -1,227 +1,269 @@
-import { motion } from "framer-motion"
-import { useSelector } from "react-redux"
-import styled from "styled-components"
-import { selectUser } from "../../../../features/auth/userSlice"
-import { MenuLink } from "./MenuLink"
-import { UserSection } from "../UserSection"
-import { WebName } from "../../system/WebName/WebName"
-import { getMenuData } from "../MenuData/MenuData"
-import { Button } from "../../system/Button/Button"
-import { icons } from "../../../../constants/icons/icons"
-import ROUTES_PATH from "../../../../routes/routesName"
-import { useNavigate } from "react-router-dom"
-import { SelectSettingCart } from "../../../../features/cart/cartSlice"
+import { motion } from 'framer-motion';
+import React, { useMemo, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-const sidebarVariant = {
-    open: {
-        x: 0,
-        transition: {
-            type: 'spring',
-            stiffness: 450,
-            damping: 50,
-            restDelta: 2
-        }
+import { icons } from '../../../../constants/icons/icons';
+import { selectBusinessData } from '../../../../features/auth/businessSlice';
+import { selectUser } from '../../../../features/auth/userSlice';
+import { SelectSettingCart } from '../../../../features/cart/cartSlice';
+import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice';
+import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
+import ROUTES_PATH from '@/router/routes/routesName';
+import { useHasDeveloperAccess } from '../../../../utils/menuAccess';
+import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu';
+import { OpenMenuButton } from '../../system/Button/OpenMenuButton';
+import { WebName } from '../../system/WebName/WebName';
+import { useMenuData } from '../MenuData/MenuData';
+import { UserSection } from '../UserSection';
+
+import { MenuLink } from './MenuLink';
+
+const SIDEBAR_VARIANTS = {
+  open: {
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 450,
+      damping: 50,
+      restDelta: 2,
     },
-    closed: {
-        x: '-100%',
-        transition: {
-            type: 'spring',
-            stiffness: 450,
-            damping: 50,
-            restDelta: 2
-        }
-    }
+  },
+  closed: {
+    x: '-100%',
+    transition: {
+      type: 'spring',
+      stiffness: 450,
+      damping: 50,
+      restDelta: 2,
+    },
+  },
 };
 
-export const SideBar = ({ isOpen }) => {
-    const user = useSelector(selectUser);
-    const { billing: { billingMode } } = useSelector(SelectSettingCart)
-    const links = getMenuData();
-    const { SETTINGS } = ROUTES_PATH.SETTING_TERM;
-    const navigate = useNavigate();
+const useMenuFiltering = () => {
+  const settings = useSelector(SelectSettingCart);
+  const {
+    billing: { billingMode, authorizationFlowEnabled },
+  } = settings;
+  const business = useSelector(selectBusinessData);
+  const businessType = business?.businessType || null;
+  const links = useMenuData();
+  const canSeeDeveloperGroup = useHasDeveloperAccess();
 
-    // Filtrar los enlaces basados en 'key' y 'condition'
+  return useMemo(() => {
     const filteredLinks = links.reduce((acc, item) => {
-        // Verificar si el elemento principal tiene una 'key' y una 'condition' y evaluarla
-        let includeItem = true;
-        if (item.key && item.condition) {
-            includeItem = item.condition({ billingMode });
+      let includeItem = true;
+      if (item.key && item.condition) {
+        includeItem = item.condition({
+          billingMode,
+          businessType,
+          authorizationFlowEnabled,
+        });
+      }
+
+      if (!includeItem) return acc;
+
+      const newItem = { ...item };
+
+      if (item.submenu) {
+        const filteredSubmenu = item.submenu.filter((subItem) => {
+          if (subItem.key && subItem.condition) {
+            return subItem.condition({ billingMode, authorizationFlowEnabled });
+          }
+          return true;
+        });
+
+        if (filteredSubmenu.length > 0) {
+          newItem.submenu = filteredSubmenu;
+        } else {
+          delete newItem.submenu;
         }
+      }
 
-        // Si el elemento no cumple la condición, lo omitimos
-        if (!includeItem) {
-            return acc;
-        }
-
-        // Crear una copia del elemento para evitar mutaciones
-        const newItem = { ...item };
-
-        // Si el elemento tiene un 'submenu', aplicamos el filtrado al 'submenu'
-        if (item.submenu) {
-            const filteredSubmenu = item.submenu.filter(subItem => {
-                // Verificar si el subelemento tiene una 'key' y una 'condition' y evaluarla
-                if (subItem.key && subItem.condition) {
-                    return subItem.condition({ billingMode });
-                }
-                return true; // Incluir subelementos sin 'key' o sin 'condition'
-            });
-
-            // Si después del filtrado hay elementos en el 'submenu', lo asignamos
-            if (filteredSubmenu.length > 0) {
-                newItem.submenu = filteredSubmenu;
-            } else {
-                // Si no hay elementos en el 'submenu', eliminamos la propiedad 'submenu'
-                delete newItem.submenu;
-            }
-        }
-
-        // Añadir el elemento filtrado al acumulador
-        acc.push(newItem);
-        return acc;
+      acc.push(newItem);
+      return acc;
     }, []);
 
-    // Agrupar los enlaces filtrados por 'group'
-    const groupedLinks = filteredLinks.reduce((acc, item) => {
-        if (!acc[item.group]) {
-            acc[item.group] = [];
-        }
-        acc[item.group].push(item);
-        return acc;
+    const grouped = filteredLinks.reduce((acc, item) => {
+      if (!acc[item.group]) {
+        acc[item.group] = [];
+      }
+      acc[item.group].push(item);
+      return acc;
     }, {});
-
-    const handleGoToSetting = () => {
-        navigate(SETTINGS)
+    // Remove developer group if user lacks developer access
+    if (!canSeeDeveloperGroup && grouped.developer) {
+      delete grouped.developer;
     }
+    return grouped;
+  }, [
+    links,
+    billingMode,
+    businessType,
+    authorizationFlowEnabled,
+    canSeeDeveloperGroup,
+  ]);
+};
 
-    return (
-        <Container
-            variants={sidebarVariant}
-            initial='closed'
-            animate={isOpen ? 'open' : 'closed'}
-        >
-            <Wrapper>
-                <Head>
-                    <div>
-                        <EmptyBox />
-                        <WebName></WebName>
-                    </div>
-                    <Button
-                        startIcon={icons.operationModes.setting}
-                        color='info'
-                        size='icon32'
-                        borderRadius='normal'
-                        onClick={handleGoToSetting}
-                    />
-                </Head>
-                <UserSection user={user}></UserSection>
-                <Body>
-                    <Links>
-                        {Object.keys(groupedLinks).map(group => (
-                            <Group key={group}>
-                                {/* <GroupTitle>{group}</GroupTitle> */}
-                                <MenuLinkList>
-                                    {groupedLinks[group].map((item, index) => (
-                                        <MenuLink item={item} key={index}></MenuLink>
-                                    ))}
-                                </MenuLinkList>
-                            </Group>
-                        ))}
-                    </Links>
-                </Body>
-            </Wrapper>
-        </Container>
-    )
-}
+export const SideBar = ({ isOpen, handleOpenMenu }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector(selectUser);
+  const groupedLinks = useMenuFiltering();
+  const { abilities } = useUserAccess();
+  const canAccessGeneralConfig =
+    abilities.can('manage', 'Business') ||
+    abilities.can('manage', 'business-settings');
+
+  const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM;
+
+  const handleGoToSetting = useCallback(() => {
+    if (!canAccessGeneralConfig) return;
+    navigate(GENERAL_CONFIG_BUSINESS);
+  }, [canAccessGeneralConfig, navigate, GENERAL_CONFIG_BUSINESS]);
+
+  const handleOpenNotifications = useCallback(() => {
+    dispatch(openNotificationCenter('taxReceipt'));
+    handleOpenMenu();
+  }, [dispatch, handleOpenMenu]);
+
+  return (
+    <Container
+      variants={SIDEBAR_VARIANTS}
+      initial="closed"
+      animate={isOpen ? 'open' : 'closed'}
+    >
+      <Wrapper>
+        <Header>
+          <HeaderContent>
+            <CloseButtonContainer>
+              <OpenMenuButton isOpen={isOpen} onClick={handleOpenMenu} />
+            </CloseButtonContainer>
+            <LogoContainer />
+            <WebName />
+          </HeaderContent>
+          <ActionButtons>
+            <ButtonIconMenu
+              icon={icons.system.notification}
+              onClick={handleOpenNotifications}
+              aria-label="Open notifications"
+            />
+            {canAccessGeneralConfig && (
+              <ButtonIconMenu
+                icon={icons.operationModes.setting}
+                onClick={handleGoToSetting}
+                aria-label="Open settings"
+              />
+            )}
+          </ActionButtons>
+        </Header>
+        <UserSection user={user} />
+        <NavigationBody>
+          <NavigationLinks>
+            {Object.entries(groupedLinks).map(([group, items]) => (
+              <MenuGroup key={group}>
+                <MenuContainer>
+                  {items.map((item, index) => (
+                    <MenuLink item={item} key={`${group}-${index}`} />
+                  ))}
+                </MenuContainer>
+              </MenuGroup>
+            ))}
+          </NavigationLinks>
+        </NavigationBody>
+      </Wrapper>
+    </Container>
+  );
+};
 
 const Container = styled(motion.div)`
-    position: fixed;
-    z-index: 9999;
-    top: 0;
-    left: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9900;
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  overflow: hidden;
+  background-color: white;
+  border-right: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 0 10px 10px 0;
+  box-shadow:
+    5px 0 15px rgb(0 0 0 / 10%),
+    10px 0 25px rgb(0 0 0 / 5%);
+`;
 
-    /*Box */
-    max-width: 400px;
-    width: 100%;
-    height: 100vh;
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
 
-    border-radius: 10px;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
-
-    overflow: hidden;
-    transform: translateX(-100%); 
-    transition: transform 400ms ease;
-    background-color: ${props => props.theme.bg.shade};  
-    border-right: 1px solid rgb(0, 0, 0, 0.1);
-    box-shadow: 5px 0 5px rgba(0, 0, 0, 0.1), 10px 0 5px rgba(0, 0, 0, 0.05);
-`
 const Wrapper = styled.div`
-    /*Box */
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: grid;
-    grid-template-rows: min-content min-content 1fr;
-    @media (max-width: 600px) {
-            max-width: 500px;
-            resize: none;
-    }
-   
-`
-const Body = styled.div`
-    /* position: relative; */
-    background-color: ${props => props.theme.bg.color2}; 
-    padding: 0.8em;
-    overflow-y: auto;
-`
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 
-const Links = styled.ul`
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    padding: 0;
-    gap: 0.6em;
+  @media (width <= 600px) {
+    max-width: 500px;
+  }
+`;
+const NavigationBody = styled.div`
+  padding: 0.6em 0.9em;
+  overflow: hidden auto;
+  background-color: ${(props) => props.theme.bg.color2};
+`;
 
-    `
-export const Group = styled.div`
-    overflow: hidden;
-`
-export const MenuLinkList = styled.div`
-    background-color: ${props => props.theme.bg.shade};
-    border-radius: var(--border-radius);
-    padding: 0.2em;
-    border: 1px solid rgb(0, 0, 0, 0.1);
-    overflow: hidden;
-  
-`
-const Head = styled.div`
-   height: 2.75em;
-    width: 100%;
-    padding: 1em 0.4em 1em 1em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: ${props => props.theme.bg.color}; 
-    position: sticky;
-    top: 0;
+const NavigationLinks = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 0.4rem;
+  padding: 0;
+`;
+const MenuGroup = styled.div`
+  overflow: hidden;
+`;
 
-    div{
-        display: flex;
-        align-items: center;
-    }
-     
-`
-const EmptyBox = styled.div`
+const MenuContainer = styled.div`
+  padding: 0.25rem;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.bg.shade};
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius, 8px);
+`;
+const Header = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.75em;
+  padding: 1rem;
+  background-color: ${(props) => props.theme.bg.color};
+
+  @media (width <= 768px) {
     height: 2.75em;
-    width:3em;
-    background-color: ${props => props.theme.bg.color}; 
-    `
+  }
+`;
 
-const GroupTitle = styled.h4`
-    font-size: 1.1em;
-    padding: 0.4em 0.8em;
-    margin: 0;
-    background-color: ${props => props.theme.bg.color}; 
-    color: ${props => props.theme.text.color};
-    border-bottom: 1px solid rgb(0, 0, 0, 0.1);
-    `
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const CloseButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LogoContainer = styled.div`
+  width: 2.4rem;
+  height: 2em;
+`;

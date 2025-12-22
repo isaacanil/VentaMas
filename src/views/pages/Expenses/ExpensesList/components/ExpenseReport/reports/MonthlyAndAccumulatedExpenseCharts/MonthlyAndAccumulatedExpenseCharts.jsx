@@ -1,22 +1,30 @@
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { accumulateMonthlyData } from './utils/accumulateMonthlyData';
-import TotalAccumulatedChart from './charts/TotalAccumulatedChart';
-import MonthlyExpenseChart from './charts/MonthlyExpenseChart';
+
 import Typography from '../../../../../../../templates/system/Typografy/Typografy';
+
 import { options } from './chartOptions';
+import MonthlyExpenseChart from './charts/MonthlyExpenseChart';
+import TotalAccumulatedChart from './charts/TotalAccumulatedChart';
+import { accumulateMonthlyData } from './utils/accumulateMonthlyData';
 
 export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const { monthlyData, totalAccumulated } = useMemo(() => accumulateMonthlyData(expenses), [expenses]);
+    const normalizedExpenses = useMemo(
+        () => Array.isArray(expenses) ? expenses : [],
+        [expenses]
+    );
+    const { monthlyData, totalAccumulated } = useMemo(
+        () => accumulateMonthlyData(normalizedExpenses),
+        [normalizedExpenses],
+    );
     const labels = useMemo(() => Object.keys(monthlyData), [monthlyData]);
 
+    const hasData = normalizedExpenses.length > 0 && labels.length > 0;
+
     // Calcular el valor máximo
-    const maxMonthly = Math.max(...Object.values(monthlyData));
-    const maxScaleValue = Math.max(totalAccumulated, maxMonthly);
+    const maxMonthly =
+        labels.length > 0 ? Math.max(...Object.values(monthlyData)) : 0;
+    const maxScaleValue = Math.max(totalAccumulated ?? 0, maxMonthly);
 
     const customOptions = useMemo(() => ({
         ...options,
@@ -28,6 +36,10 @@ export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
             },
         },
     }), [maxScaleValue]);
+
+    if (!hasData) {
+        return null;  // or some fallback UI
+    }
 
     return (
         <Container>
@@ -41,8 +53,8 @@ export const MonthlyAndAccumulatedExpenseCharts = ({ expenses }) => {
 };
 
 const Container = styled.div`
-    height: 400px;
     display: grid;
+    height: 400px;
 `;
 const Group = styled.div`
   display: grid;

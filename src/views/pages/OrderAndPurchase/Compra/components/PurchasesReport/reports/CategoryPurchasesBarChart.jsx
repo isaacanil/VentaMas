@@ -1,9 +1,12 @@
-import { Bar } from 'react-chartjs-2';
-import React, { useMemo, useRef } from 'react';
 import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import React, { useMemo, useRef } from 'react';
+import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -31,7 +34,7 @@ const options = {
                 label: function (context) {
                     let label = context.dataset.label || '';
                     if (label) {
-                        label += " " + useFormatPrice(context.parsed.y);
+                        label += " " + formatPrice(context.parsed.y);
                     }
                     return label;
                 }
@@ -52,11 +55,12 @@ const accumulatePurchaseDataByCategory = (purchases) => {
 };
 
 export const CategoryPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+    const normalizedPurchases = useMemo(() => Array.isArray(purchases) ? purchases : [], [purchases]);
 
-    const purchasesByCategory = useMemo(() => accumulatePurchaseDataByCategory(purchases), [purchases]);
+    const purchasesByCategory = useMemo(
+        () => accumulatePurchaseDataByCategory(normalizedPurchases),
+        [normalizedPurchases],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(purchasesByCategory);
         const dataTotals = labels.map(label => purchasesByCategory[label].total);
@@ -77,6 +81,10 @@ export const CategoryPurchasesBarChart = ({ purchases }) => {
 
     const chartRef = useRef(null);
 
+    if (!normalizedPurchases.length) {
+        return null;
+    }
+
     return (
         <Container>
             <Typography variant='h3'>Compras Totales por Categoría</Typography>
@@ -86,7 +94,7 @@ export const CategoryPurchasesBarChart = ({ purchases }) => {
 }
 
 const Container = styled.div`
-    height: 200px;
     display: grid;
     gap: 1em;
+    height: 200px;
 `;

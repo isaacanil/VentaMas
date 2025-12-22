@@ -1,35 +1,34 @@
-import React, { useEffect, useState } from 'react'
-import { fbGetPendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
-import styled from 'styled-components';
-import { useFormatPrice } from '../../../../../../hooks/useFormatPrice';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
 import { selectUser } from '../../../../../../features/auth/userSlice';
+import { usePendingBalance } from '../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
 import { Subtitle } from '../../../Style';
 
-export const GeneralBalance = ({data}) => {
-    const user = useSelector(selectUser);
-    const businessID = user?.businessID
-    const clientId = data?.client?.id
-    const [pendingBalance, setPendingBalance] = useState(0)
-    useEffect(() => {
-        const fetchPendingBalance = async () => {
-            if (!businessID || !clientId) return
-            await fbGetPendingBalance(businessID, clientId, setPendingBalance)
-        }
-        fetchPendingBalance()
-    }, [businessID, clientId])
+
+export const GeneralBalance = ({ data }) => {
+  const user = useSelector(selectUser);
+  const businessID = user?.businessID;
+  const clientId = data?.client?.id;
+  const [pendingBalance, setPendingBalance] = useState(0);
+
+  usePendingBalance(businessID, clientId, setPendingBalance);
+
   return (
     <Container>
-       <Subtitle>Balance General</Subtitle>
-       <Subtitle>{useFormatPrice(pendingBalance)}</Subtitle>
+      <Subtitle>Balance General</Subtitle>
+      <Subtitle>{formatPrice(pendingBalance)}</Subtitle>
     </Container>
-  )
-}
+  );
+};
 
 const Container = styled.div`
-    width: min-content;
-    display: grid;
-    width: 100%;
-   justify-items: right;
-    white-space: nowrap;
-`
+  display: grid;
+  justify-items: right;
+  width: min-content;
+  width: 100%;
+  white-space: nowrap;
+`;

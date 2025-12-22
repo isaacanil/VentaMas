@@ -1,51 +1,53 @@
-import React from 'react'
-
-import noImg from '../../../../../../../assets/producto/noImg.png'
-
-import useImageFallback from '../../../../../../../hooks/image/useImageFallback';
+import React from 'react';
 import styled from 'styled-components';
-import { useCheckForInternetConnection } from '../../../../../../../hooks/useCheckForInternetConnection';
-export const ImgCell = ({img}) => {
-    const isConnected = useCheckForInternetConnection();
-    const [imageFallback] = useImageFallback(img, noImg)
-    return (
-        <ImgContainer>
-            <Img
-                src={(isConnected && imageFallback) || noImg}
-                noFound={img ? false : true}
-                alt=""
-                style={img === imageFallback ? { objectFit: "cover" } : { objectFit: 'contain' }}
 
-            />
-        </ImgContainer>
-    )
-}
+import noImg from '../../../../../../../assets/producto/noimg.png';
+import useImageFallback from '../../../../../../../hooks/image/useImageFallback';
+import { useCheckForInternetConnection } from '../../../../../../../hooks/useCheckForInternetConnection';
+
+export const ImgCell = ({ img }) => {
+  const isConnected = useCheckForInternetConnection();
+  const [imageFallback] = useImageFallback(img, noImg);
+  return (
+    <ImgContainer>
+      <Img
+        src={(isConnected && imageFallback) || noImg}
+        noFound={img ? false : true}
+        alt=""
+        style={
+          img === imageFallback
+            ? { objectFit: 'cover' }
+            : { objectFit: 'contain' }
+        }
+      />
+    </ImgContainer>
+  );
+};
 
 const ImgContainer = styled.div`
-    max-height: 3em;
-    height: 3em;
-    min-width: 2.75em;
-    max-width: 2.75em;
-    width: 2.75em;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    border-radius: var(--border-radius-light);
-    background-color: white;
-    
-`
+  position: relative;
+  display: flex;
+  width: 2.75em;
+  min-width: 2.75em;
+  max-width: 2.75em;
+  height: 3em;
+  max-height: 3em;
+  overflow: hidden;
+  background-color: white;
+  border-radius: var(--border-radius-light);
+`;
 const Img = styled.img`
+  height: 100%;
   object-fit: cover;
   object-position: center;
   width: 100%;
-  height: 100%;
-  ${props => {
-        switch (props.noFound) {
-            case true:
-                return `
+  ${(props) => {
+    switch (props.noFound) {
+      case true:
+        return `
         object-fit: contain;`;
-            default:
-                return ``;
-        }
-    }}
+      default:
+        return ``;
+    }
+  }}
 `;

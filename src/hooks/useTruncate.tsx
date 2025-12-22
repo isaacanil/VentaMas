@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, RefObject } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
+
 
 interface UseTruncateResult {
   isTruncated: boolean;
@@ -10,7 +11,7 @@ interface UseTruncateResult {
 const useTruncate = (
   text: string | null | undefined,
   containerRef: RefObject<HTMLElement>,
-  useTooltip: boolean = true
+  useTooltip = true,
 ): UseTruncateResult => {
   const [isTruncated, setIsTruncated] = useState(false);
   const [truncatedText, setTruncatedText] = useState<string>(text || '');
@@ -18,8 +19,10 @@ const useTruncate = (
 
   useEffect(() => {
     if (!text) {
-      setIsTruncated(false);
-      setTruncatedText('');
+      requestAnimationFrame(() => {
+        setIsTruncated(false);
+        setTruncatedText('');
+      });
       return;
     }
 
@@ -27,64 +30,72 @@ const useTruncate = (
     const element = textRef.current;
     if (!containerElement || !element) return;
 
-    const calculateTruncate = () => {
-      const style = window.getComputedStyle(containerElement);
-      const containerWidth = containerElement.clientWidth;
-      const containerHeight = containerElement.clientHeight;
-      const lineHeight = parseInt(style.lineHeight) || parseInt(style.fontSize);
-      
-      // Crear un elemento temporal para medir el texto
-      const tempSpan = document.createElement('span');
-      tempSpan.style.visibility = 'hidden';
-      tempSpan.style.position = 'absolute';
-      tempSpan.style.whiteSpace = 'nowrap';
-      tempSpan.style.font = style.font;
-      document.body.appendChild(tempSpan);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return;
+    }
 
-      // Función para medir si el texto cabe
-      const measureText = (testText: string) => {
-        tempSpan.textContent = testText;
-        const fits = tempSpan.offsetWidth <= containerWidth;
-        return fits;
-      };
+    let frameId: number | null = null;
 
-      // Si el texto original cabe completamente
-      if (measureText(text)) {
-        setIsTruncated(false);
-        setTruncatedText(text);
-        document.body.removeChild(tempSpan);
-        return;
+    const scheduleMeasurement = () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
       }
 
-      // Búsqueda binaria para encontrar el número correcto de caracteres
-      let left = 0;
-      let right = text.length;
-      let bestFit = '';
+      frameId = requestAnimationFrame(() => {
+        const style = window.getComputedStyle(containerElement);
+        const containerWidth = containerElement.clientWidth;
+        const fontShorthand =
+          style.font ||
+          `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        context.font = fontShorthand.trim();
 
-      while (left <= right) {
-        const mid = Math.floor((left + right) / 2);
-        const testText = text.slice(0, mid) + '...';
-        
-        if (measureText(testText)) {
-          bestFit = testText;
-          left = mid + 1;
-        } else {
-          right = mid - 1;
+        const textFits = context.measureText(text).width <= containerWidth;
+
+        if (textFits) {
+          setIsTruncated(false);
+          setTruncatedText(text);
+          return;
         }
-      }
 
-      document.body.removeChild(tempSpan);
-      setIsTruncated(true);
-      setTruncatedText(bestFit);
+        let left = 0;
+        let right = text.length;
+        let bestFit = '';
+
+        while (left <= right) {
+          const mid = Math.floor((left + right) / 2);
+          const candidate = `${text.slice(0, mid)}...`;
+          const candidateWidth = context.measureText(candidate).width;
+
+          if (candidateWidth <= containerWidth) {
+            bestFit = candidate;
+            left = mid + 1;
+          } else {
+            right = mid - 1;
+          }
+        }
+
+        setIsTruncated(true);
+        setTruncatedText(bestFit);
+      });
     };
 
-    calculateTruncate();
+    scheduleMeasurement();
+    void document.fonts?.ready
+      ?.then(() => scheduleMeasurement())
+      .catch(() => {
+        /* swallow */
+      });
 
-    const resizeObserver = new ResizeObserver(calculateTruncate);
+    const resizeObserver = new ResizeObserver(scheduleMeasurement);
     resizeObserver.observe(containerElement);
 
     return () => {
       resizeObserver.disconnect();
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
     };
   }, [text, containerRef, useTooltip]);
 

@@ -1,52 +1,98 @@
-import React from 'react'
-import styled from 'styled-components'
-import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4'
-import { icons } from '../../../../../constants/icons/icons'
-import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue'
-export const UserView = ({user, user2, label='Entregado por', label2='', title}, ) => {
+import { Input, Form } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
+import { icons } from '../../../../../constants/icons/icons';
+import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
+
+export const UserView = ({
+  user,
+  user2,
+  label = 'Entregado por',
+  label2 = '',
+  title,
+}) => {
   return (
     <Container>
       {title && <FormattedValue value={title} size={'small'} type={'title'} />}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <Group>
-            <InputV4 disabled label={label} value={user?.name} />
-            <Icon>
-                {icons.user.userCheck}
-            </Icon>
+          <FormItemStyled
+            label={label}
+            colon={false}
+            labelCol={{ span: 24 }}
+            wrapperCol={{ span: 24 }}
+          >
+            <Input readOnly value={user?.name} />
+          </FormItemStyled>
+          <Icon>{icons.user.userCheck}</Icon>
         </Group>
-{
-    user2 && (
-        <Group>
-            <InputV4 disabled label={label2} value={user2?.name} />
-            <Icon>
-                {icons.user.userCheck}
-            </Icon>
-        </Group>
-    )
-}
+        {user2 && (
+          <Group>
+            <FormItemStyled
+              label={label2}
+              colon={false}
+              labelCol={{ span: 24 }}
+              wrapperCol={{ span: 24 }}
+            >
+              <Input readOnly value={user2?.name} />
+            </FormItemStyled>
+            <Icon>{icons.user.userCheck}</Icon>
+          </Group>
+        )}
+      </div>
     </Container>
-  )
-}
- const Container = styled.div`
-    padding: 0.4em;
-    background-color: white;
-    border-radius: var(--border-radius);
-    border: var(--border-primary);
-    display: grid;
-    gap: 0.4em;
+  );
+};
 
- `
- 
- const Group = styled.div`
-    display: grid;
-    grid-template-columns: 1fr min-content;
-    gap: 0.4em;
- `
- const Icon = styled.div`
-    width: 2em;
-    height: 2em;
-    align-self: end;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+const Container = styled.div`
+  display: grid;
+  gap: 0.4em;
+  padding: 0.4em;
+  background-color: white;
+  border: var(--border-primary);
+  border-radius: var(--border-radius);
+`;
 
- `
+const Group = styled.div`
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  gap: 0.4em;
+`;
+
+const FormItemStyled = styled(Form.Item)`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+
+  .ant-form-item-label {
+    display: block;
+    padding: 0;
+    margin-bottom: 4px;
+    text-align: left;
+  }
+
+  .ant-form-item-label > label {
+    height: auto;
+  }
+
+  .ant-form-item-control {
+    width: 100%;
+  }
+`;
+
+const Icon = styled.div`
+  display: flex;
+  align-items: center;
+  align-self: end;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+`;

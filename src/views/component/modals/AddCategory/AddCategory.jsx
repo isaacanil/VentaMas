@@ -1,183 +1,92 @@
-import { nanoid } from 'nanoid';
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { addNotification } from '../../../../features/notification/NotificationSlice';
-import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
-import { motion } from 'framer-motion';
-import { useCategoryState } from '../../../../Context/CategoryContext/CategoryContext';
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import Typography from '../../../templates/system/Typografy/Typografy';
-import { Button } from '../../../templates/system/Button/Button';
+import { Modal, Typography, Input, Form, notification } from 'antd';
+import { useEffect } from 'react';
 
-const OverlayVariants = {
-  open: {
-    opacity: 1,
-    pointerEvents: 'all',
-  },
-  closed: {
-    opacity: 0,
-    pointerEvents: 'none',
-  }
-}
+import { useCategoryState } from '../../../../Context/CategoryContext';
 
-const ContainerVariants = {
-  open: { scale: 1 },
-  closed: { scale: 0 }
-}
+const { Title } = Typography;
 
 const AddCategoryModal = () => {
-  const { category, setCategory, categoryState, onSubmit, onClose } = useCategoryState();
+  const { category, categoryState, onSubmit, onClose } = useCategoryState();
   const { type, isOpen } = categoryState;
-
-  const inputRef = useRef(null);
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      form.setFieldsValue({ name: category.name });
     }
-  }, []);
+  }, [isOpen, category.name, form]);
 
-  const dispatch = useDispatch();
+  const handleOk = async () => {
+    try {
+      const { name } = await form.validateFields();
+      if (!name) {
+        notification.error({
+          message: 'El nombre de la categoría no puede estar vacío',
+        });
+        return;
+      }
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (category.name === '') {
-      dispatch(addNotification({
-        message: 'El nombre de la categoría no puede estar vacío',
-        type: 'error',
-      }))
-      return
+      const newCat = {
+        ...category,
+        name,
+      };
+
+      onSubmit(newCat);
+
+      notification.success({
+        message:
+          type === 'create'
+            ? 'Categoría creada con éxito'
+            : 'Categoría actualizada con éxito',
+      });
+      form.resetFields();
+      onClose();
+    } catch (err) {
+      console.error('Error al validar el formulario:', err);
     }
-    onSubmit();
-    dispatch(addNotification({
-      message: type === 'create' ? 'Categoría creada con éxito' : 'Categoría actualizada con éxito',
-      type: 'success',
-    })
-    )
   };
 
-  useClickOutSide(inputRef, isOpen, onClose);
-
-  if(!isOpen) return
+  const handleCancel = () => {
+    form.resetFields();
+    onClose();
+  };
 
   return (
-    <ModalOverlay
-      variants={OverlayVariants}
-      initial="closed"
-      animate={isOpen ? "open" : "closed"}
-      exit="closed"
-      transition={{ duration: 0.3 }}
-      isOpen={isOpen}
-    >
-      <ModalContainer
-        ref={inputRef}
-        variants={ContainerVariants}
-        initial="closed"
-        animate={isOpen ? "open" : "closed"}
-        exit="closed"
-      >
-        <Typography variant='h3'>
+    <Modal
+      open={isOpen}
+      title={
+        <Title level={4}>
           {type === 'create' ? 'Crear Categoría' : 'Actualizar Categoría'}
-        </Typography>
-        <Form onSubmit={handleSubmit}>
-          <InputV4
-            name='name'
-            placeholder='Nombre de la Categoría'
-            onChange={(e) => setCategory({ ...category, name: e.target.value })}
-            size='medium'
-            ref={inputRef}
-            value={category.name}
-            autoFocus={true}
-          />
-          <ButtonGroup>
-            <Button
-              type="button"
-              title="Cancelar"
-              color="gray-contained"
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
-            <Button
-              color="primary"
-              type="submit"
-              title={type === 'create' ? 'Crear' : 'Actualizar'}
-            />
-          </ButtonGroup>
-        </Form>
-      </ModalContainer>
-    </ModalOverlay>
+        </Title>
+      }
+      onOk={handleOk}
+      onCancel={handleCancel}
+      okText={type === 'create' ? 'Crear' : 'Actualizar'}
+      cancelText="Cancelar"
+      width={400}
+      destroyOnHidden
+      zIndex={2000}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ name: category.name }}
+      >
+        <Form.Item
+          name="name"
+          label="Nombre de la Categoría"
+          rules={[
+            {
+              required: true,
+              message: 'Por favor ingresa el nombre de la categoría',
+            },
+          ]}
+        >
+          <Input placeholder="Nombre de la Categoría" autoFocus />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 };
 
 export default AddCategoryModal;
-
-const ModalOverlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(2px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000000;
-  /* opacity: ${(props) => (props.isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; */
-
-`;
-
-const ModalContainer = styled(motion.div)`
-  width: 400px;
-  background-color: white;
-  padding: 1em;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  h2{
-    margin-top: 0;
-    padding: 0;
-    margin: 0;
-    margin-bottom: 1em;
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-`;
-
-
-
-const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5em;
-`;
-
-
-
-// if (categoryToUpdate) {
-//   fbUpdateCategory(category, user)
-//     .then(() => { onClose(); })
-//     .then(() => {
-//       dispatch(addNotification({
-//         message: 'Categoría actualizada con éxito',
-//         type: 'success',
-//       }))
-//       return
-//     })
-// } else {
-//   fbAddCategory(category, user)
-//     .then(() => { onClose(); })
-//     .then(() => {
-//       dispatch(addNotification({
-//         message: 'Categoría creada con éxito',
-//         type: 'success',
-//       }))
-//     });
-// }

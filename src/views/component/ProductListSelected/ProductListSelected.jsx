@@ -1,20 +1,23 @@
-import React from 'react'
-import styled from 'styled-components'
-import { useFormatPrice } from '../../../hooks/useFormatPrice'
-import { Table, Input, Button }from 'antd';
-import { icons } from '../../../constants/icons/icons'
+import { Table, Input, Button } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
+import { icons } from '../../../constants/icons/icons';
 
 export const ProductListSelected = ({
-  productsSelected,
+  productsSelected = [],
   handleDeleteProduct,
   handleUpdateProduct,
 }) => {
+  const rows = Array.isArray(productsSelected) ? productsSelected : [];
+
   const columns = [
     {
       title: 'Producto',
       dataIndex: 'productName',
       key: 'productName',
-      
       width: 250,
     },
     {
@@ -24,10 +27,10 @@ export const ProductListSelected = ({
       width: 150,
       render: (text, record) => (
         <Input
-        type='number'
+          type="number"
           value={text}
-          onChange={e =>
-            handleUpdateProduct({
+          onChange={(e) =>
+            handleUpdateProduct?.({
               value: { newStock: Number(e.target.value) },
               productID: record.id,
             })
@@ -38,14 +41,14 @@ export const ProductListSelected = ({
     {
       title: 'Costo Inicial',
       dataIndex: 'initialCost',
-      width: 150,
       key: 'initialCost',
+      width: 150,
       render: (text, record) => (
         <Input
-            type='number'
+          type="number"
           value={text}
-          onChange={e =>
-            handleUpdateProduct({
+          onChange={(e) =>
+            handleUpdateProduct?.({
               value: { initialCost: Number(e.target.value) },
               productID: record.id,
             })
@@ -56,7 +59,10 @@ export const ProductListSelected = ({
     {
       title: 'Total',
       key: 'total',
-      render: (_, record) => useFormatPrice(record.initialCost * record.newStock),
+      render: (_, record) =>
+        formatPrice(
+          (Number(record?.initialCost) || 0) * (Number(record?.newStock) || 0),
+        ),
     },
     {
       title: 'Acciones',
@@ -64,61 +70,48 @@ export const ProductListSelected = ({
       width: 120,
       align: 'right',
       render: (_, record) => (
-        <Button     
+        <Button
           icon={icons.operationModes.delete}
-          onClick={() => handleDeleteProduct(record)}
+          onClick={() => handleDeleteProduct?.(record)}
         />
       ),
     },
   ];
 
+  const total = rows.reduce(
+    (acc, item) =>
+      acc +
+      (Number(item?.initialCost) || 0) * (Number(item?.newStock) || 0),
+    0,
+  );
+
   return (
     <Container>
       <h4>Lista de productos</h4>
-      <Table 
-      dataSource={productsSelected} 
-      bordered
-    
-      columns={columns} 
-      size='small'
-      pagination={{ pageSize: 5 }} 
-      footer={
-        () => (
-          <span>Total: {useFormatPrice(productsSelected.reduce((acc, item) => acc + item.initialCost * item.newStock, 0))}</span>
-        )
-      }
+      <Table
+        dataSource={rows}
+        bordered
+        columns={columns}
+        rowKey={(record) => record?.id ?? record?.key ?? record?.productID}
+        size="small"
+        pagination={{ pageSize: 5 }}
+        footer={() => <span>Total: {formatPrice(total)}</span>}
       />
     </Container>
   );
 };
+
 const Container = styled.div`
-   display: grid;
-    
-`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  display: grid;
+  gap: 8px;
+`;
 
 // export const ProductListSelected = ({ productsSelected, productsTotalPrice, handleDeleteProduct, handleUpdateProduct }) => {
 //     return (
 //         <Container>
 //             <Head>
 //                 <h4>Lista de productos</h4>
-//                 <span>Total: {useFormatPrice(productsTotalPrice)}</span>
+//                 <span>Total: {formatPrice(productsTotalPrice)}</span>
 //             </Head>
 //             <Body>
 //                 {
@@ -138,11 +131,11 @@ const Container = styled.div`
 // }
 // const Container = styled.div`
 //     border: var(--border-primary);
-//     background-color: var(--White1);
+//     background-color: var(--white-1);
 //     border-radius: 6px;
 //     height: 100%;
 //     position: relative;
-    
+
 //     display: grid;
 //     grid-template-rows: min-content 1fr;
 //     overflow: hidden;
@@ -150,7 +143,7 @@ const Container = styled.div`
 
 // `
 // const Head = styled.div`
-//     background-color: var(--White1);
+//     background-color: var(--white-1);
 //     color: #303030;
 //     height: 2em;
 //     display: grid;
@@ -170,6 +163,6 @@ const Container = styled.div`
 // `
 // const Body = styled.div`
 //    padding: 0em;
-    
+
 //     overflow-y: scroll;
 // `

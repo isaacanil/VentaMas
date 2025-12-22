@@ -1,34 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { MenuApp } from '../../..'
-import { ExpensesTable } from './components/ExpenseTable/ExpensesTable'
-import { useFbGetExpenses } from '../../../../firebase/expenses/Items/useFbGetExpenses'
-import { useDispatch } from 'react-redux'
-import { setExpenseList } from '../../../../features/expense/expensesListSlice'
-import { getDateRange } from '../../../../utils/date/getDateRange'
+import styled from 'styled-components';
+
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm';
+
+import { ExpensesTable } from './components/ExpenseTable/ExpensesTable';
 
 export const ExpensesList = () => {
-  // const [datesSelected, setDatesSelected] = useState(getDateRange('thisMonth'));
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
-  const { expenses } = useFbGetExpenses(dateRange);
-
   return (
     <Container>
-      <MenuApp
-        sectionName={'Gastos'}
-        searchData={searchTerm}
-        setSearchData={setSearchTerm}
-      />
-      <ExpensesTable
-        searchTerm={searchTerm}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        expenses={expenses}
-      />
+      <MenuApp sectionName={'Gastos'} />
+      <ExpensesTable />
+      <ExpensesForm />
     </Container>
-  )
-}
+  );
+};
+
 const Container = styled.div`
-    
-`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;

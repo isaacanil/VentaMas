@@ -37,7 +37,7 @@ const productExpirySelectorSlice = createSlice({
       return {
         ...state,
         ...action.payload,
-      }
+      };
     },
     updateInventory: (state, action) => {
       state.inventory = action.payload;
@@ -45,31 +45,40 @@ const productExpirySelectorSlice = createSlice({
     setModalOpen: (state, action) => {
       state.isOpen = action.payload;
     },
-    clearProductExpirySelector: (state) => {
+    clearProductExpirySelector: (_state) => {
       return initialState;
-    }
+    },
   },
 });
 
 // Export actions and reducer
-export const { setFilter, setOrderBy, updateInventory, openProductExpirySelector, setProductExpiryState, clearProductExpirySelector, setModalOpen } = productExpirySelectorSlice.actions;
+export const {
+  setFilter,
+  setOrderBy,
+  updateInventory,
+  openProductExpirySelector,
+  setProductExpiryState,
+  clearProductExpirySelector,
+  setModalOpen,
+} = productExpirySelectorSlice.actions;
 export default productExpirySelectorSlice.reducer;
 
-const selectInventory = state => state.productExpirySelector.inventory;
-const selectFilter = state => state.productExpirySelector.filter;
-const selectOrderBy = state => state.productExpirySelector.orderBy;
-const selectOrderAscending = state => state.productExpirySelector.orderAscending;
-export const selectProduct = state => state.productExpirySelector.product;
-export const selectProductId = state => state.productExpirySelector.productId;
-export const selectModalOpen = state => state.productExpirySelector.isOpen;
+const selectInventory = (state) => state.productExpirySelector.inventory;
+const selectFilter = (state) => state.productExpirySelector.filter;
+const selectOrderBy = (state) => state.productExpirySelector.orderBy;
+const selectOrderAscending = (state) =>
+  state.productExpirySelector.orderAscending;
+export const selectProduct = (state) => state.productExpirySelector.product;
+export const selectProductId = (state) => state.productExpirySelector.productId;
+export const selectModalOpen = (state) => state.productExpirySelector.isOpen;
 
 export const selectFilteredInventory = createSelector(
   [selectInventory, selectFilter, selectOrderBy, selectOrderAscending],
   (inventory, filter, orderBy, orderAscending) => {
-    const filteredInventory = inventory.filter(item =>
-      Object.values(item).some(value =>
-        value?.toString().toLowerCase().includes(filter.toLowerCase())
-      )
+    const filteredInventory = inventory.filter((item) =>
+      Object.values(item).some((value) =>
+        value?.toString().toLowerCase().includes(filter.toLowerCase()),
+      ),
     );
 
     if (!orderBy) return filteredInventory;
@@ -79,5 +88,5 @@ export const selectFilteredInventory = createSelector(
       if (a[orderBy] > b[orderBy]) return orderAscending ? 1 : -1;
       return 0;
     });
-  }
+  },
 );

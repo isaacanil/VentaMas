@@ -1,59 +1,70 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux'
-import { ProductItem } from './ProductCard/ProductItem'
-import { ProductCardRow } from './ProductCard/ProductCardRow'
-import { Carrusel } from '../../../../../../component/Carrusel/Carrusel'
-import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue'
-import { CenteredText } from '../../../../../../templates/system/CentredText'
-import { icons } from '../../../../../../../constants/icons/icons'
-import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice'
-import { ChangeProductData, selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice'
-import { OPERATION_MODES } from '../../../../../../../constants/modes'
-import { handleDeleteProductAlert } from '../../../../../../../features/Alert/AlertSlice'
-import { ButtonGroup } from '../../../../../../templates/system/Button/Button'
-import StockIndicator from '../../../../../../templates/system/labels/StockIndicator'
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice'
-import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell'
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable'
-import { useDialog } from '../../../../../../../Context/Dialog/DialogContext'
-import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct'
-import { selectUser } from '../../../../../../../features/auth/userSlice'
-import { getTax, getTotalPrice } from '../../../../../../../utils/pricing'
-import * as antd from 'antd'
-//quiero el iconos d elos tres punto verticales
+import {
+  EditOutlined,
+  DeleteOutlined,
+  MoreOutlined,
+  PrinterOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown } from 'antd';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import { EditOutlined, DeleteOutlined, MoreOutlined, PrinterOutlined } from '@ant-design/icons';
-import { store } from '../../../../../../../app/store'
-import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice'
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice'
-import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar'
-import { useFormatNumber } from '../../../../../../../hooks/useFormatNumber'
-const { Button, Dropdown, Menu } = antd;
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
+import { store } from '../../../../../../../app/store';
+import { icons } from '../../../../../../../constants/icons/icons';
+import { OPERATION_MODES } from '../../../../../../../constants/modes';
+import { useDialog } from '../../../../../../../Context/Dialog';
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
+import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice';
+import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
+import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct';
+import { filterData } from '../../../../../../../hooks/search/useSearch';
+import { getTax, getTotalPrice } from '../../../../../../../utils/pricing';
+import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar';
+import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
+import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
+import StockIndicator from '../../../../../../templates/system/labels/StockIndicator';
+
 
 export const ProductsTable = ({ products, searchTerm }) => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
   const { setDialogConfirm } = useDialog();
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [totalsDismissed, setTotalsDismissed] = useState(false);
 
-  const handleDeleteProduct = useCallback((id) => {
-    let docId = id?.product?.id ? id?.product?.id : id?.id
-    setDialogConfirm({
-      title: 'Eliminar producto',
-      isOpen: true,
-      type: 'error',
-      message: '¿Está seguro que desea eliminar este producto?',
-      onConfirm: async () => {
-        const currentUser = selectUser(store.getState());
-        await fbDeleteProduct(currentUser, docId);
-      }
-    })
-  }, [user])
+  const handleDeleteProduct = useCallback(
+    (value) => {
+      const docId = value?.product?.id ?? value?.id;
+      if (!docId) return;
+      setDialogConfirm({
+        title: 'Eliminar producto',
+        isOpen: true,
+        type: 'error',
+        message: '¿Está seguro que desea eliminar este producto?',
+        onConfirm: async () => {
+          const currentUser = selectUser(store.getState());
+          await fbDeleteProduct(currentUser, docId);
+        },
+      });
+    },
+    [setDialogConfirm],
+  );
 
   const handleUpdateProduct = (product) => {
     dispatch(openModalUpdateProd());
-    dispatch(ChangeProductData({ product: product, status: OPERATION_MODES.UPDATE.label }));
+    dispatch(
+      ChangeProductData({
+        product: product,
+        status: OPERATION_MODES.UPDATE.label,
+      }),
+    );
   };
 
   const columns = [
@@ -70,7 +81,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
           <ImgCell img={value.img} />
           <span>{value.name}</span>
         </ProductName>
-      )
+      ),
     },
     {
       Header: 'Stock',
@@ -80,7 +91,12 @@ export const ProductsTable = ({ products, searchTerm }) => {
       sortableValue: (value) => value.stock,
       minWidth: '80px',
       maxWidth: '140px',
-      cell: ({ value }) => <StockIndicator stock={useFormatNumber(value.stock)} trackInventory={value.trackInventory}></StockIndicator>
+      cell: ({ value }) => (
+        <StockIndicator
+          stock={formatNumber(value.stock)}
+          trackInventory={value.trackInventory}
+        ></StockIndicator>
+      ),
     },
     {
       Header: 'Costo',
@@ -89,7 +105,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       accessor: 'cost',
       minWidth: '120px',
       maxWidth: '0.4fr',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => <div>{formatPrice(value)}</div>,
     },
     {
       Header: 'Impuesto',
@@ -98,7 +114,7 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '120px',
       maxWidth: '0.4fr',
       accessor: 'tax',
-      cell: ({ value }) => <div>{useFormatPrice(value)}</div>
+      cell: ({ value }) => <div>{formatPrice(value)}</div>,
     },
     {
       Header: 'Precio',
@@ -108,16 +124,18 @@ export const ProductsTable = ({ products, searchTerm }) => {
       maxWidth: '0.4fr',
       align: 'right',
       cell: ({ value }) => {
-        const price = getTotalPrice(value, taxReceiptEnabled)
-        const unit = value?.weightDetail?.weightUnit
-        const isSoldByWeight = value?.weightDetail?.isSoldByWeight
+        const price = getTotalPrice(value, taxReceiptEnabled);
+        const unit = value?.weightDetail?.weightUnit;
+        const isSoldByWeight = value?.weightDetail?.isSoldByWeight;
         if (isSoldByWeight) {
           return (
-            <div>{useFormatPrice(price)} / {unit}</div>
-          )
+            <div>
+              {formatPrice(price)} / {unit}
+            </div>
+          );
         }
-        return useFormatPrice(price)
-      }
+        return formatPrice(price);
+      },
     },
     {
       Header: 'Facturable',
@@ -125,7 +143,9 @@ export const ProductsTable = ({ products, searchTerm }) => {
       minWidth: '100px',
       maxWidth: '100px',
       align: 'center',
-      cell: ({ value }) => <div>{value === false && icons.operationModes.hide}</div>
+      cell: ({ value }) => (
+        <div>{value === false && icons.operationModes.hide}</div>
+      ),
     },
     {
       Header: 'Acción',
@@ -139,26 +159,26 @@ export const ProductsTable = ({ products, searchTerm }) => {
         const menu = {
           items: [
             {
-              label: "Editar",
+              label: 'Editar',
               key: 1,
               icon: <EditOutlined />,
-              onClick: () => handleUpdateProduct(value)
+              onClick: () => handleUpdateProduct(value),
             },
             {
-              label: "Imprimir Barcode",
+              label: 'Imprimir Barcode',
               key: 2,
               icon: <PrinterOutlined />,
-              onClick: () => dispatch(toggleBarcodeModal(value))
+              onClick: () => dispatch(toggleBarcodeModal(value)),
             },
             {
-              label: "Eliminar",
+              label: 'Eliminar',
               key: 3,
               icon: <DeleteOutlined />,
               danger: true,
-              onClick: () => handleDeleteProduct(value)
-            }
-          ]
-        }
+              onClick: () => handleDeleteProduct(value),
+            },
+          ],
+        };
 
         return (
           <ButtonGroup>
@@ -166,9 +186,9 @@ export const ProductsTable = ({ products, searchTerm }) => {
               <Button icon={<MoreOutlined />} />
             </Dropdown>
           </ButtonGroup>
-        )
-      }
-    }
+        );
+      },
+    },
   ];
 
   const data = products.map((product) => ({
@@ -185,145 +205,118 @@ export const ProductsTable = ({ products, searchTerm }) => {
     category: product.category,
   }));
 
+  // Totales (filtrados por el término de búsqueda actual)
+  const filteredProducts = useMemo(
+    () => filterData(products, searchTerm),
+    [products, searchTerm],
+  );
+  const totals = useMemo(() => {
+    let stock = 0;
+    let cost = 0;
+    let listPrice = 0;
+    for (const p of filteredProducts) {
+      const qty = Number(p?.stock) || 0;
+      const unitCost = Number(p?.pricing?.cost) || 0;
+      // Preferir listPrice; si no hay, usar price como aproximación
+      const unitListPrice =
+        typeof p?.pricing?.listPrice === 'number' && p.pricing.listPrice;
+      stock += qty;
+      cost += qty * unitCost;
+      listPrice += qty * unitListPrice;
+    }
+    return { stock, cost, listPrice };
+  }, [filteredProducts]);
+
+  // Recibe métricas de scroll del cuerpo de la tabla para ocultar la píldora al llegar abajo
+  const handleScrollMetrics = useCallback(({ isAtBottom }) => {
+    setIsAtBottom(!!isAtBottom);
+  }, []);
+
   return (
-
-        <AdvancedTable
-          data={data}
-          columns={columns}
-          searchTerm={searchTerm}
-          headerComponent={ <ProductCategoryBar  />}
-          tableName={'inventory_items_table'}
-          elementName={'productos'}
-          onRowClick={(row) => handleUpdateProduct(row.action)}
-          groupBy={'category'}
-        />
-
-  )
-}
+    <>
+      <AdvancedTable
+        data={data}
+        columns={columns}
+        searchTerm={searchTerm}
+        headerComponent={<ProductCategoryBar />}
+        tableName={'inventory_items_table'}
+        elementName={'productos'}
+        onRowClick={(row) => handleUpdateProduct(row.action)}
+        groupBy={'category'}
+        onScrollMetrics={handleScrollMetrics}
+      />
+      <FloatingTotals $hidden={isAtBottom || totalsDismissed}>
+        <TotalsContainer>
+          <span>Stock: {formatNumber(totals.stock)}</span>
+          <Divider>|</Divider>
+          <span>Costo: {formatPrice(totals.cost)}</span>
+          <Divider>|</Divider>
+          <span>Precio lista: {formatPrice(totals.listPrice)}</span>
+          <CloseButton
+            type="text"
+            size="small"
+            aria-label="Ocultar totales"
+            onClick={() => setTotalsDismissed(true)}
+            icon={<CloseOutlined />}
+          />
+        </TotalsContainer>
+      </FloatingTotals>
+    </>
+  );
+};
 const ProductName = styled.div`
   display: flex;
-  align-items: center;
-  height: 100%;                     
   gap: 1.2em;
-`
-
-
-const ProductCountDisplay = styled.div`
-  position: absolute;
-  left: 10px;
-
-`
-
-const Table = styled.div`
-  position: relative;
-  margin: 0 auto;
- 
-  background-color: white;
-  overflow-y: auto;
-  
-  height: 100%;
-  width: 100%;
-  display: grid;
-  grid-template-rows: min-content min-content 1fr min-content; /* nuevo estilo */
-`;
-const Categories = styled.div`
-position: sticky;
-top: 0;
-z-index: 2;
-
-`
-const TableBody = styled.div`
-  display: grid;
-  align-items: flex-start;
-  align-content: flex-start;
-  height: 100%;
-  gap: 0.4em;
-  width: 100%;
-  color: rgb(70, 70, 70);
-`;
-
-const Row = styled.div`
-  display: grid;
   align-items: center;
-  height: 3em;
-  width: 100%;
-  gap: 1vw;
-  grid-template-columns: 
-  minmax(80px, 0.1fr) //Image
-  minmax(200px, 1fr) //Name
-  minmax(70px, 0.4fr) //cost
-  minmax(70px, 0.4fr) //stock
-  minmax(70px, 0.5fr) //precio
-  minmax(70px, 0.5fr) //precio
-  minmax(100px, 0.1fr); //acción
-  @media (max-width: 800px){
-    gap: 0;
+  height: 100%;
+`;
+
+// Totales en el pie de tabla
+const TotalsContainer = styled.div`
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  font-weight: 600;
+  white-space: nowrap;
+`;
+
+const Divider = styled.span`
+  color: var(--gray6);
+`;
+
+// Píldora flotante con totales
+const FloatingTotals = styled.div`
+  position: fixed;
+  right: 16px;
+  bottom: 50px;
+  z-index: 1000;
+  padding: 8px 12px;
+  pointer-events: ${(p) => (p.$hidden ? 'none' : 'auto')};
+  background: rgb(255 255 255 / 92%);
+  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+  opacity: ${(p) => (p.$hidden ? 0 : 1)};
+  backdrop-filter: blur(6px);
+  transform: translateY(${(p) => (p.$hidden ? '8px' : '0')});
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  @media (width <= 600px) {
+    right: 8px;
+    bottom: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
- 
-  ${(props) => {
-    switch (props.type) {
-      case 'header':
-        return `    
-          background-color: var(--White);
-          border-top: var(--border-primary);
-          border-bottom: var(--border-primary);
-          
-          position: sticky;
-          top: 2.60em;
-          z-index: 1;
-        `
-      default:
-        break;
-    }
-  }}
-`
+`;
 
-const Col = styled.div`
-  padding: 0 0.6em;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  ${props => {
-    switch (props.position) {
-      case 'right':
-        return `
-          justify-content: right;
-        `;
+// Botón de cerrar con estilo mínimo (reutiliza antd Button)
+const CloseButton = styled(Button)`
+  margin-left: 8px;
+  color: var(--gray6);
 
-      default:
-        break;
-    }
-  }}
-  ${(props) => {
-    switch (props.size) {
-      case 'limit':
-        return `
-          width: 100%;
-          
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;  
-          //white-space: nowrap;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          `
-
-      default:
-        break;
-    }
-  }}
-`
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
- border-top: var(--border-primary);
-  height: 3em;
-  position: sticky;
-  background-color: white;
-  bottom: 0;
-  z-index: 1;
-`
+  &.ant-btn:hover {
+    color: var(--gray3);
+  }
+`;

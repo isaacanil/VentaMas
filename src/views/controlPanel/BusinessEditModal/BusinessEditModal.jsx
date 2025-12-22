@@ -1,71 +1,121 @@
-import React, { useState } from 'react';
-import * as antd from 'antd';
-const { Modal, Menu, Form, Input, Button } = antd;
-import { MailOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { faUser, faStore, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, Typography, Divider, Card, Space } from 'antd';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 
-export const BusinessEditModal = ({ isOpen }) => {
-  const [currentSection, setCurrentSection] = useState('products');
+import { toggleSignUpUser } from '../../../features/modals/modalSlice';
 
-  const renderContent = () => {
-    switch (currentSection) {
-      case 'products':
-        return <ProductsForm />;
-      case 'categories':
-        return <CategoriesForm />;
-      default:
-        return null;
-    }
+export const BusinessEditModal = ({ isOpen, onClose, business }) => {
+  const dispatch = useDispatch();
+
+  const handleOpenSignUpModal = (e) => {
+    // Evitar propagación del evento
+    e.stopPropagation();
+    dispatch(
+      toggleSignUpUser({
+        isOpen: true,
+        businessID: business?.id,
+      }),
+    );
   };
+  // Asegurarse de que el modal capture el evento de cierre
+  const handleCancel = (e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    onClose();
+  };
+
+  const { Title, Text, Paragraph } = Typography;
 
   return (
     <Modal
-      title="Editar Negocio"
-      open={isOpen}
-      // onCancel={onClose}
-      width={800}
-      footer={null}
-    >
-      <div style={{ display: 'flex', height: '100%' }}>
-        <Menu
-          style={{ width: 256 }}
-          selectedKeys={[currentSection]}
-          mode="inline"
-          onClick={({ key }) => setCurrentSection(key)}
-        >
-          <Menu.Item key="products" icon={<AppstoreOutlined />}>
-            Productos
-          </Menu.Item>
-          <Menu.Item key="categories" icon={<MailOutlined />}>
-            Categorías
-          </Menu.Item>
-          {/* Puedes agregar más secciones aquí */}
-        </Menu>
-        <div style={{ flex: 1, padding: '0 24px' }}>
-          {renderContent()}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FontAwesomeIcon
+            icon={faStore}
+            style={{ color: '#1890ff', fontSize: '20px' }}
+          />
+          <span>Editar Negocio: {business?.name}</span>
         </div>
+      }
+      open={isOpen}
+      onCancel={handleCancel}
+      maskClosable={true}
+      keyboard={true}
+      width={600}
+      footer={[
+        <Button key="close" onClick={handleCancel}>
+          Cerrar
+        </Button>,
+      ]}
+    >
+      {/* Sección de información del negocio */}
+      <div style={{ marginBottom: '20px' }}>
+        <Title level={4}>Información del Negocio</Title>
+        <Paragraph>
+          Aquí podrás gestionar la información y configuraciones de este
+          negocio.
+        </Paragraph>
+
+        <div
+          style={{
+            background: '#f5f5f5',
+            padding: '12px',
+            borderRadius: '6px',
+            marginBottom: '16px',
+          }}
+        >
+          <Text strong>ID:</Text> <Text>{business?.id}</Text>
+          <br />
+          <Text strong>Dirección:</Text>{' '}
+          <Text>{business?.address || 'No especificada'}</Text>
+          <br />
+          <Text strong>Teléfono:</Text>{' '}
+          <Text>{business?.tel || 'No especificado'}</Text>
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* Sección de Usuarios */}
+      <div>
+        {' '}
+        <Title
+          level={4}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <FontAwesomeIcon icon={faUser} /> Gestión de Usuarios
+        </Title>
+        <Paragraph>
+          Administra los usuarios que tienen acceso a este negocio. Puedes
+          agregar nuevos usuarios asignándoles diferentes roles y permisos.
+        </Paragraph>
+        <Card
+          style={{
+            marginTop: '16px',
+            backgroundColor: '#f0f7ff',
+            borderColor: '#d6e8fd',
+          }}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Text>
+              Agrega un nuevo usuario a este negocio para darle acceso al
+              sistema.
+            </Text>{' '}
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={faUserPlus} />}
+              size="large"
+              block
+              onClick={handleOpenSignUpModal}
+            >
+              Agregar Usuario
+            </Button>
+          </Space>
+        </Card>
       </div>
     </Modal>
   );
 };
-
-const ProductsForm = () => (
-  <Form layout="vertical">
-    <Form.Item label="Nombre del Producto">
-      <Input placeholder="Introduce el nombre del producto" />
-    </Form.Item>
-    {/* Más campos según sea necesario */}
-    <Button type="primary">Guardar Cambios</Button>
-  </Form>
-);
-
-const CategoriesForm = () => (
-  <Form layout="vertical">
-    <Form.Item label="Nombre de la Categoría">
-      <Input placeholder="Introduce el nombre de la categoría" />
-    </Form.Item>
-    {/* Más campos según sea necesario */}
-    <Button type="primary">Guardar Cambios</Button>
-  </Form>
-);
-
-

@@ -1,8 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
-import styled from 'styled-components'
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import {
+  autoUpdate,
+  flip,
+  offset as floatingOffset,
+  shift,
+  useFloating,
+} from '@floating-ui/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+
 import { icons } from '../../../../constants/icons/icons';
-import { usePopper } from 'react-popper';
+import { useClickOutSide } from '../../../../hooks/useClickOutSide';
 import { InputV4 } from '../Inputs/GeneralInput/InputV4';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {
@@ -10,7 +17,7 @@ const getValueByKeyOrPath = (obj, keyOrPath) => {
     return keyOrPath.split('.').reduce((o, key) => o && o[key], obj);
   }
   return obj[keyOrPath];
-}
+};
 
 export const Select = ({
   title,
@@ -26,22 +33,28 @@ export const Select = ({
   const [isOpen, setIsOpen] = useState(false);
   const SelectRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [referenceElement, setReferenceElement] = useState(null);
-  const [popperElement, setPopperElement] = useState(null);
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [{ name: 'arrow' }],
+  const { refs, floatingStyles } = useFloating({
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
+  const setReference = useCallback((node) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
 
-  const handleSelect = select => {
+  const handleSelect = (select) => {
     setIsOpen(false);
     onChange({ target: { value: select } });
   };
 
   const filteredItems = Array.isArray(data)
     ? data.filter((item) => {
-      const value = getValueByKeyOrPath(item, displayKey);
-      return value && (typeof value === 'string' || typeof value === 'number') && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
-    })
+        const value = getValueByKeyOrPath(item, displayKey);
+        return (
+          value &&
+          (typeof value === 'string' || typeof value === 'number') &&
+          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      })
     : [];
 
   const handleReset = () => {
@@ -49,41 +62,35 @@ export const Select = ({
     setIsOpen(false);
     onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
     onNoneOptionSelected && onNoneOptionSelected();
-  }
+  };
 
   useEffect(() => {
     if (!value) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary for synchronizing internal state (searchTerm, isOpen) with the 'value' prop
       setSearchTerm(''); // Si quieres reiniciar el término de búsqueda también
       setIsOpen(false);
-      onChange({ target: { value: null } }); // Aquí puedes enviar un valor nulo para indicar que se ha reseteado
     }
-  }, [])
+  }, [value]);
 
-  useClickOutSide(SelectRef, isOpen, () => { setIsOpen(false) })
+  useClickOutSide(SelectRef, isOpen, () => {
+    setIsOpen(false);
+  });
 
   return (
     <Container ref={SelectRef}>
       <OtherContainer>
-        {
-          (value || labelVariant === 'label2' || labelVariant === 'label1') && (
-            <Label
-              labelVariant={labelVariant}
-            >
-              {title}:
-            </Label>
-          )
-        }
-        {
-          props.required && <Asterisk style={{ color: 'red', }}>{icons.forms.asterisk}</Asterisk>
-        }
+        {(value || labelVariant === 'label2' || labelVariant === 'label1') && (
+          <Label labelVariant={labelVariant}>{title}:</Label>
+        )}
+        {props.required && (
+          <Asterisk style={{ color: 'red' }}>{icons.forms.asterisk}</Asterisk>
+        )}
       </OtherContainer>
-      <Head ref={setReferenceElement}>
+      <Head ref={setReference}>
         {isLoading === true ? (
           <Group>
             <h3>{'cargando ...'}</h3>
-            <Icon>
-              {icons.arrows.chevronDown}
-            </Icon>
+            <Icon>{icons.arrows.chevronDown}</Icon>
           </Group>
         ) : (
           <Group onClick={() => setIsOpen(!isOpen)}>
@@ -95,11 +102,7 @@ export const Select = ({
         )}
       </Head>
       {isOpen ? (
-        <Body
-          ref={setPopperElement}
-          style={styles.popper}
-          {...attributes.popper}
-        >
+        <Body ref={setFloating} style={floatingStyles}>
           {data?.length > 0 ? (
             <List>
               <SearchSection>
@@ -113,7 +116,9 @@ export const Select = ({
                 />
               </SearchSection>
               <Item
-                style={!value ? { backgroundColor: 'blue', color: 'white' } : null}
+                style={
+                  !value ? { backgroundColor: 'blue', color: 'white' } : null
+                }
                 onClick={() => handleReset()}
               >
                 Ninguno
@@ -121,7 +126,11 @@ export const Select = ({
               {filteredItems.map((item, index) => (
                 <Item
                   key={index}
-                  style={value === getValueByKeyOrPath(item, displayKey) ? { backgroundColor: 'blue', color: 'white' } : null}
+                  style={
+                    value === getValueByKeyOrPath(item, displayKey)
+                      ? { backgroundColor: 'blue', color: 'white' }
+                      : null
+                  }
                   onClick={() => handleSelect(item)}
                 >
                   {getValueByKeyOrPath(item, displayKey)}
@@ -131,9 +140,6 @@ export const Select = ({
           ) : (
             filteredItems.length === 0 && (
               <NoneItemMessageContainer>
-                {
-                  console.log('no hay resultados')
-                }
                 No hay {title}.
               </NoneItemMessageContainer>
             )
@@ -144,132 +150,132 @@ export const Select = ({
   );
 };
 const Asterisk = styled.span`
+
+  padding-left: 8px;
   color: red;
-  svg{
+
+  svg {
     font-size: 0.8em;
   }
-  padding-left: 8px;
-
-`
+`;
 const OtherContainer = styled.div`
-    display: flex;
-    `
+  display: flex;
+`;
 const Container = styled.div`
-    position: relative;
-    max-width: 300px;
-    height: min-content;
-    width: 100%;
-`
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  height: min-content;
+`;
 
 const Head = styled.div`
-    width: 100%;
-    display: flex;
-    align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.100);
-    border-radius: var(--border-radius-light);
-    background-color: var(--White);
-    overflow: hidden;
-    padding: 0 0 0 0.2em;
-    transition-duration: 20s;
-    transition-timing-function: ease-in-out;
-    transition-property: all; 
-`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 0 0 0.2em;
+  overflow: hidden;
+  background-color: var(--white);
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--border-radius-light);
+  transition-timing-function: ease-in-out;
+  transition-duration: 20s;
+  transition-property: all;
+`;
 const Body = styled.div`
-    min-width: 300px;
-    width: 100%;
-    max-height: 300px;
-    height: 300px;
-    position: absolute;
-    z-index: 999999999999;
-    background-color: #ffffff;
-    overflow: hidden;
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.200);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.200);
-   
-`
+  position: absolute;
+  z-index: 999999999999;
+  width: 100%;
+  min-width: 300px;
+  height: 300px;
+  max-height: 300px;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid rgb(0 0 0 / 20%);
+  border-radius: 6px;
+  box-shadow: 0 0 20px rgb(0 0 0 / 20%);
+`;
 const List = styled.ul`
-    z-index: 1;
-    display: block;
-    padding: 0;
-    height: 100%;
-    overflow-y: auto;
-`
+  z-index: 1;
+  display: block;
+  height: 100%;
+  padding: 0;
+  overflow-y: auto;
+`;
 const Group = styled.div`
-    height: 2.2em;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap:10px;
-    transition: 1s display ease-in-out;
-    padding-right: 0.5em;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.2em;
+  padding-right: 0.5em;
+  transition: 1s display ease-in-out;
 
-    h3{
-        margin: 0 0 0 10px;
-        font-weight: 500;
-        font-size: 1em;
-        color: rgb(66, 66, 66);
-        width: 100%;
-        line-height: 1pc;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;  
-        //white-space: nowrap;
-        text-transform: uppercase;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-`
+  h3 {
+    display: -webkit-box;
+    width: 100%;
+    margin: 0 0 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    font-size: 1em;
+    font-weight: 500;
+    line-height: 1pc;
+    color: rgb(66 66 66);
+    text-transform: uppercase;
+
+    /* white-space: nowrap; */
+    -webkit-box-orient: vertical;
+  }
+`;
 
 const Item = styled.p`
-        list-style: none;
-        padding: 0 1em;
-        display: flex;
-        align-items: center;
-        height: 2.4em;
-    &:hover{
-        background-color: var(--color);
-        color: white;
-    }
+  list-style: none;
+  padding: 0 1em;
+  display: flex;
+  align-items: center;
+  height: 2.4em;
 
-    ${(props) => {
+  &:hover {
+    color: white;
+    background-color: var(--color);
+  }
+
+  ${(props) => {
     if (props.selected) {
       return `
                 background-color: #4081d6;
                 color: white;
-            `
+            `;
     }
   }}
-
-    
-`
+`;
 const Icon = styled.div`
- height: 1em;
- width: 0.8em;
- display: flex;
- align-items: center;
-`
+  display: flex;
+  align-items: center;
+  width: 0.8em;
+  height: 1em;
+`;
 const SearchSection = styled.div`
-    position: sticky;
-    top: 0;
-    padding: 0.2em;
-    background-color: var(--White2);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.100);
-`
+  position: sticky;
+  top: 0;
+  padding: 0.2em;
+  background-color: var(--white-2);
+  border-bottom: 1px solid rgb(0 0 0 / 10%);
+`;
 const NoneItemMessageContainer = styled.div`
-    padding: 1em;
-`
+  padding: 1em;
+`;
 const Label = styled.label`
   font-size: 13px;
- color: var(--Gray5);
+  color: var(--gray-5);
   margin-bottom: 4px;
-  ${props => {
+  ${(props) => {
     switch (props.labelVariant) {
       case 'primary':
         return `
         font-size: 11px;
-        color: var(--Gray5);
+        color: var(--gray-5);
         position: absolute;
         z-index: 1;
         background-color: white;
@@ -282,20 +288,20 @@ const Label = styled.label`
           ::after {
             content: ' :';
           }
-        `
+        `;
       case 'label2':
         return `
           font-size: 16px;
         color: black;
         margin-bottom: 10px;
         display: block;
-        `
+        `;
       default:
         return `
         font-size: 13px;
-        color: var(--Gray5);
+        color: var(--gray-5);
         margin-bottom: 4px;
-        `
+        `;
     }
   }}
-`
+`;

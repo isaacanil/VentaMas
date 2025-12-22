@@ -1,59 +1,69 @@
-import { useState } from 'react'
+import { faUserCog } from '@fortawesome/free-solid-svg-icons';
+import { faExternalLink } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 
-import Style from './Account.module.scss'
-import { Link } from 'react-router-dom'
-import { Button } from '../../'
-import { auth } from '../../../firebase/firebaseconfig.jsx'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { useDispatch, useSelector } from 'react-redux'
-import { FaUserCog } from 'react-icons/fa'
-import { FiExternalLink } from 'react-icons/fi'
+import { logout } from '../../../features/auth/userSlice';
+import { auth } from '../../../firebase/firebaseconfig.jsx';
+import { Button } from '../system/Button/Button';
+
+import Style from './Account.module.scss';
+
 export const Account = () => {
   const dispatch = useDispatch();
-  const [isOpen, SetIsOpen] = useState(false)
+  const [isOpen, SetIsOpen] = useState(false);
   const OpenMenu = () => {
-    SetIsOpen(!isOpen)
-  }
+    SetIsOpen(!isOpen);
+  };
   const logoutOfApp = () => {
     dispatch(logout());
     auth.signOut();
-  }
+  };
 
   return (
     <div className={Style.Component_container} onClick={OpenMenu}>
       <Button
-        color='gray-dark'
+        color="gray-dark"
         borderRadius={'normal'}
         width={'icon32'}
-        title={<FaUserCog />}
+        title={<FontAwesomeIcon icon={faUserCog} />}
       />
-      <article className={!isOpen ? `${Style.AccountMenu}` : `${Style.AccountMenu} ${Style.Open}`}>
+      <article
+        className={
+          !isOpen
+            ? `${Style.AccountMenu}`
+            : `${Style.AccountMenu} ${Style.Open}`
+        }
+      >
         <ul className={Style.Items}>
           <li className={Style.Item}>
-            <Link to className={Style.Item_Link}>Cuenta</Link>
+            <Link to className={Style.Item_Link}>
+              Cuenta
+            </Link>{' '}
             <div className={Style.Icon_wrapper}>
-              <FiExternalLink />
+              <FontAwesomeIcon icon={faExternalLink} />
             </div>
           </li>
           <li className={Style.Item}>
-            <Link to className={Style.Item_Link}>Ayuda</Link>
+            <Link to className={Style.Item_Link}>
+              Ayuda
+            </Link>
             <div className={Style.Icon_wrapper}>
-              <FiExternalLink />
+              <FontAwesomeIcon icon={faExternalLink} />
             </div>
           </li>
 
           <Button
             borderRadius={'normal'}
-            title='Cerrar sesión'
+            title="Cerrar sesión"
             bgcolor="primary"
             width="100"
             onClick={logoutOfApp}
           />
-
         </ul>
       </article>
     </div>
-
-  )
-}
-
+  );
+};

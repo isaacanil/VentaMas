@@ -1,216 +1,374 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import * as antd from 'antd';
-const { Modal, Button, Table, Tag, Typography, Divider, Input } = antd;
 import {
-    UserOutlined,
-    ShoppingOutlined,
-    CreditCardOutlined,
+  UserOutlined,
+  ShoppingOutlined,
+  CreditCardOutlined,
+  CloseOutlined,
+  DownOutlined,
+  UpOutlined,
 } from '@ant-design/icons';
-import { icons } from '../../../../constants/icons/icons';
-import { useFormatPrice } from '../../../../hooks/useFormatPrice';
+import { useState } from 'react';
+import styled from 'styled-components';
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+import { formatPrice } from '@/utils/format';
 
-// Styled Components
-const StyledModal = styled(Modal)`
-  .ant-modal-content {
-    max-width: 800px;
+export const PreorderModal = ({
+  preorder,
+  visible,
+  open,
+  isReady = true,
+  onCancel,
+}) => {
+  const [isClientExpanded, setIsClientExpanded] = useState(false);
+  const status = preorder?.preorderDetails?.status;
+  const products = preorder?.products ?? [];
+  const totalPurchaseValue = Number(preorder?.totalPurchase?.value ?? 0);
+  const deliveryStatus = Boolean(preorder?.delivery?.status);
+  const deliveryValue = Number(preorder?.delivery?.value ?? 0);
+  const subtotalValue = deliveryStatus
+    ? Math.max(totalPurchaseValue - deliveryValue, 0)
+    : totalPurchaseValue;
+  const createdAtSeconds = preorder?.preorderDetails?.date?.seconds;
+  const createdAtLabel = createdAtSeconds
+    ? new Date(createdAtSeconds * 1000).toLocaleString('es-DO', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    : 'Fecha no disponible';
+  const hasCreatedAt = Boolean(createdAtSeconds);
+  const orderNumber = preorder?.preorderDetails?.numberID ?? '—';
+  const customerName = preorder?.client?.name ?? 'Cliente sin nombre';
+  const customerPhone = preorder?.client?.tel || 'N/A';
+  const customerAddress = preorder?.client?.address || 'Sin dirección';
+  const hasClientExtra = customerAddress && customerAddress !== 'Sin dirección';
+
+  const getStatusColor = (value) => {
+    switch ((value || '').toLowerCase()) {
+      case 'pending':
+        return '#ea580c';
+      case 'completed':
+        return '#15803d';
+      case 'cancelled':
+        return '#dc2626';
+      default:
+        return '#475569';
+    }
+  };
+
+  const getStatusName = (value) => {
+    switch ((value || '').toLowerCase()) {
+      case 'pending':
+        return 'Pendiente';
+      case 'completed':
+        return 'Completado';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return 'Desconocido';
+    }
+  };
+
+  const statusTone = getStatusColor(status);
+  const isVisible = typeof open === 'boolean' ? open : visible;
+  const shouldRender = !!isVisible && isReady !== false;
+
+  const closeModal = () => {
+    setIsClientExpanded(false);
+    if (onCancel) {
+      onCancel();
+    }
+  };
+
+  return (
+    <>
+      {shouldRender && (
+        <ModalOverlay onClick={closeModal}>
+          <ModalCard onClick={(event) => event.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>
+                <IconLabel>
+                  <ShoppingOutlined />
+                  Pedido #{orderNumber}
+                </IconLabel>
+              </ModalTitle>
+              <CloseButton onClick={closeModal} aria-label="Cerrar">
+                <CloseOutlined />
+              </CloseButton>
+            </ModalHeader>
+            <ModalBody>
+              <StatusBadge $tone={statusTone}>
+                <span>{getStatusName(status)}</span>
+                {hasCreatedAt && <span>•</span>}
+                <span>
+                  {hasCreatedAt ? createdAtLabel : 'Fecha no disponible'}
+                </span>
+              </StatusBadge>
+
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>
+                    <UserOutlined /> Cliente
+                  </SectionTitle>
+                  {hasClientExtra && (
+                    <ToggleButton
+                      type="button"
+                      onClick={() => setIsClientExpanded((prev) => !prev)}
+                      aria-expanded={isClientExpanded}
+                      aria-label={
+                        isClientExpanded
+                          ? 'Ocultar detalles del cliente'
+                          : 'Ver detalles del cliente'
+                      }
+                    >
+                      {isClientExpanded ? <UpOutlined /> : <DownOutlined />}
+                      {isClientExpanded ? 'Ocultar' : 'Ver detalles'}
+                    </ToggleButton>
+                  )}
+                </SectionHeader>
+                <InfoGrid>
+                  <InfoLabel>{customerName}</InfoLabel>
+                  <span>
+                    <InfoLabel>Teléfono:</InfoLabel> {customerPhone}
+                  </span>
+                  {isClientExpanded && hasClientExtra && (
+                    <span>
+                      <InfoLabel>Dirección:</InfoLabel> {customerAddress}
+                    </span>
+                  )}
+                </InfoGrid>
+              </Section>
+
+              <Section>
+                <SectionTitle>
+                  <ShoppingOutlined /> Productos ({products.length})
+                </SectionTitle>
+                <ProductsTable>
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Cant.</th>
+                      <th>Tamaño</th>
+                      <th>Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((item, index) => (
+                      <tr key={`${item?.name || 'producto'}-${index}`}>
+                        <td>{item?.name || 'Sin nombre'}</td>
+                        <td>{item?.amountToBuy ?? 0}</td>
+                        <td>{item?.size || 'N/A'}</td>
+                        <td>
+                          {formatPrice(Number(item?.pricing?.price ?? 0))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </ProductsTable>
+              </Section>
+
+              <Section>
+                <SectionTitle>
+                  <CreditCardOutlined /> Resumen
+                </SectionTitle>
+                <PaymentRow>
+                  <span>Subtotal</span>
+                  <span>{formatPrice(subtotalValue)}</span>
+                </PaymentRow>
+                {deliveryStatus && (
+                  <PaymentRow>
+                    <span>Entrega</span>
+                    <span>{formatPrice(deliveryValue)}</span>
+                  </PaymentRow>
+                )}
+                <Separator />
+                <PaymentTotal>
+                  <span>Total</span>
+                  <span>{formatPrice(totalPurchaseValue)}</span>
+                </PaymentTotal>
+              </Section>
+            </ModalBody>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+    </>
+  );
+}
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+`;
+
+const IconLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #6b7280;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1f2937;
   }
 `;
 
-const Header = styled.div`
+const ModalBody = styled.div`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const StatusBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: ${(props) => props.$tone || '#475569'};
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const SectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-const Card = styled.div`
-  border: 1px solid #f0f0f0;
-  padding: 16px;
-  border-radius: 4px;
-  margin-bottom: 24px;
+const SectionTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
-const Group = styled.div`
-    display: grid;
-    gap: 1em;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #1d4ed8;
+  }
 `;
 
-const FlexBetween = styled.div`
+const InfoGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+`;
+
+const InfoLabel = styled.span`
+  font-weight: 600;
+  color: #1f2937;
+`;
+
+const ProductsTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th {
+    text-align: left;
+    padding: 8px;
+    background: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  td {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #1f2937;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+`;
+
+const PaymentRow = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  font-size: 14px;
+  color: #374151;
 `;
 
-export default function PreorderModal() {
-    const [visible, setVisible] = useState(false);
-    const [preorderData, setPreorderData] = useState(null);
-    const [notes, setNotes] = useState('');
+const Separator = styled.hr`
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 8px 0;
+`;
 
-    useEffect(() => {
-        fetch('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/snippet-kLsSWKTzqCrT9GtLcfVJoFlCwQoqRH.txt')
-            .then((response) => response.json())
-            .then((data) => setPreorderData(data[0].data))
-            .catch((error) => console.error('Error fetching data:', error));
-    }, []);
+const PaymentTotal = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+`;
 
-    if (!preorderData) return null;
-
-    const getStatusColor = (status) => {
-        switch (status.toLowerCase()) {
-            case 'pending':
-                return 'volcano';
-            case 'completed':
-                return 'green';
-            default:
-                return 'gray';
-        }
-    };
-
-    const getStatusName = (status) => {
-        switch (status.toLowerCase()) {
-            case 'pending':
-                return 'Pendiente';
-            case 'completed':
-                return 'Completado';
-            default:
-                return 'Desconocido';
-        }
-    };
-
-    return (
-        <>
-            <Button icon={icons.editingActions.show} type="default" onClick={() => setVisible(true)}>
-             
-            </Button>
-            <StyledModal
-                title="Detalles del Pedido"
-                visible={visible}
-                onCancel={() => setVisible(false)}
-                footer={null}
-                width={800}
-            >
-                <div>
-                    {/* Order Status */}
-                    <Group>
-                        <Card>
-                            <Header>
-                                <FlexBetween >
-                                    <Title level={5} style={{ margin: "0 1em 0 0" }}>
-                                        Estado del Pedido
-                                    </Title>
-                                    <Tag color={getStatusColor(preorderData.status)}>
-                                        {getStatusName(preorderData.status)}
-                                    </Tag>
-                                </FlexBetween>
-                            </Header>
-                            <div style={{ marginTop: 16 }}>
-                                <Text strong style={{ fontSize: '18px', display: 'block' }}>
-                                    Pedido #{preorderData.preorderDetails.numberID}
-                                </Text>
-                            </div>
-                        </Card>
-
-                        {/* Client Information */}
-                        <Card>
-                            <Header>
-                                <FlexBetween>
-                                    <UserOutlined style={{ marginRight: 8 }} />
-                                    <Title level={5} style={{ margin: 0 }}>
-                                        Información del Cliente
-                                    </Title>
-                                </FlexBetween>
-                            </Header>
-                            <div style={{ marginTop: 16 }}>
-                                <Text strong>{preorderData.client.name}</Text>
-                                <br />
-                                <Text>
-                                    <strong>Teléfono:</strong> {preorderData.client.tel || 'N/A'}
-                                </Text>
-                                <br />
-                                <Text type="secondary">{preorderData.client.address}</Text>
-                            </div>
-                        </Card>
-                    </Group>
-
-                    {/* Products */}
-                    <Card>
-                        <Header>
-                            <FlexBetween>
-                                <ShoppingOutlined style={{ marginRight: 8 }} />
-                                <Title level={5} style={{ margin: 0 }}>
-                                    Productos
-                                </Title>
-                            </FlexBetween>
-                        </Header>
-                        <Table
-                            columns={[
-                                {
-                                    title: 'Nombre',
-                                    dataIndex: 'name',
-                                    key: 'name',
-                                    render: (text) => <Text strong>{text}</Text>,
-                                },
-                                {
-                                    title: 'Tamaño',
-                                    dataIndex: 'size',
-                                    key: 'size',
-                                },
-                                {
-                                    title: 'Cantidad',
-                                    dataIndex: 'amountToBuy',
-                                    key: 'amountToBuy',
-                                },
-                                {
-                                    title: 'Precio',
-                                    dataIndex: ['pricing', 'price'],
-                                    key: 'price',
-                                    align: 'right',
-                                    render: (price) => `$${price.toFixed(2)}`,
-                                },
-                            ]}
-                            dataSource={preorderData.products}
-                            rowKey={(record, index) => index}
-                            pagination={false}
-                            style={{ marginTop: 16 }}
-                        />
-                    </Card>
-
-                    {/* Payment Summary */}
-                    <Card>
-                        <Header>
-                            <FlexBetween>
-                                <CreditCardOutlined style={{ marginRight: 8 }} />
-                                <Title level={5} style={{ margin: 0 }}>
-                                    Resumen de Pago
-                                </Title>
-                            </FlexBetween>
-                        </Header>
-                        <div style={{ marginTop: 16 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                <Text>Subtotal</Text>
-                                <Text>{useFormatPrice(preorderData.totalPurchase.value - preorderData.delivery.value)}</Text>
-                            </div>
-                            {
-                                preorderData.delivery.status && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                        <Text>Entrega</Text>
-                                        <Text>{useFormatPrice(preorderData.delivery.value)}</Text>
-                                    </div>
-                                )
-                            }
-                            <Divider />
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-                                <Text>Total</Text>
-                                <Text>{useFormatPrice(preorderData.totalPurchase.value)}</Text>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            </StyledModal>
-        </>
-    );
-}
+export default PreorderModal;

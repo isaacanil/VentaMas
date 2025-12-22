@@ -1,34 +1,92 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "../firebaseconfig";
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { useCallback, useState, useEffect } from 'react';
 
-export async function fbGetPendingBalance(businessID, clientId, callback) {
-    const accountsReceivableRef = collection(db, `businesses/${businessID}/accountsReceivable`);
+import { db } from '../firebaseconfig';
 
-    const q = query(
-        accountsReceivableRef,
-        where('clientId', '==', clientId),
-    );
+export function fbGetPendingBalance(businessID, clientId, callback) {
+  const safeCb = typeof callback === 'function' ? callback : () => { /* noop */ };
 
-    try {
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            if (querySnapshot.empty) {
-                callback(0); // callback con balance 0 si no hay documentos
-                return;
-            }
+  if (!businessID || !clientId) {
+    safeCb(0);
+    return () => { /* noop */ };
+  }
 
-            let totalPendingBalance = 0;
-            
-            querySnapshot.forEach(doc => {
-                const data = doc.data();
-                totalPendingBalance += data.arBalance;
-            });
+  const accountsReceivableRef = collection(
+    db,
+    `businesses/${businessID}/accountsReceivable`,
+  );
+  const q = query(accountsReceivableRef, where('clientId', '==', clientId));
 
-            callback(totalPendingBalance); // callback con el balance total pendiente
-        });
+  try {
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (querySnapshot.empty) {
+        safeCb(0);
+        return;
+      }
+      //
+      let totalPendingBalance = 0;
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        totalPendingBalance += Number(data.arBalance) || 0;
+      });
 
-        return unsubscribe; // Devuelve la función de desuscripción para que puedas dejar de escuchar cuando ya no sea necesario
-    } catch (error) {
-        console.error('Error getting documents: ', error);
-        throw new Error('Error getting documents');
-    }
+      safeCb(totalPendingBalance);
+    });
+
+    return unsubscribe;
+  } catch (error) {
+    console.error('Error getting documents: ', error);
+    safeCb(0);
+    return () => { /* noop */ };
+  }
 }
+
+function usePendingBalance(businessID, clientId, onBalanceChange = null) {
+  const [pendingBalance, setPendingBalance] = useState(0);
+
+  if ((!businessID || !clientId) && pendingBalance !== 0) {
+    setPendingBalance(0);
+    if (onBalanceChange) onBalanceChange(0);
+  }
+
+  useEffect(() => {
+    if (!businessID || !clientId) {
+      return undefined;
+    }
+
+    const unsubscribe = fbGetPendingBalance(
+      businessID,
+      clientId,
+      onBalanceChange,
+    );
+    return () => unsubscribe();
+  }, [businessID, clientId, onBalanceChange]);
+
+  return pendingBalance;
+}
+
+export function useGetPendingBalance({
+  dependencies = [],
+  onBalanceChange = null,
+}) {
+  const [pendingBalance, setPendingBalance] = useState(0);
+
+  const updateBalance = useCallback(
+    (balance) => {
+      setPendingBalance(balance);
+      if (onBalanceChange) {
+        onBalanceChange(balance);
+      }
+    },
+    [onBalanceChange],
+  );
+
+  useEffect(() => {
+    const unsubscribe = fbGetPendingBalance(...dependencies, updateBalance);
+    return () => unsubscribe();
+  }, [dependencies, updateBalance]);
+
+  return pendingBalance;
+}
+
+export { usePendingBalance };

@@ -1,12 +1,12 @@
 //colores de la aplicacion
-import palette from "./colors/light/Palette";
-import darkPalette from "./colors/dark/DarkPalette";
+import darkPalette from './colors/dark/DarkPalette';
+import palette from './colors/light/Palette';
 
 // Tema claro completo
 export const lightTheme = {
-    ...palette,
+  ...palette,
 };
 // Tema oscuro completo
 export const darkTheme = {
-    ...darkPalette,
+  ...darkPalette,
 };

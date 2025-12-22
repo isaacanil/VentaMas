@@ -1,16 +1,17 @@
-import { faListCheck } from "@fortawesome/free-solid-svg-icons";
-import ROUTES_NAME from "../../../../../routes/routesName";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faListCheck } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const { CHANGELOG_LIST } = ROUTES_NAME.CHANGELOG_TERM
+import ROUTES_NAME from '@/router/routes/routesName';
+
+const { CHANGELOG_LIST } = ROUTES_NAME.CHANGELOG_TERM;
 
 const changelogs = [
-    {
-        title: 'Actualizaciones',
-        icon: <FontAwesomeIcon icon={faListCheck} />,
-        route: CHANGELOG_LIST,
-        group: 'admin'
-    },  
-]
+  {
+    title: 'Actualizaciones',
+    icon: <FontAwesomeIcon icon={faListCheck} />,
+    route: CHANGELOG_LIST,
+    group: 'admin',
+  },
+];
 
 export default changelogs;

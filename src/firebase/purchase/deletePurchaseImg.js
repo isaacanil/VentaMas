@@ -1,9 +1,12 @@
-import { storage } from "../firebaseconfig";
+import { ref, deleteObject } from 'firebase/storage';
 
-export const deletePurchaseData = () => {
-    
-}
-export const deletePurchaseImg = (purchaseId) => {
-    const storageRef = ref(storage, `purchase/${purchaseId}`)
-  
-}
+import { storage } from '../firebaseconfig';
+
+export const deletePurchaseImg = async (purchaseId) => {
+  const storageRef = ref(storage, `purchase/${purchaseId}`);
+  try {
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.error('Error deleting purchase image:', error);
+  }
+};

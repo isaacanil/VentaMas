@@ -1,8 +1,13 @@
 import { AbilityBuilder, PureAbility } from '@casl/ability';
 
-export function defineAbilitiesForAdmin(user) {
+export function defineAbilitiesForAdmin() {
   const { can, cannot, rules } = new AbilityBuilder(PureAbility);
-  can('manage', 'all'); // el dueño puede manejar todo
-  cannot('developerAccess', 'all')
+  can('manage', 'all'); // el administrador puede manejar todo
+  can('access', 'all'); // acceso a todas las rutas
+  cannot('developerAccess', 'all');
+  can('access', '/users');
+  can('access', '/users/list');
+  can('access', '/users/session-logs');
+  can('access', '/users/activity');
   return rules;
 }

@@ -1,27 +1,22 @@
-import React from 'react'
-import styled from 'styled-components'
-import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4'
+import { Input } from 'antd';
+import React from 'react';
 
 export const Body = ({ user, setUser }) => {
-
   return (
-    <Component>
-      <InputV4
-        label='Nombre de Usuario'
+    <div style={{ display: 'grid', gap: '0.8em' }}>
+      <Input
+        placeholder="Nombre de Usuario"
         value={user.name}
-        onChange={e => setUser({ ...user, name: e.target.value })}
+        onChange={(e) => setUser({ ...user, name: e.target.value })}
+        size="large"
+        autoFocus
       />
-      <InputV4
-        label='Password'
-        type='password'
+      <Input.Password
+        placeholder="Password"
         value={user.password}
-        onChange={e => setUser({ ...user, password: e.target.value })}
+        onChange={(e) => setUser({ ...user, password: e.target.value })}
+        size="large"
       />
-    </Component>
-  )
-}
-
-const Component = styled.div`
-    display: grid;
-    gap: 0.8em;
-`
+    </div>
+  );
+};

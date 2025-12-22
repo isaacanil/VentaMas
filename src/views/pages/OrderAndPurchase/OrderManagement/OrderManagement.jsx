@@ -1,46 +1,52 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { message, Button, Form } from 'antd'
-import styled from 'styled-components'
-import GeneralForm from './components/GeneralForm/GeneralForm'
-import { MenuApp } from '../../../templates/MenuApp/MenuApp'
-import { useDispatch, useSelector } from 'react-redux'
-import { cleanOrder, setOrder, selectOrderState } from '../../../../features/addOrder/addOrderSlice'
-import ROUTES_PATH from '../../../../routes/routesName'
-import { useNavigate, useParams } from 'react-router-dom'
-import { defaultsMap, sanitizeData } from './orderLogic'
+import { message, Button, Form, notification } from 'antd';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
+
+import {
+  cleanOrder,
+  setOrder,
+  selectOrderState,
+} from '../../../../features/addOrder/addOrderSlice';
+import { selectUser } from '../../../../features/auth/userSlice';
+import { addOrder } from '../../../../firebase/order/fbAddOrder';
+import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder';
+import { useListenOrder } from '../../../../hooks/useOrders';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { getLocalURL } from '../../../../utils/files';
-import { addOrder } from '../../../../firebase/order/fbAddOrder'
-import { selectUser } from '../../../../features/auth/userSlice'
-import { useListenOrder } from '../../../../hooks/useOrders'
-import Loader from '../../../component/Loader/Loader'
-import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder'
-import { getBackOrderAssociationId } from '../PurchaseManagement/PurchaseManagement'
+import Loader from '../../../component/Loader/Loader';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { getBackOrderAssociationId } from '../PurchaseManagement/purchaseManagementUtils';
+
+import GeneralForm from './components/GeneralForm/GeneralForm';
+import { defaultsMap, sanitizeData } from './orderLogic';
 
 const Container = styled.div`
   display: grid;
-  height: 100vh;
   grid-template-rows: min-content 1fr min-content;
+  height: 100%;
   overflow-y: hidden;
-`
+`;
 
 const Body = styled.div`
- padding: 1em;
-  overflow-y: auto;
- width: 100%;
+  width: 100%;
+  padding: 1em;
   margin: 0 auto;
-`
+  overflow-y: auto;
+`;
 const ButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
   position: sticky;
   bottom: 0;
-  width: 100%;
+  display: flex;
   gap: 1em;
-  background-color: #ffffff;
+  justify-content: flex-end;
+  width: 100%;
   padding: 1em;
-  border-top: 1px solid #e8e8e8;
   margin-top: auto;
-`
+  background-color: #fff;
+  border-top: 1px solid #e8e8e8;
+`;
 
 const OrderManagement = () => {
   const dispatch = useDispatch();
@@ -48,7 +54,7 @@ const OrderManagement = () => {
   const { id } = useParams();
   const mode = id ? 'update' : 'create';
 
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
   const { order: orderData } = useSelector(selectOrderState);
 
   const { ORDERS } = ROUTES_PATH.ORDER_TERM;
@@ -57,52 +63,57 @@ const OrderManagement = () => {
     mode,
     orderId: orderData.id,
     operationType: 'order',
-  })
+  });
 
   const [localFiles, setLocalFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
     provider: false,
     deliveryAt: false,
-    note: false
+    note: false,
   });
 
   const { order: fetchedOrder, isLoading: orderLoading } = useListenOrder(id);
 
-  const updateOrderState = useCallback((updates) => {
-    dispatch(setOrder(updates));
-  }, [dispatch]);
+  const updateOrderState = useCallback(
+    (updates) => {
+      dispatch(setOrder(updates));
+    },
+    [dispatch],
+  );
 
-  const handleAddFiles = useCallback((newFiles) => {
-    const newAttachments = newFiles.map(file => ({
-      type: file.type,
-      url: getLocalURL(file.file),
-      location: 'local',
-      id: file.id,
-      name: file.name,
-    }));
+  const handleAddFiles = useCallback(
+    (newFiles) => {
+      const newAttachments = newFiles.map((file) => ({
+        type: file.type,
+        url: getLocalURL(file.file),
+        location: 'local',
+        id: file.id,
+        name: file.name,
+      }));
 
-    updateOrderState({ attachmentUrls: [...(orderData.attachmentUrls || []), ...newAttachments] });
-    setLocalFiles((prev) => [...prev, ...newFiles]);
-  }, [orderData.attachmentUrls, updateOrderState]);
+      updateOrderState({
+        attachmentUrls: [
+          ...(orderData.attachmentUrls || []),
+          ...newAttachments,
+        ],
+      });
+      setLocalFiles((prev) => [...prev, ...newFiles]);
+    },
+    [orderData.attachmentUrls, updateOrderState],
+  );
 
-  const handleRemoveFile = useCallback((fileId) => {
-    setLocalFiles((prev) => prev.filter(f => f.id !== fileId));
-    updateOrderState({
-      attachmentUrls: (orderData.attachmentUrls || []).filter(f => f.id !== fileId),
-    });
-  }, [orderData.attachmentUrls, updateOrderState]);
-
-  const validateFields = useCallback(() => {
-    const newErrors = {
-      provider: !orderData.provider,
-      deliveryAt: !orderData.deliveryAt,
-      note: orderData.note && orderData.note.length > 300 // Solo validar longitud si hay nota
-    };
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error);
-  }, [orderData]);
+  const handleRemoveFile = useCallback(
+    (fileId) => {
+      setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
+      updateOrderState({
+        attachmentUrls: (orderData.attachmentUrls || []).filter(
+          (f) => f.id !== fileId,
+        ),
+      });
+    },
+    [orderData.attachmentUrls, updateOrderState],
+  );
 
   useEffect(() => {
     if (mode === 'update' && fetchedOrder) {
@@ -111,8 +122,71 @@ const OrderManagement = () => {
   }, [mode, fetchedOrder, dispatch]);
 
   const handleSubmit = useCallback(async () => {
-    if (!validateFields()) {
-      message.error('Por favor complete todos los campos requeridos');
+    // 1. Validar Proveedor
+    if (!orderData.provider) {
+      notification.warning({
+        message: 'Falta el Proveedor',
+        description: 'Por favor, selecciona un proveedor para continuar.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, provider: true }));
+      return;
+    }
+
+    // 2. Validar Fecha de Entrega (requerido por schema/logica anterior)
+    if (!orderData.deliveryAt) {
+      notification.warning({
+        message: 'Falta Fecha de Entrega',
+        description: 'Por favor, selecciona una fecha de entrega estimada.',
+        duration: 5,
+      });
+      setErrors((prev) => ({ ...prev, deliveryAt: true }));
+      return;
+    }
+
+    // 3. Validar Lista de Productos
+    if (!orderData?.replenishments?.length) {
+      notification.warning({
+        message: 'Pedido Vacío',
+        description: 'Debes agregar al menos un producto al pedido.',
+        duration: 5,
+      });
+      return;
+    }
+
+    // 4. Validar Productos Individuales (Cantidad y Costo)
+    const invalidProduct = orderData.replenishments.find((p) => {
+      const qty = Number(p.quantity) || 0;
+      const cost = Number(p.baseCost) || 0;
+      return !p.name?.trim() || qty <= 0 || cost <= 0;
+    });
+
+    if (invalidProduct) {
+      const qty = Number(invalidProduct.quantity) || 0;
+      const cost = Number(invalidProduct.baseCost) || 0;
+
+      let description = 'Revisa los datos del producto.';
+      if (qty <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene una cantidad de 0.`;
+      } else if (cost <= 0) {
+        description = `El producto "${invalidProduct.name}" tiene un costo base de 0.`;
+      }
+
+      notification.warning({
+        message: 'Producto Inválido',
+        description,
+        duration: 6,
+      });
+      return;
+    }
+
+    // Nota muy larga
+    if (orderData.note && orderData.note.length > 300) {
+      notification.warning({
+        message: 'Nota muy extensa',
+        description: 'La nota no debe exceder los 300 caracteres.',
+        duration: 5,
+      });
       return;
     }
 
@@ -128,12 +202,20 @@ const OrderManagement = () => {
       dispatch(cleanOrder());
       navigate(ORDERS);
     } catch (error) {
-      console.error("Error al guardar el pedido:", error);
+      console.error('Error al guardar el pedido:', error);
       message.error('Error al guardar el pedido');
     } finally {
       setLoading(false);
     }
-  }, [dispatch, navigate, user, orderData, localFiles, validateFields, ORDERS, mode]);
+  }, [
+    dispatch,
+    navigate,
+    user,
+    orderData,
+    localFiles,
+    ORDERS,
+    mode,
+  ]);
 
   const handleCancel = useCallback(() => {
     dispatch(cleanOrder());
@@ -149,10 +231,13 @@ const OrderManagement = () => {
 
   return (
     <Container>
-      <MenuApp showBackButton={false} sectionName={mode === 'create' ? 'Nuevo Pedido' : 'Editar Pedido'} />
-      <Loader loading={orderLoading} minHeight="200px" >
+      <MenuApp
+        showBackButton={false}
+        sectionName={mode === 'create' ? 'Nuevo Pedido' : 'Editar Pedido'}
+      />
+      <Loader loading={orderLoading} minHeight="200px">
         <Body>
-          <Form layout='vertical'>
+          <Form layout="vertical">
             <GeneralForm
               mode={mode}
               files={localFiles}
@@ -166,15 +251,13 @@ const OrderManagement = () => {
         </Body>
       </Loader>
       <ButtonsContainer>
-        <Button onClick={handleCancel}>
-          Cancelar
-        </Button>
+        <Button onClick={handleCancel}>Cancelar</Button>
         <Button type="primary" onClick={handleSubmit} loading={loading}>
           Guardar
         </Button>
       </ButtonsContainer>
     </Container>
-  )
-}
+  );
+};
 
-export default OrderManagement
+export default OrderManagement;

@@ -1,104 +1,82 @@
-import React, { useMemo } from 'react';
-import { Bar,  Line } from 'react-chartjs-2';
+import { createChart } from 'lightweight-charts';
+import React, { useRef, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { LineElement, PointElement, BarElement } from 'chart.js';
-import {Chart} from 'chart.js';
-// Registrar los elementos Line, Point y Bar
-Chart.register(LineElement, PointElement, BarElement);
-
-const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-        y: {
-            beginAtZero: true,
-            title: {
-                display: true,
-                text: 'Monto de Gastos',
-            },
-        },
-        x: {
-            title: {
-                display: true,
-                text: 'Mes',
-            },
-        },
-    },
-    plugins: {
-        tooltip: {
-            callbacks: {
-                label: function (context) {
-                    let label = context.dataset.label || '';
-                    if (label) {
-                        label += ": " + useFormatPrice(context.parsed.y);
-                    }
-                    return label;
-                }
-            }
-        }
-    }
-};
-
-const accumulateMonthlyData = (expenses) => {
-    const monthlyData = {};
-    let totalAccumulated = 0;
-
-    for (let { expense } of expenses) {
-        const date = new Date(expense.dates.expenseDate);
-        const monthYear = date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-        monthlyData[monthYear] = (monthlyData[monthYear] || 0) + expense.amount;
-        totalAccumulated += expense.amount;
-    }
-
-    return { monthlyData, totalAccumulated };
-};
-
-export const MonthlyExpenseBarChart = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const { monthlyData, totalAccumulated } = useMemo(() => accumulateMonthlyData(expenses), [expenses]);
-    const data = useMemo(() => {
-        const labels = Object.keys(monthlyData);
-        const dataMonthly = labels.map(label => monthlyData[label]);
-        const dataAccumulated = labels.map(() => totalAccumulated);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    type: 'line',  // especifica el tipo de gráfico para este dataset
-                    label: 'Total Acumulado',
-                    data: dataAccumulated,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    fill: false,
-                },
-                {
-                    type: 'bar',  // especifica el tipo de gráfico para este dataset
-                    label: 'Total por Mes',
-                    data: dataMonthly,
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                },
-            ]
-        };
-    }, [monthlyData, totalAccumulated]);
-
-    return (
-        <Container>
-            <Typography variant='h3'>Gastos Totales Acumulados y por Mes</Typography>
-            <Line data={data} options={options} />  
-        </Container>
-    )
-}
 
 const Container = styled.div`
-    height: 200px;
-    display: grid;
-    gap: 1em;
+  position: relative;
+  height: 300px;
 `;
+
+const MonthlyExpenseBarChart = ({ expenses }) => {
+  const chartContainerRef = useRef(null);
+  const chart = useRef(null);
+  const barSeries = useRef(null);
+  const lineSeries = useRef(null);
+
+  const { monthlyData, totalAccumulated } = useMemo(() => {
+    const monthlyData = {};
+    let total = 0;
+    (expenses || []).forEach(({ expense }) => {
+      const date = new Date(expense.dates.expenseDate);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + expense.amount;
+      total += expense.amount;
+    });
+    return { monthlyData, totalAccumulated: total };
+  }, [expenses]);
+
+  const barData = useMemo(
+    () => Object.entries(monthlyData).map(([time, value]) => ({ time, value })),
+    [monthlyData]
+  );
+  const lineData = useMemo(
+    () =>
+      Object.keys(monthlyData).map(time => ({ time, value: totalAccumulated })),
+    [monthlyData, totalAccumulated]
+  );
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    if (!chart.current) {
+      chart.current = createChart(chartContainerRef.current, {
+        layout: { backgroundColor: '#ffffff', textColor: '#333' },
+        grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
+        rightPriceScale: { scaleMargins: { top: 0.3, bottom: 0.25 } },
+        timeScale: { timeVisible: true },
+      });
+
+      barSeries.current = chart.current.addHistogramSeries({
+        color: 'rgba(54, 162, 235, 0.5)',
+        priceFormat: { type: 'volume' },
+        scaleMargins: { top: 0.7, bottom: 0 },
+      });
+
+      lineSeries.current = chart.current.addLineSeries({
+        color: 'rgba(255, 99, 132, 1)',
+        lineWidth: 2,
+      });
+    }
+
+    barSeries.current.setData(barData);
+    lineSeries.current.setData(lineData);
+    chart.current.timeScale().fitContent();
+
+    return () => {
+      if (chart.current) {
+        chart.current.remove();
+        chart.current = null;
+      }
+    };
+  }, [barData, lineData]);
+
+  return (
+    <Container>
+      <Typography variant="h3">Gastos Totales Acumulados y por Mes</Typography>
+      <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
+    </Container>
+  );
+};
+export { MonthlyExpenseBarChart };

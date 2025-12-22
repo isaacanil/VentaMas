@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 import { selectUser } from '../../features/auth/userSlice';
 
 // Servicios de escucha
-import { listenAllWarehouses } from './warehouseService';
-import { listenAllShelves } from './shelfService';
+import { listenAllProductStockByLocation } from './productStockService';
 import { listenAllRowShelves } from './RowShelfService';
 import { listenAllSegments } from './segmentService';
-import { listenAllProductStockByLocation } from './productStockService';
+import { listenAllShelves } from './shelfService';
+import { listenAllWarehouses } from './warehouseService';
 
 export const useWarehouseHierarchy = () => {
   const user = useSelector(selectUser);
+  const businessId = user?.businessID ?? null;
 
   const [warehouses, setWarehouses] = useState([]);
   const [shelves, setShelves] = useState({});
@@ -18,55 +20,54 @@ export const useWarehouseHierarchy = () => {
   const [segments, setSegments] = useState({});
   const [productStock, setProductStock] = useState({});
 
-  const [warehousesLoading, setWarehousesLoading] = useState(true);
   const [shelvesLoading, setShelvesLoading] = useState({});
   const [rowsLoading, setRowsLoading] = useState({});
   const [segmentsLoading, setSegmentsLoading] = useState({});
   const [error, setError] = useState(null);
 
-  const [warehouseUnsubscribe, setWarehouseUnsubscribe] = useState(null);
-  const [shelvesUnsubscribes, setShelvesUnsubscribes] = useState([]);
-  const [rowsUnsubscribes, setRowsUnsubscribes] = useState([]);
-  const [segmentsUnsubscribes, setSegmentsUnsubscribes] = useState([]);
-  const [productStockUnsubscribes, setProductStockUnsubscribes] = useState([]);
+  const warehouseUnsubscribeRef = useRef(null);
+  const shelvesUnsubscribesRef = useRef([]);
+  const rowsUnsubscribesRef = useRef([]);
+  const segmentsUnsubscribesRef = useRef([]);
+  const productStockUnsubscribesRef = useRef([]);
+
+  const [warehousesLoadedFor, setWarehousesLoadedFor] = useState(null);
+  const warehousesLoading =
+    businessId !== null && warehousesLoadedFor !== businessId;
 
   // ---------------------------------------------------
   // Escucha de WAREHOUSES
   // ---------------------------------------------------
   useEffect(() => {
-    if (!user?.businessID) return;
+    if (!businessId) return;
 
-    if (warehouseUnsubscribe) {
-      warehouseUnsubscribe();
-    }
-
-    setWarehousesLoading(true);
+    if (warehouseUnsubscribeRef.current) warehouseUnsubscribeRef.current();
 
     const unsubscribe = listenAllWarehouses(
       user,
       (warehouseData) => {
         setWarehouses(warehouseData);
-        setWarehousesLoading(false);
+        setWarehousesLoadedFor(businessId);
       },
       (err) => {
         setError(err);
-        setWarehousesLoading(false);
-      }
+        setWarehousesLoadedFor(businessId);
+      },
     );
 
-    setWarehouseUnsubscribe(() => unsubscribe);
+    warehouseUnsubscribeRef.current = unsubscribe;
 
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [user]);
+  }, [businessId, user]);
 
   // ---------------------------------------------------
   // Escucha de SHELVES
   // ---------------------------------------------------
   useEffect(() => {
-    shelvesUnsubscribes.forEach((u) => u());
-    setShelvesUnsubscribes([]);
+    shelvesUnsubscribesRef.current.forEach((u) => u());
+    shelvesUnsubscribesRef.current = [];
 
     const newUnsubscribes = [];
 
@@ -83,13 +84,13 @@ export const useWarehouseHierarchy = () => {
         (err) => {
           setError(err);
           setShelvesLoading((prev) => ({ ...prev, [warehouse.id]: false }));
-        }
+        },
       );
 
       newUnsubscribes.push(unsubscribe);
     });
 
-    setShelvesUnsubscribes(newUnsubscribes);
+    shelvesUnsubscribesRef.current = newUnsubscribes;
 
     return () => {
       newUnsubscribes.forEach((u) => u());
@@ -100,8 +101,8 @@ export const useWarehouseHierarchy = () => {
   // Escucha de ROWS
   // ---------------------------------------------------
   useEffect(() => {
-    rowsUnsubscribes.forEach((u) => u());
-    setRowsUnsubscribes([]);
+    rowsUnsubscribesRef.current.forEach((u) => u());
+    rowsUnsubscribesRef.current = [];
 
     const newUnsubscribes = [];
 
@@ -120,14 +121,14 @@ export const useWarehouseHierarchy = () => {
           (err) => {
             setError(err);
             setRowsLoading((prev) => ({ ...prev, [shelf.id]: false }));
-          }
+          },
         );
 
         newUnsubscribes.push(unsubscribe);
       });
     });
 
-    setRowsUnsubscribes(newUnsubscribes);
+    rowsUnsubscribesRef.current = newUnsubscribes;
 
     return () => {
       newUnsubscribes.forEach((u) => u());
@@ -138,8 +139,8 @@ export const useWarehouseHierarchy = () => {
   // Escucha de SEGMENTS
   // ---------------------------------------------------
   useEffect(() => {
-    segmentsUnsubscribes.forEach((u) => u());
-    setSegmentsUnsubscribes([]);
+    segmentsUnsubscribesRef.current.forEach((u) => u());
+    segmentsUnsubscribesRef.current = [];
 
     const newUnsubscribes = [];
 
@@ -159,14 +160,14 @@ export const useWarehouseHierarchy = () => {
           (err) => {
             setError(err);
             setSegmentsLoading((prev) => ({ ...prev, [row.id]: false }));
-          }
+          },
         );
 
         newUnsubscribes.push(unsubscribe);
       });
     });
 
-    setSegmentsUnsubscribes(newUnsubscribes);
+    segmentsUnsubscribesRef.current = newUnsubscribes;
 
     return () => {
       newUnsubscribes.forEach((u) => u());
@@ -177,8 +178,8 @@ export const useWarehouseHierarchy = () => {
   // Escucha de PRODUCT STOCK
   // ---------------------------------------------------
   useEffect(() => {
-    productStockUnsubscribes.forEach((u) => u());
-    setProductStockUnsubscribes([]);
+    productStockUnsubscribesRef.current.forEach((u) => u());
+    productStockUnsubscribesRef.current = [];
 
     const newUnsubscribes = [];
 
@@ -190,7 +191,7 @@ export const useWarehouseHierarchy = () => {
         (stockData) => {
           setProductStock((prev) => ({ ...prev, [warehouse.id]: stockData }));
         },
-        (err) => setError(err)
+        (err) => setError(err),
       );
       newUnsubscribes.push(unsubscribe);
     });
@@ -204,7 +205,7 @@ export const useWarehouseHierarchy = () => {
           (stockData) => {
             setProductStock((prev) => ({ ...prev, [shelf.id]: stockData }));
           },
-          (err) => setError(err)
+          (err) => setError(err),
         );
         newUnsubscribes.push(unsubscribe);
       });
@@ -213,7 +214,7 @@ export const useWarehouseHierarchy = () => {
     // Rows and Segments...
     // (Similar lógica para rows y segments)
 
-    setProductStockUnsubscribes(newUnsubscribes);
+    productStockUnsubscribesRef.current = newUnsubscribes;
 
     return () => {
       newUnsubscribes.forEach((u) => u());
@@ -223,7 +224,7 @@ export const useWarehouseHierarchy = () => {
   // ---------------------------------------------------
   // Combinar datos en estructura final
   // ---------------------------------------------------
-  const combineData = () => {
+  const data = useMemo(() => {
     return warehouses.map((warehouse) => {
       const warehouseShelves = shelves[warehouse.id] || [];
       return {
@@ -249,15 +250,7 @@ export const useWarehouseHierarchy = () => {
         }),
       };
     });
-  };
-
-  const data = useMemo(() => combineData(), [
-    warehouses,
-    shelves,
-    rows,
-    segments,
-    productStock,
-  ]);
+  }, [warehouses, shelves, rows, segments, productStock]);
 
   const overallLoading =
     warehousesLoading ||
@@ -268,6 +261,22 @@ export const useWarehouseHierarchy = () => {
   return { data, loading: overallLoading, error };
 };
 
+const omitKeys = (entity = {}, keys = []) => {
+  return Object.keys(entity || {}).reduce((acc, key) => {
+    if (!keys.includes(key)) {
+      acc[key] = entity[key];
+    }
+    return acc;
+  }, {});
+};
+
+const sanitizeWarehouse = (warehouse) =>
+  omitKeys(warehouse, ['shelves', 'rows', 'segments', 'productStock']);
+const sanitizeShelf = (shelf) =>
+  omitKeys(shelf, ['rows', 'segments', 'productStock']);
+const sanitizeRow = (row) => omitKeys(row, ['segments', 'productStock']);
+const sanitizeSegment = (segment) => omitKeys(segment, ['productStock']);
+
 export const useTransformedWarehouseData = () => {
   const { data, loading, error } = useWarehouseHierarchy();
 
@@ -275,15 +284,23 @@ export const useTransformedWarehouseData = () => {
     return data.map((warehouse) => ({
       id: warehouse.id,
       name: warehouse.name,
+      type: 'warehouse',
+      record: sanitizeWarehouse(warehouse),
       children: warehouse.shelves?.map((shelf) => ({
         id: shelf.id,
         name: shelf.name,
+        type: 'shelf',
+        record: sanitizeShelf(shelf),
         children: shelf.rows?.map((row) => ({
           id: row.id,
           name: row.name,
+          type: 'row',
+          record: sanitizeRow(row),
           children: row.segments?.map((segment) => ({
             id: segment.id,
             name: segment.name,
+            type: 'segment',
+            record: sanitizeSegment(segment),
           })),
         })),
       })),

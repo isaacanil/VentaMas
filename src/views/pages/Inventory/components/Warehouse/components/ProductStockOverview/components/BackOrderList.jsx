@@ -1,13 +1,15 @@
+import {
+  faBoxes,
+  faClock,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Spin, Modal, Button, Progress, Tooltip } from 'antd';
+import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Spin, Modal, Button, Progress, Tooltip } from 'antd';
-import { useBackOrdersByProduct, useListenBackOrders } from '../../../../../../../../firebase/warehouse/backOrderService';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faClock, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import dayjs from 'dayjs';
-import { DateTime } from 'luxon';
+
+import { useBackOrdersByProduct } from '../../../../../../../../firebase/warehouse/backOrderService';
 
 const Widget = styled.div`
   display: flex;
@@ -16,7 +18,7 @@ const Widget = styled.div`
   padding: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: #f8fafc;
     border-radius: 8px;
@@ -25,14 +27,14 @@ const Widget = styled.div`
       opacity: 1;
     }
   }
-  
+
   .header {
     display: flex;
-    align-items: center;
     gap: 8px;
-    color: #64748b;
+    align-items: center;
     font-size: 0.9rem;
-    
+    color: #64748b;
+
     .icon {
       color: #94a3b8;
     }
@@ -41,16 +43,16 @@ const Widget = styled.div`
 
 const OrdersBar = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
-  
+  align-items: center;
+
   .bar {
+    display: flex;
     flex: 1;
     height: 24px;
+    overflow: hidden;
     background: #f1f5f9;
     border-radius: 12px;
-    display: flex;
-    overflow: hidden;
   }
 
   .progress {
@@ -58,13 +60,13 @@ const OrdersBar = styled.div`
     background: #0ea5e9;
     transition: width 0.3s ease;
   }
-  
+
   .total {
     min-width: 70px;
-    text-align: right;
+    font-size: 0.9rem;
     font-weight: 500;
     color: #0f172a;
-    font-size: 0.9rem;
+    text-align: right;
   }
 `;
 
@@ -75,15 +77,15 @@ const DetailsList = styled.div`
 `;
 
 const DetailItem = styled.div`
+  position: relative;
   padding: 12px;
   background: #f8fafc;
   border-radius: 8px;
-  position: relative;
 
   .date {
-    color: #64748b;
-    font-size: 0.85rem;
     margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: #64748b;
   }
 
   .top-info {
@@ -93,38 +95,44 @@ const DetailItem = styled.div`
   }
 
   .quantities {
-    color: #0f172a;
     font-size: 0.9rem;
+    color: #0f172a;
   }
 `;
 
 const StatusPill = styled.span`
-  background: #e0f7fa;
-  color: #00695c;
   padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
   margin-left: 8px;
+  font-size: 0.75rem;
+  color: #00695c;
+  background: #e0f7fa;
+  border-radius: 12px;
 `;
 
 const BackOrderList = ({ productId }) => {
   // Agregar mapeo de estados para la interfaz en español
   const statusMapping = {
-    pending: "Pendiente",
-    reserved: "Reservado"
+    pending: 'Pendiente',
+    reserved: 'Reservado',
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const user = useSelector(selectUser);
-  const { backOrders, loading, error } = useBackOrdersByProduct( productId);
-  console.log("-------", backOrders);
+  const { data: backOrders, loading, error } = useBackOrdersByProduct(productId);
 
   if (loading) return <Spin size="small" />;
   if (error || !backOrders?.length) return null;
 
-  const totalInitial = backOrders.reduce((sum, order) => sum + order.initialQuantity, 0);
-  const totalPending = backOrders.reduce((sum, order) => sum + order.pendingQuantity, 0);
-  const progress = Math.round(((totalInitial - totalPending) / totalInitial) * 100);
+  const totalInitial = backOrders.reduce(
+    (sum, order) => sum + order.initialQuantity,
+    0,
+  );
+  const totalPending = backOrders.reduce(
+    (sum, order) => sum + order.pendingQuantity,
+    0,
+  );
+  const progress = Math.round(
+    ((totalInitial - totalPending) / totalInitial) * 100,
+  );
 
   return (
     <>
@@ -132,17 +140,17 @@ const BackOrderList = ({ productId }) => {
         <div className="header">
           <FontAwesomeIcon icon={faBoxes} className="icon" />
           <span>Reservas por Abonar ({backOrders.length})</span>
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             size="small"
             className="view-more"
-            style={{ 
-              marginLeft: 'auto', 
+            style={{
+              marginLeft: 'auto',
               opacity: 0,
               padding: '4px 8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '4px',
             }}
           >
             Ver detalles
@@ -151,12 +159,11 @@ const BackOrderList = ({ productId }) => {
         </div>
         <OrdersBar>
           <div className="bar">
-            <div 
-              className="progress" 
-              style={{ width: `${progress}%` }} 
-            />
+            <div className="progress" style={{ width: `${progress}%` }} />
           </div>
-          <span className="total">{totalPending}/{totalInitial}</span>
+          <span className="total">
+            {totalPending}/{totalInitial}
+          </span>
         </OrdersBar>
       </Widget>
 
@@ -168,21 +175,34 @@ const BackOrderList = ({ productId }) => {
         width={600}
       >
         <DetailsList>
-          {backOrders.map(order => {
-            const orderProgress = Math.round(((order.initialQuantity - order.pendingQuantity) / order.initialQuantity) * 100);
+          {backOrders.map((order) => {
+            const orderProgress = Math.round(
+              ((order.initialQuantity - order.pendingQuantity) /
+                order.initialQuantity) *
+              100,
+            );
             return (
               <DetailItem key={order.id}>
                 <div className="top-info">
                   <Tooltip title="Cantidad pendiente/inicial">
-                    <span className="quantities">{order.pendingQuantity}/{order.initialQuantity} unidades</span>
+                    <span className="quantities">
+                      {order.pendingQuantity}/{order.initialQuantity} unidades
+                    </span>
                   </Tooltip>
                 </div>
                 <div className="date">
-                  <FontAwesomeIcon icon={faClock} style={{ marginRight: '8px' }} />
-                  {DateTime.fromJSDate(order.createdAt).setLocale('es').toLocaleString(DateTime.DATETIME_MED)}
-                  <StatusPill>{statusMapping[order.status] || order.status}</StatusPill>
+                  <FontAwesomeIcon
+                    icon={faClock}
+                    style={{ marginRight: '8px' }}
+                  />
+                  {DateTime.fromJSDate(order.createdAt)
+                    .setLocale('es')
+                    .toLocaleString(DateTime.DATETIME_MED)}
+                  <StatusPill>
+                    {statusMapping[order.status] || order.status}
+                  </StatusPill>
                 </div>
-                <Progress 
+                <Progress
                   percent={orderProgress}
                   size="small"
                   strokeColor="#0ea5e9"

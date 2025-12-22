@@ -1,60 +1,78 @@
-import React from 'react'
-import { useFormatPhoneNumber } from '../../../../../hooks/useFormatPhoneNumber'
 import { DateTime } from 'luxon';
-import styled from 'styled-components';
-import DateUtils from '../../../../../utils/date/dateUtils';
+import React from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
 import { selectBusinessData } from '../../../../../features/auth/businessSlice';
+import DateUtils from '../../../../../utils/date/dateUtils';
+import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
+import { resolveDocumentIdentity } from '../../../../../utils/invoice/documentIdentity.js';
 import { InfoItem, Spacing } from '../../Style';
 
-export const Header = ({ data, Space }) => {
-    let business = useSelector(selectBusinessData) || ""
-    const fechaActual = data?.date 
-      ? DateUtils.convertMillisToISODate(DateUtils.convertTimestampToMillis(data.date), "dd/MM/yyyy HH:mm") 
-      : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
-    return (
-        <Container>
-                <Title>{business?.name}</Title>
-                <InfoItem align='center' label={business?.address} justifyContent='center' />
-                <InfoItem align='center' label={useFormatPhoneNumber(business?.tel)} justifyContent='center' />
+export const Header = ({ data }) => {
+  let business = useSelector(selectBusinessData) || '';
+  const documentIdentity = resolveDocumentIdentity(data);
+  const fechaActual = data?.date
+    ? DateUtils.convertMillisToISODate(
+        DateUtils.convertTimestampToMillis(data.date),
+        'dd/MM/yyyy HH:mm',
+      )
+    : DateTime.now().toFormat('dd/MM/yyyy HH:mm');
+  return (
+    <Container>
+      <Title>{business?.name}</Title>
+      <InfoItem
+        align="center"
+        label={business?.address}
+        justifyContent="center"
+      />
+      <InfoItem
+        align="center"
+        label={formatPhoneNumber(business?.tel)}
+        justifyContent="center"
+      />
 
-                <Spacing size={'large'} />
+      <Spacing size={'large'} />
 
-                <InfoItem label={"Fecha"} value={fechaActual} />
-                {data?.NCF && <InfoItem label={"NCF"} value={data?.NCF} />}
-                <Spacing />
-            {
-                data?.client && (
-                    <div>
-                        <InfoItem label="CLIENTE" value={data?.client?.name?.toUpperCase() || 'CLIENTE GENERICO'} />
-                        {
-                            data?.client?.personalID && <InfoItem label="CEDULA/RNC" value={data?.client?.personalID} />
-                        }
-                        {
-                            data?.client?.tel && <InfoItem label="TEL" value={useFormatPhoneNumber(data?.client?.tel)} />
-                        }
-                        {
-                            data?.client?.address && <InfoItem label="DIR" value={data?.client?.address} />
-                        }
-                    </div>
-                )
-            }
-        </Container>
-    )
-}
+      <InfoItem label={'Fecha'} value={fechaActual} />
+      {documentIdentity.label && (
+        <InfoItem
+          label={documentIdentity.label}
+          value={documentIdentity.value || '-'}
+        />
+      )}
+      <Spacing />
+      {data?.client && (
+        <div>
+          <InfoItem
+            label="CLIENTE"
+            value={data?.client?.name?.toUpperCase() || 'CLIENTE GENERICO'}
+          />
+          {data?.client?.personalID && (
+            <InfoItem label="CEDULA/RNC" value={data?.client?.personalID} />
+          )}
+          {data?.client?.tel && (
+            <InfoItem
+              label="TEL"
+              value={formatPhoneNumber(data?.client?.tel)}
+            />
+          )}
+          {data?.client?.address && (
+            <InfoItem label="DIR" value={data?.client?.address} />
+          )}
+        </div>
+      )}
+    </Container>
+  );
+};
 const Container = styled.div`
-    margin-top: 1em;
-    margin-bottom: 0.6em;
-`
+  margin-top: 1em;
+  margin-bottom: 0.6em;
+`;
 const Title = styled.p`
-    font-size: 16px;
-    font-weight: 600;
-    padding: 0.2em 0;
-    text-align: center;
-    margin: 0;
-    
-`
-const Group = styled.div`
-    display: flex;
-    gap: 12px;
-`
+  padding: 0.2em 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+`;

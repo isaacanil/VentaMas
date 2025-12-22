@@ -2,11 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-export const Card = ({ data }) => {
+const CardComponent = ({ data, ...rest }, ref) => {
   const { title, route, description, icon } = data;
   const path = route || '#';
   return (
-    <Container to={path}>
+    <Container to={path} ref={ref} {...rest}>
       <Head>
         <Icon>{icon}</Icon>
         <Title>{title}</Title>
@@ -17,47 +17,53 @@ export const Card = ({ data }) => {
     </Container>
   );
 };
+
+export const Card = React.forwardRef(CardComponent);
+Card.displayName = 'SettingCard';
+
 const Head = styled.div`
-  
   display: flex;
   gap: 0.6em;
-`
+`;
 const Container = styled(Link)`
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
   padding: 16px;
   color: #333;
-  :hover{
-    text-decoration: none;
+  scroll-margin-top: 120px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+
+  &:hover {
     color: #333;
+    text-decoration: none;
+    transform: translateY(-2px);
   }
 
+  &.search-highlight {
+    box-shadow: 0 0 0 3px var(--primary-color, #1677ff);
+    transform: translateY(-2px);
+  }
 `;
 const CardWrapper = styled.div`
-  background-color: #fff;
- 
   color: #333;
-  
+  background-color: #fff;
 `;
 
 const Title = styled.span`
-  font-size: 16px;
-    font-weight: 600;
+  display: block;
   margin-bottom: 6px;
-    display: block;
-
+  font-size: 16px;
+  font-weight: 600;
 `;
 
 const Description = styled.p`
+  display: block;
   font-size: 14px;
-    display: block;
-    color: #666;
+  color: #666;
 `;
-
-
-
-
 
 const Icon = styled.div`
   margin-right: 8px;

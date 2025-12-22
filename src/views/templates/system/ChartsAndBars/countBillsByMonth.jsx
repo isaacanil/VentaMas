@@ -1,17 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 
 export function useBillsByMonth(bills) {
-  const [billCounts, setBillCounts] = useState([]);
-
-  useEffect(() => {
+  const billCounts = useMemo(() => {
     // Creamos un objeto vacío para almacenar el número de facturas por mes
     const billCountsByMonth = {};
 
     // Iteramos sobre el array de facturas
-    bills.map(({data}) => {
+    bills.forEach(({ data }) => {
       // Obtenemos el mes de la factura
       const month = new Date(data.date.seconds * 1000).getMonth();
-      console.log(month)
+
       // Si aún no existe una propiedad para este mes, la creamos
       if (!billCountsByMonth[month]) {
         billCountsByMonth[month] = 0;
@@ -26,9 +24,7 @@ export function useBillsByMonth(bills) {
     for (let i = 0; i < 12; i++) {
       counts.push(billCountsByMonth[i] || 0);
     }
-
-    // Actualizamos el estado con el arreglo con el número de facturas por mes
-    setBillCounts(counts);
+    return counts;
   }, [bills]);
 
   // Devolvemos el arreglo con el número de facturas por mes
@@ -36,9 +32,7 @@ export function useBillsByMonth(bills) {
 }
 
 export function useBillsByDay(bills) {
-  const [billCounts, setBillCounts] = useState([]);
-
-  useEffect(() => {
+  const billCounts = useMemo(() => {
     // Creamos un objeto vacío para almacenar el número de facturas por día
     const billCountsByDay = {};
 
@@ -64,13 +58,9 @@ export function useBillsByDay(bills) {
     for (let i = 1; i <= 31; i++) {
       counts.push(billCountsByDay[i] || 0);
     }
-
-    // Actualizamos el estado con el arreglo con el número de facturas por día
-    setBillCounts(counts);
+    return counts;
   }, [bills]);
 
   // Devolvemos el arreglo con el número de facturas por día
   return billCounts;
 }
-
-

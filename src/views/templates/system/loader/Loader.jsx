@@ -1,9 +1,17 @@
-
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
-import { selectLoaderMessage, selectLoaderShow } from '../../../../features/loader/loaderSlice';
 
-const Loader = ({ useRedux = true, show: propsShow, message: propsMessage, theme = 'dark'}) => {
+import {
+  selectLoaderMessage,
+  selectLoaderShow,
+} from '../../../../features/loader/loaderSlice';
+
+const Loader = ({
+  useRedux = true,
+  show: propsShow,
+  message: propsMessage,
+  theme = 'dark',
+}) => {
   const reduxShow = useSelector(selectLoaderShow);
   const reduxMessage = useSelector(selectLoaderMessage);
 
@@ -51,34 +59,34 @@ const Container = styled.div`
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background-color: ${({ theme }) => getThemeStyles(theme).backgroundColor};
-  z-index: 999;
 `;
 const LoaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1em;
+  align-items: center;
 `;
 const Spinner = styled.div`
+  width: 44px;
+  height: 44px;
   border: ${({ theme }) => getThemeStyles(theme).spinnerBorder};
   border-top-color: ${({ theme }) => getThemeStyles(theme).spinnerTopColor};
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
   animation: ${SpinnerAnimation} 0.8s linear infinite;
 `;
 
 const Message = styled.p`
+  font-family: Lato, sans-serif;
   font-size: 20px;
-  font-family: 'Lato', sans-serif;
-  text-align: center;
-  letter-spacing: 0.5px;
   font-weight: bold;
   color: ${({ theme }) => getThemeStyles(theme).textColor};
+  text-align: center;
+  letter-spacing: 0.5px;
 `;

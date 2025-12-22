@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
-import { findPathToNode } from "../utils/nodeUtils";
+import { useRef, useEffect } from 'react';
 
-const useSelectedNode = (data, selectedId, manuallyClosedNodes, setManualExpandedNodes) => {
-  const [selectedNode, setSelectedNode] = useState(selectedId);
+import { findPathToNode } from '../utils/nodeUtils';
+
+const useSelectedNode = (
+  data,
+  selectedId,
+  manuallyClosedNodes,
+  setManualExpandedNodes,
+) => {
+  const prevSelectedId = useRef(selectedId);
 
   useEffect(() => {
-    if (selectedId && selectedId !== selectedNode) {  // Solo ejecutar si el ID seleccionado cambia
+    if (selectedId && selectedId !== prevSelectedId.current) {
+      prevSelectedId.current = selectedId;
       const path = findPathToNode(data, selectedId);
       if (path) {
         setManualExpandedNodes((prev) => {
           const newExpanded = { ...prev };
           // Solo expandir los nodos padre que no están manualmente cerrados
-          path.forEach(id => {
+          path.forEach((id) => {
             if (!manuallyClosedNodes[id]) {
               newExpanded[id] = true;
             }
@@ -19,11 +26,10 @@ const useSelectedNode = (data, selectedId, manuallyClosedNodes, setManualExpande
           return newExpanded;
         });
       }
-      setSelectedNode(selectedId);
     }
-  }, [selectedId, data]);
+  }, [selectedId, data, manuallyClosedNodes, setManualExpandedNodes]);
 
-  return { selectedNode, setSelectedNode };
+  return { selectedNode: selectedId, setSelectedNode: () => undefined };
 };
 
 export default useSelectedNode;

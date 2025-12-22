@@ -4,10 +4,9 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   isVisible: false,
   product: null,
-  weight: 1.000,
-  product: null,
+  weight: 1.0,
   onAdd: null,
-  
+
   totalPrice: 0,
 };
 
@@ -18,13 +17,13 @@ const productWeightEntryModalSlice = createSlice({
     openModal: (state, action) => {
       state.isVisible = true;
       state.product = action.payload.product;
-      state.weight = 1.000;
-      state.totalPrice = action.payload.product.pricePerUnit * 1.000;
+      state.weight = 1.0;
+      state.totalPrice = action.payload.product.pricePerUnit * 1.0;
     },
     closeModal: (state) => {
       state.isVisible = false;
       state.product = null;
-      state.weight = 1.000;
+      state.weight = 1.0;
       state.totalPrice = 0;
     },
     setWeight: (state, action) => {
@@ -34,6 +33,7 @@ const productWeightEntryModalSlice = createSlice({
   },
 });
 
-export const { openModal, closeModal, setWeight } = productWeightEntryModalSlice.actions;
+export const { openModal, closeModal, setWeight } =
+  productWeightEntryModalSlice.actions;
 
 export default productWeightEntryModalSlice.reducer;

@@ -1,25 +1,31 @@
-import React, { useState } from 'react'
-import { BsFilter } from 'react-icons/bs'
-import styled from 'styled-components'
-import { Button } from '../../../../templates/system/Button/Button'
-import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter'
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
+import styled from 'styled-components';
+
+import { Button } from '@/views/templates/system/Button/Button';
+
+import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter';
+
+
 
 export const OrderFilter = () => {
-  const [MenuIsOpen, setMenuIsOpen] = useState(false)
-  const handleOpenMenu = () => setMenuIsOpen(!MenuIsOpen)
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+
+  const handleOpenMenu = () => setMenuIsOpen(!menuIsOpen);
+
   return (
     <Container>
       <Button
-        borderRadius='normal'
-        startIcon={<BsFilter />}
-        title={`Filtros`}
-        color='gray-dark'
+        borderRadius="normal"
+        startIcon={<FontAwesomeIcon icon={faFilter} />}
+        title="Filtros"
+        color="gray-dark"
         onClick={handleOpenMenu}
       />
-      <OrderMenuFilter MenuIsOpen={MenuIsOpen}/>
+      <OrderMenuFilter MenuIsOpen={menuIsOpen} />
     </Container>
-  )
-}
-const Container = styled.div`
-    
-`
+  );
+};
+
+const Container = styled.div``;

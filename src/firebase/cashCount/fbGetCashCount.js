@@ -1,8 +1,9 @@
-import { doc, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { db } from "../firebaseconfig";
-import { selectUser } from "../../features/auth/userSlice";
+import { doc, onSnapshot } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 
 /**
  * Subscribe to Firestore document changes with automatic error handling.
@@ -14,14 +15,18 @@ import { selectUser } from "../../features/auth/userSlice";
  * @returns {Function} - Unsubscribe function to call on component unmount.
  */
 const subscribeToCashCount = (businessId, docId, onChange, onError) => {
-    const cashCountRef = doc(db, 'businesses', businessId, "cashCounts", docId);
-    return onSnapshot(cashCountRef, (snapshot) => {
-        if (snapshot.exists()) {
-            onChange(snapshot.data());
-        } else {
-            onChange(null); // Handle case where no data is available
-        }
-    }, onError);
+  const cashCountRef = doc(db, 'businesses', businessId, 'cashCounts', docId);
+  return onSnapshot(
+    cashCountRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        onChange(snapshot.data());
+      } else {
+        onChange(null); // Handle case where no data is available
+      }
+    },
+    onError,
+  );
 };
 
 /**
@@ -31,29 +36,32 @@ const subscribeToCashCount = (businessId, docId, onChange, onError) => {
  * @returns {Object|null} - The cash count data or null if not available.
  */
 export const useFbGetCashCount = (id) => {
-    const [cashCount, setCashCount] = useState(null);
-    const user = useSelector(selectUser);
-    
-    useEffect(() => {
-        if (!id || !user?.businessID) {
-            setCashCount(null);
-            return;
-        }
+  const [cashCount, setCashCount] = useState(null);
+  const user = useSelector(selectUser);
 
-        const onError = (error) => {
-            console.error("Error fetching cash count:", error);
-            setCashCount(null);
-        };
+  if ((!id || !user?.businessID) && cashCount !== null) {
+    setCashCount(null);
+  }
 
-        const unsubscribe = subscribeToCashCount(
-            user.businessID, 
-            id, 
-            setCashCount, 
-            onError
-        );
+  useEffect(() => {
+    if (!id || !user?.businessID) {
+      return undefined;
+    }
 
-        return unsubscribe;
-    }, [id, user?.businessID]);
+    const onError = (error) => {
+      console.error('Error fetching cash count:', error);
+      setCashCount(null);
+    };
 
-    return cashCount;
+    const unsubscribe = subscribeToCashCount(
+      user.businessID,
+      id,
+      setCashCount,
+      onError,
+    );
+
+    return unsubscribe;
+  }, [id, user?.businessID]);
+
+  return cashCount;
 };

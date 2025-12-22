@@ -1,39 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+
 const scrollToTopOfWrapper = (wrapperRef) => {
-  if (wrapperRef.current) {
+  if (wrapperRef?.current) {
     wrapperRef.current.scrollTop = 0;
   }
 };
-export const useTablePagination = (data, sortedData, filteredData, itemsPerPage = 15, wrapperRef) => {
+
+export const useTablePagination = (
+  data,
+  sortedData,
+  filteredData,
+  itemsPerPage = 15,
+  wrapperRef,
+) => {
   const [currentPage, setCurrentPage] = useState(0);
 
-  useEffect(() => {
-    setCurrentPage(0); // Reiniciar la página actual a 0 cuando los datos cambian
-  }, [data]);
+  const total = filteredData?.length ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / itemsPerPage));
 
-  // Cálculo de páginas
-  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
-  const start = currentPage * itemsPerPage;
+  const clampedPage = Math.min(currentPage, pageCount - 1);
+  if (clampedPage !== currentPage) {
+    setCurrentPage(clampedPage);
+  }
+
+  const start = clampedPage * itemsPerPage;
   const end = start + itemsPerPage;
   const currentData = sortedData.slice(start, end);
 
-  const nextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, pageCount - 1))
+    const nextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, pageCount - 1));
     scrollToTopOfWrapper(wrapperRef);
   };
+
   const prevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
     scrollToTopOfWrapper(wrapperRef);
   };
-  const firstPage = () => {
+
+   const firstPage = () => {
     setCurrentPage(0);
     scrollToTopOfWrapper(wrapperRef);
   };
-  const lastPage = () =>{ 
-    setCurrentPage(pageCount - 1)
-    scrollToTopOfWrapper(wrapperRef);};
 
-  return { currentData, nextPage, prevPage, firstPage, lastPage, currentPage, pageCount };
+  const lastPage = () => {
+    setCurrentPage(pageCount - 1);
+    scrollToTopOfWrapper(wrapperRef);
+  };
+
+  return {
+    currentData,
+    nextPage,
+    prevPage,
+    firstPage,
+    lastPage,
+    currentPage,
+    pageCount,
+  };
 };
-
-

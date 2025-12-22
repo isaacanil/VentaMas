@@ -1,15 +1,17 @@
-import React from 'react'
-
 import { useState } from 'react';
 
-const useTableSorting = (filteredData, columns, config = { key: null, direction: 'asc' }) => {
+const useTableSorting = (
+  filteredData,
+  columns,
+  config = { key: null, direction: 'asc' },
+) => {
   const [sortConfig, setSortConfig] = useState(config);
 
   const sortedData = [...filteredData].sort((a, b) => {
     if (sortConfig.key === null || sortConfig.direction === 'none') return 0;
 
     const key = sortConfig.key;
-    const column = columns.find(col => col.accessor === key);
+    const column = columns.find((col) => col.accessor === key);
 
     const aValue = column.sortableValue ? column.sortableValue(a[key]) : a[key];
     const bValue = column.sortableValue ? column.sortableValue(b[key]) : b[key];
@@ -39,4 +41,3 @@ const useTableSorting = (filteredData, columns, config = { key: null, direction:
 };
 
 export default useTableSorting;
-

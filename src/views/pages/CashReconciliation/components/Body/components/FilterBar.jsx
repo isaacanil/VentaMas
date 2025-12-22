@@ -1,11 +1,9 @@
-import React from 'react'
+import styled from 'styled-components';
 
 export const FilterBar = () => {
-  return (
-  
-        <Container>
+  return <Container />;
+};
 
-        </Container>
- 
-  )
-}
+const Container = styled.div`
+  width: 100%;
+`;

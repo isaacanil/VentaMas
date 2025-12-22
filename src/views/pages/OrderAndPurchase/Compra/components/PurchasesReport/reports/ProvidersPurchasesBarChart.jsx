@@ -1,9 +1,12 @@
-import { Bar } from 'react-chartjs-2';
-import React, { useMemo, useRef } from 'react';
 import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import React, { useMemo, useRef } from 'react';
+import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -31,7 +34,7 @@ const options = {
                 label: function (context) {
                     let label = context.dataset.label || '';
                     if (label) {
-                        label += " " + useFormatPrice(context.parsed.y);
+                        label += " " + formatPrice(context.parsed.y);
                     }
                     return label;
                 }
@@ -50,11 +53,12 @@ const accumulatePurchaseDataByProvider = (purchases) => {
 };
 
 export const ProviderPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+    const normalizedPurchases = useMemo(() => Array.isArray(purchases) ? purchases : [], [purchases]);
 
-    const purchasesByProvider = useMemo(() => accumulatePurchaseDataByProvider(purchases), [purchases]);
+    const purchasesByProvider = useMemo(
+        () => accumulatePurchaseDataByProvider(normalizedPurchases),
+        [normalizedPurchases],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(purchasesByProvider);
         const dataTotals = labels.map(label => purchasesByProvider[label].total);
@@ -75,6 +79,10 @@ export const ProviderPurchasesBarChart = ({ purchases }) => {
 
     const chartRef = useRef(null);
 
+    if (!normalizedPurchases.length) {
+        return null;
+    }
+
     return (
         <Container>
             <Typography variant='h3'>Compras Totales por Proveedor</Typography>
@@ -84,7 +92,7 @@ export const ProviderPurchasesBarChart = ({ purchases }) => {
 }
 
 const Container = styled.div`
-    height: 200px;
     display: grid;
     gap: 1em;
+    height: 200px;
 `;

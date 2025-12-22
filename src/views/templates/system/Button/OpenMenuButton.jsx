@@ -1,47 +1,44 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
-import styled from 'styled-components'
-import { toggleOpenMenu } from '../../../../features/nav/navSlice'
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { toggleMenu } from '../../../../features/nav/navSlice';
 
 export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
-  const dispatch = useDispatch()
-  const toggleMenu = () => dispatch(toggleOpenMenu());
+  const dispatch = useDispatch();
+  const handleToggleMenu = () => dispatch(toggleMenu());
 
   return (
-    <Container
-      isOpen={isOpen}
-      onClick={onClick || toggleMenu} zIndex={zIndex}>
-      <MenuIcon isOpen={isOpen}></MenuIcon>
+    <Container $isOpen={isOpen} onClick={onClick || handleToggleMenu} $zIndex={zIndex}>
+      <MenuIcon $isOpen={isOpen}></MenuIcon>
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-:root {
-   --menu-items: rgb(241, 241, 241);
-   //btnMenuItem
-   --btnMenuItem-bg-color: var(--menu-items);
-   --btnMenuItem-width: 1.6em;
-   --btnMenuItem-height: 2px;
+  :root {
+    --menu-items: rgb(241 241 241);
 
-}
-      justify-self: start;
-  max-height: 2em;
-  min-width: 2em;
-  min-height: 2em;
-  max-width: 2em;
-  width: 2em;
-  height: 2em;
+    /* btnMenuItem */
+    --btn-menu-item-bg-color: var(--menu-items);
+    --btn-menu-item-width: 1.6em;
+    --btn-menu-item-height: 2px;
+  }
+
+  justify-self: start;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
+  width: 2em;
+  height: 2em;
+  background-color: rgb(0 0 0 / 20%);
   border-radius: var(--border-radius);
   cursor: pointer;
+  transition-delay: ${(props) => !props.$isOpen && '1s'};
 
-  z-index: ${props => props.isOpen ? 10000 : 0};
-  transition-delay: ${props => !props.isOpen && '1s'};
-
-`
+  @media (width <= 768px) {
+    width: 2.3em;
+    height: 2.3em;
+  }
+`;
 const MenuIcon = styled.div`
   position: relative;
   z-index: 10;
@@ -49,9 +46,14 @@ const MenuIcon = styled.div`
   height: 2px;
   background-color: var(--menu-items);
   transition: all 1s ease-in-out;
- 
 
-  &:after {
+  /* Iconos más grandes en móviles */
+  @media (width <= 768px) {
+    width: 1.4em;
+    height: 2.5px;
+  }
+
+  &::after {
     content: '';
     position: absolute;
     z-index: 10;
@@ -60,6 +62,12 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: 6px;
     transition: all 0.4s ease-in-out;
+
+    @media (width <= 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: 7px;
+    }
   }
 
   &::before {
@@ -71,9 +79,15 @@ const MenuIcon = styled.div`
     background-color: var(--menu-items);
     margin-top: -6px;
     transition: all 0.4s ease-in-out;
+
+    @media (width <= 768px) {
+      width: 1.4em;
+      height: 2.5px;
+      margin-top: -7px;
+    }
   }
-  ${props => {
-    switch (props.isOpen) {
+  ${(props) => {
+    switch (props.$isOpen) {
       case true:
         return `
         position: relative;
@@ -81,6 +95,12 @@ const MenuIcon = styled.div`
          height: 2px;
          background-color: transparent;
          transition: all 0.2s ease-in-out;
+         
+         @media (max-width: 768px) {
+           width: 1.4em;
+           height: 2.5px;
+         }
+         
         &::after {
             content: '';
             position: absolute;
@@ -91,7 +111,10 @@ const MenuIcon = styled.div`
             transform: rotate(-45deg);
             transition: all 0.4s ease-in-out;
 
-
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
 
          &::before {
@@ -103,20 +126,15 @@ const MenuIcon = styled.div`
             margin-top: 0;
             transform: rotate(45deg);
             transition: all 0.4s ease-in-out;
+            
+            @media (max-width: 768px) {
+              width: 1.4em;
+              height: 2.5px;
+            }
          }
-        `
+        `;
       default:
         break;
     }
   }}
-  
-  
-`
-
-
-
-
-
-
-
-
+`;

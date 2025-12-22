@@ -24,12 +24,15 @@ export function isPDFFile(filename) {
 
 export function getFileExtension(fileNameOrUrl) {
   // Si es una URL de Firebase Storage
-  if (typeof fileNameOrUrl === 'string' && fileNameOrUrl.includes('firebasestorage.googleapis.com')) {
+  if (
+    typeof fileNameOrUrl === 'string' &&
+    fileNameOrUrl.includes('firebasestorage.googleapis.com')
+  ) {
     const decodedUrl = decodeURIComponent(fileNameOrUrl);
-    const match = decodedUrl.match(/[^\/]+\.([^?]+)(?=\?|$)/i);
+    const match = decodedUrl.match(/[^/]+\.([^?]+)(?=\?|$)/i);
     return match ? match[1].toLowerCase() : '';
   }
-  
+
   // Para archivos locales o nombres de archivo normales
   return fileNameOrUrl.split('.').pop().toLowerCase();
 }

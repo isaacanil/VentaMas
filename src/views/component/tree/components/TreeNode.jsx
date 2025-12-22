@@ -1,12 +1,15 @@
-import React, { memo, useCallback, useMemo } from "react";
-import styled from "styled-components";
-import { faSpinner, faCircle } from "@fortawesome/free-solid-svg-icons";
-import { selectNode } from "../helpers/nodeHelper";
-import { NavigationButton } from "./NavigationButton";
-import NodeName from "./NodeName";
-import LevelGroup from "./LevelGroup";
-import ActionButtons from "./ActionButtons";
-import { LoadingIndicator } from "./LoadingIndicator";
+import { faSpinner, faCircle } from '@fortawesome/free-solid-svg-icons';
+import React, { useCallback, useMemo } from 'react';
+import styled from 'styled-components';
+
+import { selectNode } from '../helpers/nodeHelper';
+
+import ActionButtons from './ActionButtons';
+import LevelGroup from './LevelGroup';
+import { LoadingIndicator } from './LoadingIndicator';
+import { NavigationButton } from './NavigationButton';
+import NodeName from './NodeName';
+import { formatLots } from './nodeName.helpers';
 
 // Estilos con styled-components
 const NodeContainer = styled.div`
@@ -14,42 +17,45 @@ const NodeContainer = styled.div`
   grid-template-columns: min-content 1fr min-content;
   align-items: center;
   margin: 0;
-  padding: 0 0.2em;
+  padding: ${({ $hasLabel }) => ($hasLabel ? '6px 0.2em' : '0 0.2em')};
   border-radius: 6px;
-  background-color: ${(props) => (props.isSelected ? "#e9e9e9" : "transparent")};
-  cursor: pointer; // Replace the 'not-allowed' logic
-  opacity: 1; // Remove the disabled opacity
-  height: 40px;
+  background-color: ${(props) =>
+    props.isSelected ? '#e9e9e9' : 'transparent'};
+  cursor: pointer; /* Replace the 'not-allowed' logic */
+  opacity: 1; /* Remove the disabled opacity */
+  min-height: ${({ $hasLabel }) => ($hasLabel ? '48px' : '40px')};
+  height: auto;
   position: relative;
   width: 100%;
   overflow: hidden;
 
   &:hover {
     background-color: ${(props) =>
-      !props.disabled && (props.isSelected ? "#f0f0f0" : "#f0f0f0")};
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 35px;
-    top: 0;
-    height: 100%;
-    width: 20px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      ${(props) => (props.isSelected ? "#e9e9e9" : "white")}
-    );
-    pointer-events: none;
-  }
-
-  &:hover::after {
-    background: linear-gradient(to right, transparent, #f0f0f0);
+      !props.disabled && (props.isSelected ? '#f0f0f0' : '#f0f0f0')};
   }
 `;
 
-const TreeNode = memo(({
+const CountPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background-color: ${({ $empty }) =>
+    $empty ? 'rgba(148, 163, 184, 0.18)' : 'rgba(22, 119, 255, 0.15)'};
+  color: ${({ $empty }) => ($empty ? '#6b7280' : '#1677ff')};
+`;
+
+const ActionsSlot = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const TreeNode = ({
   node,
   level,
   expandedNodes,
@@ -66,15 +72,22 @@ const TreeNode = memo(({
   const isExpanded = expandedNodes[node.id] || false;
   const hasChildren = !!node.children?.length;
   const isSelected = selectedNode === node.id;
-  const isDisabled = config.disabledNodes?.includes(node.id);
+  const themeStyles = useMemo(() => {
+    if (node?.theme) return node.theme;
+    if (typeof config?.resolveNodeTheme === 'function') {
+      return config.resolveNodeTheme(node, { level, isSelected, isExpanded });
+    }
+    return null;
+  }, [config, node, level, isSelected, isExpanded]);
 
-  const match = useMemo(() => 
-    node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (node.productStock &&
-      node.productStock.some((stock) =>
-        stock.productName.toLowerCase().includes(searchTerm.toLowerCase())
-      )),
-    [node.name, node.productStock, searchTerm]
+  const match = useMemo(
+    () =>
+      node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (node.productStock &&
+        node.productStock.some((stock) =>
+          stock.productName.toLowerCase().includes(searchTerm.toLowerCase()),
+        )),
+    [node.name, node.productStock, searchTerm],
   );
 
   const getNodeIcon = useCallback(() => {
@@ -83,18 +96,43 @@ const TreeNode = memo(({
     return null;
   }, [node.isLoading, hasChildren]);
 
-  const handleToggle = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (hasChildren && !node.isLoading) {
-      onToggleNode(node.id);
+  const handleToggle = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (hasChildren && !node.isLoading) {
+        onToggleNode(node.id);
+      }
+    },
+    [hasChildren, node.id, node.isLoading, onToggleNode],
+  );
+
+  const currentPath = useMemo(
+    () => [...(path || []), node.id],
+    [path, node.id],
+  );
+
+  const showSummary = Boolean(config?.showLocationStockSummary);
+  const directLots = node?.stockSummary?.directLots;
+  const hasDirectInfo = Number.isFinite(directLots);
+  let pillLabel = null;
+  let pillEmpty = false;
+
+  if (showSummary) {
+    if (node.stockSummaryLoading) {
+      pillLabel = '...';
+      pillEmpty = false;
+    } else if (hasDirectInfo) {
+      pillLabel = formatLots(directLots);
+      pillEmpty = (directLots ?? 0) <= 0;
     }
-  }, [hasChildren, node.id, node.isLoading, onToggleNode]);
+  }
 
   return (
     <div>
       <NodeContainer
         isSelected={isSelected}
+        $hasLabel={Boolean(themeStyles?.label)}
         onClick={() =>
           selectNode({
             nodeId: node.id,
@@ -109,8 +147,15 @@ const TreeNode = memo(({
         }
       >
         <LevelGroup level={level} />
-
-        <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0, marginRight: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flex: 1,
+            minWidth: 0,
+            gap: 6,
+          }}
+        >
           <NavigationButton
             getNodeIcon={getNodeIcon}
             isExpanded={isExpanded}
@@ -118,27 +163,38 @@ const TreeNode = memo(({
             hasChildren={hasChildren}
             isLoading={node.isLoading}
             node={node}
-            setExpandedNodes={setExpandedNodes}
-            onToggleNode={onToggleNode} // Ensure onToggleNode is passed
             onClick={handleToggle}
           />
           <NodeName
             title={node.name}
             isMatch={match}
-            children={node.children}
             isLoading={node.isLoading}
             searchTerm={searchTerm}
             config={config}
             matchedStockCount={node.matchedStockCount}
+            stockSummary={node.stockSummary}
+            stockSummaryLoading={node.stockSummaryLoading}
             renderHighlightedText={renderHighlightedText}
+            themeStyles={themeStyles}
+            extraDetails={node.extraDetails}
+            tooltipDetails={node.tooltipDetails}
           />
           <LoadingIndicator isLoading={node.isLoading} />
         </div>
-
-        <ActionButtons node={node} actions={config.actions} level={level} path={path} /> {/* Usar 'path' prop */}
+        <ActionsSlot>
+          {pillLabel && <CountPill $empty={pillEmpty}>{pillLabel}</CountPill>}
+          <ActionButtons
+            node={node}
+            actions={config.actions}
+            level={level}
+            path={currentPath}
+          />
+        </ActionsSlot>{' '}
+        {/* Usar 'path' prop */}
       </NodeContainer>
 
-      {isExpanded && hasChildren && (
+      {isExpanded &&
+        hasChildren &&
         node.children.map((child) => (
           <TreeNode
             key={child.id}
@@ -152,21 +208,12 @@ const TreeNode = memo(({
             config={config}
             traverse={traverse}
             renderHighlightedText={renderHighlightedText}
-            path={path}
+            path={currentPath}
             onToggleNode={onToggleNode} // Ensure onToggleNode is passed to children
           />
-        ))
-      )}
+        ))}
     </div>
   );
-}, (prevProps, nextProps) => {
-  // Custom comparison function for memo
-  return (
-    prevProps.node === nextProps.node &&
-    prevProps.expandedNodes[prevProps.node.id] === nextProps.expandedNodes[prevProps.node.id] &&
-    prevProps.selectedNode === nextProps.selectedNode &&
-    prevProps.searchTerm === nextProps.searchTerm
-  );
-});
+};
 
 export default TreeNode;

@@ -1,8 +1,13 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { EmptyNewProduct, EmptyProduct, EmptyProductSelected } from "./emptyData";
+import { createSlice } from '@reduxjs/toolkit';
+
+import {
+  EmptyNewProduct,
+  EmptyProduct,
+  EmptyProductSelected,
+} from './emptyData';
 
 const customPizzaSlice = createSlice({
-  name: "customPizza",
+  name: 'customPizza',
   initialState: {
     products: [],
     pizzaSlices: [],
@@ -11,7 +16,7 @@ const customPizzaSlice = createSlice({
     product: EmptyProduct,
     productSelected: EmptyProductSelected,
     totalIngredientPrice: 0,
-    ingredientListNameSelected: "",
+    ingredientListNameSelected: '',
     newProduct: EmptyNewProduct,
   },
   reducers: {
@@ -52,5 +57,3 @@ export const {
 export default customPizzaSlice.reducer;
 
 export const selectCustomPizza = (state) => state.customPizza;
-
-

@@ -1,14 +1,17 @@
+import Lightbox from 'yet-another-react-lightbox';
+import Captions from 'yet-another-react-lightbox/plugins/captions';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
+import 'yet-another-react-lightbox/plugins/captions.css';
 
-import React from 'react';
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import Captions from "yet-another-react-lightbox/plugins/captions";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import "yet-another-react-lightbox/plugins/captions.css";
-
-const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightboxIndex, getImageFiles }) => (
+const ImageLightbox = ({
+  lightboxOpen,
+  setLightboxOpen,
+  lightboxIndex,
+  getImageFiles,
+}) => (
   <Lightbox
     open={lightboxOpen}
     close={() => setLightboxOpen(false)}
@@ -18,7 +21,7 @@ const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightb
     carousel={{
       spacing: 0,
       padding: 0,
-      imageFit: "contain",
+      imageFit: 'contain',
     }}
     zoom={{
       wheelZoomDistanceFactor: 100,
@@ -26,7 +29,7 @@ const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightb
       scrollToZoom: true,
     }}
     thumbnails={{
-      position: "bottom",
+      position: 'bottom',
       width: 120,
       height: 80,
       gap: 2,
@@ -34,7 +37,7 @@ const ImageLightbox = ({ lightboxOpen, setLightboxOpen, lightboxIndex, setLightb
     }}
     captions={{
       showToggle: true,
-      descriptionTextAlign: "left",
+      descriptionTextAlign: 'left',
     }}
   />
 );

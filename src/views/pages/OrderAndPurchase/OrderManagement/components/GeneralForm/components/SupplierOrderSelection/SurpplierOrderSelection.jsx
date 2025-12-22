@@ -1,15 +1,7 @@
-import React from 'react';
-import { Form, Select } from 'antd';
-import ProviderSelector from '../ProviderSelector';
-import OrderSelector from '../OrderSelector';
-
-const { Option } = Select;
-
-const SupplierOrderSelection = ({ supplierName, orderSelection, onChange }) => (
-  <div>
-    <ProviderSelector />
-    <OrderSelector />
-  </div>
-);
+/**
+ * Candidate to delete: no active imports reference this component.
+ * Left as a stub to avoid reintroducing unused dependencies during cleanup.
+ */
+const SupplierOrderSelection = () => null;
 
 export default SupplierOrderSelection;

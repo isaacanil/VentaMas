@@ -1,7 +1,13 @@
-import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import {
+  FileOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons';
 import { Tag, Empty, Tooltip } from 'antd';
-import { FileOutlined, DeleteOutlined, EyeOutlined, FileImageOutlined, FilePdfOutlined, CloudOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
+import styled from 'styled-components';
 
 const FileListContainer = styled.div`
   max-height: 300px;
@@ -13,7 +19,7 @@ const FileItem = styled.div`
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:hover {
     background-color: #f5f5f5;
   }
@@ -24,19 +30,13 @@ const FileInfo = styled.div`
   margin-left: 10px;
 `;
 
-const FileType = styled.span`
-  color: #888;
-  font-size: 12px;
-  margin-left: 10px;
-`;
-
 const DeleteButton = styled.button`
-  background: none;
-  border: none;
+  padding: 5px;
   color: #ff4d4f;
   cursor: pointer;
-  padding: 5px;
-  
+  background: none;
+  border: none;
+
   &:hover {
     color: #cf1322;
   }
@@ -52,13 +52,13 @@ const FileGroup = styled.div`
 `;
 
 const PreviewButton = styled.button`
-  background: none;
-  border: none;
-  color: #1890ff;
-  cursor: pointer;
   padding: 5px;
   margin-right: 8px;
-  
+  color: #1890ff;
+  cursor: pointer;
+  background: none;
+  border: none;
+
   &:hover {
     color: #40a9ff;
   }
@@ -66,15 +66,15 @@ const PreviewButton = styled.button`
 
 const GroupTitle = styled.h4`
   margin: 12px 0;
-  color: #666;
   font-weight: 500;
+  color: #666;
 `;
 
 const FileIcon = styled.span`
-  margin-right: 8px;
-  font-size: 16px;
   display: flex;
   align-items: center;
+  margin-right: 8px;
+  font-size: 16px;
 `;
 
 const FileList = ({ files = [], removeFile, handlePreview }) => {
@@ -103,13 +103,15 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
       others: { title: 'Otros Documentos', files: [] },
     };
 
-    files?.forEach(file => {
+    files?.forEach((file) => {
       const type = file.type?.toLowerCase() || 'others';
       const targetGroup = groups[type] || groups.others;
       targetGroup.files.push(file);
     });
 
-    return Object.entries(groups).filter(([_, group]) => group.files.length > 0);
+    return Object.entries(groups).filter(
+      ([_, group]) => group.files.length > 0,
+    );
   }, [files]);
 
   const renderFileItem = (file) => (
@@ -124,14 +126,10 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
         )}
       </FileIcon>
       <FileInfo>
-        <Tooltip title={file.name}>
-          {file.name}
-        </Tooltip>
-        <TypeTag color={getTagColor(file.type)}>
-          {file.type}
-        </TypeTag>
-        <TypeTag color={file.url ? "purple" : "blue"}>
-          {file.url ? "Remoto" : "Local"}
+        <Tooltip title={file.name}>{file.name}</Tooltip>
+        <TypeTag color={getTagColor(file.type)}>{file.type}</TypeTag>
+        <TypeTag color={file.url ? 'purple' : 'blue'}>
+          {file.url ? 'Remoto' : 'Local'}
         </TypeTag>
       </FileInfo>
       <div>
@@ -167,8 +165,10 @@ const FileList = ({ files = [], removeFile, handlePreview }) => {
 
 FileList.defaultProps = {
   files: [],
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   removeFile: () => {},
-  handlePreview: () => {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  handlePreview: () => {},
 };
 
 export default FileList;

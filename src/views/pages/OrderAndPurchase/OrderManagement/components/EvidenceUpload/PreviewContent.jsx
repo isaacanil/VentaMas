@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
 import { Drawer, Image } from 'antd';
+import { useEffect } from 'react';
+import styled from 'styled-components';
 
 const PreviewContainer = styled.div`
   max-width: 100%;
@@ -8,26 +8,34 @@ const PreviewContainer = styled.div`
 `;
 
 const PDFContainer = styled.div`
-  height: 100%;
-  margin: 0;
-  padding: 0;
   width: 100%;
-  
+  height: 100%;
+  padding: 0;
+  margin: 0;
+
   embed {
     width: 100%;
     height: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(0 0 0 / 10%);
     border-radius: 4px;
   }
 `;
 
-const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPreviewFile }) => {
+const PreviewContent = ({
+  previewFile,
+  previewVisible,
+  setPreviewVisible,
+  setPreviewFile,
+}) => {
   const renderPreview = () => {
     if (!previewFile) return null;
-    
+
     const extension = previewFile.name.split('.').pop().toLowerCase();
-    const fileUrl = previewFile.url || previewFile.preview || (previewFile.file && URL.createObjectURL(previewFile.file));
-    
+    const fileUrl =
+      previewFile.url ||
+      previewFile.preview ||
+      (previewFile.file && URL.createObjectURL(previewFile.file));
+
     if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
       return (
         <Image
@@ -37,7 +45,7 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
         />
       );
     }
-    
+
     if (extension === 'pdf') {
       return (
         <PDFContainer>
@@ -71,7 +79,7 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
         setPreviewFile(null);
       }}
       width="80%"
-      height='100%'
+      height="100%"
       title={previewFile?.name}
       placement="bottom"
       footer={null}
@@ -79,19 +87,17 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
         content: {
           height: '100%',
           padding: 0,
-          margin: 0
+          margin: 0,
         },
         body: {
           padding: '0',
           margin: '0',
           height: '100%',
           overflow: 'hidden',
-        }
+        },
       }}
     >
-      <PreviewContainer>
-        {renderPreview()}
-      </PreviewContainer>
+      <PreviewContainer>{renderPreview()}</PreviewContainer>
     </Drawer>
   );
 };

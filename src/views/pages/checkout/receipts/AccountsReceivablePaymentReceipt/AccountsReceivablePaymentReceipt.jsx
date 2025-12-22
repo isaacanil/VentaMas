@@ -1,81 +1,81 @@
-import React, { forwardRef } from 'react'
-import { InfoItem, ReceiptComponent, Subtitle } from '../../Style'
-import { Header } from '../../components/Header/Header'
+import React, { forwardRef } from 'react';
 import styled from 'styled-components';
-import { Line } from '../../Receipt';
-import { Row } from '../../components/Table/Row';
-import { PaymentArea } from './components/PaymentArea'
-import { GeneralBalance } from './components/GeneralBalance';
-import { useFormatPrice } from '../../../../../hooks/useFormatPrice';
-import { useFormatNumber } from '../../../../../hooks/useFormatNumber'
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
+import { Header } from '../../components/Header/Header';
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
+import { Row } from '../../components/Table/Row';
+import { Line } from '../../Receipt';
+import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '../../Style';
+
+import { GeneralBalance } from './components/GeneralBalance';
+import { PaymentArea } from './components/PaymentArea';
+
 
 export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
   const statusSpanish = {
     paid: 'Pagado',
-  }
-  const formatReceipt = (receipt) => (
-    `Cuota #${receipt.number}, ${useFormatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`
-);
+  };
+  const formatReceipt = (receipt) =>
+    `Cuota #${receipt.number}, ${formatPrice(receipt.amount)}, ${statusSpanish[receipt.status]}`;
   return (
-    <ReceiptComponent.HiddenPrintWrapper>
-      <ReceiptComponent.Container ref={ref}>
+    <HiddenPrintWrapper>
+      <Container ref={ref}>
         <Header data={data} />
         <Section>
           <GeneralBalance data={data} />
           <Line />
           <Row space>
-            <Subtitle align='center'>RECIBO DE PAGO</Subtitle>
+            <Subtitle align="center">RECIBO DE PAGO</Subtitle>
           </Row>
           <Line />
           {data?.accounts.map((account, index) => (
             <div key={index}>
-              <InfoItem label={"NO. DOCUMENTO"} value={`#${account?.arNumber}`} />
+              <InfoItem
+                label={'NO. DOCUMENTO'}
+                value={`#${account?.arNumber}`}
+              />
               <ReceiptList
-                title={"Pago Aplicado a: "}
+                title={'Pago Aplicado a: '}
                 list={account?.paidInstallments}
                 formatReceipt={formatReceipt}
               />
-              <InfoItem label={"FACTURA"} value={`#${useFormatNumber(account?.invoiceNumber)}`} />
-              <InfoItem label={"PAGO"} value={useFormatPrice(account?.totalPaid)} justifyContent='space-between' />
-              <InfoItem label={"BALANCE DE CUENTA"} value={useFormatPrice(account?.arBalance)} justifyContent='space-between' />
+              <InfoItem
+                label={'FACTURA'}
+                value={
+                  account?.invoiceNumber !== undefined &&
+                  account?.invoiceNumber !== null
+                    ? `#${formatNumber(account?.invoiceNumber)}`
+                    : 'N/A'
+                }
+              />
+              <InfoItem
+                label={'PAGO'}
+                value={formatPrice(account?.totalPaid)}
+                justifyContent="space-between"
+              />
+              <InfoItem
+                label={'BALANCE DE CUENTA'}
+                value={formatPrice(account?.arBalance)}
+                justifyContent="space-between"
+              />
               <Line />
             </div>
           ))}
         </Section>
         <PaymentArea data={data} />
-      </ReceiptComponent.Container>
-    </ReceiptComponent.HiddenPrintWrapper>
+      </Container>
+    </HiddenPrintWrapper>
   );
 });
 
+AccountsReceivablePaymentReceipt.displayName =
+  'AccountsReceivablePaymentReceipt';
+
 export default AccountsReceivablePaymentReceipt;
-
-const ReceiptContainer = styled.div`
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  border: 1px solid #000;
-`;
-
-
-const Info = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.5em;
-`;
 
 const Section = styled.div`
   margin-bottom: 20px;
-`;
-
-const Label = styled.span`
-  font-weight: bold;
 `;

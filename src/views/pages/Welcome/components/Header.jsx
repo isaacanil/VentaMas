@@ -1,80 +1,104 @@
-import React from 'react'
-// import { Button } from '../../../templates/system/Button/Button'
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup'
-import WelcomeData from '../WelcomeData.json'
-import styled from 'styled-components'
-import ROUTES_NAME from '../../../../routes/routesName'
-import { useMatchRouteByName } from '../../../templates/MenuApp/GlobalMenu/useMatchRouterByName'
-import { useNavigate } from 'react-router-dom'
-import findRouteByName from '../../../templates/MenuApp/findRouteByName'
-import * as ant from 'antd'
-const { Button } = ant;
+import { Button } from 'antd';
+import { motion } from 'framer-motion';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import ROUTES_NAME from '@/router/routes/routesName';
+import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup';
+import WelcomeData from '../WelcomeData.json';
+
 const Header = () => {
-    const { LOGIN, SIGNUP } = ROUTES_NAME.AUTH_TERM
+  const { LOGIN } = ROUTES_NAME.AUTH_TERM;
+  const navigate = useNavigate();
 
-    const loginPath = LOGIN
-    const signupPath = SIGNUP
-    const navigate = useNavigate()
-    const handleNavigate = (path) => {
-        navigate(path)
-    }
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
 
-    return (
-        <Head>
-            <Group>
-                <WebName>{WelcomeData.webName}</WebName>
+  const headerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' },
+    },
+  };
 
-                {/* <Logo src={WelcomeData.logo} alt="" /> */}
-            </Group>
-            <Group>
-                <ButtonGroup>
-                    <Button
-                        onClick={() => {
-                            handleNavigate(loginPath)
-                        }
-                        }
+  return (
+    <Head
+      as={motion.div}
+      variants={headerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <Group>
+        <WebName>{WelcomeData.webName}</WebName>
+      </Group>
+      <Group>
+        <ButtonGroup>
+          <Button
+            type="primary"
+            size="large"
+            onClick={() => handleNavigate(LOGIN)}
+          >
+            Iniciar sesión
+          </Button>
+          {/* <Button
+                        size="large"
+                        onClick={() => handleNavigate(SIGNUP)}
                     >
-                        Iniciar sesión
-                    </Button>
-                
-                </ButtonGroup>
-            </Group>
-        </Head>
-    )
-}
+                        Registrarse
+                    </Button> */}
+        </ButtonGroup>
+      </Group>{' '}
+    </Head>
+  );
+};
 
-export default Header
+export default Header;
 
 const Head = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
-  align-items: center;
-  height: 2.2em;
-  width: 100%;
   gap: 1em;
-  font-size: 25px;
-  padding: 0 1em;
+  align-items: center;
   justify-content: space-between;
-  background-color: var(--color) ;
-`
+  width: 100%;
+  height: 2.2em;
+  padding: 0 1em;
+  font-size: 25px;
+  background: linear-gradient(135deg, var(--color, #1890ff) 0%, #40a9ff 100%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+
+  @media (width <= 768px) {
+    height: 60px;
+    padding: 0 1em;
+    font-size: 20px;
+  }
+`;
+
 const Group = styled.div`
   display: flex;
+  gap: 12px;
+  align-items: center;
   color: white;
-`
-const Logo = styled.img`
-    height: 2em;
-    width: 2em;
-    margin: 0;
-    padding: 0;
-    display: block;
+`;
 
-`
 const WebName = styled.div`
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+
+  @media (width <= 768px) {
     font-size: 1.2em;
-    font-weight: 700;
-    margin: 0;
-    color: white;
-    @media (max-width: 800px) {
-        font-size: 1em;
-        text-align: center;
-    }
-`
+  }
+
+  @media (width <= 480px) {
+    font-size: 1em;
+  }
+`;

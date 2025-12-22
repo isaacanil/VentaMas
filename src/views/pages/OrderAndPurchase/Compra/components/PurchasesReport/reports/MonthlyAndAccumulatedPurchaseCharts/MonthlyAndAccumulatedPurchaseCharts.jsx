@@ -1,21 +1,28 @@
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { accumulatePurchaseData } from './utils/accumulatePurchaseData';
-import TotalAccumulatedPurchaseChart from './charts/TotalAccumulatedPurchasesChart';
-import MonthlyPurchasesChart from './charts/MonthlyPurchasesChart';
-import { options } from './chartOptions';
+
 import Typography from '../../../../../../../templates/system/Typografy/Typografy';
 
-export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
+import { options } from './chartOptions';
+import MonthlyPurchasesChart from './charts/MonthlyPurchasesChart';
+import TotalAccumulatedPurchaseChart from './charts/TotalAccumulatedPurchasesChart';
+import { accumulatePurchaseData } from './utils/accumulatePurchaseData';
 
-    const { monthlyData, totalAccumulated } = useMemo(() => accumulatePurchaseData(purchases), [purchases]);
+
+export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
+    const normalizedPurchases = useMemo(() => Array.isArray(purchases) ? purchases : [], [purchases]);
+
+    const { monthlyData, totalAccumulated } = useMemo(
+        () => accumulatePurchaseData(normalizedPurchases),
+        [normalizedPurchases],
+    );
     const labels = useMemo(() => Object.keys(monthlyData), [monthlyData]);
 
-    const maxMonthly = Math.max(...Object.values(monthlyData));
-    const maxScaleValue = Math.max(totalAccumulated, maxMonthly);
+    const hasData = normalizedPurchases.length > 0 && labels.length > 0;
+
+    const maxMonthly =
+        labels.length > 0 ? Math.max(...Object.values(monthlyData)) : 0;
+    const maxScaleValue = Math.max(totalAccumulated ?? 0, maxMonthly);
 
     const customOptions = useMemo(() => ({
         ...options,
@@ -27,6 +34,10 @@ export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
             },
         },
     }), [maxScaleValue]);
+
+    if (!hasData) {
+        return null;
+    }
 
     return (
         <Container>
@@ -40,8 +51,8 @@ export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }) => {
 };
 
 const Container = styled.div`
-    height: 400px;
     display: grid;
+    height: 400px;
 `;
 
 const Group = styled.div`

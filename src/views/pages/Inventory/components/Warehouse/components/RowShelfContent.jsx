@@ -1,20 +1,26 @@
-import React, { useCallback, useEffect, useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { DetailContainer, DetailItem } from "./WarehouseContent";
-import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { deleteSegment,  useListenAllSegments } from "../../../../../../firebase/warehouse/segmentService";
-import { useNavigate, useParams } from "react-router-dom";
-import { ProductsSection } from "./ProductsSection";
-import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
-import { icons } from "../../../../../../constants/icons/icons";
-import { openSegmentForm } from "../../../../../../features/warehouse/segmentModalSlice";
+import { faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, List, Tag, message } from 'antd';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
-const { Modal, Button, List, Tag, message } = antd;
+import { icons } from '../../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { openRowShelfForm } from '../../../../../../features/warehouse/rowShelfModalSlice';
+import { openSegmentForm } from '../../../../../../features/warehouse/segmentModalSlice';
+import {
+  navigateWarehouse,
+  selectWarehouse,
+} from '../../../../../../features/warehouse/warehouseSlice';
+import {
+  deleteSegment,
+  useListenAllSegments,
+} from '../../../../../../firebase/warehouse/segmentService';
+
+import { ProductsSection } from './ProductsSection';
+import { DetailContainer, DetailItem } from './WarehouseContent';
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
@@ -29,14 +35,14 @@ const RowShelfInfo = styled.div`
 
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
 `;
 
@@ -52,15 +58,15 @@ const SectionContent = styled.div`
 `;
 
 const AddButton = styled(Button)`
-  margin-bottom: 0; /* Alineación con el título */
   display: flex;
   align-items: center;
+  margin-bottom: 0; /* Alineación con el título */
 `;
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 export default function RowShelfContent() {
@@ -68,14 +74,16 @@ export default function RowShelfContent() {
   const dispatch = useDispatch();
   const { rowId, warehouseId, shelfId } = useParams();
   const user = useSelector(selectUser);
-  const [location, setLocation] = useState({ id: rowId, type: "rowShelf" });
-  const { selectedWarehouse: warehouse, selectedShelf: shelf, selectedRowShelf: rowShelf } = useSelector(selectWarehouse);
-  const { data: segments, loading, error } = useListenAllSegments(warehouseId, shelfId, rowId)
+  const location = useMemo(() => ({ id: rowId, type: 'rowShelf' }), [rowId]);
+  const { selectedRowShelf: rowShelf } = useSelector(selectWarehouse);
+  const { data: segments } = useListenAllSegments(warehouseId, shelfId, rowId);
 
   useEffect(() => {
     if (!warehouseId || !shelfId || !rowId) {
-      message.warning("Faltan IDs para cargar los datos correctamente. Verifique la URL o la selección.");
-      navigate("/warehouses"); // Redirigir al usuario si faltan IDs
+      message.warning(
+        'Faltan IDs para cargar los datos correctamente. Verifique la URL o la selección.',
+      );
+      navigate('/warehouses'); // Redirigir al usuario si faltan IDs
       return;
     }
   }, [warehouseId, shelfId, rowId, dispatch, navigate]);
@@ -84,54 +92,61 @@ export default function RowShelfContent() {
     dispatch(openRowShelfForm(rowShelf));
   };
 
-  const onNavigate = useCallback((segment) => {
-    navigate(`segment/${segment?.id}`);
-    dispatch(navigateWarehouse({ view: "segment", data: segment }));
-  }, [navigate, dispatch]);
+  const onNavigate = useCallback(
+    (segment) => {
+      navigate(`segment/${segment?.id}`);
+      dispatch(navigateWarehouse({ view: 'segment', data: segment }));
+    },
+    [navigate, dispatch],
+  );
 
-  const handleDeleteSegment = async (segment) => {
+  const handleDeleteSegment = useCallback(async (segment) => {
     try {
       await deleteSegment(user, warehouseId, shelfId, rowId, segment.id);
-      message.success("Segmento eliminado correctamente");
+      message.success('Segmento eliminado correctamente');
     } catch (error) {
-      console.error("Error al eliminar el segmento: ", error);
-      message.error("Error al eliminar el segmento");
+      console.error('Error al eliminar el segmento: ', error);
+      message.error('Error al eliminar el segmento');
     }
-  }
+  }, [user, warehouseId, shelfId, rowId]);
 
   const handleAddSegment = () => {
     dispatch(openSegmentForm());
-  }
+  };
 
-  const handleUpdateSegment = (segment) => {
+  const handleUpdateSegment = useCallback((segment) => {
     dispatch(openSegmentForm(segment));
-  }
+  }, [dispatch]);
 
-  const renderActions = useCallback((segment) => [
-    <Button
-      icon={<FontAwesomeIcon icon={faEdit} />}
-      onClick={(e) => {
-        e.stopPropagation();
-        handleUpdateSegment(segment);
-        //funcion de actualziar segmento
-      }}
-    />, // Se reutiliza la función de editar
-    <Button
-      icon={icons.editingActions.delete}
-      danger
-      onClick={(e) => {
-        e.stopPropagation();
-        Modal.confirm({
-          title: "Eliminar Segmento de Fila",
-          content: "¿Estás seguro de que deseas eliminar este segmento?",
-          okText: "Eliminar",
-          okType: "danger",
-          cancelText: "Cancelar",
-          onOk: () => handleDeleteSegment(segment),
-        });
-      }}
-    />,
-  ], [handleDeleteSegment]);
+  const renderActions = useCallback(
+    (segment) => [
+      <Button
+        key="edit-segment"
+        icon={<FontAwesomeIcon icon={faEdit} />}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleUpdateSegment(segment);
+        }}
+      />,
+      <Button
+        key="delete-segment"
+        icon={icons.editingActions.delete}
+        danger
+        onClick={(e) => {
+          e.stopPropagation();
+          Modal.confirm({
+            title: 'Eliminar Segmento de Fila',
+            content: '¿Estás seguro de que deseas eliminar este segmento?',
+            okText: 'Eliminar',
+            okType: 'danger',
+            cancelText: 'Cancelar',
+            onOk: () => handleDeleteSegment(segment),
+          });
+        }}
+      />,
+    ],
+    [handleDeleteSegment, handleUpdateSegment],
+  );
 
   return (
     <Container>
@@ -159,13 +174,10 @@ export default function RowShelfContent() {
           <DetailItem>
             <strong>Descripción:</strong> {rowShelf?.description}
           </DetailItem>
-
         </DetailContainer>
       </RowShelfInfo>
       <Body>
-        <ProductsSection
-          location={location}
-        />
+        <ProductsSection location={location} />
         <SectionContent>
           <SectionHeader>
             <SectionTitle>Segmentos en la Fila</SectionTitle>
@@ -178,19 +190,22 @@ export default function RowShelfContent() {
             </AddButton>
           </SectionHeader>
           <List
-            dataSource={segments}
+            dataSource={segments ?? []}
             renderItem={(segment) => (
               <List.Item
+                key={segment.id}
                 actions={renderActions(segment)}
                 onClick={() => onNavigate(segment)}
               >
-                <List.Item.Meta title={segment.name} description={`Capacidad: ${segment.capacity} unidades`} />
+                <List.Item.Meta
+                  title={segment.name}
+                  description={`Capacidad: ${segment.capacity} unidades`}
+                />
               </List.Item>
             )}
           />
         </SectionContent>
       </Body>
-
     </Container>
   );
 }

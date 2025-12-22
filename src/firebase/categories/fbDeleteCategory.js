@@ -1,15 +1,15 @@
-import { deleteDoc, doc } from "firebase/firestore"
-import { db } from "../firebaseconfig"
+import { deleteDoc, doc } from 'firebase/firestore';
+
+import { db } from '../firebaseconfig';
 
 export const fbDeleteCategory = async (user, id) => {
+  if (!user || !user?.businessID) return;
 
-  if (!user || !user?.businessID) return
-
-  const { businessID } = user
-  const categoryRef = doc(db, "businesses", businessID, "categories", id)
+  const { businessID } = user;
+  const categoryRef = doc(db, 'businesses', businessID, 'categories', id);
   try {
-    await deleteDoc(categoryRef)
+    await deleteDoc(categoryRef);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-}
+};

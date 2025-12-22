@@ -1,8 +1,13 @@
-import { createUserWithEmailAndPassword, signInWithCustomToken, signOut } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithCustomToken,
+  signOut,
+} from 'firebase/auth';
 
-import { saveUserData } from "./saveUserData";
-import { auth } from "../../../firebaseconfig";
+import { auth } from '../../../firebaseconfig';
 
+import { saveUserData } from './saveUserData';
+import { updateUserProfile } from './updateUserProfile';
 
 export const registerUser = async (user) => {
   const { email, password, name } = user;
@@ -15,7 +20,11 @@ export const registerUser = async (user) => {
     }
 
     // Crea el nuevo usuario
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     await updateUserProfile(userCredential.user, name);
     await saveUserData(userCredential.user, user);
 
@@ -26,7 +35,7 @@ export const registerUser = async (user) => {
     if (originalUser) {
       const originalToken = localStorage.getItem('authToken');
       await signInWithCustomToken(auth, originalToken);
-      localStorage.removeItem('authToken');  // limpia el token guardado
+      localStorage.removeItem('authToken'); // limpia el token guardado
     }
 
     return userCredential;

@@ -1,50 +1,66 @@
-import React from 'react'
+import { Spin } from 'antd';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
 
-import styled from 'styled-components'
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel'
-import { useSelector } from 'react-redux'
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice'
-import { CashReconciliation } from '../../../../../../../CashReconciliation'
-import { CashCountMetaData } from '../../CashCountMetaData'
-import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice'
-import Loader from '../../../../../../../../../templates/system/loader/Loader'
-import { Skeleton } from '../../../../../../../../../templates/system/Skeleton/Skeleton'
+import { formatNumber } from '@/utils/format';
 
-export const CashBoxClosureDetails = ({invoices, loading}) => {
-  const cashCount = useSelector(selectCashCount)
-  const {totalSystem, totalCharged, totalDiscrepancy} = CashCountMetaData(cashCount, invoices)
+import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
+import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
+
+
+export const CashBoxClosureDetails = ({ loading }) => {
+  const cashCount = useSelector(selectCashCount);
+  const totalSystem = cashCount?.totalSystem ?? 0;
+  const totalCharged = cashCount?.totalCharged ?? 0;
+  const totalDiscrepancy = cashCount?.totalDiscrepancy ?? 0;
+  const totalExpenses = cashCount?.totalExpenses ?? 0;
+  const totalReceivables = cashCount?.totalReceivables ?? 0;
+
   return (
-   <Skeleton loading={loading} >
-    <Container>
-      <InputWithHorizontalLabel
-        label={'Total Facturado'}
-        disabled
-        value={useFormatPrice(totalCharged)}
+    <Spin spinning={loading}>
+      <Container>
+        <InputWithHorizontalLabel
+          label={'Total Facturado'}
+          readOnly
+          value={formatNumber(totalCharged)}
         />
-      <InputWithHorizontalLabel
-        label={'Total sistema'}
-        disabled
-        value={useFormatPrice(totalSystem)}
-      />
-      {
-        totalDiscrepancy !== 0 && (
+        {totalReceivables > 0 && (
+          <InputWithHorizontalLabel
+            label={'Total Cobrado CxC'}
+            readOnly
+            value={formatNumber(totalReceivables)}
+          />
+        )}
+        {totalExpenses > 0 && (
+          <InputWithHorizontalLabel
+            label={'Total Gastos'}
+            readOnly
+            themeColor="warning"
+            value={formatNumber(totalExpenses)}
+          />
+        )}
+        <InputWithHorizontalLabel
+          label={'Total sistema'}
+          readOnly
+          value={formatNumber(totalSystem)}
+        />
+        {totalDiscrepancy !== 0 && (
           <InputWithHorizontalLabel
             themeColor={totalDiscrepancy > 0 ? 'success' : 'danger'}
+            readOnly
             label={totalDiscrepancy > 0 ? 'Sobrante' : 'Faltante'}
-            value={useFormatPrice(totalDiscrepancy)}
+            value={formatNumber(totalDiscrepancy)}
           />
-        )
-      }
-
-    </Container>
-   </Skeleton>
-  )
-}
+        )}
+      </Container>
+    </Spin>
+  );
+};
 const Container = styled.div`
-    display: grid;
-    gap: 0.4em;
-    padding: 0.4em;
-    border-radius: var(--border-radius);
-    border: var(--border1);
-    background-color: white;
-`
+  display: grid;
+  gap: 0.4em;
+  padding: 0.4em;
+  background-color: white;
+  border: var(--border1);
+  border-radius: var(--border-radius);
+`;

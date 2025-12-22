@@ -1,72 +1,89 @@
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, doc, collection } from "firebase/firestore";
-import { db } from "./firebaseconfig";
+import {
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
+  doc,
+  collection,
+} from 'firebase/firestore';
+
+import { db } from './firebaseconfig';
 
 // Función para leer datos de Firestore
 export async function fbGetDocs(refOrQuery, transaction = null) {
-    try {
-
-        return transaction ? await transaction.get(refOrQuery) : await getDocs(refOrQuery);
-    } catch (error) {
-        console.error("Error al leer datos de Firestore: ", error);
-        throw error;
-    }
+  try {
+    return transaction
+      ? await transaction.get(refOrQuery)
+      : await getDocs(refOrQuery);
+  } catch (error) {
+    console.error('Error al leer datos de Firestore: ', error);
+    throw error;
+  }
 }
 
-export async function fbReadData (refOrQuery, transaction = null) {
-    try {
-        return transaction ? await transaction.get(refOrQuery) : await getDocs(refOrQuery);
-    } catch (error) {
-        console.error("Error al leer datos de Firestore: ", error);
-        throw error;
-    }
+export async function fbReadData(refOrQuery, transaction = null) {
+  try {
+    return transaction
+      ? await transaction.get(refOrQuery)
+      : await getDocs(refOrQuery);
+  } catch (error) {
+    console.error('Error al leer datos de Firestore: ', error);
+    throw error;
+  }
 }
 
 export async function fbGetDoc(refOrQuery, transaction = null) {
-    try {
-        return transaction ? await transaction.get(refOrQuery) : await getDoc(refOrQuery);
-    } catch (error) {
-        console.error("Error al leer datos de Firestore: ", error);
-        throw error;
-    }
+  try {
+    return transaction
+      ? await transaction.get(refOrQuery)
+      : await getDoc(refOrQuery);
+  } catch (error) {
+    console.error('Error al leer datos de Firestore: ', error);
+    throw error;
+  }
 }
 export const getDocRef = (...segments) => {
-    return doc(db, ...segments);
+  return doc(db, ...segments);
 };
 
 // Function to get a collection reference using destructured array segments
 export const getCollectionRef = (...segments) => {
-    return collection(db, ...segments);
+  return collection(db, ...segments);
 };
-
 
 // Función para escribir datos en Firestore
 export async function fbSetDoc(ref, data, transaction = null) {
-    try {
-        return transaction ? await transaction.set(ref, data) : await setDoc(ref, data);
-    } catch (error) {
-        console.error("Error al escribir datos en Firestore: ", error);
-        throw error;
-    }
+  try {
+    return transaction
+      ? await transaction.set(ref, data)
+      : await setDoc(ref, data);
+  } catch (error) {
+    console.error('Error al escribir datos en Firestore: ', error);
+    throw error;
+  }
 }
 
 // Función para actualizar datos en Firestore
 export async function fbUpdateDoc(ref, data, transaction = null) {
-    try {
-        return transaction ? await transaction.update(ref, data) : await updateDoc(ref, data);
-    } catch (error) {
-        console.error("Error al actualizar datos en Firestore: ", error);
-        throw error;
-    }
+  try {
+    return transaction
+      ? await transaction.update(ref, data)
+      : await updateDoc(ref, data);
+  } catch (error) {
+    console.error('Error al actualizar datos en Firestore: ', error);
+    throw error;
+  }
 }
 
 // Función para eliminar datos de Firestore
 export async function fbDeleteDoc(ref, transaction = null) {
-    try {
-        return transaction ? await transaction.delete(ref) : await deleteDoc(ref);
-    } catch (error) {
-        console.error("Error al eliminar datos de Firestore: ", error);
-        throw error;
-    }
+  try {
+    return transaction ? await transaction.delete(ref) : await deleteDoc(ref);
+  } catch (error) {
+    console.error('Error al eliminar datos de Firestore: ', error);
+    throw error;
+  }
 }
 
-export default { fbGetDocs, fbGetDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc }
+export default { fbGetDocs, fbGetDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc };

@@ -17,9 +17,6 @@ export const barcodePrintModalSlice = createSlice({
         state.product = null;
       }
     },
-
-
-
   },
 });
 
@@ -28,4 +25,4 @@ export const { toggleBarcodeModal } = barcodePrintModalSlice.actions;
 
 export default barcodePrintModalSlice.reducer;
 
-export const SelectBarcodePrintModal = (state) => state.barcodePrintModal
+export const SelectBarcodePrintModal = (state) => state.barcodePrintModal;

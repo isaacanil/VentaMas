@@ -1,12 +1,28 @@
-import { deleteDoc, doc } from "firebase/firestore";
-import { db } from "../../firebaseconfig";
+import { httpsCallable } from 'firebase/functions';
+
+import { functions } from '../../firebaseconfig';
+
+import {
+  clearStoredSession,
+  getStoredSession,
+  setLogoutInProgress,
+} from './sessionClient';
+
+const clientLogoutCallable = httpsCallable(functions, 'clientLogout');
 
 export const fbSignOut = async () => {
-    // Limpiar sesión nueva
-    const sessionToken = localStorage.getItem('sessionToken');
+  setLogoutInProgress(true);
+  try {
+    const { sessionToken } = getStoredSession();
     if (sessionToken) {
-        await deleteDoc(doc(db, 'sessionTokens', sessionToken));
+      try {
+        await clientLogoutCallable({ sessionToken });
+      } catch (error) {
+        console.error('logout error:', error?.message || error);
+      }
     }
-
-    localStorage.removeItem('sessionToken');
+    clearStoredSession();
+  } finally {
+    setLogoutInProgress(false);
+  }
 };

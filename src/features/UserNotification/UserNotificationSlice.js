@@ -1,8 +1,10 @@
-import { createSlice, createSerializableStateInvariantMiddleware } from '@reduxjs/toolkit';
-import { initialBanknotes } from '../cashCount/initialBanknotes';
+import {
+  createSlice,
+  createSerializableStateInvariantMiddleware,
+} from '@reduxjs/toolkit';
 
-const nonSerializableMiddleware = createSerializableStateInvariantMiddleware({
-  isSerializable: value => typeof value !== 'function',
+createSerializableStateInvariantMiddleware({
+  isSerializable: (value) => typeof value !== 'function',
 });
 
 const initialState = {
@@ -22,7 +24,6 @@ const UserNotificationSlice = createSlice({
   reducers: {
     setUserNotification: (state, action) => {
       state.currentDialog = action.payload;
-      
     },
     closeUserNotification: (state) => {
       const initialValue = {
@@ -34,14 +35,10 @@ const UserNotificationSlice = createSlice({
       state.currentDialog = initialValue;
     },
   },
-
-  
 });
 
-export const {
-  setUserNotification,
-  closeUserNotification,
-} = UserNotificationSlice.actions;
+export const { setUserNotification, closeUserNotification } =
+  UserNotificationSlice.actions;
 
 export default UserNotificationSlice.reducer;
 

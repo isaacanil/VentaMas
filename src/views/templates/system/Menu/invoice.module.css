@@ -1,70 +1,69 @@
 .invoice-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    background: white;
-    border: 1px solid #ddd;
-    font-family: 'Helvetica', 'Arial', sans-serif;
-  }
-  
-  header {
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  
-  header h1 {
-    font-size: 24px;
-    margin: 0;
-  }
-  
-  address {
-    margin-bottom: 10px;
-  }
-  
-  main {
-    margin-bottom: 20px;
-  }
-  
-  .customer-info p,
-  .totals p {
-    margin: 0;
-    line-height: 1.5;
-  }
-  
-  .invoice-details {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-  }
-  
-  .invoice-details thead {
-    background-color: #f8f8f8;
-  }
-  
-  .invoice-details th,
-  .invoice-details td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .invoice-details th {
-    font-weight: bold;
-  }
-  
-  .totals {
-    text-align: right;
-    margin-bottom: 20px;
-  }
-  
-  footer {
-    border-top: 2px solid #000;
-    padding-top: 10px;
-    text-align: center;
-  }
-  
-  footer p {
-    font-size: 12px;
-  }
-  
+  max-width: 800px;
+  padding: 20px;
+  margin: auto;
+  font-family: Helvetica, Arial, sans-serif;
+  background: white;
+  border: 1px solid #ddd;
+}
+
+header {
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #000;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+address {
+  margin-bottom: 10px;
+}
+
+main {
+  margin-bottom: 20px;
+}
+
+.invoice-details {
+  width: 100%;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.invoice-details thead {
+  background-color: #f8f8f8;
+}
+
+.invoice-details th,
+.invoice-details td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.invoice-details th {
+  font-weight: bold;
+}
+
+.totals {
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+footer {
+  padding-top: 10px;
+  text-align: center;
+  border-top: 2px solid #000;
+}
+
+footer p {
+  font-size: 12px;
+}
+
+.customer-info p,
+.totals p {
+  margin: 0;
+  line-height: 1.5;
+}

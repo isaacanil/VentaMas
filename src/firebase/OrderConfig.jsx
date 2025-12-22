@@ -1,8 +1,3 @@
-import { useEffect, useMemo, useState } from "react"
-import { useDispatch } from "react-redux"
-import { getPendingOrdersFromDB } from "../features/order/ordersSlice"
-
-
 // export const OrdersData = () => {
 //     const [orders, setOrders] = useState([])
 //     useEffect(() => {
@@ -16,5 +11,3 @@ import { getPendingOrdersFromDB } from "../features/order/ordersSlice"
 //         if (orders.length > 0) dispatch(getPendingOrdersFromDB({ optionsID: 'Pedidos', datas: orders, propertyName: 'data'}))
 //     }, [orders])
 // }
-
-

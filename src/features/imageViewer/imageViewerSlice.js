@@ -1,22 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   show: false,
-  url: "",
+  url: '',
 };
 
 const imageViewerSlice = createSlice({
-  name: "imageViewer",
+  name: 'imageViewer',
   initialState,
   reducers: {
     toggleImageViewer: (state, action) => {
       const { show, url } = action.payload;
       state.show = show;
-      state.url = url || "";
+      state.url = url || '';
     },
-    clearImageViewer: (state) =>{
-     state = initialState;
-    }
+    clearImageViewer: () => {
+      return initialState;
+    },
   },
 });
 

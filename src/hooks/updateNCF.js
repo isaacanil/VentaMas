@@ -1,9 +1,13 @@
-import { useState } from "react"
-import { UpdateObjectProperty } from "../views/pages/setting/subPage/TaxReceipts/UpdateTaxReceipt"
+import { useState } from 'react';
 
-const updateNCF = (comprobante) => {
-    const [RNC, setRNC] = useState('')
-    const {name, type, serie, sequence, increase, quantity } = comprobante
-    
-    
-}
+export const useUpdateNCF = (comprobante) => {
+  const [_RNC, _setRNC] = useState('');
+  const {
+    name: _name,
+    type: _type,
+    serie: _serie,
+    sequence: _sequence,
+    increase: _increase,
+    quantity: _quantity,
+  } = comprobante;
+};

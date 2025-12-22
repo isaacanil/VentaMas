@@ -1,4 +1,2 @@
-export { UserIcon } from './system/user/UserIcon'
-export { PlusIcon } from './system/plus/plusIcon'
-export { ButtonSetting} from './system/setting/Setting'
-
+// Candidate cleanup: `UserIcon` panel appears unused; retaining only PlusIcon for now.
+export { PlusIcon } from './system/plus/plusIcon';

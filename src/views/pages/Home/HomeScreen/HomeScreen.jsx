@@ -1,50 +1,62 @@
-import React from 'react'
-import { AiFillHome } from 'react-icons/ai'
-import { BiCog, BiMoney } from 'react-icons/bi'
-import { FaCashRegister, FaShoppingCart } from 'react-icons/fa'
-import { FiChevronRight, FiHome, FiSettings } from 'react-icons/fi'
-import { IoCart, IoCash, IoCube, IoDocumentText, IoHome, IoSettings } from 'react-icons/io5'
-import { MdArchive, MdAttachMoney, MdHome, MdInsertChart, MdLocalGroceryStore, MdPlaylistAdd, MdSettings, MdShoppingCart, MdStorage } from 'react-icons/md'
-import { RiArchiveDrawerFill } from 'react-icons/ri'
-import { Line } from 'react-chartjs-2';
+import {
+  faHome,
+  faCashRegister,
+  faShoppingCart,
+  faCube,
+  faFileText,
+  faCog,
+  faBoxesStacked,
+  faWarehouse,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react';
+import styled from 'styled-components';
 
-import styled from 'styled-components'
-import { Sidebar } from './components/Menu/Nav'
-import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent'
+import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent';
+import { Sidebar } from './components/Menu/Nav';
+
 export const HomeScreen = () => {
   const items = [
     {
-      icon: <IoHome/>,
+      icon: <FontAwesomeIcon icon={faHome} />,
       label: 'Inicio',
     },
     {
-      icon: <IoCash />,
+      icon: <FontAwesomeIcon icon={faCashRegister} />,
       label: 'Ventas',
     },
     {
-      icon: <IoCart />,
+      icon: <FontAwesomeIcon icon={faShoppingCart} />,
       label: 'Compras',
     },
     {
-      icon: <IoCube/>,
+      icon: <FontAwesomeIcon icon={faCube} />,
       label: 'Inventario',
     },
     {
-      icon: <IoDocumentText />,
-      label: 'Registro'
+      icon: <FontAwesomeIcon icon={faBoxesStacked} />,
+      label: 'Control de Inventario',
     },
     {
-      icon: <IoSettings />,
+      icon: <FontAwesomeIcon icon={faWarehouse} />,
+      label: 'Almacenes',
+    },
+    {
+      icon: <FontAwesomeIcon icon={faFileText} />,
+      label: 'Registro',
+    },
+    {
+      icon: <FontAwesomeIcon icon={faCog} />,
       label: 'Configuración',
     },
-  ]
+  ];
   return (
     <Container>
       <Sidebar items={items}></Sidebar>
       <HomeScreenContent />
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-display: flex;
-`
+  display: flex;
+`;

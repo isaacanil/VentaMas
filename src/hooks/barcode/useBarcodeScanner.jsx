@@ -1,28 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useBarcodeScanner = (products, fn) => {
-    let barcode = '';
+  const barcodeRef = useRef('');
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            // Ignorar eventos que vengan de elementos input o textarea
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                return;
-            }
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Ignorar eventos que vengan de elementos input o textarea
+      if (
+        event.target.tagName === 'INPUT' ||
+        event.target.tagName === 'TEXTAREA'
+      ) {
+        return;
+      }
 
-            if (event.key === 'Enter') {
-                fn(products, barcode);
-                barcode = '';
-            } else {
-                barcode += event.key;
-            }
-        };
+      if (event.key === 'Enter') {
+        fn(products, barcodeRef.current);
+        barcodeRef.current = '';
+      } else {
+        barcodeRef.current += event.key;
+      }
+    };
 
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [products]);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [products, fn]);
 };
-
-

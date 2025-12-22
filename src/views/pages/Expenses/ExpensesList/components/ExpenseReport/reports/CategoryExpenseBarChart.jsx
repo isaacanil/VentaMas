@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+
 
 const options = {
     responsive: true,
@@ -28,7 +31,7 @@ const options = {
                 label: function (context) {
                     let label = context.dataset.label || '';
                     if (label) {
-                        label += ": " + useFormatPrice(context.parsed.y);
+                        label += ": " + formatPrice(context.parsed.y);
                     }
                     return label;
                 }
@@ -46,11 +49,14 @@ const accumulateCategoryData = (expenses) => {
 };
 
 export const CategoryExpenseBarChart = ({ expenses }) => {
-    if (!expenses || !Array.isArray(expenses)) {
-        return null;  // or some fallback UI
-    }
-
-    const categoryData = useMemo(() => accumulateCategoryData(expenses), [expenses]);
+    const normalizedExpenses = useMemo(
+        () => Array.isArray(expenses) ? expenses : [],
+        [expenses]
+    );
+    const categoryData = useMemo(
+        () => accumulateCategoryData(normalizedExpenses),
+        [normalizedExpenses],
+    );
     const data = useMemo(() => {
         const labels = Object.keys(categoryData);
         const dataTotals = labels.map(label => categoryData[label]);
@@ -69,6 +75,10 @@ export const CategoryExpenseBarChart = ({ expenses }) => {
         };
     }, [categoryData]);
 
+    if (!normalizedExpenses.length) {
+        return null;  // or some fallback UI
+    }
+
     return (
         <Container>
             <Typography variant='h3'>Gastos Totales por Categoría</Typography>
@@ -78,7 +88,7 @@ export const CategoryExpenseBarChart = ({ expenses }) => {
 }
 
 const Container = styled.div`
-    height: 200px;
     display: grid;
     gap: 1em;
+    height: 200px;
 `;

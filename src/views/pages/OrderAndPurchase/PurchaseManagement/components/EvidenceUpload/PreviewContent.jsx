@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import styled from 'styled-components';
 import { Drawer, Image, Spin, Alert } from 'antd';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import styled from 'styled-components';
 
 const PreviewContainer = styled.div`
   max-width: 100%;
@@ -8,23 +8,23 @@ const PreviewContainer = styled.div`
 `;
 
 const PDFContainer = styled.div`
-  height: 100%;
-  margin: 0;
-  padding: 0;
   width: 100%;
-  
+  height: 100%;
+  padding: 0;
+  margin: 0;
+
   embed {
     width: 100%;
     height: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(0 0 0 / 10%);
     border-radius: 4px;
   }
 `;
 
 const LoadingContainer = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100%;
 `;
 
@@ -35,14 +35,21 @@ const AccessibleStatus = styled.div`
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 `;
 
-const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPreviewFile }) => {
+const PreviewContent = ({
+  previewFile,
+  previewVisible,
+  setPreviewVisible,
+  setPreviewFile,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pdfLoadAttempts, setPdfLoadAttempts] = useState(0);
+  const pdfRef = useRef(null);
 
   const handlePdfLoad = useCallback(() => {
     setIsLoading(false);
@@ -51,26 +58,35 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
 
   const handlePdfError = useCallback(() => {
     if (pdfLoadAttempts < 2) {
-      setPdfLoadAttempts(prev => prev + 1);
+      setPdfLoadAttempts((prev) => prev + 1);
       // Reintento con un pequeño delay
       setTimeout(() => setIsLoading(true), 1000);
     } else {
       setIsLoading(false);
-      setError('No se pudo cargar el PDF. Por favor, verifique su conexión o intente abrirlo en una nueva pestaña.');
+      setError(
+        'No se pudo cargar el PDF. Por favor, verifique su conexión o intente abrirlo en una nueva pestaña.',
+      );
     }
   }, [pdfLoadAttempts]);
 
   const renderPreview = () => {
     if (!previewFile) return null;
-    
+
     const extension = previewFile.name.split('.').pop().toLowerCase();
-    const fileUrl = previewFile.url || previewFile.preview || (previewFile.file && URL.createObjectURL(previewFile.file));
-    
+    const fileUrl =
+      previewFile.url ||
+      previewFile.preview ||
+      (previewFile.file && URL.createObjectURL(previewFile.file));
+
     if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
       return (
         <>
           <AccessibleStatus role="status" aria-live="polite">
-            {isLoading ? 'Cargando imagen...' : error ? error : 'Imagen cargada'}
+            {isLoading
+              ? 'Cargando imagen...'
+              : error
+                ? error
+                : 'Imagen cargada'}
           </AccessibleStatus>
           <Image
             src={fileUrl}
@@ -78,15 +94,21 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
             style={{ maxWidth: '100%', height: 'auto' }}
             placeholder={
               <LoadingContainer>
-                <Spin size="large" tip="Cargando imagen..." />
+                <Spin size="large" tip="Cargando imagen...">
+                  <div style={{ width: '100%', minHeight: 160 }} />
+                </Spin>
               </LoadingContainer>
             }
-            onError={() => setError('No se pudo cargar la imagen. Verifique su conexión o permisos de acceso.')}
+            onError={() =>
+              setError(
+                'No se pudo cargar la imagen. Verifique su conexión o permisos de acceso.',
+              )
+            }
           />
         </>
       );
     }
-    
+
     if (extension === 'pdf') {
       return (
         <PDFContainer>
@@ -95,15 +117,19 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
           </AccessibleStatus>
           {isLoading && (
             <LoadingContainer>
-              <Spin size="large" tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`} />
+              <Spin
+                size="large"
+                tip={`Cargando PDF${pdfLoadAttempts > 0 ? ` (intento ${pdfLoadAttempts + 1}/3)` : ''}`}
+              >
+                <div style={{ width: '100%', minHeight: 160 }} />
+              </Spin>
             </LoadingContainer>
           )}
           <embed
+            ref={pdfRef}
             src={`${fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=100`}
             type="application/pdf"
             style={{ display: isLoading ? 'none' : 'block' }}
-            onLoad={handlePdfLoad}
-            onError={handlePdfError}
           />
           {error && (
             <Alert
@@ -132,20 +158,51 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
   useEffect(() => {
     let localUrl;
     if (previewFile) {
-      setIsLoading(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to clear error when a new preview file is provided
       setError(null);
-      
+
       if (previewFile.file instanceof File) {
         localUrl = URL.createObjectURL(previewFile.file);
       }
     }
-    
+
     return () => {
       if (localUrl) URL.revokeObjectURL(localUrl);
+       
       setError(null);
-      setIsLoading(false);
     };
   }, [previewFile]);
+
+  useEffect(() => {
+    if (previewFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Necessary to set loading state when a new preview file is available
+      setIsLoading(true);
+    } else {
+       
+      setIsLoading(false);
+    }
+  }, [previewFile]);
+
+  useEffect(() => {
+    if (!previewFile) return;
+
+    const extension = previewFile.name.split('.').pop()?.toLowerCase();
+    if (extension !== 'pdf') return;
+
+    const node = pdfRef.current;
+    if (!node) return;
+
+    const handleLoadEvent = () => handlePdfLoad();
+    const handleErrorEvent = () => handlePdfError();
+
+    node.addEventListener('load', handleLoadEvent);
+    node.addEventListener('error', handleErrorEvent);
+
+    return () => {
+      node.removeEventListener('load', handleLoadEvent);
+      node.removeEventListener('error', handleErrorEvent);
+    };
+  }, [previewFile, handlePdfError, handlePdfLoad]);
 
   return (
     <Drawer
@@ -156,27 +213,25 @@ const PreviewContent = ({ previewFile, previewVisible, setPreviewVisible, setPre
         setPdfLoadAttempts(0);
       }}
       width={window.innerWidth <= 768 ? '100%' : '80%'}
-      height='100%'
+      height="100%"
       title={previewFile?.name}
-      placement={window.innerWidth <= 768 ? "right" : "bottom"}
+      placement={window.innerWidth <= 768 ? 'right' : 'bottom'}
       footer={null}
       styles={{
         content: {
           height: '100%',
           padding: 0,
-          margin: 0
+          margin: 0,
         },
         body: {
           padding: '0',
           margin: '0',
           height: '100%',
           overflow: 'hidden',
-        }
+        },
       }}
     >
-      <PreviewContainer>
-        {renderPreview()}
-      </PreviewContainer>
+      <PreviewContainer>{renderPreview()}</PreviewContainer>
     </Drawer>
   );
 };

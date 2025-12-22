@@ -1,7 +1,6 @@
-
-import { Alert, Button, Popover, List, Tag, Space } from 'antd'
-import { SyncOutlined } from '@ant-design/icons'
-import styled from 'styled-components'
+import { SyncOutlined } from '@ant-design/icons';
+import { Alert, Button, Popover, List, Tag, Space } from 'antd';
+import styled from 'styled-components';
 
 const DiffItem = styled.div`
   display: flex;
@@ -9,7 +8,7 @@ const DiffItem = styled.div`
   gap: 4px;
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -27,7 +26,7 @@ const DiffList = ({ differences }) => (
   <List
     size="small"
     dataSource={differences}
-    renderItem={diff => (
+    renderItem={(diff) => (
       <DiffItem>
         <strong>{diff.label}</strong>
         <ValueComparison>
@@ -54,8 +53,8 @@ export const DgiiSyncAlert = ({ differences, onSync, loading }) => {
       message={
         <Space>
           <span>Datos no sincronizados con DGII</span>
-          <Popover 
-            title="Diferencias encontradas" 
+          <Popover
+            title="Diferencias encontradas"
             content={content}
             trigger="click"
           >
@@ -68,7 +67,7 @@ export const DgiiSyncAlert = ({ differences, onSync, loading }) => {
       type="warning"
       showIcon
       action={
-        <Button 
+        <Button
           icon={<SyncOutlined spin={loading} />}
           onClick={onSync}
           loading={loading}

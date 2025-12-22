@@ -1,43 +1,39 @@
-import React from 'react'
-import styled from 'styled-components'
-import { Header } from './components/Header'
-import { Body } from './components/Body/Body'
+import React from 'react';
+import styled from 'styled-components';
 
-export const ConfigModal = ({config}) => {
+import { Body } from './components/Body/Body';
+import { Header } from './components/Header';
+
+export const ConfigModal = ({ config }) => {
   return (
     <Backdrop>
       <Container>
-        <Header 
-        config = {config}
-        />
-        <Body 
-        config = {config}
-        />
+        <Header config={config} />
+        <Body config={config} />
       </Container>
     </Backdrop>
-  )
-}
+  );
+};
 const Container = styled.div`
+  display: grid;
+  grid-template-rows: min-content 1fr;
   width: 100%;
   max-width: 1000px;
   height: 100%;
   max-height: 520px;
+  overflow: hidden;
   background-color: white;
   border-radius: var(--border-radius);
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: min-content 1fr;
-`
+`;
 const Backdrop = styled.div`
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,.5);
-    z-index: 100;
-    top: 0;
-    left: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-`
-
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0 0 0 / 50%);
+`;

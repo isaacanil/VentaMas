@@ -1,40 +1,23 @@
-import React from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
-import { Button, ButtonGroup } from '../../../system/Button/Button'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import routesName from '../../../../../routes/routesName'
-import { openModalAddOrder, toggleAddPurchaseModal, toggleProviderModal } from '../../../../../features/modals/modalSlice'
+import React from 'react';
+import { useMatch } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { AddProductButton } from '../../../system/Button/AddProductButton'
-import { OPERATION_MODES } from '../../../../../constants/modes'
+import routesName from '@/router/routes/routesName';
+import { AddProductButton } from '../../../system/Button/AddProductButton';
+import { ButtonGroup } from '../../../system/Button/Button';
 
-export const CreatePurchaseToolbar = ({ side = 'left', searchData, setSearchData }) => {
-    const {  PURCHASES_CREATE  } = routesName.PURCHASE_TERM;
-    const matchWithCashReconciliation = useMatch(PURCHASES_CREATE)
+export const CreatePurchaseToolbar = ({ side = 'left' }) => {
+  const { PURCHASES_CREATE } = routesName.PURCHASE_TERM;
+  const matchWithCashReconciliation = useMatch(PURCHASES_CREATE);
+  return matchWithCashReconciliation ? (
+    <Container>
+      {side === 'right' && (
+        <ButtonGroup>
+          <AddProductButton />
+        </ButtonGroup>
+      )}
+    </Container>
+  ) : null;
+};
 
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const user = useSelector(selectUser)
-    const createMode = OPERATION_MODES.CREATE.id
-    const openProviderModal = () => {dispatch(toggleProviderModal({mode: createMode, data: null}))}
-    return (
-        matchWithCashReconciliation ? (
-            <Container>
-                {
-                    side === 'right' && (
-                        <ButtonGroup>
-                            
-                               <AddProductButton />
-                        </ButtonGroup>
-                    )
-                }
-            </Container>
-        ) : null
-    )
-}
-
-const Container = styled.div`
-
-`
+const Container = styled.div``;

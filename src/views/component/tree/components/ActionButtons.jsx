@@ -1,41 +1,52 @@
 // ActionButtons.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Menu, Dropdown } from 'antd';
+import { Dropdown } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 const ActionButtonsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  flex-shrink: 0;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: auto;
   background: inherit;
 `;
 
 const ActionButton = styled.button`
+  display: flex;
+  margin-left: 5px;
+  cursor: pointer;
   background: none;
   border: none;
-  display: flex;
-  cursor: pointer;
-  margin-left: 5px;
 
   &:hover {
     color: #0056b3;
   }
 `;
 
-const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' como prop
+const ActionButtons = ({ node, actions, level, path }) => {
+  // Agregar 'path' como prop
+  const visibleActions = useMemo(
+    () => {
+      const safeActions = Array.isArray(actions) ? actions : [];
+      return safeActions.filter((action) => {
+        if (!action) return false;
+        if (action.show && !action.show(node, level)) return false;
+        if (action.type === 'dropdown') {
+          return !!action.items;
+        }
+        return typeof action.handler === 'function';
+      });
+    },
+    [actions, level, node],
+  );
+
   return (
     <ActionButtonsContainer>
-      {actions.map((action) => {
-        // Verificar la propiedad "show" si está definida
-        if (action.show && !action.show(node, level)) {
-          return null;
-        }
-
+      {visibleActions.map((action) => {
         if (action.type === 'button') {
           return (
             <ActionButton
@@ -50,33 +61,41 @@ const ActionButtons = ({ node, actions, level, path }) => { // Agregar 'path' co
             </ActionButton>
           );
         } else if (action.type === 'dropdown') {
-          const items = typeof action.items === 'function'
-            ? action.items(node, level, path) // Pasar 'path' a las items
-            : action.items;
+          const items =
+            typeof action.items === 'function'
+              ? action.items(node, level, path) // Pasar 'path' a las items
+              : action.items;
+
+          if (!items || items.length === 0) return null;
 
           return (
             <Dropdown
               key={action.name}
-              overlay={
-                <Menu>
-                  {items.map((item) => (
-                    <Menu.Item
-                      key={item.name}
-                      onClick={(e) => {
-                        e.domEvent.stopPropagation();
-                        item.handler(node, level, path); // Pasar 'path' al handler
-                      }}
-                      danger={item.name.toLowerCase().includes('eliminar')}
-                    >
-                      <FontAwesomeIcon icon={item.icon} style={{ marginRight: '5px' }} />
+              menu={{
+                items: items.map((item) => ({
+                  key: item.name,
+                  label: (
+                    <>
+                      <FontAwesomeIcon
+                        icon={item.icon}
+                        style={{ marginRight: '5px' }}
+                      />
                       {item.name}
-                    </Menu.Item>
-                  ))}
-                </Menu>
-              }
+                    </>
+                  ),
+                  danger: item.name.toLowerCase().includes('eliminar'),
+                  onClick: (e) => {
+                    e.domEvent.stopPropagation();
+                    item.handler(node, level, path);
+                  },
+                })),
+              }}
               trigger={['click']}
             >
-              <ActionButton onClick={(e) => e.stopPropagation()} title={action.name}>
+              <ActionButton
+                onClick={(e) => e.stopPropagation()}
+                title={action.name}
+              >
                 <FontAwesomeIcon icon={action.icon} />
               </ActionButton>
             </Dropdown>
@@ -94,7 +113,7 @@ ActionButtons.propTypes = {
       name: PropTypes.string.isRequired,
       type: PropTypes.oneOf(['button', 'dropdown']).isRequired,
       icon: PropTypes.object.isRequired, // Asegúrate de que los íconos sean objetos válidos de FontAwesome
-      handler: PropTypes.func.isRequired,
+      handler: PropTypes.func, // Cambiar a opcional
       show: PropTypes.func, // Opcional
       items: PropTypes.oneOfType([
         PropTypes.arrayOf(
@@ -102,15 +121,20 @@ ActionButtons.propTypes = {
             name: PropTypes.string.isRequired,
             icon: PropTypes.object.isRequired,
             handler: PropTypes.func.isRequired,
-          })
+          }),
         ),
         PropTypes.func,
       ]),
-    })
-  ).isRequired,
+    }),
+  ),
   node: PropTypes.object.isRequired,
   level: PropTypes.number.isRequired,
   path: PropTypes.array, // Nueva propType para 'path'
+};
+
+ActionButtons.defaultProps = {
+  actions: [],
+  path: undefined,
 };
 
 export default ActionButtons;

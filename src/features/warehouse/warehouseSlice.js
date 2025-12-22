@@ -60,7 +60,7 @@ const warehouseSlice = createSlice({
         state.selectedSegment = data;
       }
     },
-    
+
     // Retrocede un nivel en la navegación
     back: (state) => {
       const viewMap = {
@@ -88,10 +88,10 @@ const warehouseSlice = createSlice({
     // Nueva acción para navegar a través de los breadcrumbs
     navigateToBreadcrumb: (state, action) => {
       const index = action.payload; // Índice del breadcrumb clicado
-      
+
       // Actualizar breadcrumbs
       state.breadcrumbs = state.breadcrumbs.slice(0, index + 1);
-      
+
       // Resetear selecciones basadas en el índice clickeado
       // Recordar: 0=warehouse, 1=shelf, 2=rowShelf, 3=segment
       switch (index) {
@@ -125,8 +125,8 @@ const warehouseSlice = createSlice({
   },
 });
 
-export const { navigateWarehouse, back, navigateToBreadcrumb } = warehouseSlice.actions;
+export const { navigateWarehouse, back, navigateToBreadcrumb } =
+  warehouseSlice.actions;
 export default warehouseSlice.reducer;
 
 export const selectWarehouse = (state) => state.warehouse;
-

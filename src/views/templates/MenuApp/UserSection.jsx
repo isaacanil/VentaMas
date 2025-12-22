@@ -1,31 +1,29 @@
-import { Button } from '../system/Button/Button'
-import React from 'react'
-import styled from 'styled-components'
-import { auth } from '../../../firebase/firebaseconfig'
-import { useDispatch, useSelector } from 'react-redux'
-import { logout, selectUser } from '../../../features/auth/userSlice'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons'
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut'
-import { useNavigate } from 'react-router-dom'
-import { icons } from '../../../constants/icons/icons'
-import { useDialog } from '../../../Context/Dialog/DialogContext'
-import { selectBusinessData } from '../../../features/auth/businessSlice'
-import * as antd from 'antd'
-const { Tag } = antd
+import { SwapOutlined } from '@ant-design/icons';
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tag } from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { useDialog } from '../../../Context/Dialog';
+import { selectBusinessData } from '../../../features/auth/businessSlice';
+import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../features/auth/userSlice';
+import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
 
 export const UserSection = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const { dialog, onClose, setDialogConfirm } = useDialog();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData);
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   const handleLogout = () => {
     dispatch(logout());
     fbSignOut();
-    navigate('/', { replace: true });
-  }
+    navigate('/login', { replace: true });
+  };
 
   const logoutOfApp = () => {
     // dispatch to the store with the logout action
@@ -35,94 +33,168 @@ export const UserSection = () => {
       type: 'warning',
       message: '¿Está seguro que desea cerrar sesión?',
       onConfirm: () => {
-        handleLogout()
-        onClose()
-      }
-    })
-  }
+        handleLogout();
+        onClose();
+      },
+    });
+  };
   const getDisplayName = (user) => {
-    return user?.displayName && user.displayName.trim() !== '' ? user.displayName : user?.username
-  }
+    return user?.displayName && user.displayName.trim() !== ''
+      ? user.displayName
+      : user?.username;
+  };
+
+  const getInitial = (name) => {
+    const n = (name || '').trim();
+    return n ? n.charAt(0).toUpperCase() : 'U';
+  };
+
+  const handleReturnToOriginalBusiness = () => {
+    dispatch(returnToOriginalBusiness());
+  };
+
+  // Mostrar botón de regresar si el usuario está en modo temporal (otro negocio)
+  const isTemporaryMode = useSelector(selectIsTemporaryMode);
 
   return (
-    <Container>
-      <UserInfo>
-        <Avatar>
-          <Icon>
-            <FontAwesomeIcon icon={faUser} />
-          </Icon>
-          <Username>{<span>{getDisplayName(user)} </span>}</Username>
-        </Avatar>
-        <Action>
-          <Button
-            startIcon={icons.operationModes.logout}
-            color={'gray-contained'}
-            title={'Salir'}
-            size="medium"
-            borderRadius='normal'
-            onClick={logoutOfApp}
-          />
-        </Action>
-      </UserInfo>
-      <Business color='blue'>{user === null ? null : <span>{business?.name} </span>}</Business>
+    <Container role="group" aria-label="Usuario">
+      <Left>
+        <AvatarCircle aria-hidden>
+          {getInitial(getDisplayName(user) || user?.email || 'Usuario')}
+        </AvatarCircle>
+        <Info>
+          <Username title={getDisplayName(user) || 'Usuario'}>
+            {getDisplayName(user) || 'Usuario'}
+          </Username>
+          <BusinessPill color="blue">
+            <span>{business?.name || 'Negocio'}</span>
+          </BusinessPill>
+        </Info>
+      </Left>
+      <Action>
+        {isTemporaryMode && (
+          <IconButton
+            type="button"
+            aria-label="Regresar al negocio original"
+            title="Regresar al negocio original"
+            onClick={handleReturnToOriginalBusiness}
+          >
+            <SwapOutlined />
+         
+          </IconButton>
+        )}
+        <IconButton
+          type="button"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          onClick={logoutOfApp}
+        >
+          <FontAwesomeIcon icon={faArrowRightFromBracket} />
+        </IconButton>
+      </Action>
     </Container>
-  )
-}
-
-
+  );
+};
 
 const Container = styled.div`
-
-  display: grid;
-  gap: 0.6em;
-    padding: 0.8em 1em;
-    overflow: hidden;
-  
-`
-const Icon = styled.div`
-  background-color: var(--color2);
-  max-height: 2em; 
-  max-width: 2em;
-  height: 2em; 
-  width: 2em;
   display: flex;
+  gap: 0.8em;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8em 1em;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+`;
+
+const Left = styled.div`
+  display: flex;
+  gap: 0.8em;
+  align-items: center;
+  min-width: 0; /* enable text truncation */
+`;
+
+const Info = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  min-width: 0;
+`;
+
+const Username = styled.div`
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  color: #1f1f1f;
+  text-transform: capitalize;
+  white-space: nowrap;
+`;
+
+const AvatarCircle = styled.div`
+  display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
-  border-radius: var(--border-radius-light);
-  color: #555555;
-
-`
-
-const UserInfo = styled.div`
- display: flex;
- gap: 0.4em;
- justify-content: space-between;
-`
-const Username = styled.div`
+  width: 2rem;
+  height: 2rem;
   font-weight: 600;
-  color: #636262;
-  text-transform: capitalize;
-`
-const Avatar = styled.div` 
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
+  color: #fff;
+  user-select: none;
+  background: linear-gradient(135deg, #7c4dff 0%, #8e2de2 100%);
+  border-radius: 9999px;
+`;
 
-`
-const Business = styled(Tag)`  
-white-space: nowrap;
-width: 100%;
-overflow: hidden;
-text-overflow: ellipsis;
-font-size: 14px;
-padding: 0.4em 0.8em;
-border-radius: var(--border-radius);
+const BusinessPill = styled(Tag)`
+  align-self: flex-start;
+  max-width: 240px;
+  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 9999px;
 
-`
+  span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;
+
 const Action = styled.div`
   display: flex;
+  gap: 0.5em;
   align-items: center;
-  gap: 1em;
-  
   justify-content: center;
-`
+`;
+
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #595959;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    color: #262626;
+    background: #f5f5f5;
+  }
+
+  &:active {
+    transform: translateY(0.5px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #7c4dff;
+    outline-offset: 2px;
+  }
+`;

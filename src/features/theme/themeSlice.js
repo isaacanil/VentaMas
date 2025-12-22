@@ -16,12 +16,10 @@ const themeSlice = createSlice({
       state.mode = action.payload;
       if (state.mode === 'dark') {
         localStorage.setItem('theme', 'light');
-      }
-      else {
+      } else {
         localStorage.setItem('theme', 'dark');
       }
-
-    }
+    },
   },
 });
 
@@ -29,5 +27,3 @@ export const { toggleTheme, setTheme } = themeSlice.actions;
 export default themeSlice.reducer;
 
 export const selectThemeMode = (state) => state.theme.mode;
-
-

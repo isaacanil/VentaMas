@@ -5,26 +5,26 @@ const ModalWrapper = styled.div`
   position: fixed;
   top: 0;
   left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgb(0 0 0 / 30%);
 `;
 
 const ModalContent = styled.div`
   width: 80%;
   max-width: 600px;
-  background-color: white;
   padding: 1rem;
+  background-color: white;
   border-radius: 0.5rem;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
 `;
 
@@ -33,10 +33,10 @@ const ModalTitle = styled.h2`
 `;
 
 const ModalCloseButton = styled.button`
-  background-color: transparent;
-  border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  background-color: transparent;
+  border: none;
 `;
 
 const ModalFooter = styled.div`
@@ -46,16 +46,16 @@ const ModalFooter = styled.div`
 `;
 
 const ModalButton = styled.button`
-  background-color: #0077ff;
+  padding: 0.5rem 1rem;
   color: white;
+  cursor: pointer;
+  background-color: #07f;
   border: none;
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background-color: #0066cc;
+    background-color: #06c;
   }
 `;
 
@@ -68,7 +68,7 @@ const ModalToggleButton = styled.button`
   transition: color 0.2s ease-in-out;
 
   &:hover {
-    color: #0077ff;
+    color: #07f;
   }
 
   &:focus {
@@ -82,7 +82,12 @@ const ModalToggleButton = styled.button`
     `}
 `;
 
-export const AddProductAndServicesModal = ({ title, children, onClose, onSave }) => {
+export const AddProductAndServicesModal = ({
+  title,
+  children,
+  onClose,
+  onSave,
+}) => {
   const [isProductSelected, setIsProductSelected] = useState(true);
 
   const handleProductToggle = () => {
@@ -101,10 +106,16 @@ export const AddProductAndServicesModal = ({ title, children, onClose, onSave })
           <ModalCloseButton onClick={onClose}>X</ModalCloseButton>
         </ModalHeader>
         <div>
-          <ModalToggleButton active={isProductSelected} onClick={handleProductToggle}>
+          <ModalToggleButton
+            active={isProductSelected}
+            onClick={handleProductToggle}
+          >
             Producto
           </ModalToggleButton>
-          <ModalToggleButton active={!isProductSelected} onClick={handleServiceToggle}>
+          <ModalToggleButton
+            active={!isProductSelected}
+            onClick={handleServiceToggle}
+          >
             Servicio
           </ModalToggleButton>
         </div>
@@ -116,5 +127,3 @@ export const AddProductAndServicesModal = ({ title, children, onClose, onSave })
     </ModalWrapper>
   );
 };
-
-

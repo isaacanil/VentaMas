@@ -1,5 +1,3 @@
-import { nanoid } from 'nanoid'; // Importación correcta de nanoid
-import { db } from '../firebaseconfig';
 import {
   collection,
   getDocs,
@@ -12,9 +10,13 @@ import {
   where,
   getDoc,
 } from 'firebase/firestore';
+import { nanoid } from 'nanoid'; // Importación correcta de nanoid
 import { useEffect, useMemo, useState } from 'react';
-import { selectUser } from '../../features/auth/userSlice';
 import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 import { deleteAllProductStocksByBatch } from './productStockService';
 
 // Obtener referencia de la colección de batches para un negocio específico
@@ -52,7 +54,13 @@ export const createBatch = async (user, batchData) => {
 export const getBatchById = async (user, batchId) => {
   try {
     if (!batchId) return null;
-    const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', batchId);
+    const batchDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'batches',
+      batchId,
+    );
     const snapshot = await getDoc(batchDocRef);
     if (snapshot.exists()) {
       return snapshot.data();
@@ -76,7 +84,7 @@ export const getAllBatches = async (user, productID = null) => {
         batchCollectionRef,
         where('productId', '==', productID),
         where('isDeleted', '==', false),
-        where('status', '==', 'active')
+        where('status', '==', 'active'),
       );
     } else {
       // Sin filtro de productId, obtener todos los batches no eliminados
@@ -101,29 +109,26 @@ export const listenAllBatches = (user, productID = null, callback) => {
     let q;
 
     if (productID) {
-      q = query(
-        batchCollectionRef,
-        where('productId', '==', productID),
-      );
+      q = query(batchCollectionRef, where('productId', '==', productID));
     } else {
       q = query(
         batchCollectionRef,
-        where('isDeleted', '==', false) // Asegúrate de filtrar por isDeleted correctamente
+        where('isDeleted', '==', false), // Asegúrate de filtrar por isDeleted correctamente
       );
     }
 
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const batches = querySnapshot.docs.map(doc => ({
+        const batches = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         }));
         callback(batches);
       },
       (error) => {
         console.error('Error al escuchar documentos en tiempo real:', error);
-      }
+      },
     );
 
     return unsubscribe;
@@ -139,13 +144,15 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
     // Verificar que user y user.businessID estén definidos
     if (!user || !user.businessID) {
       console.error('User o user.businessID no están definidos');
-      return () => { }; // Retorna una función de limpieza vacía
+       
+      return undefined; // Retorna una función de limpieza vacía
     }
 
     // Verificar que batchIDs es un array válido y no está vacío
     if (!Array.isArray(batchIDs) || batchIDs.length === 0) {
       console.warn('No se proporcionaron batch IDs para escuchar');
-      return () => { };
+       
+      return undefined;
     }
 
     const unsubscribeFuncs = [];
@@ -157,36 +164,45 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
         return;
       }
 
-      const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', batchID);
+      const batchDocRef = doc(
+        db,
+        'businesses',
+        user.businessID,
+        'batches',
+        batchID,
+      );
 
       const unsubscribe = onSnapshot(
         batchDocRef,
         (docSnapshot) => {
           if (docSnapshot.exists()) {
             const updatedBatch = { id: docSnapshot.id, ...docSnapshot.data() };
-            console.log('Updated batch:', updatedBatch);
 
             // Actualizar el estado de los batches
             callback((prevBatches) => {
               // Si prevBatches es undefined, inicializarlo como un array vacío
               const previous = prevBatches || [];
               // Actualizar o agregar el batch
-              const batchExists = previous.some(batch => batch.id === updatedBatch.id);
+              const batchExists = previous.some(
+                (batch) => batch.id === updatedBatch.id,
+              );
               if (batchExists) {
                 return previous.map((batch) =>
-                  batch.id === updatedBatch.id ? updatedBatch : batch
+                  batch.id === updatedBatch.id ? updatedBatch : batch,
                 );
               } else {
                 return [...previous, updatedBatch];
               }
             });
           } else {
-            console.warn(`Batch con ID ${batchID} no existe en la base de datos.`);
+            console.warn(
+              `Batch con ID ${batchID} no existe en la base de datos.`,
+            );
           }
         },
         (error) => {
           console.error('Error escuchando batch por ID:', error);
-        }
+        },
       );
 
       unsubscribeFuncs.push(unsubscribe);
@@ -205,12 +221,17 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
 // Actualizar un batch existente
 export const updateBatch = async (user, data) => {
   try {
-    const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', data.id);
+    const batchDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'batches',
+      data.id,
+    );
     await updateDoc(batchDocRef, {
       ...data,
       updatedAt: serverTimestamp(),
       updatedBy: user.uid,
-
     });
     return data;
   } catch (error) {
@@ -220,15 +241,19 @@ export const updateBatch = async (user, data) => {
 };
 
 // Función para revisar el estado del batch en función de los productStocks asociados
-export async function updateBatchStatusForProductStock(businessID, batchId, productId) {
+export async function updateBatchStatusForProductStock(
+  businessID,
+  batchId,
+  productId,
+) {
   // Consulta todos los productStock que pertenecen a ese batch y producto
   const productStockQuery = query(
-    collection(db, "businesses", businessID, "productsStock"),
-    where("isDeleted", "==", false),
-    where("status", "==", "active"),
-    where("batchId", "==", batchId),
-    where("productId", "==", productId),
-    where("quantity", ">", 0)
+    collection(db, 'businesses', businessID, 'productsStock'),
+    where('isDeleted', '==', false),
+    where('status', '==', 'active'),
+    where('batchId', '==', batchId),
+    where('productId', '==', productId),
+    where('quantity', '>', 0),
   );
 
   const querySnapshot = await getDocs(productStockQuery);
@@ -240,26 +265,39 @@ export async function updateBatchStatusForProductStock(businessID, batchId, prod
   });
 
   // Referencia al documento del batch
-  const batchRef = doc(db, "businesses", businessID, "batches", batchId);
+  const batchRef = doc(db, 'businesses', businessID, 'batches', batchId);
 
   if (totalQuantity <= 0) {
     // Si en conjunto no hay stock, se marca el batch como inactivo
-    await updateDoc(batchRef, { quantity: 0, status: "inactive", updatedAt: serverTimestamp() });
+    await updateDoc(batchRef, {
+      quantity: 0,
+      status: 'inactive',
+      updatedAt: serverTimestamp(),
+    });
   }
 }
-
 
 // Marcar un batch como eliminado
 export const deleteBatch = async ({ user, batchId, movement }) => {
   try {
-    const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', batchId);
+    const batchDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'batches',
+      batchId,
+    );
     const batchSnap = await getDoc(batchDocRef);
 
     if (!batchSnap.exists()) throw new Error('Lote no encontrado');
 
     const batchData = batchSnap.data();
 
-    const deletionResult = await deleteAllProductStocksByBatch({ user, batchId, movement });
+    const deletionResult = await deleteAllProductStocksByBatch({
+      user,
+      batchId,
+      movement,
+    });
 
     await updateDoc(batchDocRef, {
       isDeleted: true,
@@ -278,26 +316,33 @@ export const deleteBatch = async ({ user, batchId, movement }) => {
 export const useListenBatchesByIds = (batchIDs = []) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    () => Array.isArray(batchIDs) && batchIDs.length > 0 && Boolean(user?.businessID),
+  );
   const [error, setError] = useState(null);
 
-  const memorizedBatchIDs = useMemo(() => batchIDs, [batchIDs]);
-  const memorizedUser = useMemo(() => user, [user]);
+  const stableBatchIDs = useMemo(
+    () => (Array.isArray(batchIDs) ? batchIDs : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(batchIDs)],
+  );
 
   useEffect(() => {
-    try {
-      // Validaciones iniciales
-      if (!Array.isArray(batchIDs) || batchIDs.length === 0 || !user.businessID) {
-        setData([]);
-        setLoading(false);
-        return;
-      }
+    // Validaciones iniciales
+    if (stableBatchIDs.length === 0 || !user?.businessID) {
+      setData([]);
+      setLoading(false);
+      return undefined;
+    }
 
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      // Escuchar en tiempo real los IDs de batches
-      const unsubscribe = listenAllBatchesByIds(user, batchIDs, (updatedBatches) => {
+    // Escuchar en tiempo real los IDs de batches
+    const unsubscribe = listenAllBatchesByIds(
+      user,
+      stableBatchIDs,
+      (updatedBatches) => {
         try {
           setData(updatedBatches);
           setLoading(false);
@@ -305,27 +350,32 @@ export const useListenBatchesByIds = (batchIDs = []) => {
           console.error('Error en el callback de onSnapshot:', callbackError);
           setError(callbackError);
         }
-      });
+      },
+    );
 
-      // Cleanup
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Error en useListenBatchesByIds:', error);
-      setError(error);
-      setLoading(false);
-    }
-
-  }, [memorizedUser, memorizedBatchIDs]);
+    // Cleanup
+    return () => unsubscribe?.();
+  }, [stableBatchIDs, user]);
 
   return { data, loading, error };
 };
 
-export const checkAndDeleteEmptyBatch = async ({ user, batchId, transaction }) => {
+export const checkAndDeleteEmptyBatch = async ({
+  user,
+  batchId,
+  transaction,
+}) => {
   try {
-    const batchDocRef = doc(db, 'businesses', user.businessID, 'batches', batchId);
-    
+    const batchDocRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'batches',
+      batchId,
+    );
+
     // Obtener documento usando transacción si está disponible
-    const batchSnap = transaction 
+    const batchSnap = transaction
       ? await transaction.get(batchDocRef)
       : await getDoc(batchDocRef);
 
@@ -336,15 +386,20 @@ export const checkAndDeleteEmptyBatch = async ({ user, batchId, transaction }) =
     const batchData = batchSnap.data();
 
     // Consultar stocks asociados
-    const productStocksRef = collection(db, 'businesses', user.businessID, 'productStocks');
+    const productStocksRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'productStocks',
+    );
     const q = query(
-      productStocksRef, 
+      productStocksRef,
       where('batchId', '==', batchId),
-      where('isDeleted', '==', false)
+      where('isDeleted', '==', false),
     );
 
     // Obtener documentos con/sin transacción
-    const productStocksSnap = transaction 
+    const productStocksSnap = transaction
       ? await transaction.get(q)
       : await getDocs(q);
 
@@ -365,16 +420,15 @@ export const checkAndDeleteEmptyBatch = async ({ user, batchId, transaction }) =
       return {
         success: true,
         message: 'Batch eliminado automáticamente por no tener stock',
-        batchData
+        batchData,
       };
     }
 
     return {
       success: false,
       message: 'El batch aún tiene productos en stock',
-      remainingStocks: productStocksSnap.size
+      remainingStocks: productStocksSnap.size,
     };
-    
   } catch (error) {
     console.error('Error al verificar y eliminar batch:', error);
     throw error;

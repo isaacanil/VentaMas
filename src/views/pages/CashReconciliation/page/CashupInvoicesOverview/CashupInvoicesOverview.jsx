@@ -1,48 +1,56 @@
-import React, { useEffect, useState } from 'react'
-import styled from 'styled-components'
-import { SaleReportTable } from '../../../Registro/SaleReportTable/SaleReportTable'
-import { tableData } from './tableConfig'
-import { useSelector } from 'react-redux'
-import { selectCashCount } from '../../../../../features/cashCount/cashCountManagementSlice'
-import { fbLoadInvoicesForCashCount } from '../../../../../firebase/cashCount/fbLoadInvoicesForCashCount'
-import { selectUser } from '../../../../../features/auth/userSlice'
-import { useNavigate } from 'react-router-dom'
-import { Header } from './components/Header/Header'
+import { Drawer } from 'antd';
+import { Suspense, memo } from 'react';
+import styled from 'styled-components';
 
-export const CashupInvoicesOverview = ({ bills }) => {
-    const { id } = useSelector(selectCashCount)
-    const user = useSelector(selectUser)
-    const [invoices, setInvoices] = useState([])
-    const navigate = useNavigate()
-    useEffect(() => {
-        if (id) {
-            const fetchData = async () => {
-                const invoicesData = await fbLoadInvoicesForCashCount(user, id, 'invoices')
-                setInvoices(invoicesData)
-            }
-            fetchData()
-        } else {
-            navigate('/cash-reconciliation')
-        }
-    }, [id])
-    const total = invoices ? () => invoices?.reduce((total, { data }) => total + data.totalPurchase.value, 0)
-        : 0
+import { lazyWithRetry } from '../../../../../utils/lazyWithRetry';
+
+import { ExportInvoice } from './components/Header/ExportInvoice';
+
+const SaleReportTable = lazyWithRetry(
+  () => import('../../../InvoicesPage/SaleReportTable/SaleReportTable'),
+  'SaleReportTable',
+);
+
+const Spinner = () => (
+  <div style={{ padding: '2em', textAlign: 'center' }}>Cargando...</div>
+);
+
+export const CashupInvoicesOverview = memo(
+  ({ invoices = [], isOpen, onClose }) => {
     return (
-        <Container>
-            <Header invoices={invoices} />
-            <SaleReportTable
-                data={tableData}
-                bills={invoices}
-                total={total}
-            />
-        </Container>
-    )
-}
+      <Drawer
+        open={isOpen}
+        onClose={onClose}
+        size="large"
+        placement="bottom"
+        extra={<ExportInvoice invoices={invoices} />}
+        styles={{
+          wrapper: {
+            height: '100vh',
+          },
+          header: {
+            paddingBlock: 0,
+          },
+          body: {
+            padding: 0,
+          },
+        }}
+      >
+        <Suspense fallback={<Spinner />}>
+          <Container>
+            <SaleReportTable bills={invoices} />
+          </Container>
+        </Suspense>
+      </Drawer>
+    );
+  },
+);
+
+CashupInvoicesOverview.displayName = 'CashupInvoicesOverview';
 const Container = styled.div`
-    height: 100vh;
-    max-height: 100vh;
-    width: 100%;
-    display: grid;
-    grid-template-rows: min-content 1fr;
-    background-color: var(--color2);
-`
+  display: grid;
+  grid-template-rows: 1fr;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color2);
+`;

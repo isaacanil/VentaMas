@@ -16,7 +16,8 @@ const activeIngredientsSlice = createSlice({
   reducers: {
     openModal: (state, action) => {
       state.activeIngredientModal.isOpen = true;
-      state.activeIngredientModal.initialValues = action.payload.initialValues || null;
+      state.activeIngredientModal.initialValues =
+        action.payload.initialValues || null;
     },
     closeModal: (state) => {
       state.activeIngredientModal.isOpen = false;
@@ -27,12 +28,12 @@ const activeIngredientsSlice = createSlice({
     },
     removeIngredient: (state, action) => {
       state.activeIngredients = state.activeIngredients.filter(
-        (ingredient) => ingredient.id !== action.payload
+        (ingredient) => ingredient.id !== action.payload,
       );
     },
     updateIngredient: (state, action) => {
       const index = state.activeIngredients.findIndex(
-        (ingredient) => ingredient.id === action.payload.id
+        (ingredient) => ingredient.id === action.payload.id,
       );
       if (index !== -1) {
         state.activeIngredients[index] = action.payload;
@@ -53,4 +54,5 @@ export const {
 export default activeIngredientsSlice.reducer;
 
 // Selector para el modal de ingredientes activos
-export const selectActiveIngredientModal = (state) => state.activeIngredients.activeIngredientModal;
+export const selectActiveIngredientModal = (state) =>
+  state.activeIngredients.activeIngredientModal;

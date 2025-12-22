@@ -1,8 +1,93 @@
 {
-    "webName": "Ventamax",
-    "logo": "./ventamax.svg",
-    "section": {
-        "description": "Ventamax es el software de punto de venta perfecto para administrar tu negocio de manera eficiente y efectiva. Con Ventamax, puedes manejar las compras y ventas desde un solo lugar, lo que te permite tener un control más completo de tus operaciones diarias." 
+  "webName": "Ventamax",
+  "logo": "./ventamax.svg",
+  "tagline": "Punto de venta inteligente",
+  "version": "2.0",
+  "section": {
+    "title": "Sistema de Facturación Profesional",
+    "description": "Ventamax es el software de punto de venta perfecto para administrar tu negocio de manera eficiente y efectiva. Con Ventamax, puedes manejar las compras y ventas desde un solo lugar, lo que te permite tener un control más completo de tus operaciones diarias.",
+    "subtitle": "Eleva tu negocio al siguiente nivel con herramientas avanzadas, análisis profundos y soporte especializado."
+  },
+  "features": [
+    {
+      "id": "inventory",
+      "title": "Gestión de Inventario",
+      "description": "Control completo de tu inventario con alertas de stock y reportes detallados",
+      "icon": "ShopOutlined",
+      "color": "#52c41a"
+    },
+    {
+      "id": "sales",
+      "title": "Ventas Inteligentes",
+      "description": "Procesamiento rápido de ventas con múltiples métodos de pago",
+      "icon": "DollarOutlined",
+      "color": "#1890ff"
+    },
+    {
+      "id": "reports",
+      "title": "Reportes Avanzados",
+      "description": "Análisis detallados de tus operaciones y tendencias de venta",
+      "icon": "BarChartOutlined",
+      "color": "#722ed1"
+    },
+    {
+      "id": "customers",
+      "title": "Gestión de Clientes",
+      "description": "Base de datos completa de clientes con historial de compras",
+      "icon": "TeamOutlined",
+      "color": "#fa8c16"
+    },
+    {
+      "id": "security",
+      "title": "Seguridad Total",
+      "description": "Protección de datos con encriptación y respaldos automáticos",
+      "icon": "SafetyOutlined",
+      "color": "#f5222d"
+    },
+    {
+      "id": "support",
+      "title": "Soporte 24/7",
+      "description": "Asistencia técnica disponible cuando la necesites",
+      "icon": "CustomerServiceOutlined",
+      "color": "#13c2c2"
     }
+  ],
+  "benefits": [
+    "Incrementa tus ventas hasta 30%",
+    "Reduce errores de inventario",
+    "Ahorra tiempo en reportes",
+    "Mejora la experiencia del cliente"
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "María González",
+      "business": "Farmacia Central",
+      "comment": "Ventamax transformó completamente mi negocio. Ahora tengo control total.",
+      "rating": 5
+    },
+    {
+      "id": 2,
+      "name": "Carlos Rodríguez",
+      "business": "Supermercado El Ahorro",
+      "comment": "La mejor inversión que he hecho para mi empresa.",
+      "rating": 5
+    }
+  ],
+  "cta": {
+    "primary": "Iniciar sesión",
+    "secondary": "Solicitar demo",
+    "trial": "Prueba gratuita 30 días"
+  },
+  "contact": {
+    "phone": "+1 (809) 555-0123",
+    "email": "soporte@ventamax.com",
+    "website": "https://ventamax.com"
+  },
+  "social": {
+    "facebook": "https://facebook.com/ventamax",
+    "instagram": "https://instagram.com/ventamax",
+    "twitter": "https://twitter.com/ventamax",
+    "linkedin": "https://linkedin.com/company/ventamax"
+  }
 }
-

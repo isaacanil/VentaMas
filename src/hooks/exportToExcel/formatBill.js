@@ -1,96 +1,120 @@
-import { useFormatPrice } from "../useFormatPrice";
-import useFormatTimestamp from "../useFormatTimeStamp";
+import { formatTimestamp } from '@/utils/format';
 
-const formatBillResumen = (data) => {
-  const { date, id, NCF, client, totalShoppingItems, totalTaxes, paymentMethod, payment, change, delivery, totalPurchase } = data;
-  const { name = '', tel = '', address = '', personalID = '' } = client || {};
-  const shoppingItems = totalShoppingItems.value;
-  const taxes = totalTaxes.value;
-  const total = totalPurchase.value;
-  const method = () => {
-    if (paymentMethod) {
-      return paymentMethod.find((item) => item.status === true).method;
-    }
-    data.cardPaymentMethod && 'Tarjeta'
-    data.cashPaymentMethod && 'Efectivo'
-    data.transferPaymentMethod && 'Transferencia'
-  }
-  const paymentValue = () => {
-    payment && payment.value
-    data.cardPaymentMethod && data.cardPaymentMethod.value
-    data.cashPaymentMethod && data.cashPaymentMethod.value
-    data.transferPaymentMethod && data.transferPaymentMethod.value
+const unwrapInvoice = (raw) => raw?.data ?? raw?.ver?.data ?? raw ?? {};
+
+const ensureNumber = (value) => {
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+};
+
+const translatePaymentMethod = (method) => {
+  if (!method || method === 'N/A') return 'N/A';
+
+  const translations = {
+    cash: 'Efectivo',
+    card: 'Tarjeta',
+    transfer: 'Transferencia',
+    efectivo: 'Efectivo',
+    tarjeta: 'Tarjeta',
+    transferencia: 'Transferencia',
+    credit: 'Crédito',
+    debit: 'Débito',
+    credito: 'Crédito',
+    debito: 'Débito',
   };
-  const deliveryValue = delivery.value;
-  const changeValue = change.value;
-  return {
-    ['Fecha']: useFormatTimestamp(date),
-    ['ID']: id,
-    ['Comprobante']: NCF,
-    ['Nombre Cliente']: name || null ? name || 'Cliente Genérico' : 'Cliente Genérico',
-    ['Teléfono Cliente']: tel ? tel : 'N/A',
-    ['Dirección Cliente']: address ? address : 'N/A',
-    ['RNC/Cédula']: personalID ? personalID : 'N/A',
-    ['Cantidad de Productos']: shoppingItems,
-    ['Total ITBIS']: useFormatPrice(taxes),
-    ['Método de Pago']: method(),
-    ['Pagado']: paymentValue(),
-    ['Delivery']: useFormatPrice(deliveryValue, 'rd'),
-    ['Cambio']: useFormatPrice(changeValue),
-    ['Total']: useFormatPrice(total)
+
+  // Convertir a minúsculas para buscar
+  const methodLower = method.toLowerCase().trim();
+
+  // Buscar traducción exacta
+  if (translations[methodLower]) {
+    return translations[methodLower];
   }
-}
+
+  // Si no encuentra traducción, capitalizar la primera letra
+  return method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+};
+
+const getPrimaryPaymentMethod = (paymentMethod = []) => {
+  const method = (paymentMethod.find((pm) => pm.status) || {}).method ?? 'N/A';
+  return translatePaymentMethod(method);
+};
+
+const getPrimaryPaymentValue = (paymentMethod = [], fallbackPayment) => {
+  if (fallbackPayment?.value != null)
+    return ensureNumber(fallbackPayment.value);
+  const pm = paymentMethod.find((pm) => pm.status);
+  return pm ? ensureNumber(pm.value) : 0;
+};
+const formatBillResumen = (data) => {
+  const {
+    date,
+    id: _id,
+    NCF,
+    client = {},
+    totalShoppingItems = {},
+    totalTaxes = {},
+    paymentMethod,
+    payment,
+    change = {},
+    delivery = {},
+    totalPurchase = {},
+  } = data;
+  return {
+    ['Fecha']: formatTimestamp(date),
+    ['Comprobante']: NCF ?? 'N/A',
+    ['Nombre Cliente']: client.name || 'Cliente Genérico',
+    ['Teléfono Cliente']: client.tel || 'N/A',
+    ['Dirección Cliente']: client.address || 'N/A',
+    ['RNC/Cédula']: client.personalID || 'N/A',
+    ['Cantidad de Productos']: ensureNumber(totalShoppingItems.value),
+    ['Total ITBIS']: ensureNumber(totalTaxes.value),
+    ['Método de Pago']: getPrimaryPaymentMethod(paymentMethod),
+    ['Pagado']: getPrimaryPaymentValue(paymentMethod, payment),
+    ['Delivery']: ensureNumber(delivery.value),
+    ['Cambio']: ensureNumber(change.value),
+    ['Total']: ensureNumber(totalPurchase.value),
+  };
+};
 const formatBillDetailed = (facturas) => {
   const resultados = [];
 
-  for (let i = 0; i < facturas.length; i++) {
-    const factura = facturas[i].data;
-    const products = factura.products;
-    const clientName = factura.client.name;
-    const NCF = factura.NCF;
-    const date = factura.date;
-    const id = factura.id;
-    const total = factura.totalPurchase.value;
+  facturas.forEach((raw) => {
+    const factura = unwrapInvoice(raw);
+    const {
+      products = [],
+      client = {},
+      NCF,
+      date,
+      id: _id,
+      totalPurchase = {},
+    } = factura;
 
-    for (let j = 0; j < products.length; j++) {
-      const product = products[j];
-      const productId = product.id;
-      const productName = product.productName;
-      const amountToBuy = product.amountToBuy.total;
-      const category = product.category;
-      const price = product.price.unit;
-      const type = product.type;
-
-      const resultado = {
-        ["Fecha"]: useFormatTimestamp(date),
-        ["Id Factura"]: id,
-        ["Comprobante"]: NCF,
-        ["Cliente"]: clientName,
-        ["Nombre del Producto"]: productId,
-        ["Producto"]: productName,
-        ["Categoría"]: category,
-        ["Tipo"]: type,
-        ["Precio"]: useFormatPrice(price),
-        ["Cantidad Facturada"]: amountToBuy,
-        ["Total"]: useFormatPrice(total)
-      };
-
-      resultados.push(resultado);
-    }
-  }
+    products.forEach((product) => {
+      resultados.push({
+        Fecha: formatTimestamp(date),
+        Comprobante: NCF,
+        Cliente: client.name || 'Cliente Genérico',
+        Producto: product.name,
+        Categoría: product.category,
+        Tipo: product.type,
+        Precio: ensureNumber(product.pricing?.price),
+        'Cantidad Facturada': ensureNumber(product.amountToBuy),
+        Total: ensureNumber(totalPurchase.value),
+      });
+    });
+  });
 
   return resultados;
-}
+};
 
 export const formatBill = ({ type, data }) => {
   switch (type) {
-    case "Resumen":
-      return formatBillResumen(data)
-
-    case "Detailed":
-      return formatBillDetailed(data)
-
+    case 'Resumen':
+      return formatBillResumen(data);
+    case 'Detailed':
+      return formatBillDetailed(data);
     default:
-      break;
+      return [];
   }
-}
+};

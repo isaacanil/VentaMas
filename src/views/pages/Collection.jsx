@@ -1,24 +1,23 @@
-import React from 'react'
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 export const Collection = () => {
-    const handleClick = () => {
-        console.log('click')
-    }
+  const handleClick = () => {
+    // Handle click logic here
+  };
   return (
     <Container>
-        <button onClick={handleClick}>Click</button>
+      <Button onClick={handleClick}>Click</Button>
     </Container>
-  )
-}
+  );
+};
 const Container = styled.div`
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100%;
+`;
 const Button = styled.button`
-    padding: 1em;
-    height: 2em;
-`
+  height: 2em;
+  padding: 1em;
+`;

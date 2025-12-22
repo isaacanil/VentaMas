@@ -1,0 +1,21 @@
+.corporate-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+}
+
+.corporate-card .ant-card-body {
+  padding: 24px;
+}
+
+.insurance-type-card {
+  transition: all 0.3s ease;
+}
+
+.insurance-type-card:hover {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 5%);
+}
+
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: #1f1f1f;
+}

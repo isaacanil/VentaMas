@@ -1,6 +1,7 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Fragment, useRef } from 'react';
 import styled from 'styled-components';
-import { MdClose, MdSearch } from 'react-icons/md';
 
 /**
  * @typedef {Object} InputV4
@@ -13,55 +14,76 @@ import { MdClose, MdSearch } from 'react-icons/md';
  * @param {InputV4} props
  * @returns {JSX.Element}
  */
-export const TextareaV2 = ({ icon, label, search, onClear, validate, errorMessage, bgColor, clearButton = false, ...props }) => {
-  const showClearButton = clearButton && props.value;
+export const TextareaV2 = ({
+  icon,
+  label,
+  search,
+  onClear,
+  validate,
+  errorMessage,
+  bgColor,
+  clearButton = false,
+  ...props
+}) => {
   const inputRef = useRef(null);
-  const inputValue = props.value
 
   return (
     <div>
-      {label && 
-      <Fragment>
-        <Label>{label}</Label> 
-      </Fragment> }
-      <InputWrapper {...props} bgColor={bgColor} search={search} validate={validate}>
+      {label && (
+        <Fragment>
+          <Label>{label}</Label>
+        </Fragment>
+      )}
+      <InputWrapper
+        {...props}
+        bgColor={bgColor}
+        search={search}
+        validate={validate}
+      >
         {icon}
         <StyledInput {...props} ref={inputRef} />
-     
-       {onClear && <MdClose
+        {onClear && clearButton && (
+          <FontAwesomeIcon
+            icon={faTimes}
             onClick={() => onClear()}
-            style={{ cursor: 'pointer', marginLeft: '8px', color: `${props.value ? "#999" : "transparent"}` }}
-          />}
-        
+            style={{
+              cursor: 'pointer',
+              marginLeft: '8px',
+              color: `${props.value ? '#999' : 'transparent'}`,
+            }}
+          />
+        )}
       </InputWrapper>
-      {(validate && errorMessage) && <ErrorMessage show>{errorMessage}</ErrorMessage>}
+      {validate && errorMessage && (
+        <ErrorMessage show>{errorMessage}</ErrorMessage>
+      )}
     </div>
   );
 };
 
 const InputWrapper = styled.div.attrs(() => ({
-  tabIndex: 0
+  tabIndex: 0,
 }))`
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  background-color: white;
   border-radius: 4px;
- 
   height: 5em;
   outline: none;
   position: relative;
   width: 100%;
-  max-width: ${props => props.search ? '280px' : null};
-  background: ${props => props.bgColor || 'white'};
+  max-width: ${(props) => (props.search ? '280px' : null)};
+  background: ${(props) => props.bgColor || 'white'};
+
   svg {
     font-size: 18px;
     color: #999;
-    
   }
-  transition: all 0.3s ease, width 0.300ms linear;
-  border: ${ props => {
-    if(props.validate === 'pass') {
+
+  transition:
+    all 0.3s ease,
+    width 0.3ms linear;
+  border: ${(props) => {
+    if (props.validate === 'pass') {
       return '1px solid #00c853';
     } else if (props.validate === 'fail') {
       return '1px solid #ff3547';
@@ -69,39 +91,38 @@ const InputWrapper = styled.div.attrs(() => ({
       return '1px solid #ccc';
     }
   }};
-    ${props => props.disabled && `
+  ${(props) =>
+    props.disabled &&
+    `
       background-color: #f8f8f8;
   `}
- 
 `;
 
 const StyledInput = styled.textarea`
-  border: none;
-  outline: none;
   flex: 1;
+  width: 100%;
+  height: 100%;
   padding: 0.6em;
   font-size: 14px;
-  height: 100%;
+  color: rgb(51 51 51);
   resize: none;
-  color: rgb(51, 51, 51);
-  width: 100%;
+  outline: none;
   background: transparent;
+  border: none;
+
   &::placeholder {
     color: #999;
   }
-
 `;
 
 const ErrorMessage = styled.span`
-  color: #ff3547;
-  font-size: 12px;
+  display: ${({ $show }) => ($show ? 'inline' : 'hidden')};
   margin-left: 8px;
-  display: ${props => props.show ? 'inline' : 'hidden'};
+  font-size: 12px;
+  color: #ff3547;
 `;
 const Label = styled.label`
-  font-size: 13px;
- color: var(--Gray5);
-
-
   margin-bottom: 4px;
-`
+  font-size: 13px;
+  color: var(--gray-5);
+`;

@@ -1,50 +1,50 @@
-import React from 'react'
-import styled from 'styled-components'
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel'
-import { useSelector } from 'react-redux'
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice'
-import { CashCountMetaData } from '../../CashCountMetaData'
-import { useFormatPrice } from '../../../../../../../../../../hooks/useFormatPrice'
-import { Skeleton } from '../../../../../../../../../templates/system/Skeleton/Skeleton'
+import { Spin } from 'antd';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { formatNumber } from '@/utils/format';
+
+import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
+import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
 
 
-export const TransactionSummary = ({invoices, loading}) => {
-  const cashCount = useSelector(selectCashCount)
-  const { totalCard, totalRegister, totalTransfer } = CashCountMetaData(cashCount, invoices)
-  
- 
+export const TransactionSummary = ({ loading }) => {
+  const cashCount = useSelector(selectCashCount);
+  const totalCard = cashCount?.totalCard ?? 0;
+  const totalTransfer = cashCount?.totalTransfer ?? 0;
+  const totalRegister = cashCount?.totalRegister ?? 0;
+
   return (
-  <Skeleton
-    loading={loading}
-  >
-    <Container>
-      <InputWithHorizontalLabel
-        label={'Total Tarjeta'}
-        disabled
-        type='subtitle'
-        value={useFormatPrice(totalCard)}
-      />
-      <InputWithHorizontalLabel
-        label={'Total Transf..'}
-        disabled
-        type='subtitle'
-        value={useFormatPrice(totalTransfer)}
-      />
-      <InputWithHorizontalLabel
-        label={'Total en caja'}
-        disabled
-        type='subtitle'
-        value={useFormatPrice(totalRegister)}
-      />
-    </Container>
-  </Skeleton>
-  )
-}
+    <Spin spinning={loading}>
+      <Container>
+        <InputWithHorizontalLabel
+          label={'Total Tarjeta'}
+          readOnly
+          type="subtitle"
+          value={formatNumber(totalCard)}
+        />
+        <InputWithHorizontalLabel
+          label={'Total Transferencia'}
+          readOnly
+          type="subtitle"
+          value={formatNumber(totalTransfer)}
+        />
+        <InputWithHorizontalLabel
+          label={'Total en caja'}
+          type="subtitle"
+          readOnly
+          value={formatNumber(totalRegister)}
+        />
+      </Container>
+    </Spin>
+  );
+};
 const Container = styled.div`
-    display: grid;
-    gap: 0.4em;
-    padding: 0.4em;
-    border-radius: var(--border-radius);
-    border: var(--border1);
-    background-color: white;
-`
+  display: grid;
+  gap: 0.4em;
+  padding: 0.4em;
+  background-color: white;
+  border: var(--border1);
+  border-radius: var(--border-radius);
+`;

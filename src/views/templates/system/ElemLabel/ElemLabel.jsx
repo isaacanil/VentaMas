@@ -1,21 +1,21 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-const ElemLabel = ({children,label}) => {
+const ElemLabel = ({ children, label }) => {
   return (
     <Container>
-        <Label>{label}</Label>
-        {children}
+      <Label>{label}</Label>
+      {children}
     </Container>
-  )
-}
+  );
+};
 
-export default ElemLabel
+export default ElemLabel;
 const Container = styled.div`
-      width: 100%;
   position: relative;
-`
+  width: 100%;
+`;
 const Label = styled.label`
-     font-size: 13px;
- color: var(--Gray5);
-`
+  font-size: 13px;
+  color: var(--gray-5);
+`;

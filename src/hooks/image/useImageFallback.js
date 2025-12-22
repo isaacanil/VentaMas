@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 
 const useImageFallback = (initialImageURL, fallbackImageURL) => {
- 
   const [imageURL, setImageURL] = useState(initialImageURL);
 
-
   useEffect(() => {
-
     const loadImage = () => {
       const img = new Image();
       img.src = initialImageURL;
@@ -18,9 +15,7 @@ const useImageFallback = (initialImageURL, fallbackImageURL) => {
       };
     };
 
-  
     loadImage();
-
   }, [initialImageURL, fallbackImageURL]);
 
   return [imageURL];

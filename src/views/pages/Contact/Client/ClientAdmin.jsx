@@ -1,38 +1,167 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import React, { Fragment, useMemo, useState } from 'react';
+import styled from 'styled-components';
 
-import {
-  MenuApp,
-  Button,
-} from '../../../'
+import { FilterBar } from '../../../../components/common/FilterBar';
+import { useFbGetClients } from '../../../../firebase/client/useFbGetClients';
+import { filterData } from '../../../../hooks/search/useSearch';
+import { MenuApp } from '../../../templates/MenuApp/MenuApp';
 
+import { ClientsListTable } from './components/OrderListTable/ClientsListTable';
 
-import { filterData } from '../../../../hooks/search/useSearch'
-import { ClientsListTable } from './components/OrderListTable/ClientsListTable'
-import { ToolBar } from './ToolBar'
-import { useFbGetClients } from '../../../../firebase/client/useFbGetClients'
 export const ClientAdmin = () => {
-  const [searchTerm, setSearchTerm] = useState('')
-  const { clients } = useFbGetClients()
-  const clientsFiltered = filterData(clients, searchTerm)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    clientId: '',
+    rnc: '',
+    phone: '',
+    status: 'active',
+  });
+  const { clients } = useFbGetClients({ includeDeleted: true });
+  const clientOptions = useMemo(() => {
+    const safeClients = Array.isArray(clients) ? clients : [];
+    return [
+      { value: '', label: 'Todos' },
+      ...safeClients
+        .map(({ client }) =>
+          client?.id && client?.name
+            ? { value: client.id, label: client.name }
+            : null,
+        )
+        .filter(Boolean),
+    ];
+  }, [clients]);
+
+  const filteredClients = useMemo(() => {
+    const bySearch = filterData(clients, searchTerm);
+    return bySearch.filter(({ client, isDeleted }) => {
+      const matchesClient =
+        !filters.clientId || client?.id === filters.clientId;
+      const matchesRnc =
+        !filters.rnc ||
+        `${client?.personalID || ''}`
+          .toLowerCase()
+          .includes(filters.rnc.toLowerCase());
+      const matchesPhone =
+        !filters.phone ||
+        `${client?.tel || ''}`.toLowerCase().includes(filters.phone.toLowerCase());
+      const matchesStatus =
+        filters.status === 'all'
+          ? true
+          : filters.status === 'deleted'
+            ? Boolean(isDeleted)
+            : !isDeleted;
+      return matchesClient && matchesRnc && matchesPhone && matchesStatus;
+    });
+  }, [
+    clients,
+    filters.clientId,
+    filters.phone,
+    filters.rnc,
+    filters.status,
+    searchTerm,
+  ]);
+
+  const hasActiveFilters =
+    !!filters.clientId ||
+    !!filters.rnc ||
+    !!filters.phone ||
+    filters.status !== 'active';
+
+  const handleClearFilters = () =>
+    setFilters({
+      clientId: '',
+      rnc: '',
+      phone: '',
+    });
+
+  const filterItems = useMemo(
+    () => [
+      {
+        key: 'client',
+        section: 'main',
+        label: 'Cliente',
+        type: 'select',
+        value: filters.clientId,
+        onChange: (val) =>
+          setFilters((prev) => ({ ...prev, clientId: val || '' })),
+        options: clientOptions,
+        width: 200,
+      },
+      {
+        key: 'rnc',
+        section: 'main',
+        label: 'RNC/Cédula',
+        type: 'input',
+        value: filters.rnc,
+        onChange: (val) =>
+          setFilters((prev) => ({ ...prev, rnc: val || '' })),
+        placeholder: 'Buscar documento',
+        allowClear: true,
+        props: { maxLength: 30 },
+        minWidth: 200,
+      },
+      {
+        key: 'phone',
+        section: 'additional',
+        label: 'Teléfono',
+        type: 'input',
+        value: filters.phone,
+        onChange: (val) =>
+          setFilters((prev) => ({ ...prev, phone: val || '' })),
+        placeholder: 'Buscar teléfono',
+        allowClear: true,
+        props: { maxLength: 20 },
+        minWidth: 180,
+      },
+      {
+        key: 'status',
+        section: 'additional',
+        label: 'Estado',
+        type: 'select',
+        value: filters.status,
+        onChange: (val) =>
+          setFilters((prev) => ({ ...prev, status: val || 'active' })),
+        options: [
+          { label: 'Activos', value: 'active' },
+          { label: 'Desactivados', value: 'deleted' },
+          { label: 'Todos (incluye desactivados)', value: 'all' },
+        ],
+        allowClear: false,
+        minWidth: 200,
+      },
+    ],
+    [clientOptions, filters.clientId, filters.phone, filters.rnc, filters.status],
+  );
+
   return (
     <Fragment>
       <MenuApp
-        sectionName='Clientes'
+        sectionName="Clientes"
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
       <Container>
-        <ClientsListTable clients={clientsFiltered} />
+        <BarWrapper>
+          <FilterBar
+            items={filterItems}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={handleClearFilters}
+          />
+        </BarWrapper>
+        <ClientsListTable clients={filteredClients} />
       </Container>
     </Fragment>
-  )
-}
+  );
+};
 const Container = styled.div`
-    width: 100vw;
-    height: calc(100vh - 2.75em);
-    background-color: var(--color2);
-    display: grid;
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  width: 100vw;
+  height: calc(100vh - 2.75em);
+  overflow: hidden;
+  background-color: var(--color2);
+`;
 
-    overflow: hidden;
-`
+const BarWrapper = styled.div`
+  padding: 0;
+`;

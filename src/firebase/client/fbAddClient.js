@@ -1,23 +1,36 @@
-import { doc, setDoc } from "firebase/firestore"
-import { db } from "../firebaseconfig"
-import { nanoid } from "nanoid"
-import { getNextID } from "../Tools/getNextID";
+import { doc, setDoc } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
+
+import { db } from '../firebaseconfig';
+import { getNextID } from '../Tools/getNextID';
+
+import { buildClientWritePayload } from './clientNormalizer';
 
 export const fbAddClient = async (user, client) => {
-    try {
-        if (!user || !user.businessID) throw new Error('No user or businessID');
-      console.log('cliente', client)
-        client = { ...client, 
-            id: nanoid(8) ,
-            numberId: await getNextID(user, "lastClientId")
-        }
+  try {
+    if (!user || !user.businessID) throw new Error('No user or businessID');
+    // Processing client data
+    client = {
+      ...client,
+      id: nanoid(8),
+      numberId: await getNextID(user, 'lastClientId'),
+      isDeleted: false,
+    };
 
-        const clientRef = doc(db, 'businesses', user.businessID, 'clients', client.id);
+    const clientRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'clients',
+      client.id,
+    );
 
-        await setDoc(clientRef, { client });
-        return client;
-    } catch (error) {
-        console.error("Error adding document: ", error)
-    }
-}
+    const { payload, client: normalizedClient } =
+      buildClientWritePayload(client);
 
+    await setDoc(clientRef, payload, { merge: true });
+    return normalizedClient;
+  } catch (error) {
+    console.error('Error adding document: ', error);
+  }
+};

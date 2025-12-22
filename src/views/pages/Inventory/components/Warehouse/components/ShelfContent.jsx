@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import * as antd from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlusCircle, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { DetailContainer } from "./WarehouseContent";
-import { selectUser } from "../../../../../../features/auth/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { navigateWarehouse, selectWarehouse } from "../../../../../../features/warehouse/warehouseSlice";
-import { deleteRowShelf, getAllRowShelves, listenAllRowShelves, useListenRowShelves } from "../../../../../../firebase/warehouse/RowShelfService";
-import { useNavigate, useParams } from "react-router-dom";
-import { ProductStockForm } from "../forms/ProductStockForm/ProductStockForm";
-import { ProductsSection } from "./ProductsSection";
-import { icons } from "../../../../../../constants/icons/icons";
-import { openRowShelfForm } from "../../../../../../features/warehouse/rowShelfModalSlice";
-import { openShelfForm } from "../../../../../../features/warehouse/shelfModalSlice";
+import { faPlusCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal, Button, List, Tag, message } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
+import { icons } from '../../../../../../constants/icons/icons';
+import { selectUser } from '../../../../../../features/auth/userSlice';
+import { openRowShelfForm } from '../../../../../../features/warehouse/rowShelfModalSlice';
+import { openShelfForm } from '../../../../../../features/warehouse/shelfModalSlice';
+import {
+  navigateWarehouse,
+  selectWarehouse,
+} from '../../../../../../features/warehouse/warehouseSlice';
+import {
+  deleteRowShelf,
+  useListenRowShelves,
+} from '../../../../../../firebase/warehouse/RowShelfService';
+import { ProductStockForm } from '../forms/ProductStockForm/ProductStockForm';
 
-const { Modal, Button, List, Tag, message } = antd;
+import { ProductsSection } from './ProductsSection';
+import { DetailContainer } from './WarehouseContent';
 
 // Estilos personalizados usando styled-components
 const Container = styled.div`
@@ -31,15 +36,15 @@ const ShelfInfo = styled.div`
 
 const InfoHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
 `;
 
@@ -55,15 +60,15 @@ const SectionContent = styled.div`
 `;
 
 const AddButton = styled(Button)`
-  margin-bottom: 0; /* Alineación con el título */
   display: flex;
   align-items: center;
+  margin-bottom: 0; /* Alineación con el título */
 `;
 
 const Body = styled.div`
   display: grid;
-  gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1em;
 `;
 
 const DetailItem = styled.p`
@@ -71,10 +76,10 @@ const DetailItem = styled.p`
   font-size: 14px;
   color: #333;
 
-
   & > strong {
     font-weight: 600;
- /* Color distintivo para los títulos de los detalles */
+
+    /* Color distintivo para los títulos de los detalles */
   }
 `;
 
@@ -83,15 +88,16 @@ export default function ShelfContent() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const { shelfId } = useParams();
-  const { selectedWarehouse: warehouse, selectedShelf: shelf } = useSelector(selectWarehouse);
-  const [location, setLocation] = useState({ id: shelfId, type: "shelf" })
+  const { selectedWarehouse: warehouse, selectedShelf: shelf } =
+    useSelector(selectWarehouse);
+  const location = useMemo(() => ({ id: shelfId, type: 'shelf' }), [shelfId]);
 
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-  const { data: rowShelves, loading, error } = useListenRowShelves(warehouse?.id, shelf?.id);
+  const { data: rowShelves } = useListenRowShelves(warehouse?.id, shelf?.id);
 
   const onNavigate = (row) => {
     navigate(`row/${row.id}`);
-    dispatch(navigateWarehouse({ view: "rowShelf", data: row })); // Actualiza el estado global de Redux
+    dispatch(navigateWarehouse({ view: 'rowShelf', data: row })); // Actualiza el estado global de Redux
   };
 
   const handleEditShelfInfo = () => dispatch(openShelfForm(shelf));
@@ -135,9 +141,7 @@ export default function ShelfContent() {
         </DetailContainer>
       </ShelfInfo>
       <Body>
-        <ProductsSection
-          location={location}
-        />
+        <ProductsSection location={location} />
         <SectionContent>
           <SectionHeader>
             <SectionTitle>Filas en el Estante</SectionTitle>
@@ -150,45 +154,59 @@ export default function ShelfContent() {
             </AddButton>
           </SectionHeader>
           <List
-            dataSource={rowShelves}
+            dataSource={rowShelves ?? []}
             renderItem={(row) => (
               <List.Item
+                key={row.id}
                 actions={[
                   <Button
+                    key="edit-row"
                     icon={<FontAwesomeIcon icon={faEdit} />}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleUpdateShelf(row);
                     }}
-                  >
-                  </Button>,
+                  ></Button>,
                   <Button
+                    key="delete-row"
                     icon={icons.editingActions.delete}
                     danger
                     onClick={(e) => {
                       e.stopPropagation();
                       Modal.confirm({
-                        title: "Eliminar Fila de Estante",
-                        content: "¿Estás seguro de que deseas eliminar esta fila de estante?",
-                        okText: "Eliminar",
-                        okType: "danger",
-                        cancelText: "Cancelar",
+                        title: 'Eliminar Fila de Estante',
+                        content:
+                          '¿Estás seguro de que deseas eliminar esta fila de estante?',
+                        okText: 'Eliminar',
+                        okType: 'danger',
+                        cancelText: 'Cancelar',
                         onOk: async () => {
                           try {
-                            await deleteRowShelf(user, warehouse.id, shelf.id, row.id);
-                            message.success("Estante eliminado correctamente");
+                            await deleteRowShelf(
+                              user,
+                              warehouse.id,
+                              shelf.id,
+                              row.id,
+                            );
+                            message.success('Estante eliminado correctamente');
                           } catch (error) {
-                            console.error("Error al eliminar el estante: ", error);
-                            message.error("Error al eliminar el estante");
+                            console.error(
+                              'Error al eliminar el estante: ',
+                              error,
+                            );
+                            message.error('Error al eliminar el estante');
                           }
                         },
                       });
                     }}
-                  >
-                  </Button>,
+                  ></Button>,
                 ]}
-                onClick={() => onNavigate(row)}>
-                <List.Item.Meta title={row.name} description={`Capacidad: ${row.capacity}`} />
+                onClick={() => onNavigate(row)}
+              >
+                <List.Item.Meta
+                  title={row.name}
+                  description={`Capacidad: ${row.capacity}`}
+                />
               </List.Item>
             )}
           />

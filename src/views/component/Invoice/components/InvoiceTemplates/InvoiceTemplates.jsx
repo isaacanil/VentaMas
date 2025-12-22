@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { Button, Modal, Form } from 'antd'; // Eliminar Select de las importaciones
-import { Invoice } from '../Invoice/Invoice';
-import { useReactToPrint } from 'react-to-print';
-import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { Button, Modal } from 'antd'; // Eliminar Select de las importaciones
+import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
+
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { Invoice } from '../Invoice/Invoice';
+import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 
 const TEMPLATES_CONFIG = {
   template1: {
@@ -19,68 +20,76 @@ const TEMPLATES_CONFIG = {
     width: '210mm',
     height: '297mm',
     padding: '0mm',
-  }
+  },
+  template4: {
+    format: '80mm',
+    width: '80mm',
+    height: 'auto',
+    padding: '0mm',
+  },
 };
 
 const InvoiceContainer = styled.div`
-  width: ${props => TEMPLATES_CONFIG[props.template]?.width};
-  height: ${props => TEMPLATES_CONFIG[props.template]?.height};
-  padding: ${props => TEMPLATES_CONFIG[props.template]?.padding};
-  background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: ${({ $template }) => TEMPLATES_CONFIG[$template]?.width};
+  height: ${({ $template }) => TEMPLATES_CONFIG[$template]?.height};
+  padding: ${({ $template }) => TEMPLATES_CONFIG[$template]?.padding};
   margin: 20px auto;
-  
+  background: white;
+  box-shadow: 0 0 10px rgb(0 0 0 / 10%);
+
   @media print {
-    box-shadow: none;
     margin: 0;
+    box-shadow: none;
   }
 `;
 
 const PreviewContainer = styled.div`
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: flex-start;
-  background: #f0f0f0;
-  padding: 0px;
+  justify-content: center;
+  width: 100%;
   min-height: 50vh;
-  
+  padding: 0;
+  background: #f0f0f0;
 `;
 
-export default function InvoiceTemplates({ previewInModal = true, hidePreviewButton = false }) {
-  const { billing: { invoiceType } } = useSelector(SelectSettingCart);
-  const [selectedTemplate, setSelectedTemplate] = useState('template1');
-  const componentRef = useRef();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+export default function InvoiceTemplates({
+  previewInModal = true,
+  hidePreviewButton = false,
+}) {
+  const {
+    billing: { invoiceType },
+  } = useSelector(SelectSettingCart);
 
-  useEffect(() => {
-    // Si invoiceType no existe o no es un template válido, usar template1
-    if (!invoiceType || !TEMPLATES_CONFIG[invoiceType]) {
-      setSelectedTemplate('template1');
-    } else {
-      setSelectedTemplate(invoiceType);
-    }
-  }, [invoiceType]);
+  // Derive selectedTemplate from invoiceType
+  const derivedTemplate =
+    invoiceType && TEMPLATES_CONFIG[invoiceType] ? invoiceType : 'template1';
+  // Allow local override via state, initialized from derived value
+  const [selectedTemplate, setSelectedTemplate] = useState(derivedTemplate);
+  // Use derived template if invoiceType matches a config, otherwise use local state
+  const effectiveTemplate =
+    invoiceType && TEMPLATES_CONFIG[invoiceType] ? invoiceType : selectedTemplate;
+  const componentRef = useRef(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleTemplateChange = (value) => {
     setSelectedTemplate(value);
   };
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
   });
 
   const handlePreview = () => {
-    console.log('handlePreview called');
     setIsModalVisible(true);
   };
 
-  const renderInvoice = (ref) => (
-    <PreviewContainer template={selectedTemplate}>
-      <InvoiceContainer template={selectedTemplate}>
+  const renderInvoice = () => (
+    <PreviewContainer>
+      <InvoiceContainer $template={effectiveTemplate}>
         <Invoice
-          ref={ref}
-          template={selectedTemplate}
+          ref={componentRef}
+          template={effectiveTemplate}
           data={{}}
           ignoreHidden={true}
         />
@@ -93,7 +102,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
       <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
         <InvoiceTemplateSelector
           onSave={handleTemplateChange}
-          template={selectedTemplate}
+          template={effectiveTemplate}
           onPreview={handlePreview}
           hidePreviewButton={hidePreviewButton}
         />
@@ -105,7 +114,7 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
         onCancel={() => setIsModalVisible(false)}
         width={'1000px'}
         style={{ top: 20 }}
-        destroyOnClose={true}
+        destroyOnHidden={true}
         footer={[
           <Button key="print" onClick={handlePrint} type="primary">
             Imprimir
@@ -122,12 +131,11 @@ export default function InvoiceTemplates({ previewInModal = true, hidePreviewBut
             backgroundColor: 'red',
           }}
         >
-          {renderInvoice(componentRef)}
-
+          {renderInvoice()}
         </div>
       </Modal>
 
-      {!previewInModal && renderInvoice(componentRef)}
+      {!previewInModal && renderInvoice()}
     </div>
   );
 }

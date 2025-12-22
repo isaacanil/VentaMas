@@ -1,239 +1,304 @@
-import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, Timestamp, getDocs, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseconfig';
-import { selectUser } from '../../features/auth/userSlice';
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  Timestamp,
+  getDocs,
+  addDoc,
+  updateDoc,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
+
 export const convertTimestampToDate = (timestamp) => {
-    if (timestamp instanceof Timestamp) {
-        return timestamp.toDate();
-    }
-    return new Date(timestamp);
+  if (!timestamp) return null;
+  if (timestamp instanceof Timestamp) return timestamp.toDate();
+  return new Date(timestamp);
 };
 
+// Helpers: “estado inicial” por key (businessID / businessID+productId)
+const makeBaseState = (key, isActive) => ({
+  key: key ?? null,
+  data: [],
+  loading: !!isActive,
+  error: null,
+});
+
+/**
+ * Listener simple (sin enrichment)
+ */
 export const useListenBackOrders = (user) => {
-    const [backOrders, setBackOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const businessID = user?.businessID ?? null;
 
-    useEffect(() => {
-        let unsubscribe;
+  const [state, setState] = useState(() =>
+    makeBaseState(businessID, businessID),
+  );
 
-        const listenToBackOrders = async () => {
-            if (!user?.businessID) {
-                setBackOrders([]);
-                setLoading(false);
-                return;
-            }
+  // View “keyed”: si cambió el businessID, NO seteamos nada;
+  // simplemente devolvemos un estado “nuevo” y dejamos que el efecto lo llene.
+  const view = state.key === businessID
+    ? state
+    : makeBaseState(businessID, businessID);
 
-            try {
-                const backOrdersRef = collection(db, `businesses/${user.businessID}/backOrders`);
-                const q = query(backOrdersRef);
+  useEffect(() => {
+    if (!businessID) return;
 
-                unsubscribe = onSnapshot(q, (snapshot) => {
-                    const backOrdersData = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        createdAt: convertTimestampToDate(doc.data().createdAt),
-                        updatedAt: convertTimestampToDate(doc.data().updatedAt)
-                    }));
-                    setBackOrders(backOrdersData);
-                    setLoading(false);
-                }, (err) => {
-                    setError(err);
-                    setLoading(false);
-                });
-            } catch (err) {
-                setError(err);
-                setLoading(false);
-            }
-        };
+    const ref = collection(db, 'businesses', businessID, 'backOrders');
+    const q = query(ref);
 
-        listenToBackOrders();
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((docSnap) => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...d,
+            createdAt: convertTimestampToDate(d.createdAt),
+            updatedAt: convertTimestampToDate(d.updatedAt),
+          };
+        });
 
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [user?.businessID]);
+        setState({
+          key: businessID,
+          data,
+          loading: false,
+          error: null,
+        });
+      },
+      (err) => {
+        console.error('Error listening to backOrders:', err);
+        setState({
+          key: businessID,
+          data: [],
+          loading: false,
+          error: err,
+        });
+      },
+    );
+  }, [businessID]);
 
-    return { data: backOrders, loading, error };
+  return { data: view.data, loading: view.loading, error: view.error };
 };
 
+/**
+ * Listener enriquecido (con productName)
+ */
 export const useEnrichedBackOrders = () => {
-    const [backOrders, setBackOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const user = useSelector(selectUser);
+  const businessID = user?.businessID ?? null;
 
-    const user = useSelector(selectUser);
+  const [state, setState] = useState(() =>
+    makeBaseState(businessID, businessID),
+  );
 
-    useEffect(() => {
-        let unsubscribe;
+  const view = state.key === businessID
+    ? state
+    : makeBaseState(businessID, businessID);
 
-        const listenToBackOrders = async () => {
-            if (!user?.businessID) {
-                setBackOrders([]);
-                setLoading(false);
-                return;
-            }
+  // Cache por businessID (para no mezclar nombres entre negocios)
+  const productCacheRef = useRef({ businessID: null, map: new Map() });
 
-            try {
-                const backOrdersRef = collection(db, `businesses/${user.businessID}/backOrders`);
-                const q = query(backOrdersRef, where('status', 'in', ['pending', 'reserved']));
+  useEffect(() => {
+    if (!businessID) return;
 
-                unsubscribe = onSnapshot(q, async (snapshot) => {
-                    const enrichedBackOrders = await Promise.all(
-                        snapshot.docs.map(async (docSnap) => {
-                            const data = docSnap.data();
-                            let productName = data?.productName;
+    // reset cache cuando cambia el negocio
+    if (productCacheRef.current.businessID !== businessID) {
+      productCacheRef.current = { businessID, map: new Map() };
+    }
 
-                            // Si no hay productName, intentamos obtenerlo
-                            if (!productName && data?.productId) {
-                                try {
-                                    const productRef = doc(db, `businesses/${user.businessID}/products/${data.productId}`);
-                                    const productSnap = await getDoc(productRef);
-                                    if (productSnap.exists()) {
-                                        productName = productSnap.data().name;
-                                        // Actualizamos el backorder con el nombre del producto
-                                        await updateDoc(docSnap.ref, {
-                                            productName,
-                                            updatedAt: Timestamp.now()
-                                        });
-                                    }
-                                } catch (err) {
-                                    console.error('Error fetching product:', err);
-                                }
-                            }
+    let cancelled = false;
 
-                            return {
-                                id: docSnap.id,
-                                ...data,
-                                productName: productName || 'Producto no encontrado',
-                                createdAt: convertTimestampToDate(data.createdAt),
-                                updatedAt: convertTimestampToDate(data.updatedAt)
-                            };
-                        })
-                    );
+    const backOrdersRef = collection(db, 'businesses', businessID, 'backOrders');
+    const q = query(
+      backOrdersRef,
+      where('status', 'in', ['pending', 'reserved']),
+    );
 
-                    setBackOrders(enrichedBackOrders);
-                    setLoading(false);
-                }, (err) => {
-                    setError(err);
-                    setLoading(false);
-                });
-            } catch (err) {
-                setError(err);
-                setLoading(false);
-            }
-        };
+    const getProductName = async (productId) => {
+      if (!productId) return null;
 
-        listenToBackOrders();
+      const cache = productCacheRef.current.map;
 
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [user?.businessID]);
+      // Soporta cache de string o de Promise (evita duplicar fetches en paralelo)
+      const cached = cache.get(productId);
+      if (typeof cached === 'string') return cached;
+      if (cached && typeof cached.then === 'function') return await cached;
 
-    return { data: backOrders, loading, error };
+      const p = (async () => {
+        const productRef = doc(db, 'businesses', businessID, 'products', productId);
+        const snap = await getDoc(productRef);
+        return snap.exists() ? snap.data().name : null;
+      })();
+
+      cache.set(productId, p);
+
+      try {
+        const name = await p;
+        cache.set(productId, name || 'Producto no encontrado');
+        return name || 'Producto no encontrado';
+      } catch {
+        cache.set(productId, 'Producto no encontrado');
+        return 'Producto no encontrado';
+      }
+    };
+
+    const unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        try {
+          const enriched = await Promise.all(
+            snapshot.docs.map(async (docSnap) => {
+              const d = docSnap.data();
+              const productName =
+                d?.productName ||
+                (d?.productId ? await getProductName(d.productId) : null) ||
+                'Producto no encontrado';
+
+              return {
+                id: docSnap.id,
+                ...d,
+                productName,
+                createdAt: convertTimestampToDate(d.createdAt),
+                updatedAt: convertTimestampToDate(d.updatedAt),
+              };
+            }),
+          );
+
+          if (cancelled) return;
+
+          setState({
+            key: businessID,
+            data: enriched,
+            loading: false,
+            error: null,
+          });
+        } catch (err) {
+          if (cancelled) return;
+          console.error('Error enriching backOrders:', err);
+          setState({
+            key: businessID,
+            data: [],
+            loading: false,
+            error: err,
+          });
+        }
+      },
+      (err) => {
+        if (cancelled) return;
+        console.error('Error listening to enriched backOrders:', err);
+        setState({
+          key: businessID,
+          data: [],
+          loading: false,
+          error: err,
+        });
+      },
+    );
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [businessID]);
+
+  return { data: view.data, loading: view.loading, error: view.error };
 };
 
 export const createBackOrder = async (businessId, backOrderData) => {
-    try {
-        const backOrdersRef = collection(db, `businesses/${businessId}/backOrders`);
-        const newBackOrder = {
-            ...backOrderData,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-            status: 'pending'
-        };
-        
-        await addDoc(backOrdersRef, newBackOrder);
-        return true;
-    } catch (error) {
-        console.error('Error creating backorder:', error);
-        throw error;
-    }
+  const backOrdersRef = collection(db, 'businesses', businessId, 'backOrders');
+  const newBackOrder = {
+    ...backOrderData,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+    status: 'pending',
+  };
+  await addDoc(backOrdersRef, newBackOrder);
+  return true;
 };
 
 export const updateBackOrder = async (businessId, backOrderId, updateData) => {
-    try {
-        const backOrderRef = doc(db, `businesses/${businessId}/backOrders/${backOrderId}`);
-        await updateDoc(backOrderRef, {
-            ...updateData,
-            updatedAt: Timestamp.now()
-        });
-        return true;
-    } catch (error) {
-        console.error('Error updating backorder:', error);
-        throw error;
-    }
+  const backOrderRef = doc(db, 'businesses', businessId, 'backOrders', backOrderId);
+  await updateDoc(backOrderRef, { ...updateData, updatedAt: Timestamp.now() });
+  return true;
 };
 
 export const getBackOrdersByProduct = async (businessId, productId) => {
-    try {
-        const backOrdersRef = collection(db, `businesses/${businessId}/backOrders`);
-        const q = query(
-            backOrdersRef,
-            where('productId', '==', productId),
-            where('status', 'in', ['pending', 'reserved'])
-        );
-        
-        const result = await getDocs(q);
-        return result.docs.map(doc => ({
-            ...doc.data(),
-            createdAt: convertTimestampToDate(doc.data().createdAt),
-            updatedAt: convertTimestampToDate(doc.data().updatedAt)
-        }));
-    } catch (error) {
-        console.error('Error getting backorders:', error);
-        throw error;
-    }
+  const backOrdersRef = collection(db, 'businesses', businessId, 'backOrders');
+  const q = query(
+    backOrdersRef,
+    where('productId', '==', productId),
+    where('status', 'in', ['pending', 'reserved']),
+  );
+
+  const result = await getDocs(q);
+  return result.docs.map((docSnap) => {
+    const d = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...d,
+      createdAt: convertTimestampToDate(d.createdAt),
+      updatedAt: convertTimestampToDate(d.updatedAt),
+    };
+  });
 };
 
 export const useBackOrdersByProduct = (productId) => {
-    const user = useSelector(selectUser);
-    const [backOrders, setBackOrders] = useState([]);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const user = useSelector(selectUser);
+  const businessID = user?.businessID ?? null;
 
-    useEffect(() => {
-        let unsubscribe;
-        if (!user?.businessID || !productId) {
-            setBackOrders([]);
-            setLoading(false);
-            return;
-        }
-        try {
-            const backOrdersRef = collection(db, `businesses/${user.businessID}/backOrders`);
-            const q = query(backOrdersRef, where('productId', '==', productId), where('status', 'in', ['pending', 'reserved']));
-            unsubscribe = onSnapshot(
-                q,
-                (snapshot) => {
-                    const data = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        ...doc.data(),
-                        createdAt: convertTimestampToDate(doc.data().createdAt),
-                        updatedAt: convertTimestampToDate(doc.data().updatedAt),
-                    }));
-                    setBackOrders(data);
-                    setLoading(false);
-                },
-                (err) => {
-                    setError(err);
-                    setLoading(false);
-                }
-            );
-        } catch (err) {
-            setError(err);
-            setLoading(false);
-        }
-        return () => {
-            if (unsubscribe) unsubscribe();
-        };
-    }, [user?.businessID, productId]);
+  const key = businessID && productId ? `${businessID}::${productId}` : null;
 
-    return { backOrders, loading, error };
+  const [state, setState] = useState(() => makeBaseState(key, key));
+  const view = state.key === key ? state : makeBaseState(key, key);
+
+  useEffect(() => {
+    if (!businessID || !productId) return;
+
+    const backOrdersRef = collection(db, 'businesses', businessID, 'backOrders');
+    const q = query(
+      backOrdersRef,
+      where('productId', '==', productId),
+      where('status', 'in', ['pending', 'reserved']),
+    );
+
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((docSnap) => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...d,
+            createdAt: convertTimestampToDate(d.createdAt),
+            updatedAt: convertTimestampToDate(d.updatedAt),
+          };
+        });
+
+        setState({
+          key: `${businessID}::${productId}`,
+          data,
+          loading: false,
+          error: null,
+        });
+      },
+      (err) => {
+        console.error('Error listening to product backOrders:', err);
+        setState({
+          key: `${businessID}::${productId}`,
+          data: [],
+          loading: false,
+          error: err,
+        });
+      },
+    );
+  }, [businessID, productId]);
+
+  return { data: view.data, loading: view.loading, error: view.error };
 };

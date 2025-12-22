@@ -1,30 +1,30 @@
 // src/components/NavBar.jsx
+import { faArrowLeft, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+
 import Button from '../Button/Button';
 
-
 const NavBarContainer = styled.nav`
-  background-color: #1E3A8A; /* bg-primary */
-  color: #FFFFFF; /* text-primary-foreground */
   padding: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #fff; /* text-primary-foreground */
+  background-color: #1e3a8a; /* bg-primary */
+  box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
 `;
 
 const NavBarWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   max-width: 1280px; /* container mx-auto */
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 `;
 
 const LeftSection = styled.div`
   display: flex;
-  align-items: center;
   gap: 1rem; /* space-x-4 */
+  align-items: center;
 `;
 
 const Title = styled.h1`
@@ -38,13 +38,27 @@ const NavBar = () => {
       <NavBarWrapper>
         <LeftSection>
           <Button variant="ghost" style={{ padding: '0.5rem' }}>
-            <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '0.5rem', height: '1.25rem', width: '1.25rem' }} />
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              style={{
+                marginRight: '0.5rem',
+                height: '1.25rem',
+                width: '1.25rem',
+              }}
+            />
             Volver
           </Button>
           <Title>Gestión de Preventas</Title>
         </LeftSection>
         <Button variant="secondary">
-          <FontAwesomeIcon icon={faFileAlt} style={{ marginRight: '0.5rem', height: '1.25rem', width: '1.25rem' }} />
+          <FontAwesomeIcon
+            icon={faFileAlt}
+            style={{
+              marginRight: '0.5rem',
+              height: '1.25rem',
+              width: '1.25rem',
+            }}
+          />
           Ir a Facturas
         </Button>
       </NavBarWrapper>

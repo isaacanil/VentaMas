@@ -1,194 +1,215 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from 'styled-components';
+import { BugOutlined, HomeOutlined, RollbackOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Typography, Space, Alert } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BugOutlined, HomeOutlined, WarningOutlined, RollbackOutlined } from '@ant-design/icons';
-import * as antd from 'antd';
-import { useErrorHandling } from './hooks/useErrorHandling';
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from 'styled-components';
+
+import { Logo } from '../../../assets/logo/Logo';
+
 import { ErrorCard } from './components/ErrorCard';
 import { ErrorDetails } from './components/ErrorDetails';
 import { MESSAGES, ANIMATIONS } from './constants';
-import { Logo } from '../../../assets/logo/Logo';
+import { useErrorHandling } from './hooks/useErrorHandling';
 
-const { Button, Checkbox, Typography, Space, Alert } = antd;
 const { Title: AntTitle, Text } = Typography;
 
 export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
-    const {
-        user,
-        loading,
-        reportError,
-        canGoBack,
-        handleBack,
-        handleGoBack,
-        handleReportChange,
-    } = useErrorHandling(errorInfo, errorStackTrace);
+  const {
+    user,
+    loading,
+    canGoBack,
+    handleBack,
+    handleGoBack,
+    handleReportChange,
+  } = useErrorHandling(errorInfo, errorStackTrace);
 
-    return (
-        <Container
-            variants={ANIMATIONS.container}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-        >
-            <ErrorCard>
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                    <AnimatePresence>
-                        <LogoWrapper
-                            variants={ANIMATIONS.logo}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            <Logo />
-                        </LogoWrapper>
+  return (
+    <Container
+      variants={ANIMATIONS.container}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <ErrorCard>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <AnimatePresence>
+            <LogoWrapper
+              key="logo"
+              variants={ANIMATIONS.logo}
+              initial="hidden"
+              animate="visible"
+            >
+              <Logo />
+            </LogoWrapper>
 
-                        <StyledAlert
-                            icon={<BugOutlined className="error-icon" />}
-                            message={
-                                <AntTitle level={4} style={{ margin: 0 }}>
-                                    {MESSAGES.ERROR_TITLE}
-                                </AntTitle>
-                            }
-                            description={
-                                <Text>{MESSAGES.ERROR_DESCRIPTION}</Text>
-                            }
-                            type="error"
-                            showIcon
-                        />
+            <StyledAlert
+              key="alert"
+              icon={<BugOutlined className="error-icon" />}
+              message={
+                <AntTitle level={4} style={{ margin: 0, color: '#cf1322' }}>
+                  {MESSAGES.ERROR_TITLE}
+                </AntTitle>
+              }
+              description={<Text>{MESSAGES.ERROR_DESCRIPTION}</Text>}
+              type="error"
+              showIcon
+            />
 
-                        <ReportSection>
-                            <Checkbox onChange={handleReportChange}>
-                                <Text strong>{MESSAGES.REPORT_ERROR}</Text>
-                            </Checkbox>
-                            <Text type="secondary" className="report-description">
-                                {MESSAGES.REPORT_DESCRIPTION}
-                            </Text>
-                        </ReportSection>
+            <ReportSection key="report">
+              <Checkbox onChange={handleReportChange}>
+                <Text strong>{MESSAGES.REPORT_ERROR}</Text>
+              </Checkbox>
+              <Text type="secondary" className="report-description">
+                {MESSAGES.REPORT_DESCRIPTION}
+              </Text>
+            </ReportSection>
 
-                        <ButtonGroup>
-                            {canGoBack && (
-                                <Button
-                                    icon={<RollbackOutlined />}
-                                    onClick={handleGoBack}
-                                    size="large"
-                                    className="back-button"
-                                >
-                                    {MESSAGES.GO_BACK}
-                                </Button>
-                            )}
-                            <Button
-                                type="primary"
-                                size="large"
-                                icon={<HomeOutlined />}
-                                onClick={handleBack}
-                                loading={loading}
-                                className="home-button"
-                            >
-                                {MESSAGES.GO_HOME}
-                            </Button>
-                        </ButtonGroup>
-
-                        {user?.role === 'dev' && (
-                            <ErrorDetails
-                                errorStackTrace={errorStackTrace}
-                                variants={ANIMATIONS.errorDetails}
-                            />
-                        )}
-                    </AnimatePresence>
-                </Space>
-            </ErrorCard>
-        </Container>
-    );
+            <ButtonGroup key="actions">
+              {canGoBack && (
+                <Button
+                  icon={<RollbackOutlined />}
+                  onClick={handleGoBack}
+                  size="large"
+                  className="back-button"
+                >
+                  {MESSAGES.GO_BACK}
+                </Button>
+              )}
+              <Button
+                type="primary"
+                size="large"
+                icon={<HomeOutlined />}
+                onClick={handleBack}
+                loading={loading}
+                className="home-button"
+              >
+                {MESSAGES.GO_HOME}
+              </Button>
+            </ButtonGroup>
+            {user?.role === 'dev' && (
+              <ErrorDetails
+                key="details"
+                errorStackTrace={errorStackTrace}
+                variants={ANIMATIONS.errorDetails}
+              />
+            )}
+          </AnimatePresence>
+        </Space>
+      </ErrorCard>
+    </Container>
+  );
 };
 
 ErrorElement.propTypes = {
-    errorInfo: PropTypes.string,
-    errorStackTrace: PropTypes.string,
+  errorInfo: PropTypes.string,
+  errorStackTrace: PropTypes.string,
 };
 
+// --- STYLED COMPONENTS ACTUALIZADOS ---
+
 const Container = styled(motion.div)`
-    min-height: 100vh;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    background: linear-gradient(145deg, var(--color-background-light) 0%, var(--color-background-dark) 100%);
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* Centrado vertical */
+  justify-content: center;  /* Centrado horizontal */
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f8f9fa; /* Fondo gris suave para contexto */
+  padding: 20px;
+  overflow-y: auto;
 `;
 
 const LogoWrapper = styled(motion.div)`
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2.5rem;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 10%));
 `;
 
 const StyledAlert = styled(Alert)`
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 0, 0, 0.1);
-    margin: 1em 0;
-    
-    .error-icon {
-        font-size: 28px;
-        color: #ff4d4f;
-    }
+  margin: 1.5rem 0;
+  border: none;
+  border-left: 4px solid #ff4d4f; /* Borde de acento elegante */
+  border-radius: 4px;
+  background: #fff1f0;
+  box-shadow: none; /* Eliminamos sombra para diseño plano */
 
-    .ant-alert-message {
-        margin-bottom: 8px;
-    }
+  .error-icon {
+    font-size: 24px;
+    color: #ff4d4f;
+    margin-top: 4px;
+  }
+
+  .ant-alert-message {
+    margin-bottom: 4px;
+  }
 `;
 
 const ReportSection = styled(Space)`
-    padding: 1.5rem;
-    background: var(--color-background-light);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    
-    .report-description {
-        font-size: 0.9rem;
-        opacity: 0.85;
-        padding-left: 24px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 1rem 1.5rem;
+  width: 100%;
+  
+  /* Diseño sutil y técnico */
+  background: rgba(0, 0, 0, 0.02); 
+  border: 1px dashed #d9d9d9; 
+  border-radius: 8px;
+  /* Sin sombras pesadas */
 
-    .ant-checkbox-wrapper:hover {
-        opacity: 0.8;
-    }
+  .report-description {
+    padding-left: 24px;
+    font-size: 0.85rem;
+    opacity: 0.85;
+  }
+
+  .ant-checkbox-wrapper:hover {
+    opacity: 0.8;
+  }
 `;
 
 const ButtonGroup = styled(Space)`
-    width: 100%;
-    justify-content: center;
-    gap: 16px !important;
-    margin-top: 1rem;
-    
-    .back-button {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        &:hover {
-            transform: translateX(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-    }
-    
-    .home-button {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-    }
+  gap: 16px !important;
+  justify-content: center;
+  width: 100%;
+  margin-top: 2rem;
+  flex-wrap: wrap; /* Para móviles */
 
-    button {
-        height: 44px;
-        padding: 0 24px;
-        border-radius: 8px;
+  button {
+    height: 48px;
+    padding: 0 32px;
+    border-radius: 12px; /* Bordes más modernos */
+    font-weight: 500;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .back-button {
+    border: 1px solid #d9d9d9;
+    background: white;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #40a9ff;
+      color: #40a9ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+  }
+
+  .home-button {
+    /* Gradiente sutil */
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    border: none;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(24, 144, 255, 0.4); /* Glow azul */
+    }
+  }
 `;
 
 export default ErrorElement;

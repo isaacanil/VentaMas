@@ -1,12 +1,10 @@
-import { updateUserProfile } from "./functions/updateUserProfile";
-import { saveUserData } from "./functions/saveUserData";
-import { registerUser } from "./functions/registerUser";
-import { auth } from "../../firebaseconfig";
-import { validateInputs } from "./functions/validateInputs";
-import { navigateSafely } from "./functions/navigateUser";
+import { auth } from '../../firebaseconfig';
 
+import { navigateSafely } from './functions/navigateUser';
+import { registerUser } from './functions/registerUser';
+import { validateInputs } from './functions/validateInputs';
 
-export const fbSignUpUserAccount = async (user, navigate) => { 
+export const fbSignUpUserAccount = async (user, navigate) => {
   try {
     validateInputs(user);
     await registerUser(auth, user);
@@ -16,10 +14,3 @@ export const fbSignUpUserAccount = async (user, navigate) => {
     throw error;
   }
 };
-
-
-
-
-
-
-

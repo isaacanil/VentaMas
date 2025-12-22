@@ -1,8 +1,13 @@
-import { AbilityBuilder, createMongoAbility, PureAbility } from '@casl/ability';
+import { AbilityBuilder, PureAbility } from '@casl/ability';
 
-export function defineAbilitiesForOwner(user) {
-  const { can, rules } = new AbilityBuilder(PureAbility);
+export function defineAbilitiesForOwner() {
+  const { can, cannot, rules } = new AbilityBuilder(PureAbility);
   can('manage', 'all'); // el dueño puede manejar todo
-  cannot('developerAccess', 'all')
+  can('access', 'all'); // acceso a todas las rutas
+  cannot('developerAccess', 'all');
+  cannot('access', '/users');
+  cannot('access', '/users/list');
+  cannot('access', '/users/session-logs');
+  cannot('access', '/users/activity');
   return rules;
 }

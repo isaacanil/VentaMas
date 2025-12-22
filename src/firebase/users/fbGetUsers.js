@@ -1,23 +1,43 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore"
-import { db } from "../firebaseconfig"
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
 
-export const fbGetUsers = async (setUser, user) => {
+import { db } from '../firebaseconfig';
 
-    if (!user || !user?.businessID) { return }
+export const fbGetUsers = (currentUser, setUsers, onError, onLoad) => {
+  if (!currentUser?.businessID) {
+    return;
+  }
 
-    const businessID = user.businessID
-    const usersRef = collection(db, "users")
-    const q = query(usersRef, where("user.businessID", "==", businessID))
-    onSnapshot(q, (snapshot) => {
-        const usersArray = snapshot.docs
-            .map((doc) => doc.data())
-            .sort((a, b) => a.user.createAt.seconds - b.user.createAt.seconds)
-            .map((doc, index) => {
-                doc.user.number = index + 1
-                return doc
-            })
-            .reverse()
+  const usersRef = collection(db, 'users');
+  const q = query(
+    usersRef,
+    where('user.businessID', '==', currentUser.businessID),
+    orderBy('user.createAt', 'desc'),
+  );
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      const usersArray = snapshot.docs.map((doc, i) => ({
+        ...doc.data(),
+        number: i + 1,
+      }));
 
-        setUser(usersArray)
-    })
-}
+      setUsers(usersArray);
+      if (onLoad) onLoad();
+    },
+    (error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        console.error('Error fetching users: ', error);
+      }
+      if (onLoad) onLoad();
+    },
+  );
+  return unsubscribe;
+};

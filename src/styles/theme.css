@@ -1,0 +1,41 @@
+/* src/styles/tokens.css */
+:root {
+  /* ----- Colores base ----- */
+  --primary: #06f;
+  --secondary: #f57;
+
+  --success: #33d9b2;
+  --warning: #fa0;
+  --error: #ff4d4f;
+  --info: #2f7cff;
+  --critical: #e03131;
+
+  --progress-bg: #e6e8ef;
+
+  /* Neutrales */
+  --text-100: #2b3043;
+  --text-60: #5c667b;
+  --bg-base: #fff;
+  --bg-elev: #f5f6fa;
+  --border: #d7dbe8;
+
+  /* ----- Radios, sombras y espaciado ----- */
+  --radius: 12px;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 8%);
+  --shadow-md: 0 4px 10px rgb(0 0 0 / 12%);
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Tipografías */
+  --font-sans: 'Roboto', sans-serif;
+  --font-display: 'Inter', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}

@@ -1,15 +1,19 @@
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
 
 export const useGetProducts = (db) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const productRef = collection(db, "products");
-    const q = query(productRef, orderBy("product.productName", "desc"), orderBy("product.order", "asc"));
+    const productRef = collection(db, 'products');
+    const q = query(
+      productRef,
+      orderBy('product.productName', 'desc'),
+      orderBy('product.order', 'asc'),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let productsArray = snapshot.docs.map(item => item.data());
+      let productsArray = snapshot.docs.map((item) => item.data());
       setProducts(productsArray);
     });
 
@@ -17,4 +21,4 @@ export const useGetProducts = (db) => {
   }, [db]);
 
   return products;
-}
+};

@@ -10,49 +10,55 @@ const StyledButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
-  ${(props) => {
-    switch (props.variant) {
+  ${({ $variant }) => {
+    switch ($variant) {
       case 'ghost':
         return css`
+          color: #1e3a8a;
           background: transparent;
-          color: #1E3A8A;
+
           &:hover {
-            background-color: rgba(30, 58, 138, 0.1);
+            background-color: rgb(30 58 138 / 10%);
           }
         `;
       case 'secondary':
         return css`
-          background-color: #6D28D9;
-          color: #FFFFFF;
+          color: #fff;
+          background-color: #6d28d9;
+
           &:hover {
-            background-color: #5B21B6;
+            background-color: #5b21b6;
           }
         `;
       case 'outline':
         return css`
+          color: #ef4444;
           background: transparent;
-          border: 1px solid #EF4444;
-          color: #EF4444;
+          border: 1px solid #ef4444;
+
           &:hover {
-            background-color: #EF4444;
-            color: #FFFFFF;
+            color: #fff;
+            background-color: #ef4444;
           }
         `;
       default:
         return css`
-          background-color: #3B82F6;
-          color: #FFFFFF;
+          color: #fff;
+          background-color: #3b82f6;
+
           &:hover {
-            background-color: #2563EB;
+            background-color: #2563eb;
           }
         `;
     }
   }}
 
-  ${(props) => {
-    switch (props.size) {
+  ${({ $size }) => {
+    switch ($size) {
       case 'sm':
         return css`
           padding: 0.25rem 0.5rem;
@@ -72,9 +78,15 @@ const StyledButton = styled.button`
   }}
 `;
 
-const Button = ({ variant = 'default', size = 'md', children, onClick, style }) => {
+const Button = ({
+  variant = 'default',
+  size = 'md',
+  children,
+  onClick,
+  style,
+}) => {
   return (
-    <StyledButton variant={variant} size={size} onClick={onClick} style={style}>
+    <StyledButton $variant={variant} $size={size} onClick={onClick} style={style}>
       {children}
     </StyledButton>
   );

@@ -1,17 +1,8 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
+export const ConfigMenu = ({ items: _items }) => {
+  return <Container></Container>;
+};
 
-export const ConfigMenu = ({ items }) => {
-  return (
-
-      <Container>
-
-      </Container>
-   
-  )
-}
-
-const Container = styled.div`
-
-`
+const Container = styled.div``;

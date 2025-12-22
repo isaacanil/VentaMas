@@ -1,16 +1,13 @@
-import React from 'react'
-import styled from 'styled-components'
+import styled from 'styled-components';
 
-export const Body = ({ children, messageNoData  }) => {
-    return (
-        <Container>
-            {children}
-            {messageNoData}
-        </Container>
-    )
-}
+export const Body = ({ children, messageNoData }) => {
+  return (
+    <Container>
+      {children}
+      {messageNoData}
+    </Container>
+  );
+};
 const Container = styled.div`
-    overflow-y: auto;
-   
- 
-`
+  overflow-y: auto;
+`;

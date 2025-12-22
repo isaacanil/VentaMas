@@ -1,88 +1,110 @@
-import { Timestamp, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../firebaseconfig";
-import { isFirebaseStorageUrl } from "../../../utils/url/isValidUrl";
-import { fbDeleteImage } from "../../img/fbDeleteImage";
-import { fbUploadFile } from "../../img/fbUploadFileAndGetURL";
-import { isImageFile } from "../../../utils/file/isValidFile";
+import { Timestamp, doc, updateDoc } from 'firebase/firestore';
 
+import { sanitizeFirebaseData } from '../../../utils/firebase/sanitizeFirebaseData';
+import { toTimestamp } from '../../../utils/firebase/toTimestamp';
+import { db } from '../../firebaseconfig';
+import { fbDeleteImage } from '../../img/fbDeleteImage';
+import { fbUploadFile } from '../../img/fbUploadFileAndGetURL';
 
 // Función que se encarga de actualizar un gasto.
-export const fbUpdateExpense = async (user, setLoading, expense, img) => {
-    try {
-        setLoading({
-            isOpen: true,
-            message: "Iniciando actualización del gasto..."
-        });
-        // Verifica que el usuario tenga un ID de negocio.
-        if (!user.businessID) {
-            throw new Error("No businessID provided");
-        }
-     
-        // Construye el objeto de gasto modificado. Las fechas se convierten al formato Timestamp de Firebase.
-        let modifiedExpense = {
-            ...expense,
-            dates: {
-                ...expense.dates,
-                expenseDate: Timestamp.fromMillis(expense.dates.expenseDate),
-                createdAt: Timestamp.fromMillis(expense.dates.createdAt),
-            },
-        }
+export const fbUpdateExpense = async (
+  user,
+  setLoading,
+  expense,
+  files,
+  removedAttachments = [],
+) => {
+  try {
+    setLoading({
+      isOpen: true,
+      message: 'Iniciando actualización del gasto...',
+    });
 
-        // Si img es un archivo de imagen válido...
-        if (isImageFile(img)) {
-            setLoading({
-                isOpen: true,
-                message: "Procesando imagen..."
-            });
-            if (isFirebaseStorageUrl(expense.receiptImageUrl)) {
-                // Elimina la imagen antigua.
-                setLoading({
-                    isOpen: true,
-                    message: "Eliminando imagen anterior..."
-                });
-                await fbDeleteImage(expense.receiptImageUrl);
-                console.log("Deleted old image-----------------");
-            }
-            // Carga la nueva imagen y actualiza la URL de la imagen en el gasto modificado.
-            setLoading({
-                isOpen: true,
-                message: "Cargando nueva imagen..."
-            });
-            const url = await fbUploadFile(user, 'expensesReceiptImg', img);
-            modifiedExpense.receiptImageUrl = url;
-            console.log("Uploaded new image-----------------------");
-        }
-
-        // Si img es una cadena vacía...
-        if (img === "") {
-            // Establece la URL de la imagen en el gasto modificado como una cadena vacía.
-            modifiedExpense.receiptImageUrl = "";
-            // Si el gasto actual tiene una URL de imagen en Firebase Storage...
-            if (isFirebaseStorageUrl(expense.receiptImageUrl)) {
-                // Elimina la imagen antigua.
-                await fbDeleteImage(expense.receiptImageUrl);
-                console.log("Deleted old image-----------------");
-            }
-        }
-    
-        setLoading({
-            isOpen: true,
-            message: "Actualizando gasto..."
-        });
-
-        // Obtiene la referencia del gasto en Firebase y actualiza el gasto con el gasto modificado.
-        const expenseRef = doc(db, 'businesses', user.businessID, 'expenses', expense.id);
-        await updateDoc(expenseRef, { expense: modifiedExpense });
-
-        setLoading({
-            isOpen: false,
-            message: ""
-        });
-
-    } catch (error) {
-        // Si ocurre algún error, lo arroja para que pueda ser manejado por la función que llama a fbUpdateExpense.
-        throw new Error("Error updating expense: " + error);
+    if (!user.businessID) {
+      throw new Error('No businessID provided');
     }
-}
 
+    // Delete removed attachments from Firebase Storage if any
+    if (removedAttachments.length > 0) {
+      setLoading({
+        isOpen: true,
+        message: 'Eliminando archivos adjuntos...',
+      });
 
+      for (const file of removedAttachments) {
+        const urlToDelete = file.url; // url es string
+        if (urlToDelete) {
+          await fbDeleteImage(urlToDelete);
+        }
+      }
+    }
+
+    let modifiedExpense = {
+      ...expense,
+      dates: {
+        ...expense.dates,
+        expenseDate: toTimestamp(expense.dates.expenseDate ?? Date.now()),
+        createdAt: toTimestamp(expense.dates.createdAt ?? Date.now()),
+        updatedAt: Timestamp.now(),
+      },
+    };
+
+    // Process new file attachments if any
+    if (files && files.length > 0) {
+      setLoading({
+        isOpen: true,
+        message: 'Procesando archivos adjuntos...',
+      });
+
+      const uploadPromises = files.map((f) =>
+        fbUploadFile(user, 'expensesReceiptImg', f.file),
+      );
+
+      const urls = await Promise.all(uploadPromises);
+      // Create new attachments array with both existing remote files (correctly formatted)
+      const existingAttachments = modifiedExpense.attachments || [];
+
+      const newAttachments = files.map((file, index) => ({
+        id: file.id,
+        name: file.name,
+        type: file.type,
+        url: urls[index],
+      }));
+
+      // Add the newly uploaded files with the correct structure
+      modifiedExpense.attachments = [...existingAttachments, ...newAttachments];
+    }
+
+    setLoading({
+      isOpen: true,
+      message: 'Sanitizando y actualizando gasto...',
+    });
+
+    // Sanitizar los datos antes de guardarlos
+    const sanitizedExpense = sanitizeFirebaseData(modifiedExpense);
+
+    const expenseRef = doc(
+      db,
+      'businesses',
+      user.businessID,
+      'expenses',
+      sanitizedExpense.id,
+    );
+    await updateDoc(expenseRef, { expense: sanitizedExpense });
+
+    setLoading({
+      isOpen: false,
+      message: '',
+    });
+
+    return true; // Indicate success
+  } catch (error) {
+    // Si ocurre algún error, lo arroja para que pueda ser manejado por la función que llama a fbUpdateExpense.
+    console.error('Error updating expense:', error);
+    setLoading({
+      isOpen: false,
+      message: '',
+    });
+    throw new Error('Error updating expense: ' + error);
+  }
+};

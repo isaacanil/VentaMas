@@ -1,8 +1,4 @@
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../features/auth/userSlice';
 import { nanoid } from '@reduxjs/toolkit';
-import { db } from '../firebaseconfig';
-import { useEffect, useState } from 'react';
 import {
   collection,
   getDocs,
@@ -14,13 +10,24 @@ import {
   onSnapshot,
   where,
   query,
+  writeBatch,
 } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../firebaseconfig';
 import { getNextID } from '../Tools/getNextID';
 
 // Crear un nuevo almacén
 export const createWarehouse = async (user, warehouseData) => {
   const id = nanoid();
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
   const warehouseDocReference = doc(warehouseCollectionRef, id);
 
   try {
@@ -42,7 +49,12 @@ export const createWarehouse = async (user, warehouseData) => {
 
 // Obtener todos los almacenes de un negocio
 export const getWarehouses = async (user) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
 
   try {
     const querySnapshot = await getDocs(warehouseCollectionRef);
@@ -55,8 +67,13 @@ export const getWarehouses = async (user) => {
 
 // Escuchar todos los almacenes en tiempo real
 export const listenAllWarehouses = (user, callback) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
-  
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
+
   return onSnapshot(
     warehouseCollectionRef,
     (querySnapshot) => {
@@ -65,13 +82,20 @@ export const listenAllWarehouses = (user, callback) => {
         .filter((data) => data.isDeleted !== true);
       callback(filteredData);
     },
-    (error) => console.error('Error al obtener documentos en tiempo real:', error)
+    (error) =>
+      console.error('Error al obtener documentos en tiempo real:', error),
   );
 };
 
 // Obtener un almacén específico por ID
 export const getWarehouse = async (user, id) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     const warehouseDoc = await getDoc(warehouseDocReference);
@@ -84,18 +108,30 @@ export const getWarehouse = async (user, id) => {
 
 // Escuchar un almacén específico en tiempo real
 export const listenWarehouse = (user, id, callback) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   return onSnapshot(
     warehouseDocReference,
     (docSnapshot) => callback(docSnapshot.exists() ? docSnapshot.data() : null),
-    (error) => console.error('Error al obtener el almacén:', error)
+    (error) => console.error('Error al obtener el almacén:', error),
   );
 };
 
 // Actualizar un almacén
 export const updateWarehouse = async (user, id, updatedData) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     await updateDoc(warehouseDocReference, {
@@ -112,7 +148,13 @@ export const updateWarehouse = async (user, id, updatedData) => {
 
 // Borrar un almacén (marcar como eliminado)
 export const deleteWarehouse = async (user, id) => {
-  const warehouseDocReference = doc(db, 'businesses', user.businessID, 'warehouses', id);
+  const warehouseDocReference = doc(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+    id,
+  );
 
   try {
     await updateDoc(warehouseDocReference, {
@@ -129,8 +171,16 @@ export const deleteWarehouse = async (user, id) => {
 
 // Crear un almacén por defecto si no existe
 export const getDefaultWarehouse = async (user) => {
-  const warehouseCollectionRef = collection(db, 'businesses', user.businessID, 'warehouses');
-  const defaultWarehouseQuery = query(warehouseCollectionRef, where('defaultWarehouse', '==', true));
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
+  const defaultWarehouseQuery = query(
+    warehouseCollectionRef,
+    where('defaultWarehouse', '==', true),
+  );
 
   try {
     const querySnapshot = await getDocs(defaultWarehouseQuery);
@@ -169,29 +219,143 @@ export const getDefaultWarehouse = async (user) => {
   }
 };
 
+export const setDefaultWarehouse = async (user, warehouseId) => {
+  if (!user?.businessID)
+    throw new Error('No se pudo identificar el negocio actual.');
+  if (!warehouseId) throw new Error('Identificador de almacén inválido.');
+
+  const warehouseCollectionRef = collection(
+    db,
+    'businesses',
+    user.businessID,
+    'warehouses',
+  );
+  const targetWarehouseRef = doc(warehouseCollectionRef, warehouseId);
+
+  const targetSnapshot = await getDoc(targetWarehouseRef);
+  if (!targetSnapshot.exists()) {
+    throw new Error('El almacén seleccionado no existe.');
+  }
+
+  if (targetSnapshot.data()?.defaultWarehouse) {
+    return targetSnapshot.data();
+  }
+
+  const batch = writeBatch(db);
+  const currentDefaultsSnapshot = await getDocs(
+    query(warehouseCollectionRef, where('defaultWarehouse', '==', true)),
+  );
+
+  currentDefaultsSnapshot.forEach((docSnapshot) => {
+    if (
+      docSnapshot.id !== warehouseId &&
+      docSnapshot.data()?.defaultWarehouse
+    ) {
+      batch.update(docSnapshot.ref, {
+        defaultWarehouse: false,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+    }
+  });
+
+  batch.update(targetWarehouseRef, {
+    defaultWarehouse: true,
+    updatedAt: serverTimestamp(),
+    updatedBy: user.uid,
+  });
+
+  await batch.commit();
+
+  const updatedSnapshot = await getDoc(targetWarehouseRef);
+  return updatedSnapshot.data();
+};
+
 // Hook para crear y obtener el almacén por defecto
 export const useDefaultWarehouse = () => {
   const user = useSelector(selectUser);
-  const [defaultWarehouse, setDefaultWarehouse] = useState(null);
+  const [defaultWarehouse, setDefaultWarehouseState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+    let unsubscribe;
+
     const fetchDefaultWarehouse = async () => {
+      if (!user?.businessID) {
+        if (isMounted) {
+          setDefaultWarehouseState(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        const warehouse = await getDefaultWarehouse(user);
-        setDefaultWarehouse(warehouse);
-      } catch (error) {
-        setError(error);
-      } finally {
+        const ensuredDefault = await getDefaultWarehouse(user);
+        if (isMounted && ensuredDefault) {
+          setDefaultWarehouseState(ensuredDefault);
+        }
+
+        const warehouseCollectionRef = collection(
+          db,
+          'businesses',
+          user.businessID,
+          'warehouses',
+        );
+        const defaultWarehouseQuery = query(
+          warehouseCollectionRef,
+          where('defaultWarehouse', '==', true),
+        );
+
+        unsubscribe = onSnapshot(
+          defaultWarehouseQuery,
+          (snapshot) => {
+            if (!isMounted) return;
+            if (!snapshot.empty) {
+              setDefaultWarehouseState(snapshot.docs[0].data());
+              setLoading(false);
+              return;
+            }
+
+            getDefaultWarehouse(user)
+              .then((warehouse) => {
+                if (!isMounted) return;
+                setDefaultWarehouseState(warehouse || null);
+              })
+              .catch((ensureError) => {
+                if (!isMounted) return;
+                setError(ensureError);
+              })
+              .finally(() => {
+                if (!isMounted) return;
+                setLoading(false);
+              });
+          },
+          (snapshotError) => {
+            if (!isMounted) return;
+            setError(snapshotError);
+            setLoading(false);
+          },
+        );
+      } catch (fetchError) {
+        if (!isMounted) return;
+        setError(fetchError);
         setLoading(false);
       }
     };
 
-    if (user) {
-      fetchDefaultWarehouse();
-    }
+    fetchDefaultWarehouse();
+
+    return () => {
+      isMounted = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, [user]);
 
   return { defaultWarehouse, loading, error };
@@ -201,17 +365,14 @@ export const useDefaultWarehouse = () => {
 export const useListenWarehouse = (id) => {
   const user = useSelector(selectUser);
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(() => Boolean(id));
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!id || !user) {
-      setData([]);
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const unsubscribe = listenWarehouse(user, id, (data) => {
       setData(data);
       setLoading(false);
@@ -226,16 +387,13 @@ export const useListenWarehouses = () => {
   const user = useSelector(selectUser);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!user?.businessID) {
-      setData([]);
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const unsubscribe = listenAllWarehouses(user, (data) => {
       setData(data);
       setLoading(false);
@@ -248,14 +406,14 @@ export const useListenWarehouses = () => {
 
 export const useGetWarehouseData = (items) => {
   const user = useSelector(selectUser);
-  const [data, setData] = useState({
+  const [data, _setData] = useState({
     warehouses: [],
     shelves: [],
     rows: [],
     segments: [],
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, _setLoading] = useState(false);
+  const [error] = useState(null);
 
   useEffect(() => {
     if (!Array.isArray(items) && items.length === 0) return;

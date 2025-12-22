@@ -1,48 +1,39 @@
-import React, { Fragment, useEffect, useState } from 'react'
-import style from './ControlSearchProductStyle.module.scss'
-import { Product, Grid } from '../../'
+import React, { useMemo } from 'react';
 
-export const SearchList = ({dataSearch}) => {
-  
-  const [products, setProduct] = useState()
-  const [filteredProducts, setFilteredProducts] = useState([])
-  console.log(dataSearch)
+import { Grid } from '../../templates/system/Grid/Grid';
+import { Product } from '../../templates/system/Product/Product/Product';
 
-  //console.log(auth.currentUser)
-    useEffect(()=>{
-        const filtered = products.filter((e) => e.product.productName.toLowerCase().includes(dataSearch.toLowerCase()));
-        setFilteredProducts(filtered)
-    }, [dataSearch, products])
-  
-    
- 
+import style from './ControlSearchProductStyle.module.scss';
 
+export const SearchList = ({ dataSearch = '', products = [] }) => {
+  const searchTerm = dataSearch?.toString().trim().toLowerCase();
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return [];
+    return products.filter(({ product }) =>
+      product?.productName?.toLowerCase().includes(searchTerm),
+    );
+  }, [products, searchTerm]);
 
   return (
     <div className={style.container}>
-      <Grid columns='4'>
-      {
-        !dataSearch == '' ? (
-          products.length > 0 ? filteredProducts.map(({product}, index) => (
-
-           <Product 
-           key={index} 
-           image={product.productImageURL}
-           title={product.productName} 
-           price={product.totalPrice}
-           view="row"  
-           product={product}
-           ></Product>
-              
-           
-          ))  : <h2>No hay Productos!</h2>
-      ) : (
-      null
-      )
-      }
+      <Grid columns="4">
+        {searchTerm ? (
+          filteredProducts.length > 0 ? (
+            filteredProducts.map(({ product }, index) => (
+              <Product
+                key={index}
+                image={product.productImageURL}
+                title={product.productName}
+                price={product.totalPrice}
+                view="row"
+                product={product}
+              />
+            ))
+          ) : (
+            <h2>No hay Productos!</h2>
+          )
+        ) : null}
       </Grid>
-
-    </div >
-  )
-}
-
+    </div>
+  );
+};

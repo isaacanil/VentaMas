@@ -1,0 +1,1 @@
+export { MultiPaymentModal } from './MultiPaymentModal';

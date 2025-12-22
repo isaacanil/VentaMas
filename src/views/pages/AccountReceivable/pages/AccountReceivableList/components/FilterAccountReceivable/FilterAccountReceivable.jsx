@@ -1,173 +1,340 @@
-import React, { useEffect, useState } from 'react';
+import { Button, Select, Space } from 'antd';
+import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { Button, Select, Form } from 'antd';
-import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
-import { DatePicker } from '../../../../../../templates/system/Dates/DatePicker/DatePicker';
-import { DateRangeFilter } from '../../../../../../templates/system/Button/TimeFilterButton/DateRangeFilter';
-import { icons } from '../../../../../../../constants/icons/icons';
-import { sortAccounts } from '../../../../../../../utils/sorts/sortAccountsReceivable';
 
-const FilterContainer = styled.div`
-  height: 3em;
-  display: grid;
-  padding: 0 1em;
-  align-items: center;
-  background: white;
-  border-radius: 8px;
-`;
+import { FilterBar as CommonFilterBar } from '../../../../../../../components/common/FilterBar';
+import { icons } from '../../../../../../../constants/icons/icons';
+import useBusiness from '../../../../../../../hooks/useBusiness';
+
+const DEFAULT_CLIENT_TYPE = 'normal';
+const DEFAULT_STATUS = 'active';
+const DEFAULT_PAYMENT_STATUS = 'all';
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const NO_OP = () => { };
+const DEFAULT_DATE_RANGE = { startDate: null, endDate: null };
+
+const SORT_OPTIONS = [
+  { value: 'defaultCriteria', label: 'Por defecto' },
+  { value: 'date', label: 'Fecha' },
+  { value: 'invoiceNumber', label: 'No. Factura' },
+  { value: 'client', label: 'Cliente' },
+  { value: 'balance', label: 'Balance' },
+  { value: 'initialAmount', label: 'Monto inicial' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Activas' },
+  { value: 'inactive', label: 'Inactivas' },
+  { value: 'all', label: 'Todas' },
+];
+
+const PAYMENT_STATUS_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'paid', label: 'Pagadas' },
+  { value: 'unpaid', label: 'No Pagadas' },
+  { value: 'partial', label: 'Parcial' },
+];
+
+const CLIENT_TYPE_OPTIONS = [
+  { value: DEFAULT_CLIENT_TYPE, label: 'Clientes' },
+  { value: 'insurance', label: 'Aseguradoras' },
+];
+
+const normalizeDateRange = (range) => {
+  if (!range) return { startDate: null, endDate: null };
+  if (Array.isArray(range)) {
+    const [start, end] = range;
+    return { startDate: start ?? null, endDate: end ?? null };
+  }
+  return {
+    startDate: range.startDate ?? null,
+    endDate: range.endDate ?? null,
+  };
+};
+
+const isSameRange = (a, b) => {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return a.startDate === b.startDate && a.endDate === b.endDate;
+};
 
 export const FilterAccountReceivable = ({
-  datesSelected = [],
-  setDatesSelected = () => {},
-  accounts = [],
-  onSort = () => {},
+  datesSelected = DEFAULT_DATE_RANGE,
+  setDatesSelected = NO_OP,
+  clientType = DEFAULT_CLIENT_TYPE,
+  onClientTypeChange = NO_OP,
+  statusFilter = DEFAULT_STATUS,
+  onStatusFilterChange = NO_OP,
+  sortCriteria = 'defaultCriteria',
+  sortDirection = 'asc',
+  onSortChange = NO_OP,
+  onToggleSortDirection = NO_OP,
+  totalCount = 0,
+  selectedClient = 'all',
+  onClientChange = NO_OP,
+  clientOptions = [],
+  paymentStatusFilter = DEFAULT_PAYMENT_STATUS,
+  onPaymentStatusChange = NO_OP,
 }) => {
-  const [sortCriteria, setSortCriteria] = useState('defaultCriteria');
-  const [sortDirection, setSortDirection] = useState('asc');
+  const { isPharmacy } = useBusiness();
+  const [initialDateRange] = useState(
+    () => datesSelected ?? { startDate: null, endDate: null },
+  );
 
-  const handleSort = (newCriteria) => {
-    setSortCriteria(newCriteria);
-    const sortedAccounts = sortAccounts(accounts, newCriteria, sortDirection);
-    onSort(sortedAccounts);
-  };
+  const handleDateRangeChange = useCallback(
+    (range) => {
+      setDatesSelected(normalizeDateRange(range));
+    },
+    [setDatesSelected],
+  );
 
-  const toggleSortDirection = () => {
-    const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    setSortDirection(newDirection);
-    const sortedAccounts = sortAccounts(accounts, sortCriteria, newDirection);
-    onSort(sortedAccounts);
-  };
+  const handleStatusChange = useCallback(
+    (value) => {
+      onStatusFilterChange(value || DEFAULT_STATUS);
+    },
+    [onStatusFilterChange],
+  );
 
-  const handleSortChange = (value) => {
-    handleSort(value);
-  };
+  const handleClientTypeChange = useCallback(
+    (value) => {
+      onClientTypeChange(value || DEFAULT_CLIENT_TYPE);
+    },
+    [onClientTypeChange],
+  );
 
-  const handleTimeChange = (dates) => {
-    setDatesSelected(dates);
-  };
+  const handleClientChange = useCallback(
+    (value) => {
+      onClientChange(value || 'all');
+    },
+    [onClientChange],
+  );
 
-  const sortOptions = [
-    { value: 'defaultCriteria', label: 'Por defecto' },
-    { value: 'date', label: 'Fecha' },
-    { value: 'invoiceNumber', label: 'Número de Factura' },
-    { value: 'client', label: 'Cliente' },
-    { value: 'balance', label: 'Balance' },
-    { value: 'initialAmount', label: 'Monto Inicial' },
-  ];
+  const handlePaymentStatusChange = useCallback(
+    (value) => {
+      onPaymentStatusChange(value || DEFAULT_PAYMENT_STATUS);
+    },
+    [onPaymentStatusChange],
+  );
 
-  const vw = useViewportWidth();
+  const handleSortChange = useCallback(
+    (value) => {
+      onSortChange(value);
+    },
+    [onSortChange],
+  );
+
+  const hasActiveFilters = useMemo(() => {
+    const dateChanged = !isSameRange(datesSelected, initialDateRange);
+    const statusChanged = statusFilter !== DEFAULT_STATUS;
+    const clientTypeChanged =
+      isPharmacy && clientType !== DEFAULT_CLIENT_TYPE;
+    const clientChanged = selectedClient !== 'all';
+    const paymentStatusChanged = paymentStatusFilter !== DEFAULT_PAYMENT_STATUS;
+    return (
+      dateChanged ||
+      statusChanged ||
+      clientTypeChanged ||
+      clientChanged ||
+      paymentStatusChanged
+    );
+  }, [
+    clientType,
+    datesSelected,
+    initialDateRange,
+    isPharmacy,
+    statusFilter,
+    selectedClient,
+    paymentStatusFilter,
+  ]);
+
+  const handleClearFilters = useCallback(() => {
+    setDatesSelected(initialDateRange);
+    onStatusFilterChange(DEFAULT_STATUS);
+    onClientTypeChange(DEFAULT_CLIENT_TYPE);
+    onClientChange('all');
+    onPaymentStatusChange(DEFAULT_PAYMENT_STATUS);
+  }, [
+    initialDateRange,
+    onClientTypeChange,
+    onStatusFilterChange,
+    onClientChange,
+    onPaymentStatusChange,
+    setDatesSelected,
+  ]);
+
+  const sortOptions = useMemo(() => {
+    if (!isPharmacy) return SORT_OPTIONS;
+    return [
+      ...SORT_OPTIONS.slice(0, 4),
+      { value: 'insurance', label: 'Aseguradora' },
+      ...SORT_OPTIONS.slice(4),
+    ];
+  }, [isPharmacy]);
+
+  const items = useMemo(
+    () =>
+      [
+        {
+          key: 'date',
+          label: 'Fechas',
+          type: 'dateRange',
+          value: datesSelected,
+          onChange: handleDateRangeChange,
+          isActive: (value) => !isSameRange(value, initialDateRange),
+        },
+        isPharmacy
+          ? {
+            key: 'clientType',
+            label: 'Tipo',
+            type: 'select',
+            value: clientType,
+            onChange: handleClientTypeChange,
+            options: CLIENT_TYPE_OPTIONS,
+            allowClear: false,
+            controlStyle: { width: '100%' },
+            minWidth: 150,
+          }
+          : null,
+        {
+          key: 'client',
+          label: 'Cliente',
+          type: 'select',
+          value: selectedClient,
+          onChange: handleClientChange,
+          options: [{ value: 'all', label: 'Todos' }, ...clientOptions],
+          allowClear: false,
+          controlStyle: { width: 200 },
+          showSearch: true,
+          filterOption: (input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+        },
+        {
+          key: 'paymentStatus',
+          label: 'Pago',
+          type: 'select',
+          value: paymentStatusFilter,
+          onChange: handlePaymentStatusChange,
+          options: PAYMENT_STATUS_OPTIONS,
+          allowClear: false,
+          controlStyle: { width: 140 },
+          minWidth: 140,
+        },
+        {
+          key: 'status',
+          label: 'Estado',
+          type: 'select',
+          value: statusFilter,
+          onChange: handleStatusChange,
+          options: STATUS_OPTIONS,
+          allowClear: false,
+          controlStyle: { width: '100%' },
+          minWidth: 150,
+        },
+        {
+          key: 'sort',
+          label: 'Ordenar',
+          wrap: true,
+          render: () => (
+            <Space.Compact>
+              <Select
+                value={sortCriteria}
+                style={{ width: 160 }}
+                onChange={handleSortChange}
+                options={sortOptions}
+              />
+              <Button
+                icon={
+                  sortDirection === 'asc'
+                    ? icons.sort.sortAsc
+                    : icons.sort.sortDesc
+                }
+                onClick={onToggleSortDirection}
+                disabled={sortCriteria === 'defaultCriteria'}
+              />
+            </Space.Compact>
+          ),
+          value: { sortCriteria, sortDirection },
+          isActive: (value) =>
+            value?.sortCriteria && value.sortCriteria !== 'defaultCriteria',
+          wrapperStyle: { marginLeft: 'auto' },
+        },
+      ].filter(Boolean),
+    [
+      clientType,
+      datesSelected,
+      handleClientTypeChange,
+      handleDateRangeChange,
+      handleSortChange,
+      handleStatusChange,
+      initialDateRange,
+      isPharmacy,
+      sortCriteria,
+      sortDirection,
+      sortOptions,
+      statusFilter,
+      onToggleSortDirection,
+      selectedClient,
+      handleClientChange,
+      clientOptions,
+      paymentStatusFilter,
+      handlePaymentStatusChange,
+    ],
+  );
+
+  const mobileTotals = useMemo(
+    () => <TotalBadge>Total: {totalCount}</TotalBadge>,
+    [totalCount],
+  );
 
   return (
-    <Container>
-      <Row>
-        <DatePicker inputMovilWidth setDates={setDatesSelected} dates={datesSelected} />
-        <DateRangeFilter setDates={handleTimeChange} dates={datesSelected} />
-      </Row>
-      <Buttons>
-        <OrderOptions>
-          <Form.Item label="Ordenar: " style={{ marginBottom: 0 }}>
-            <Select
-              defaultValue="defaultCriteria"
-              style={{ width: 180 }}
-              onChange={handleSortChange}
-              options={sortOptions}
-            />
-          </Form.Item>
-          <Button
-            icon={sortDirection === 'asc' ? icons.sort.sortAsc : icons.sort.sortDesc}
-            onClick={toggleSortDirection}
-            disabled={sortCriteria === 'defaultCriteria'}
-          />
-        </OrderOptions>
-        {vw < 900 && (
-          <MoreInfo>
-            <Label>Total de Cuentas</Label>
-            <Label>#{processedAccounts.length}</Label>
-          </MoreInfo>
-        )}
-      </Buttons>
-    </Container>
+    <CommonFilterBar
+      items={items}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={hasActiveFilters ? handleClearFilters : null}
+      mobileHeaderRight={mobileTotals}
+      labels={{
+        drawerTrigger: 'Filtros',
+        drawerTitle: 'Filtros',
+        modalTitle: 'Filtros adicionales',
+        more: 'Más filtros',
+        clear: 'Limpiar filtros',
+      }}
+    />
   );
 };
 
-FilterAccountReceivable.defaultProps = {
-  onFilter: () => {},
-  datesSelected: [],
-  setDatesSelected: () => {},
-  onReportSaleOpen: () => {},
-  processedInvoices: [],
-  setProcessedInvoices: () => {},
+
+
+FilterAccountReceivable.propTypes = {
+  datesSelected: PropTypes.shape({
+    startDate: PropTypes.number,
+    endDate: PropTypes.number,
+  }),
+  setDatesSelected: PropTypes.func,
+  clientType: PropTypes.string,
+  onClientTypeChange: PropTypes.func,
+  statusFilter: PropTypes.string,
+  onStatusFilterChange: PropTypes.func,
+  sortCriteria: PropTypes.string,
+  sortDirection: PropTypes.string,
+  onSortChange: PropTypes.func,
+  onToggleSortDirection: PropTypes.func,
+  totalCount: PropTypes.number,
+  selectedClient: PropTypes.string,
+  onClientChange: PropTypes.func,
+  clientOptions: PropTypes.array,
+  paymentStatusFilter: PropTypes.string,
+  onPaymentStatusChange: PropTypes.func,
 };
 
-const Container = styled.div`
-  width: 100%;
-  display: flex;
-  background-color: var(--White);
-  align-items: end;
-  border-bottom: 1px solid var(--Gray);
-  padding: 0.4em 1em;
-  margin: 0 auto;
-  gap: 1em;
-
-  select {
-    padding: 0.1em 0.2em;
-  }
-
-  @media (max-width: 900px) {
-    gap: 0.8em;
-    display: grid;
-  }
-`;
-
-const Buttons = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1em;
-
-  @media (max-width: 900px) {
-    gap: 0.2em;
-    order: 1;
-    justify-content: space-between;
-  }
-`;
-
-const Label = styled.div`
-  font-size: 1em;
-  font-weight: 550;
-  min-height: 2em;
-  display: flex;
-  align-items: center;
+const TotalBadge = styled.div`
+  padding: 4px 10px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
   white-space: nowrap;
-
-  @media (max-width: 800px) {
-    font-size: 1em;
-  }
-`;
-
-const Row = styled.div`
-  display: grid;
-  gap: 1em;
-  align-items: end;
-  grid-template-columns: min-content min-content min-content;
-
-  @media (max-width: 800px) {
-    row-gap: 0;
-    column-gap: 1em;
-  }
-`;
-
-const OrderOptions = styled.div`
-  display: flex;
-  gap: 1em;
-  align-items: center;
-
-  @media (max-width: 800px) {
-    gap: 0.2em;
-  }
-`;
-
-const MoreInfo = styled.div`
-  display: flex;
-  gap: 1em;
-  align-items: center;
+  border: 1px solid #e5e7eb;
 `;

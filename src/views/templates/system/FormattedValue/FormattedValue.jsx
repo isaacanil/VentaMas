@@ -1,23 +1,37 @@
-import styled from "styled-components"
-import { useFormatNumber } from "../../../../hooks/useFormatNumber"
-import { useFormatDate } from "../../../../hooks/useFormatTime"
-import { useFormatPrice } from "../../../../hooks/useFormatPrice"
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
+import styled from 'styled-components';
+
+import { formatNumber } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
+
+const formatDateValue = (value) => {
+  const timestamp = value || DateTime.now().toMillis();
+  return DateTime.fromMillis(timestamp).toLocaleString(DateTime.DATE_MED);
+};
 
 const formatValue = (type, value) => {
   switch (type) {
     case 'number':
-      return useFormatNumber(value);
+      return formatNumber(value);
     case 'date':
-      return useFormatDate(value || DateTime.now().toMillis());
+      return formatDateValue(value);
     case 'price':
-      return useFormatPrice(value);
+      return formatPrice(value);
     default:
       return value;
   }
 };
 
-export const FormattedValue = ({ type, value, size, bold, noWrap, color, transformValue = true, align }) => {
+export const FormattedValue = ({
+  type,
+  value,
+  size,
+  bold,
+  noWrap,
+  color,
+  transformValue = true,
+  align,
+}) => {
   const formattedValue = transformValue ? formatValue(type, value) : value;
 
   if (type === 'text') {
@@ -25,39 +39,54 @@ export const FormattedValue = ({ type, value, size, bold, noWrap, color, transfo
   }
 
   return (
-    <Text size={size} bold={bold} color={color} noWrap={noWrap} type={type} align={align}>
+    <Text
+      size={size}
+      bold={bold}
+      color={color}
+      noWrap={noWrap}
+      type={type}
+      $align={align}
+    >
       {formattedValue}
     </Text>
   );
 };
 
 const Text = styled.div`
-height:min-content;
-${({ type }) => type === 'title-large' && 'font-size: 28px; font-weight: 700; line-height: 1.4; color: #222222;'}
-${({ type }) => type === 'title' && 'font-size: 22px; font-weight: 600; line-height: 1.4; color: #333333;'}
-${({ type }) => type === 'subtitle' && 'font-size: 18px; font-weight: 500; line-height: 1.4; color: #333333;'}
-${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 0.02em; color: #555555;'}
+  height: min-content;
+  ${({ type }) =>
+    type === 'title-large' &&
+    'font-size: 28px; font-weight: 700; line-height: 1.4; color: #222222;'}
+  ${({ type }) =>
+    type === 'title' &&
+    'font-size: 22px; font-weight: 600; line-height: 1.4; color: #333333;'}
+${({ type }) =>
+    type === 'subtitle' &&
+    'font-size: 18px; font-weight: 500; line-height: 1.4; color: #333333;'}
+${({ type }) =>
+    type === 'paragraph' &&
+    'font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: 0.02em; color: #555555;'}
 
   ${({ type }) => {
     switch (type) {
       case 'title-table':
-        return 'font-size: 18px;font-weight: bold;color: var(--color);'
+        return 'font-size: 18px;font-weight: bold;color: var(--color);';
       case 'subtitle-table':
         return `
         font-size: 14px;
         font-weight: bold;
         text-transform: capitalize;
         font-family: 'Montserrat', sans-serif;
-        `
+        `;
       case 'paragraph-table':
         return `
         font-size: 14px;
         font-weight: 400;
         text-transform: capitalize;
         font-family: 'Azeret Mono', monospace;
-        `
+        `;
       default:
-        return ''
+        return '';
     }
   }}
 
@@ -71,8 +100,8 @@ ${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line
   ${({ noWrap }) => noWrap && `white-space: nowrap;`}
 
   ${({ bold }) => bold && 'font-weight: bold;'}
-  ${({ align }) => {
-    switch (align) {
+  ${({ $align }) => {
+    switch ($align) {
       case 'center':
         return 'text-align: center;';
       case 'right':
@@ -86,5 +115,5 @@ ${({ type }) => type === 'paragraph' && 'font-size: 16px; font-weight: 400; line
   ${({ color }) => color === 'secondary' && 'color: var(--color1);'}
   ${({ color }) => color === 'tertiary' && 'color: var(--color2);'}
   ${({ color }) => color === 'quaternary' && 'color: var(--color3);'}
-  ${({ color }) => color === 'gray-dark' && 'color: var(--Gray8);'}
+  ${({ color }) => color === 'gray-dark' && 'color: var(--gray-8);'}
 `;

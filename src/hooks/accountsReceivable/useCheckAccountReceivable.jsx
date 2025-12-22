@@ -1,22 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
-import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
 
-export const useCreditLimitCheck = (creditLimit, change, clientId, userBusinessId) => {
+import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
+import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
+
+export const useCreditLimitCheck = (
+  creditLimit,
+  change,
+  clientId,
+  userBusinessId,
+) => {
   const { currentBalance } = useSelector(selectAR);
-  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState(0);
-  const [isWithinCreditLimit, setIsWithinCreditLimit] = useState(null);
+  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] =
+    useState(0);
   const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
-  const [creditLimitValue, setCreditLimitValue] = useState(0);
-  
 
   useEffect(() => {
     const fetchInvoiceAvailableCount = async () => {
       if (creditLimit?.invoice?.status) {
-        const invoiceAvailableCount = await fbGetActiveARCount(userBusinessId, clientId);
+        const invoiceAvailableCount = await fbGetActiveARCount(
+          userBusinessId,
+          clientId,
+        );
         setActiveAccountsReceivableCount(invoiceAvailableCount);
-        setIsWithinInvoiceCount(invoiceAvailableCount <= (creditLimit?.invoice?.value || 0));
+        // Corregido: usar < en lugar de <= para la validación
+        setIsWithinInvoiceCount(
+          invoiceAvailableCount < (creditLimit?.invoice?.value || 0),
+        );
       } else {
         setIsWithinInvoiceCount(true);
       }
@@ -24,14 +34,19 @@ export const useCreditLimitCheck = (creditLimit, change, clientId, userBusinessI
     fetchInvoiceAvailableCount();
   }, [clientId, userBusinessId, creditLimit]);
 
-  useEffect(() => {
+  // Derivar isWithinCreditLimit y creditLimitValue con useMemo en lugar de effect
+  const { isWithinCreditLimit, creditLimitValue } = useMemo(() => {
     if (creditLimit?.creditLimit?.status && currentBalance !== null) {
-      const adjustedCreditLimit = currentBalance + (-change);
-      setIsWithinCreditLimit(adjustedCreditLimit <= creditLimit?.creditLimit?.value);
-      setCreditLimitValue(adjustedCreditLimit);
-    } else {
-      setIsWithinCreditLimit(true);
+      const adjustedCreditLimit = currentBalance + -change;
+      return {
+        isWithinCreditLimit: adjustedCreditLimit <= creditLimit?.creditLimit?.value,
+        creditLimitValue: adjustedCreditLimit,
+      };
     }
+    return {
+      isWithinCreditLimit: true,
+      creditLimitValue: 0,
+    };
   }, [creditLimit, currentBalance, change]);
 
   return {

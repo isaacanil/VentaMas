@@ -1,45 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, InputNumber, Button } from 'antd';
+import { Modal } from 'antd';
+import React, { useCallback, useMemo, useState } from 'react';
 
-const AdjustInventoryModal = ({ visible, onClose, stock, packSize, onSave }) => {
-    const [adjustedStock, setAdjustedStock] = useState(stock);
-    const [adjustedTotalUnit, setAdjustedTotalUnit] = useState(stock * packSize);
+const AdjustInventoryModal = ({
+  visible,
+  onClose,
+  stock,
+  packSize,
+  onSave,
+}) => {
+  const initialTrigger = `${visible}-${stock}-${packSize}`;
+  const [{ trigger: localTrigger, value: localStock }, setLocalStock] =
+    useState(() => ({ trigger: initialTrigger, value: stock }));
 
-    // Actualiza los valores del modal cuando se reciben nuevas props
-    useEffect(() => {
-        setAdjustedStock(stock);
-        setAdjustedTotalUnit(stock * packSize);
-    }, [stock, packSize]);
+  const adjustedStock = localTrigger === initialTrigger ? localStock : stock;
+  const setAdjustedStock = useCallback(
+    (value) => setLocalStock({ trigger: initialTrigger, value }),
+    [initialTrigger],
+  );
 
-    // Maneja el cambio en el stock y recalcula el total de unidades
-    const handleStockChange = (value) => {
-        setAdjustedStock(value);
-        setAdjustedTotalUnit(value * packSize);
-    };
+  const adjustedTotalUnit = useMemo(
+    () => (Number(adjustedStock) || 0) * (Number(packSize) || 0),
+    [adjustedStock, packSize],
+  );
 
-    // Maneja la confirmación del modal y llama a la función de guardado
-    const handleOk = () => {
-        onSave(adjustedStock, adjustedTotalUnit);
-        onClose();
-    };
+  // Maneja el cambio en el stock y recalcula el total de unidades
+  const _handleStockChange = (value) => {
+    setAdjustedStock(value);
+  };
 
-    // Cierra el modal sin guardar cambios
-    const handleCancel = () => {
-        onClose();
-    };
+  // Maneja la confirmación del modal y llama a la función de guardado
+  const handleOk = () => {
+    onSave(adjustedStock, adjustedTotalUnit);
+    onClose();
+  };
 
-    return (
-        <Modal
-            title="Ajustar Inventario"
-            open={visible}
-            onOk={handleOk}
-            onCancel={handleCancel}
-            okText="Guardar"
-            cancelText="Cancelar"
-        >
-        
-        </Modal>
-    );
+  // Cierra el modal sin guardar cambios
+  const handleCancel = () => {
+    onClose();
+  };
+
+  return (
+    <Modal
+      title="Ajustar Inventario"
+      open={visible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      okText="Guardar"
+      cancelText="Cancelar"
+    ></Modal>
+  );
 };
 
 export default AdjustInventoryModal;

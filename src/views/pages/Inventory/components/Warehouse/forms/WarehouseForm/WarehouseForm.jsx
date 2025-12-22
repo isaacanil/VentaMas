@@ -1,21 +1,23 @@
-import React, { useEffect } from "react";
-import * as antd from "antd";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { selectUser } from "../../../../../../../features/auth/userSlice";
-import { createWarehouse, updateWarehouse } from "../../../../../../../firebase/warehouse/warehouseService";
-import { 
-    selectWarehouseModalState, 
-    closeWarehouseForm, 
-    setWarehouseLoading, 
-    setWarehouseError 
-} from "../../../../../../../features/warehouse/warehouseModalSlice";
+import { Button, Input, InputNumber, Form, Spin, Modal, message } from 'antd';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
 
-const { Button, Input, InputNumber, Form, Spin, Modal } = antd;
+import { selectUser } from '../../../../../../../features/auth/userSlice';
+import {
+  selectWarehouseModalState,
+  closeWarehouseForm,
+  setWarehouseLoading,
+  setWarehouseError,
+} from '../../../../../../../features/warehouse/warehouseModalSlice';
+import {
+  createWarehouse,
+  updateWarehouse,
+} from '../../../../../../../firebase/warehouse/warehouseService';
 
 const CardDescription = styled.p`
-  color: #888;
   margin-bottom: 20px;
+  color: #888;
 `;
 
 const FormContainer = styled(Form)`
@@ -25,9 +27,10 @@ const FormContainer = styled(Form)`
 
 const StyledButton = styled(Button)`
   width: 100%;
-  background-color: #1890ff;
   color: white;
-  &:hover {
+  background-color: #1890ff;
+
+    &:hover {
     background-color: #40a9ff;
   }
 `;
@@ -35,7 +38,7 @@ const StyledButton = styled(Button)`
 export function WarehouseForm() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { isOpen, formData, loading, error } = useSelector(selectWarehouseModalState);
+  const { isOpen, formData, loading } = useSelector(selectWarehouseModalState);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -54,9 +57,10 @@ export function WarehouseForm() {
 
   const handleSubmit = async () => {
     try {
+      dispatch(setWarehouseError(null));
       await form.validateFields(); // Validate form fields
       let data = form.getFieldsValue(); // Get form values
-      
+
       // Sanitize the data before sending to Firebase
       data = {
         name: data.name || '',
@@ -68,9 +72,9 @@ export function WarehouseForm() {
         dimension: {
           length: data.dimension?.length || 0,
           width: data.dimension?.width || 0,
-          height: data.dimension?.height || 0
+          height: data.dimension?.height || 0,
         },
-        capacity: data.capacity || 0
+        capacity: data.capacity || 0,
       };
 
       dispatch(setWarehouseLoading(true));
@@ -79,37 +83,65 @@ export function WarehouseForm() {
       } else {
         await createWarehouse(user, data); // Create new warehouse
       }
-      dispatch(closeWarehouseForm()); // Close the modal after submission
-      antd.message.success(`Almacén ${formData ? "actualizado" : "creado"} correctamente`);
+      handleClose(); // Close the modal after submission
+      message.success(
+        `Almacén ${formData ? 'actualizado' : 'creado'} correctamente`,
+      );
     } catch (error) {
-      antd.message.error("Ocurrió un error al procesar la solicitud.");
+      message.error('Ocurrió un error al procesar la solicitud.');
       dispatch(setWarehouseError(error.message));
-      console.error("Ocurrió un error al procesar la solicitud.", error);
+      console.error('Ocurrió un error al procesar la solicitud.', error);
     } finally {
       dispatch(setWarehouseLoading(false));
     }
   };
 
+  const handleClose = () => {
+    dispatch(closeWarehouseForm());
+    form.resetFields();
+  };
+
   return (
     <Modal
-      title={formData && formData.id ? "Actualizar Información del Almacén" : "Información del Almacén"}
+      title={
+        formData && formData.id
+          ? 'Actualizar Información del Almacén'
+          : 'Información del Almacén'
+      }
       open={isOpen}
-      onCancel={() => dispatch(closeWarehouseForm())}
+      onCancel={handleClose}
+      destroyOnHidden
       footer={null} // Remove default footer
     >
       <Spin
         size="large"
         spinning={loading}
-        tip={formData && formData.id ? "Actualizando almacén..." : "Creando almacén..."}
+        tip={
+          formData && formData.id
+            ? 'Actualizando almacén...'
+            : 'Creando almacén...'
+        }
       >
         <CardDescription>
-          {formData && formData.id ? "Actualiza los detalles del almacén" : "Introduce los detalles del nuevo almacén"}
+          {formData && formData.id
+            ? 'Actualiza los detalles del almacén'
+            : 'Introduce los detalles del nuevo almacén'}
         </CardDescription>
         <FormContainer form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item label="Nombre" name="name" rules={[{ required: true, message: "Por favor ingresa el nombre" }]}>
+          <Form.Item
+            label="Nombre"
+            name="name"
+            rules={[{ required: true, message: 'Por favor ingresa el nombre' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Nombre Corto" rules={[{required: true, message: "Por favor ingresa el nombre corto"}]} name="shortName">
+          <Form.Item
+            label="Nombre Corto"
+            rules={[
+              { required: true, message: 'Por favor ingresa el nombre corto' },
+            ]}
+            name="shortName"
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Descripción" name="description">
@@ -118,7 +150,13 @@ export function WarehouseForm() {
           <Form.Item label="Propietario" name="owner">
             <Input />
           </Form.Item>
-          <Form.Item label="Ubicación" name="location" rules={[{ required: true, message: "Por favor ingresa la ubicación" }]}>
+          <Form.Item
+            label="Ubicación"
+            name="location"
+            rules={[
+              { required: true, message: 'Por favor ingresa la ubicación' },
+            ]}
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Dirección" name="address">
@@ -126,14 +164,26 @@ export function WarehouseForm() {
           </Form.Item>
 
           <DimensionInputGroup>
-            <Form.Item label={'Longitud'} name={['dimension', 'length']} >
-              <InputNumber style={{ width: '100%' }} min={0} placeholder="Longitud" />
+            <Form.Item label={'Longitud'} name={['dimension', 'length']}>
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                placeholder="Longitud"
+              />
             </Form.Item>
             <Form.Item label={'Ancho'} name={['dimension', 'width']}>
-              <InputNumber style={{ width: '100%' }} min={0} placeholder="Ancho" />
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                placeholder="Ancho"
+              />
             </Form.Item>
-            <Form.Item label={'Altura'} name={['dimension', 'height']} >
-              <InputNumber style={{ width: '100%' }} min={0} placeholder="Altura" />
+            <Form.Item label={'Altura'} name={['dimension', 'height']}>
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                placeholder="Altura"
+              />
             </Form.Item>
           </DimensionInputGroup>
 
@@ -141,7 +191,7 @@ export function WarehouseForm() {
             <InputNumber min={0} />
           </Form.Item>
           <StyledButton type="primary" htmlType="submit">
-            {formData && formData.id ? "Actualizar" : "Enviar"}
+            {formData && formData.id ? 'Actualizar' : 'Enviar'}
           </StyledButton>
         </FormContainer>
       </Spin>
@@ -151,9 +201,10 @@ export function WarehouseForm() {
 
 const DimensionInputGroup = styled.div`
   display: grid;
-  gap: 0.6em;
   grid-template-columns: repeat(3, 1fr);
-  input[type="number"] {
+  gap: 0.6em;
+
+  input[type='number'] {
     width: 100% !important;
     max-width: none !important;
   }

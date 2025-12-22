@@ -1,12 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, InputNumber, Button, Modal, Checkbox, message, Tag } from 'antd';
-import styled from 'styled-components';
-import { DollarCircleOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
-import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import {
+  DollarCircleOutlined,
+  RiseOutlined,
+  FallOutlined,
+} from '@ant-design/icons';
+import {
+  Form,
+  Input,
+  InputNumber,
+  Button,
+  Modal,
+  Checkbox,
+  message,
+} from 'antd';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
+import { selectUser } from '../../../../../../../features/auth/userSlice';
 import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
 
 const FormContainer = styled.div``;
 
@@ -30,21 +44,9 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     },
   };
 
-  const [cardData, setCardData] = useState([]);
   const {
     product: { id: productId },
   } = useSelector(selectUpdateProductData);
-
-  useEffect(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues);
-      // Actualizamos los datos de las tarjetas al inicializar
-      updateCardData(initialValues);
-    } else {
-      form.resetFields();
-      setCardData([]); // Reiniciar los datos de la tarjeta si no hay valores iniciales
-    }
-  }, [initialValues, form]);
 
   const handleFinish = (values) => {
     try {
@@ -64,10 +66,6 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     } catch (error) {
       console.error(error);
     }
-  };
-
-  const handleValuesChange = (changedValues, allValues) => {
-    updateCardData(allValues);
   };
 
   const updateCardData = (values) => {
@@ -101,21 +99,52 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
 
     const newCardData = [];
     if (listPriceEnabled) {
-      newCardData.push({ key: '1', tipoPrecio: 'Precio de Lista', ...calculateRow(listPrice) });
+      newCardData.push({
+        key: '1',
+        tipoPrecio: 'Precio de Lista',
+        ...calculateRow(listPrice),
+      });
     }
     if (avgPriceEnabled) {
-      newCardData.push({ key: '2', tipoPrecio: 'Precio Promedio', ...calculateRow(avgPrice) });
+      newCardData.push({
+        key: '2',
+        tipoPrecio: 'Precio Promedio',
+        ...calculateRow(avgPrice),
+      });
     }
     if (minPriceEnabled) {
-      newCardData.push({ key: '3', tipoPrecio: 'Precio Mínimo', ...calculateRow(minPrice) });
+      newCardData.push({
+        key: '3',
+        tipoPrecio: 'Precio Mínimo',
+        ...calculateRow(minPrice),
+      });
     }
 
-    setCardData(newCardData);
+    return newCardData;
   };
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
+      // Actualizamos los datos de las tarjetas al inicializar
+    } else {
+      form.resetFields();
+    }
+  }, [initialValues, form]);
+
+  const pricing = Form.useWatch('pricing', form);
+  const cardData = useMemo(
+    () => updateCardData({ pricing: pricing || {} }),
+    [pricing],
+  );
 
   return (
     <Modal
-      title={initialValues ? 'Editar Unidad de Venta' : 'Agregar Nueva Unidad de Venta'}
+      title={
+        initialValues
+          ? 'Editar Unidad de Venta'
+          : 'Agregar Nueva Unidad de Venta'
+      }
       open={isOpen}
       width={1000}
       style={{ top: 5 }}
@@ -135,61 +164,69 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
           layout="vertical"
           initialValues={initialData}
           onFinish={handleFinish}
-          onValuesChange={handleValuesChange}
         >
           <FormContainer>
             <Form.Item
               name="unitName"
               tooltip="Nombre de la unidad de venta"
               label="Nombre de la Unidad"
-              rules={[{ required: true, message: 'Por favor ingresa el nombre de la unidad' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingresa el nombre de la unidad',
+                },
+              ]}
             >
               <Input placeholder="Ejemplo: Caja" />
             </Form.Item>
             <Grid>
-
-            <Form.Item
-              tooltip="Cantidad de productos en stock"
-              label="Stock"
-            >
-          
-
-              //here we calculate the stock
-        
-            </Form.Item>
-            <Form.Item
-              name="packSize"
-             tooltip="Cantidad de productos en un paquete"
-              label="Cantidad de Productos por Paquete"
-              rules={[{ required: true, message: 'Por favor ingresa la cantidad' }]}
-            >
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
+              <Form.Item
+                name="packSize"
+                tooltip="Cantidad de productos en un paquete"
+                label="Cantidad de Productos por Paquete"
+                rules={[
+                  { required: true, message: 'Por favor ingresa la cantidad' },
+                ]}
+              >
+                <InputNumber min={1} style={{ width: '100%' }} />
+              </Form.Item>
             </Grid>
             <Grid>
-
               <Form.Item
                 name={['pricing', 'tax']}
                 tooltip="Impuesto aplicado a la unidad de venta"
                 label="Impuesto"
-                rules={[{ required: true, message: 'Por favor ingresa el impuesto' }]}
+                rules={[
+                  { required: true, message: 'Por favor ingresa el impuesto' },
+                ]}
               >
-                <InputNumber style={{ width: '100%' }} placeholder="Ejemplo: IVA" />
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Ejemplo: IVA"
+                />
               </Form.Item>
               <Form.Item
                 name={['pricing', 'cost']}
                 label="Costo"
-                rules={[{ required: true, message: 'Por favor ingresa el costo' }]}
+                rules={[
+                  { required: true, message: 'Por favor ingresa el costo' },
+                ]}
               >
                 <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
               </Form.Item>
             </Grid>
-         
 
             {/* Precio de Lista */}
-            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues !== currentValues}>
+            <Form.Item
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues !== currentValues
+              }
+            >
               {({ getFieldValue }) => {
-                const listPriceEnabled = getFieldValue(['pricing', 'listPriceEnabled']);
+                const listPriceEnabled = getFieldValue([
+                  'pricing',
+                  'listPriceEnabled',
+                ]);
                 return (
                   <Form.Item
                     label={
@@ -222,9 +259,16 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
             </Form.Item>
 
             {/* Precio Promedio */}
-            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues !== currentValues}>
+            <Form.Item
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues !== currentValues
+              }
+            >
               {({ getFieldValue }) => {
-                const avgPriceEnabled = getFieldValue(['pricing', 'avgPriceEnabled']);
+                const avgPriceEnabled = getFieldValue([
+                  'pricing',
+                  'avgPriceEnabled',
+                ]);
                 return (
                   <Form.Item
                     label={
@@ -257,9 +301,16 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
             </Form.Item>
 
             {/* Precio Mínimo */}
-            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues !== currentValues}>
+            <Form.Item
+              shouldUpdate={(prevValues, currentValues) =>
+                prevValues !== currentValues
+              }
+            >
               {({ getFieldValue }) => {
-                const minPriceEnabled = getFieldValue(['pricing', 'minPriceEnabled']);
+                const minPriceEnabled = getFieldValue([
+                  'pricing',
+                  'minPriceEnabled',
+                ]);
                 return (
                   <Form.Item
                     label={
@@ -298,7 +349,11 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               key={item.key}
               style={{
                 backgroundColor:
-                  item.key === '1' ? '#fff5e8' : item.key === '2' ? '#f4fef6' : '#e9f3f9',
+                  item.key === '1'
+                    ? '#fff5e8'
+                    : item.key === '2'
+                      ? '#f4fef6'
+                      : '#e9f3f9',
               }}
             >
               <div
@@ -309,22 +364,31 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
               >
                 <IconContainer>
                   {item.key === '1' && (
-                    <DollarCircleOutlined style={{ fontSize: '24px', color: '#ffbf00' }} />
+                    <DollarCircleOutlined
+                      style={{ fontSize: '24px', color: '#ffbf00' }}
+                    />
                   )}
                   {item.key === '2' && (
-                    <RiseOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
+                    <RiseOutlined
+                      style={{ fontSize: '24px', color: '#52c41a' }}
+                    />
                   )}
                   {item.key === '3' && (
-                    <FallOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+                    <FallOutlined
+                      style={{ fontSize: '24px', color: '#1890ff' }}
+                    />
                   )}
                 </IconContainer>
                 <CardTitle>{item.tipoPrecio}</CardTitle>
               </div>
-              <Option title="Monto" value={useFormatPrice(item.precioSinItbis)} />
-              <Option title="Itbis" value={useFormatPrice(item.itbis)} />
-              <Option title="Margen" value={useFormatPrice(item.margen)} />
+              <Option
+                title="Monto"
+                value={formatPrice(item.precioSinItbis)}
+              />
+              <Option title="Itbis" value={formatPrice(item.itbis)} />
+              <Option title="Margen" value={formatPrice(item.margen)} />
               <Option title="Ganancia (%)" value={item.porcentajeGanancia} />
-              <Option title="Total" value={useFormatPrice(item.total)} />
+              <Option title="Total" value={formatPrice(item.total)} />
             </Card>
           ))}
         </CardContainer>
@@ -338,7 +402,6 @@ export default SaleUnitForm;
 const Group = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
   gap: 1em;
   width: 100%;
 `;
@@ -347,41 +410,40 @@ const Grid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1em;
   align-items: end;
-
 `;
 const CardContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  align-content: start;
   gap: 1em;
+  align-content: start;
   margin-top: 20px;
 `;
 
 const Card = styled.div`
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  width: 100%;
   padding: 8px 16px;
   background-color: #fafafa;
-  width: 100%;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.15);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 2px rgb(0 0 0 / 15%);
 `;
 
 const CardTitle = styled.h3`
-  font-size: 1rem;
   margin-bottom: 8px;
+  font-size: 1rem;
 `;
 
 const IconContainer = styled.div`
   margin-bottom: 8px;
 `;
 const OptionTitle = styled.span`
-  font-weight: 550;
   margin-right: 16px;
+  font-weight: 550;
 `;
 const OptionContainer = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 `;
 const Option = ({ title, value }) => {
   return (

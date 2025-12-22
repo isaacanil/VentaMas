@@ -1,38 +1,40 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import {MenuApp,} from '../../../../index';
 import styled from 'styled-components';
+
 import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
+import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+
+import { ProductRecordList } from './components/ProductTable/ProductRecordList';
 import { ProductsTable } from './components/ProductTable/ProductsTable';
 
 export const Inventory = () => {
-  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState('');
   const { products } = useGetProducts();
+  const vw = useViewportWidth();
 
   return (
     <Container>
       <MenuApp
-        displayName='Productos'
+        displayName="Productos"
         searchData={searchTerm}
         setSearchData={setSearchTerm}
       />
-      <ProductsTable
-        products={products}
-        searchTerm={searchTerm}
-      />
+      {vw > 900 ? (
+        <ProductsTable products={products} searchTerm={searchTerm} />
+      ) : (
+        <ProductRecordList products={products} searchTerm={searchTerm} />
+      )}
     </Container>
-
   );
 };
 
 const Container = styled.div`
-   display: grid;
-    position: relative;
-    grid-template-columns: auto;
-    background-color: var(--White);
-    grid-template-rows:  min-content 1fr;
-
-    height: calc(100vh );
-   overflow: hidden;
-`
+  position: relative;
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  grid-template-columns: auto;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--white);
+`;

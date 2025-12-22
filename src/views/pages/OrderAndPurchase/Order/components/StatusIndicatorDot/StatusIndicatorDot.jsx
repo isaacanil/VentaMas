@@ -1,17 +1,12 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 
-export const StatusIndicatorDot = ({color}) => {
-    console.log(color)
-  return (
-    <Container color={color}>
-
-    </Container>
-  )
-}
+export const StatusIndicatorDot = ({ color }) => {
+  return <Container $color={color}></Container>;
+};
 const Container = styled.div`
-    height: 0.6em;
-    width: 1.2em;
-    border-radius: 10px;
-    background-color: ${props => props.color};
-`
+  width: 1.2em;
+  height: 0.6em;
+  background-color: ${({ $color }) => $color};
+  border-radius: 10px;
+`;

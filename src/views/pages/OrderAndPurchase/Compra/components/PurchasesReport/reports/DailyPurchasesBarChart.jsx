@@ -1,9 +1,12 @@
-import { Bar } from 'react-chartjs-2'
-import React, { useEffect, useMemo, useRef } from 'react';
 import { LinearScale, CategoryScale, BarElement, Chart, Tooltip } from "chart.js";
+import React, { useMemo, useRef } from 'react';
+import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+
 import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { useFormatPrice } from '../../../../../../../hooks/useFormatPrice';
+
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 
@@ -31,7 +34,7 @@ const options = {
                 label: function (context) {
                     let label = context.dataset.label || '';
                     if (label) {
-                        label += " " + useFormatPrice(context.parsed.y);
+                        label += ' ' + formatPrice(context.parsed.y);
                     }
                     return label;
                 }
@@ -40,96 +43,122 @@ const options = {
     }
 };
 
-const formatDate = (milliseconds, byMonth = false) => {
-    const date = new Date(milliseconds);
-    return byMonth
-        ? date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
-        : date.toLocaleDateString();
+const getPurchaseDate = (purchaseData) => {
+    if (!purchaseData) return null;
+
+    const dateValue =
+        purchaseData?.dates?.createdAt ??
+        purchaseData?.createdAt ??
+        purchaseData?.date ??
+        purchaseData?.deliveryAt ??
+        purchaseData?.paymentAt ??
+        purchaseData?.deliveryDate ??
+        purchaseData?.paymentDate;
+
+    if (!dateValue) return null;
+
+    const timestamp =
+        typeof dateValue === 'number'
+            ? dateValue
+            : typeof dateValue?.toMillis === 'function'
+                ? dateValue.toMillis()
+                : new Date(dateValue).getTime();
+
+    if (!Number.isFinite(timestamp)) return null;
+
+    return new Date(timestamp);
 };
 
-const accumulatePurchaseData = (purchases, byMonth = false) => {
+const getPurchaseTotal = (purchaseData) => {
+    const totals = [
+        purchaseData?.total,
+        purchaseData?.totalPurchase,
+        purchaseData?.totalPurchase?.value,
+    ].map((value) => Number(value) || 0);
+
+    const replenishmentTotal = Array.isArray(purchaseData?.replenishments)
+        ? purchaseData.replenishments.reduce((sum, item) => {
+            const subtotal = Number(item?.subtotal) || 0;
+            const fallback = (Number(item?.cost) || 0) * (Number(item?.newStock) || Number(item?.quantity) || 0);
+            return sum + (subtotal || fallback);
+        }, 0)
+        : 0;
+
+    const directTotal = totals.find((value) => value > 0) ?? 0;
+
+    return directTotal || replenishmentTotal;
+};
+
+const accumulatePurchaseDataByDay = (purchases) => {
     return purchases.reduce((acc, purchase) => {
-        const date = formatDate(purchase.data.dates.createdAt, byMonth);
-        acc[date] = acc[date] || { total: 0 };
-        acc[date].total += purchase.data.total;
+        const purchaseData = purchase?.data ?? purchase;
+        const date = getPurchaseDate(purchaseData);
+        if (!date) return acc;
+
+        const total = getPurchaseTotal(purchaseData);
+        const dayKey = date.toISOString().split('T')[0];
+        const displayDate = purchaseData?.displayDate || date.toLocaleDateString();
+
+        if (!acc[dayKey]) {
+            acc[dayKey] = { total: 0, label: displayDate };
+        }
+
+        acc[dayKey].total += total;
+
         return acc;
     }, {});
 };
-const parseDate = (dateString) => {
-    const [day, month, year] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
-};
-
 
 export const DailyPurchasesBarChart = ({ purchases }) => {
-    if (!purchases || !Array.isArray(purchases)) {
-        return null;
-    }
-
-    const dateSpan = purchases.reduce(
-        (span, purchase) => {
-            const date = purchase.data.dates.createdAt;  // Corrección aquí
-            span.min = Math.min(span.min, date);
-            span.max = Math.max(span.max, date);
-            return span;
-        },
-        { min: Infinity, max: -Infinity }
+    const normalizedPurchases = useMemo(
+        () => (Array.isArray(purchases) ? purchases : []),
+        [purchases],
     );
 
-    const spanInMonths = (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
+    const purchasesByDay = useMemo(
+        () => accumulatePurchaseDataByDay(normalizedPurchases),
+        [normalizedPurchases],
+    );
 
-    const byMonth = spanInMonths > 2;
+    const sortedKeys = useMemo(
+        () => Object.keys(purchasesByDay).sort((a, b) => a.localeCompare(b)),
+        [purchasesByDay],
+    );
 
-    const purchasesByDay = useMemo(() => accumulatePurchaseData(purchases, byMonth), [purchases, byMonth]);
     const data = useMemo(() => {
-        console.log(purchasesByDay)
-        const labels = Object.keys(purchasesByDay)
-            .sort((a, b) => parseDate(b) - parseDate(a));
-        console.log(labels)
-        const dataTotals = labels.map(label => purchasesByDay[label].total);
+        const labels = sortedKeys.map((key) => purchasesByDay[key].label);
+        const totals = sortedKeys.map((key) => purchasesByDay[key].total);
 
         return {
             labels,
             datasets: [
                 {
                     label: 'Compras',
-                    data: dataTotals,
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
+                    data: totals,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1,
                 },
-            ]
+            ],
         };
-    }, [purchasesByDay]);
+    }, [purchasesByDay, sortedKeys]);
 
     const chartRef = useRef(null);
 
-    useEffect(() => {
-        return () => {
-            if (chartRef.current && chartRef.current instanceof Chart) {
-                chartRef.current.destroy();
-            }
-        };
-    }, []);
-    useEffect(() => {
-        return () => {
-            if (chartRef.current && chartRef.current instanceof Chart) {
-                chartRef.current.destroy();
-            }
-        };
-    }, []);
-    console.log(purchases)
+    if (!normalizedPurchases.length || !sortedKeys.length) {
+        return null;
+    }
 
     return (
         <Container>
-            <Typography variant='h3'>Compras Totales por Día</Typography>
+            <Typography variant='h3'>Compras totales por dia</Typography>
             <Bar ref={chartRef} data={data} options={options} />
         </Container>
-    )
-}
+    );
+};
+
 const Container = styled.div`
-    height: 200px;
- 
     display: grid;
     gap: 1em;
-`
+    height: 200px;
+`;

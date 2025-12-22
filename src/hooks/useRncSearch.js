@@ -1,17 +1,18 @@
 import { useState, useCallback } from 'react';
+
 import supabase from '../supabase/config';
 
 const FIELD_MAPPINGS = {
   rnc: {
     formKey: 'rnc',
     dgiiKey: 'rnc_number',
-    label: 'RNC'
+    label: 'RNC',
   },
   personalID: {
     formKey: 'personalID',
     dgiiKey: 'rnc_number',
-    label: 'Cédula/RNC'
-  }
+    label: 'Cédula/RNC',
+  },
 };
 
 const COMPARABLE_FIELDS = [
@@ -31,35 +32,38 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
     setError('');
   };
 
-  const compareDgiiData = useCallback((formData, dgiiData) => {
-    if (!dgiiData) {
-      setDifferences([]);
-      return false;
-    }
-
-    const fieldsToCompare = [
-      ...COMPARABLE_FIELDS,
-      FIELD_MAPPINGS[fieldType] // Add the dynamic RNC/personalID field
-    ];
-
-    const diffs = fieldsToCompare.reduce((acc, field) => {
-      const currentValue = formData[field.formKey];
-      const dgiiValue = dgiiData[field.dgiiKey];
-
-      if (currentValue && dgiiValue && currentValue !== dgiiValue) {
-        acc.push({
-          field: field.formKey,
-          label: field.label,
-          currentValue,
-          dgiiValue,
-        });
+  const compareDgiiData = useCallback(
+    (formData, dgiiData) => {
+      if (!dgiiData) {
+        setDifferences([]);
+        return false;
       }
-      return acc;
-    }, []);
 
-    setDifferences(diffs);
-    return diffs.length > 0;
-  }, [fieldType]);
+      const fieldsToCompare = [
+        ...COMPARABLE_FIELDS,
+        FIELD_MAPPINGS[fieldType], // Add the dynamic RNC/personalID field
+      ];
+
+      const diffs = fieldsToCompare.reduce((acc, field) => {
+        const currentValue = formData[field.formKey];
+        const dgiiValue = dgiiData[field.dgiiKey];
+
+        if (currentValue && dgiiValue && currentValue !== dgiiValue) {
+          acc.push({
+            field: field.formKey,
+            label: field.label,
+            currentValue,
+            dgiiValue,
+          });
+        }
+        return acc;
+      }, []);
+
+      setDifferences(diffs);
+      return diffs.length > 0;
+    },
+    [fieldType],
+  );
 
   const syncWithDgii = async () => {
     if (!rncInfo) {
@@ -69,10 +73,7 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
 
     setLoading(true);
     try {
-      const fieldsToSync = [
-        ...COMPARABLE_FIELDS,
-        FIELD_MAPPINGS[fieldType]
-      ];
+      const fieldsToSync = [...COMPARABLE_FIELDS, FIELD_MAPPINGS[fieldType]];
 
       const updates = fieldsToSync.reduce((acc, field) => {
         if (rncInfo[field.dgiiKey]) {
@@ -100,14 +101,14 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
       clearAll();
       return;
     }
-    
+
     if (!silent) {
       clearAll();
     }
-    
+
     try {
       setLoading(true);
-      
+
       if (!/^\d{9,11}$/.test(value)) {
         clearAll();
         throw new Error('El número debe tener entre 9 y 11 dígitos.');
@@ -123,15 +124,14 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
 
       if (!data) {
         clearAll();
-        throw new Error('No se encontraron resultados para el número ingresado.');
+        throw new Error(
+          'No se encontraron resultados para el número ingresado.',
+        );
       }
 
       setRncInfo(data);
-      
-      const fieldsToUpdate = [
-        ...COMPARABLE_FIELDS,
-        FIELD_MAPPINGS[fieldType]
-      ];
+
+      const fieldsToUpdate = [...COMPARABLE_FIELDS, FIELD_MAPPINGS[fieldType]];
 
       const updates = fieldsToUpdate.reduce((acc, field) => {
         if (data[field.dgiiKey]) {
@@ -143,12 +143,12 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
       form.setFieldsValue(updates);
       const formData = form.getFieldsValue();
       compareDgiiData(formData, data);
-      
+
       return data;
-    } catch (err) {
+    } catch {
       clearAll();
       if (!silent) {
-        setError("No se pudo consultar el RNC. Intente de nuevo más tarde.");
+        setError('No se pudo consultar el RNC. Intente de nuevo más tarde.');
       }
       return null;
     } finally {

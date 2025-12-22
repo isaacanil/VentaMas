@@ -1,22 +1,18 @@
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { useSelector } from "react-redux"
-import { selectUser } from '../../features/auth/userSlice'
-import { Home } from "../pages/Home/Home";
+import { selectUser } from '../../features/auth/userSlice';
 
-export const RequireAuth = ({ children}) => {
-    const user = useSelector(selectUser);
-    const navigate = useNavigate();
-    const sessionToken = localStorage.getItem('sessionToken'); 
-    useEffect(() => {
-        if (user === null) {
-            navigate('/', { replace: true }); // Redirige al usuario a la ruta principal si no está autenticado
-        } else {
-            children
-        }
-    }, [user]);
+export const RequireAuth = ({ children }) => {
+  const user = useSelector(selectUser);
+  const navigate = useNavigate();
 
-    // Si el usuario está autenticado y tiene los permisos necesarios, renderiza los children. En caso contrario, no renderiza nada.
-    return (user && children);
+  useEffect(() => {
+    if (user === null) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
+  return user ? children : null;
 };

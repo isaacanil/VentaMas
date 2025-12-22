@@ -1,6 +1,6 @@
 // components/Breadcrumbs.jsx
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 const BreadcrumbContainer = styled.nav`
   display: flex;
@@ -10,8 +10,9 @@ const BreadcrumbContainer = styled.nav`
 `;
 
 const BreadcrumbLink = styled.a`
-  text-decoration: none;
   color: #0070f3;
+  text-decoration: none;
+
   &:hover {
     text-decoration: underline;
   }

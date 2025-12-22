@@ -8,3 +8,7 @@ typings/
 # Node.js dependency directory
 node_modules/
 *.local
+
+# Archivos de entorno (añadido para proteger credenciales)
+.env
+.env.*
