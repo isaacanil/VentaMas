@@ -2,8 +2,8 @@ import { Modal, Button, Form, Typography, Alert } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { requestInvoiceEditAuthorization } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
+import { selectUser } from '@/features/auth/userSlice';
+import { requestInvoiceEditAuthorization } from '@/firebase/authorizations/invoiceEditAuthorizations';
 
 const { Paragraph } = Typography;
 

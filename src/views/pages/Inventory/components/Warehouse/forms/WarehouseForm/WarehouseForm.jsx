@@ -3,17 +3,17 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectWarehouseModalState,
   closeWarehouseForm,
   setWarehouseLoading,
   setWarehouseError,
-} from '../../../../../../../features/warehouse/warehouseModalSlice';
+} from '@/features/warehouse/warehouseModalSlice';
 import {
   createWarehouse,
   updateWarehouse,
-} from '../../../../../../../firebase/warehouse/warehouseService';
+} from '@/firebase/warehouse/warehouseService';
 
 const CardDescription = styled.p`
   margin-bottom: 20px;

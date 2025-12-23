@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const setBillingSettings = async (user, setting) => {
   if (!user?.businessID) {

@@ -1,7 +1,7 @@
 import { Form, Input, Button } from 'antd';
 import styled from 'styled-components';
 
-import { DatePicker } from '../../../../../../../../../components/common/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 
 const iconButtonStyles = `
   padding: 0;

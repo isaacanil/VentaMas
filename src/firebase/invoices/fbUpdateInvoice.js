@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const saveLastInvoiceChange = async (user, lastInvoiceChange) => {
   const { id } = lastInvoiceChange.data;

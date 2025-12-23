@@ -3,13 +3,13 @@ import React, { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectPurchaseList } from '../../../../../../features/purchase/purchasesSlice';
+import { selectPurchaseList } from '@/features/purchase/purchasesSlice';
 import {
   selectPurchaseChartModal,
   togglePurchaseChartModal,
-} from '../../../../../../features/purchase/purchaseUISlice';
-import { Button } from '../../../../../templates/system/Button/Button';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+} from '@/features/purchase/purchaseUISlice';
+import { Button } from '@/views/templates/system/Button/Button';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { CategoryPurchasesBarChart } from './reports/CategoryPurchasesBarChart';
 import { DailyPurchasesBarChart } from './reports/DailyPurchasesBarChart';

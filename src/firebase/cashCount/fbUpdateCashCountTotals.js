@@ -1,6 +1,6 @@
 import { doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbUpdateCashCountTotals(user, cashCountId, cashCount) {
   if (!user || !user?.businessID) {

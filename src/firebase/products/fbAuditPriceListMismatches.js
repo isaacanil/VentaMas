@@ -16,7 +16,7 @@ import {
   doc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /* ───────────────────────────── Números seguros ───────────────────────────── */
 /** Parser estricto de dinero: null si el texto es ambiguo o malformado. */

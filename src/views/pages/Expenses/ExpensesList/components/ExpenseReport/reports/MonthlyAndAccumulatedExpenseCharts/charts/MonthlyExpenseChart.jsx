@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
-// import { options } from '../chartOptions';
+// import { options } from '@/views/pages/Expenses/ExpensesList/components/ExpenseReport/reports/MonthlyAndAccumulatedExpenseCharts/chartOptions';
 import styled from 'styled-components';
 
 const MonthlyExpenseChart = ({ monthlyData, options }) => {

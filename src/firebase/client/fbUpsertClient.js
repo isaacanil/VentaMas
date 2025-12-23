@@ -1,8 +1,8 @@
 import { doc, setDoc } from 'firebase/firestore';
 
-import { compareObjects } from '../../utils/object/compareObject';
-import { db } from '../firebaseconfig';
-import { fbGetDoc } from '../firebaseOperations';
+import { compareObjects } from '@/utils/object/compareObject';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetDoc } from '@/firebase/firebaseOperations';
 
 import {
   buildClientWritePayload,

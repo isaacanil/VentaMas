@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { filterData } from '../../../../../../../hooks/search/useSearch';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { filterData } from '@/hooks/search/useSearch';
 
 import { ProductItem } from './ProductCard/ProductItem';
 

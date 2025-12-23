@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
 
-import { calculatePaymentDates } from '../../views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/receivableUtils';
+import { calculatePaymentDates } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/receivableUtils';
 
 const roundToTwo = (num) => {
   return Math.round(num * 100) / 100;

@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import ROUTES_NAME from '../routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const ClientAdmin = lazy(() =>
   import('@/views/pages/Contact/Client/ClientAdmin').then((module) => ({

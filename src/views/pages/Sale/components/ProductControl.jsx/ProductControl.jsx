@@ -4,17 +4,17 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectIsRow } from '../../../../../features/setting/settingSlice';
-import useScroll from '../../../../../hooks/useScroll';
+import { selectIsRow } from '@/features/setting/settingSlice';
+import useScroll from '@/hooks/useScroll';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Carrusel } from '../../../../component/Carrusel/Carrusel';
-import { CenteredText } from '../../../../templates/system/CentredText';
-import { Grid } from '../../../../templates/system/Grid/Grid';
-import Loader from '../../../../templates/system/loader/Loader';
-import { CustomProduct } from '../../../../templates/system/Product/CustomProduct';
-import { Product } from '../../../../templates/system/Product/Product/Product';
-import { CategoriesGrouped } from '../CategoriesProductsGrouped/CategoriesGrouped';
-import { ShoppingItemsCounter } from '../ShoppingItemsCounter/ShoppingItemsCounter';
+import { Carrusel } from '@/views/component/Carrusel/Carrusel';
+import { CenteredText } from '@/views/templates/system/CentredText';
+import { Grid } from '@/views/templates/system/Grid/Grid';
+import Loader from '@/views/templates/system/loader/Loader';
+import { CustomProduct } from '@/views/templates/system/Product/CustomProduct';
+import { Product } from '@/views/templates/system/Product/Product/Product';
+import { CategoriesGrouped } from '@/views/pages/Sale/components/CategoriesProductsGrouped/CategoriesGrouped';
+import { ShoppingItemsCounter } from '@/views/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
 
 export const ProductControl = ({
   products,

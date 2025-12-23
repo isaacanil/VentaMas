@@ -3,12 +3,12 @@ import { useDispatch } from 'react-redux';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { navigateWarehouse } from '../../../../../features/warehouse/warehouseSlice';
-import { useListenProductsStockByLocation } from '../../../../../firebase/warehouse/productStockService';
-import { useTransformedWarehouseData } from '../../../../../firebase/warehouse/warehouseNestedServise';
-import { useDefaultWarehouse } from '../../../../../firebase/warehouse/warehouseService';
-import { ResizableSidebar } from '../../../../component/ResizebleSidebar/ResizebleSidebar';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { navigateWarehouse } from '@/features/warehouse/warehouseSlice';
+import { useListenProductsStockByLocation } from '@/firebase/warehouse/productStockService';
+import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
+import { useDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
+import { ResizableSidebar } from '@/views/component/ResizebleSidebar/ResizebleSidebar';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import InventoryMenu from './components/DetailView/InventoryMenu';
 import Sidebar from './components/Sidebar/Sidebar';

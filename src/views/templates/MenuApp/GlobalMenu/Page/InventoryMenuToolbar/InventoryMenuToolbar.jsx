@@ -11,25 +11,25 @@ import { useSelector } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbAddProducts } from '../../../../../../firebase/products/fbAddProducts';
-import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts';
-import { normalizeProductTaxes } from '../../../../../../firebase/products/fbNormalizeProductTaxes';
-import { ExportProducts } from '../../../../../../hooks/exportToExcel/useExportProducts';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { fbAddProducts } from '@/firebase/products/fbAddProducts';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { normalizeProductTaxes } from '@/firebase/products/fbNormalizeProductTaxes';
+import { ExportProducts } from '@/hooks/exportToExcel/useExportProducts';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import ROUTES_NAME from '@/router/routes/routesName';
 import {
   createProductTemplate,
   importProductData,
-} from '../../../../../../utils/import/product';
-import { getProducts } from '../../../../../../utils/pricing';
-import ImportModal from '../../../../../component/modals/ImportModal/ImportModal';
-import ImportProgressModal from '../../../../../component/modals/ImportProgressModal/ImportProgressModal';
-import { InventoryFilterAndSort } from '../../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
-import { AddProductButton } from '../../../../system/Button/AddProductButton';
-import { ButtonGroup } from '../../../../system/Button/Button';
-import { DropdownMenu } from '../../../../system/DropdownMenu/DropdowMenu';
+} from '@/utils/import/product';
+import { getProducts } from '@/utils/pricing';
+import ImportModal from '@/views/component/modals/ImportModal/ImportModal';
+import ImportProgressModal from '@/views/component/modals/ImportProgressModal/ImportProgressModal';
+import { InventoryFilterAndSort } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
+import { AddProductButton } from '@/views/templates/system/Button/AddProductButton';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
+import { DropdownMenu } from '@/views/templates/system/DropdownMenu/DropdowMenu';
 
 import { fbAddActiveIngredients } from './fbAddActiveIngredients';
 

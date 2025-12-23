@@ -6,8 +6,8 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { setAccountPayment } from '../../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
 
 
 export function Payment({

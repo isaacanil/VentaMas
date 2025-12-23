@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 
-import { selectBusinessData } from '../features/auth/businessSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 
 /**
  * Custom hook to access and check business properties

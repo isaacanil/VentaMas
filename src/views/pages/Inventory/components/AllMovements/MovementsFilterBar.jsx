@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { useWarehouseHierarchy } from '../../../../../firebase/warehouse/warehouseNestedServise';
-import { DatePicker } from '../../../../templates/system/Dates/DatePicker/DatePicker';
-import { shortenLocationPath } from '../../../InventoryControl/components/inventoryTableUtils.js';
+import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedServise';
+import { DatePicker } from '@/views/templates/system/Dates/DatePicker/DatePicker';
+import { shortenLocationPath } from '@/views/pages/InventoryControl/components/inventoryTableUtils.js';
 
 const Bar = styled.div`
   display: flex;

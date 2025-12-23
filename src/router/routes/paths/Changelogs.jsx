@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import RoutesName from '../routesName';
+import RoutesName from '@/router/routes/routesName';
 
 const ChangelogList = lazy(() =>
   import(

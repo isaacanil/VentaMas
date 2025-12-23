@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
-import { getRelativePath } from '../getConfigRoute';
-import ROUTES_NAME from '../routesName';
+import { getRelativePath } from '@/router/routes/getConfigRoute';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const AuthorizationFlowConfig = lazy(() =>
   import(

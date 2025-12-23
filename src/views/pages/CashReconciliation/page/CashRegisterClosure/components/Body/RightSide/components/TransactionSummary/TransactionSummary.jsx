@@ -5,8 +5,8 @@ import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/format';
 
-import { selectCashCount } from '../../../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { InputWithHorizontalLabel } from '../../../../../../../../../templates/system/Inputs/InputWithHorizontalLabel';
+import { selectCashCount } from '@/features/cashCount/cashCountManagementSlice';
+import { InputWithHorizontalLabel } from '@/views/templates/system/Inputs/InputWithHorizontalLabel';
 
 
 export const TransactionSummary = ({ loading }) => {

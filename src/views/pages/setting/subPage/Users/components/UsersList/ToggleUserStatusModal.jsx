@@ -1,7 +1,7 @@
 import { Alert, Modal, Typography, message } from 'antd';
 import { useCallback, useMemo, useState } from 'react';
 
-import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
+import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 
 export const ToggleUserStatusModal = ({ isOpen, user, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,4 +1,4 @@
-import { closeUserNotification } from '../../../../../../../../features/UserNotification/UserNotificationSlice';
+import { closeUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 
 export const redirectToCashReconciliationOpening = (navigate, dispatch) => {
   const handleCloseCashReconciliation = () => {

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { icons } from '../../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 
 export interface PaymentMethodMeta {
   label: string;

@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { getSalesForCurrentDay } from '@/utils/sales';
 
-import { getBills } from '../../../../../../firebase/firebaseconfig';
+import { getBills } from '@/firebase/firebaseconfig';
 
 // Obtener la fecha y hora actual
 const today = DateTime.local();

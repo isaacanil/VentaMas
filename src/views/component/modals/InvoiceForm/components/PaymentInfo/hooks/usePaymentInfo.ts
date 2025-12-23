@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { formatPrice } from '@/utils/format';
 
-import { changeValueInvoiceForm } from '../../../../../../../features/invoice/invoiceFormSlice';
+import { changeValueInvoiceForm } from '@/features/invoice/invoiceFormSlice';
 
 import type {
   DiscountType,
   PaymentMethod,
   PaymentInfoProps,
   RootState,
-} from '../types';
+} from '@/views/component/modals/InvoiceForm/components/PaymentInfo/types';
 
 
 

@@ -3,8 +3,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
+import { selectUser } from '@/features/auth/userSlice';
+import { setBillingSettings } from '@/firebase/billing/billingSetting';
 
 const InnerCard = styled(Card)`
   margin-bottom: 16px;

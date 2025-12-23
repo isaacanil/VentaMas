@@ -7,7 +7,7 @@ import { Modal, Button, message, Typography, Space } from 'antd';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
-import { fbViewUserPins } from '../../../../firebase/authorization/pinAuth';
+import { fbViewUserPins } from '@/firebase/authorization/pinAuth';
 
 const { Text, Title } = Typography;
 
@@ -19,7 +19,7 @@ const MODULE_LABELS = {
 const PinDisplay = styled.div`
   padding: 12px;
   margin: 12px 0;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Poppins', monospace;
   font-size: 20px;
   color: #fff;
   text-align: center;

@@ -14,8 +14,8 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-import { fbGetCashCountState } from '../cashCount/fbCashCountStatus';
-import { db } from '../firebaseconfig';
+import { fbGetCashCountState } from '@/firebase/cashCount/fbCashCountStatus';
+import { db } from '@/firebase/firebaseconfig';
 
 const LEGACY_COLLECTION_NAME = 'invoiceEditAuthorizations';
 const GENERIC_COLLECTION_NAME = 'authorizationRequests';

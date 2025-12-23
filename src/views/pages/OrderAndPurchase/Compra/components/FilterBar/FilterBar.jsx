@@ -11,7 +11,7 @@ import styled from 'styled-components';
 
 import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
 
-import { Selector } from '../../../../../../components/common/Selector/Selector';
+import { Selector } from '@/components/common/Selector/Selector';
 
 import { StatusSelector } from './components/StatusSelector';
 import { useFilterBar } from './hooks/useFilterBar';

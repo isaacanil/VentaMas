@@ -17,23 +17,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 // Local imports
-import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectProviderModalData,
   toggleProviderModal,
-} from '../../../../../../features/modals/modalSlice';
-import { fbAddProvider } from '../../../../../../firebase/provider/fbAddProvider';
-import { fbCheckProviderExists } from '../../../../../../firebase/provider/fbCheckProviderExists';
-import { fbUpdateProvider } from '../../../../../../firebase/provider/fbUpdateProvider';
-import { useRncSearch } from '../../../../../../hooks/useRncSearch';
+} from '@/features/modals/modalSlice';
+import { fbAddProvider } from '@/firebase/provider/fbAddProvider';
+import { fbCheckProviderExists } from '@/firebase/provider/fbCheckProviderExists';
+import { fbUpdateProvider } from '@/firebase/provider/fbUpdateProvider';
+import { useRncSearch } from '@/hooks/useRncSearch';
 import {
   formatPhoneNumber,
   unformatPhoneNumber,
   isValidPhoneNumber,
-} from '../../../../../../utils/format';
-import { DgiiSyncAlert } from '../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
-import { RncPanel } from '../../../../../component/Rnc/RncPanel/RncPanel';
+} from '@/utils/format';
+import { DgiiSyncAlert } from '@/views/component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
+import { RncPanel } from '@/views/component/Rnc/RncPanel/RncPanel';
 
 import { comprobantesOptions } from './constants';
 

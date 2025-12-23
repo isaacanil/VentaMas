@@ -1,6 +1,6 @@
 import { query, getDocs, where, collection } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbLoadInvoicesForCashCount = async (user, cashCountID) => {
   if (!user.businessID || !cashCountID) return [];

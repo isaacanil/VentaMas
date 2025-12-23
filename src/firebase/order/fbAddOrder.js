@@ -7,13 +7,13 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
+import { db } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 import {
   safeTimestamp,
   updateLocalAttachmentsWithRemoteURLs,
-} from '../purchase/fbAddPurchase';
-import { getNextID } from '../Tools/getNextID';
+} from '@/firebase/purchase/fbAddPurchase';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 export const fbAddOrder = async (user, value, fileList = []) => {
   try {

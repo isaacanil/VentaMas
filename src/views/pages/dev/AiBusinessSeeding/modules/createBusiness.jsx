@@ -5,9 +5,9 @@ import { Typography, Button } from 'antd';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import React from 'react';
 
-import { fbSignUp } from '../../../../../firebase/Auth/fbAuthV2/fbSignUp';
-import { createBusiness } from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
-import { db } from '../../../../../firebase/firebaseconfig';
+import { fbSignUp } from '@/firebase/Auth/fbAuthV2/fbSignUp';
+import { createBusiness } from '@/firebase/businessInfo/fbAddBusinessInfo';
+import { db } from '@/firebase/firebaseconfig';
 
 const { Title, Text } = Typography;
 

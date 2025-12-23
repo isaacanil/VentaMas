@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { GenericClient } from '../../features/clientCart/clientCartSlice';
-import { getCashCountStrategy } from '../../notification/cashCountNotification/cashCountNotificacion';
+import { GenericClient } from '@/features/clientCart/clientCartSlice';
+import { getCashCountStrategy } from '@/notification/cashCountNotification/cashCountNotificacion';
 
 import {
   submitInvoice,

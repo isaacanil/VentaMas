@@ -13,15 +13,15 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { CREDIT_NOTE_STATUS } from '../../../../constants/creditNoteStatus';
-import { useBusinessDataConfig } from '../../../../features/auth/useBusinessDataConfig';
-import { openCreditNoteModal } from '../../../../features/creditNote/creditNoteModalSlice';
-import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
-import { useFbGetCreditNotes } from '../../../../firebase/creditNotes/useFbGetCreditNotes';
-import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
+import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
+import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
+import { openCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { useFbGetCreditNotes } from '@/firebase/creditNotes/useFbGetCreditNotes';
+import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { CreditNoteFilters } from './components/CreditNoteFilters';
 

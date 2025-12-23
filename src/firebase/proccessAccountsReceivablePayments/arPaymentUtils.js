@@ -12,9 +12,9 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { defaultInstallmentPaymentsAR } from '../../schema/accountsReceivable/installmentPaymentsAR';
-import { defaultPaymentsAR } from '../../schema/accountsReceivable/paymentAR';
-import { db } from '../firebaseconfig';
+import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
+import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import { db } from '@/firebase/firebaseconfig';
 
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 

@@ -11,24 +11,25 @@ import { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   setExpense,
   setExpenseMode,
-} from '../../../../../../features/expense/expenseManagementSlice';
-import { openExpenseFormModal } from '../../../../../../features/expense/expenseUISlice';
-import { toggleImageViewer } from '../../../../../../features/imageViewer/imageViewerSlice';
-import { fbDeleteExpense } from '../../../../../../firebase/expenses/Items/fbDeleteExpense';
-import { useFbGetExpenses } from '../../../../../../firebase/expenses/Items/useFbGetExpenses';
-import { convertMillisToDate } from '../../../../../../hooks/useFormatTime';
-import { truncateString } from '../../../../../../utils/text/truncateString';
-import { FilterBar } from '../../../../../component/FilterBar/FilterBar';
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { EditDelBtns } from '../../../../../templates/system/Button/EditDelBtns/EditDelBtns';
-import { ExpenseChart } from '../ExpenseReport/ExpenseReport';
+} from '@/features/expense/expenseManagementSlice';
+import { openExpenseFormModal } from '@/features/expense/expenseUISlice';
+import { toggleImageViewer } from '@/features/imageViewer/imageViewerSlice';
+import { fbDeleteExpense } from '@/firebase/expenses/Items/fbDeleteExpense';
+import { useFbGetExpenses } from '@/firebase/expenses/Items/useFbGetExpenses';
+import { convertMillisToDate } from '@/hooks/useFormatTime';
+import { formatPrice } from '@/utils/format';
+import { truncateString } from '@/utils/text/truncateString';
+import { ExpenseChart } from '@/views/pages/Expenses/ExpensesList/components/ExpenseReport/ExpenseReport';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import { Button } from '@/views/templates/system/Button/Button';
+import { EditDelBtns } from '@/views/templates/system/Button/EditDelBtns/EditDelBtns';
+
+import { FilterExpenses } from '../FilterBar/FilterExpenses';
 
 
 const FIREBASE_INDEX_LINK_REGEX =
@@ -89,11 +90,10 @@ const normalizeExpenseStatus = (status) =>
  * @desc A component that renders a table of expenses.
  * @returns {JSX.Element} The ExpensesTable component
  */
-export const ExpensesTable = () => {
+export const ExpensesTable = ({ searchTerm = '' }) => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null,
@@ -107,22 +107,14 @@ export const ExpensesTable = () => {
   const [filters, setFilters] = useState({});
 
   const handleFilterChange = useCallback(
-    (newFilterState) => {
-      setFilters(newFilterState.filters);
+    (newFilters) => {
+      setFilters(newFilters);
 
-      if (newFilterState.filters.dateRange) {
+      const newDateRange = newFilters.dateRange;
+      if (newDateRange) {
         try {
-          const startDate = newFilterState.filters.dateRange.startDate
-            ? typeof newFilterState.filters.dateRange.startDate === 'number'
-              ? newFilterState.filters.dateRange.startDate
-              : new Date(newFilterState.filters.dateRange.startDate).getTime()
-            : null;
-
-          const endDate = newFilterState.filters.dateRange.endDate
-            ? typeof newFilterState.filters.dateRange.endDate === 'number'
-              ? newFilterState.filters.dateRange.endDate
-              : new Date(newFilterState.filters.dateRange.endDate).getTime()
-            : null;
+          const startDate = newDateRange.startDate;
+          const endDate = newDateRange.endDate;
 
           if (
             startDate !== dateRange?.startDate ||
@@ -136,9 +128,13 @@ export const ExpensesTable = () => {
         } catch (error) {
           console.error('Error processing date range:', error);
         }
+      } else {
+        if (dateRange.startDate || dateRange.endDate) {
+          setDateRange({ startDate: null, endDate: null });
+        }
       }
     },
-    [setDateRange, dateRange],
+    [dateRange],
   );
 
   const normalizedExpenses = Array.isArray(expenses) ? expenses : [];
@@ -148,46 +144,8 @@ export const ExpensesTable = () => {
   const categoryOptions = categories.map((category) => ({
     label: category,
     value: category,
-  })); // Filter config for FilterBar
-  const filterConfig = {
-    filters: [
-      {
-        key: 'category',
-        type: 'select',
-        placeholder: 'Categoría',
-        options: categoryOptions,
-      },
-      {
-        key: 'status',
-        type: 'status',
-        placeholder: 'Estado',
-        visibleStatus: [
-          'active',
-          'canceled',
-          'completed',
-          'pending',
-          'deleted',
-        ],
-        allowClear: true,
-        clearText: 'Ver todos los estados',
-      },
-    ],
-    showSortButton: true,
-    showResetButton: true,
-    defaultValues: {
-      dateRange:
-        dateRange?.startDate && dateRange?.endDate
-          ? {
-              startDate: dateRange.startDate,
-              endDate: dateRange.endDate,
-            }
-          : null,
-      status: null,
-    },
-    defaultSort: {
-      isAscending: false,
-    },
-  };
+  }));
+
 
   const data = normalizedExpenses
     .map(({ expense: rawExpense }) => {
@@ -381,19 +339,10 @@ export const ExpensesTable = () => {
           />
         </ErrorBanner>
       )}
-      <FilterBar
-        config={filterConfig}
-        onChange={handleFilterChange}
-        searchTerm={searchTerm}
-        onSearchTermChange={
-          setSearchTerm ? (value) => setSearchTerm(value) : undefined
-        }
-        dataConfig={{
-          category: {
-            data: categoryOptions,
-            accessor: (item) => item,
-          },
-        }}
+      <FilterExpenses
+        filters={filters}
+        onFiltersChange={handleFilterChange}
+        categoryOptions={categoryOptions}
       />
       <AdvancedTable
         columns={columns}

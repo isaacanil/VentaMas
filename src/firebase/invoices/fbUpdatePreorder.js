@@ -1,7 +1,7 @@
 import { doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
 
-import { sanitizeFirestoreDocument } from '../../utils/firebase/sanitizeFirestoreDocument';
-import { db } from '../firebaseconfig';
+import { sanitizeFirestoreDocument } from '@/utils/firebase/sanitizeFirestoreDocument';
+import { db } from '@/firebase/firebaseconfig';
 
 const toFirestoreTimestamp = (value) => {
   if (value === undefined || value === null) return value;

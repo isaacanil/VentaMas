@@ -11,7 +11,7 @@ import type {
   ProductBatchMap,
   ProductOption,
   ProductStockLike,
-} from '../types';
+} from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 interface UseProductFilterOptionsResult {
   productOptions: ProductOption[];

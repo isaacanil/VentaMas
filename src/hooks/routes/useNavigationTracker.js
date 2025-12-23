@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
-import { pushHistory } from '../../features/navigation/navigationSlice';
+import { pushHistory } from '@/features/navigation/navigationSlice';
 
 /**
  * Hook para registrar automáticamente las rutas visitadas en el navigationSlice

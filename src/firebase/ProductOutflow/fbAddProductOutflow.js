@@ -1,7 +1,7 @@
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 import { fbUpdateStock } from './fbUpdateStock';
 

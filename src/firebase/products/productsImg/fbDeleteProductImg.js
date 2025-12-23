@@ -1,6 +1,6 @@
 import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 
-import { storage } from '../../firebaseconfig';
+import { storage } from '@/firebase/firebaseconfig';
 
 import { fbDeleteProductImgData } from './fbDeleteProductImgData';
 

@@ -4,19 +4,19 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import noImg from '../../../../../../../../assets/producto/noimg.png';
-import { icons } from '../../../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../../../constants/modes';
-import { handleDeleteProductAlert } from '../../../../../../../../features/Alert/AlertSlice';
-import { openModalUpdateProd } from '../../../../../../../../features/modals/modalSlice';
-import { ChangeProductData } from '../../../../../../../../features/updateProduct/updateProductSlice';
-import useImageFallback from '../../../../../../../../hooks/image/useImageFallback';
-import { useCheckForInternetConnection } from '../../../../../../../../hooks/useCheckForInternetConnection';
+import noImg from '@/assets/producto/noimg.png';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { handleDeleteProductAlert } from '@/features/Alert/AlertSlice';
+import { openModalUpdateProd } from '@/features/modals/modalSlice';
+import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
+import useImageFallback from '@/hooks/image/useImageFallback';
+import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
 import {
   Button,
   ButtonGroup,
-} from '../../../../../../../templates/system/Button/Button';
-import StockIndicator from '../../../../../../../templates/system/labels/StockIndicator';
+} from '@/views/templates/system/Button/Button';
+import StockIndicator from '@/views/templates/system/labels/StockIndicator';
 
 
 export const ProductCardRow = ({ product, Col, Row }) => {

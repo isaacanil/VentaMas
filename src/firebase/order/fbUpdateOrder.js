@@ -6,12 +6,12 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
+import { db } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 import {
   safeTimestamp,
   updateLocalAttachmentsWithRemoteURLs,
-} from '../purchase/fbAddPurchase';
+} from '@/firebase/purchase/fbAddPurchase';
 
 export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
   if (!user || !user?.businessID) return;

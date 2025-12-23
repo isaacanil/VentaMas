@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { CONFIG } from '../../constants/appConfig';
+import { CONFIG } from '@/constants/appConfig';
 
 const appModeSlice = createSlice({
   name: 'appMode',

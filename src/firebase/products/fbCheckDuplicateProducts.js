@@ -1,5 +1,5 @@
 // import { collection, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
-// import { db } from '../firebaseconfig';
+// import { db } from '@/firebase/firebaseconfig';
 
 // export async function checkDuplicateProducts(businessID) {
 //   try {
@@ -32,7 +32,7 @@
 
 import { collection, getDocs, writeBatch } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbCheckDuplicateProducts(businessID) {
   try {

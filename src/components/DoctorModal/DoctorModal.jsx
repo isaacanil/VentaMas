@@ -3,7 +3,7 @@ import { Modal, Form, Input, Button, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectDoctorsModal,
   selectSelectedDoctor,
@@ -12,7 +12,7 @@ import {
   addDoctor,
   updateDoctor,
   clearError,
-} from '../../features/doctors/doctorsSlice';
+} from '@/features/doctors/doctorsSlice';
 
 const DoctorModal = () => {
   const [form] = Form.useForm();

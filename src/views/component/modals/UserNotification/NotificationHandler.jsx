@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectCurrentUserNotification } from '../../../../features/UserNotification/UserNotificationSlice';
+import { selectCurrentUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 
 import { ConfirmationDialog } from './components/ConfirmationDialog/ConfirmationDialog';
 

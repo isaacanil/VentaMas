@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   fetchUserFilterPreferences,
   saveUserFilterPreferences,
-} from '../../firebase/Settings/filterPreferences';
+} from '@/firebase/Settings/filterPreferences';
 
 export const DEFAULT_FILTERS = {
   criterio: 'nombre',

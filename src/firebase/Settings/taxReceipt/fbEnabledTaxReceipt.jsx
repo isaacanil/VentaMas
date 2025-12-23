@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbEnabledTaxReceipt = async (user) => {
   if (!user || !user?.businessID) return;

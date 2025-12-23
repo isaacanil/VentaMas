@@ -2,7 +2,7 @@ import { MoreOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Tag } from 'antd';
 import { useMemo } from 'react';
 
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { DateCell } from './DateCell';
 

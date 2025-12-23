@@ -10,7 +10,7 @@ import { Button as AntButton } from 'antd';
 import { useCallback, useRef, useState, cloneElement } from 'react';
 import styled from 'styled-components';
 
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 import { Option } from './Option';
 

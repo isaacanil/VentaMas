@@ -6,16 +6,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { formatPrice } from '@/utils/format';
 
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   changeClientInvoiceForm,
   changeValueInvoiceForm,
   closeInvoiceForm,
   selectInvoice,
-} from '../../../../features/invoice/invoiceFormSlice';
-import { markAuthorizationUsed } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
-import { fbUpdateInvoice } from '../../../../firebase/invoices/fbUpdateInvoice';
-import { convertInvoiceDateToMillis } from '../../../../utils/invoice';
+} from '@/features/invoice/invoiceFormSlice';
+import { markAuthorizationUsed } from '@/firebase/authorizations/invoiceEditAuthorizations';
+import { fbUpdateInvoice } from '@/firebase/invoices/fbUpdateInvoice';
+import { convertInvoiceDateToMillis } from '@/utils/invoice';
 
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
 import { Products } from './components/Products/Products';

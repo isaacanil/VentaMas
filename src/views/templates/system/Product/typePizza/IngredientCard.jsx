@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { deleteIngredientTypePizza } from '../../../../../firebase/firebaseconfig.jsx';
-import { ButtonGroup } from '../../Button/ButtonGroup';
-import { DeleteButton } from '../../Button/DeleteButton';
-import { EditButton } from '../../Button/EditButton';
+import { deleteIngredientTypePizza } from '@/firebase/firebaseconfig.jsx';
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+import { DeleteButton } from '@/views/templates/system/Button/DeleteButton';
+import { EditButton } from '@/views/templates/system/Button/EditButton';
 
 export const IngredientCard = ({ item }) => {
   const DeleteIngredient = (item) => {

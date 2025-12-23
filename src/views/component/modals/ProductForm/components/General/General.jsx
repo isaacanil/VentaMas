@@ -14,37 +14,37 @@ import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { closeModalUpdateProd } from '../../../../../../features/modals/modalSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { closeModalUpdateProd } from '@/features/modals/modalSlice';
 import {
   ChangeProductData,
   PRODUCT_BRAND_DEFAULT,
   changeProductPrice,
   clearUpdateProductData,
   selectUpdateProductData,
-} from '../../../../../../features/updateProduct/updateProductSlice';
-import { useListenProductBrands } from '../../../../../../firebase/products/brands/productBrands';
-import { fbAddProduct } from '../../../../../../firebase/products/fbAddProduct';
-import { fbUpdateProduct } from '../../../../../../firebase/products/fbUpdateProduct';
-import { initTaxes } from '../../../UpdateProduct/InitializeData';
+} from '@/features/updateProduct/updateProductSlice';
+import { useListenProductBrands } from '@/firebase/products/brands/productBrands';
+import { fbAddProduct } from '@/firebase/products/fbAddProduct';
+import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
+import { BarCode } from '@/views/component/modals/ProductForm/components/sections/BarCode';
+import { InventoryInfo } from '@/views/component/modals/ProductForm/components/sections/InventoryInfo';
+import { PriceCalculator } from '@/views/component/modals/ProductForm/components/sections/PriceCalculator';
+import { PriceInfo } from '@/views/component/modals/ProductForm/components/sections/PriceInfo';
+import { ProductInfo } from '@/views/component/modals/ProductForm/components/sections/ProductInfo';
+import { QRCode } from '@/views/component/modals/ProductForm/components/sections/QRCode';
+import { WarrantyInfo } from '@/views/component/modals/ProductForm/components/sections/WarrantyInfo';
 import {
   BRAND_DEFAULT_OPTION_VALUE,
   BRAND_LEGACY_OPTION_VALUE,
-} from '../../constants/brandOptions';
-import { imgFailed } from '../../ImageManager/ImageManager';
+} from '@/views/component/modals/ProductForm/constants/brandOptions';
+import { imgFailed } from '@/views/component/modals/ProductForm/ImageManager/ImageManager';
 import {
   buildNormalizedProductSnapshot,
   buildSanitizedProductForSubmit,
   normalizeItemType,
   normalizeTrackInventoryValue,
-} from '../../utils/productNormalization';
-import { BarCode } from '../sections/BarCode';
-import { InventoryInfo } from '../sections/InventoryInfo';
-import { PriceCalculator } from '../sections/PriceCalculator';
-import { PriceInfo } from '../sections/PriceInfo';
-import { ProductInfo } from '../sections/ProductInfo';
-import { QRCode } from '../sections/QRCode';
-import { WarrantyInfo } from '../sections/WarrantyInfo';
+} from '@/views/component/modals/ProductForm/utils/productNormalization';
+import { initTaxes } from '@/views/component/modals/UpdateProduct/InitializeData';
 
 export const General = ({ showImageManager }) => {
   const dispatch = useDispatch();
@@ -118,9 +118,9 @@ export const General = ({ showImageManager }) => {
         normalizedItemType === 'service'
           ? false
           : normalizeTrackInventoryValue(
-              product?.trackInventory,
-              normalizedItemType,
-            );
+            product?.trackInventory,
+            normalizedItemType,
+          );
 
       dispatch(
         ChangeProductData({

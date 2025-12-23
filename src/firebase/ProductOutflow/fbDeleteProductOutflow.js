@@ -1,6 +1,6 @@
 // import { deleteDoc, doc } from 'firebase/firestore'
 // import React from 'react'
-// import { db } from '../firebaseconfig'
+// import { db } from '@/firebase/firebaseconfig'
 
 // export const fbDeleteProductOutflow = async (user, item) => {
 //     const docRef = doc(db, "businesses", user.businessID, "productOutflow", item.id)
@@ -14,7 +14,7 @@
 
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 import { fbUpdateStock } from './fbUpdateStock'; // Asegúrate de que esta función pueda manejar el ajuste de stock adecuadamente
 

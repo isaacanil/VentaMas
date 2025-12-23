@@ -1,9 +1,10 @@
 import { onValue, ref } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fbGetSessionLogs } from '../../../../../../../firebase/Auth/fbAuthV2/fbGetSessionLogs';
-import { fbGetUser } from '../../../../../../../firebase/Auth/fbGetUser';
-import { realtimeDB } from '../../../../../../../firebase/firebaseconfig';
+import { fbGetSessionLogs } from '@/firebase/Auth/fbAuthV2/fbGetSessionLogs';
+import { fbGetUser } from '@/firebase/Auth/fbGetUser';
+import { realtimeDB } from '@/firebase/firebaseconfig';
+
 import {
   buildSessionsFromLogs,
   normalizeContext,

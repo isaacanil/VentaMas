@@ -1,4 +1,4 @@
-import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 import { measurePreciseTextBlock } from './textMeasurement.js';
 

@@ -6,7 +6,7 @@ import {
   where,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Function to get preorders from Firebase
 export async function fbGetPreorders(user, callback) {

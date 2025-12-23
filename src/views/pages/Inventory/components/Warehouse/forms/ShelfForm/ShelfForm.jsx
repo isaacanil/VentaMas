@@ -2,7 +2,7 @@ import { Form, Input, Button, Modal, Spin, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   clearShelfForm,
   closeShelfForm,
@@ -10,11 +10,11 @@ import {
   setShelfError,
   setShelfLoading,
   updateShelfFormData,
-} from '../../../../../../../features/warehouse/shelfModalSlice';
+} from '@/features/warehouse/shelfModalSlice';
 import {
   createShelf,
   updateShelf,
-} from '../../../../../../../firebase/warehouse/shelfService';
+} from '@/firebase/warehouse/shelfService';
 
 export function ShelfForm() {
   const dispatch = useDispatch();

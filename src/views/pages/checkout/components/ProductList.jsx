@@ -5,13 +5,13 @@ import styled from 'styled-components';
 import { formatPrice } from '@/utils/format';
 import { separator } from '@/utils/number/number';
 
-import { SelectSettingCart } from '../../../../features/cart/cartSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
 import {
   getTax,
   getTotalPrice,
   resetAmountToBuyForProduct,
-} from '../../../../utils/pricing';
-import { convertTimeToSpanish } from '../../../component/modals/ProductForm/components/sections/warranty.helpers';
+} from '@/utils/pricing';
+import { convertTimeToSpanish } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

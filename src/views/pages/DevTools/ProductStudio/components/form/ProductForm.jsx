@@ -1,11 +1,11 @@
 import { Form, Space } from 'antd';
 import styled from 'styled-components';
 
-import { CodesSection } from '../sections/CodesSection';
-import { IdentitySection } from '../sections/IdentitySection';
-import { InventorySection } from '../sections/InventorySection';
-import { PricingSection } from '../sections/PricingSection';
-import { WarrantySection } from '../sections/WarrantySection';
+import { CodesSection } from '@/views/pages/DevTools/ProductStudio/components/sections/CodesSection';
+import { IdentitySection } from '@/views/pages/DevTools/ProductStudio/components/sections/IdentitySection';
+import { InventorySection } from '@/views/pages/DevTools/ProductStudio/components/sections/InventorySection';
+import { PricingSection } from '@/views/pages/DevTools/ProductStudio/components/sections/PricingSection';
+import { WarrantySection } from '@/views/pages/DevTools/ProductStudio/components/sections/WarrantySection';
 
 const FormWrapper = styled.div`
   width: 100%;

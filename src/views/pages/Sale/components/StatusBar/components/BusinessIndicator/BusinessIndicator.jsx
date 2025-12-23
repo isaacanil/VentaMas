@@ -8,8 +8,8 @@ import styled from 'styled-components';
 import {
   selectIsTemporaryMode,
   selectUser,
-} from '../../../../../../../features/auth/userSlice';
-import { ReturnToBusinessModal } from '../ReturnToBusinessModal';
+} from '@/features/auth/userSlice';
+import { ReturnToBusinessModal } from '@/views/pages/Sale/components/StatusBar/components/ReturnToBusinessModal';
 
 export const BusinessIndicator = () => {
   const isTemporaryMode = useSelector(selectIsTemporaryMode);

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { fbGetUsers } from '../../../../../firebase/Auth/fbGetUser';
-import { fbGetBusinessesList } from '../../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { fbGetUsers } from '@/firebase/Auth/fbGetUser';
+import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { TableUser } from './TableUser';
 import { UsersFilterBar } from './UsersFilterBar';

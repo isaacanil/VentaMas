@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { setAccountPayment } from '../../../../../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 
 
 export const ClientBalanceInfo = ({ client, pendingBalance }) => {

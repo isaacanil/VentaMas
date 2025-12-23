@@ -2,7 +2,7 @@ import {
   buildFunctionsAuthHeaders,
   getFunctionsBaseUrl,
   parseFunctionsResponse,
-} from '../functionsApiClient';
+} from '@/services/functionsApiClient';
 
 export const fetchInvoiceV2Summary = async ({ businessId, invoiceId }) => {
   if (!businessId || !invoiceId) {

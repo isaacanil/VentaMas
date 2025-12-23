@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { moveProduct } from '../../../../../../../../firebase/warehouse/productMovementService';
-import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
-import Tree from '../../../../../../../component/tree/Tree';
+import { selectUser } from '@/features/auth/userSlice';
+import { moveProduct } from '@/firebase/warehouse/productMovementService';
+import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
+import Tree from '@/views/component/tree/Tree';
 
 const { TextArea } = Input;
 

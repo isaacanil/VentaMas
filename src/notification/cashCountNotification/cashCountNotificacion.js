@@ -1,5 +1,5 @@
-import { setUserNotification } from '../../features/UserNotification/UserNotificationSlice';
-import { CONFIRMATION_TASK_TYPE } from '../../views/component/modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction';
+import { setUserNotification } from '@/features/UserNotification/UserNotificationSlice';
+import { CONFIRMATION_TASK_TYPE } from '@/views/component/modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction';
 
 // Clase base para los diferentes comportamientos de cuadre de caja
 class CashCountStrategy {

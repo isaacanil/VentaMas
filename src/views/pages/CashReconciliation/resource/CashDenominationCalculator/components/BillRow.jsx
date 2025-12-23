@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const BillRow = ({
   bill,

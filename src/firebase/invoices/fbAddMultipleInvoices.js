@@ -1,6 +1,6 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbAddMultipleInvoices(user, invoices) {
   if (!user || !user?.businessID) return;

@@ -25,7 +25,8 @@ import {
   ATTACH_TO_CASH_COUNT_TASK,
   STATUS_COLORS,
   TASK_DESCRIPTIONS,
-} from '../constants';
+} from '@/views/pages/DevTools/InvoiceV2Recovery/constants';
+
 import { formatDateTime } from '../utils/time';
 
 import { Centered, CodeBlock } from './StyledComponents';

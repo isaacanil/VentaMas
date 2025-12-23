@@ -9,7 +9,7 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
-import { PAYMENT_TERMS, TIME_UNITS } from '../constants';
+import { PAYMENT_TERMS, TIME_UNITS } from '@/views/pages/Insurance/InsuranceConfigForm/constants';
 
 export const PeriodSelectionModal = ({
   visible,

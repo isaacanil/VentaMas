@@ -1,4 +1,4 @@
-import { fbConsumeCreditNotes } from '../creditNotes/fbConsumeCreditNotes';
+import { fbConsumeCreditNotes } from '@/firebase/creditNotes/fbConsumeCreditNotes';
 
 import { fbApplyPartialPaymentToAccount } from './fbApplyPartialPaymentToAccount';
 import { fbPayActiveInstallmentForAccount } from './fbPayActiveInstallmentForAccount';

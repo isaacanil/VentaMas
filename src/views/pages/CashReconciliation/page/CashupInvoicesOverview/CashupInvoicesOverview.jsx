@@ -2,7 +2,7 @@ import { Drawer } from 'antd';
 import { Suspense, memo } from 'react';
 import styled from 'styled-components';
 
-import { lazyWithRetry } from '../../../../../utils/lazyWithRetry';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
 import { ExportInvoice } from './components/Header/ExportInvoice';
 

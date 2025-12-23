@@ -10,8 +10,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { openModal } from '../../features/doctors/doctorsSlice';
-import { normalizeText } from '../../utils/text';
+import { openModal } from '@/features/doctors/doctorsSlice';
+import { normalizeText } from '@/utils/text';
 
 const Wrapper = styled.div`
   display: grid;

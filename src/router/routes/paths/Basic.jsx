@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
 import { Home } from '@/views/pages/Home/Home';
-import ROUTES_NAME from '../routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const Welcome = lazy(() =>
   import('@/views/pages/Welcome/Welcome').then((module) => ({

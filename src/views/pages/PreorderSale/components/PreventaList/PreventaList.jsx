@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import PreventaCard from '../PreventaCard/PreventaCard';
+import PreventaCard from '@/views/pages/PreorderSale/components/PreventaCard/PreventaCard';
 
 const Grid = styled.div`
   display: grid;

@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 
-import { designSystemV2 } from '../../../../theme/designSystemV2';
+import { designSystemV2 } from '@/theme/designSystemV2';
 
 const { colors: palette } = designSystemV2;
 

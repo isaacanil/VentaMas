@@ -2,7 +2,7 @@ import { Modal, Tag, Table, Typography, Spin } from 'antd';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { PillButton } from '../../../../../../../../../component/PillButton/PillButton';
+import { PillButton } from '@/views/component/PillButton/PillButton';
 
 const { Title, Text } = Typography;
 

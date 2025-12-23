@@ -6,7 +6,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbFixProductsWithoutId(user) {
   if (!user?.businessID) return;

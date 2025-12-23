@@ -9,7 +9,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-import { db } from '../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Servicio para gestionar permisos dinámicos de usuarios

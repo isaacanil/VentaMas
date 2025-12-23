@@ -1,7 +1,7 @@
 import { Empty } from 'antd';
 import styled from 'styled-components';
 
-import { PanelCard } from '../../shared/PanelPrimitives';
+import { PanelCard } from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import PanelHeader from './PanelHeader';
 

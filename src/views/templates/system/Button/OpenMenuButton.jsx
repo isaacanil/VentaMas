@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleMenu } from '../../../../features/nav/navSlice';
+import { toggleMenu } from '@/features/nav/navSlice';
 
 export const OpenMenuButton = ({ onClick, zIndex, isOpen }) => {
   const dispatch = useDispatch();

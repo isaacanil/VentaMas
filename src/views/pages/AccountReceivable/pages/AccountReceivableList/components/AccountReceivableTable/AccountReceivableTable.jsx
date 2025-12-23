@@ -1,7 +1,7 @@
 import React from 'react';
 
-import useBusiness from '../../../../../../../hooks/useBusiness';
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import useBusiness from '@/hooks/useBusiness';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { getColumns } from './columns';
 

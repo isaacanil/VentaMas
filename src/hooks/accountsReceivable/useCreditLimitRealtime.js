@@ -1,7 +1,7 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
-import { db } from '../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Hook personalizado para obtener el límite de crédito en tiempo real usando onSnapshot

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-import supabase from '../supabase/config';
+import supabase from '@/supabase/config';
 
 const FIELD_MAPPINGS = {
   rnc: {

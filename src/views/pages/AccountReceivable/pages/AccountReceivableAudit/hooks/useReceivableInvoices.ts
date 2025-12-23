@@ -9,12 +9,13 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { db } from '../../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 import {
   DEFAULT_SAMPLE_LIMIT,
   FIRESTORE_IN_LIMIT,
   MAX_SAMPLE_LIMIT,
-} from '../constants';
+} from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/constants';
+
 import {
   chunkArray,
   mapAccountsReceivableDoc,
@@ -24,7 +25,7 @@ import {
 import type {
   ReceivableInvoice,
   ReceivablesLookup,
-} from '../types';
+} from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
 
 interface UseReceivableInvoicesOptions {
   defaultLimit?: number;

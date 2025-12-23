@@ -1,7 +1,7 @@
 import { Form, Input, Modal, Typography, message } from 'antd';
 import { useCallback, useState } from 'react';
 
-import { fbUpdateUserPassword } from '../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
+import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 
 export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
   const [form] = Form.useForm();

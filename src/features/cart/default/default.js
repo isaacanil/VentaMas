@@ -1,4 +1,4 @@
-import { GenericClient } from '../../clientCart/clientCartSlice';
+import { GenericClient } from '@/features/clientCart/clientCartSlice';
 
 const defaultDelivery = {
   status: false,

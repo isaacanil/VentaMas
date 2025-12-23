@@ -3,13 +3,13 @@ import React, { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectExpenseList } from '../../../../../../features/expense/expensesListSlice';
+import { selectExpenseList } from '@/features/expense/expensesListSlice';
 import {
   selectExpenseChartModal,
   toggleExpenseChartModal,
-} from '../../../../../../features/expense/expenseUISlice';
-import { Button } from '../../../../../templates/system/Button/Button';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+} from '@/features/expense/expenseUISlice';
+import { Button } from '@/views/templates/system/Button/Button';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { CategoryExpenseBarChart } from './reports/CategoryExpenseBarChart';
 import { DailyExpenseBarChart } from './reports/DailyExpensesBarChart';

@@ -2,7 +2,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { isPresetActive } from '../utils/dateUtils';
+import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
 
 const PresetsContainer = styled.div`
   border: 1px solid #d9d9d9;
@@ -109,9 +109,9 @@ const PresetButton = styled.button`
   padding: 10px 16px;
   border: 1px solid
     ${({ $active, $isToggle }) => {
-      if ($isToggle) return '#bfbfbf';
-      return $active ? '#1890ff' : '#d9d9d9';
-    }};
+    if ($isToggle) return '#bfbfbf';
+    return $active ? '#1890ff' : '#d9d9d9';
+  }};
   border-width: ${({ $isToggle }) => ($isToggle ? '2px' : '1px')};
   border-radius: 4px;
   background: ${({ $active, $isToggle }) => {
@@ -130,13 +130,13 @@ const PresetButton = styled.button`
   &:hover {
     border-color: ${({ $isToggle }) => ($isToggle ? '#8a8a8a' : '#1890ff')};
     color: ${({ $active, $isToggle }) => {
-      if ($isToggle) return '#374151';
-      return $active ? 'white' : '#1890ff';
-    }};
+    if ($isToggle) return '#374151';
+    return $active ? 'white' : '#1890ff';
+  }};
     background: ${({ $active, $isToggle }) => {
-      if ($isToggle) return '#f1f5f9';
-      return $active ? '#1890ff' : 'white';
-    }};
+    if ($isToggle) return '#f1f5f9';
+    return $active ? '#1890ff' : 'white';
+  }};
   }
 
   &:active {

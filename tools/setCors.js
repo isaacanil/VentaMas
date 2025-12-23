@@ -1,9 +1,9 @@
 // setCors.js
-const { Storage } = require('@google-cloud/storage');
+import { Storage as GCloudStorage } from '@google-cloud/storage';
 
 // Inicializa el cliente. Asegúrate de que
 // GOOGLE_APPLICATION_CREDENTIALS apunte a tu JSON de servicio.
-const storage = new Storage();
+const storage = new GCloudStorage();
 
 async function setBucketCors() {
   const bucketName = 'ventamaxpos.appspot.com';
@@ -11,8 +11,17 @@ async function setBucketCors() {
 
   await bucket.setCorsConfiguration([
     {
-      origin: ['*'],
+      origin: [
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:4173',
+        'https://ventamax.web.app',
+        'https://ventamax.vercel.app',
+        'https://ventamaxpos-staging.web.app',
+      ],
       method: ['GET', 'HEAD'],
+      responseHeader: ['Content-Type'],
       maxAgeSeconds: 3600,
     },
   ]);

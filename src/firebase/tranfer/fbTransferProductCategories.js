@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Transfiere categorías de productos de un negocio a otro.

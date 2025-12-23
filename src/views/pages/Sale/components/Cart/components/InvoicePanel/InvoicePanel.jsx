@@ -12,34 +12,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import { selectAR } from '../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectAppMode } from '../../../../../../../features/appModes/appModeSlice';
-import { selectBusinessData } from '../../../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { selectAppMode } from '@/features/appModes/appModeSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectCartData,
   SelectSettingCart,
   toggleInvoicePanelOpen,
   setPaymentMethod,
-} from '../../../../../../../features/cart/cartSlice';
-import { selectClient } from '../../../../../../../features/clientCart/clientCartSlice';
-import { selectInsuranceAR } from '../../../../../../../features/insurance/insuranceAccountsReceivableSlice';
-import { selectInsuranceAuthData } from '../../../../../../../features/insurance/insuranceAuthSlice';
+} from '@/features/cart/cartSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { selectInsuranceAR } from '@/features/insurance/insuranceAccountsReceivableSlice';
+import { selectInsuranceAuthData } from '@/features/insurance/insuranceAuthSlice';
 import {
   selectNcfType,
   selectTaxReceipt,
   lockTaxReceiptType,
   unlockTaxReceiptType,
   selectTaxReceiptType,
-} from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { downloadInvoiceLetterPdf } from '../../../../../../../firebase/quotation/downloadQuotationPDF';
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
-import useViewportWidth from '../../../../../../../hooks/windows/useViewportWidth';
-import logInvoiceAuthorizations from '../../../../../../../services/invoice/logInvoiceAuthorizations';
-import useInvoice from '../../../../../../../services/invoice/useInvoice';
-import DateUtils from '../../../../../../../utils/date/dateUtils';
-import { measure } from '../../../../../../../utils/perf/measure';
-import { Invoice } from '../../../../../../component/Invoice/components/Invoice/Invoice';
+} from '@/features/taxReceipt/taxReceiptSlice';
+import { downloadInvoiceLetterPdf } from '@/firebase/quotation/downloadQuotationPDF';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import logInvoiceAuthorizations from '@/services/invoice/logInvoiceAuthorizations';
+import useInvoice from '@/services/invoice/useInvoice';
+import DateUtils from '@/utils/date/dateUtils';
+import { measure } from '@/utils/perf/measure';
+import { Invoice } from '@/views/component/Invoice/components/Invoice/Invoice';
 
 import { Body } from './components/Body/Body';
 import { TaxReceiptDepletedModal } from './components/TaxReceiptDepletedModal/TaxReceiptDepletedModal';

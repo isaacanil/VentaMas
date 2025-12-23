@@ -2,16 +2,16 @@ import { Modal, Form, Button, Tabs, notification, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   addClient,
   setClientMode,
-} from '../../../../../../features/clientCart/clientCartSlice';
-import { CLIENT_MODE_BAR } from '../../../../../../features/clientCart/clientMode';
-import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
-import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
-import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
+} from '@/features/clientCart/clientCartSlice';
+import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { fbAddClient } from '@/firebase/client/fbAddClient';
+import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
 
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';

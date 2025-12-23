@@ -5,12 +5,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   closeModal,
   selectActiveIngredientModal,
-} from '../../../../features/activeIngredients/activeIngredientsSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
+} from '@/features/activeIngredients/activeIngredientsSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   fbAddActiveIngredient,
   fbUpdateActiveIngredient,
-} from '../../../../firebase/products/activeIngredient/activeIngredients';
+} from '@/firebase/products/activeIngredient/activeIngredients';
 
 const ActiveIngredientModal = () => {
   const dispatch = useDispatch();

@@ -1,4 +1,4 @@
-import { isArray, toNumber } from '../validators';
+import { isArray, toNumber } from '@/utils/validators';
 
 export function getTotalValue(banknotes) {
   if (!isArray(banknotes)) return 0;

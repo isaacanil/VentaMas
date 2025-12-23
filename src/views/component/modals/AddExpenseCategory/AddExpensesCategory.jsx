@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { toggleAddCategory } from '../../../../features/modals/modalSlice';
-import { addNotification } from '../../../../features/notification/notificationSlice';
-import { fbAddCategory } from '../../../../firebase/categories/fbAddCategory';
-import { fbUpdateCategory } from '../../../../firebase/categories/fbUpdateCategory';
-import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleAddCategory } from '@/features/modals/modalSlice';
+import { addNotification } from '@/features/notification/notificationSlice';
+import { fbAddCategory } from '@/firebase/categories/fbAddCategory';
+import { fbUpdateCategory } from '@/firebase/categories/fbUpdateCategory';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 const OverlayVariants = {
   open: {

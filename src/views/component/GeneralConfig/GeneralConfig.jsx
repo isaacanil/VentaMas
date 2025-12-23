@@ -13,12 +13,12 @@ import { useSelector } from 'react-redux'; // Import useSelector
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { makeSelectPreviousRelevantRoute } from '../../../features/navigation/navigationSlice';
-import { useUserAccess } from '../../../hooks/abilities/useAbilities';
+import { selectUser } from '@/features/auth/userSlice';
+import { makeSelectPreviousRelevantRoute } from '@/features/navigation/navigationSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { Nav } from '../../templates/system/Nav/Nav';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { Nav } from '@/views/templates/system/Nav/Nav';
 
 import { GeneralConfigSearch } from './components/Search/GeneralConfigSearch';
 // Import the factory instead of the direct selector

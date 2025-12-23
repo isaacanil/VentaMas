@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-// import { fbGetActiveAccountsReceivableCount } from '../../firebase/accountsReceivable/fbGetActiveAccountsReceivableCount';
-import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
+// import { fbGetActiveAccountsReceivableCount } from '@/firebase/accountsReceivable/fbGetActiveAccountsReceivableCount';
+import { fbGetActiveARCount } from '@/firebase/accountsReceivable/fbGetActiveARCount';
 
 export const useCreditLimitCheck = (
   creditLimit,

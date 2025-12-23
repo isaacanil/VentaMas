@@ -3,7 +3,7 @@ import React from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { Button } from '../../../system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const MultiPaymentToolbar = ({ side = 'left' }) => {
   const matchWithMultiPayment = useMatch('/accounts-receivable');

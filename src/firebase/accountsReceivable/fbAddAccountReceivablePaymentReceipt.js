@@ -1,8 +1,8 @@
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { fbGetClient } from '../client/fbGetClient';
-import { db } from '../firebaseconfig';
+import { fbGetClient } from '@/firebase/client/fbGetClient';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbAddAccountReceivablePaymentReceipt({
   user,

@@ -2,19 +2,19 @@ import { Form } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectCartData,
   selectCreditNotePayment,
   setCreditNotePayment,
   recalcTotals,
-} from '../../../../../../../../../features/cart/cartSlice';
-import { selectClient } from '../../../../../../../../../features/clientCart/clientCartSlice';
-import { useUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
-import { useCreditLimitCheck } from '../../../../../../../../../hooks/accountsReceivable/useCheckAccountReceivable';
-import { useCreditLimitRealtime } from '../../../../../../../../../hooks/accountsReceivable/useCreditLimitRealtime';
-import useInsuranceEnabled from '../../../../../../../../../hooks/useInsuranceEnabled';
-import CreditSelector from '../CreditSelector/CreditSelector';
+} from '@/features/cart/cartSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { useCreditLimitCheck } from '@/hooks/accountsReceivable/useCheckAccountReceivable';
+import { useCreditLimitRealtime } from '@/hooks/accountsReceivable/useCreditLimitRealtime';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import CreditSelector from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector';
 
 import AccountsReceivableManager from './components/AccountsReceivableManager/AccountsReceivableManager';
 import { ChargedSection } from './components/ChargedSection/ChargedSection';

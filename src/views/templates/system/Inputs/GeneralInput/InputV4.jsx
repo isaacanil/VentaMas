@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 
 /**
  * @typedef {Object} InputButton

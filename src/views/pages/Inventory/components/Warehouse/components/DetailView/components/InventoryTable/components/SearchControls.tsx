@@ -15,9 +15,9 @@ import {
   SortButton,
   AdvancedFilterButton,
   ClearButton,
-} from '../styles';
+} from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/styles';
 
-import type { DateRangeValue, SortMenuItems } from '../types';
+import type { DateRangeValue, SortMenuItems } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 import type { DateTime } from 'luxon';
 
 interface DateRangePreset {

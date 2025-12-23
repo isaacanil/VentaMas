@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { fbGetPreorders } from '../../../firebase/invoices/fbGetPreorders';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { InvoicePanel } from '../Sale/components/Cart/components/InvoicePanel/InvoicePanel';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbGetPreorders } from '@/firebase/invoices/fbGetPreorders';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { InvoicePanel } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
 
 import Layout from './components/Layout/Layout';
 import { PreSaleTable } from './components/PreSaleTable/PreSaleTable';

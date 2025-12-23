@@ -5,7 +5,7 @@ import { formatPrice } from '@/utils/format';
 import {
   getProductsPrice,
   getTotalDiscount,
-} from '../../../../../../../../utils/pricing';
+} from '@/utils/pricing';
 
 
 const PAYMENT_METHODS = {

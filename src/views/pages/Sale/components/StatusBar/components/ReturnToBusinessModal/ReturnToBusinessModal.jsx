@@ -12,7 +12,7 @@ import styled from 'styled-components';
 import {
   selectIsTemporaryMode,
   returnToOriginalBusiness,
-} from '../../../../../../../features/auth/userSlice';
+} from '@/features/auth/userSlice';
 
 const { Title, Text } = Typography;
 

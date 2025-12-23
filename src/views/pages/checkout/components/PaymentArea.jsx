@@ -4,15 +4,15 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { usePendingBalance } from '../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { selectUser } from '@/features/auth/userSlice';
+import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import {
   getProductsPrice,
   getProductsTax,
   getTotalDiscount,
-} from '../../../../utils/pricing';
-import { Line, SubTitle } from '../Receipt';
-import { Paragraph, Spacing, Subtitle } from '../Style';
+} from '@/utils/pricing';
+import { Line, SubTitle } from '@/views/pages/checkout/Receipt';
+import { Paragraph, Spacing, Subtitle } from '@/views/pages/checkout/Style';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

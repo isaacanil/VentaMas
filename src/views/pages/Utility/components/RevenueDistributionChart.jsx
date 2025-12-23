@@ -2,7 +2,7 @@ import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 
 import { EmptyState } from './EmptyState';
 

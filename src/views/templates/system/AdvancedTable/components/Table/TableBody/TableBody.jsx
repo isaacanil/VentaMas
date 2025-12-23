@@ -1,10 +1,10 @@
 import { Fragment, useState } from 'react';
 import styled from 'styled-components';
 
-import Loader from '../../../../../../component/Loader/Loader';
-import { CenteredText } from '../../../../CentredText';
-import { Row } from '../../../AdvancedTable';
-import { CellRenderer } from '../../CellRenderer/CellRenderer';
+import Loader from '@/views/component/Loader/Loader';
+import { CenteredText } from '@/views/templates/system/CentredText';
+import { Row } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import { CellRenderer } from '@/views/templates/system/AdvancedTable/components/CellRenderer/CellRenderer';
 
 const Body = styled.div`
   position: relative;

@@ -11,19 +11,19 @@ import {
   setPaymentDetails,
   setPaymentOption,
   setCreditNotePayment,
-} from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { selectClient } from '../../../../features/clientCart/clientCartSlice';
-import { fbProcessClientPaymentAR } from '../../../../firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR';
+} from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { fbProcessClientPaymentAR } from '@/firebase/proccessAccountsReceivablePayments/fbProccessClientPaymentAR';
 import {
   PAYMENT_OPTIONS,
   PAYMENT_SCOPE,
-} from '../../../../utils/accountsReceivable/accountsReceivable';
-import { AccountsReceivablePaymentReceipt } from '../../../../views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt';
-import CreditSelector from '../../../pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector';
-import { modalStyles } from '../../../pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles';
-import { Modal } from '../../../pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
-import { ShowcaseList } from '../../../templates/system/ShowCase/ShowcaseList';
+} from '@/utils/accountsReceivable/accountsReceivable';
+import { AccountsReceivablePaymentReceipt } from '@/views/pages/checkout/receipts/AccountsReceivablePaymentReceipt/AccountsReceivablePaymentReceipt';
+import CreditSelector from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/CreditSelector/CreditSelector';
+import { modalStyles } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles';
+import { Modal } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
+import { ShowcaseList } from '@/views/templates/system/ShowCase/ShowcaseList';
 
 import { PaymentFields } from './components/PaymentFields';
 

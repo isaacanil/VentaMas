@@ -3,14 +3,14 @@ import { ref, uploadBytesResumable } from 'firebase/storage';
 import { getDownloadURL } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
-import { addNotification } from '../../features/notification/notificationSlice';
-import { addReceiptImageToPurchase } from '../../features/purchase/addPurchaseSlice';
-import { SaveImg } from '../../features/uploadImg/uploadImageSlice';
+import { addNotification } from '@/features/notification/notificationSlice';
+import { addReceiptImageToPurchase } from '@/features/purchase/addPurchaseSlice';
+import { SaveImg } from '@/features/uploadImg/uploadImageSlice';
 import {
   UploadImgLoading,
   UploadProgress,
-} from '../../features/uploadImg/uploadImageSlice';
-import { db, storage } from '../firebaseconfig';
+} from '@/features/uploadImg/uploadImageSlice';
+import { db, storage } from '@/firebase/firebaseconfig';
 
 export const fbAddPurchaseReceiptImg = (user, dispatch, file, orderId) => {
   if (!user || !user?.businessID) return;

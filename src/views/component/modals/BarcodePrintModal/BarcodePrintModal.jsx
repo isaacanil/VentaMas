@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   SelectBarcodePrintModal,
   toggleBarcodeModal,
-} from '../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
+} from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
 
 import { BarCode } from './Barcode';
 

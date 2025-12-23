@@ -2,17 +2,17 @@ import { AnimatePresence } from 'framer-motion';
 import { Fragment, lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 
-import { OPERATION_MODES } from '../../../constants/modes';
-import { useDialog } from '../../../Context/Dialog/useDialog';
-import { selectAccountsReceivablePayment } from '../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { selectARDetailsModal } from '../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectActiveIngredientModal } from '../../../features/activeIngredients/activeIngredientsSlice';
-import { selectAppMode } from '../../../features/appModes/appModeSlice';
-import { SelectBarcodePrintModal } from '../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
-import { selectCreditNoteModal } from '../../../features/creditNote/creditNoteModalSlice';
-import { selectFileCenter } from '../../../features/files/fileSlice';
-import { selectImageViewerShow } from '../../../features/imageViewer/imageViewerSlice';
-import { selectInvoice } from '../../../features/invoice/invoiceFormSlice';
+import { OPERATION_MODES } from '@/constants/modes';
+import { useDialog } from '@/Context/Dialog/useDialog';
+import { selectAccountsReceivablePayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { selectARDetailsModal } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { selectActiveIngredientModal } from '@/features/activeIngredients/activeIngredientsSlice';
+import { selectAppMode } from '@/features/appModes/appModeSlice';
+import { SelectBarcodePrintModal } from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
+import { selectCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
+import { selectFileCenter } from '@/features/files/fileSlice';
+import { selectImageViewerShow } from '@/features/imageViewer/imageViewerSlice';
+import { selectInvoice } from '@/features/invoice/invoiceFormSlice';
 import {
   SelectAddClientModal,
   SelectUpdateProdModal,
@@ -27,20 +27,20 @@ import {
   toggleFileListModal,
   SelectSignUpUserModal,
   SelectDeveloperModal,
-} from '../../../features/modals/modalSlice';
-import { selectNote } from '../../../features/noteModal/noteModalSlice';
-import { selectCurrentNotification } from '../../../features/notification/notificationSlice';
-import { selectProductBrandModal } from '../../../features/productBrands/productBrandSlice';
-import { SelectProductOutflow } from '../../../features/productOutflow/productOutflow';
-import { selectDeleteModalState } from '../../../features/productStock/deleteProductStockSlice';
-import { selectProductStock } from '../../../features/productStock/productStockSlice';
-import { selectCurrentUserNotification } from '../../../features/UserNotification/UserNotificationSlice';
-import { selectModalOpen as selectProductExpiryModalOpen } from '../../../features/warehouse/productExpirySelectionSlice';
-import { selectRowShelfState } from '../../../features/warehouse/rowShelfModalSlice';
-import { selectSegmentState } from '../../../features/warehouse/segmentModalSlice';
-import { selectShelfState } from '../../../features/warehouse/shelfModalSlice';
-import { selectWarehouseModalState } from '../../../features/warehouse/warehouseModalSlice';
-import Loader from '../../templates/system/loader/Loader';
+} from '@/features/modals/modalSlice';
+import { selectNote } from '@/features/noteModal/noteModalSlice';
+import { selectCurrentNotification } from '@/features/notification/notificationSlice';
+import { selectProductBrandModal } from '@/features/productBrands/productBrandSlice';
+import { SelectProductOutflow } from '@/features/productOutflow/productOutflow';
+import { selectDeleteModalState } from '@/features/productStock/deleteProductStockSlice';
+import { selectProductStock } from '@/features/productStock/productStockSlice';
+import { selectCurrentUserNotification } from '@/features/UserNotification/UserNotificationSlice';
+import { selectModalOpen as selectProductExpiryModalOpen } from '@/features/warehouse/productExpirySelectionSlice';
+import { selectRowShelfState } from '@/features/warehouse/rowShelfModalSlice';
+import { selectSegmentState } from '@/features/warehouse/segmentModalSlice';
+import { selectShelfState } from '@/features/warehouse/shelfModalSlice';
+import { selectWarehouseModalState } from '@/features/warehouse/warehouseModalSlice';
+import Loader from '@/views/templates/system/loader/Loader';
 
 // === Lazy Load: Components previously imported statically ===
 

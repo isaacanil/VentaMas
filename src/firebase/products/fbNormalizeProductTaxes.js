@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const parseTaxValue = (value, fallback = 0) => {
   if (value === null || value === undefined || value === '') return fallback;

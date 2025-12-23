@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import React, { useCallback, useMemo } from 'react';
 
-import { DatePicker } from '../../../../../../components/common/DatePicker/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 
 import { FilterField } from './FilterField';
 

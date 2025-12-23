@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 
-import { FilterBar as CommonFilterBar } from '../../../../../components/common/FilterBar';
+import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar';
 
 import {
   AmountRangeFilter,
@@ -39,9 +39,8 @@ export const FilterBar = ({
       {
         key: 'date',
         section: 'main',
-        minWidth: 260,
         wrap: false,
-      
+        minWidth: 220,
         label: 'Fechas',
         render: (item) => (
           <DateRangeFilter
@@ -69,7 +68,7 @@ export const FilterBar = ({
         ),
         value: filters?.clientId,
       },
-    
+
       {
         key: 'payment',
         section: 'additional',
@@ -129,7 +128,7 @@ export const FilterBar = ({
         ),
         value: filters?.receivablesOnly,
       },
-        {
+      {
         key: 'sort',
         section: 'main',
         wrap: false,

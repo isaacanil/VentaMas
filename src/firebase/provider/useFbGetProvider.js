@@ -2,8 +2,8 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useFbGetProviders = () => {
   const [providers, setProviders] = useState([]);

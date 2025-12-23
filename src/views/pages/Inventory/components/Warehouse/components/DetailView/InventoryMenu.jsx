@@ -4,7 +4,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import { useDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import ROUTES_PATH from '@/router/routes/routesName';
 
 const MenuContainer = styled.div`

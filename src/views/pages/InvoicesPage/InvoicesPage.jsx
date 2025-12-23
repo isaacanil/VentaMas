@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 import { Fragment, useMemo, useState, Suspense } from 'react';
 import styled from 'styled-components';
 
-import { useFbGetInvoicesWithFilters } from '../../../firebase/invoices/useFbGetInvoicesWithFilters';
-import useViewportWidth from '../../../hooks/windows/useViewportWidth';
-import { getDateRange } from '../../../utils/date/getDateRange';
-import { lazyWithRetry } from '../../../utils/lazyWithRetry';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { useFbGetInvoicesWithFilters } from '@/firebase/invoices/useFbGetInvoicesWithFilters';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import { getDateRange } from '@/utils/date/getDateRange';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { SaleRecordList } from './SaleRecordList/RecordList';

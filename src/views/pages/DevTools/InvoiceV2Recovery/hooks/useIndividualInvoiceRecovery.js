@@ -13,12 +13,12 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fbGetBusinessesList } from '../../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { db } from '../../../../../firebase/firebaseconfig';
+import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
+import { db } from '@/firebase/firebaseconfig';
 import {
   fetchInvoiceV2Summary,
   repairInvoiceV2,
-} from '../../../../../services/invoice/invoiceV2Admin.service';
+} from '@/services/invoice/invoiceV2Admin.service';
 import {
   AUTO_RECOVERY_REASON,
   AUTO_RECOVERY_TASKS,
@@ -27,7 +27,7 @@ import {
   MAX_INVOICE_SUGGESTIONS,
   TASK_DESCRIPTIONS,
   TASK_ORDER,
-} from '../constants';
+} from '@/views/pages/DevTools/InvoiceV2Recovery/constants';
 import { formatDateTime, parseTimestamp } from '../utils/time';
 
 const parseCounterNumber = (value) => {
@@ -185,8 +185,8 @@ export const useIndividualInvoiceRecovery = ({
             hasCanonical &&
             Boolean(
               v2CreatedAtTs &&
-                canonicalDateTs &&
-                !canonicalDateTs.isSame(v2CreatedAtTs),
+              canonicalDateTs &&
+              !canonicalDateTs.isSame(v2CreatedAtTs),
             );
           const labelParts = [];
           const createdAtLabel = formatDateTime(createdAtSource);
@@ -471,8 +471,8 @@ export const useIndividualInvoiceRecovery = ({
     linkedCashCounts.length > 0 ||
     Boolean(
       cashCountMeta?.resolvedCashCountId ||
-        cashCountMeta?.relinkedAt ||
-        cashCountMeta?.resolvedState,
+      cashCountMeta?.relinkedAt ||
+      cashCountMeta?.resolvedState,
     );
   const intendedCashCountId =
     cashCountMeta?.intendedCashCountId || snapshot?.cashCountIdHint || null;

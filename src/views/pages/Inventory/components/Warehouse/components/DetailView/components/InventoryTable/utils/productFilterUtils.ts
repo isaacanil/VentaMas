@@ -1,4 +1,4 @@
-import type { ProductStockLike } from '../types';
+import type { ProductStockLike } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 export const NO_BATCH_VALUE = '__NO_BATCH__';
 

@@ -2,13 +2,13 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectExpenseList,
   setExpenseList,
-} from '../../../features/expense/expensesListSlice';
-import { toMillis } from '../../../utils/date/toMillis';
-import { db } from '../../firebaseconfig';
+} from '@/features/expense/expensesListSlice';
+import { toMillis } from '@/utils/date/toMillis';
+import { db } from '@/firebase/firebaseconfig';
 
 const SHARED_SCOPE = 'shared';
 const LOCAL_SCOPE = 'local';

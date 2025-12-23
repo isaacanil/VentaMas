@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { FilterBar as CommonFilterBar } from '../../../../../../../components/common/FilterBar';
-import { icons } from '../../../../../../../constants/icons/icons';
-import useBusiness from '../../../../../../../hooks/useBusiness';
+import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar';
+import { icons } from '@/constants/icons/icons';
+import useBusiness from '@/hooks/useBusiness';
 
 const DEFAULT_CLIENT_TYPE = 'normal';
 const DEFAULT_STATUS = 'active';

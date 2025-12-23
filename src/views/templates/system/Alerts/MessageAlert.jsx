@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleViewOrdersNotes } from '../../../../features/modals/modalSlice';
-import { Button } from '../Button/Button';
+import { toggleViewOrdersNotes } from '@/features/modals/modalSlice';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const MessageAlert = ({ isOpen, data }) => {
   const dispatch = useDispatch();

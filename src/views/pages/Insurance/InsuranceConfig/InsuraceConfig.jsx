@@ -1,13 +1,13 @@
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
-import { openInsuranceConfigModal } from '../../../../features/insurance/insuranceConfigModalSlice';
-import { useListenInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
-import DateUtils from '../../../../utils/date/dateUtils';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
-import InsuranceConfigForm from '../InsuranceConfigForm/InsuranceConfigForm';
+import { icons } from '@/constants/icons/icons';
+import { openInsuranceConfigModal } from '@/features/insurance/insuranceConfigModalSlice';
+import { useListenInsuranceConfig } from '@/firebase/insurance/insuranceService';
+import DateUtils from '@/utils/date/dateUtils';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import InsuranceConfigForm from '@/views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm';
 
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 

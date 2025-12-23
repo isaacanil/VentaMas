@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { ProviderTable } from './components/OrderListTable/ProviderTable';
 import { ToolBar } from './ToolBar';

@@ -3,8 +3,8 @@ import { memo } from 'react';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { CustomProduct } from '../../../../../templates/system/Product/CustomProduct';
-import { Product } from '../../../../../templates/system/Product/Product/Product';
+import { CustomProduct } from '@/views/templates/system/Product/CustomProduct';
+import { Product } from '@/views/templates/system/Product/Product/Product';
 
 const StyledItemRow = styled.div`
   position: absolute;

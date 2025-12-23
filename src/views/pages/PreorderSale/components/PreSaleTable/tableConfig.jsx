@@ -1,4 +1,4 @@
-import { getTimeElapsed } from '../../../../../hooks/useFormatTime';
+import { getTimeElapsed } from '@/hooks/useFormatTime';
 
 import { PreorderActionsCell, PriceCell, StatusCell } from './tableCells';
 

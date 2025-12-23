@@ -6,8 +6,8 @@ import styled from 'styled-components';
 import {
   SelectSettingCart,
   togglePrintInvoice,
-} from '../../../../../../../../../../../features/cart/cartSlice';
-import InvoiceTemplates from '../../../../../../../../../../component/Invoice/components/InvoiceTemplates/InvoiceTemplates';
+} from '@/features/cart/cartSlice';
+import InvoiceTemplates from '@/views/component/Invoice/components/InvoiceTemplates/InvoiceTemplates';
 
 export const PrintControl = () => {
   const cartSetting = useSelector(SelectSettingCart);

@@ -3,8 +3,8 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { updateUser } from '../../../../../../../../../features/usersManagement/usersManagementSlice';
-import { Row } from '../../../../../../../../templates/system/Table/Row';
+import { updateUser } from '@/features/usersManagement/usersManagementSlice';
+import { Row } from '@/views/templates/system/Table/Row';
 
 export const Item = ({ data, num, colWidth }) => {
   const navigate = useNavigate();

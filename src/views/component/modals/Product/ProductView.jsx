@@ -12,9 +12,9 @@ import React, { Fragment } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import noImg from '../../../../assets/producto/noimg.png';
-import { useListenProduct } from '../../../../firebase/products/fbGetProduct';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import noImg from '@/assets/producto/noimg.png';
+import { useListenProduct } from '@/firebase/products/fbGetProduct';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const defaultProduct = {
   name: 'Producto No Encontrado',

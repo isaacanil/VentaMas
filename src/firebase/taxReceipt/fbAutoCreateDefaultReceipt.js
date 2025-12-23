@@ -9,11 +9,11 @@ import {
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { getTaxReceiptData } from '../../features/taxReceipt/taxReceiptSlice';
-import { serializeFirestoreDocuments } from '../../utils/serialization/serializeFirestoreData';
-import { validateUser } from '../../utils/userValidation';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { getTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
+import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
+import { validateUser } from '@/utils/userValidation';
+import { db } from '@/firebase/firebaseconfig';
 
 import { removeDuplicateTaxReceipts } from './removeDuplicateTaxReceipts';
 import { taxReceiptDefault } from './taxReceiptsDefault';

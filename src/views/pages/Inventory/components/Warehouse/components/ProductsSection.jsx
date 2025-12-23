@@ -5,13 +5,13 @@ import React, { Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { openProductStock } from '../../../../../../features/productStock/productStockSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { openProductStock } from '@/features/productStock/productStockSlice';
 import {
   deleteProductStock,
   useListenProductsStockByLocation,
-} from '../../../../../../firebase/warehouse/productStockService';
+} from '@/firebase/warehouse/productStockService';
 
 import SectionContainer from './SectionContainer';
 

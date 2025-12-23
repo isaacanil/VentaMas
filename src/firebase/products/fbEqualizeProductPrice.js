@@ -6,7 +6,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Igualar el precio de un producto: pricing.price = pricing.listPrice

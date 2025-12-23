@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 
-import { addProduct } from '../../../../features/cart/cartSlice';
+import { addProduct } from '@/features/cart/cartSlice';
 
 const getPricePerUnit = (currentProduct) => {
   if (!currentProduct) return 0;

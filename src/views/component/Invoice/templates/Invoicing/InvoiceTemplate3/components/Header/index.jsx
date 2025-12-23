@@ -2,8 +2,8 @@ import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { formatPhoneNumber } from '../../../../../../../../utils/format/formatPhoneNumber';
-import { resolveDocumentIdentity } from '../../../../../../../../utils/invoice/documentIdentity.js';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 const formatDate = (dateObj) => {
   if (!dateObj) return '';

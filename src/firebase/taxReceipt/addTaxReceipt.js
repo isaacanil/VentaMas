@@ -1,6 +1,6 @@
 import { collection, addDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig'; // Asegúrate que la ruta sea correcta
+import { db } from '@/firebase/firebaseconfig'; // Asegúrate que la ruta sea correcta
 
 /**
  * Creates a new tax receipt document in Firestore within a 'data' field.

@@ -6,7 +6,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-import { db } from '../../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Función para agregar ingredientes activos desde un arreglo de productos
 export const fbAddActiveIngredients = async (user, products) => {

@@ -3,14 +3,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { closeNotificationCenter } from '../../../../../../features/notification/notificationCenterSlice';
-import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
+import { selectUser } from '@/features/auth/userSlice';
+import { closeNotificationCenter } from '@/features/notification/notificationCenterSlice';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
 import {
   listenToAuthorizationsByStatus,
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
-} from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
+} from '@/firebase/authorizations/invoiceEditAuthorizations';
 import ROUTES_PATH from '@/router/routes/routesName';
 
 import {

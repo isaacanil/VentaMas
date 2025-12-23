@@ -5,17 +5,16 @@ import {
   onSnapshot,
   getDocs,
 } from 'firebase/firestore';
-import filter from 'lodash/filter';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { SelectSettingCart } from '../../features/cart/cartSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
 import {
   SelectActiveIngredients,
   SelectCategories,
   SelectCategoryStatus,
-} from '../../features/category/categorySlicer';
+} from '@/features/category/categorySlicer';
 import {
   DEFAULT_FILTER_CONTEXT,
   selectCriterio,
@@ -29,9 +28,9 @@ import {
   selectStockAlertLevel,
   selectStockRequirement,
   selectStockLocations,
-} from '../../features/filterProduct/filterProductsSlice';
-import { getTax } from '../../utils/pricing';
-import { db } from '../firebaseconfig';
+} from '@/features/filterProduct/filterProductsSlice';
+import { getTax } from '@/utils/pricing';
+import { db } from '@/firebase/firebaseconfig';
 
 const normalizeTaxValue = (value) => {
   if (value === null || value === undefined || value === '') return null;
@@ -60,13 +59,11 @@ function filterProducts(
   // Filtro por Inventariable
   if (!serverApplied.inventariable) {
     if (inventariable === 'si') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product.trackInventory === true,
       );
     } else if (inventariable === 'no') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product.trackInventory === false,
       );
     }
@@ -76,7 +73,7 @@ function filterProducts(
   if (!serverApplied.itbis && itbis !== 'todos') {
     const itbisValue = normalizeTaxValue(itbis);
     if (itbisValue !== null) {
-      productsArray = filter(productsArray, (product = {}) => {
+      productsArray = productsArray.filter((product = {}) => {
         const { pricing = {} } = product;
         const normalizedTax = normalizeTaxValue(pricing.tax);
         if (normalizedTax === null) return false;
@@ -88,12 +85,12 @@ function filterProducts(
   // Filtro por estado de precio
   if (!serverApplied.priceStatus) {
     if (priceStatus === 'sinPrecio') {
-      productsArray = filter(productsArray, (product) => {
+      productsArray = productsArray.filter((product) => {
         const price = Number(product?.pricing?.price ?? 0);
         return !Number.isFinite(price) || price <= 0;
       });
     } else if (priceStatus === 'conPrecio') {
-      productsArray = filter(productsArray, (product) => {
+      productsArray = productsArray.filter((product) => {
         const price = Number(product?.pricing?.price ?? 0);
         return Number.isFinite(price) && price > 0;
       });
@@ -103,12 +100,12 @@ function filterProducts(
   // Filtro por estado de costo
   if (!serverApplied.costStatus) {
     if (costStatus === 'sinCosto') {
-      productsArray = filter(productsArray, (product) => {
+      productsArray = productsArray.filter((product) => {
         const cost = Number(product?.pricing?.cost ?? 0);
         return !Number.isFinite(cost) || cost <= 0;
       });
     } else if (costStatus === 'conCosto') {
-      productsArray = filter(productsArray, (product) => {
+      productsArray = productsArray.filter((product) => {
         const cost = Number(product?.pricing?.cost ?? 0);
         return Number.isFinite(cost) && cost > 0;
       });
@@ -118,13 +115,11 @@ function filterProducts(
   // Filtro por promociones
   if (!serverApplied.promotionStatus) {
     if (promotionStatus === 'promocionActiva') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product?.promotions?.isActive === true,
       );
     } else if (promotionStatus === 'sinPromocion') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product?.promotions?.isActive !== true,
       );
     }
@@ -133,13 +128,11 @@ function filterProducts(
   // Filtro disponibilidad de stock
   if (!serverApplied.stockAvailability) {
     if (stockAvailability === 'conStock') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => (product.stock ?? 0) > 0,
       );
     } else if (stockAvailability === 'sinStock') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => (product.stock ?? 0) === 0,
       );
     }
@@ -148,13 +141,11 @@ function filterProducts(
   // Filtro por requerimiento de stock
   if (!serverApplied.stockRequirement) {
     if (stockRequirement === 'requiere') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product.restrictSaleWithoutStock === true,
       );
     } else if (stockRequirement === 'noRequiere') {
-      productsArray = filter(
-        productsArray,
+      productsArray = productsArray.filter(
         (product) => product.restrictSaleWithoutStock !== true,
       );
     }
@@ -168,7 +159,7 @@ function filterProducts(
       ? criticalThreshold
       : Math.min(low, 10);
 
-    productsArray = filter(productsArray, (product) => {
+    productsArray = productsArray.filter((product) => {
       if (!product.trackInventory) return stockAlertLevel === 'normal';
       const stock = product.stock ?? 0;
       if (stock <= 0) {
@@ -190,7 +181,7 @@ function filterProducts(
   // Filtro por Categoria
   if (categories.length > 0 && categoriesStatus) {
     const categoriesNameArray = categories.map((item) => item.name);
-    productsArray = filter(productsArray, (product) =>
+    productsArray = productsArray.filter((product) =>
       categoriesNameArray.includes(product.category),
     );
   }
@@ -200,7 +191,7 @@ function filterProducts(
     const activeIngredientsNameArray = activeIngredients.map(
       (item) => item.name,
     );
-    productsArray = filter(productsArray, (product) =>
+    productsArray = productsArray.filter((product) =>
       activeIngredientsNameArray.includes(product.activeIngredients),
     );
   }

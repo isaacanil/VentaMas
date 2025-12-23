@@ -6,10 +6,10 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { getOrderData } from '../../../../../../../features/purchase/addPurchaseSlice';
-import DateUtils from '../../../../../../../utils/date/dateUtils';
-import { normalizeText } from '../../../../../../../utils/text';
+import { icons } from '@/constants/icons/icons';
+import { getOrderData } from '@/features/purchase/addPurchaseSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { normalizeText } from '@/utils/text';
 
 
 const Wrapper = styled.div`

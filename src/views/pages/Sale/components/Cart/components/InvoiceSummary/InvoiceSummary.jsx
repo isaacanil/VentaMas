@@ -13,9 +13,9 @@ import { useReactToPrint } from 'react-to-print';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { selectBusinessData } from '../../../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectCartData,
   SelectSettingCart,
@@ -27,27 +27,27 @@ import {
   selectTotalIndividualDiscounts,
   setDiscountAuthorizationContext,
   clearDiscountAuthorizationContext,
-} from '../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 import {
   selectNcfType,
   selectTaxReceiptEnabled,
-} from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbAddPreOrder } from '../../../../../../../firebase/invoices/fbAddPreocer';
-import { fbUpdatePreOrder } from '../../../../../../../firebase/invoices/fbUpdatePreorder';
-import { downloadQuotationPdf } from '../../../../../../../firebase/quotation/downloadQuotationPDF';
-import { addQuotation } from '../../../../../../../firebase/quotation/quotationService';
-import { useAuthorizationModules } from '../../../../../../../hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '../../../../../../../hooks/useAuthorizationPin';
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
-import useInsuranceFormComplete from '../../../../../../../hooks/useInsuranceFormComplete';
-import { validateInvoiceCart } from '../../../../../../../utils/invoiceValidation';
-import { getTotalDiscount } from '../../../../../../../utils/pricing';
-import { PinAuthorizationModal } from '../../../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
-import { Quotation } from '../../../../../../component/Quotation/components/Quotation/Quotation';
-import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
-import CustomInput from '../../../../../../templates/system/Inputs/CustomInput';
-import { usePreorderModal } from '../../../usePreorderModal.jsx';
-import { handleCancelShipping } from '../InvoicePanel/handleCancelShipping';
+} from '@/features/taxReceipt/taxReceiptSlice';
+import { fbAddPreOrder } from '@/firebase/invoices/fbAddPreocer';
+import { fbUpdatePreOrder } from '@/firebase/invoices/fbUpdatePreorder';
+import { downloadQuotationPdf } from '@/firebase/quotation/downloadQuotationPDF';
+import { addQuotation } from '@/firebase/quotation/quotationService';
+import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
+import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import useInsuranceFormComplete from '@/hooks/useInsuranceFormComplete';
+import { validateInvoiceCart } from '@/utils/invoiceValidation';
+import { getTotalDiscount } from '@/utils/pricing';
+import { PinAuthorizationModal } from '@/views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { Quotation } from '@/views/component/Quotation/components/Quotation/Quotation';
+import { AnimatedNumber } from '@/views/templates/system/AnimatedNumber/AnimatedNumber';
+import CustomInput from '@/views/templates/system/Inputs/CustomInput';
+import { usePreorderModal } from '@/views/pages/Sale/components/usePreorderModal.jsx';
+import { handleCancelShipping } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/handleCancelShipping';
 
 import { ActionMenu } from './components/ActionMenu/Actionmenu';
 import { Delivery } from './components/Delivery/Delivery';

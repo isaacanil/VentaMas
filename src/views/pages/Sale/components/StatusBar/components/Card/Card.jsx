@@ -7,8 +7,8 @@ import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/format';
 
-import { SelectTotalShoppingItems } from '../../../../../../../features/cart/cartSlice';
-import { AnimatedNumber } from '../../../../../../templates/system/AnimatedNumber/AnimatedNumber';
+import { SelectTotalShoppingItems } from '@/features/cart/cartSlice';
+import { AnimatedNumber } from '@/views/templates/system/AnimatedNumber/AnimatedNumber';
 
 
 export const ProductCounter = ({

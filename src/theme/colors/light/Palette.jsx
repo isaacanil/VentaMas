@@ -1,4 +1,4 @@
-import { getContrastColorPairs } from '../../getContrastColorPairs';
+import { getContrastColorPairs } from '@/theme/getContrastColorPairs';
 
 import { baseColors } from './baseColors';
 

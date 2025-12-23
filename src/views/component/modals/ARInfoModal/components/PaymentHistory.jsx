@@ -2,8 +2,8 @@ import { CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import React from 'react';
 
-import { SectionTitle, TableCard, HighlightCard } from '../styles';
-import { formatCurrency, formatDate } from '../utils';
+import { SectionTitle, TableCard, HighlightCard } from '@/views/component/modals/ARInfoModal/styles';
+import { formatCurrency, formatDate } from '@/views/component/modals/ARInfoModal/utils';
 
 const PaymentHistory = ({ data }) => {
     const payments = data?.payments || [];

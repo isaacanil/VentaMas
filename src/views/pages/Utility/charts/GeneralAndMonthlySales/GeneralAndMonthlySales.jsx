@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import Typography from '../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import MonthlySalesChart from './charts/MonthlySalesChart';
 import TotalSalesChart from './charts/TotalSalesChart';

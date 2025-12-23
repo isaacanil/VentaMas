@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
-import { Grid } from '../../templates/system/Grid/Grid';
-import { Product } from '../../templates/system/Product/Product/Product';
+import { Grid } from '@/views/templates/system/Grid/Grid';
+import { Product } from '@/views/templates/system/Product/Product/Product';
 
 import style from './ControlSearchProductStyle.module.scss';
 

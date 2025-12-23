@@ -2,8 +2,8 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSelector } from 'react-redux';
 
-import { SelectProductSelected } from '../../../../../../features/productOutflow/productOutflow';
-import { Button } from '../../../../../templates/system/Button/Button';
+import { SelectProductSelected } from '@/features/productOutflow/productOutflow';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const useTableHeaderColumns = ({ Group }) => {
   const productSelected = useSelector(SelectProductSelected);

@@ -9,8 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getRoleLabelById } from '../../abilities/roles';
-import { developerShortcuts } from '../../constants/devtools/developerShortcuts.jsx';
+import { getRoleLabelById } from '@/abilities/roles';
+import { developerShortcuts } from '@/constants/devtools/developerShortcuts.jsx';
 import {
   selectIsTemporaryRoleMode,
   selectOriginalRole,
@@ -19,9 +19,9 @@ import {
   selectIsTemporaryMode,
   selectOriginalBusinessId,
   returnToOriginalBusiness,
-} from '../../features/auth/userSlice';
-import { toggleDeveloperModal } from '../../features/modals/modalSlice';
-import { useHasDeveloperAccess } from '../../utils/menuAccess';
+} from '@/features/auth/userSlice';
+import { toggleDeveloperModal } from '@/features/modals/modalSlice';
+import { useHasDeveloperAccess } from '@/utils/menuAccess';
 
 const BUTTON_SIZE = 48;
 const PANEL_MIN_WIDTH = 420;

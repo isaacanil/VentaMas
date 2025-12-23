@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '../../../../features/cart/cartSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
 
 import BillingModeConfig from './components/BillingModeConfig';
 import BillingSection from './components/BillingSection';

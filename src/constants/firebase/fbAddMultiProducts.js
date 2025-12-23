@@ -1,6 +1,6 @@
 import { collection, setDoc, doc } from 'firebase/firestore';
 
-import { db } from '../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbAddMultiProducts(user, productsData) {
   if (!user || !user?.businessID) {

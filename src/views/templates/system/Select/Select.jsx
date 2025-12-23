@@ -8,9 +8,9 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import { InputV4 } from '../Inputs/GeneralInput/InputV4';
+import { icons } from '@/constants/icons/icons';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 const getValueByKeyOrPath = (obj, keyOrPath) => {
   if (typeof keyOrPath === 'string' && keyOrPath.includes('.')) {

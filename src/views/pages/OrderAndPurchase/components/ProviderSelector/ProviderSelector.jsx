@@ -8,8 +8,8 @@ import { Form, Input, Button, Drawer, Dropdown, Tooltip } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { normalizeText } from '../../../../../utils/text';
-import { comprobantesOptions } from '../../../Contact/Provider/components/CreateContact/constants';
+import { normalizeText } from '@/utils/text';
+import { comprobantesOptions } from '@/views/pages/Contact/Provider/components/CreateContact/constants';
 
 const Wrapper = styled.div`
   display: grid;

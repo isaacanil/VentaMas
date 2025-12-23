@@ -3,22 +3,22 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
 import {
   SelectProductOutflow,
   setProductOutflowData,
-} from '../../../../../features/productOutflow/productOutflow';
-import { fbDeleteProductOutflow } from '../../../../../firebase/ProductOutflow/fbDeleteProductOutflow';
-import { fbGetProductOutflow } from '../../../../../firebase/ProductOutflow/fbGetProductOutflow';
-import useScroll from '../../../../../hooks/useScroll';
-import DateUtils from '../../../../../utils/date/dateUtils';
-import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup';
-import { CenteredText } from '../../../../templates/system/CentredText';
-import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
-import Loader from '../../../../templates/system/loader/Loader';
+} from '@/features/productOutflow/productOutflow';
+import { fbDeleteProductOutflow } from '@/firebase/ProductOutflow/fbDeleteProductOutflow';
+import { fbGetProductOutflow } from '@/firebase/ProductOutflow/fbGetProductOutflow';
+import useScroll from '@/hooks/useScroll';
+import DateUtils from '@/utils/date/dateUtils';
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+import { CenteredText } from '@/views/templates/system/CentredText';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
+import Loader from '@/views/templates/system/loader/Loader';
 
 import { Header } from './components/Header/Header';
 import {

@@ -2,8 +2,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../../firebase/firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 const items = [
   {

@@ -5,22 +5,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   clearCashCount,
   selectCashCount,
   setCashCountOpeningBanknotes,
   setCashCountOpeningComments,
-} from '../../../../../features/cashCount/cashCountManagementSlice';
-import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs';
-import { fbCashCountOpening } from '../../../../../firebase/cashCount/opening/fbCashCountOpening';
-import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization';
-import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
-import { CashDenominationCalculator } from '../../resource/CashDenominationCalculator/CashDenominationCalculator';
-import { Comments } from '../CashRegisterClosure/Comments/Comments';
-import { DateSection } from '../CashRegisterClosure/components/Header/DateSection';
+} from '@/features/cashCount/cashCountManagementSlice';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
+import { fbCashCountOpening } from '@/firebase/cashCount/opening/fbCashCountOpening';
+import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
+import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
+import { PeerReviewAuthorization } from '@/views/component/modals/PeerReviewAuthorization/PeerReviewAuthorization';
+import { PinAuthorizationModal } from '@/views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { Comments } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
+import { DateSection } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Headers/Header';

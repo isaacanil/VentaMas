@@ -7,13 +7,13 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { addIngredientTypePizza } from '../../../../firebase/firebaseconfig.jsx';
-import { fbGetCustomProduct } from '../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
-import { Button } from '../../../templates/system/Button/Button';
-import { PlusIconButton } from '../../../templates/system/Button/PlusIconButton';
-import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4.jsx';
-import { IngredientCard } from '../../../templates/system/Product/typePizza/IngredientCard';
+import { selectUser } from '@/features/auth/userSlice';
+import { addIngredientTypePizza } from '@/firebase/firebaseconfig.jsx';
+import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
+import { Button } from '@/views/templates/system/Button/Button';
+import { PlusIconButton } from '@/views/templates/system/Button/PlusIconButton';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4.jsx';
+import { IngredientCard } from '@/views/templates/system/Product/typePizza/IngredientCard';
 
 export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
   const user = useSelector(selectUser);

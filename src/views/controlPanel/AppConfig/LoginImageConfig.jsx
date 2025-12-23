@@ -16,8 +16,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { storage } from '../../../firebase/firebaseconfig';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { storage } from '@/firebase/firebaseconfig';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 // Parámetros de compresión
 const TARGET_SIZE_MB = 0.4; // Tamaño máximo deseado en MB (ajustado para mejor calidad)

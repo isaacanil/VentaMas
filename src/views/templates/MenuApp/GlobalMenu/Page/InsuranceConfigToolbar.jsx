@@ -3,10 +3,10 @@ import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { openInsuranceConfigModal } from '../../../../../features/insurance/insuranceConfigModalSlice';
+import { icons } from '@/constants/icons/icons';
+import { openInsuranceConfigModal } from '@/features/insurance/insuranceConfigModalSlice';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '../../../system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const InsuranceConfigToolbar = ({ side = 'left' }) => {
   const dispatch = useDispatch();

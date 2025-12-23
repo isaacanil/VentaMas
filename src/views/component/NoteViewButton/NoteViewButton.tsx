@@ -2,7 +2,7 @@ import { Button, Tooltip } from 'antd';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 
-import { setNote } from '../../../features/noteModal/noteModalSlice';
+import { setNote } from '@/features/noteModal/noteModalSlice';
 
 type NoteValue = string | null | undefined;
 export function NoteButton({ value }: { value: NoteValue }) {

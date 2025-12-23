@@ -5,8 +5,8 @@ import {
 import { Button, Tooltip } from 'antd';
 import React from 'react';
 
-import { generateARPDF } from '../generateARPDF';
-import { ActionButtonsContainer } from '../styles';
+import { generateARPDF } from '@/views/component/modals/ARInfoModal/generateARPDF';
+import { ActionButtonsContainer } from '@/views/component/modals/ARInfoModal/styles';
 
 const ActionButtons = ({ data, onPay }) => {
     const hasBalance = (data?.ar?.arBalance || 0) > 0;

@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { Fragment, useMemo, useState, Suspense } from 'react';
 import styled from 'styled-components';
 
-import { useAccountsReceivablePaymentReceipts } from '../../../firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts';
-import { getDateRange } from '../../../utils/date/getDateRange';
-import { lazyWithRetry } from '../../../utils/lazyWithRetry';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { useAccountsReceivablePaymentReceipts } from '@/firebase/accountsReceivable/paymentReceipt/useAccountsReceivablePaymentReceipts';
+import { getDateRange } from '@/utils/date/getDateRange';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { FilterBar } from './components/FilterBar/FilterBar';
 

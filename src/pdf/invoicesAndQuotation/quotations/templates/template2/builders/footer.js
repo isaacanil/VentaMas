@@ -31,10 +31,10 @@ export function buildFooter(d) {
               { text: money(d.totalTaxes?.value ?? 0), style: 'totalsValue' },
             ],
             !hasIndividualDisc &&
-              d.discount?.value && [
-                'Descuento General:',
-                { text: `-${money(generalDiscount)}`, style: 'totalsValue' },
-              ],
+            d.discount?.value && [
+              'Descuento General:',
+              { text: `-${money(generalDiscount)}`, style: 'totalsValue' },
+            ],
             hasIndividualDisc && [
               'Descuentos Productos:',
               { text: `-${money(individualDiscounts)}`, style: 'totalsValue' },

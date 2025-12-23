@@ -7,13 +7,13 @@ import styled from 'styled-components';
 import {
   closeUserNotification,
   selectCurrentUserNotification,
-} from '../../../../../../features/UserNotification/UserNotificationSlice';
-import { useIsOpenCashReconciliation } from '../../../../../../firebase/cashCount/useIsOpenCashReconciliation';
+} from '@/features/UserNotification/UserNotificationSlice';
+import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import {
   Button,
   ButtonGroup,
-} from '../../../../../templates/system/Button/Button';
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue';
+} from '@/views/templates/system/Button/Button';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 import { HandleConfirmationAction } from './HandleConfirmationAction';
 

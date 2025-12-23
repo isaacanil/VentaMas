@@ -3,8 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { useClickOutSide } from '../../../../../../hooks/useClickOutSide';
+import { icons } from '@/constants/icons/icons';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 const { TabPane } = Tabs;
 

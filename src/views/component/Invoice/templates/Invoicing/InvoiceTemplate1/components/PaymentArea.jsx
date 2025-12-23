@@ -4,17 +4,17 @@ import styled from 'styled-components';
 
 import { formatPrice as formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectInsuranceEnabled } from '../../../../../../../features/cart/cartSlice';
-import { usePendingBalance } from '../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectInsuranceEnabled } from '@/features/cart/cartSlice';
+import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBalance';
 import {
   getProductsPrice,
   getProductsTax,
   getTotalDiscount,
   getProductsIndividualDiscounts,
-} from '../../../../../../../utils/pricing';
-import { Line, SubTitle } from '../InvoiceTemplate1';
-import { Paragraph, Spacing, Subtitle } from '../Style';
+} from '@/utils/pricing';
+import { Line, SubTitle } from '@/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1';
+import { Paragraph, Spacing, Subtitle } from '@/views/component/Invoice/templates/Invoicing/InvoiceTemplate1/Style';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

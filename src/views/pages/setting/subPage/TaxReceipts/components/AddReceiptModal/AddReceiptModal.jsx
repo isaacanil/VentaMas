@@ -14,12 +14,12 @@ import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { addTaxReceipt } from '../../../../../../../firebase/taxReceipt/addTaxReceipt'; // Asumiendo que esta función existe
+import { selectUser } from '@/features/auth/userSlice';
+import { addTaxReceipt } from '@/firebase/taxReceipt/addTaxReceipt'; // Asumiendo que esta función existe
 import {
   countryComprobantes,
   getAvailableCountries,
-} from '../../../../../../../firebase/taxReceipt/taxReceiptTemplates';
+} from '@/firebase/taxReceipt/taxReceiptTemplates';
 
 const { Option } = Select;
 const { Title, Text } = Typography;

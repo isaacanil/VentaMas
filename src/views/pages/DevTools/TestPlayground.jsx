@@ -11,15 +11,15 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { fbNormalizeAllBusinessesClients } from '../../../firebase/client/fbNormalizeAllBusinessesClients';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbNormalizeAllBusinessesClients } from '@/firebase/client/fbNormalizeAllBusinessesClients';
 import {
   fbFixExpenseTimestamps,
   fbFixExpenseTimestampsForAll,
-} from '../../../firebase/expenses/maintenance/fbFixExpenseTimestamps';
-import { fbFixMissingProductIds } from '../../../firebase/products/fbFixMissingProductIds';
-import { normalizeAllBusinessesProductTaxes } from '../../../firebase/products/fbNormalizeAllBusinessesProductTaxes';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+} from '@/firebase/expenses/maintenance/fbFixExpenseTimestamps';
+import { fbFixMissingProductIds } from '@/firebase/products/fbFixMissingProductIds';
+import { normalizeAllBusinessesProductTaxes } from '@/firebase/products/fbNormalizeAllBusinessesProductTaxes';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionTokensCleanup';
 

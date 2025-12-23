@@ -5,10 +5,10 @@ import styled from 'styled-components';
 
 import { formatRNC } from '@/utils/format';
 
-import { handleModalCreateClient } from '../../../../../../features/modals/modalSlice';
-import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { Message } from '../../../../../templates/system/message/Message';
+import { handleModalCreateClient } from '@/features/modals/modalSlice';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { Button } from '@/views/templates/system/Button/Button';
+import { Message } from '@/views/templates/system/message/Message';
 
 
 export const CreateContact = ({ isOpen }) => {

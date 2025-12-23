@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { useMatch } from 'react-router-dom';
 
-import { Carrusel } from '../Carrusel/Carrusel';
+import { Carrusel } from '@/views/component/Carrusel/Carrusel';
 
 import Style from './ProductControl.module.scss';
 

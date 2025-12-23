@@ -10,15 +10,15 @@ import Barcode from 'react-barcode';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { ChangeProductData } from '../../../../../../features/updateProduct/updateProductSlice';
-import useBarcodeSettings from '../../../../../../hooks/barcode/useBarcodeSettings';
+import { selectUser } from '@/features/auth/userSlice';
+import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
+import useBarcodeSettings from '@/hooks/barcode/useBarcodeSettings';
 import {
   getBarcodeInfo,
   PRINT_DPI,
   getGS1Geometry,
-} from '../../../../../../utils/barcode/barcode';
-import BarcodePrintModal from '../../../../../pages/test/pages/barcodePrint/components/BarcodePrintModal';
+} from '@/utils/barcode/barcode';
+import BarcodePrintModal from '@/views/pages/test/pages/barcodePrint/components/BarcodePrintModal';
 
 import { BarcodeGenerator } from './BarcodeGenerator/BarcodeGenerator';
 import BarcodeFixTooltip from './BarcodeGenerator/components/BarcodeFixTooltip';

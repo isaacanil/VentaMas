@@ -16,8 +16,8 @@ import {
 import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
 
-import { useFbGetInvoicesBySerie } from '../../../../firebase/invoices/useFbGetInvoicesBySerie';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { useFbGetInvoicesBySerie } from '@/firebase/invoices/useFbGetInvoicesBySerie';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const { Title, Paragraph, Text } = Typography;
 

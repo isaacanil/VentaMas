@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import {
   getDefaultTransactionCondition,
   getDefaultTransactionStatus,
-} from '../../constants/orderAndPurchaseState';
+} from '@/constants/orderAndPurchaseState';
 
 const EmptyPurchase = {
   id: null,

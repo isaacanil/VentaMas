@@ -21,8 +21,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import DatePicker from '@/components/DatePicker';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
+import { selectUser } from '@/features/auth/userSlice';
+import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 
 const { Title, Text } = Typography;
 const { Option } = Select;

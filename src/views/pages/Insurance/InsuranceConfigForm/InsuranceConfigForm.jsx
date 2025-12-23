@@ -12,12 +12,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   closeInsuranceConfigModal,
   selectInsuranceConfigModal,
-} from '../../../../features/insurance/insuranceConfigModalSlice';
-import { saveInsuranceConfig } from '../../../../firebase/insurance/insuranceService';
+} from '@/features/insurance/insuranceConfigModalSlice';
+import { saveInsuranceConfig } from '@/firebase/insurance/insuranceService';
 
 import { PeriodSelectionModal } from './components/PeriodSelectionModal';
 import { PAYMENT_TERMS, TIME_UNITS } from './constants';

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { fbLoadInvoicesForCashCount } from '../../firebase/cashCount/fbLoadInvoicesForCashCount';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbLoadInvoicesForCashCount } from '@/firebase/cashCount/fbLoadInvoicesForCashCount';
 
 export const useInvoicesForCashCount = (cashCountId) => {
   const user = useSelector(selectUser);

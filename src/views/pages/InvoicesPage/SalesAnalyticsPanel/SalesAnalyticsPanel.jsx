@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import { Button } from '../../../templates/system/Button/Button';
-import Typography from '../../../templates/system/Typografy/Typografy';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import { Button } from '@/views/templates/system/Button/Button';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { DailySalesBarChart } from './components/Bars/DailySalesBarChart/DailySalesBarChart';
 import { DiscountsGivenBarChart } from './components/Bars/DiscountsGivenBarChart/DiscountsGivenBarChart';

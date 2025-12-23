@@ -7,7 +7,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 async function fetchAccountsReceivableDetails(user, id) {
   if (!user?.businessID) {

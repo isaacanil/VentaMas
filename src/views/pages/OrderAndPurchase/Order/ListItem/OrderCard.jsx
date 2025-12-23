@@ -1,13 +1,13 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 
+import { getOrderStateByID } from '@/constants/orderAndPurchaseState';
+import { toggleViewOrdersNotes } from '@/features/modals/modalSlice';
+import { correctDate } from '@/hooks/date/correctDate';
 import { formatPrice } from '@/utils/format';
+import { Button } from '@/views/templates/system/Button/Button';
+import { Tooltip } from '@/views/templates/system/Button/Tooltip';
 
-import { getOrderStateByID } from '../../../../../constants/orderAndPurchaseState';
-import { toggleViewOrdersNotes } from '../../../../../features/modals/modalSlice';
-import { correctDate } from '../../../../../hooks/date/correctDate';
-import { Button } from '../../../../templates/system/Button/Button';
-import { Tooltip } from '../../../../templates/system/Button/Tooltip';
 import { StatusIndicatorDot } from '../components/StatusIndicatorDot/StatusIndicatorDot';
 
 import { ActionsButtonsGroup } from './ActionsButtonsGroup';

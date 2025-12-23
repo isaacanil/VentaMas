@@ -2,14 +2,20 @@ import pluginReact from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type PluginOption, type UserConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
+import { compression } from 'vite-plugin-compression2';
 import { VitePWA } from 'vite-plugin-pwa';
+import Unfonts from 'unplugin-fonts/vite';
 
 const plugins: PluginOption[] = [
   pluginReact({
     babel: {
-      plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+      plugins: [
+        ['babel-plugin-react-compiler', { target: '19' }],
+        ['babel-plugin-styled-components', { displayName: true, fileName: false }],
+      ],
     },
   }),
+  compression(),
   VitePWA({
     registerType: 'autoUpdate',
     injectRegister: null,
@@ -42,6 +48,17 @@ const plugins: PluginOption[] = [
       enabled: false,
     },
   }),
+  Unfonts({
+    google: {
+      families: [
+        {
+          name: 'Poppins',
+          styles: 'wght@300;400;500;600;700',
+          defer: true,
+        },
+      ],
+    },
+  }),
 ];
 
 // Configuración del analizador si lo necesitas
@@ -61,15 +78,16 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
-      '@constants': fileURLToPath(new URL('./src/constants', import.meta.url)),
-      '@features': fileURLToPath(new URL('./src/features', import.meta.url)),
-      '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
-      '@templates': fileURLToPath(new URL('./src/views/templates', import.meta.url)),
-      views: fileURLToPath(new URL('./src/views', import.meta.url)),
     },
     // Esto es CRUCIAL para evitar el error de createContext
-    dedupe: ['react', 'react-dom', 'scheduler', 'object-assign', 'styled-components'],
+    dedupe: [
+      'react',
+      'react-dom',
+      'scheduler',
+      'object-assign',
+      'styled-components',
+      'react-compiler-runtime',
+    ],
   },
   build: {
     sourcemap: false,
@@ -200,7 +218,6 @@ export default defineConfig({
             {
               name: 'utils-vendor',
               test: (id: string) =>
-                id.includes('lodash') ||
                 id.includes('luxon') ||
                 id.includes('moment'),
               priority: 15,
@@ -285,4 +302,7 @@ export default defineConfig({
   plugins,
   server: { host: '0.0.0.0', hmr: false },
   define: { global: 'globalThis' },
+  optimizeDeps: {
+    include: ['react-compiler-runtime'],
+  },
 }) satisfies UserConfig;

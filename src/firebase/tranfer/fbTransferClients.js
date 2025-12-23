@@ -12,8 +12,8 @@ import {
   buildClientWritePayload,
   CLIENT_ROOT_FIELDS,
   extractNormalizedClient,
-} from '../client/clientNormalizer';
-import { db } from '../firebaseconfig';
+} from '@/firebase/client/clientNormalizer';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Transfiere clientes de un negocio a otro.

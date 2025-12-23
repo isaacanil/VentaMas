@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import ROUTES_NAME from '../routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const Utility = lazy(() =>
   import('@/views/pages/Utility/Utility').then((module) => ({

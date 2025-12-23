@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
 import { RouterProvider } from 'react-router';
 
-import PwaUpdatePrompt from './components/PwaUpdatePrompt/PwaUpdatePrompt';
-import { router } from './router/index';
+import PwaUpdatePrompt from '@/components/PwaUpdatePrompt/PwaUpdatePrompt';
+import { router } from '@/router/index';
 
 function App() {
   return (

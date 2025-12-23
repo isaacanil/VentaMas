@@ -1,6 +1,6 @@
 import { deleteDoc, doc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbDeleteMultipleInvoices(user, invoices) {
   const ids = invoices.map(({ data }) => data.id);

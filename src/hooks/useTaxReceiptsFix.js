@@ -8,8 +8,8 @@ import {
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../features/auth/userSlice';
-import { db } from '../firebase/firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 /** 8 dígitos para B, 10 para E */
 const defaultLength = (serie) => (serie === 'B' ? 8 : 10);

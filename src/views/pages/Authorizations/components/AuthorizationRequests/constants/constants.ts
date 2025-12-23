@@ -1,4 +1,4 @@
-import type { AuthorizationStatus } from '../types';
+import type { AuthorizationStatus } from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 interface StatusThemeToken {
   bg: string;

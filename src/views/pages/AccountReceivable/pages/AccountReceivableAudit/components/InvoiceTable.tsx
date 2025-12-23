@@ -2,9 +2,9 @@ import { MoreOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Empty, Table, message } from 'antd';
 import { useCallback, useMemo } from 'react';
 
-import { formatDate, formatPrice } from '../utils/formatters';
+import { formatDate, formatPrice } from '@/utils/formatters';
 
-import type { ReceivableInvoice, ReceivablesLookup } from '../types';
+import type { ReceivableInvoice, ReceivablesLookup } from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 interface InvoiceTableProps {

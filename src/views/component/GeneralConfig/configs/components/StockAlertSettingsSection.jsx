@@ -3,9 +3,9 @@ import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
+import { selectUser } from '@/features/auth/userSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { setBillingSettings } from '@/firebase/billing/billingSetting';
 
 const ConfigItem = styled.div`
   padding-left: ${({ $level }) => ($level || 0) * 16}px;

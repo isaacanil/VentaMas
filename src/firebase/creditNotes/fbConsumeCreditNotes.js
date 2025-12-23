@@ -1,7 +1,7 @@
 import { doc, Timestamp, runTransaction } from 'firebase/firestore';
 
-import { CREDIT_NOTE_STATUS } from '../../constants/creditNoteStatus';
-import { db } from '../firebaseconfig';
+import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
+import { db } from '@/firebase/firebaseconfig';
 
 import { fbAddCreditNoteApplication } from './fbAddCreditNoteApplication';
 

@@ -2,7 +2,7 @@
 
 import { collection, getDocs } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 import { extractNormalizedClient } from './clientNormalizer';
 

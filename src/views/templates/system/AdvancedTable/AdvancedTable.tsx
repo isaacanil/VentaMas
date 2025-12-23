@@ -11,10 +11,10 @@ import {
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
-import { filterData } from '../../../../hooks/search/useSearch';
-import { useWindowWidth } from '../../../../hooks/useWindowWidth';
-import { DatePicker } from '../Dates/DatePicker/DatePicker';
+import { icons } from '@/constants/icons/icons';
+import { filterData } from '@/hooks/search/useSearch';
+import { useWindowWidth } from '@/hooks/useWindowWidth';
+import { DatePicker } from '@/views/templates/system/Dates/DatePicker/DatePicker';
 
 import { ColumnMenu } from './components/ColumnMenu/ColumnMenu';
 import { FilterUI } from './components/MenuFilter/MenuFilter';

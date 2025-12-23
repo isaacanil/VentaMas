@@ -4,10 +4,10 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format'
 
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
-import { SelectInvoiceComment } from '../../../../../../features/cart/cartSlice';
-import { selectInsuranceData } from '../../../../../../features/insurance/insuranceSlice';
-import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { SelectInvoiceComment } from '@/features/cart/cartSlice';
+import { selectInsuranceData } from '@/features/insurance/insuranceSlice';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 import { Header } from './components/Header/Header';
 import { PaymentArea } from './components/PaymentArea';

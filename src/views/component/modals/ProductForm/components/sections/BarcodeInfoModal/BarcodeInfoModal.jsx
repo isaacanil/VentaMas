@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import {
   getBarcodeInfo,
   isGS1RDCode,
-} from '../../../../../../../utils/barcode/barcode';
+} from '@/utils/barcode/barcode';
 
 const HeaderContainer = styled.div`
   display: flex;

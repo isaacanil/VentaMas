@@ -6,7 +6,7 @@ import {
   selectOriginalBusinessId,
   selectUser,
   switchToBusiness,
-} from '../features/auth/userSlice';
+} from '@/features/auth/userSlice';
 
 const STORAGE_KEY = 'vmx_dev_business_override';
 

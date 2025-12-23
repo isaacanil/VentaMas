@@ -8,9 +8,9 @@ import {
   getProductsTax,
   getProductsTotalPrice,
   getTotalItems,
-} from '../../../../../utils/pricing';
-import { PreorderModal } from '../../../../component/modals/PreorderModal/PreorderModal';
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
+} from '@/utils/pricing';
+import { PreorderModal } from '@/views/component/modals/PreorderModal/PreorderModal';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { tableConfig } from './tableConfig.jsx';
 

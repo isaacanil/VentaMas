@@ -1,8 +1,8 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
-import { db } from '../../firebase/firebaseconfig';
-import { toValidDate } from '../../utils/date/toValidDate';
+import { db } from '@/firebase/firebaseconfig';
+import { toValidDate } from '@/utils/date/toValidDate';
 
 
 /**

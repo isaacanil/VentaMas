@@ -6,9 +6,9 @@ import styled from 'styled-components';
 import {
   selectNotificationCenter,
   closeNotificationCenter,
-} from '../../../features/notification/notificationCenterSlice';
-import { useFiscalReceiptsAlerts } from '../../../hooks/useFiscalReceiptsAlerts';
-import Loader from '../system/loader/Loader';
+} from '@/features/notification/notificationCenterSlice';
+import { useFiscalReceiptsAlerts } from '@/hooks/useFiscalReceiptsAlerts';
+import Loader from '@/views/templates/system/loader/Loader';
 
 const ModulesNavigator = lazy(() => import('./components/ModulesNavigator'));
 

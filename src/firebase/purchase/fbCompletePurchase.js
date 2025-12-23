@@ -9,16 +9,16 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
-import { db } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-import { getNextID } from '../Tools/getNextID';
-import { createBatch } from '../warehouse/batchService';
-import { createProductStock } from '../warehouse/productStockService';
+import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import { db } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
+import { getNextID } from '@/firebase/Tools/getNextID';
+import { createBatch } from '@/firebase/warehouse/batchService';
+import { createProductStock } from '@/firebase/warehouse/productStockService';
 import {
   getDefaultWarehouse,
   getWarehouse,
-} from '../warehouse/warehouseService';
+} from '@/firebase/warehouse/warehouseService';
 
 import {
   safeTimestamp,

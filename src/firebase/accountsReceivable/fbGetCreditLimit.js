@@ -1,6 +1,6 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export function fbGetCreditLimit({ user, clientId }) {
   return new Promise((resolve, reject) => {

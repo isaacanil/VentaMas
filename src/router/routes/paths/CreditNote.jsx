@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
-import { ROUTE_STATUS } from '../routeMeta';
-import ROUTES_NAME from '../routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const CreditNoteList = lazy(() =>
   import('@/views/pages/CreditNote').then((module) => ({

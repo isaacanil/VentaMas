@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectWarehouse } from '../../../../../../../features/warehouse/warehouseSlice';
+import { selectWarehouse } from '@/features/warehouse/warehouseSlice';
 
 import { BreadcrumbNav } from './components/BreadcrumbNav';
 import { InventoryTable } from './components/InventoryTable/InventoryTable';

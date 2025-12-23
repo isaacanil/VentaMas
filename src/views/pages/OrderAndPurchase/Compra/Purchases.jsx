@@ -2,11 +2,11 @@ import { useState, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-import PurchaseCompletionSummary from '../../../../components/Purchase/PurchaseCompletionSummary';
-import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider';
-import useFilter from '../../../../hooks/search/useSearch';
-import { useListenPurchases } from '../../../../hooks/usePurchases';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import PurchaseCompletionSummary from '@/components/Purchase/PurchaseCompletionSummary';
+import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import useFilter from '@/hooks/search/useSearch';
+import { useListenPurchases } from '@/hooks/usePurchases';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { PurchasesReport } from './components/PurchasesReport/PurchasesReport';

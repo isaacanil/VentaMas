@@ -13,8 +13,8 @@ import { DateTime } from 'luxon';
 import {
   convertDecimalToPercentage,
   getPriceWithoutTax,
-} from '../../utils/pricing';
-import { db } from '../firebaseconfig';
+} from '@/utils/pricing';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbFixInvoices = async (businessID) => {
   try {

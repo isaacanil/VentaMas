@@ -5,7 +5,7 @@ import { Dropdown, Tooltip } from 'antd';
 import React, { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
-import { AdvancedTable } from '../../../../../../../templates/system/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 const ProductStockTable = ({
   stocks,

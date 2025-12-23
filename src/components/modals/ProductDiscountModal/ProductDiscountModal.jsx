@@ -6,9 +6,9 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { updateProductDiscount } from '../../../features/cart/cartSlice';
-import { selectTaxReceiptEnabled } from '../../../features/taxReceipt/taxReceiptSlice';
-import { getTotalPrice } from '../../../utils/pricing';
+import { updateProductDiscount } from '@/features/cart/cartSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { getTotalPrice } from '@/utils/pricing';
 
 
 const { Text } = Typography;

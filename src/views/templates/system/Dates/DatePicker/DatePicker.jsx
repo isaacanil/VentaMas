@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../../Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 const { RangePicker } = AntDatePicker;
 const DATE_LOCALE = 'es';

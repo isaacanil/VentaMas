@@ -3,15 +3,15 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { paymentDescriptions } from '../../../../../constants/paymentDescriptions';
+import { icons } from '@/constants/icons/icons';
+import { paymentDescriptions } from '@/constants/paymentDescriptions';
 import {
   clearMethodErrors,
   selectAccountsReceivablePayment,
   setMethodError,
   updatePaymentMethod,
-} from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { formatNumber } from '../../../../../utils/formatNumber';
+} from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { formatNumber } from '@/utils/formatNumber';
 
 export const PaymentFields = () => {
   const cashInputRef = useRef(null);

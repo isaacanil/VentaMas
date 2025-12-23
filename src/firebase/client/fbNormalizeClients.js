@@ -1,7 +1,7 @@
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
-import { compareObjects } from '../../utils/object/compareObject';
-import { db } from '../firebaseconfig';
+import { compareObjects } from '@/utils/object/compareObject';
+import { db } from '@/firebase/firebaseconfig';
 
 import {
   buildClientWritePayload,

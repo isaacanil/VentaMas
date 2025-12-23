@@ -2,14 +2,14 @@ import { Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { closeModalUpdateProd } from '../../../../features/modals/modalSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { closeModalUpdateProd } from '@/features/modals/modalSlice';
 import {
   clearUpdateProductData,
   selectUpdateProductData,
   setProduct,
-} from '../../../../features/updateProduct/updateProductSlice';
-import { listenToProduct } from '../../../../firebase/products/fbListenProduct';
+} from '@/features/updateProduct/updateProductSlice';
+import { listenToProduct } from '@/firebase/products/fbListenProduct';
 
 import ImageManager from './ImageManager/ImageManager';
 import { ProductForm } from './ProductForm';

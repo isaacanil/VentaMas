@@ -5,7 +5,7 @@ export const Container = styled.div`
   width: 100vw;
   padding: 3mm;
   margin: 0;
-  font-family: Lato, sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 11px;
   line-height: 20px;
   text-transform: uppercase;

@@ -5,7 +5,7 @@ import { getPaymentMethodMeta } from '../utils/paymentMethodMeta';
 
 import { PaymentMethodRow } from './PaymentMethodRow';
 
-import type { PaymentMethod } from '../types';
+import type { PaymentMethod } from '@/views/component/modals/InvoiceForm/components/PaymentInfo/types';
 
 interface PaymentMethodsSectionProps {
   paymentMethods: PaymentMethod[];

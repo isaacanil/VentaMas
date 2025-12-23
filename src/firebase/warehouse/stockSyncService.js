@@ -7,7 +7,7 @@ import {
   doc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Función para obtener todos los productos
 const getAllProducts = async (businessID) => {

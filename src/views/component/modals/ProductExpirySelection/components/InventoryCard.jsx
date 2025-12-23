@@ -11,11 +11,11 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { addProduct } from '../../../../../features/cart/cartSlice';
+import { addProduct } from '@/features/cart/cartSlice';
 import {
   clearProductExpirySelector,
   selectProduct,
-} from '../../../../../features/warehouse/productExpirySelectionSlice';
+} from '@/features/warehouse/productExpirySelectionSlice';
 
 const StyledCard = styled.div`
   overflow: hidden;

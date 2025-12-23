@@ -1,33 +1,21 @@
 ﻿import { Button, Input, Select, Form, Modal } from 'antd';
-
 import { DateTime } from 'luxon';
-
 import { useMemo, useState } from 'react';
-
 import { useDispatch } from 'react-redux';
-
 import styled from 'styled-components';
 
 
 
 import DatePicker from '@/components/DatePicker';
-
-
-
-import { icons } from '../../../../constants/icons/icons';
-
-import { useCategoryState } from '../../../../Context/CategoryContext';
-
-import { useFbGetExpensesCategories } from '../../../../firebase/expenses/categories/fbGetExpensesCategories';
-
-import EvidenceUpload from '../../../component/EvidenceUpload/EvidenceUpload';
-
-import Loader from '../../../templates/system/loader/Loader';
+import { icons } from '@/constants/icons/icons';
+import { useCategoryState } from '@/Context/CategoryContext';
+import { useFbGetExpensesCategories } from '@/firebase/expenses/categories/fbGetExpensesCategories';
+import EvidenceUpload from '@/views/component/EvidenceUpload/EvidenceUpload';
+import Loader from '@/views/templates/system/loader/Loader';
 
 
 
 import ManageExpenseCategoriesModal from './components/ManageExpenseCategoriesModal';
-
 import useExpensesForm from './hooks/useExpenseForm';
 
 
@@ -338,7 +326,7 @@ const ExpensesForm = () => {
 
               expense.dates.expenseDate
 
-                ? DateTime.fromMillis()
+                ? DateTime.fromMillis(expense.dates.expenseDate)
                 : DateTime.now()
 
             }

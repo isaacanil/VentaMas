@@ -3,11 +3,11 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import DateUtils from '../../../../../utils/date/dateUtils';
-import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
-import { resolveDocumentIdentity } from '../../../../../utils/invoice/documentIdentity.js';
-import { InfoItem, Spacing } from '../../Style';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { InfoItem, Spacing } from '@/views/pages/checkout/Style';
 
 export const Header = ({ data }) => {
   let business = useSelector(selectBusinessData) || '';

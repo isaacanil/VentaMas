@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { useFbGetProviders } from '../../../../firebase/provider/useFbGetProvider';
-import useFilter from '../../../../hooks/search/useSearch';
-import { useListenOrders } from '../../../../hooks/useOrders';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { FilterBar } from '../Compra/components/FilterBar/FilterBar';
+import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import useFilter from '@/hooks/search/useSearch';
+import { useListenOrders } from '@/hooks/useOrders';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { FilterBar } from '@/views/pages/OrderAndPurchase/Compra/components/FilterBar/FilterBar';
 
 import { OrdersTable } from './components/OrderListTable/OrdersTable';
 import createFilterConfig from './config/filterConfig';

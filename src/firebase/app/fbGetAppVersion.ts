@@ -1,6 +1,6 @@
 import { doc, getDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbGetAppVersion = async () => {
   const appRef = doc(db, 'app', '3Iz5UZWWfF4vCJPlDSy1');

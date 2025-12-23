@@ -7,15 +7,15 @@ import styled from 'styled-components';
 
 import { formatRNC } from '@/utils/format';
 
-import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { toggleClientModal } from '../../../../../../features/modals/modalSlice';
-import { fbAddClient } from '../../../../../../firebase/client/fbAddClient';
-import { fbUpdateClient } from '../../../../../../firebase/client/fbUpdateClient';
-import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { Message } from '../../../../../templates/system/message/Message';
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { fbAddClient } from '@/firebase/client/fbAddClient';
+import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { Button } from '@/views/templates/system/Button/Button';
+import { Message } from '@/views/templates/system/message/Message';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 
 export const ClientForm = ({ isOpen, mode, data }) => {

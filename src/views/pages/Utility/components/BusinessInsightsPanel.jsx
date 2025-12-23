@@ -4,10 +4,10 @@ import { Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
-import { buildBusinessInsights } from '../utils/buildBusinessInsights';
-import { getVariantStyles } from '../utils/insightVariants';
+import { designSystemV2 } from '@/theme/designSystemV2';
+import { buildBusinessInsights } from '@/views/pages/Utility/utils/buildBusinessInsights';
+import { getVariantStyles } from '@/views/pages/Utility/utils/insightVariants';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 
 import { EmptyState } from './EmptyState';
 

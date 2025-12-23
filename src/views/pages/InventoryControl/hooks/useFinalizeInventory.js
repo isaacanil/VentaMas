@@ -2,7 +2,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { useState } from 'react';
 
-import { functions } from '../../../../firebase/firebaseconfig';
+import { functions } from '@/firebase/firebaseconfig';
 
 /**
  * Encapsula la lógica de finalización de una sesión de inventario.

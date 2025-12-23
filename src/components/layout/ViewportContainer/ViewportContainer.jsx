@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { useViewportHeight } from '../../../hooks/windows/useViewportHeight';
+import { useViewportHeight } from '@/hooks/windows/useViewportHeight';
 
 export const ViewportContainer = ({ children }) => {
   const viewportHeight = useViewportHeight();

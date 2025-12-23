@@ -4,13 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleImageViewer } from '../../../../features/imageViewer/imageViewerSlice';
-import { toggleLoader } from '../../../../features/loader/loaderSlice';
+import { toggleImageViewer } from '@/features/imageViewer/imageViewerSlice';
+import { toggleLoader } from '@/features/loader/loaderSlice';
 import {
   selectUploadImageLoading,
   selectUploadImageStatus,
   selectUploadImageUrl,
-} from '../../../../features/uploadImg/uploadImageSlice';
+} from '@/features/uploadImg/uploadImageSlice';
 
 export const AddFileBtn = ({ title, startIcon, endIcon, id, fn }) => {
   const process = useSelector(selectUploadImageStatus);

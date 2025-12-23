@@ -4,7 +4,7 @@ import {
   signOut,
 } from 'firebase/auth';
 
-import { auth } from '../../../firebaseconfig';
+import { auth } from '@/firebase/firebaseconfig';
 
 import { saveUserData } from './saveUserData';
 import { updateUserProfile } from './updateUserProfile';

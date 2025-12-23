@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
-import { ROUTE_STATUS } from '../routeMeta'; // Para usar los estados de ruta
-import ROUTES_NAME from '../routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta'; // Para usar los estados de ruta
+import ROUTES_NAME from '@/router/routes/routesName';
 
 const BackOrders = lazy(() =>
   import('@/views/pages/OrderAndPurchase/BackOrders/BackOrders'),

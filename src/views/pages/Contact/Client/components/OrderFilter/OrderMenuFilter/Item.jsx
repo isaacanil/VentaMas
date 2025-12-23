@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment, useState } from 'react';
 import styled from 'styled-components';
 
-import { useSearchFilterOrderMenuOption } from '../../../../../../../hooks/useSearchFilter';
+import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
 
 import { Input } from './Input';
 import { modifyOrderMenuData } from './modifyOrderMenuData';

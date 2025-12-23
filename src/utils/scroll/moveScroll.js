@@ -1,4 +1,4 @@
-import { useElementSize } from '../../hooks/useElementSize';
+import { useElementSize } from '@/hooks/useElementSize';
 
 export const useMoveScroll = (ref) => {
   const { width } = useElementSize(ref);

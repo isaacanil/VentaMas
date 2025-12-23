@@ -3,19 +3,19 @@ import { message } from 'antd';
 import { useMemo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectExpense,
   resetExpense,
   setExpense,
-} from '../../../../../features/expense/expenseManagementSlice';
+} from '@/features/expense/expenseManagementSlice';
 import {
   closeExpenseFormModal,
   selectExpenseFormModal,
-} from '../../../../../features/expense/expenseUISlice';
-import { fbAddExpense } from '../../../../../firebase/expenses/Items/fbAddExpense';
-import { fbUpdateExpense } from '../../../../../firebase/expenses/Items/fbUpdateExpense';
-import { validateExpense } from '../../../../../validates/expenseValidate';
+} from '@/features/expense/expenseUISlice';
+import { fbAddExpense } from '@/firebase/expenses/Items/fbAddExpense';
+import { fbUpdateExpense } from '@/firebase/expenses/Items/fbUpdateExpense';
+import { validateExpense } from '@/validates/expenseValidate';
 
 import { useOpenCashRegisters } from './useOpenCashRegisters';
 

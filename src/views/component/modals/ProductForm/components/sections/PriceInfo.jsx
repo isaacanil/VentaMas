@@ -1,11 +1,11 @@
 import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useSelector } from 'react-redux';
 
-import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import {
   initTaxes,
   taxLabel,
-} from '../../../../../component/modals/UpdateProduct/InitializeData';
+} from '@/views/component/modals/UpdateProduct/InitializeData';
 
 
 export const PriceInfo = () => {

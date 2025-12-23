@@ -15,8 +15,8 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../../../../../../features/auth/userSlice';
-import { fbGetCreditLimit } from '../../../../../../../../../firebase/accountsReceivable/fbGetCreditLimit';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbGetCreditLimit } from '@/firebase/accountsReceivable/fbGetCreditLimit';
 
 import CreditLimitModal from './CreditLimitModal';
 

@@ -1,4 +1,4 @@
-import { fbRecordAuthorizationApproval } from '../../firebase/authorization/approvalLogs';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
 
 const extractAmount = (value) => {
   if (value === null || value === undefined) return null;

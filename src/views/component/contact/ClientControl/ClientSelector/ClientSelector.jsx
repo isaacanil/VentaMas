@@ -1,21 +1,21 @@
 import { useMemo, Suspense, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectClient,
   selectClientSearchTerm,
   selectIsOpen,
   setClientMode,
   setIsOpen,
-} from '../../../../../features/clientCart/clientCartSlice';
-import { CLIENT_MODE_BAR } from '../../../../../features/clientCart/clientMode';
-import { toggleClientModal } from '../../../../../features/modals/modalSlice';
-import { fbDeleteClient } from '../../../../../firebase/client/fbDeleteClient';
-import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
-import { filtrarDatos } from '../../../../../hooks/useSearchFilter';
-import { lazyWithRetry } from '../../../../../utils/lazyWithRetry';
+} from '@/features/clientCart/clientCartSlice';
+import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
+import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import { filtrarDatos } from '@/hooks/useSearchFilter';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
 const ClientSelectionModal = lazyWithRetry(
   () =>

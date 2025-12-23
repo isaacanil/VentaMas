@@ -1,6 +1,6 @@
 import { doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbDeleteOrder = async (user, orderId) => {
   if (!user || !user.businessID) return;

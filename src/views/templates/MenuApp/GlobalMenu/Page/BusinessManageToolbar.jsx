@@ -3,7 +3,7 @@ import React from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import ROUTES_PATH from '@/router/routes/routesName';
 
 const BusinessManagerToolbar = ({ side = 'left' }) => {

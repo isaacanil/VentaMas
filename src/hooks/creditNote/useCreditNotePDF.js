@@ -2,8 +2,8 @@ import { message } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectBusinessData } from '../../features/auth/businessSlice';
-import { printPdfBase64 } from '../../utils/printPdf';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { printPdfBase64 } from '@/utils/printPdf';
 
 export const useCreditNotePDF = () => {
   const business = useSelector(selectBusinessData);

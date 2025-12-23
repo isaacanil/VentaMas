@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { db } from '../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useOpenCashRegisters = (businessID, isOpen) => {
   const [options, setOptions] = useState([]);

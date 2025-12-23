@@ -9,7 +9,7 @@ import {
   SectionDescription,
   SectionHeader,
   SectionTitle,
-} from '../SectionLayout';
+} from '@/views/pages/DevTools/ProductStudio/components/SectionLayout';
 
 const { Text } = Typography;
 

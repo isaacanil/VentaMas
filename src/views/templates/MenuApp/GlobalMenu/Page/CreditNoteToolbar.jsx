@@ -12,13 +12,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { openCreditNoteModal } from '../../../../../features/creditNote/creditNoteModalSlice';
-import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { useFbGetTaxReceipt } from '../../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import { createProfessionalCreditNoteReportCallback } from '../../../../../hooks/exportToExcel/exportConfig';
-import { formatCreditNote } from '../../../../../hooks/exportToExcel/formatCreditNote';
-import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
-import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu';
+import { openCreditNoteModal } from '@/features/creditNote/creditNoteModalSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
+import { createProfessionalCreditNoteReportCallback } from '@/hooks/exportToExcel/exportConfig';
+import { formatCreditNote } from '@/hooks/exportToExcel/formatCreditNote';
+import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+import { DropdownMenu } from '@/views/templates/system/DropdownMenu/DropdowMenu';
 
 export const CreditNoteToolbar = ({ side = 'left', data }) => {
   const matchWithCreditNote = useMatch('/credit-note');

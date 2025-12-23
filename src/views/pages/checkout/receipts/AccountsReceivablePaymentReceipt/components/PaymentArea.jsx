@@ -5,7 +5,7 @@ import { formatPrice } from '@/utils/format';
 
 import { Col } from '../../../components/Table/Col';
 import { Row } from '../../../components/Table/Row';
-import { Paragraph, Spacing, Subtitle } from '../../../Style';
+import { Paragraph, Spacing, Subtitle } from '@/views/pages/checkout/Style';
 
 
 function calculateTotal(paymentMethods) {

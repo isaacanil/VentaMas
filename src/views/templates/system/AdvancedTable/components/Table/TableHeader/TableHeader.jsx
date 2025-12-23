@@ -2,8 +2,8 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { Row } from '../../../AdvancedTable';
+import { icons } from '@/constants/icons/icons';
+import { Row } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 export const TableHeader = ({
   handleSort,

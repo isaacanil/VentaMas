@@ -1,5 +1,4 @@
 import { Button, Select, Space, Skeleton } from 'antd';
-import { DateTime } from 'luxon';
 import {
   collection,
   addDoc,
@@ -13,17 +12,18 @@ import {
   getDoc,
   updateDoc,
 } from 'firebase/firestore';
+import { DateTime } from 'luxon';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { DatePicker as RangeDatePicker } from '../../../components/common/DatePicker/DatePicker';
-import { selectUser } from '../../../features/auth/userSlice';
-import { db } from '../../../firebase/firebaseconfig';
-import DateUtils from '../../../utils/date/dateUtils';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../templates/system/AdvancedTable/AdvancedTable';
+import { DatePicker as RangeDatePicker } from '@/components/common/DatePicker/DatePicker';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import DateUtils from '@/utils/date/dateUtils';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 export default function InventorySessionsList() {
   const user = useSelector(selectUser);
@@ -37,6 +37,124 @@ export default function InventorySessionsList() {
   const [sessionEditors, setSessionEditors] = useState({}); // { sessionId: Array<{uid,name}> }
   const [resolvingUIDs, setResolvingUIDs] = useState({}); // { [uid]: true }
   const [loadingEditorsBySession, setLoadingEditorsBySession] = useState({}); // { [sessionId]: true }
+
+  const formatUserDisplay = useCallback((raw) => {
+    if (!raw) return '';
+    const val = String(raw).trim();
+    if (val.includes('@') || /\s/.test(val)) return val;
+    if (val.length > 18) {
+      return `${val.slice(0, 6)}…${val.slice(-4)}`;
+    }
+    return val;
+  }, []);
+
+  const fetchUserDisplayName = useCallback(
+    async (uid, businessID) => {
+      const tryPaths = [
+        ['businesses', businessID, 'users', uid],
+        ['businesses', businessID, 'staff', uid],
+        ['users', uid],
+        ['profiles', uid],
+      ];
+      for (const parts of tryPaths) {
+        try {
+          const ref = doc(db, ...parts);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const data = snap.data() || {};
+            const nested = data.user || {};
+            const realName = (nested.realName || data.realName || '').trim();
+            const resolved =
+              realName ||
+              nested.name ||
+              nested.displayName ||
+              data.displayName ||
+              data.name ||
+              uid;
+            return formatUserDisplay(resolved);
+          }
+        } catch {
+          /* ignore lookup errors */
+        }
+      }
+      return formatUserDisplay(uid);
+    },
+    [formatUserDisplay],
+  );
+
+  const pickEmbeddedUserName = useCallback((u, fallbackUid) => {
+    if (!u) return '';
+    const candidates = [u.realName, u.name, u.displayName, u.fullName, u.email];
+    for (const c of candidates) {
+      if (typeof c === 'string' && c.trim()) return c.trim();
+    }
+    return fallbackUid || '';
+  }, []);
+
+  const resolveMissingCreatorNames = useCallback(
+    async (list) => {
+      if (!user?.businessID) return;
+      const updates = [];
+      for (const s of list) {
+        const uid = s.createdBy;
+        if (!uid) continue;
+        const embeddedName = pickEmbeddedUserName(s.user, uid);
+        if (embeddedName && embeddedName !== s.createdByName) {
+          try {
+            const sessionRef = doc(
+              db,
+              'businesses',
+              user.businessID,
+              'inventorySessions',
+              s.id,
+            );
+            await updateDoc(sessionRef, { createdByName: embeddedName });
+          } catch {
+            /* ignore */
+          }
+          updates.push({ ...s, createdByName: embeddedName });
+          continue;
+        }
+        let display = userNameCacheRef.current[uid];
+        if (!display) {
+          setResolvingUIDs((prev) => ({ ...prev, [uid]: true }));
+          try {
+            display = await fetchUserDisplayName(uid, user.businessID);
+          } finally {
+            setResolvingUIDs((prev) => {
+              const { [uid]: _, ...rest } = prev;
+              return rest;
+            });
+          }
+          setUserNameCache((prev) => ({ ...prev, [uid]: display }));
+        }
+        if (display && s.createdByName !== display) {
+          try {
+            const sessionRef = doc(
+              db,
+              'businesses',
+              user.businessID,
+              'inventorySessions',
+              s.id,
+            );
+            await updateDoc(sessionRef, { createdByName: display });
+          } catch {
+            /* ignore */
+          }
+          updates.push({ ...s, createdByName: display });
+        }
+      }
+      if (updates.length) {
+        setSessions((prev) =>
+          prev.map((p) => {
+            const u = updates.find((x) => x.id === p.id);
+            return u || p;
+          }),
+        );
+      }
+    },
+    [fetchUserDisplayName, pickEmbeddedUserName, user?.businessID],
+  );
 
   useEffect(() => {
     userNameCacheRef.current = userNameCache;
@@ -126,127 +244,7 @@ export default function InventorySessionsList() {
     });
   }, [sessions, user?.businessID, sessionEditors, userNameCache, formatUserDisplay]);
 
-  // Eliminado listener de usuarios activos a pedido del usuario
 
-  const formatUserDisplay = useCallback((raw) => {
-    if (!raw) return '';
-    const val = String(raw).trim();
-    if (val.includes('@') || /\s/.test(val)) return val;
-    if (val.length > 18) {
-      return `${val.slice(0, 6)}…${val.slice(-4)}`;
-    }
-    return val;
-  }, []);
-
-  const fetchUserDisplayName = useCallback(
-    async (uid, businessID) => {
-      const tryPaths = [
-        ['businesses', businessID, 'users', uid],
-        ['businesses', businessID, 'staff', uid],
-        ['users', uid],
-        ['profiles', uid],
-      ];
-      for (const parts of tryPaths) {
-        try {
-          const ref = doc(db, ...parts);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            const data = snap.data() || {};
-            const nested = data.user || {};
-            const realName = (nested.realName || data.realName || '').trim();
-            const resolved =
-              realName ||
-              nested.name ||
-              nested.displayName ||
-              data.displayName ||
-              data.name ||
-              uid;
-            return formatUserDisplay(resolved);
-          }
-        } catch {
-          /* ignore lookup errors */
-        }
-      }
-      return formatUserDisplay(uid);
-    },
-    [formatUserDisplay],
-  );
-
-  // Helper para elegir nombre desde un objeto user embebido
-  const pickEmbeddedUserName = useCallback((u, fallbackUid) => {
-    if (!u) return '';
-    const candidates = [u.realName, u.name, u.displayName, u.fullName, u.email];
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim()) return c.trim();
-    }
-    return fallbackUid || '';
-  }, []);
-
-  const resolveMissingCreatorNames = useCallback(async (list) => {
-    if (!user?.businessID) return;
-    const updates = [];
-    for (const s of list) {
-      const uid = s.createdBy;
-      if (!uid) continue;
-      // 1) Intentar primero con user embebido en el documento de la sesión
-      const embeddedName = pickEmbeddedUserName(s.user, uid);
-      if (embeddedName && embeddedName !== s.createdByName) {
-        try {
-          const sessionRef = doc(
-            db,
-            'businesses',
-            user.businessID,
-            'inventorySessions',
-            s.id,
-          );
-          await updateDoc(sessionRef, { createdByName: embeddedName });
-        } catch {
-          /* ignore */
-        }
-        updates.push({ ...s, createdByName: embeddedName });
-        // Ya tenemos el mejor nombre posible; evitamos fetch adicional
-        continue;
-      }
-      let display = userNameCacheRef.current[uid];
-      if (!display) {
-        // marcar loading por-UID
-        setResolvingUIDs((prev) => ({ ...prev, [uid]: true }));
-        try {
-          display = await fetchUserDisplayName(uid, user.businessID);
-        } finally {
-          setResolvingUIDs((prev) => {
-            const { [uid]: _, ...rest } = prev;
-            return rest;
-          });
-        }
-        setUserNameCache((prev) => ({ ...prev, [uid]: display }));
-      }
-      // Si encontramos un display distinto al almacenado (o no hay), lo actualizamos.
-      if (display && s.createdByName !== display) {
-        try {
-          const sessionRef = doc(
-            db,
-            'businesses',
-            user.businessID,
-            'inventorySessions',
-            s.id,
-          );
-          await updateDoc(sessionRef, { createdByName: display });
-        } catch {
-          /* ignore */
-        }
-        updates.push({ ...s, createdByName: display });
-      }
-    }
-    if (updates.length) {
-      setSessions((prev) =>
-        prev.map((p) => {
-          const u = updates.find((x) => x.id === p.id);
-          return u || p;
-        }),
-      );
-    }
-  }, [fetchUserDisplayName, pickEmbeddedUserName, user?.businessID]);
 
   const _fetchUserDisplayNameLegacy = async (uid, businessID) => {
     // Única ruta confirmada: users/{uid}. Se dejan otras rutas como fallback por si existen en algunos tenants.
@@ -448,10 +446,10 @@ export default function InventorySessionsList() {
     const embedded = pickEmbeddedUserName(session.user, session.createdBy);
     const createdByDisplay = formatUserDisplay(
       embedded ||
-        session.createdByName ||
-        userNameCache[session.createdBy] ||
-        session.createdBy ||
-        '',
+      session.createdByName ||
+      userNameCache[session.createdBy] ||
+      session.createdBy ||
+      '',
     );
     const createdByLoading = !!resolvingUIDs[session.createdBy];
     const editorsLoading = !!loadingEditorsBySession[session.id];

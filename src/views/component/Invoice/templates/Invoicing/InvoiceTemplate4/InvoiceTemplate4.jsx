@@ -5,12 +5,12 @@ import styled from 'styled-components';
 
 import { separator } from '@/utils/number/number';
 
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
-import { SelectSettingCart } from '../../../../../../features/cart/cartSlice';
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../../features/updateProduct/updateProductSlice';
-import DateUtils from '../../../../../../utils/date/dateUtils';
-import { formatPhoneNumber } from '../../../../../../utils/format/formatPhoneNumber';
-import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 import {
   getTotalPrice,
   getTax,
@@ -20,8 +20,8 @@ import {
   getTotalDiscount,
   getProductIndividualDiscount,
   getProductsIndividualDiscounts,
-} from '../../../../../../utils/pricing';
-import { convertTimeToSpanish } from '../../../../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
+} from '@/utils/pricing';
+import { convertTimeToSpanish } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 
 // Máximo de caracteres por línea

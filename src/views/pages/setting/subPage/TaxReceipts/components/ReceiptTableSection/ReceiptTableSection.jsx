@@ -7,9 +7,9 @@ import { Button, Badge } from 'antd';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import DisabledReceiptsModal from '../DisabledReceiptsModal/DisabledReceiptsModal';
-import { TableTaxReceipt } from '../TableTaxReceipt/TableTaxReceipt';
-import TaxReceiptAuthorizationModal from '../TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
+import DisabledReceiptsModal from '@/views/pages/setting/subPage/TaxReceipts/components/DisabledReceiptsModal/DisabledReceiptsModal';
+import { TableTaxReceipt } from '@/views/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/TableTaxReceipt';
+import TaxReceiptAuthorizationModal from '@/views/pages/setting/subPage/TaxReceipts/components/TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
 
 export const ReceiptTableSection = ({
   enabled,

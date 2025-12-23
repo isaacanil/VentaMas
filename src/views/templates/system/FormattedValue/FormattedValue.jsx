@@ -76,14 +76,14 @@ ${({ type }) =>
         font-size: 14px;
         font-weight: bold;
         text-transform: capitalize;
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Poppins', sans-serif;
         `;
       case 'paragraph-table':
         return `
         font-size: 14px;
         font-weight: 400;
         text-transform: capitalize;
-        font-family: 'Azeret Mono', monospace;
+        font-family: 'Poppins', monospace;
         `;
       default:
         return '';

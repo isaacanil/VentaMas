@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
-import { applyUpdates } from '../../utils/reduxStateUtils';
+import { applyUpdates } from '@/utils/reduxStateUtils';
 
 const defaultInsuranceAR = {
   id: '',

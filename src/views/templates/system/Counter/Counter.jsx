@@ -6,8 +6,8 @@ import {
   addAmountToProduct,
   diminishAmountToProduct,
   onChangeValueAmountToProduct,
-} from '../../../../features/cart/cartSlice';
-import { Alert } from '../Product/Cart/Alert';
+} from '@/features/cart/cartSlice';
+import { Alert } from '@/views/templates/system/Product/Cart/Alert';
 
 export const Counter = ({ amountToBuy, stock, id, item }) => {
   const dispatch = useDispatch();

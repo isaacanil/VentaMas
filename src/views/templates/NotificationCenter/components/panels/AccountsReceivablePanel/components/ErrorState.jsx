@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { PanelCard, MetaValue } from '../../shared/PanelPrimitives';
+import { PanelCard, MetaValue } from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import PanelHeader from './PanelHeader';
 

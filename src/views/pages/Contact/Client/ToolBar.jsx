@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { OPERATION_MODES } from '../../../../constants/modes';
-import { toggleClientModal } from '../../../../features/modals/modalSlice';
-import { Button } from '../../../templates/system/Button/Button';
-import { InputV4 } from '../../../templates/system/Inputs/GeneralInput/InputV4';
+import { OPERATION_MODES } from '@/constants/modes';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { Button } from '@/views/templates/system/Button/Button';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 export const ToolBar = ({ searchTerm, setSearchTerm }) => {
   const createMode = OPERATION_MODES.CREATE.id;

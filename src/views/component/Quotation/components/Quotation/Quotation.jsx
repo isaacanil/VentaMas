@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { QuotationTemplate2 } from '../../templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { QuotationTemplate2 } from '@/views/component/Quotation/templates/Invoicing/QuotationTemplate2/QuotationTemplate2';
 
 const InvoiceWrapper = styled.div`
   ${({ $template }) =>

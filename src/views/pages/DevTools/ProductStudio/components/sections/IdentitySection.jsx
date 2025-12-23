@@ -17,7 +17,7 @@ import {
 } from 'antd';
 import styled from 'styled-components';
 
-import { imgFailed } from '../../../../../component/modals/ProductForm/ImageManager/ImageManager';
+import { imgFailed } from '@/views/component/modals/ProductForm/ImageManager/ImageManager';
 import {
   DividerLabel,
   FieldGrid,
@@ -26,7 +26,7 @@ import {
   SectionHeader,
   SectionTitle,
   SwitchField,
-} from '../SectionLayout';
+} from '@/views/pages/DevTools/ProductStudio/components/SectionLayout';
 
 const { Text } = Typography;
 

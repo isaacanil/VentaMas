@@ -1,8 +1,8 @@
 import { useAbility } from '@casl/react';
 import { useSelector } from 'react-redux';
 
-import { AbilityContext } from '../../Context/AbilityContext/context';
-import { selectAbilitiesLoading } from '../../features/abilities/abilitiesSlice';
+import { AbilityContext } from '@/Context/AbilityContext/context';
+import { selectAbilitiesLoading } from '@/features/abilities/abilitiesSlice';
 
 /**
  * Hook mejorado para usar permisos de usuario

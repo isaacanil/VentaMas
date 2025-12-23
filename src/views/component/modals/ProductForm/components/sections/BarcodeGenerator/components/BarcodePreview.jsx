@@ -3,7 +3,7 @@ import React from 'react';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
-import { isGS1RDCode } from '../../../../../../../../utils/barcode/barcode';
+import { isGS1RDCode } from '@/utils/barcode/barcode';
 
 const { Text } = Typography;
 

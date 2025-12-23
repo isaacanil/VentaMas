@@ -6,19 +6,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   openShelfForm,
   setShelfLoading,
-} from '../../../../../../features/warehouse/shelfModalSlice';
-import { navigateWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
+} from '@/features/warehouse/shelfModalSlice';
+import { navigateWarehouse } from '@/features/warehouse/warehouseSlice';
 import {
   deleteShelf,
   useListenShelves,
-} from '../../../../../../firebase/warehouse/shelfService';
-import { useListenWarehouse } from '../../../../../../firebase/warehouse/warehouseService';
-import { WarehouseForm } from '../forms/WarehouseForm/WarehouseForm';
+} from '@/firebase/warehouse/shelfService';
+import { useListenWarehouse } from '@/firebase/warehouse/warehouseService';
+import { WarehouseForm } from '@/views/pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm';
 
 import { ProductsSection } from './ProductsSection';
 import SectionContainer from './SectionContainer';

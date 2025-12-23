@@ -5,7 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getLazyGenerativeModel } from '../../../../firebase/firebaseconfig';
+import { getLazyGenerativeModel } from '@/firebase/firebaseconfig';
 
 import { ACTIONS, getSystemPrompt } from './aiActions';
 

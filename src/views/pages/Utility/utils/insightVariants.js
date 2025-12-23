@@ -1,4 +1,4 @@
-import { designSystemV2 } from '../../../../theme/designSystemV2';
+import { designSystemV2 } from '@/theme/designSystemV2';
 
 const { colors } = designSystemV2;
 

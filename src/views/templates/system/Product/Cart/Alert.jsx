@@ -9,8 +9,8 @@ import {
   totalPurchase,
   setChange,
   totalShoppingItems,
-} from '../../../../../features/cart/cartSlice';
-import { Button, ButtonGroup } from '../../Button/Button';
+} from '@/features/cart/cartSlice';
+import { Button, ButtonGroup } from '@/views/templates/system/Button/Button';
 
 export const Alert = ({ isOpen, handleIsOpen, id }) => {
   const dispatch = useDispatch();

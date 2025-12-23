@@ -19,9 +19,9 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import { db } from '@/firebase/firebaseconfig';
 
 const normalizeToDate = (value) => {
   if (!value) return null;

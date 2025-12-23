@@ -1,7 +1,7 @@
 import { Form, Input, Modal, Typography, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fbUpdateUserPassword } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
+import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 
 const PASSWORD_RULES = [
   { required: true, message: 'Por favor ingresa la nueva contraseña.' },

@@ -8,10 +8,10 @@ import React, {
 } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { Transition } from '../../templates/system/Transition';
-import Typography from '../../templates/system/Typografy/Typografy';
+import { icons } from '@/constants/icons/icons';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { Transition } from '@/views/templates/system/Transition';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { Card } from './Components/Card';
 import { getSettingData } from './SettingData';

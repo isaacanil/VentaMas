@@ -5,10 +5,10 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-import { ActionIcon } from '../../../../../../components/common/ActionIcon';
+import { ActionIcon } from '@/components/common/ActionIcon';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import { ROUTES } from '@/router/routes/routesName';
-import TextCell from '../../../../../templates/system/AdvancedTable/components/Cells/Text/TextCerll';
+import TextCell from '@/views/templates/system/AdvancedTable/components/Cells/Text/TextCerll';
 
 export function ProviderCell({ value }) {
   if (!value) return null;

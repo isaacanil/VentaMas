@@ -6,7 +6,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Elimina hasta 500 documentos de la subcolección 'products' de un negocio específico.

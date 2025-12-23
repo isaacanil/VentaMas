@@ -2,7 +2,7 @@ import {
   buildFunctionsAuthHeaders,
   getFunctionsBaseUrl,
   parseFunctionsResponse,
-} from '../functionsApiClient';
+} from '@/services/functionsApiClient';
 
 export interface AuditRequestPayload {
   businessId: string;

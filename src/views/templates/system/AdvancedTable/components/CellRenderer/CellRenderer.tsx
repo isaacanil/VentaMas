@@ -3,15 +3,15 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import DateUtils from '../../../../../../utils/date/dateUtils';
-import { Badge } from '../../../../../component/Badge/Badge';
-import { BadgeDate } from '../../../../../component/Badge/BadgeDate';
-import { EnhancedDateDisplay } from '../../../../../component/Badge/BadgeDateStatus';
-import { StatusBadge } from '../../../../../component/Badge/StatusBadge';
-import { NoteButton } from '../../../../../component/NoteViewButton/NoteViewButton';
-import { ShowFiles } from '../../../../../component/ShowFileButton/ShowFileButton';
+import DateUtils from '@/utils/date/dateUtils';
+import { Badge } from '@/views/component/Badge/Badge';
+import { BadgeDate } from '@/views/component/Badge/BadgeDate';
+import { EnhancedDateDisplay } from '@/views/component/Badge/BadgeDateStatus';
+import { StatusBadge } from '@/views/component/Badge/StatusBadge';
+import { NoteButton } from '@/views/component/NoteViewButton/NoteViewButton';
+import { ShowFiles } from '@/views/component/ShowFileButton/ShowFileButton';
 
-import type { CellType } from '../../types/ColumnTypes';
+import type { CellType } from '@/views/templates/system/AdvancedTable/types/ColumnTypes';
 import type { ImgHTMLAttributes, ReactNode } from 'react';
 
 

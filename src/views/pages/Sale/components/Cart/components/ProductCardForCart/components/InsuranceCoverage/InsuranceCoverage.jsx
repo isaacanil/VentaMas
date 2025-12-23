@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { updateProductInsurance } from '../../../../../../../../../features/cart/cartSlice';
+import { updateProductInsurance } from '@/features/cart/cartSlice';
 
 const INSURANCE_MODES = Object.freeze({
   PERCENTAGE: 'porcentaje',

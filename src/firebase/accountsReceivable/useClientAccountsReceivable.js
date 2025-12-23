@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Escucha en tiempo real las cuentas por cobrar de un cliente con filtros opcionales.

@@ -1,8 +1,8 @@
 import { Select, Button, Space } from 'antd';
 import React from 'react';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+import { icons } from '@/constants/icons/icons';
+import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '@/views/pages/InvoicesPage/components/FilterBar/constants';
 
 import { FilterField } from './FilterField';
 

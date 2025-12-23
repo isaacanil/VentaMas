@@ -2,13 +2,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons';
-import { useDialog } from '../../../Context/Dialog';
-import { logout, selectUser } from '../../../features/auth/userSlice';
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
+import { icons } from '@/constants/icons/icons';
+import { useDialog } from '@/Context/Dialog';
+import { logout, selectUser } from '@/features/auth/userSlice';
+import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
 import ROUTES_PATH from '@/router/routes/routesName';
-import PersonalizedGreeting from '../../pages/Home/components/PersonalizedGreeting/PersonalizedGreeting';
-import { NotificationButton } from '../MenuApp/Components/NotificationButton/NotificationButton';
+import PersonalizedGreeting from '@/views/pages/Home/components/PersonalizedGreeting/PersonalizedGreeting';
+import { NotificationButton } from '@/views/templates/MenuApp/Components/NotificationButton/NotificationButton';
 
 export const MenuWebsite = () => {
   const navigate = useNavigate();

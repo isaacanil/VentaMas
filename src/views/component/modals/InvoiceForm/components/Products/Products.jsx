@@ -5,14 +5,14 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   addProductInvoiceForm,
   changeAmountToBuyProduct,
   deleteProductInvoiceForm,
-} from '../../../../../../features/invoice/invoiceFormSlice';
-import { useGetProducts } from '../../../../../../firebase/products/fbGetProducts';
-import { getTotalPrice } from '../../../../../../utils/pricing';
+} from '@/features/invoice/invoiceFormSlice';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { getTotalPrice } from '@/utils/pricing';
 
 import { getCategoryName, getCategoryStats } from './productDataUtils';
 import { ProductFilterToolbar } from './ProductFilterToolbar';

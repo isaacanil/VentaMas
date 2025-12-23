@@ -2,10 +2,10 @@ import { DateTime } from 'luxon';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { DatePicker } from '../../../../components/common/DatePicker/DatePicker';
-import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { getDateRange } from '../../../../utils/date/getDateRange';
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { designSystemV2 } from '@/theme/designSystemV2';
+import { getDateRange } from '@/utils/date/getDateRange';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 
 const { colors, spacing, radii, shadows, typography } = designSystemV2;
 

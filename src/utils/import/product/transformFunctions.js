@@ -1,4 +1,4 @@
-import { warrantyOptions } from '../../../views/component/modals/ProductForm/components/sections/warranty.helpers';
+import { warrantyOptions } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 const ITEM_TYPE_MAP = {
   product: 'product',

@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { FormattedValue } from '../../../../../../../templates/system/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const CashReconciliationState = () => {
   return (

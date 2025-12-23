@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbUpdateProductStructure = async (user, id) => {
   const docRef = doc(db, 'businesses', user?.businessID, `products`, id);

@@ -2,9 +2,9 @@ import { InfoCircleOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
 import React, { useMemo } from 'react';
 
-import { ActionContainer, ActionButton, ExpirationDateText } from '../styles';
+import { ActionContainer, ActionButton, ExpirationDateText } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/styles';
 
-import type { GetActionMenu, InventoryRow } from '../types';
+import type { GetActionMenu, InventoryRow } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 interface UseInventoryColumnsParams {
   onViewBatch: (batchId: string) => void | Promise<void>;

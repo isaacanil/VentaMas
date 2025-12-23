@@ -4,9 +4,9 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { OPERATION_MODES } from '../../../../constants/modes';
-import { toggleProviderModal } from '../../../../features/modals/modalSlice';
-import { Button } from '../../../templates/system/Button/Button';
+import { OPERATION_MODES } from '@/constants/modes';
+import { toggleProviderModal } from '@/features/modals/modalSlice';
+import { Button } from '@/views/templates/system/Button/Button';
 
 import { OrderFilter } from './components/OrderFilter/OrderFilter';
 

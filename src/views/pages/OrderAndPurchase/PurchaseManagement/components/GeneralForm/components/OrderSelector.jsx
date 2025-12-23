@@ -7,14 +7,14 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   getOrderData,
   selectPurchase,
-} from '../../../../../../../features/purchase/addPurchaseSlice';
-import DateUtils from '../../../../../../../utils/date/dateUtils';
-import { normalizeText } from '../../../../../../../utils/text';
-import { calculateOrderTotals } from '../../../../OrderManagement/utils/orderCalculationsUtil';
+} from '@/features/purchase/addPurchaseSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { normalizeText } from '@/utils/text';
+import { calculateOrderTotals } from '@/views/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
 
 
 const Wrapper = styled.div`

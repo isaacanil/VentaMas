@@ -8,14 +8,14 @@ import {
 import { Tooltip, Button } from 'antd';
 import React from 'react';
 
-import { ContextContainer, ContextPanel, StyledTag } from '../styles';
+import { ContextContainer, ContextPanel, StyledTag } from '@/views/component/modals/ARInfoModal/styles';
 import {
     formatDate,
     translateFrequency,
     getNextPaymentInfo,
     openWhatsApp,
     copyToClipboard,
-} from '../utils';
+} from '@/views/component/modals/ARInfoModal/utils';
 
 const ContextPanels = ({ data }) => {
     const nextPayment = getNextPaymentInfo(data);

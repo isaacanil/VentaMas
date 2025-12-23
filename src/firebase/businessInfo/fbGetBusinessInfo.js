@@ -1,6 +1,6 @@
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Subscribes to real-time updates of a business document in Firestore.

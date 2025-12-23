@@ -6,15 +6,15 @@ import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { addInvoice } from '../../../../../../features/invoice/invoiceFormSlice';
-import { openInvoicePreviewModal } from '../../../../../../features/invoice/invoicePreviewSlice';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
-import { isInvoicePaidInFull } from '../../../../../../utils/invoice';
-import { prepareInvoiceForEdit } from '../../../../../../utils/invoice';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { Receipt } from '../../../../checkout/Receipt';
-import useInvoiceEditAuthorization from '../../../hooks/useInvoiceEditAuthorization.jsx';
+import { icons } from '@/constants/icons/icons';
+import { addInvoice } from '@/features/invoice/invoiceFormSlice';
+import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import { isInvoicePaidInFull } from '@/utils/invoice';
+import { prepareInvoiceForEdit } from '@/utils/invoice';
+import { Button } from '@/views/templates/system/Button/Button';
+import { Receipt } from '@/views/pages/checkout/Receipt';
+import useInvoiceEditAuthorization from '@/views/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
 
 export const Footer = ({ data }) => {
   const componentToPrintRef = useRef(null);

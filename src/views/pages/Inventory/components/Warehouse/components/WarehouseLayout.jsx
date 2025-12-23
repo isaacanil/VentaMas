@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   back,
   selectWarehouse,
-} from '../../../../../../features/warehouse/warehouseSlice';
-import { MenuApp } from '../../../../../templates/MenuApp/MenuApp';
+} from '@/features/warehouse/warehouseSlice';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const widthSize = 'calc(100vw - 16px)';
 const Container = styled.div`

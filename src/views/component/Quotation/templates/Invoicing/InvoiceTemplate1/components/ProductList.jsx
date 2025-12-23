@@ -7,8 +7,8 @@ import {
   getTax,
   getTotalPrice,
   resetAmountToBuyForProduct,
-} from '../../../../../../../utils/pricing';
-import { convertTimeToSpanish } from '../../../../../modals/ProductForm/components/sections/warranty.helpers';
+} from '@/utils/pricing';
+import { convertTimeToSpanish } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

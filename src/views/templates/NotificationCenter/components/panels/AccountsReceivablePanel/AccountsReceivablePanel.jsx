@@ -5,9 +5,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useMemo } from 'react';
 
-import useDueDatesReceivable from '../../../../../../hooks/accountsReceivable/useDueDatesReceivable';
-import { formatNumber } from '../../../../../../utils/formatNumber';
-import { PanelCard } from '../shared/PanelPrimitives';
+import useDueDatesReceivable from '@/hooks/accountsReceivable/useDueDatesReceivable';
+import { formatNumber } from '@/utils/formatNumber';
+import { PanelCard } from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import AccountsList from './components/AccountsList';
 import EmptyState from './components/EmptyState';

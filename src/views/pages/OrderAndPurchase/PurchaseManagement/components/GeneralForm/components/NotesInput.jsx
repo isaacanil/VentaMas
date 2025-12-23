@@ -1,6 +1,7 @@
 import { Form, Input } from 'antd';
-import debounce from 'lodash/debounce';
 import { useState, useEffect, useMemo } from 'react';
+
+import { debounce } from '@/utils/lodash-minimal';
 
 const { TextArea } = Input;
 

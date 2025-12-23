@@ -1,22 +1,24 @@
 import { motion } from 'framer-motion';
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
-import { selectBusinessData } from '../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import { openNotificationCenter } from '../../../../features/notification/notificationCenterSlice';
-import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
+
+import { icons } from '@/constants/icons/icons';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { closeMenu } from '@/features/nav/navSlice';
+import { openNotificationCenter } from '@/features/notification/notificationCenterSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_PATH from '@/router/routes/routesName';
-import { useHasDeveloperAccess } from '../../../../utils/menuAccess';
-import { ButtonIconMenu } from '../../system/Button/ButtonIconMenu';
-import { OpenMenuButton } from '../../system/Button/OpenMenuButton';
-import { WebName } from '../../system/WebName/WebName';
-import { useMenuData } from '../MenuData/MenuData';
-import { UserSection } from '../UserSection';
+import { useHasDeveloperAccess } from '@/utils/menuAccess';
+import { useMenuData } from '@/views/templates/MenuApp/MenuData/MenuData';
+import { UserSection } from '@/views/templates/MenuApp/UserSection';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
+import { OpenMenuButton } from '@/views/templates/system/Button/OpenMenuButton';
+import { WebName } from '@/views/templates/system/WebName/WebName';
 
 import { MenuLink } from './MenuLink';
 
@@ -109,6 +111,14 @@ const useMenuFiltering = () => {
 export const SideBar = ({ isOpen, handleOpenMenu }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(closeMenu());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // Cierra el menú cuando cambia la ruta
   const user = useSelector(selectUser);
   const groupedLinks = useMenuFiltering();
   const { abilities } = useUserAccess();

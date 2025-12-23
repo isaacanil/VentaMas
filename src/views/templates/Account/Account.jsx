@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { logout } from '../../../features/auth/userSlice';
-import { auth } from '../../../firebase/firebaseconfig.jsx';
-import { Button } from '../system/Button/Button';
+import { logout } from '@/features/auth/userSlice';
+import { auth } from '@/firebase/firebaseconfig.jsx';
+import { Button } from '@/views/templates/system/Button/Button';
 
 import Style from './Account.module.scss';
 

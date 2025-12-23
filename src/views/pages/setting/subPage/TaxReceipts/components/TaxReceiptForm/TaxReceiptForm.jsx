@@ -10,9 +10,9 @@ import { Button, Form, Grid, Input, message, Modal, Switch } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { logSequenceWarning } from '../../../../../../../firebase/taxReceipt/logSequenceWarning';
-import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
+import { selectUser } from '@/features/auth/userSlice';
+import { logSequenceWarning } from '@/firebase/taxReceipt/logSequenceWarning';
+import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 
 import NcfSequenceSummary from './components/NcfSequenceSummary';
 import SequenceLedgerInsights from './components/SequenceLedgerInsights';

@@ -20,13 +20,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   fbGetUsersWithPinStatus,
   fbGenerateUserPin,
   fbDeactivateUserPin,
-} from '../../../../../firebase/authorization/pinAuth';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+} from '@/firebase/authorization/pinAuth';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { GeneratePinModal } from './components/GeneratePinModal';
 import { PinDetailsModal } from './components/PinDetailsModal';

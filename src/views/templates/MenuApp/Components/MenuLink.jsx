@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { NavLink, useLocation, useMatch } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
-import { toggleDeveloperModal } from '../../../../features/modals/modalSlice';
+import { toggleDeveloperModal } from '@/features/modals/modalSlice';
 
 import { SubMenu } from './SubMenu/SubMenu';
 

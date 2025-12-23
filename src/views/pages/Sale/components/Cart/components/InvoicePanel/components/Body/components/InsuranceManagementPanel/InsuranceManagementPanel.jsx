@@ -7,17 +7,17 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { SelectCartData } from '../../../../../../../../../../../features/cart/cartSlice';
-import { selectClient } from '../../../../../../../../../../../features/clientCart/clientCartSlice';
+import { SelectCartData } from '@/features/cart/cartSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
 import {
   selectInsuranceAR,
   setInsuranceAR,
-} from '../../../../../../../../../../../features/insurance/insuranceAccountsReceivableSlice';
-import { calculateAmountPerInstallment } from '../../../../../../../../../../../utils/accountsReceivable/accountsReceivable';
-import { getMaxInstallments } from '../../../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
-import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
-import { setNumPrecision } from '../../../../../../../../../../../utils/pricing';
-import usePaymentDates from '../ReceivableManagementPanel/usePaymentDates';
+} from '@/features/insurance/insuranceAccountsReceivableSlice';
+import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
+import { getMaxInstallments } from '@/utils/accountsReceivable/getMaxInstallments';
+import DateUtils from '@/utils/date/dateUtils';
+import { setNumPrecision } from '@/utils/pricing';
+import usePaymentDates from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/usePaymentDates';
 
 
 const { Option } = Select;

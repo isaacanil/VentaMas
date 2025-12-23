@@ -35,10 +35,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { db } from '../../../../firebase/firebaseconfig';
-import { functions } from '../../../../firebase/firebaseconfig';
-import { CashCountMetaData } from '../../CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { functions } from '@/firebase/firebaseconfig';
+import { CashCountMetaData } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
 
 
 const { Title, Text } = Typography;

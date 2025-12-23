@@ -10,11 +10,11 @@ import {
   selectImageViewerShow,
   selectImageViewerURL,
   toggleImageViewer,
-} from '../../../../features/imageViewer/imageViewerSlice';
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
-import { Button } from '../Button/Button';
-import { CenteredText } from '../CentredText';
-import Typography from '../Typografy/Typografy';
+} from '@/features/imageViewer/imageViewerSlice';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import { Button } from '@/views/templates/system/Button/Button';
+import { CenteredText } from '@/views/templates/system/CentredText';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 const ImageViewer = () => {
   const dispatch = useDispatch();

@@ -7,8 +7,8 @@ import {
 } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
 
-import { db, storage } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
+import { db, storage } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 
 const updateLocalAttachmentsWithRemoteURLs = (
   localAttachments,

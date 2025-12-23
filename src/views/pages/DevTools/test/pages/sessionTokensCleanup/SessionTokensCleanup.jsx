@@ -9,7 +9,7 @@ import {
 } from 'firebase/firestore';
 import { useState } from 'react';
 
-import { db } from '../../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const { Paragraph, Text } = Typography;
 

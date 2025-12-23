@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid';
 import {
   getDefaultTransactionCondition,
   getDefaultTransactionStatus,
-} from '../../constants/orderAndPurchaseState';
+} from '@/constants/orderAndPurchaseState';
 
 // Agregar funciones auxiliares para cálculos (idénticas a las de addPurchaseSlice)
 const calculateUnitCost = (product) => {

@@ -9,12 +9,12 @@ import React, { useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   removeNotification,
   selectCurrentNotification,
-} from '../../../../features/notification/notificationSlice';
-import { Button } from '../Button/Button';
+} from '@/features/notification/notificationSlice';
+import { Button } from '@/views/templates/system/Button/Button';
 
 const getTimerByType = (type) => {
   switch (type) {

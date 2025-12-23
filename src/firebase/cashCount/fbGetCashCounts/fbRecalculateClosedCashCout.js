@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Funciones auxiliares para cálculos
 const calculateTotalSales = (invoices) =>

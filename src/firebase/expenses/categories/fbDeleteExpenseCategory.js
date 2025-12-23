@@ -1,6 +1,6 @@
 import { Timestamp, doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Marca una categoría de gastos como eliminada (soft delete) en Firebase.

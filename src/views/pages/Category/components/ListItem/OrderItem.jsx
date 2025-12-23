@@ -3,12 +3,12 @@ import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbDeleteCategory } from '../../../../../firebase/categories/fbDeleteCategory';
-import { fbUpdateCategory } from '../../../../../firebase/categories/fbUpdateCategory';
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
-import { ButtonGroup } from '../../../../templates/system/Button/Button';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbDeleteCategory } from '@/firebase/categories/fbDeleteCategory';
+import { fbUpdateCategory } from '@/firebase/categories/fbUpdateCategory';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
 
 const antd = { Button: AntdButton, message };
 

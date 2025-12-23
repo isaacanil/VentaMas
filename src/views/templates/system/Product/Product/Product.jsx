@@ -3,8 +3,8 @@ import { Fragment, memo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { selectTaxReceiptEnabled } from '../../../../../features/taxReceipt/taxReceiptSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 
 import ProductImage from './components/ImagenBlock';
 import { ProductFooter } from './components/ProductFooter';

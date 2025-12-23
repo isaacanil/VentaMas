@@ -11,7 +11,7 @@ import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   selectCart,
   setPaymentMethod,
@@ -19,7 +19,7 @@ import {
   SelectCxcAutoRemovalNotification,
   clearCxcAutoRemovalNotification,
   applyPricingPreset,
-} from '../../../../../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 
 export const PaymentMethods = () => {
   const dispatch = useDispatch();

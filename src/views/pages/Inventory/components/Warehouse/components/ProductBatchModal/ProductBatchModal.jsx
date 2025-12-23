@@ -20,17 +20,17 @@ import styled from 'styled-components';
 import {
   addProduct,
   SelectCartData,
-} from '../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 import {
   DEFAULT_FILTER_CONTEXT,
   selectStockLocations,
-} from '../../../../../../../features/filterProduct/filterProductsSlice';
+} from '@/features/filterProduct/filterProductsSlice';
 import {
   selectProductStockSimple,
   closeProductStockSimple,
-} from '../../../../../../../features/productStock/productStockSimpleSlice';
-import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
-import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
+} from '@/features/productStock/productStockSimpleSlice';
+import { useListenProductsStock } from '@/firebase/warehouse/productStockService';
+import { useLocationNames } from '@/hooks/useLocationNames';
 
 const numberFormatter = new Intl.NumberFormat('es-DO');
 

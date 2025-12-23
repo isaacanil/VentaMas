@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../features/auth/userSlice';
-import { getLocationName } from '../firebase/warehouse/locationService';
+import { selectUser } from '@/features/auth/userSlice';
+import { getLocationName } from '@/firebase/warehouse/locationService';
 
 const CACHE_KEY = 'locationNamesCache';
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas

@@ -2,7 +2,7 @@ import { Modal, Form, Input, notification, Button } from 'antd';
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
-import { fbUpdateUserPassword } from '../../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
+import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 
 export const ChangePassword = ({
   user = null,

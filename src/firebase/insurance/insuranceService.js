@@ -11,8 +11,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 export const updateInsuranceConfig = async ({ ref, insuranceData }) =>
   await updateDoc(ref, insuranceData);

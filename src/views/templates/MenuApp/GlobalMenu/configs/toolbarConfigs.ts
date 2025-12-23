@@ -1,7 +1,7 @@
 import ROUTES_NAME from '@/router/routes/routesName';
-import { registerToolbar } from '../core/registerToolbar';
+import { registerToolbar } from '@/views/templates/MenuApp/GlobalMenu/core/registerToolbar';
 
-import type { ToolbarRegistryEntry } from '../types/types';
+import type { ToolbarRegistryEntry } from '@/views/templates/MenuApp/GlobalMenu/types';
 
 const {
   SALES_TERM,

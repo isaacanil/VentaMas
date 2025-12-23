@@ -6,9 +6,9 @@ import styled from 'styled-components';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 
-import { navigateWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
-import { useListenWarehouses } from '../../../../../../firebase/warehouse/warehouseService';
-import { filterData } from '../../../../../../hooks/search/useSearch';
+import { navigateWarehouse } from '@/features/warehouse/warehouseSlice';
+import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
+import { filterData } from '@/hooks/search/useSearch';
 
 import WarehouseCard from './WarehouseCard';
 

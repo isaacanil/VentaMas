@@ -1,7 +1,7 @@
 import { Typography } from 'antd';
 import React from 'react';
 
-import { Logo } from '../../../../../../assets/logo/Logo';
+import { Logo } from '@/assets/logo/Logo';
 
 const { Title, Text } = Typography;
 export const Header = ({

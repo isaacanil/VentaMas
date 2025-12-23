@@ -4,16 +4,16 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { monetarySymbols } from '../../../../../../constants/monetarySymbols';
+import { monetarySymbols } from '@/constants/monetarySymbols';
 import {
   SelectDelivery,
   SelectTotalTaxes,
   SelectChange,
   setPaymentAmount,
   SelectPaymentValue,
-} from '../../../../../../features/cart/cartSlice';
-import CustomInput from '../../../../../templates/system/Inputs/CustomInput';
-import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
+} from '@/features/cart/cartSlice';
+import CustomInput from '@/views/templates/system/Inputs/CustomInput';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 
 export const PaymentArea = () => {

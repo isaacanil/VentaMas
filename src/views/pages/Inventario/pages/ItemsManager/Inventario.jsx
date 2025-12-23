@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { useGetProducts } from '../../../../../firebase/products/fbGetProducts.js';
-import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { useGetProducts } from '@/firebase/products/fbGetProducts.js';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { ProductRecordList } from './components/ProductTable/ProductRecordList';
 import { ProductsTable } from './components/ProductTable/ProductsTable';

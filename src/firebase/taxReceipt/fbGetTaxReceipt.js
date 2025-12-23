@@ -2,13 +2,13 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectNcfType,
   selectTaxReceiptType,
-} from '../../features/taxReceipt/taxReceiptSlice';
-import { serializeFirestoreDocuments } from '../../utils/serialization/serializeFirestoreData';
-import { db } from '../firebaseconfig';
+} from '@/features/taxReceipt/taxReceiptSlice';
+import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
+import { db } from '@/firebase/firebaseconfig';
 
 // NOTE: This function uses React hooks; keep the `use*` prefix so tools like
 // React Compiler and hook linting can reliably treat it as a hook.

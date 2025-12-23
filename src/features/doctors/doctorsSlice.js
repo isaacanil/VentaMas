@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { fbAddDoctor } from '../../firebase/doctors/fbAddDoctor';
-import { fbCheckDoctorExists } from '../../firebase/doctors/fbCheckDoctorExists';
-import { fbDeleteDoctor } from '../../firebase/doctors/fbDeleteDoctor';
-import { fbUpdateDoctor } from '../../firebase/doctors/fbUpdateDoctor';
+import { fbAddDoctor } from '@/firebase/doctors/fbAddDoctor';
+import { fbCheckDoctorExists } from '@/firebase/doctors/fbCheckDoctorExists';
+import { fbDeleteDoctor } from '@/firebase/doctors/fbDeleteDoctor';
+import { fbUpdateDoctor } from '@/firebase/doctors/fbUpdateDoctor';
 
 // Async thunks
 export const addDoctor = createAsyncThunk(

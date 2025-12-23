@@ -13,11 +13,11 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   changeValueInvoiceForm,
   selectInvoice,
-} from '../../../../../../features/invoice/invoiceFormSlice';
+} from '@/features/invoice/invoiceFormSlice';
 
 
 const PAYMENT_METHOD_META = {

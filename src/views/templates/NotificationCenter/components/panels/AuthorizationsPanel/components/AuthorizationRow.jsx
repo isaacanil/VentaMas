@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-import { resolveModuleMeta } from '../../../../../../pages/Authorizations/components/AuthorizationRequests/utils/utils';
+import { resolveModuleMeta } from '@/views/pages/Authorizations/components/AuthorizationRequests/utils/utils';
 
 const STATUS_CONFIG = {
   pending: {

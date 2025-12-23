@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import {
   batchDOMOperations,
   performantThrottle,
-} from '../utils/performance/performanceUtils';
+} from '@/utils/performance/performanceUtils';
 
 /**
  * Custom hook for performant scroll operations that prevents forced reflows

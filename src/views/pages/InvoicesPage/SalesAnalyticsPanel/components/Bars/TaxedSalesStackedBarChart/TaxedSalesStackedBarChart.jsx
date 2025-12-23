@@ -9,7 +9,7 @@ import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
 

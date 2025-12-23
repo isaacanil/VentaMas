@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { OPERATION_MODES } from '../../constants/modes';
+import { OPERATION_MODES } from '@/constants/modes';
 
 const initialState = {
   modalAddClient: {

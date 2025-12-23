@@ -8,8 +8,8 @@ import {
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 // Función para obtener la referencia al documento de estructura
 const getStructureDoc = (businessId, type) => {

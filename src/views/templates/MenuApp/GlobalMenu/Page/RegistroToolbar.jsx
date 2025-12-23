@@ -12,12 +12,12 @@ import React, { useState } from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { createProfessionalReportCallback } from '../../../../../hooks/exportToExcel/exportConfig';
-import { formatBill } from '../../../../../hooks/exportToExcel/formatBill';
-import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
-import useViewportWidth from '../../../../../hooks/windows/useViewportWidth';
+import { createProfessionalReportCallback } from '@/hooks/exportToExcel/exportConfig';
+import { formatBill } from '@/hooks/exportToExcel/formatBill';
+import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import routesName from '@/router/routes/routesName';
-import { DropdownMenu } from '../../../system/DropdownMenu/DropdowMenu';
+import { DropdownMenu } from '@/views/templates/system/DropdownMenu/DropdowMenu';
 
 export const RegistroToolbar = ({ side = 'left', data, onReportSaleOpen }) => {
   const [isExporting, setIsExporting] = useState(false);

@@ -1,6 +1,6 @@
 import { collection, query, getDocs, deleteDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Valor por defecto de sequence (ajústalo según tu lógica)
 const DEFAULT_SEQUENCE = '0000000000';

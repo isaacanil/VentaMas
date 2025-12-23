@@ -5,15 +5,15 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   closeInvoicePreviewModal,
   selectInvoicePreview,
-} from '../../../../features/invoice/invoicePreviewSlice';
-import { useFbGetAccountReceivableByInvoice } from '../../../../firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
-import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
-import { syncInvoicePaymentsFromAR } from '../../../../firebase/invoices/syncInvoicePaymentsFromAR';
-import { useFbGetCreditNoteApplicationsByInvoice } from '../../../../hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
+} from '@/features/invoice/invoicePreviewSlice';
+import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
+import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
+import { syncInvoicePaymentsFromAR } from '@/firebase/invoices/syncInvoicePaymentsFromAR';
+import { useFbGetCreditNoteApplicationsByInvoice } from '@/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
 
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';

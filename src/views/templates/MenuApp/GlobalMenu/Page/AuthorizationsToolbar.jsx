@@ -2,9 +2,9 @@ import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
 
 const { SETTING_TERM } = ROUTES_NAME;
 const { GENERAL_CONFIG_AUTHORIZATION } = SETTING_TERM;

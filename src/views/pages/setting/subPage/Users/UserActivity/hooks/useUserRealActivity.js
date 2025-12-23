@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useEffect, useState } from 'react';
 
-import { db } from '../../../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useUserRealActivity = ({ userId, businessId }) => {
     const [activities, setActivities] = useState([]);

@@ -5,13 +5,13 @@ import { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   useEnrichedBackOrders,
   updateBackOrder,
-} from '../../../../firebase/warehouse/backOrderService';
-import InventoryMenu from '../../../pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+} from '@/firebase/warehouse/backOrderService';
+import InventoryMenu from '@/views/pages/Inventory/components/Warehouse/components/DetailView/InventoryMenu';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import FulfillModal from './components/FulfillModal';
 import Header from './components/Header';

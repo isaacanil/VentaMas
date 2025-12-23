@@ -262,7 +262,7 @@ export default [
 
   // Scripts Node locales
   {
-    files: ['controller.js', 'tools/setCors.js'],
+    files: ['controller.js', 'tools/**/*.{js,cjs}'],
     languageOptions: {
       sourceType: 'module',
       globals: { ...globals.node },

@@ -2,8 +2,8 @@ import { Tag } from 'antd';
 
 import { formatPrice } from '@/utils/format';
 
-import DateUtils from '../../../../../utils/date/dateUtils';
-import { CashCountStateIndicator } from '../../resource/CashCountStatusIndicator/CashCountStateIndicator';
+import DateUtils from '@/utils/date/dateUtils';
+import { CashCountStateIndicator } from '@/views/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator';
 
 
 export const tableConfig = () => {

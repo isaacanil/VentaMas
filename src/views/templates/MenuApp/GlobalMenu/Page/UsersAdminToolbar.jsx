@@ -4,9 +4,9 @@ import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { toggleSignUpUser } from '../../../../../features/modals/modalSlice';
-import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
+import { icons } from '@/constants/icons/icons';
+import { toggleSignUpUser } from '@/features/modals/modalSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 
 const UsersAdminToolbar = ({ side = 'left' }) => {
   const dispatch = useDispatch();

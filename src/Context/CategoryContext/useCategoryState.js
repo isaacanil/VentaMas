@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { fbAddCategory } from '../../firebase/categories/fbAddCategory';
-import { fbAddExpenseCategory } from '../../firebase/expenses/categories/fbAddExpenseCategory';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbAddCategory } from '@/firebase/categories/fbAddCategory';
+import { fbAddExpenseCategory } from '@/firebase/expenses/categories/fbAddExpenseCategory';
 
 import {
   CategoryContext,

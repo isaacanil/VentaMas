@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import styled from 'styled-components';
 
-import Button from '../Button/Button';
+import Button from '@/views/pages/PreorderSale/components/Button/Button';
 
 const NavBarContainer = styled.nav`
   padding: 1rem;

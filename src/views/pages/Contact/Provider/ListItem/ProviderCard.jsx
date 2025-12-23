@@ -2,14 +2,14 @@ import { Button, Popconfirm, message } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { toggleProviderModal } from '../../../../../features/modals/modalSlice';
-import { fbDeleteProvider } from '../../../../../firebase/provider/fbDeleteProvider';
-import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
-import { truncateString } from '../../../../../utils/text/truncateString';
-import { ButtonGroup } from '../../../../templates/system/Button/Button';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleProviderModal } from '@/features/modals/modalSlice';
+import { fbDeleteProvider } from '@/firebase/provider/fbDeleteProvider';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { truncateString } from '@/utils/text/truncateString';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
 
 const UPDATE_MODE = OPERATION_MODES.UPDATE.id;
 

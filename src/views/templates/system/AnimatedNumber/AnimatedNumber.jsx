@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import AnimatedDigit from '../AnimatedDigit/AnimatedDigit';
+import AnimatedDigit from '@/views/templates/system/AnimatedDigit/AnimatedDigit';
 
 export const AnimatedNumber = ({ value }) => {
   const digits = String(value).split('');

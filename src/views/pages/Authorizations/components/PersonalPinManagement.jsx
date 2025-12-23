@@ -11,15 +11,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   fbGetUserPinStatus,
   fbGenerateUserPin,
   fbDeactivateUserPin,
-} from '../../../../firebase/authorization/pinAuth';
-import { useAuthorizationModules } from '../../../../hooks/useAuthorizationModules';
-import { GeneratePinModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
-import { PinDetailsModal } from '../../../pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
+} from '@/firebase/authorization/pinAuth';
+import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
+import { GeneratePinModal } from '@/views/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
+import { PinDetailsModal } from '@/views/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
 
 import { PinInfoModal } from './PinInfoModal.jsx';
 import { RequestPinModal } from './RequestPinModal';

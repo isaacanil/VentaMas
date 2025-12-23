@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { getProductsPrice, getTotalDiscount } from '../../../../../../../../utils/pricing';
+import { getProductsPrice, getTotalDiscount } from '@/utils/pricing';
 
 
 export default function Footer({ data }) {

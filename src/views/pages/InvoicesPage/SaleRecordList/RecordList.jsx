@@ -9,8 +9,8 @@ import React, { useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import { filterData } from '../../../../hooks/search/useSearch';
-import { useMediaQuery } from '../../../../hooks/useMediaQuery';
+import { filterData } from '@/hooks/search/useSearch';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 import { InvoiceItem } from './InvoiceItem/InvoiceItem';
 import { InvoiceItemWide } from './InvoiceItem/InvoiceItemWide';

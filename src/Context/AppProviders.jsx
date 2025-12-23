@@ -1,6 +1,6 @@
 // Importa otros proveedores aquí
 
-import ThemeColorProvider from '../theme/ThemeProvider';
+import ThemeColorProvider from '@/theme/ThemeProvider';
 
 import { AbilityProvider } from './AbilityContext/AbilityProvider';
 import { CategoryProvider } from './CategoryContext';

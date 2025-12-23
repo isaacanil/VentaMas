@@ -1,6 +1,6 @@
 import { updateDoc, doc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbUpdateNCFInvoices(user, invoices) {
   // Convertimos y ordenamos las facturas por fecha de manera ascendente

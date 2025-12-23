@@ -4,13 +4,13 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { OPERATION_MODES } from '../../../../../../../constants/modes';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { toggleClientModal } from '../../../../../../../features/modals/modalSlice';
-import { fbDeleteClient } from '../../../../../../../firebase/client/fbDeleteClient';
-import { useRncSearch } from '../../../../../../../hooks/useRncSearch';
-import { DgiiSyncAlert } from '../../../../../../component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
-import { RncPanel } from '../../../../../../component/Rnc/RncPanel/RncPanel';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
+import { useRncSearch } from '@/hooks/useRncSearch';
+import { DgiiSyncAlert } from '@/views/component/Rnc/DgiiSyncAlert/DgiiSyncAlert';
+import { RncPanel } from '@/views/component/Rnc/RncPanel/RncPanel';
 
 const Wrapper = styled.div`
   display: grid;

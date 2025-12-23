@@ -1,3 +1,8 @@
+import { formatPrice } from './format/formatPrice';
+import { formatDate } from './formatDate';
+
+export { formatDate, formatPrice };
+
 export const formatMoney = (amount) => {
   return new Intl.NumberFormat('es-DO', {
     style: 'currency',

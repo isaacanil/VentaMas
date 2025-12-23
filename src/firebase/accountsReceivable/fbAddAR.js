@@ -1,8 +1,8 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
-import { getNextID } from '../Tools/getNextID';
+import { db } from '@/firebase/firebaseconfig';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 export async function fbAddAR({ user, accountsReceivable }) {
   if (!user?.businessID) return;

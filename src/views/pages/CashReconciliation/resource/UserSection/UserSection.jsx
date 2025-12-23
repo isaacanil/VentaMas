@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
 
 export const UserSection = () => {
   const user = useSelector(selectUser);

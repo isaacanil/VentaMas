@@ -2,19 +2,19 @@ import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   addItem,
   deleteAllItems,
   SelectCategoryList,
   SelectCategoryState,
-} from '../../../features/category/categorySlicer';
-import { useGetFavoriteProductCategories } from '../../../firebase/categories/fbGetFavoriteProductCategories';
-import { fbToggleFavoriteProductCategory } from '../../../firebase/categories/fbToggleFavoriteProductCategory';
-import { useFbGetCategories } from '../../../firebase/categories/useFbGetCategories';
-import { useListenActiveIngredients } from '../../../firebase/products/activeIngredient/activeIngredients';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
-import { filterFavoriteProductCategories } from '../../../utils/data/products/category';
+} from '@/features/category/categorySlicer';
+import { useGetFavoriteProductCategories } from '@/firebase/categories/fbGetFavoriteProductCategories';
+import { fbToggleFavoriteProductCategory } from '@/firebase/categories/fbToggleFavoriteProductCategory';
+import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import { filterFavoriteProductCategories } from '@/utils/data/products/category';
 
 import { CategoryBar } from './components/CategoryBar/CategoryBar';
 import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';

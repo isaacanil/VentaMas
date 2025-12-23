@@ -3,17 +3,17 @@ import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   resetExpense,
   setExpense,
-} from '../../../../../features/expense/expenseManagementSlice';
+} from '@/features/expense/expenseManagementSlice';
 import {
   openExpenseFormModal,
   toggleExpenseChartModal,
-} from '../../../../../features/expense/expenseUISlice';
+} from '@/features/expense/expenseUISlice';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '../../../system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const ExpensesListToolbar = ({ side = 'left' }) => {
   const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;

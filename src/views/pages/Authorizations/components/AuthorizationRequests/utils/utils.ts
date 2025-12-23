@@ -5,7 +5,7 @@ import {
   faFileInvoiceDollar,
 } from '@fortawesome/free-solid-svg-icons';
 
-import type { AuthorizationRequest, ModuleMeta } from '../types';
+import type { AuthorizationRequest, ModuleMeta } from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 type MetadataMap = Record<string, ModuleMeta>;
 

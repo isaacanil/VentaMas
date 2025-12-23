@@ -1,4 +1,4 @@
-import { getPdfMake } from '../../../../utils/pdf/pdfMakeLoader.js';
+import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
 
 import { buildContent } from './builders/content.js';
 import { buildFooter } from './builders/footer.js';

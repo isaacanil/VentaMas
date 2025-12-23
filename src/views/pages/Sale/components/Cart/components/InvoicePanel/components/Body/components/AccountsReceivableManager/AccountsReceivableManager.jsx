@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import { Fragment, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { SelectCartData } from '../../../../../../../../../../../features/cart/cartSlice';
-import { ARValidateMessage } from '../MarkAsReceivableButton/components/ARValidateMessage/ARValidateMessage';
-import { MarkAsReceivableButton } from '../MarkAsReceivableButton/MarkAsReceivableButton';
-import { useARValidation } from '../MarkAsReceivableButton/useARValidation';
-import { ReceivableWidget } from '../ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
-import { ReceivableManagementPanel } from '../ReceivableManagementPanel/ReceivableManagementPanel';
+import { SelectCartData } from '@/features/cart/cartSlice';
+import { ARValidateMessage } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/components/ARValidateMessage/ARValidateMessage';
+import { MarkAsReceivableButton } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/MarkAsReceivableButton';
+import { useARValidation } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/useARValidation';
+import { ReceivableWidget } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/components/ReceivableWidget/ReceivableWidget';
+import { ReceivableManagementPanel } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel';
 
 const AccountsReceivableManager = ({
   hasAccountReceivablePermission,

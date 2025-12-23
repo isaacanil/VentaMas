@@ -8,10 +8,9 @@ import { SearchPanel } from '@/components/common/SearchPanel/SearchPanel';
 import { icons } from '@/constants/icons/icons';
 import { toggleMenu, closeMenu, selectMenuOpenStatus } from '@/features/nav/navSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
-
-import { ButtonIconMenu } from '../system/Button/ButtonIconMenu';
-import { GoBackButton } from '../system/Button/GoBackButton';
-import { OpenMenuButton } from '../system/Button/OpenMenuButton';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
+import { GoBackButton } from '@/views/templates/system/Button/GoBackButton';
+import { OpenMenuButton } from '@/views/templates/system/Button/OpenMenuButton';
 
 import { NotificationButton } from './Components/NotificationButton/NotificationButton';
 import { SideBar } from './Components/SideBar';

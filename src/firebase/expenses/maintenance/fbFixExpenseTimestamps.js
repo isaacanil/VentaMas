@@ -1,7 +1,7 @@
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
-import { toTimestamp } from '../../../utils/firebase/toTimestamp';
-import { db } from '../../firebaseconfig';
+import { toTimestamp } from '@/utils/firebase/toTimestamp';
+import { db } from '@/firebase/firebaseconfig';
 
 const TIMESTAMP_PATHS = [
   ['dates', 'createdAt'],

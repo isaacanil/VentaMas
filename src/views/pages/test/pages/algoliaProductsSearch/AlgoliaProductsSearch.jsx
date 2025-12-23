@@ -13,12 +13,12 @@ import {
   Typography,
 } from 'antd';
 import { doc, getDoc } from 'firebase/firestore';
-import debounce from 'lodash/debounce';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { db } from '../../../../../firebase/firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { debounce } from '@/utils/lodash-minimal';
 
 const { Title, Paragraph, Text } = Typography;
 

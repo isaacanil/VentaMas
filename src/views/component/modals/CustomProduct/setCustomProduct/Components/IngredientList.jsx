@@ -4,11 +4,11 @@ import styled from 'styled-components';
 
 import { separator } from '@/utils/number/number';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { selectTotalIngredientPrice } from '../../../../../../features/customProducts/customProductSlice';
-import { fbGetCustomProduct } from '../../../../../../firebase/products/customProduct/fbGetCustomProductTypePizza';
-import { Button } from '../../../../../templates/system/Button/Button';
-import { IngredientCard } from '../../../../../templates/system/customProduct/typePizza/IngredientCard';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectTotalIngredientPrice } from '@/features/customProducts/customProductSlice';
+import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
+import { Button } from '@/views/templates/system/Button/Button';
+import { IngredientCard } from '@/views/templates/system/customProduct/typePizza/IngredientCard';
 
 
 export const IngredientList = ({ handleIngredientOpen }) => {

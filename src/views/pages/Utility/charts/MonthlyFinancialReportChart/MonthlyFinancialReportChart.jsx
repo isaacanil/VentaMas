@@ -14,7 +14,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import Typography from '../../../../templates/system/Typografy/Typografy.jsx';
+import Typography from '@/views/templates/system/Typografy/Typografy.jsx';
 
 import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils.js';
 

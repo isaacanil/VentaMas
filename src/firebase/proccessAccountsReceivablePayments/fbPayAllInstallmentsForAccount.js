@@ -1,8 +1,8 @@
 import { doc, runTransaction, arrayUnion } from 'firebase/firestore';
 
-import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
-import { db } from '../firebaseconfig';
-import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 
 import {
   getInstallmentsByArId,

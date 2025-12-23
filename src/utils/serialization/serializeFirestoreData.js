@@ -1,4 +1,4 @@
-import DateUtils from '../date/dateUtils';
+import DateUtils from '@/utils/date/dateUtils';
 
 /**
  * Recursively serializes Firestore Timestamp objects to milliseconds

@@ -13,8 +13,8 @@ import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { db } from '../../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 // Función para actualizar o crear una unidad de venta en la subcolección saleUnits
 export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {

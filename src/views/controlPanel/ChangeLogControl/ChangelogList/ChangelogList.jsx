@@ -5,8 +5,8 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
-import { useGetChangelogs } from '../../../../firebase/AppUpdate/useGetChangeogs';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { useGetChangelogs } from '@/firebase/AppUpdate/useGetChangeogs';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const theme = {
   paragraph: 'editor-paragraph',

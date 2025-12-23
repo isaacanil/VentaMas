@@ -7,7 +7,7 @@ import {
   limit,
 } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Function to get the last installment amount for a specific AR ID
 export const getLastInstallmentAmountByArId = async (user, arId) => {

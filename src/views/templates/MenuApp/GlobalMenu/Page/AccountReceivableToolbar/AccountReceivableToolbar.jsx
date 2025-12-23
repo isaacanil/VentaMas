@@ -6,18 +6,18 @@ import { useSelector } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { useListenAccountsReceivable } from '../../../../../../firebase/accountsReceivable/accountReceivableServices';
+import { selectUser } from '@/features/auth/userSlice';
+import { useListenAccountsReceivable } from '@/firebase/accountsReceivable/accountReceivableServices';
 import {
   applyProfessionalStyling,
   addTotalsRow,
   addReportHeader,
   formatCurrencyColumns,
-} from '../../../../../../hooks/exportToExcel/exportConfig';
-import exportToExcel from '../../../../../../hooks/exportToExcel/useExportToExcel';
-import useBusiness from '../../../../../../hooks/useBusiness';
-import DateUtils from '../../../../../../utils/date/dateUtils';
-import { getDateRange } from '../../../../../../utils/date/getDateRange';
+} from '@/hooks/exportToExcel/exportConfig';
+import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+import useBusiness from '@/hooks/useBusiness';
+import DateUtils from '@/utils/date/dateUtils';
+import { getDateRange } from '@/utils/date/getDateRange';
 
 import { MultiPaymentModal } from './components/MultiPaymentModal/MultiPaymentModal';
 

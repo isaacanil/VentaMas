@@ -14,11 +14,11 @@ import { formatPrice } from '@/utils/format';
 import {
   selectAR,
   resetAR,
-} from '../../../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { toggleReceivableStatus } from '../../../../../../../../../../../../../features/cart/cartSlice';
-import { SelectCartData } from '../../../../../../../../../../../../../features/cart/cartSlice';
-import DateUtils from '../../../../../../../../../../../../../utils/date/dateUtils';
-import { calculateInvoiceChange } from '../../../../../../../../../../../../../utils/invoice';
+} from '@/features/accountsReceivable/accountsReceivableSlice';
+import { toggleReceivableStatus } from '@/features/cart/cartSlice';
+import { SelectCartData } from '@/features/cart/cartSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { calculateInvoiceChange } from '@/utils/invoice';
 
 
 const getPositive = (value) => (value < 0 ? -value : value);

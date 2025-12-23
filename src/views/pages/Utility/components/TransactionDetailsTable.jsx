@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 import { buildTransactionRows } from '../utils/transactionRows';
 
 export const TransactionDetailsTable = ({
@@ -22,7 +22,7 @@ export const TransactionDetailsTable = ({
   const firstRowId = rows[0]?.id ?? null;
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-  
+
   const resetTrigger = `${rows.length}-${firstRowId}-${pageSize}`;
   const [{ trigger: pageTrigger, page: pageState }, setPageState] = useState(
     () => ({ trigger: resetTrigger, page: 0 }),
@@ -42,7 +42,7 @@ export const TransactionDetailsTable = ({
     },
     [resetTrigger],
   );
-  
+
   const currentPage = Math.min(page, totalPages - 1);
 
   const paginatedRows = useMemo(() => {

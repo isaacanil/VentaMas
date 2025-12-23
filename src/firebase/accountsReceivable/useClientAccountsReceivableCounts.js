@@ -6,7 +6,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useClientAccountsReceivableCounts = ({ user, clientId }) => {
   const [counts, setCounts] = useState({ open: 0, closed: 0 });

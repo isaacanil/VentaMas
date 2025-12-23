@@ -4,8 +4,8 @@ import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   resetFilters,
   DEFAULT_FILTER_CONTEXT,
@@ -14,8 +14,8 @@ import {
   persistFilterPreferences,
   selectFiltersByContext,
   selectFilterMeta,
-} from '../../../../../../../features/filterProduct/filterProductsSlice';
-import { ButtonIconMenu } from '../../../../../../templates/system/Button/ButtonIconMenu';
+} from '@/features/filterProduct/filterProductsSlice';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
 
 import { Body } from './components/Body/Body';
 import { Header } from './components/Header/Header';

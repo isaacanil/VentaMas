@@ -13,23 +13,23 @@ import styled from 'styled-components';
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
 
-import { store } from '../../../../../../../app/store';
-import { icons } from '../../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../../constants/modes';
-import { useDialog } from '../../../../../../../Context/Dialog';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { toggleBarcodeModal } from '../../../../../../../features/barcodePrintModalSlice/barcodePrintModalSlice';
-import { openModalUpdateProd } from '../../../../../../../features/modals/modalSlice';
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { ChangeProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
-import { fbDeleteProduct } from '../../../../../../../firebase/products/fbDeleteproduct';
-import { filterData } from '../../../../../../../hooks/search/useSearch';
-import { getTax, getTotalPrice } from '../../../../../../../utils/pricing';
-import { ProductCategoryBar } from '../../../../../../component/ProductCategoryBar/ProductCategoryBar';
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
-import { ImgCell } from '../../../../../../templates/system/AdvancedTable/components/Cells/Img/ImgCell';
-import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
-import StockIndicator from '../../../../../../templates/system/labels/StockIndicator';
+import { store } from '@/app/store';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { useDialog } from '@/Context/Dialog';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleBarcodeModal } from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
+import { openModalUpdateProd } from '@/features/modals/modalSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
+import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
+import { filterData } from '@/hooks/search/useSearch';
+import { getTax, getTotalPrice } from '@/utils/pricing';
+import { ProductCategoryBar } from '@/views/component/ProductCategoryBar/ProductCategoryBar';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import { ImgCell } from '@/views/templates/system/AdvancedTable/components/Cells/Img/ImgCell';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
+import StockIndicator from '@/views/templates/system/labels/StockIndicator';
 
 
 export const ProductsTable = ({ products, searchTerm }) => {

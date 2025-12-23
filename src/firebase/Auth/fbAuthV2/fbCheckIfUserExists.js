@@ -1,6 +1,6 @@
 import { getDocs, query, collection, where } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 // Función para verificar si el nombre de usuario ya existe
 export async function fbCheckIfUserExists(name, excludeId = null) {

@@ -1,4 +1,5 @@
-import { resolveDocumentIdentity } from '../../../../../../utils/invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+
 import { formatDate } from '../utils/formatters.js';
 
 import { buildClientBlock } from './clientBlock.js';
@@ -62,12 +63,12 @@ export function buildHeader(biz, d, images) {
         alignment: 'right',
       },
       comprobanteLabel &&
-        comprobanteType !== 'preorder' && {
-          text: `${comprobanteLabel}: ${comprobanteValue || '-'}`,
-          style: 'headerInfo',
-          alignment: 'right',
-          bold: true,
-        },
+      comprobanteType !== 'preorder' && {
+        text: `${comprobanteLabel}: ${comprobanteValue || '-'}`,
+        style: 'headerInfo',
+        alignment: 'right',
+        bold: true,
+      },
       {
         text: `${referenceLabel} # ${referenceValue}`,
         style: 'headerInfo',
@@ -75,11 +76,11 @@ export function buildHeader(biz, d, images) {
         bold: true,
       },
       d.type === 'preorder' &&
-        d.preorderDetails?.date && {
-          text: `Fecha de Pedido: ${formatDate(d.preorderDetails.date)}`,
-          style: 'headerInfo',
-          alignment: 'right',
-        },
+      d.preorderDetails?.date && {
+        text: `Fecha de Pedido: ${formatDate(d.preorderDetails.date)}`,
+        style: 'headerInfo',
+        alignment: 'right',
+      },
       d.dueDate && {
         text: `Vence: ${formatDate(d.dueDate)}`,
         style: 'headerInfo',

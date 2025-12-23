@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { addItem, deleteItem } from '../../../features/category/categorySlicer';
-import getIconFromText from '../../../utils/text/getIconFromText';
+import { addItem, deleteItem } from '@/features/category/categorySlicer';
+import getIconFromText from '@/utils/text/getIconFromText';
 
 export const Category = ({
   category,

@@ -22,10 +22,10 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { db } from '../../../../firebase/firebaseconfig';
-import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
+import { db } from '@/firebase/firebaseconfig';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { toFriendlyFirestoreError } from './utils/errors';
 import { exportBusinessWorkbook } from './utils/exportWorkbook';

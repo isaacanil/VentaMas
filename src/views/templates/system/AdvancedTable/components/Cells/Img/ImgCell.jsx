@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import noImg from '../../../../../../../assets/producto/noimg.png';
-import useImageFallback from '../../../../../../../hooks/image/useImageFallback';
-import { useCheckForInternetConnection } from '../../../../../../../hooks/useCheckForInternetConnection';
+import noImg from '@/assets/producto/noimg.png';
+import useImageFallback from '@/hooks/image/useImageFallback';
+import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
 
 export const ImgCell = ({ img }) => {
   const isConnected = useCheckForInternetConnection();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import Typography from '../../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 // Hook para detectar tamaño de pantalla
 const useIsMobile = () => {

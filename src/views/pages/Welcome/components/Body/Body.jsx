@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import React, { Suspense } from 'react';
 import styled from 'styled-components';
 
-import { lazyWithRetry } from '../../../../../utils/lazyWithRetry';
-import { uiImage } from '../../../../templates/system/FormattedValue/ui/uiImage';
-import welcomeData from '../../WelcomeData.json';
-import Features from '../Features/Features';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
+import { uiImage } from '@/views/templates/system/FormattedValue/ui/uiImage';
+import welcomeData from '@/views/pages/Welcome/WelcomeData.json';
+import Features from '@/views/pages/Welcome/components/Features/Features';
 
 import { CardWelcome } from './CardWelcome/CardWelcome';
 

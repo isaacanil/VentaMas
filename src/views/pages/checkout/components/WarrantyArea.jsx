@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { SubTitle } from '../Receipt';
+import { SubTitle } from '@/views/pages/checkout/Receipt';
 
 export const WarrantyArea = ({ data }) => {
   const someProductHaveWarranty = data.products.some(

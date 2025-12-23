@@ -1,7 +1,7 @@
 // Candidate for deletion: no current modules import this multi display control view.
 import { useState } from 'react';
 
-import { PlusIcon } from '../../../assets/index';
+import { PlusIcon } from '@/assets/index';
 
 import Style from './MultiDisplayControl.module.scss';
 

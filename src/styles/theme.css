@@ -35,7 +35,7 @@
   --space-7: 48px;
 
   /* Tipografías */
-  --font-sans: 'Roboto', sans-serif;
-  --font-display: 'Inter', sans-serif;
-  --font-mono: 'Fira Code', monospace;
+  --font-sans: 'Poppins', sans-serif;
+  --font-display: 'Poppins', sans-serif;
+  --font-mono: 'Poppins', monospace;
 }

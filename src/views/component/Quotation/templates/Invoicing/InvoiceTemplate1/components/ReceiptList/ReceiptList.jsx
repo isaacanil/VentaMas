@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Paragraph } from '../../Style';
+import { Paragraph } from '@/views/component/Quotation/templates/Invoicing/InvoiceTemplate1/Style';
 
 export function ReceiptList({ title, list = [], formatReceipt }) {
   return (

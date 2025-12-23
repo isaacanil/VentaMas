@@ -3,9 +3,9 @@ import React from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import routesName from '@/router/routes/routesName';
-import { Tooltip } from '../../../system/Button/Tooltip';
+import { Tooltip } from '@/views/templates/system/Button/Tooltip';
 
 export const OrderToolbar = ({ side = 'left' }) => {
   const { ORDERS, ORDERS_CREATE } = routesName.ORDER_TERM;

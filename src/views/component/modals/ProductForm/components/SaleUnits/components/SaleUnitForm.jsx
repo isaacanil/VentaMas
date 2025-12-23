@@ -18,9 +18,9 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
-import { fbUpsetSaleUnits } from '../../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
+import { fbUpsetSaleUnits } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
 
 const FormContainer = styled.div``;
 

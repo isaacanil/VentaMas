@@ -6,9 +6,9 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
-import DateUtils from '../../../../../utils/date/dateUtils';
-import { normalizeText } from '../../../../../utils/text';
+import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import DateUtils from '@/utils/date/dateUtils';
+import { normalizeText } from '@/utils/text';
 
 
 /*

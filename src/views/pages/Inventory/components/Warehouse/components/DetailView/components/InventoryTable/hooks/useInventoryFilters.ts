@@ -6,7 +6,7 @@ import type {
   FilterDraft,
   ProductBatchMap,
   ProductOption,
-} from '../types';
+} from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 interface UseInventoryFiltersParams {
   productOptions: ProductOption[];

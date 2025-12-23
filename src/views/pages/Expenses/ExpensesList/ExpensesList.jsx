@@ -1,15 +1,22 @@
+import { useState } from 'react';
 import styled from 'styled-components';
 
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import ExpensesForm from '../../Expenses/ExpensesForm/ExpensesForm';
+import ExpensesForm from '@/views/pages/Expenses/ExpensesForm/ExpensesForm';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { ExpensesTable } from './components/ExpenseTable/ExpensesTable';
 
 export const ExpensesList = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
   return (
     <Container>
-      <MenuApp sectionName={'Gastos'} />
-      <ExpensesTable />
+      <MenuApp
+        sectionName={'Gastos'}
+        searchData={searchTerm}
+        setSearchData={setSearchTerm}
+      />
+      <ExpensesTable searchTerm={searchTerm} />
       <ExpensesForm />
     </Container>
   );

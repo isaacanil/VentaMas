@@ -16,9 +16,9 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { db } from '../../../firebase/firebaseconfig';
-import { syncProductsStockFromProductsStock } from '../../../firebase/warehouse/stockSyncService';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { syncProductsStockFromProductsStock } from '@/firebase/warehouse/stockSyncService';
 
 // Developer Sync Diagnostics
 // Compares totals and referential integrity across:

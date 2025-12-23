@@ -1,7 +1,7 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { db } from '../../firebase/firebaseconfig.jsx';
+import { db } from '@/firebase/firebaseconfig.jsx';
 
 /**
  * Hook para escuchar cambios en tiempo real de un producto específico

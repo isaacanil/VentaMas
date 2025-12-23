@@ -5,11 +5,11 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-// import { Button } from '../../../system/Button/Button'
+// import { Button } from '@/views/templates/system/Button/Button'
 
-import { togglePurchaseChartModal } from '../../../../../features/purchase/purchaseUISlice';
+import { togglePurchaseChartModal } from '@/features/purchase/purchaseUISlice';
 import routesName from '@/router/routes/routesName';
-import { ButtonGroup } from '../../../system/Button/ButtonGroup';
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
 
 export const PurchaseToolbar = ({ side = 'left' }) => {
   const { PURCHASES, PURCHASES_CREATE } = routesName.PURCHASE_TERM;

@@ -6,10 +6,10 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons';
-import { selectUser } from '../../../features/auth/userSlice';
-import { getStoredSession } from '../../../firebase/Auth/fbAuthV2/sessionClient';
-import { storage } from '../../../firebase/firebaseconfig';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { storage } from '@/firebase/firebaseconfig';
 
 import { LoginForm } from './components/LoginForm';
 

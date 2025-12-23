@@ -1,10 +1,10 @@
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { fbAddBillToOpenCashCount } from '../cashCount/fbAddBillToOpenCashCount';
-import { db } from '../firebaseconfig';
-import { fbSetDoc } from '../firebaseOperations';
-import { getNextID } from '../Tools/getNextID';
+import { fbAddBillToOpenCashCount } from '@/firebase/cashCount/fbAddBillToOpenCashCount';
+import { db } from '@/firebase/firebaseconfig';
+import { fbSetDoc } from '@/firebase/firebaseOperations';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 import { fbGetInvoice } from './fbGetInvoice';
 

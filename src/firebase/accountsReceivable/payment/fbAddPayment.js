@@ -1,8 +1,8 @@
 import { setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { defaultPaymentsAR } from '../../../schema/accountsReceivable/paymentAR';
-import { getDocRef } from '../../firebaseOperations';
+import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import { getDocRef } from '@/firebase/firebaseOperations';
 
 export const fbAddPayment = async (user, paymentDetails) => {
   const id = nanoid();

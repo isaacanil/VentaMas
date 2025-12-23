@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   DEFAULT_FILTER_CONTEXT,
   DEFAULT_FILTERS,
@@ -11,8 +11,8 @@ import {
   selectOrden,
   setCriterio,
   setOrden,
-} from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
-import { opcionesCriterio } from '../../../../InventoryFilterAndSortMetadata';
+} from '@/features/filterProduct/filterProductsSlice';
+import { opcionesCriterio } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
 
 export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }) => {
   const dispatch = useDispatch();

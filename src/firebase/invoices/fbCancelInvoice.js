@@ -1,6 +1,6 @@
 import { runTransaction, doc, Timestamp, increment } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbCancelInvoice = async (user, invoice, cancellationReason) => {
   try {

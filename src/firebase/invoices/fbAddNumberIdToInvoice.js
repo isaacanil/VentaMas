@@ -8,7 +8,7 @@ import {
   runTransaction,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 async function updateInvoicesInBatches(businessID) {
   const invoicesRef = collection(db, 'businesses', businessID, 'invoices');

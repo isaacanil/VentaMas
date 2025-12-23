@@ -2,7 +2,7 @@ import { BarcodeOutlined } from '@ant-design/icons';
 import { Divider, InputNumber, Select, Switch } from 'antd';
 import { Form } from 'antd';
 
-import { unitsOfMeasure } from '../../../../../../constants/unitsOfMeasure';
+import { unitsOfMeasure } from '@/constants/unitsOfMeasure';
 import {
   DividerLabel,
   FieldGrid,
@@ -11,7 +11,7 @@ import {
   SectionHeader,
   SectionTitle,
   SwitchField,
-} from '../SectionLayout';
+} from '@/views/pages/DevTools/ProductStudio/components/SectionLayout';
 
 export const InventorySection = ({ domId }) => (
   <SectionCard id={domId}>

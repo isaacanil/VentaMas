@@ -9,7 +9,7 @@ import { DateTime } from 'luxon';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { normalizeText } from '../../../../../../../../../../utils/text';
+import { normalizeText } from '@/utils/text';
 
 const Wrapper = styled.div`
   display: grid;

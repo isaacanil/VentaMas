@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
+import { designSystemV2 } from '@/theme/designSystemV2';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 
 import { BusinessInsightsPanel } from './BusinessInsightsPanel';
 import { TopProductsPanel } from './TopProductsPanel';

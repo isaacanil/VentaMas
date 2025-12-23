@@ -19,7 +19,7 @@ import {
 } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
 
-import type { AuthorizationRequest } from '../types';
+import type { AuthorizationRequest } from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 interface DetailModalProps {
   open: boolean;
@@ -53,7 +53,7 @@ export const DetailModal = ({
   const moduleMeta = resolveModuleMeta(detailRequest);
   const metadataSource =
     typeof detailRequest.metadata === 'object' &&
-    detailRequest.metadata !== null
+      detailRequest.metadata !== null
       ? detailRequest.metadata
       : {};
   const metadataReference =

@@ -8,8 +8,8 @@ import {
 } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 
-import { toMillis } from '../../../utils/firebase/toTimestamp';
-import { db } from '../../firebaseconfig';
+import { toMillis } from '@/utils/firebase/toTimestamp';
+import { db } from '@/firebase/firebaseconfig';
 
 import { getEmployeeData } from './getEmployeeData';
 

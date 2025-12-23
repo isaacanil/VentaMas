@@ -6,11 +6,11 @@ import { useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { toggleProviderModal } from '../../../../../../features/modals/modalSlice';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { transactionConditions } from '@/constants/orderAndPurchaseState';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleProviderModal } from '@/features/modals/modalSlice';
 import {
   selectPurchase,
   AddProductToPurchase,
@@ -19,18 +19,18 @@ import {
   setPurchase,
   cleanPurchase,
   SelectProduct,
-} from '../../../../../../features/purchase/addPurchaseSlice';
-import { db } from '../../../../../../firebase/firebaseconfig';
-import { useFbGetPendingOrdersByProvider } from '../../../../../../firebase/order/usefbGetOrders';
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
+} from '@/features/purchase/addPurchaseSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { useFbGetPendingOrdersByProvider } from '@/firebase/order/usefbGetOrders';
+import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import {
   getBackOrdersByProduct,
-} from '../../../../../../firebase/warehouse/backOrderService';
+} from '@/firebase/warehouse/backOrderService';
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
-import ProductModal from '../../../shared/ProductModal';
-import BackOrdersModal from '../BackOrdersModal';
-import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
-import ProductsTable from '../ProductsTable';
+import ProductModal from '@/views/pages/OrderAndPurchase/shared/ProductModal';
+import BackOrdersModal from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
+import EvidenceUpload from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/EvidenceUpload/EvidenceUpload';
+import ProductsTable from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/ProductsTable';
 
 import NotesInput from './components/NotesInput';
 import OrderSelector from './components/OrderSelector';

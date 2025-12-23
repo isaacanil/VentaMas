@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { SelectSettingCart } from '../features/cart/cartSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
 
 const DEFAULT_LOW_THRESHOLD = 20;
 const DEFAULT_CRITICAL_THRESHOLD = 10;

@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 export const Selector = ({
   value,

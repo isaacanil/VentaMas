@@ -8,7 +8,7 @@ import { Empty } from 'antd';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { formatNumber } from '../../../../../../utils/formatNumber';
+import { formatNumber } from '@/utils/formatNumber';
 import {
   PanelCard,
   ScrollArea,
@@ -24,8 +24,8 @@ import {
   StatusPill,
   MetaLabel,
   MetaValue,
-} from '../shared/PanelPrimitives';
-import SimplePanelHeader from '../shared/SimplePanelHeader';
+} from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
+import SimplePanelHeader from '@/views/templates/NotificationCenter/components/panels/shared/SimplePanelHeader';
 
 const STATUS_MAP = {
   critical: {

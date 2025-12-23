@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbUpdateClientsWithIncrementalNumber({ setMessage }) {
   const businessesRef = collection(db, 'businesses');

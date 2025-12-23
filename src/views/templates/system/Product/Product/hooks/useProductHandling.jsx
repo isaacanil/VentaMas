@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { getTotalPrice } from '@/utils/pricing';
 import {
     addProduct,
     deleteProduct,
-} from '@features/cart/cartSlice';
-import { openProductStockSimple } from '@features/productStock/productStockSimpleSlice';
+} from '@/features/cart/cartSlice';
+import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
+import { getTotalPrice } from '@/utils/pricing';
 
 import {
     useProductInCart,

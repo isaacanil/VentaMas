@@ -1,4 +1,4 @@
-import { useUserAccess } from '../hooks/abilities/useAbilities';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import { isHiddenInMenu, getRouteMeta } from '@/router/routes/routeVisibility';
 
 /**

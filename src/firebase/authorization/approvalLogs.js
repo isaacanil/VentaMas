@@ -10,7 +10,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const sanitizeUserSnapshot = (userLike) => {
   if (!userLike || typeof userLike !== 'object') return null;

@@ -1,6 +1,6 @@
 import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Actualiza o crea la configuración de alertas de comprobantes fiscales

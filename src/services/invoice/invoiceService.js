@@ -1,21 +1,21 @@
 import { Timestamp } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 
-import { GenericClient } from '../../features/clientCart/clientCartSlice';
-import { fbAddAR } from '../../firebase/accountsReceivable/fbAddAR';
-import { fbAddInstallmentAR } from '../../firebase/accountsReceivable/fbAddInstallmentAR';
-import { fbRecordAuthorizationApproval } from '../../firebase/authorization/approvalLogs';
-import { checkOpenCashReconciliation } from '../../firebase/cashCount/useIsOpenCashReconciliation';
-import { fbUpsertClient } from '../../firebase/client/fbUpsertClient';
-import { fbConsumeCreditNotes } from '../../firebase/creditNotes/fbConsumeCreditNotes';
-import { addInsuranceAuth } from '../../firebase/insurance/insuranceAuthService';
-import { getInsurance } from '../../firebase/insurance/insuranceService';
-import { fbAddInvoice } from '../../firebase/invoices/fbAddInvoice';
-import { fbGenerateInvoiceFromPreorder } from '../../firebase/invoices/fbGenerateInvoiceFromPreorder';
-import { fbUpdateProductsStock } from '../../firebase/products/fbUpdateProductsStock';
-import { fbGetAndUpdateTaxReceipt } from '../../firebase/taxReceipt/fbGetAndUpdateTaxReceipt';
-import { getCashCountStrategy } from '../../notification/cashCountNotification/cashCountNotificacion';
-import { validateInvoiceCart } from '../../utils/invoiceValidation';
+import { GenericClient } from '@/features/clientCart/clientCartSlice';
+import { fbAddAR } from '@/firebase/accountsReceivable/fbAddAR';
+import { fbAddInstallmentAR } from '@/firebase/accountsReceivable/fbAddInstallmentAR';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { fbUpsertClient } from '@/firebase/client/fbUpsertClient';
+import { fbConsumeCreditNotes } from '@/firebase/creditNotes/fbConsumeCreditNotes';
+import { addInsuranceAuth } from '@/firebase/insurance/insuranceAuthService';
+import { getInsurance } from '@/firebase/insurance/insuranceService';
+import { fbAddInvoice } from '@/firebase/invoices/fbAddInvoice';
+import { fbGenerateInvoiceFromPreorder } from '@/firebase/invoices/fbGenerateInvoiceFromPreorder';
+import { fbUpdateProductsStock } from '@/firebase/products/fbUpdateProductsStock';
+import { fbGetAndUpdateTaxReceipt } from '@/firebase/taxReceipt/fbGetAndUpdateTaxReceipt';
+import { getCashCountStrategy } from '@/notification/cashCountNotification/cashCountNotificacion';
+import { validateInvoiceCart } from '@/utils/invoiceValidation';
 
 export async function processInvoice({
   user,

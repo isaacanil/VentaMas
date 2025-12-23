@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { getTotalPrice } from '../../../../../utils/pricing';
+import { getTotalPrice } from '@/utils/pricing';
 
 
 const { Text } = Typography;

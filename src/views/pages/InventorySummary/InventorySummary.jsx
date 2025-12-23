@@ -2,8 +2,8 @@ import { Input, Select, Button } from 'antd';
 import { useMemo, useState, useCallback } from 'react';
 import styled from 'styled-components';
 
-import { useGetProducts } from '../../../firebase/products/fbGetProducts';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 // No usamos useInventoryStocksProducts, tomamos products directamente
 
 // Export helper (exceljs + file-saver), same pattern used elsewhere in the app

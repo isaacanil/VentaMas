@@ -10,7 +10,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { nanoid } from 'nanoid';
 
-import { functions, db } from '../../firebase/firebaseconfig';
+import { functions, db } from '@/firebase/firebaseconfig';
 
 const createInvoiceCallable = httpsCallable(functions, 'createInvoiceV2');
 

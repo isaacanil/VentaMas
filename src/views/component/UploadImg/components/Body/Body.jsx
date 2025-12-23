@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUpdateProductData } from '../../../../../features/updateProduct/updateProductSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 
 import { GalleryAdmin } from './GalleryAdmin';
 import { UploadImgAdmin } from './UploadImgAdmin';

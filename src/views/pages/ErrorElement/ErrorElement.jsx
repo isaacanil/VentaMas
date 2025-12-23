@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Logo } from '../../../assets/logo/Logo';
+import { Logo } from '@/assets/logo/Logo';
 
 import { ErrorCard } from './components/ErrorCard';
 import { ErrorDetails } from './components/ErrorDetails';

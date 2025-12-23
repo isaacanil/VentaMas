@@ -1,6 +1,6 @@
 import { matchPath } from 'react-router-dom';
 
-import type { ToolbarEntryWithMatchers } from '../types/types';
+import type { ToolbarEntryWithMatchers } from '@/views/templates/MenuApp/GlobalMenu/types';
 
 /**
  * Finds the toolbar entry that matches the current pathname

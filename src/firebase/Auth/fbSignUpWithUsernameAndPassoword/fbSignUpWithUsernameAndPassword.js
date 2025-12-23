@@ -1,4 +1,4 @@
-import { auth } from '../../firebaseconfig';
+import { auth } from '@/firebase/firebaseconfig';
 
 import { navigateSafely } from './functions/navigateUser';
 import { registerUser } from './functions/registerUser';

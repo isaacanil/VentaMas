@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { DatePicker } from '../../../../../components/common/DatePicker/DatePicker';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { DatePicker } from '@/components/common/DatePicker/DatePicker';
+import { selectUser } from '@/features/auth/userSlice';
 
 import { DetailModal } from './components/DetailModal';
 import { RequestCard } from './components/RequestCard';

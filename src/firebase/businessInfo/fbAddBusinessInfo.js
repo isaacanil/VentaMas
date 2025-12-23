@@ -14,7 +14,7 @@ import {
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const createBusiness = async (businessData) => {
   try {

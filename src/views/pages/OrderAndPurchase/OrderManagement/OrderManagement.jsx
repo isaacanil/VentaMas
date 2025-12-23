@@ -8,16 +8,16 @@ import {
   cleanOrder,
   setOrder,
   selectOrderState,
-} from '../../../../features/addOrder/addOrderSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { addOrder } from '../../../../firebase/order/fbAddOrder';
-import { fbUpdateOrder } from '../../../../firebase/order/fbUpdateOrder';
-import { useListenOrder } from '../../../../hooks/useOrders';
+} from '@/features/addOrder/addOrderSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { addOrder } from '@/firebase/order/fbAddOrder';
+import { fbUpdateOrder } from '@/firebase/order/fbUpdateOrder';
+import { useListenOrder } from '@/hooks/useOrders';
 import ROUTES_PATH from '@/router/routes/routesName';
-import { getLocalURL } from '../../../../utils/files';
-import Loader from '../../../component/Loader/Loader';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
-import { getBackOrderAssociationId } from '../PurchaseManagement/purchaseManagementUtils';
+import { getLocalURL } from '@/utils/files';
+import Loader from '@/views/component/Loader/Loader';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { getBackOrderAssociationId } from '@/views/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils';
 
 import GeneralForm from './components/GeneralForm/GeneralForm';
 import { defaultsMap, sanitizeData } from './orderLogic';

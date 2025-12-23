@@ -3,9 +3,9 @@ import { useMemo, useState, useCallback, useDeferredValue } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { db } from '../../../firebase/firebaseconfig';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import {
   Container,

@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { Button } from '../../../Button/Button';
+import { icons } from '@/constants/icons/icons';
+import { Button } from '@/views/templates/system/Button/Button';
 
 import { Item } from './Item';
 

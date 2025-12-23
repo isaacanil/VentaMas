@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { Logo } from '../../../../../assets/logo/Logo';
+import { Logo } from '@/assets/logo/Logo';
 
 export const LogoContainer = () => {
   return (

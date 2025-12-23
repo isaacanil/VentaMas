@@ -1,6 +1,6 @@
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbDeleteClient = async (businessID, id) => {
   try {

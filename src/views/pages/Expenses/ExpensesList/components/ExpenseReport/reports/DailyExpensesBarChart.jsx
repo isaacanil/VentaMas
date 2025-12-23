@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { toMillis } from '@/utils/date/toMillis';
 
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 
 

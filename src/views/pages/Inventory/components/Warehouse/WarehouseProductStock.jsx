@@ -3,8 +3,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { ResizableSidebar } from '../../../../component/ResizebleSidebar/ResizebleSidebar';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { ResizableSidebar } from '@/views/component/ResizebleSidebar/ResizebleSidebar';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import InventoryMenu from './components/DetailView/InventoryMenu';
 import { PRODUCT_STOCK_FILTER_OPTIONS } from './components/ProductStockBrowser/constants.js';

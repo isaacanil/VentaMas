@@ -8,8 +8,8 @@ import {
 } from '@ant-design/icons';
 import React from 'react';
 
-import { HeroKPIContainer, KPICard } from '../styles';
-import { formatCurrency, getNextPaymentInfo, getDaysLate } from '../utils';
+import { HeroKPIContainer, KPICard } from '@/views/component/modals/ARInfoModal/styles';
+import { formatCurrency, getNextPaymentInfo, getDaysLate } from '@/views/component/modals/ARInfoModal/utils';
 
 const HeroKPIs = ({ data }) => {
     // Calcular total de factura con fallback robusto

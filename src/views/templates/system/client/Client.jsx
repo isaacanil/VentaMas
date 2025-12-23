@@ -5,10 +5,10 @@ import { Button, Modal, Tooltip } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled, { css } from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { addClient } from '../../../../features/clientCart/clientCartSlice';
-import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice';
-import { highlightSearch } from '../highlight/Highlight';
+import { selectUser } from '@/features/auth/userSlice';
+import { addClient } from '@/features/clientCart/clientCartSlice';
+import { clearAuthData } from '@/features/insurance/insuranceAuthSlice';
+import { highlightSearch } from '@/views/templates/system/highlight/Highlight';
 
 import { clientGridTemplateWithActions } from './Client.styles';
 

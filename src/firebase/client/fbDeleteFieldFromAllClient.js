@@ -5,7 +5,7 @@ import {
   deleteField,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbDeleteFieldFromAllClients(fieldName) {
   const businessesRef = collection(db, 'businesses');

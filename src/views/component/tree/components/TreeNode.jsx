@@ -2,7 +2,7 @@ import { faSpinner, faCircle } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { selectNode } from '../helpers/nodeHelper';
+import { selectNode } from '@/views/component/tree/helpers/nodeHelper';
 
 import ActionButtons from './ActionButtons';
 import LevelGroup from './LevelGroup';

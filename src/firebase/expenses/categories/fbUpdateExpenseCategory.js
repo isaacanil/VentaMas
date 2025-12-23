@@ -1,6 +1,6 @@
 import { Timestamp, doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const normalizeTimestamp = (value) => {
   if (value === null || value === undefined) return null;

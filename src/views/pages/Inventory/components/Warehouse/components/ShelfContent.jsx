@@ -6,19 +6,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { openRowShelfForm } from '../../../../../../features/warehouse/rowShelfModalSlice';
-import { openShelfForm } from '../../../../../../features/warehouse/shelfModalSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { openRowShelfForm } from '@/features/warehouse/rowShelfModalSlice';
+import { openShelfForm } from '@/features/warehouse/shelfModalSlice';
 import {
   navigateWarehouse,
   selectWarehouse,
-} from '../../../../../../features/warehouse/warehouseSlice';
+} from '@/features/warehouse/warehouseSlice';
 import {
   deleteRowShelf,
   useListenRowShelves,
-} from '../../../../../../firebase/warehouse/RowShelfService';
-import { ProductStockForm } from '../forms/ProductStockForm/ProductStockForm';
+} from '@/firebase/warehouse/RowShelfService';
+import { ProductStockForm } from '@/views/pages/Inventory/components/Warehouse/forms/ProductStockForm/ProductStockForm';
 
 import { ProductsSection } from './ProductsSection';
 import { DetailContainer } from './WarehouseContent';

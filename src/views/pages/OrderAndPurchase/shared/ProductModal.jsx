@@ -14,10 +14,10 @@ import { useSelector } from 'react-redux';
 import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { db } from '../../../../firebase/firebaseconfig';
-import { useGetProducts } from '../../../../firebase/products/fbGetProducts';
-import { filterData } from '../../../../hooks/search/useSearch';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { filterData } from '@/hooks/search/useSearch';
 
 const Header = styled.div`
   padding: 0 1em;

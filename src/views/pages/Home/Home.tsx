@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { MenuWebsite } from '../../templates/MenuWebsite/MenuWebsite';
+import { MenuWebsite } from '@/views/templates/MenuWebsite/MenuWebsite';
 
 import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
 import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';

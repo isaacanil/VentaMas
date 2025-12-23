@@ -9,12 +9,12 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { defaultInstallmentPaymentsAR } from '../../schema/accountsReceivable/installmentPaymentsAR';
-import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
-import { fbAddPayment } from '../accountsReceivable/payment/fbAddPayment';
-import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
-import { db } from '../firebaseconfig';
-import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
+import { fbAddAccountReceivablePaymentReceipt } from '@/firebase/accountsReceivable/fbAddAccountReceivablePaymentReceipt';
+import { fbAddPayment } from '@/firebase/accountsReceivable/payment/fbAddPayment';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 
 import {
   getOldestActiveInstallmentByArId,

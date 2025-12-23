@@ -3,24 +3,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import {
   clear,
   selectUserManager,
   setErrors,
   updateUser,
-} from '../../../../../../../features/usersManagement/usersManagementSlice';
-import { fbUpdateUser } from '../../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
-import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
+} from '@/features/usersManagement/usersManagementSlice';
+import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import {
   Button,
   ButtonGroup,
-} from '../../../../../../templates/system/Button/Button';
-import ElemLabel from '../../../../../../templates/system/ElemLabel/ElemLabel';
-import { ErrorComponent } from '../../../../../../templates/system/ErrorComponent/ErrorComponent';
-import { InputV4 } from '../../../../../../templates/system/Inputs/GeneralInput/InputV4';
-import { Select } from '../../../../../../templates/system/Select/Select';
-import DynamicPermissionsManager from '../DynamicPermissionsManager';
+} from '@/views/templates/system/Button/Button';
+import ElemLabel from '@/views/templates/system/ElemLabel/ElemLabel';
+import { ErrorComponent } from '@/views/templates/system/ErrorComponent/ErrorComponent';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
+import { Select } from '@/views/templates/system/Select/Select';
+import DynamicPermissionsManager from '@/views/pages/setting/subPage/Users/components/DynamicPermissionsManager';
 
 import { ChangePassword } from './ChangePassword/ChangePassword';
 

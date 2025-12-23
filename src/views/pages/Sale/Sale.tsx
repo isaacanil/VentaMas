@@ -19,23 +19,23 @@ import {
   toggleCart,
   SelectSettingCart,
   SelectCartData,
-} from '../../../features/cart/cartSlice';
-import { deleteClient } from '../../../features/clientCart/clientCartSlice.js';
-import { clearTaxReceiptData } from '../../../features/taxReceipt/taxReceiptSlice.js';
-import { useGetProducts } from '../../../firebase/products/fbGetProducts';
-import { useBarcodeScanner } from '../../../hooks/barcode/useBarcodeScanner';
-import { useCashCountClosingPrompt } from '../../../hooks/cashCount/useCashCountClosingPrompt';
-import useFilter from '../../../hooks/search/useSearch'; // Cambiar importación
-import useViewportWidth from '../../../hooks/windows/useViewportWidth.jsx';
+} from '@/features/cart/cartSlice';
+import { deleteClient } from '@/features/clientCart/clientCartSlice.js';
+import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice.js';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { useBarcodeScanner } from '@/hooks/barcode/useBarcodeScanner';
+import { useCashCountClosingPrompt } from '@/hooks/cashCount/useCashCountClosingPrompt';
+import useFilter from '@/hooks/search/useSearch'; // Cambiar importación
+import useViewportWidth from '@/hooks/windows/useViewportWidth.jsx';
 import {
   extractProductInfo,
   extractWeightInfo,
   formatWeight,
-} from '../../../utils/barcode.js';
-import { ClientSelector } from '../../component/contact/ClientControl/ClientSelector/ClientSelector.jsx';
-import { MenuApp } from '../../templates/MenuApp/MenuApp.jsx';
-import { MenuComponents } from '../../templates/MenuComponents/MenuComponents.jsx';
-import { ProductBatchModal } from '../Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx';
+} from '@/utils/barcode.js';
+import { ClientSelector } from '@/views/component/contact/ClientControl/ClientSelector/ClientSelector.jsx';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp.jsx';
+import { MenuComponents } from '@/views/templates/MenuComponents/MenuComponents.jsx';
+import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx';
 
 import { Cart } from './components/Cart/Cart';
 import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx';

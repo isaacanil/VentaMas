@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import {
   selectIsSoldInUnits,
   selectSelectedSaleUnit,
-} from '../../../../../../../features/updateProduct/updateProductSlice';
+} from '@/features/updateProduct/updateProductSlice';
 
 const PricesContainer = styled.div`
   margin-top: 20px;

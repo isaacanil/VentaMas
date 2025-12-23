@@ -1,7 +1,7 @@
 import {
   getOrderConditionByID,
   getOrderStateByID,
-} from '../../../../../../constants/orderAndPurchaseState';
+} from '@/constants/orderAndPurchaseState';
 
 import { OrderActionButtons } from './tableCells.jsx';
 

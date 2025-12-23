@@ -20,17 +20,17 @@ import styled from 'styled-components';
 import {
   getRoleLabelById,
   userRoles,
-} from '../../../../../../../abilities/roles';
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { toggleSignUpUser } from '../../../../../../../features/modals/modalSlice';
-import { updateUser } from '../../../../../../../features/usersManagement/usersManagementSlice';
-import { realtimeDB } from '../../../../../../../firebase/firebaseconfig.jsx';
-import { fbGetUsers } from '../../../../../../../firebase/users/fbGetUsers';
-import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
+} from '@/abilities/roles';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleSignUpUser } from '@/features/modals/modalSlice';
+import { updateUser } from '@/features/usersManagement/usersManagementSlice';
+import { realtimeDB } from '@/firebase/firebaseconfig.jsx';
+import { fbGetUsers } from '@/firebase/users/fbGetUsers';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { getAvailablePermissionsForRole } from '../../../../../../../services/dynamicPermissions';
-import { AdvancedTable } from '../../../../../../templates/system/AdvancedTable/AdvancedTable';
-import DynamicPermissionsManager from '../DynamicPermissionsManager';
+import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import DynamicPermissionsManager from '@/views/pages/setting/subPage/Users/components/DynamicPermissionsManager';
 
 import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';

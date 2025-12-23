@@ -5,9 +5,9 @@ import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
 
-import { icons } from '../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { toggleClientModal } from '../../../../../features/modals/modalSlice';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { toggleClientModal } from '@/features/modals/modalSlice';
 import routesName from '@/router/routes/routesName';
 
 export const ClientControlToolbar = ({ side = 'left' }) => {

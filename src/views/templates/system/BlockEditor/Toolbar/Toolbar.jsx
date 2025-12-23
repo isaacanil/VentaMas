@@ -4,8 +4,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { fbAddChangelog } from '../../../../../firebase/AppUpdate/fbAddAppUpdate';
+import { icons } from '@/constants/icons/icons';
+import { fbAddChangelog } from '@/firebase/AppUpdate/fbAddAppUpdate';
 
 const Toolbar = () => {
   const [editor] = useLexicalComposerContext();

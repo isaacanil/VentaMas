@@ -1,6 +1,6 @@
 import { collection, onSnapshot } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbGetProductsImg = async (user, SetAllImg) => {
   if (!user || !user?.businessID) {

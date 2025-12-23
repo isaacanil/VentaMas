@@ -8,9 +8,9 @@
 import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { sanitizeFirestoreDocument } from '../../utils/firebase/sanitizeFirestoreDocument';
-import { db } from '../firebaseconfig';
-import { getNextID } from '../Tools/getNextID';
+import { sanitizeFirestoreDocument } from '@/utils/firebase/sanitizeFirestoreDocument';
+import { db } from '@/firebase/firebaseconfig';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 export const fbAddPreOrder = async (user, cartData) => {
   try {

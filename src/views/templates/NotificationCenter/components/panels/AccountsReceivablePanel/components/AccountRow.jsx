@@ -7,7 +7,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
-import { formatNumber } from '../../../../../../../utils/formatNumber';
+import { formatNumber } from '@/utils/formatNumber';
 import {
   PanelRow,
   RowMain,
@@ -21,7 +21,7 @@ import {
   StatusPill,
   MetaLabel,
   MetaValue,
-} from '../../shared/PanelPrimitives';
+} from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 const resolveIcon = (account) => {
   if (account?.isOverdue) return faExclamationTriangle;

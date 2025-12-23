@@ -8,14 +8,14 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   ChangeProductImage,
   selectUpdateProductData,
-} from '../../../../../features/updateProduct/updateProductSlice';
-import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
-import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
-import { fbGetProductsImg } from '../../../../../firebase/products/productsImg/fbGetProductsImg';
+} from '@/features/updateProduct/updateProductSlice';
+import { fbAddProductImg } from '@/firebase/products/productsImg/fbAddProductImg';
+import { fbAddProductImgData } from '@/firebase/products/productsImg/fbAddProductImgData';
+import { fbGetProductsImg } from '@/firebase/products/productsImg/fbGetProductsImg';
 
 import { Gallery } from './components/Gallery';
 

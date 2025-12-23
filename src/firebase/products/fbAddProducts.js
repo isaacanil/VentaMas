@@ -8,11 +8,11 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { BatchStatus } from '../../models/Warehouse/Batch';
-import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
-import { db } from '../firebaseconfig';
-import { getNextID } from '../Tools/getNextID';
-import { getDefaultWarehouse } from '../warehouse/warehouseService';
+import { BatchStatus } from '@/models/Warehouse/Batch';
+import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import { db } from '@/firebase/firebaseconfig';
+import { getNextID } from '@/firebase/Tools/getNextID';
+import { getDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 
 class ImportProgress {
   constructor() {

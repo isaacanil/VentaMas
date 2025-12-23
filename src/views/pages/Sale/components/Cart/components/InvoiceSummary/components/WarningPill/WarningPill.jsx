@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 
-import { useClickOutSide } from '../../../../../../../../../hooks/useClickOutSide';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 const WarningPill = ({ message, icon = '⚠️' }) => {
   const [showMessage, setShowMessage] = useState(false);

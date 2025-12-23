@@ -4,7 +4,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { handleModalSetCustomPizza } from '../../../../features/modals/modalSlice';
+import { handleModalSetCustomPizza } from '@/features/modals/modalSlice';
 
 export const CustomProduct = ({ product }) => {
   const dispatch = useDispatch();

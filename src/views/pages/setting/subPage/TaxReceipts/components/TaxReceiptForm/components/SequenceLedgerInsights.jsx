@@ -39,7 +39,7 @@ const InsightList = ({ label, items, withCount = false, formatNcf }) => {
             typeof formatNcf === 'function'
               ? formatNcf(item)
               : item.ncf ||
-                `${item.prefix || ''}${item.normalizedDigits || ''}`;
+              `${item.prefix || ''}${item.normalizedDigits || ''}`;
           return (
             <li key={key}>
               <Text>{value}</Text>
@@ -167,9 +167,9 @@ const SequenceLedgerInsights = ({
     : null;
   const availableAfterRange = showAvailableAfter
     ? {
-        start: formatItemNcf(availableAfter[0]),
-        end: formatItemNcf(availableAfter[availableAfter.length - 1]),
-      }
+      start: formatItemNcf(availableAfter[0]),
+      end: formatItemNcf(availableAfter[availableAfter.length - 1]),
+    }
     : null;
 
   const formatRangeLabel = (range) => {

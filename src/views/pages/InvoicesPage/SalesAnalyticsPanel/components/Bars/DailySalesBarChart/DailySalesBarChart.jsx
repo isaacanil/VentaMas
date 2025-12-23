@@ -11,7 +11,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 
 Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);

@@ -3,8 +3,8 @@ import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { fbGetSessionLogs } from '../../../../../firebase/Auth/fbAuthV2/fbGetSessionLogs';
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
+import { fbGetSessionLogs } from '@/firebase/Auth/fbAuthV2/fbGetSessionLogs';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 const columns = [
   {

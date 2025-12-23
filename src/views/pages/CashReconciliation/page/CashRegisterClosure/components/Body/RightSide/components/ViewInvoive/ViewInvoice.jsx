@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { PillButton } from '../../../../../../../../../component/PillButton/PillButton';
-import { CashupInvoicesOverview } from '../../../../../../CashupInvoicesOverview/CashupInvoicesOverview';
+import { PillButton } from '@/views/component/PillButton/PillButton';
+import { CashupInvoicesOverview } from '@/views/pages/CashReconciliation/page/CashupInvoicesOverview/CashupInvoicesOverview';
 
 export const ViewInvoice = ({ invoices, invoicesCount, loading }) => {
   const [isOpen, setIsOpen] = useState(false);

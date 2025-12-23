@@ -1,6 +1,6 @@
 import { collection, doc, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbUpdateTaxReceipt = async (user, taxReceiptArray) => {
   if (!user || !user?.businessID) return;

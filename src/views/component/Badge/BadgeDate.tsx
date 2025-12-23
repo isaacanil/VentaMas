@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import React, { cloneElement, ReactNode, isValidElement } from 'react';
 import styled from 'styled-components';
 
-import type { ConfigItem } from '../../../config/statusActionConfig';
+import type { ConfigItem } from '@/config/statusActionConfig';
 
 type BadgeDateConfig = ConfigItem;
 

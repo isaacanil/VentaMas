@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../../../../../../../templates/system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const PaginationBar = ({
   products,

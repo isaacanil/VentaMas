@@ -18,9 +18,9 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
-          ]
+          DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
+          DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+        ]
         : DateTime.local().setLocale(DATE_LOCALE).startOf('day'),
   },
   {
@@ -28,19 +28,19 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 1 })
-              .startOf('day'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 1 })
-              .endOf('day'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ days: 1 })
             .startOf('day'),
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .minus({ days: 1 })
+            .endOf('day'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ days: 1 })
+          .startOf('day'),
   },
   {
     label: 'Esta semana',
@@ -56,74 +56,74 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('month'),
-          ]
+          DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
+          DateTime.local().setLocale(DATE_LOCALE).endOf('month'),
+        ]
         : DateTime.local().setLocale(DATE_LOCALE).startOf('month'),
   },
   {
-    label: 'Este aヵo',
+    label: 'Este año',
     value:
       mode === 'range'
         ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
-          ]
+          DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+          DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
+        ]
         : DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
   },
-  // Perヴodos recientes
+  // Periodos recientes
   {
-    label: 'れltimos 7 dヴas',
+    label: 'Últimos 7 días',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 6 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ days: 6 })
             .startOf('day'),
-    group: 'Perヴodos recientes',
+          DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ days: 6 })
+          .startOf('day'),
+    group: 'Periodos recientes',
   },
   {
-    label: 'れltimos 30 dヴas',
+    label: 'Últimos 30 días',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 29 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ days: 29 })
             .startOf('day'),
-    group: 'Perヴodos recientes',
+          DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ days: 29 })
+          .startOf('day'),
+    group: 'Periodos recientes',
   },
   {
-    label: 'れltimos 90 dヴas',
+    label: 'Últimos 90 días',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ days: 89 })
-              .startOf('day'),
-            DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ days: 89 })
             .startOf('day'),
-    group: 'Perヴodos recientes',
+          DateTime.local().setLocale(DATE_LOCALE).endOf('day'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ days: 89 })
+          .startOf('day'),
+    group: 'Periodos recientes',
   },
-  // Perヴodos pasados
+  // Periodos pasados
   {
     label: 'Semana pasada',
     value: (() => {
@@ -133,47 +133,47 @@ export const createDefaultPresets = (mode = 'single') => [
       const { start, end } = getWeekRangeMondayAligned(reference);
       return mode === 'range' ? [start, end] : start;
     })(),
-    group: 'Perヴodos pasados',
+    group: 'Periodos pasados',
   },
   {
     label: 'Mes pasado',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ months: 1 })
-              .startOf('month'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ months: 1 })
-              .endOf('month'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ months: 1 })
             .startOf('month'),
-    group: 'Perヴodos pasados',
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .minus({ months: 1 })
+            .endOf('month'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ months: 1 })
+          .startOf('month'),
+    group: 'Periodos pasados',
   },
   {
-    label: 'Aヵo pasado',
+    label: 'Año pasado',
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ years: 1 })
-              .startOf('year'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .minus({ years: 1 })
-              .endOf('year'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .minus({ years: 1 })
             .startOf('year'),
-    group: 'Perヴodos pasados',
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .minus({ years: 1 })
+            .endOf('year'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .minus({ years: 1 })
+          .startOf('year'),
+    group: 'Periodos pasados',
   },
   // Trimestres actuales
   {
@@ -181,13 +181,13 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 2 })
-              .endOf('month'),
-          ]
+          DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .startOf('year')
+            .plus({ months: 2 })
+            .endOf('month'),
+        ]
         : DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
     group: 'Trimestres',
   },
@@ -196,20 +196,20 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 3 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 5 })
-              .endOf('month'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .startOf('year')
             .plus({ months: 3 }),
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .startOf('year')
+            .plus({ months: 5 })
+            .endOf('month'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .startOf('year')
+          .plus({ months: 3 }),
     group: 'Trimestres',
   },
   {
@@ -217,20 +217,20 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 6 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 8 })
-              .endOf('month'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .startOf('year')
             .plus({ months: 6 }),
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .startOf('year')
+            .plus({ months: 8 })
+            .endOf('month'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .startOf('year')
+          .plus({ months: 6 }),
     group: 'Trimestres',
   },
   {
@@ -238,22 +238,22 @@ export const createDefaultPresets = (mode = 'single') => [
     value:
       mode === 'range'
         ? [
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 9 }),
-            DateTime.local()
-              .setLocale(DATE_LOCALE)
-              .startOf('year')
-              .plus({ months: 11 })
-              .endOf('month'),
-          ]
-        : DateTime.local()
+          DateTime.local()
             .setLocale(DATE_LOCALE)
             .startOf('year')
             .plus({ months: 9 }),
+          DateTime.local()
+            .setLocale(DATE_LOCALE)
+            .startOf('year')
+            .plus({ months: 11 })
+            .endOf('month'),
+        ]
+        : DateTime.local()
+          .setLocale(DATE_LOCALE)
+          .startOf('year')
+          .plus({ months: 9 }),
     group: 'Trimestres',
   },
 ];
 
-export const WEEK_DAYS = ['Dom', 'Lun', 'Mar', 'Miゼ', 'Jue', 'Vie', 'Sケb'];
+export const WEEK_DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

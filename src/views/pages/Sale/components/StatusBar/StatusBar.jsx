@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectCart } from '../../../../../features/cart/cartSlice';
+import { selectCart } from '@/features/cart/cartSlice';
 
 import { BusinessIndicator } from './components/BusinessIndicator/BusinessIndicator';
 import { ProductCounter } from './components/Card/Card';

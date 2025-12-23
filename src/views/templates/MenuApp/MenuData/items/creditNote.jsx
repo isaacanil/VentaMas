@@ -1,4 +1,4 @@
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;

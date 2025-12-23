@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
-import { ROUTE_STATUS } from '../routeMeta';
-import RoutesName from '../routesName';
+import { ROUTE_STATUS } from '@/router/routes/routeMeta';
+import RoutesName from '@/router/routes/routesName';
 
 const AllUsersControl = lazy(() =>
   import('@/views/controlPanel/AllUsersControl/AllUsersControl').then(

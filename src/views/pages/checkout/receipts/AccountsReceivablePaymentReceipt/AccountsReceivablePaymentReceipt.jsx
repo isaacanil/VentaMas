@@ -7,8 +7,8 @@ import { formatPrice } from '@/utils/format';
 import { Header } from '../../components/Header/Header';
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 import { Row } from '../../components/Table/Row';
-import { Line } from '../../Receipt';
-import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '../../Style';
+import { Line } from '@/views/pages/checkout/Receipt';
+import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '@/views/pages/checkout/Style';
 
 import { GeneralBalance } from './components/GeneralBalance';
 import { PaymentArea } from './components/PaymentArea';
@@ -46,7 +46,7 @@ export const AccountsReceivablePaymentReceipt = forwardRef(({ data }, ref) => {
                 label={'FACTURA'}
                 value={
                   account?.invoiceNumber !== undefined &&
-                  account?.invoiceNumber !== null
+                    account?.invoiceNumber !== null
                     ? `#${formatNumber(account?.invoiceNumber)}`
                     : 'N/A'
                 }

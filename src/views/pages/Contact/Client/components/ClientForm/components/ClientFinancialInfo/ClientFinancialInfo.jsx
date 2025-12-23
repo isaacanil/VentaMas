@@ -8,11 +8,11 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { useClientAccountsReceivable } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivable';
-import { useClientAccountsReceivableCounts } from '../../../../../../../../firebase/accountsReceivable/useClientAccountsReceivableCounts';
-import { useClientPendingBalance } from '../../../../../../../../firebase/accountsReceivable/useClientPendingBalance';
-import { convertAccountsData } from '../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { selectUser } from '@/features/auth/userSlice';
+import { useClientAccountsReceivable } from '@/firebase/accountsReceivable/useClientAccountsReceivable';
+import { useClientAccountsReceivableCounts } from '@/firebase/accountsReceivable/useClientAccountsReceivableCounts';
+import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
+import { convertAccountsData } from '@/utils/accountsReceivable/accountsReceivable';
 
 import { AccountCard } from './AccountCard/AccountCard';
 import { ClientBalanceInfo } from './components/ClientBalanceInfo';

@@ -13,13 +13,13 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { useCategoryState } from '../../../../../Context/CategoryContext';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbDeleteExpenseCategory } from '../../../../../firebase/expenses/categories/fbDeleteExpenseCategory';
-import { useFbGetExpensesCategories } from '../../../../../firebase/expenses/categories/fbGetExpensesCategories';
-import { fbRestoreExpenseCategory } from '../../../../../firebase/expenses/categories/fbRestoreExpenseCategory';
-import { fbUpdateExpenseCategory } from '../../../../../firebase/expenses/categories/fbUpdateExpenseCategory';
+import { icons } from '@/constants/icons/icons';
+import { useCategoryState } from '@/Context/CategoryContext';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbDeleteExpenseCategory } from '@/firebase/expenses/categories/fbDeleteExpenseCategory';
+import { useFbGetExpensesCategories } from '@/firebase/expenses/categories/fbGetExpensesCategories';
+import { fbRestoreExpenseCategory } from '@/firebase/expenses/categories/fbRestoreExpenseCategory';
+import { fbUpdateExpenseCategory } from '@/firebase/expenses/categories/fbUpdateExpenseCategory';
 
 const { Title, Text } = Typography;
 

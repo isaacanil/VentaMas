@@ -6,7 +6,7 @@ import {
   getThresholdsForReceiptType,
   getAlertMessage,
   FISCAL_RECEIPTS_ALERT_CONFIG,
-} from '../config/fiscalReceiptsAlertConfig';
+} from '@/config/fiscalReceiptsAlertConfig';
 
 /**
  * Configuración por defecto para alertas de comprobantes

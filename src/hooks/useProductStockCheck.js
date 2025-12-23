@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../features/auth/userSlice';
-import { openProductStockSimple } from '../features/productStock/productStockSimpleSlice';
-import { getProductStockByProductId } from '../firebase/warehouse/productStockService';
+import { selectUser } from '@/features/auth/userSlice';
+import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
+import { getProductStockByProductId } from '@/firebase/warehouse/productStockService';
 
 export const useProductStockCheck = () => {
   const dispatch = useDispatch();

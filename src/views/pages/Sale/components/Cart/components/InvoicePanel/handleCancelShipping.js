@@ -2,10 +2,10 @@ import {
   resetCart,
   toggleCart,
   toggleInvoicePanel,
-} from '../../../../../../../features/cart/cartSlice';
-import { deleteClient } from '../../../../../../../features/clientCart/clientCartSlice';
-import { clearAuthData } from '../../../../../../../features/insurance/insuranceAuthSlice';
-import { clearTaxReceiptData } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
+} from '@/features/cart/cartSlice';
+import { deleteClient } from '@/features/clientCart/clientCartSlice';
+import { clearAuthData } from '@/features/insurance/insuranceAuthSlice';
+import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 
 export function handleCancelShipping({
   dispatch,

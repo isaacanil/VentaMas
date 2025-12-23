@@ -2,8 +2,8 @@ import { Select, Form, Button, message } from 'antd';
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
+import { selectUser } from '@/features/auth/userSlice';
+import { setBillingSettings } from '@/firebase/billing/billingSetting';
 
 const { Option } = Select;
 

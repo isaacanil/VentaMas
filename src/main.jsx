@@ -6,18 +6,18 @@ import ReactDOM from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 
-import './firebase/firebaseconfig';
-import { AntConfigProvider } from './ant/AntConfigProvider';
-import App from './App';
-import './styles/normalize/normalize.css';
-import './index.css';
-import './variable.css';
-import './styles/typography/typographyStyle.scss';
-import './styles/theme.css';
-import './styles/darkTheme.css';
-import { store } from './app/store';
-import AppProviders from './Context/AppProviders';
-import i18n from './i18n';
+import '@/firebase/firebaseconfig';
+import { AntConfigProvider } from '@/ant/AntConfigProvider';
+import App from '@/App';
+import '@/styles/normalize/normalize.css';
+import '@/index.css';
+import '@/variable.css';
+import '@/styles/typography/typographyStyle.scss';
+import '@/styles/theme.css';
+import '@/styles/darkTheme.css';
+import { store } from '@/app/store';
+import AppProviders from '@/Context/AppProviders';
+import i18n from '@/i18n';
 
 (async () => {
   if (shouldPolyfill()) {

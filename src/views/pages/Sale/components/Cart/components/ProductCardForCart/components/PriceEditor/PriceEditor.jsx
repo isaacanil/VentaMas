@@ -4,14 +4,14 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../../../../constants/icons/icons';
-import { changeProductPrice } from '../../../../../../../../../features/cart/cartSlice';
-import { selectTaxReceiptEnabled } from '../../../../../../../../../features/taxReceipt/taxReceiptSlice';
-import { useUserAccess } from '../../../../../../../../../hooks/abilities/useAbilities';
+import { icons } from '@/constants/icons/icons';
+import { changeProductPrice } from '@/features/cart/cartSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import {
   getPriceTotal,
   getPriceWithoutTax,
-} from '../../../../../../../../../utils/pricing';
+} from '@/utils/pricing';
 
 
 export const PriceEditor = ({ item, onModalOpen }) => {

@@ -1,7 +1,7 @@
 import { InputNumber } from 'antd';
 import styled from 'styled-components';
 
-import { FormattedValue } from '../FormattedValue/FormattedValue';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 const THEME_COLOR_TO_CSS_VAR = {
   success: 'var(--success)',

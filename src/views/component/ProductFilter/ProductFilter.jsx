@@ -4,9 +4,9 @@ import { Input } from 'antd';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { useGetProducts } from '../../../firebase/products/fbGetProducts';
-import { filterData } from '../../../hooks/search/useSearch';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { useGetProducts } from '@/firebase/products/fbGetProducts';
+import { filterData } from '@/hooks/search/useSearch';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 import { ProductCard } from './ProductCard';
 

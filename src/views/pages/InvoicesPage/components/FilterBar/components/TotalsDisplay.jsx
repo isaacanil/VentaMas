@@ -5,7 +5,7 @@ import { formatPrice } from '@/utils/format';
 import {
   calculateInvoicesTotal,
   countInvoices,
-} from '../../../../../../utils/invoice';
+} from '@/utils/invoice';
 
 
 export const TotalsDisplay = ({ invoices, className }) => {

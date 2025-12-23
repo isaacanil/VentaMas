@@ -1,10 +1,10 @@
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import debounce from 'lodash/debounce';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../../firebase/firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { debounce } from '@/utils/lodash-minimal';
 
 /**
  * Hook para validar códigos de barras duplicados en tiempo real
@@ -82,15 +82,15 @@ export const useBarcodeValidator = (
           isDuplicate,
           duplicateInfo: duplicateProduct
             ? {
-                id: duplicateProduct.id,
-                name: duplicateProduct.name || duplicateProduct.productName,
-                barcode: duplicateProduct.barcode,
-                category: duplicateProduct.category,
-                price:
-                  duplicateProduct.pricing?.price ||
-                  duplicateProduct.price?.unit,
-                stock: duplicateProduct.stock,
-              }
+              id: duplicateProduct.id,
+              name: duplicateProduct.name || duplicateProduct.productName,
+              barcode: duplicateProduct.barcode,
+              category: duplicateProduct.category,
+              price:
+                duplicateProduct.pricing?.price ||
+                duplicateProduct.price?.unit,
+              stock: duplicateProduct.stock,
+            }
             : null,
         };
 

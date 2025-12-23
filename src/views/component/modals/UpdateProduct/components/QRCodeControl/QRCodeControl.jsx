@@ -3,9 +3,9 @@ import QRCode from 'react-qr-code';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { setProduct } from '../../../../../../features/updateProduct/updateProductSlice';
-import { InputV4 } from '../../../../../templates/system/Inputs/GeneralInput/InputV4';
+import { icons } from '@/constants/icons/icons';
+import { setProduct } from '@/features/updateProduct/updateProductSlice';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 export const QRCodeControl = ({ product, value }) => {
   const dispatch = useDispatch();

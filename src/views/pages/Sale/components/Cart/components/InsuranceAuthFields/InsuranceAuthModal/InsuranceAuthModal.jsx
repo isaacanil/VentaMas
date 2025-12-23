@@ -6,10 +6,10 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import DoctorModal from '../../../../../../../../components/DoctorModal/DoctorModal';
-import DoctorSelector from '../../../../../../../../components/DoctorSelector/DoctorSelector';
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
-import { selectClient } from '../../../../../../../../features/clientCart/clientCartSlice';
+import DoctorModal from '@/components/DoctorModal/DoctorModal';
+import DoctorSelector from '@/components/DoctorSelector/DoctorSelector';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
 import {
   setAuthData,
   selectInsuranceAuthData,
@@ -18,16 +18,16 @@ import {
   closeModal,
   fetchInsuranceAuthByClientId,
   updateAuthField,
-} from '../../../../../../../../features/insurance/insuranceAuthSlice';
-import { useFbGetDoctors } from '../../../../../../../../firebase/doctors/useFbGetDoctors';
+} from '@/features/insurance/insuranceAuthSlice';
+import { useFbGetDoctors } from '@/firebase/doctors/useFbGetDoctors';
 import {
   createClientInsurance,
   updateClientInsurance,
   getClientInsuranceByClientId,
-} from '../../../../../../../../firebase/insurance/clientInsuranceService';
-import { useListenInsuranceConfig } from '../../../../../../../../firebase/insurance/insuranceService';
-import useInsuranceEnabled from '../../../../../../../../hooks/useInsuranceEnabled';
-import FileUploader from '../../../../../../../component/FileUploader/FileUploader';
+} from '@/firebase/insurance/clientInsuranceService';
+import { useListenInsuranceConfig } from '@/firebase/insurance/insuranceService';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import FileUploader from '@/views/component/FileUploader/FileUploader';
 
 import Dependent from './components/Dependent/Dependent';
 

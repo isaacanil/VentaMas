@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import BackButton from '../../GoBackToSetting';
+import BackButton from '@/views/pages/setting/GoBackToSetting';
 
 const InfoWrapper = styled.div`
   background-color: #f7f7f7;

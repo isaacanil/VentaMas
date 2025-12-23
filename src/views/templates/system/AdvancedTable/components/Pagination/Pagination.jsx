@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 
 export const Pagination = ({
   firstPage,

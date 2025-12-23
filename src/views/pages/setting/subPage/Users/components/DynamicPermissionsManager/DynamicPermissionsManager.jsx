@@ -3,14 +3,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { useUserAccess } from '../../../../../../../hooks/abilities/useAbilities';
+import { selectUser } from '@/features/auth/userSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import {
   getUserDynamicPermissions,
   setUserDynamicPermissions,
   getAvailablePermissionsForRole,
   getRolePermissionsInfo,
-} from '../../../../../../../services/dynamicPermissions';
+} from '@/services/dynamicPermissions';
 
 const DynamicPermissionsManager = ({
   userId,

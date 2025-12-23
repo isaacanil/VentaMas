@@ -13,8 +13,8 @@ import { useEffect, useRef } from 'react';
 import {
   ensureDeviceId,
   getStoredSession,
-} from '../Auth/fbAuthV2/sessionClient.js';
-import { realtimeDB } from '../firebaseconfig.jsx';
+} from '@/firebase/Auth/fbAuthV2/sessionClient.js';
+import { realtimeDB } from '@/firebase/firebaseconfig.jsx';
 
 const PRESENCE_BASE_PATH = 'presence';
 const HEARTBEAT_INTERVAL_MS = 20 * 1000; // Mantener actualizado el timestamp antes de que el backend lo marque como inactivo

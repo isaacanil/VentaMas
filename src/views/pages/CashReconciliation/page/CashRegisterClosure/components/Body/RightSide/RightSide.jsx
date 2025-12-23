@@ -2,21 +2,21 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   addPropertiesToCashCount,
   selectCashCount,
   setCashCountClosingBanknotes,
   setCashCountClosingComments,
   updateCashCountTotals,
-} from '../../../../../../../../features/cashCount/cashCountManagementSlice';
-import { useInvoicesForCashCount } from '../../../../../../../../hooks/cashCount/useInvoicesForCashCount';
-import { usePaymentsForCashCount } from '../../../../../../../../hooks/cashCount/usePaymentsForCashCount';
-import { useExpensesForCashCount } from '../../../../../../../../hooks/expense/useExpensesForCashCount';
-import { isArrayEmpty } from '../../../../../../../../utils/array/ensureArray';
-import { CashDenominationCalculator } from '../../../../../resource/CashDenominationCalculator/CashDenominationCalculator';
-import { Comments } from '../../../Comments/Comments';
-import { DateSection } from '../../Header/DateSection';
+} from '@/features/cashCount/cashCountManagementSlice';
+import { useInvoicesForCashCount } from '@/hooks/cashCount/useInvoicesForCashCount';
+import { usePaymentsForCashCount } from '@/hooks/cashCount/usePaymentsForCashCount';
+import { useExpensesForCashCount } from '@/hooks/expense/useExpensesForCashCount';
+import { isArrayEmpty } from '@/utils/array/ensureArray';
+import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { Comments } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
+import { DateSection } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
 
 import { CashCountMetaData } from './CashCountMetaData';
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails';

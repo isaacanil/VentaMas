@@ -1,6 +1,6 @@
 import { ref, getBlob } from 'firebase/storage';
 
-import { storage } from '../firebaseconfig';
+import { storage } from '@/firebase/firebaseconfig';
 
 export async function downloadImage(url) {
   const gsPath = url.split('/o/')[1].split('?')[0];

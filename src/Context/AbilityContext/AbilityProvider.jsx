@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ability } from '../../abilities/abilityInstance';
-import { selectAbilities } from '../../features/abilities/abilitiesSlice';
+import { ability } from '@/abilities/abilityInstance';
+import { selectAbilities } from '@/features/abilities/abilitiesSlice';
 
 import { AbilityContext } from './context';
 

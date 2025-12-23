@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { ClientControl } from '../../../../component/contact/ClientControl/ClienteControl';
+import { ClientControl } from '@/views/component/contact/ClientControl/ClienteControl';
 
 import InvoiceSummary from './components/InvoiceSummary/InvoiceSummary';
 import { ProductsList } from './components/ProductsList/ProductsLit';

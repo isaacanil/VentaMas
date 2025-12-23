@@ -2,8 +2,8 @@ import { Input, Typography, Button } from 'antd';
 import { forwardRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { filterData } from '../../../../../hooks/search/useSearch';
+import { icons } from '@/constants/icons/icons';
+import { filterData } from '@/hooks/search/useSearch';
 
 import { Category } from './Category';
 

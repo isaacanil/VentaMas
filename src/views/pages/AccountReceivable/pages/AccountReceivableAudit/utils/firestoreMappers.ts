@@ -1,7 +1,7 @@
 import type {
   AccountsReceivableDoc,
   ReceivableInvoice,
-} from '../types';
+} from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
 import type {
   DocumentData,
   QueryDocumentSnapshot,

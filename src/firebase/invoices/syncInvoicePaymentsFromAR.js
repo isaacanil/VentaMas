@@ -8,9 +8,9 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
-import { mergePaymentMethods } from '../proccessAccountsReceivablePayments/arPaymentUtils';
-import { THRESHOLD, roundToTwoDecimals } from '../proccessAccountsReceivablePayments/financeUtils';
+import { db } from '@/firebase/firebaseconfig';
+import { mergePaymentMethods } from '@/firebase/proccessAccountsReceivablePayments/arPaymentUtils';
+import { THRESHOLD, roundToTwoDecimals } from '@/firebase/proccessAccountsReceivablePayments/financeUtils';
 
 const parseAmountFromPayment = (payment) => {
   const candidates = [

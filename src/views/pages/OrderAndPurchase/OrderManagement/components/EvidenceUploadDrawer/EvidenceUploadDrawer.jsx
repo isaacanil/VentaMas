@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   closeFileCenter,
   selectFileCenter,
-} from '../../../../../../features/files/fileSlice';
-import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
+} from '@/features/files/fileSlice';
+import EvidenceUpload from '@/views/pages/OrderAndPurchase/OrderManagement/components/EvidenceUpload/EvidenceUpload';
 
 function EvidenceUploadDrawer() {
   const dispatch = useDispatch();

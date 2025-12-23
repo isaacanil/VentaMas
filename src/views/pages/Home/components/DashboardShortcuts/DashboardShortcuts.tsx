@@ -1,12 +1,12 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
-import { useDeveloperFeaturesData, useMenuCardData } from '../../CardData';
-import { FeatureCardList } from '../FeatureCardList/FeatureCardList';
+import { selectUser } from '@/features/auth/userSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { useDeveloperFeaturesData, useMenuCardData } from '@/views/pages/Home/CardData';
+import { FeatureCardList } from '@/views/pages/Home/components/FeatureCardList/FeatureCardList';
 
-import type { FeatureCardData } from '../FeatureCardList/FeatureCard';
+import type { FeatureCardData } from '@/views/pages/Home/components/FeatureCardList/FeatureCard';
 import type { JSX } from 'react';
 
 const isFeatureCardData = (card: unknown): card is FeatureCardData => {

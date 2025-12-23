@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { designSystemV2 } from '../../../theme/designSystemV2';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { designSystemV2 } from '@/theme/designSystemV2';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { BestDayHighlightCard } from './components/BestDayHighlightCard';
 import { DailyPerformanceChart } from './components/DailyPerformanceChart';

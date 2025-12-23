@@ -3,8 +3,8 @@ import { useDispatch } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { openMultiPaymentModal } from '../../../../../features/modals/modalSlice';
-import { Button } from '../../../system/Button/Button';
+import { openMultiPaymentModal } from '@/features/modals/modalSlice';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const AccountReceivableToolbar = ({ side = 'left' }) => {
   const matchWithAccountsReceivable = useMatch('/account-receivable/list');

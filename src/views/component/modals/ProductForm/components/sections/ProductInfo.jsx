@@ -2,20 +2,20 @@ import { Card, Button, Input, Row, Col, Select, Form } from 'antd';
 import React, { useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { useCategoryState } from '../../../../../../Context/CategoryContext';
-import { openModal } from '../../../../../../features/activeIngredients/activeIngredientsSlice';
-import { openBrandModal } from '../../../../../../features/productBrands/productBrandSlice';
+import { icons } from '@/constants/icons/icons';
+import { useCategoryState } from '@/Context/CategoryContext';
+import { openModal } from '@/features/activeIngredients/activeIngredientsSlice';
+import { openBrandModal } from '@/features/productBrands/productBrandSlice';
 import {
   PRODUCT_BRAND_DEFAULT,
   PRODUCT_ITEM_TYPE_OPTIONS,
-} from '../../../../../../features/updateProduct/updateProductSlice';
-import { useFbGetCategories } from '../../../../../../firebase/categories/useFbGetCategories';
-import { useListenActiveIngredients } from '../../../../../../firebase/products/activeIngredient/activeIngredients';
+} from '@/features/updateProduct/updateProductSlice';
+import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
 import {
   BRAND_DEFAULT_OPTION_VALUE,
   BRAND_LEGACY_OPTION_VALUE,
-} from '../../constants/brandOptions';
+} from '@/views/component/modals/ProductForm/constants/brandOptions';
 
 export const ProductInfo = ({ product, productBrands = [] }) => {
   const dispatch = useDispatch();
@@ -78,11 +78,11 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
   const brandOptions = useMemo(() => {
     const normalizedBrands = Array.isArray(productBrands)
       ? productBrands
-          .map(({ id, name }) => ({
-            value: id,
-            label: typeof name === 'string' ? name.trim() : '',
-          }))
-          .filter(({ value, label }) => value && label)
+        .map(({ id, name }) => ({
+          value: id,
+          label: typeof name === 'string' ? name.trim() : '',
+        }))
+        .filter(({ value, label }) => value && label)
       : [];
 
     const options = [
@@ -95,8 +95,8 @@ export const ProductInfo = ({ product, productBrands = [] }) => {
 
     const hasLegacyBrand = Boolean(
       !product?.brandId &&
-        product?.brand &&
-        product.brand !== PRODUCT_BRAND_DEFAULT,
+      product?.brand &&
+      product.brand !== PRODUCT_BRAND_DEFAULT,
     );
 
     if (hasLegacyBrand) {

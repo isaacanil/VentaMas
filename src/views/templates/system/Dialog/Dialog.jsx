@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons';
-import { useDialog } from '../../../../Context/Dialog';
-import { ButtonGroup } from '../Button/Button';
-import Typography from '../Typografy/Typografy';
+import { icons } from '@/constants/icons/icons';
+import { useDialog } from '@/Context/Dialog';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { BackdropVariants, ContainerVariants } from './variants';
 

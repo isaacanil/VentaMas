@@ -75,7 +75,7 @@ const SummaryLabel = styled.span`
 `;
 
 const SummaryValue = styled.span`
-  font-family: 'Roboto Mono', 'Fira Code', Menlo, Consolas, monospace;
+  font-family: 'Poppins', monospace;
   font-size: clamp(16px, 1.6vw, 20px);
   font-weight: 600;
   line-height: 1.15;

@@ -16,7 +16,7 @@ import { getStatusLabel, statusTheme } from '../constants/constants';
 import type {
   AuthorizationRequest,
   AuthorizationRequestListItem,
-} from '../types';
+} from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 type ApproveHandler = (id: string) => void | string | Promise<void | string>;
 

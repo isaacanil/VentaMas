@@ -13,7 +13,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 
-import { Nav } from '../../templates/system/Nav/Nav';
+import { Nav } from '@/views/templates/system/Nav/Nav';
 
 export default function SettingsExample() {
   const [activeTab, setActiveTab] = useState('profile');

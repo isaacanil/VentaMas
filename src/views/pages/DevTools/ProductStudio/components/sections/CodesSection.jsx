@@ -7,7 +7,7 @@ import {
   SectionDescription,
   SectionHeader,
   SectionTitle,
-} from '../SectionLayout';
+} from '@/views/pages/DevTools/ProductStudio/components/SectionLayout';
 
 const CodesCard = styled(SectionCard)`
   .ant-card-body {

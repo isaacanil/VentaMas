@@ -3,12 +3,12 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useListenAllMovementsByDateRange } from '../../../../../firebase/warehouse/productMovementService';
-import { MovementReason } from '../../../../../models/Warehouse/Movement';
-import { getDateRange } from '../../../../../utils/date/getDateRange';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
+import { selectUser } from '@/features/auth/userSlice';
+import { useListenAllMovementsByDateRange } from '@/firebase/warehouse/productMovementService';
+import { MovementReason } from '@/models/Warehouse/Movement';
+import { getDateRange } from '@/utils/date/getDateRange';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import MovementsFilterBar from './MovementsFilterBar';
 

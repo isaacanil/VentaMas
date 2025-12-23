@@ -2,7 +2,7 @@ import { Alert, Modal } from 'antd';
 import { useEffect } from 'react';
 import styled from 'styled-components';
 
-import { useLocationNames } from '../../../../../../../../../hooks/useLocationNames';
+import { useLocationNames } from '@/hooks/useLocationNames';
 
 const InfoList = styled.div`
   display: grid;

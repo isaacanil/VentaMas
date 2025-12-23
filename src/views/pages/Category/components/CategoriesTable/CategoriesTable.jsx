@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { useFbGetCategories } from '../../../../../firebase/categories/useFbGetCategories';
-import { filterData } from '../../../../../hooks/search/useSearch';
-import { OrderItem } from '../ListItem/OrderItem';
+import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import { filterData } from '@/hooks/search/useSearch';
+import { OrderItem } from '@/views/pages/Category/components/ListItem/OrderItem';
 
 export const CategoriesTable = ({ searchTerm }) => {
   const { categories } = useFbGetCategories();

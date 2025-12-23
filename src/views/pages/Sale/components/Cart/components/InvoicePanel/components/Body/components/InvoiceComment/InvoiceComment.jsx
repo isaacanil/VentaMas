@@ -13,7 +13,7 @@ import {
   addInvoiceComment,
   deleteInvoiceComment,
   SelectInvoiceComment,
-} from '../../../../../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 
 const { TextArea } = Input;
 const { confirm } = Modal;

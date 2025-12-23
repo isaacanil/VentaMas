@@ -1,6 +1,6 @@
 import { faTruck, faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 
-import { transactionConditions } from '../../../../../constants/orderAndPurchaseState';
+import { transactionConditions } from '@/constants/orderAndPurchaseState';
 
 const createFilterConfig = () => ({
   filters: [

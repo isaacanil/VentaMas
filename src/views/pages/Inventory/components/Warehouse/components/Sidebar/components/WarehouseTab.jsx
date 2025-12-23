@@ -5,11 +5,11 @@ import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useTransformedWarehouseData } from '../../../../../../../../firebase/warehouse/warehouseNestedServise';
-import RowForm from '../../../forms/RowShelfForm/RowShelfForm';
-import SegmentForm from '../../../forms/SegmentForm/SegmentForm';
-import { ShelfForm } from '../../../forms/ShelfForm/ShelfForm';
-import { WarehouseForm } from '../../../forms/WarehouseForm/WarehouseForm';
+import { useTransformedWarehouseData } from '@/firebase/warehouse/warehouseNestedServise';
+import RowForm from '@/views/pages/Inventory/components/Warehouse/forms/RowShelfForm/RowShelfForm';
+import SegmentForm from '@/views/pages/Inventory/components/Warehouse/forms/SegmentForm/SegmentForm';
+import { ShelfForm } from '@/views/pages/Inventory/components/Warehouse/forms/ShelfForm/ShelfForm';
+import { WarehouseForm } from '@/views/pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm';
 
 const TabContent = styled.div`
   display: flex;

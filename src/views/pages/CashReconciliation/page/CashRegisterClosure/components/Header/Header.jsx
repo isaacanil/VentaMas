@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { CashCountStateIndicator } from '../../../../resource/CashCountStatusIndicator/CashCountStateIndicator';
+import { CashCountStateIndicator } from '@/views/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator';
 
 import { UserSection } from './../../../../resource/UserSection/UserSection';
 

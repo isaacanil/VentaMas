@@ -4,18 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 // Redux
-import { selectAppMode } from '../../../features/appModes/appModeSlice';
+import { selectAppMode } from '@/features/appModes/appModeSlice';
 import {
   selectUser,
   selectIsTemporaryMode,
   selectOriginalBusinessId,
   selectIsTemporaryRoleMode,
   selectOriginalRole,
-} from '../../../features/auth/userSlice';
+} from '@/features/auth/userSlice';
 import {
   toggleDeveloperModal,
   SelectDeveloperModal,
-} from '../../../features/modals/modalSlice';
+} from '@/features/modals/modalSlice';
 
 // Componentes
 import CommandProcessor from './components/CommandProcessor';

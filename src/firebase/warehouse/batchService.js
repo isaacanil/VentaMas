@@ -14,8 +14,8 @@ import { nanoid } from 'nanoid'; // Importación correcta de nanoid
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 import { deleteAllProductStocksByBatch } from './productStockService';
 

@@ -6,7 +6,7 @@ import { formatPrice } from '@/utils/format';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
-} from '../../../../../../utils/invoice';
+} from '@/utils/invoice';
 
 import { Items } from './Items';
 

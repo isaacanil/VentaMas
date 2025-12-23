@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import {
   SelectProduct,
   SelectSettingCart,
-} from '../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
+
 import {
   isStockExceeded,
   isStockRestricted,

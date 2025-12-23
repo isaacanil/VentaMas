@@ -2,8 +2,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleAddCategory } from '../../../features/modals/modalSlice';
-import { Button } from '../../templates/system/Button/Button';
+import { toggleAddCategory } from '@/features/modals/modalSlice';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const ToolBar = () => {
   const dispatch = useDispatch();

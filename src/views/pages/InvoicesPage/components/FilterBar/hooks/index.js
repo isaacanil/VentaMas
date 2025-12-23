@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 
-import { useFbGetClientsOnOpen } from '../../../../../../firebase/client/useFbGetClientsOnOpen';
-import { useOverflowCollapse } from '../../../../../../hooks/useOverflowCollapse';
-import useViewportWidth from '../../../../../../hooks/windows/useViewportWidth';
-import { BREAKPOINTS } from '../constants';
+import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import { useOverflowCollapse } from '@/hooks/useOverflowCollapse';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
+import { BREAKPOINTS } from '@/views/pages/InvoicesPage/components/FilterBar/constants';
 
 export const useInvoiceSorting = (processedInvoices, setProcessedInvoices) => {
   const [sortCriteria, setSortCriteria] = useState('defaultCriteria');

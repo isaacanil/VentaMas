@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../constants/icons/icons';
-import { useClickOutSide } from '../../../hooks/useClickOutSide';
+import { icons } from '@/constants/icons/icons';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 export const SearchPanel = ({
   isOpen,

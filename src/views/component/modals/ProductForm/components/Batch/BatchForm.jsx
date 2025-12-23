@@ -17,13 +17,13 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 import {
   createBatch,
   updateBatch,
-} from '../../../../../../firebase/warehouse/batchService';
-import DateUtils from '../../../../../../utils/date/dateUtils';
+} from '@/firebase/warehouse/batchService';
+import DateUtils from '@/utils/date/dateUtils';
 
 // Styled Components
 const StyledContainer = styled.div`

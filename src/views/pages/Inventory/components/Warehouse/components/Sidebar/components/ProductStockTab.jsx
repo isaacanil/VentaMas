@@ -6,7 +6,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import Tree from '../../../../../../../component/tree/Tree';
+import Tree from '@/views/component/tree/Tree';
 
 const TabContent = styled.div`
   display: flex;

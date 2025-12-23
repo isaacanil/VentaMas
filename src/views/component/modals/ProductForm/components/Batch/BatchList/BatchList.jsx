@@ -6,9 +6,9 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
-import { listenAllBatches } from '../../../../../../../firebase/warehouse/batchService';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
+import { listenAllBatches } from '@/firebase/warehouse/batchService';
 
 // Styled Components
 const StyledContainer = styled.div`

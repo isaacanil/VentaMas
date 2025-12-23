@@ -12,22 +12,22 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { openRowShelfForm } from '../../../../../../../features/warehouse/rowShelfModalSlice';
-import { openSegmentForm } from '../../../../../../../features/warehouse/segmentModalSlice';
-import { openShelfForm } from '../../../../../../../features/warehouse/shelfModalSlice';
-import { openWarehouseForm } from '../../../../../../../features/warehouse/warehouseModalSlice';
-import { selectWarehouse } from '../../../../../../../features/warehouse/warehouseSlice';
-import { getStockAggregatesByLocationPaths } from '../../../../../../../firebase/warehouse/productStockService';
-import { deleteRowShelf } from '../../../../../../../firebase/warehouse/RowShelfService';
-import { deleteSegment } from '../../../../../../../firebase/warehouse/segmentService';
-import { deleteShelf } from '../../../../../../../firebase/warehouse/shelfService';
-import { deleteWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
-import { useDefaultWarehouse } from '../../../../../../../firebase/warehouse/warehouseService';
+import { selectUser } from '@/features/auth/userSlice';
+import { openRowShelfForm } from '@/features/warehouse/rowShelfModalSlice';
+import { openSegmentForm } from '@/features/warehouse/segmentModalSlice';
+import { openShelfForm } from '@/features/warehouse/shelfModalSlice';
+import { openWarehouseForm } from '@/features/warehouse/warehouseModalSlice';
+import { selectWarehouse } from '@/features/warehouse/warehouseSlice';
+import { getStockAggregatesByLocationPaths } from '@/firebase/warehouse/productStockService';
+import { deleteRowShelf } from '@/firebase/warehouse/RowShelfService';
+import { deleteSegment } from '@/firebase/warehouse/segmentService';
+import { deleteShelf } from '@/firebase/warehouse/shelfService';
+import { deleteWarehouse } from '@/firebase/warehouse/warehouseService';
+import { useDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
-import Tree from '../../../../../../component/tree/Tree';
-import { WarehouseForm } from '../../forms/WarehouseForm/WarehouseForm';
+import Tree from '@/views/component/tree/Tree';
+import { WarehouseForm } from '@/views/pages/Inventory/components/Warehouse/forms/WarehouseForm/WarehouseForm';
 
 const SidebarContainer = styled.div`
   display: flex;

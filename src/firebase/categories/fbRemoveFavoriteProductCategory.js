@@ -5,7 +5,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Elimina una categoría de la lista de favoritos de un usuario.

@@ -6,18 +6,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { openRowShelfForm } from '../../../../../../features/warehouse/rowShelfModalSlice';
-import { openSegmentForm } from '../../../../../../features/warehouse/segmentModalSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { openRowShelfForm } from '@/features/warehouse/rowShelfModalSlice';
+import { openSegmentForm } from '@/features/warehouse/segmentModalSlice';
 import {
   navigateWarehouse,
   selectWarehouse,
-} from '../../../../../../features/warehouse/warehouseSlice';
+} from '@/features/warehouse/warehouseSlice';
 import {
   deleteSegment,
   useListenAllSegments,
-} from '../../../../../../firebase/warehouse/segmentService';
+} from '@/firebase/warehouse/segmentService';
 
 import { ProductsSection } from './ProductsSection';
 import { DetailContainer, DetailItem } from './WarehouseContent';

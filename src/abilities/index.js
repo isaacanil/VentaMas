@@ -1,4 +1,4 @@
-import { getUserDynamicPermissions } from '../services/dynamicPermissions';
+import { getUserDynamicPermissions } from '@/services/dynamicPermissions';
 
 import { defineAbilitiesForAdmin } from './roles/admin';
 import { defineAbilitiesForCashier } from './roles/cajero';

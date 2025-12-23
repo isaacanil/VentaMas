@@ -1,10 +1,10 @@
 import { Button } from 'antd';
 import { useDispatch } from 'react-redux';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { useDialog } from '../../../../../Context/Dialog';
-import { addNotification } from '../../../../../features/notification/notificationSlice';
-import { ButtonGroup } from '../Button';
+import { icons } from '@/constants/icons/icons';
+import { useDialog } from '@/Context/Dialog';
+import { addNotification } from '@/features/notification/notificationSlice';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const EditDelBtns = ({ onUpdate, onDelete = async () => {} }) => {

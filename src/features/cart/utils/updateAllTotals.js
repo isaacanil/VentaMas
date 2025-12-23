@@ -4,7 +4,7 @@ import {
   getProductsTax,
   getProductsTotalPrice,
   getTotalItems,
-} from '../../../utils/pricing';
+} from '@/utils/pricing';
 
 export const updateAllTotals = (state, paymentValue = undefined) => {
   try {

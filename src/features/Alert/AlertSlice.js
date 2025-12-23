@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { fbDeleteClient } from '../../firebase/client/fbDeleteClient';
-import { fbDeleteProduct } from '../../firebase/products/fbDeleteproduct';
+import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
+import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
 
 const initialState = {
   deleteProduct: {

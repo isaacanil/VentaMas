@@ -3,35 +3,35 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useCategoryState } from '../../../../Context/CategoryContext';
-import { openModal as openActiveIngredientModal } from '../../../../features/activeIngredients/activeIngredientsSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { openBrandModal } from '../../../../features/productBrands/productBrandSlice';
+import { useCategoryState } from '@/Context/CategoryContext';
+import { openModal as openActiveIngredientModal } from '@/features/activeIngredients/activeIngredientsSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { openBrandModal } from '@/features/productBrands/productBrandSlice';
 import {
   ChangeProductData,
   PRODUCT_BRAND_DEFAULT,
   changeProductPrice,
   clearUpdateProductData,
   selectUpdateProductData,
-} from '../../../../features/updateProduct/updateProductSlice';
-import { useFbGetCategories } from '../../../../firebase/categories/useFbGetCategories';
-import { useListenActiveIngredients } from '../../../../firebase/products/activeIngredient/activeIngredients';
-import { useListenProductBrands } from '../../../../firebase/products/brands/productBrands';
-import { fbAddProduct } from '../../../../firebase/products/fbAddProduct';
-import { fbGetProduct } from '../../../../firebase/products/fbGetProduct';
-import { fbUpdateProduct } from '../../../../firebase/products/fbUpdateProduct';
+} from '@/features/updateProduct/updateProductSlice';
+import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
+import { useListenProductBrands } from '@/firebase/products/brands/productBrands';
+import { fbAddProduct } from '@/firebase/products/fbAddProduct';
+import { fbGetProduct } from '@/firebase/products/fbGetProduct';
+import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
 import {
   BRAND_DEFAULT_OPTION_VALUE,
   BRAND_LEGACY_OPTION_VALUE,
-} from '../../../component/modals/ProductForm/constants/brandOptions';
-import ImageManager from '../../../component/modals/ProductForm/ImageManager/ImageManager';
+} from '@/views/component/modals/ProductForm/constants/brandOptions';
+import ImageManager from '@/views/component/modals/ProductForm/ImageManager/ImageManager';
 import {
   buildNormalizedProductSnapshot,
   buildSanitizedProductForSubmit,
   normalizeItemType,
   normalizeTrackInventoryValue,
-} from '../../../component/modals/ProductForm/utils/productNormalization';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+} from '@/views/component/modals/ProductForm/utils/productNormalization';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { ActionBar } from './components/ActionBar';
 import { ProductForm } from './components/form/ProductForm';

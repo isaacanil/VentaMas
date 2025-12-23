@@ -2,8 +2,8 @@ import { Input, Form } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
+import { icons } from '@/constants/icons/icons';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const UserView = ({
   user,

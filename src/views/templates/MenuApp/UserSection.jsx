@@ -7,10 +7,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useDialog } from '../../../Context/Dialog';
-import { selectBusinessData } from '../../../features/auth/businessSlice';
-import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '../../../features/auth/userSlice';
-import { fbSignOut } from '../../../firebase/Auth/fbAuthV2/fbSignOut';
+import { useDialog } from '@/Context/Dialog';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { logout, selectUser, selectIsTemporaryMode, returnToOriginalBusiness } from '@/features/auth/userSlice';
+import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
 
 export const UserSection = () => {
   const dispatch = useDispatch();

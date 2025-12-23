@@ -10,13 +10,13 @@ import {
     StyledProgress,
     StyledProgressBar,
     StyledAlert,
-} from '../styles';
+} from '@/views/component/modals/ARInfoModal/styles';
 import {
     formatCurrency,
     formatDate,
     calculateProgress,
     getNextPaymentInfo,
-} from '../utils';
+} from '@/views/component/modals/ARInfoModal/utils';
 
 const Timeline = ({ data }) => {
     const progress = calculateProgress(data);

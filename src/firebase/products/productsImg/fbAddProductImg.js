@@ -1,7 +1,7 @@
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
-import { storage } from '../../firebaseconfig';
+import { storage } from '@/firebase/firebaseconfig';
 
 export const fbAddProductImg = (user, file, onProgress) => {
   return new Promise((resolve, reject) => {

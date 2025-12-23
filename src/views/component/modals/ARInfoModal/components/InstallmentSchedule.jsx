@@ -2,8 +2,8 @@ import { FileTextOutlined } from '@ant-design/icons';
 import { Badge } from 'antd';
 import React from 'react';
 
-import { SectionTitle, TableCard } from '../styles';
-import { formatCurrency, formatDate } from '../utils';
+import { SectionTitle, TableCard } from '@/views/component/modals/ARInfoModal/styles';
+import { formatCurrency, formatDate } from '@/views/component/modals/ARInfoModal/utils';
 
 const InstallmentSchedule = ({ data }) => {
     const installments = data?.installments || [];

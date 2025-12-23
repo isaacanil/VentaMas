@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 
-import { selectBusinessData } from '../features/auth/businessSlice';
-import { selectInsuranceEnabled } from '../features/cart/cartSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectInsuranceEnabled } from '@/features/cart/cartSlice';
 
 /**
  * Custom hook to determine if insurance functionality is enabled

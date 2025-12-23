@@ -9,11 +9,11 @@ import { useARValidation } from '@/views/pages/Sale/components/Cart/components/I
 import {
   resetAR,
   setAR,
-} from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
+} from '@/features/accountsReceivable/accountsReceivableSlice';
 import {
   SelectCartData,
   toggleReceivableStatus,
-} from '../../../../../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 
 
 export const MarkAsReceivableButton = ({ creditLimit = null, setIsOpen }) => {

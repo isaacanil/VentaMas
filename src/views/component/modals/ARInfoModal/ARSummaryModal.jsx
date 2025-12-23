@@ -9,7 +9,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { setAccountPayment } from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import {
   fetchAccountReceivableDetails,
   resetAR,
@@ -18,8 +18,8 @@ import {
   selectARInfo,
   selectARLoading,
   setARDetailsModal,
-} from '../../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
+} from '@/features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '@/features/auth/userSlice';
 
 import ActionButtons from './components/ActionButtons';
 import ContextPanels from './components/ContextPanels';

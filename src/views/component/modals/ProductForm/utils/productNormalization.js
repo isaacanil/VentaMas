@@ -1,5 +1,5 @@
-import { PRODUCT_ITEM_TYPE_OPTIONS } from '../../../../../features/updateProduct/updateProductSlice';
-import { initTaxes } from '../../UpdateProduct/InitializeData';
+import { PRODUCT_ITEM_TYPE_OPTIONS } from '@/features/updateProduct/updateProductSlice';
+import { initTaxes } from '@/views/component/modals/UpdateProduct/InitializeData';
 
 const DEFAULT_ITEM_TYPE = PRODUCT_ITEM_TYPE_OPTIONS[0]?.value || 'product';
 

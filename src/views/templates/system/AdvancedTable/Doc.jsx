@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import palette from '../../../../theme/colors/light/Palette';
+import palette from '@/theme/colors/light/Palette';
 
 export function Doc() {
   const colors = ['primary', 'error', 'warning', 'info', 'success'];

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
-import { OPERATION_MODES } from '../../constants/modes';
+import { OPERATION_MODES } from '@/constants/modes';
 
 const EmptyProductsOutflow = [];
 

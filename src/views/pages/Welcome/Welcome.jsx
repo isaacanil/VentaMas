@@ -7,8 +7,8 @@ import styled from 'styled-components';
 
 import ROUTES_PATH from '@/router/routes/routesName';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { lazyWithRetry } from '../../../utils/lazyWithRetry';
+import { selectUser } from '@/features/auth/userSlice';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
 import ErrorBoundary from './components/ErrorBoundary';
 import { Footer } from './components/Footer/Footer';

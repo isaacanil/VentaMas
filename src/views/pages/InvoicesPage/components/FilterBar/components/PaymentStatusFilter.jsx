@@ -1,7 +1,7 @@
 import { Select } from 'antd';
 import React from 'react';
 
-import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '../constants';
+import { FILTER_CONFIG, ACCESSIBILITY_CONFIG } from '@/views/pages/InvoicesPage/components/FilterBar/constants';
 
 import { FilterField } from './FilterField';
 

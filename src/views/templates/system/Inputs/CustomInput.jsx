@@ -6,8 +6,8 @@ import styled from 'styled-components';
 import { formatPrice } from '@/utils/format';
 import { quitarCeros } from '@/utils/number/number';
 
-import { addDiscount } from '../../../../features/cart/cartSlice';
-import { useClickOutSide } from '../../../../hooks/useClickOutSide';
+import { addDiscount } from '@/features/cart/cartSlice';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 
 const { Title, Paragraph } = Typography;

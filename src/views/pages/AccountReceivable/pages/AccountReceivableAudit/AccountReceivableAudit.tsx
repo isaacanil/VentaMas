@@ -16,15 +16,15 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   addReportHeader,
   applyProfessionalStyling,
   formatCurrencyColumns,
-} from '../../../../../hooks/exportToExcel/exportConfig';
-import exportToExcel from '../../../../../hooks/exportToExcel/useExportToExcel';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+} from '@/hooks/exportToExcel/exportConfig';
+import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { FinancialSummary } from './components/FinancialSummary';
 import { InvoiceTable } from './components/InvoiceTable';

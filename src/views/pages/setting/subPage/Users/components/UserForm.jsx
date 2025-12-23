@@ -13,16 +13,16 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 
-import { getAssignableRoles } from '../../../../../../abilities/roles';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { getAssignableRoles } from '@/abilities/roles';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectSignUpUserModal,
   toggleSignUpUser,
-} from '../../../../../../features/modals/modalSlice';
-import { fbSignUp } from '../../../../../../firebase/Auth/fbAuthV2/fbSignUp';
-import { fbUpdateUser } from '../../../../../../firebase/Auth/fbAuthV2/fbUpdateUser';
-import { useUserAccess } from '../../../../../../hooks/abilities/useAbilities';
-import { getAvailablePermissionsForRole } from '../../../../../../services/dynamicPermissions';
+} from '@/features/modals/modalSlice';
+import { fbSignUp } from '@/firebase/Auth/fbAuthV2/fbSignUp';
+import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
 
 import DynamicPermissionsManager from './DynamicPermissionsManager';
 import RoleDowngradeConfirmationModal from './RoleDowngradeConfirmationModal';

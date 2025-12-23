@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 
-import { selectThemeMode } from '../features/theme/themeSlice';
+import { selectThemeMode } from '@/features/theme/themeSlice';
 
 import { lightTheme, darkTheme } from './ColorTheme'; // Asegúrate de poner el camino correcto
 

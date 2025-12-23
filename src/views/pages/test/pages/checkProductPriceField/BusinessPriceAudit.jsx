@@ -7,7 +7,7 @@ import {
   fbCSVProblemProductsAll,
   fbCSVProblemProductsForBusinesses,
   fbExportProblemProductsAll,
-} from '../../../../../firebase/products/fbAuditPriceListMismatches';
+} from '@/firebase/products/fbAuditPriceListMismatches';
 
 export default function BusinessPriceAudit() {
   const [input, setInput] = useState('');

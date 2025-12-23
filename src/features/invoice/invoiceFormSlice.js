@@ -6,7 +6,7 @@ import {
   getProductsTax,
   getProductsTotalPrice,
   getTotalItems,
-} from '../../utils/pricing';
+} from '@/utils/pricing';
 
 const roundToTwoDecimals = (num) => {
   return Math.round(num * 100) / 100;

@@ -1,9 +1,9 @@
 import { runTransaction, doc, arrayUnion } from 'firebase/firestore';
 
-import { fbAddAccountReceivablePaymentReceipt } from '../accountsReceivable/fbAddAccountReceivablePaymentReceipt';
-import { checkOpenCashReconciliation } from '../cashCount/useIsOpenCashReconciliation';
-import { db } from '../firebaseconfig';
-import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { fbAddAccountReceivablePaymentReceipt } from '@/firebase/accountsReceivable/fbAddAccountReceivablePaymentReceipt';
+import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 
 import {
   getInstallmentsByArId,

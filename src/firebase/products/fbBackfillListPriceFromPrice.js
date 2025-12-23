@@ -6,7 +6,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 const toNumber = (value) => {
   const parsed = Number(value);

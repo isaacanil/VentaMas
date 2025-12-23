@@ -6,8 +6,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { CashCountMetaData } from '../../views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
-import { db } from '../firebaseconfig';
+import { CashCountMetaData } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
+import { db } from '@/firebase/firebaseconfig';
 
 import { fbLoadInvoicesForCashCount } from './fbLoadInvoicesForCashCount';
 

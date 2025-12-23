@@ -1,12 +1,13 @@
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fbRecordAuthorizationApproval } from '../../../../../../firebase/authorization/approvalLogs';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
 import {
   listAuthorizationRequests,
   approveAuthorizationRequest,
   rejectAuthorizationRequest,
-} from '../../../../../../firebase/authorizations/invoiceEditAuthorizations';
+} from '@/firebase/authorizations/invoiceEditAuthorizations';
+
 import { formatDateTime } from '../constants/constants';
 import { resolveModuleMeta } from '../utils/utils';
 
@@ -15,7 +16,7 @@ import type {
   AuthorizationRequest,
   AuthorizationRequestListItem,
   RequestedBy,
-} from '../types';
+} from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 interface RecordAuthorizationApprovalPayload {
   businessId?: string | null;
@@ -41,8 +42,8 @@ const resolveRequestModule = (request?: AuthorizationRequest | null) => {
 
   const metadataModule =
     typeof request.metadata === 'object' &&
-    request.metadata !== null &&
-    typeof request.metadata?.['module'] === 'string'
+      request.metadata !== null &&
+      typeof request.metadata?.['module'] === 'string'
       ? String(request.metadata['module'])
       : null;
 
@@ -177,7 +178,7 @@ export const useAuthorizationRequests = (
       const requestedBySnapshot = requestSnapshot?.requestedBy || null;
       const requestMetadata =
         (typeof requestSnapshot?.metadata === 'object' &&
-        requestSnapshot.metadata !== null
+          requestSnapshot.metadata !== null
           ? requestSnapshot.metadata
           : null) || null;
 
@@ -192,41 +193,40 @@ export const useAuthorizationRequests = (
 
       const descriptionForLog = isInvoiceEdit
         ? requestSnapshot?.requestNote ||
-          requestSnapshot?.note ||
-          `Se autorizó la edición de la factura ${
-            requestSnapshot?.invoiceNumber || requestSnapshot?.reference || ''
+        requestSnapshot?.note ||
+        `Se autorizó la edición de la factura ${requestSnapshot?.invoiceNumber || requestSnapshot?.reference || ''
           }`.trim()
         : requestSnapshot?.requestNote ||
-          requestSnapshot?.note ||
-          'Aprobación de solicitud de autorización';
+        requestSnapshot?.note ||
+        'Aprobación de solicitud de autorización';
 
       const targetForLog = isInvoiceEdit
         ? {
-            type: 'invoice',
-            id:
-              (typeof requestSnapshot?.invoiceId === 'string' &&
-                requestSnapshot.invoiceId) ||
-              (typeof requestMetadata?.['invoiceId'] === 'string'
-                ? requestMetadata['invoiceId']
-                : ''),
-            name: requestSnapshot?.invoiceNumber
-              ? `Factura ${requestSnapshot.invoiceNumber}`
-              : requestSnapshot?.reference || requestSnapshot?.invoiceId || '',
-            details: {
-              requestId: id,
-              status: requestSnapshot?.status || 'pending',
-              authorizationType: 'invoice-edit',
-            },
-          }
+          type: 'invoice',
+          id:
+            (typeof requestSnapshot?.invoiceId === 'string' &&
+              requestSnapshot.invoiceId) ||
+            (typeof requestMetadata?.['invoiceId'] === 'string'
+              ? requestMetadata['invoiceId']
+              : ''),
+          name: requestSnapshot?.invoiceNumber
+            ? `Factura ${requestSnapshot.invoiceNumber}`
+            : requestSnapshot?.reference || requestSnapshot?.invoiceId || '',
+          details: {
+            requestId: id,
+            status: requestSnapshot?.status || 'pending',
+            authorizationType: 'invoice-edit',
+          },
+        }
         : {
-            type: 'authorizationRequest',
-            id,
-            name: requestSnapshot?.reference || '',
-            details: {
-              status: requestSnapshot?.status || 'pending',
-              module: moduleForLog,
-            },
-          };
+          type: 'authorizationRequest',
+          id,
+          name: requestSnapshot?.reference || '',
+          details: {
+            status: requestSnapshot?.status || 'pending',
+            module: moduleForLog,
+          },
+        };
 
       const metadataForLog: Record<string, unknown> = {
         collectionKey: requestSnapshot?.collectionKey || null,
@@ -340,7 +340,7 @@ export const useAuthorizationRequests = (
             module: record.module || moduleMeta.moduleKey,
             collectionKey:
               resolvedCollectionKey === LEGACY_COLLECTION_KEY &&
-              record.collectionKey === undefined
+                record.collectionKey === undefined
                 ? LEGACY_COLLECTION_KEY
                 : resolvedCollectionKey,
           },

@@ -1,10 +1,10 @@
 import { Timestamp, doc, updateDoc } from 'firebase/firestore';
 
-import { sanitizeFirebaseData } from '../../../utils/firebase/sanitizeFirebaseData';
-import { toTimestamp } from '../../../utils/firebase/toTimestamp';
-import { db } from '../../firebaseconfig';
-import { fbDeleteImage } from '../../img/fbDeleteImage';
-import { fbUploadFile } from '../../img/fbUploadFileAndGetURL';
+import { sanitizeFirebaseData } from '@/utils/firebase/sanitizeFirebaseData';
+import { toTimestamp } from '@/utils/firebase/toTimestamp';
+import { db } from '@/firebase/firebaseconfig';
+import { fbDeleteImage } from '@/firebase/img/fbDeleteImage';
+import { fbUploadFile } from '@/firebase/img/fbUploadFileAndGetURL';
 
 // Función que se encarga de actualizar un gasto.
 export const fbUpdateExpense = async (

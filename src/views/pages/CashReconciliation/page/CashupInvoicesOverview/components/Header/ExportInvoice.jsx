@@ -4,10 +4,10 @@ import { message, Button, Dropdown } from 'antd';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { createProfessionalReportCallback } from '../../../../../../../hooks/exportToExcel/exportConfig';
-import { formatBill } from '../../../../../../../hooks/exportToExcel/formatBill';
-import exportToExcel from '../../../../../../../hooks/exportToExcel/useExportToExcel';
+import { icons } from '@/constants/icons/icons';
+import { createProfessionalReportCallback } from '@/hooks/exportToExcel/exportConfig';
+import { formatBill } from '@/hooks/exportToExcel/formatBill';
+import exportToExcel from '@/hooks/exportToExcel/useExportToExcel';
 
 export const ExportInvoice = ({ invoices = [] }) => {
   const [isExporting, setIsExporting] = useState(false);

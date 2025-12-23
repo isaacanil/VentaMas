@@ -1,4 +1,4 @@
-import { ScrollArea } from '../../shared/PanelPrimitives';
+import { ScrollArea } from '@/views/templates/NotificationCenter/components/panels/shared/PanelPrimitives';
 
 import AccountRow from './AccountRow';
 

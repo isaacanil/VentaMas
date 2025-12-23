@@ -2,7 +2,7 @@ import { faCircleDot, faCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch } from 'react-redux';
 
-import { Button } from '../../../../../templates/system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const ProductVisibilityButton = ({ product, setProduct }) => {
   const dispatch = useDispatch();

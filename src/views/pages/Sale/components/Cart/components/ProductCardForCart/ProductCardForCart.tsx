@@ -16,13 +16,13 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../../../constants/icons/icons';
-import { changeProductPrice } from '../../../../../../../features/cart/cartSlice';
-import { selectTaxReceiptEnabled } from '../../../../../../../features/taxReceipt/taxReceiptSlice';
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
-import { getTotalPrice } from '../../../../../../../utils/pricing';
-import { Counter } from '../../../../../../templates/system/Counter/Counter';
-import PriceAndSaleUnitsModal from '../PriceAndSaleUnitsModal';
+import { icons } from '@/constants/icons/icons';
+import { changeProductPrice } from '@/features/cart/cartSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { getTotalPrice } from '@/utils/pricing';
+import { Counter } from '@/views/templates/system/Counter/Counter';
+import PriceAndSaleUnitsModal from '@/views/pages/Sale/components/Cart/components/PriceAndSaleUnitsModal';
 
 import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
 import { PriceEditor } from './components/PriceEditor/PriceEditor';

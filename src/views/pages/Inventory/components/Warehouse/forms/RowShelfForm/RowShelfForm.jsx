@@ -3,7 +3,7 @@ import { Form, Input, Button, Modal, Spin, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   clearRowShelfForm,
   closeRowShelfForm,
@@ -11,11 +11,11 @@ import {
   setRowShelfError,
   setRowShelfLoading,
   updateRowShelfFormData,
-} from '../../../../../../../features/warehouse/rowShelfModalSlice';
+} from '@/features/warehouse/rowShelfModalSlice';
 import {
   createRowShelf,
   updateRowShelf,
-} from '../../../../../../../firebase/warehouse/RowShelfService';
+} from '@/firebase/warehouse/RowShelfService';
 
 export default function RowShelfForm() {
   const [form] = Form.useForm();

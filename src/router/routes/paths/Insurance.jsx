@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import { ROUTES } from '../routesName';
+import { ROUTES } from '@/router/routes/routesName';
 
 const InsuranceConfig = lazy(() =>
   import('@/views/pages/Insurance/InsuranceConfig/InsuraceConfig'),

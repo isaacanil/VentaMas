@@ -1,10 +1,11 @@
 import { Checkbox, Input, InputNumber } from 'antd';
-import { CheckboxChangeEvent } from 'antd/es/checkbox';
-import { ChangeEvent, FC, useCallback } from 'react';
+import { useCallback } from 'react';
 import styled from 'styled-components';
 
-import type { PaymentMethod } from '../types';
 import type { PaymentMethodMeta } from '../utils/paymentMethodMeta';
+import type { PaymentMethod } from '@/views/component/modals/InvoiceForm/components/PaymentInfo/types';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import type { ChangeEvent, FC } from 'react';
 
 interface PaymentMethodRowProps {
   method: PaymentMethod;

@@ -3,7 +3,7 @@
 
 import { doc, getDoc } from 'firebase/firestore';
 
-import { db } from '../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export function sum(arr) {
   return (arr || []).reduce((acc, n) => acc + Number(n ?? 0), 0);

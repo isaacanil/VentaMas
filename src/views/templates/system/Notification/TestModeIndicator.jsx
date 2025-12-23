@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components';
 import {
   selectAppMode,
   toggleMode,
-} from '../../../../features/appModes/appModeSlice';
+} from '@/features/appModes/appModeSlice';
 
 export const TestModeIndicator = () => {
   const isTestMode = useSelector(selectAppMode);

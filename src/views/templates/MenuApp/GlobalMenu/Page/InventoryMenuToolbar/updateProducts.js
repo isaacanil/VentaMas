@@ -8,7 +8,7 @@ import {
   doc,
 } from 'firebase/firestore';
 
-import { db } from '../../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Función para actualizar el `listPrice` de productos en Firestore de manera paralela.

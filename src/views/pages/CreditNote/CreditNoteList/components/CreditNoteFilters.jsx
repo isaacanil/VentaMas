@@ -4,12 +4,12 @@ import { DateTime } from 'luxon';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { DatePicker } from '../../../../../components/common/DatePicker';
+import { DatePicker } from '@/components/common/DatePicker';
 import {
   CREDIT_NOTE_STATUS,
   CREDIT_NOTE_STATUS_LABEL,
-} from '../../../../../constants/creditNoteStatus';
-import { useFbGetClientsOnOpen } from '../../../../../firebase/client/useFbGetClientsOnOpen';
+} from '@/constants/creditNoteStatus';
+import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 
 const { Option } = Select;
 const DATE_LOCALE = 'es';
@@ -41,7 +41,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
   }, []);
 
   const handleDateRangeChange = (dates) => {
-    // 1) El usuario limpiИ el selector -> volver a "Hoy"
+    // 1) El usuario limpió el selector -> volver a "Hoy"
     if (!dates || !dates[0]) {
       setDraftRange(null);
       onFiltersChange({
@@ -52,10 +52,10 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
       return;
     }
 
-    // 2) SИlo eligiИ la primera fecha
+    // 2) Sólo eligió la primera fecha
     if (dates[0] && !dates[1]) {
       setDraftRange(dates[0]);
-      return; // no aplicamos filtro aカn
+      return; // no aplicamos filtro aún
     }
 
     // 3) Ya hay start & end -> aplicamos filtro y limpiamos draft
@@ -148,14 +148,14 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                   ],
                 },
                 {
-                  label: 'Este aヵo',
+                  label: 'Este año',
                   value: [
                     DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
                     DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
                   ],
                 },
                 {
-                  label: 'れltimos 7 dヴas',
+                  label: 'Últimos 7 días',
                   value: [
                     DateTime.local()
                       .setLocale(DATE_LOCALE)
@@ -165,7 +165,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                   ],
                 },
                 {
-                  label: 'れltimos 30 dヴas',
+                  label: 'Últimos 30 días',
                   value: [
                     DateTime.local()
                       .setLocale(DATE_LOCALE)
@@ -283,14 +283,14 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                   ],
                 },
                 {
-                  label: 'Este aヵo',
+                  label: 'Este año',
                   value: [
                     DateTime.local().setLocale(DATE_LOCALE).startOf('year'),
                     DateTime.local().setLocale(DATE_LOCALE).endOf('year'),
                   ],
                 },
                 {
-                  label: 'れltimos 7 dヴas',
+                  label: 'Últimos 7 días',
                   value: [
                     DateTime.local()
                       .setLocale(DATE_LOCALE)
@@ -300,7 +300,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
                   ],
                 },
                 {
-                  label: 'れltimos 30 dヴas',
+                  label: 'Últimos 30 días',
                   value: [
                     DateTime.local()
                       .setLocale(DATE_LOCALE)

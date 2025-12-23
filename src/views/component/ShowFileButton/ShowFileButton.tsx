@@ -1,8 +1,8 @@
 import { Button, Tooltip } from 'antd';
 import { useDispatch } from 'react-redux';
 
-import { openFileCenter } from '../../../features/files/fileSlice';
-import { truncateString } from '../../../utils/text/truncateString';
+import { openFileCenter } from '@/features/files/fileSlice';
+import { truncateString } from '@/utils/text/truncateString';
 
 interface AttachmentSummary {
   id: string | number;

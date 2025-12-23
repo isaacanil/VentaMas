@@ -8,9 +8,9 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
-import { getNextID } from '../Tools/getNextID';
+import { db } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 

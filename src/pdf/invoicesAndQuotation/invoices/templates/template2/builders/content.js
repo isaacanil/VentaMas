@@ -1,5 +1,6 @@
 import { money, getProductIndividualDiscount } from '../utils/formatters.js';
 
+
 const DEFAULT_BRAND = 'Sin marca';
 
 /* ──────────────────────────────────────────────── */
@@ -33,11 +34,11 @@ export function buildContent(d) {
         brand && brand.toLowerCase() !== DEFAULT_BRAND.toLowerCase();
       const descriptionCell = hasBrand
         ? {
-            stack: [
-              { text: p.name || 'Producto sin nombre', margin: [0, 0, 0, 2] },
-              { text: `Marca: ${brand}`, fontSize: 9, color: '#555555' },
-            ],
-          }
+          stack: [
+            { text: p.name || 'Producto sin nombre', margin: [0, 0, 0, 2] },
+            { text: `Marca: ${brand}`, fontSize: 9, color: '#555555' },
+          ],
+        }
         : p.name || 'Producto sin nombre';
 
       const formatCurrencyCell = (value) => ({

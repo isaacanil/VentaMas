@@ -1,7 +1,7 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbAddCategory = async (user, category) => {
   const { businessID } = user;

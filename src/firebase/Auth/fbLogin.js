@@ -1,7 +1,7 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-import { login } from '../../features/auth/userSlice';
-import { auth } from '../firebaseconfig';
+import { login } from '@/features/auth/userSlice';
+import { auth } from '@/firebase/firebaseconfig';
 
 export const fbLogin = async (user, homePath, navigate, dispatch) => {
   const { email, password } = user;

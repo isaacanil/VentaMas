@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useUserAccess } from '../../../../../hooks/abilities/useAbilities';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const {
   SETTING_TERM: {

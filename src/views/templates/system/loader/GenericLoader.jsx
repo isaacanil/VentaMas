@@ -5,7 +5,7 @@ import { SplitText } from 'gsap/SplitText';
 import React, { useCallback, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
-import { usePrefersReducedMotion } from '../../../../hooks/usePrefersReducedMotion';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 import logo from './ventamax.svg';
 
@@ -124,14 +124,14 @@ const VentamaxMinimalLoader = ({ active, message, onFinish, status }) => {
       return;
     }
 
-    // Solo finalizar si realmente veníamos de activo -> inactivo
+    // Solo finalizar si realmente venï¿½amos de activo -> inactivo
     if (wasActive && prefersReducedMotion && !finishCalledRef.current) {
       finishCalledRef.current = true;
       onFinishRef.current?.();
     }
   }, [active, prefersReducedMotion]);
 
-  const statusMessage = message || 'Iniciando sesión...';
+  const statusMessage = message || 'Iniciando sesiï¿½n...';
 
   return (
     <MinimalOverlay

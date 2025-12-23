@@ -10,7 +10,7 @@ import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState, useEffect, memo, useRef } from 'react';
 import styled from 'styled-components';
 
-import { Selector } from '../../../components/common/Selector/Selector';
+import { Selector } from '@/components/common/Selector/Selector';
 
 import { StatusSelector } from './components/StatusSelector';
 import { useFilterBar } from './hooks/useFilterBar';

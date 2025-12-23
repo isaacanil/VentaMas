@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { toggleMode } from '../../../../features/appModes/appModeSlice';
-// import { SearchClient } from '../../system/Inputs/SearchClient' // TODO: Component not found
+import { toggleMode } from '@/features/appModes/appModeSlice';
+// import { SearchClient } from '@/views/templates/system/Inputs/SearchClient' // TODO: Component not found
 
 export const SearchProductBar = ({ searchData, setSearchData }) => {
   const navigate = useNavigate();

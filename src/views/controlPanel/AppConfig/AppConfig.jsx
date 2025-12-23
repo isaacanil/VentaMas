@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 const AppConfig = () => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { useTableConfig } from './tableConfig';
 

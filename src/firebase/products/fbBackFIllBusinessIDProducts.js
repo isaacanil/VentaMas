@@ -5,7 +5,7 @@
 
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig'; // ajusta la ruta a tu config
+import { db } from '@/firebase/firebaseconfig'; // ajusta la ruta a tu config
 
 /**
  * Parcha productos antiguos añadiendo businessID.

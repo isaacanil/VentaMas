@@ -3,10 +3,10 @@ import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { selectBusinessData } from '../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../features/auth/userSlice';
-import { useUserAccess } from '../../../../hooks/abilities/useAbilities';
-import { MenuApp } from '../../../templates/MenuApp/MenuApp';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { BulkRecoveryTab } from './components/BulkRecoveryTab';
 import { IndividualRecoveryTab } from './components/IndividualRecoveryTab';

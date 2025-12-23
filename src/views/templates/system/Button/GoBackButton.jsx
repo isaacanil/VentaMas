@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { icons } from '../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 
 import { ButtonIconMenu } from './ButtonIconMenu';
 

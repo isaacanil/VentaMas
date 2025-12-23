@@ -3,7 +3,7 @@ import { Form, Input, Button, Modal, Spin, message } from 'antd';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   clearSegmentForm,
   closeSegmentForm,
@@ -11,11 +11,11 @@ import {
   setSegmentError,
   setSegmentLoading,
   updateSegmentFormData,
-} from '../../../../../../../features/warehouse/segmentModalSlice';
+} from '@/features/warehouse/segmentModalSlice';
 import {
   createSegment,
   updateSegment,
-} from '../../../../../../../firebase/warehouse/segmentService';
+} from '@/firebase/warehouse/segmentService';
 
 export default function SegmentForm() {
   const dispatch = useDispatch();

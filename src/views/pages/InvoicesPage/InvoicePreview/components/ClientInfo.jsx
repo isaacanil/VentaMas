@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { formatPhoneNumber } from '../../../../../utils/format/formatPhoneNumber';
-import { InfoCard } from '../../../../templates/system/InfoCard/InfoCard';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { InfoCard } from '@/views/templates/system/InfoCard/InfoCard';
 
 export const ClientInfoCard = ({ client }) => {
   const formattedPhoneNumber = client.tel

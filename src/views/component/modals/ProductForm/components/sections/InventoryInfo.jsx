@@ -2,8 +2,8 @@ import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { unitsOfMeasure } from '../../../../../../constants/unitsOfMeasure';
-import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { unitsOfMeasure } from '@/constants/unitsOfMeasure';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 
 import AdjustInventoryModal from './AdjustInventoryModal';
 

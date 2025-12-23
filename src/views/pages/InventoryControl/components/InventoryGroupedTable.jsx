@@ -13,7 +13,7 @@ import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { GroupedLotsModal } from './GroupedLotsModal';
 import { EditorsList } from './inventoryTableComponents.jsx';

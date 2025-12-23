@@ -2,9 +2,9 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
-import { ProviderCard } from '../../ListItem/ProviderCard';
+import { selectUser } from '@/features/auth/userSlice';
+import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import { ProviderCard } from '@/views/pages/Contact/Provider/ListItem/ProviderCard';
 
 export const ProviderTable = () => {
   const user = useSelector(selectUser);

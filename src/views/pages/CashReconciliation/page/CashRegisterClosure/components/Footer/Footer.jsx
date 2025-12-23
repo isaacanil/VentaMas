@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { ConfirmCancelButtons } from '../../../../resource/ConfirmCancelButtons/ConfirmCancelButtons';
+import { ConfirmCancelButtons } from '@/views/pages/CashReconciliation/resource/ConfirmCancelButtons/ConfirmCancelButtons';
 
 export const Footer = ({ onSubmit, onCancel }) => {
   return (

@@ -1,6 +1,6 @@
 import { formatPrice } from '@/utils/format';
 
-import { getTimeElapsed } from '../../../../../../../hooks/useFormatTime';
+import { getTimeElapsed } from '@/hooks/useFormatTime';
 
 import AccountActionsCell from './AccountActionsCell';
 

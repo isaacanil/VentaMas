@@ -6,8 +6,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
-import { getNextID } from '../Tools/getNextID';
+import { db } from '@/firebase/firebaseconfig';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 export async function fbGenerateInvoiceFromPreorder(user, preorder) {
   try {

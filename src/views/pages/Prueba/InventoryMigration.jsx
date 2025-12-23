@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Checkbox, Input, Typography } from 'antd';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { syncAllBusinessesProductsStock } from '../../../firebase/warehouse/stockSyncService';
+import { syncAllBusinessesProductsStock } from '@/firebase/warehouse/stockSyncService';
 
 // Panel para alinear product.stock con la suma de productsStock por negocio.
 // Props:

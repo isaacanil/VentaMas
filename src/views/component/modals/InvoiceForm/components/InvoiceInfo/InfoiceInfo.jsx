@@ -9,13 +9,13 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { closeInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice';
-import { fbCancelInvoice } from '../../../../../../firebase/invoices/fbCancelInvoice';
-import { Client } from '../Client/Client';
-import { InvoiceHeader } from '../InvoiceHeader/InvoiceHeader';
-import { PaymentInfoModal } from '../PaymentInfo/PaymentInfoModal';
-import { TimeRemainingBadge } from '../TimeRemainingBadge/TimeRemainingBadge';
+import { selectUser } from '@/features/auth/userSlice';
+import { closeInvoiceForm } from '@/features/invoice/invoiceFormSlice';
+import { fbCancelInvoice } from '@/firebase/invoices/fbCancelInvoice';
+import { Client } from '@/views/component/modals/InvoiceForm/components/Client/Client';
+import { InvoiceHeader } from '@/views/component/modals/InvoiceForm/components/InvoiceHeader/InvoiceHeader';
+import { PaymentInfoModal } from '@/views/component/modals/InvoiceForm/components/PaymentInfo/PaymentInfoModal';
+import { TimeRemainingBadge } from '@/views/component/modals/InvoiceForm/components/TimeRemainingBadge/TimeRemainingBadge';
 
 import { InvoiceResume } from './components/InvoiceResume';
 

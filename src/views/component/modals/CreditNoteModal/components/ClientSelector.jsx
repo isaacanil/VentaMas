@@ -3,7 +3,7 @@ import { Input, Drawer } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { normalizeText } from '../../../../../utils/text';
+import { normalizeText } from '@/utils/text';
 
 /*
   Selector de Clientes

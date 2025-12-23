@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import {
   getBarcodeInfo,
   generateCorrectionSuggestions,
-} from '../../../../../../../utils/barcode/barcode';
+} from '@/utils/barcode/barcode';
 
 // Styled Components
 const WorkingCodeSection = styled.div`

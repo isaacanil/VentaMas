@@ -9,7 +9,7 @@ import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { useBackOrdersByProduct } from '../../../../../../../../firebase/warehouse/backOrderService';
+import { useBackOrdersByProduct } from '@/firebase/warehouse/backOrderService';
 
 const Widget = styled.div`
   display: flex;

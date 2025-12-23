@@ -1,6 +1,6 @@
 import { doc, getDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbGetCashCountState = async (user, cashCountID) => {
   if (!user?.businessID || !cashCountID) {

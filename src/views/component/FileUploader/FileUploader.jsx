@@ -8,7 +8,7 @@ import {
   isImageFile,
   isPDFFile,
   getFileTypeFromUrl,
-} from '../../../utils/fileUtils';
+} from '@/utils/fileUtils';
 
 import DragOverlay from './DragOverlay';
 import FileList from './FileList';

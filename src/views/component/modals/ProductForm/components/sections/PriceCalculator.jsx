@@ -2,8 +2,8 @@ import { InputNumber, Table, Form } from 'antd';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectTaxReceiptEnabled } from '../../../../../../features/taxReceipt/taxReceiptSlice';
-import { selectUpdateProductData } from '../../../../../../features/updateProduct/updateProductSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 
 const columns = [
   {

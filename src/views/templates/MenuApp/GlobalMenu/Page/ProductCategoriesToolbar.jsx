@@ -2,10 +2,10 @@ import React from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { useCategoryState } from '../../../../../Context/CategoryContext';
+import { icons } from '@/constants/icons/icons';
+import { useCategoryState } from '@/Context/CategoryContext';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '../../../system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const ProductCategoriesToolbar = ({ side = 'left' }) => {
   const { configureAddProductCategoryModal } = useCategoryState();

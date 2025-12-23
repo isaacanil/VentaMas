@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectBusinessData } from '../../../../../../features/auth/businessSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 
 import Content from './components/Content';
 import Footer from './components/Footer';

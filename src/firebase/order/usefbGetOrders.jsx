@@ -8,9 +8,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
-import { convertFirestoreTimestamps } from '../purchase/fbGetPurchases';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { convertFirestoreTimestamps } from '@/firebase/purchase/fbGetPurchases';
 
 export const useFbGetOrders = () => {
   const [orders, setOrders] = useState([]);

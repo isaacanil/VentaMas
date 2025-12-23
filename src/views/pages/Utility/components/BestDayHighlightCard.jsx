@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { designSystemV2 } from '../../../../theme/designSystemV2';
-import { SimpleTypography } from '../../../templates/system/Typografy/SimpleTypography';
-import { buildBusinessInsights } from '../utils/buildBusinessInsights';
+import { designSystemV2 } from '@/theme/designSystemV2';
+import { buildBusinessInsights } from '@/views/pages/Utility/utils/buildBusinessInsights';
+import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
 

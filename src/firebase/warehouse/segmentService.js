@@ -13,8 +13,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 // Obtener referencia de la colección de segmentos de una fila de estante
 const getSegmentCollectionRef = (businessId) => {

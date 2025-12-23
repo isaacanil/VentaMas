@@ -10,7 +10,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { useFbGetAvailableCreditNotes } from '../../../../../../../../../hooks/creditNote/useFbGetAvailableCreditNotes';
+import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
 
 const toDateTime = (value) => {
   if (!value) return null;

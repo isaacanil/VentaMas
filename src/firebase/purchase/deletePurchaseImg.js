@@ -1,6 +1,6 @@
 import { ref, deleteObject } from 'firebase/storage';
 
-import { storage } from '../firebaseconfig';
+import { storage } from '@/firebase/firebaseconfig';
 
 export const deletePurchaseImg = async (purchaseId) => {
   const storageRef = ref(storage, `purchase/${purchaseId}`);

@@ -3,10 +3,10 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { ChangeProductImage } from '../../../../../../features/updateProduct/updateProductSlice';
-import { fbDeleteProductImg } from '../../../../../../firebase/products/productsImg/fbDeleteProductImg';
-import { imgFailed } from '../ImageManager';
+import { selectUser } from '@/features/auth/userSlice';
+import { ChangeProductImage } from '@/features/updateProduct/updateProductSlice';
+import { fbDeleteProductImg } from '@/firebase/products/productsImg/fbDeleteProductImg';
+import { imgFailed } from '@/views/component/modals/ProductForm/ImageManager/ImageManager';
 
 export const Gallery = ({ images }) => {
   const user = useSelector(selectUser);

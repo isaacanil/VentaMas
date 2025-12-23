@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { formatDate } from '../../../../../../../../../utils/formatDate';
+import { formatDate } from '@/utils/formatDate';
 
 import { Payment } from './components/Payment';
 

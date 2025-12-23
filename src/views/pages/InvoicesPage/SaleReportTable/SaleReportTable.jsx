@@ -10,23 +10,23 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../constants/icons/icons';
-import { setAccountPayment } from '../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { selectBusinessData } from '../../../../features/auth/businessSlice';
-import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import { addInvoice } from '../../../../features/invoice/invoiceFormSlice';
-import { openInvoicePreviewModal } from '../../../../features/invoice/invoicePreviewSlice';
-import { useFbGetAccountReceivableByInvoice } from '../../../../firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
-import { downloadInvoiceLetterPdf } from '../../../../firebase/quotation/downloadQuotationPDF';
+import { icons } from '@/constants/icons/icons';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { addInvoice } from '@/features/invoice/invoiceFormSlice';
+import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivable/useFbGetAccountReceivableByInvoice';
+import { downloadInvoiceLetterPdf } from '@/firebase/quotation/downloadQuotationPDF';
 import {
   convertInvoiceDateToMillis,
   prepareInvoiceForEdit,
   getInvoicePaymentInfo,
-} from '../../../../utils/invoice';
-import { getProductsTax, getTotalItems } from '../../../../utils/pricing';
-import { Invoice } from '../../../component/Invoice/components/Invoice/Invoice';
-import { AdvancedTable } from '../../../templates/system/AdvancedTable/AdvancedTable';
-import { Tag } from '../../../templates/system/Tag/Tag';
+} from '@/utils/invoice';
+import { getProductsTax, getTotalItems } from '@/utils/pricing';
+import { Invoice } from '@/views/component/Invoice/components/Invoice/Invoice';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import { Tag } from '@/views/templates/system/Tag/Tag';
 import useInvoiceEditAuthorization from '../hooks/useInvoiceEditAuthorization.jsx';
 
 
@@ -114,8 +114,8 @@ const ActionsMenu = ({ value }) => {
 
   const isReceivableInvoice = Boolean(
     data?.isAddedToReceivables ||
-      data?.accountsReceivable ||
-      data?.snapshot?.cart?.isAddedToReceivables,
+    data?.accountsReceivable ||
+    data?.snapshot?.cart?.isAddedToReceivables,
   );
 
   const { accountsReceivable: receivableAccounts = [], loading: receivableLoading } =

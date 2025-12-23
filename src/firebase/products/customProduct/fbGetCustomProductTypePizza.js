@@ -1,6 +1,6 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbGetCustomProduct = async (user, setProduct) => {
   if (!user && !user?.businessID) {

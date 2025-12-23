@@ -1,4 +1,4 @@
-import { resolveDocumentIdentity } from '../invoice/documentIdentity.js';
+import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 // Función de formateo de precios (ajústala según necesites)
 const formatPrice = (value) => `$${Number(value).toFixed(2)}`;

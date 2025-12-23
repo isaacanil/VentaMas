@@ -8,7 +8,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig'; // Asegúrate de que la ruta sea correcta
+import { db } from '@/firebase/firebaseconfig'; // Asegúrate de que la ruta sea correcta
 
 /**
  * Obtiene los detalles completos de una cuenta por cobrar para visualizar en un modal.

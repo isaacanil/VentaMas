@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { fbGetProductsImg } from '../../../firebase/products/productsImg/fbGetProductsImg';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbGetProductsImg } from '@/firebase/products/productsImg/fbGetProductsImg';
 
 import { Body } from './components/Body/Body';
 import { Header } from './components/Header/Header';

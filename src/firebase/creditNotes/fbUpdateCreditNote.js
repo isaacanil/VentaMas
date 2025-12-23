@@ -1,6 +1,6 @@
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Actualiza una Nota de Crédito existente.

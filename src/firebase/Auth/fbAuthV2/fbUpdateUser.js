@@ -1,6 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 
-import { functions } from '../../firebaseconfig';
+import { functions } from '@/firebase/firebaseconfig';
 
 import { fbCheckIfUserExists } from './fbCheckIfUserExists';
 

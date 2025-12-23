@@ -1,6 +1,6 @@
 import { httpsCallable } from 'firebase/functions';
 
-import { functions } from '../firebaseconfig.jsx';
+import { functions } from '@/firebase/firebaseconfig.jsx';
 
 const generateModulePinsCallable = httpsCallable(
   functions,

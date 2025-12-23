@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 
-import ROUTES_PATH from '../routesName';
+import ROUTES_PATH from '@/router/routes/routesName';
 
 const ExpensesForm = lazy(() =>
   import('@/views/pages/Expenses/ExpensesForm/ExpensesForm'),

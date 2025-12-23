@@ -2,8 +2,8 @@ import { Button, Input } from 'antd';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../../../constants/icons/icons';
-import { changeAmountToBuyProduct } from '../../../../../../../../features/invoice/invoiceFormSlice';
+import { icons } from '@/constants/icons/icons';
+import { changeAmountToBuyProduct } from '@/features/invoice/invoiceFormSlice';
 
 export const Product = ({ product }) => {
   const dispatch = useDispatch();

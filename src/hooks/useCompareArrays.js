@@ -1,5 +1,6 @@
-import isEqual from 'lodash/isEqual';
 import { useMemo } from 'react';
+
+import { isEqual } from '@/utils/lodash-minimal';
 
 export const useCompareArrays = (array1, array2) => {
   return useMemo(() => {

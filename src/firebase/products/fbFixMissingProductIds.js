@@ -1,6 +1,6 @@
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Garantiza que cada documento de producto tenga su campo `id`

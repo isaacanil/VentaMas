@@ -5,15 +5,15 @@ import styled from 'styled-components';
 import { formatPrice as formatPrice } from '@/utils/format';
 import { separator } from '@/utils/number/number';
 
-import { SelectSettingCart } from '../../../../../../../features/cart/cartSlice';
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../features/updateProduct/updateProductSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 import {
   getTax,
   getTotalPrice,
   resetAmountToBuyForProduct,
   getProductIndividualDiscount,
-} from '../../../../../../../utils/pricing';
-import { convertTimeToSpanish } from '../../../../../../component/modals/ProductForm/components/sections/warranty.helpers';
+} from '@/utils/pricing';
+import { convertTimeToSpanish } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';

@@ -14,16 +14,16 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   closeDeleteModal,
   selectDeleteModalState,
   changeActionType,
-} from '../../../../../../../features/productStock/deleteProductStockSlice';
-// import { deleteProductStock } from '../../../../../../../services/productStockService';
-import { deleteBatch } from '../../../../../../../firebase/warehouse/batchService';
-import { deleteProductStock } from '../../../../../../../firebase/warehouse/productStockService';
-import { useProductStockData } from '../../../../../../../hooks/useProductStockData';
+} from '@/features/productStock/deleteProductStockSlice';
+// import { deleteProductStock } from '@/services/productStockService';
+import { deleteBatch } from '@/firebase/warehouse/batchService';
+import { deleteProductStock } from '@/firebase/warehouse/productStockService';
+import { useProductStockData } from '@/hooks/useProductStockData';
 
 const { TextArea } = Input;
 const { Text } = Typography;

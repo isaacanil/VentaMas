@@ -3,8 +3,8 @@ import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
 import routesName from '@/router/routes/routesName';
-import { AddProductButton } from '../../../system/Button/AddProductButton';
-import { ButtonGroup } from '../../../system/Button/Button';
+import { AddProductButton } from '@/views/templates/system/Button/AddProductButton';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
 
 export const CreateOrderToolbar = ({ side = 'left' }) => {
   const { ORDERS_CREATE } = routesName.ORDER_TERM;

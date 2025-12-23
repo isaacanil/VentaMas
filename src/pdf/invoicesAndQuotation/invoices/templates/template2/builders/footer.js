@@ -36,36 +36,36 @@ export function buildFooter(biz, d) {
   /* Métodos de pago */
   const paymentStack = d.paymentMethod?.filter((m) => m?.status).length
     ? [
-        { text: 'Métodos de Pago:', bold: true, margin: [0, 0, 0, 4] },
-        {
-          ul: d.paymentMethod
-            .filter((m) => m?.status)
-            .map((m) => ({
-              text:
-                `${PAYMENT_METHODS[m.method?.toLowerCase()] || m.method}: ` +
-                money(m.value || 0) +
-                (m.reference ? ` - Ref: ${m.reference}` : ''),
-              margin: [0, 0, 0, 0],
-            })),
-        },
-      ]
+      { text: 'Métodos de Pago:', bold: true, margin: [0, 0, 0, 4] },
+      {
+        ul: d.paymentMethod
+          .filter((m) => m?.status)
+          .map((m) => ({
+            text:
+              `${PAYMENT_METHODS[m.method?.toLowerCase()] || m.method}: ` +
+              money(m.value || 0) +
+              (m.reference ? ` - Ref: ${m.reference}` : ''),
+            margin: [0, 0, 0, 0],
+          })),
+      },
+    ]
     : [];
 
   /* Notas de crédito aplicadas */
   const creditNotesStack = d.creditNotePayment?.length
     ? [
-        {
-          text: 'Notas de Crédito Aplicadas:',
-          bold: true,
-          margin: [0, 8, 0, 4],
-        },
-        {
-          ul: d.creditNotePayment.map((note) => ({
-            text: `NCF: ${note.ncf} - ${money(note.amountUsed)}`,
-            margin: [0, 0, 0, 0],
-          })),
-        },
-      ]
+      {
+        text: 'Notas de Crédito Aplicadas:',
+        bold: true,
+        margin: [0, 8, 0, 4],
+      },
+      {
+        ul: d.creditNotePayment.map((note) => ({
+          text: `NCF: ${note.ncf} - ${money(note.amountUsed)}`,
+          margin: [0, 0, 0, 0],
+        })),
+      },
+    ]
     : [];
 
   /* Calcular descuentos */
@@ -92,14 +92,14 @@ export function buildFooter(biz, d) {
       },
     ],
     !hasIndividualDisc &&
-      d.discount?.value && [
-        'Descuento General:',
-        {
-          text: `-${money(generalDiscount)}`,
-          style: 'totalsValue',
-          margin: [0, 0],
-        },
-      ],
+    d.discount?.value && [
+      'Descuento General:',
+      {
+        text: `-${money(generalDiscount)}`,
+        style: 'totalsValue',
+        margin: [0, 0],
+      },
+    ],
     hasIndividualDisc && [
       'Descuentos Productos:',
       {

@@ -9,15 +9,15 @@ import {
   clearCashCount,
   selectCashCount,
   addPropertiesToCashCount, // Importar la acción para actualizar el estado de Redux
-} from '../../../../../features/cashCount/cashCountManagementSlice';
-import { fbRecordAuthorizationApproval } from '../../../../../firebase/authorization/approvalLogs';
-import { fbCashCountClosed } from '../../../../../firebase/cashCount/closing/fbCashCountClosed';
-import { fbCashCountChangeState } from '../../../../../firebase/cashCount/closing/fbCashCountClosing';
-import { useFbGetCashCount } from '../../../../../firebase/cashCount/fbGetCashCount';
-import { useAuthorizationModules } from '../../../../../hooks/useAuthorizationModules';
-import { useAuthorizationPin } from '../../../../../hooks/useAuthorizationPin';
-import { PeerReviewAuthorization } from '../../../../component/modals/PeerReviewAuthorization/PeerReviewAuthorization';
-import { PinAuthorizationModal } from '../../../../component/modals/PinAuthorizationModal/PinAuthorizationModal';
+} from '@/features/cashCount/cashCountManagementSlice';
+import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approvalLogs';
+import { fbCashCountClosed } from '@/firebase/cashCount/closing/fbCashCountClosed';
+import { fbCashCountChangeState } from '@/firebase/cashCount/closing/fbCashCountClosing';
+import { useFbGetCashCount } from '@/firebase/cashCount/fbGetCashCount';
+import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
+import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
+import { PeerReviewAuthorization } from '@/views/component/modals/PeerReviewAuthorization/PeerReviewAuthorization';
+import { PinAuthorizationModal } from '@/views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
 
 import { selectUser } from './../../../../../features/auth/userSlice';
 import { Body } from './components/Body/Body';

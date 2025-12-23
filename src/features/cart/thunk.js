@@ -4,7 +4,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectTaxReceiptEnabled } from '../taxReceipt/taxReceiptSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 
 import { setTaxReceiptEnabled } from './cartSlice';
 

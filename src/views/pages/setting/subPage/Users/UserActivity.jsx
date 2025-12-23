@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { getRoleLabelById } from '../../../../../abilities/roles';
-import { fbRevokeSession } from '../../../../../firebase/Auth/fbAuthV2/fbRevokeSession';
+import { getRoleLabelById } from '@/abilities/roles';
+import { fbRevokeSession } from '@/firebase/Auth/fbAuthV2/fbRevokeSession';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 import { SessionsTable } from './UserActivity/components/SessionsTable';

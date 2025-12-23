@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { fbUpdateTaxReceipt } from '../../firebase/taxReceipt/fbUpdateTaxReceipt';
-import { serializeFirestoreData } from '../../utils/serialization/serializeFirestoreData';
+import { fbUpdateTaxReceipt } from '@/firebase/taxReceipt/fbUpdateTaxReceipt';
+import { serializeFirestoreData } from '@/utils/serialization/serializeFirestoreData';
 
 import { increaseSequence } from './increaseSequence';
 

@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 
 const handleNoData = (user) => {
   if (!user || !user?.businessID) {

@@ -2,12 +2,12 @@ import { Form, Select, Modal, Input, message, DatePicker, Radio } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../../../../features/auth/userSlice';
-import { selectClient } from '../../../../../../../../../../features/clientCart/clientCartSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
 import {
   useInsuranceBeneficiaries,
   addInsuranceBeneficiary,
-} from '../../../../../../../../../../firebase/insurance/insuranceBeneficiaryService';
+} from '@/firebase/insurance/insuranceBeneficiaryService';
 
 import DependentSelector from './DependentSelector';
 

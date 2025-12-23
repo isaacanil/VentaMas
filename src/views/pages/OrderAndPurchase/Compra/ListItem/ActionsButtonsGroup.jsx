@@ -2,14 +2,14 @@ import { Button } from 'antd';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { useDialog } from '../../../../../Context/Dialog';
+import { icons } from '@/constants/icons/icons';
+import { useDialog } from '@/Context/Dialog';
 import {
   setAddPurchaseMode,
   setPurchase,
-} from '../../../../../features/purchase/addPurchaseSlice';
+} from '@/features/purchase/addPurchaseSlice';
 import ROUTES_PATH from '@/router/routes/routesName';
-import { ButtonGroup } from '../../../../templates/system/Button/ButtonGroup';
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
 
 export const ActionsButtonsGroup = ({ purchaseData }) => {
   const dispatch = useDispatch();

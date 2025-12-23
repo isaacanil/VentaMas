@@ -1,8 +1,8 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { fbUpdateAppVersion } from '../app/fbUpdateAppVersion';
-import { db } from '../firebaseconfig';
+import { fbUpdateAppVersion } from '@/firebase/app/fbUpdateAppVersion';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbAddChangelog = async (jsonString) => {
   let changelog = {

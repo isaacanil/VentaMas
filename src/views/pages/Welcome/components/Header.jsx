@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import { ButtonGroup } from '../../../templates/system/Button/ButtonGroup';
-import WelcomeData from '../WelcomeData.json';
+import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
+import WelcomeData from '@/views/pages/Welcome/WelcomeData.json';
 
 const Header = () => {
   const { LOGIN } = ROUTES_NAME.AUTH_TERM;

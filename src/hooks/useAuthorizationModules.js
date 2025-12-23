@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 
-import { SelectSettingCart } from '../features/cart/cartSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
 
 /**
  * Hook para verificar qué módulos de autorización están activos

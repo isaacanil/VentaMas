@@ -1,11 +1,11 @@
 import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 
-import { useDialog } from '../../../../../../Context/Dialog'; // Nuevo import
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { fbCancelPurchase } from '../../../../../../firebase/purchase/fbCancelPurchase';
-import { AdvancedTable } from '../../../../../templates/system/AdvancedTable/AdvancedTable';
-import { calculateTotalNewStockFromReplenishments } from '../../../Order/components/OrderListTable/orderTableUtils';
+import { useDialog } from '@/Context/Dialog'; // Nuevo import
+import { selectUser } from '@/features/auth/userSlice';
+import { fbCancelPurchase } from '@/firebase/purchase/fbCancelPurchase';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+import { calculateTotalNewStockFromReplenishments } from '@/views/pages/OrderAndPurchase/Order/components/OrderListTable/orderTableUtils';
 
 import { columns } from './tableConfig.jsx';
 

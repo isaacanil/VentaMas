@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { useListenProductsStockByLocation } from '@/firebase/warehouse/productStockService';
 
-import type { InventoryTableProps, ProductStockLike } from '../types';
+import type { InventoryTableProps, ProductStockLike } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 
 

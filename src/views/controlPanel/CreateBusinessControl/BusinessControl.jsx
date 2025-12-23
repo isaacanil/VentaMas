@@ -10,9 +10,9 @@ import { Input, Button } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
-import { BusinessEditModal } from '../BusinessEditModal/BusinessEditModal';
+import { fbGetBusinesses } from '@/firebase/dev/businesses/fbGetBusinesses';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { BusinessEditModal } from '@/views/controlPanel/BusinessEditModal/BusinessEditModal';
 
 import { BusinessCard } from './components/BusinessCard/BusinessCard';
 import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer';

@@ -1,7 +1,7 @@
-import { createExcelTemplate } from '../createExcelTemplate';
-import { readExcelFile } from '../excelReader';
-import { mapData } from '../mapData';
-import { processMappedData } from '../processMappedData';
+import { createExcelTemplate } from '@/utils/import/createExcelTemplate';
+import { readExcelFile } from '@/utils/import/excelReader';
+import { mapData } from '@/utils/import/mapData';
+import { processMappedData } from '@/utils/import/processMappedData';
 
 import { createSelectedHeaders } from './filterEssentialHeaders';
 import { productHeaderMappings } from './headerMappings';

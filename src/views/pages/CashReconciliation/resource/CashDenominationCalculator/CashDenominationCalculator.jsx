@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
 
-import { FormattedValue } from '../../../../templates/system/FormattedValue/FormattedValue';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 import { BillRow } from './components/BillRow';
 import { OpenControllerSmall } from './OpenControllerSmall';
@@ -108,7 +108,7 @@ export const CashDenominationCalculator = ({
 const Container = styled.div`
   box-sizing: border-box;
   display: grid;
-  font-family: 'Noto Sans Mono', monospace;
+  font-family: 'Poppins', monospace;
   ${({ width }) =>
     width === 'small' &&
     `

@@ -47,9 +47,9 @@ export default {
         7: '48px',
       },
       fontFamily: {
-        sans: ['Roboto', 'sans-serif'],
-        display: ['Inter', 'sans-serif'],
-        mono: ['Fira Code', 'monospace'],
+        sans: ['Poppins', 'sans-serif'],
+        display: ['Poppins', 'sans-serif'],
+        mono: ['Poppins', 'monospace'],
       },
 
       /* ────────────────────  Sombras  ──────────────────── */

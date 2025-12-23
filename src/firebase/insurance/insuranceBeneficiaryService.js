@@ -9,7 +9,7 @@ import {
 import { nanoid } from 'nanoid';
 import { useState, useEffect } from 'react';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Retorna la referencia a la colección "insuranceBeneficiaries" dentro del negocio.

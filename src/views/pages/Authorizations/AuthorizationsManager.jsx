@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { useAuthorizationModules } from '../../../hooks/useAuthorizationModules';
-import { MenuApp } from '../../templates/MenuApp/MenuApp';
+import { selectUser } from '@/features/auth/userSlice';
+import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import ApprovalLogs from './components/ApprovalLogs/ApprovalLogs';
 import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';

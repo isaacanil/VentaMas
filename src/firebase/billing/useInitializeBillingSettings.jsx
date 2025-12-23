@@ -3,9 +3,9 @@ import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { setBillingSettings } from '../../features/cart/cartSlice';
-import { db } from '../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { setBillingSettings } from '@/features/cart/cartSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useInitializeBillingSettings = () => {
   const user = useSelector(selectUser);

@@ -2,13 +2,13 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   clearCashReconciliation,
   setCashReconciliation,
-} from '../../features/cashCount/cashStateSlice';
-import DateUtils from '../../utils/date/dateUtils';
-import { db } from '../firebaseconfig';
+} from '@/features/cashCount/cashStateSlice';
+import DateUtils from '@/utils/date/dateUtils';
+import { db } from '@/firebase/firebaseconfig';
 
 import { getEmployeeData } from './fbGetCashCounts/getEmployeeData';
 

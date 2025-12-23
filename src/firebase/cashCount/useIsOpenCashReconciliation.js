@@ -2,9 +2,9 @@ import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
-import { fbGetDocs } from '../firebaseOperations';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetDocs } from '@/firebase/firebaseOperations';
 
 export function useIsOpenCashReconciliation() {
   const [value, setValue] = useState(false);

@@ -2,7 +2,7 @@ import { Modal, Typography } from 'antd';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
-import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
+import useBarcodeSettings from '@/hooks/barcode/useBarcodeSettings';
 
 const { Text } = Typography;
 

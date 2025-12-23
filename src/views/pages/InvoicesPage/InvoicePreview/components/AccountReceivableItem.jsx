@@ -7,8 +7,8 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { useFbGetAccountReceivablePayments } from '../../../../../firebase/accountsReceivable/useFbGetAccountReceivablePayments';
-import { Payment } from '../../../Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
+import { useFbGetAccountReceivablePayments } from '@/firebase/accountsReceivable/useFbGetAccountReceivablePayments';
+import { Payment } from '@/views/pages/Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
 
 const toDateTime = (value) => {
   if (!value) return null;

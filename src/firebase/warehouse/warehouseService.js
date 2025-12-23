@@ -15,9 +15,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../firebaseconfig';
-import { getNextID } from '../Tools/getNextID';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { getNextID } from '@/firebase/Tools/getNextID';
 
 // Crear un nuevo almacén
 export const createWarehouse = async (user, warehouseData) => {

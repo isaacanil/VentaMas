@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import {
   defineAbilitiesFor,
   defineAbilitiesForWithDynamic,
-} from '../../abilities';
+} from '@/abilities';
 
 // Acción asíncrona para cargar abilities con permisos dinámicos
 export const loadUserAbilities = createAsyncThunk(

@@ -6,8 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { openSegmentForm } from '../../../../../../features/warehouse/segmentModalSlice';
-import { selectWarehouse } from '../../../../../../features/warehouse/warehouseSlice';
+import { openSegmentForm } from '@/features/warehouse/segmentModalSlice';
+import { selectWarehouse } from '@/features/warehouse/warehouseSlice';
 
 import { ProductsSection } from './ProductsSection';
 import { DetailContainer, DetailItem } from './WarehouseContent';

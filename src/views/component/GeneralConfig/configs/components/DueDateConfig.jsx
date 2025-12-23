@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
-import { setBillingSettings } from '../../../../../firebase/billing/billingSetting';
+import { selectUser } from '@/features/auth/userSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { setBillingSettings } from '@/firebase/billing/billingSetting';
 
 const OptionContainer = styled.div`
   display: flex;

@@ -1,20 +1,20 @@
 import { collection, getDocs } from 'firebase/firestore';
 
-import { userRoles, getAvailableRoles } from '../../../../abilities/roles';
-import { toggleMode } from '../../../../features/appModes/appModeSlice';
+import { userRoles, getAvailableRoles } from '@/abilities/roles';
+import { toggleMode } from '@/features/appModes/appModeSlice';
 import {
   switchToBusiness,
   returnToOriginalBusiness,
   switchToRole,
   returnToOriginalRole,
-} from '../../../../features/auth/userSlice';
+} from '@/features/auth/userSlice';
 import {
   fbGetUsers,
   fbSearchUsers,
-} from '../../../../firebase/Auth/fbAuthV2/fbGetUsers';
-import { fbUpdateUserPassword } from '../../../../firebase/Auth/fbAuthV2/fbUpdateUserPassword';
-import { fbGetBusinessesList } from '../../../../firebase/dev/businesses/fbGetBusinessesList';
-import { db } from '../../../../firebase/firebaseconfig';
+} from '@/firebase/Auth/fbAuthV2/fbGetUsers';
+import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
+import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
+import { db } from '@/firebase/firebaseconfig';
 import { ROUTES } from '@/router/routes/routesName';
 
 /**

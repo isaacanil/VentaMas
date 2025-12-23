@@ -6,7 +6,7 @@ import {
   where,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /** 8 dígitos para B, 10 para E */
 const defaultLength = (serie) => (serie === 'B' ? 8 : 10);

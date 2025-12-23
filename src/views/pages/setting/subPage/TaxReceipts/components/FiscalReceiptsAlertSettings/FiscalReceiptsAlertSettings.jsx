@@ -13,7 +13,7 @@ import styled from 'styled-components';
 import {
   FISCAL_RECEIPTS_ALERT_CONFIG,
   getThresholdsForReceiptType,
-} from '../../../../../../../config/fiscalReceiptsAlertConfig';
+} from '@/config/fiscalReceiptsAlertConfig';
 
 const { Title, Text } = Typography;
 

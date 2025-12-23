@@ -3,10 +3,10 @@ import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { deleteItem } from '../../../../../features/category/categorySlicer';
-import { useMoveScroll } from '../../../../../utils/scroll/moveScroll';
-import { categoryColors } from '../../categoryColors';
+import { icons } from '@/constants/icons/icons';
+import { deleteItem } from '@/features/category/categorySlicer';
+import { useMoveScroll } from '@/utils/scroll/moveScroll';
+import { categoryColors } from '@/views/component/CategorySelector/categoryColors';
 
 export const CategoryBar = ({ open, setOpen, items = [] }) => {
   const categoriesRef = useRef(null);

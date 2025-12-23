@@ -3,9 +3,9 @@ import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
 import { useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { addClient } from '../../../../../../../../../../../../../../../features/clientCart/clientCartSlice';
-import { useFbGetClientsOnOpen } from '../../../../../../../../../../../../../../../firebase/client/useFbGetClientsOnOpen';
-import { filtrarDatos } from '../../../../../../../../../../../../../../../hooks/useSearchFilter';
+import { addClient } from '@/features/clientCart/clientCartSlice';
+import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import { filtrarDatos } from '@/hooks/useSearchFilter';
 
 const { Search } = Input;
 const { Text } = Typography;

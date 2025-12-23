@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 
 import AccountsReceivablePanel from './panels/AccountsReceivablePanel';
 import AuthorizationsPanel from './panels/AuthorizationsPanel';

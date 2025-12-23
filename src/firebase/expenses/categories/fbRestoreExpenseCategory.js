@@ -1,6 +1,6 @@
 import { doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbRestoreExpenseCategory = async (user, categoryId) => {
   if (!user || !user?.businessID)

@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 
-import { getFontSize } from '../../../../../helper/styleHelper';
+import { getFontSize } from '@/helper/styleHelper';
 
 import { colors } from './colors';
 import { fontSize } from './fontSize';

@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectAR } from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
-import { fbGetActiveARCount } from '../../../../../../../../../../../firebase/accountsReceivable/fbGetActiveARCount';
-import { calculateInvoiceChange } from '../../../../../../../../../../../utils/invoice';
+import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbGetActiveARCount } from '@/firebase/accountsReceivable/fbGetActiveARCount';
+import { calculateInvoiceChange } from '@/utils/invoice';
 
 export const useARValidation = (cartData, creditLimit) => {
   const user = useSelector(selectUser);

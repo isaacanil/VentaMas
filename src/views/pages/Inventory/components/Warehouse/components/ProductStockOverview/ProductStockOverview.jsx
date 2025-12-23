@@ -10,10 +10,10 @@ import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { openDeleteModal } from '../../../../../../../features/productStock/deleteProductStockSlice';
-import { useListenProductsStock } from '../../../../../../../firebase/warehouse/productStockService';
-import { useLocationNames } from '../../../../../../../hooks/useLocationNames';
-import useStockAlertThresholds from '../../../../../../../hooks/useStockAlertThresholds';
+import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
+import { useListenProductsStock } from '@/firebase/warehouse/productStockService';
+import { useLocationNames } from '@/hooks/useLocationNames';
+import useStockAlertThresholds from '@/hooks/useStockAlertThresholds';
 
 import BatchGroup from './components/BatchGroup';
 import ProductStockTable from './components/ProductStockTable';

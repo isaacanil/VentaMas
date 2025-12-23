@@ -1,5 +1,5 @@
-import { ensureArray } from '../../../../../../../../utils/array/ensureArray';
-import { toNumber } from '../../../../../../../../utils/validators';
+import { ensureArray } from '@/utils/array/ensureArray';
+import { toNumber } from '@/utils/validators';
 
 const getBanknoteTotal = (notes = []) =>
   notes.reduce((t, { value = 0, quantity = 0 }) => t + value * quantity, 0);

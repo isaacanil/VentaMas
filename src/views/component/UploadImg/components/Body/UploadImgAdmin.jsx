@@ -3,15 +3,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import noImg from '../../../../../assets/producto/noImg.png';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbAddProductImg } from '../../../../../firebase/products/productsImg/fbAddProductImg';
-import { fbAddProductImgData } from '../../../../../firebase/products/productsImg/fbAddProductImgData';
-import { AddFileBtn } from '../../../../templates/system/Button/AddFileBtn';
+import noImg from '@/assets/producto/noImg.png';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbAddProductImg } from '@/firebase/products/productsImg/fbAddProductImg';
+import { fbAddProductImgData } from '@/firebase/products/productsImg/fbAddProductImgData';
+import { AddFileBtn } from '@/views/templates/system/Button/AddFileBtn';
 import {
   Button,
   ButtonGroup,
-} from '../../../../templates/system/Button/Button';
+} from '@/views/templates/system/Button/Button';
 
 export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
   const user = useSelector(selectUser);

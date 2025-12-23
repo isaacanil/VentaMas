@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getStatusConfig } from '../../../config/statusActionConfig';
+import { getStatusConfig } from '@/config/statusActionConfig';
 
 import { Badge } from './Badge';
 

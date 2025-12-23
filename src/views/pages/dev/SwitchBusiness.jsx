@@ -2,7 +2,7 @@ import { Select, Button } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { fbGetBusinesses } from '../../../firebase/dev/businesses/fbGetBusinesses';
+import { fbGetBusinesses } from '@/firebase/dev/businesses/fbGetBusinesses';
 
 const { Option } = Select;
 

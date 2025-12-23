@@ -13,21 +13,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@templates/*": [
-        "views/templates/*"
-      ],
-      "@views/*": [
-        "views/*"
-      ],
-      "@components/*": [
-        "components/*"
-      ],
-      "@constants/*": [
-        "constants/*"
-      ],
-      "@features/*": [
-        "features/*"
       ]
     },
     "allowJs": true,

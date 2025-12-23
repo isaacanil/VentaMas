@@ -14,10 +14,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { fbValidateUser } from '../../../../firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser';
-import { fbValidateUserPin } from '../../../../firebase/authorization/pinAuth';
-import { db } from '../../../../firebase/firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbValidateUser } from '@/firebase/Auth/fbAuthV2/fbSignIn/fbVerifyUser';
+import { fbValidateUserPin } from '@/firebase/authorization/pinAuth';
+import { db } from '@/firebase/firebaseconfig';
 
 const { Paragraph, Text } = Typography;
 

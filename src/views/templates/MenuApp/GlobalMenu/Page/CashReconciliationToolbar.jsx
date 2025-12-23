@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { useMatch, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { useDialog } from '../../../../../Context/Dialog';
-import { selectCashReconciliation } from '../../../../../features/cashCount/cashStateSlice';
+import { icons } from '@/constants/icons/icons';
+import { useDialog } from '@/Context/Dialog';
+import { selectCashReconciliation } from '@/features/cashCount/cashStateSlice';
 
 export const CashReconciliationToolbar = ({ side = 'left' }) => {
   const matchWithCashReconciliation = useMatch('/cash-reconciliation');

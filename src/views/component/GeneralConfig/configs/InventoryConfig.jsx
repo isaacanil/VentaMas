@@ -3,12 +3,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { fbRecalculateProductStockTotals } from '../../../../firebase/inventory/recalculateProductStockTotals';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbRecalculateProductStockTotals } from '@/firebase/inventory/recalculateProductStockTotals';
 import {
   setDefaultWarehouse,
   useListenWarehouses,
-} from '../../../../firebase/warehouse/warehouseService';
+} from '@/firebase/warehouse/warehouseService';
 
 import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 

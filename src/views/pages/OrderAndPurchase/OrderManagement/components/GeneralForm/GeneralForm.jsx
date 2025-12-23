@@ -1,14 +1,14 @@
 import { Form, Select, message, Button } from 'antd';
-import DatePicker from '@/components/DatePicker';
-import { DateTime } from 'luxon';
 import { onSnapshot, doc } from 'firebase/firestore';
+import { DateTime } from 'luxon';
 import { useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../../constants/icons/icons';
-import { OPERATION_MODES } from '../../../../../../constants/modes';
-import { transactionConditions } from '../../../../../../constants/orderAndPurchaseState';
+import DatePicker from '@/components/DatePicker';
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { transactionConditions } from '@/constants/orderAndPurchaseState';
 import {
   selectOrder,
   AddProductToOrder,
@@ -16,19 +16,18 @@ import {
   updateProduct,
   setOrder,
   SelectProduct,
-} from '../../../../../../features/addOrder/addOrderSlice';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { toggleProviderModal } from '../../../../../../features/modals/modalSlice';
-import { db } from '../../../../../../firebase/firebaseconfig';
-import { useFbGetProviders } from '../../../../../../firebase/provider/useFbGetProvider';
-import {
-  getBackOrdersByProduct,
-} from '../../../../../../firebase/warehouse/backOrderService';
+} from '@/features/addOrder/addOrderSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleProviderModal } from '@/features/modals/modalSlice';
+import { db } from '@/firebase/firebaseconfig';
+import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import { getBackOrdersByProduct } from '@/firebase/warehouse/backOrderService';
+import EvidenceUpload from '@/views/pages/OrderAndPurchase/OrderManagement/components/EvidenceUpload/EvidenceUpload';
+import ProductsTable from '@/views/pages/OrderAndPurchase/OrderManagement/components/ProductsTable';
+import BackOrdersModal from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
+import ProductModal from '@/views/pages/OrderAndPurchase/shared/ProductModal';
+
 import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
-import BackOrdersModal from '../../../PurchaseManagement/components/BackOrdersModal';
-import ProductModal from '../../../shared/ProductModal';
-import EvidenceUpload from '../EvidenceUpload/EvidenceUpload';
-import ProductsTable from '../ProductsTable';
 
 import NotesInput from './components/NotesInput';
 

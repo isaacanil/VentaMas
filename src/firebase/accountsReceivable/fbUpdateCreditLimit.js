@@ -1,6 +1,6 @@
 import { doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export async function fbUpdateCreditLimit({ user, client, creditLimitData }) {
   if (!user?.businessID) return;

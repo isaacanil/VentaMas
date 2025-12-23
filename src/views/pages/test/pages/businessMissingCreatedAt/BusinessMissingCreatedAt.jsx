@@ -14,7 +14,7 @@ import React, {
   useState,
 } from 'react';
 
-import { db } from '../../../../../firebase/firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Auditoría de negocios sin campo createdAt.

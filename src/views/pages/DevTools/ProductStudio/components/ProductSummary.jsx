@@ -2,8 +2,8 @@ import { StopOutlined } from '@ant-design/icons';
 import { Divider, Space, Typography } from 'antd';
 import styled from 'styled-components';
 
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../features/updateProduct/updateProductSlice';
-import { imgFailed } from '../../../../component/modals/ProductForm/ImageManager/ImageManager';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import { imgFailed } from '@/views/component/modals/ProductForm/ImageManager/ImageManager';
 
 const { Title, Text } = Typography;
 

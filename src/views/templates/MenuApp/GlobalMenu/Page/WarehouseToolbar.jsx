@@ -5,11 +5,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { openWarehouseForm } from '../../../../../features/warehouse/warehouseModalSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
+import { openWarehouseForm } from '@/features/warehouse/warehouseModalSlice';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
 
 export const WarehouseToolbar = ({ side = 'left' }) => {
   const [_isOpen, _setIsOpen] = useState(false);

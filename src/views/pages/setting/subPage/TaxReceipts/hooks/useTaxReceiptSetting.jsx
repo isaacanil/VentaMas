@@ -3,17 +3,17 @@ import { message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { useDialog } from '../../../../../../Context/Dialog';
-import { selectUser } from '../../../../../../features/auth/userSlice';
+import { useDialog } from '@/Context/Dialog';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   getTaxReceiptData,
   selectTaxReceiptEnabled,
-} from '../../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbEnabledTaxReceipt } from '../../../../../../firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
-import { useFbGetTaxReceipt } from '../../../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import { fbUpdateTaxReceipt } from '../../../../../../firebase/taxReceipt/fbUpdateTaxReceipt';
-import { useCompareArrays } from '../../../../../../hooks/useCompareArrays';
-import { serializeFirestoreDocuments } from '../../../../../../utils/serialization/serializeFirestoreData';
+} from '@/features/taxReceipt/taxReceiptSlice';
+import { fbEnabledTaxReceipt } from '@/firebase/Settings/taxReceipt/fbEnabledTaxReceipt';
+import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
+import { fbUpdateTaxReceipt } from '@/firebase/taxReceipt/fbUpdateTaxReceipt';
+import { useCompareArrays } from '@/hooks/useCompareArrays';
+import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 
 export function useTaxReceiptSetting() {
   const dispatch = useDispatch();

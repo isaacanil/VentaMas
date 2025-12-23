@@ -3,12 +3,12 @@ import { Modal, Form, Button, Space, Typography, notification } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { selectUpdateProductData } from '../../../../../../../features/updateProduct/updateProductSlice';
-import { generateNextItemReference } from '../../../../../../../firebase/barcode/barcodeGeneration';
-import { fbUpdateProduct } from '../../../../../../../firebase/products/fbUpdateProduct';
-import useBarcodeSettings from '../../../../../../../hooks/barcode/useBarcodeSettings';
-import useProductRealtimeListener from '../../../../../../../hooks/product/useProductRealtimeListener';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
+import { generateNextItemReference } from '@/firebase/barcode/barcodeGeneration';
+import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
+import useBarcodeSettings from '@/hooks/barcode/useBarcodeSettings';
+import useProductRealtimeListener from '@/hooks/product/useProductRealtimeListener';
 import {
   generateGTIN13RD,
   generateInternalGTIN13RD,
@@ -18,13 +18,13 @@ import {
   generateGTIN13AR,
   generateGTIN13CL,
   generateGTIN13PE,
-} from '../../../../../../../utils/barcode/barcode';
+} from '@/utils/barcode/barcode';
 import {
   analyzeBarcodeStructure,
   isGS1RDCode,
   extractCompanyPrefix,
   extractItemReference,
-} from '../../../../../../../utils/barcode/barcode';
+} from '@/utils/barcode/barcode';
 
 import { GenerateTab, ConfigurationTab } from './components';
 

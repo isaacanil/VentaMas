@@ -5,7 +5,7 @@
 import { serverTimestamp } from '@firebase/firestore';
 import { doc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbUpdateAppVersion = async (ChangelogId: string) => {
   const appRef = doc(db, 'app', '3Iz5UZWWfF4vCJPlDSy1');

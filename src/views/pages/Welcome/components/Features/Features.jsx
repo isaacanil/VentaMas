@@ -12,7 +12,7 @@ import { Card, Row, Col, Typography } from 'antd';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 
-import welcomeData from '../../WelcomeData.json';
+import welcomeData from '@/views/pages/Welcome/WelcomeData.json';
 
 const { Title, Paragraph } = Typography;
 

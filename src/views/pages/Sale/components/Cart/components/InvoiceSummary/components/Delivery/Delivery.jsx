@@ -6,8 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   selectClient,
   setClient,
-} from '../../../../../../../../../features/clientCart/clientCartSlice';
-import { Label, LineItem } from '../../InvoiceSummary.styles';
+} from '@/features/clientCart/clientCartSlice';
+import { Label, LineItem } from '@/views/pages/Sale/components/Cart/components/InvoiceSummary/InvoiceSummary.styles';
 
 export const Delivery = ({
   inputWidth = '170px',

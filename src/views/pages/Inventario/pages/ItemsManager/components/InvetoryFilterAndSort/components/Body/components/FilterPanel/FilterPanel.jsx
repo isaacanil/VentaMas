@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   DEFAULT_FILTER_CONTEXT,
   DEFAULT_FILTERS,
@@ -25,14 +25,14 @@ import {
   selectStockRequirement,
   setStockLocations,
   selectStockLocations,
-} from '../../../../../../../../../../../features/filterProduct/filterProductsSlice';
-import { getWarehousesStockAggregates } from '../../../../../../../../../../../firebase/warehouse/productStockService';
-import { useListenWarehouses } from '../../../../../../../../../../../firebase/warehouse/warehouseService';
+} from '@/features/filterProduct/filterProductsSlice';
+import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockService';
+import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
 import {
   opcionesInventariable,
   opcionesItbis,
-} from '../../../../InventoryFilterAndSortMetadata';
-import { LabelWithStatus } from '../SortPanel/SortPanel';
+} from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
+import { LabelWithStatus } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 
 import { InventoryLocationSelector } from './InventoryLocationSelector';
 

@@ -1,6 +1,6 @@
 import React, { lazy } from 'react';
 
-import ROUTES_NAME from '../routesName';
+import ROUTES_NAME from '@/router/routes/routesName';
 
 // Lazy load components
 const CashReconciliation = lazy(() =>

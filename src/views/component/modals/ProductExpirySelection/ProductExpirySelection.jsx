@@ -7,7 +7,7 @@ import {
   selectModalOpen,
   selectProductId,
   setModalOpen,
-} from '../../../../features/warehouse/productExpirySelectionSlice';
+} from '@/features/warehouse/productExpirySelectionSlice';
 
 import InventoryCard from './components/InventoryCard';
 import { useGetAllInventoryData } from './fbFetchAllInventoryData';

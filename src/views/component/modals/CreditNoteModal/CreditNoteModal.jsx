@@ -6,21 +6,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice, getTax } from '@/utils/pricing';
 
-import { selectUser } from '../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   closeCreditNoteModal,
   selectCreditNoteModal,
   openCreditNoteModal,
-} from '../../../../features/creditNote/creditNoteModalSlice';
-import { selectTaxReceiptEnabled } from '../../../../features/taxReceipt/taxReceiptSlice';
-import { useFbGetClientsOnOpen } from '../../../../firebase/client/useFbGetClientsOnOpen';
-import { fbAddCreditNote } from '../../../../firebase/creditNotes/fbAddCreditNote';
-import { fbUpdateCreditNote } from '../../../../firebase/creditNotes/fbUpdateCreditNote';
-import { useFbGetCreditNotesByInvoice } from '../../../../firebase/creditNotes/useFbGetCreditNotesByInvoice';
-import { useFbGetInvoicesByClient } from '../../../../firebase/invoices/useFbGetInvoicesByClient';
-import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt';
-import { useCreditNotePDF } from '../../../../hooks/creditNote/useCreditNotePDF';
-import { useFbGetCreditNoteApplications } from '../../../../hooks/creditNote/useFbGetCreditNoteApplications';
+} from '@/features/creditNote/creditNoteModalSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import { fbAddCreditNote } from '@/firebase/creditNotes/fbAddCreditNote';
+import { fbUpdateCreditNote } from '@/firebase/creditNotes/fbUpdateCreditNote';
+import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
+import { useFbGetInvoicesByClient } from '@/firebase/invoices/useFbGetInvoicesByClient';
+import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
+import { useCreditNotePDF } from '@/hooks/creditNote/useCreditNotePDF';
+import { useFbGetCreditNoteApplications } from '@/hooks/creditNote/useFbGetCreditNoteApplications';
 
 
 import { ApplicationHistoryTab } from './components/ApplicationHistoryTab';

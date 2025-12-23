@@ -1,9 +1,11 @@
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
-import { DateTime } from 'luxon';
-import { WEEK_DAYS } from '../constants/presets';
-import { renderCalendarGrid } from '../utils/dateUtils';
+
+import { WEEK_DAYS } from '@/components/common/DatePicker/constants/presets';
+import { renderCalendarGrid } from '@/components/common/DatePicker/utils/dateUtils';
+
 const DATE_LOCALE = 'es';
 
 const CalendarContainer = styled.div`
@@ -117,8 +119,8 @@ const CalendarDay = styled.div`
     
     &:hover {
     ${(props) =>
-      !props.$isSelected &&
-      `
+    !props.$isSelected &&
+    `
             background: #f5f5f5;
             color: #1890ff;
         `}
@@ -181,11 +183,11 @@ export const CalendarSection = ({
           const isSelected =
             mode === 'single'
               ? value &&
-                DateTime.isDateTime(value) &&
-                date.hasSame(value, 'day')
+              DateTime.isDateTime(value) &&
+              date.hasSame(value, 'day')
               : (currentRangeStart &&
-                  date.hasSame(currentRangeStart, 'day')) ||
-                (currentRangeEnd && date.hasSame(currentRangeEnd, 'day'));
+                date.hasSame(currentRangeStart, 'day')) ||
+              (currentRangeEnd && date.hasSame(currentRangeEnd, 'day'));
 
           let isInRange = false;
           if (mode === 'range') {

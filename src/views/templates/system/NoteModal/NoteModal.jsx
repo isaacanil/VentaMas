@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   clearNote,
   selectNote,
-} from '../../../../features/noteModal/noteModalSlice';
+} from '@/features/noteModal/noteModalSlice';
 
 const { Paragraph } = Typography;
 

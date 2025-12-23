@@ -10,8 +10,8 @@ import DatePicker from '@/components/DatePicker';
 import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 
-import { formatMoney, formatPercentage, formatQuantity } from '../../../../../utils/formatters';
-import ProductModal from '../../shared/ProductModal';
+import { formatMoney, formatPercentage, formatQuantity } from '@/utils/formatters';
+import ProductModal from '@/views/pages/OrderAndPurchase/shared/ProductModal';
 
 const EditableCell = ({
   dataIndex,

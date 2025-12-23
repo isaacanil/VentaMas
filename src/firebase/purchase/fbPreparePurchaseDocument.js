@@ -1,7 +1,7 @@
 import { Timestamp, doc, setDoc, updateDoc } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
-import { fbUploadFiles } from '../img/fbUploadFileAndGetURL';
+import { db } from '@/firebase/firebaseconfig';
+import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 
 import { fbUpdateProdStockForReplenish } from './fbUpdateProdStockForReplenish';
 

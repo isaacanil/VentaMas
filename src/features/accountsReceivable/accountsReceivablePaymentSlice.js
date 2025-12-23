@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getLastInstallmentAmountByArId } from '../../firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
+import { getLastInstallmentAmountByArId } from '@/firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
 
 const paymentDetailsTemplate = {
   paymentScope: 'balance', // Tipo de pago (cuota, balance de cuenta, abono) account

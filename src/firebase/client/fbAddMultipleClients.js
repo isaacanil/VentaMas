@@ -1,6 +1,6 @@
 import { doc, writeBatch } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 import { buildClientWritePayload } from './clientNormalizer';
 import { clients } from './clients';

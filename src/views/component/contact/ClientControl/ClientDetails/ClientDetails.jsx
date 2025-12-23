@@ -5,17 +5,17 @@ import styled from 'styled-components';
 
 import { formatPrice as formatPrice } from '@/utils/format';
 
-import { setAccountPayment } from '../../../../../features/accountsReceivable/accountsReceivablePaymentSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectClient,
   setClient,
-} from '../../../../../features/clientCart/clientCartSlice';
-import { useClientPendingBalance } from '../../../../../firebase/accountsReceivable/useClientPendingBalance';
-import { useClickOutSide } from '../../../../../hooks/useClickOutSide';
-import useInsuranceEnabled from '../../../../../hooks/useInsuranceEnabled';
-import { updateObject } from '../../../../../utils/object/updateObject';
-import { InputV4 } from '../../../../templates/system/Inputs/GeneralInput/InputV4';
+} from '@/features/clientCart/clientCartSlice';
+import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
+import { useClickOutSide } from '@/hooks/useClickOutSide';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { updateObject } from '@/utils/object/updateObject';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 
 
 export const ClientDetails = ({ mode }) => {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   resolveUserDisplayNamesBatch,
   collectUIDsForInventoryTable,
-} from '../../../../utils/users/resolveUserDisplayNamesBatch';
+} from '@/utils/users/resolveUserDisplayNamesBatch';
 
 /**
  * Hook para manejar la resolución y caché de nombres de usuarios involucrados en la tabla de inventario.

@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Button } from '../../../system/Button/Button';
+import { Button } from '@/views/templates/system/Button/Button';
 
 const EXPORT_EVENT = 'utility-export-request';
 const AVAILABILITY_EVENT = 'utility-export-availability';

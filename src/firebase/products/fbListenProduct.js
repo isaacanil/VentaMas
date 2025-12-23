@@ -1,6 +1,6 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Escucha los cambios en un documento específico de Firestore y actualiza el estado en Redux.

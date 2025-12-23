@@ -7,10 +7,10 @@ import styled from 'styled-components';
 import {
   useInventoryProductIds,
   useListenAllActiveProductsStock,
-} from '../../../../../../../firebase/warehouse/productStockService';
+} from '@/firebase/warehouse/productStockService';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
-import Tree from '../../../../../../component/tree/Tree';
+import Tree from '@/views/component/tree/Tree';
 
 import { PRODUCT_STOCK_FILTER_OPTIONS as BASE_PRODUCT_STOCK_FILTER_OPTIONS } from './constants';
 

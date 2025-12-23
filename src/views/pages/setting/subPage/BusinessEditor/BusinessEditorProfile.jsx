@@ -1,14 +1,14 @@
 import { Form, message } from 'antd';
-import isEqual from 'lodash/isEqual';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   fbUpdateBusinessInfo,
   fbUpdateBusinessLogo,
-} from '../../../../../firebase/businessInfo/fbAddBusinessInfo';
+} from '@/firebase/businessInfo/fbAddBusinessInfo';
+import { isEqual } from '@/utils/lodash-minimal';
 
 import {
   Wrapper,

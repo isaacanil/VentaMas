@@ -1,7 +1,7 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
-import { createReference, getDocFromRef } from '../../utils/refereceUtils';
-import { db } from '../firebaseconfig';
+import { createReference, getDocFromRef } from '@/utils/refereceUtils';
+import { db } from '@/firebase/firebaseconfig';
 
 export const convertFirestoreTimestamps = (dates, fields) => {
   fields.forEach((field) => {

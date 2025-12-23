@@ -8,7 +8,7 @@ import {
   SectionHeader,
   SectionTitle,
   SwitchField,
-} from '../SectionLayout';
+} from '@/views/pages/DevTools/ProductStudio/components/SectionLayout';
 
 const WarrantyCard = styled(SectionCard)`
   .ant-card-body {

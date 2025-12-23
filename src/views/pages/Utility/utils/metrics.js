@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 
-import { getTotalPrice, getTax } from '../../../../utils/pricing';
+import { getTotalPrice, getTax } from '@/utils/pricing';
 
 const toNumber = (value) => {
   const parsed = Number(value);

@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import type { DiscountType } from '../types';
+import type { DiscountType } from '@/views/component/modals/InvoiceForm/components/PaymentInfo/types';
 import type { MenuProps } from 'antd';
 
 interface DiscountSectionProps {

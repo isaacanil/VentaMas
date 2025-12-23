@@ -2,10 +2,10 @@ import { message } from 'antd';
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { useDialog } from '../../Context/Dialog';
-import { selectUser } from '../../features/auth/userSlice';
-import { selectCashReconciliation } from '../../features/cashCount/cashStateSlice';
-import { fbCashCountChangeState } from '../../firebase/cashCount/closing/fbCashCountClosing';
+import { useDialog } from '@/Context/Dialog';
+import { selectUser } from '@/features/auth/userSlice';
+import { selectCashReconciliation } from '@/features/cashCount/cashStateSlice';
+import { fbCashCountChangeState } from '@/firebase/cashCount/closing/fbCashCountClosing';
 
 const dialogConfig = {
   title: 'Cierre de caja en proceso',

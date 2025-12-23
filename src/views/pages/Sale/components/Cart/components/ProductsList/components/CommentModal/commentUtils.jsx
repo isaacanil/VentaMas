@@ -1,7 +1,7 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
 
-import { getLazyGenerativeModel } from '../../../../../../../../../firebase/firebaseconfig';
+import { getLazyGenerativeModel } from '@/firebase/firebaseconfig';
 
 export const getCommentFromAI = async (productName, category, description) => {
   try {

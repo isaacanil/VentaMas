@@ -10,9 +10,9 @@ import { Button } from 'antd';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { OPERATION_MODES } from '../../../../../../../../../../../../../../constants/modes';
-import { selectClient } from '../../../../../../../../../../../../../../features/clientCart/clientCartSlice';
-import { toggleClientModal } from '../../../../../../../../../../../../../../features/modals/modalSlice';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { toggleClientModal } from '@/features/modals/modalSlice';
 
 import { MiniClientSelector } from './MiniClientSelector/MiniClientSelector';
 

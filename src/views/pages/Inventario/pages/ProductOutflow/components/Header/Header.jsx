@@ -2,10 +2,10 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { toggleAddProductOutflow } from '../../../../../../../features/modals/modalSlice';
-import { MenuApp } from '../../../../../../templates/MenuApp/MenuApp';
-import { Button } from '../../../../../../templates/system/Button/Button';
-import { FormattedValue } from '../../../../../../templates/system/FormattedValue/FormattedValue';
+import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { Button } from '@/views/templates/system/Button/Button';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const Header = () => {
   const dispatch = useDispatch();

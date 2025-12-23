@@ -1,6 +1,6 @@
 import { deleteDoc, getDocs, collection, query } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const cleanInventoryData = async (businessID) => {
   if (!businessID) throw new Error('BusinessID es requerido');

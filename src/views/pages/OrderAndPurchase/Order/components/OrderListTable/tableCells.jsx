@@ -6,10 +6,10 @@ import {
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { ActionIcon } from '../../../../../../components/common/ActionIcon';
-import { useDialog } from '../../../../../../Context/Dialog';
-import { selectUser } from '../../../../../../features/auth/userSlice';
-import { fbDeleteOrder } from '../../../../../../firebase/order/fbDeleteOrder';
+import { ActionIcon } from '@/components/common/ActionIcon';
+import { useDialog } from '@/Context/Dialog';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbDeleteOrder } from '@/firebase/order/fbDeleteOrder';
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import { ROUTES } from '@/router/routes/routesName';
 

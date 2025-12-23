@@ -10,15 +10,15 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { icons } from '../../../../constants/icons/icons.jsx';
-import { OPERATION_MODES } from '../../../../constants/modes.js';
-import { selectBusinessData } from '../../../../features/auth/businessSlice.js';
+import { icons } from '@/constants/icons/icons.jsx';
+import { OPERATION_MODES } from '@/constants/modes.js';
+import { selectBusinessData } from '@/features/auth/businessSlice.js';
 import {
   setClient as setClientInClientCart,
   toggleCart,
   updateInsuranceStatus,
   setDefaultClient,
-} from '../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 import {
   deleteClient,
   selectClient,
@@ -27,20 +27,20 @@ import {
   setClient,
   setClientSearchTerm,
   setIsOpen,
-} from '../../../../features/clientCart/clientCartSlice';
-import { CLIENT_MODE_BAR } from '../../../../features/clientCart/clientMode';
-import { clearAuthData } from '../../../../features/insurance/insuranceAuthSlice.js';
-import { toggleClientModal } from '../../../../features/modals/modalSlice.js';
+} from '@/features/clientCart/clientCartSlice';
+import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
+import { clearAuthData } from '@/features/insurance/insuranceAuthSlice.js';
+import { toggleClientModal } from '@/features/modals/modalSlice.js';
 import {
   selectNcfType,
   selectTaxReceipt,
   selectTaxReceiptType,
   selectNcfTypeLocked,
-} from '../../../../features/taxReceipt/taxReceiptSlice.js';
-import { useFbGetTaxReceipt } from '../../../../firebase/taxReceipt/fbGetTaxReceipt.js';
-import useInsuranceEnabled from '../../../../hooks/useInsuranceEnabled';
-import { useWindowWidth } from '../../../../hooks/useWindowWidth';
-import { updateObject } from '../../../../utils/object/updateObject';
+} from '@/features/taxReceipt/taxReceiptSlice.js';
+import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt.js';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { useWindowWidth } from '@/hooks/useWindowWidth';
+import { updateObject } from '@/utils/object/updateObject';
 
 import { ClientDetails } from './ClientDetails/ClientDetails.jsx';
 

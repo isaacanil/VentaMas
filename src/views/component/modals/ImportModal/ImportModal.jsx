@@ -3,8 +3,8 @@ import { Button, Upload, Modal, message, Tabs, Table } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { getAvailableHeaders } from '../../../../utils/import/product/filterEssentialHeaders';
-import { productHeaderMappings } from '../../../../utils/import/product/headerMappings';
+import { getAvailableHeaders } from '@/utils/import/product/filterEssentialHeaders';
+import { productHeaderMappings } from '@/utils/import/product/headerMappings';
 
 import FieldSelector from './FieldSelector';
 

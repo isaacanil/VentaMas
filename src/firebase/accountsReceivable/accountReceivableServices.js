@@ -7,9 +7,9 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-import { fbGetClient } from '../client/fbGetClient';
-import { db } from '../firebaseconfig';
-import { fbGetInvoice } from '../invoices/fbGetInvoice';
+import { fbGetClient } from '@/firebase/client/fbGetClient';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 
 export const useListenAccountsReceivable = (
   user,

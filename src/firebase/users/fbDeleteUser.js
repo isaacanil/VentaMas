@@ -5,7 +5,7 @@ import {
 } from 'firebase/auth';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 
-import { auth, db } from '../firebaseconfig';
+import { auth, db } from '@/firebase/firebaseconfig';
 
 export const fbDeleteUser = async (uid, password) => {
   const userDocRef = doc(db, 'users', uid);

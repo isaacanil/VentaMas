@@ -4,7 +4,7 @@ import {
   getMinPriceTotal,
   getCardPriceTotal,
   getOfferPriceTotal,
-} from '../../../../../../../../utils/pricing';
+} from '@/utils/pricing';
 
 export function extraerPreciosConImpuesto(pricing, taxReceiptEnabled = true) {
   const { listPrice, avgPrice, minPrice, cardPrice, offerPrice } =

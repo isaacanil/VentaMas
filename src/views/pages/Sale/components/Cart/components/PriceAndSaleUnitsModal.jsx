@@ -5,11 +5,11 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { useListenSaleUnits } from '../../../../../../firebase/products/saleUnits/fbUpdateSaleUnit';
+import { useListenSaleUnits } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
 import {
   getListPriceTotal,
   getTotalPrice,
-} from '../../../../../../utils/pricing';
+} from '@/utils/pricing';
 
 import { extraerPreciosConImpuesto } from './ProductCardForCart/utils/priceUtils';
 

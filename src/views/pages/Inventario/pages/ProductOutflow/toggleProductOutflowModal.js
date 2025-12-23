@@ -1,6 +1,6 @@
-import { OPERATION_MODES } from '../../../../../constants/modes';
-import { toggleAddProductOutflow } from '../../../../../features/modals/modalSlice';
-import { setProductOutflowData } from '../../../../../features/productOutflow/productOutflow';
+import { OPERATION_MODES } from '@/constants/modes';
+import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
+import { setProductOutflowData } from '@/features/productOutflow/productOutflow';
 
 const EmptyProductsOutflow = [];
 

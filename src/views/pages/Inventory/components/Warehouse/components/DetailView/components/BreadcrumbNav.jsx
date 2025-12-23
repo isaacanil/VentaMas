@@ -3,7 +3,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { navigateToBreadcrumb } from '../../../../../../../../features/warehouse/warehouseSlice';
+import { navigateToBreadcrumb } from '@/features/warehouse/warehouseSlice';
 
 const StyledBreadcrumb = styled(Breadcrumb)`
   margin-bottom: 16px;

@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 
-import { selectInsuranceAuthData } from '../features/insurance/insuranceAuthSlice';
+import { selectInsuranceAuthData } from '@/features/insurance/insuranceAuthSlice';
 
 import useInsuranceEnabled from './useInsuranceEnabled';
 

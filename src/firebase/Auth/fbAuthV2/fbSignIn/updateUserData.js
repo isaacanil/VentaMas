@@ -2,9 +2,9 @@ import { onSnapshot, doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { login, logout } from '../../../../features/auth/userSlice';
-import { addUserData } from '../../../../features/auth/userSlice';
-import { db } from '../../../firebaseconfig';
+import { login, logout } from '@/features/auth/userSlice';
+import { addUserData } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 export function useUserDocListener(userId) {
   const dispatch = useDispatch();

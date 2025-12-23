@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../../../system/Button/Button';
-import { MenuLink } from '../MenuLink';
+import { Button } from '@/views/templates/system/Button/Button';
+import { MenuLink } from '@/views/templates/MenuApp/Components/MenuLink';
 
 export const SubMenu = ({ isOpen, item, onClose }) => {
   const submenuItems = item.submenu || [];

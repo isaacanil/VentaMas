@@ -1,7 +1,7 @@
 import { collection, query, where } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
-import { fbGetDoc, fbGetDocs, fbUpdateDoc } from '../firebaseOperations';
+import { db } from '@/firebase/firebaseconfig';
+import { fbGetDoc, fbGetDocs, fbUpdateDoc } from '@/firebase/firebaseOperations';
 
 export const fbAddBillToOpenCashCount = async (
   user,

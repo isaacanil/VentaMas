@@ -8,9 +8,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { CREDIT_NOTE_STATUS } from '../../constants/creditNoteStatus';
-import { selectUser } from '../../features/auth/userSlice';
-import { db } from '../../firebase/firebaseconfig';
+import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 export const useFbGetAvailableCreditNotes = (clientId) => {
   const user = useSelector(selectUser);

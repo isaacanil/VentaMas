@@ -4,16 +4,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useMatch } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   selectFullScreen,
   toggleFullScreen,
-} from '../../../../../features/setting/settingSlice';
-import { useAppNavigation } from '../../../../../hooks/useAppNavigation';
+} from '@/features/setting/settingSlice';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import ROUTES_NAME from '@/router/routes/routesName';
-import { InventoryFilterAndSort } from '../../../../pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
-import { ButtonIconMenu } from '../../../system/Button/ButtonIconMenu';
+import { InventoryFilterAndSort } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSort';
+import { ButtonIconMenu } from '@/views/templates/system/Button/ButtonIconMenu';
 
 export const VentaMenuToolbar = ({ side = 'left' }) => {
   const navigation = useAppNavigation();

@@ -5,7 +5,7 @@ import {
   faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { Selector } from '../../../../../../../components/common/Selector/Selector';
+import { Selector } from '@/components/common/Selector/Selector';
 
 const defaultStatusOptions = [
   {

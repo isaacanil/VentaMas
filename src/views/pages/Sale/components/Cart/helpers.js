@@ -4,19 +4,19 @@ import {
   addTaxReceiptInState,
   resetCart,
   toggleCart,
-} from '../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 import {
   deleteClient,
   handleClient,
-} from '../../../../../features/clientCart/clientCartSlice';
+} from '@/features/clientCart/clientCartSlice';
 import {
   IncreaseEndConsumer,
   IncreaseTaxCredit,
   clearTaxReceiptData,
-} from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbAddInvoice } from '../../../../../firebase/invoices/fbAddInvoice';
-import { fbUpdateProductsStock } from '../../../../../firebase/products/fbUpdateProductStock';
-import { fbUpdateTaxReceipt } from '../../../../../firebase/taxReceipt/fbUpdateTaxReceipt';
+} from '@/features/taxReceipt/taxReceiptSlice';
+import { fbAddInvoice } from '@/firebase/invoices/fbAddInvoice';
+import { fbUpdateProductsStock } from '@/firebase/products/fbUpdateProductStock';
+import { fbUpdateTaxReceipt } from '@/firebase/taxReceipt/fbUpdateTaxReceipt';
 
 export const handleTaxReceipt = async (
   dispatch,

@@ -7,7 +7,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbAddFavoriteProductCategory = async (user, category) => {
   const { businessID, uid } = user;

@@ -2,7 +2,7 @@ import { createChart } from 'lightweight-charts';
 import React, { useRef, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 const Container = styled.div`
   position: relative;

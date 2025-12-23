@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
-import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
+import { selectAR } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { fbGetActiveARCount } from '@/firebase/accountsReceivable/fbGetActiveARCount';
 
 export const useCreditLimitCheck = (
   creditLimit,

@@ -1,5 +1,5 @@
-import { getStoredSession } from '../firebase/Auth/fbAuthV2/sessionClient';
-import { auth } from '../firebase/firebaseconfig';
+import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { auth } from '@/firebase/firebaseconfig';
 
 const DEFAULT_REGION =
   typeof import.meta.env.VITE_FIREBASE_REGION === 'string' &&

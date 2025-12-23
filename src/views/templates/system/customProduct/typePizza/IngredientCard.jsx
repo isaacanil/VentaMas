@@ -10,7 +10,7 @@ import {
   totalPurchase,
   deleteIngredient,
   selectIngredientList,
-} from '../../../../../features/customProducts/customProductSlice';
+} from '@/features/customProducts/customProductSlice';
 
 export const IngredientCard = ({ item, index }) => {
   const dispatch = useDispatch();

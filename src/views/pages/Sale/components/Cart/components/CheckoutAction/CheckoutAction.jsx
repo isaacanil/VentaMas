@@ -4,8 +4,8 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { ButtonGroup } from '../../../../../../templates/system/Button/Button';
-import { Receipt } from '../../../../../checkout/Receipt';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
+import { Receipt } from '@/views/pages/checkout/Receipt';
 
 
 const antd = { Button: AntdButton, message };

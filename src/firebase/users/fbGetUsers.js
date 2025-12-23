@@ -6,7 +6,7 @@ import {
   where,
 } from 'firebase/firestore';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export const fbGetUsers = (currentUser, setUsers, onError, onLoad) => {
   if (!currentUser?.businessID) {

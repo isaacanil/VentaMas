@@ -12,8 +12,8 @@ import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { changeClientInvoiceForm } from '../../../../../../features/invoice/invoiceFormSlice';
-import { useFbGetClients } from '../../../../../../firebase/client/useFbGetClients';
+import { changeClientInvoiceForm } from '@/features/invoice/invoiceFormSlice';
+import { useFbGetClients } from '@/firebase/client/useFbGetClients';
 
 export const Client = ({ invoice, isEditLocked = false }) => {
   const clientData = invoice?.client;

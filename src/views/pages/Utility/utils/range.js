@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 
-import { getDateRange } from '../../../../utils/date/getDateRange';
+import { getDateRange } from '@/utils/date/getDateRange';
 
 export const computePreviousRange = (range, presetKey) => {
   const fallback = getDateRange('lastWeek');

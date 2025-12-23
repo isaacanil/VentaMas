@@ -4,7 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import {
   selectLoaderMessage,
   selectLoaderShow,
-} from '../../../../features/loader/loaderSlice';
+} from '@/features/loader/loaderSlice';
 
 const Loader = ({
   useRedux = true,
@@ -83,7 +83,7 @@ const Spinner = styled.div`
 `;
 
 const Message = styled.p`
-  font-family: Lato, sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 20px;
   font-weight: bold;
   color: ${({ theme }) => getThemeStyles(theme).textColor};

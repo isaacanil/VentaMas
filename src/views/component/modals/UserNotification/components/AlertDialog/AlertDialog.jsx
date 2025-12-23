@@ -3,12 +3,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectCurrentUserNotification } from '../../../../../../features/UserNotification/UserNotificationSlice';
+import { selectCurrentUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 import {
   Button,
   ButtonGroup,
-} from '../../../../../templates/system/Button/Button';
-import { FormattedValue } from '../../../../../templates/system/FormattedValue/FormattedValue';
+} from '@/views/templates/system/Button/Button';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const AlertDialog = ({ onSubmit, submitBtnName }) => {
   const confirmation = useSelector(selectCurrentUserNotification);

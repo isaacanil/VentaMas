@@ -4,8 +4,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
+import { selectUser } from '@/features/auth/userSlice';
+import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 
 /**
  * Modal para mostrar y restaurar comprobantes deshabilitados

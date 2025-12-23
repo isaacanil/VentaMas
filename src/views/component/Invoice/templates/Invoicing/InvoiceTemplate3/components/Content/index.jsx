@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../../../../features/updateProduct/updateProductSlice';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 
 
 export default function Content({ data }) {

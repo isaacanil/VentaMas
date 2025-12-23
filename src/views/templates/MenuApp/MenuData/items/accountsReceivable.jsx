@@ -1,4 +1,4 @@
-import { icons } from '../../../../../constants/icons/icons';
+import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 
 const {

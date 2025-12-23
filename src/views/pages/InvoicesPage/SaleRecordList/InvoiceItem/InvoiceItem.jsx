@@ -15,16 +15,16 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import { addInvoice } from '../../../../../features/invoice/invoiceFormSlice';
-import { openInvoicePreviewModal } from '../../../../../features/invoice/invoicePreviewSlice';
+import { addInvoice } from '@/features/invoice/invoiceFormSlice';
+import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,
   getInvoicePaymentInfo,
-} from '../../../../../utils/invoice';
-import { prepareInvoiceForEdit } from '../../../../../utils/invoice';
-import { Receipt } from '../../../checkout/Receipt';
-import useInvoiceEditAuthorization from '../../hooks/useInvoiceEditAuthorization.jsx';
+} from '@/utils/invoice';
+import { prepareInvoiceForEdit } from '@/utils/invoice';
+import { Receipt } from '@/views/pages/checkout/Receipt';
+import useInvoiceEditAuthorization from '@/views/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
 
 
 export const InvoiceItem = ({ data }) => {
@@ -435,9 +435,9 @@ const PaymentDot = styled.span`
   background: ${({ $type }) => ($type === 'pending' ? '#d4380d' : '#52c41a')};
   box-shadow: 0 0 0 1px
     ${({ $type }) =>
-      $type === 'pending'
-        ? 'rgba(212, 56, 13, 0.35)'
-        : 'rgba(82, 196, 26, 0.35)'};
+    $type === 'pending'
+      ? 'rgba(212, 56, 13, 0.35)'
+      : 'rgba(82, 196, 26, 0.35)'};
 `;
 
 const ActionButtons = styled.div`

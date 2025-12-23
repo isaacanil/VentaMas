@@ -3,12 +3,12 @@ import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { setARDetailsModal } from '../../../../../features/accountsReceivable/accountsReceivableSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { useListenAccountsReceivable } from '../../../../../firebase/accountsReceivable/accountReceivableServices';
-import { getDateRange } from '../../../../../utils/date/getDateRange';
-import { sortAccounts } from '../../../../../utils/sorts/sortAccountsReceivable';
-import { MenuApp } from '../../../../templates/MenuApp/MenuApp';
+import { setARDetailsModal } from '@/features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '@/features/auth/userSlice';
+import { useListenAccountsReceivable } from '@/firebase/accountsReceivable/accountReceivableServices';
+import { getDateRange } from '@/utils/date/getDateRange';
+import { sortAccounts } from '@/utils/sorts/sortAccountsReceivable';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { AccountReceivableTable } from './components/AccountReceivableTable/AccountReceivableTable';
 import { FilterAccountReceivable } from './components/FilterAccountReceivable/FilterAccountReceivable';

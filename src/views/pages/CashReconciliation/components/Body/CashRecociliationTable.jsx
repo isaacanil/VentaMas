@@ -4,12 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { setCashCount } from '../../../../../features/cashCount/cashCountManagementSlice';
-import { fbListenCashCounts } from '../../../../../firebase/cashCount/fbGetCashCounts/fbGetCashCounts';
-import { useBusinessUsers } from '../../../../../firebase/users/useBusinessUsers';
-import { FilterBar } from '../../../../component/FilterBar/FilterBar';
-import { AdvancedTable } from '../../../../templates/system/AdvancedTable/AdvancedTable';
+import { selectUser } from '@/features/auth/userSlice';
+import { setCashCount } from '@/features/cashCount/cashCountManagementSlice';
+import { fbListenCashCounts } from '@/firebase/cashCount/fbGetCashCounts/fbGetCashCounts';
+import { useBusinessUsers } from '@/firebase/users/useBusinessUsers';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+
+import { FilterCashReconciliation } from '../FilterBar/FilterCashReconciliation';
 
 import { tableConfig } from './tableConfig';
 
@@ -22,38 +23,21 @@ export const CashReconciliationTable = () => {
   const navigate = useNavigate();
 
   const { users: usersList } = useBusinessUsers();
-  const filterConfig = {
-    defaultValues: {
-      status: 'open', // Cambiado de 'active' a null, para que no haya filtro inicial
+
+  const userOptions = useMemo(() => {
+    return (usersList || []).map((user) => ({
+      label: user.realName?.trim() ? user.realName : user.name,
+      value: user.id,
+    }));
+  }, [usersList]);
+
+  const [filterState, setFilterState] = useState({
+    filters: {
+      status: 'open',
       user: null,
       createdAtDateRange: null,
     },
-    defaultSort: {
-      isAscending: false,
-    },
-    filters: [
-      {
-        key: 'status',
-        type: 'select',
-        placeholder: 'Estado',
-        clearText: 'Limpiar estado',
-      },
-      {
-        key: 'user',
-        type: 'select',
-        placeholder: 'Usuario',
-        clearText: 'Limpiar usuario',
-        showSearch: true,
-        icon: null,
-      },
-    ],
-    showSortButton: true,
-    showResetButton: true,
-  };
-
-  const [filterState, setFilterState] = useState({
-    filters: filterConfig.defaultValues,
-    isAscending: filterConfig.defaultSort.isAscending,
+    isAscending: false,
   });
 
   const handleClick = (cashCount) => {
@@ -144,35 +128,20 @@ export const CashReconciliationTable = () => {
 
   const columns = tableConfig();
 
-  const dataConfig = {
-    user: {
-      data: usersList,
-      accessor: ({ user }) => ({
-        label: user.realName?.trim() ? user.realName : user.name,
-        value: user.id,
-      }),
-    },
-    status: {
-      data: [
-        { label: 'Abierto', value: 'open' },
-        { label: 'Cerrando Cuadre', value: 'closing' },
-        { label: 'Cerrado', value: 'closed' },
-      ],
-      accessor: (item) => ({
-        label: item.label,
-        value: item.value,
-      }),
-    },
-  };
+
 
   return (
     <Container>
-      <FilterBar
-        config={filterConfig}
-        dataConfig={dataConfig}
-        onChange={(newFilterStateFromBar) => {
-          setFilterState(newFilterStateFromBar);
-        }}
+      <FilterCashReconciliation
+        filters={filterState.filters}
+        onFiltersChange={(newFilters) =>
+          setFilterState((prev) => ({ ...prev, filters: newFilters }))
+        }
+        sortAscending={filterState.isAscending}
+        onSortChange={(isAscending) =>
+          setFilterState((prev) => ({ ...prev, isAscending }))
+        }
+        userOptions={userOptions}
       />
       <AdvancedTable
         columns={columns}

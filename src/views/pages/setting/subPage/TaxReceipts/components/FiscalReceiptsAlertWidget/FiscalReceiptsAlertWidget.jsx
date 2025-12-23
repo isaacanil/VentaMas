@@ -3,7 +3,7 @@ import { Drawer, Button } from 'antd';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import FiscalReceiptsAlertSettings from '../FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
+import FiscalReceiptsAlertSettings from '@/views/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
 
 /**
  * Botón simple para abrir configuración de alertas de comprobantes fiscales

@@ -1,6 +1,6 @@
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
-import { db } from '../../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 /**
  * Obtiene la lista de negocios de una sola vez (sin listener)

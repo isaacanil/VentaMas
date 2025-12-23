@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { UserSection } from '../../../../resource/UserSection/UserSection';
+import { UserSection } from '@/views/pages/CashReconciliation/resource/UserSection/UserSection';
 
 export const Header = () => {
   return (

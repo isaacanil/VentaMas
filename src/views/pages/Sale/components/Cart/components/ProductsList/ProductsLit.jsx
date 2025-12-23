@@ -5,20 +5,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
-import ProductDiscountModal from '../../../../../../../components/modals/ProductDiscountModal/ProductDiscountModal';
+import ProductDiscountModal from '@/components/modals/ProductDiscountModal/ProductDiscountModal';
 import {
   deleteProduct,
   SelectProduct,
   updateProductFields,
-} from '../../../../../../../features/cart/cartSlice';
+} from '@/features/cart/cartSlice';
 import {
   selectInsuranceData,
   updateInsuranceData,
-} from '../../../../../../../features/insurance/insuranceSlice';
-import useInsuranceEnabled from '../../../../../../../hooks/useInsuranceEnabled';
-import Typography from '../../../../../../templates/system/Typografy/Typografy';
-import { InsuranceAuthFields } from '../InsuranceAuthFields/InsuranceAuthFields';
-import { ProductCardForCart } from '../ProductCardForCart/ProductCardForCart';
+} from '@/features/insurance/insuranceSlice';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import Typography from '@/views/templates/system/Typografy/Typografy';
+import { InsuranceAuthFields } from '@/views/pages/Sale/components/Cart/components/InsuranceAuthFields/InsuranceAuthFields';
+import { ProductCardForCart } from '@/views/pages/Sale/components/Cart/components/ProductCardForCart/ProductCardForCart';
 
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';

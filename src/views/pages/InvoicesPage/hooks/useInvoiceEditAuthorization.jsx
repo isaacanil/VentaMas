@@ -2,11 +2,11 @@ import { message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { SelectSettingCart } from '../../../../features/cart/cartSlice';
-import { getActiveApprovedAuthorizationForInvoice } from '../../../../firebase/authorizations/invoiceEditAuthorizations';
-import { fbGetCashCountState } from '../../../../firebase/cashCount/fbCashCountStatus';
-import RequestInvoiceEditAuthorization from '../../../component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization';
+import { selectUser } from '@/features/auth/userSlice';
+import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { getActiveApprovedAuthorizationForInvoice } from '@/firebase/authorizations/invoiceEditAuthorizations';
+import { fbGetCashCountState } from '@/firebase/cashCount/fbCashCountStatus';
+import RequestInvoiceEditAuthorization from '@/views/component/modals/RequestInvoiceEditAuthorization/RequestInvoiceEditAuthorization';
 
 const PRIVILEGED_ROLES = new Set(['admin', 'owner', 'dev', 'manager']);
 const MAX_EDIT_WINDOW_SECONDS = 48 * 60 * 60;

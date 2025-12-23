@@ -7,9 +7,9 @@ import {
   FilterSectionTitle,
   FilterSelectContainer,
   MutedText,
-} from '../styles';
+} from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/styles';
 
-import type { DraftBatchOption, FilterDraft, ProductOption } from '../types';
+import type { DraftBatchOption, FilterDraft, ProductOption } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 
 interface AdvancedFilterModalProps {
   open: boolean;

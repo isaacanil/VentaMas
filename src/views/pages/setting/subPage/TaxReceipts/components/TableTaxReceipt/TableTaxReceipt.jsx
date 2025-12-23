@@ -9,10 +9,10 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
-import { updateTaxReceipt } from '../../../../../../../firebase/taxReceipt/updateTaxReceipt';
-import { settingDataTaxTable } from '../../taxConfigTable';
-import TaxReceiptForm from '../TaxReceiptForm/TaxReceiptForm';
+import { selectUser } from '@/features/auth/userSlice';
+import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
+import { settingDataTaxTable } from '@/views/pages/setting/subPage/TaxReceipts/taxConfigTable';
+import TaxReceiptForm from '@/views/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm';
 
 export const TableTaxReceipt = ({ array, setData }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);

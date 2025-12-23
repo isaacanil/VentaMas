@@ -1,7 +1,7 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useCallback, useState, useEffect } from 'react';
 
-import { db } from '../firebaseconfig';
+import { db } from '@/firebase/firebaseconfig';
 
 export function fbGetPendingBalance(businessID, clientId, callback) {
   const safeCb = typeof callback === 'function' ? callback : () => { /* noop */ };

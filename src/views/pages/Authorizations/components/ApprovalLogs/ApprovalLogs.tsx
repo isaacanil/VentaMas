@@ -6,10 +6,10 @@ import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
 // @ts-expect-error - legacy JS component without type declarations
-import { DatePicker as CommonDatePicker } from '../../../../../components/common/DatePicker';
-import { selectUser } from '../../../../../features/auth/userSlice';
-import { fbListApprovalLogs } from '../../../../../firebase/authorization/approvalLogs';
-import { getDateRange } from '../../../../../utils/date/getDateRange';
+import { DatePicker as CommonDatePicker } from '@/components/common/DatePicker';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbListApprovalLogs } from '@/firebase/authorization/approvalLogs';
+import { getDateRange } from '@/utils/date/getDateRange';
 
 
 interface UserSnapshot {

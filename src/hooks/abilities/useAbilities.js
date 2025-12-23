@@ -2,15 +2,15 @@ import { useAbility } from '@casl/react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AbilityContext } from '../../Context/AbilityContext/context';
+import { AbilityContext } from '@/Context/AbilityContext/context';
 import {
   selectAbilities,
   selectAbilitiesLoading,
   selectAbilitiesError,
   selectAbilitiesStatus,
   loadUserAbilities,
-} from '../../features/abilities/abilitiesSlice';
-import { selectUser } from '../../features/auth/userSlice';
+} from '@/features/abilities/abilitiesSlice';
+import { selectUser } from '@/features/auth/userSlice';
 
 export const useAbilities = () => {
   const abilities = useSelector(selectAbilities);

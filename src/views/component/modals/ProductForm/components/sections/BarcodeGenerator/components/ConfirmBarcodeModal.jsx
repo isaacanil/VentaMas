@@ -1,7 +1,7 @@
 import { Modal, Space, Button, Typography, Tag } from 'antd';
 import React from 'react';
 
-import { analyzeBarcodeStructure } from '../../../../../../../../utils/barcode/barcode';
+import { analyzeBarcodeStructure } from '@/utils/barcode/barcode';
 
 const { Text } = Typography;
 

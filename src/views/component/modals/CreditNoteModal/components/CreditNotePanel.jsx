@@ -10,8 +10,8 @@ import styled, { css } from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-import DateUtils from '../../../../../utils/date/dateUtils';
-import { getTotalPrice } from '../../../../../utils/pricing';
+import DateUtils from '@/utils/date/dateUtils';
+import { getTotalPrice } from '@/utils/pricing';
 
 
 const CreditNotePanel = memo(

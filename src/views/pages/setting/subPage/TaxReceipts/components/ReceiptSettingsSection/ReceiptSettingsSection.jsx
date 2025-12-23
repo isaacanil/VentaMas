@@ -3,7 +3,7 @@ import { Switch, Typography } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
+import FiscalReceiptsAlertWidget from '@/views/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
 
 const { Title, Text } = Typography;
 

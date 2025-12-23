@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
-import { FloatingMessage } from '../FloatingMessage/FloatingMessage';
+import { FloatingMessage } from '@/views/templates/system/FloatingMessage/FloatingMessage';
 
 export const EditButton = () => {
   return (

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-import welcomeData from '../../WelcomeData.json';
+import welcomeData from '@/views/pages/Welcome/WelcomeData.json';
 
 const { Title, Paragraph, Text } = Typography;
 

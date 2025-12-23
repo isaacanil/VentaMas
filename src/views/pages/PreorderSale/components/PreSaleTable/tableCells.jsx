@@ -12,25 +12,25 @@ import { useReactToPrint } from 'react-to-print';
 
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '../../../../../constants/icons/icons';
-import { selectBusinessData } from '../../../../../features/auth/businessSlice';
-import { selectUser } from '../../../../../features/auth/userSlice';
+import { icons } from '@/constants/icons/icons';
+import { selectBusinessData } from '@/features/auth/businessSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   SelectSettingCart,
   loadCart,
   setCartId,
   toggleInvoicePanelOpen,
-} from '../../../../../features/cart/cartSlice';
-import { selectClientWithAuth } from '../../../../../features/clientCart/clientCartSlice';
-import { selectTaxReceiptType } from '../../../../../features/taxReceipt/taxReceiptSlice';
-import { fbCancelPreorder } from '../../../../../firebase/invoices/fbCancelPreorder';
-import { downloadInvoiceLetterPdf } from '../../../../../firebase/quotation/downloadQuotationPDF';
-import { getTimeElapsed } from '../../../../../hooks/useFormatTime';
-import { validateInvoiceCart } from '../../../../../utils/invoiceValidation';
-import { Invoice } from '../../../../component/Invoice/components/Invoice/Invoice';
-import { ConfirmModal } from '../../../../component/modals/ConfirmModal/ConfirmModal';
-import PreorderModal from '../../../../component/modals/PreorderModal/PreorderModal';
-import { Tag } from '../../../../templates/system/Tag/Tag';
+} from '@/features/cart/cartSlice';
+import { selectClientWithAuth } from '@/features/clientCart/clientCartSlice';
+import { selectTaxReceiptType } from '@/features/taxReceipt/taxReceiptSlice';
+import { fbCancelPreorder } from '@/firebase/invoices/fbCancelPreorder';
+import { downloadInvoiceLetterPdf } from '@/firebase/quotation/downloadQuotationPDF';
+import { getTimeElapsed } from '@/hooks/useFormatTime';
+import { validateInvoiceCart } from '@/utils/invoiceValidation';
+import { Invoice } from '@/views/component/Invoice/components/Invoice/Invoice';
+import { ConfirmModal } from '@/views/component/modals/ConfirmModal/ConfirmModal';
+import PreorderModal from '@/views/component/modals/PreorderModal/PreorderModal';
+import { Tag } from '@/views/templates/system/Tag/Tag';
 
 const resolvePreorderTaxReceiptType = (preorder) =>
   preorder?.selectedTaxReceiptType ??

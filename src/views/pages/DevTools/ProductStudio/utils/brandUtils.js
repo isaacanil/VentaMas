@@ -1,8 +1,8 @@
-import { PRODUCT_BRAND_DEFAULT } from '../../../../../features/updateProduct/updateProductSlice';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 import {
   BRAND_DEFAULT_OPTION_VALUE,
   BRAND_LEGACY_OPTION_VALUE,
-} from '../../../../component/modals/ProductForm/constants/brandOptions';
+} from '@/views/component/modals/ProductForm/constants/brandOptions';
 
 export const brandFieldMetaByType = (typeValue) => {
   const normalizedType = (typeValue || '').toLowerCase();

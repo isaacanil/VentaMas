@@ -4,7 +4,7 @@ import {
   getTotalPrice,
   getTax,
   getProductIndividualDiscount as getAppProductIndividualDiscount,
-} from '../../../../../utils/pricing.js';
+} from '@/utils/pricing.js';
 
 export function money(n) {
   const num = Number(n) || 0;

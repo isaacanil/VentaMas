@@ -1,5 +1,5 @@
 :root {
-  --font-primary: sans-serif;
+  --font-primary: 'Poppins', sans-serif;
   --font-secondary: serif;
 
   /* set base values */
@@ -104,21 +104,21 @@ a {
 }
 */
 
-@media (width >= 768px) {
+@media (width >=768px) {
   :root {
     --text-base-size: 1em;
     --text-scale-ratio: 1.2;
   }
 }
 
-@media (width >= 1024px) {
+@media (width >=1024px) {
   :root {
     --text-base-size: 1em;
     --text-scale-ratio: 1.2;
   }
 }
 
-@media (width >= 1280px) {
+@media (width >=1280px) {
   :root {
     --text-base-size: 1em;
     --text-scale-ratio: 1.2;

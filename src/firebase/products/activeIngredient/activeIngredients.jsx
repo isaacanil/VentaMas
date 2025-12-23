@@ -10,8 +10,8 @@ import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '../../../features/auth/userSlice';
-import { db } from '../../firebaseconfig';
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 
 // Hook para escuchar los ingredientes activos
 export const useListenActiveIngredients = () => {

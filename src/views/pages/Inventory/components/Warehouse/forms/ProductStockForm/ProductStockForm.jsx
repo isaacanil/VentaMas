@@ -15,22 +15,22 @@ import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/format';
 
-import { selectUser } from '../../../../../../../features/auth/userSlice';
+import { selectUser } from '@/features/auth/userSlice';
 import {
   closeProductStock,
   selectProductStock,
   setProductStockClear,
   updateProductStockFormData,
   openProductStock,
-} from '../../../../../../../features/productStock/productStockSlice';
-import { selectWarehouse } from '../../../../../../../features/warehouse/warehouseSlice';
+} from '@/features/productStock/productStockSlice';
+import { selectWarehouse } from '@/features/warehouse/warehouseSlice';
 import {
   createProductStock,
   updateProductStock,
   useListenProductsStock,
-} from '../../../../../../../firebase/warehouse/productStockService';
-import { useGetProductsWithBatch } from '../../../../../../../hooks/products/useGetProductsWithBatch';
-import useListenBatches from '../../../../../../../hooks/products/useListenBatch';
+} from '@/firebase/warehouse/productStockService';
+import { useGetProductsWithBatch } from '@/hooks/products/useGetProductsWithBatch';
+import useListenBatches from '@/hooks/products/useListenBatch';
 
 
 const { Option } = Select;

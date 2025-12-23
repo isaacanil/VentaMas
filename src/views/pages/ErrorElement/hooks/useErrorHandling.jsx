@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 
-import { selectUser } from '../../../../features/auth/userSlice';
-import { fbRecordError } from '../../../../firebase/errors/fbRecordError';
-import { MESSAGES } from '../constants';
+import { selectUser } from '@/features/auth/userSlice';
+import { fbRecordError } from '@/firebase/errors/fbRecordError';
+import { MESSAGES } from '@/views/pages/ErrorElement/constants';
 
 export const useErrorHandling = (errorInfo, errorStackTrace) => {
   const user = useSelector(selectUser);
