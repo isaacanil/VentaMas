@@ -8,8 +8,8 @@ import {
 } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 
-import { toMillis } from '@/utils/firebase/toTimestamp';
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/firebase/toTimestamp';
 
 import { getEmployeeData } from './getEmployeeData';
 
@@ -24,7 +24,17 @@ export const buildQueryConstraints = ({
   const constraints = [];
   if (startDate) constraints.push(where(sortField, '>=', startDate));
   if (endDate) constraints.push(where(sortField, '<=', endDate));
-  if (status) constraints.push(where('cashCount.state', '==', status));
+
+  if (status) {
+    if (status === 'active') {
+      constraints.push(where('cashCount.state', 'in', ['open', 'closing']));
+    } else if (Array.isArray(status)) {
+      constraints.push(where('cashCount.state', 'in', status));
+    } else {
+      constraints.push(where('cashCount.state', '==', status));
+    }
+  }
+
   if (userRef)
     constraints.push(where('cashCount.opening.employee', '==', userRef));
   constraints.push(orderBy(sortField, sortAsc ? 'asc' : 'desc'));

@@ -24,6 +24,9 @@ import {
 export const PaymentMethods = () => {
   const dispatch = useDispatch();
   const cashInputRef = useRef(null);
+  // REFERENCIA NUEVA: Para saber si el efectivo YA estaba activo antes
+  const lastCashStatusRef = useRef(false);
+
   const cart = useSelector(selectCart);
   const showCxcAutoRemovalNotification = useSelector(
     SelectCxcAutoRemovalNotification,
@@ -33,49 +36,38 @@ export const PaymentMethods = () => {
   const totalPurchase = cartData.totalPurchase.value;
 
   const paymentInfo = {
-    cash: {
-      label: 'Efectivo',
-      icon: icons.finances.money,
-    },
-    card: {
-      label: 'Tarjeta',
-      icon: icons.finances.card,
-    },
-    transfer: {
-      label: 'Transferencia',
-      icon: icons.finances.transfer,
-    },
-    creditNote: {
-      label: 'Nota de Crédito',
-      icon: icons.finances.money,
-    },
+    cash: { label: 'Efectivo', icon: icons.finances.money },
+    card: { label: 'Tarjeta', icon: icons.finances.card },
+    transfer: { label: 'Transferencia', icon: icons.finances.transfer },
+    creditNote: { label: 'Nota de Crédito', icon: icons.finances.money },
   };
 
+  // ---------------------------------------------------------
+  // CORRECCIÓN 1: Lógica de Foco "Educada"
+  // Solo roba el foco si el usuario ACABA de activar el checkbox.
+  // Si ya estaba activo, no molesta.
+  // ---------------------------------------------------------
   useEffect(() => {
-    if (
-      cashInputRef.current &&
-      document.activeElement !== cashInputRef.current &&
-      paymentMethods.some((method) => method.method === 'cash' && method.status)
-    ) {
+    const cashMethod = paymentMethods.find((m) => m.method === 'cash');
+    const isCashActive = Boolean(cashMethod?.status);
+    const wasCashActive = lastCashStatusRef.current;
+    
+    // Actualizamos la referencia
+    lastCashStatusRef.current = isCashActive;
+
+    // Solo enfocamos si pasamos de APAGADO -> ENCENDIDO
+    if (isCashActive && !wasCashActive && cashInputRef.current) {
       cashInputRef.current.focus();
       cashInputRef.current.select();
     }
   }, [paymentMethods]);
 
-  useEffect(() => {
-    const totalPaymentValue = paymentMethods.reduce((total, method) => {
-      return method.status ? total + (Number(method.value) || 0) : total;
-    }, 0);
+  // ---------------------------------------------------------
+  // CORRECCIÓN 2: ELIMINADO EL useEffect DE AUTO-RELLENADO
+  // (El que te impedía borrar el número)
+  // ---------------------------------------------------------
 
-    if (totalPaymentValue === 0 && totalPurchase > 0) {
-      const cashMethod = paymentMethods.find(
-        (method) => method.method === 'cash' && method.status,
-      );
-      if (cashMethod && cashMethod.value === 0) {
-        dispatch(setPaymentMethod({ ...cashMethod, value: totalPurchase }));
-      }
-    }
-  }, [totalPurchase, paymentMethods, dispatch]);
+  // Auto-selección inicial al añadir a cuentas por cobrar (Esto está bien mantenerlo)
   useEffect(() => {
     if (cartData.isAddedToReceivables) {
       const anyEnabled = paymentMethods.some((m) => m.status);
@@ -92,6 +84,7 @@ export const PaymentMethods = () => {
     }
   }, [cartData.isAddedToReceivables, paymentMethods, dispatch]);
 
+  // Lógica de Tarjeta (Se mantiene, pero ten cuidado si también causa conflictos)
   useEffect(() => {
     const activeCard = paymentMethods.find(
       (method) => method.method === 'card' && method.status,
@@ -107,6 +100,7 @@ export const PaymentMethods = () => {
         Number(method.value || 0) > 0,
     );
 
+    // Solo actualizamos si hay diferencia significativa para evitar bucles
     if (!hasOtherMethodWithAmount && Math.abs(current - total) > 0.01) {
       dispatch(setPaymentMethod({ ...activeCard, value: total }));
       dispatch(recalcTotals());
@@ -116,8 +110,11 @@ export const PaymentMethods = () => {
   const handleStatusChange = (method, status) => {
     let newValue = method.value;
 
-    if (status && (!newValue || newValue === 0)) {
+    // CÁLCULO DE RESTANTE:
+    // Al activar (status=true), calculamos cuánto falta y lo ponemos en este método.
+    if (status) {
       const currentTotal = paymentMethods.reduce((total, m) => {
+        // Sumamos los OTROS métodos activos
         if (m.status && m.method !== method.method) {
           return total + (Number(m.value) || 0);
         }
@@ -125,13 +122,18 @@ export const PaymentMethods = () => {
       }, 0);
 
       const remaining = totalPurchase - currentTotal;
+      // Si el usuario activa el check, le ponemos lo que falta. Si sobra, 0.
       newValue = remaining > 0 ? remaining : 0;
+    } else {
+        // Si desactiva, reseteamos a 0
+        newValue = 0;
     }
 
     const isAddedToReceivables = cartData.isAddedToReceivables;
     if (!status && isAddedToReceivables) {
       const enabledCount = paymentMethods.filter((m) => m.status).length;
-      if (enabledCount === 1) {
+      // Validación: impedir desmarcar el último si es obligatorio
+      if (enabledCount === 1 && method.status) {
         message.warning('Debe seleccionar al menos un método de pago');
         return;
       }
@@ -157,7 +159,7 @@ export const PaymentMethods = () => {
       revertListPrice = false,
     } = {}) => {
       dispatch(
-        setPaymentMethod({ ...method, status, value: status ? newValue : 0 }),
+        setPaymentMethod({ ...method, status, value: newValue }),
       );
       dispatch(recalcTotals());
       if (applyCardPrice) {
@@ -202,11 +204,10 @@ export const PaymentMethods = () => {
 
     proceed({ revertListPrice: shouldRevertToListPrice });
   };
+
   const handleValueChange = (method, newValue) => {
-    // Validar que el valor no sea negativo
     const validValue = Math.max(0, Number(newValue) || 0);
 
-    // Si el usuario intentó ingresar un valor negativo, mostrar advertencia
     if (newValue < 0) {
       message.warning('No se permiten montos negativos en los métodos de pago');
     }
@@ -219,7 +220,6 @@ export const PaymentMethods = () => {
     dispatch(setPaymentMethod({ ...method, reference: newReference }));
   };
 
-  // Manejar notificación de auto-removal de CxC
   useEffect(() => {
     if (showCxcAutoRemovalNotification) {
       notification.success({
@@ -256,7 +256,7 @@ export const PaymentMethods = () => {
                     value={method.value}
                     disabled={!method.status}
                     onChange={(e) => handleValueChange(method, e)}
-                    ref={cashInputRef}
+                    ref={cashInputRef} 
                     min={0}
                     precision={2}
                     step={0.01}
@@ -305,27 +305,8 @@ export const PaymentMethods = () => {
     </Container>
   );
 };
-const Container = styled.div`
-  padding: 0;
-`;
-const Row = styled.div`
-  display: grid;
-  grid-template-columns: min-content 0.8fr 1fr;
-  gap: 0.6em;
-`;
-const Items = styled.div`
-  display: grid;
-  gap: 1em;
-`;
-const FormItem = styled(Form.Item)`
-  .ant-form-item-label {
-    padding: 0;
-  }
 
-  margin: 0;
-
-  svg {
-    font-size: 1.2em;
-    color: #414141;
-  }
-`;
+const Container = styled.div` padding: 0; `;
+const Row = styled.div` display: grid; grid-template-columns: min-content 0.8fr 1fr; gap: 0.6em; `;
+const Items = styled.div` display: grid; gap: 1em; `;
+const FormItem = styled(Form.Item)` .ant-form-item-label { padding: 0; } margin: 0; svg { font-size: 1.2em; color: #414141; } `;

@@ -1,8 +1,8 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
-import { roundDecimals } from '@/utils/pricing';
 import { GenericClient } from '@/features/clientCart/clientCartSlice';
+import { roundDecimals } from '@/utils/pricing';
 
 import { initialState, defaultDelivery } from './default/default';
 import { updateAllTotals } from './utils/updateAllTotals';

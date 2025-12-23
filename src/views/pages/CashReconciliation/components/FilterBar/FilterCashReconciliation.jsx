@@ -28,7 +28,7 @@ export const FilterCashReconciliation = ({
     const handleClearFilters = useCallback(() => {
         onFiltersChange({
             createdAtDateRange: null,
-            status: null,
+            status: 'active',
             user: null,
         });
     }, [onFiltersChange]);
@@ -62,12 +62,12 @@ export const FilterCashReconciliation = ({
                 value: filters.status,
                 onChange: handleStatusChange,
                 options: [
-                    { label: 'Abierto', value: 'open' },
-                    { label: 'Cerrando Cuadre', value: 'closing' },
+                    { label: 'Abierto y cerrando', value: 'active' },
                     { label: 'Cerrado', value: 'closed' },
                 ],
                 placeholder: 'Estado',
                 controlStyle: { width: 150 },
+                props: { popupMatchSelectWidth: false },
             },
             {
                 key: 'user',
@@ -80,6 +80,7 @@ export const FilterCashReconciliation = ({
                 placeholder: 'Usuario',
                 showSearch: true,
                 controlStyle: { width: 180 },
+                props: { popupMatchSelectWidth: false },
                 filterOption: (input, option) =>
                     (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
             },

@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { icons } from '@/constants/icons/icons';
-import { Button } from '@/views/templates/system/Button/Button';
-import { ButtonGroup } from '@/views/templates/system/Button/Button';
-import { MotionWrapper } from '@/views/component/base/animation/MotionWrapper';
+import { icons } from '../../../constants/icons/icons';
+import { Button } from '../../templates/system/Button/Button';
+import { ButtonGroup } from '../../templates/system/Button/Button';
+import { MotionWrapper } from '../base/animation/MotionWrapper';
 
 export const Modal = ({
   children,

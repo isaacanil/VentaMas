@@ -2,8 +2,8 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '@/features/auth/userSlice';
-import { db } from '@/firebase/firebaseconfig';
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../../firebase/firebaseconfig';
 
 /**
  * Configura una suscripción a Firestore para obtener productos con fecha de expiración.

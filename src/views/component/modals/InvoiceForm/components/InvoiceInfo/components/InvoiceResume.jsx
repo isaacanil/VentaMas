@@ -111,7 +111,7 @@ export const InvoiceResume = ({
 
   detailItems.push({
     icon: faShoppingCart,
-    label: 'Total a cobrar',
+    label: 'Total Facturado',
     value: formattedTotal,
     helper: 'Monto final con descuentos',
     status: 'primary',

@@ -10,23 +10,23 @@ import { formatPrice } from '@/utils/format';
 import {
   selectAR,
   setAR,
-} from '@/features/accountsReceivable/accountsReceivableSlice';
-import { selectUser } from '@/features/auth/userSlice';
+} from '../../../../../../../../../../../features/accountsReceivable/accountsReceivableSlice';
+import { selectUser } from '../../../../../../../../../../../features/auth/userSlice';
 import {
   SelectCartData,
   toggleReceivableStatus,
-} from '@/features/cart/cartSlice';
-import { selectClient } from '@/features/clientCart/clientCartSlice';
+} from '../../../../../../../../../../../features/cart/cartSlice';
+import { selectClient } from '../../../../../../../../../../../features/clientCart/clientCartSlice';
 import {
   useGetPendingBalance,
   usePendingBalance,
-} from '@/firebase/accountsReceivable/fbGetPendingBalance';
-import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
-import { getMaxInstallments } from '@/utils/accountsReceivable/getMaxInstallments';
-import DateUtils from '@/utils/date/dateUtils';
-import { calculateInvoiceChange } from '@/utils/invoice';
-import { setNumPrecision } from '@/utils/pricing';
-import PaymentDatesOverview from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/PaymentDatesOverview/PaymentDatesOverbiew';
+} from '../../../../../../../../../../../firebase/accountsReceivable/fbGetPendingBalance';
+import { calculateAmountPerInstallment } from '../../../../../../../../../../../utils/accountsReceivable/accountsReceivable';
+import { getMaxInstallments } from '../../../../../../../../../../../utils/accountsReceivable/getMaxInstallments';
+import DateUtils from '../../../../../../../../../../../utils/date/dateUtils';
+import { calculateInvoiceChange } from '../../../../../../../../../../../utils/invoice';
+import { setNumPrecision } from '../../../../../../../../../../../utils/pricing';
+import PaymentDatesOverview from '../PaymentDatesOverview/PaymentDatesOverbiew';
 
 import usePaymentDates from './usePaymentDates';
 

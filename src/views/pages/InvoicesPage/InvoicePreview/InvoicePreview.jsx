@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -14,6 +13,7 @@ import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivabl
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { syncInvoicePaymentsFromAR } from '@/firebase/invoices/syncInvoicePaymentsFromAR';
 import { useFbGetCreditNoteApplicationsByInvoice } from '@/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
+import { formatPrice } from '@/utils/format';
 
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';

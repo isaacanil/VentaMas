@@ -8,9 +8,9 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '@/features/auth/userSlice';
-import { validateUser } from '@/utils/userValidation';
-import { db } from '@/firebase/firebaseconfig';
+import { selectUser } from '../../features/auth/userSlice';
+import { validateUser } from '../../utils/userValidation';
+import { db } from '../firebaseconfig';
 
 export const useFbGetInvoices = (time) => {
   const [loading, setLoading] = useState(

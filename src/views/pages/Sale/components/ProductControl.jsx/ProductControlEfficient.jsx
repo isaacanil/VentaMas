@@ -8,6 +8,8 @@ export function ProductControlEfficient({
   products,
   productsLoading,
   statusMeta = {},
+  isLocked,
+  onLockedClick,
 }) {
   return (
     <Container>
@@ -18,6 +20,7 @@ export function ProductControlEfficient({
           productsLoading={productsLoading}
           statusMeta={statusMeta}
         />
+        {isLocked && <BlockerOverlay onClick={onLockedClick} />}
       </ProductListWrapper>
     </Container>
   );
@@ -33,8 +36,20 @@ const Container = styled.div`
 `;
 
 const ProductListWrapper = styled.div`
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
+`;
+
+const BlockerOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  background-color: transparent; 
+  cursor: not-allowed;
 `;

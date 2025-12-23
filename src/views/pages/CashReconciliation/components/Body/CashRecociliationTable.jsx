@@ -25,15 +25,18 @@ export const CashReconciliationTable = () => {
   const { users: usersList } = useBusinessUsers();
 
   const userOptions = useMemo(() => {
-    return (usersList || []).map((user) => ({
-      label: user.realName?.trim() ? user.realName : user.name,
-      value: user.id,
-    }));
+    return (usersList || []).map((item) => {
+      const userData = item.user || {};
+      return {
+        label: userData.realName?.trim() ? userData.realName : (userData.name || 'Sin nombre'),
+        value: userData.id || userData.uid || item.uid || item.id,
+      };
+    });
   }, [usersList]);
 
   const [filterState, setFilterState] = useState({
     filters: {
-      status: 'open',
+      status: 'active',
       user: null,
       createdAtDateRange: null,
     },

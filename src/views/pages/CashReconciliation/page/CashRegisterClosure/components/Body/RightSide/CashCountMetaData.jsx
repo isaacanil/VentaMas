@@ -26,19 +26,19 @@ const sumReceivableMetrics = (payments = []) =>
 const invoiceTotalFromData = (data) =>
   toNumber(
     data?.totalPurchase?.value ??
-      data?.totalPurchase ??
-      data?.snapshot?.cart?.totalPurchase?.value ??
-      data?.snapshot?.cart?.totalPurchase ??
-      0,
+    data?.totalPurchase ??
+    data?.snapshot?.cart?.totalPurchase?.value ??
+    data?.snapshot?.cart?.totalPurchase ??
+    0,
   );
 
 const invoiceChangeFromData = (data) =>
   toNumber(
     data?.change?.value ??
-      data?.change ??
-      data?.snapshot?.cart?.change?.value ??
-      data?.snapshot?.cart?.change ??
-      0,
+    data?.change ??
+    data?.snapshot?.cart?.change?.value ??
+    data?.snapshot?.cart?.change ??
+    0,
   );
 
 const sumInvoiceMetrics = (invoices) =>
@@ -134,7 +134,7 @@ export const CashCountMetaData = (
     totalRegister: register,
     totalSystem: system,
     totalDiscrepancy: discrepancy,
-    totalCharged: invoiceMetrics.invoiced, // Map Invoiced Amount to 'totalCharged' for UI 'Total Facturado'
+    totalCharged: invoiceMetrics.collected, // Map Invoiced Amount to 'totalCharged' for UI 'Total Facturado'
     totalReceivables: arMetrics.collected,
     totalExpenses: totalExpenses,
   };

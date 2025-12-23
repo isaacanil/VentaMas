@@ -236,7 +236,8 @@ export const ModalManager = () => {
   const { isOpen: isBarcodePrintModalOpen } = useSelector(
     SelectBarcodePrintModal,
   );
-  const { isOpen: isInvoiceFormOpen } = useSelector(selectInvoice); // Assumed 'isOpen' based on pattern
+  const { modal } = useSelector(selectInvoice); // Assumed 'isOpen' based on pattern
+  const isInvoiceFormOpen = modal?.isOpen;
   const { isOpen: isPaymentFormOpen } = useSelector(
     selectAccountsReceivablePayment,
   );

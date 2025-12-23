@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import { selectUser } from '@/features/auth/userSlice';
-import { fbProcessMultiplePaymentsAR } from '@/firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
-import DateUtils from '@/utils/date/dateUtils';
-import { formatMoney } from '@/utils/formatters';
-import { ShowcaseList } from '@/views/templates/system/ShowCase/ShowcaseList';
+import { selectUser } from '../../../../../../../../features/auth/userSlice';
+import { fbProcessMultiplePaymentsAR } from '../../../../../../../../firebase/proccessAccountsReceivablePayments/insurance/fbProcessMultiplePaymentsAR';
+import DateUtils from '../../../../../../../../utils/date/dateUtils';
+import { formatMoney } from '../../../../../../../../utils/formatters';
+import { ShowcaseList } from '../../../../../../../templates/system/ShowCase/ShowcaseList';
 
 import {
   FilterBar,

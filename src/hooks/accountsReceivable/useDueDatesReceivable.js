@@ -16,8 +16,8 @@ import { DateTime } from 'luxon';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectUser } from '@/features/auth/userSlice';
-import { db } from '@/firebase/firebaseconfig';
+import { selectUser } from '../../features/auth/userSlice';
+import { db } from '../../firebase/firebaseconfig';
 
 /**
  * Hook personalizado para obtener cuentas por cobrar próximas a vencer

@@ -1,6 +1,7 @@
 import { message } from 'antd';
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 
 import { useDialog } from '@/Context/Dialog';
 import { selectUser } from '@/features/auth/userSlice';
@@ -19,11 +20,20 @@ export const useCashCountClosingPrompt = () => {
   const user = useSelector(selectUser);
   const { setDialogConfirm } = useDialog();
   const promptedCashCountId = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     const cashCountId = cashCount?.id;
+    const isCashReconciliationRoute =
+      location.pathname === '/cash-reconciliation' ||
+      location.pathname.startsWith('/cash-reconciliation/');
 
-    if (state !== 'closing' || !cashCountId || !user?.uid) {
+    if (
+      isCashReconciliationRoute ||
+      state !== 'closing' ||
+      !cashCountId ||
+      !user?.uid
+    ) {
       promptedCashCountId.current = null;
       return;
     }
@@ -56,5 +66,5 @@ export const useCashCountClosingPrompt = () => {
         message.info('El cuadre de caja seguirá cerrando.');
       },
     });
-  }, [state, cashCount, user, setDialogConfirm]);
+  }, [state, cashCount, user, setDialogConfirm, location.pathname]);
 };

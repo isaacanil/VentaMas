@@ -40,14 +40,30 @@ export function useIsOpenCashReconciliation() {
         const isSameUser = querySnapshot.docs.some(
           (doc) => doc.data().cashCount.opening.employee.id === user.uid,
         );
+        const isOpenForUser = querySnapshot.docs.some((doc) => {
+          const { cashCount } = doc.data();
+          return (
+            cashCount.state === 'open' &&
+            cashCount.opening.employee.id === user.uid
+          );
+        });
+        const isClosingForUser = querySnapshot.docs.some((doc) => {
+          const { cashCount } = doc.data();
+          return (
+            cashCount.state === 'closing' &&
+            cashCount.opening.employee.id === user.uid
+          );
+        });
         if (isEmpty) {
           setValue('none'); // o 'empty' o null, lo que prefieras
           return;
         }
-        if (isOpen && isSameUser) {
+        if (isOpenForUser) {
           setValue('open');
-        } else if (isClosing && isSameUser) {
+        } else if (isClosingForUser || isClosing) {
           setValue('closing');
+        } else if (isOpen || isSameUser) {
+          setValue('closed');
         } else {
           setValue('closed');
         }

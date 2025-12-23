@@ -11,8 +11,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 
-import { formatPrice } from '@/utils/format';
-
 import { icons } from '@/constants/icons/icons';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
@@ -32,6 +30,7 @@ import {
   selectNcfType,
   selectTaxReceiptEnabled,
 } from '@/features/taxReceipt/taxReceiptSlice';
+import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { fbAddPreOrder } from '@/firebase/invoices/fbAddPreocer';
 import { fbUpdatePreOrder } from '@/firebase/invoices/fbUpdatePreorder';
 import { downloadQuotationPdf } from '@/firebase/quotation/downloadQuotationPDF';
@@ -40,14 +39,16 @@ import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
 import useInsuranceFormComplete from '@/hooks/useInsuranceFormComplete';
+import { formatPrice } from '@/utils/format';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
 import { getTotalDiscount } from '@/utils/pricing';
 import { PinAuthorizationModal } from '@/views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
 import { Quotation } from '@/views/component/Quotation/components/Quotation/Quotation';
+import { handleCancelShipping } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/handleCancelShipping';
+import { CashRegisterAlertModal } from '@/views/pages/Sale/components/modals/CashRegisterAlertModal';
+import { usePreorderModal } from '@/views/pages/Sale/components/usePreorderModal.jsx';
 import { AnimatedNumber } from '@/views/templates/system/AnimatedNumber/AnimatedNumber';
 import CustomInput from '@/views/templates/system/Inputs/CustomInput';
-import { usePreorderModal } from '@/views/pages/Sale/components/usePreorderModal.jsx';
-import { handleCancelShipping } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/handleCancelShipping';
 
 import { ActionMenu } from './components/ActionMenu/Actionmenu';
 import { Delivery } from './components/Delivery/Delivery';
@@ -321,7 +322,15 @@ const InvoiceSummary = () => {
     setIsCartValid(isValid);
   }, [cartData]);
 
+  const { status: cashRegisterStatus } = useIsOpenCashReconciliation(); // Status check
+  const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
+
   const handleInvoicePanelOpen = () => {
+    if (cashRegisterStatus !== 'open' && typeof cashRegisterStatus === 'string') {
+      setIsCashRegisterModalOpen(true);
+      return;
+    }
+
     const { isValid, message } = validateInvoiceCart(cartData);
     if (isValid) {
       dispatch(setCashPaymentToTotal());
@@ -716,6 +725,11 @@ const InvoiceSummary = () => {
         onConfirm={handleSavePreOrder}
         preorder={{ data: cartData }}
         loading={isSavingPreorder}
+      />
+      <CashRegisterAlertModal
+        open={isCashRegisterModalOpen}
+        onClose={() => setIsCashRegisterModalOpen(false)}
+        status={cashRegisterStatus}
       />
     </Fragment>
   );

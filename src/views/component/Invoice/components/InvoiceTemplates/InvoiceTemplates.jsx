@@ -4,9 +4,9 @@ import { useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '@/features/cart/cartSlice';
-import { Invoice } from '@/views/component/Invoice/components/Invoice/Invoice';
-import InvoiceTemplateSelector from '@/views/component/Invoice/components/InvoiceTemplateSelector/InvoiceTemplateSelector';
+import { SelectSettingCart } from '../../../../../features/cart/cartSlice';
+import { Invoice } from '../Invoice/Invoice';
+import InvoiceTemplateSelector from '../InvoiceTemplateSelector/InvoiceTemplateSelector';
 
 const TEMPLATES_CONFIG = {
   template1: {

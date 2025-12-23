@@ -17,8 +17,8 @@ import {
 import { nanoid } from 'nanoid';
 import { useState, useEffect } from 'react';
 
-import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
-import { db } from '@/firebase/firebaseconfig';
+import { MovementReason, MovementType } from '../../models/Warehouse/Movement';
+import { db } from '../firebaseconfig';
 
 import {
   createProductStock,

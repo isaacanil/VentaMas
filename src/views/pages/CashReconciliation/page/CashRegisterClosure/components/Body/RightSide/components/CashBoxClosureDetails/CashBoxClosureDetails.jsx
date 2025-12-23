@@ -1,10 +1,11 @@
-import { Spin } from 'antd';
+import { CheckCircleOutlined } from '@ant-design/icons';
+import { Spin, Tag } from 'antd';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/format';
-
 import { selectCashCount } from '@/features/cashCount/cashCountManagementSlice';
+import { formatNumber } from '@/utils/format';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 import { InputWithHorizontalLabel } from '@/views/templates/system/Inputs/InputWithHorizontalLabel';
 
 
@@ -44,13 +45,24 @@ export const CashBoxClosureDetails = ({ loading }) => {
           readOnly
           value={formatNumber(totalSystem)}
         />
-        {totalDiscrepancy !== 0 && (
+        {totalDiscrepancy !== 0 ? (
           <InputWithHorizontalLabel
             themeColor={totalDiscrepancy > 0 ? 'success' : 'danger'}
             readOnly
             label={totalDiscrepancy > 0 ? 'Sobrante' : 'Faltante'}
             value={formatNumber(totalDiscrepancy)}
           />
+        ) : (
+          <BalancedContainer>
+            <FormattedValue
+              size={'small'}
+              type={'title'}
+              value={'Estado'}
+            />
+            <Tag icon={<CheckCircleOutlined />} color="success">
+              Cuadre Correcto
+            </Tag>
+          </BalancedContainer>
         )}
       </Container>
     </Spin>
@@ -63,4 +75,13 @@ const Container = styled.div`
   background-color: white;
   border: var(--border1);
   border-radius: var(--border-radius);
+`;
+
+const BalancedContainer = styled.div`
+  display: grid;
+  align-items: center;
+  align-content: center;
+  padding: 0 0.4em;
+  gap: 1em;
+  grid-template-columns: 10em 1fr;
 `;

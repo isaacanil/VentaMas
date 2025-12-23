@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectUser } from '@/features/auth/userSlice';
+import { selectUser } from '../features/auth/userSlice';
 import {
   selectPurchaseList,
   updatePurchases,
-} from '@/features/purchase/purchasesSlice';
-import { subscribeSinglePurchase } from '@/firebase/purchase/fbGetPurchase';
+} from '../features/purchase/purchasesSlice';
+import { subscribeSinglePurchase } from '../firebase/purchase/fbGetPurchase';
 import {
   subscribeToPurchase,
   processPurchase,
-} from '@/firebase/purchase/fbGetPurchases';
-import { sortPurchases } from '@/utils/filterUtils';
+} from '../firebase/purchase/fbGetPurchases';
+import { sortPurchases } from '../utils/filterUtils';
 
 // Función auxiliar para convertir timestamps
 const convertTimestamps = (data) => {

@@ -22,9 +22,9 @@ import {
 } from '@/features/cart/cartSlice';
 import { deleteClient } from '@/features/clientCart/clientCartSlice.js';
 import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice.js';
+import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { useBarcodeScanner } from '@/hooks/barcode/useBarcodeScanner';
-import { useCashCountClosingPrompt } from '@/hooks/cashCount/useCashCountClosingPrompt';
 import useFilter from '@/hooks/search/useSearch'; // Cambiar importación
 import useViewportWidth from '@/hooks/windows/useViewportWidth.jsx';
 import {
@@ -33,12 +33,13 @@ import {
   formatWeight,
 } from '@/utils/barcode.js';
 import { ClientSelector } from '@/views/component/contact/ClientControl/ClientSelector/ClientSelector.jsx';
+import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp.jsx';
 import { MenuComponents } from '@/views/templates/MenuComponents/MenuComponents.jsx';
-import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx';
 
 import { Cart } from './components/Cart/Cart';
 import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx';
+import { CashRegisterAlertModal } from './components/modals/CashRegisterAlertModal';
 import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx';
 
 import type { Dispatch, SetStateAction, JSX } from 'react';
@@ -160,7 +161,29 @@ const toWeightValue = (value: unknown): number => {
 };
 
 export const Sales = (): JSX.Element => {
-  useCashCountClosingPrompt();
+
+
+  const { status: cashRegisterStatus } = useIsOpenCashReconciliation() as {
+    status: string | boolean;
+  };
+
+  // Mantenemos null como estado inicial para que el primer valor real dispare la alerta al cargar
+  const [prevStatus, setPrevStatus] = useState<string | boolean | null>(null);
+  const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
+
+  // Verificamos si cambió el status directamente en el cuerpo de la función
+  if (cashRegisterStatus !== prevStatus) {
+    setPrevStatus(cashRegisterStatus);
+    // Si la condición se cumple, actualizamos el estado inmediatamente.
+    if (
+      cashRegisterStatus &&
+      cashRegisterStatus !== 'open' &&
+      typeof cashRegisterStatus === 'string'
+    ) {
+      setIsCashRegisterModalOpen(true);
+    }
+  }
+  // --- FIX END ---
 
   const [searchData, setSearchData] = useState('');
   const deferredSearchData = useDeferredValue(searchData);
@@ -171,6 +194,7 @@ export const Sales = (): JSX.Element => {
     loading: productsLoading,
     stockMeta,
   } = parseProductsResponse(useGetProducts('sales'));
+
   const cartSettingsRaw: unknown = useSelector(SelectSettingCart);
   const cartSettings = isCartSettings(cartSettingsRaw)
     ? cartSettingsRaw
@@ -178,14 +202,36 @@ export const Sales = (): JSX.Element => {
   const cartDataRaw: unknown = useSelector(SelectCartData);
   const cartData = isCartData(cartDataRaw) ? cartDataRaw : undefined;
 
+  const cartItemsCount =
+    typeof cartDataRaw === 'object' &&
+      cartDataRaw !== null &&
+      'products' in cartDataRaw &&
+      Array.isArray((cartDataRaw as any).products)
+      ? (cartDataRaw as any).products.length
+      : 0;
+
   const viewportValue: unknown = useViewportWidth();
   const viewport = typeof viewportValue === 'number' ? viewportValue : 0;
   const dispatch = useDispatch();
 
   const productsList = products;
 
+  // NOTA: El useEffect que causaba el error ha sido eliminado y reemplazado 
+  // por la lógica "FIX START" arriba.
+
+  // NOTA: El bloqueo de clics ahora se maneja mediante un overlay en ProductControlEfficient
+
+
   const checkBarcode = useCallback(
     (products: Product[], barcode: string) => {
+      if (
+        cashRegisterStatus !== 'open' &&
+        typeof cashRegisterStatus === 'string'
+      ) {
+        setIsCashRegisterModalOpen(true);
+        return;
+      }
+
       if (products.length <= 0) {
         notification.error({
           title: 'Error al escanear',
@@ -233,7 +279,7 @@ export const Sales = (): JSX.Element => {
         dispatch(addProduct(product));
       }
     },
-    [dispatch],
+    [dispatch, cashRegisterStatus, cartItemsCount],
   );
 
   useBarcodeScanner(productsList, checkBarcode);
@@ -338,6 +384,8 @@ export const Sales = (): JSX.Element => {
             productsLoading={productsLoading}
             products={filterProductsByVisibility}
             statusMeta={statusMeta}
+            isLocked={cashRegisterStatus !== 'open' && typeof cashRegisterStatus === 'string'}
+            onLockedClick={() => setIsCashRegisterModalOpen(true)}
           />
           <MenuComponents />
         </ProductContainer>
@@ -345,6 +393,11 @@ export const Sales = (): JSX.Element => {
       </Container>
       <InvoicePanel />
       <ProductBatchModal />
+      <CashRegisterAlertModal
+        open={isCashRegisterModalOpen}
+        onClose={() => setIsCashRegisterModalOpen(false)}
+        status={cashRegisterStatus}
+      />
     </>
   );
 };

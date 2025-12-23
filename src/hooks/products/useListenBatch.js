@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { listenAllBatches } from '@/firebase/warehouse/batchService';
+import { listenAllBatches } from '../../firebase/warehouse/batchService';
 
 export const useListenBatches = (user, productID = null) => {
   const [batches, setBatches] = useState([]);

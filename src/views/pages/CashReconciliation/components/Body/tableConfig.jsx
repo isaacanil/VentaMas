@@ -1,10 +1,31 @@
+import { faClock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tag } from 'antd';
-
-import { formatPrice } from '@/utils/format';
+import styled, { keyframes } from 'styled-components';
 
 import DateUtils from '@/utils/date/dateUtils';
+import { formatPrice } from '@/utils/format';
 import { CashCountStateIndicator } from '@/views/pages/CashReconciliation/resource/CashCountStatusIndicator/CashCountStateIndicator';
 
+const breathe = keyframes`
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+`;
+
+const PendingBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: ${breathe} 3s infinite ease-in-out;
+`;
 
 export const tableConfig = () => {
   let columns = [
@@ -49,13 +70,13 @@ export const tableConfig = () => {
         const isOpen = value?.state === 'open' || value?.state === 'closing';
         if (isOpen) {
           return (
-            <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>
+            <PendingBadge>
+              <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
               Pendiente
-            </Tag>
+            </PendingBadge>
           );
         }
-        return value.totalSystem ? formatPrice(value.totalSystem) : 'Total';
-        //  return JSON.stringify(formatPrice(value.totalSystem))
+        return value.totalSystem ? formatPrice(value.totalSystem) : '0';
       },
     },
     {
@@ -66,14 +87,16 @@ export const tableConfig = () => {
       minWidth: '100px',
       cell: ({ value }) => {
         const isOpen = value?.state === 'open' || value?.state === 'closing';
-        let color = 'success';
         if (isOpen) {
           return (
-            <Tag style={{ fontSize: '16px', padding: '5px 10px' }}>
+            <PendingBadge>
+              <FontAwesomeIcon icon={faClock} style={{ fontSize: '12px' }} />
               Pendiente
-            </Tag>
+            </PendingBadge>
           );
         }
+
+        let color = 'success';
         switch (true) {
           case value.totalDiscrepancy < 0:
             color = 'error';
@@ -86,8 +109,8 @@ export const tableConfig = () => {
             break;
         }
         return (
-          <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px' }}>
-            {formatPrice(value.totalDiscrepancy) ?? 'Sobrante'}
+          <Tag color={color} style={{ fontSize: '16px', padding: '5px 10px', borderRadius: '6px' }}>
+            {formatPrice(value.totalDiscrepancy)}
           </Tag>
         );
       },

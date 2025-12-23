@@ -14,9 +14,9 @@ import { useInvoicesForCashCount } from '@/hooks/cashCount/useInvoicesForCashCou
 import { usePaymentsForCashCount } from '@/hooks/cashCount/usePaymentsForCashCount';
 import { useExpensesForCashCount } from '@/hooks/expense/useExpensesForCashCount';
 import { isArrayEmpty } from '@/utils/array/ensureArray';
-import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
 import { Comments } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
 import { DateSection } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
+import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
 
 import { CashCountMetaData } from './CashCountMetaData';
 import { CashBoxClosureDetails } from './components/CashBoxClosureDetails/CashBoxClosureDetails';
