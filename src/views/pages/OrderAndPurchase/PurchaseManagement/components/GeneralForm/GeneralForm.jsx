@@ -37,6 +37,17 @@ import OrderSelector from './components/OrderSelector';
 
 const { confirm } = Modal;
 
+const parseDate = (value) => {
+  if (!value) return null;
+  if (typeof value === 'number') {
+    return DateTime.fromMillis(value);
+  }
+  if (typeof value === 'string') {
+    return DateTime.fromISO(value);
+  }
+  return null;
+};
+
 const GeneralForm = ({
   files,
   attachmentUrls,
@@ -332,9 +343,7 @@ const GeneralForm = ({
               }
             >
               <DatePicker
-                value={
-                  deliveryAt ? DateTime.fromMillis(deliveryAt) : null
-                }
+                value={parseDate(deliveryAt)}
                 onChange={(value) => handleDateChange('deliveryAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}
@@ -348,7 +357,7 @@ const GeneralForm = ({
               help={errors?.paymentAt ? 'La fecha de pago es requerida' : ''}
             >
               <DatePicker
-                value={paymentAt ? DateTime.fromMillis(paymentAt) : null}
+                value={parseDate(paymentAt)}
                 onChange={(value) => handleDateChange('paymentAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}

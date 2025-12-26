@@ -19,7 +19,7 @@ import styled from 'styled-components';
 
 import {
   addProduct,
-  SelectCartData,
+  // SelectCartData, // 1. ELIMINADO: No se usaba
 } from '@/features/cart/cartSlice';
 import {
   DEFAULT_FILTER_CONTEXT,
@@ -130,11 +130,11 @@ const BatchCard = styled.div`
   background: white;
   border: 2px solid
     ${({ selected, $expired, $disabled }) => {
-      if ($disabled) return '#cbd5f5';
-      if (selected && $expired) return '#dc2626';
-      if (selected) return '#2563eb';
-      return '#e2e8f0';
-    }};
+    if ($disabled) return '#cbd5f5';
+    if (selected && $expired) return '#dc2626';
+    if (selected) return '#2563eb';
+    return '#e2e8f0';
+  }};
   border-radius: 12px;
   box-shadow: ${({ selected, $expired, $disabled }) => {
     if ($disabled) return 'none';
@@ -146,7 +146,7 @@ const BatchCard = styled.div`
 
   &:hover {
     box-shadow: ${({ $disabled }) =>
-      $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
+    $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
     transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-2px)')};
   }
 
@@ -239,7 +239,9 @@ export function ProductBatchModal() {
   const { isOpen, productId, product } = useSelector(selectProductStockSimple);
   const [rawSelectedBatch, setRawSelectedBatch] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const { products } = useSelector(SelectCartData);
+
+  // 2. ELIMINADO: const { products } = useSelector(SelectCartData);
+
   const inventoryLocations = useSelector((state) =>
     selectStockLocations(state, DEFAULT_FILTER_CONTEXT),
   );
@@ -278,17 +280,28 @@ export function ProductBatchModal() {
   const [hideExpired, setHideExpired] = useState(false);
 
   const sanitizedProductStocks = useMemo(() => {
+    if (!Array.isArray(productStocks)) return [];
     if (!isStrictProduct) return productStocks;
-    return productStocks.filter((stock) => Number(stock?.quantity) > 0);
+    return productStocks.filter((stock) => (Number(stock?.quantity) || 0) > 0);
   }, [productStocks, isStrictProduct]);
+
+  // 3. ESTRATEGIA: Función para cerrar y limpiar estado simultáneamente
+  const handleCloseModal = () => {
+    dispatch(closeProductStockSimple());
+    setRawSelectedBatch(null);
+    setSearchText('');
+  };
+
+  // 4. ELIMINADO: El useEffect que reseteaba el estado al abrirse (causante del error)
+  // useEffect(() => { ... }, [isOpen]); 
 
   const filteredBySearch = useMemo(() => {
     const term = searchText.trim().toLowerCase();
     const source = hideExpired
       ? sanitizedProductStocks.filter((stock) => {
-          const exp = normalizeExpirationDate(stock?.expirationDate);
-          return exp === null || exp >= todayTimestamp;
-        })
+        const exp = normalizeExpirationDate(stock?.expirationDate);
+        return exp === null || exp >= todayTimestamp;
+      })
       : sanitizedProductStocks;
     if (!term) return source;
     return source.filter(
@@ -379,15 +392,14 @@ export function ProductBatchModal() {
     });
   }, [filteredBySearch, locationNames, fetchLocationName]);
 
-  // Validar selectedBatch durante render: solo es válido si hay productos y existe en la lista
+  // Validar selectedBatch durante render: solo es válido si existe en la lista
   const selectedBatch = useMemo(() => {
-    if (products.length === 0) return null;
     if (!rawSelectedBatch) return null;
     const exists = sanitizedProductStocks.some(
       (stock) => stock.id === rawSelectedBatch,
     );
     return exists ? rawSelectedBatch : null;
-  }, [products.length, rawSelectedBatch, sanitizedProductStocks]);
+  }, [rawSelectedBatch, sanitizedProductStocks]);
 
   // Modificar la función formatLocation
   function formatLocation(locationId) {
@@ -425,7 +437,8 @@ export function ProductBatchModal() {
         batchInfo,
       }),
     );
-    dispatch(closeProductStockSimple());
+    // 5. ACTUALIZADO: Usamos handleCloseModal para cerrar Y limpiar
+    handleCloseModal();
   };
 
   const handleBatchToggle = (stock, isExpired) => {
@@ -471,7 +484,7 @@ export function ProductBatchModal() {
     <StyledWrapper>
       <StyledModal
         open={isOpen}
-        onCancel={() => dispatch(closeProductStockSimple())}
+        onCancel={handleCloseModal} // 6. ACTUALIZADO: Limpia al cancelar/cerrar
         title="Seleccionar Ubicación del Producto"
         width={800}
         style={{ top: '10px' }}
@@ -602,7 +615,11 @@ export function ProductBatchModal() {
               </BatchGrid>
             ) : (
               <Empty
-                description="No se encontraron lotes"
+                description={
+                  isStrictProduct && productStocks.length > 0
+                    ? 'No hay lotes con unidades disponibles'
+                    : 'No se encontraron lotes registrados para este producto'
+                }
                 style={{ margin: '40px 0' }}
               />
             )}

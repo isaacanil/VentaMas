@@ -160,7 +160,7 @@ export function generateCorrectionSuggestions(barcode) {
     );
   }
 
-  // Sugerencia para expandir códigos cortos con ceros
+  // Sugerencia para códigos cortos con ceros
   if (length < 12 && length > 0 && /^\d+$/.test(cleanCode)) {
     // Expandir a diferentes longitudes objetivo
     const targets = [
