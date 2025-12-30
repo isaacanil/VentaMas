@@ -1,7 +1,12 @@
 // Construcción de grupos de inventario (pura) extraída de InventoryControl.jsx
 // Acepta colecciones y estados necesarios y devuelve la misma estructura que esperaba la tabla.
 
-import { sum, buildLocations, getLocationKey } from './inventoryHelpers';
+import {
+  sum,
+  buildLocations,
+  getLocationKey,
+  normalizeDateKey,
+} from './inventoryHelpers';
 
 /**
  * Devuelve la fecha de vencimiento efectiva para un item considerando ediciones en memoria.
@@ -68,6 +73,14 @@ function getEffectiveExpirationDate(item, expirationEdits, countsMeta) {
 
   // 3) Fecha original del item
   return item.expirationDate;
+}
+
+function normalizeSortDate(value) {
+  if (!value || value === '__REMOVE__') return '';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value))
+    return value;
+  const key = normalizeDateKey(value);
+  return key === 'no-date' ? '' : key;
 }
 
 /**
@@ -296,6 +309,26 @@ export function buildInventoryGroups({
       }),
     );
     const totalDiff = (totalReal ?? 0) - (totalStock ?? 0);
+    const expirationSortValue = (() => {
+      const dates = [];
+      for (const child of children) {
+        if (child.type !== 'batch') continue;
+        if (Array.isArray(child.sources) && child.sources.length) {
+          for (const src of child.sources) {
+            const normalized = normalizeSortDate(
+              src.expirationDate || child.expirationDate,
+            );
+            if (normalized) dates.push(normalized);
+          }
+        } else {
+          const normalized = normalizeSortDate(child.expirationDate);
+          if (normalized) dates.push(normalized);
+        }
+      }
+      if (!dates.length) return '';
+      dates.sort();
+      return dates[0];
+    })();
 
     let canEditAtTop = false;
     let topKey = undefined;
@@ -311,6 +344,7 @@ export function buildInventoryGroups({
       totalStock,
       totalReal,
       totalDiff,
+      expirationSortValue,
       _children: children,
       canEditAtTop,
       topKey,

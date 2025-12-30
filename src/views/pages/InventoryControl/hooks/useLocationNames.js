@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getLocationKey,
   resolveLocationLabel,
@@ -11,39 +10,61 @@ import {
 export function useLocationNames({ businessID, filteredItems }) {
   const [locationNames, setLocationNames] = useState({});
   const [resolvingLocations, setResolvingLocations] = useState({});
+  const locationNamesRef = useRef(locationNames);
+  const inFlightRef = useRef(new Set());
 
   useEffect(() => {
-    if (!businessID) return;
+    locationNamesRef.current = locationNames;
+  }, [locationNames]);
+
+  const locationKeys = useMemo(() => {
     const uniqueKeys = new Set();
     for (const it of filteredItems || []) {
       const key = getLocationKey(it?.location);
       if (key) uniqueKeys.add(key);
     }
-    const keys = Array.from(uniqueKeys);
-    if (keys.length === 0) return;
+    return Array.from(uniqueKeys);
+  }, [filteredItems]);
+
+  useEffect(() => {
+    if (!businessID || locationKeys.length === 0) return;
 
     let cancelled = false;
-    const cache = { ...locationNames };
+    const cache = locationNamesRef.current || {};
+    const inFlight = inFlightRef.current;
+    const toLoad = locationKeys.filter((k) => !cache[k] && !inFlight.has(k));
+    if (toLoad.length === 0) return;
+
+    toLoad.forEach((k) => inFlight.add(k));
+    setResolvingLocations((prev) => ({
+      ...prev,
+      ...Object.fromEntries(toLoad.map((k) => [k, true])),
+    }));
+
     const run = async () => {
-      const toLoad = keys.filter((k) => !cache[k]);
-      if (toLoad.length) {
-        setResolvingLocations((prev) => ({
-          ...prev,
-          ...Object.fromEntries(toLoad.map((k) => [k, true])),
-        }));
-      }
-      const entries = await Promise.all(
-        keys.map(async (key) => {
-          if (cache[key]) return [key, cache[key]];
-          const label = await resolveLocationLabel(businessID, key);
-          return [key, label];
-        }),
-      );
-      if (!cancelled) {
-        const map = { ...cache };
-        for (const [k, v] of entries) map[k] = v;
-        setLocationNames(map);
-        if (toLoad.length) {
+      try {
+        const entries = await Promise.all(
+          toLoad.map(async (key) => {
+            const label = await resolveLocationLabel(businessID, key);
+            return [key, label];
+          }),
+        );
+        if (!cancelled) {
+          setLocationNames((prev) => {
+            let changed = false;
+            const next = { ...prev };
+            for (const [k, v] of entries) {
+              if (next[k] !== v) {
+                next[k] = v;
+                changed = true;
+              }
+            }
+            return changed ? next : prev;
+          });
+        }
+      } finally {
+        toLoad.forEach((k) => inFlight.delete(k));
+        if (!cancelled) {
           setResolvingLocations((prev) => {
             const next = { ...prev };
             toLoad.forEach((k) => {
@@ -58,7 +79,7 @@ export function useLocationNames({ businessID, filteredItems }) {
     return () => {
       cancelled = true;
     };
-  }, [businessID, filteredItems, locationNames]);
+  }, [businessID, locationKeys]);
 
   return { locationNames, resolvingLocations };
 }

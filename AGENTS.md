@@ -13,6 +13,7 @@
   - No uses `eslint-disable` salvo último recurso; si se usa, justificar por qué no hay alternativa.
 
 ## Encoding / Unicode (tildes, ñ, signos, comillas)
+- En textos en español (UI, comentarios, docs, skills), conserva tildes/ñ y no conviertas a ASCII.
 - Preserva **exactamente** caracteres no-ASCII en textos UI y comentarios (áéíóú, ñ, ü, ¿¡, “”, —, …). No los conviertas a ASCII (ej: `Cálculo` -> `Calculo`) salvo que el usuario lo pida explícitamente.
 - Los archivos de código deben guardarse como **UTF-8 sin BOM**.
 - Al modificar textos con tildes/ñ, revisa el diff y asegura que no se hayan degradado los caracteres (buscar patrones como `Calculo`, `Maxima`, `Espana`, `Republica` cuando deberían llevar tildes).

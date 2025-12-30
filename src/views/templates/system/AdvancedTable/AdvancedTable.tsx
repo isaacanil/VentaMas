@@ -363,8 +363,11 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     };
   })();
 
+  const shouldUseVirtualization = enableVirtualization && !loading;
   const totalElements = data.length;
-  const elementsShown = currentData.length;
+  const elementsShown = shouldUseVirtualization
+    ? sortedData.length
+    : currentData.length;
 
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
@@ -436,7 +439,6 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     return () => resizeObserver.disconnect();
   }, [onScrollMetrics]);
 
-  const shouldUseVirtualization = enableVirtualization && !loading;
 
   return (
     <Container

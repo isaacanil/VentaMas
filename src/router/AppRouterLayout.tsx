@@ -1,8 +1,7 @@
-import { Spin } from 'antd';
 import { lazy, memo, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet, useLocation, useNavigation } from 'react-router';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { ViewportContainer } from '@/components/layout/ViewportContainer/ViewportContainer';
 import { selectUser } from '@/features/auth/userSlice';
@@ -55,18 +54,43 @@ const RoutePendingBar = styled.div`
   }
 `;
 
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`;
+
+const FallbackContainer = styled.div`
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+`;
+
+const NavSpinner = styled.div`
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(102, 126, 234, 0.1);
+  border-top-color: var(--color-primary, #667eea);
+  border-radius: 50%;
+  animation: ${spin} 0.8s linear infinite;
+`;
+
+const FallbackText = styled.span`
+  color: var(--color-primary, #667eea);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+`;
+
 const RouteSuspenseFallback = () => (
-    <Spin size="large" tip="Cargando...">
-        <div
-            style={{
-                width: '100%',
-                minHeight: '40vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        />
-    </Spin>
+    <FallbackContainer>
+        <NavSpinner />
+        <FallbackText>Cargando...</FallbackText>
+    </FallbackContainer>
 );
 
 const AppLayout = memo(({ blockContent }: { blockContent: boolean }) => {

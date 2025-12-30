@@ -81,18 +81,20 @@ function diagnose() {
     fileStats.sort((a, b) => b.size - a.size);
 
     console.log('\n🏆 Top 50 Largest Files (by Size):');
-    console.log('-------------------------------------------------------------------------------');
+    console.log('------------------------------------------------------------------------------------------------');
     console.log(
-        padRight('File Path', 50) + ' | ' +
-        padRight('Size', 12) + ' | ' +
-        'Lines'
+        padRight('File Name', 40) + ' | ' +
+        padRight('Size', 10) + ' | ' +
+        padRight('Lines', 6) + ' | ' +
+        'Path'
     );
-    console.log('-------------------------------------------------------------------------------');
+    console.log('------------------------------------------------------------------------------------------------');
 
     fileStats.slice(0, 50).forEach(stat => {
         let color = '';
         const reset = '\x1b[0m';
         const kbSize = stat.size / 1024;
+        const fileName = path.basename(stat.file);
 
         // Color logic: Red if very large size OR very many lines
         if (kbSize >= LARGE_FILE_SIZE_KB || stat.lines >= LARGE_FILE_LINES) {
@@ -101,12 +103,16 @@ function diagnose() {
             color = '\x1b[33m'; // Yellow
         }
 
+        // Make path clickable in VS Code terminal (convert Windows backslashes to forward slashes)
+        const absolutePath = path.resolve(path.join(__dirname, '..'), stat.file).replace(/\\/g, '/');
+        const clickablePath = `\x1b]8;;file:///${absolutePath}\x1b\\${stat.file}\x1b]8;;\x1b\\`;
+
         console.log(
-            `${color}${padRight(stat.file, 50)} | ${padRight(formatBytes(stat.size), 12)} | ${stat.lines}${reset}`
+            `${color}${padRight(fileName, 40)} | ${padRight(formatBytes(stat.size), 10)} | ${padRight(stat.lines.toString(), 6)} | ${clickablePath}${reset}`
         );
     });
 
-    console.log('-------------------------------------------------------------------------------');
+    console.log('------------------------------------------------------------------------------------------------');
     console.log(`Total files scanned: ${fileStats.length}`);
 }
 

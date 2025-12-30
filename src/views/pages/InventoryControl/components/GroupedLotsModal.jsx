@@ -1,7 +1,6 @@
 import {
   Modal,
   Button,
-  DatePicker,
   Tag,
   InputNumber,
   Dropdown,
@@ -11,6 +10,8 @@ import {
 import { DateTime } from 'luxon';
 import { useMemo } from 'react';
 import styled from 'styled-components';
+
+import DatePicker from '@/components/DatePicker';
 
 import { EditorsList, SummaryBar } from './inventoryTableComponents.jsx';
 import {
@@ -266,7 +267,7 @@ export function GroupedLotsModal({
                   const currentEditStr = isMarkedForRemoval
                     ? CLEAR_SENTINEL
                     : dateValue
-                      ? dateValue.toFormat('yyyy-LL-dd')
+                    ? dateValue.toFormat('yyyy-LL-dd')
                       : '';
                   const isDifferentFromOriginal =
                     record.type === 'batch' &&
@@ -373,7 +374,7 @@ export function GroupedLotsModal({
                       }
                       if (srcBaseStr) {
                         const d = DateTime.fromISO(srcBaseStr);
-                        if (d.isValid()) sourceDateValue = d;
+                        if (d.isValid) sourceDateValue = d;
                       }
 
                       return (
@@ -473,7 +474,7 @@ export function GroupedLotsModal({
                                     }
                                     return;
                                   }
-                                  const iso = date.format('YYYY-MM-DD');
+                                  const iso = date.toISODate();
                                   onChangeExpiration &&
                                     onChangeExpiration(skey, iso);
                                   syncSameLotDates(skey, iso, src);
@@ -751,7 +752,7 @@ export function GroupedLotsModal({
                               }
                               return;
                             }
-                            const iso = date.format('YYYY-MM-DD');
+                            const iso = date.toISODate();
                             onChangeExpiration &&
                               onChangeExpiration(record.key, iso);
                             if (record.type === 'batch')

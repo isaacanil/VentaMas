@@ -3,7 +3,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 import React, { useCallback, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
@@ -11,6 +11,16 @@ import logo from './ventamax.svg';
 
 // registra los plugins una sola vez
 gsap.registerPlugin(SplitText);
+
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+`;
 
 const SplashWrapper = styled.div`
   position: fixed;
@@ -105,6 +115,114 @@ const MinimalMessage = styled.p`
   color: #ebf4ff;
 `;
 
+// --- SYSTEM/SESSION LOADER COMPONENTS ---
+
+const SystemOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  opacity: ${({ $active }) => ($active ? 1 : 0)};
+  transition: opacity 0.3s ease;
+  pointer-events: ${({ $active }) => ($active ? 'auto' : 'none')};
+`;
+
+const SystemLogo = styled.img`
+  width: 120px;
+  margin-bottom: 40px;
+  animation: ${pulse} 3s ease-in-out infinite;
+`;
+
+const SystemSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--color-primary, #667eea);
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const SystemLoadingText = styled.p`
+  margin-top: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  letter-spacing: 1px;
+  opacity: 0.9;
+`;
+
+const ErrorContainer = styled.div`
+  max-width: 500px;
+  padding: 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  text-align: center;
+`;
+
+const ErrorTitle = styled.h2`
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e53e3e;
+`;
+
+const ErrorMessage = styled.p`
+  margin-bottom: 24px;
+  line-height: 1.6;
+  color: #4a5568;
+`;
+
+const RetryButton = styled.button`
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background: var(--color-primary, #667eea);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+`;
+
+const VentamaxSystemLoader = ({ active, message, error, status }) => {
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
+  const isError = status === 'error';
+
+  return (
+    <SystemOverlay $active={active}>
+      {isError ? (
+        <ErrorContainer>
+          <ErrorTitle>Error de Sesión</ErrorTitle>
+          <ErrorMessage>
+            {error?.message || 'Ha ocurrido un error inesperado. Por favor, intenta nuevamente.'}
+          </ErrorMessage>
+          <RetryButton onClick={handleRetry}>Reintentar</RetryButton>
+        </ErrorContainer>
+      ) : (
+        <>
+          <SystemLogo src={logo} alt="Ventamax Logo" />
+          <SystemSpinner />
+          <SystemLoadingText>{message || 'Cargando sesión...'}</SystemLoadingText>
+        </>
+      )}
+    </SystemOverlay>
+  );
+};
+
 const VentamaxMinimalLoader = ({ active, message, onFinish, status }) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const onFinishRef = useRef(onFinish);
@@ -124,14 +242,14 @@ const VentamaxMinimalLoader = ({ active, message, onFinish, status }) => {
       return;
     }
 
-    // Solo finalizar si realmente ven�amos de activo -> inactivo
+    // Solo finalizar si realmente veníamos de activo -> inactivo
     if (wasActive && prefersReducedMotion && !finishCalledRef.current) {
       finishCalledRef.current = true;
       onFinishRef.current?.();
     }
   }, [active, prefersReducedMotion]);
 
-  const statusMessage = message || 'Iniciando sesi�n...';
+  const statusMessage = message || 'Iniciando sesión...';
 
   return (
     <MinimalOverlay
@@ -199,11 +317,11 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
       if (prefersReducedMotion) {
         introCompletedRef.current = true;
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        return () => {};
+        return () => { };
       }
 
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      if (!titleRef.current) return () => {};
+      if (!titleRef.current) return () => { };
 
       const split = new SplitText(titleRef.current, { type: 'chars' });
 
@@ -289,8 +407,12 @@ const VentamaxSplashLoader = ({ active, message, onFinish, status }) => {
 
 export default function VentamaxLoader(props) {
   if (props.variant === 'minimal') {
-    return <VentamaxMinimalLoader {...props} />;
+    return <VentamaxMinimalLoader {...props} active={props.active ?? props.show} />;
   }
 
-  return <VentamaxSplashLoader {...props} />;
+  if (props.variant === 'system' || props.variant === 'session') {
+    return <VentamaxSystemLoader {...props} active={props.active ?? props.show} />;
+  }
+
+  return <VentamaxSplashLoader {...props} active={props.active ?? props.show} />;
 }

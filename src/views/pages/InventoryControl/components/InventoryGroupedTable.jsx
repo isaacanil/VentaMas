@@ -5,12 +5,12 @@ import {
   Tooltip,
   Empty,
   Button,
-  DatePicker,
   Dropdown,
   Modal,
 } from 'antd';
+import DatePicker from '@/components/DatePicker';
 import { DateTime } from 'luxon';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
@@ -149,101 +149,38 @@ export default function InventoryGroupedTable({
   }, [groups, serverCounts, countsMeta]);
 
   // Mapear a columnas de AdvancedTable
-  // Columnas (incluye indicador de cambios en Producto)
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'Producto',
-        accessor: 'productNameNode',
-        sortable: true,
-        align: 'left',
-        minWidth: '220px',
-        maxWidth: '1.3fr',
-        cell: ({ value }) => value,
-        // Usar el nombre real para ordenamiento alfabético
-        sortableValue: (val, row) => row?.productName?.toLowerCase?.() || '',
-      },
-      {
-        Header: 'Vencimiento',
-        accessor: 'expirationNode',
-        sortable: true,
-        align: 'left',
-        minWidth: '140px',
-        maxWidth: '1fr',
-        cell: ({ value }) => value,
-        sortableValue: (val, row) => {
-          // Use hidden sort value computed per-row
-          return row?.expirationSortValue || '';
-        },
-      },
-      {
-        Header: 'Ubicaciones',
-        accessor: 'locationsNode',
-        align: 'left',
-        minWidth: '220px',
-        maxWidth: '1.4fr',
-        cell: ({ value }) => value,
-      },
-      {
-        Header: 'Stock',
-        accessor: 'totalStock',
-        align: 'right',
-        minWidth: '110px',
-        maxWidth: '0.6fr',
-        cell: ({ value }) => <strong>{formatNumber(value)}</strong>,
-      },
-      {
-        Header: 'Conteo real',
-        accessor: 'conteoNode',
-        align: 'right',
-        minWidth: '130px',
-        maxWidth: '0.7fr',
-        clickable: false,
-        cell: ({ value }) => value,
-      },
-      {
-        Header: 'Diferencia',
-        accessor: 'diffNode',
-        align: 'right',
-        minWidth: '130px',
-        maxWidth: '0.7fr',
-        cell: ({ value }) => value,
-      },
-      {
-        Header: 'Editado por',
-        accessor: 'userNode',
-        align: 'left',
-        minWidth: '180px',
-        maxWidth: '1.2fr',
-        clickable: false,
-        cell: ({ value }) => value,
-      },
-      {
-        Header: 'Acción',
-        accessor: 'actionsNode',
-        align: 'right',
-        minWidth: '70px',
-        maxWidth: '0.5fr',
-        clickable: false,
-        cell: ({ value }) => value,
-      },
+  const rowMetaCache = useMemo(
+    () => new WeakMap(),
+    [
+      baselineSnapshot,
+      counts,
+      countsMeta,
+      expirationEdits,
+      locationNamesMap,
+      onChangeCount,
+      onChangeExpiration,
+      readOnly,
+      resolvingLocations,
+      resolvingUIDs,
+      serverCounts,
+      usersNameCache,
     ],
-    [],
   );
 
-  // Preconstruir nodos para columnas que necesitan estado/handlers
-  const rows = useMemo(() => {
-    if (!groups) return [];
-    // Helper: valor persistido para una key (serverCounts o fallback a stock/quantity)
-    const getPersistedCount = (k, node) => {
-      if (serverCounts[k] !== undefined) return Number(serverCounts[k]);
-      if (node && typeof node === 'object') {
-        const stock = Number(node.stock ?? node.quantity ?? 0);
-        return isFinite(stock) ? stock : 0;
-      }
-      return 0;
-    };
-    return groups.map((g) => {
+  const getRowMeta = useCallback(
+    (g) => {
+      if (!g) return {};
+      const cached = rowMetaCache.get(g);
+      if (cached) return cached;
+      // Helper: valor persistido para una key (serverCounts o fallback a stock/quantity)
+      const getPersistedCount = (k, node) => {
+        if (serverCounts[k] !== undefined) return Number(serverCounts[k]);
+        if (node && typeof node === 'object') {
+          const stock = Number(node.stock ?? node.quantity ?? 0);
+          return isFinite(stock) ? stock : 0;
+        }
+        return 0;
+      };
       // Calcular número de lotes subyacentes (incluye sources dentro de un único child noexp o batch)
       const underlyingLotsCount = (g._children || []).reduce((acc, ch) => {
         if (Array.isArray(ch.sources) && ch.sources.length > 0)
@@ -656,9 +593,11 @@ export default function InventoryGroupedTable({
             // No hay estado de edición: usar valores persistidos/originales
             currentStr = manualVal || originalVal || '';
           }
-          const valueDay = currentStr
-            ? DateTime.fromISO(currentStr)
-            : null;
+          const valueDay = (() => {
+            if (!currentStr) return null;
+            const parsed = DateTime.fromISO(currentStr);
+            return parsed.isValid ? parsed : null;
+          })();
           expirationSortValue = currentStr || '';
           const hasOriginal = !!originalVal;
           // Mostrar DatePicker
@@ -711,7 +650,7 @@ export default function InventoryGroupedTable({
                   }
                   return;
                 }
-                const iso = date.format('YYYY-MM-DD');
+                const iso = date.toISODate();
                 onChangeExpiration && onChangeExpiration(key, iso);
               }}
               style={{ width: '100%' }}
@@ -1094,7 +1033,7 @@ export default function InventoryGroupedTable({
         }
       }
 
-      return {
+            const meta = {
         ...g,
         productNameNode, // para la columna Producto
         conteoNode: conteoEl,
@@ -1106,23 +1045,106 @@ export default function InventoryGroupedTable({
         actionsNode: actionsEl,
         _hasMultipleLots: hasMultipleLots,
       };
-    });
-  }, [
-    groups,
-    counts,
-    baselineSnapshot,
-    onChangeCount,
-    countsMeta,
-    usersNameCache,
-    readOnly,
-    expirationEdits,
-    onChangeExpiration,
-    resolvingUIDs,
-    serverCounts,
-    locationNamesMap,
-    resolvingLocations,
-  ]);
+      rowMetaCache.set(g, meta);
+      return meta;
+    
+    },
+    [
+      rowMetaCache,
+      baselineSnapshot,
+      counts,
+      countsMeta,
+      expirationEdits,
+      locationNamesMap,
+      onChangeCount,
+      onChangeExpiration,
+      readOnly,
+      resolvingLocations,
+      resolvingUIDs,
+      serverCounts,
+      usersNameCache,
+    ],
+  );
 
+  // Columnas (incluye indicador de cambios en Producto)
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Producto',
+        accessor: 'productName',
+        sortable: true,
+        align: 'left',
+        minWidth: '220px',
+        maxWidth: '1.3fr',
+        cell: ({ row }) => getRowMeta(row).productNameNode,
+        sortableValue: (val) => String(val || '').toLowerCase(),
+      },
+      {
+        Header: 'Vencimiento',
+        accessor: 'expirationSortValue',
+        sortable: true,
+        align: 'left',
+        minWidth: '140px',
+        maxWidth: '1fr',
+        cell: ({ row }) => getRowMeta(row).expirationNode,
+        sortableValue: (val) => val || '',
+      },
+      {
+        Header: 'Ubicaciones',
+        accessor: 'locationsNode',
+        align: 'left',
+        minWidth: '220px',
+        maxWidth: '1.4fr',
+        cell: ({ row }) => getRowMeta(row).locationsNode,
+      },
+      {
+        Header: 'Stock',
+        accessor: 'totalStock',
+        align: 'right',
+        minWidth: '110px',
+        maxWidth: '0.6fr',
+        cell: ({ value }) => <strong>{formatNumber(value)}</strong>,
+      },
+      {
+        Header: 'Conteo real',
+        accessor: 'conteoNode',
+        align: 'right',
+        minWidth: '130px',
+        maxWidth: '0.7fr',
+        clickable: false,
+        cell: ({ row }) => getRowMeta(row).conteoNode,
+      },
+      {
+        Header: 'Diferencia',
+        accessor: 'diffNode',
+        align: 'right',
+        minWidth: '130px',
+        maxWidth: '0.7fr',
+        cell: ({ row }) => getRowMeta(row).diffNode,
+      },
+      {
+        Header: 'Editado por',
+        accessor: 'userNode',
+        align: 'left',
+        minWidth: '180px',
+        maxWidth: '1.2fr',
+        clickable: false,
+        cell: ({ row }) => getRowMeta(row).userNode,
+      },
+      {
+        Header: 'Acci?n',
+        accessor: 'actionsNode',
+        align: 'right',
+        minWidth: '70px',
+        maxWidth: '0.5fr',
+        clickable: false,
+        cell: ({ row }) => getRowMeta(row).actionsNode,
+      },
+    ],
+    [getRowMeta],
+  );
+
+  const rows = groups || [];
   if (!loading && (!groups || groups.length === 0)) {
     return <Empty description="Sin registros" />;
   }
@@ -1133,10 +1155,12 @@ export default function InventoryGroupedTable({
         data={rows}
         columns={columns}
         loading={loading}
+        enableVirtualization
         numberOfElementsPerPage={15}
         tableName="inventory-grouped"
         rowSize={rowSize}
         rowBorder
+        getRowId={(row) => row.productKey || row.productId || row.key}
         onRowClick={(row) => {
           try {
             if (!row || !Array.isArray(row._children)) return;

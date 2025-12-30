@@ -1,11 +1,11 @@
 import { Form, Input, Select, message, Modal, Button } from 'antd';
-import DatePicker from '@/components/DatePicker';
-import { DateTime } from 'luxon';
 import { onSnapshot, doc } from 'firebase/firestore';
+import { DateTime } from 'luxon';
 import { useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import DatePicker from '@/components/DatePicker';
 import { icons } from '@/constants/icons/icons';
 import { OPERATION_MODES } from '@/constants/modes';
 import { transactionConditions } from '@/constants/orderAndPurchaseState';
@@ -26,11 +26,12 @@ import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import {
   getBackOrdersByProduct,
 } from '@/firebase/warehouse/backOrderService';
-import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
-import ProductModal from '@/views/pages/OrderAndPurchase/shared/ProductModal';
 import BackOrdersModal from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/BackOrdersModal';
 import EvidenceUpload from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/EvidenceUpload/EvidenceUpload';
 import ProductsTable from '@/views/pages/OrderAndPurchase/PurchaseManagement/components/ProductsTable';
+import ProductModal from '@/views/pages/OrderAndPurchase/shared/ProductModal';
+
+import ProviderSelector from '../../../components/ProviderSelector/ProviderSelector';
 
 import NotesInput from './components/NotesInput';
 import OrderSelector from './components/OrderSelector';

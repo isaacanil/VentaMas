@@ -1,10 +1,10 @@
 import { Input, InputNumber, Select, Form, Modal } from 'antd';
-import DatePicker from '@/components/DatePicker';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import DatePicker from '@/components/DatePicker';
 import { formatPrice } from '@/utils/format';
 
 import {
@@ -46,7 +46,6 @@ export const ReceivableManagementPanel = ({
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [userModifiedDate, setUserModifiedDate] = useState(false);
-  const [forceRecalculate, setForceRecalculate] = useState(false);
   const [baseCalculationDate, setBaseCalculationDate] = useState(
     DateTime.now().startOf('day').toMillis(),
   );
@@ -58,7 +57,6 @@ export const ReceivableManagementPanel = ({
     }
     // Reset local states
     setUserModifiedDate(false);
-    setForceRecalculate(false);
     // Call the original close panel function
     closePanel();
   }, [form, closePanel]);
@@ -93,7 +91,6 @@ export const ReceivableManagementPanel = ({
       const newBase = DateTime.now().startOf('day').toMillis();
       setBaseCalculationDate(newBase);
       setUserModifiedDate(false);
-      setForceRecalculate(true);
       dispatch(setAR({ ...updates, paymentDate: null }));
     },
     [dispatch],
@@ -105,14 +102,12 @@ export const ReceivableManagementPanel = ({
         const newDateMillis = date.toMillis();
         if (newDateMillis !== paymentDate) {
           setUserModifiedDate(true);
-          setForceRecalculate(false);
           updatePaymentDateInStore(newDateMillis);
         }
       } else {
         setUserModifiedDate(false);
         updatePaymentDateInStore(null);
         setBaseCalculationDate(DateTime.now().startOf('day').toMillis());
-        setForceRecalculate(true);
       }
     },
     [paymentDate, updatePaymentDateInStore],
@@ -163,7 +158,6 @@ export const ReceivableManagementPanel = ({
     paymentFrequency,
     totalInstallments,
     userModifiedDate ? paymentDate : baseCalculationDate,
-    forceRecalculate,
   );
 
   useGetPendingBalance({
@@ -175,8 +169,8 @@ export const ReceivableManagementPanel = ({
 
   useEffect(() => {
     const shouldAutoSet =
-      (!userModifiedDate || forceRecalculate) &&
-      (!paymentDate || forceRecalculate) &&
+      !userModifiedDate &&
+      !paymentDate &&
       paymentFrequency &&
       totalInstallments > 0 &&
       nextPaymentDate &&
@@ -186,20 +180,13 @@ export const ReceivableManagementPanel = ({
       if (nextPaymentDate !== paymentDate) {
         updatePaymentDateInStore(nextPaymentDate);
 
-        setUserModifiedDate(false);
-        if (forceRecalculate) setForceRecalculate(false);
-
         // Actualizar el form también
         if (form) {
           form.setFieldsValue({
             paymentDate: DateUtils.convertMillisToDayjs(nextPaymentDate),
           });
         }
-      } else if (forceRecalculate) {
-        setForceRecalculate(false);
       }
-    } else if (forceRecalculate) {
-      setForceRecalculate(false);
     }
   }, [
     nextPaymentDate,
@@ -207,8 +194,6 @@ export const ReceivableManagementPanel = ({
     totalInstallments,
     paymentDate,
     userModifiedDate,
-    forceRecalculate,
-    baseCalculationDate,
     updatePaymentDateInStore,
     isOpen,
     form,
@@ -230,17 +215,12 @@ export const ReceivableManagementPanel = ({
       dispatch(toggleReceivableStatus(false));
     }
   }, [client?.id, isReceivable, receivableStatus, dispatch]);
+
   // Detectar cuando se quita automáticamente de CxC y resetear estados
   useEffect(() => {
-    if (!receivableStatus && !isReceivable) {
-      setUserModifiedDate(false);
-      setForceRecalculate(false);
-      setBaseCalculationDate(DateTime.now().startOf('day').toMillis());
-
+    if (!receivableStatus && !isReceivable && isOpen) {
       // Cerrar el modal si está abierto
-      if (isOpen) {
-        closePanel();
-      }
+      closePanel();
     }
   }, [receivableStatus, isReceivable, isOpen, closePanel]);
   // Reset form and states when modal opens/closes
@@ -290,14 +270,8 @@ export const ReceivableManagementPanel = ({
     if (form) {
       form.setFieldsValue({ paymentFrequency, totalInstallments });
     }
-  }, [form, paymentFrequency, totalInstallments]); // Inicializar fecha base al abrir el modal
-  useEffect(() => {
-    if (isOpen && !baseCalculationDate) {
-      const initialBase = DateTime.now().startOf('day').toMillis();
-      setBaseCalculationDate(initialBase);
-      setForceRecalculate(true); // Forzar recálculo inicial
-    }
-  }, [isOpen, baseCalculationDate]);
+  }, [form, paymentFrequency, totalInstallments]); 
+
   // Inicializar valores por defecto cuando se abre el modal por primera vez
   useEffect(() => {
     if (!isOpen || !isReceivable) return;
@@ -314,7 +288,6 @@ export const ReceivableManagementPanel = ({
           paymentDate: null, // Se calculará automáticamente
         }),
       );
-      setForceRecalculate(true);
     }
   }, [isOpen, isReceivable, paymentFrequency, totalInstallments, dispatch]);
 
