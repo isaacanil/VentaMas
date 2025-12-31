@@ -4,8 +4,8 @@ import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { fbGetPreorders } from '@/firebase/invoices/fbGetPreorders';
-import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import { InvoicePanel } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import Layout from './components/Layout/Layout';
 import { PreSaleTable } from './components/PreSaleTable/PreSaleTable';

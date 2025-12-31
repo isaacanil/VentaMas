@@ -154,3 +154,20 @@ export const MutedText = styled.span`
   font-size: 0.9em;
   color: #8c8c8c;
 `;
+
+export const ProductNameCell = styled.span`
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const ProductNameWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+`;

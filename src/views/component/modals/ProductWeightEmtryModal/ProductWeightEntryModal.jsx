@@ -2,10 +2,10 @@ import { Modal, Input, Form, Button, notification } from 'antd';
 import React, { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { addProduct } from '@/features/cart/cartSlice';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 
-import { addProduct } from '@/features/cart/cartSlice';
 
 const getPricePerUnit = (currentProduct) => {
   if (!currentProduct) return 0;

@@ -1,4 +1,4 @@
-import { UnorderedListOutlined } from '@ant-design/icons';
+﻿import { MoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import {
   InputNumber,
   Tag,
@@ -8,11 +8,11 @@ import {
   Dropdown,
   Modal,
 } from 'antd';
-import DatePicker from '@/components/DatePicker';
 import { DateTime } from 'luxon';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import DatePicker from '@/components/DatePicker';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { GroupedLotsModal } from './GroupedLotsModal';
@@ -39,7 +39,7 @@ import {
  *       stock: number,
  *       real: number,
  *       diff: number,
- *       locations: Array<{ location: string, quantity: number }>
+ *       locations: Array<{ location: string, locationKey?: string, locationLabel?: string, quantity: number }>
  *     }>
  *   }>
  * - counts: Record<string, number>
@@ -77,7 +77,7 @@ export default function InventoryGroupedTable({
     const countsBase = {};
     const expBase = {};
     const norm = (d) => formatInputDate(d) || '';
-    
+
     groups.forEach((g) => {
       (g._children || []).forEach((ch) => {
         const key = ch.key;
@@ -144,34 +144,28 @@ export default function InventoryGroupedTable({
         }
       }
     });
-    
+
     return { counts: countsBase, expirations: expBase };
   }, [groups, serverCounts, countsMeta]);
 
   // Mapear a columnas de AdvancedTable
-  const rowMetaCache = useMemo(
-    () => new WeakMap(),
-    [
-      baselineSnapshot,
-      counts,
-      countsMeta,
-      expirationEdits,
-      locationNamesMap,
-      onChangeCount,
-      onChangeExpiration,
-      readOnly,
-      resolvingLocations,
-      resolvingUIDs,
-      serverCounts,
-      usersNameCache,
-    ],
-  );
+  // Compute row metadata - no caching to comply with React compiler rules      
+  const getRowMeta = useMemo(() => {
+    const getLocationDisplay = (locKey, fallbackLabel = '') => {
+      const key = locKey || '';
+      const mapLabel = key ? locationNamesMap[key] : '';
+      const resolvedFromMap = mapLabel && mapLabel !== key;
+      const resolvedFromFallback =
+        fallbackLabel && fallbackLabel !== key ? fallbackLabel : '';
+      const resolvedLabel = resolvedFromMap ? mapLabel : resolvedFromFallback;
+      const isLoading = !resolvedLabel && !!(key && resolvingLocations[key]);
+      const label =
+        resolvedLabel || (isLoading ? 'Cargando ubicación...' : 'Ubicación sin nombre');
+      return { label, isLoading };
+    };
 
-  const getRowMeta = useCallback(
-    (g) => {
+    return (g) => {
       if (!g) return {};
-      const cached = rowMetaCache.get(g);
-      if (cached) return cached;
       // Helper: valor persistido para una key (serverCounts o fallback a stock/quantity)
       const getPersistedCount = (k, node) => {
         if (serverCounts[k] !== undefined) return Number(serverCounts[k]);
@@ -393,7 +387,7 @@ export default function InventoryGroupedTable({
       }
 
       // Nodo Producto con indicador
-      const productName = g.productName || '—';
+      const productName = g.productName || 'â€”';
       const productNameNode = (
         <Tooltip title={productName} placement="topLeft">
           <ProductNameWrapper>
@@ -415,30 +409,37 @@ export default function InventoryGroupedTable({
       if (allLocations.length) {
         const agg = new Map();
         for (const l of allLocations) {
-          if (!l?.location) continue;
-          const prev = agg.get(l.location) || 0;
-          agg.set(l.location, prev + Number(l.quantity || 0));
+          const locKey = l?.locationKey || l?.location;
+          if (!locKey) continue;
+          const prev = agg.get(locKey) || { quantity: 0, label: '' };
+          agg.set(locKey, {
+            quantity: prev.quantity + Number(l.quantity || 0),
+            label: prev.label || l?.locationLabel || '',
+          });
         }
-        const entries = Array.from(agg.entries()).sort((a, b) => b[1] - a[1]);
-        const MAX_SHOW = 6;
+        const entries = Array.from(agg.entries()).sort(
+          (a, b) => b[1].quantity - a[1].quantity,
+        );
+        const MAX_SHOW = 2;
         const shown = entries.slice(0, MAX_SHOW);
         const extra = entries.length - shown.length;
         locationsNode = (
           <TagsWrap>
-            {shown.map(([loc, q]) => {
-              const label = locationNamesMap[loc] || shortenLocationPath(loc);
-              const isLoadingLoc =
-                !locationNamesMap[loc] && !!resolvingLocations[loc];
+            {shown.map(([loc, data]) => {
+              const { label, isLoading } = getLocationDisplay(
+                loc,
+                data.label,
+              );
+              const displayLabel = shortenLocationPath(label);
               return (
-                <Tooltip key={loc} title={`${label} (${formatNumber(q)})`}>
+                <Tooltip
+                  key={loc}
+                  title={`${label} (${formatNumber(data.quantity)})`}
+                >
                   <Tag>
-                    {isLoadingLoc ? (
-                      <span style={{ opacity: 0.6, fontSize: 11 }}>
-                        Cargando…
-                      </span>
-                    ) : (
-                      shortenLocationPath(label)
-                    )}
+                    <span style={isLoading ? { opacity: 0.7 } : undefined}>
+                      {displayLabel}
+                    </span>
                   </Tag>
                 </Tooltip>
               );
@@ -447,11 +448,17 @@ export default function InventoryGroupedTable({
               <Tooltip
                 title={
                   <div>
-                    {entries.slice(MAX_SHOW).map(([loc, q]) => (
-                      <div key={loc}>
-                        {loc} ({formatNumber(q)})
-                      </div>
-                    ))}
+                    {entries.slice(MAX_SHOW).map(([loc, data]) => {
+                      const { label } = getLocationDisplay(
+                        loc,
+                        data.label,
+                      );
+                      return (
+                        <div key={loc}>
+                          {label} ({formatNumber(data.quantity)})
+                        </div>
+                      );
+                    })}
                   </div>
                 }
               >
@@ -476,10 +483,10 @@ export default function InventoryGroupedTable({
                 s +
                 Number(
                   counts[src.id || src.key] ??
-                    serverCounts[src.id || src.key] ??
-                    src.real ??
-                    src.stock ??
-                    0,
+                  serverCounts[src.id || src.key] ??
+                  src.real ??
+                  src.stock ??
+                  0,
                 ),
               0,
             );
@@ -610,7 +617,7 @@ export default function InventoryGroupedTable({
               disabledDate={(d) =>
                 d &&
                 d.endOf('day').toMillis() <
-                  DateTime.local().startOf('day').toMillis()
+                DateTime.local().startOf('day').toMillis()
               }
               onChange={(date) => {
                 if (!date) {
@@ -734,7 +741,7 @@ export default function InventoryGroupedTable({
         } else if (child.type === 'noexp') {
           const manualExists =
             countsMeta[g.topKey]?.manualExpirationDate ||
-            countsMeta[child.key]?.manualExpirationDate
+              countsMeta[child.key]?.manualExpirationDate
               ? true
               : false;
           expirationNode = (
@@ -929,7 +936,7 @@ export default function InventoryGroupedTable({
           <Tooltip title="Editar lotes">
             <Button
               size="small"
-              type="text"
+              type="default"
               shape="circle"
               icon={<UnorderedListOutlined />}
               onClick={() => setModalGroup(g)}
@@ -941,9 +948,7 @@ export default function InventoryGroupedTable({
             placement="bottomRight"
             trigger={['click']}
           >
-            <Button size="small" type="text">
-              ⋯
-            </Button>
+            <Button type="default" icon={<MoreOutlined />} />
           </Dropdown>
         );
         // Recolectar todos los editores de los hijos
@@ -1033,7 +1038,7 @@ export default function InventoryGroupedTable({
         }
       }
 
-            const meta = {
+      const meta = {
         ...g,
         productNameNode, // para la columna Producto
         conteoNode: conteoEl,
@@ -1045,26 +1050,23 @@ export default function InventoryGroupedTable({
         actionsNode: actionsEl,
         _hasMultipleLots: hasMultipleLots,
       };
-      rowMetaCache.set(g, meta);
       return meta;
-    
-    },
-    [
-      rowMetaCache,
-      baselineSnapshot,
-      counts,
-      countsMeta,
-      expirationEdits,
-      locationNamesMap,
-      onChangeCount,
-      onChangeExpiration,
-      readOnly,
-      resolvingLocations,
-      resolvingUIDs,
-      serverCounts,
-      usersNameCache,
-    ],
-  );
+
+    };
+  }, [
+    baselineSnapshot,
+    counts,
+    countsMeta,
+    expirationEdits,
+    locationNamesMap,
+    onChangeCount,
+    onChangeExpiration,
+    readOnly,
+    resolvingLocations,
+    resolvingUIDs,
+    serverCounts,
+    usersNameCache,
+  ]);
 
   // Columnas (incluye indicador de cambios en Producto)
   const columns = useMemo(
@@ -1132,7 +1134,7 @@ export default function InventoryGroupedTable({
         cell: ({ row }) => getRowMeta(row).userNode,
       },
       {
-        Header: 'Acci?n',
+        Header: 'Acción',
         accessor: 'actionsNode',
         align: 'right',
         minWidth: '70px',
@@ -1156,7 +1158,9 @@ export default function InventoryGroupedTable({
         columns={columns}
         loading={loading}
         enableVirtualization
-        numberOfElementsPerPage={15}
+        paginateVirtualizedData
+        showPagination
+        numberOfElementsPerPage={50}
         tableName="inventory-grouped"
         rowSize={rowSize}
         rowBorder
@@ -1209,8 +1213,8 @@ const Wrapper = styled.div`
 `;
 
 const ProductNameCell = styled.span`
-  display: inline-block;
-  max-width: 100%;
+  display: block;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1221,4 +1225,6 @@ const ProductNameWrapper = styled.div`
   flex-direction: column;
   gap: 2px;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
 `;

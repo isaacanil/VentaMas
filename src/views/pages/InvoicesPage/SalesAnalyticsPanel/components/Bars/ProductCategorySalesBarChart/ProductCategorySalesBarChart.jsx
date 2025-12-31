@@ -10,7 +10,6 @@ import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import { getTotalPrice } from '@/utils/pricing';
 import Typography from '@/views/templates/system/Typografy/Typografy';
 

@@ -8,6 +8,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { SimpleTypography } from '@/views/templates/system/Typografy/SimpleTypography';
+
 import { buildTransactionRows } from '../utils/transactionRows';
 
 export const TransactionDetailsTable = ({

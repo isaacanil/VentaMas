@@ -5,13 +5,13 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatRNC } from '@/utils/format';
 
 import { OPERATION_MODES } from '@/constants/modes';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 import { fbAddClient } from '@/firebase/client/fbAddClient';
 import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
+import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/views/templates/system/Button/Button';
 import { Message } from '@/views/templates/system/message/Message';

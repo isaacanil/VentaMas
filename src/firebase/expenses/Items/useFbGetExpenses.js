@@ -7,8 +7,8 @@ import {
   selectExpenseList,
   setExpenseList,
 } from '@/features/expense/expensesListSlice';
-import { toMillis } from '@/utils/date/toMillis';
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/date/toMillis';
 
 const SHARED_SCOPE = 'shared';
 const LOCAL_SCOPE = 'local';

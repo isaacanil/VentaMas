@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const BillRow = ({

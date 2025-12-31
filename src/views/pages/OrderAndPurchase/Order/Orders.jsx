@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
 import useFilter from '@/hooks/search/useSearch';
 import { useListenOrders } from '@/hooks/useOrders';
-import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import { FilterBar } from '@/views/pages/OrderAndPurchase/Compra/components/FilterBar/FilterBar';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import { OrdersTable } from './components/OrderListTable/OrdersTable';
 import createFilterConfig from './config/filterConfig';

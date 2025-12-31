@@ -3,8 +3,6 @@ import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { formatPrice } from '@/utils/format';
-import { getTotalPrice, getTax } from '@/utils/pricing';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -21,6 +19,8 @@ import { useFbGetInvoicesByClient } from '@/firebase/invoices/useFbGetInvoicesBy
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import { useCreditNotePDF } from '@/hooks/creditNote/useCreditNotePDF';
 import { useFbGetCreditNoteApplications } from '@/hooks/creditNote/useFbGetCreditNoteApplications';
+import { formatPrice } from '@/utils/format';
+import { getTotalPrice, getTax } from '@/utils/pricing';
 
 
 import { ApplicationHistoryTab } from './components/ApplicationHistoryTab';
@@ -149,16 +149,24 @@ export const CreditNoteModal = () => {
   const pageSize = 5;
 
   const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
-  const createdAtDate = creditNoteData?.createdAt
-    ? creditNoteData.createdAt.seconds
+  const createdAtDate = useMemo(() => {
+    if (!creditNoteData?.createdAt) return null;
+    return creditNoteData.createdAt.seconds
       ? new Date(creditNoteData.createdAt.seconds * 1000)
-      : new Date(creditNoteData.createdAt)
-    : null;
+      : new Date(creditNoteData.createdAt);
+  }, [creditNoteData?.createdAt]);
   const hasApplications = creditNoteApplications?.length > 0; // Usar las aplicaciones de la nueva colección
-  const isTimeAllowed =
-    mode === 'edit' && createdAtDate
-      ? Date.now() - createdAtDate.getTime() <= ALLOWED_EDIT_MS
-      : mode === 'edit';
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const isTimeAllowed = useMemo(() => {
+    if (mode !== 'edit' || !createdAtDate) return mode === 'edit';
+    return now - createdAtDate.getTime() <= ALLOWED_EDIT_MS;
+  }, [mode, createdAtDate, now, ALLOWED_EDIT_MS]);
   const isEditAllowed = isTimeAllowed && !hasApplications; // No se puede editar si ya se aplicó
   const effectiveIsView =
     mode === 'view' || (mode === 'edit' && !isEditAllowed);

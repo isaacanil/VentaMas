@@ -3,7 +3,6 @@ import { useState } from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import {
   getProductsTax,
   getProductsTotalPrice,

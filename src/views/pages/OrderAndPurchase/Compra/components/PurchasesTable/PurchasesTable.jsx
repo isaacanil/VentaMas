@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import { useDialog } from '@/Context/Dialog'; // Nuevo import
 import { selectUser } from '@/features/auth/userSlice';
 import { fbCancelPurchase } from '@/firebase/purchase/fbCancelPurchase';
-import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 import { calculateTotalNewStockFromReplenishments } from '@/views/pages/OrderAndPurchase/Order/components/OrderListTable/orderTableUtils';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { columns } from './tableConfig.jsx';
 

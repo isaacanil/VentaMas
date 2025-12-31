@@ -3,7 +3,6 @@ import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice as formatPrice } from '@/utils/format';
 
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectUser } from '@/features/auth/userSlice';
@@ -14,6 +13,7 @@ import {
 import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { formatPrice as formatPrice } from '@/utils/format';
 import { updateObject } from '@/utils/object/updateObject';
 import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 

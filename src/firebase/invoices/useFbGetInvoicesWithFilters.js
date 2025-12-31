@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
 import { getInvoicePaymentInfo } from '@/utils/invoice';
 import { validateUser } from '@/utils/userValidation';
-import { db } from '@/firebase/firebaseconfig';
 
 // Función para aplicar filtros del lado del cliente
 const applyClientSideFilters = (invoices, filters) => {

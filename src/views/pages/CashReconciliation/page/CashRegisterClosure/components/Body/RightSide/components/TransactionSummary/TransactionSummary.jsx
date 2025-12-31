@@ -3,9 +3,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/format';
-
 import { selectCashCount } from '@/features/cashCount/cashCountManagementSlice';
+import { formatNumber } from '@/utils/format';
 import { InputWithHorizontalLabel } from '@/views/templates/system/Inputs/InputWithHorizontalLabel';
 
 

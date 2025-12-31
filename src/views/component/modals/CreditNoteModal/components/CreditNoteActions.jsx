@@ -1,6 +1,7 @@
 import { PrinterOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
-import React from 'react';
+import { DateTime } from 'luxon';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 export const CreditNoteActions = ({
@@ -19,42 +20,60 @@ export const CreditNoteActions = ({
   hasApplications,
   createdAtDate,
   allowedEditMs,
-}) => (
-  <>
-    <ActionButtons>
-      <Button onClick={onClose}>Cancelar</Button>
-      {(effectiveIsView || effectiveIsEdit) && (
-        <Button
-          icon={<PrinterOutlined />}
-          onClick={() => onPrint(creditNoteData)}
-          loading={pdfLoading}
-          disabled={!creditNoteData}
-        >
-          Imprimir
-        </Button>
+}) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000); // Actualizar cada minuto
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeRemainingHours = useMemo(() => {
+    if (!isTimeAllowed || !createdAtDate) return 0;
+    const expirationDate = DateTime.fromJSDate(createdAtDate).plus({
+      milliseconds: allowedEditMs,
+    });
+    const diff = expirationDate.diff(DateTime.fromMillis(now), 'hours');
+    return Math.max(0, Math.floor(diff.hours));
+  }, [isTimeAllowed, createdAtDate, allowedEditMs, now]);
+
+  return (
+    <>
+      <ActionButtons>
+        <Button onClick={onClose}>Cancelar</Button>
+        {(effectiveIsView || effectiveIsEdit) && (
+          <Button
+            icon={<PrinterOutlined />}
+            onClick={() => onPrint(creditNoteData)}
+            loading={pdfLoading}
+            disabled={!creditNoteData}
+          >
+            Imprimir
+          </Button>
+        )}
+        {!effectiveIsView && canUseCreditNotes && (
+          <Button
+            type="primary"
+            onClick={onSubmit}
+            disabled={!selectedInvoiceId || selectedItems.length === 0}
+            loading={loading}
+          >
+            {effectiveIsEdit ? 'Guardar Cambios' : 'Crear Nota de Crédito'}
+          </Button>
+        )}
+      </ActionButtons>
+      {effectiveIsEdit && (
+        <CountdownText>
+          {isTimeAllowed && !hasApplications
+            ? `Tiempo restante para editar: ${timeRemainingHours}h`
+            : hasApplications
+              ? 'No se puede editar: nota ya aplicada'
+              : 'Edición expirada'}
+        </CountdownText>
       )}
-      {!effectiveIsView && canUseCreditNotes && (
-        <Button
-          type="primary"
-          onClick={onSubmit}
-          disabled={!selectedInvoiceId || selectedItems.length === 0}
-          loading={loading}
-        >
-          {effectiveIsEdit ? 'Guardar Cambios' : 'Crear Nota de Crédito'}
-        </Button>
-      )}
-    </ActionButtons>
-    {effectiveIsEdit && (
-      <CountdownText>
-        {isTimeAllowed && !hasApplications
-          ? `Tiempo restante para editar: ${Math.max(0, Math.floor((allowedEditMs - (Date.now() - createdAtDate.getTime())) / (60 * 60 * 1000)))}h`
-          : hasApplications
-            ? 'No se puede editar: nota ya aplicada'
-            : 'Edición expirada'}
-      </CountdownText>
-    )}
-  </>
-);
+    </>
+  );
+};
 
 const ActionButtons = styled.div`
   display: flex;

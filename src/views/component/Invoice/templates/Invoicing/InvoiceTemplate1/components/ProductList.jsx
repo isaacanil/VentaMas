@@ -2,11 +2,10 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice as formatPrice } from '@/utils/format';
-import { separator } from '@/utils/number/number';
-
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
+import { formatPrice as formatPrice } from '@/utils/format';
+import { separator } from '@/utils/number/number';
 import {
   getTax,
   getTotalPrice,

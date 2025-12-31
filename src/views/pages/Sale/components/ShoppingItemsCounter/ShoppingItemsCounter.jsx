@@ -2,9 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/format';
-
 import { SelectTotalShoppingItems } from '@/features/cart/cartSlice';
+import { formatNumber } from '@/utils/format';
 import { AnimatedNumber } from '@/views/templates/system/AnimatedNumber/AnimatedNumber';
 
 

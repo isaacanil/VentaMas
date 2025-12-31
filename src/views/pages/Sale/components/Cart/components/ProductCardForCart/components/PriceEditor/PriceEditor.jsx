@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import { changeProductPrice } from '@/features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import { formatPrice } from '@/utils/format';
 import {
   getPriceTotal,
   getPriceWithoutTax,

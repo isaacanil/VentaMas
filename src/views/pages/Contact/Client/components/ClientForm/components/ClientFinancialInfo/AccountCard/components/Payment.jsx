@@ -4,10 +4,10 @@ import { Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
+import { formatPrice } from '@/utils/format';
 
 
 export function Payment({

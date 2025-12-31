@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PENDING_DIR = path.join(__dirname, '../pending');
-const DELAY = 20000; // 20 seconds, matching the original script
+// const DELAY = 20000; // 20 seconds, matching the original script
 
 console.log('Checking for pending tasks...');
 

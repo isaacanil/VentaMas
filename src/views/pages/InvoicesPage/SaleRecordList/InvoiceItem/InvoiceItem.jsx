@@ -13,10 +13,10 @@ import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { addInvoice } from '@/features/invoice/invoiceFormSlice';
 import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice';
+import { formatPrice } from '@/utils/format';
 import {
   abbreviatePaymentMethods,
   getActivePaymentMethods,

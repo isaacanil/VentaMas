@@ -11,7 +11,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { selectUser } from '@/features/auth/userSlice.js';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice.js';
@@ -19,6 +18,7 @@ import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBa
 import { getBatchById } from '@/firebase/warehouse/batchService.js';
 import BatchViewModal from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal.jsx';
 import { ProductMovementModal } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal.jsx';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
 import { SearchControls } from './components/SearchControls';

@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom/vitest';
+import { vi } from 'vitest';
+
 
 if (typeof window.matchMedia !== 'function') {
   Object.defineProperty(window, 'matchMedia', {
@@ -7,27 +9,33 @@ if (typeof window.matchMedia !== 'function') {
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
       dispatchEvent: () => false,
     }),
   });
 }
 
 if (!window.HTMLElement.prototype.scrollIntoView) {
-  window.HTMLElement.prototype.scrollIntoView = () => {};
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
 }
 
 const originalGetComputedStyle = window.getComputedStyle;
-window.getComputedStyle = (element, pseudo) =>
+window.getComputedStyle = (element, _pseudo) =>
   originalGetComputedStyle(element);
 
 class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() {
+    /* no-op */
+  }
+  unobserve() {
+    /* no-op */
+  }
+  disconnect() {
+    /* no-op */
+  }
 }
 
 globalThis.ResizeObserver = ResizeObserver;

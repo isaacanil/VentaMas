@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 import { SubTitle } from '@/views/pages/checkout/Receipt';
+import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 export const FilterSumary = ({ criterio, orden }) => {
   // Mapeo de los valores de 'criterio' a sus descripciones correspondientes

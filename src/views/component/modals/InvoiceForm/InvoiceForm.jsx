@@ -3,7 +3,6 @@ import { Form, Button, Modal, Alert, message, Tabs }from 'antd';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { formatPrice } from '@/utils/format';
 
 
 import { selectUser } from '@/features/auth/userSlice';
@@ -15,6 +14,7 @@ import {
 } from '@/features/invoice/invoiceFormSlice';
 import { markAuthorizationUsed } from '@/firebase/authorizations/invoiceEditAuthorizations';
 import { fbUpdateInvoice } from '@/firebase/invoices/fbUpdateInvoice';
+import { formatPrice } from '@/utils/format';
 import { convertInvoiceDateToMillis } from '@/utils/invoice';
 
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';

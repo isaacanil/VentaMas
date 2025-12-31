@@ -2,13 +2,13 @@ import { Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import { OPERATION_MODES } from '@/constants/modes';
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
+import { formatPrice } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { ButtonGroup } from '@/views/templates/system/Button/Button';
 import { Message } from '@/views/templates/system/message/Message';

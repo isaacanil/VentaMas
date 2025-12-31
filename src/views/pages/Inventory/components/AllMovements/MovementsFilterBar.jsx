@@ -4,8 +4,8 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedServise';
-import { DatePicker } from '@/views/templates/system/Dates/DatePicker/DatePicker';
 import { shortenLocationPath } from '@/views/pages/InventoryControl/components/inventoryTableUtils.js';
+import { DatePicker } from '@/views/templates/system/Dates/DatePicker/DatePicker';
 
 const Bar = styled.div`
   display: flex;

@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatRNC } from '@/utils/format';
-
 import { handleModalCreateClient } from '@/features/modals/modalSlice';
+import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/views/templates/system/Button/Button';
 import { Message } from '@/views/templates/system/message/Message';

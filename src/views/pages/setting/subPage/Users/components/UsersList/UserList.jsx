@@ -29,8 +29,8 @@ import { fbGetUsers } from '@/firebase/users/fbGetUsers';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
-import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 import DynamicPermissionsManager from '@/views/pages/setting/subPage/Users/components/DynamicPermissionsManager';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';

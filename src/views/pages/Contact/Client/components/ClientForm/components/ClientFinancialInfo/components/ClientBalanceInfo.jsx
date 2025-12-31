@@ -4,9 +4,9 @@ import { Button } from 'antd';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { formatPrice } from '@/utils/format';
 
-import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 
 
 export const ClientBalanceInfo = ({ client, pendingBalance }) => {

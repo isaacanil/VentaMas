@@ -10,11 +10,11 @@ import {
 import { DateTime } from 'luxon';
 
 // Asumiendo que estas funciones están implementadas correctamente
+import { db } from '@/firebase/firebaseconfig';
 import {
   convertDecimalToPercentage,
   getPriceWithoutTax,
 } from '@/utils/pricing';
-import { db } from '@/firebase/firebaseconfig';
 
 export const fbFixInvoices = async (businessID) => {
   try {

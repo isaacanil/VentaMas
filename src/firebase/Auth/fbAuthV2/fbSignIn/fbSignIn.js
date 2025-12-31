@@ -1,8 +1,8 @@
 import { httpsCallable } from 'firebase/functions';
 
 import { login } from '@/features/auth/userSlice';
-import { functions } from '@/firebase/firebaseconfig';
 import { buildSessionInfo, storeSessionLocally } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { functions } from '@/firebase/firebaseconfig';
 
 const clientLoginCallable = httpsCallable(functions, 'clientLogin');
 

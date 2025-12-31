@@ -1,8 +1,8 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { validateUser } from '@/utils/userValidation';
 import { db } from '@/firebase/firebaseconfig';
+import { validateUser } from '@/utils/userValidation';
 
 export const fbCreateTaxReceipt = async (taxReceipt, user) => {
   taxReceipt = {

@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
-
 import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
 
 import { BillRow } from './components/BillRow';

@@ -10,8 +10,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/format';
-import { formatPrice } from '@/utils/format';
 
 import { store } from '@/app/store';
 import { icons } from '@/constants/icons/icons';
@@ -24,6 +22,8 @@ import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
 import { filterData } from '@/hooks/search/useSearch';
+import { formatPrice } from '@/utils/format';
+import { formatNumber } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
 import { ProductCategoryBar } from '@/views/component/ProductCategoryBar/ProductCategoryBar';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';

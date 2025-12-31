@@ -2,9 +2,9 @@ import { message } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { changeValueInvoiceForm } from '@/features/invoice/invoiceFormSlice';
 import { formatPrice } from '@/utils/format';
 
-import { changeValueInvoiceForm } from '@/features/invoice/invoiceFormSlice';
 
 import type {
   DiscountType,

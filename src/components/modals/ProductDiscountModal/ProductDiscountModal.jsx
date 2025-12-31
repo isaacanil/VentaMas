@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { updateProductDiscount } from '@/features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 
 

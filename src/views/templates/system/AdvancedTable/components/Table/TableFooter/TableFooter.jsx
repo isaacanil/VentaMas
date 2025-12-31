@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { Button } from '@/views/templates/system/Button/Button';
 import { Pagination } from '@/views/templates/system/AdvancedTable/components/Pagination/Pagination';
+import { Button } from '@/views/templates/system/Button/Button';
 
 const TableFooter = ({
   elementsShown,

@@ -1,5 +1,5 @@
-import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 import { calculateOrderTotals } from '@/views/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
+import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import {
   calculatePaymentDate,

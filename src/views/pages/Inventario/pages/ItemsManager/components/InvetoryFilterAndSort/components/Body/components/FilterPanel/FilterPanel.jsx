@@ -28,11 +28,11 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockService';
 import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
+import { LabelWithStatus } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 import {
   opcionesInventariable,
   opcionesItbis,
 } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
-import { LabelWithStatus } from '@/views/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/components/Body/components/SortPanel/SortPanel';
 
 import { InventoryLocationSelector } from './InventoryLocationSelector';
 

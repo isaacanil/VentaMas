@@ -5,9 +5,9 @@ import { icons } from '@/constants/icons/icons';
 import { openInsuranceConfigModal } from '@/features/insurance/insuranceConfigModalSlice';
 import { useListenInsuranceConfig } from '@/firebase/insurance/insuranceService';
 import DateUtils from '@/utils/date/dateUtils';
+import InsuranceConfigForm from '@/views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
-import InsuranceConfigForm from '@/views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm';
 
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 

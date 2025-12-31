@@ -4,7 +4,7 @@
 import {
   sum,
   buildLocations,
-  getLocationKey,
+  getItemLocationKey,
   normalizeDateKey,
 } from './inventoryHelpers';
 
@@ -156,18 +156,23 @@ export function buildInventoryGroups({
         expirationDate: null,
         locations: buildLocations(noExpItems, locationNames),
         sourceIds: noExpItems.map((x) => x.id),
-        sources: noExpItems.map((x) => ({
-          id: x.id,
-          quantity: Number(x.quantity ?? x.stock ?? 0) || 0,
-          batchNumberId: x.batchNumberId ?? null,
-          batchId: x.batchId ?? null,
-          expirationDate: getEffectiveExpirationDate(
-            x,
-            expirationEdits,
-            countsMeta,
-          ),
-          location: getLocationKey(x.location) || x.location || '',
-        })),
+        sources: noExpItems.map((x) => {
+          const locationKey = getItemLocationKey(x);
+          return {
+            id: x.id,
+            quantity: Number(x.quantity ?? x.stock ?? 0) || 0,
+            batchNumberId: x.batchNumberId ?? null,
+            batchId: x.batchId ?? null,
+            expirationDate: getEffectiveExpirationDate(
+              x,
+              expirationEdits,
+              countsMeta,
+            ),
+            location: locationKey,
+            locationKey,
+            locationLabel: locationNames?.[locationKey] || '',
+          };
+        }),
       });
     }
 
@@ -233,18 +238,23 @@ export function buildInventoryGroups({
           diff: (real ?? 0) - stock,
           locations: buildLocations(arr, locationNames),
           sourceIds: arr.map((x) => x.id),
-          sources: arr.map((x) => ({
-            id: x.id,
-            quantity: Number(x.quantity ?? x.stock ?? 0) || 0,
-            batchNumberId: x.batchNumberId ?? null,
-            batchId: x.batchId ?? null,
-            expirationDate: getEffectiveExpirationDate(
-              x,
-              expirationEdits,
-              countsMeta,
-            ),
-            location: getLocationKey(x.location) || x.location || '',
-          })),
+          sources: arr.map((x) => {
+            const locationKey = getItemLocationKey(x);
+            return {
+              id: x.id,
+              quantity: Number(x.quantity ?? x.stock ?? 0) || 0,
+              batchNumberId: x.batchNumberId ?? null,
+              batchId: x.batchId ?? null,
+              expirationDate: getEffectiveExpirationDate(
+                x,
+                expirationEdits,
+                countsMeta,
+              ),
+              location: locationKey,
+              locationKey,
+              locationLabel: locationNames?.[locationKey] || '',
+            };
+          }),
         });
       }
     }

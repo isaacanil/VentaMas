@@ -1,11 +1,11 @@
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { sanitizeFirebaseData } from '@/utils/firebase/sanitizeFirebaseData';
-import { toTimestamp } from '@/utils/firebase/toTimestamp';
 import { db } from '@/firebase/firebaseconfig';
 import { fbUploadFile } from '@/firebase/img/fbUploadFileAndGetURL';
 import { getNextID } from '@/firebase/Tools/getNextID';
+import { sanitizeFirebaseData } from '@/utils/firebase/sanitizeFirebaseData';
+import { toTimestamp } from '@/utils/firebase/toTimestamp';
 
 export const fbAddExpense = async (user, setLoading, expense, receiptImage) => {
   try {

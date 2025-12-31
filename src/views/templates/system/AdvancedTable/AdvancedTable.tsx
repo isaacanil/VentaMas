@@ -113,6 +113,7 @@ export interface AdvancedTableProps<Row = TableRow> {
   rowExpandable?: (row: Row) => boolean;
   getRowId?: (row: Row, index: number) => string | number;
   enableVirtualization?: boolean;
+  paginateVirtualizedData?: boolean;
   showPagination?: boolean;
 }
 
@@ -228,6 +229,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   rowExpandable,
   getRowId,
   enableVirtualization = false,
+  paginateVirtualizedData = false,
   showPagination = true,
 }: AdvancedTableProps<Row>) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -325,23 +327,29 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     wrapperRef,
   ) as PaginationUtilities<Row>;
 
+  const shouldUseVirtualization = enableVirtualization && !loading;
+  const shouldPaginateVirtualized =
+    shouldUseVirtualization && paginateVirtualizedData && showPagination;
+
   const shouldGroup = Boolean(
-    (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy,
+    (sortConfig.direction === 'none' || sortConfig.key === null) && groupBy,    
   );
 
-  // Si hay virtualización, agrupamos TODO el dataset (sortedData).
-  // Si es paginación normal, agrupamos solo la página actual (currentData).
-  const dataToGroup = enableVirtualization ? sortedData : currentData;
+  // Si hay virtualización con paginación, agrupamos solo la página actual.
+  // En caso contrario, la virtualización agrupa todo el dataset (sortedData).
+  const dataToGroup = shouldUseVirtualization
+    ? (shouldPaginateVirtualized ? currentData : sortedData)
+    : currentData;
 
   const groupedData =
     shouldGroup && groupBy
       ? groupDataByField(dataToGroup, groupBy)
-      : sortedData;
+      : dataToGroup;
 
   // Preparar datos planos para GroupedVirtuoso
   const { groupCounts, groupHeaders, flatGroupedData } = (() => {
-    if (!shouldGroup || !groupBy || !enableVirtualization) {
-      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };
+    if (!shouldGroup || !groupBy || !shouldUseVirtualization) {
+      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };        
     }
 
     // En este punto groupedData es un objeto Record<string, Row[]>
@@ -363,11 +371,11 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     };
   })();
 
-  const shouldUseVirtualization = enableVirtualization && !loading;
   const totalElements = data.length;
   const elementsShown = shouldUseVirtualization
-    ? sortedData.length
+    ? (shouldPaginateVirtualized ? currentData.length : sortedData.length)
     : currentData.length;
+  const virtualData = shouldPaginateVirtualized ? currentData : sortedData;
 
   const isWideScreen = useWindowWidth(1366);
   const isWideLayout = useWideLayout();
@@ -493,7 +501,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           {shouldUseVirtualization ? (
             <VirtualTableBody
               columnOrder={columnOrder}
-              currentData={sortedData}
+              currentData={virtualData}
               emptyText={emptyText}
               onRowClick={onRowClick}
               loading={loading}
@@ -541,7 +549,10 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
           prevPage={prevPage}
           toggleReorderMenu={toggleReorderMenu}
           totalElements={totalElements}
-          showPaginationControls={!shouldUseVirtualization && showPagination}
+          showPaginationControls={
+            showPagination &&
+            (!shouldUseVirtualization || shouldPaginateVirtualized)
+          }
         />
         <ColumnMenu
           resetColumnOrder={resetColumnOrder}

@@ -29,8 +29,8 @@ import {
   selectStockRequirement,
   selectStockLocations,
 } from '@/features/filterProduct/filterProductsSlice';
-import { getTax } from '@/utils/pricing';
 import { db } from '@/firebase/firebaseconfig';
+import { getTax } from '@/utils/pricing';
 
 const normalizeTaxValue = (value) => {
   if (value === null || value === undefined || value === '') return null;

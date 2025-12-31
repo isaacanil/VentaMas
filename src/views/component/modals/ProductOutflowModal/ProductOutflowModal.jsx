@@ -17,9 +17,9 @@ import { fbAddProductOutFlow } from '@/firebase/ProductOutflow/fbAddProductOutfl
 import { fbRemoveOutputRestoreQuantity } from '@/firebase/ProductOutflow/fbRemoveOutputRestoreQuantity';
 import { fbUpdateProductOutflow } from '@/firebase/ProductOutflow/fbUpdateProductOutflow';
 import useScroll from '@/hooks/useScroll';
+import { Modal } from '@/views/component/modals/Modal';
 import { CenteredText } from '@/views/templates/system/CentredText';
 import { FormattedValue } from '@/views/templates/system/FormattedValue/FormattedValue';
-import { Modal } from '@/views/component/modals/Modal';
 
 import { OutputProductEntry } from './OutputProductEntry/OutputProductEntry';
 

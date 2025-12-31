@@ -5,10 +5,10 @@ import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
+import { StatusBar } from '@/views/pages/Sale/components/StatusBar/StatusBar';
 import { CenteredText } from '@/views/templates/system/CentredText';
 import { CustomProduct } from '@/views/templates/system/Product/CustomProduct';
 import { Product } from '@/views/templates/system/Product/Product/Product';
-import { StatusBar } from '@/views/pages/Sale/components/StatusBar/StatusBar';
 
 const GridList = styled.div`
   display: grid;

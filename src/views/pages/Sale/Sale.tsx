@@ -202,13 +202,6 @@ export const Sales = (): JSX.Element => {
   const cartDataRaw: unknown = useSelector(SelectCartData);
   const cartData = isCartData(cartDataRaw) ? cartDataRaw : undefined;
 
-  const cartItemsCount =
-    typeof cartDataRaw === 'object' &&
-      cartDataRaw !== null &&
-      'products' in cartDataRaw &&
-      Array.isArray((cartDataRaw as any).products)
-      ? (cartDataRaw as any).products.length
-      : 0;
 
   const viewportValue: unknown = useViewportWidth();
   const viewport = typeof viewportValue === 'number' ? viewportValue : 0;
@@ -279,7 +272,7 @@ export const Sales = (): JSX.Element => {
         dispatch(addProduct(product));
       }
     },
-    [dispatch, cashRegisterStatus, cartItemsCount],
+    [dispatch, cashRegisterStatus],
   );
 
   useBarcodeScanner(productsList, checkBarcode);

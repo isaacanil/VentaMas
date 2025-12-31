@@ -3,7 +3,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { separator } from '@/utils/number/number';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
@@ -11,6 +10,7 @@ import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSli
 import DateUtils from '@/utils/date/dateUtils';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import { separator } from '@/utils/number/number';
 import {
   getTotalPrice,
   getTax,

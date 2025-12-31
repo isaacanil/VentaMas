@@ -1,7 +1,7 @@
 import { Timestamp, collection, doc, writeBatch } from 'firebase/firestore';
 
-import { generateInstallments } from '@/utils/accountsReceivable/generateInstallments';
 import { db } from '@/firebase/firebaseconfig';
+import { generateInstallments } from '@/utils/accountsReceivable/generateInstallments';
 
 function prepareInstallmentForFirebase(installments) {
   return installments.map((installment) => ({

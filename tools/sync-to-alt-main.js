@@ -19,6 +19,7 @@ function exec(command) {
     try {
         return execSync(command, { encoding: 'utf8', stdio: 'pipe' }).trim();
     } catch (error) {
+        console.error(error);
         return null;
     }
 }
@@ -28,6 +29,7 @@ function execWithOutput(command) {
         execSync(command, { stdio: 'inherit' });
         return true;
     } catch (e) {
+        console.error(e);
         return false;
     }
 }
@@ -79,7 +81,8 @@ rl.question(`⚠️  Esto eliminará TODAS las ramas remotas en 'alt' y subirá 
                 try {
                     exec(`git push alt --delete "${branch}"`);
                 } catch (e) {
-                    console.log(`      (Error deleting ${branch}, possibly already gone)`);
+                    console.error(`(Error deleting ${branch}, possibly already gone)`);
+                    console.error(e);
                 }
             }
         } else {

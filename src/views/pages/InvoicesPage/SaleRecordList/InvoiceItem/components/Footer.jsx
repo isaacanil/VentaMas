@@ -12,9 +12,9 @@ import { openInvoicePreviewModal } from '@/features/invoice/invoicePreviewSlice'
 import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import { isInvoicePaidInFull } from '@/utils/invoice';
 import { prepareInvoiceForEdit } from '@/utils/invoice';
-import { Button } from '@/views/templates/system/Button/Button';
 import { Receipt } from '@/views/pages/checkout/Receipt';
 import useInvoiceEditAuthorization from '@/views/pages/InvoicesPage/hooks/useInvoiceEditAuthorization';
+import { Button } from '@/views/templates/system/Button/Button';
 
 export const Footer = ({ data }) => {
   const componentToPrintRef = useRef(null);

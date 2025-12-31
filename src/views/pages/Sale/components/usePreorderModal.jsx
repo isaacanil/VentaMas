@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -17,6 +16,7 @@ import {
 import { selectClientWithAuth } from '@/features/clientCart/clientCartSlice';
 import { selectTaxReceiptType } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbGetPreorders } from '@/firebase/invoices/fbGetPreorders';
+import { formatPrice } from '@/utils/format';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
 
 

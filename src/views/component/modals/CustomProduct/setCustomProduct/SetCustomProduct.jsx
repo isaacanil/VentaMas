@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { separator } from '@/utils/number/number';
 
 import { addProduct } from '@/features/cart/cartSlice';
 import { formatData } from '@/features/customProducts/customProductSlice';
 import { handleModalSetCustomPizza } from '@/features/modals/modalSlice';
 import { addNotification } from '@/features/notification/notificationSlice.js';
+import { separator } from '@/utils/number/number';
 import { AddCustomProductModal } from '@/views/component/modals/AddCustomProductModal/AddCustomProductModal.jsx';
 import { Modal } from '@/views/component/modals/Modal';
 

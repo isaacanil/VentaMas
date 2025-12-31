@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  getLocationKey,
-  resolveLocationLabel,
-} from '../utils/inventoryHelpers';
+
+import { getItemLocationKey, resolveLocationLabel } from '../utils/inventoryHelpers';
+
+const FAILED_TTL_MS = 5 * 60 * 1000;
 
 /**
  * Resuelve etiquetas legibles de ubicaciones para un conjunto de items filtrados.
@@ -12,6 +12,15 @@ export function useLocationNames({ businessID, filteredItems }) {
   const [resolvingLocations, setResolvingLocations] = useState({});
   const locationNamesRef = useRef(locationNames);
   const inFlightRef = useRef(new Set());
+  const failedRef = useRef(new Map());
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true; // Reset on mount (needed for React StrictMode remount)
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     locationNamesRef.current = locationNames;
@@ -20,7 +29,7 @@ export function useLocationNames({ businessID, filteredItems }) {
   const locationKeys = useMemo(() => {
     const uniqueKeys = new Set();
     for (const it of filteredItems || []) {
-      const key = getLocationKey(it?.location);
+      const key = getItemLocationKey(it);
       if (key) uniqueKeys.add(key);
     }
     return Array.from(uniqueKeys);
@@ -29,10 +38,20 @@ export function useLocationNames({ businessID, filteredItems }) {
   useEffect(() => {
     if (!businessID || locationKeys.length === 0) return;
 
-    let cancelled = false;
     const cache = locationNamesRef.current || {};
     const inFlight = inFlightRef.current;
-    const toLoad = locationKeys.filter((k) => !cache[k] && !inFlight.has(k));
+    const failed = failedRef.current;
+    const now = Date.now();
+    const isFailedRecently = (key) => {
+      const ts = failed.get(key);
+      if (!ts) return false;
+      if (now - ts < FAILED_TTL_MS) return true;
+      failed.delete(key);
+      return false;
+    };
+    const toLoad = locationKeys.filter(
+      (k) => !cache[k] && !inFlight.has(k) && !isFailedRecently(k),
+    );
     if (toLoad.length === 0) return;
 
     toLoad.forEach((k) => inFlight.add(k));
@@ -49,11 +68,15 @@ export function useLocationNames({ businessID, filteredItems }) {
             return [key, label];
           }),
         );
-        if (!cancelled) {
+        const resolvedEntries = entries.filter(([, label]) => !!label);
+        const failedKeys = entries
+          .filter(([, label]) => !label)
+          .map(([key]) => key);
+        if (isMountedRef.current && resolvedEntries.length) {
           setLocationNames((prev) => {
             let changed = false;
             const next = { ...prev };
-            for (const [k, v] of entries) {
+            for (const [k, v] of resolvedEntries) {
               if (next[k] !== v) {
                 next[k] = v;
                 changed = true;
@@ -62,9 +85,14 @@ export function useLocationNames({ businessID, filteredItems }) {
             return changed ? next : prev;
           });
         }
+        if (failedKeys.length) {
+          failedKeys.forEach((key) => {
+            failedRef.current.set(key, Date.now());
+          });
+        }
       } finally {
         toLoad.forEach((k) => inFlight.delete(k));
-        if (!cancelled) {
+        if (isMountedRef.current) {
           setResolvingLocations((prev) => {
             const next = { ...prev };
             toLoad.forEach((k) => {
@@ -76,9 +104,6 @@ export function useLocationNames({ businessID, filteredItems }) {
       }
     };
     run();
-    return () => {
-      cancelled = true;
-    };
   }, [businessID, locationKeys]);
 
   return { locationNames, resolvingLocations };

@@ -6,8 +6,8 @@ import styled from 'styled-components';
 
 import { closeModalAddClient } from '@/features/modals/modalSlice';
 import { db } from '@/firebase/firebaseconfig.jsx';
-import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4.jsx';
 import { Modal } from '@/views/component/modals/Modal';
+import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4.jsx';
 
 export const AddClientModal = ({ isOpen }) => {
   const dispatch = useDispatch();

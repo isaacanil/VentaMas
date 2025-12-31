@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import { formatDate } from '@/utils/formatDate';
 
 import { Payment } from './components/Payment';

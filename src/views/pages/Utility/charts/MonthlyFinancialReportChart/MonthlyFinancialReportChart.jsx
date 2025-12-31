@@ -13,7 +13,6 @@ import { Line } from 'react-chartjs-2';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import Typography from '@/views/templates/system/Typografy/Typografy.jsx';
 
 import { getTotalSalesPerMonth, getTotalExpensesPerMonth } from './utils.js';

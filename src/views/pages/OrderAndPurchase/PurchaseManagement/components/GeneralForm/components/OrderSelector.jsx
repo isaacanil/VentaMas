@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import {
@@ -13,6 +12,7 @@ import {
   selectPurchase,
 } from '@/features/purchase/addPurchaseSlice';
 import DateUtils from '@/utils/date/dateUtils';
+import { formatPrice } from '@/utils/format';
 import { normalizeText } from '@/utils/text';
 import { calculateOrderTotals } from '@/views/pages/OrderAndPurchase/OrderManagement/utils/orderCalculationsUtil';
 

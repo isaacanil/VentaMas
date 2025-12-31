@@ -5,9 +5,8 @@ import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-
 import { useFbGetAccountReceivablePayments } from '@/firebase/accountsReceivable/useFbGetAccountReceivablePayments';
+import { formatPrice } from '@/utils/format';
 import { Payment } from '@/views/pages/Contact/Client/components/ClientForm/components/ClientFinancialInfo/AccountCard/components/Payment';
 
 const toDateTime = (value) => {

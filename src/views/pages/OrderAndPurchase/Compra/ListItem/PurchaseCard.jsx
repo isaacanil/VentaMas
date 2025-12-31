@@ -1,9 +1,9 @@
+import { correctDate } from '@/hooks/date/correctDate';
 import { formatPrice } from '@/utils/format';
 import { ActionsButtonsGroup } from '@/views/pages/OrderAndPurchase/Compra/ListItem/ActionsButtonsGroup';
 import { Button } from '@/views/templates/system/Button/Button';
 import { ButtonGroup } from '@/views/templates/system/Button/ButtonGroup';
 
-import { correctDate } from '@/hooks/date/correctDate';
 
 
 export const PurchaseCard = ({

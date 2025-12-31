@@ -4,9 +4,9 @@ import React, { Suspense } from 'react';
 import styled from 'styled-components';
 
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
-import { uiImage } from '@/views/templates/system/FormattedValue/ui/uiImage';
-import welcomeData from '@/views/pages/Welcome/WelcomeData.json';
 import Features from '@/views/pages/Welcome/components/Features/Features';
+import welcomeData from '@/views/pages/Welcome/WelcomeData.json';
+import { uiImage } from '@/views/templates/system/FormattedValue/ui/uiImage';
 
 import { CardWelcome } from './CardWelcome/CardWelcome';
 

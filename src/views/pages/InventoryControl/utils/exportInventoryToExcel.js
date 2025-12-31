@@ -1,5 +1,5 @@
-import { DateTime } from 'luxon';
 import { saveAs } from 'file-saver';
+import { DateTime } from 'luxon';
 
 /**
  * Export inventory grouped data to Excel
@@ -82,7 +82,11 @@ export async function exportInventoryToExcel(
         conteoReal,
         diferencia,
         locations: (child.locations || [])
-          .map((l) => `${l.location}(${l.quantity})`)
+          .map((l) => {
+            const label = l.locationLabel || '';
+            const display = label || 'Ubicación sin nombre';
+            return `${display}(${l.quantity})`;
+          })
           .join('; '),
         hasManualExp: hasManual ? 'Sí' : 'No',
         manualExpirationDate: hasManual ? formatDate(manualExpirationDate) : '',

@@ -24,8 +24,16 @@ const suspiciousSequences = [
     { seq: 'ï¿½', char: ' (Replacement Character)' },
     { seq: '\uFFFD', char: ' (Unicode Replacement)' },
     // Secuencias genéricas (Dejar al final para evitar ruido si ya se detectó la completa)
-    { seq: 'Ã', char: 'Posible fragmento UTF-8 roto (C3)' }, 
+    { seq: 'Ã', char: 'Posible fragmento UTF-8 roto (C3)' },
     // { seq: 'Â', char: 'Posible fragmento UTF-8 roto (C2)' }, // Comentado: 'Â' es muy común en copyright legal (Â©) y genera ruido.
+];
+
+// Nuevos patrones para detectar literales "?" que reemplazaron a carácteres con acento
+const suspiciousRegexes = [
+    {
+        regex: /[a-zA-ZáéíóúÁÉÍÓÚñÑ]\?[a-z]/g,
+        message: 'Posible carácter roto (sustituido por literal "?")'
+    }
 ];
 
 function searchFile(filePath) {
@@ -35,7 +43,7 @@ function searchFile(filePath) {
         const lines = content.split('\n');
 
         lines.forEach((line, index) => {
-            // Optimización: Revisar línea por línea una sola vez
+            // 1. Revisar secuencias estáticas
             for (const { seq, char } of suspiciousSequences) {
                 if (line.includes(seq)) {
                     errors.push({
@@ -45,9 +53,22 @@ function searchFile(filePath) {
                         suspectedChar: char,
                         content: line.trim()
                     });
-                    // Break opcional: si encuentras un error grave en la línea, 
-                    // quizás no necesitas reportar los otros 5 en la misma línea para evitar spam.
-                    // break; 
+                }
+            }
+
+            // 2. Revisar regex (para casos como Acci?n)
+            for (const { regex, message } of suspiciousRegexes) {
+                const matches = line.match(regex);
+                if (matches) {
+                    matches.forEach(match => {
+                        errors.push({
+                            file: filePath,
+                            line: index + 1,
+                            sequence: match,
+                            suspectedChar: message,
+                            content: line.trim()
+                        });
+                    });
                 }
             }
         });

@@ -2,10 +2,10 @@ import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
+import { Paragraph, Spacing, Subtitle } from '@/views/pages/checkout/Style';
 
 import { Col } from '../../../components/Table/Col';
 import { Row } from '../../../components/Table/Row';
-import { Paragraph, Spacing, Subtitle } from '@/views/pages/checkout/Style';
 
 
 function calculateTotal(paymentMethods) {

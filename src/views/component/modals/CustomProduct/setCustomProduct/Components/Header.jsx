@@ -3,8 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { separator } from '@/utils/number/number';
-import { removeMatchesString } from '@/utils/text';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -13,6 +11,8 @@ import {
 } from '@/features/customProducts/customProductSlice';
 import { addNotification } from '@/features/notification/notificationSlice';
 import { fbGetProductsQueryByType } from '@/firebase/products/customProduct/fbGetCustomProductByType';
+import { separator } from '@/utils/number/number';
+import { removeMatchesString } from '@/utils/text';
 import { getPizzaType } from '@/views/component/modals/CustomProduct/getPizzaType';
 import customPizzaData from '@/views/component/modals/CustomProduct/setCustomProduct/customPizza.json';
 

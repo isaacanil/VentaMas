@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { formatPrice } from '@/utils/format';
-
 import {
   calculateInvoicesTotal,
   countInvoices,

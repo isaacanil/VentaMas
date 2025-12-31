@@ -12,6 +12,7 @@ import {
 } from '@/features/usersManagement/usersManagementSlice';
 import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
+import DynamicPermissionsManager from '@/views/pages/setting/subPage/Users/components/DynamicPermissionsManager';
 import {
   Button,
   ButtonGroup,
@@ -20,7 +21,6 @@ import ElemLabel from '@/views/templates/system/ElemLabel/ElemLabel';
 import { ErrorComponent } from '@/views/templates/system/ErrorComponent/ErrorComponent';
 import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 import { Select } from '@/views/templates/system/Select/Select';
-import DynamicPermissionsManager from '@/views/pages/setting/subPage/Users/components/DynamicPermissionsManager';
 
 import { ChangePassword } from './ChangePassword/ChangePassword';
 

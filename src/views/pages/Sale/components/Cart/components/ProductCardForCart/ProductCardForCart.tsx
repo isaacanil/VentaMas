@@ -14,15 +14,15 @@ import { useState, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import { changeProductPrice } from '@/features/cart/cartSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
-import { Counter } from '@/views/templates/system/Counter/Counter';
 import PriceAndSaleUnitsModal from '@/views/pages/Sale/components/Cart/components/PriceAndSaleUnitsModal';
+import { Counter } from '@/views/templates/system/Counter/Counter';
 
 import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
 import { PriceEditor } from './components/PriceEditor/PriceEditor';

@@ -3,9 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-
 import { useListenSaleUnits } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
+import { formatPrice } from '@/utils/format';
 import {
   getListPriceTotal,
   getTotalPrice,

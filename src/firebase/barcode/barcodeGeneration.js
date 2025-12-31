@@ -1,8 +1,8 @@
 import { doc, getDoc } from 'firebase/firestore';
 
-import { generateGTIN13RD } from '@/utils/barcode/barcode';
 import { db } from '@/firebase/firebaseconfig';
 import { getNextID } from '@/firebase/Tools/getNextID';
+import { generateGTIN13RD } from '@/utils/barcode/barcode';
 
 import { getBarcodeSettings } from './barcodeSettings';
 

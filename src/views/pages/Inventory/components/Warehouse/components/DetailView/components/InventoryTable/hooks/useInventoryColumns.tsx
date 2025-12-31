@@ -1,8 +1,13 @@
-import { InfoCircleOutlined, EllipsisOutlined } from '@ant-design/icons';
-import { Button, Dropdown } from 'antd';
+import { Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 
-import { ActionContainer, ActionButton, ExpirationDateText } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/styles';
+import {
+  ActionContainer,
+  ActionButton,
+  ExpirationDateText,
+  ProductNameCell,
+  ProductNameWrapper,
+} from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/styles';
 
 import type { GetActionMenu, InventoryRow } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/InventoryTable/types';
 

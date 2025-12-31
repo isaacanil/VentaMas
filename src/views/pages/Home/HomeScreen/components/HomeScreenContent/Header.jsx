@@ -2,9 +2,9 @@ import { DateTime } from 'luxon';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+import { getBills } from '@/firebase/firebaseconfig';
 import { getSalesForCurrentDay } from '@/utils/sales';
 
-import { getBills } from '@/firebase/firebaseconfig';
 
 // Obtener la fecha y hora actual
 const today = DateTime.local();

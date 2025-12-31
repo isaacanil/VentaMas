@@ -40,6 +40,18 @@ export function GroupedLotsModal({
   baselineSnapshot,
 }) {
   const CLEAR_SENTINEL = '__REMOVE__';
+  const resolveLocationDisplay = (locKey, fallbackLabel = '') => {
+    const key = locKey || '';
+    const mapLabel = key ? locationNamesMap[key] : '';
+    const resolvedFromMap = mapLabel && mapLabel !== key;
+    const resolvedFromFallback =
+      fallbackLabel && fallbackLabel !== key ? fallbackLabel : '';
+    const resolvedLabel = resolvedFromMap ? mapLabel : resolvedFromFallback;
+    const isLoading = !resolvedLabel && !!(key && resolvingLocations[key]);
+    const label =
+      resolvedLabel || (isLoading ? 'Cargando ubicación...' : 'Ubicación sin nombre');
+    return { label, isLoading };
+  };
 
   // Sincronizar fecha en sources que comparten el mismo lote
   const syncSameLotDates = (changedSourceKey, newDate, currentSource) => {
@@ -134,16 +146,16 @@ export function GroupedLotsModal({
         ...(readOnly
           ? []
           : [
-              <Button
-                key="save"
-                type="primary"
-                onClick={handleSaveAndClose}
-                loading={saving}
-                disabled={!hasChanges}
-              >
-                {hasChanges ? 'Guardar y Cerrar' : 'Cerrar'}
-              </Button>,
-            ]),
+            <Button
+              key="save"
+              type="primary"
+              onClick={handleSaveAndClose}
+              loading={saving}
+              disabled={!hasChanges}
+            >
+              {hasChanges ? 'Guardar y Cerrar' : 'Cerrar'}
+            </Button>,
+          ]),
       ]}
       width={1200}
       style={{ top: 10 }}
@@ -193,7 +205,7 @@ export function GroupedLotsModal({
                     counts[record.key] !== undefined
                       ? counts[record.key]
                       : aggregatedTopCount !== undefined &&
-                          children.length === 1
+                        children.length === 1
                         ? aggregatedTopCount
                         : serverCounts[record.key] !== undefined
                           ? serverCounts[record.key]
@@ -225,7 +237,7 @@ export function GroupedLotsModal({
 
                   let currentPersistedExp =
                     meta?.manualExpirationDate &&
-                    meta.manualExpirationDate !== CLEAR_SENTINEL
+                      meta.manualExpirationDate !== CLEAR_SENTINEL
                       ? meta.manualExpirationDate
                       : record.type === 'batch'
                         ? formatInputDate(record.expirationDate)
@@ -267,7 +279,7 @@ export function GroupedLotsModal({
                   const currentEditStr = isMarkedForRemoval
                     ? CLEAR_SENTINEL
                     : dateValue
-                    ? dateValue.toFormat('yyyy-LL-dd')
+                      ? dateValue.toFormat('yyyy-LL-dd')
                       : '';
                   const isDifferentFromOriginal =
                     record.type === 'batch' &&
@@ -302,14 +314,14 @@ export function GroupedLotsModal({
                         sourceLive;
                       const sDiff = Number(sReal ?? 0) - stock;
                       const sMeta = countsMeta[skey];
-                      const locationRaw = src.location || '—';
-                      const fullLocationLabel =
-                        locationNamesMap[locationRaw] || locationRaw;
+                      const locationKey = src.locationKey || src.location || '';
+                      const { label: locationLabel, isLoading: isLoadingLoc } =
+                        resolveLocationDisplay(
+                          locationKey,
+                          src.locationLabel,
+                        );
                       const tagLocationLabel =
-                        shortenLocationPath(fullLocationLabel);
-                      const isLoadingLoc =
-                        !locationNamesMap[locationRaw] &&
-                        !!resolvingLocations[locationRaw];
+                        shortenLocationPath(locationLabel);
                       const srcEditVal = expirationEdits[skey];
                       const srcPersistedVal = sMeta?.manualExpirationDate;
 
@@ -435,12 +447,12 @@ export function GroupedLotsModal({
                                       const prevVal =
                                         sMeta?.manualExpirationDate
                                           ? formatInputDate(
-                                              sMeta.manualExpirationDate,
-                                            )
+                                            sMeta.manualExpirationDate,
+                                          )
                                           : formatInputDate(
-                                              src.expirationDate ||
-                                                record.expirationDate,
-                                            );
+                                            src.expirationDate ||
+                                            record.expirationDate,
+                                          );
                                       onChangeExpiration &&
                                         onChangeExpiration(skey, undefined);
                                       Modal.confirm({
@@ -483,21 +495,11 @@ export function GroupedLotsModal({
                             </div>
                           </td>
                           <td>
-                            <Tooltip
-                              title={
-                                isLoadingLoc
-                                  ? 'Resolviendo ubicación…'
-                                  : fullLocationLabel
-                              }
-                            >
+                            <Tooltip title={locationLabel}>
                               <Tag>
-                                {isLoadingLoc ? (
-                                  <span style={{ opacity: 0.6, fontSize: 11 }}>
-                                    Cargando…
-                                  </span>
-                                ) : (
-                                  shortenLocationPath(tagLocationLabel)
-                                )}
+                                <span style={isLoadingLoc ? { opacity: 0.7 } : undefined}>
+                                  {tagLocationLabel}
+                                </span>
                               </Tag>
                             </Tooltip>
                           </td>
@@ -547,10 +549,10 @@ export function GroupedLotsModal({
                                   expirationEdits[skey] !== undefined ||
                                   (originalDate &&
                                     formatInputDate(originalDate) !==
-                                      (expirationEdits[skey] ||
-                                        countsMeta[skey]
-                                          ?.manualExpirationDate ||
-                                        ''))
+                                    (expirationEdits[skey] ||
+                                      countsMeta[skey]
+                                        ?.manualExpirationDate ||
+                                      ''))
                                 );
                                 if (record.type === 'batch' && originalDate) {
                                   menuItems.push({
@@ -615,7 +617,7 @@ export function GroupedLotsModal({
                                 const canRestoreBaseline =
                                   baselineSourceCount !== undefined &&
                                   Number(baselineSourceCount) !==
-                                    effectiveSourceVal;
+                                  effectiveSourceVal;
                                 if (hasEditedSourceCount) {
                                   if (menuItems.length)
                                     menuItems.push({ type: 'divider' });
@@ -764,31 +766,23 @@ export function GroupedLotsModal({
                         {record.locations?.length ? (
                           <TagsWrap>
                             {record.locations.map((l, idx) => {
-                              const raw = l.location || '—';
-                              const full = locationNamesMap[raw] || raw;
-                              const shortened = shortenLocationPath(full);
-                              const isLoadingLoc =
-                                !locationNamesMap[raw] &&
-                                !!resolvingLocations[raw];
+                              const locationKey =
+                                l.locationKey || l.location || '';
+                              const { label, isLoading } =
+                                resolveLocationDisplay(
+                                  locationKey,
+                                  l.locationLabel,
+                                );
+                              const shortened = shortenLocationPath(label);
                               return (
                                 <Tooltip
                                   key={`${record.key}-loc-${idx}`}
-                                  title={
-                                    isLoadingLoc
-                                      ? 'Resolviendo ubicación…'
-                                      : full
-                                  }
+                                  title={label}
                                 >
                                   <Tag>
-                                    {isLoadingLoc ? (
-                                      <span
-                                        style={{ opacity: 0.6, fontSize: 11 }}
-                                      >
-                                        Cargando…
-                                      </span>
-                                    ) : (
-                                      shortenLocationPath(shortened)
-                                    )}
+                                    <span style={isLoading ? { opacity: 0.7 } : undefined}>
+                                      {shortened}
+                                    </span>
                                   </Tag>
                                 </Tooltip>
                               );
@@ -891,7 +885,7 @@ export function GroupedLotsModal({
                               const hasEditedRecordCount =
                                 counts[record.key] !== undefined &&
                                 Number(counts[record.key]) !==
-                                  persistedRecordCount;
+                                persistedRecordCount;
                               const baselineRecordCount =
                                 baselineCounts[record.key];
                               const effectiveRecordVal =
@@ -901,7 +895,7 @@ export function GroupedLotsModal({
                               const canRestoreBaseline =
                                 baselineRecordCount !== undefined &&
                                 Number(baselineRecordCount) !==
-                                  effectiveRecordVal;
+                                effectiveRecordVal;
                               if (hasEditedRecordCount) {
                                 if (menuItems.length)
                                   menuItems.push({ type: 'divider' });

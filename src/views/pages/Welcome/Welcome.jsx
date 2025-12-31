@@ -5,9 +5,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import ROUTES_PATH from '@/router/routes/routesName';
-
 import { selectUser } from '@/features/auth/userSlice';
+import ROUTES_PATH from '@/router/routes/routesName';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
 import ErrorBoundary from './components/ErrorBoundary';

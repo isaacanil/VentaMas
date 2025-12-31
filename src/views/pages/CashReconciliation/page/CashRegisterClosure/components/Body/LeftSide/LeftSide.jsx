@@ -6,10 +6,10 @@ import {
   selectCashCount,
   setCashCountOpeningBanknotes,
 } from '@/features/cashCount/cashCountManagementSlice';
-import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
-import { UserView } from '@/views/pages/CashReconciliation/resource/UserView/UserView';
 import { Comments } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
 import { DateSection } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
+import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
+import { UserView } from '@/views/pages/CashReconciliation/resource/UserView/UserView';
 
 export const LeftSide = ({ calculationIsOpen, setCalculationIsOpen }) => {
   const CashReconciliation = useSelector(selectCashCount);

@@ -16,9 +16,9 @@ import {
   updateInsuranceData,
 } from '@/features/insurance/insuranceSlice';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
-import Typography from '@/views/templates/system/Typografy/Typografy';
 import { InsuranceAuthFields } from '@/views/pages/Sale/components/Cart/components/InsuranceAuthFields/InsuranceAuthFields';
 import { ProductCardForCart } from '@/views/pages/Sale/components/Cart/components/ProductCardForCart/ProductCardForCart';
+import Typography from '@/views/templates/system/Typografy/Typografy';
 
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';

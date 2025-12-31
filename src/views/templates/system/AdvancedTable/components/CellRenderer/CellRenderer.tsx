@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-
 import DateUtils from '@/utils/date/dateUtils';
+import { formatPrice } from '@/utils/format';
 import { Badge } from '@/views/component/Badge/Badge';
 import { BadgeDate } from '@/views/component/Badge/BadgeDate';
 import { EnhancedDateDisplay } from '@/views/component/Badge/BadgeDateStatus';

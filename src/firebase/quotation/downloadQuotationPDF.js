@@ -1,7 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
 
-import { printPdfBase64 } from '@/utils/printPdf';
 import { functions } from '@/firebase/firebaseconfig';
+import { printPdfBase64 } from '@/utils/printPdf';
 // import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "@/pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
 
 export function sanitizeNumbers(obj) {

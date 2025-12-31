@@ -8,13 +8,13 @@ import { selectIsRow } from '@/features/setting/settingSlice';
 import useScroll from '@/hooks/useScroll';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { Carrusel } from '@/views/component/Carrusel/Carrusel';
+import { CategoriesGrouped } from '@/views/pages/Sale/components/CategoriesProductsGrouped/CategoriesGrouped';
+import { ShoppingItemsCounter } from '@/views/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
 import { CenteredText } from '@/views/templates/system/CentredText';
 import { Grid } from '@/views/templates/system/Grid/Grid';
 import Loader from '@/views/templates/system/loader/Loader';
 import { CustomProduct } from '@/views/templates/system/Product/CustomProduct';
 import { Product } from '@/views/templates/system/Product/Product/Product';
-import { CategoriesGrouped } from '@/views/pages/Sale/components/CategoriesProductsGrouped/CategoriesGrouped';
-import { ShoppingItemsCounter } from '@/views/pages/Sale/components/ShoppingItemsCounter/ShoppingItemsCounter';
 
 export const ProductControl = ({
   products,

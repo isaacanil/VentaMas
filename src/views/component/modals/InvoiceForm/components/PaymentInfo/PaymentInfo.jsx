@@ -11,13 +11,13 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import {
   changeValueInvoiceForm,
   selectInvoice,
 } from '@/features/invoice/invoiceFormSlice';
+import { formatPrice } from '@/utils/format';
 
 
 const PAYMENT_METHOD_META = {

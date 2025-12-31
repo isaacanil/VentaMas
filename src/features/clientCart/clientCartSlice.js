@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+import { fetchInsuranceAuthByClientId } from '@/features/insurance/insuranceAuthSlice';
 import { fbAddClient } from '@/firebase/client/fbAddClient';
 import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
 import { compareObjectsByJSON } from '@/utils/object/compareObjects';
-import { fetchInsuranceAuthByClientId } from '@/features/insurance/insuranceAuthSlice';
 
 import { CLIENT_MODE_BAR } from './clientMode';
 

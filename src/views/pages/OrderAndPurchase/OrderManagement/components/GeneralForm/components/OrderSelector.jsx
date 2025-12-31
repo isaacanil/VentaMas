@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { icons } from '@/constants/icons/icons';
 import { getOrderData } from '@/features/purchase/addPurchaseSlice';
 import DateUtils from '@/utils/date/dateUtils';
+import { formatPrice } from '@/utils/format';
 import { normalizeText } from '@/utils/text';
 
 

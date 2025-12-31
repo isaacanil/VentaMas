@@ -1,8 +1,8 @@
 import { lazy } from 'react';
 
-import { ErrorBoundary } from '@/views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
 import { accountReceivableInfoLoader } from '@/router/routes/loaders/accountReceivableLoaders'; // Import loader
 import ROUTES_NAME from '@/router/routes/routesName';
+import { ErrorBoundary } from '@/views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
 
 import type { AppRoute } from '@/router/routes/routes';
 

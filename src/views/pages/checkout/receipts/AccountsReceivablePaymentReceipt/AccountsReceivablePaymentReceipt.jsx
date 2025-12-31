@@ -3,12 +3,12 @@ import styled from 'styled-components';
 
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
+import { Line } from '@/views/pages/checkout/Receipt';
+import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '@/views/pages/checkout/Style';
 
 import { Header } from '../../components/Header/Header';
 import { ReceiptList } from '../../components/ReceiptList/ReceiptList';
 import { Row } from '../../components/Table/Row';
-import { Line } from '@/views/pages/checkout/Receipt';
-import { Container, HiddenPrintWrapper, InfoItem, Subtitle } from '@/views/pages/checkout/Style';
 
 import { GeneralBalance } from './components/GeneralBalance';
 import { PaymentArea } from './components/PaymentArea';

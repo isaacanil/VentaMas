@@ -3,9 +3,9 @@ import { GroupedVirtuoso, Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import Loader from '@/views/component/Loader/Loader';
-import { CenteredText } from '@/views/templates/system/CentredText';
 import { Row } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 import { CellRenderer } from '@/views/templates/system/AdvancedTable/components/CellRenderer/CellRenderer';
+import { CenteredText } from '@/views/templates/system/CentredText';
 
 const Body = styled.div`
   position: relative;
@@ -100,7 +100,7 @@ RowItem.displayName = 'RowItem';
 
 export const VirtualTableBody = ({
   loading = false,
-  currentData, // En modo virtual, esto debería ser la lista COMPLETA de datos
+  currentData, // En modo virtual puede ser la lista completa o una página.
   columnOrder,
   onRowClick,
   emptyText,

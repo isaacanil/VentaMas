@@ -2,11 +2,11 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format'
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { SelectInvoiceComment } from '@/features/cart/cartSlice';
 import { selectInsuranceData } from '@/features/insurance/insuranceSlice';
+import { formatPrice } from '@/utils/format'
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 import { Header } from './components/Header/Header';

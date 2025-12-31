@@ -2,9 +2,9 @@ import { Table, Input, Button } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
+import { icons } from '@/constants/icons/icons';
 import { formatPrice } from '@/utils/format';
 
-import { icons } from '@/constants/icons/icons';
 
 export const ProductListSelected = ({
   productsSelected = [],

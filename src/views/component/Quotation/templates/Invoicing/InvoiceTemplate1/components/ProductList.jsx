@@ -2,7 +2,6 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 import { separator } from '@/utils/number/number';
-
 import {
   getTax,
   getTotalPrice,

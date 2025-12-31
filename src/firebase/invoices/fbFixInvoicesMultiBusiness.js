@@ -1,10 +1,10 @@
 import { collection, getDocs, query, writeBatch } from 'firebase/firestore';
 
+import { db } from '@/firebase/firebaseconfig';
 import {
   convertDecimalToPercentage,
   getPriceWithoutTax,
 } from '@/utils/pricing';
-import { db } from '@/firebase/firebaseconfig';
 
 import { isString } from './fbFixInvoice';
 

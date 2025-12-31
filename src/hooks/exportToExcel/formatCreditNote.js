@@ -1,6 +1,5 @@
-import { formatTimestamp } from '@/utils/format';
-
 import { CREDIT_NOTE_STATUS_LABEL } from '@/constants/creditNoteStatus';
+import { formatTimestamp } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
 
 

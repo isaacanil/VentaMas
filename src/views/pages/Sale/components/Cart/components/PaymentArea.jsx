@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { monetarySymbols } from '@/constants/monetarySymbols';
 import {
@@ -12,6 +11,7 @@ import {
   setPaymentAmount,
   SelectPaymentValue,
 } from '@/features/cart/cartSlice';
+import { formatPrice } from '@/utils/format';
 import CustomInput from '@/views/templates/system/Inputs/CustomInput';
 import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
 

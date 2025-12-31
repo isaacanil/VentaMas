@@ -7,14 +7,14 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
-import { validateUser } from '@/utils/userValidation';
 import { db } from '@/firebase/firebaseconfig';
 import {
   getBatchById,
   updateBatchStatusForProductStock,
 } from '@/firebase/warehouse/batchService';
 import { getProductStockById } from '@/firebase/warehouse/productStockService';
+import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import { validateUser } from '@/utils/userValidation';
 
 // Función para dividir el array en subarrays de tamaño máximo size
 function chunkArray(array, size) {

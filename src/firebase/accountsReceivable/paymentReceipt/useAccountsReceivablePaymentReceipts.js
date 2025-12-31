@@ -3,8 +3,8 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { validateUser } from '@/utils/userValidation';
 import { db } from '@/firebase/firebaseconfig';
+import { validateUser } from '@/utils/userValidation';
 
 const fetchPaymentReceipts = async ({ queryKey }) => {
   const [_, time, user] = queryKey;

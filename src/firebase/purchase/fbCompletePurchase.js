@@ -9,7 +9,6 @@ import {
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
-import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { db } from '@/firebase/firebaseconfig';
 import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 import { getNextID } from '@/firebase/Tools/getNextID';
@@ -19,6 +18,7 @@ import {
   getDefaultWarehouse,
   getWarehouse,
 } from '@/firebase/warehouse/warehouseService';
+import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 
 import {
   safeTimestamp,

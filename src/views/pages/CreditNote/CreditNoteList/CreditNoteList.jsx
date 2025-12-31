@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
 import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
@@ -20,6 +19,7 @@ import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { useFbGetCreditNotes } from '@/firebase/creditNotes/useFbGetCreditNotes';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
 import ROUTES_NAME from '@/router/routes/routesName';
+import { formatPrice } from '@/utils/format';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 

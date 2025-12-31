@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
-
 import { getTotalPrice } from '@/utils/pricing';
 
 

@@ -3,9 +3,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
-import { ButtonGroup } from '@/views/templates/system/Button/Button';
 import { Receipt } from '@/views/pages/checkout/Receipt';
+import { ButtonGroup } from '@/views/templates/system/Button/Button';
 
 
 const antd = { Button: AntdButton, message };

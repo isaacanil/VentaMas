@@ -13,7 +13,6 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatNumber } from '@/utils/format';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -31,6 +30,7 @@ import {
 } from '@/firebase/warehouse/productStockService';
 import { useGetProductsWithBatch } from '@/hooks/products/useGetProductsWithBatch';
 import useListenBatches from '@/hooks/products/useListenBatch';
+import { formatNumber } from '@/utils/format';
 
 
 const { Option } = Select;

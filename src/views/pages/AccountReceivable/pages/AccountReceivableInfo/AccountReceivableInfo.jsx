@@ -4,7 +4,6 @@ import { useLoaderData } from 'react-router-dom'; // Import useLoaderData
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
-
 import { DetailSummary } from '@/views/component/DetailSummary/DetailSummary';
 import Typography from '@/views/templates/system/Typografy/Typografy';
 

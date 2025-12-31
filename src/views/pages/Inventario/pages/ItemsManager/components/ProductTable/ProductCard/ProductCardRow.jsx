@@ -2,7 +2,6 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
 
 import noImg from '@/assets/producto/noimg.png';
 import { icons } from '@/constants/icons/icons';
@@ -12,6 +11,7 @@ import { openModalUpdateProd } from '@/features/modals/modalSlice';
 import { ChangeProductData } from '@/features/updateProduct/updateProductSlice';
 import useImageFallback from '@/hooks/image/useImageFallback';
 import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
+import { formatPrice } from '@/utils/format';
 import {
   Button,
   ButtonGroup,

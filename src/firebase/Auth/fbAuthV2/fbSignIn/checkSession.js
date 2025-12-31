@@ -11,7 +11,6 @@ import {
   ACTIVITY_CHECK_INTERVAL,
 } from '@/constants/sessionConfig';
 import { login, logout } from '@/features/auth/userSlice';
-import { db, functions } from '@/firebase/firebaseconfig';
 import {
   buildSessionInfo,
   clearStoredSession,
@@ -20,6 +19,7 @@ import {
   isLogoutInProgress,
   storeSessionLocally,
 } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { db, functions } from '@/firebase/firebaseconfig';
 
 const EXPIRY_WARNING_WINDOW_MS = 24 * 60 * 60 * 1000; // 24h
 

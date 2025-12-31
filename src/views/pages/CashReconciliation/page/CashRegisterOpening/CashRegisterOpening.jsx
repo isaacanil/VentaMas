@@ -18,9 +18,9 @@ import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
 import { PeerReviewAuthorization } from '@/views/component/modals/PeerReviewAuthorization/PeerReviewAuthorization';
 import { PinAuthorizationModal } from '@/views/component/modals/PinAuthorizationModal/PinAuthorizationModal';
-import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
 import { Comments } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
 import { DateSection } from '@/views/pages/CashReconciliation/page/CashRegisterClosure/components/Header/DateSection';
+import { CashDenominationCalculator } from '@/views/pages/CashReconciliation/resource/CashDenominationCalculator/CashDenominationCalculator';
 
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Headers/Header';

@@ -9,9 +9,9 @@ import {
   selectProduct,
   SelectProductSelected,
 } from '@/features/productOutflow/productOutflow';
+import { ProductFilter } from '@/views/component/ProductFilter/ProductFilter';
 import { Button } from '@/views/templates/system/Button/Button';
 import { InputV4 } from '@/views/templates/system/Inputs/GeneralInput/InputV4';
-import { ProductFilter } from '@/views/component/ProductFilter/ProductFilter';
 
 import { useTableHeaderColumns } from './tableConfig/tableHeaderConfig';
 

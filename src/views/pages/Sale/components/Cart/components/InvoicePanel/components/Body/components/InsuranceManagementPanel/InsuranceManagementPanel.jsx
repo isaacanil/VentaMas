@@ -1,12 +1,10 @@
 import { InputNumber, Select, Form, Input } from 'antd';
-import DatePicker from '@/components/DatePicker';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { formatPrice } from '@/utils/format';
-
+import DatePicker from '@/components/DatePicker';
 import { SelectCartData } from '@/features/cart/cartSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import {
@@ -16,6 +14,7 @@ import {
 import { calculateAmountPerInstallment } from '@/utils/accountsReceivable/accountsReceivable';
 import { getMaxInstallments } from '@/utils/accountsReceivable/getMaxInstallments';
 import DateUtils from '@/utils/date/dateUtils';
+import { formatPrice } from '@/utils/format';
 import { setNumPrecision } from '@/utils/pricing';
 import usePaymentDates from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/usePaymentDates';
 

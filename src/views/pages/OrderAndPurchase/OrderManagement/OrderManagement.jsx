@@ -16,8 +16,8 @@ import { useListenOrder } from '@/hooks/useOrders';
 import ROUTES_PATH from '@/router/routes/routesName';
 import { getLocalURL } from '@/utils/files';
 import Loader from '@/views/component/Loader/Loader';
-import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import { getBackOrderAssociationId } from '@/views/pages/OrderAndPurchase/PurchaseManagement/purchaseManagementUtils';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import GeneralForm from './components/GeneralForm/GeneralForm';
 import { defaultsMap, sanitizeData } from './orderLogic';

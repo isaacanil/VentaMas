@@ -11,8 +11,8 @@ import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
-import { settingDataTaxTable } from '@/views/pages/setting/subPage/TaxReceipts/taxConfigTable';
 import TaxReceiptForm from '@/views/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm';
+import { settingDataTaxTable } from '@/views/pages/setting/subPage/TaxReceipts/taxConfigTable';
 
 export const TableTaxReceipt = ({ array, setData }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);

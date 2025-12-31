@@ -7,8 +7,8 @@ import {
   selectNcfType,
   selectTaxReceiptType,
 } from '@/features/taxReceipt/taxReceiptSlice';
-import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 import { db } from '@/firebase/firebaseconfig';
+import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
 
 // NOTE: This function uses React hooks; keep the `use*` prefix so tools like
 // React Compiler and hook linting can reliably treat it as a hook.
