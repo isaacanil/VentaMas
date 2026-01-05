@@ -38,12 +38,6 @@ export const toolbarConfigs: ToolbarRegistryEntry[] = [
     exportName: 'InventoryMenuToolbar',
   }),
   registerToolbar({
-    id: 'inventory-categories-toolbar',
-    routes: INVENTORY_TERM.CATEGORIES,
-    importFn: () => import('../Page/ProductCategoriesToolbar'),
-    exportName: 'ProductCategoriesToolbar',
-  }),
-  registerToolbar({
     id: 'inventory-warehouses-toolbar',
     routes: { path: INVENTORY_TERM.WAREHOUSES, end: false },
     importFn: () => import('../Page/WarehouseToolbar'),

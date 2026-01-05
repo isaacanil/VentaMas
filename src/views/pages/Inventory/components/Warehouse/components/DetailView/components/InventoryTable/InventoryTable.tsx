@@ -1,4 +1,4 @@
-﻿import {
+import {
   DeleteOutlined,
   MoreOutlined,
   SwapOutlined,
@@ -13,9 +13,9 @@ import { useNavigate } from 'react-router-dom';
 
 
 import { selectUser } from '@/features/auth/userSlice.js';
-import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice.js';
+import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
 import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus.js';
-import { getBatchById } from '@/firebase/warehouse/batchService.js';
+import { getBatchById } from '@/firebase/warehouse/batchService';
 import BatchViewModal from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal.jsx';
 import { ProductMovementModal } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal.jsx';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
@@ -34,7 +34,7 @@ import {
   TitleSection,
   ToolbarButton,
 } from './styles';
-import { normalizeToDateTime, toMillis } from './utils/dateUtils';
+import { normalizeToDateTime, toMillis } from '@/utils/inventory/dates';
 import {
   NO_BATCH_VALUE,
   getProductFilterKey,

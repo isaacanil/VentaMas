@@ -52,10 +52,6 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/views/pages/Inventory/components/Warehouse/Warehouse'),
   [INVENTORY_TERM.INVENTORY_MOVEMENTS]: () =>
     import('@/views/pages/Inventory/components/AllMovements/AllMovements'),
-  [INVENTORY_TERM.CATEGORIES]: () =>
-    import('@/views/pages/Category/CategoryAdmin'),
-  [INVENTORY_TERM.PRODUCT_IMAGES_MANAGER]: () =>
-    import('@/views/pages/Inventario/pages/MultimediaManager/MultimediaManager'),
   [INVENTORY_TERM.PRODUCT_STUDIO]: () =>
     import('@/views/pages/DevTools/ProductStudio/ProductStudio'),
 
@@ -122,4 +118,3 @@ export const routePreloaders: Record<string, RoutePreloader> = {
   [DEV_VIEW_TERM.PRUEBA]: () =>
     import('@/views/pages/DevTools/TestPlayground'),
 };
-

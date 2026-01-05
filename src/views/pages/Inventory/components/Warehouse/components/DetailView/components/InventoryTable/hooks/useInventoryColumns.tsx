@@ -1,4 +1,8 @@
-import { Tooltip } from 'antd';
+import {
+  InfoCircleOutlined,
+  EllipsisOutlined,
+} from '@ant-design/icons';
+import { Button, Dropdown, Tooltip } from 'antd';
 import React, { useMemo } from 'react';
 
 import {
@@ -26,6 +30,13 @@ export const useInventoryColumns = ({
         Header: 'Producto',
         accessor: 'productName',
         minWidth: '200px',
+        cell: ({ value }: { value: string }) => (
+          <Tooltip title={value} placement="topLeft">
+            <ProductNameWrapper>
+              <ProductNameCell>{value}</ProductNameCell>
+            </ProductNameWrapper>
+          </Tooltip>
+        ),
       },
       {
         Header: 'Cantidad Existente',

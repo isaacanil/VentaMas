@@ -85,6 +85,7 @@ export const getColumns = (isPharmacy) => {
       maxWidth: '1fr',
       minWidth: '120px',
       fixed: 'right', // Fijar la última columna a la derecha
+      clickable: false,
       cell: ({ value }) => <AccountActionsCell value={value} />,
     },
   ];

@@ -31,6 +31,8 @@ import {
 } from '@/features/productStock/productStockSimpleSlice';
 import { useListenProductsStock } from '@/firebase/warehouse/productStockService';
 import { useLocationNames } from '@/hooks/useLocationNames';
+import { toExpirationTimestamp } from '@/utils/inventory/dates';
+import { normalizeLocationId } from '@/utils/inventory/locations';
 
 const numberFormatter = new Intl.NumberFormat('es-DO');
 
@@ -261,21 +263,6 @@ export function ProductBatchModal() {
   today.setHours(0, 0, 0, 0);
   const todayTimestamp = today.getTime();
 
-  const normalizeExpirationDate = (value) => {
-    if (!value) return null;
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') {
-      const parsed = Date.parse(value);
-      return Number.isNaN(parsed) ? null : parsed;
-    }
-    if (value?.seconds !== undefined) {
-      return value.seconds * 1000;
-    }
-    if (typeof value?.toDate === 'function') {
-      return value.toDate().getTime();
-    }
-    return null;
-  };
 
   const [hideExpired, setHideExpired] = useState(false);
 
@@ -299,7 +286,7 @@ export function ProductBatchModal() {
     const term = searchText.trim().toLowerCase();
     const source = hideExpired
       ? sanitizedProductStocks.filter((stock) => {
-        const exp = normalizeExpirationDate(stock?.expirationDate);
+        const exp = toExpirationTimestamp(stock?.expirationDate);
         return exp === null || exp >= todayTimestamp;
       })
       : sanitizedProductStocks;
@@ -311,10 +298,6 @@ export function ProductBatchModal() {
     );
   }, [sanitizedProductStocks, searchText, hideExpired, todayTimestamp]);
 
-  const normalizeLocationId = (value) => {
-    if (typeof value !== 'string') return '';
-    return value.trim();
-  };
 
   const inventorySummary = useMemo(() => {
     const locationSet = new Set();
@@ -421,7 +404,7 @@ export function ProductBatchModal() {
       batchId: chosenStock.batchId ?? null,
       batchNumber: chosenStock.batchNumberId ?? null,
       quantity: chosenStock.quantity ?? null,
-      expirationDate: normalizeExpirationDate(chosenStock.expirationDate),
+      expirationDate: toExpirationTimestamp(chosenStock.expirationDate),
       locationId: chosenStock.location ?? null,
       locationName: chosenStock.location
         ? formatLocation(chosenStock.location)
@@ -554,7 +537,7 @@ export function ProductBatchModal() {
                           selectedBatch,
                           todayTimestamp,
                           handleBatchToggle,
-                          normalizeExpirationDate,
+                          toExpirationTimestamp,
                           formatLocation,
                           normalizeLocationId,
                           isStrictProduct,
@@ -580,7 +563,7 @@ export function ProductBatchModal() {
                           selectedBatch,
                           todayTimestamp,
                           handleBatchToggle,
-                          normalizeExpirationDate,
+                          toExpirationTimestamp,
                           formatLocation,
                           normalizeLocationId,
                           isStrictProduct,
@@ -606,7 +589,7 @@ export function ProductBatchModal() {
                     selectedBatch,
                     todayTimestamp,
                     handleBatchToggle,
-                    normalizeExpirationDate,
+                    toExpirationTimestamp,
                     formatLocation,
                     normalizeLocationId,
                     isStrictProduct,
@@ -635,12 +618,12 @@ function renderBatchCard({
   selectedBatch,
   todayTimestamp,
   handleBatchToggle,
-  normalizeExpirationDate,
+  toExpirationTimestamp,
   formatLocation,
   normalizeLocationId,
   isStrictProduct,
 }) {
-  const expirationTimestamp = normalizeExpirationDate(stock.expirationDate);
+  const expirationTimestamp = toExpirationTimestamp(stock.expirationDate);
   const isExpired =
     expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
   const formattedExpiration = expirationTimestamp

@@ -16,8 +16,8 @@ import {
   Col,
   Progress,
 } from 'antd';
-import { DateTime } from 'luxon';
 import styled from 'styled-components';
+import { formatDateTime } from '@/utils/inventory/dates';
 
 const { Title, Text } = Typography;
 
@@ -71,25 +71,8 @@ const QuantityCard = styled(Card)`
 `;
 
 const BatchViewModal = ({ visible, onClose, batchData }) => {
-  const formatDate = (dateObj) => {
-    if (!dateObj) return '-';
-    if (typeof dateObj === 'object' && dateObj.seconds) {
-      return DateTime.fromSeconds(dateObj.seconds).toFormat('dd/MM/yyyy HH:mm');
-    }
-    if (dateObj instanceof Date) {
-      return DateTime.fromJSDate(dateObj).toFormat('dd/MM/yyyy HH:mm');
-    }
-    if (typeof dateObj === 'number') {
-      return DateTime.fromMillis(dateObj).toFormat('dd/MM/yyyy HH:mm');
-    }
-    if (typeof dateObj === 'string') {
-      const parsed = DateTime.fromISO(dateObj);
-      if (parsed.isValid) return parsed.toFormat('dd/MM/yyyy HH:mm');
-    }
-
-    const fallback = DateTime.fromJSDate(new Date(dateObj));
-    return fallback.isValid ? fallback.toFormat('dd/MM/yyyy HH:mm') : '-';
-  };
+  const formatDate = (dateObj) =>
+    formatDateTime(dateObj, 'dd/MM/yyyy HH:mm') || '-';
 
   const getStatusColor = (status) => {
     switch (status) {

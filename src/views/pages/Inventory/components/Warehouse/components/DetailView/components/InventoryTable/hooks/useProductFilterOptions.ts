@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { toMillis } from '../utils/dateUtils';
+import { toMillis } from '@/utils/inventory/dates';
 import {
   NO_BATCH_VALUE,
   getProductFilterKey,

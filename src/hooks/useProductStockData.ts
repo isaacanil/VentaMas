@@ -1,0 +1,122 @@
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectDeleteModalState } from '@/features/productStock/deleteProductStockSlice';
+import { getBatchById } from '@/firebase/warehouse/batchService';
+import {
+  getProductStockByBatch,
+  getProductStockById,
+} from '@/firebase/warehouse/productStockService';
+import { selectUser } from '@/features/auth/userSlice';
+
+type StockData = {
+  quantity: number;
+  locations: number;
+  expirationDate?: unknown;
+  batchNumber?: unknown;
+  numberId?: unknown;
+  batchId?: string | null;
+  productStockId?: string | null;
+  originalData: Record<string, unknown>;
+};
+
+type DeleteModalState = ReturnType<typeof selectDeleteModalState>;
+
+type ActionType = 'batch' | 'productStock';
+
+export const useProductStockData = () => {
+  const [stockData, setStockData] = useState<StockData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<unknown | null>(null);
+  const { productStockId, batchId, actionType, isOpen } = useSelector(
+    selectDeleteModalState,
+  ) as DeleteModalState;
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const loadData = async () => {
+      if (!isOpen) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        if (actionType === 'batch' && batchId) {
+          const [batchInfo, batchStocks] = await Promise.all([
+            getBatchById(user, batchId, controller.signal),
+            getProductStockByBatch(user, { batchId }, controller.signal),
+          ]);
+
+          if (isMounted) {
+            setStockData({
+              quantity: batchStocks.reduce(
+                (acc: number, stock: { quantity?: number }) =>
+                  acc + (stock.quantity || 0),
+                0,
+              ),
+              locations: batchStocks.length,
+              expirationDate: batchInfo?.expirationDate,
+              batchNumber: batchInfo?.batchNumber,
+              numberId: batchInfo?.numberId,
+              batchId,
+              originalData: {
+                batch: batchInfo,
+                items: batchStocks,
+              },
+            });
+          }
+        } else if (actionType === 'productStock' && productStockId) {
+          const stock = await getProductStockById(
+            user,
+            productStockId,
+            controller.signal,
+          );
+          const batchInfo = stock?.batchId
+            ? await getBatchById(user, stock.batchId, controller.signal)
+            : null;
+
+          if (isMounted) {
+            setStockData({
+              quantity: stock?.quantity || 0,
+              locations: 1,
+              expirationDate: batchInfo?.expirationDate,
+              batchNumber: batchInfo?.batchNumber,
+              numberId: stock?.batchNumberId,
+              productStockId,
+              originalData: {
+                stock,
+                batch: batchInfo,
+              },
+            });
+          }
+        }
+      } catch (error) {
+        if (isMounted && error?.name !== 'AbortError') {
+          console.error('Error loading stock data:', error);
+          setError(error);
+          setStockData(null);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    if (
+      isOpen &&
+      ((productStockId && actionType === 'productStock') ||
+        (batchId && actionType === 'batch'))
+    ) {
+      loadData();
+    }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [productStockId, batchId, actionType, user, isOpen]);
+
+  return { data: stockData, isLoading, error };
+};

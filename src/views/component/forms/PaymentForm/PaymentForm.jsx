@@ -302,10 +302,12 @@ export const PaymentForm = () => {
       </Form>
 
       <div style={{ display: 'none' }}>
-        <AccountsReceivablePaymentReceipt
-          data={receipt}
-          ref={componentToPrintRef}
-        />
+        {receipt && (
+          <AccountsReceivablePaymentReceipt
+            data={receipt}
+            ref={componentToPrintRef}
+          />
+        )}
       </div>
     </Modal>
   );

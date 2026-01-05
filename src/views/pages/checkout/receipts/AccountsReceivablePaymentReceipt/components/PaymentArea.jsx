@@ -8,8 +8,11 @@ import { Col } from '../../../components/Table/Col';
 import { Row } from '../../../components/Table/Row';
 
 
-function calculateTotal(paymentMethods) {
-  return paymentMethods?.reduce((total, payment) => total + payment.value, 0);
+function calculateTotal(paymentMethods = []) {
+  return paymentMethods.reduce(
+    (total, payment) => total + (payment?.value ?? 0),
+    0
+  );
 }
 
 export const PaymentArea = ({ data }) => {
@@ -18,6 +21,7 @@ export const PaymentArea = ({ data }) => {
     card: 'Tarjeta',
     transfer: 'Trasferencia',
   };
+  const changeValue = data?.change ?? 0;
   const items = [
     ...(data?.paymentMethod
       ?.filter((item) => item?.status === true)
@@ -34,8 +38,8 @@ export const PaymentArea = ({ data }) => {
       spacingEnd: true,
     },
     {
-      label: data?.change >= 0 ? 'CAMBIO' : 'FALTANTE',
-      value2: formatPrice(data.change),
+      label: changeValue >= 0 ? 'CAMBIO' : 'FALTANTE',
+      value2: formatPrice(changeValue),
       condition: true,
     },
   ];

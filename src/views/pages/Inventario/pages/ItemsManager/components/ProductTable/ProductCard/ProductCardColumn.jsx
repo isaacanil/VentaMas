@@ -56,9 +56,6 @@ export const ProductCardColumn = ({
           <span>stock: {product.stock}</span>
         </Item>
 
-        {/* <Item>
-                    <span>Contenido Neto: {product.netContent}</span>
-                </Item> */}
         <Item>
           <span>Total: {formatPrice(product.price.unit)}</span>
         </Item>
@@ -109,6 +106,11 @@ const ProductName = styled.div`
   h3 {
     margin: 0;
     font-size: 0.9em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;
 const Item = styled.div`

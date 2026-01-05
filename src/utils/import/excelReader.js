@@ -1,6 +1,29 @@
 // excelReader.js
+import { normalizeHeaderKey } from './normalizeHeaderKey';
 
-export const readExcelFile = async (file) => {
+const resolveCellValue = (cell) => {
+  if (cell === null || cell === undefined) return cell;
+  if (typeof cell !== 'object') return cell;
+  if ('text' in cell) return cell.text;
+  if ('result' in cell) return cell.result;
+  if ('richText' in cell) {
+    return cell.richText.map((item) => item.text).join('');
+  }
+  return cell;
+};
+
+const trimCellValue = (value) =>
+  typeof value === 'string' ? value.trim() : value;
+
+const isEmptyCellValue = (value) =>
+  value === null ||
+  value === undefined ||
+  (typeof value === 'string' && value.trim() === '');
+
+const getRowValues = (row) =>
+  row.values.slice(1).map(resolveCellValue).map(trimCellValue);
+
+export const readExcelFile = async (file, options = {}) => {
   try {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
@@ -50,20 +73,60 @@ export const readExcelFile = async (file) => {
       );
     }
 
+    const { expectedHeaders = [], minHeaderMatches = 2 } = options;
+    const normalizedExpectedHeaders = expectedHeaders
+      .map(normalizeHeaderKey)
+      .filter(Boolean);
+    const expectedHeaderSet = new Set(normalizedExpectedHeaders);
+
     let headers = null;
-    const rows = [];
+    let headerRowNumber = null;
+    let firstNonEmptyRowValues = null;
+    let firstNonEmptyRowNumber = null;
 
-    worksheet.eachRow({ includeEmpty: false }, (row) => {
-      // row.values[0] es undefined; las celdas arrancan en el índice 1
-      const rowValues = row.values
-        .slice(1)
-        .map((cell) => (cell && typeof cell === 'object' && 'text' in cell ? cell.text : cell));
+    const getHeaderMatchCount = (rowValues) => {
+      if (!expectedHeaderSet.size) return 0;
+      return rowValues
+        .map(normalizeHeaderKey)
+        .filter(Boolean)
+        .reduce(
+          (count, value) => (expectedHeaderSet.has(value) ? count + 1 : count),
+          0,
+        );
+    };
 
-      if (!headers) {
-        headers = rowValues;
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      const rowValues = getRowValues(row);
+      const hasValues = rowValues.some((value) => !isEmptyCellValue(value));
+
+      if (hasValues && !firstNonEmptyRowValues) {
+        firstNonEmptyRowValues = rowValues;
+        firstNonEmptyRowNumber = rowNumber;
+      }
+
+      if (headerRowNumber !== null || !expectedHeaderSet.size) {
         return;
       }
 
+      const matchCount = getHeaderMatchCount(rowValues);
+      if (matchCount >= minHeaderMatches) {
+        headers = rowValues;
+        headerRowNumber = rowNumber;
+      }
+    });
+
+    if (!headers && firstNonEmptyRowValues) {
+      headers = firstNonEmptyRowValues;
+      headerRowNumber = firstNonEmptyRowNumber;
+    }
+
+    const rows = [];
+
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (!headers || headers.length === 0) return;
+      if (headerRowNumber !== null && rowNumber <= headerRowNumber) return;
+
+      const rowValues = getRowValues(row);
       const rowObject = {};
       headers.forEach((key, index) => {
         if (key === undefined || key === null || key === '') return; // ignora encabezados vacíos

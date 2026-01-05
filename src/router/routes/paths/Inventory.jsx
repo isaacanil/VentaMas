@@ -5,11 +5,6 @@ import ROUTES_NAME from '@/router/routes/routesName';
 const ProductView = lazy(() =>
   import('@/views/component/modals/Product/ProductView'),
 );
-const CategoryAdmin = lazy(() =>
-  import('@/views/pages/Category/CategoryAdmin').then((module) => ({
-    default: module.CategoryAdmin,
-  })),
-);
 const ProductStudio = lazy(() =>
   import('@/views/pages/DevTools/ProductStudio/ProductStudio'),
 );
@@ -17,11 +12,6 @@ const Inventory = lazy(() =>
   import('@/views/pages/Inventario/pages/ItemsManager/Inventario').then(
     (module) => ({ default: module.Inventory }),
   ),
-);
-const MultimediaManager = lazy(() =>
-  import(
-    '@/views/pages/Inventario/pages/MultimediaManager/MultimediaManager'
-  ).then((module) => ({ default: module.MultimediaManager })),
 );
 const ProductOutflow = lazy(() =>
   import(
@@ -62,7 +52,6 @@ const InventorySummary = lazy(() =>
 
 const {
   INVENTORY_ITEMS,
-  CATEGORIES,
   WAREHOUSE,
   SHELF,
   ROW,
@@ -73,7 +62,6 @@ const {
   INVENTORY_CONTROL,
   INVENTORY_SUMMARY,
   INVENTORY_CONTROL_SESSION,
-  PRODUCT_IMAGES_MANAGER,
   PRODUCT_OUTFLOW,
   PRODUCT_STUDIO,
   CREATE_PRODUCT,
@@ -106,14 +94,6 @@ const Routes = [
   {
     path: PRODUCT,
     element: <ProductView />,
-  },
-  {
-    path: CATEGORIES,
-    element: <CategoryAdmin />,
-  },
-  {
-    path: PRODUCT_IMAGES_MANAGER,
-    element: <MultimediaManager />,
   },
   {
     path: WAREHOUSES,

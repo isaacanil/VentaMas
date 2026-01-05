@@ -14,9 +14,11 @@ export const importProductData = async (file, language = 'en') => {
   }
   try {
     // Pasar el archivo directamente a readExcelFile
-    const data = await readExcelFile(file);
-
     const headerMapping = productHeaderMappings;
+    const data = await readExcelFile(file, {
+      expectedHeaders: Object.keys(headerMapping?.[language] ?? {}),
+      minHeaderMatches: 2,
+    });
 
     const dataMapped = mapData({
       data,

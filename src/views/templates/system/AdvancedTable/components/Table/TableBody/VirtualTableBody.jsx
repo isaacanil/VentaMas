@@ -1,4 +1,4 @@
-import { Fragment, useState, memo } from 'react';
+import { Fragment, memo, useCallback, useMemo, useState } from 'react';
 import { GroupedVirtuoso, Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
@@ -32,33 +32,25 @@ const RowItem = memo(
   ({
     row,
     rowIndex,
+    rowId,
     activeColumns,
-    isWideScreen: _isWideScreen,
-    isWideLayout: _isWideLayout,
     rowBorder,
     rowSize,
     handleCellClick,
-    expanded,
+    isExpanded,
     toggleRow,
     expandedRowRender,
     rowExpandable,
-    getRowId,
   }) => {
-    const rowId = getRowId
-      ? getRowId(row, rowIndex)
-      : row?.id ?? row?.key ?? rowIndex;
-
     const canExpand =
       !!expandedRowRender && (rowExpandable ? rowExpandable(row) : true);
-
-    const isExpanded = !!expanded[rowId];
 
     const rowWithExpanderData = canExpand
       ? {
         ...row,
         _expander: {
           expanded: isExpanded,
-          toggle: () => toggleRow(row, rowId),
+          toggle: () => toggleRow(rowId),
         },
       }
       : row;
@@ -104,8 +96,6 @@ export const VirtualTableBody = ({
   columnOrder,
   onRowClick,
   emptyText,
-  isWideScreen,
-  isWideLayout,
   expandedRowRender,
   rowExpandable,
   getRowId,
@@ -117,18 +107,30 @@ export const VirtualTableBody = ({
   groupHeaders = [],
   flatGroupedData = [],
 }) => {
-  const activeColumns = columnOrder.filter((col) => col.status === 'active');
+  const activeColumns = useMemo(
+    () => columnOrder.filter((col) => col.status === 'active'),
+    [columnOrder],
+  );
 
-  const handleCellClick = (e, col, row) => {
-    if (onRowClick && col?.clickable !== false) onRowClick(row);
-  };
+  const handleCellClick = useCallback(
+    (e, col, row) => {
+      if (onRowClick && col?.clickable !== false) onRowClick(row);
+    },
+    [onRowClick],
+  );
 
   // Estado local de filas expandidas
   const [expanded, setExpanded] = useState({});
 
-  const toggleRow = (row, id) => {
+  const toggleRow = useCallback((id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  }, []);
+
+  const resolveRowId = useCallback(
+    (row, rowIndex) =>
+      getRowId ? getRowId(row, rowIndex) : row?.id ?? row?.key ?? rowIndex,
+    [getRowId],
+  );
 
   const containerStyle =
     typeof rowBorder === 'string'
@@ -164,21 +166,21 @@ export const VirtualTableBody = ({
               )}
               itemContent={(index) => {
                 const row = flatGroupedData[index];
+                const rowId = resolveRowId(row, index);
+                const isExpanded = !!expanded[rowId];
                 return (
                   <RowItem
                     row={row}
                     rowIndex={index}
+                    rowId={rowId}
                     activeColumns={activeColumns}
-                    isWideScreen={isWideScreen}
-                    isWideLayout={isWideLayout}
                     rowBorder={rowBorder}
                     rowSize={rowSize}
                     handleCellClick={handleCellClick}
-                    expanded={expanded}
+                    isExpanded={isExpanded}
                     toggleRow={toggleRow}
                     expandedRowRender={expandedRowRender}
                     rowExpandable={rowExpandable}
-                    getRowId={getRowId}
                   />
                 );
               }}
@@ -188,23 +190,25 @@ export const VirtualTableBody = ({
               data={currentData}
               totalCount={currentData.length}
               style={{ height: '100%' }}
-              itemContent={(index, row) => (
-                <RowItem
-                  row={row}
-                  rowIndex={index}
-                  activeColumns={activeColumns}
-                  isWideScreen={isWideScreen}
-                  isWideLayout={isWideLayout}
-                  rowBorder={rowBorder}
-                  rowSize={rowSize}
-                  handleCellClick={handleCellClick}
-                  expanded={expanded}
-                  toggleRow={toggleRow}
-                  expandedRowRender={expandedRowRender}
-                  rowExpandable={rowExpandable}
-                  getRowId={getRowId}
-                />
-              )}
+              itemContent={(index, row) => {
+                const rowId = resolveRowId(row, index);
+                const isExpanded = !!expanded[rowId];
+                return (
+                  <RowItem
+                    row={row}
+                    rowIndex={index}
+                    rowId={rowId}
+                    activeColumns={activeColumns}
+                    rowBorder={rowBorder}
+                    rowSize={rowSize}
+                    handleCellClick={handleCellClick}
+                    isExpanded={isExpanded}
+                    toggleRow={toggleRow}
+                    expandedRowRender={expandedRowRender}
+                    rowExpandable={rowExpandable}
+                  />
+                );
+              }}
             />
           )}
         </Container>

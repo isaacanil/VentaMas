@@ -71,7 +71,6 @@ const INVENTORY_TERM = {
   INVENTORY_SUMMARY: '/inventory/summary',
   INVENTORY_CONTROL: '/inventory/control',
   INVENTORY_CONTROL_SESSION: '/inventory/control/:sessionId',
-  CATEGORIES: '/inventory/categories',
   WAREHOUSES: WAREHOUSES_PATH, // Listado de almacenes
   WAREHOUSE: WAREHOUSE_BASE_PATH, // Detalle de un almacén
   SHELF: SHELVE_BASE_PATH, // Detalle de un estante
@@ -82,7 +81,6 @@ const INVENTORY_TERM = {
   CREATE_WAREHOUSE: `${INVENTORY_BASE_PATH}/warehouses/create`, // Crear un nuevo almacén
   EDIT_WAREHOUSE: `${INVENTORY_BASE_PATH}/warehouses/edit/:id`,
   INVENTORY_SERVICES: '/inventory/services',
-  PRODUCT_IMAGES_MANAGER: '/inventory/product-images-manager',
   PRODUCT_STUDIO: '/inventory/product-studio',
   PRODUCT_OUTFLOW: '/inventory/product_outflow',
   SERVICE_OUTFLOW: '/inventory/service_outflow',

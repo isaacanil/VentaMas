@@ -136,12 +136,19 @@ const Img = styled.img`
     }
   }}
 `;
+
 const ProductName = styled.span`
+  display: block;
+  width: 100%;
   padding: 0;
   margin: 0;
   font-weight: 500;
   color: var(--gray7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
+
 const Item = styled.div`
   ${(props) => {
     switch (props.position) {

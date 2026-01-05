@@ -35,7 +35,6 @@ export function useAppNavigation() {
         replacePathParams(ROUTES_NAME.INVENTORY_TERM.PRODUCT, productId),
       ),
     inventoryItems: () => navigate(ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS),
-    categories: () => navigate(ROUTES_NAME.INVENTORY_TERM.CATEGORIES),
     warehouses: () => navigate(ROUTES_NAME.INVENTORY_TERM.WAREHOUSES),
     warehouse: (warehouseId) =>
       navigate(

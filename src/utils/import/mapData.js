@@ -1,15 +1,42 @@
+import { normalizeHeaderKey } from './normalizeHeaderKey';
+
 // mapData.js
+const HEADER_ALIASES = {
+  es: {
+    codigo: 'codigo de barras',
+    'codigo de barra': 'codigo de barras',
+  },
+};
+
+const resolveNormalizedHeader = (value, language) => {
+  const normalized = normalizeHeaderKey(value);
+  if (!normalized) return '';
+  return HEADER_ALIASES[language]?.[normalized] ?? normalized;
+};
+
 export const mapData = ({ data, headerMapping, language = 'es' }) => {
   if (!headerMapping?.[language]) return [];
 
   const languageMapping = headerMapping[language];
+  const normalizedMapping = Object.entries(languageMapping).reduce(
+    (acc, [headerKey, mappedKey]) => {
+      const normalizedHeader = normalizeHeaderKey(headerKey);
+      if (normalizedHeader) {
+        acc[normalizedHeader] = mappedKey;
+      }
+      return acc;
+    },
+    {},
+  );
 
   return data.map((item) => {
     const mappedItem = {};
+    Object.entries(item).forEach(([headerKey, rawValue]) => {
+      const normalizedHeader = resolveNormalizedHeader(headerKey, language);
+      const mappedKey = normalizedMapping[normalizedHeader];
+      if (!mappedKey) return;
 
-    Object.entries(languageMapping).forEach(([headerKey, mappedKey]) => {
-      let value = item[headerKey];
-
+      let value = rawValue;
       // Solo aplica trim si el valor es una cadena
       if (typeof value === 'string') {
         value = value.trim();
