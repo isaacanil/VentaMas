@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import styled from 'styled-components';
 
 interface BalanceSummary {
@@ -13,11 +12,11 @@ interface PaymentSummaryProps {
   balance: BalanceSummary;
 }
 
-export const PaymentSummary: FC<PaymentSummaryProps> = ({
+export const PaymentSummary = ({
   formattedTotalPurchase,
   formattedTotalPayment,
   balance,
-}) => (
+}: PaymentSummaryProps) => (
   <Summary>
     <SummaryItem>
       <SummaryLabel>Total compra</SummaryLabel>

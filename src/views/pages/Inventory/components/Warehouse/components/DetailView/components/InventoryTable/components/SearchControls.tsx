@@ -68,6 +68,8 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
         format="DD/MM/YYYY"
         allowClear
         presets={dateRangePresets}
+        className=""
+        style={{}}
       />
     </Form.Item>
 

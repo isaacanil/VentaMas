@@ -18,7 +18,7 @@ type SessionBusiness = {
 
 interface InfoRowEntry {
   label: string;
-  value: string | number;
+  value: string;
 }
 
 interface SessionInfoModalProps {

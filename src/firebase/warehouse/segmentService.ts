@@ -20,7 +20,7 @@ import type { InventoryUser } from '@/utils/inventory/types';
 
 type SegmentRecord = Partial<Segment> & Record<string, unknown>;
 
-// Obtener referencia de la colección de segmentos de una fila de estante
+// Obtener referencia de la colección de segmentos de una fila de estantestante
 const getSegmentCollectionRef = (businessId) => {
   return collection(db, 'businesses', businessId, 'segments');
 };
@@ -71,13 +71,14 @@ const getAllSegments = async (user, _warehouseId, _shelfId, _rowShelfId) => {
   }
 };
 
-// Escuchar en tiempo real todos los segmentos de una fila de estante específica
+// Escuchar en tiempo real todos los segmentos de una fila de estante específicaa
 const listenAllSegments = (
   user,
   _warehouseId,
   _shelfId,
   _rowShelfId,
   callback,
+  onError?: (error: unknown) => void,
 ) => {
   if (
     user.businessID === undefined ||
@@ -111,6 +112,7 @@ const listenAllSegments = (
     },
     (error) => {
       console.error('Error al escuchar documentos en tiempo real: ', error);
+      if (onError) onError(error);
     },
   );
 };

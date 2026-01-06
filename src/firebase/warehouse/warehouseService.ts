@@ -70,7 +70,11 @@ export const getWarehouses = async (user) => {
 };
 
 // Escuchar todos los almacenes en tiempo real
-export const listenAllWarehouses = (user, callback) => {
+export const listenAllWarehouses = (
+  user,
+  callback,
+  onError?: (error: unknown) => void,
+) => {
   const warehouseCollectionRef = collection(
     db,
     'businesses',
@@ -86,8 +90,10 @@ export const listenAllWarehouses = (user, callback) => {
         .filter((data) => data.isDeleted !== true);
       callback(filteredData);
     },
-    (error) =>
-      console.error('Error al obtener documentos en tiempo real:', error),
+    (error) => {
+      console.error('Error al obtener documentos en tiempo real:', error);
+      if (onError) onError(error);
+    },
   );
 };
 

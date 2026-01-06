@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import { buildLocationPath } from '@/utils/inventory/locations';
 import type { InventoryUser } from '@/utils/inventory/types';
 
 // Función para obtener la referencia al documento de estructura
@@ -71,16 +72,28 @@ const updateStructureElement = async (
     let location = '';
     switch (type) {
       case 'warehouses':
-        location = elementId;
+        location = buildLocationPath({ warehouseId: elementId });
         break;
       case 'shelves':
-        location = `${data.warehouseId}/${elementId}`;
+        location = buildLocationPath({
+          warehouseId: data.warehouseId,
+          shelfId: elementId,
+        });
         break;
       case 'rows':
-        location = `${data.warehouseId}/${data.shelfId}/${elementId}`;
+        location = buildLocationPath({
+          warehouseId: data.warehouseId,
+          shelfId: data.shelfId,
+          rowShelfId: elementId,
+        });
         break;
       case 'segments':
-        location = `${data.warehouseId}/${data.shelfId}/${data.rowShelfId}/${elementId}`;
+        location = buildLocationPath({
+          warehouseId: data.warehouseId,
+          shelfId: data.shelfId,
+          rowShelfId: data.rowShelfId,
+          segmentId: elementId,
+        });
         break;
     }
 
@@ -122,7 +135,7 @@ export const createStructureFromExisting = async (
       warehouseElements[warehouse.id] = {
         id: warehouse.id,
         name: warehouse.name,
-        location: warehouse.id,
+        location: buildLocationPath({ warehouseId: warehouse.id }),
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
         isDeleted: false,
@@ -137,7 +150,10 @@ export const createStructureFromExisting = async (
       shelfElements[shelf.id] = {
         id: shelf.id,
         name: shelf.name,
-        location: `${shelf.warehouseId}/${shelf.id}`,
+        location: buildLocationPath({
+          warehouseId: shelf.warehouseId,
+          shelfId: shelf.id,
+        }),
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
         isDeleted: false,
@@ -152,7 +168,11 @@ export const createStructureFromExisting = async (
       rowElements[row.id] = {
         id: row.id,
         name: row.name,
-        location: `${row.warehouseId}/${row.shelfId}/${row.id}`,
+        location: buildLocationPath({
+          warehouseId: row.warehouseId,
+          shelfId: row.shelfId,
+          rowShelfId: row.id,
+        }),
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
         isDeleted: false,
@@ -167,7 +187,12 @@ export const createStructureFromExisting = async (
       segmentElements[segment.id] = {
         id: segment.id,
         name: segment.name,
-        location: `${segment.warehouseId}/${segment.shelfId}/${segment.rowShelfId}/${segment.id}`,
+        location: buildLocationPath({
+          warehouseId: segment.warehouseId,
+          shelfId: segment.shelfId,
+          rowShelfId: segment.rowShelfId,
+          segmentId: segment.id,
+        }),
         updatedAt: new Date().toISOString(),
         updatedBy: user.uid,
         isDeleted: false,

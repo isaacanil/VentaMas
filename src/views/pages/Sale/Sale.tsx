@@ -33,7 +33,7 @@ import {
   formatWeight,
 } from '@/utils/barcode.js';
 import { ClientSelector } from '@/views/component/contact/ClientControl/ClientSelector/ClientSelector.jsx';
-import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal.jsx';
+import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp.jsx';
 import { MenuComponents } from '@/views/templates/MenuComponents/MenuComponents.jsx';
 

@@ -3,7 +3,7 @@ import type { Firestore } from 'firebase/firestore';
 import { CLEAR_SENTINEL } from './constants';
 
 export type TimestampLike =
-  | { toDate?: () => Date; seconds?: number }
+  | { toDate?: () => Date; seconds?: number; toMillis?: () => number }
   | Date
   | string
   | number
@@ -125,6 +125,9 @@ export interface InventoryStockItem {
   status?: string | null;
   real?: number;
 }
+
+export type ProductStockRecord =
+  Partial<InventoryStockItem> & Record<string, unknown>;
 
 export interface InventorySession {
   id?: string;

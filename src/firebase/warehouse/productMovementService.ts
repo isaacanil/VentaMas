@@ -54,6 +54,14 @@ type MovementWithLocations = MovementDoc & {
   destinationLocationName?: string | null;
 };
 
+const getCreatedAtSeconds = (value: MovementDoc['createdAt']): number => {
+  if (!value) return 0;
+  if (value instanceof Date) return Math.floor(value.getTime() / 1000);
+  if (typeof value === 'object' && typeof value.seconds === 'number')
+    return value.seconds;
+  return 0;
+};
+
 // Agregar funciones para crear y leer movimientos
 export const createMovementLog = async (
   user: InventoryUser,
@@ -97,7 +105,14 @@ export const createMovementLog = async (
   };
   // Usar transacción si está disponible, de lo contrario usar setDoc normal
   if (transaction) {
-    transaction.set(movementRef, movementData);
+    (
+      transaction as {
+        set: (
+          ref: typeof movementRef,
+          data: typeof movementData,
+        ) => Transaction | WriteBatch;
+      }
+    ).set(movementRef, movementData);
   } else {
     await setDoc(movementRef, movementData);
   }
@@ -118,7 +133,7 @@ export const getMovementsByLocation = async (
       'movements',
     );
 
-    // Firestore no soporta consultas OR directamente, así que hacemos dos consultas y combinamos
+    // Firestore no soporta consultas OR directamente, así que hacemos dos consultas y combinamoss y combinamos
     const sourceQuery = query(
       movementsRef,
       where('sourceLocation', '==', locationId),
@@ -150,7 +165,7 @@ export const getMovementsByLocation = async (
 
     // Combinar ambos conjuntos de movimientos
     return [...sourceMovements, ...destinationMovements].sort((a, b) => {
-      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+      return getCreatedAtSeconds(b.createdAt) - getCreatedAtSeconds(a.createdAt);
     });
   } catch (error) {
     console.error('Error al obtener movimientos por ubicación:', error);

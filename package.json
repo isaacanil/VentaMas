@@ -25,6 +25,7 @@
     "lint:all": "npm run lint:web && npm run lint:functions && npm run lint:styles",
     "test": "vitest",
     "test:run": "vitest run",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "deploy:beta": "firebase hosting:channel:deploy beta",

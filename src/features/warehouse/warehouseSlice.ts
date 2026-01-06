@@ -8,12 +8,11 @@ import type { Warehouse } from '@/models/Warehouse/Warehouse';
 
 type WarehouseView = 'warehouse' | 'shelf' | 'rowShelf' | 'segment';
 
-type WarehouseEntity = Warehouse | Shelf | RowShelf | Segment;
 
 type Breadcrumb = {
   title: string;
   key: WarehouseView;
-  data?: WarehouseEntity | null;
+  data?: Warehouse | Shelf | RowShelf | Segment | null;
 };
 
 interface WarehouseState {
@@ -25,10 +24,11 @@ interface WarehouseState {
   breadcrumbs: Breadcrumb[];
 }
 
-interface NavigatePayload {
-  view: WarehouseView;
-  data: WarehouseEntity;
-}
+type NavigatePayload =
+  | { view: 'warehouse'; data: Warehouse }
+  | { view: 'shelf'; data: Shelf }
+  | { view: 'rowShelf'; data: RowShelf }
+  | { view: 'segment'; data: Segment };
 
 const initialState: WarehouseState = {
   currentView: 'warehouse',

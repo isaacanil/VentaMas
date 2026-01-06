@@ -1,15 +1,14 @@
 import { Modal } from 'antd';
-import { FC } from 'react';
 
 import { PaymentInfo } from './PaymentInfo';
 
 import type { PaymentInfoModalProps } from './types';
 
-export const PaymentInfoModal: FC<PaymentInfoModalProps> = ({
+export const PaymentInfoModal = ({
   isOpen,
   handleClose,
   isEditLocked = false,
-}) => (
+}: PaymentInfoModalProps) => (
   <Modal
     open={isOpen}
     footer={null}

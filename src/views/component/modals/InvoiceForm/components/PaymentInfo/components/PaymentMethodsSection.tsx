@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { getPaymentMethodMeta } from '../utils/paymentMethodMeta';
@@ -15,13 +15,13 @@ interface PaymentMethodsSectionProps {
   onReferenceChange: (method: PaymentMethod, reference: string) => void;
 }
 
-export const PaymentMethodsSection: FC<PaymentMethodsSectionProps> = ({
+export const PaymentMethodsSection = ({
   paymentMethods,
   readOnly,
   onStatusChange,
   onValueChange,
   onReferenceChange,
-}) => {
+}: PaymentMethodsSectionProps) => {
   const hasPaymentMethods = paymentMethods.length > 0;
 
   const methodList = useMemo(() => paymentMethods, [paymentMethods]);

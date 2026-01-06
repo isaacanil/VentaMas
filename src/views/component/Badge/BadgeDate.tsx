@@ -1,7 +1,8 @@
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateTime } from 'luxon';
-import React, { cloneElement, ReactNode, isValidElement } from 'react';
+import { cloneElement, isValidElement } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import styled from 'styled-components';
 
 import type { ConfigItem } from '@/config/statusActionConfig';
@@ -50,13 +51,13 @@ const BadgeText = styled.div<{ $color: string }>`
 `;
 
 interface IconProps {
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 const renderIcon = (icon: ReactNode, color: string) => {
   if (isValidElement<IconProps>(icon)) {
     return cloneElement(icon, {
-      style: { color } as React.CSSProperties,
+      style: { color } as CSSProperties,
     });
   }
   return icon;

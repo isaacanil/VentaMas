@@ -16,8 +16,8 @@ import { selectUser } from '@/features/auth/userSlice.js';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
 import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus.js';
 import { getBatchById } from '@/firebase/warehouse/batchService';
-import BatchViewModal from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal.jsx';
-import { ProductMovementModal } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal.jsx';
+import BatchViewModal from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal';
+import { ProductMovementModal } from '@/views/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal';
 import { AdvancedTable } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
@@ -279,7 +279,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         activatedBatches = 0,
         deactivatedBatches = 0,
       } = result;
-      return `Actualizados: ${batchesUpdated} · Activados: ${activatedBatches} · Desactivados: ${deactivatedBatches}`;
+      return `Actualizados: ${batchesUpdated} Â· Activados: ${activatedBatches} Â· Desactivados: ${deactivatedBatches}`;
     },
     [],
   );
@@ -297,9 +297,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       setSyncingBatches(true);
       try {
         const result = (await reconcileBatchStatus({
-          businessId: user.businessID,
-          actorUid: user.uid,
-          dryRun,
+          businessId: user.businessID,          dryRun,
         })) as ReconcileBatchStatusResult;
 
         notification.success({
@@ -328,7 +326,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         label: (
           <MenuItemContent>
             <SyncOutlined spin={syncingBatches} />
-            {syncingBatches ? 'Sincronizando…' : 'Sincronizar lotes'}
+            {syncingBatches ? 'Sincronizandoâ€¦' : 'Sincronizar lotes'}
           </MenuItemContent>
         ),
         disabled: syncingBatches,
@@ -640,5 +638,6 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     </>
   );
 };
+
 
 

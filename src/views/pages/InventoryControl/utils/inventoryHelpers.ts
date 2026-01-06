@@ -1,4 +1,4 @@
-// Helper utilities extracted from InventoryControl.jsx for reuse and to reduce file size
+// Helper utilities extracted from InventoryControl.tsx for reuse and to reduce file size
 // Pure / side-effect free helpers.
 
 import { normalizeLocationKey } from '@/utils/inventory/locations';
@@ -119,12 +119,17 @@ export function normalizeDateKey(d: TimestampLike) {
     let date;
     if (d instanceof Date) {
       date = d;
-    } else if (d?.toDate) {
-      date = d.toDate();
+    } else if (
+      typeof d === 'object' &&
+      d &&
+      'toDate' in d &&
+      typeof (d as { toDate?: () => Date }).toDate === 'function'
+    ) {
+      date = (d as { toDate: () => Date }).toDate();
     } else if (typeof d === 'object' && typeof d.seconds === 'number') {
-      date = new Date(d.seconds * 1000);
+      date = new Date((d as { seconds: number }).seconds * 1000);
     } else {
-      date = new Date(d);
+      date = new Date(d as string | number);
     }
     if (Number.isNaN(date.getTime())) return 'no-date';
     const yyyy = date.getFullYear();

@@ -124,6 +124,8 @@ const Category = styled.div`
   border-radius: 8px;
 `;
 
+const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 const featureContainerVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: {
@@ -133,7 +135,7 @@ const featureContainerVariants = {
       when: 'beforeChildren',
       staggerChildren: 0.06,
       duration: 0.1,
-      ease: 'easeOut',
+      ease: easeOut,
     },
   },
 };
@@ -143,7 +145,7 @@ const featureCardVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: 'easeOut' },
+    transition: { duration: 0.35, ease: easeOut },
   },
 };
 
@@ -183,5 +185,6 @@ const EmptyMessage = styled.div`
 const LoadingContainer = styled.div`
   grid-column: 1 / -1;
 `;
+
 
 

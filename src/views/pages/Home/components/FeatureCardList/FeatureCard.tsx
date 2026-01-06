@@ -29,7 +29,7 @@ export const FeatureCard = ({ card }: FeatureCardProps): JSX.Element => {
 
     switch (card.action) {
       case 'openDeveloperModal':
-        dispatch(toggleDeveloperModal());
+        dispatch(toggleDeveloperModal({}));
         break;
       default:
         console.warn(`Action not implemented: ${card.action}`);

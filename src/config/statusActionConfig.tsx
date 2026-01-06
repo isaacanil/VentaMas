@@ -131,8 +131,15 @@ export const getDateStatus = (
       const iso = DateTime.fromISO(value);
       return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
     }
-    if (typeof value?.toDate === 'function') {
-      return DateTime.fromJSDate(value.toDate());
+    if (
+      typeof value === 'object' &&
+      value &&
+      'toDate' in value &&
+      typeof (value as { toDate?: () => Date }).toDate === 'function'
+    ) {
+      return DateTime.fromJSDate(
+        (value as { toDate: () => Date }).toDate(),
+      );
     }
     return null;
   };

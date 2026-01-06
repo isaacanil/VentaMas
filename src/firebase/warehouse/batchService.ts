@@ -27,7 +27,7 @@ const getBatchCollectionRef = (businessID) =>
   collection(db, 'businesses', businessID, 'batches');
 
 // Crear un nuevo batch
-export const createBatch = async (user, batchData) => {
+export const createBatch = async (user, batchData: BatchRecord) => {
   const id = nanoid(); // Generar ID único
   try {
     const batchCollectionRef = getBatchCollectionRef(user.businessID);
@@ -54,7 +54,11 @@ export const createBatch = async (user, batchData) => {
 };
 
 // Obtener un batch por su ID
-export const getBatchById = async (user, batchId) => {
+export const getBatchById = async (
+  user,
+  batchId,
+  _signal?: AbortSignal,
+) => {
   try {
     if (!batchId) return null;
     const batchDocRef = doc(
@@ -97,7 +101,7 @@ export const getAllBatches = async (user, productID = null) => {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...(doc.data() as Record<string, unknown>),
     }));
   } catch (error) {
     console.error('Error al obtener los batches:', error);
@@ -125,7 +129,7 @@ export const listenAllBatches = (user, productID = null, callback) => {
       (querySnapshot) => {
         const batches = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as Record<string, unknown>),
         }));
         callback(batches);
       },
@@ -242,7 +246,7 @@ export const updateBatch = async (user, data) => {
   }
 };
 
-// Función para revisar el estado del batch en función de los productStocks asociados
+// Función para revisar el estado del batch en función de los productStocks asociadosociados
 export async function updateBatchStatusForProductStock(
   businessID,
   batchId,

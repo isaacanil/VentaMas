@@ -81,21 +81,21 @@ export function useBaselineSnapshot({
       if (g.topKey) {
         // Counts baseline para topKey
         if (countsBase[g.topKey] === undefined) {
-          const firstChild = (g._children || [])[0] || {};
+          const firstChild = (g._children || [])[0];
           const persistedTop = getPersistedCount(
             serverCounts,
             g.topKey,
-            Number(firstChild.stock ?? 0),
+            Number(firstChild?.stock ?? 0),
           );
           countsBase[g.topKey] = Number(persistedTop);
         }
         // Expiration baseline para topKey: manual del grupo o fecha original del primer hijo (si es batch)
         if (expBase[g.topKey] === undefined) {
-          const firstChild = (g._children || [])[0] || {};
+          const firstChild = (g._children || [])[0];
           const m = countsMeta[g.topKey]?.manualExpirationDate;
           if (m && m !== CLEAR_SENTINEL) expBase[g.topKey] = norm(m);
-          else if (firstChild.type === 'batch' && firstChild.expirationDate)
-            expBase[g.topKey] = norm(firstChild.expirationDate);
+          else if (firstChild?.type === 'batch' && firstChild?.expirationDate)
+            expBase[g.topKey] = norm(firstChild?.expirationDate);
           else expBase[g.topKey] = '';
         }
       }
@@ -104,3 +104,4 @@ export function useBaselineSnapshot({
     return { counts: countsBase, expirations: expBase };
   }, [groups, serverCounts, countsMeta]);
 }
+

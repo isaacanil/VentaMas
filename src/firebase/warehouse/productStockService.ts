@@ -22,9 +22,24 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
-import type { InventoryStockItem, InventoryUser, LocationRefLike } from '@/utils/inventory/types';
+import { buildLocationPath } from '@/utils/inventory/locations';
+import type {
+  InventoryStockItem,
+  InventoryUser,
+  ProductStockRecord,
+} from '@/utils/inventory/types';
 
-type ProductStockRecord = Partial<InventoryStockItem> & Record<string, unknown>;
+type ProductStockMovementInput = {
+  quantity?: number;
+  reason?: MovementReason;
+  notes?: string;
+};
+
+type ProductStockQueryParams = {
+  productId?: string | number | null;
+  batchId?: string | number | null;
+  location?: InventoryStockItem['location'] | null;
+};
 
 const normalizeToDate = (value) => {
   if (!value) return null;
@@ -55,38 +70,11 @@ export const getProductStockCollectionRef = (businessID) => {
   return collection(db, 'businesses', businessID, 'productsStock');
 };
 
-const buildLocationPath = (rawLocation: LocationRefLike | string | null | undefined) => {
-  if (!rawLocation) return '';
-  if (typeof rawLocation === 'string') return rawLocation;
-  if (typeof rawLocation === 'object') {
-    if (typeof rawLocation.path === 'string') return rawLocation.path;
-    if (Array.isArray(rawLocation.pathSegments)) {
-      return rawLocation.pathSegments.filter(Boolean).join('/');
-    }
-    const {
-      warehouse,
-      warehouseId,
-      shelf,
-      shelfId,
-      row,
-      rowId,
-      segment,
-      segmentId,
-    } = rawLocation;
-    return [
-      warehouse || warehouseId,
-      shelf || shelfId,
-      row || rowId,
-      segment || segmentId,
-    ]
-      .filter(Boolean)
-      .join('/');
-  }
-  return '';
-};
-
 // Crear un nuevo producto en stock
-export const createProductStock = async (user, productStockData = {}) => {
+export const createProductStock = async (
+  user: InventoryUser,
+  productStockData: ProductStockRecord = {},
+) => {
   const id = nanoid();
 
   try {
@@ -120,7 +108,7 @@ export const createProductStock = async (user, productStockData = {}) => {
 };
 
 // Leer todos los productos en stock
-export const getAllProductStocks = async (user) => {
+export const getAllProductStocks = async (user: InventoryUser) => {
   try {
     const productStockCollectionRef = getProductStockCollectionRef(
       user.businessID,
@@ -137,7 +125,10 @@ export const getAllProductStocks = async (user) => {
 };
 
 // Actualizar un producto en stock
-export const updateProductStock = async (user, data) => {
+export const updateProductStock = async (
+  user: InventoryUser,
+  data: ProductStockRecord & { id: string },
+) => {
   try {
     const productStockDocRef = doc(
       db,
@@ -162,6 +153,10 @@ export const deleteAllProductStocksByBatch = async ({
   user,
   batchId,
   movement,
+}: {
+  user: InventoryUser;
+  batchId: string | number;
+  movement?: ProductStockMovementInput;
 }) => {
   try {
     // 1. Obtener todos los productStock del batch
@@ -201,6 +196,10 @@ export const deleteProductStock = async ({
   user,
   productStockId,
   movement = {},
+}: {
+  user: InventoryUser;
+  productStockId: string;
+  movement?: ProductStockMovementInput;
 }) => {
   if (!user?.businessID || !productStockId) {
     throw new Error(
@@ -224,7 +223,7 @@ export const deleteProductStock = async ({
       throw new Error('Stock record not found');
     }
 
-    const stockData = stockDoc.data();
+    const stockData = stockDoc.data() as ProductStockRecord;
     const {
       batchId,
       productId,
@@ -242,8 +241,20 @@ export const deleteProductStock = async ({
     }
 
     // 3. Get references
-    const batchRef = doc(db, 'businesses', businessID, 'batches', batchId);
-    const productRef = doc(db, 'businesses', businessID, 'products', productId);
+    const batchRef = doc(
+      db,
+      'businesses',
+      businessID,
+      'batches',
+      String(batchId),
+    );
+    const productRef = doc(
+      db,
+      'businesses',
+      businessID,
+      'products',
+      String(productId),
+    );
 
     // 4. Validate batch exists
     const batchDoc = await getDoc(batchRef);
@@ -252,7 +263,7 @@ export const deleteProductStock = async ({
     }
 
     // 5. Validate quantity
-    const quantityToRemove = movement?.quantity || stockQuantity;
+    const quantityToRemove = Number(movement?.quantity ?? stockQuantity ?? 0);
     // if (quantityToRemove <= 0 || quantityToRemove > stockQuantity) {
     //   throw new Error('Cantidad a eliminar inválida');
     // }
@@ -272,7 +283,7 @@ export const deleteProductStock = async ({
     const otherStocksSnap = await getDocs(stocksQuery);
     const willBatchBeEmpty = otherStocksSnap.size <= 1;
 
-    // 7. Perform updates (no transacciones: cada operación es individual)
+    // 7. Perform updates (no transacciones: cada operación es individual)al)
     // 7a. Decrementa stock en el producto
     await updateDoc(productRef, {
       stock: increment(-quantityToRemove),
@@ -382,11 +393,17 @@ export const listenAllProductStock = (user, productId, callback) => {
 };
 
 // Escuchar en tiempo real todos los productos en stock por ubicación
-export const listenAllProductStockByLocation = (user, location, callback) => {
+export const listenAllProductStockByLocation = (
+  user,
+  location,
+  callback,
+  onError?: (error: unknown) => void,
+) => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noOp = () => { };
 
-  if (!user || !location || !callback) {
+  const normalizedLocation = buildLocationPath(location);
+  if (!user || !normalizedLocation || !callback) {
     console.warn(
       'Missing required parameters in listenAllProductStockByLocation',
     );
@@ -404,7 +421,7 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
 
     const q = query(
       productStockCollectionRef,
-      where('location', '==', location),
+      where('location', '==', normalizedLocation),
       where('isDeleted', '==', false),
       where('status', '==', 'active'),
     );
@@ -417,6 +434,7 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
       },
       (error) => {
         console.error('Error al escuchar documentos en tiempo real:', error);
+        if (onError) onError(error);
         callback([]);
       },
     );
@@ -430,22 +448,23 @@ export const listenAllProductStockByLocation = (user, location, callback) => {
 // Hook para escuchar productos en stock por ubicación
 export const useListenProductsStockByLocation = (location = null) => {
   const user = useSelector(selectUser) as InventoryUser | null;
+  const locationPath = useMemo(() => buildLocationPath(location), [location]);
   const [data, setData] = useState<ProductStockRecord[]>([]);
   // Inicializar loading basado en si tenemos las dependencias necesarias
-  const [loading, setLoading] = useState(!!(location && user?.businessID));
+  const [loading, setLoading] = useState(!!(locationPath && user?.businessID));
 
   // Estado para detectar cambios en dependencias
-  const [prevLocation, setPrevLocation] = useState(location);
+  const [prevLocation, setPrevLocation] = useState(locationPath);
   const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
 
   // Ajustar estado durante render si cambian dependencias
-  if (location !== prevLocation || user?.businessID !== prevBusinessID) {
-    setPrevLocation(location);
+  if (locationPath !== prevLocation || user?.businessID !== prevBusinessID) {
+    setPrevLocation(locationPath);
     setPrevBusinessID(user?.businessID);
     // Data se limpia o se mantiene según preferencia, aquí limpiamos
     setData([]);
     // Si hay datos válidos, ponemos loading true. Si no, false.
-    if (location && user?.businessID) {
+    if (locationPath && user?.businessID) {
       setLoading(true);
     } else {
       setLoading(false);
@@ -453,14 +472,14 @@ export const useListenProductsStockByLocation = (location = null) => {
   }
 
   useEffect(() => {
-    // Si no tenemos datos válidos, el render ya reseteó el estado. Salimos.
-    if (!location || !user?.businessID) {
+    // Si no tenemos datos válidos, el render ya reseteó el estado. Salimos.limos.
+    if (!locationPath || !user?.businessID) {
       return;
     }
 
     const unsubscribe = listenAllProductStockByLocation(
       user,
-      location,
+      locationPath,
       (updatedProducts) => {
         setData(updatedProducts);
         setLoading(false);
@@ -469,7 +488,7 @@ export const useListenProductsStockByLocation = (location = null) => {
 
     // Limpiamos el listener al desmontar
     return () => unsubscribe();
-  }, [user, location]); // Dependencias del efecto se mantienen
+  }, [user, locationPath]); // Dependencias del efecto se mantienen
 
   return { data, loading };
 };
@@ -750,8 +769,9 @@ export const useInventoryProductIds = () => {
 ========================== */
 
 export const getProductStockByBatch = async (
-  user,
-  { productId, batchId, location } = {},
+  user: InventoryUser,
+  { productId, batchId, location }: ProductStockQueryParams = {},
+  _signal?: AbortSignal,
 ) => {
   const productStockCollectionRef = getProductStockCollectionRef(
     user.businessID,
@@ -760,6 +780,7 @@ export const getProductStockByBatch = async (
 
   // Armamos los filtros dinámicamente
   const filters = [where('isDeleted', '==', false)];
+  const normalizedLocation = buildLocationPath(location);
 
   if (productId) {
     filters.push(where('productId', '==', productId));
@@ -769,8 +790,8 @@ export const getProductStockByBatch = async (
     filters.push(where('batchId', '==', batchId));
   }
 
-  if (location) {
-    filters.push(where('location', '==', location));
+  if (normalizedLocation) {
+    filters.push(where('location', '==', normalizedLocation));
   }
 
   // Creamos la query con todos los filtros
@@ -780,7 +801,10 @@ export const getProductStockByBatch = async (
   return snapshot.docs.map((doc) => doc.data());
 };
 
-export const getProductStockByProductId = async (user, { productId } = {}) => {
+export const getProductStockByProductId = async (
+  user: InventoryUser,
+  { productId }: { productId?: string | number | null } = {},
+) => {
   const productStockCollectionRef = getProductStockCollectionRef(
     user.businessID,
   );
@@ -800,7 +824,11 @@ export const getProductStockByProductId = async (user, { productId } = {}) => {
 };
 
 // Obtener producto en stock por su ID
-export const getProductStockById = async (user, productStockId) => {
+export const getProductStockById = async (
+  user: InventoryUser,
+  productStockId: string,
+  _signal?: AbortSignal,
+) => {
   if (!productStockId) return null;
 
   try {
@@ -823,7 +851,7 @@ export const getProductStockById = async (user, productStockId) => {
 };
 
 const buildLocationBounds = (locationPath = '') => {
-  const normalized = String(locationPath || '').trim();
+  const normalized = buildLocationPath(locationPath);
   if (!normalized) return null;
   const upperBound = `${normalized}\uf8ff`;
   return { lower: normalized, upper: upperBound };
@@ -872,7 +900,7 @@ export const getLocationStockAggregates = async (user, locationPath) => {
 
 export const getLocationDirectStockAggregates = async (user, locationPath) => {
   if (!user?.businessID) return EMPTY_AGGREGATE;
-  const normalized = String(locationPath || '').trim();
+  const normalized = buildLocationPath(locationPath);
   if (!normalized) return EMPTY_AGGREGATE;
 
   const stockRef = getProductStockCollectionRef(user.businessID);

@@ -101,6 +101,8 @@ export const VirtualTableBody = ({
   getRowId,
   rowSize = 'medium',
   rowBorder,
+  isWideScreen: _isWideScreen,
+  isWideLayout: _isWideLayout,
   // Props para grouping
   shouldGroup = false,
   groupCounts = [],

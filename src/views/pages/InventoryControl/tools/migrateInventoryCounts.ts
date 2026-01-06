@@ -18,7 +18,14 @@ import {
  * @param {{ businessIds?: string[], dryRun?: boolean, onProgress?: (info: any) => void }} options
  * @returns {Promise<{ businesses: number, sessions: number, docsScanned: number, docsUpdated: number, fieldsMigrated: number, errors: number, logs: string[] }>}
  */
-export async function migrateAllBusinessesInventoryCounts(db, options = {}) {
+export async function migrateAllBusinessesInventoryCounts(
+  db,
+  options: {
+    businessIds?: string[] | null;
+    dryRun?: boolean;
+    onProgress?: (info: { type: string; msg: string }) => void;
+  } = {},
+) {
   const { businessIds = null, dryRun = false, onProgress } = options;
   const summary = {
     businesses: 0,
@@ -68,7 +75,7 @@ export async function migrateAllBusinessesInventoryCounts(db, options = {}) {
         for (const docSnap of countsSnap.docs) {
           summary.docsScanned++;
           const id = docSnap.id;
-          const data = docSnap.data() || {};
+          const data = (docSnap.data() || {}) as Record<string, unknown>;
 
           const hasLegacy =
             Object.prototype.hasOwnProperty.call(data, 'conteoReal') ||
@@ -121,7 +128,7 @@ export async function migrateAllBusinessesInventoryCounts(db, options = {}) {
           );
 
           if (!dryRun) {
-            const update = {};
+            const update: Record<string, unknown> = {};
             if (systemStock !== undefined && !Number.isNaN(systemStock))
               update.systemStock = Number(systemStock);
             if (realCount !== undefined && !Number.isNaN(realCount))
@@ -180,3 +187,5 @@ export async function migrateAllBusinessesInventoryCounts(db, options = {}) {
 }
 
 export default migrateAllBusinessesInventoryCounts;
+
+

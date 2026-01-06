@@ -6,6 +6,8 @@ type ProductStockFormData = {
   id: string;
   batchId: string;
   location: LocationRefLike | Record<string, unknown>;
+  locationId?: string | null;
+  path?: string;
   productId: string;
   productName: string;
   stock: number;
@@ -24,6 +26,8 @@ const initialState: ProductStockState = {
     id: '', // Autogenerado, no necesario en el formulario
     batchId: '',
     location: {},
+    locationId: '',
+    path: '',
     productId: '',
     productName: '',
     stock: 0, // Cantidad de stock

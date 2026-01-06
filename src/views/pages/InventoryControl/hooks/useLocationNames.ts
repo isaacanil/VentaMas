@@ -43,7 +43,7 @@ export function useLocationNames({
   }, [locationNames]);
 
   const locationKeys = useMemo(() => {
-    const uniqueKeys = new Set();
+    const uniqueKeys = new Set<string>();
     for (const it of filteredItems || []) {
       const key = getItemLocationKey(it);
       if (key) uniqueKeys.add(key);
@@ -58,7 +58,7 @@ export function useLocationNames({
     const inFlight = inFlightRef.current;
     const failed = failedRef.current;
     const now = Date.now();
-    const isFailedRecently = (key) => {
+    const isFailedRecently = (key: string) => {
       const ts = failed.get(key);
       if (!ts) return false;
       if (now - ts < FAILED_TTL_MS) return true;

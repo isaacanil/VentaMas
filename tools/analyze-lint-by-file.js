@@ -26,7 +26,7 @@ function padRight(str, len) {
 }
 
 function analyzeLintByFile() {
-    console.log(`\n${BLUE}${BOLD}� Starting ESLint Stats by file...${RESET}`);
+    console.log(`\n${BLUE}${BOLD}🔍 Starting ESLint Stats by file...${RESET}`);
     console.log(`${BLUE}📂 Working directory: ${ROOT_DIR}${RESET}`);
 
     if (!fs.existsSync(REPORTS_DIR)) {

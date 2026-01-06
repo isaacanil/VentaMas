@@ -1,10 +1,16 @@
 import type { MenuProps } from 'antd';
 import type { DateTime } from 'luxon';
 
+export type WarehouseNode = {
+  id: string;
+  name?: string;
+  children?: WarehouseNode[];
+} & Record<string, unknown>;
+
 export type DateRangeValue = [DateTime | null, DateTime | null] | null;
 
 export interface InventoryTableProps {
-  currentNode: unknown;
+  currentNode: WarehouseNode | null;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   setDateRange: (dates: DateRangeValue) => void;

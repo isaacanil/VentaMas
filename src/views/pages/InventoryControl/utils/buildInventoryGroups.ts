@@ -1,4 +1,4 @@
-// Construcción de grupos de inventario (pura) extraída de InventoryControl.jsx
+// Construcción de grupos de inventario (pura) extraída de InventoryControl.tsxx
 // Acepta colecciones y estados necesarios y devuelve la misma estructura que esperaba la tabla.
 
 import {

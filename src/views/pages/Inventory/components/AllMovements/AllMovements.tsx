@@ -250,7 +250,18 @@ const AllMovements = () => {
 
   const rows = useMemo<MovementRow[]>(() => {
     return (filteredData || []).map((mv) => {
-      const dateObj = mv.createdAt?.toDate?.();
+      const dateObj = (() => {
+        const createdAt = mv.createdAt;
+        if (!createdAt) return null;
+        if (createdAt instanceof Date) return createdAt;
+        if (typeof (createdAt as { toDate?: () => Date }).toDate === 'function') {
+          return (createdAt as { toDate: () => Date }).toDate();
+        }
+        if (typeof (createdAt as { seconds?: number }).seconds === 'number') {
+          return new Date((createdAt as { seconds: number }).seconds * 1000);
+        }
+        return null;
+      })();
       const productName =
         typeof mv.productName === 'string' ? mv.productName : '';
       return {
@@ -373,3 +384,4 @@ const Page = styled.div`
   grid-template-rows: min-content min-content 1fr;
   height: 100%;
 `;
+

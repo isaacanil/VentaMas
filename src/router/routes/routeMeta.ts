@@ -1,11 +1,13 @@
 // Centraliza metadatos y constantes de rutas para evitar dependencias circulares.
-export const ROUTE_STATUS = Object.freeze({
+export const ROUTE_STATUS = {
   STABLE: 'stable', // Ruta estable
   BETA: 'beta', // Funcionalidad en beta
   WIP: 'wip', // En construcción
   HIDDEN: 'hidden', // No listada en menús (decisión de UI)
   DISABLED: 'disabled', // Excluida totalmente
-}) as const;
+} as const;
+
+Object.freeze(ROUTE_STATUS);
 
 export type RouteStatus = (typeof ROUTE_STATUS)[keyof typeof ROUTE_STATUS];
 

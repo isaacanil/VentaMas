@@ -51,7 +51,7 @@ export const RequestCard = ({
   } = item;
 
   const disableApprove = status !== 'pending';
-  const disableReject = status !== 'pending' || status === 'rejected';
+  const disableReject = status !== 'pending';
 
   const handleCardClick = () => {
     onOpenDetails(raw);

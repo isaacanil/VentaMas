@@ -71,8 +71,10 @@ export async function exportInventoryToExcel(
   for (const g of groups) {
     let productHasAnyRow = false;
     for (const child of g._children || []) {
-      // Salvaguarda: si algún proceso previo agregó un pseudo-child de totales, lo ignoramos.
-      if (child?.type === 'total' || child?.rowType === 'TOTAL') continue;
+      // Salvaguarda: si algún proceso previo agregó un pseudo-child de totales, lo ignoramos.ignoramos.
+      const rowType =
+        typeof child?.rowType === 'string' ? child.rowType.toLowerCase() : '';
+      if (rowType === 'total') continue;
       const key = child.key;
       const stockSistema = Number(child.stock ?? 0);
       const conteoReal = Number(counts[key] ?? child.real ?? child.stock ?? 0);
@@ -186,10 +188,16 @@ function formatDate(d: TimestampLike) {
   try {
     let date;
     if (d instanceof Date) date = d;
-    else if (d?.toDate) date = d.toDate();
+    else if (
+      typeof d === 'object' &&
+      d &&
+      'toDate' in d &&
+      typeof (d as { toDate?: () => Date }).toDate === 'function'
+    )
+      date = (d as { toDate: () => Date }).toDate();
     else if (typeof d === 'object' && typeof d.seconds === 'number')
-      date = new Date(d.seconds * 1000);
-    else date = new Date(d);
+      date = new Date((d as { seconds: number }).seconds * 1000);
+    else date = new Date(d as string | number);
     if (isNaN(date.getTime())) return '';
     return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd');
   } catch {
@@ -202,10 +210,16 @@ function formatDateTime(d: TimestampLike) {
   try {
     let date;
     if (d instanceof Date) date = d;
-    else if (d?.toDate) date = d.toDate();
+    else if (
+      typeof d === 'object' &&
+      d &&
+      'toDate' in d &&
+      typeof (d as { toDate?: () => Date }).toDate === 'function'
+    )
+      date = (d as { toDate: () => Date }).toDate();
     else if (typeof d === 'object' && typeof d.seconds === 'number')
-      date = new Date(d.seconds * 1000);
-    else date = new Date(d);
+      date = new Date((d as { seconds: number }).seconds * 1000);
+    else date = new Date(d as string | number);
     if (isNaN(date.getTime())) return '';
     return DateTime.fromJSDate(date).toFormat('yyyy-LL-dd HH:mm');
   } catch {

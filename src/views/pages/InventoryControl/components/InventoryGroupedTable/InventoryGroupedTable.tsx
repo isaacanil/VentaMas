@@ -111,7 +111,7 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '220px',
         maxWidth: '1.3fr',
-        cell: ({ row }) => getRowMeta(row).productNameNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).productNameNode : null),
         sortableValue: (val) => String(val || '').toLowerCase(),
       },
       {
@@ -121,7 +121,7 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '140px',
         maxWidth: '1fr',
-        cell: ({ row }) => getRowMeta(row).expirationNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).expirationNode : null),
         sortableValue: (val) => val || '',
       },
       {
@@ -130,7 +130,7 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '220px',
         maxWidth: '1.4fr',
-        cell: ({ row }) => getRowMeta(row).locationsNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).locationsNode : null),
       },
       {
         Header: 'Stock',
@@ -147,7 +147,7 @@ export default function InventoryGroupedTable({
         minWidth: '130px',
         maxWidth: '0.7fr',
         clickable: false,
-        cell: ({ row }) => getRowMeta(row).conteoNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).conteoNode : null),
       },
       {
         Header: 'Diferencia',
@@ -155,7 +155,7 @@ export default function InventoryGroupedTable({
         align: 'right',
         minWidth: '130px',
         maxWidth: '0.7fr',
-        cell: ({ row }) => getRowMeta(row).diffNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).diffNode : null),
       },
       {
         Header: 'Editado por',
@@ -164,7 +164,7 @@ export default function InventoryGroupedTable({
         minWidth: '180px',
         maxWidth: '1.2fr',
         clickable: false,
-        cell: ({ row }) => getRowMeta(row).userNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).userNode : null),
       },
       {
         Header: 'Acción',
@@ -173,7 +173,7 @@ export default function InventoryGroupedTable({
         minWidth: '70px',
         maxWidth: '0.5fr',
         clickable: false,
-        cell: ({ row }) => getRowMeta(row).actionsNode,
+        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).actionsNode : null),
       },
     ],
     [getRowMeta],
@@ -204,7 +204,7 @@ export default function InventoryGroupedTable({
   return (
     <Wrapper>
       <AdvancedTable
-        data={rows}
+        data={rows as unknown as Record<string, unknown>[]}
         columns={columns}
         loading={loading}
         enableVirtualization
@@ -214,7 +214,7 @@ export default function InventoryGroupedTable({
         tableName="inventory-grouped"
         rowSize={rowSize}
         rowBorder
-        getRowId={(row) => row.productKey || row.productId || row.key}
+        getRowId={(row) => String(row.productKey ?? row.productId ?? row.key ?? '')}
         onRowClick={handleRowClick}
       />
 
@@ -246,5 +246,7 @@ const Wrapper = styled.div`
   height: 100%;
   overflow: auto;
 `;
+
+
 
 

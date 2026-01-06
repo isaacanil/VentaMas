@@ -1,6 +1,6 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Dropdown, InputNumber } from 'antd';
-import { FC, useMemo } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
@@ -22,14 +22,14 @@ const DISCOUNT_OPTIONS: { key: DiscountType; label: string }[] = [
   { key: 'fixed', label: '$ Monto Fijo' },
 ];
 
-export const DiscountSection: FC<DiscountSectionProps> = ({
+export const DiscountSection = ({
   discountType,
   discountValue,
   subtotal,
   readOnly,
   onDiscountTypeChange,
   onDiscountValueChange,
-}) => {
+}: DiscountSectionProps) => {
   const formattedSubtotal = useMemo(() => formatPrice(subtotal), [subtotal]);
 
   const addonBefore = discountType === 'percentage' ? '%' : '$';

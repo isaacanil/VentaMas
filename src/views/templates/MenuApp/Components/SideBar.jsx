@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -112,6 +112,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const didPrefetchRoutesRef = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -137,6 +138,57 @@ export const SideBar = ({ isOpen, handleOpenMenu }) => {
     dispatch(openNotificationCenter('taxReceipt'));
     handleOpenMenu();
   }, [dispatch, handleOpenMenu]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || didPrefetchRoutesRef.current) return;
+
+    const preloaders = [];
+    const seenRoutes = new Set();
+
+    const collectPreloaders = (items = []) => {
+      items.forEach((item) => {
+        if (item?.route && typeof item?.preload === 'function') {
+          if (!seenRoutes.has(item.route)) {
+            seenRoutes.add(item.route);
+            preloaders.push(item.preload);
+          }
+        }
+        if (Array.isArray(item?.submenu)) {
+          collectPreloaders(item.submenu);
+        }
+      });
+    };
+
+    Object.values(groupedLinks).forEach((items) => collectPreloaders(items));
+
+    if (!preloaders.length) return;
+
+    didPrefetchRoutesRef.current = true;
+
+    const runPreloads = () => {
+      preloaders.forEach((preload, index) => {
+        setTimeout(() => {
+          try {
+            preload();
+          } catch {
+            // Silenciamos errores de precarga en dev.
+          }
+        }, index * 60);
+      });
+    };
+
+    if (typeof requestIdleCallback === 'function') {
+      const idleId = requestIdleCallback(runPreloads, { timeout: 1500 });
+      return () => {
+        if (typeof cancelIdleCallback === 'function') {
+          cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    const timeoutId = setTimeout(runPreloads, 200);
+    return () => clearTimeout(timeoutId);
+  }, [groupedLinks]);
 
   return (
     <Container

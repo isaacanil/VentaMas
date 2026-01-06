@@ -47,8 +47,7 @@ export const DetailModal = ({
 
   const detailStatus = detailRequest.status ?? 'pending';
   const disableApprove = detailStatus !== 'pending';
-  const disableReject =
-    detailStatus !== 'pending' || detailStatus === 'rejected';
+  const disableReject = detailStatus !== 'pending';
   const requestedBy = detailRequest.requestedBy || {};
   const moduleMeta = resolveModuleMeta(detailRequest);
   const metadataSource =

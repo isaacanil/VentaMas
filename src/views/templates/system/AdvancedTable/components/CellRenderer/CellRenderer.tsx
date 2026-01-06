@@ -122,7 +122,7 @@ export const CellRenderer: React.FC<CellRendererProps> = ({
     }
 
     case 'note':
-      return <NoteButton value={value} />;
+      return <NoteButton value={typeof value === 'string' ? value : null} />;
 
     case 'file':
       return <ShowFiles value={Array.isArray(value) ? value : []} />;

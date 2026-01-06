@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
-// @ts-expect-error - legacy JS component without type declarations
 import { DatePicker as CommonDatePicker } from '@/components/common/DatePicker';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbListApprovalLogs } from '@/firebase/authorization/approvalLogs';
@@ -325,17 +324,17 @@ const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
 };
 
 const resolveName = (user?: UserSnapshot | null) =>
-  user?.name || user?.email || user?.uid || '—';
+  user?.name || user?.email || user?.uid || 'â€”';
 
 const resolveUserSummary = (user?: UserSnapshot | null) => {
-  if (!user) return '—';
+  if (!user) return 'â€”';
   const roleLabel = user.role ? ROLE_LABELS[user.role] || user.role : '';
   return roleLabel ? `${resolveName(user)} (${roleLabel})` : resolveName(user);
 };
 
 const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
   if (!entry.targetUser) {
-    return '—';
+    return 'â€”';
   }
 
   const targetSummary = resolveUserSummary(entry.targetUser);
@@ -346,7 +345,7 @@ const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
 
   const samePrincipal =
     resolveName(entry.requestedBy) === resolveName(entry.targetUser);
-  return samePrincipal ? `${targetSummary} • Mismo solicitante` : targetSummary;
+  return samePrincipal ? `${targetSummary} â€¢ Mismo solicitante` : targetSummary;
 };
 
 const formatDateTime = (value: Date | null) => {
@@ -354,7 +353,7 @@ const formatDateTime = (value: Date | null) => {
   try {
     const dt = DateTime.fromJSDate(value);
     const relative = dt.toRelative({ locale: 'es' });
-    const absolute = dt.toFormat('dd LLL yyyy • hh:mm a');
+    const absolute = dt.toFormat('dd LLL yyyy â€¢ hh:mm a');
     return relative ? `${absolute} (${relative})` : absolute;
   } catch {
     return value.toLocaleString();
@@ -476,7 +475,7 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
     }
   }
 
-  return pieces.length ? pieces.join(' • ') : '—';
+  return pieces.length ? pieces.join(' â€¢ ') : 'â€”';
 };
 
 const matchesModuleFilter = (

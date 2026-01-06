@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
+import { buildLocationPath } from '@/utils/inventory/locations';
 import type { InventoryStockItem, InventoryUser } from '@/utils/inventory/types';
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 import type { Segment } from '@/models/Warehouse/Segment';
@@ -222,9 +223,11 @@ export const useWarehouseHierarchy = () => {
 
     // Warehouses
     warehouses.forEach((warehouse) => {
+      const locationPath = buildLocationPath({ warehouseId: warehouse.id });
+      if (!locationPath) return;
       const unsubscribe = listenAllProductStockByLocation(
         user,
-        { id: warehouse.id, type: 'warehouse' },
+        locationPath,
         (stockData) => {
           setProductStock((prev) => ({ ...prev, [warehouse.id]: stockData }));
         },
@@ -236,9 +239,14 @@ export const useWarehouseHierarchy = () => {
     // Shelves
     Object.keys(shelves).forEach((warehouseId) => {
       shelves[warehouseId].forEach((shelf) => {
+        const locationPath = buildLocationPath({
+          warehouseId: shelf.warehouseId ?? warehouseId,
+          shelfId: shelf.id,
+        });
+        if (!locationPath) return;
         const unsubscribe = listenAllProductStockByLocation(
           user,
-          { id: shelf.id, type: 'shelf' },
+          locationPath,
           (stockData) => {
             setProductStock((prev) => ({ ...prev, [shelf.id]: stockData }));
           },
