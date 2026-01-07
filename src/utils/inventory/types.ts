@@ -1,4 +1,8 @@
 import type { Firestore } from 'firebase/firestore';
+import type { RowShelf } from '@/models/Warehouse/RowShelf';
+import type { Segment } from '@/models/Warehouse/Segment';
+import type { Shelf } from '@/models/Warehouse/Shelf';
+import type { Warehouse } from '@/models/Warehouse/Warehouse';
 
 import { CLEAR_SENTINEL } from './constants';
 
@@ -18,6 +22,79 @@ export type ExpirationEditValue =
   | null
   | undefined
   | typeof CLEAR_SENTINEL;
+
+export type WarehouseStructureType =
+  | 'warehouses'
+  | 'shelves'
+  | 'rows'
+  | 'segments';
+
+export interface WarehouseStructureElement {
+  id: string;
+  name?: string;
+  location: string;
+  updatedAt: string;
+  updatedBy?: string;
+  isDeleted?: boolean;
+}
+
+export interface WarehouseStructurePayload {
+  name?: string;
+  warehouseId?: string;
+  shelfId?: string;
+  rowShelfId?: string;
+}
+
+export interface WarehouseStructureData {
+  warehouses: Array<{ id: string; name?: string }>;
+  shelves: Array<{ id: string; name?: string; warehouseId?: string }>;
+  rows: Array<{
+    id: string;
+    name?: string;
+    warehouseId?: string;
+    shelfId?: string;
+  }>;
+  segments: Array<{
+    id: string;
+    name?: string;
+    warehouseId?: string;
+    shelfId?: string;
+    rowShelfId?: string;
+  }>;
+}
+
+export type LocationPathParts = {
+  warehouseId?: string | number | null;
+  shelfId?: string | number | null;
+  rowId?: string | number | null;
+  rowShelfId?: string | number | null;
+  segmentId?: string | number | null;
+};
+
+export type WarehouseRecord = Partial<Warehouse> & {
+  id?: string;
+} & Record<string, unknown>;
+
+export type ShelfRecord = Partial<Shelf> & {
+  id?: string;
+  warehouseId?: string;
+  createdAt?: TimestampLike;
+} & Record<string, unknown>;
+
+export type RowShelfRecord = Partial<RowShelf> & {
+  id?: string;
+  warehouseId?: string;
+  shelfId?: string;
+  createdAt?: TimestampLike;
+} & Record<string, unknown>;
+
+export type SegmentRecord = Partial<Segment> & {
+  id?: string;
+  warehouseId?: string;
+  shelfId?: string;
+  rowShelfId?: string;
+  createdAt?: TimestampLike;
+} & Record<string, unknown>;
 
 export interface InventoryCountMeta {
   updatedBy?: string | null;
@@ -128,6 +205,29 @@ export interface InventoryStockItem {
 
 export type ProductStockRecord =
   Partial<InventoryStockItem> & Record<string, unknown>;
+
+export interface StockSummary {
+  totalLots: number;
+  totalUnits: number;
+  directLots: number;
+  directUnits: number;
+}
+
+export interface AggregatedProductStock {
+  id?: string;
+  name?: string;
+  productName?: string;
+  barcode?: string;
+  totalStock?: number;
+  uniqueBatches?: number;
+  uniqueLocations?: number;
+  stockRecords?: number;
+  hasExpiration?: boolean;
+  hasExpired?: boolean;
+  locations?: Array<string | null>;
+  stockItems?: ProductStockRecord[];
+  stockSummary?: StockSummary | null;
+}
 
 export interface InventorySession {
   id?: string;

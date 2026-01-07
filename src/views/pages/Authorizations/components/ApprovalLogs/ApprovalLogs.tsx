@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled, { keyframes } from 'styled-components';
 
-import { DatePicker as CommonDatePicker } from '@/components/common/DatePicker';
+import DatePicker from '@/components/DatePicker';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbListApprovalLogs } from '@/firebase/authorization/approvalLogs';
 import { getDateRange } from '@/utils/date/getDateRange';
@@ -291,6 +291,8 @@ const ACTION_COLORS: Record<string, string> = {
   authorization: '#0ea5e9',
 };
 
+const { RangePicker } = DatePicker;
+
 const TARGET_LABELS: Record<string, string> = {
   authorizationRequest: 'Solicitud',
   invoice: 'Factura',
@@ -324,17 +326,17 @@ const isCashRegisterEntry = (entry: ApprovalLogEntry) => {
 };
 
 const resolveName = (user?: UserSnapshot | null) =>
-  user?.name || user?.email || user?.uid || 'â€”';
+  user?.name || user?.email || user?.uid || '—';
 
 const resolveUserSummary = (user?: UserSnapshot | null) => {
-  if (!user) return 'â€”';
+  if (!user) return '—';
   const roleLabel = user.role ? ROLE_LABELS[user.role] || user.role : '';
   return roleLabel ? `${resolveName(user)} (${roleLabel})` : resolveName(user);
 };
 
 const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
   if (!entry.targetUser) {
-    return 'â€”';
+    return '—';
   }
 
   const targetSummary = resolveUserSummary(entry.targetUser);
@@ -345,7 +347,7 @@ const resolveTargetUserSummary = (entry: ApprovalLogEntry) => {
 
   const samePrincipal =
     resolveName(entry.requestedBy) === resolveName(entry.targetUser);
-  return samePrincipal ? `${targetSummary} â€¢ Mismo solicitante` : targetSummary;
+  return samePrincipal ? `${targetSummary} • Mismo solicitante` : targetSummary;
 };
 
 const formatDateTime = (value: Date | null) => {
@@ -353,7 +355,7 @@ const formatDateTime = (value: Date | null) => {
   try {
     const dt = DateTime.fromJSDate(value);
     const relative = dt.toRelative({ locale: 'es' });
-    const absolute = dt.toFormat('dd LLL yyyy â€¢ hh:mm a');
+    const absolute = dt.toFormat('dd LLL yyyy • hh:mm a');
     return relative ? `${absolute} (${relative})` : absolute;
   } catch {
     return value.toLocaleString();
@@ -475,7 +477,7 @@ const resolveTargetSummary = (entry: ApprovalLogEntry) => {
     }
   }
 
-  return pieces.length ? pieces.join(' â€¢ ') : 'â€”';
+  return pieces.length ? pieces.join(' • ') : '—';
 };
 
 const matchesModuleFilter = (
@@ -649,11 +651,10 @@ const ApprovalLogs = ({ searchTerm = '' }: ApprovalLogsProps) => {
     <Wrapper>
       <Controls>
         <FilterGroup>
-          <CommonDatePicker
-            mode="range"
+          <RangePicker
             value={datePickerValue ?? undefined}
             onChange={handleDatePickerChange}
-            placeholder="Rango de fechas"
+            placeholder={['Inicio', 'Fin']}
             allowClear
             size="middle"
             className="approval-logs-date-picker"

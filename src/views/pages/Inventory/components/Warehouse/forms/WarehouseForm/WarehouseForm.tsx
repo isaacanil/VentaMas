@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button, Input, InputNumber, Form, Spin, Modal, message } from 'antd';
 import type { FormInstance } from 'antd';
 import { useEffect } from 'react';

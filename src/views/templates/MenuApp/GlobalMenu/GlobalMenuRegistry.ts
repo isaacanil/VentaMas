@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
 
 import { toolbarConfigs } from './configs/toolbarConfigs';

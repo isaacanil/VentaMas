@@ -1,0 +1,97 @@
+// @ts-nocheck
+import {
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  Chart,
+  Tooltip,
+} from 'chart.js';
+import React, { useMemo } from 'react';
+import { Bar } from 'react-chartjs-2';
+import styled from 'styled-components';
+
+import Typography from '@/views/templates/system/Typografy/Typografy';
+
+Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: { title: { display: true, text: 'Ventas ($)' } },
+    x: { title: { display: true, text: 'Cliente' } },
+  },
+};
+
+const accumulateGenericCustomerSalesData = (sales) => {
+  return sales.reduce((acc, sale) => {
+    if (
+      sale &&
+      sale.data &&
+      sale.data.client &&
+      typeof sale.data.client.name === 'string'
+    ) {
+      const customerName = sale.data.client.name.toLowerCase();
+
+      if (
+        customerName.includes('generico') ||
+        customerName.includes('genérico') ||
+        customerName.includes('generic client')
+      ) {
+        acc['Generico'] =
+          (acc['Generico'] || 0) + sale.data.totalPurchase.value;
+      }
+    } else {
+      console.warn(
+        'Sale data or client name is undefined or not a string:',
+        sale,
+      );
+    }
+
+    return acc;
+  }, {});
+};
+
+export const GenericCustomerSalesChart = ({ sales }) => {
+  const normalizedSales = useMemo(() => Array.isArray(sales) ? sales : [], [sales]);
+
+  const salesByGenericCustomer = useMemo(
+    () => accumulateGenericCustomerSalesData(normalizedSales),
+    [normalizedSales],
+  );
+
+  const data = useMemo(() => {
+    const labels = Object.keys(salesByGenericCustomer);
+    const dataTotals = labels.map((label) => salesByGenericCustomer[label]);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Ventas ($)',
+          data: dataTotals,
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [salesByGenericCustomer]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
+
+  return (
+    <Container>
+      <Typography variant="h4">Ventas Genéricas</Typography>
+      <Bar data={data} options={options} />
+    </Container>
+  );
+};
+
+const Container = styled.div`
+  display: grid;
+  gap: 1em;
+  height: 200px;
+`;

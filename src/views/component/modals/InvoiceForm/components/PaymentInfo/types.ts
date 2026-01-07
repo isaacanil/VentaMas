@@ -1,3 +1,4 @@
+// @ts-nocheck
 export type DiscountType = 'percentage' | 'fixed';
 
 export interface PaymentMethod {

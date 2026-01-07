@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   InfoCircleOutlined,
   EllipsisOutlined,

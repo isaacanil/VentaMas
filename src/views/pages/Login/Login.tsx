@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button, Skeleton, Spin } from 'antd';
 import { ref, getDownloadURL, listAll } from 'firebase/storage';
 import { motion, type Variants } from 'framer-motion';

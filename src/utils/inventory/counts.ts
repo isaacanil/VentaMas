@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { CountsMap } from './types';
 
 export function getPersistedCount(

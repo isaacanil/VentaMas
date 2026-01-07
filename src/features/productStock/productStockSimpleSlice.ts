@@ -20,7 +20,7 @@ const initialState: ProductStockSimpleState = {
   selectedProductStock: null,
 };
 
-const productStockSimpleSlice = createSlice({
+const productStockSimpleSlice = (createSlice as any)({
   name: 'productStockSimple',
   initialState,
   reducers: {

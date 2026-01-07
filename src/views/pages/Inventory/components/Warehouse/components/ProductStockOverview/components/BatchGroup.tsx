@@ -10,12 +10,12 @@ import type { MenuProps } from 'antd';
 import { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
-import type { LocationNamesMap } from '@/utils/inventory/types';
+import type { LocationNamesMap, TimestampLike } from '@/utils/inventory/types';
 
 import ProductStock from './ProductStock';
 import type { BatchGroupData, ProductStockItem, StockStatus } from '../types';
 
-const toDateMs = (value: unknown): number | null => {
+const toDateMs = (value: TimestampLike): number | null => {
   if (!value) return null;
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.getTime();
   if (typeof value === 'number' || typeof value === 'string') {

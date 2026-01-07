@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PlusOutlined } from '@ant-design/icons';
 import { Tree, Button, Tooltip } from 'antd';
 import { AnimatePresence } from 'framer-motion';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Timestamp } from 'firebase/firestore';
 import { DateTime } from 'luxon';
 

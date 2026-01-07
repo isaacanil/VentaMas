@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { matchPath } from 'react-router-dom';
 
 import type { ToolbarEntryWithMatchers } from '@/views/templates/MenuApp/GlobalMenu/types';

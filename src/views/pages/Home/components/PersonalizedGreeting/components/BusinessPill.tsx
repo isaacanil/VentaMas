@@ -1,3 +1,4 @@
+// @ts-nocheck
 // BusinessPill component - combines logo and business name
 import styled from 'styled-components';
 

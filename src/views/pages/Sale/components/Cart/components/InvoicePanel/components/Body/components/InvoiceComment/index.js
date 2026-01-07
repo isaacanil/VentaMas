@@ -1,1 +1,0 @@
-export { InvoiceComment } from './InvoiceComment';

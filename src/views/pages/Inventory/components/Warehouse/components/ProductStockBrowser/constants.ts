@@ -1,4 +1,13 @@
-export const PRODUCT_STOCK_FILTER_OPTIONS = [
+import type { AggregatedProductStock } from '@/utils/inventory/types';
+
+export type ProductStockFilterOption = {
+  value: string;
+  label: string;
+  description?: string;
+  test?: (product: AggregatedProductStock) => boolean;
+};
+
+export const PRODUCT_STOCK_FILTER_OPTIONS: ProductStockFilterOption[] = [
   {
     value: 'multipleLots',
     label: 'Más de un lote activo',

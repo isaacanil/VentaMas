@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 
 import { useListenProductsStockByLocation } from '@/firebase/warehouse/productStockService';

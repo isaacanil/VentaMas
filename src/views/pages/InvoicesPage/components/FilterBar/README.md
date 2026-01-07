@@ -4,15 +4,15 @@ El `FilterBar` de facturas usa un contenedor reutilizable que maneja la disposic
 
 ## Piezas principales
 
-- `src/components/common/FilterBar/FilterBar.jsx`: contenedor genérico (drawer/modal/desktop, clear, breakpoint móvil por defecto en 900px).
-- `src/views/pages/InvoicesPage/components/FilterBar/FilterBar.jsx`: arma la configuración de filtros para facturas y se la pasa al contenedor genérico.
+- `src/components/common/FilterBar/FilterBar.tsx`: contenedor genérico (drawer/modal/desktop, clear, breakpoint móvil por defecto en 900px).
+- `src/views/pages/InvoicesPage/components/FilterBar/FilterBar.tsx`: arma la configuración de filtros para facturas y se la pasa al contenedor genérico.
 - `components/`: filtros individuales (DateRangeFilter, ClientFilter, PaymentMethodFilter, AmountRangeFilter, ReceivableFilter, SortControls, TotalsDisplay).
 - `hooks/`: `useInvoiceSorting`, `useFilterHandlers`, `useClientOptions`.
 - `constants/`: opciones y textos usados por los filtros.
 
 ## Cómo se configura
 
-`FilterBar.jsx` genera un arreglo `items` donde cada entrada define:
+`FilterBar.tsx` genera un arreglo `items` donde cada entrada define:
 - `key`: identificador único.
 - `section`: `'main'` (desktop visible) o `'additional'` (va al modal/extra).
 - `render`: función que devuelve el componente del filtro. Se usa `wrap: false` porque cada filtro ya incluye su propio `Form.Item`.

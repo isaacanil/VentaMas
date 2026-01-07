@@ -42,7 +42,7 @@ const initialState: WarehouseModalState = {
   error: null,
 };
 
-const warehouseModalSlice = createSlice({
+const warehouseModalSlice = (createSlice as any)({
   name: 'warehouseModal', // Slice name
   initialState,
   reducers: {

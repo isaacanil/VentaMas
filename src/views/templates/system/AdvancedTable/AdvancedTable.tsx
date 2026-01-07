@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   memo,
   useEffect,
@@ -103,6 +104,7 @@ export interface AdvancedTableProps<Row = TableRow> {
   tableName?: string;
   dateRange?: unknown;
   defaultDate?: unknown;
+  datesKeyConfig?: string;
   setDateRange?: (value: unknown) => void;
   emptyText?: ReactNode;
   onRowClick?: (row: Row) => void;

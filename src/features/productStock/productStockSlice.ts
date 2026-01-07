@@ -36,7 +36,7 @@ const initialState: ProductStockState = {
   error: null,
 };
 
-const productStockSlice = createSlice({
+const productStockSlice = (createSlice as any)({
   name: 'productStock',
   initialState,
   reducers: {
@@ -94,3 +94,4 @@ export default productStockSlice.reducer;
 
 export const selectProductStock = (state: { productStock: ProductStockState }) =>
   state.productStock;
+

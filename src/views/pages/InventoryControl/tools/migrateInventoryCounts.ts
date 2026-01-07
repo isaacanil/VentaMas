@@ -10,24 +10,37 @@ import {
   writeBatch,
   doc,
   deleteField,
+  type Firestore,
 } from 'firebase/firestore';
+
+interface MigrationProgressInfo {
+  type: 'log';
+  msg: string;
+}
+
+interface MigrationSummary {
+  businesses: number;
+  sessions: number;
+  docsScanned: number;
+  docsUpdated: number;
+  fieldsMigrated: number;
+  errors: number;
+  logs: string[];
+}
 
 /**
  * migrateAllBusinessesInventoryCounts
- * @param {import('firebase/firestore').Firestore} db
- * @param {{ businessIds?: string[], dryRun?: boolean, onProgress?: (info: any) => void }} options
- * @returns {Promise<{ businesses: number, sessions: number, docsScanned: number, docsUpdated: number, fieldsMigrated: number, errors: number, logs: string[] }>}
  */
 export async function migrateAllBusinessesInventoryCounts(
-  db,
+  db: Firestore,
   options: {
     businessIds?: string[] | null;
     dryRun?: boolean;
-    onProgress?: (info: { type: string; msg: string }) => void;
+    onProgress?: (info: MigrationProgressInfo) => void;
   } = {},
-) {
+): Promise<MigrationSummary> {
   const { businessIds = null, dryRun = false, onProgress } = options;
-  const summary = {
+  const summary: MigrationSummary = {
     businesses: 0,
     sessions: 0,
     docsScanned: 0,
@@ -37,7 +50,7 @@ export async function migrateAllBusinessesInventoryCounts(
     logs: [],
   };
 
-  const log = (msg) => {
+  const log = (msg: string) => {
     summary.logs.push(msg);
     if (onProgress) onProgress({ type: 'log', msg });
   };
@@ -50,7 +63,8 @@ export async function migrateAllBusinessesInventoryCounts(
     }
   } catch (e) {
     summary.errors++;
-    log(`[error] Listing businesses failed: ${e?.message || e}`);
+    const errMessage = e instanceof Error ? e.message : String(e);
+    log(`[error] Listing businesses failed: ${errMessage}`);
     throw e;
   }
 
@@ -158,7 +172,8 @@ export async function migrateAllBusinessesInventoryCounts(
               await batch.commit();
             } catch (e) {
               summary.errors++;
-              log(`    [error] commit: ${e?.message || e}`);
+              const errMessage = e instanceof Error ? e.message : String(e);
+              log(`    [error] commit: ${errMessage}`);
             }
             batch = writeBatch(db);
             pending = 0;
@@ -170,13 +185,15 @@ export async function migrateAllBusinessesInventoryCounts(
             await batch.commit();
           } catch (e) {
             summary.errors++;
-            log(`    [error] commit: ${e?.message || e}`);
+            const errMessage = e instanceof Error ? e.message : String(e);
+            log(`    [error] commit: ${errMessage}`);
           }
         }
       }
     } catch (e) {
       summary.errors++;
-      log(`  [error] Business ${bid}: ${e?.message || e}`);
+      const errMessage = e instanceof Error ? e.message : String(e);
+      log(`  [error] Business ${bid}: ${errMessage}`);
     }
   }
 

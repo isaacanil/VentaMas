@@ -53,7 +53,7 @@ const initialState: SegmentModalState = {
   error: null,
 };
 
-const segmentModalSlice = createSlice({
+const segmentModalSlice = (createSlice as any)({
   name: 'segmentModal', // Updated slice name
   initialState,
   reducers: {

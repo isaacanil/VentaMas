@@ -1,7 +1,7 @@
 import type {
   AccountsReceivableDoc,
-  ReceivableInvoice,
-} from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
+  ReceivableAuditInvoice,
+} from '@/utils/accountsReceivable/types';
 import type {
   DocumentData,
   QueryDocumentSnapshot,
@@ -41,7 +41,7 @@ export const toMillis = (value?: unknown): number | null => {
 
 export const mapInvoiceDoc = (
   docSnap: QueryDocumentSnapshot<DocumentData>,
-): ReceivableInvoice => {
+): ReceivableAuditInvoice => {
   const payload = docSnap.data();
   const payloadRecord = isRecord(payload) ? payload : {};
   const canonical = isRecord(payloadRecord.data) ? payloadRecord.data : {};

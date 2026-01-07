@@ -14,7 +14,7 @@ type DateRange = {
 };
 
 type HierarchyNode = {
-  id: string;
+  id?: string;
   name?: string | null;
   shelves?: HierarchyNode[];
   rows?: HierarchyNode[];
@@ -85,17 +85,22 @@ const MovementsFilterBar = ({
   // Build Cascader options from warehouse hierarchy
   const options = useMemo<CascaderOption[]>(() => {
     const toOptions = (items: HierarchyNode[]) =>
-      (items || []).map((item) => ({
-        label: item.name || 'Sin nombre',
-        value: item.id,
-        children: Array.isArray(item.shelves)
-          ? toOptions(item.shelves)
-          : Array.isArray(item.rows)
-            ? toOptions(item.rows)
-            : Array.isArray(item.segments)
-              ? toOptions(item.segments)
-              : undefined,
-      }));
+      (items || []).flatMap((item) => {
+        if (!item.id) return [];
+        return [
+          {
+            label: item.name || 'Sin nombre',
+            value: item.id,
+            children: Array.isArray(item.shelves)
+              ? toOptions(item.shelves)
+              : Array.isArray(item.rows)
+                ? toOptions(item.rows)
+                : Array.isArray(item.segments)
+                  ? toOptions(item.segments)
+                  : undefined,
+          },
+        ];
+      });
 
     return toOptions(hierarchy as HierarchyNode[]);
   }, [hierarchy]);

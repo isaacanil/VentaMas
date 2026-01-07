@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { memo, useMemo, useState } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';

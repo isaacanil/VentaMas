@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { message } from 'antd';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

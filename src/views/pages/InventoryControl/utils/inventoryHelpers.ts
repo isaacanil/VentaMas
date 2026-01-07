@@ -40,15 +40,15 @@ export function getLocationKey(
     segment,
     segmentId,
   } = location || {};
-  const pickId = (value) => {
+  const pickId = (value: unknown) => {
     if (!value) return '';
     if (typeof value === 'string' || typeof value === 'number')
       return String(value);
-    if (
-      typeof value === 'object' &&
-      (typeof value.id === 'string' || typeof value.id === 'number')
-    ) {
-      return String(value.id);
+    if (typeof value === 'object' && value && 'id' in value) {
+      const candidate = (value as { id?: string | number }).id;
+      if (typeof candidate === 'string' || typeof candidate === 'number') {
+        return String(candidate);
+      }
     }
     return '';
   };
@@ -95,7 +95,7 @@ export function buildLocations(
   items: Partial<InventoryStockItem>[],
   locationNamesMap: LocationNamesMap = {},
 ): InventoryLocation[] {
-  const map = new Map();
+  const map = new Map<string, number>();
   for (const it of items || []) {
     const locKey = getItemLocationKey(it);
     const qty = Number(it.quantity ?? it.stock ?? 0);

@@ -101,7 +101,9 @@ export function GroupedLotsTableBody({
           (record.sources?.length || 0) > 0
         ) {
           return record.sources.map((src, idx) => {
-            const sourceKey = src.id || src.key || `${record.key}-src-${idx}`;
+            const sourceKey = String(
+              src.id ?? src.key ?? `${record.key}-src-${idx}`,
+            );
             return (
               <GroupedLotsSourceRow
                 key={sourceKey}

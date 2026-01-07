@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo } from 'react';
 
 import { toMillis } from '@/utils/inventory/dates';

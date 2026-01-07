@@ -23,18 +23,18 @@ import {
 } from '../utils/firestoreMappers';
 
 import type {
-  ReceivableInvoice,
+  ReceivableAuditInvoice,
   ReceivablesLookup,
-} from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
+} from '@/utils/accountsReceivable/types';
 
 interface UseReceivableInvoicesOptions {
   defaultLimit?: number;
 }
 
 interface FetchResultState {
-  receivableInvoices: ReceivableInvoice[];
+  receivableInvoices: ReceivableAuditInvoice[];
   receivablesByInvoice: ReceivablesLookup;
-  missingReceivableInvoices: ReceivableInvoice[];
+  missingReceivableInvoices: ReceivableAuditInvoice[];
   lastUpdated: number | null;
   totalCreditInvoicesCount: number | null;
   loading: boolean;
@@ -61,7 +61,7 @@ export const useReceivableInvoices = (
       : DEFAULT_SAMPLE_LIMIT;
 
   const [receivableInvoices, setReceivableInvoices] = useState<
-    ReceivableInvoice[]
+    ReceivableAuditInvoice[]
   >([]);
   const [receivablesByInvoice, setReceivablesByInvoice] =
     useState<ReceivablesLookup>({});

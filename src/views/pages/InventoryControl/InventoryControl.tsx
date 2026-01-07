@@ -38,7 +38,7 @@ import type { MenuProps } from 'antd';
 const consoleApi =
   typeof globalThis !== 'undefined' ? globalThis.console : undefined;
 
-const logError = (...args) => {
+const logError = (...args: unknown[]) => {
   if (consoleApi?.error) {
     consoleApi.error(...args);
   }

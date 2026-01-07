@@ -71,7 +71,7 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/views/pages/InvoicesPage/ReceivablePaymentReceipt'),
 
   [CREDIT_NOTE_TERM.CREDIT_NOTE_LIST]: () =>
-    import('@/views/pages/CreditNote'),
+    import('@/views/pages/CreditNote/CreditNoteList/CreditNoteList'),
 
   [AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST]: () =>
     import('@/views/pages/Authorizations/AuthorizationsManager'),

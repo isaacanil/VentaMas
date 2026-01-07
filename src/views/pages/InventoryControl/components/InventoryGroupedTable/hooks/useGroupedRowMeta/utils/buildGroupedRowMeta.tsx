@@ -1,6 +1,7 @@
 import { UnorderedListOutlined } from '@ant-design/icons';
 import { Button, Dropdown, InputNumber, Modal, Tag, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
+import type { ReactNode } from 'react';
 
 import { ActionMenuButton } from '@/components/ActionMenuButton';
 import DatePicker from '@/components/DatePicker';
@@ -22,7 +23,11 @@ import {
 } from '../../../../inventoryTableUtils';
 import { ProductNameCell } from '../../../components/ProductNameCell';
 
-import type { InventoryGroup } from '@/utils/inventory/types';
+import type {
+  InventoryGroup,
+  InventoryLocation,
+  TimestampLike,
+} from '@/utils/inventory/types';
 import type { MenuProps } from 'antd';
 import type { BuildGroupedRowMetaParams, InventoryRowMeta } from '../types';
 
@@ -44,7 +49,10 @@ export function buildGroupedRowMeta({
   usersNameCache,
   setModalGroup,
 }: BuildGroupedRowMetaParams) {
-  const getLocationDisplay = (locKey, fallbackLabel = '') =>
+  const getLocationDisplay = (
+    locKey: string | null | undefined,
+    fallbackLabel = '',
+  ): ReturnType<typeof resolveLocationDisplay> =>
     resolveLocationDisplay(
       locKey,
       fallbackLabel,
@@ -52,8 +60,8 @@ export function buildGroupedRowMeta({
       resolvingLocations,
     );
 
-    const buildMeta = (g: InventoryGroup): InventoryRowMeta => {
-      if (!g) return {} as InventoryRowMeta;
+  const buildMeta = (g: InventoryGroup): InventoryRowMeta => {
+    if (!g) return {} as InventoryRowMeta;
       // Calcular número de lotes subyacentes (incluye sources dentro de un único child noexp o batch)
       const underlyingLotsCount = (g._children || []).reduce((acc, ch) => {
         if (Array.isArray(ch.sources) && ch.sources.length > 0)
@@ -100,8 +108,8 @@ export function buildGroupedRowMeta({
         }, 0);
       };
 
-      let computedSummedReal = null;
-      let conteoEl = null;
+      let computedSummedReal: number | null = null;
+      let conteoEl: ReactNode = null;
       let diffComputed = 0;
 
       if (hasSourceEdits || hasMultipleUnderlyingLots) {
@@ -118,20 +126,21 @@ export function buildGroupedRowMeta({
       }
 
       // Si más abajo (en canEditAtTop) se transforma a InputNumber se recalculará allí el diff de nuevo.
-      let diffEl = (
+      let diffEl: ReactNode = (
         <Diff $value={diffComputed}>{formatNumber(diffComputed)}</Diff>
       );
       const hasMultipleLots = hasMultipleUnderlyingLots; // mantener compatibilidad con nombre anterior
-      let actionsEl = null;
-      let userEl = null;
-      let expirationNode = <span style={{ opacity: 0.6 }}>-</span>;
-      let locationsNode = <span>-</span>;
+      let actionsEl: ReactNode = null;
+      let userEl: ReactNode = null;
+      let expirationNode: ReactNode = <span style={{ opacity: 0.6 }}>-</span>;
+      let locationsNode: ReactNode = <span>-</span>;
       let expirationSortValue = '';
 
       // --------------------------------------------------
       // Detección de modificaciones (conteo o vencimiento)
       // --------------------------------------------------
-      const normExp = (val) => normalizeExpirationValue(val);
+      const normExp = (val: Parameters<typeof normalizeExpirationValue>[0]) =>
+        normalizeExpirationValue(val);
       let isModified = false;
       for (const child of g._children || []) {
         const childKey = child.key;
@@ -284,12 +293,12 @@ export function buildGroupedRowMeta({
       );
 
       // Aggregated locations across children
-      const allLocations = [];
+      const allLocations: InventoryLocation[] = [];
       (g._children || []).forEach((c) => {
         if (Array.isArray(c.locations)) allLocations.push(...c.locations);
       });
       if (allLocations.length) {
-        const agg = new Map();
+        const agg = new Map<string, { quantity: number; label: string }>();
         for (const l of allLocations) {
           const locKey = l?.locationKey || l?.location;
           if (!locKey) continue;
@@ -391,10 +400,11 @@ export function buildGroupedRowMeta({
         diffEl = <Diff $value={diff}>{formatNumber(diff)}</Diff>;
 
         // Detectar diferencias entre valores actuales persistidos y baseline original - para todos los productos
-        const editedPairs = [];
+        const editedPairs: Array<[string, number]> = [];
         // NUEVO: detectar ediciones pendientes (counts vs persistido actual)
-        const pendingCountPairs = [];
-        const pushIfPending = (key, persisted) => {
+        const pendingCountPairs: Array<[string, number]> = [];
+        const pushIfPending = (key: string | undefined, persisted: number) => {
+          if (!key) return;
           if (Object.prototype.hasOwnProperty.call(counts, key)) {
             const current = Number(counts[key]);
             if (Number(current) !== Number(persisted))
@@ -410,6 +420,7 @@ export function buildGroupedRowMeta({
           );
           const baselineTop = baselineSnapshot.counts[g.topKey];
           if (
+            g.topKey &&
             baselineTop !== undefined &&
             Number(currentPersistedTop) !== Number(baselineTop)
           ) {
@@ -664,8 +675,11 @@ export function buildGroupedRowMeta({
         }
 
         // Recolectar editores para grupo con un solo hijo
-        const editorsMap = new Map();
-        const meta = countsMeta[g.topKey];
+        const editorsMap = new Map<
+          string,
+          { uid: string; name: string; updatedAt?: TimestampLike }
+        >();
+        const meta = g.topKey ? countsMeta[g.topKey] : undefined;
         if (meta?.updatedBy) {
           const uid = meta.updatedBy;
           const updatedAt = meta.updatedAt;
@@ -693,9 +707,9 @@ export function buildGroupedRowMeta({
 
       if (hasMultipleLots) {
         // Detectar diferencias entre valores actuales persistidos y baseline original en todo el grupo
-        const editedPairs = [];
+        const editedPairs: Array<[string, number]> = [];
         // NUEVO: detectar ediciones pendientes (counts vs persistido)
-        const pendingCountPairs = [];
+        const pendingCountPairs: Array<[string, number]> = [];
         (g._children || []).forEach((ch) => {
           const currentPersistedChild = getPersistedCount(
             serverCounts,
@@ -740,10 +754,12 @@ export function buildGroupedRowMeta({
         });
 
         // (Opcional) Detectar claves de fecha a restaurar al original
-        const dateResetPairs = [];
-        const norm = (v) => {
+        const dateResetPairs: Array<[string, string]> = [];
+        const norm = (
+          v: Parameters<typeof formatInputDate>[0] | null | undefined,
+        ) => {
           if (!v || v === CLEAR_SENTINEL) return '';
-          if (/^\\d{4}-\\d{2}-\\d{2}$/.test(v)) return v;
+          if (typeof v === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(v)) return v;
           return formatInputDate(v) || '';
         };
         (g._children || []).forEach((ch) => {
@@ -835,7 +851,10 @@ export function buildGroupedRowMeta({
           </Dropdown>
         );
         // Recolectar todos los editores de los hijos
-        const editorsMap = new Map();
+        const editorsMap = new Map<
+          string,
+          { uid: string; name: string; updatedAt?: TimestampLike }
+        >();
         (g._children || []).forEach((ch) => {
           const meta = countsMeta[ch.key];
           if (!meta?.updatedBy) return;
@@ -871,7 +890,7 @@ export function buildGroupedRowMeta({
           );
         }
         // Expiration summary for multiple lots (usar fecha efectiva: manual en grupo/source o fecha original)
-        const expirations = new Set();
+        const expirations = new Set<string>();
         (g._children || []).forEach((c) => {
           if (c.type !== 'batch') return;
           const groupManual = countsMeta[c.key]?.manualExpirationDate;

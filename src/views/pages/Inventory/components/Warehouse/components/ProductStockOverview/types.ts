@@ -1,13 +1,13 @@
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-import type { ProductStockRecord } from '@/utils/inventory/types';
+import type { ProductStockRecord, TimestampLike } from '@/utils/inventory/types';
 
 export type ProductStockItem = ProductStockRecord;
 
 export type BatchGroupData = {
   batchId?: string | null;
   batchNumberId?: string | null;
-  expirationDate?: unknown;
+  expirationDate?: TimestampLike;
   productName?: string | null;
   items: ProductStockItem[];
   total: number;

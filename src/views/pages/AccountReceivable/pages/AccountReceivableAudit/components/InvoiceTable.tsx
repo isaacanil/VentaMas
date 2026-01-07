@@ -4,11 +4,14 @@ import { useCallback, useMemo } from 'react';
 
 import { formatDate, formatPrice } from '@/utils/formatters';
 
-import type { ReceivableInvoice, ReceivablesLookup } from '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/types';
+import type {
+  ReceivableAuditInvoice,
+  ReceivablesLookup,
+} from '@/utils/accountsReceivable/types';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 
 interface InvoiceTableProps {
-  invoices: ReceivableInvoice[];
+  invoices: ReceivableAuditInvoice[];
   receivablesMap: ReceivablesLookup;
   loading: boolean;
   pagination: TablePaginationConfig;
@@ -41,7 +44,7 @@ export const InvoiceTable = ({
     }
   }, []);
 
-  const columns: ColumnsType<ReceivableInvoice> = useMemo(
+  const columns: ColumnsType<ReceivableAuditInvoice> = useMemo(
     () => [
       {
         title: 'Número',
@@ -78,14 +81,14 @@ export const InvoiceTable = ({
       {
         title: 'CxC',
         key: 'receivableStatus',
-        render: (_: unknown, record: ReceivableInvoice) =>
+        render: (_: unknown, record: ReceivableAuditInvoice) =>
           receivablesMap[record.invoiceId] ? 'Creada' : 'Falta',
       },
       {
         title: '',
         key: 'actions',
         align: 'right',
-        render: (_: unknown, record: ReceivableInvoice) => {
+        render: (_: unknown, record: ReceivableAuditInvoice) => {
           const items = [
             {
               key: 'copy',

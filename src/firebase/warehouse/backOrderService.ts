@@ -16,9 +16,12 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import type { BackOrder } from '@/models/Warehouse/BackOrder';
-import type { InventoryUser } from '@/utils/inventory/types';
+import type { InventoryUser, TimestampLike } from '@/utils/inventory/types';
 
-type BackOrderDoc = BackOrder & Record<string, unknown>;
+type BackOrderDoc = Omit<BackOrder, 'createdAt' | 'updatedAt'> & {
+  createdAt?: TimestampLike;
+  updatedAt?: TimestampLike;
+} & Record<string, unknown>;
 
 type ListenerState<T> = {
   key: string | null;
@@ -27,10 +30,20 @@ type ListenerState<T> = {
   error: unknown | null;
 };
 
-export const convertTimestampToDate = (timestamp: unknown) => {
+export const convertTimestampToDate = (
+  timestamp?: TimestampLike,
+): Date | null => {
   if (!timestamp) return null;
   if (timestamp instanceof Timestamp) return timestamp.toDate();
-  return new Date(timestamp as string | number);
+  if (timestamp instanceof Date) return timestamp;
+  if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+    return new Date(timestamp);
+  }
+  if (typeof timestamp?.toDate === 'function') return timestamp.toDate();
+  if (typeof timestamp?.seconds === 'number') {
+    return new Date(timestamp.seconds * 1000);
+  }
+  return null;
 };
 
 // Helpers: estado inicial por key (businessID / businessID+productId)

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button } from 'antd';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';

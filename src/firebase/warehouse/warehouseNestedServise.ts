@@ -3,11 +3,14 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { buildLocationPath } from '@/utils/inventory/locations';
-import type { InventoryStockItem, InventoryUser } from '@/utils/inventory/types';
-import type { RowShelf } from '@/models/Warehouse/RowShelf';
-import type { Segment } from '@/models/Warehouse/Segment';
-import type { Shelf } from '@/models/Warehouse/Shelf';
-import type { Warehouse } from '@/models/Warehouse/Warehouse';
+import type {
+  InventoryStockItem,
+  InventoryUser,
+  RowShelfRecord,
+  SegmentRecord,
+  ShelfRecord,
+  WarehouseRecord,
+} from '@/utils/inventory/types';
 
 // Servicios de escucha
 import { listenAllProductStockByLocation } from './productStockService';
@@ -16,28 +19,24 @@ import { listenAllSegments } from './segmentService';
 import { listenAllShelves } from './shelfService';
 import { listenAllWarehouses } from './warehouseService';
 
-type WarehouseRecord = Partial<Warehouse> & {
-  id: string;
-  shelves?: ShelfRecord[];
+type WarehouseNode = WarehouseRecord & {
+  shelves?: ShelfNode[];
   productStock?: InventoryStockItem[];
 };
 
-type ShelfRecord = Partial<Shelf> & {
-  id: string;
-  rows?: RowRecord[];
+type ShelfNode = ShelfRecord & {
+  rows?: RowNode[];
   productStock?: InventoryStockItem[];
 };
 
-type RowRecord = Partial<RowShelf> & {
-  id: string;
-  segments?: SegmentRecord[];
+type RowNode = RowShelfRecord & {
+  segments?: SegmentNode[];
   productStock?: InventoryStockItem[];
   warehouseId?: string;
   shelfId?: string;
 };
 
-type SegmentRecord = Partial<Segment> & {
-  id: string;
+type SegmentNode = SegmentRecord & {
   productStock?: InventoryStockItem[];
 };
 
@@ -49,10 +48,10 @@ export const useWarehouseHierarchy = () => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const businessId = user?.businessID ?? null;
 
-  const [warehouses, setWarehouses] = useState<WarehouseRecord[]>([]);
-  const [shelves, setShelves] = useState<Record<string, ShelfRecord[]>>({});
-  const [rows, setRows] = useState<Record<string, RowRecord[]>>({});
-  const [segments, setSegments] = useState<Record<string, SegmentRecord[]>>({});
+  const [warehouses, setWarehouses] = useState<WarehouseNode[]>([]);
+  const [shelves, setShelves] = useState<Record<string, ShelfNode[]>>({});
+  const [rows, setRows] = useState<Record<string, RowNode[]>>({});
+  const [segments, setSegments] = useState<Record<string, SegmentNode[]>>({});
   const [productStock, setProductStock] = useState<WarehouseStockMap>({});
   const [shelvesLoading, setShelvesLoading] = useState<LoadingMap>({});
   const [rowsLoading, setRowsLoading] = useState<LoadingMap>({});
@@ -82,7 +81,7 @@ export const useWarehouseHierarchy = () => {
     const unsubscribe = listenAllWarehouses(
       user,
       (warehouseData) => {
-        setWarehouses(warehouseData as WarehouseRecord[]);
+        setWarehouses(warehouseData as WarehouseNode[]);
         setWarehousesLoadedFor(businessId);
       },
       (err) => {
@@ -110,18 +109,28 @@ export const useWarehouseHierarchy = () => {
     const newUnsubscribes: (() => void)[] = [];
 
     warehouses.forEach((warehouse) => {
-      setShelvesLoading((prev) => ({ ...prev, [warehouse.id]: true }));
+      if (!warehouse?.id) return;
+      setShelvesLoading((prev) => ({ ...prev, [warehouse.id as string]: true }));
 
       const unsubscribe = listenAllShelves(
         user,
-        warehouse.id,
+        warehouse.id as string,
         (shelfData) => {
-          setShelves((prev) => ({ ...prev, [warehouse.id]: shelfData }));
-          setShelvesLoading((prev) => ({ ...prev, [warehouse.id]: false }));
+          setShelves((prev) => ({
+            ...prev,
+            [warehouse.id as string]: shelfData as ShelfNode[],
+          }));
+          setShelvesLoading((prev) => ({
+            ...prev,
+            [warehouse.id as string]: false,
+          }));
         },
         (err) => {
           setError(err);
-          setShelvesLoading((prev) => ({ ...prev, [warehouse.id]: false }));
+          setShelvesLoading((prev) => ({
+            ...prev,
+            [warehouse.id as string]: false,
+          }));
         },
       );
 
@@ -146,19 +155,29 @@ export const useWarehouseHierarchy = () => {
 
     Object.keys(shelves).forEach((warehouseId) => {
       shelves[warehouseId].forEach((shelf) => {
-        setRowsLoading((prev) => ({ ...prev, [shelf.id]: true }));
+        if (!shelf?.id) return;
+        setRowsLoading((prev) => ({ ...prev, [shelf.id as string]: true }));
 
         const unsubscribe = listenAllRowShelves(
           user,
           warehouseId,
-          shelf.id,
+          shelf.id as string,
           (rowData) => {
-            setRows((prev) => ({ ...prev, [shelf.id]: rowData }));
-            setRowsLoading((prev) => ({ ...prev, [shelf.id]: false }));
+            setRows((prev) => ({
+              ...prev,
+              [shelf.id as string]: rowData as RowNode[],
+            }));
+            setRowsLoading((prev) => ({
+              ...prev,
+              [shelf.id as string]: false,
+            }));
           },
           (err) => {
             setError(err);
-            setRowsLoading((prev) => ({ ...prev, [shelf.id]: false }));
+            setRowsLoading((prev) => ({
+              ...prev,
+              [shelf.id as string]: false,
+            }));
           },
         );
 
@@ -184,20 +203,30 @@ export const useWarehouseHierarchy = () => {
 
     Object.keys(rows).forEach((shelfId) => {
       rows[shelfId].forEach((row) => {
-        setSegmentsLoading((prev) => ({ ...prev, [row.id]: true }));
+        if (!row?.id) return;
+        setSegmentsLoading((prev) => ({ ...prev, [row.id as string]: true }));
 
         const unsubscribe = listenAllSegments(
           user,
           row.warehouseId,
           row.shelfId,
-          row.id,
+          row.id as string,
           (segmentData) => {
-            setSegments((prev) => ({ ...prev, [row.id]: segmentData }));
-            setSegmentsLoading((prev) => ({ ...prev, [row.id]: false }));
+            setSegments((prev) => ({
+              ...prev,
+              [row.id as string]: segmentData as SegmentNode[],
+            }));
+            setSegmentsLoading((prev) => ({
+              ...prev,
+              [row.id as string]: false,
+            }));
           },
           (err) => {
             setError(err);
-            setSegmentsLoading((prev) => ({ ...prev, [row.id]: false }));
+            setSegmentsLoading((prev) => ({
+              ...prev,
+              [row.id as string]: false,
+            }));
           },
         );
 
@@ -223,13 +252,17 @@ export const useWarehouseHierarchy = () => {
 
     // Warehouses
     warehouses.forEach((warehouse) => {
+      if (!warehouse?.id) return;
       const locationPath = buildLocationPath({ warehouseId: warehouse.id });
       if (!locationPath) return;
       const unsubscribe = listenAllProductStockByLocation(
         user,
         locationPath,
         (stockData) => {
-          setProductStock((prev) => ({ ...prev, [warehouse.id]: stockData }));
+          setProductStock((prev) => ({
+            ...prev,
+            [warehouse.id as string]: stockData,
+          }));
         },
         (err) => setError(err),
       );
@@ -239,16 +272,20 @@ export const useWarehouseHierarchy = () => {
     // Shelves
     Object.keys(shelves).forEach((warehouseId) => {
       shelves[warehouseId].forEach((shelf) => {
+        if (!shelf?.id) return;
         const locationPath = buildLocationPath({
           warehouseId: shelf.warehouseId ?? warehouseId,
-          shelfId: shelf.id,
+          shelfId: shelf.id as string,
         });
         if (!locationPath) return;
         const unsubscribe = listenAllProductStockByLocation(
           user,
           locationPath,
           (stockData) => {
-            setProductStock((prev) => ({ ...prev, [shelf.id]: stockData }));
+            setProductStock((prev) => ({
+              ...prev,
+              [shelf.id as string]: stockData,
+            }));
           },
           (err) => setError(err),
         );
@@ -271,23 +308,28 @@ export const useWarehouseHierarchy = () => {
   // ---------------------------------------------------
   const data = useMemo(() => {
     return warehouses.map((warehouse) => {
-      const warehouseShelves = shelves[warehouse.id] || [];
+      const warehouseId = warehouse.id as string;
+      const warehouseShelves = warehouseId ? shelves[warehouseId] || [] : [];
       return {
         ...warehouse,
-        productStock: productStock[warehouse.id] || [],
+        productStock: warehouseId ? productStock[warehouseId] || [] : [],
         shelves: warehouseShelves.map((shelf) => {
-          const shelfRows = rows[shelf.id] || [];
+          const shelfId = shelf.id as string;
+          const shelfRows = shelfId ? rows[shelfId] || [] : [];
           return {
             ...shelf,
-            productStock: productStock[shelf.id] || [],
+            productStock: shelfId ? productStock[shelfId] || [] : [],
             rows: shelfRows.map((row) => {
-              const rowSegments = segments[row.id] || [];
+              const rowId = row.id as string;
+              const rowSegments = rowId ? segments[rowId] || [] : [];
               return {
                 ...row,
-                productStock: productStock[row.id] || [],
+                productStock: rowId ? productStock[rowId] || [] : [],
                 segments: rowSegments.map((segment) => ({
                   ...segment,
-                  productStock: productStock[segment.id] || [],
+                  productStock: segment.id
+                    ? productStock[segment.id as string] || []
+                    : [],
                 })),
               };
             }),
@@ -335,7 +377,7 @@ const sanitizeSegment = (segment: Record<string, unknown>) =>
 export const useTransformedWarehouseData = () => {
   const { data, loading, error } = useWarehouseHierarchy();
 
-  const transformData = (entries: WarehouseRecord[]): TreeNode[] => {
+  const transformData = (entries: WarehouseNode[]): TreeNode[] => {
     return entries.map((warehouse) => ({
       id: warehouse.id,
       name: warehouse.name as string | undefined,

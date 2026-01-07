@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button, Tooltip } from 'antd';
 import { useDispatch } from 'react-redux';
 

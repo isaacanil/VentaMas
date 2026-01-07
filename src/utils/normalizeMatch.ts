@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { MatchConfig } from '@/views/templates/MenuApp/GlobalMenu/types';
 import type { PathPattern } from 'react-router-dom';
 

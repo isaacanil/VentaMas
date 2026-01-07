@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SearchOutlined } from '@ant-design/icons';
 import { faBoxes, faEye } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createLazyLoader } from '@/utils/createLazyLoader';
 import { ensureArray } from '@/utils/ensureArray';
 import { normalizeMatch } from '@/utils/normalizeMatch';

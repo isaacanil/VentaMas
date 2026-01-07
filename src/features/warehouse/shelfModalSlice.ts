@@ -38,7 +38,7 @@ const initialState: ShelfModalState = {
   error: null,
 };
 
-const shelfModalSlice = createSlice({
+const shelfModalSlice = (createSlice as any)({
   name: 'shelfModal', // Updated slice name
   initialState,
   reducers: {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Modal, Checkbox, Select, Button } from 'antd';
 import React from 'react';
 

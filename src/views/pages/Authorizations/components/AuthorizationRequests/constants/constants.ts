@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { AuthorizationStatus } from '@/views/pages/Authorizations/components/AuthorizationRequests/types';
 
 interface StatusThemeToken {

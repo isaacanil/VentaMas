@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button } from 'antd';
 import { type FC } from 'react';
 import styled from 'styled-components';

@@ -20,27 +20,27 @@ import {
   SelectSettingCart,
   SelectCartData,
 } from '@/features/cart/cartSlice';
-import { deleteClient } from '@/features/clientCart/clientCartSlice.js';
-import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice.js';
+import { deleteClient } from '@/features/clientCart/clientCartSlice';
+import { clearTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { useGetProducts } from '@/firebase/products/fbGetProducts';
 import { useBarcodeScanner } from '@/hooks/barcode/useBarcodeScanner';
 import useFilter from '@/hooks/search/useSearch'; // Cambiar importación
-import useViewportWidth from '@/hooks/windows/useViewportWidth.jsx';
+import useViewportWidth from '@/hooks/windows/useViewportWidth';
 import {
   extractProductInfo,
   extractWeightInfo,
   formatWeight,
-} from '@/utils/barcode.js';
-import { ClientSelector } from '@/views/component/contact/ClientControl/ClientSelector/ClientSelector.jsx';
+} from '@/utils/barcode';
+import { ClientSelector } from '@/views/component/contact/ClientControl/ClientSelector/ClientSelector';
 import { ProductBatchModal } from '@/views/pages/Inventory/components/Warehouse/components/ProductBatchModal/ProductBatchModal';
-import { MenuApp } from '@/views/templates/MenuApp/MenuApp.jsx';
-import { MenuComponents } from '@/views/templates/MenuComponents/MenuComponents.jsx';
+import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
+import { MenuComponents } from '@/views/templates/MenuComponents/MenuComponents';
 
 import { Cart } from './components/Cart/Cart';
-import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel.jsx';
+import { InvoicePanel } from './components/Cart/components/InvoicePanel/InvoicePanel';
 import { CashRegisterAlertModal } from './components/modals/CashRegisterAlertModal';
-import { ProductControlEfficient } from './components/ProductControl.jsx/ProductControlEfficient.jsx';
+import { ProductControlEfficient } from './components/ProductControl/ProductControlEfficient';
 
 import type { Dispatch, SetStateAction, JSX } from 'react';
 import type { ComponentType, ReactNode } from 'react';

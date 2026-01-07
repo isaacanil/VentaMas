@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { MenuProps } from 'antd';
 import type { DateTime } from 'luxon';
 

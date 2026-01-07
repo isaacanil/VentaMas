@@ -1,6 +1,6 @@
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -62,11 +62,9 @@ const InventoryMenu = () => {
   const { BACKORDERS, PURCHASES } = PURCHASE_TERM;
   const { ORDERS } = ORDER_TERM;
 
-  const [value, setValue] = useState(0);
 
-  const handleChange = (newValue: number) => {
-    setValue(newValue);
-    let selectedRoute;
+const handleChange = (newValue: number) => {
+  let selectedRoute;
 
     switch (newValue) {
       case 0: // Almacenes
@@ -95,57 +93,41 @@ const InventoryMenu = () => {
     }
   };
 
-  useEffect(() => {
+  const activeValue = useMemo(() => {
     const path = location.pathname;
+    if (path === `${WAREHOUSES}/products-stock`) return 1;
+    if (path.startsWith(`${WAREHOUSES}/warehouse/`)) return 0;
+    if (path.includes('/backorders')) return 2;
+    if (path.includes('/purchases')) return 3;
+    if (path.includes('/orders')) return 4;
+    return 0;
+  }, [location.pathname, WAREHOUSES]);
 
-    // Stock: /inventory/warehouses/products-stock
-    if (path === `${WAREHOUSES}/products-stock`) {
-      setValue(1);
-    }
-    // Almacenes: /inventory/warehouses/warehouse/[id] y niveles posteriores (shelf, row, segment)
-    else if (path.startsWith(`${WAREHOUSES}/warehouse/`)) {
-      setValue(0);
-    }
-    // Backorders: cualquier ruta con /backorders
-    else if (path.includes('/backorders')) {
-      setValue(2);
-    }
-    // Compras: cualquier ruta con /purchases
-    else if (path.includes('/purchases')) {
-      setValue(3);
-    }
-    // Pedidos: cualquier ruta con /orders
-    else if (path.includes('/orders')) {
-      setValue(4);
-    }
-    // Default: redirigir al almacén por defecto
-    else if (path === WAREHOUSES) {
-      setValue(0);
-      if (!loadingDefault && defaultWarehouse) {
-        navigate(`${WAREHOUSES}/warehouse/${defaultWarehouse.id}`);
-      }
+  useEffect(() => {
+    if (location.pathname === WAREHOUSES && !loadingDefault && defaultWarehouse) {
+      navigate(`${WAREHOUSES}/warehouse/${defaultWarehouse.id}`);
     }
   }, [location.pathname, loadingDefault, defaultWarehouse, navigate, WAREHOUSES]);
 
   return (
     <MenuContainer>
       <TabList>
-        <Tab $active={value === 0} onClick={() => handleChange(0)}>
+        <Tab $active={activeValue === 0} onClick={() => handleChange(0)}>
           Almacenes
         </Tab>
-        <Tab $active={value === 1} onClick={() => handleChange(1)}>
+        <Tab $active={activeValue === 1} onClick={() => handleChange(1)}>
           Stock
         </Tab>
-        <Tab $active={value === 2} onClick={() => handleChange(2)}>
+        <Tab $active={activeValue === 2} onClick={() => handleChange(2)}>
           Backorders
         </Tab>
-        <Tab $active={value === 3} onClick={() => handleChange(3)}>
+        <Tab $active={activeValue === 3} onClick={() => handleChange(3)}>
           Compras
           <ExternalArrow>
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
           </ExternalArrow>
         </Tab>
-        <Tab $active={value === 4} onClick={() => handleChange(4)}>
+        <Tab $active={activeValue === 4} onClick={() => handleChange(4)}>
           Pedidos
           <ExternalArrow>
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />

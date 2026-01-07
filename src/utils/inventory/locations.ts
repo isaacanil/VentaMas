@@ -1,12 +1,4 @@
-import type { LocationRefLike } from './types';
-
-type LocationPathParts = {
-  warehouseId?: string | number | null;
-  shelfId?: string | number | null;
-  rowId?: string | number | null;
-  rowShelfId?: string | number | null;
-  segmentId?: string | number | null;
-};
+import type { LocationPathParts, LocationRefLike } from './types';
 
 const toPathPart = (value: unknown): string | null => {
   if (typeof value === 'string') {
@@ -21,7 +13,7 @@ const toPathPart = (value: unknown): string | null => {
   return null;
 };
 
-export function normalizeLocationId(value: unknown) {
+export function normalizeLocationId(value: unknown): string {
   if (typeof value !== 'string') return '';
   return value.trim();
 }
@@ -38,7 +30,7 @@ const LOCATION_COLLECTIONS = new Set([
   'rowShelf',
 ]);
 
-export function normalizeLocationKey(value: string) {
+export function normalizeLocationKey(value: string): string {
   if (!value || typeof value !== 'string') return '';
   const parts = value.split('/').filter(Boolean);
   if (!parts.length) return '';
@@ -61,7 +53,7 @@ export function normalizeLocationKey(value: string) {
 
 export function buildLocationPath(
   rawLocation: LocationRefLike | LocationPathParts | string | null | undefined,
-) {
+): string {
   if (!rawLocation) return '';
   if (typeof rawLocation === 'string') {
     const normalized = normalizeLocationKey(rawLocation);
@@ -92,7 +84,14 @@ export function buildLocationPath(
   return '';
 }
 
-export function parseLocationPath(value: string) {
+export function parseLocationPath(
+  value: string,
+): {
+  warehouseId?: string;
+  shelfId?: string;
+  rowId?: string;
+  segmentId?: string;
+} {
   const normalized = normalizeLocationKey(value);
   if (!normalized) return {};
   const [warehouseId, shelfId, rowId, segmentId] = normalized

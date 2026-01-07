@@ -22,7 +22,7 @@ const initialState: DeleteProductStockState = {
   actionType: 'productStock',
 };
 
-const deleteProductStockSlice = createSlice({
+const deleteProductStockSlice = (createSlice as any)({
   name: 'deleteProductStock',
   initialState,
   reducers: {

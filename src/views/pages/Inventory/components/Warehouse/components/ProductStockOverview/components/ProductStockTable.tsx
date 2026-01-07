@@ -6,7 +6,7 @@ import type { MenuProps } from 'antd';
 import { useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 
-import type { LocationNamesMap } from '@/utils/inventory/types';
+import type { LocationNamesMap, TimestampLike } from '@/utils/inventory/types';
 import {
   AdvancedTable,
   type AdvancedTableColumn,
@@ -30,7 +30,7 @@ type ProductStockRow = ProductStockItem & {
   actions: string;
 };
 
-const toDateMs = (value: unknown): number | null => {
+const toDateMs = (value: TimestampLike): number | null => {
   if (!value) return null;
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.getTime();
   if (typeof value === 'number' || typeof value === 'string') {
@@ -110,7 +110,7 @@ const ProductStockTable = ({
   const columns = useMemo<AdvancedTableColumn<ProductStockRow>[]>(
     () => [
       {
-        Header: 'Ubicación',
+        Header: 'ubicación',
         accessor: 'location',
         minWidth: '300px',
         maxWidth: '1fr',
@@ -121,7 +121,7 @@ const ProductStockTable = ({
           const locationLabel =
             locationNames?.[locationValue] ||
             locationValue ||
-            'Ubicación no disponible';
+            'ubicación no disponible';
 
           return (
             <Tooltip title={locationLabel} placement="topLeft">

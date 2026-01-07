@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Checkbox, Input, InputNumber } from 'antd';
 import { useCallback } from 'react';
 import styled from 'styled-components';

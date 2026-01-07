@@ -4,38 +4,38 @@ Este directorio contiene los componentes separados del generador de códigos de 
 
 ## Estructura de Componentes
 
-### 🎯 **BarcodeGenerator.jsx** (Componente Principal)
+### 🎯 **BarcodeGenerator.tsx** (Componente Principal)
 
 - Maneja el estado global y la lógica de negocio
 - Coordina la comunicación entre componentes
 - Contiene las funciones de validación y generación
 
-### 📱 **GenerateTab.jsx**
+### 📱 **GenerateTab.tsx**
 
 - Pestaña principal para generar códigos
 - Formulario de entrada de datos
 - Validación en tiempo real
 - Integra BarcodePreview y BarcodeResult
 
-### ⚙️ **ConfigurationTab.jsx**
+### ⚙️ **ConfigurationTab.tsx**
 
 - Pestaña de configuración de empresa
 - Configuración de Company Prefix
 - Integra CodeStructure para visualización
 
-### 🎨 **BarcodeResult.jsx**
+### 🎨 **BarcodeResult.tsx**
 
 - Muestra el código de barras generado
 - Renderiza el componente Barcode
 - Mensaje de validación
 
-### 👁️ **BarcodePreview.jsx**
+### 👁️ **BarcodePreview.tsx**
 
 - Previsualización en tiempo real del código
 - Se actualiza conforme el usuario escribe
 - Muestra formato GTIN-13 estructurado
 
-### 🏗️ **CodeStructure.jsx**
+### 🏗️ **CodeStructure.tsx**
 
 - Visualización de la estructura del código
 - Muestra los componentes: GS1 RD | Company | Products | Check

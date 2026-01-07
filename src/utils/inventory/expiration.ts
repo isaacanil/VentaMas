@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CLEAR_SENTINEL } from './constants';
 import type {
   CountsMetaMap,

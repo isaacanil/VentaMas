@@ -12,13 +12,13 @@ const consoleApi =
   typeof globalThis !== 'undefined' ? globalThis.console : undefined;
 const isDev = import.meta.env.DEV;
 
-const logDebug = (...args) => {
+const logDebug = (...args: unknown[]) => {
   if (isDev && consoleApi?.debug) {
     consoleApi.debug(...args);
   }
 };
 
-const logError = (...args) => {
+const logError = (...args: unknown[]) => {
   if (consoleApi?.error) {
     consoleApi.error(...args);
   }

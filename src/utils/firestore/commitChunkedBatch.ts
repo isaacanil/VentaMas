@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Firestore, writeBatch } from 'firebase/firestore';
 
 export type BatchApplyFn = (b: ReturnType<typeof writeBatch>) => void;

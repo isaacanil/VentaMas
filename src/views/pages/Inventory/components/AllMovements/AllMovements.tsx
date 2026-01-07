@@ -13,9 +13,13 @@ import {
 } from '@/views/templates/system/AdvancedTable/AdvancedTable';
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 import MovementsFilterBar from './MovementsFilterBar';
+import type { InventoryUser, TimestampLike } from '@/utils/inventory/types';
 
 // Reuse styles from MovementsTable for consistent look
-type Movement = ReturnType<typeof useListenAllMovementsByDateRange>['data'][number];
+
+type Movement = ReturnType<
+  typeof useListenAllMovementsByDateRange
+>['data'][number];
 
 type MovementRow = Movement & {
   key: string;
@@ -182,11 +186,7 @@ const getLocationDisplay = (movement: Movement): string => {
   const location = isEntry
     ? movement.sourceLocation
     : movement.destinationLocation;
-  if (
-    !location ||
-    !locationName ||
-    /Ubicación no encontrada|N\/A|Error/i.test(locationName)
-  ) {
+  if (!location || !locationName || /Ubicación no encontrada|N\/A|Error/i.test(locationName)) {
     switch (reason) {
       case 'purchase':
         return 'Proveedor Externo';
@@ -220,17 +220,31 @@ const MovementTypeBadge = styled.span<{ isEntry: boolean }>`
   border-radius: 8px;
 `;
 
+const toDate = (value?: TimestampLike): Date | null => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === 'number' || typeof value === 'string') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value?.toDate === 'function') return value.toDate();
+  if (typeof value?.seconds === 'number') {
+    return new Date(value.seconds * 1000);
+  }
+  return null;
+};
+
 const AllMovements = () => {
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as InventoryUser | null;
   const navigate = useNavigate();
   const [dates, setDates] = useState<MovementRange>(() =>
     getDateRange('thisWeek'),
   );
-  const [typeFilter, setTypeFilter] = useState<MovementFilterType>(null); // 'in' | 'out' | null (Todas)
+  const [typeFilter, setTypeFilter] = useState<MovementFilterType>(null);
 
   const { data, loading } = useListenAllMovementsByDateRange(user, dates);
 
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null); // path like 'warehouseId/shelfId'
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
 
   const filteredData = useMemo<Movement[]>(() => {
     let arr = data ?? [];
@@ -250,20 +264,8 @@ const AllMovements = () => {
 
   const rows = useMemo<MovementRow[]>(() => {
     return (filteredData || []).map((mv) => {
-      const dateObj = (() => {
-        const createdAt = mv.createdAt;
-        if (!createdAt) return null;
-        if (createdAt instanceof Date) return createdAt;
-        if (typeof (createdAt as { toDate?: () => Date }).toDate === 'function') {
-          return (createdAt as { toDate: () => Date }).toDate();
-        }
-        if (typeof (createdAt as { seconds?: number }).seconds === 'number') {
-          return new Date((createdAt as { seconds: number }).seconds * 1000);
-        }
-        return null;
-      })();
-      const productName =
-        typeof mv.productName === 'string' ? mv.productName : '';
+      const dateObj = toDate(mv.createdAt as TimestampLike | undefined);
+      const productName = typeof mv.productName === 'string' ? mv.productName : '';
       return {
         ...mv,
         key: mv.id,
@@ -320,9 +322,7 @@ const AllMovements = () => {
               <LocationName isEntry={isEntry}>{locationDisplay}</LocationName>
               <DirectionWrapper>
                 <DirectionLabel isEntry={isEntry}>
-                  <DirectionArrow isEntry={isEntry}>
-                    {isEntry ? '←' : '→'}
-                  </DirectionArrow>
+                  <DirectionArrow isEntry={isEntry}>{isEntry ? '←' : '→'}</DirectionArrow>
                   {isEntry ? 'Origen' : 'Destino'}
                 </DirectionLabel>
               </DirectionWrapper>
@@ -384,4 +384,3 @@ const Page = styled.div`
   grid-template-rows: min-content min-content 1fr;
   height: 100%;
 `;
-

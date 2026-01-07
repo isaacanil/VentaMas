@@ -1,6 +1,7 @@
 import React, { lazy } from 'react';
 
 import ROUTES_NAME from '@/router/routes/routesName';
+import type { AppRoute } from '@/router/routes/routes';
 
 // Lazy load components
 const CashReconciliation = lazy(() =>
@@ -28,14 +29,7 @@ const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
 const { CASH_RECONCILIATION_LIST: CASH_RECONCILIATION } =
   ROUTES_NAME.CASH_RECONCILIATION_TERM;
 
-interface RouteConfig {
-  path: string;
-  element: React.JSX.Element;
-  title: string;
-  metaDescription: string;
-}
-
-const routes: RouteConfig[] = [
+const routes: AppRoute[] = [
   {
     path: SALES,
     element: <Sales />,
@@ -67,3 +61,4 @@ const routes: RouteConfig[] = [
 ];
 
 export default routes;
+

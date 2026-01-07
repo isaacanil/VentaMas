@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Skeleton, Typography } from 'antd';

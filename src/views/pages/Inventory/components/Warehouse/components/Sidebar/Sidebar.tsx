@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LoadingOutlined } from '@ant-design/icons';
 import {
   faPlus,

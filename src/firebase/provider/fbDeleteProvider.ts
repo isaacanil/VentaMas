@@ -1,0 +1,15 @@
+// @ts-nocheck
+import { doc, deleteDoc } from 'firebase/firestore';
+
+import { db } from '@/firebase/firebaseconfig';
+
+export const fbDeleteProvider = async (id, user) => {
+  if (!user || !user?.businessID) return;
+  const providerRef = doc(db, 'businesses', user.businessID, 'providers', id);
+  try {
+    await deleteDoc(providerRef);
+    // Deleting provider
+  } catch (error) {
+    console.error('Error deleting provider:', error);
+  }
+};

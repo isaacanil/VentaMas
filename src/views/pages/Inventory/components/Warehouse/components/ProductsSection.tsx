@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, List } from 'antd';

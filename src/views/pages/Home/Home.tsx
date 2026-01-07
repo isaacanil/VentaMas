@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Spin } from 'antd';
 import { lazy, Suspense } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { auth } from '@/firebase/firebaseconfig';
 

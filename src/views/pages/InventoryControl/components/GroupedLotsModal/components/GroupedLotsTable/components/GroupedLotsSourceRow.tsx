@@ -24,6 +24,7 @@ import type {
   InventoryChild,
   InventorySource,
 } from '@/utils/inventory/types';
+import type { MenuProps } from 'antd';
 
 interface LocationDisplay {
   label: string;
@@ -120,7 +121,7 @@ export function GroupedLotsSourceRow({
     expirationEdits,
     sourceKey,
   );
-  let sourceDateValue = null;
+  let sourceDateValue: DateTime | null = null;
   let srcBaseStr = '';
   if (srcHasEditState) {
     if (srcEditVal === CLEAR_SENTINEL) srcBaseStr = '';
@@ -263,7 +264,7 @@ export function GroupedLotsSourceRow({
       <td style={{ textAlign: 'center' }}>
         {!readOnly &&
           (() => {
-            const menuItems = [];
+            const menuItems: NonNullable<MenuProps['items']> = [];
             const originalDate = source.expirationDate || record.expirationDate;
             const srcHasChanged = !!(
               countsMeta[sourceKey]?.manualExpirationDate ||

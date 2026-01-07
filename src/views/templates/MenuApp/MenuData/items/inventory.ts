@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MenuItem } from '@/types/menu';
 
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
@@ -17,17 +17,6 @@ const { BACKORDERS } = ROUTES_NAME.PURCHASE_TERM;
 
 const ChevronRight = icons.arrows.chevronRight;
 const ChevronLeft = icons.arrows.chevronLeft;
-
-type MenuItem = {
-  title: string;
-  icon?: ReactNode;
-  route?: string;
-  group?: string;
-  requiresDevAccess?: boolean;
-  submenuIconOpen?: ReactNode;
-  submenuIconClose?: ReactNode;
-  submenu?: MenuItem[];
-};
 
 const inventory: MenuItem[] = [
   {

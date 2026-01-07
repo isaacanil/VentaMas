@@ -32,7 +32,10 @@ export function useInventorySession({
       sessionId,
     );
     const unsub = onSnapshot(sessionRef, (snap) => {
-      if (snap.exists()) setSession({ id: snap.id, ...snap.data() });
+      if (snap.exists()) {
+        const data = snap.data() as InventorySession;
+        setSession({ id: snap.id, ...data });
+      }
       else setSession(null);
     });
     return () => unsub();

@@ -11,48 +11,23 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { buildLocationPath } from '@/utils/inventory/locations';
-import type { InventoryUser } from '@/utils/inventory/types';
+import type {
+  InventoryUser,
+  WarehouseStructureData,
+  WarehouseStructureElement,
+  WarehouseStructurePayload,
+  WarehouseStructureType,
+} from '@/utils/inventory/types';
 
 // Función para obtener la referencia al documento de estructura
 const getStructureDoc = (businessId: string, type: StructureType) => {
   return doc(db, 'businesses', businessId, 'warehouseStructure', type);
 };
 
-type StructureType = 'warehouses' | 'shelves' | 'rows' | 'segments';
-
-type StructureElement = {
-  id: string;
-  name?: string;
-  location: string;
-  updatedAt: string;
-  updatedBy?: string;
-  isDeleted?: boolean;
-};
-
-type StructurePayload = {
-  name?: string;
-  warehouseId?: string;
-  shelfId?: string;
-  rowShelfId?: string;
-};
-
-type StructureData = {
-  warehouses: Array<{ id: string; name?: string }>;
-  shelves: Array<{ id: string; name?: string; warehouseId?: string }>;
-  rows: Array<{
-    id: string;
-    name?: string;
-    warehouseId?: string;
-    shelfId?: string;
-  }>;
-  segments: Array<{
-    id: string;
-    name?: string;
-    warehouseId?: string;
-    shelfId?: string;
-    rowShelfId?: string;
-  }>;
-};
+type StructureType = WarehouseStructureType;
+type StructureElement = WarehouseStructureElement;
+type StructurePayload = WarehouseStructurePayload;
+type StructureData = WarehouseStructureData;
 
 // Función para actualizar o añadir un elemento a la estructura
 const updateStructureElement = async (

@@ -11,6 +11,7 @@ import {
 import { replacePathParams } from '@/router/routes/replacePathParams';
 import ROUTES_PATH from '@/router/routes/routesName';
 import Tree from '@/views/component/tree/Tree';
+import type { TreeConfig as BaseTreeConfig } from '@/views/component/tree/Tree';
 
 import { PRODUCT_STOCK_FILTER_OPTIONS as BASE_PRODUCT_STOCK_FILTER_OPTIONS } from './constants';
 
@@ -51,20 +52,14 @@ type TreeHeaderAction = {
   render: () => ReactNode;
 };
 
-type TreeConfig = {
+type TreeConfig = BaseTreeConfig & {
   actions?: unknown[];
   headerActions?: TreeHeaderAction[];
-  showToggleAllButton?: boolean;
-  searchPlaceholder?: string;
-  showInitialVisibleInfoMessage?: boolean;
-  footerPlacement?: string;
   onNodeClick?: (node: TreeNodeData) => void;
   showMatchedStockCount?: boolean;
   showLocationStockSummary?: boolean;
   disableStockSummaryDetails?: boolean;
   disableStockSummaryTooltip?: boolean;
-  initialVisibleCount?: number;
-  footer?: ReactNode;
 };
 
 type ProductStockBrowserProps = {

@@ -20,13 +20,13 @@ import { db } from '../firebaseconfig';
 
 import { getLocationName } from './locationService';
 
-import type { InventoryUser } from '@/utils/inventory/types';
+import type { InventoryUser, TimestampLike } from '@/utils/inventory/types';
 
 type MovementDoc = Record<string, unknown> & {
   id: string;
   sourceLocation?: string | null;
   destinationLocation?: string | null;
-  createdAt?: { seconds?: number } | Date | null;
+  createdAt?: TimestampLike;
   productId?: string | null;
   productName?: string | null;
   batchId?: string | null;

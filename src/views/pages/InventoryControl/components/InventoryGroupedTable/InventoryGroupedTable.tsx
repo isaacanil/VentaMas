@@ -18,6 +18,9 @@ import type {
   LocationNamesMap,
   ResolvingMap,
 } from '@/utils/inventory/types';
+import type { AdvancedTableColumn } from '@/views/templates/system/AdvancedTable/AdvancedTable';
+
+type InventoryGroupRow = InventoryGroup & Record<string, unknown>;
 
 /**
  * InventoryGroupedTable
@@ -111,7 +114,8 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '220px',
         maxWidth: '1.3fr',
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).productNameNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).productNameNode : null,
         sortableValue: (val) => String(val || '').toLowerCase(),
       },
       {
@@ -121,7 +125,8 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '140px',
         maxWidth: '1fr',
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).expirationNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).expirationNode : null,
         sortableValue: (val) => val || '',
       },
       {
@@ -130,7 +135,8 @@ export default function InventoryGroupedTable({
         align: 'left',
         minWidth: '220px',
         maxWidth: '1.4fr',
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).locationsNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).locationsNode : null,
       },
       {
         Header: 'Stock',
@@ -138,7 +144,11 @@ export default function InventoryGroupedTable({
         align: 'right',
         minWidth: '110px',
         maxWidth: '0.6fr',
-        cell: ({ value }) => <strong>{formatNumber(value)}</strong>,
+        cell: ({ value }) => {
+          const safe =
+            typeof value === 'number' || typeof value === 'string' ? value : 0;
+          return <strong>{formatNumber(safe)}</strong>;
+        },
       },
       {
         Header: 'Conteo real',
@@ -147,7 +157,8 @@ export default function InventoryGroupedTable({
         minWidth: '130px',
         maxWidth: '0.7fr',
         clickable: false,
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).conteoNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).conteoNode : null,
       },
       {
         Header: 'Diferencia',
@@ -155,7 +166,8 @@ export default function InventoryGroupedTable({
         align: 'right',
         minWidth: '130px',
         maxWidth: '0.7fr',
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).diffNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).diffNode : null,
       },
       {
         Header: 'Editado por',
@@ -164,7 +176,8 @@ export default function InventoryGroupedTable({
         minWidth: '180px',
         maxWidth: '1.2fr',
         clickable: false,
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).userNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).userNode : null,
       },
       {
         Header: 'Acción',
@@ -173,11 +186,12 @@ export default function InventoryGroupedTable({
         minWidth: '70px',
         maxWidth: '0.5fr',
         clickable: false,
-        cell: ({ row }: { row?: InventoryGroup }) => (row ? getRowMeta(row).actionsNode : null),
+        cell: ({ row }: { row?: InventoryGroupRow }) =>
+          row ? getRowMeta(row).actionsNode : null,
       },
     ],
     [getRowMeta],
-  );
+  ) as AdvancedTableColumn<InventoryGroupRow>[];
 
   const handleRowClick = useCallback((row: InventoryGroup) => {
     try {
@@ -196,15 +210,15 @@ export default function InventoryGroupedTable({
     }
   }, [setModalGroup]);
 
-  const rows = groups || [];
+  const rows = (groups || []) as InventoryGroupRow[];
   if (!loading && (!groups || groups.length === 0)) {
     return <Empty description="Sin registros" />;
   }
 
   return (
     <Wrapper>
-      <AdvancedTable
-        data={rows as unknown as Record<string, unknown>[]}
+      <AdvancedTable<InventoryGroupRow>
+        data={rows}
         columns={columns}
         loading={loading}
         enableVirtualization
@@ -214,7 +228,9 @@ export default function InventoryGroupedTable({
         tableName="inventory-grouped"
         rowSize={rowSize}
         rowBorder
-        getRowId={(row) => String(row.productKey ?? row.productId ?? row.key ?? '')}
+        getRowId={(row) =>
+          String(row.productKey ?? row.productId ?? row.key ?? '')
+        }
         onRowClick={handleRowClick}
       />
 

@@ -84,7 +84,9 @@ export function useLocationNames({
             return [key, label];
           }),
         );
-        const resolvedEntries = entries.filter(([, label]) => !!label);
+        const resolvedEntries = entries.filter(
+          (entry): entry is [string, string] => Boolean(entry[1]),
+        );
         const failedKeys = entries
           .filter(([, label]) => !label)
           .map(([key]) => key);

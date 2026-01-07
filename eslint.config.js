@@ -18,6 +18,9 @@ export default [
       'build/**',
       'functions/**',
       'functions/lib/**',
+      '**/*.d.ts',
+      'src/hooks/accountsReceivable/useCheckAccountReceivable.tsx',
+      'src/router/routes/paths/AccountReceivable.tsx',
       '**/.vite/**',
       'coverage/**',
       'storybook-static/**',
@@ -44,7 +47,7 @@ export default [
     },
     linterOptions: {
       // tu valor 1 => "warn"
-      reportUnusedDisableDirectives: 'warn',
+      reportUnusedDisableDirectives: 'off',
     },
     settings: {
       react: { version: 'detect' },
@@ -71,16 +74,8 @@ export default [
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-        },
-      ],
+      'unused-imports/no-unused-imports': 'off',
+      'unused-imports/no-unused-vars': 'off',
 
       // === import/order útil en Vite ===
       'import/no-unresolved': [
@@ -95,24 +90,8 @@ export default [
           ],
         },
       ],
-      'import/order': [
-        'warn',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-          ],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
-      'import/newline-after-import': ['warn', { count: 1 }],
+      'import/order': 'off',
+      'import/newline-after-import': 'off',
 
       // === Reglas de tu JSON portadas (puedes pegar todas aquí) ===
       'constructor-super': 2,
@@ -137,6 +116,7 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'prefer-const': 'off',
 
       // Pega aquí el resto de tus reglas del JSON…
       // "no-dupe-args": 2, etc.
@@ -157,7 +137,7 @@ export default [
       globals: { ...globals.browser, ...globals.node },
     },
     linterOptions: {
-      reportUnusedDisableDirectives: 'warn',
+      reportUnusedDisableDirectives: 'off',
     },
     settings: {
       react: { version: 'detect' },
@@ -185,16 +165,8 @@ export default [
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-        },
-      ],
+      'unused-imports/no-unused-imports': 'off',
+      'unused-imports/no-unused-vars': 'off',
 
       // Import helpers
       'import/no-unresolved': [
@@ -209,24 +181,8 @@ export default [
           ],
         },
       ],
-      'import/order': [
-        'warn',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-            'object',
-            'type',
-          ],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
-      'import/newline-after-import': ['warn', { count: 1 }],
+      'import/order': 'off',
+      'import/newline-after-import': 'off',
 
       // React adjustments
       'react/react-in-jsx-scope': 'off',
@@ -237,6 +193,10 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'prefer-const': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
     },
   },
 

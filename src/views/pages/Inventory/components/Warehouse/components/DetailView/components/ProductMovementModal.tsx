@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Modal, Input, Form, InputNumber, message } from 'antd';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';

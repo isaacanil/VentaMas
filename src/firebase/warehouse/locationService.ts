@@ -22,11 +22,14 @@ const requestQueue: {
   reject: (reason?: unknown) => void;
 }[] = [];
 
-function getCacheKey(businessID: string, pathParts: string[]) {
+function getCacheKey(businessID: string, pathParts: string[]): string {
   return `${businessID}:${pathParts.join('/')}`;
 }
 
-function getCachedName(businessID: string, pathParts: string[]) {
+function getCachedName(
+  businessID: string,
+  pathParts: string[],
+): string | null | undefined {
   const key = getCacheKey(businessID, pathParts);
   const cached = locationNameCache.get(key);
   if (!cached) return undefined;
@@ -41,12 +44,12 @@ function setCachedName(
   businessID: string,
   pathParts: string[],
   value: string | null,
-) {
+): void {
   const key = getCacheKey(businessID, pathParts);
   locationNameCache.set(key, { value, timestamp: Date.now() });
 }
 
-async function processQueue() {
+async function processQueue(): Promise<void> {
   while (requestQueue.length > 0 && activeRequests < MAX_CONCURRENT_REQUESTS) {
     const entry = requestQueue.shift();
     if (!entry) return;
@@ -66,7 +69,7 @@ async function processQueue() {
   }
 }
 
-function enqueueRequest(fn: () => Promise<string | null>) {
+function enqueueRequest(fn: () => Promise<string | null>): Promise<string | null> {
   return new Promise<string | null>((resolve, reject) => {
     requestQueue.push({ fn, resolve, reject });
     processQueue();
@@ -249,9 +252,9 @@ export async function resolveLocationLabel(
 }
 
 export const getLocationName = async (
-  user: InventoryUser,
+  user: InventoryUser | null | undefined,
   locationId?: string | null,
-) => {
+): Promise<string> => {
   if (!locationId) return 'N/A';
   try {
     const businessID = user?.businessID;

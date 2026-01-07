@@ -24,6 +24,7 @@ import type {
   ExpirationEditsMap,
   InventoryChild,
 } from '@/utils/inventory/types';
+import type { MenuProps } from 'antd';
 
 interface LocationDisplay {
   label: string;
@@ -124,7 +125,7 @@ export function GroupedLotsRecordRow({
   const rowModified =
     countChangedPersisted || expChangedPersisted || hasPendingExpEdit;
 
-  let dateValue = null;
+  let dateValue: DateTime | null = null;
   let baseStr = '';
   if (hasEditState) {
     if (editVal === CLEAR_SENTINEL) baseStr = '';
@@ -284,7 +285,7 @@ export function GroupedLotsRecordRow({
       <td style={{ textAlign: 'center' }}>
         {!readOnly &&
           (() => {
-            const menuItems = [];
+            const menuItems: NonNullable<MenuProps['items']> = [];
             if (record.type === 'batch' && originalDateStr) {
               menuItems.push({
                 key: 'restore-date',

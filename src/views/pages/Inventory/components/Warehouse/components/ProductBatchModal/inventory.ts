@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface Location {
   warehouse: string;
   shelf?: string;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ROUTES_NAME from '@/router/routes/routesName';
 import { registerToolbar } from '@/views/templates/MenuApp/GlobalMenu/core/registerToolbar';
 

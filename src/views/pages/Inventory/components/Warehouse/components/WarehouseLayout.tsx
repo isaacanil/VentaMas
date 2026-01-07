@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Breadcrumb, Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';

@@ -10,30 +10,57 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore';
+import type {
+  CollectionReference,
+  DocumentData,
+  Unsubscribe,
+} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../firebaseconfig';
 import type { Shelf } from '@/models/Warehouse/Shelf';
-import type { InventoryUser } from '@/utils/inventory/types';
+import type { InventoryUser, ShelfRecord, TimestampLike } from '@/utils/inventory/types';
 
-type ShelfRecord = Partial<Shelf> & Record<string, unknown>;
+const toMillis = (value?: TimestampLike): number => {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (typeof value === 'object') {
+    if (typeof value.toMillis === 'function') return value.toMillis();
+    if (typeof value.toDate === 'function') {
+      return value.toDate()?.getTime?.() ?? 0;
+    }
+    if (typeof value.seconds === 'number') return value.seconds * 1000;
+  }
+  return 0;
+};
 
 // Obtener referencia de la colección de estantes de un almacén
-const getShelfCollectionRef = (businessId) => {
+const getShelfCollectionRef = (
+  businessId?: string | null,
+): CollectionReference<DocumentData> | null => {
   if (typeof businessId !== 'string' || !businessId) {
     console.error(
       'Invalid parameter passed to getShelfCollectionRef',
       businessId,
     );
-    return;
+    return null;
   }
   return collection(db, 'businesses', businessId, 'shelves');
 };
 
 // Crear un nuevo estante
-const createShelf = async (user, warehouseId, data) => {
+const createShelf = async (
+  user: InventoryUser,
+  warehouseId: string,
+  data: ShelfRecord,
+) => {
   const id = nanoid();
 
   try {
@@ -61,15 +88,19 @@ const createShelf = async (user, warehouseId, data) => {
 };
 
 // Leer todos los estantes de un almacén específico
-const getShelves = async (user, warehouseId) => {
+const getShelves = async (
+  user: InventoryUser,
+  warehouseId: string,
+): Promise<ShelfRecord[]> => {
   try {
     const shelfCollectionRef = getShelfCollectionRef(user.businessID);
+    if (!shelfCollectionRef) return [];
     const q = query(
       shelfCollectionRef,
       where('warehouseId', '==', warehouseId),
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((docSnap) => docSnap.data() as ShelfRecord);
   } catch (error) {
     console.error('Error al obtener estantes:', error);
     throw error;
@@ -77,8 +108,14 @@ const getShelves = async (user, warehouseId) => {
 };
 
 // Escuchar en tiempo real todos los estantes de un almacén específico
-const listenAllShelves = (user, warehouseId, callback, onError) => {
+const listenAllShelves = (
+  user: InventoryUser,
+  warehouseId: string,
+  callback: (data: ShelfRecord[]) => void,
+  onError?: (error: unknown) => void,
+): Unsubscribe | undefined => {
   const shelfCollectionRef = getShelfCollectionRef(user.businessID);
+  if (!shelfCollectionRef) return undefined;
   const q = query(
     shelfCollectionRef,
     where('isDeleted', '==', false),
@@ -88,9 +125,13 @@ const listenAllShelves = (user, warehouseId, callback, onError) => {
   return onSnapshot(
     q,
     (snapshot) => {
-      const shelves = snapshot.docs.map((doc) => doc.data());
-      const order = shelves.sort((a, b) => a.createdAt - b.createdAt);
-      callback(order);
+      const shelves = snapshot.docs.map(
+        (docSnap) => docSnap.data() as ShelfRecord,
+      );
+      const ordered = shelves
+        .slice()
+        .sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt));
+      callback(ordered);
     },
     (error) => {
       if (onError) {
@@ -101,7 +142,11 @@ const listenAllShelves = (user, warehouseId, callback, onError) => {
 };
 
 // Actualizar un estante
-const updateShelf = async (user, warehouseId, data) => {
+const updateShelf = async (
+  user: InventoryUser,
+  warehouseId: string,
+  data: ShelfRecord & { id?: string },
+) => {
   try {
     if (!user?.businessID || !data?.id) {
       throw new Error('Missing required parameters for shelf update');
@@ -127,7 +172,7 @@ const updateShelf = async (user, warehouseId, data) => {
 };
 
 // Marcar un estante como eliminado
-const deleteShelf = async (user, id) => {
+const deleteShelf = async (user: InventoryUser, id: string) => {
   try {
     const shelfDocRef = doc(db, 'businesses', user.businessID, 'shelves', id);
     await updateDoc(shelfDocRef, {
@@ -142,7 +187,7 @@ const deleteShelf = async (user, id) => {
   }
 };
 
-const useListenShelves = (warehouseId) => {
+const useListenShelves = (warehouseId: string | null) => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const [data, setData] = useState<ShelfRecord[]>([]);
   const [loading, setLoading] = useState(() => Boolean(warehouseId));

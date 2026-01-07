@@ -7,11 +7,14 @@ import { ResizableSidebar } from '@/views/component/ResizebleSidebar/ResizebleSi
 import { MenuApp } from '@/views/templates/MenuApp/MenuApp';
 
 import InventoryMenu from './components/DetailView/InventoryMenu';
-import { PRODUCT_STOCK_FILTER_OPTIONS } from './components/ProductStockBrowser/constants';
+import {
+  PRODUCT_STOCK_FILTER_OPTIONS,
+  type ProductStockFilterOption,
+} from './components/ProductStockBrowser/constants';
 import ProductStockBrowser from './components/ProductStockBrowser/ProductStockBrowser';
 import ProductStockOverview from './components/ProductStockOverview/ProductStockOverview';
 
-type ProductStockFilter = string;
+type ProductStockFilter = ProductStockFilterOption['value'];
 
 interface ProductStats {
   totalProducts: number;

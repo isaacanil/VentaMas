@@ -46,14 +46,21 @@ export function useUserNamesCache({
   const [namesBatchLoading, setNamesBatchLoading] = useState(false);
 
   // Helper para resolver un único usuario (esquema flexible users/{uid})
-  const resolveUserDisplayName = useCallback(async (uid) => {
+  const resolveUserDisplayName = useCallback(async (uid: string) => {
     if (!uid) return '';
     try {
       const ref = doc(db, 'users', uid);
       const snap = await getDoc(ref);
       if (snap.exists()) {
-        const data = snap.data() || {};
-        const nested = data.user || {};
+        const data = (snap.data() || {}) as {
+          user?: Record<string, unknown>;
+          realName?: unknown;
+          name?: unknown;
+          displayName?: unknown;
+          fullName?: unknown;
+          email?: unknown;
+        };
+        const nested = (data.user || {}) as Record<string, unknown>;
         const candidates = [
           data.realName,
           nested.realName,
@@ -103,7 +110,7 @@ export function useUserNamesCache({
     if (uids.length === 0) return;
 
     // Sembrar lo que ya venga con updatedByName
-    const seed = {};
+    const seed: Record<string, string> = {};
     for (const key in countsMeta) {
       const m = countsMeta[key];
       if (m?.updatedBy && m?.updatedByName && !usersNameCache[m.updatedBy]) {
@@ -122,7 +129,7 @@ export function useUserNamesCache({
     let cancelled = false;
     setResolvingUIDs((prev) => ({
       ...prev,
-      ...missing.reduce((acc, uid) => {
+      ...missing.reduce<Record<string, boolean>>((acc, uid) => {
         acc[uid] = true;
         return acc;
       }, {}),

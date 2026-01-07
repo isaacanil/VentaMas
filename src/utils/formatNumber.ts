@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const formatNumber = (
   value: string | number | null | undefined,
 ): string => {

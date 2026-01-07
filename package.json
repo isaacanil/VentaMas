@@ -40,7 +40,8 @@
     "push:alt": "node ./tools/sync-to-alt-main.js",
     "build-storybook": "storybook build",
     "diagnose": "node tools/analyze-file-sizes.js",
-    "scan-encoding": "node ./tools/scan-encoding-issues.js"
+    "scan-encoding": "node ./tools/scan-encoding-issues.js",
+    "scan-bom": "node ./tools/scan-utf8-bom.js"
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",

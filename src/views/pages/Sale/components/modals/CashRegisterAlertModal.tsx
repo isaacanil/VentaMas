@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
 

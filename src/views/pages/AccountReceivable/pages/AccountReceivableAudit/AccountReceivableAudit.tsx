@@ -33,13 +33,11 @@ import { useReceivableInvoices } from './hooks/useReceivableInvoices';
 import { formatDate, formatPrice } from './utils/formatters';
 
 import type { TablePaginationConfig } from 'antd/es/table';
+import type { UserIdentity } from '@/types/users';
 
 const { Title, Text } = Typography;
 
-interface User {
-  businessID?: string;
-  role?: string;
-}
+type User = UserIdentity;
 
 interface Business {
   id?: string;
