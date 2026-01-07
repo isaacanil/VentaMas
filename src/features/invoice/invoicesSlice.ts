@@ -38,7 +38,12 @@ export const { setInvoices, filterInvoicesByStatus, sortInvoices } =
 export const selectFilteredSortedInvoices = (state) => {
   const { items, statusFilter, sortKey, sortOrder } = state.invoices;
   const toNumber = (value) => Number(value || 0);
-  const toDateValue = (value) => new Date(value).getTime();
+  const toDateValue = (value) => {
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+    return Number(value || 0);
+  };
   return items
     .filter(
       (invoice) => statusFilter === 'todos' || invoice.status === statusFilter,
