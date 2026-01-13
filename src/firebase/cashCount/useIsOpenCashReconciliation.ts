@@ -7,9 +7,12 @@ import { fbGetDocs } from '@/firebase/firebaseOperations';
 import type { UserIdentity } from '@/types/users';
 import type { CashCountRecord, CashCountState } from '@/utils/cashCount/types';
 
+type CashRegisterStatus = CashCountState | 'loading';
+
 export function useIsOpenCashReconciliation() {
-  const [value, setValue] = useState<CashCountState | false>('none');
-  const [cashReconciliation, setCashReconciliation] = useState<CashCountRecord | null>(null);
+  const [value, setValue] = useState<CashRegisterStatus>('loading');
+  const [cashReconciliation, setCashReconciliation] =
+    useState<CashCountRecord | null>(null);
   const user = useSelector(selectUser) as UserIdentity | null;
 
   useEffect(() => {
@@ -80,7 +83,10 @@ export function useIsOpenCashReconciliation() {
     return () => unsubscribe();
   }, [user]);
 
-  return { status: value, cashCount: cashReconciliation };
+  const status = user?.businessID ? value : 'loading';
+  const cashCount = user?.businessID ? cashReconciliation : null;
+
+  return { status, cashCount };
 }
 
 export async function checkOpenCashReconciliation(user: UserIdentity | null | undefined) {

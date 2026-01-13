@@ -5,13 +5,11 @@ import styled, { css, type DefaultTheme } from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { useDialog } from '@/Context/Dialog/useDialog';
+import type { DialogSize, DialogType } from '@/Context/Dialog/contextState';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import Typography from '@/components/ui/Typografy/Typografy';
 
 import { BackdropVariants, ContainerVariants } from './variants';
-
-export type DialogType = 'error' | 'warning' | 'success' | 'info';
-export type DialogSize = 'small' | 'default' | 'large';
 
 interface DialogThemeStyles {
   background: string;
@@ -55,13 +53,22 @@ const dialogTheme: Record<DialogType, DialogThemeStyles> = {
     buttonHover: '#2563EB',
     iconBg: 'rgba(59, 130, 246, 0.1)',
   },
+  neutro: {
+    background: '#F8FAFC',
+    border: '#E2E8F0',
+    text: '#475569',
+    button: '#64748B',
+    buttonHover: '#475569',
+    iconBg: 'rgba(100, 116, 139, 0.12)',
+  },
 };
 
-const iconTypes = {
+const iconTypes: Record<DialogType, React.ReactNode> = {
   warning: icons.types.warning,
   error: icons.types.error,
   success: icons.types.success,
   info: icons.types.info,
+  neutro: icons.types.neutro,
 };
 
 const BaseButton = styled.button`

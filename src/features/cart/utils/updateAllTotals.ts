@@ -5,8 +5,12 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
+import type { CartState } from '../types';
 
-export const updateAllTotals = (state, paymentValue = undefined) => {
+export const updateAllTotals = (
+  state: CartState,
+  paymentValue?: number,
+) => {
   try {
     // Verificamos que el estado tenga la estructura correcta para evitar errores
     if (

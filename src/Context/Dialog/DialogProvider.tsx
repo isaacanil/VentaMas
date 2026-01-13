@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 
-import { DialogContext, initDialog } from './contextState';
+import { DialogContext, initDialog, type DialogState } from './contextState';
 
-export const DialogProvider = ({ children }) => {
-  const [dialog, setDialog] = useState(initDialog);
+interface DialogProviderProps {
+  children: ReactNode;
+}
 
+export const DialogProvider = ({ children }: DialogProviderProps) => {
+  const [dialog, setDialog] = useState<DialogState>(initDialog);
   return (
     <DialogContext.Provider value={{ dialog, setDialog }}>
       {children}

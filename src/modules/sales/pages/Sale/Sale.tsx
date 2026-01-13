@@ -177,27 +177,29 @@ export const Sales = (): JSX.Element => {
 
 
   const { status: cashRegisterStatus } = useIsOpenCashReconciliation() as {
-    status: string | boolean | 'loading';
+    status: string | 'loading';
   };
 
-  // Mantenemos null como estado inicial para que el primer valor real dispare la alerta al cargar
-  const [prevStatus, setPrevStatus] = useState<string | boolean | null>(null);
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
+  const dismissedCashRegisterStatusRef = useRef<string | null>(null);
 
-  // Verificamos si cambió el status directamente en el cuerpo de la función
-  if (cashRegisterStatus !== prevStatus) {
-    setPrevStatus(cashRegisterStatus);
-    // Si la condición se cumple, actualizamos el estado inmediatamente.
+  const isBlockingCashRegisterStatus =
+    typeof cashRegisterStatus === 'string' &&
+    cashRegisterStatus !== 'open' &&
+    cashRegisterStatus !== 'loading';
+
+  useEffect(() => {
     if (
-      cashRegisterStatus &&
-      cashRegisterStatus !== 'open' &&
-      cashRegisterStatus !== 'loading' &&
-      typeof cashRegisterStatus === 'string'
+      cashRegisterStatus === 'open' ||
+      cashRegisterStatus === 'loading'
     ) {
-      setIsCashRegisterModalOpen(true);
+      dismissedCashRegisterStatusRef.current = null;
     }
-  }
-  // --- FIX END ---
+  }, [cashRegisterStatus]);
+
+  const shouldShowCashRegisterModal =
+    isBlockingCashRegisterStatus &&
+    dismissedCashRegisterStatusRef.current !== cashRegisterStatus;
 
   const [searchData, setSearchData] = useState('');
   const deferredSearchData = useDeferredValue(searchData);
@@ -223,19 +225,12 @@ export const Sales = (): JSX.Element => {
 
   const productsList = products;
 
-  // NOTA: El useEffect que causaba el error ha sido eliminado y reemplazado 
-  // por la lógica "FIX START" arriba.
-
   // NOTA: El bloqueo de clics ahora se maneja mediante un overlay en ProductControlEfficient
 
 
   const checkBarcode = useCallback(
     (products: Product[], barcode: string) => {
-      if (
-        cashRegisterStatus !== 'open' &&
-        cashRegisterStatus !== 'loading' &&
-        typeof cashRegisterStatus === 'string'
-      ) {
+      if (isBlockingCashRegisterStatus) {
         setIsCashRegisterModalOpen(true);
         return;
       }
@@ -287,7 +282,7 @@ export const Sales = (): JSX.Element => {
         dispatch(addProduct(product));
       }
     },
-    [dispatch, cashRegisterStatus],
+    [dispatch, isBlockingCashRegisterStatus],
   );
 
   useBarcodeScanner(productsList, checkBarcode);
@@ -396,7 +391,7 @@ export const Sales = (): JSX.Element => {
             productsLoading={productsLoading}
             products={normalizedProducts}
             statusMeta={statusMeta}
-            isLocked={cashRegisterStatus !== 'open' && cashRegisterStatus !== 'loading' && typeof cashRegisterStatus === 'string'}
+            isLocked={isBlockingCashRegisterStatus}
             onLockedClick={() => setIsCashRegisterModalOpen(true)}
           />
           <MenuComponents />
@@ -406,8 +401,13 @@ export const Sales = (): JSX.Element => {
       <InvoicePanel />
       <ProductBatchModal />
       <CashRegisterAlertModal
-        open={isCashRegisterModalOpen}
-        onClose={() => setIsCashRegisterModalOpen(false)}
+        open={isCashRegisterModalOpen || shouldShowCashRegisterModal}
+        onClose={() => {
+          if (typeof cashRegisterStatus === 'string') {
+            dismissedCashRegisterStatusRef.current = cashRegisterStatus;
+          }
+          setIsCashRegisterModalOpen(false);
+        }}
         status={cashRegisterStatus}
       />
     </>

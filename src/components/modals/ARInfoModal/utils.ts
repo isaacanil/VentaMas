@@ -2,6 +2,7 @@ import { message } from 'antd';
 import type {
   AccountsReceivableInstallment,
   AccountsReceivableSummaryData,
+  AccountsReceivableSummaryView,
 } from '@/utils/accountsReceivable/types';
 import type { TimestampLike } from '@/utils/date/types';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
@@ -23,9 +24,13 @@ export const formatDate = (timestamp: TimestampLike | null | undefined) => {
   });
 };
 
-export const calculateProgress = (
-  data: AccountsReceivableSummaryData | null | undefined,
-) => {
+type AccountsReceivableSummaryLike =
+  | AccountsReceivableSummaryData
+  | AccountsReceivableSummaryView
+  | null
+  | undefined;
+
+export const calculateProgress = (data: AccountsReceivableSummaryLike) => {
   const total = toNumber(data?.ar?.totalReceivable ?? data?.ar?.totalAmount);
   const balance = toNumber(
     data?.ar?.arBalance ??
@@ -102,7 +107,7 @@ const getInstallmentMillis = (installment: AccountsReceivableInstallment) =>
   toMillis(installment.installmentDate) ?? 0;
 
 export const getNextPaymentInfo = (
-  data?: AccountsReceivableSummaryData | null,
+  data?: AccountsReceivableSummaryLike,
 ): NextPaymentInfo => {
   if (!data?.installments || !data?.ar) return { date: null, status: 'N/A' };
 

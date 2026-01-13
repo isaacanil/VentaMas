@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { DialogContext, initDialog } from './contextState';
+import { DialogContext, initDialog, type DialogState } from './contextState';
 
 export const useDialog = () => {
   const context = useContext(DialogContext);
@@ -9,6 +9,7 @@ export const useDialog = () => {
   }
   const { dialog, setDialog } = context;
   const onClose = () => setDialog(initDialog);
-  const setDialogConfirm = (data) => setDialog({ ...dialog, ...data });
+  const setDialogConfirm = (data: Partial<DialogState>) =>
+    setDialog({ ...dialog, ...data });
   return { dialog, setDialogConfirm, onClose };
 };

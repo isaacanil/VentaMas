@@ -1,8 +1,75 @@
 ﻿import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { getLastInstallmentAmountByArId } from '@/firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
+import type { AccountsReceivableInstallment } from '@/utils/accountsReceivable/types';
+import type { UserIdentity } from '@/types/users';
 
-const paymentDetailsTemplate = {
+interface AccountsReceivablePaymentMethod {
+  method: string;
+  value: number;
+  status: boolean;
+  reference?: string;
+  name?: string;
+  [key: string]: string | number | boolean | undefined;
+}
+
+interface CreditNoteSelection {
+  id: string;
+  amountToUse: number;
+  creditNote?: {
+    ncf?: string;
+    number?: string;
+    totalAmount?: number;
+  } | null;
+}
+
+interface CreditNotePayment {
+  id: string;
+  ncf: string;
+  amountUsed: number;
+  originalAmount: number;
+}
+
+interface PaymentDetails {
+  paymentScope: string;
+  paymentOption: string;
+  clientId: string;
+  arId: string;
+  paymentMethods: AccountsReceivablePaymentMethod[];
+  comments: string;
+  totalAmount: number;
+  totalPaid: number;
+  printReceipt: boolean;
+  creditNotePayment: CreditNotePayment[];
+  balance?: number;
+}
+
+interface PaymentExtra {
+  arBalance?: number;
+  installmentAmount?: number;
+  [key: string]: unknown;
+}
+
+interface AccountsReceivablePaymentState {
+  isOpen: boolean;
+  paymentDetails: PaymentDetails;
+  error: string | null;
+  isValid: boolean;
+  methodErrors: Record<string, string | null>;
+  extra: PaymentExtra | null;
+  installment: AccountsReceivableInstallment | null;
+}
+
+interface SetAccountPaymentPayload {
+  isOpen?: boolean;
+  paymentDetails?: Partial<PaymentDetails>;
+  error?: string | null;
+  isValid?: boolean;
+  methodErrors?: Record<string, string | null>;
+  extra?: PaymentExtra | null;
+}
+
+const paymentDetailsTemplate: PaymentDetails = {
   paymentScope: 'balance', // Tipo de pago (cuota, balance de cuenta, abono) account
   paymentOption: 'installment', // Subtipo de pago ('cuota', 'abono' cuando tipo es 'cuenta')
   clientId: '', // ID del cliente
@@ -38,7 +105,7 @@ const paymentDetailsTemplate = {
   creditNotePayment: [], // Notas de crÃ©dito aplicadas
 };
 
-const createDefaultPaymentDetails = (amount = 0) => {
+const createDefaultPaymentDetails = (amount = 0): PaymentDetails => {
   const methods = paymentDetailsTemplate.paymentMethods.map((method) => ({
     ...method,
   }));
@@ -62,7 +129,7 @@ const createDefaultPaymentDetails = (amount = 0) => {
   };
 };
 
-const initialState = {
+const initialState: AccountsReceivablePaymentState = {
   isOpen: false,
   paymentDetails: createDefaultPaymentDetails(),
   error: null, // Para manejar errores
@@ -75,15 +142,22 @@ const initialState = {
 // Thunk to fetch last installment amount
 export const fetchLastInstallmentAmount = (createAsyncThunk as any)(
   'accountsReceivablePayment/fetchLastInstallmentAmount',
-  async ({ user, arId }, { rejectWithValue }) => {
+  async (
+    { user, arId }: { user: UserIdentity; arId: string },
+    { rejectWithValue }: { rejectWithValue: (value: string) => unknown },
+  ) => {
     try {
-      const lastInstallmentAmount = await getLastInstallmentAmountByArId(
+      const lastInstallmentAmount = await getLastInstallmentAmountByArId(       
         user,
         arId,
       );
       return { arId, lastInstallmentAmount };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo obtener el monto de la Ãºltima cuota.',
+      );
     }
   },
 );
@@ -92,10 +166,10 @@ const accountsReceivablePaymentSlice = createSlice({
   name: 'accountsReceivablePayment',
   initialState,
   reducers: {
-    openPaymentModal: (state: any) => {
+    openPaymentModal: (state: AccountsReceivablePaymentState) => {
       state.isOpen = true;
     },
-    closePaymentModal: (state: any) => {
+    closePaymentModal: (state: AccountsReceivablePaymentState) => {
       state.isOpen = false;
       state.paymentDetails = createDefaultPaymentDetails();
       state.error = null;
@@ -103,25 +177,36 @@ const accountsReceivablePaymentSlice = createSlice({
       state.methodErrors = {};
       state.extra = null;
     },
-    setPaymentDetails: (state: any, action: PayloadAction<any>) => {
+    setPaymentDetails: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<Partial<PaymentDetails>>,
+    ) => {
       state.paymentDetails = {
         ...state.paymentDetails,
         ...action.payload,
       };
     },
-    setPaymentOption: (state: any, action: PayloadAction<any>) => {
+    setPaymentOption: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<{ paymentOption: string }>,
+    ) => {
       const { paymentOption } = action.payload;
       state.paymentDetails.paymentOption = paymentOption;
       if (
         state.paymentDetails.paymentScope === 'account' &&
         state.paymentDetails.paymentOption === 'installment'
       ) {
-        state.paymentDetails.totalAmount = state.extra.installmentAmount;
+        state.paymentDetails.totalAmount =
+          state.extra?.installmentAmount ?? state.paymentDetails.totalAmount;
       } else if (state.paymentDetails.paymentScope === 'account') {
-        state.paymentDetails.totalAmount = state.extra.arBalance;
+        state.paymentDetails.totalAmount =
+          state.extra?.arBalance ?? state.paymentDetails.totalAmount;
       }
     },
-    setAccountPayment: (state: any, action: PayloadAction<any>) => {
+    setAccountPayment: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<SetAccountPaymentPayload>,
+    ) => {
       const {
         isOpen,
         paymentDetails: paymentDetailsPayload,
@@ -176,7 +261,14 @@ const accountsReceivablePaymentSlice = createSlice({
           }, 0.0)
         : 0.0;
     },
-    updatePaymentMethod: (state: any, action: PayloadAction<any>) => {
+    updatePaymentMethod: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<{
+        method: string;
+        key: string;
+        value: string | number | boolean;
+      }>,
+    ) => {
       const { method, key, value } = action.payload;
       const methodIndex = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === method,
@@ -200,22 +292,37 @@ const accountsReceivablePaymentSlice = createSlice({
           }, 0.0);
       }
     },
-    setError: (state: any, action: PayloadAction<any>) => {
+    setError: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<string | null>,
+    ) => {
       state.error = action.payload;
     },
-    setIsValid: (state: any, action: PayloadAction<any>) => {
+    setIsValid: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<boolean>,
+    ) => {
       state.isValid = action.payload;
     },
-    setMethodError: (state: any, action: PayloadAction<any>) => {
+    setMethodError: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<{ method: string; key: string; error: string | null }>,
+    ) => {
       const { method, key, error } = action.payload;
       state.methodErrors[`${method}_${key}`] = error;
     },
-    clearMethodErrors: (state: any, action: PayloadAction<any>) => {
+    clearMethodErrors: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<{ method: string }>,
+    ) => {
       const { method } = action.payload;
       delete state.methodErrors[`${method}_value`];
       delete state.methodErrors[`${method}_reference`];
     },
-    setCreditNotePayment: (state: any, action: PayloadAction<any>) => {
+    setCreditNotePayment: (
+      state: AccountsReceivablePaymentState,
+      action: PayloadAction<CreditNoteSelection[] | null | undefined>,
+    ) => {
       const creditNoteSelections = action.payload || [];
 
       // Calcular total aplicado
@@ -269,7 +376,7 @@ const accountsReceivablePaymentSlice = createSlice({
           0,
         );
     },
-    clearCreditNotePayment: (state: any) => {
+    clearCreditNotePayment: (state: AccountsReceivablePaymentState) => {
       state.paymentDetails.creditNotePayment = [];
       const idx = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === 'creditNote',
@@ -288,23 +395,29 @@ const accountsReceivablePaymentSlice = createSlice({
         );
     },
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(fetchLastInstallmentAmount.fulfilled, (state, action) => {
+      .addCase(
+        fetchLastInstallmentAmount.fulfilled,
+        (state: AccountsReceivablePaymentState, action) => {
         const { arId, lastInstallmentAmount } = action.payload;
         if (state.paymentDetails.arId === arId) {
           state.extra = {
-            ...state.extra,
+            ...(state.extra ?? {}),
             installmentAmount: lastInstallmentAmount,
           };
           if (state.paymentDetails.paymentOption === 'installment') {
             state.paymentDetails.totalAmount = lastInstallmentAmount;
           }
         }
-      })
-      .addCase(fetchLastInstallmentAmount.rejected, (state, action) => {
+      },
+      )
+      .addCase(
+        fetchLastInstallmentAmount.rejected,
+        (state: AccountsReceivablePaymentState, action) => {
         state.error = action.payload;
-      });
+      },
+      );
   },
 });
 
@@ -325,7 +438,12 @@ export const {
 
 export default accountsReceivablePaymentSlice.reducer;
 
-export const selectAccountsReceivablePayment = (state) =>
-  state.accountsReceivablePayment;
+type AccountsReceivablePaymentRootState = {
+  accountsReceivablePayment: AccountsReceivablePaymentState;
+};
+
+export const selectAccountsReceivablePayment = (
+  state: AccountsReceivablePaymentRootState,
+) => state.accountsReceivablePayment;
 
 

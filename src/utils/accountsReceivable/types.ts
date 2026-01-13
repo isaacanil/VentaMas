@@ -36,10 +36,16 @@ export interface ReceivablePaymentMethod {
 export interface ReceivableInvoiceData {
   NCF?: string;
   numberID?: string | number;
+  number?: string | number;
+  emissionDate?: TimestampLike;
   date?: TimestampLike;
   paymentMethod?: ReceivablePaymentMethod[];
   products?: unknown[];
+  items?: unknown[];
+  itemsCount?: number;
+  totalShoppingItems?: number | { value?: number };
   totalPurchase?: { value?: number };
+  totalAmount?: number;
   insurance?: { name?: string };
 }
 
@@ -54,7 +60,9 @@ export interface ReceivableClient {
   name?: string;
   personalID?: string;
   tel?: string;
+  tel2?: string;
   address?: string;
+  sector?: string;
   error?: boolean;
 }
 
@@ -188,7 +196,17 @@ export interface AccountReceivableRow {
 }
 
 export type AccountsReceivableSummaryData = AccountsReceivableDetail;
-export type AccountsReceivableSummaryView = AccountReceivableRow;
+export type AccountsReceivableSummaryView = Omit<
+  AccountsReceivableDetail,
+  'ar' | 'installments' | 'payments' | 'installmentPayments'
+> & {
+  ar?: AccountsReceivableDoc | null;
+  client?: ReceivableClient | null;
+  invoice?: ReceivableInvoiceData | ReceivableInvoice | null;
+  installments?: AccountsReceivableInstallment[];
+  installmentPayments?: AccountsReceivableInstallmentPayment[];
+  payments?: AccountsReceivablePayment[];
+};
 
 export interface AccountsReceivablePaymentReceipt {
   account: AccountReceivableRow;
