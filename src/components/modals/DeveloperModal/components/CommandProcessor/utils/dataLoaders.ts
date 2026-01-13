@@ -4,8 +4,26 @@ import { fbGetUsers } from '@/firebase/Auth/fbAuthV2/fbGetUsers';
 import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 import { fbGetBusinessesList } from '@/firebase/dev/businesses/fbGetBusinessesList';
 import { db } from '@/firebase/firebaseconfig';
+import type { CommandProcessorInterface } from '../types';
 
-export const createDataLoaders = (processor: any) => {
+type ProductLookupRecord = Record<string, unknown> & {
+  id: string;
+  name?: string;
+  displayName?: string;
+  label?: string;
+  productName?: string;
+  description?: string;
+  presentation?: string;
+  brand?: string;
+  brandName?: string;
+  barcode?: string;
+  sku?: string;
+  code?: string;
+  internalCode?: string;
+  alternativeName?: string;
+};
+
+export const createDataLoaders = (processor: CommandProcessorInterface) => {
   const loadBusinessesList = async () => {
     try {
       const businessesList = await fbGetBusinessesList();
@@ -30,7 +48,7 @@ export const createDataLoaders = (processor: any) => {
     }
   };
 
-  const loadProductsForLookup = async () => {
+  const loadProductsForLookup = async (): Promise<ProductLookupRecord[]> => {
     if (!processor.user?.businessID) {
       return [];
     }
@@ -45,8 +63,8 @@ export const createDataLoaders = (processor: any) => {
       const snapshot = await getDocs(productsRef);
       return snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as any),
-      })) as any[];
+        ...(doc.data() as Record<string, unknown>),
+      })) as ProductLookupRecord[];
     } catch (error) {
       console.error(
         'Error al cargar productos para la consola de desarrollador:',
@@ -56,15 +74,15 @@ export const createDataLoaders = (processor: any) => {
     }
   };
 
-  const findProductsByName = async (searchTerm) => {
+  const findProductsByName = async (searchTerm: string) => {
     if (!searchTerm) return [];
 
     const normalizedSearch = searchTerm.trim().toLowerCase();
     if (!normalizedSearch) return [];
 
-    const products = (await loadProductsForLookup()) as any[];
+    const products = await loadProductsForLookup();
 
-    const fieldMatchesTerm = (value) => {
+    const fieldMatchesTerm = (value: unknown) => {
       if (!value) return false;
       if (typeof value === 'string') {
         return value.toLowerCase().includes(normalizedSearch);
@@ -107,7 +125,7 @@ export const createDataLoaders = (processor: any) => {
     });
   };
 
-  const changeUserPassword = async (userId, newPassword) => {
+  const changeUserPassword = async (userId: string, newPassword: string) => {
     try {
       await fbUpdateUserPassword(userId, newPassword);
       return true;

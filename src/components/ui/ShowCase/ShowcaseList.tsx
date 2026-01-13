@@ -3,10 +3,24 @@ import styled from 'styled-components';
 
 import { Showcase } from './ShowCase';
 
-export const ShowcaseList = ({ showcases }) => {
+type ShowcaseValueType = 'none' | 'number' | 'percent' | 'price';
+
+type ShowcaseItem = {
+  title: string;
+  value: number;
+  valueType?: ShowcaseValueType;
+  description?: string | null;
+  color?: boolean | string;
+};
+
+type ShowcaseListProps = {
+  showcases: ShowcaseItem[];
+};
+
+export const ShowcaseList = ({ showcases }: ShowcaseListProps) => {
   return (
     <Container>
-      {showcases.map((showcase, index) => (
+      {showcases.map((showcase: ShowcaseItem, index: number) => (
         <Showcase
           key={index}
           title={showcase.title}

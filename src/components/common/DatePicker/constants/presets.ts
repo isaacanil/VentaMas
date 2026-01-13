@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import type { DatePickerMode, DatePickerPreset } from '../types';
 
 const DATE_LOCALE = 'es';
 
@@ -12,7 +13,9 @@ const getWeekRangeMondayAligned = (
   return { start, end };
 };
 
-export const createDefaultPresets = (mode = 'single') => [
+export const createDefaultPresets = (
+  mode: DatePickerMode = 'single',
+): DatePickerPreset[] => [
   {
     label: 'Hoy',
     value:

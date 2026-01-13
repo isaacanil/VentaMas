@@ -28,24 +28,26 @@ type RowLayoutProps = {
 
 const StyledItemRow = styled.div<RowLayoutProps>`
   position: absolute;
-  top: ${({ top }) => `${top}px`};
+  top: ${({ top }: RowLayoutProps) => `${top}px`};
   left: 0;
   display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  grid-template-columns: ${({ columns }: RowLayoutProps) =>
+    `repeat(${columns}, 1fr)`};
   gap: 0.4em;
   width: 100%;
-  height: ${({ height }) => `${height}px`};
+  height: ${({ height }: RowLayoutProps) => `${height}px`};
 `;
 
 const EmptyRow = styled.div<RowLayoutProps>`
   position: absolute;
-  top: ${({ top }) => `${top}px`};
+  top: ${({ top }: RowLayoutProps) => `${top}px`};
   left: 0;
   display: grid;
-  grid-template-columns: ${({ columns }) => `repeat(${columns}, 1fr)`};
+  grid-template-columns: ${({ columns }: RowLayoutProps) =>
+    `repeat(${columns}, 1fr)`};
   gap: 0.4em;
   width: 100%;
-  height: ${({ height }) => `${height}px`};
+  height: ${({ height }: RowLayoutProps) => `${height}px`};
   pointer-events: none;
 `;
 

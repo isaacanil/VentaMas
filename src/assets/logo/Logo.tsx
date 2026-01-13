@@ -13,13 +13,20 @@ const imgSize = {
   xxlarge: '12rem',
 };
 
+type LogoSize = keyof typeof imgSize;
+
+type LogoProps = React.ImgHTMLAttributes<HTMLImageElement> & {
+  size?: LogoSize;
+  customSize?: string;
+};
+
 export const Logo = ({
   size = 'medium',
   customSize,
   className,
   alt = '',
   ...imgProps
-}) => {
+}: LogoProps) => {
   const resolvedSize = customSize ?? imgSize[size] ?? imgSize.medium;
 
   return (
@@ -33,8 +40,8 @@ export const Logo = ({
   );
 };
 
-const Img = styled.img`
+const Img = styled.img<{ $dimension: string }>`
   display: block !important;
-  width: ${({ $dimension }) => $dimension} !important;
-  height: ${({ $dimension }) => $dimension} !important;
+  width: ${({ $dimension }: { $dimension: string }) => $dimension} !important;
+  height: ${({ $dimension }: { $dimension: string }) => $dimension} !important;
 `;

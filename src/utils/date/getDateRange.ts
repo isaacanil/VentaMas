@@ -56,51 +56,31 @@ export function getDateRange(parameter: DateRangeKey | string): DateRangeResult 
     lastYear: now.minus({ years: 1 }).endOf('year'),
     thisQuarter: now.endOf('quarter'),
     lastQuarter: now.minus({ quarters: 1 }).endOf('quarter'),
-    firstQuarter: DateTime.local(
-      currentYear,
-      3,
-      DateTime.local(currentYear, 3, 1).daysInMonth,
-    )
-      .endOf('month')
-      .endOf('day'),
-    secondQuarter: DateTime.local(
-      currentYear,
-      6,
-      DateTime.local(currentYear, 6, 1).daysInMonth,
-    )
-      .endOf('month')
-      .endOf('day'),
-    thirdQuarter: DateTime.local(
-      currentYear,
-      9,
-      DateTime.local(currentYear, 9, 1).daysInMonth,
-    )
-      .endOf('month')
-      .endOf('day'),
-    fourthQuarter: DateTime.local(
-      currentYear,
-      12,
-      DateTime.local(currentYear, 12, 1).daysInMonth,
-    )
-      .endOf('month')
-      .endOf('day'),
+    firstQuarter: DateTime.local(currentYear, 3, 1).endOf('month').endOf('day'),
+    secondQuarter: DateTime.local(currentYear, 6, 1).endOf('month').endOf('day'),
+    thirdQuarter: DateTime.local(currentYear, 9, 1).endOf('month').endOf('day'),
+    fourthQuarter: DateTime.local(currentYear, 12, 1).endOf('month').endOf('day'),
     last30Days: now.endOf('day'),
   };
 
   const key = parameter as DateRangeKey;
+  const fallbackStart = rangeStart.thisMonth ?? now.startOf('month');
+  const fallbackEnd = rangeEnd.thisMonth ?? now.endOf('month');
 
   if (!rangeStart[key] || !rangeEnd[key]) {
     console.warn(
       `Parámetro de rango de fecha no reconocido: ${parameter}. Usando 'thisMonth' por defecto.`,
     );
     return {
-      startDate: rangeStart.thisMonth.toMillis(),
-      endDate: rangeEnd.thisMonth.toMillis(),
+      startDate: fallbackStart.toMillis(),
+      endDate: fallbackEnd.toMillis(),
     };
   }
 
+  const start = rangeStart[key] ?? fallbackStart;
+  const end = rangeEnd[key] ?? fallbackEnd;
   return {
-    startDate: rangeStart[key].toMillis(),
-    endDate: rangeEnd[key].toMillis(),
+    startDate: start.toMillis(),
+    endDate: end.toMillis(),
   };
 }

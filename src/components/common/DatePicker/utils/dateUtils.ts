@@ -1,4 +1,9 @@
 import { DateTime } from 'luxon';
+import type {
+  DatePickerMode,
+  DatePickerPreset,
+  DatePickerValue,
+} from '../types';
 
 const DATE_LOCALE = 'es';
 
@@ -11,18 +16,18 @@ const toLuxonFormat = (format = 'DD/MM/YYYY') =>
     .replace(/MM/g, 'LL')
     .replace(/M/g, 'L');
 
-const startOfWeekSunday = (date) =>
+const startOfWeekSunday = (date: DateTime) =>
   date.minus({ days: date.weekday % 7 }).startOf('day');
 
 export const formatDisplayValue = (
-  value,
+  value: DatePickerValue,
   format = 'DD/MM/YYYY',
-  mode = 'single',
+  mode: DatePickerMode = 'single',
 ) => {
   if (!value) return '';
   const luxonFormat = toLuxonFormat(format);
 
-  const formatValue = (date) =>
+  const formatValue = (date: DateTime) =>
     date.setLocale(DATE_LOCALE).toFormat(luxonFormat);
 
   if (mode === 'range' && Array.isArray(value)) {
@@ -44,7 +49,7 @@ export const formatDisplayValue = (
     : '';
 };
 
-export const renderCalendarGrid = (currentDate) => {
+export const renderCalendarGrid = (currentDate: DateTime) => {
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
   const startOfWeek = startOfWeekSunday(startOfMonth);
@@ -61,7 +66,11 @@ export const renderCalendarGrid = (currentDate) => {
   return days;
 };
 
-export const isPresetActive = (value, preset, mode) => {
+export const isPresetActive = (
+  value: DatePickerValue,
+  preset: DatePickerPreset,
+  mode: DatePickerMode,
+) => {
   if (!value) return false;
 
   if (mode === 'single' && DateTime.isDateTime(value)) {

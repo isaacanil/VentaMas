@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import { WEEK_DAYS } from '@/components/common/DatePicker/constants/presets';
 import { renderCalendarGrid } from '@/components/common/DatePicker/utils/dateUtils';
+import type { DatePickerMode, DatePickerValue } from '../types';
 
 const DATE_LOCALE = 'es';
 
@@ -69,7 +70,16 @@ const CalendarGrid = styled.div`
   gap: 2px;
 `;
 
-const CalendarDay = styled.div`
+interface CalendarDayProps {
+  $isCurrentMonth?: boolean;
+  $isSelected?: boolean;
+  $isToday?: boolean;
+  $isInRange?: boolean;
+  $isRangeStart?: boolean;
+  $isRangeEnd?: boolean;
+}
+
+const CalendarDay = styled.div<CalendarDayProps>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,6 +144,18 @@ const CalendarDay = styled.div`
     `}
 `;
 
+interface CalendarSectionProps {
+  currentDate: DateTime;
+  onNavigateMonth: (direction: 'prev' | 'next') => void;
+  onDateClick: (date: DateTime) => void;
+  onDateHover: (date: DateTime | null) => void;
+  value: DatePickerValue;
+  mode: DatePickerMode;
+  currentRangeStart: DateTime | null;
+  currentRangeEnd: DateTime | null;
+  hoverDate: DateTime | null;
+}
+
 export const CalendarSection = ({
   currentDate,
   onNavigateMonth,
@@ -144,7 +166,7 @@ export const CalendarSection = ({
   currentRangeStart,
   currentRangeEnd,
   hoverDate,
-}) => {
+}: CalendarSectionProps) => {
   const days = renderCalendarGrid(currentDate);
   const today = DateTime.local().setLocale(DATE_LOCALE);
 

@@ -20,9 +20,9 @@ type AccountsReceivableManagerProps = {
 
 const AccountsReceivableManager = ({
   hasAccountReceivablePermission,
-  creditLimit,
+  creditLimit = null,
   form,
-  receivableStatus,
+  receivableStatus = false,
   abilitiesLoading,
 }: AccountsReceivableManagerProps) => {
   const [isOpenReceivableManagementPanel, setIsOpenReceivableManagementPanel] =

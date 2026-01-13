@@ -9,6 +9,8 @@ import {
   setDoc,
   query,
   where,
+  type FirestoreError,
+  type Unsubscribe,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -19,14 +21,22 @@ import type { Segment } from '@/models/Warehouse/Segment';
 import type { InventoryUser } from '@/utils/inventory/types';
 
 type SegmentRecord = Partial<Segment> & Record<string, unknown>;
+type SegmentListener = (segments: SegmentRecord[]) => void;
+type SegmentUpdate = SegmentRecord & { id: string };
 
 // Obtener referencia de la colección de segmentos de una fila de estantestante
-const getSegmentCollectionRef = (businessId) => {
+const getSegmentCollectionRef = (businessId: string) => {
   return collection(db, 'businesses', businessId, 'segments');
 };
 
 // Crear un nuevo segmento
-const createSegment = async ({ user, segmentData }) => {
+const createSegment = async ({
+  user,
+  segmentData,
+}: {
+  user: InventoryUser;
+  segmentData: SegmentRecord;
+}): Promise<SegmentRecord> => {
   const id = nanoid();
   try {
     // Segment data processed
@@ -56,13 +66,18 @@ const createSegment = async ({ user, segmentData }) => {
 };
 
 // Obtener todos los segmentos de una fila de estante específica
-const getAllSegments = async (user, _warehouseId, _shelfId, _rowShelfId) => {
+const getAllSegments = async (
+  user: InventoryUser,
+  _warehouseId: string,
+  _shelfId: string,
+  _rowShelfId: string,
+): Promise<SegmentRecord[]> => {
   try {
     const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
     const querySnapshot = await getDocs(segmentCollectionRef);
     const segments = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...(doc.data() as SegmentRecord),
     }));
     return segments;
   } catch (error) {
@@ -73,13 +88,13 @@ const getAllSegments = async (user, _warehouseId, _shelfId, _rowShelfId) => {
 
 // Escuchar en tiempo real todos los segmentos de una fila de estante específicaa
 const listenAllSegments = (
-  user,
-  _warehouseId,
-  _shelfId,
-  _rowShelfId,
-  callback,
-  onError?: (error: unknown) => void,
-) => {
+  user: InventoryUser,
+  _warehouseId: string,
+  _shelfId: string,
+  _rowShelfId: string,
+  callback: SegmentListener,
+  onError?: (error: FirestoreError) => void,
+): Unsubscribe => {
   if (
     user.businessID === undefined ||
     _warehouseId === undefined ||
@@ -107,7 +122,9 @@ const listenAllSegments = (
   return onSnapshot(
     q,
     (querySnapshot) => {
-      const segments = querySnapshot.docs.map((doc) => doc.data());
+      const segments = querySnapshot.docs.map(
+        (doc) => doc.data() as SegmentRecord,
+      );
       callback(segments);
     },
     (error) => {
@@ -118,7 +135,10 @@ const listenAllSegments = (
 };
 
 // Actualizar un segmento específico
-const updateSegment = async (user, data) => {
+const updateSegment = async (
+  user: InventoryUser,
+  data: SegmentUpdate,
+): Promise<SegmentUpdate> => {
   try {
     const segmentDocRef = doc(
       db,
@@ -141,12 +161,12 @@ const updateSegment = async (user, data) => {
 
 // Marcar un segmento como eliminado
 const deleteSegment = async (
-  user,
-  warehouseId,
-  shelfId,
-  rowShelfId,
-  segmentId,
-) => {
+  user: InventoryUser,
+  warehouseId: string,
+  shelfId: string,
+  rowShelfId: string,
+  segmentId: string,
+): Promise<string> => {
   try {
     const segmentDocRef = doc(
       db,
@@ -167,12 +187,16 @@ const deleteSegment = async (
   }
 };
 
-const useListenAllSegments = (warehouseId, shelfId, rowShelfId) => {
+const useListenAllSegments = (
+  warehouseId: string | null,
+  shelfId: string | null,
+  rowShelfId: string | null,
+) => {
   const [data, setData] = useState<SegmentRecord[]>([]);
   const [loading, setLoading] = useState(
     () => Boolean(warehouseId && shelfId && rowShelfId),
   );
-  const [error, setError] = useState();
+  const [error, setError] = useState<unknown | null>(null);
   const user = useSelector(selectUser) as InventoryUser | null;
   useEffect(() => {
     if (!user || !warehouseId || !shelfId || !rowShelfId) {

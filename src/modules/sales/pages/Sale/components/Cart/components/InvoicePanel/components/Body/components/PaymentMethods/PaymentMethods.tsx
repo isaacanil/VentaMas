@@ -108,7 +108,7 @@ export const PaymentMethods = () => {
           dispatch(
             setPaymentMethod({ ...defaultMethod, status: true, value: 0 }),
           );
-          dispatch(recalcTotals());
+          dispatch(recalcTotals(undefined));
         }
       }
     }
@@ -133,7 +133,7 @@ export const PaymentMethods = () => {
     // Solo actualizamos si hay diferencia significativa para evitar bucles
     if (!hasOtherMethodWithAmount && Math.abs(current - total) > 0.01) {
       dispatch(setPaymentMethod({ ...activeCard, value: total }));
-      dispatch(recalcTotals());
+      dispatch(recalcTotals(undefined));
     }
   }, [paymentMethods, cartData?.totalPurchase?.value, dispatch]);
 
@@ -191,7 +191,7 @@ export const PaymentMethods = () => {
       dispatch(
         setPaymentMethod({ ...method, status, value: newValue }),
       );
-      dispatch(recalcTotals());
+      dispatch(recalcTotals(undefined));
       if (applyCardPrice) {
         applyCardPricingIfNeeded();
       } else if (revertListPrice) {
@@ -248,7 +248,7 @@ export const PaymentMethods = () => {
     }
 
     dispatch(setPaymentMethod({ ...method, value: validValue }));
-    dispatch(recalcTotals());
+    dispatch(recalcTotals(undefined));
   };
 
   const handleReferenceChange = (

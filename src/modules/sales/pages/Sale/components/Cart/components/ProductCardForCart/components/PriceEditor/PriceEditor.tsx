@@ -160,20 +160,24 @@ const PriceContainer = styled.div`
   border-radius: 8px;
 `;
 
+type DropdownButtonStyleProps = { disabled?: boolean };
+
 const DropdownButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 100%;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props: DropdownButtonStyleProps) =>
+    props.disabled ? 'not-allowed' : 'pointer'};
   background-color: #f5f5f5;
   border: none;
-  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  opacity: ${(props: DropdownButtonStyleProps) => (props.disabled ? 0.5 : 1)};
   transition: background-color 0.2s;
 
   &&:hover {
-    background-color: ${(props) => (props.disabled ? '#f5f5f5' : '#eaeaea')};
+    background-color: ${(props: DropdownButtonStyleProps) =>
+      props.disabled ? '#f5f5f5' : '#eaeaea'};
   }
 `;
 

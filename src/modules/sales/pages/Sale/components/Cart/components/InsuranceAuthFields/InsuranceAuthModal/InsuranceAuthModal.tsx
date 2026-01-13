@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import DatePicker from '@/components/DatePicker';
 import DoctorModal from '@/components/DoctorModal/DoctorModal';
 import DoctorSelector from '@/components/DoctorSelector/DoctorSelector';
+import type { DoctorRecord } from '@/types/doctors';
 import { selectUser } from '@/features/auth/userSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import {
@@ -39,12 +40,6 @@ type UserIdentity = {
 type ClientIdentity = {
   id?: string;
   name?: string;
-};
-
-type DoctorRecord = {
-  id: string;
-  name?: string;
-  specialty?: string;
 };
 
 type InsuranceType = {
@@ -208,7 +203,9 @@ export const InsuranceAuthModal = () => {
       loading: boolean;
     };
   // Escuchamos los médicos disponibles
-  const { doctors } = useFbGetDoctors() as { doctors: DoctorRecord[] };
+  const { doctors = [] } = useFbGetDoctors() as {
+    doctors?: DoctorRecord[];
+  };
 
   // Función para encontrar una aseguradora por ID
   const findInsuranceById = useCallback(
@@ -433,7 +430,7 @@ export const InsuranceAuthModal = () => {
       setHasDependent(false);
 
       // También resetear el formulario cuando se cierra el modal
-      form.resetFields();
+      form.resetFields([]);
     }
   }, [open, form]);
 
@@ -452,7 +449,7 @@ export const InsuranceAuthModal = () => {
         '🧹 Limpiando formulario porque authData se reseteo:',
         authData,
       );
-      form.resetFields();
+      form.resetFields([]);
       setSelectedDoctor(null);
       setSelectedInsurance(null);
       setPrescriptionFiles([]);
@@ -461,9 +458,11 @@ export const InsuranceAuthModal = () => {
   }, [authData, open, form]);
 
   // Validamos las fechas para que no sean del futuro
-  const disabledFutureDate = (current: DateTime | null) => {
+  const disabledFutureDate = (current: DateTime | null): boolean => {
     // Use the DateTime object provided by the DatePicker
-    return current && current.toMillis() > DateTime.local().toMillis();
+    return Boolean(
+      current && current.toMillis() > DateTime.local().toMillis(),
+    );
   };
 
   // Función para manejar la adición de archivos de receta
@@ -524,7 +523,7 @@ export const InsuranceAuthModal = () => {
     setInitialDataLoaded(false);
 
     // Resetear el formulario explícitamente
-    form.resetFields();
+    form.resetFields([]);
 
     // Cerrar el modal
     dispatch(closeModal());

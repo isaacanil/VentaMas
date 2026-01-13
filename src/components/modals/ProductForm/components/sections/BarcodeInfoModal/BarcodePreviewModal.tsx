@@ -38,7 +38,9 @@ export const BarcodePreviewModal = ({
   selectedStandard = 'gs1rd',
   nextItemReference,
 }: BarcodePreviewModalProps) => {
-  const { settings } = useBarcodeSettings();
+  const { settings } = useBarcodeSettings() as {
+    settings?: { companyPrefix?: string | number | null } | null;
+  };
 
   const countryPrefix =
     {

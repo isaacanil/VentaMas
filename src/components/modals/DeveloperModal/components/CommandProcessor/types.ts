@@ -1,4 +1,5 @@
 import type { UserIdentity } from '@/types/users';
+import type { SelectionItem } from '../../types';
 
 export interface ExtendedUserIdentity extends UserIdentity {
   displayName?: string | null;
@@ -18,12 +19,12 @@ export interface CommandProcessorInterface {
   addCommandEcho: (command: string) => void;
   setReactScanLoaded: (loaded: boolean) => void;
   reactScanLoaded: boolean;
-  setBusinesses: (businesses: any[]) => void;
-  businesses: any[];
+  setBusinesses: (businesses: SelectionItem[]) => void;
+  businesses: SelectionItem[];
   enterSelectionMode: (
-    items: any[],
+    items: SelectionItem[],
     title: string,
-    callback: (item: any) => void,
+    callback: (item: SelectionItem) => void,
     command: string,
   ) => void;
   loadBusinessesList: () => Promise<any[]>;

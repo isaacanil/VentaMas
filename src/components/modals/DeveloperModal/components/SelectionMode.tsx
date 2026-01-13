@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import styled from 'styled-components';
+import type { ConsoleLine, SelectionItem, SelectionModeProps } from '../types';
 
 /**
  * Componente para manejar el modo de selección interactiva en la consola
@@ -15,7 +16,26 @@ const SelectionMode = ({
   onSelectIndex,
   consoleOutput: _consoleOutput,
   setConsoleOutput,
-}) => {
+}: SelectionModeProps) => {
+  const resolveItemLabel = (item: SelectionItem) => {
+    if (typeof item === 'string') return item;
+    if (typeof item === 'object' && item !== null) {
+      const candidate = item as {
+        display?: string;
+        name?: string;
+        title?: string;
+        label?: string;
+      };
+      return (
+        candidate.display ||
+        candidate.name ||
+        candidate.title ||
+        candidate.label ||
+        String(item)
+      );
+    }
+    return String(item);
+  };
 
   /**
    * Muestra la lista de selección
@@ -31,7 +51,7 @@ const SelectionMode = ({
     );
 
     // Crear la nueva línea de selección con formato HTML y elementos clicables
-    const selectionLine = {
+    const selectionLine: ConsoleLine = {
       id: Date.now() + Math.random(),
       content: `<div style="color:#66d9ef;font-weight:bold;margin-bottom:10px;">${title}</div>
 <div style="margin-left:4px;margin-bottom:10px;">
@@ -44,7 +64,7 @@ ${items
       onclick="window.selectItem(${index}, event)" 
       data-index="${index}" 
       class="selectable-item ${isSelected ? 'selected' : ''}">
-      <span class="${itemClass}">${icon} ${item.display || item.name || item}</span>
+      <span class="${itemClass}">${icon} ${resolveItemLabel(item)}</span>
   </div>`;
           })
           .join('')}
@@ -62,7 +82,7 @@ ${items
     setConsoleOutput((prev) => [...prev, selectionLine]);
 
     // Definir funciones globales para manejar los clics
-    window.selectItem = (index, event) => {
+    window.selectItem = (index: number, event?: Event) => {
       // Evitar que el evento burbujee y cause scroll indeseado
       if (event) {
         event.preventDefault();

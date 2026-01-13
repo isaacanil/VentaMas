@@ -45,7 +45,19 @@ const ContentContainer = styled.div`
   width: 100%;
 `;
 
-const BarcodeContainer = styled.div`
+interface BarcodeContainerProps {
+  valid?: boolean;
+}
+
+interface BarcodeQuietZoneProps {
+  quietZone?: number;
+}
+
+interface ValidationMessageProps {
+  isValid?: boolean;
+}
+
+const BarcodeContainer = styled.div<BarcodeContainerProps>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,15 +65,17 @@ const BarcodeContainer = styled.div`
   padding: 16px;
   margin-bottom: 16px;
   background-color: white;
-  border: 2px solid ${(props: any) => (props.valid ? '#d9d9d9' : '#ff7875')};
+  border: 2px solid
+    ${(props: BarcodeContainerProps) =>
+      props.valid ? '#d9d9d9' : '#ff7875'};
   border-radius: 8px;
 `;
 
-const BarcodeQuietZoneContainer = styled.div`
+const BarcodeQuietZoneContainer = styled.div<BarcodeQuietZoneProps>`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: ${(props) => props.quietZone || 0}mm;
+  padding: ${(props: BarcodeQuietZoneProps) => props.quietZone || 0}mm;
   background-color: white;
 `;
 
@@ -75,14 +89,15 @@ const InputWrapper = styled.div`
   width: 100%;
 `;
 
-const ValidationMessage = styled.div`
+const ValidationMessage = styled.div<ValidationMessageProps>`
   display: flex;
   gap: 4px;
   align-items: center;
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.3;
-  color: ${(props: any) => (props.isValid ? '#52c41a' : '#ff4d4f')};
+  color: ${(props: ValidationMessageProps) =>
+    props.isValid ? '#52c41a' : '#ff4d4f'};
 `;
 
 const FooterContainer = styled.div`
@@ -255,7 +270,7 @@ export const BarCode = ({ product }: BarCodeProps) => {
     if (!barcodeValue || barcodeInfo?.valid) return null;
 
     // Reconocer tipos de barcode según la longitud
-    const getExpectedLengthByType = (length) => {
+    const getExpectedLengthByType = (length: number) => {
       switch (length) {
         case 7:
           return { type: 'EAN-8', expectedLength: 8 }; // EAN-8 sin check digit
@@ -276,7 +291,7 @@ export const BarCode = ({ product }: BarCodeProps) => {
     // Solo sugerir si falta exactamente 1 dígito para completar
     if (expectedType && currentLength === expectedType.expectedLength - 1) {
       // Calcular check digit según el tipo
-      const calculateCheckDigit = (code, type) => {
+      const calculateCheckDigit = (code: string, type: string) => {
         if (type === 'EAN-8' || type === 'EAN-13' || type === 'UPC-A') {
           // Algoritmo EAN/UPC
           let sum = 0;

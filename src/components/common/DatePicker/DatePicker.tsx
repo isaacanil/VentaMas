@@ -10,6 +10,7 @@ import { createDefaultPresets } from './constants/presets';
 import { useDatePicker } from './hooks/useDatePicker';
 import { useMobile } from './hooks/useMobile';
 import { formatDisplayValue } from './utils/dateUtils';
+import type { DatePickerProps, DatePickerPreset } from './types';
 
 // Styled Components
 const Container = styled.div`
@@ -17,7 +18,19 @@ const Container = styled.div`
   width: 100%;
 `;
 
-const DatePickerContent = styled.div`
+interface DatePickerContentProps {
+  $isMobile?: boolean;
+}
+
+interface ActionsSectionProps {
+  $isMobile?: boolean;
+}
+
+interface ActionButtonProps {
+  $primary?: boolean;
+}
+
+const DatePickerContent = styled.div<DatePickerContentProps>`
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -29,7 +42,7 @@ const DatePickerContent = styled.div`
   padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0px')};
 `;
 
-const ActionsSection = styled.div`
+const ActionsSection = styled.div<ActionsSectionProps>`
   position: sticky;
   bottom: 0;
   z-index: 1;
@@ -40,7 +53,7 @@ const ActionsSection = styled.div`
   border-top: 1px solid #f0f0f0;
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled.button<ActionButtonProps>`
   flex: 1;
   padding: 8px 16px;
   font-size: 14px;
@@ -106,11 +119,11 @@ export const DatePicker = ({
   className,
   style,
   ...props
-}) => {
-  const containerRef = useRef(null);
+}: DatePickerProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMobile();
 
-  const finalPresets =
+  const finalPresets: DatePickerPreset[] =
     presets.length > 0 ? presets : createDefaultPresets(mode);
 
   const {
@@ -128,12 +141,17 @@ export const DatePicker = ({
     navigateMonth,
     getCurrentRangeStart,
     getCurrentRangeEnd,
-  } = useDatePicker({ mode, value, onChange, presets: finalPresets });
+  } = useDatePicker({
+    mode,
+    value: value ?? null,
+    onChange,
+    presets: finalPresets,
+  });
 
   const currentRangeStart = getCurrentRangeStart();
   const currentRangeEnd = getCurrentRangeEnd();
 
-  const inputValue = formatDisplayValue(value, format, mode);
+  const inputValue = formatDisplayValue(value ?? null, format, mode);
   const hasValue = inputValue !== '';
 
   const renderContent = (includeActions = true) => {

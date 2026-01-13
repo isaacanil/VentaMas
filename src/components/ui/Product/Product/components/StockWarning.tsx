@@ -13,15 +13,16 @@ type WarningWrapperProps = {
 // Styled wrapper for the warning badge
 const WarningWrapper = styled.div<WarningWrapperProps>`
   position: absolute;
-  ${({ $position }) => ($position === 'top' ? 'top: 0;' : 'bottom: 0;')}
+  ${({ $position }: WarningWrapperProps) =>
+    $position === 'top' ? 'top: 0;' : 'bottom: 0;'}
   left: 0;
   width: 105px;
   text-align: center;
   line-height: 1em;
   border-top-right-radius: 10px;
-  padding: ${({ $position }) =>
+  padding: ${({ $position }: WarningWrapperProps) =>
     $position === 'top' ? '0.2em 0.4em 0.6em' : '0.6em 0.4em 0.2em'};
-  background: ${({ $variant, $isSelected }) => {
+  background: ${({ $variant, $isSelected }: WarningWrapperProps) => {
     switch ($variant) {
       case 'outOfStock':
         return $isSelected

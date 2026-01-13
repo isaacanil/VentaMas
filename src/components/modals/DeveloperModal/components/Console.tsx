@@ -1,11 +1,12 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import AutoComplete from './AutoComplete';
+import type { ConsoleLine, ConsoleLineType, ConsoleProps } from '../types';
 
 // Variantes de animación para los elementos de la consola
-const consoleLineVariants = {
+const consoleLineVariants: Variants = {
   hidden: {
     opacity: 0,
     x: -8,
@@ -14,9 +15,12 @@ const consoleLineVariants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.15, ease: [0, 0, 0.2, 1] },
+    transition: {
+      duration: 0.15,
+      ease: [0, 0, 0.2, 1] as [number, number, number, number],
+    },
   },
-} as any;
+};
 
 /**
  * Componente que muestra la salida de la consola y el prompt para entrada de comandos
@@ -36,12 +40,14 @@ const Console = ({
   onAutoCompleteSelectedIndexChange,
   // Nueva prop para filtrar selecciones
   onFilterSelection,
-}) => {
-  const inputRef = useRef(null);
-  const [inputElement, setInputElement] = useState(null);
-  const terminalRef = useRef(null);
+}: ConsoleProps) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [inputElement, setInputElement] = useState<HTMLInputElement | null>(
+    null,
+  );
+  const terminalRef = useRef<HTMLDivElement | null>(null);
 
-  const setInputRef = useCallback((node) => {
+  const setInputRef = useCallback((node: HTMLInputElement | null) => {
     inputRef.current = node;
     setInputElement(node);
   }, []);
@@ -69,7 +75,7 @@ const Console = ({
       }, 50);
     }
   }, [selectionMode.active]); // Función para manejar el clic en la consola
-  const handleConsoleClick = (e) => {
+  const handleConsoleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // No enfocar si estamos en modo de selección, pero no prevenir otros eventos
     if (selectionMode.active) {
       return;
@@ -107,7 +113,7 @@ const Console = ({
         <WelcomeText>{welcomeText}</WelcomeText>
 
         {/* Salida de la consola */}
-        {consoleOutput.map((line) => (
+        {consoleOutput.map((line: ConsoleLine) => (
           <motion.div
             key={line.id}
             initial="hidden"
@@ -257,7 +263,11 @@ const WelcomeText = styled.div`
   line-height: 1.2;
 `;
 
-const ConsoleLine = styled.div`
+interface ConsoleLineProps {
+  type: ConsoleLineType;
+}
+
+const ConsoleLine = styled.div<ConsoleLineProps>`
   margin-bottom: ${(props) => {
     switch (props.type) {
       case 'command':

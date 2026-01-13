@@ -1,6 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
+type InfoCardElement = {
+  label: string;
+  value?: React.ReactNode;
+};
+
+type InfoCardProps = {
+  title: React.ReactNode;
+  elements: InfoCardElement[];
+};
+
 const StyledContainer = styled.div`
   height: auto;
   overflow: hidden;
@@ -37,7 +47,7 @@ const StyledLabel = styled.span`
   color: #4b5563;
 `;
 
-export const InfoCard = ({ title, elements }) => {
+export const InfoCard = ({ title, elements }: InfoCardProps) => {
   return (
     <StyledContainer>
       <StyledHeader>

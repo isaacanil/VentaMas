@@ -5,12 +5,22 @@ import {
   CloseOutlined,
   MedicineBoxOutlined,
 } from '@ant-design/icons';
-import { Form, Input, Button, Drawer, Tooltip, Dropdown } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import {
+  Form,
+  Input,
+  Button,
+  Drawer,
+  Tooltip,
+  Dropdown,
+  type InputRef,
+  type FormItemProps,
+} from 'antd';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { openModal } from '@/features/doctors/doctorsSlice';
+import type { DoctorRecord } from '@/types/doctors';
 import { normalizeText } from '@/utils/text';
 
 const Wrapper = styled.div`
@@ -41,7 +51,11 @@ const DoctorsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const DoctorCard = styled.div`
+interface DoctorCardProps {
+  $isSelected?: boolean;
+}
+
+const DoctorCard = styled.div<DoctorCardProps>`
   padding: 12px;
   cursor: pointer;
   background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
@@ -133,22 +147,30 @@ const DoctorInfo = styled.div`
   }
 `;
 
+interface DoctorSelectorProps {
+  doctors?: DoctorRecord[];
+  selectedDoctor?: DoctorRecord | null;
+  onSelectDoctor?: (doctor: DoctorRecord | null) => void;
+  validateStatus?: FormItemProps['validateStatus'];
+  help?: FormItemProps['help'];
+}
+
 const DoctorSelector = ({
   doctors = [],
   selectedDoctor,
   onSelectDoctor,
   validateStatus,
   help,
-}) => {
+}: DoctorSelectorProps) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
-  const searchInputRef = useRef(null);
+  const searchInputRef = useRef<InputRef | null>(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (visible && searchInputRef.current) {
       setTimeout(() => {
-        searchInputRef.current.focus();
+        searchInputRef.current?.focus();
       }, 100);
     }
   }, [visible]);
@@ -156,12 +178,12 @@ const DoctorSelector = ({
   const filteredDoctors = search
     ? doctors.filter(
         (doctor) =>
-          normalizeText(doctor.name).includes(normalizeText(search)) ||
+          normalizeText(doctor.name || '').includes(normalizeText(search)) ||
           normalizeText(doctor.specialty || '').includes(normalizeText(search)),
       )
     : doctors;
 
-  const handleDoctorSelect = (doctor) => {
+  const handleDoctorSelect = (doctor: DoctorRecord) => {
     onSelectDoctor?.(doctor);
     setVisible(false);
     setSearch('');
@@ -172,18 +194,22 @@ const DoctorSelector = ({
     setVisible(false);
   };
 
-  const handleCardClick = (e, doctor) => {
-    if (!e.target.closest('.dropdown-container')) {
+  const handleCardClick = (
+    e: ReactMouseEvent<HTMLElement>,
+    doctor: DoctorRecord,
+  ) => {
+    const target = e.target as HTMLElement | null;
+    if (!target?.closest('.dropdown-container')) {
       handleDoctorSelect(doctor);
     }
   };
 
-  const openModalUpdateMode = (e, doctor) => {
+  const openModalUpdateMode = (_event: unknown, doctor: DoctorRecord) => {
     dispatch(openModal({ mode: 'edit', doctor }));
     setVisible(false);
   };
 
-  const getMenuItems = (doctor) => [
+  const getMenuItems = (doctor: DoctorRecord) => [
     {
       key: 'edit',
       label: 'Editar',
@@ -192,7 +218,7 @@ const DoctorSelector = ({
     },
   ];
 
-  const handleClearDoctor = (e) => {
+  const handleClearDoctor = (e: ReactMouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     onSelectDoctor?.(null);

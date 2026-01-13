@@ -26,6 +26,7 @@ export interface InputV4Props extends Omit<React.InputHTMLAttributes<HTMLInputEl
   validate?: boolean;
   errorMessage?: string | string[];
   bgColor?: string;
+  border?: boolean;
   buttons?: InputButtonConfig[];
   buttonsAlignment?: 'start' | 'end' | 'stretch';
   buttonsStyle?: CSSProperties;

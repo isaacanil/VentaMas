@@ -10,27 +10,54 @@ import {
   where,
   getDoc,
 } from 'firebase/firestore';
+import type {
+  CollectionReference,
+  DocumentData,
+  Transaction,
+  Unsubscribe,
+} from 'firebase/firestore';
 import { nanoid } from 'nanoid'; // Importación correcta de nanoid
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../firebaseconfig';
 import { deleteAllProductStocksByBatch } from './productStockService';
+import { MovementReason } from '@/models/Warehouse/Movement';
 import type { Batch } from '@/models/Warehouse/Batch';
 import type { InventoryUser } from '@/utils/inventory/types';
 
 type BatchRecord = Partial<Batch> & Record<string, unknown>;
+type BatchListener = (batches: BatchRecord[]) => void;
+type BatchStateSetter = Dispatch<SetStateAction<BatchRecord[]>>;
+type BatchDeletionMovement = {
+  quantity?: number;
+  reason?: MovementReason;
+  notes?: string;
+};
 
 // Obtener referencia de la colección de batches para un negocio específico
-const getBatchCollectionRef = (businessID) =>
-  collection(db, 'businesses', businessID, 'batches');
+const getBatchCollectionRef = (
+  businessID?: string | null,
+): CollectionReference<DocumentData> | null => {
+  if (!businessID) {
+    console.warn('businessID is empty. Skipping batch collection reference.');
+    return null;
+  }
+  return collection(db, 'businesses', businessID, 'batches');
+};
 
 // Crear un nuevo batch
-export const createBatch = async (user, batchData: BatchRecord) => {
+export const createBatch = async (
+  user: InventoryUser,
+  batchData: BatchRecord,
+): Promise<BatchRecord> => {
   const id = nanoid(); // Generar ID único
   try {
     const batchCollectionRef = getBatchCollectionRef(user.businessID);
+    if (!batchCollectionRef) {
+      throw new Error('businessID no válido para crear batch');
+    }
     const batchDocRef = doc(batchCollectionRef, id);
 
     const batch = {
@@ -55,18 +82,18 @@ export const createBatch = async (user, batchData: BatchRecord) => {
 
 // Obtener un batch por su ID
 export const getBatchById = async (
-  user,
-  batchId,
+  user: InventoryUser,
+  batchId: string | number | null | undefined,
   _signal?: AbortSignal,
 ) => {
   try {
-    if (!batchId) return null;
+    if (!batchId || !user?.businessID) return null;
     const batchDocRef = doc(
       db,
       'businesses',
       user.businessID,
       'batches',
-      batchId,
+      String(batchId),
     );
     const snapshot = await getDoc(batchDocRef);
     if (snapshot.exists()) {
@@ -80,9 +107,13 @@ export const getBatchById = async (
 };
 
 // Leer todos los batches de un negocio, opcionalmente filtrados por productId
-export const getAllBatches = async (user, productID = null) => {
+export const getAllBatches = async (
+  user: InventoryUser,
+  productID: string | number | null = null,
+) => {
   try {
     const batchCollectionRef = getBatchCollectionRef(user.businessID);
+    if (!batchCollectionRef) return [];
     let q;
 
     if (productID) {
@@ -110,9 +141,17 @@ export const getAllBatches = async (user, productID = null) => {
 };
 
 // Escuchar en tiempo real todos los batches de un negocio específico, opcionalmente filtrados por productId
-export const listenAllBatches = (user, productID = null, callback) => {
+export const listenAllBatches = (
+  user: InventoryUser,
+  productID: string | number | null = null,
+  callback: BatchListener,
+): Unsubscribe => {
   try {
     const batchCollectionRef = getBatchCollectionRef(user.businessID);
+    if (!batchCollectionRef) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      return () => {};
+    }
     let q;
 
     if (productID) {
@@ -146,7 +185,11 @@ export const listenAllBatches = (user, productID = null, callback) => {
 };
 
 // Escuchar batches específicos por sus IDs
-export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
+export const listenAllBatchesByIds = (
+  user: InventoryUser,
+  batchIDs: Array<string | number> = [],
+  callback: BatchStateSetter,
+): (() => void) | undefined => {
   try {
     // Verificar que user y user.businessID estén definidos
     if (!user || !user.businessID) {
@@ -162,7 +205,7 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
       return undefined;
     }
 
-    const unsubscribeFuncs = [];
+    const unsubscribeFuncs: Unsubscribe[] = [];
 
     // Iterar sobre cada batchID y crear un listener para cada uno
     batchIDs.forEach((batchID) => {
@@ -176,7 +219,7 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
         'businesses',
         user.businessID,
         'batches',
-        batchID,
+        String(batchID),
       );
 
       const unsubscribe = onSnapshot(
@@ -225,8 +268,14 @@ export const listenAllBatchesByIds = (user, batchIDs = [], callback) => {
 };
 
 // Actualizar un batch existente
-export const updateBatch = async (user, data) => {
+export const updateBatch = async (
+  user: InventoryUser,
+  data: BatchRecord & { id: string },
+) => {
   try {
+    if (!user?.businessID) {
+      throw new Error('businessID no válido para actualizar batch');
+    }
     const batchDocRef = doc(
       db,
       'businesses',
@@ -248,9 +297,9 @@ export const updateBatch = async (user, data) => {
 
 // Función para revisar el estado del batch en función de los productStocks asociadosociados
 export async function updateBatchStatusForProductStock(
-  businessID,
-  batchId,
-  productId,
+  businessID: string,
+  batchId: string | number,
+  productId: string | number,
 ) {
   // Consulta todos los productStock que pertenecen a ese batch y producto
   const productStockQuery = query(
@@ -271,7 +320,7 @@ export async function updateBatchStatusForProductStock(
   });
 
   // Referencia al documento del batch
-  const batchRef = doc(db, 'businesses', businessID, 'batches', batchId);
+  const batchRef = doc(db, 'businesses', businessID, 'batches', String(batchId));
 
   if (totalQuantity <= 0) {
     // Si en conjunto no hay stock, se marca el batch como inactivo
@@ -284,14 +333,25 @@ export async function updateBatchStatusForProductStock(
 }
 
 // Marcar un batch como eliminado
-export const deleteBatch = async ({ user, batchId, movement }) => {
+export const deleteBatch = async ({
+  user,
+  batchId,
+  movement,
+}: {
+  user: InventoryUser;
+  batchId: string | number;
+  movement?: BatchDeletionMovement;
+}) => {
   try {
+    if (!user?.businessID) {
+      throw new Error('businessID no válido para eliminar batch');
+    }
     const batchDocRef = doc(
       db,
       'businesses',
       user.businessID,
       'batches',
-      batchId,
+      String(batchId),
     );
     const batchSnap = await getDoc(batchDocRef);
 
@@ -301,7 +361,7 @@ export const deleteBatch = async ({ user, batchId, movement }) => {
 
     const deletionResult = await deleteAllProductStocksByBatch({
       user,
-      batchId,
+      batchId: String(batchId),
       movement,
     });
 
@@ -319,7 +379,7 @@ export const deleteBatch = async ({ user, batchId, movement }) => {
 };
 
 // Custom Hook para escuchar batches por IDs
-export const useListenBatchesByIds = (batchIDs = []) => {
+export const useListenBatchesByIds = (batchIDs: Array<string | number> = []) => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const [data, setData] = useState<BatchRecord[]>([]);
   const [loading, setLoading] = useState(
@@ -370,14 +430,21 @@ export const checkAndDeleteEmptyBatch = async ({
   user,
   batchId,
   transaction,
+}: {
+  user: InventoryUser;
+  batchId: string | number;
+  transaction?: Transaction | null;
 }) => {
   try {
+    if (!user?.businessID) {
+      throw new Error('businessID no válido para verificar batch');
+    }
     const batchDocRef = doc(
       db,
       'businesses',
       user.businessID,
       'batches',
-      batchId,
+      String(batchId),
     );
 
     // Obtener documento usando transacción si está disponible

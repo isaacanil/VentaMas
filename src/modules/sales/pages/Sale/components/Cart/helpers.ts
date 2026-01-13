@@ -38,9 +38,9 @@ export const handleTaxReceipt = async (
   try {
     if (!taxReceiptEnabled) return;
     if (ncfStatus) {
-      dispatch(IncreaseTaxCredit());
+      dispatch(IncreaseTaxCredit(undefined));
     } else {
-      dispatch(IncreaseEndConsumer());
+      dispatch(IncreaseEndConsumer(undefined));
     }
   } catch (error) {
     console.error('Error in cart helper:', error);
@@ -82,7 +82,7 @@ export const savingDataToFirebase = async (
     if (isSelectMode) {
       await fbAddInvoice(bill, user);
 
-      if (taxReceiptEnabled && taxReceipt?.length) {
+      if (taxReceiptEnabled && taxReceipt?.length && user) {
         await fbUpdateTaxReceipt(user, taxReceipt);
       }
 

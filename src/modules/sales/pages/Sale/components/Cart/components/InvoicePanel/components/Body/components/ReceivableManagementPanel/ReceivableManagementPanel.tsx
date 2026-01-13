@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import DatePicker from '@/components/DatePicker';
 import { formatPrice } from '@/utils/format';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
 
 import {
   selectAR,
@@ -57,17 +58,6 @@ type UserIdentity = {
 
 type ClientIdentity = {
   id?: string;
-};
-
-type CreditLimitConfig = {
-  creditLimit?: {
-    status?: boolean;
-    value?: number;
-  };
-  invoice?: {
-    status?: boolean;
-    value?: number;
-  };
 };
 
 type ReceivableManagementPanelProps = {

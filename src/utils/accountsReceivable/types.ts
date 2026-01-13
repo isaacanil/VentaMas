@@ -220,7 +220,18 @@ export type ReceivablePaidInstallment = AccountsReceivableInstallment;
 export type ReceivablePaymentReceiptAccount = AccountReceivableRow;
 
 export interface CreditLimitConfig {
-  enabled: boolean;
-  limit: number;
-  currentUsage: number;
+  // Legacy flat fields (compatibilidad)
+  enabled?: boolean;
+  limit?: number;
+  currentUsage?: number;
+  // Configuración actual
+  creditLimit?: {
+    status?: boolean;
+    value?: number;
+  };
+  invoice?: {
+    status?: boolean;
+    value?: number;
+  };
+  currentBalance?: number;
 }

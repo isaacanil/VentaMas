@@ -201,7 +201,10 @@ const Center = styled.div`
 `;
 
 export const InventorySummary = () => {
-  const { products = [], loading } = useGetProducts();
+  const { products = [], loading } = useGetProducts() as {
+    products?: ProductRecord[];
+    loading?: boolean;
+  };
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');

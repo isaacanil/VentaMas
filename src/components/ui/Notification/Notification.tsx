@@ -16,7 +16,13 @@ import {
 } from '@/features/notification/notificationSlice';
 import { Button } from '@/components/ui/Button/Button';
 
-const getTimerByType = (type) => {
+type NotificationVariant = 'success' | 'error' | 'warning' | 'info';
+
+type NotificationStyleProps = {
+  type?: NotificationVariant;
+};
+
+const getTimerByType = (type?: NotificationVariant) => {
   switch (type) {
     case 'success':
       return 4000;
@@ -146,7 +152,7 @@ const Container = styled(motion.div)`
     width: 96%;
   }
 
-  ${(props) => {
+  ${(props: NotificationStyleProps) => {
     switch (props.type) {
       case 'error':
         return `
@@ -216,7 +222,7 @@ const Icon = styled.div`
     fill: white;
   }
 
-  ${(props) => {
+  ${(props: NotificationStyleProps) => {
     switch (props.type) {
       case 'error':
         return `  

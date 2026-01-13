@@ -2,7 +2,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-export const Modal = ({ visible, onClose, children }) => {
+interface ModalProps {
+  visible: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+export const Modal = ({ visible, onClose, children }: ModalProps) => {
   if (!visible) return null;
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -23,6 +23,16 @@ import Console from './components/Console';
 import { Header } from './components/Header';
 import { Modal } from './components/Modal';
 import SelectionMode from './components/SelectionMode';
+import type { UserIdentity } from '@/types/users';
+import type {
+  AutoCompleteSelectOptions,
+  AutoCompleteSuggestion,
+  ConsoleCommandLine,
+  ConsoleLine,
+  ConsoleResultLine,
+  SelectionItem,
+  SelectionModeState,
+} from './types';
 
 /**
  * Modal de desarrollador con consola de comandos
@@ -38,20 +48,24 @@ export const DeveloperModal = () => {
   const isTemporaryRoleMode = useSelector(selectIsTemporaryRoleMode);
   const originalRole = useSelector(selectOriginalRole);
   // Estados locales
-  const [consoleOutput, setConsoleOutput] = useState([]);
+  const [consoleOutput, setConsoleOutput] = useState<ConsoleLine[]>([]);
   const [commandInput, setCommandInput] = useState('');
   const [reactScanLoaded, setReactScanLoaded] = useState(false);
-  const [businesses, setBusinesses] = useState([]);
-  const commandProcessorRef = useRef(null);
+  const [businesses, setBusinesses] = useState<SelectionItem[]>([]);
+  const commandProcessorRef = useRef<InstanceType<typeof CommandProcessor> | null>(
+    null,
+  );
 
   // Estados para autocompletado
-  const [autoCompleteSuggestions, setAutoCompleteSuggestions] = useState([]);
+  const [autoCompleteSuggestions, setAutoCompleteSuggestions] = useState<
+    AutoCompleteSuggestion[]
+  >([]);
   const [showAutoComplete, setShowAutoComplete] = useState(false);
   const [autoCompleteSelectedIndex, setAutoCompleteSelectedIndex] =
     useState(-1);
 
   // Estado para el modo de selección
-  const [selectionMode, setSelectionMode] = useState({
+  const [selectionMode, setSelectionMode] = useState<SelectionModeState>({
     active: false,
     items: [],
     selectedIndex: 0,
@@ -61,14 +75,18 @@ export const DeveloperModal = () => {
   });
 
   // Estado para filtrado en modo selección
-  const [originalItems, setOriginalItems] = useState([]);
+  const [originalItems, setOriginalItems] = useState<SelectionItem[]>([]);
 
   // Verificar si el usuario es desarrollador
-  const isDeveloper = user?.role === 'dev';
+  const isDeveloper = (user as UserIdentity | null)?.role === 'dev';
 
   // Funciones para agregar salida a la consola
-  const addOutput = (content, type = 'result', html = false) => {
-    const newLine = {
+  const addOutput = (
+    content: string,
+    type: ConsoleResultLine['type'] = 'result',
+    html = false,
+  ) => {
+    const newLine: ConsoleResultLine = {
       id: Date.now() + Math.random(),
       content: content,
       type,
@@ -77,8 +95,8 @@ export const DeveloperModal = () => {
     setConsoleOutput((prev) => [...prev, newLine]);
   };
 
-  const addCommandEcho = (command) => {
-    const commandLine = {
+  const addCommandEcho = (command: string) => {
+    const commandLine: ConsoleCommandLine = {
       id: Date.now() + Math.random(),
       content: {
         prompt: 'C:\\VentaMax>',
@@ -89,7 +107,12 @@ export const DeveloperModal = () => {
     setConsoleOutput((prev) => [...prev, commandLine]);
   };
   // Funciones para el modo de selección
-  const enterSelectionMode = (items, title, onSelect, command = '') => {
+  const enterSelectionMode = (
+    items: SelectionItem[],
+    title: string,
+    onSelect: (item: SelectionItem) => void,
+    command = '',
+  ) => {
     setOriginalItems(items); // Guardar items originales
     setSelectionMode({
       active: true,
@@ -101,7 +124,7 @@ export const DeveloperModal = () => {
     });
   };
   // Función para filtrar items en modo selección
-  const handleFilterSelection = (filterText) => {
+  const handleFilterSelection = (filterText: string) => {
     if (!selectionMode.active) return;
 
     console.log('Filtering with text:', filterText);
@@ -121,7 +144,11 @@ export const DeveloperModal = () => {
         const itemText =
           typeof item === 'string'
             ? item
-            : item.name || item.title || item.label || String(item);
+            : (item as { name?: string; title?: string; label?: string })
+                .name ||
+              (item as { name?: string; title?: string; label?: string }).title ||
+              (item as { name?: string; title?: string; label?: string }).label ||
+              String(item);
         return itemText.toLowerCase().includes(filterText.toLowerCase());
       });
 
@@ -135,7 +162,7 @@ export const DeveloperModal = () => {
   };
 
   // Actualiza la selección al hacer clic en un item
-  const updateSelectedIndex = (index) => {
+  const updateSelectedIndex = (index: number) => {
     setSelectionMode((prev) => ({ ...prev, selectedIndex: index }));
   };
 
@@ -189,7 +216,7 @@ export const DeveloperModal = () => {
   };
 
   // Funciones para autocompletado
-  const updateAutoComplete = (input) => {
+  const updateAutoComplete = (input: string) => {
     if (!commandProcessorRef.current) return;
 
     const suggestions =
@@ -199,7 +226,7 @@ export const DeveloperModal = () => {
     setAutoCompleteSelectedIndex(-1);
   };
 
-  const triggerCommandExecution = useCallback((command) => {
+  const triggerCommandExecution = useCallback((command: string) => {
     const commandText = command?.trim();
     if (!commandText || !commandProcessorRef.current) return;
 
@@ -216,8 +243,8 @@ export const DeveloperModal = () => {
   }, []);
 
   const handleAutoCompleteSuggestionSelect = useCallback((
-    suggestion,
-    options = { trigger: 'keyboard' },
+    suggestion: AutoCompleteSuggestion | null,
+    options: AutoCompleteSelectOptions = { trigger: 'keyboard' },
   ) => {
     if (!suggestion) return;
 
@@ -237,7 +264,7 @@ export const DeveloperModal = () => {
     }
   }, [triggerCommandExecution]);
 
-  const handleAutoCompleteSelectedIndexChange = (index) => {
+  const handleAutoCompleteSelectedIndexChange = (index: number) => {
     setAutoCompleteSelectedIndex(index);
   };
 
@@ -285,7 +312,7 @@ export const DeveloperModal = () => {
   }, [modalData.isOpen, isDeveloper, dispatch]);
 
   // Manejar entrada de teclado - DEBE ESTAR ANTES del useEffect que lo usa
-  const handleKeyDown = useCallback((e) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
     if (selectionMode.active) {
       if (e.key === 'Escape') {
@@ -393,7 +420,7 @@ export const DeveloperModal = () => {
 
   // Agregar listener global solo para ESC cuando estamos en modo selección
   useEffect(() => {
-    const handleGlobalKeyDown = (e) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Solo manejar ESC globalmente si el modal está abierto
       if (modalData.isOpen) {
         handleKeyDown(e);
@@ -417,7 +444,7 @@ export const DeveloperModal = () => {
     dispatch(toggleDeveloperModal(undefined));
   };
 
-  const _triggerCommandExecution = (command) => {
+  const _triggerCommandExecution = (command: string) => {
     const commandText = command?.trim();
     if (!commandText || !commandProcessorRef.current) return;
 

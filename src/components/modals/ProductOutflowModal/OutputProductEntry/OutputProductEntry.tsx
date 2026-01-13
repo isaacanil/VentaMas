@@ -143,7 +143,7 @@ const Row = styled.div<RowProps>`
   position: relative;
   gap: 1em;
 
-  ${(props) =>
+  ${(props: RowProps) =>
     props.$columns &&
     `
     grid-template-columns: ${props.$columns.map((col: TableHeaderColumn) => col.width).join(' ')};

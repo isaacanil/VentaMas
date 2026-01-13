@@ -48,6 +48,10 @@ interface DiscountInfo {
   [key: string]: unknown;
 }
 
+type PricingCarrier = {
+  pricing?: ProductPricing | null;
+};
+
 type TimestampLike = {
   seconds?: number;
   toDate?: () => Date;
@@ -71,6 +75,10 @@ type CartItem = CartProductRecord & {
 };
 
 type SaleUnitRecord = Partial<ProductSaleUnit> & { id: string };
+
+type ExpiredStyleProps = { $expired: boolean };
+type HasBatchStyleProps = { $hasBatch: boolean };
+type DiscountStyleProps = { $hasDiscount: boolean };
 
 interface ProductCardForCartProps {
   item: CartItem;
@@ -191,7 +199,7 @@ export const ProductCardForCart = ({
     updatePricing(unit.pricing);
   };
 
-  const handleSelectDefaultUnit = (unit: CartItem) => {
+  const handleSelectDefaultUnit = (unit: PricingCarrier) => {
     setSelectedUnit(null);
     updatePricing(unit?.pricing);
   };
@@ -529,7 +537,8 @@ const Container = styled.div<{ $expired: boolean }>`
   padding: 0.4em;
   background-color: #fff;
   border: 1px solid
-    ${(props) => (props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)')};
+    ${(props: ExpiredStyleProps) =>
+      props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)'};
   border-radius: 8px;
 `;
 
@@ -591,7 +600,7 @@ const LeftSlot = styled.div<{ $hasBatch: boolean }>`
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: ${(props) => (props.$hasBatch ? '0' : '2px')};
+  gap: ${(props: HasBatchStyleProps) => (props.$hasBatch ? '0' : '2px')};
   align-items: flex-start;
   min-width: 0;
 `;
@@ -638,7 +647,8 @@ const BatchSummaryInteractive = styled.span<{ $expired: boolean }>`
 
   .expiration-text {
     font-weight: 600;
-    color: ${(props) => (props.$expired ? '#dc2626' : '#16a34a')};
+    color: ${(props: ExpiredStyleProps) =>
+      props.$expired ? '#dc2626' : '#16a34a'};
   }
 `;
 
@@ -675,7 +685,8 @@ const Price = styled.span<{ $hasDiscount: boolean }>`
   padding: 0 10px;
   font-size: 14px;
   font-weight: 600;
-  color: ${(props) => (props.$hasDiscount ? '#52c41a' : 'var(--gray-6)')};
+  color: ${(props: DiscountStyleProps) =>
+    props.$hasDiscount ? '#52c41a' : 'var(--gray-6)'};
   white-space: nowrap;
   background-color: var(--white-1);
 `;
@@ -683,5 +694,6 @@ const Price = styled.span<{ $hasDiscount: boolean }>`
 const StatusIcon = styled(FontAwesomeIcon)<{ $expired: boolean }>`
   flex-shrink: 0;
   font-size: 12px;
-  color: ${(props) => (props.$expired ? '#dc2626' : '#16a34a')};
+  color: ${(props: ExpiredStyleProps) =>
+    props.$expired ? '#dc2626' : '#16a34a'};
 `;

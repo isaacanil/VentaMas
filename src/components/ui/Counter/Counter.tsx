@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, type ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -9,7 +9,18 @@ import {
 } from '@/features/cart/cartSlice';
 import { Alert } from '@/components/ui/Product/Cart/Alert';
 
-export const Counter = ({ amountToBuy, stock, id, item }) => {
+type CounterItem = {
+  restrictSaleWithoutStock?: boolean;
+};
+
+type CounterProps = {
+  amountToBuy: number;
+  stock: number;
+  id: string;
+  item: CounterItem;
+};
+
+export const Counter = ({ amountToBuy, stock, id, item }: CounterProps) => {
   const dispatch = useDispatch();
   const [DeletePrevent, setDeletePrevent] = useState(false);
   const [inputAmount, setInputAmount] = useState(amountToBuy || 1);
@@ -19,7 +30,7 @@ export const Counter = ({ amountToBuy, stock, id, item }) => {
   }, [amountToBuy]);
 
   // Manejador para cambiar el valor del input en tiempo real
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
 
     // Validación en tiempo real si se debe restringir el stock

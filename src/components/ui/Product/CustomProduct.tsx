@@ -48,7 +48,7 @@ const ProductContainer = styled.div<ProductContainerProps>`
   grid-template-columns: min-content 1fr;
   transition: 400ms all ease-in-out;
 
-  ${(props) => {
+  ${(props: ProductContainerProps) => {
     switch (props.$imageHiddenRef) {
       case true:
         return `
@@ -65,7 +65,7 @@ const ProductContainer = styled.div<ProductContainerProps>`
     }
   }}
 
-  ${(props) => {
+  ${(props: ProductContainerProps) => {
     switch (props.container) {
       case 'row':
         return `
@@ -94,7 +94,7 @@ const ProductImgWrapper = styled.div<ProductImgWrapperProps>`
   /* background-color: green; */
   padding: 4px;
   transition: all 400ms ease-in-out;
-  ${(props) => {
+  ${(props: ProductImgWrapperProps) => {
     switch (props.$imageHiddenRef) {
       case false:
         return `
@@ -143,7 +143,7 @@ const ProductImgWrapper = styled.div<ProductImgWrapperProps>`
     background-color: var(--white-3);
     border-radius: 7px;
   }
-  ${(props) => {
+  ${(props: ProductImgWrapperProps) => {
     switch (props.type) {
       case 'row':
         return `

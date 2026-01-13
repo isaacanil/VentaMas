@@ -1,26 +1,49 @@
 import { PercentageOutlined, DollarOutlined } from '@ant-design/icons';
-import { Modal, Radio, InputNumber, Button, Typography } from 'antd';
+import { Modal, Radio, InputNumber, Button, Typography, type RadioChangeEvent } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 
 import { updateProductDiscount } from '@/features/cart/cartSlice';
+import type { Product } from '@/features/cart/types';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import type { DiscountType } from '@/types/invoice';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 
 
 const { Text } = Typography;
 
-const ProductDiscountModal = ({ visible, onClose, product }) => {
+type CartDiscountType = 'percentage' | 'amount';
+
+interface DiscountPreset {
+  label: string;
+  value: number;
+  type: DiscountType;
+}
+
+interface ProductDiscountModalProps {
+  visible: boolean;
+  onClose: () => void;
+  product: Product | null;
+}
+
+const toCartDiscountType = (type: DiscountType): CartDiscountType =>
+  type === 'fixed' ? 'amount' : 'percentage';
+
+const ProductDiscountModal = ({
+  visible,
+  onClose,
+  product,
+}: ProductDiscountModalProps) => {
   const dispatch = useDispatch();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  const [discountType, setDiscountType] = useState('percentage');
+  const [discountType, setDiscountType] = useState<DiscountType>('percentage');
   const [discountValue, setDiscountValue] = useState(0);
-  const [presetDiscount, setPresetDiscount] = useState(null);
+  const [presetDiscount, setPresetDiscount] = useState<DiscountPreset | null>(null);
 
-  const presetDiscounts = [
+  const presetDiscounts: DiscountPreset[] = [
     { label: '5%', value: 5, type: 'percentage' },
     { label: '10%', value: 10, type: 'percentage' },
     { label: '15%', value: 15, type: 'percentage' },
@@ -32,7 +55,7 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
   // Reiniciar valores cuando se abre el modal
   // State for synchronization
   const [prevVisible, setPrevVisible] = useState(false);
-  const [prevProduct, setPrevProduct] = useState(null);
+  const [prevProduct, setPrevProduct] = useState<Product | null>(null);
 
   // Synchronize state with props during render
   if (visible && (!prevVisible || product !== prevProduct)) {
@@ -40,7 +63,9 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
     setPrevProduct(product);
 
     if (product?.discount) {
-      setDiscountType(product.discount.type);
+      const productDiscountType =
+        product.discount.type === 'amount' ? 'fixed' : product.discount.type;
+      setDiscountType(productDiscountType);
       setDiscountValue(product.discount.value);
       setPresetDiscount(null);
     } else {
@@ -111,7 +136,9 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
     dispatch(
       updateProductDiscount({
         id: product.id || product.cid,
-        discount: value > 0 ? discount : null,
+        discount: value > 0
+          ? { type: toCartDiscountType(discount.type), value }
+          : null,
       }),
     );
 
@@ -133,18 +160,18 @@ const ProductDiscountModal = ({ visible, onClose, product }) => {
     onClose();
   };
 
-  const handlePresetSelect = (preset) => {
+  const handlePresetSelect = (preset: DiscountPreset) => {
     setPresetDiscount(preset);
     setDiscountValue(0);
   };
 
-  const handleCustomValueChange = (value) => {
+  const handleCustomValueChange = (value: number | null) => {
     setDiscountValue(value || 0);
     setPresetDiscount(null);
   };
 
-  const handleDiscountTypeChange = (event) => {
-    const nextType = event.target.value;
+  const handleDiscountTypeChange = (event: RadioChangeEvent) => {
+    const nextType = event.target.value as DiscountType;
     setDiscountType(nextType);
 
     if (nextType === 'fixed') {
@@ -329,7 +356,27 @@ const PriceDetails = styled.div`
   gap: 6px;
 `;
 
-const PriceRow = styled.div`
+interface PriceRowProps {
+  $isFinal?: boolean;
+  $isDiscount?: boolean;
+}
+
+interface PriceLabelProps {
+  $isFinal?: boolean;
+  $isDiscount?: boolean;
+}
+
+interface PriceValueProps {
+  $isFinal?: boolean;
+  $isDiscount?: boolean;
+  $isTotal?: boolean;
+}
+
+interface PresetPillProps {
+  $isSelected?: boolean;
+}
+
+const PriceRow = styled.div<PriceRowProps>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -349,14 +396,14 @@ const PriceRow = styled.div`
     props.$isFinal || props.$isDiscount ? '6px' : '0'};
 `;
 
-const PriceLabel = styled.span`
+const PriceLabel = styled.span<PriceLabelProps>`
   font-size: 14px;
   font-weight: ${(props) => (props.$isFinal ? '600' : '500')};
   color: ${(props) =>
     props.$isFinal ? '#52c41a' : props.$isDiscount ? '#ff4d4f' : '#6c757d'};
 `;
 
-const PriceValue = styled.span`
+const PriceValue = styled.span<PriceValueProps>`
   font-size: ${(props) =>
     props.$isFinal ? '18px' : props.$isTotal ? '16px' : '14px'};
   font-weight: 700;
@@ -420,7 +467,7 @@ const PresetGrid = styled.div`
   gap: 6px;
 `;
 
-const PresetPill = styled.div`
+const PresetPill = styled.div<PresetPillProps>`
   display: flex;
   align-items: center;
   justify-content: center;

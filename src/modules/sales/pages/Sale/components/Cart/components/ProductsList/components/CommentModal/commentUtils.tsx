@@ -20,6 +20,14 @@ type CorrectionPair = {
   right: string;
 };
 
+const isCorrectionPair = (value: unknown): value is CorrectionPair => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as { wrong?: unknown; right?: unknown };
+  return (
+    typeof candidate.wrong === 'string' && typeof candidate.right === 'string'
+  );
+};
+
 export const getCommentFromAI = async (
   productName: string,
   category?: string,
@@ -56,13 +64,16 @@ export function applyCorrections(
   // 2) Si es JSON array
   if (pairs.length === 0 && correctionsText.trim().startsWith('[')) {
     try {
-      const arr = JSON.parse(correctionsText);
+      const arr = JSON.parse(correctionsText) as unknown;
       // array de objetos {wrong,right}?
-      if (arr.every((it) => it.wrong && it.right)) {
-        pairs = arr as CorrectionPair[];
+      if (Array.isArray(arr) && arr.every(isCorrectionPair)) {
+        pairs = arr;
       }
       // array de strings → asumimos que el string es la forma correcta y buscamos cuál era incorrecta...
-      else if (arr.every((it) => typeof it === 'string')) {
+      else if (
+        Array.isArray(arr) &&
+        arr.every((it): it is string => typeof it === 'string')
+      ) {
         arr.forEach((right) => {
           // intenta encontrar en original la palabra más parecida
           // aquí podrías usar un simple includes o Levenshtein
@@ -118,9 +129,9 @@ export function parseCorrections(rawText: string): CorrectionPair[] {
   const clean = extractJson(rawText);
   // intenta JSON first
   try {
-    const arr = JSON.parse(clean);
-    if (Array.isArray(arr) && arr.every((it) => it.wrong && it.right)) {
-      return arr as CorrectionPair[];
+    const arr = JSON.parse(clean) as unknown;
+    if (Array.isArray(arr) && arr.every(isCorrectionPair)) {
+      return arr;
     }
   } catch (error) {
     console.warn('Failed to parse corrections list', error);

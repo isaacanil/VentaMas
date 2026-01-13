@@ -16,6 +16,13 @@ import {
   sum,
   count,
 } from 'firebase/firestore';
+import type {
+  CollectionReference,
+  DocumentData,
+  Query,
+  QueryConstraint,
+  Unsubscribe,
+} from 'firebase/firestore';
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -24,6 +31,7 @@ import { db } from '@/firebase/firebaseconfig';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { buildLocationPath } from '@/utils/inventory/locations';
 import type {
+  AggregatedProductStock,
   InventoryStockItem,
   InventoryUser,
   ProductStockRecord,
@@ -41,7 +49,19 @@ type ProductStockQueryParams = {
   location?: InventoryStockItem['location'] | null;
 };
 
-const normalizeToDate = (value) => {
+type StockAggregateSummary = {
+  totalUnits: number;
+  totalLots: number;
+};
+
+type StockAggregateDetailedSummary = StockAggregateSummary & {
+  directUnits: number;
+  directLots: number;
+};
+
+type ProductStockListener = (data: ProductStockRecord[]) => void;
+
+const normalizeToDate = (value: unknown): Date | null => {
   if (!value) return null;
   if (value instanceof Date) {
     return Number.isNaN(value.getTime()) ? null : value;
@@ -50,19 +70,23 @@ const normalizeToDate = (value) => {
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
-  if (typeof value?.toDate === 'function') {
-    const parsed = value.toDate();
+  if (
+    typeof (value as { toDate?: () => Date } | null)?.toDate === 'function'
+  ) {
+    const parsed = (value as { toDate: () => Date }).toDate();
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
-  if (typeof value?.seconds === 'number') {
-    const parsed = new Date(value.seconds * 1000);
+  if (typeof (value as { seconds?: number } | null)?.seconds === 'number') {
+    const parsed = new Date((value as { seconds: number }).seconds * 1000);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
   return null;
 };
 
 // Obtener referencia de la colección de productos en stock
-export const getProductStockCollectionRef = (businessID) => {
+export const getProductStockCollectionRef = (
+  businessID?: string | null,
+): CollectionReference<DocumentData> | null => {
   if (!businessID) {
     console.warn('businessID is empty. Skipping collection reference.');
     return null; // Return early or handle gracefully
@@ -170,7 +194,7 @@ export const deleteAllProductStocksByBatch = async ({
         movement: {
           ...movement,
           quantity: stock.quantity,
-          notes: `${movement.notes || ''} - Eliminación por batch ${batchId}`,
+          notes: `${movement?.notes || ''} - Eliminación por batch ${batchId}`,
         },
       }),
     );
@@ -350,11 +374,15 @@ export const deleteProductStock = async ({
 };
 
 // Escuchar en tiempo real todos los productos en stock filtrados por productId
-export const listenAllProductStock = (user, productId, callback) => {
+export const listenAllProductStock = (
+  user: InventoryUser | null | undefined,
+  productId: string | number | null | undefined,
+  callback: ProductStockListener,
+): Unsubscribe => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const noOp = () => { };
+  const noOp: Unsubscribe = () => {};
 
-  if (!user || !productId || !callback) {
+  if (!user || productId === null || productId === undefined || !callback) {
     console.warn('Missing required parameters in listenAllProductStock');
     return noOp;
   }
@@ -378,7 +406,9 @@ export const listenAllProductStock = (user, productId, callback) => {
     return onSnapshot(
       q,
       (querySnapshot) => {
-        const data = querySnapshot.docs.map((doc) => doc.data());
+        const data = querySnapshot.docs.map(
+          (doc) => doc.data() as ProductStockRecord,
+        );
         callback(data);
       },
       (error) => {
@@ -394,13 +424,13 @@ export const listenAllProductStock = (user, productId, callback) => {
 
 // Escuchar en tiempo real todos los productos en stock por ubicación
 export const listenAllProductStockByLocation = (
-  user,
-  location,
-  callback,
+  user: InventoryUser | null | undefined,
+  location: InventoryStockItem['location'] | null | undefined,
+  callback: ProductStockListener,
   onError?: (error: unknown) => void,
-) => {
+): Unsubscribe => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const noOp = () => { };
+  const noOp: Unsubscribe = () => {};
 
   const normalizedLocation = buildLocationPath(location);
   if (!user || !normalizedLocation || !callback) {
@@ -429,7 +459,9 @@ export const listenAllProductStockByLocation = (
     return onSnapshot(
       q,
       (querySnapshot) => {
-        const data = querySnapshot.docs.map((doc) => doc.data());
+        const data = querySnapshot.docs.map(
+          (doc) => doc.data() as ProductStockRecord,
+        );
         callback(data);
       },
       (error) => {
@@ -446,7 +478,9 @@ export const listenAllProductStockByLocation = (
 
 // Hook para escuchar productos en stock por ubicación
 // Hook para escuchar productos en stock por ubicación
-export const useListenProductsStockByLocation = (location = null) => {
+export const useListenProductsStockByLocation = (
+  location: InventoryStockItem['location'] | null = null,
+) => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const locationPath = useMemo(() => buildLocationPath(location), [location]);
   const [data, setData] = useState<ProductStockRecord[]>([]);
@@ -494,7 +528,9 @@ export const useListenProductsStockByLocation = (location = null) => {
 };
 
 // Hook para escuchar productos en stock por producto
-export const useListenProductsStock = (productId = null) => {
+export const useListenProductsStock = (
+  productId: string | number | null = null,
+) => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const stableUser = useMemo(() => user, [user]);
   const [data, setData] = useState<ProductStockRecord[]>([]);
@@ -543,7 +579,7 @@ export const useListenProductsStock = (productId = null) => {
 // Hook para escuchar TODOS los productos en stock activos y agruparlos por producto
 export const useListenAllActiveProductsStock = () => {
   const user = useSelector(selectUser) as InventoryUser | null;
-  const [data, setData] = useState<ProductStockRecord[]>([]);
+  const [data, setData] = useState<AggregatedProductStock[]>([]);
   const [loading, setLoading] = useState(!!user?.businessID);
 
   const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
@@ -582,15 +618,32 @@ export const useListenAllActiveProductsStock = () => {
       const unsubscribe = onSnapshot(
         q,
         (querySnapshot) => {
-          const stockItems = querySnapshot.docs.map((doc) => doc.data());
+          const stockItems = querySnapshot.docs.map(
+            (doc) => doc.data() as ProductStockRecord,
+          );
+
+          type GroupedStockBucket = {
+            id: string | number;
+            name: string;
+            productName: string;
+            totalStock: number;
+            locations: Array<string | null | undefined>;
+            batches: Set<string | number>;
+            stockItems: ProductStockRecord[];
+            hasExpiration: boolean;
+            hasExpired?: boolean;
+          };
 
           // Agrupar por productId y agregar información
-          const groupedByProduct = stockItems.reduce((acc, stock) => {
-            const productId = stock.productId;
+          const groupedByProduct = stockItems.reduce<
+            Record<string, GroupedStockBucket>
+          >((acc, stock) => {
+            const productId = stock.productId ?? stock.productID ?? stock.idProduct;
             if (!productId) return acc;
+            const productKey = String(productId);
 
-            if (!acc[productId]) {
-              acc[productId] = {
+            if (!acc[productKey]) {
+              acc[productKey] = {
                 id: productId,
                 name: stock.productName || 'Producto sin nombre',
                 productName: stock.productName || 'Producto sin nombre',
@@ -602,21 +655,23 @@ export const useListenAllActiveProductsStock = () => {
               };
             }
 
-            acc[productId].totalStock += Number(stock.quantity) || 0;
-            acc[productId].locations.push(stock.location);
-            acc[productId].stockItems.push(stock);
+            acc[productKey].totalStock += Number(stock.quantity) || 0;
+            acc[productKey].locations.push(
+              typeof stock.location === 'string' ? stock.location : stock.location?.path,
+            );
+            acc[productKey].stockItems.push(stock);
 
             const expirationDate =
               normalizeToDate(stock.expirationDate) ||
               normalizeToDate(stock.expDate) ||
               normalizeToDate(stock.expiration);
             if (expirationDate) {
-              acc[productId].hasExpiration = true;
+              acc[productKey].hasExpiration = true;
             }
 
             // Agregar batchId al Set si existe
             if (stock.batchId) {
-              acc[productId].batches.add(stock.batchId);
+              acc[productKey].batches.add(stock.batchId);
             }
 
             return acc;
@@ -779,7 +834,7 @@ export const getProductStockByBatch = async (
   if (!productStockCollectionRef) return [];
 
   // Armamos los filtros dinámicamente
-  const filters = [where('isDeleted', '==', false)];
+  const filters: QueryConstraint[] = [where('isDeleted', '==', false)];
   const normalizedLocation = buildLocationPath(location);
 
   if (productId) {
@@ -850,16 +905,23 @@ export const getProductStockById = async (
   }
 };
 
-const buildLocationBounds = (locationPath = '') => {
+const buildLocationBounds = (
+  locationPath: string | null | undefined = '',
+) => {
   const normalized = buildLocationPath(locationPath);
   if (!normalized) return null;
   const upperBound = `${normalized}\uf8ff`;
   return { lower: normalized, upper: upperBound };
 };
 
-const EMPTY_AGGREGATE = Object.freeze({ totalUnits: 0, totalLots: 0 });
+const EMPTY_AGGREGATE: StockAggregateSummary = {
+  totalUnits: 0,
+  totalLots: 0,
+};
 
-const fetchAggregateSnapshot = async (aggregateQuery) => {
+const fetchAggregateSnapshot = async (
+  aggregateQuery: Query<DocumentData>,
+): Promise<StockAggregateSummary> => {
   try {
     const snapshot = await getAggregateFromServer(aggregateQuery, {
       totalUnits: sum('quantity'),
@@ -879,7 +941,10 @@ const fetchAggregateSnapshot = async (aggregateQuery) => {
   }
 };
 
-export const getLocationStockAggregates = async (user, locationPath) => {
+export const getLocationStockAggregates = async (
+  user: InventoryUser | null | undefined,
+  locationPath: string | null | undefined,
+): Promise<StockAggregateSummary> => {
   if (!user?.businessID) return EMPTY_AGGREGATE;
   const bounds = buildLocationBounds(locationPath);
   if (!bounds) return EMPTY_AGGREGATE;
@@ -898,7 +963,10 @@ export const getLocationStockAggregates = async (user, locationPath) => {
   return fetchAggregateSnapshot(baseQuery);
 };
 
-export const getLocationDirectStockAggregates = async (user, locationPath) => {
+export const getLocationDirectStockAggregates = async (
+  user: InventoryUser | null | undefined,
+  locationPath: string | null | undefined,
+): Promise<StockAggregateSummary> => {
   if (!user?.businessID) return EMPTY_AGGREGATE;
   const normalized = buildLocationPath(locationPath);
   if (!normalized) return EMPTY_AGGREGATE;
@@ -917,9 +985,9 @@ export const getLocationDirectStockAggregates = async (user, locationPath) => {
 };
 
 export const getLocationStockAggregatesDetailed = async (
-  user,
-  locationPath,
-) => {
+  user: InventoryUser | null | undefined,
+  locationPath: string | null | undefined,
+): Promise<StockAggregateDetailedSummary> => {
   const totals = await getLocationStockAggregates(user, locationPath);
   const direct = await getLocationDirectStockAggregates(user, locationPath);
 
@@ -931,28 +999,37 @@ export const getLocationStockAggregatesDetailed = async (
   };
 };
 
-export const getWarehouseStockAggregates = async (user, warehouseId) => {
+export const getWarehouseStockAggregates = async (
+  user: InventoryUser | null | undefined,
+  warehouseId: string | number | null | undefined,
+): Promise<StockAggregateSummary> => {
   return getLocationStockAggregates(user, warehouseId);
 };
 
-export const getWarehousesStockAggregates = async (user, warehouseIds = []) => {
+export const getWarehousesStockAggregates = async (
+  user: InventoryUser | null | undefined,
+  warehouseIds: Array<string | number> = [],
+): Promise<Record<string, StockAggregateSummary>> => {
   if (!Array.isArray(warehouseIds) || warehouseIds.length === 0) return {};
   const summaries = await Promise.all(
     warehouseIds.map(async (id) => ({
-      id,
+      id: String(id),
       summary: await getWarehouseStockAggregates(user, id),
     })),
   );
-  return summaries.reduce((acc, { id, summary }) => {
-    acc[id] = summary;
-    return acc;
-  }, {});
+  return summaries.reduce<Record<string, StockAggregateSummary>>(
+    (acc, { id, summary }) => {
+      acc[id] = summary;
+      return acc;
+    },
+    {},
+  );
 };
 
 export const getStockAggregatesByLocationPaths = async (
-  user,
-  locationPaths = [],
-) => {
+  user: InventoryUser | null | undefined,
+  locationPaths: Array<string | null | undefined> = [],
+): Promise<Record<string, StockAggregateDetailedSummary>> => {
   if (!Array.isArray(locationPaths) || locationPaths.length === 0) return {};
   const uniquePaths = Array.from(
     new Set(
@@ -972,8 +1049,11 @@ export const getStockAggregatesByLocationPaths = async (
     })),
   );
 
-  return summaries.reduce((acc, { path, summary }) => {
-    acc[path] = summary;
-    return acc;
-  }, {});
+  return summaries.reduce<Record<string, StockAggregateDetailedSummary>>(
+    (acc, { path, summary }) => {
+      acc[path] = summary;
+      return acc;
+    },
+    {},
+  );
 };

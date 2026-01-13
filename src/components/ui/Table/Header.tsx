@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { Row } from './Row';
 
-export const Header = ({ children, colWidth, scrolled = false }) => {
+type HeaderProps = {
+  children: ReactNode;
+  colWidth?: number | string;
+  scrolled?: boolean;
+};
+
+type HeaderStyleProps = {
+  scrolled?: boolean;
+};
+
+export const Header = ({ children, colWidth, scrolled = false }: HeaderProps) => {
   return (
     <Container scrolled={scrolled}>
       <Row element="header" col={colWidth}>
@@ -25,10 +35,10 @@ const Container = styled.div`
   padding: 0 1em;
   font-weight: 500;
   border-bottom: var(--border-primary);
-  ${(props) =>
+  ${(props: HeaderStyleProps) =>
     props.scrolled &&
     `
-        background-color: var(--white); 
+        background-color: var(--white);
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.249);
         `}
 `;

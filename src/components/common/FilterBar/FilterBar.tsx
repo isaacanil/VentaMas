@@ -76,14 +76,21 @@ const getNumberRange = (value: any) => {
   return { min: null, max: null };
 };
 
+type DateRangeValue = Array<DateTime | null> | null;
+
 const getDateRangeValue = (item: any) => {
   if (!item?.value) return null;
-  const toDateTime = (value) => {
+  const toDateTime = (value: unknown): DateTime | null => {
     if (!value) return null;
     if (DateTime.isDateTime(value)) return value;
     if (value instanceof Date) return DateTime.fromJSDate(value);
-    if (typeof value?.toDate === 'function') {
-      return DateTime.fromJSDate(value.toDate());
+    if (
+      value &&
+      typeof value === 'object' &&
+      'toDate' in value &&
+      typeof (value as { toDate?: () => Date }).toDate === 'function'
+    ) {
+      return DateTime.fromJSDate((value as { toDate: () => Date }).toDate());
     }
     if (typeof value === 'number') return DateTime.fromMillis(value);
     if (typeof value === 'string') {
@@ -93,7 +100,7 @@ const getDateRangeValue = (item: any) => {
     return null;
   };
   if (Array.isArray(item.value)) {
-    return item.value.map((v) => toDateTime(v));
+    return item.value.map((v: unknown) => toDateTime(v));
   }
   return [
     item.value?.startDate ? toDateTime(item.value.startDate) : null,
@@ -101,7 +108,7 @@ const getDateRangeValue = (item: any) => {
   ];
 };
 
-const handleDateChange = (item: any, range: any) => {
+const handleDateChange = (item: any, range: DateRangeValue) => {
   if (!item?.onChange) return;
   if (item.valueFormat === 'luxon') {
     item.onChange(range);
@@ -142,7 +149,9 @@ const renderControl = (item: any) => {
         <Input
           {...item.props}
           value={item.value}
-          onChange={(e) => item.onChange?.(e?.target?.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            item.onChange?.(e?.target?.value)
+          }
           placeholder={item.placeholder}
           allowClear={item.allowClear !== false}
           aria-label={item.ariaLabel}
@@ -151,11 +160,11 @@ const renderControl = (item: any) => {
     }
     case 'numberRange': {
       const { min, max } = getNumberRange(item.value);
-      const onMinChange = (val) => {
+      const onMinChange = (val: number | null) => {
         if (item.onMinChange) item.onMinChange(val);
         else item.onChange?.({ min: val, max });
       };
-      const onMaxChange = (val) => {
+      const onMaxChange = (val: number | null) => {
         if (item.onMaxChange) item.onMaxChange(val);
         else item.onChange?.({ min, max: val });
       };
@@ -184,7 +193,7 @@ const renderControl = (item: any) => {
           mode="range"
           {...item.props}
           value={getDateRangeValue(item)}
-          onChange={(range) => handleDateChange(item, range)}
+          onChange={(range: DateRangeValue) => handleDateChange(item, range)}
           allowClear={item.allowClear !== false}
           aria-label={item.ariaLabel}
         />

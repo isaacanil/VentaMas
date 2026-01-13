@@ -1,10 +1,16 @@
 import { ROUTES } from '@/router/routes/routesName';
 
-export const getAllRoutes = () => {
-  const routes = [];
+type RouteEntry = {
+  name: string;
+  path: string;
+  category: string;
+};
+
+export const getAllRoutes = (): RouteEntry[] => {
+  const routes: RouteEntry[] = [];
 
   // Función recursiva para extraer rutas de un objeto
-  const extractRoutes = (obj, prefix = '') => {
+  const extractRoutes = (obj: Record<string, unknown>, prefix = '') => {
     Object.keys(obj).forEach((key) => {
       const value = obj[key];
       if (typeof value === 'string' && value.startsWith('/')) {
@@ -16,7 +22,7 @@ export const getAllRoutes = () => {
         });
       } else if (typeof value === 'object' && value !== null) {
         // Es un objeto anidado, recursión
-        extractRoutes(value, key);
+        extractRoutes(value as Record<string, unknown>, key);
       }
     });
   };
@@ -25,7 +31,7 @@ export const getAllRoutes = () => {
   return routes;
 };
 
-export const filterRoutes = (searchText) => {
+export const filterRoutes = (searchText: string) => {
   const allRoutes = getAllRoutes();
   if (!searchText) return allRoutes;
 

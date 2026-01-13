@@ -23,9 +23,9 @@ export function handleCancelShipping({
   clearTaxReceipt = false,
 }: HandleCancelShippingOptions) {
   if (!dispatch) return;
-  if (viewport !== undefined && viewport <= 800) dispatch(toggleCart());
-  if (closeInvoicePanel) dispatch(toggleInvoicePanel());
-  dispatch(resetCart());
+  if (viewport !== undefined && viewport <= 800) dispatch(toggleCart(undefined));
+  if (closeInvoicePanel) dispatch(toggleInvoicePanel(undefined));
+  dispatch(resetCart(undefined));
   if (clearTaxReceipt) {
     dispatch(clearTaxReceiptData());
   }

@@ -3,7 +3,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import styled from 'styled-components';
 
-function StockIndicator({ stock, trackInventory }) {
+interface StockIndicatorProps {
+  stock?: number | null;
+  trackInventory?: boolean;
+}
+
+function StockIndicator({ stock, trackInventory }: StockIndicatorProps) {
   if (trackInventory) {
     return (
       <StockContainer trackInventory={trackInventory} stock={stock}>
@@ -23,7 +28,10 @@ function StockIndicator({ stock, trackInventory }) {
 
 export default StockIndicator;
 
-const StockContainer = styled.div`
+const StockContainer = styled.div<{
+  stock?: number | null;
+  trackInventory?: boolean;
+}>`
   display: flex;
   align-items: center;
   width: 100%;

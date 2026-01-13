@@ -77,7 +77,7 @@ const Dependent = ({ form, onDependentChange }: DependentProps) => {
       await addInsuranceBeneficiary(user, formattedValues, client?.id);
       message.success('Dependiente agregado exitosamente');
       setShowNewDependentModal(false);
-      dependentForm.resetFields();
+      dependentForm.resetFields([]);
     } catch (error) {
       console.error('Error al agregar dependiente:', error);
       message.error('Error al agregar dependiente');
@@ -137,7 +137,7 @@ const Dependent = ({ form, onDependentChange }: DependentProps) => {
         open={showNewDependentModal}
         onCancel={() => {
           setShowNewDependentModal(false);
-          dependentForm.resetFields();
+          dependentForm.resetFields([]);
         }}
         onOk={handleAddNewDependent}
         confirmLoading={loading}

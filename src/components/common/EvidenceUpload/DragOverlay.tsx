@@ -17,16 +17,19 @@ const floatAnimation = keyframes`
   100% { transform: translateY(0); }
 `;
 
+type DragOverlayStyleProps = { isDragging: boolean };
+
 const DragOverlayContainer = styled.div<{ isDragging: boolean }>`
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: flex;
-  visibility: ${(props) => (props.isDragging ? 'visible' : 'hidden')};
+  visibility: ${(props: DragOverlayStyleProps) =>
+    props.isDragging ? 'visible' : 'hidden'};
   align-items: center;
   justify-content: center;
   background: rgb(0 0 0 / 75%);
-  opacity: ${(props) => (props.isDragging ? 1 : 0)};
+  opacity: ${(props: DragOverlayStyleProps) => (props.isDragging ? 1 : 0)};
   backdrop-filter: blur(4px);
   transition: all 0.3s ease-in-out;
   animation: ${fadeIn} 0.3s ease-in-out;
@@ -38,7 +41,9 @@ const DropMessage = styled.div<{ isDragging: boolean }>`
   background: rgb(255 255 255 / 95%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
-  transform: scale(${(props) => (props.isDragging ? '1.02' : '1')});
+  transform: scale(
+    ${(props: DragOverlayStyleProps) => (props.isDragging ? '1.02' : '1')}
+  );
   transition: transform 0.2s ease-in-out;
 
   .icon-wrapper {

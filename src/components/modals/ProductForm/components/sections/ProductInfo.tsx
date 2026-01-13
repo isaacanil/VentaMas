@@ -27,12 +27,18 @@ type ProductInfoProps = {
   productBrands?: ProductBrand[];
 };
 
+type CategoryRecord = {
+  category?: { name?: string };
+} & Record<string, unknown>;
+
 export const ProductInfo = ({
   product,
   productBrands = [],
 }: ProductInfoProps) => {
   const dispatch = useDispatch();
-  const { categories } = useFbGetCategories();
+  const { categories } = useFbGetCategories() as {
+    categories: CategoryRecord[];
+  };
   const { data: activeIngredients } = useListenActiveIngredients() as {
     data: ActiveIngredient[];
   };
@@ -235,11 +241,14 @@ export const ProductInfo = ({
               <Option key="none" value="none">
                 Ninguna
               </Option>
-              {categories.map(({ category }) => (
-                <Option key={category?.name} value={category.name}>
-                  {category.name}
-                </Option>
-              ))}
+              {categories
+                .map(({ category }) => category?.name)
+                .filter((name): name is string => Boolean(name))
+                .map((name) => (
+                  <Option key={name} value={name}>
+                    {name}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
           <Form.Item label={' '}>
@@ -273,11 +282,18 @@ export const ProductInfo = ({
               <Option key="none" value="none">
                 Ninguno
               </Option>
-              {activeIngredients.map((ingredient) => (
-                <Option key={ingredient.id} value={ingredient.name}>
-                  {ingredient.name}
-                </Option>
-              ))}
+              {activeIngredients
+                .filter(
+                  (ingredient): ingredient is ActiveIngredient & {
+                    id: string;
+                    name: string;
+                  } => Boolean(ingredient?.id && ingredient?.name),
+                )
+                .map((ingredient) => (
+                  <Option key={ingredient.id} value={ingredient.name}>
+                    {ingredient.name}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
           <Form.Item label={' '}>

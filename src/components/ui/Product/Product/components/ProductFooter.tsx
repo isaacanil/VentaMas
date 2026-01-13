@@ -33,7 +33,7 @@ const FooterWrapper = styled.div<FooterWrapperProps>`
   width: 100%;
   padding: 0 0.4em;
   pointer-events: none;
-  border-top-left-radius: ${({ $imageHiddenRef }) =>
+  border-top-left-radius: ${({ $imageHiddenRef }: FooterWrapperProps) =>
     $imageHiddenRef === false ? '10px' : '0'};
   transition: 0.8s border-radius ease-in-out;
 `;
@@ -53,7 +53,7 @@ const AmountToBuy = styled.div<StockThemeProps>`
   margin-left: 1.6em;
   font-size: 15px;
   font-weight: 600;
-  color: ${(props) => getAmountColor(props)};
+  color: ${(props: StockThemeProps) => getAmountColor(props)};
   letter-spacing: 0.2px;
   white-space: nowrap;
   background-color: ${() => getAmountBackground()};
@@ -68,7 +68,7 @@ const Price = styled.div<StockThemeProps>`
   height: 100%;
   font-size: 16px;
   font-weight: 550;
-  color: ${(props) => getPriceColor(props)};
+  color: ${(props: StockThemeProps) => getPriceColor(props)};
   transition: color 0.4s ease-in-out;
 `;
 
@@ -133,8 +133,9 @@ export const ProductFooter = ({
           $isSelected={isProductInCart}
           $hasStrictStock={product.restrictSaleWithoutStock}
         >
-          {isProductInCart &&
-            `${formatNumber(productInCart.amountToBuy)} / `}
+          {isProductInCart && productInCart?.amountToBuy !== undefined
+            ? `${formatNumber(productInCart.amountToBuy)} / `
+            : ''}
           {formattedStock}
 
         </AmountToBuy>

@@ -1,6 +1,6 @@
 import { UserOutlined, SearchOutlined } from '@/constants/icons/antd';
 import { Modal, Input, List, Avatar, Typography, Empty, Spin } from 'antd';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type ChangeEvent, type MouseEvent } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { addClient } from '@/features/clientCart/clientCartSlice';
@@ -39,14 +39,14 @@ export const MiniClientSelector = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtrar clientes que no sean genéricos
-  const nonGenericClients = useMemo(
+  const nonGenericClients = useMemo<ClientRow[]>(
     () =>
       clients.filter(({ client }) => client.name && client.name.trim() !== ''),
     [clients],
   );
 
-  const filteredClients = useMemo(
-    () => filtrarDatos(nonGenericClients, searchTerm),
+  const filteredClients = useMemo<ClientRow[]>(
+    () => filtrarDatos(nonGenericClients, searchTerm) as ClientRow[],
     [nonGenericClients, searchTerm],
   );
 
@@ -78,7 +78,9 @@ export const MiniClientSelector = ({
           placeholder="Buscar cliente..."
           allowClear
           onSearch={handleSearch}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            handleSearch(e.target.value)
+          }
           prefix={<SearchOutlined />}
           style={{ width: '100%' }}
         />
@@ -95,9 +97,9 @@ export const MiniClientSelector = ({
             description="No se encontraron clientes"
           />
         ) : (
-          <List
+          <List<ClientRow>
             dataSource={filteredClients}
-            renderItem={(clientData) => (
+            renderItem={(clientData: ClientRow) => (
               <List.Item
                 style={{
                   cursor: 'pointer',
@@ -108,11 +110,11 @@ export const MiniClientSelector = ({
                 }}
                 className="client-list-item"
                 onClick={() => handleSelectClient(clientData)}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
                   e.currentTarget.style.backgroundColor = '#f5f5f5';
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                onMouseLeave={(e: MouseEvent<HTMLDivElement>) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';        
                 }}
               >
                 <List.Item.Meta

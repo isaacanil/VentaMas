@@ -61,11 +61,20 @@ const DependentsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const DependentCard = styled.div`
+interface DependentCardProps {
+  $isSelected?: boolean;
+}
+
+type DependentCardStyleProps = { $isSelected?: boolean };
+
+const DependentCard = styled.div<DependentCardProps>`
   padding: 12px;
   cursor: pointer;
-  background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
-  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
+  background-color: ${(props: DependentCardStyleProps) =>
+    props.$isSelected ? '#e6f7ff' : 'white'};
+  border: 1px solid
+    ${(props: DependentCardStyleProps) =>
+      props.$isSelected ? '#1890ff' : '#e8e8e8'};
   border-radius: 8px;
   transition: all 0.2s ease;
 
@@ -153,7 +162,7 @@ const DependentInfo = styled.div`
 `;
 
 const translateRelationship = (relationship?: string) => {
-  const translations = {
+  const translations: Record<string, string> = {
     // English to Spanish translations
     child: 'Hijo/a',
     spouse: 'Cónyuge',
@@ -203,11 +212,10 @@ const DependentSelector = ({
   const searchInputRef = useRef<InputRef | null>(null);
 
   useEffect(() => {
-    if (visible && searchInputRef.current) {
-      setTimeout(() => {
-        searchInputRef.current.focus();
-      }, 100);
-    }
+    if (!visible) return;
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
   }, [visible]);
 
   const filteredDependents = search
@@ -325,7 +333,9 @@ const DependentSelector = ({
                 ref={searchInputRef}
                 placeholder="Buscar dependientes..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearch(e.target.value)
+                }
               />
             </div>
             <Tooltip title="Agregar dependiente">

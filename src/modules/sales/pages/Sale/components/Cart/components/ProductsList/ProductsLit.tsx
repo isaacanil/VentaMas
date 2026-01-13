@@ -2,7 +2,7 @@ import { Modal, Alert } from 'antd';
 import { motion } from 'framer-motion';
 import React, { useState, forwardRef, memo, useCallback } from 'react';
 import type { HTMLAttributes } from 'react';
-import type { CartProductRecord } from '@/types/products';
+import type { Product } from '@/features/cart/types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
@@ -21,11 +21,7 @@ import Typography from '@/components/ui/Typografy/Typografy';
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
 
-type CartProduct = CartProductRecord & {
-  cid?: string;
-  id: string;
-  comment?: string;
-};
+type CartProduct = Product;
 
 const VirtuosoList = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ style, children, ...props }, ref) => (

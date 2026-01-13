@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { useViewportHeight } from '@/hooks/windows/useViewportHeight';
 
-export const ViewportContainer = ({ children }) => {
+type ViewportContainerProps = {
+  children: ReactNode;
+};
+
+type ViewportContainerStyleProps = {
+  $viewportHeight: number;
+};
+
+export const ViewportContainer = ({ children }: ViewportContainerProps) => {
   const viewportHeight = useViewportHeight();
 
   return <Container $viewportHeight={viewportHeight}>{children}</Container>;
@@ -16,7 +24,7 @@ const Container = styled.div`
   width: 100%;
 
   /* Usar la altura dinámica del viewport */
-  height: ${(props) => props.$viewportHeight}px;
+  height: ${(props: ViewportContainerStyleProps) => props.$viewportHeight}px;
 
   /* Fallback para navegadores que soportan dvh */
   height: 100dvh;
@@ -31,7 +39,7 @@ const Container = styled.div`
 
   /* Para dispositivos móviles, evitar el scroll causado por la barra de navegación */
   @media (width <= 768px) {
-    height: ${(props) => props.$viewportHeight}px;
+    height: ${(props: ViewportContainerStyleProps) => props.$viewportHeight}px;
     overflow: hidden;
   }
 `;

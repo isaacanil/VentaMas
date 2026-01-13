@@ -34,13 +34,13 @@ const Container = styled.div<ContainerProps>`
   box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
   font-size: 13px;
   margin-top: 4px;
-  max-width: ${(p) => p.$maxWidth || 340}px;
+  max-width: ${(p: ContainerProps) => p.$maxWidth || 340}px;
   min-width: 280px;
   padding: 16px;
   position: absolute;
   top: 100%;
-  z-index: ${(p) => p.$zIndex || 20};
-  ${(p) =>
+  z-index: ${(p: ContainerProps) => p.$zIndex || 20};
+  ${(p: ContainerProps) =>
     p.$placement === 'right'
       ? 'right: 0;'
       : p.$placement === 'center'

@@ -84,10 +84,11 @@ type ContainerProps = {
 
 const Container = styled.div<ContainerProps>`
   align-items: center;
-  background: ${(props) => props.$bgColor};
+  background: ${(props: ContainerProps) => props.$bgColor};
   border-radius: 14px;
-  color: ${(props) => props.$color};
-  cursor: ${(props) => (props.$isClickable ? 'pointer' : 'default')};
+  color: ${(props: ContainerProps) => props.$color};
+  cursor: ${(props: ContainerProps) =>
+    props.$isClickable ? 'pointer' : 'default'};
   display: flex;
   font-size: 1rem;
   font-weight: 600;
@@ -95,7 +96,7 @@ const Container = styled.div<ContainerProps>`
   padding: 0.4rem 0.6rem;
   transition: all 0.2s ease;
 
-  ${(props) =>
+  ${(props: ContainerProps) =>
     props.$isClickable &&
     `
     &:hover {

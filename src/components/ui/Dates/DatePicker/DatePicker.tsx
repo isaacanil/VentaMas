@@ -25,14 +25,29 @@ const getEmptyDates = () => {
   };
 };
 
-export const DatePicker = ({ setDates, dates, datesDefault }) => {
+type DateRangeValue = {
+  startDate: number | null;
+  endDate: number | null;
+};
+
+type DatePickerProps = {
+  setDates: (dates: DateRangeValue) => void;
+  dates: DateRangeValue | null;
+  datesDefault?: 'today' | 'empty' | string;
+};
+
+export const DatePicker = ({
+  setDates,
+  dates,
+  datesDefault,
+}: DatePickerProps) => {
   useEffect(() => {
     if (datesDefault === 'today') {
       setDates(getDefaultDates());
     }
   }, [datesDefault, setDates]);
 
-  const handleRangeChange = (dates) => {
+  const handleRangeChange = (dates: [DateTime, DateTime] | null) => {
     if (dates) {
       setDates({
         startDate: dates[0].startOf('day').toMillis(),

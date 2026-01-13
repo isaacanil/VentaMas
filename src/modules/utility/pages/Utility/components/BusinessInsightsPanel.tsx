@@ -19,6 +19,7 @@ import { EmptyState } from './EmptyState';
 const { colors, shadows, radii, spacing } = designSystemV2;
 
 type VariantStyle = ReturnType<typeof getVariantStyles>;
+type VariantProps = { $variant: VariantStyle };
 
 interface BusinessInsightsPanelProps {
   summary: UtilitySummary;
@@ -97,7 +98,7 @@ const InsightsGrid = styled.div`
   gap: ${spacing.md};
 `;
 
-const InsightCard = styled.article<{ $variant: VariantStyle }>`
+const InsightCard = styled.article<VariantProps>`
   position: relative;
   display: grid;
   grid-template-columns: 6px 1fr;
@@ -108,18 +109,19 @@ const InsightCard = styled.article<{ $variant: VariantStyle }>`
   box-shadow: ${shadows.sm};
 `;
 
-const AccentStrip = styled.span<{ $variant: VariantStyle }>`
+const AccentStrip = styled.span<VariantProps>`
   display: block;
-  background: ${({ $variant }) => $variant.accent};
+  background: ${({ $variant }: VariantProps) => $variant.accent};
   border-top-left-radius: ${radii.md};
   border-bottom-left-radius: ${radii.md};
 `;
 
-const CardContent = styled.div<{ $variant: VariantStyle }>`
+const CardContent = styled.div<VariantProps>`
   display: grid;
   gap: ${spacing.sm};
   padding: ${spacing.md} ${spacing.lg};
-  background: ${({ $variant }) => $variant?.surface ?? 'transparent'};
+  background: ${({ $variant }: VariantProps) =>
+    $variant?.surface ?? 'transparent'};
   border-top-right-radius: ${radii.md};
   border-bottom-right-radius: ${radii.md};
 `;
@@ -137,25 +139,26 @@ const HeaderMeta = styled.div`
   align-items: center;
 `;
 
-const Badge = styled.span<{ $variant: VariantStyle }>`
+const Badge = styled.span<VariantProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${({ $variant }) => $variant.badge.color};
+  color: ${({ $variant }: VariantProps) => $variant.badge.color};
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: ${({ $variant }) => $variant.badge.background};
+  background: ${({ $variant }: VariantProps) => $variant.badge.background};
   border-radius: ${radii.pill};
 `;
 
-const Value = styled.div<{ $variant: VariantStyle }>`
+const Value = styled.div<VariantProps>`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  color: ${({ $variant }) => $variant?.accent ?? colors.text.primary};
+  color: ${({ $variant }: VariantProps) =>
+    $variant?.accent ?? colors.text.primary};
 `;
 
 const MeasurementIcon = styled.span`

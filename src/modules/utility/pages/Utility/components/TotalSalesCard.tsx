@@ -63,6 +63,10 @@ const formatMultiplier = (ratio: number | null | undefined): string => {
   return `×${Number(formatted)}`;
 };
 
+type TitleProps = { title?: string };
+type TrendIconProps = { trend: UtilityTrend };
+type LoadingBarProps = { $width?: string; $height?: string };
+
 interface TotalSalesCardProps {
   loading: boolean;
   comparison?: UtilityComparison | null;
@@ -299,7 +303,7 @@ const ChangeLine = styled.div`
   display: inline-flex;
   gap: ${spacing.xs};
   align-items: center;
-  cursor: ${({ title }) => (title ? 'help' : 'default')};
+  cursor: ${({ title }: TitleProps) => (title ? 'help' : 'default')};
 `;
 
 const ChangeIcon = styled.span<{ trend: UtilityTrend }>`
@@ -308,9 +312,10 @@ const ChangeIcon = styled.span<{ trend: UtilityTrend }>`
   justify-content: center;
   width: 28px;
   height: 28px;
-  color: ${({ trend }) => getTrendVariant(trend).color};
-  background: ${({ trend }) => getTrendVariant(trend).surface};
-  border: 1px solid ${({ trend }) => getTrendVariant(trend).border};
+  color: ${({ trend }: TrendIconProps) => getTrendVariant(trend).color};
+  background: ${({ trend }: TrendIconProps) => getTrendVariant(trend).surface};
+  border: 1px solid ${({ trend }: TrendIconProps) =>
+    getTrendVariant(trend).border};
   border-radius: ${radii.pill};
 `;
 
@@ -333,8 +338,8 @@ const LoadingState = styled.div`
 
 const LoadingBar = styled.span<{ $width?: string; $height?: string }>`
   display: block;
-  width: ${({ $width }) => $width || '100%'};
-  height: ${({ $height }) => $height || '14px'};
+  width: ${({ $width }: LoadingBarProps) => $width || '100%'};
+  height: ${({ $height }: LoadingBarProps) => $height || '14px'};
   background: linear-gradient(
     90deg,
     ${colors.skeleton.base} 0%,

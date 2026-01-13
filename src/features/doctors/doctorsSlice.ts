@@ -4,9 +4,34 @@ import { fbAddDoctor } from '@/firebase/doctors/fbAddDoctor';
 import { fbCheckDoctorExists } from '@/firebase/doctors/fbCheckDoctorExists';
 import { fbDeleteDoctor } from '@/firebase/doctors/fbDeleteDoctor';
 import { fbUpdateDoctor } from '@/firebase/doctors/fbUpdateDoctor';
+import type { DoctorRecord } from '@/types/doctors';
+import type { UserIdentity } from '@/types/users';
+
+type DoctorModalMode = 'add' | 'edit';
+
+interface DoctorsState {
+  doctors: DoctorRecord[];
+  selectedDoctor: DoctorRecord | null;
+  modal: {
+    open: boolean;
+    mode: DoctorModalMode;
+    loading: boolean;
+  };
+  loading: boolean;
+  error: string | null;
+}
+
+type DoctorThunkArgs = { doctor: DoctorRecord; user: UserIdentity };
+type DeleteDoctorArgs = { doctorId: string; user: UserIdentity };
+
+type DoctorsRootState = { doctors: DoctorsState };
 
 // Async thunks
-export const addDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
+export const addDoctor = createAsyncThunk<
+  DoctorRecord,
+  DoctorThunkArgs,
+  { rejectValue: string }
+>(
   'doctors/add',
   async ({ doctor, user }, { rejectWithValue }) => {
     try {
@@ -24,12 +49,17 @@ export const addDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
       const doctorId = await fbAddDoctor(doctor, user);
       return { ...doctor, id: doctorId };
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al agregar mÃ©dico');
+      const err = error as Error;
+      return rejectWithValue(err.message || 'Error al agregar mÃ©dico');
     }
   },
 );
 
-export const updateDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
+export const updateDoctor = createAsyncThunk<
+  DoctorRecord,
+  DoctorThunkArgs,
+  { rejectValue: string }
+>(
   'doctors/update',
   async ({ doctor, user }, { rejectWithValue }) => {
     try {
@@ -48,24 +78,30 @@ export const updateDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
       await fbUpdateDoctor(doctor, user);
       return doctor;
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al actualizar mÃ©dico');
+      const err = error as Error;
+      return rejectWithValue(err.message || 'Error al actualizar mÃ©dico');
     }
   },
 );
 
-export const deleteDoctor = createAsyncThunk<any, { doctorId: any; user: any }>(
+export const deleteDoctor = createAsyncThunk<
+  string,
+  DeleteDoctorArgs,
+  { rejectValue: string }
+>(
   'doctors/delete',
   async ({ doctorId, user }, { rejectWithValue }) => {
     try {
       await fbDeleteDoctor(doctorId, user);
       return doctorId;
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al eliminar mÃ©dico');
+      const err = error as Error;
+      return rejectWithValue(err.message || 'Error al eliminar mÃ©dico');
     }
   },
 );
 
-const initialState = {
+const initialState: DoctorsState = {
   doctors: [],
   selectedDoctor: null,
   modal: {
@@ -81,37 +117,49 @@ const doctorsSlice = createSlice({
   name: 'doctors',
   initialState,
   reducers: {
-    clearError: (state: any) => {
+    clearError: (state: DoctorsState) => {
       state.error = null;
     },
-    setSelectedDoctor: (state: any, action: PayloadAction<any>) => {
+    setSelectedDoctor: (
+      state: DoctorsState,
+      action: PayloadAction<DoctorRecord | null>,
+    ) => {
       state.selectedDoctor = action.payload;
     },
-    clearSelectedDoctor: (state: any) => {
+    clearSelectedDoctor: (state: DoctorsState) => {
       state.selectedDoctor = null;
     },
-    openModal: (state: any, action: PayloadAction<any>) => {
+    openModal: (
+      state: DoctorsState,
+      action: PayloadAction<
+        | {
+            mode?: DoctorModalMode;
+            doctor?: DoctorRecord;
+          }
+        | undefined
+      >,
+    ) => {
       state.modal.open = true;
       state.modal.mode = action.payload?.mode || 'add';
       if (action.payload?.doctor) {
         state.selectedDoctor = action.payload.doctor;
       }
     },
-    closeModal: (state: any) => {
+    closeModal: (state: DoctorsState) => {
       state.modal.open = false;
       state.modal.mode = 'add';
       state.selectedDoctor = null;
       state.error = null;
     },
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
       // Add doctor
       .addCase(addDoctor.pending, (state) => {
         state.modal.loading = true;
         state.error = null;
       })
-      .addCase(addDoctor.fulfilled, (state, _action) => {
+      .addCase(addDoctor.fulfilled, (state) => {
         state.modal.loading = false;
         state.modal.open = false;
         state.selectedDoctor = null;
@@ -119,14 +167,14 @@ const doctorsSlice = createSlice({
       })
       .addCase(addDoctor.rejected, (state, action) => {
         state.modal.loading = false;
-        state.error = action.payload;
+        state.error = action.payload ?? null;
       })
       // Update doctor
       .addCase(updateDoctor.pending, (state) => {
         state.modal.loading = true;
         state.error = null;
       })
-      .addCase(updateDoctor.fulfilled, (state, _action) => {
+      .addCase(updateDoctor.fulfilled, (state) => {
         state.modal.loading = false;
         state.modal.open = false;
         state.selectedDoctor = null;
@@ -134,20 +182,20 @@ const doctorsSlice = createSlice({
       })
       .addCase(updateDoctor.rejected, (state, action) => {
         state.modal.loading = false;
-        state.error = action.payload;
+        state.error = action.payload ?? null;
       })
       // Delete doctor
       .addCase(deleteDoctor.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteDoctor.fulfilled, (state, _action) => {
+      .addCase(deleteDoctor.fulfilled, (state) => {
         state.loading = false;
         // Note: The doctor will be removed from the list via the real-time listener
       })
       .addCase(deleteDoctor.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload ?? null;
       });
   },
 });
@@ -161,11 +209,16 @@ export const {
 } = doctorsSlice.actions;
 
 // Selectors
-export const selectDoctors = (state) => state.doctors.doctors;
-export const selectSelectedDoctor = (state) => state.doctors.selectedDoctor;
-export const selectDoctorsModal = (state) => state.doctors.modal;
-export const selectDoctorsLoading = (state) => state.doctors.loading;
-export const selectDoctorsError = (state) => state.doctors.error;
+export const selectDoctors = (state: DoctorsRootState) =>
+  state.doctors.doctors;
+export const selectSelectedDoctor = (state: DoctorsRootState) =>
+  state.doctors.selectedDoctor;
+export const selectDoctorsModal = (state: DoctorsRootState) =>
+  state.doctors.modal;
+export const selectDoctorsLoading = (state: DoctorsRootState) =>
+  state.doctors.loading;
+export const selectDoctorsError = (state: DoctorsRootState) =>
+  state.doctors.error;
 
 export default doctorsSlice.reducer;
 

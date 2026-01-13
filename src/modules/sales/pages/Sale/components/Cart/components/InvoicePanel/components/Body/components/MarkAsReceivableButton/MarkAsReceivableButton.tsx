@@ -111,7 +111,7 @@ export const MarkAsReceivableButton = ({
     }
 
     if (isChangeNegative) {
-      dispatch(toggleReceivableStatus());
+      dispatch(toggleReceivableStatus(undefined));
     }
     dispatch(setAR({ clientId, invoiceId }));
     // Abrir el modal para configurar

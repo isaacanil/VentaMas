@@ -1,6 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
 
+interface ModalProps {
+  title?: React.ReactNode;
+  onClose?: () => void;
+  onAccept?: () => void;
+  children?: React.ReactNode;
+}
+
 const ModalContainer = styled.div`
   position: fixed;
   top: 0;
@@ -50,7 +57,7 @@ const ModalButton = styled.button`
   }
 `;
 
-const Modal = ({ title, onClose, onAccept, children }) => {
+const Modal = ({ title, onClose, onAccept, children }: ModalProps) => {
   return (
     <ModalContainer>
       <ModalWrapper>

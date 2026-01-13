@@ -6,6 +6,8 @@ import {
   selectLoaderShow,
 } from '@/features/loader/loaderSlice';
 import type { LoaderProps } from '@/types/ui';
+
+type LoaderTheme = 'dark' | 'light';
 const Loader = ({
   useRedux = true,
   show: propsShow,
@@ -17,14 +19,15 @@ const Loader = ({
 
   const show = useRedux ? reduxShow : propsShow;
   const message = useRedux ? reduxMessage : propsMessage;
+  const resolvedTheme: LoaderTheme = theme === 'light' ? 'light' : 'dark';
 
   if (!show) return null;
 
   return (
-    <Container show={show} theme={theme}>
+    <Container show={show} theme={resolvedTheme}>
       <LoaderWrapper>
-        <Spinner theme={theme} />
-        {message && <Message theme={theme}>{message}</Message>}
+        <Spinner theme={resolvedTheme} />
+        {message && <Message theme={resolvedTheme}>{message}</Message>}
       </LoaderWrapper>
     </Container>
   );
@@ -32,8 +35,13 @@ const Loader = ({
 
 export default Loader;
 
-const getThemeStyles = (theme) => {
-  const themes = {
+const getThemeStyles = (theme?: LoaderTheme) => {
+  const themes: Record<LoaderTheme, {
+    backgroundColor: string;
+    spinnerBorder: string;
+    spinnerTopColor: string;
+    textColor: string;
+  }> = {
     dark: {
       backgroundColor: 'rgba(0, 0, 0, 0.39)',
       spinnerBorder: '4px solid rgba(255, 255, 255, 0.3)',
@@ -48,7 +56,7 @@ const getThemeStyles = (theme) => {
     },
   };
 
-  return themes[theme] || themes.dark;
+  return themes[theme || 'dark'] || themes.dark;
 };
 
 const SpinnerAnimation = keyframes`
@@ -56,7 +64,7 @@ const SpinnerAnimation = keyframes`
   100% { transform: rotate(360deg); }
 `;
 
-const Container = styled.div<{ show?: boolean; theme?: string }>`
+const Container = styled.div<{ show?: boolean; theme?: LoaderTheme }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -74,7 +82,7 @@ const LoaderWrapper = styled.div`
   gap: 1em;
   align-items: center;
 `;
-const Spinner = styled.div<{ theme?: string }>`
+const Spinner = styled.div<{ theme?: LoaderTheme }>`
   width: 44px;
   height: 44px;
   border: ${(props) => getThemeStyles(props.theme).spinnerBorder};
@@ -83,7 +91,7 @@ const Spinner = styled.div<{ theme?: string }>`
   animation: ${SpinnerAnimation} 0.8s linear infinite;
 `;
 
-const Message = styled.p<{ theme?: string }>`
+const Message = styled.p<{ theme?: LoaderTheme }>`
   font-family: 'Poppins', sans-serif;
   font-size: 20px;
   font-weight: bold;

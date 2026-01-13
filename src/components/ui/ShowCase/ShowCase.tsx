@@ -3,13 +3,23 @@ import styled from 'styled-components';
 import { formatNumber } from '@/utils/format';
 import { formatPrice } from '@/utils/format';
 
+type ShowcaseValueType = 'none' | 'number' | 'percent' | 'price';
+
+interface ShowcaseProps {
+  title: string;
+  value: number;
+  valueType?: ShowcaseValueType;
+  description?: string | null;
+  color?: boolean | string;
+}
+
 export function Showcase({
   title,
   value,
   valueType = 'none',
   description = null,
   color = false,
-}) {
+}: ShowcaseProps) {
   const determineColor = () => {
     if (typeof color === 'boolean' && color === true) {
       return value >= 0 ? 'success-contained' : 'error-contained';
@@ -20,17 +30,17 @@ export function Showcase({
     return '';
   };
 
-  const formatting = (value) => {
+  const formatting = (inputValue: number) => {
     switch (valueType) {
       case 'number':
-        return formatNumber(value);
+        return formatNumber(inputValue);
       case 'percent':
-        return `${value}%`;
+        return `${inputValue}%`;
       case 'price':
-        return formatPrice(value);
+        return formatPrice(inputValue);
       default:
     }
-    return value;
+    return inputValue;
   };
 
   return (
@@ -41,7 +51,14 @@ export function Showcase({
     </Container>
   );
 }
-const Container = styled.div`
+type ShowcaseStyleProps = {
+  color?: string;
+  theme?: {
+    colors?: Record<string, { text?: string; bg?: string }>;
+  };
+};
+
+const Container = styled.div<{ color?: string }>`
   display: grid;
   justify-content: center;
   padding: 0.3em 0.6em;
@@ -58,10 +75,12 @@ const Container = styled.div`
       return props.color; // Esto manejará cualquier string de color CSS directamente
     }
   }}; */
-  color: ${(props) => props?.theme?.colors[props?.color]?.text ?? ''};
+  color: ${(props: ShowcaseStyleProps) =>
+    props?.theme?.colors?.[props?.color || '']?.text ?? ''};
   text-align: center;
   background-color: var(--white-2);
-  background-color: ${(props) => props?.theme?.colors[props?.color]?.bg ?? ''};
+  background-color: ${(props: ShowcaseStyleProps) =>
+    props?.theme?.colors?.[props?.color || '']?.bg ?? ''};
   border-radius: 0.4em;
 `;
 const Value = styled.h2`

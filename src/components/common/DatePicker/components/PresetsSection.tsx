@@ -3,9 +3,29 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components';
 
 import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
-import type { PresetsSectionProps } from '@/types/ui';
+import type { DatePickerPreset, PresetsSectionProps } from '../types';
 
-const PresetsContainer = styled.div`
+type PresetLayout = 'grid' | 'sidebar';
+
+interface PresetsContainerProps {
+  $layout: PresetLayout;
+}
+
+interface PresetsGridProps {
+  $isMobile?: boolean;
+}
+
+interface DropdownItemProps {
+  $active?: boolean;
+}
+
+interface PresetButtonProps {
+  $layout: PresetLayout;
+  $active?: boolean;
+  $isToggle?: boolean;
+}
+
+const PresetsContainer = styled.div<PresetsContainerProps>`
   border: 1px solid #d9d9d9;
   border-radius: 6px;
   padding: ${({ $layout }) =>
@@ -17,7 +37,7 @@ const PresetsContainer = styled.div`
   height: ${({ $layout }) => ($layout === 'sidebar' ? '100%' : 'auto')};
 `;
 
-const PresetsGrid = styled.div`
+const PresetsGrid = styled.div<PresetsGridProps>`
   display: grid;
   grid-template-columns: ${({ $isMobile }) =>
     $isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)'};
@@ -81,7 +101,7 @@ const PresetsDropdown = styled.div`
   }
 `;
 
-const DropdownItem = styled.button`
+const DropdownItem = styled.button<DropdownItemProps>`
   width: 100%;
   padding: 14px 18px;
   border: none;
@@ -99,7 +119,7 @@ const DropdownItem = styled.button`
   }
 `;
 
-const PresetButton = styled.button`
+const PresetButton = styled.button<PresetButtonProps>`
   width: ${({ $layout }) => ($layout === 'sidebar' ? '100%' : 'auto')};
   text-align: ${({ $layout }) => ($layout === 'sidebar' ? 'left' : 'center')};
   justify-content: ${({ $layout }) =>
@@ -277,20 +297,28 @@ export const PresetsSection = ({
   presetsDropdownRef,
   layout = 'grid',
 }: PresetsSectionProps) => {
-  const groupedEntries = useMemo<[string, any[]][]>(() => {
-    const sourcePresets = layout === 'sidebar' ? presets : presets.slice(5);
-    const grouped = sourcePresets.reduce((acc, preset) => {
-      const group = preset.group || DEFAULT_GROUP;
-      if (!acc[group]) acc[group] = [];
-      acc[group].push(preset);
-      return acc;
-    }, {} as Record<string, any[]>);
-    return Object.entries(grouped) as [string, any[]][];
-  }, [presets, layout]);
+  const normalizedLayout: PresetLayout =
+    layout === 'sidebar' ? 'sidebar' : 'grid';
+  const presetItems = presets as DatePickerPreset[];
 
-  if (layout === 'sidebar') {
+  const groupedEntries = useMemo<[string, DatePickerPreset[]][]>(() => {
+    const sourcePresets =
+      normalizedLayout === 'sidebar' ? presetItems : presetItems.slice(5);
+    const grouped = sourcePresets.reduce<Record<string, DatePickerPreset[]>>(
+      (acc, preset) => {
+        const group = preset.group || DEFAULT_GROUP;
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(preset);
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(grouped) as [string, DatePickerPreset[]][];
+  }, [presetItems, normalizedLayout]);
+
+  if (normalizedLayout === 'sidebar') {
     return (
-      <PresetsContainer $layout={layout}>
+      <PresetsContainer $layout={normalizedLayout}>
         <SidebarWrapper>
           <SidebarScroll>
             {groupedEntries.map(([groupName, items]) => (
@@ -320,7 +348,7 @@ export const PresetsSection = ({
   }
 
   return (
-    <PresetsContainer $layout={layout}>
+    <PresetsContainer $layout={normalizedLayout}>
       <PresetsGrid $isMobile={isMobile}>
         {presets.slice(0, 5).map((preset, index) => {
           const isActive = isPresetActive(value, preset, mode);

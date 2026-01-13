@@ -2,8 +2,13 @@ import { CalendarOutlined, CloseOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+import type { DatePickerInputProps } from '../types';
 
-const StyledInput = styled(Input)`
+interface StyledInputProps {
+  $hasValue?: boolean;
+}
+
+const StyledInput = styled(Input)<StyledInputProps>`
   cursor: pointer;
 
   input {
@@ -49,13 +54,13 @@ export const DatePickerInput = ({
   onClear,
   onClick,
   ...props
-}) => {
+}: DatePickerInputProps) => {
   return (
     <StyledInput
       value={hasValue ? value : ''}
       placeholder={placeholder}
       readOnly
-      onClick={() => !disabled && onClick()}
+      onClick={() => !disabled && onClick?.()}
       size={size}
       disabled={disabled}
       prefix={<CalendarOutlined />}

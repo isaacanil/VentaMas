@@ -1,10 +1,21 @@
 import { DateTime } from 'luxon';
 import { useState, useEffect, useRef } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import type {
+  DatePickerPreset,
+  DatePickerValue,
+  UseDatePickerArgs,
+} from '../types';
 
-export const useDatePicker = ({ mode, value, onChange, presets }) => {
+export const useDatePicker = ({
+  mode,
+  value,
+  onChange,
+  presets,
+}: UseDatePickerArgs) => {
   const [open, setOpen] = useState(false);
   // Inicializar currentDate basado en el valor
-  const [currentDate, setCurrentDate] = useState(() => {
+  const [currentDate, setCurrentDate] = useState<DateTime>(() => {
     if (value) {
       if (mode === 'range' && Array.isArray(value) && value[0]) {
         return value[0];
@@ -14,13 +25,13 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
     }
     return DateTime.local();
   });
-  const [hoverDate, setHoverDate] = useState(null);
-  const [rangeStart, setRangeStart] = useState(null);
+  const [hoverDate, setHoverDate] = useState<DateTime | null>(null);
+  const [rangeStart, setRangeStart] = useState<DateTime | null>(null);
   const [showPresetsDropdown, setShowPresetsDropdown] = useState(false);
-  const presetsDropdownRef = useRef(null);
-  const initialValueRef = useRef(value);
+  const presetsDropdownRef = useRef<HTMLDivElement | null>(null);
+  const initialValueRef = useRef<DatePickerValue>(value);
 
-  const [prevValue, setPrevValue] = useState(value);
+  const [prevValue, setPrevValue] = useState<DatePickerValue>(value);
 
   if (value !== prevValue) {
     setPrevValue(value);
@@ -40,7 +51,7 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         presetsDropdownRef.current &&
         !presetsDropdownRef.current.contains(event.target)
@@ -55,13 +66,16 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
     };
   }, []);
 
-  const handlePresetClick = (preset, _isMobile = false) => {
+  const handlePresetClick = (preset: DatePickerPreset, _isMobile = false) => {
     onChange(preset.value);
     setRangeStart(null);
     setOpen(false);
   };
 
-  const handleClear = (e, finalPresets = []) => {
+  const handleClear = (
+    e: ReactMouseEvent<HTMLElement> | null,
+    finalPresets: DatePickerPreset[] = [],
+  ) => {
     if (e) {
       e.stopPropagation();
     }
@@ -73,7 +87,7 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
     setRangeStart(null);
   };
 
-  const handleDateClick = (date) => {
+  const handleDateClick = (date: DateTime) => {
     if (mode === 'single') {
       onChange(date);
     } else {
@@ -93,7 +107,7 @@ export const useDatePicker = ({ mode, value, onChange, presets }) => {
     }
   };
 
-  const navigateMonth = (direction) => {
+  const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate((prev) =>
       direction === 'prev'
         ? prev.minus({ months: 1 })
