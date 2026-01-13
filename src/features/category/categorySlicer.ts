@@ -1,34 +1,34 @@
-import { createSelector, createSlice } from '@reduxjs/toolkit';
+﻿import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { notification } from 'antd';
 
 const initialState = {
   status: false,
   items: [],
 };
-const categorySlice = (createSlice as any)({
+const categorySlice = createSlice({
   name: 'category',
   initialState,
   reducers: {
-    addItem: (state, action) => {
-      const { id, name, type } = action.payload; // 'type' determina si es categoría o activeIngredient
-      const list = state.items.filter((item) => item.type === type); // Filtramos según el tipo
+    addItem: (state: any, action: PayloadAction<any>) => {
+      const { id, name, type } = action.payload; // 'type' determina si es categorÃ­a o activeIngredient
+      const list = state.items.filter((item) => item.type === type); // Filtramos segÃºn el tipo
 
       const checkingNameIsDifferent = list.every((item) => item.id !== id);
       if (checkingNameIsDifferent && list.length < 12) {
         state.status = true;
-        state.items.push({ id, name, type }); // Añadimos el tipo al objeto
+        state.items.push({ id, name, type }); // AÃ±adimos el tipo al objeto
       } else if (list.length === 12) {
         notification.error({
           message: 'Error',
-          description: `No puedes agregar más de 12 elementos en la lista de ${type === 'category' ? 'categorías' : 'ingredientes activos'}`,
+          description: `No puedes agregar mÃ¡s de 12 elementos en la lista de ${type === 'category' ? 'categorÃ­as' : 'ingredientes activos'}`,
         });
       }
     },
-    deleteAllItems: (state) => {
+    deleteAllItems: (state: any) => {
       state.items = [];
       state.status = false;
     },
-    deleteItem: (state, action) => {
+    deleteItem: (state: any, action: PayloadAction<any>) => {
       const { id, type } = action.payload;
       const index = state.items.findIndex(
         (item) => item.id === id && item.type === type,
@@ -38,7 +38,7 @@ const categorySlice = (createSlice as any)({
         state.items.splice(index, 1); // Eliminamos el elemento
       }
 
-      // Si no quedan elementos de ningún tipo, actualizamos el estado
+      // Si no quedan elementos de ningÃºn tipo, actualizamos el estado
       if (state.items.length === 0) {
         state.status = false;
       }
@@ -60,4 +60,5 @@ export const SelectActiveIngredients = createSelector(
 );
 
 export default categorySlice.reducer;
+
 

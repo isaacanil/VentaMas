@@ -1,0 +1,27 @@
+import React from 'react';
+import styled from 'styled-components';
+
+import { Showcase } from './ShowCase';
+
+export const ShowcaseList = ({ showcases }) => {
+  return (
+    <Container>
+      {showcases.map((showcase, index) => (
+        <Showcase
+          key={index}
+          title={showcase.title}
+          valueType={showcase.valueType}
+          value={showcase.value}
+          description={showcase.description}
+          color={showcase.color}
+        />
+      ))}
+    </Container>
+  );
+};
+
+const Container = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+`;

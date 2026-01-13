@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Warehouse } from '@/models/Warehouse/Warehouse';
 
@@ -42,7 +42,7 @@ const initialState: WarehouseModalState = {
   error: null,
 };
 
-const warehouseModalSlice = (createSlice as any)({
+const warehouseModalSlice = createSlice({
   name: 'warehouseModal', // Slice name
   initialState,
   reducers: {
@@ -60,7 +60,7 @@ const warehouseModalSlice = (createSlice as any)({
       state.loading = false;
       state.error = null;
     },
-    closeWarehouseForm: (state) => {
+    closeWarehouseForm: (state: any) => {
       state.isOpen = false;
       state.formData = createInitialWarehouseFormData();
       state.loading = false;
@@ -72,7 +72,7 @@ const warehouseModalSlice = (createSlice as any)({
     setWarehouseError: (state, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    clearWarehouseForm: (state) => {
+    clearWarehouseForm: (state: any) => {
       state.formData = createInitialWarehouseFormData();
       state.error = null;
       state.loading = false;
@@ -105,3 +105,4 @@ export default warehouseModalSlice.reducer;
 export const selectWarehouseModalState = (state: {
   warehouseModal: WarehouseModalState;
 }) => state.warehouseModal;
+

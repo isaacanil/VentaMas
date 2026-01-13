@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { fetchInsuranceAuthByClientId } from '@/features/insurance/insuranceAuthSlice';
 import { fbAddClient } from '@/firebase/client/fbAddClient';
@@ -39,14 +39,14 @@ const initialState = {
   isOpen: false,
 };
 
-export const clientSlice = (createSlice as any)({
+export const clientSlice = createSlice({
   name: 'clientCart',
   initialState,
   reducers: {
-    setClient: (state, action) => {
+    setClient: (state: any, action: PayloadAction<any>) => {
       state.client = { ...state.client, ...action.payload };
     },
-    setClientMode: (state, action) => {
+    setClientMode: (state: any, action: PayloadAction<any>) => {
       const { SEARCH, CREATE, UPDATE } = CLIENT_MODE_BAR;
       state.mode = action.payload;
 
@@ -72,28 +72,28 @@ export const clientSlice = (createSlice as any)({
           state.showClientList = SEARCH.showClientList;
       }
     },
-    setClientSearchTerm: (state, action) => {
+    setClientSearchTerm: (state: any, action: PayloadAction<any>) => {
       state.searchTerm = action.payload;
     },
-    addClient: (state, action) => {
+    addClient: (state: any, action: PayloadAction<any>) => {
       state.client = { ...action.payload };
       state.mode = CLIENT_MODE_BAR.UPDATE.id;
       state.copyClient = { ...action.payload };
     },
-    setIsOpen: (state, action) => {
+    setIsOpen: (state: any, action: PayloadAction<any>) => {
       if (action.payload === undefined) {
         state.isOpen = !state.isOpen;
       } else {
         state.isOpen = action.payload;
       }
     },
-    deleteClient: (state) => {
+    deleteClient: (state: any) => {
       state.client = EmptyClient;
       state.isOpen = false;
       state.mode = CLIENT_MODE_BAR.SEARCH.id;
       state.labelClientMode = CLIENT_MODE_BAR.SEARCH.label;
     },
-    handleClient: (state, action) => {
+    handleClient: (state: any, action: PayloadAction<any>) => {
       const { user } = action.payload;
       if (!state.client.id) {
         state.client = GenericClient;
@@ -110,7 +110,7 @@ export const clientSlice = (createSlice as any)({
       if (
         !state?.client?.id &&
         state?.client?.name.length > 0 &&
-        state.client.name !== 'Cliente Genérico'
+        state.client.name !== 'Cliente GenÃ©rico'
       ) {
         fbAddClient(user, state.client);
         return;
@@ -154,4 +154,5 @@ export const selectIsOpen = (state) => state.clientCart.isOpen;
 export const selectClientSearchTerm = (state) => state.clientCart.searchTerm;
 
 export default clientSlice.reducer;
+
 

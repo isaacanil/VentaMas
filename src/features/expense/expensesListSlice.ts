@@ -1,14 +1,14 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   expenses: [],
 };
 
-export const expensesListSlice = (createSlice as any)({
+export const expensesListSlice = createSlice({
   name: 'expensesList',
   initialState,
   reducers: {
-    setExpenseList: (state, action) => {
+    setExpenseList: (state: any, action: PayloadAction<any>) => {
       state.expenses = action.payload;
     },
     // ... otras acciones relacionadas con la lista de gastos
@@ -19,4 +19,5 @@ export const { setExpenseList } = expensesListSlice.actions;
 export default expensesListSlice.reducer;
 
 export const selectExpenseList = (state) => state.expensesList.expenses;
+
 

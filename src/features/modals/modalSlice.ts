@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { OPERATION_MODES } from '@/constants/modes';
 
@@ -68,57 +68,57 @@ const initialState = {
     activeTab: 'console',
   },
 };
-const modalSlice = (createSlice as any)({
+const modalSlice = createSlice({
   name: 'modal',
   initialState,
   reducers: {
-    openModalAddClient: (state) => {
+    openModalAddClient: (state: any) => {
       state.modalAddClient.isOpen = true;
     },
-    closeModalAddClient: (state) => {
+    closeModalAddClient: (state: any) => {
       state.modalAddClient.isOpen = false;
     },
-    openModalAddProd: (state) => {
+    openModalAddProd: (state: any) => {
       state.modalAddProd.isOpen = true;
     },
-    closeModalAddProd: (state) => {
+    closeModalAddProd: (state: any) => {
       state.modalAddProd.isOpen = false;
     },
-    openModalUpdateProd: (state, actions) => {
+    openModalUpdateProd: (state: any, actions: PayloadAction<any | void>) => {
       state.modalUpdateProd.isOpen = true;
-      state.modalUpdateProd.prodId = actions.payload;
+      state.modalUpdateProd.prodId = actions.payload || '';
     },
-    closeModalUpdateProd: (state) => {
+    closeModalUpdateProd: (state: any) => {
       state.modalUpdateProd.isOpen = false;
       state.modalUpdateProd.prodId = '';
       state.modalUpdateProd.data = {};
     },
-    openModalCategory: (state) => {
+    openModalCategory: (state: any) => {
       state.modalCategory.isOpen = true;
     },
-    closeModalCategory: (state) => {
+    closeModalCategory: (state: any) => {
       state.modalCategory.isOpen = false;
     },
-    openModalAddOrder: (state) => {
+    openModalAddOrder: (state: any) => {
       let isOpen = state.modalAddOrder.isOpen;
       state.modalAddOrder.isOpen = !isOpen;
     },
-    closeModalAddOrder: (state) => {
+    closeModalAddOrder: (state: any) => {
       state.modalAddOrder.isOpen = false;
     },
-    toggleAddPurchaseModal: (state) => {
+    toggleAddPurchaseModal: (state: any) => {
       let isOpen = state.modalAddPurchase.isOpen;
       state.modalAddPurchase.isOpen = !isOpen;
     },
-    openModalAddProvider: (state) => {
+    openModalAddProvider: (state: any) => {
       let isOpen = state.modalAddOrder.isOpen;
       state.modalAddProvider.isOpen = !isOpen;
     },
-    handleModalSetCustomPizza: (state) => {
+    handleModalSetCustomPizza: (state: any) => {
       let isOpen = state.modalSetCustomPizza.isOpen;
       state.modalSetCustomPizza.isOpen = !isOpen;
     },
-    toggleClientModal: (state, actions) => {
+    toggleClientModal: (state: any, actions: PayloadAction<any>) => {
       // const mode = actions.payload.mode
 
       const { mode, addClientToCart } = actions.payload;
@@ -142,7 +142,7 @@ const modalSlice = (createSlice as any)({
         return;
       }
     },
-    toggleProviderModal: (state, actions) => {
+    toggleProviderModal: (state: any, actions: PayloadAction<any>) => {
       const create = OPERATION_MODES.CREATE.id;
       const update = OPERATION_MODES.UPDATE.id;
 
@@ -164,7 +164,7 @@ const modalSlice = (createSlice as any)({
         return;
       }
     },
-    toggleViewOrdersNotes: (state, actions) => {
+    toggleViewOrdersNotes: (state: any, actions: PayloadAction<any>) => {
       const { data, isOpen } = actions.payload;
       state.modalToggleOrderNote.isOpen = !isOpen;
 
@@ -183,7 +183,7 @@ const modalSlice = (createSlice as any)({
         return;
       }
     },
-    toggleAddCategory: (state, actions) => {
+    toggleAddCategory: (state: any, actions: PayloadAction<any>) => {
       const { isOpen, data } = actions.payload;
       state.modalToggleAddCategory.isOpen = isOpen;
 
@@ -201,7 +201,7 @@ const modalSlice = (createSlice as any)({
       const isOpen = state.modalToggleAddProductOutflow.isOpen;
       state.modalToggleAddProductOutflow.isOpen = !isOpen;
     },
-    toggleSignUpUser: (state, action) => {
+    toggleSignUpUser: (state: any, action: PayloadAction<any>) => {
       if (action.payload?.data) {
         state.modalToggleSignUp.data = action.payload.data;
       }
@@ -230,7 +230,7 @@ const modalSlice = (createSlice as any)({
       const isOpen = state.modalConfirmOpenCashReconciliation.isOpen;
       state.modalConfirmOpenCashReconciliation.isOpen = !isOpen;
     },
-    toggleFileListModal: (state, action) => {
+    toggleFileListModal: (state: any, action: PayloadAction<any>) => {
       const isOpen = !state.modalFileList.isOpen;
 
       state.modalFileList.isOpen = isOpen;
@@ -241,7 +241,7 @@ const modalSlice = (createSlice as any)({
         state.modalFileList.fileList = action.payload?.fileList || [];
       }
     },
-    toggleDeveloperModal: (state, action) => {
+    toggleDeveloperModal: (state: any, action: PayloadAction<any>) => {
       const payload = action.payload;
       const isOpen = !state.modalDeveloper.isOpen;
 
@@ -260,15 +260,12 @@ export const {
   closeModalAddProd,
   openModalAddOrder,
   closeModalAddOrder,
-  openModalBilling,
-  closeModalBilling,
   openModalUpdateProd,
   closeModalUpdateProd,
   openModalCategory,
   closeModalCategory,
   openModalAddProvider,
   handleModalSetCustomPizza,
-  handleModalCreateClient,
   toggleAddPurchaseModal,
   toggleProviderModal,
   toggleClientModal,
@@ -308,4 +305,5 @@ export const SelectConfirmOpenCashReconciliationModal = (state) =>
 export const SelectFileListModal = (state) => state.modal.modalFileList;
 export const SelectDeveloperModal = (state) => state.modal.modalDeveloper;
 export default modalSlice.reducer;
+
 

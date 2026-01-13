@@ -1,19 +1,19 @@
-// store.js
-import { createSlice } from '@reduxjs/toolkit';
+﻿// store.js
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const noteSlice = (createSlice as any)({
+const noteSlice = createSlice({
   name: 'note',
   initialState: {
     isOpen: false,
     note: null,
   },
   reducers: {
-    setNote: (state, action) => {
+    setNote: (state: any, action: PayloadAction<any>) => {
       const { isOpen, note } = action.payload;
       state.isOpen = isOpen;
       state.note = note;
     },
-    clearNote: (state) => {
+    clearNote: (state: any) => {
       state.note = null;
       state.isOpen = false;
     },
@@ -24,4 +24,5 @@ export const { setNote, clearNote } = noteSlice.actions;
 export default noteSlice.reducer;
 
 export const selectNote = (state) => state.note;
+
 

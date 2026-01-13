@@ -1,0 +1,35 @@
+.Counter_container {
+  .Couter_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1.4em;
+    font-weight: 700;
+    line-height: 10px;
+    color: var(--gray-6);
+    outline: none;
+    background-color: var(--white);
+    border: none;
+    border-radius: 4px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .CounterDisplay {
+    width: 2.5em;
+    font-size: 17px;
+    text-align: center;
+    outline: none;
+    background-color: transparent;
+    border: 1px solid rgb(0 0 0 / 0%);
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      margin: 0;
+      appearance: none;
+    }
+  }
+}

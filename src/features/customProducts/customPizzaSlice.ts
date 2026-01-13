@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import {
   EmptyNewProduct,
@@ -6,7 +6,7 @@ import {
   EmptyProductSelected,
 } from './emptyData';
 
-const customPizzaSlice = (createSlice as any)({
+const customPizzaSlice = createSlice({
   name: 'customPizza',
   initialState: {
     products: [],
@@ -20,25 +20,25 @@ const customPizzaSlice = (createSlice as any)({
     newProduct: EmptyNewProduct,
   },
   reducers: {
-    setProducts: (state, action) => {
+    setProducts: (state: any, action: PayloadAction<any>) => {
       state.products = action.payload;
     },
-    setIsComplete: (state, action) => {
+    setIsComplete: (state: any, action: PayloadAction<any>) => {
       state.isComplete = action.payload;
     },
-    setProduct: (state, action) => {
+    setProduct: (state: any, action: PayloadAction<any>) => {
       state.product = action.payload;
     },
-    setProductSelected: (state, action) => {
+    setProductSelected: (state: any, action: PayloadAction<any>) => {
       state.productSelected = action.payload;
     },
-    setTotalIngredientPrice: (state, action) => {
+    setTotalIngredientPrice: (state: any, action: PayloadAction<any>) => {
       state.totalIngredientPrice = action.payload;
     },
-    setIngredientListNameSelected: (state, action) => {
+    setIngredientListNameSelected: (state: any, action: PayloadAction<any>) => {
       state.ingredientListNameSelected = action.payload;
     },
-    setNewProduct: (state, action) => {
+    setNewProduct: (state: any, action: PayloadAction<any>) => {
       state.newProduct = action.payload;
     },
   },
@@ -57,4 +57,5 @@ export const {
 export default customPizzaSlice.reducer;
 
 export const selectCustomPizza = (state) => state.customPizza;
+
 

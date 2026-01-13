@@ -1,5 +1,5 @@
-// store/slices/warehouseSlice.js
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿// store/slices/warehouseSlice.js
+import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 import type { Segment } from '@/models/Warehouse/Segment';
@@ -43,12 +43,12 @@ const warehouseSlice = createSlice({
   name: 'warehouse',
   initialState,
   reducers: {
-    // Navega a una ubicación o un producto en cualquier nivel
+    // Navega a una ubicaciÃ³n o un producto en cualquier nivel
     navigateWarehouse: (state, action: PayloadAction<NavigatePayload>) => {
       const { view, data } = action.payload;
       state.currentView = view;
 
-      // Actualiza los breadcrumbs según la vista
+      // Actualiza los breadcrumbs segÃºn la vista
       switch (view) {
         case 'warehouse':
           state.breadcrumbs = [{ title: data.name, key: 'warehouse' }];
@@ -90,7 +90,7 @@ const warehouseSlice = createSlice({
       }
     },
 
-    // Retrocede un nivel en la navegación
+    // Retrocede un nivel en la navegaciÃ³n
     back: (state) => {
       const viewMap: Record<WarehouseView, WarehouseView> = {
         segment: 'rowShelf',
@@ -102,7 +102,7 @@ const warehouseSlice = createSlice({
       state.currentView = viewMap[state.currentView] || 'warehouse';
       state.breadcrumbs.pop();
 
-      // Limpiar selección de productos y datos al retroceder
+      // Limpiar selecciÃ³n de productos y datos al retroceder
       if (state.currentView === 'warehouse') {
         state.selectedShelf = null;
         state.selectedRowShelf = null;
@@ -115,14 +115,14 @@ const warehouseSlice = createSlice({
       }
     },
 
-    // Nueva acción para navegar a través de los breadcrumbs
+    // Nueva acciÃ³n para navegar a travÃ©s de los breadcrumbs
     navigateToBreadcrumb: (state, action: PayloadAction<number>) => {
-      const index = action.payload; // Índice del breadcrumb clicado
+      const index = action.payload; // Ãndice del breadcrumb clicado
 
       // Actualizar breadcrumbs
       state.breadcrumbs = state.breadcrumbs.slice(0, index + 1);
 
-      // Resetear selecciones basadas en el índice clickeado
+      // Resetear selecciones basadas en el Ã­ndice clickeado
       // Recordar: 0=warehouse, 1=shelf, 2=rowShelf, 3=segment
       switch (index) {
         case 0: // Warehouse
@@ -144,7 +144,7 @@ const warehouseSlice = createSlice({
           state.currentView = 'segment';
           break;
         default:
-          // Si por alguna razón el índice está fuera de rango, resetear todo
+          // Si por alguna razÃ³n el Ã­ndice estÃ¡ fuera de rango, resetear todo
           state.selectedWarehouse = null;
           state.selectedShelf = null;
           state.selectedRowShelf = null;
@@ -161,3 +161,4 @@ export default warehouseSlice.reducer;
 
 export const selectWarehouse = (state: { warehouse: WarehouseState }) =>
   state.warehouse;
+

@@ -3,7 +3,7 @@ import type {
   ToolbarImportFn,
   ToolbarLoader,
   ToolbarComponent,
-} from '@/views/templates/MenuApp/GlobalMenu/types';
+} from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 
 /**
  * Creates a lazy loader for a toolbar component

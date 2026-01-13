@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   selectedInsurance: false,
@@ -9,18 +9,18 @@ const initialState = {
   },
 };
 
-const insuranceSlice = (createSlice as any)({
+const insuranceSlice = createSlice({
   name: 'insurance',
   initialState,
   reducers: {
-    setInsuranceStatus: (state, action) => {
+    setInsuranceStatus: (state: any, action: PayloadAction<any>) => {
       state.selectedInsurance = action.payload;
     },
-    toggleInsurance: (state, action) => {
+    toggleInsurance: (state: any, action: PayloadAction<any>) => {
       // If explicit value provided, use it, otherwise toggle current value
       state.selectedInsurance = action.payload ?? !state.selectedInsurance;
     },
-    updateInsuranceData: (state, action) => {
+    updateInsuranceData: (state: any, action: PayloadAction<any>) => {
       state.insuranceData = { ...state.insuranceData, ...action.payload };
     },
   },
@@ -34,4 +34,5 @@ export const selectInsuranceStatus = (state) =>
 export const selectInsuranceData = (state) => state.insurance.insuranceData;
 
 export default insuranceSlice.reducer;
+
 

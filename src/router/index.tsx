@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 
-import { RouteErrorFallback } from '@/views/templates/system/ErrorComponent/RouteErrorFallback';
+import { RouteErrorFallback } from '@/components/ui/ErrorComponent/RouteErrorFallback';
 
 import { RootElement } from './AppRouterLayout';
 import { routes } from './routes/routes';

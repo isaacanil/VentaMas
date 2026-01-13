@@ -1,5 +1,5 @@
-import { RequireAuth } from '@/views/component/RequireAuth';
-import { ErrorBoundary } from '@/views/pages/ErrorElement/ErrorBoundary';
+import { RequireAuth } from '@/modules/auth/components/RequireAuth';
+import { ErrorBoundary } from '@/modules/app/pages/ErrorElement/ErrorBoundary';
 
 import type { ReactElement } from 'react';
 

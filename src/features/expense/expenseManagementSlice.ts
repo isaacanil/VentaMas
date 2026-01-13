@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   mode: 'add',
@@ -10,12 +10,12 @@ const initialState = {
       createdAt: '',
     },
     receiptImageUrl: '',
-    category: '', // Nombre de la categoría
-    categoryId: '', // ID de la categoría
+    category: '', // Nombre de la categorÃ­a
+    categoryId: '', // ID de la categorÃ­a
   },
 };
 
-export const expenseManagementSlice = (createSlice as any)({
+export const expenseManagementSlice = createSlice({
   name: 'expenseManagement',
   initialState,
   reducers: {
@@ -29,11 +29,11 @@ export const expenseManagementSlice = (createSlice as any)({
         attachments: payload.attachments ?? state.expense.attachments,
       };
     },
-    resetExpense: (state) => {
+    resetExpense: (state: any) => {
       state.expense = initialState.expense;
       state.mode = initialState.mode;
     },
-    setExpenseMode: (state, action) => {
+    setExpenseMode: (state: any, action: PayloadAction<any>) => {
       state.mode = action.payload;
     },
   },
@@ -44,4 +44,5 @@ export const { setExpense, resetExpense, setExpenseMode } =
 export default expenseManagementSlice.reducer;
 
 export const selectExpense = (state) => state.expenseManagement;
+
 

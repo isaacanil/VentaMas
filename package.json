@@ -26,6 +26,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit",
+    "audit:ts": "node tools/audit-report.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "deploy:beta": "firebase hosting:channel:deploy beta",

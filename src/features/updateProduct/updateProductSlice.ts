@@ -1,8 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
-import { warrantyOptions } from '@/views/component/modals/ProductForm/components/sections/warranty.helpers';
-import { initTaxes } from '@/views/component/modals/UpdateProduct/InitializeData';
+import { warrantyOptions } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
+import { initTaxes } from '@/components/modals/UpdateProduct/InitializeData';
 
 const DEFAULT_BRAND = 'Sin marca';
 export const PRODUCT_BRAND_DEFAULT = DEFAULT_BRAND;
@@ -79,11 +79,11 @@ const initialState = {
   product: createEmptyProduct(),
 };
 
-export const updateProductSlice = (createSlice as any)({
+export const updateProductSlice = createSlice({
   name: 'updateProduct',
   initialState,
   reducers: {
-    ChangeProductData: (state, action) => {
+    ChangeProductData: (state: any, action: PayloadAction<any>) => {
       const { status, product } = action.payload;
       if (status && !state.status) {
         state.status = status;
@@ -99,7 +99,7 @@ export const updateProductSlice = (createSlice as any)({
       }
       state.product = merged;
     },
-    setProduct: (state, action) => {
+    setProduct: (state: any, action: PayloadAction<any>) => {
       const product = action.payload;
       const merged = {
         ...state.product,
@@ -108,17 +108,17 @@ export const updateProductSlice = (createSlice as any)({
       merged.brand = normalizeBrand(merged.brand);
       state.product = merged;
     },
-    ChangeProductImage: (state, action) => {
+    ChangeProductImage: (state: any, action: PayloadAction<any>) => {
       state.product.image = action.payload;
     },
-    changeProductPrice: (state, action) => {
+    changeProductPrice: (state: any, action: PayloadAction<any>) => {
       state.product.pricing = {
         ...state.product.pricing,
         ...action?.payload?.pricing,
       };
       const hasPricing =
         action?.payload?.pricing && typeof action.payload.pricing === 'object';
-      // Si se actualiza el listPrice (aunque sea 0), también actualizar el price principal
+      // Si se actualiza el listPrice (aunque sea 0), tambiÃ©n actualizar el price principal
       if (
         hasPricing &&
         Object.prototype.hasOwnProperty.call(
@@ -128,7 +128,7 @@ export const updateProductSlice = (createSlice as any)({
       ) {
         state.product.pricing.price = action.payload.pricing.listPrice;
       }
-      // Si se actualiza el price directamente, mantenerlo (tiene prioridad explícita)
+      // Si se actualiza el price directamente, mantenerlo (tiene prioridad explÃ­cita)
       if (
         hasPricing &&
         Object.prototype.hasOwnProperty.call(action.payload.pricing, 'price')
@@ -137,12 +137,12 @@ export const updateProductSlice = (createSlice as any)({
       }
     },
     // Activa o desactiva la venta por unidades
-    toggleSaleUnits: (state, action) => {
+    toggleSaleUnits: (state: any, action: PayloadAction<any>) => {
       const { isSoldInUnits } = action.payload;
       state.product.isSoldInUnits = isSoldInUnits;
 
       if (isSoldInUnits && state.product.saleUnits.length === 0) {
-        // Inicializar saleUnits con ejemplos si se activa y está vacío
+        // Inicializar saleUnits con ejemplos si se activa y estÃ¡ vacÃ­o
         state.product.saleUnits = [
           {
             id: nanoid(),
@@ -189,8 +189,8 @@ export const updateProductSlice = (createSlice as any)({
         state.product.selectedSaleUnitId = null;
       }
     },
-    // Selecciona una unidad de venta específica
-    selectSaleUnit: (state, action) => {
+    // Selecciona una unidad de venta especÃ­fica
+    selectSaleUnit: (state: any, action: PayloadAction<any>) => {
       const { saleUnitId } = action.payload;
       const exists = state.product.saleUnits.some(
         (unit) => unit.id === saleUnitId,
@@ -201,7 +201,7 @@ export const updateProductSlice = (createSlice as any)({
     },
     // Actualiza todas las unidades de venta
 
-    clearUpdateProductData: (state) => {
+    clearUpdateProductData: (state: any) => {
       state.product = createEmptyProduct();
       state.status = false;
     },
@@ -214,8 +214,8 @@ export const {
   clearUpdateProductData,
   ChangeProductImage,
   setProduct,
-  updateSaleOptions,
-  updateSaleUnit,
+  toggleSaleUnits,
+  selectSaleUnit,
 } = updateProductSlice.actions;
 
 //selectors
@@ -233,4 +233,5 @@ export const selectSaleUnitById = (state, id) =>
   state.updateProduct.product.saleUnits.find((unit) => unit.id === id);
 
 export default updateProductSlice.reducer;
+
 

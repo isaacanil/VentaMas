@@ -9,11 +9,11 @@ const initialState = {
   },
 };
 
-export const purchaseUISlice = (createSlice as any)({
+export const purchaseUISlice = createSlice({
   name: 'purchaseUI',
   initialState,
   reducers: {
-    togglePurchaseChartModal: (state) => {
+    togglePurchaseChartModal: (state: any) => {
       state.modals.chartPurchaseModal.isOpen =
         !state.modals.chartPurchaseModal.isOpen;
     },

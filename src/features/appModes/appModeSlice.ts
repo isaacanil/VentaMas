@@ -2,14 +2,14 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { CONFIG } from '@/constants/appConfig';
 
-const appModeSlice = (createSlice as any)({
+const appModeSlice = createSlice({
   name: 'appMode',
   initialState: {
     mode: false, // false = modo producción, true = modo prueba
     notificationMode: CONFIG.APP_MODE.TEST_MODE,
   },
   reducers: {
-    toggleMode: (state) => {
+    toggleMode: (state: any) => {
       const mode = state.mode;
       state.mode = !mode;
     },

@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 
@@ -38,7 +38,7 @@ const initialState: RowShelfModalState = {
   error: null,
 };
 
-const rowShelfModalSlice = (createSlice as any)({
+const rowShelfModalSlice = createSlice({
   name: 'rowShelfModal',
   initialState,
   reducers: {
@@ -54,7 +54,7 @@ const rowShelfModalSlice = (createSlice as any)({
       state.loading = false;
       state.error = null;
     },
-    closeRowShelfForm: (state) => {
+    closeRowShelfForm: (state: any) => {
       state.isOpen = false;
       state.formData = createInitialRowShelfFormData();
       state.path = [];
@@ -67,7 +67,7 @@ const rowShelfModalSlice = (createSlice as any)({
     setRowShelfError: (state, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    clearRowShelfForm: (state) => {
+    clearRowShelfForm: (state: any) => {
       state.formData = createInitialRowShelfFormData();
       state.error = null;
       state.loading = false;
@@ -101,3 +101,4 @@ export default rowShelfModalSlice.reducer;
 export const selectRowShelfState = (state: {
   rowShelfModal: RowShelfModalState;
 }) => state.rowShelfModal;
+

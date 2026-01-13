@@ -1,0 +1,279 @@
+// @ts-nocheck
+import { InfoCircleOutlined } from '@/constants/icons/antd';
+import { Form, InputNumber, Space, Tooltip, Typography } from 'antd';
+import { useMemo } from 'react';
+import styled from 'styled-components';
+
+import {
+  FieldGrid,
+  SectionCard,
+  SectionDescription,
+  SectionHeader,
+  SectionTitle,
+} from '@/modules/dev/pages/DevTools/ProductStudio/components/SectionLayout';
+
+const { Text } = Typography;
+
+const PriceTableWrapper = styled.div`
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+`;
+
+const PriceTableRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1.3fr repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: ${({ $header }) => ($header ? 600 : 500)};
+  color: ${({ $header }) => ($header ? '#0f172a' : '#334155')};
+  text-transform: ${({ $header }) => ($header ? 'uppercase' : 'none')};
+  background: ${({ $header }) => ($header ? '#f8fafc' : '#fff')};
+  border-bottom: 1px solid #e2e8f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span.numeric-header {
+    display: block;
+    text-align: right;
+  }
+`;
+
+const LabelCell = styled.span`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  font-weight: 600;
+
+  span.label {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  span.asterisk {
+    color: #dc2626;
+  }
+
+  span.note {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+  }
+`;
+
+const InfoIcon = styled(InfoCircleOutlined)`
+  font-size: 14px;
+  color: #94a3b8;
+  cursor: help;
+`;
+
+const NumericCell = styled.span`
+  display: block;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  text-align: right;
+`;
+
+const GainCell = styled.span`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  font-weight: 600;
+  color: #0f172a;
+  text-align: right;
+
+  span.percent {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  span.placeholder {
+    font-weight: 500;
+    color: #94a3b8;
+  }
+`;
+
+const PRICE_ROWS = [
+  {
+    key: 'listPrice',
+    label: 'Precio de lista',
+    note: '(precio base)',
+    required: true,
+    formItemProps: {
+      rules: [{ required: true, message: 'Define un precio de lista.' }],
+    },
+  },
+  { key: 'midPrice', label: 'Precio medio' },
+  { key: 'minPrice', label: 'Precio mÃ­nimo' },
+  {
+    key: 'cardPrice',
+    label: 'Precio con tarjeta',
+    tooltip:
+      'Cuando cobras con tarjeta en el POS te preguntaremos si deseas usar este precio preferencial.',
+  },
+  { key: 'offerPrice', label: 'Precio de oferta' },
+];
+
+const formatCurrency = (value) => {
+  if (value === null || Number.isNaN(value) || value === 0) {
+    return 'â€”';
+  }
+  return `RD$ ${value.toFixed(2)}`;
+};
+
+const formatPercent = (value) => {
+  if (value === null || Number.isNaN(value) || value === 0) {
+    return 'â€”';
+  }
+  return `${value.toFixed(1)}%`;
+};
+
+const hasGainValue = (margin, percent) => {
+  const hasMargin = margin !== null && !Number.isNaN(margin) && margin > 0;
+  const hasPercent = percent !== null && !Number.isNaN(percent) && percent > 0;
+  return hasMargin || hasPercent;
+};
+
+export const PricingSection = ({ domId, pricingValues = {} }) => {
+  const cost = Number(pricingValues?.cost) || 0;
+  const taxRate = Number(pricingValues?.tax) || 0;
+
+  const priceMatrix = useMemo(() => {
+    return PRICE_ROWS.map((row) => {
+      const rawValue = pricingValues?.[row.key];
+      const hasAmount =
+        rawValue !== undefined && rawValue !== null && rawValue !== '';
+      const amount = hasAmount ? Number(rawValue) : null;
+      const taxAmount = hasAmount ? amount * (taxRate / 100) : null;
+      const total = hasAmount ? amount + taxAmount : null;
+      const margin = hasAmount ? amount - cost : null;
+      const gainPercent =
+        hasAmount && amount > 0 ? ((amount - cost) / amount) * 100 : null;
+
+      return {
+        ...row,
+        amount,
+        taxAmount,
+        total,
+        margin,
+        gainPercent,
+      };
+    });
+  }, [pricingValues, taxRate, cost]);
+
+  return (
+    <SectionCard id={domId}>
+      <SectionHeader>
+        <Space>
+          <SectionTitle level={4}>Estrategia de precios</SectionTitle>
+        </Space>
+        <SectionDescription>
+          Controla tus mÃ¡rgenes antes de publicar.
+        </SectionDescription>
+      </SectionHeader>
+
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <FieldGrid>
+          <Form.Item
+            name={['pricing', 'cost']}
+            label="Costo"
+            rules={[{ required: true, message: 'Registra el costo base.' }]}
+          >
+            <InputNumber
+              min={0}
+              prefix="RD$"
+              style={{ width: '100%' }}
+              placeholder="0.00"
+            />
+          </Form.Item>
+          <Form.Item
+            name={['pricing', 'tax']}
+            label="ITBIS %"
+            tooltip="AsegÃºrate de usar siempre el ITBIS vigente."
+          >
+            <InputNumber
+              min={0}
+              max={100}
+              style={{ width: '100%' }}
+              placeholder="18"
+            />
+          </Form.Item>
+        </FieldGrid>
+
+        <div>
+          <Text strong>Lista de precios</Text>
+          <PriceTableWrapper>
+            <PriceTableRow $header>
+              <span>Tipo</span>
+              <span>Monto</span>
+              <span className="numeric-header">ITBIS</span>
+              <span className="numeric-header">Ganancia</span>
+              <span className="numeric-header">Total</span>
+            </PriceTableRow>
+            {priceMatrix.map((row) => (
+              <PriceTableRow key={row.key}>
+                <LabelCell>
+                  <span className="label">
+                    {row.label}
+                    {row.required && <span className="asterisk">*</span>}
+                    {row.tooltip && (
+                      <Tooltip title={row.tooltip} placement="top">
+                        <InfoIcon />
+                      </Tooltip>
+                    )}
+                  </span>
+                  {row.note && <span className="note">{row.note}</span>}
+                </LabelCell>
+                <Form.Item
+                  name={['pricing', row.key]}
+                  style={{ margin: 0 }}
+                  {...(row.formItemProps || {})}
+                >
+                  <InputNumber
+                    min={0}
+                    prefix="RD$"
+                    style={{ width: '100%' }}
+                    placeholder="0.00"
+                    {...(row.inputProps || {})}
+                  />
+                </Form.Item>
+                <NumericCell>{formatCurrency(row.taxAmount)}</NumericCell>
+                <GainCell>
+                  {hasGainValue(row.margin, row.gainPercent) ? (
+                    <>
+                      {formatCurrency(row.margin) !== 'â€”' && (
+                        <span>{formatCurrency(row.margin)}</span>
+                      )}
+                      {formatPercent(row.gainPercent) !== 'â€”' && (
+                        <span className="percent">
+                          {formatPercent(row.gainPercent)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="placeholder">â€”</span>
+                  )}
+                </GainCell>
+                <NumericCell>{formatCurrency(row.total)}</NumericCell>
+              </PriceTableRow>
+            ))}
+          </PriceTableWrapper>
+          <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+            Completa tus precios para ver cÃ³mo varÃ­an el ITBIS, la ganancia y el
+            total.
+          </Text>
+        </div>
+      </Space>
+    </SectionCard>
+  );
+};
+

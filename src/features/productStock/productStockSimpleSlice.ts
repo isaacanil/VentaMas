@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { InventoryStockItem } from '@/utils/inventory/types';
 
@@ -20,7 +20,7 @@ const initialState: ProductStockSimpleState = {
   selectedProductStock: null,
 };
 
-const productStockSimpleSlice = (createSlice as any)({
+const productStockSimpleSlice = createSlice({
   name: 'productStockSimple',
   initialState,
   reducers: {
@@ -37,7 +37,7 @@ const productStockSimpleSlice = (createSlice as any)({
         state.product = initialState.product;
       }
     },
-    closeProductStockSimple: (state) => {
+    closeProductStockSimple: (state: any) => {
       state.isOpen = false;
       state.productId = initialState.productId;
       state.product = initialState.product;
@@ -66,3 +66,4 @@ export default productStockSimpleSlice.reducer;
 export const selectProductStockSimple = (state: {
   productStockSimple: ProductStockSimpleState;
 }) => state.productStockSimple;
+

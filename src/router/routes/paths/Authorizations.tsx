@@ -5,7 +5,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const AuthorizationsManager = lazy(() =>
-  import('@/views/pages/Authorizations/AuthorizationsManager').then(
+  import('@/modules/authorizations/pages/Authorizations/AuthorizationsManager').then(
     (module) => ({ default: module.AuthorizationsManager }),
   ),
 );

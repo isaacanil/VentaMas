@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   brandModal: {
@@ -7,15 +7,15 @@ const initialState = {
   },
 };
 
-const productBrandSlice = (createSlice as any)({
+const productBrandSlice = createSlice({
   name: 'productBrand',
   initialState,
   reducers: {
-    openBrandModal: (state, action) => {
+    openBrandModal: (state: any, action: PayloadAction<any>) => {
       state.brandModal.isOpen = true;
       state.brandModal.initialValues = action?.payload?.initialValues || null;
     },
-    closeBrandModal: (state) => {
+    closeBrandModal: (state: any) => {
       state.brandModal.isOpen = false;
       state.brandModal.initialValues = null;
     },
@@ -27,4 +27,5 @@ export const { openBrandModal, closeBrandModal } = productBrandSlice.actions;
 export const selectProductBrandModal = (state) => state.productBrand.brandModal;
 
 export default productBrandSlice.reducer;
+
 

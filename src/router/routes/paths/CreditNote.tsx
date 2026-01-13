@@ -5,7 +5,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const CreditNoteList = lazy(() =>
-  import('@/views/pages/CreditNote/CreditNoteList/CreditNoteList').then(
+  import('@/modules/invoice/pages/CreditNote/CreditNoteList/CreditNoteList').then(
     (module) => ({
       default: module.CreditNoteList,
     }),

@@ -4,10 +4,10 @@ import ROUTES_PATH from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const ExpensesForm = lazy(() =>
-  import('@/views/pages/Expenses/ExpensesForm/ExpensesForm'),
+  import('@/modules/expenses/pages/Expenses/ExpensesForm/ExpensesForm'),
 );
 const ExpensesList = lazy(() =>
-  import('@/views/pages/Expenses/ExpensesList/ExpensesList').then(
+  import('@/modules/expenses/pages/Expenses/ExpensesList/ExpensesList').then(
     (module) => ({ default: module.ExpensesList }),
   ),
 );

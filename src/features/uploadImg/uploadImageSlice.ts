@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   img: null,
@@ -7,11 +7,11 @@ const initialState = {
   status: 0,
 };
 
-export const UploadImgSlice = (createSlice as any)({
+export const UploadImgSlice = createSlice({
   name: 'uploadImg',
   initialState,
   reducers: {
-    SaveImg: (state, action) => {
+    SaveImg: (state: any, action: PayloadAction<any>) => {
       const { img, url } = action.payload;
       if (img) {
         state.img = img;
@@ -20,15 +20,15 @@ export const UploadImgSlice = (createSlice as any)({
         state.url = url;
       }
     },
-    clearImg: (state) => {
+    clearImg: (state: any) => {
       state.img = null;
       state.url = null;
     },
-    UploadProgress: (state, action) => {
+    UploadProgress: (state: any, action: PayloadAction<any>) => {
       const { progress } = action.payload;
       state.status = progress || 0;
     },
-    UploadImgLoading: (state, action) => {
+    UploadImgLoading: (state: any, action: PayloadAction<any>) => {
       state.loading = action.payload;
     },
   },
@@ -43,4 +43,5 @@ export const selectUploadImageLoading = (state) => state.uploadImg.loading;
 export const selectUploadImageStatus = (state) => state.uploadImg.status;
 
 export default UploadImgSlice.reducer;
+
 

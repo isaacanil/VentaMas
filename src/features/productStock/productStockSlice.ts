@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { LocationRefLike } from '@/utils/inventory/types';
 
@@ -36,7 +36,7 @@ const initialState: ProductStockState = {
   error: null,
 };
 
-const productStockSlice = (createSlice as any)({
+const productStockSlice = createSlice({
   name: 'productStock',
   initialState,
   reducers: {
@@ -54,7 +54,7 @@ const productStockSlice = (createSlice as any)({
         state.formData = initialState.formData;
       }
     },
-    closeProductStock: (state) => {
+    closeProductStock: (state: any) => {
       state.isOpen = false;
       state.formData = initialState.formData;
     },
@@ -64,7 +64,7 @@ const productStockSlice = (createSlice as any)({
     setProductStockError: (state, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    setProductStockClear: (state) => {
+    setProductStockClear: (state: any) => {
       state.formData = initialState.formData;
       state.error = null;
       state.loading = false;
@@ -94,4 +94,5 @@ export default productStockSlice.reducer;
 
 export const selectProductStock = (state: { productStock: ProductStockState }) =>
   state.productStock;
+
 

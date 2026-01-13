@@ -1,5 +1,5 @@
-// Import necessary libraries
-import { createSelector, createSlice } from '@reduxjs/toolkit';
+﻿// Import necessary libraries
+import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 // Initial inventory state
 const initialState = {
@@ -13,19 +13,19 @@ const initialState = {
 };
 
 // Slice to manage inventory state
-const productExpirySelectorSlice = (createSlice as any)({
+const productExpirySelectorSlice = createSlice({
   name: 'productExpirySelector',
   initialState,
   reducers: {
-    setFilter: (state, action) => {
+    setFilter: (state: any, action: PayloadAction<any>) => {
       state.filter = action.payload;
     },
-    openProductExpirySelector: (state, action) => {
+    openProductExpirySelector: (state: any, action: PayloadAction<any>) => {
       state.isOpen = true;
       state.product = action.payload;
       state.productId = action.payload.id;
     },
-    setOrderBy: (state, action) => {
+    setOrderBy: (state: any, action: PayloadAction<any>) => {
       if (state.orderBy === action.payload) {
         state.orderAscending = !state.orderAscending;
       } else {
@@ -33,16 +33,16 @@ const productExpirySelectorSlice = (createSlice as any)({
         state.orderAscending = true;
       }
     },
-    setProductExpiryState: (state, action) => {
+    setProductExpiryState: (state: any, action: PayloadAction<any>) => {
       return {
         ...state,
         ...action.payload,
       };
     },
-    updateInventory: (state, action) => {
+    updateInventory: (state: any, action: PayloadAction<any>) => {
       state.inventory = action.payload;
     },
-    setModalOpen: (state, action) => {
+    setModalOpen: (state: any, action: PayloadAction<any>) => {
       state.isOpen = action.payload;
     },
     clearProductExpirySelector: (_state) => {
@@ -90,4 +90,5 @@ export const selectFilteredInventory = createSelector(
     });
   },
 );
+
 

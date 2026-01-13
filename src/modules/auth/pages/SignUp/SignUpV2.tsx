@@ -1,0 +1,151 @@
+import React, { useState, type ChangeEvent, type FormEvent } from 'react';
+import styled from 'styled-components';
+
+const RegistroContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1em;
+  background-color: #f2f2f2;
+
+  form {
+    width: 100%;
+    max-width: 600px;
+    padding: 1em;
+  }
+`;
+
+const Titulo = styled.h2`
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  color: #333;
+`;
+
+const CampoFormulario = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1.5rem;
+`;
+
+const EtiquetaCampo = styled.label`
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: #555;
+`;
+
+const CampoInput = styled.input`
+  width: 100%;
+  padding: 0.4em;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const MensajeError = styled.p`
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: red;
+`;
+
+const BotonRegistro = styled.button`
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
+  color: #fff;
+  cursor: pointer;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const Registro = () => {
+  const [nombre, setNombre] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
+
+  const handleNombreChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setNombre(e.target.value);
+  };
+
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    setPasswordError('');
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (password.length < 8) {
+      setPasswordError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+
+    if (!/\d/.test(password)) {
+      setPasswordError('La contraseña debe contener al menos un número.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setPasswordError(
+        'La contraseña debe contener al menos una letra mayúscula.',
+      );
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      setPasswordError(
+        'La contraseña debe contener al menos una letra minúscula.',
+      );
+      return;
+    }
+  };
+
+  return (
+    <RegistroContainer>
+      <Titulo>Registro</Titulo>
+      <form onSubmit={handleSubmit}>
+        <CampoFormulario>
+          <EtiquetaCampo>Nombre:</EtiquetaCampo>
+          <CampoInput
+            type="text"
+            value={nombre}
+            onChange={handleNombreChange}
+            required
+          />
+        </CampoFormulario>
+        <CampoFormulario>
+          <EtiquetaCampo>Email:</EtiquetaCampo>
+          <CampoInput
+            type="email"
+            value={email}
+            onChange={handleEmailChange}
+            required
+          />
+        </CampoFormulario>
+        <CampoFormulario>
+          <EtiquetaCampo>Contraseña:</EtiquetaCampo>
+          <CampoInput
+            type="password"
+            value={password}
+            onChange={handlePasswordChange}
+            required
+          />
+          {passwordError && <MensajeError>{passwordError}</MensajeError>}
+        </CampoFormulario>
+        <BotonRegistro type="submit">Registrarse</BotonRegistro>
+      </form>
+    </RegistroContainer>
+  );
+};
+
+export default Registro;

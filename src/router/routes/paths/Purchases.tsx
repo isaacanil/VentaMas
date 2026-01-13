@@ -5,17 +5,17 @@ import type { AppRoute } from '@/router/routes/routes';
 
 // Lazy load components
 const Purchases = lazy(() =>
-  import('@/views/pages/OrderAndPurchase/Compra/Purchases').then((module) => ({
+  import('@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/Purchases').then((module) => ({
     default: module.Purchases,
   })),
 );
 const PurchaseManagement = lazy(() =>
   import(
-    '@/views/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement'
+    '@/modules/orderAndPurchase/pages/OrderAndPurchase/PurchaseManagement/PurchaseManagement'
   ),
 );
 const BackOrders = lazy(() =>
-  import('@/views/pages/OrderAndPurchase/BackOrders/BackOrders'),
+  import('@/modules/orderAndPurchase/pages/OrderAndPurchase/BackOrders/BackOrders'),
 );
 
 const { PURCHASES, PURCHASES_CREATE, PURCHASES_UPDATE, PURCHASES_COMPLETE, BACKORDERS } =

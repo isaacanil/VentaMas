@@ -4,49 +4,49 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const ProductView = lazy(() =>
-  import('@/views/component/modals/Product/ProductView'),
+  import('@/components/modals/Product/ProductView'),
 );
 const ProductStudio = lazy(() =>
-  import('@/views/pages/DevTools/ProductStudio/ProductStudio'),
+  import('@/modules/dev/pages/DevTools/ProductStudio/ProductStudio'),
 );
 const Inventory = lazy(() =>
-  import('@/views/pages/Inventario/pages/ItemsManager/Inventario').then(
+  import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario').then(
     (module) => ({ default: module.Inventory }),
   ),
 );
 const ProductOutflow = lazy(() =>
   import(
-    '@/views/pages/Inventario/pages/ProductOutflow/ProductOutflow'
+    '@/modules/inventory/pages/Inventario/pages/ProductOutflow/ProductOutflow'
   ).then((module) => ({ default: module.ProductOutflow })),
 );
 const AllMovements = lazy(() =>
-  import('@/views/pages/Inventory/components/AllMovements/AllMovements'),
+  import('@/modules/inventory/pages/Inventory/components/AllMovements/AllMovements'),
 );
 const DetailView = lazy(() =>
   import(
-    '@/views/pages/Inventory/components/Warehouse/components/DetailView/DetailView'
+    '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/DetailView'
   ),
 );
 const Warehouse = lazy(() =>
-  import('@/views/pages/Inventory/components/Warehouse/Warehouse').then(
+  import('@/modules/inventory/pages/Inventory/components/Warehouse/Warehouse').then(
     (module) => ({ default: module.Warehouse }),
   ),
 );
 const WarehouseProductStock = lazy(() =>
   import(
-    '@/views/pages/Inventory/components/Warehouse/WarehouseProductStock'
+    '@/modules/inventory/pages/Inventory/components/Warehouse/WarehouseProductStock'
   ),
 );
 const InventoryControl = lazy(() =>
-  import('@/views/pages/InventoryControl/InventoryControl').then(
+  import('@/modules/inventory/pages/InventoryControl/InventoryControl').then(
     (module) => ({ default: module.InventoryControl }),
   ),
 );
 const InventorySessionsList = lazy(() =>
-  import('@/views/pages/InventorySessionsList/InventorySessionsList'),
+  import('@/modules/inventory/pages/InventorySessionsList/InventorySessionsList'),
 );
 const InventorySummary = lazy(() =>
-  import('@/views/pages/InventorySummary/InventorySummary').then(
+  import('@/modules/inventory/pages/InventorySummary/InventorySummary').then(
     (module) => ({ default: module.InventorySummary }),
   ),
 );
@@ -126,10 +126,10 @@ const Routes: AppRoute[] = [
     path: PRODUCT_STUDIO,
     element: <ProductStudio />,
   },
-  {
-    path: CREATE_PRODUCT,
-    // element: <ProductForm />,
-  },
+  // {
+  //   path: CREATE_PRODUCT,
+  //   // element: <ProductForm />,
+  // },
 ];
 
 export default Routes;

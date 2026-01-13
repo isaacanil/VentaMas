@@ -37,7 +37,7 @@ export const fetchAccountReceivableDetails = (createAsyncThunk as any)(
   },
 );
 
-const accountsReceivableSlice = (createSlice as any)({
+const accountsReceivableSlice = createSlice({
   name: 'accountsReceivable',
   initialState,
   reducers: {
@@ -86,7 +86,7 @@ const accountsReceivableSlice = (createSlice as any)({
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       .addCase(fetchAccountReceivableDetails.pending, (state) => {
         state.loading = true;

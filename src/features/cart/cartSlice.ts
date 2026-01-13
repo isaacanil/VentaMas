@@ -1,4 +1,4 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+﻿import { createSlice, createSelector, type PayloadAction } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
 import { GenericClient } from '@/features/clientCart/clientCartSlice';
@@ -7,15 +7,15 @@ import { roundDecimals } from '@/utils/pricing';
 import { initialState, defaultDelivery } from './default/default';
 import { updateAllTotals } from './utils/updateAllTotals';
 
-export const cartSlice = (createSlice as any)({
+export const cartSlice = createSlice({
   name: 'factura',
   initialState,
   reducers: {
-    toggleCart: (state) => {
+    toggleCart: (state: any) => {
       const isOpen = state.isOpen;
       state.isOpen = !isOpen;
     },
-    loadCart: (state, actions) => {
+    loadCart: (state: any, actions: PayloadAction<any>) => {
       const cart = actions.payload;
       if (cart?.id) {
         // Convert Firestore Timestamps to milliseconds for serialization
@@ -35,7 +35,7 @@ export const cartSlice = (createSlice as any)({
 
         // Convert history array dates if they exist
         if (processedCart.history && Array.isArray(processedCart.history)) {
-          processedCart.history = processedCart.history.map((historyItem) => {
+          processedCart.history = processedCart.history.map((historyItem: any) => {
             if (historyItem?.date) {
               const date = historyItem.date;
               // Check if it's a Firestore Timestamp
@@ -56,7 +56,7 @@ export const cartSlice = (createSlice as any)({
         state.data = processedCart;
       }
     },
-    setClient: (state, actions) => {
+    setClient: (state: any, actions: PayloadAction<any>) => {
       const client = actions.payload;
       if (client?.id) {
         state.data.client = client;
@@ -67,12 +67,12 @@ export const cartSlice = (createSlice as any)({
         state.data.delivery = defaultDelivery;
       }
     },
-    setDefaultClient: (state) => {
+    setDefaultClient: (state: any) => {
       state.data.client = GenericClient;
       state.data.delivery = defaultDelivery;
       state.data.isAddedToReceivables = false;
     },
-    setPaymentAmount: (state, actions) => {
+    setPaymentAmount: (state: any, actions: PayloadAction<any>) => {
       const paymentValue = actions.payload;
       const isPreOrderEnabled = state.settings.isPreOrderEnabled;
 
@@ -94,11 +94,11 @@ export const cartSlice = (createSlice as any)({
         paymentMethod.value = Number(paymentValue);
       }
     },
-    changePaymentValue: (state, actions) => {
+    changePaymentValue: (state: any, actions: PayloadAction<any>) => {
       const paymentValue = actions.payload;
       state.data.payment.value = Number(paymentValue);
     },
-    updateProductFields: (state, action) => {
+    updateProductFields: (state: any, action: PayloadAction<any>) => {
       const { id, data } = action.payload;
       const product = state.data.products.find(
         (p) => p.id === id || p.cid === id,
@@ -107,49 +107,49 @@ export const cartSlice = (createSlice as any)({
         Object.assign(product, data);
       }
     },
-    addTaxReceiptInState: (state, actions) => {
+    addTaxReceiptInState: (state: any, actions: PayloadAction<any>) => {
       state.data.NCF = actions.payload;
     },
-    setTaxReceiptEnabled: (state, actions) => {
+    setTaxReceiptEnabled: (state: any, actions: PayloadAction<any>) => {
       const taxReceiptEnabled = actions.payload;
       state.settings.taxReceipt.enabled = taxReceiptEnabled;
     },
-    toggleInvoicePanelOpen: (state) => {
+    toggleInvoicePanelOpen: (state: any) => {
       state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen;
     },
-    setCartId: (state) => {
+    setCartId: (state: any) => {
       if (!state.data.id) {
         const fallbackId = state.data.cartId || state.data.cartIdRef || null;
         state.data.id = fallbackId || nanoid();
       }
     },
-    addPaymentMethod: (state, actions) => {
+    addPaymentMethod: (state: any, actions: PayloadAction<any>) => {
       const data = actions.payload;
       state.data.paymentMethod = data;
     },
-    setPaymentMethod: (state, actions) => {
+    setPaymentMethod: (state: any, actions: PayloadAction<any>) => {
       try {
         const paymentMethod = actions.payload;
-        // Asegurarse de que paymentMethod tenga un value numérico y no negativo
+        // Asegurarse de que paymentMethod tenga un value numÃ©rico y no negativo
         if (paymentMethod.value !== undefined) {
           paymentMethod.value = Math.max(0, Number(paymentMethod.value) || 0);
         }
 
         const index = state.data.paymentMethod.findIndex(
-          (method) => method.method === paymentMethod.method,
+          (method: any) => method.method === paymentMethod.method,
         );
 
         if (index !== -1) {
           state.data.paymentMethod[index] = paymentMethod;
         }
 
-        // Los totales se calcularán a través del middleware cartTotalsListener
-        // que llama a recalcTotals() después de cada cambio en setPaymentMethod
+        // Los totales se calcularÃ¡n a travÃ©s del middleware cartTotalsListener
+        // que llama a recalcTotals() despuÃ©s de cada cambio en setPaymentMethod
       } catch (error) {
         console.error('Error in setPaymentMethod:', error);
       }
     },
-    toggleReceivableStatus: (state, actions) => {
+    toggleReceivableStatus: (state: any, actions: PayloadAction<any>) => {
       const value = actions.payload;
       if (value === undefined) {
         state.data.isAddedToReceivables = !state.data.isAddedToReceivables;
@@ -158,9 +158,9 @@ export const cartSlice = (createSlice as any)({
       }
     },
 
-    changeProductPrice: (state, action) => {
+    changeProductPrice: (state: any, action: PayloadAction<any>) => {
       const { id, pricing, saleUnit, price } = action.payload;
-      const product = state.data.products.find((product) => product.id === id);
+      const product = state.data.products.find((product: any) => product.id === id);
       if (product) {
         if (saleUnit) {
           product.selectedSaleUnit = saleUnit;
@@ -176,22 +176,22 @@ export const cartSlice = (createSlice as any)({
         }
       }
     },
-    changePaymentMethod: (state) => {
+    changePaymentMethod: (state: any) => {
       const paymentMethod = state.data.paymentMethod;
       const paymentMethodSelected = paymentMethod.findIndex(
-        (method) => method.status === true,
+        (method: any) => method.status === true,
       );
       if (paymentMethodSelected) {
         paymentMethodSelected;
       }
     },
-    addPaymentMethodAutoValue: (state) => {
+    addPaymentMethodAutoValue: (state: any) => {
       const totalPurchase = state.data.totalPurchase.value;
       state.data.payment.value = totalPurchase;
     },
-    addProduct: (state, action) => {
+    addProduct: (state: any, action: PayloadAction<any>) => {
       const product = action.payload;
-      const checkingID = state.data.products.find((p) => p.id === product.id);
+      const checkingID = state.data.products.find((p: any) => p.id === product.id);
       const products = state.data.products;
 
       if (checkingID) {
@@ -222,9 +222,9 @@ export const cartSlice = (createSlice as any)({
         state.data.products = [...products, productData];
       }
     },
-    deleteProduct: (state, action) => {
+    deleteProduct: (state: any, action: PayloadAction<any>) => {
       const productFound = state.data.products.find(
-        (product) => product.cid === action.payload,
+        (product: any) => product.cid === action.payload,
       );
       if (productFound) {
         state.data.products.splice(
@@ -237,25 +237,25 @@ export const cartSlice = (createSlice as any)({
         state.data.products = [];
       }
     },
-    onChangeValueAmountToProduct: (state, action) => {
+    onChangeValueAmountToProduct: (state: any, action: PayloadAction<any>) => {
       const { id, value } = action.payload;
       const productFound = state.data.products.find(
-        (product) => product.id === id,
+        (product: any) => product.id === id,
       );
       if (productFound) {
         productFound.amountToBuy = Number(value);
       }
     },
-    addAmountToProduct: (state, action) => {
+    addAmountToProduct: (state: any, action: PayloadAction<any>) => {
       const { id } = action.payload;
       const productFound = state.data.products.find(
-        (product) => product.id === id,
+        (product: any) => product.id === id,
       );
       if (productFound) {
         productFound.amountToBuy = productFound.amountToBuy + 1;
       }
     },
-    diminishAmountToProduct: (state, action) => {
+    diminishAmountToProduct: (state: any, action: PayloadAction<any>) => {
       const { id } = action.payload;
       const productFound = state.data.products.find(
         (product) => product.id === id,
@@ -270,19 +270,19 @@ export const cartSlice = (createSlice as any)({
         }
       }
     },
-    setCashPaymentToTotal: (state) => {
+    setCashPaymentToTotal: (state: any) => {
       const total = state.data.totalPurchase.value;
-      // Ajustar array de métodos de pago
+      // Ajustar array de mÃ©todos de pago
       state.data.paymentMethod = state.data.paymentMethod.map((m) => ({
         ...m,
         value: m.method === 'cash' ? total : 0,
         status: m.method === 'cash',
       }));
-      // También actualizar payment.value y change
+      // TambiÃ©n actualizar payment.value y change
       state.data.payment.value = total;
       state.data.change.value = 0;
     },
-    resetCart: (state) => ({
+    resetCart: (state: any) => ({
       ...initialState,
       settings: {
         ...initialState.settings,
@@ -290,14 +290,14 @@ export const cartSlice = (createSlice as any)({
         billing: { ...state.settings.billing },
       },
     }),
-    changeProductWeight: (state, action) => {
+    changeProductWeight: (state: any, action: PayloadAction<any>) => {
       const { id, weight } = action.payload;
       const product = state.data.products.find((product) => product.cid === id);
       if (product) {
         product.weightDetail.weight = weight;
       }
     },
-    totalPurchaseWithoutTaxes: (state) => {
+    totalPurchaseWithoutTaxes: (state: any) => {
       const ProductsSelected = state.data.products;
       const result = ProductsSelected.reduce(
         (total, product) => total + product.cost.total,
@@ -305,32 +305,32 @@ export const cartSlice = (createSlice as any)({
       );
       state.data.totalPurchaseWithoutTaxes.value = roundDecimals(result);
     },
-    addDiscount: (state, action) => {
+    addDiscount: (state: any, action: PayloadAction<any>) => {
       const value = action.payload;
       state.data.discount.value = Number(value);
     },
-    setDiscountAuthorizationContext: (state, action) => {
+    setDiscountAuthorizationContext: (state: any, action: PayloadAction<any>) => {
       if (!state.data.authorizationContext) {
         state.data.authorizationContext = {};
       }
       state.data.authorizationContext.discount = action.payload || null;
     },
-    clearDiscountAuthorizationContext: (state) => {
+    clearDiscountAuthorizationContext: (state: any) => {
       if (state.data.authorizationContext) {
         state.data.authorizationContext.discount = null;
       }
     },
-    addSourceOfPurchase: (state, actions) => {
+    addSourceOfPurchase: (state: any, actions: PayloadAction<any>) => {
       const source = actions.payload;
       state.data.sourceOfPurchase = source;
     },
-    togglePrintInvoice: (state) => {
+    togglePrintInvoice: (state: any) => {
       state.settings.printInvoice = !state.settings.printInvoice;
     },
-    toggleInvoicePanel: (state) => {
+    toggleInvoicePanel: (state: any) => {
       state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen;
     },
-    setBillingSettings: (state, action) => {
+    setBillingSettings: (state: any, action: PayloadAction<any>) => {
       const { billingMode, isError, isLoading } = action.payload;
       state.settings.billing.billingMode = billingMode;
       state.settings.billing = {
@@ -340,7 +340,7 @@ export const cartSlice = (createSlice as any)({
       state.settings.billing.isLoading = isLoading;
       state.settings.billing.isError = isError;
     },
-    updateProductInsurance: (state, action) => {
+    updateProductInsurance: (state: any, action: PayloadAction<any>) => {
       const { id, mode, value } = action.payload;
       const product = state.data.products.find(
         (p) => p.id === id || p.cid === id,
@@ -349,7 +349,7 @@ export const cartSlice = (createSlice as any)({
         product.insurance = { mode, value };
       }
     },
-    updateInsuranceStatus: (state, action) => {
+    updateInsuranceStatus: (state: any, action: PayloadAction<any>) => {
       state.data.insuranceEnabled = action.payload;
 
       if (!action.payload) {
@@ -360,7 +360,7 @@ export const cartSlice = (createSlice as any)({
         });
       }
     },
-    applyPricingPreset: (state, action) => {
+    applyPricingPreset: (state: any, action: PayloadAction<any>) => {
       const { priceKey } = action.payload || {};
       if (!priceKey) return;
 
@@ -385,7 +385,7 @@ export const cartSlice = (createSlice as any)({
 
       updateAllTotals(state);
     },
-    recalcTotals: (state, action) => {
+    recalcTotals: (state: any, action: PayloadAction<any>) => {
       const paymentValue =
         action.payload !== undefined && action.payload !== null
           ? Number(action.payload)
@@ -405,16 +405,16 @@ export const cartSlice = (createSlice as any)({
         }
       }
     },
-    addInvoiceComment: (state, action) => {
+    addInvoiceComment: (state: any, action: PayloadAction<any>) => {
       state.data.invoiceComment = action.payload;
     },
-    deleteInvoiceComment: (state) => {
+    deleteInvoiceComment: (state: any) => {
       state.data.invoiceComment = '';
     },
-    clearCxcAutoRemovalNotification: (state) => {
+    clearCxcAutoRemovalNotification: (state: any) => {
       state.showCxcAutoRemovalNotification = false;
     },
-    updateProductDiscount: (state, action) => {
+    updateProductDiscount: (state: any, action: PayloadAction<any>) => {
       const { id, discount } = action.payload;
       const product = state.data.products.find(
         (p) => p.id === id || p.cid === id,
@@ -424,16 +424,16 @@ export const cartSlice = (createSlice as any)({
         updateAllTotals(state);
       }
     },
-    setCreditNotePayment: (state, action) => {
+    setCreditNotePayment: (state: any, action: PayloadAction<any>) => {
       const creditNoteSelections = action.payload || [];
 
-      // Calcular el total de notas de crédito aplicadas
+      // Calcular el total de notas de crÃ©dito aplicadas
       const totalCreditNoteAmount = creditNoteSelections.reduce(
         (sum, selection) => sum + (selection.amountToUse || 0),
         0,
       );
 
-      // Calcular cuánto se ha pagado con otros métodos
+      // Calcular cuÃ¡nto se ha pagado con otros mÃ©todos
       const totalOtherPayments = state.data.paymentMethod
         .filter((method) => method.status && method.method !== 'creditNote')
         .reduce((sum, method) => sum + (Number(method.value) || 0), 0);
@@ -446,7 +446,7 @@ export const cartSlice = (createSlice as any)({
         remainingToPay,
       );
 
-      // Si el monto de notas de crédito es válido, aplicarlo
+      // Si el monto de notas de crÃ©dito es vÃ¡lido, aplicarlo
       if (validCreditNoteAmount >= 0) {
         state.data.creditNotePayment = creditNoteSelections
           .filter((selection) => selection.amountToUse > 0)
@@ -460,7 +460,7 @@ export const cartSlice = (createSlice as any)({
           }));
       }
 
-      // Actualizar el método de pago de notas de crédito
+      // Actualizar el mÃ©todo de pago de notas de crÃ©dito
       const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
         (method) => method.method === 'creditNote',
       );
@@ -472,19 +472,19 @@ export const cartSlice = (createSlice as any)({
           status: validCreditNoteAmount > 0,
         };
       } else if (validCreditNoteAmount > 0) {
-        // Si no existe el método de pago de notas de crédito, agregarlo
+        // Si no existe el mÃ©todo de pago de notas de crÃ©dito, agregarlo
         state.data.paymentMethod.push({
           method: 'creditNote',
-          name: 'Notas de Crédito',
+          name: 'Notas de CrÃ©dito',
           value: validCreditNoteAmount,
           status: true,
         });
       }
     },
-    clearCreditNotePayment: (state) => {
+    clearCreditNotePayment: (state: any) => {
       state.data.creditNotePayment = [];
 
-      // Desactivar el método de pago de notas de crédito
+      // Desactivar el mÃ©todo de pago de notas de crÃ©dito
       const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
         (method) => method.method === 'creditNote',
       );
@@ -510,7 +510,6 @@ export const {
   setDiscountAuthorizationContext,
   clearDiscountAuthorizationContext,
   addPaymentMethodAutoValue,
-  togglePrintWarranty,
   addProduct,
   addSourceOfPurchase,
   addTaxReceiptInState,
@@ -523,18 +522,11 @@ export const {
   toggleReceivableStatus,
   diminishAmountToProduct,
   onChangeValueAmountToProduct,
-  selectClientInState,
-  setChange,
   loadCart,
   toggleInvoicePanelOpen,
-  totalPurchase,
   totalPurchaseWithoutTaxes,
-  totalShoppingItems,
   setTaxReceiptEnabled,
   updateProductFields,
-  totalTaxes,
-  updateClientInState,
-  saveBillInFirebase,
   toggleCart,
   togglePrintInvoice,
   toggleInvoicePanel,
@@ -620,4 +612,5 @@ export const selectTotalCreditNotePayment = (state) =>
   );
 
 export default cartSlice.reducer;
+
 

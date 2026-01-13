@@ -1,11 +1,11 @@
-import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 
 import {
   defineAbilitiesFor,
   defineAbilitiesForWithDynamic,
 } from '@/abilities';
 
-// Acción asíncrona para cargar abilities con permisos dinámicos
+// AcciÃ³n asÃ­ncrona para cargar abilities con permisos dinÃ¡micos
 export const loadUserAbilities = (createAsyncThunk as any)(
   'abilities/loadUserAbilities',
   async (user, { rejectWithValue }) => {
@@ -25,24 +25,24 @@ const initialState = {
   error: null,
 };
 
-const abilitiesSlice = (createSlice as any)({
+const abilitiesSlice = createSlice({
   name: 'abilities',
   initialState,
   reducers: {
-    setAbilities: (state, action) => {
+    setAbilities: (state: any, action: PayloadAction<any>) => {
       state.abilities = defineAbilitiesFor(action.payload);
       state.loading = false;
       state.status = 'succeeded';
       state.error = null;
     },
-    clearAbilities: (state) => {
+    clearAbilities: (state: any) => {
       state.abilities = [];
       state.loading = false;
       state.status = 'idle';
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       .addCase(loadUserAbilities.pending, (state) => {
         state.loading = true;
@@ -90,4 +90,5 @@ export const selectAbilitiesError = createSelector(
   [selectAbilitiesState],
   (abilitiesState) => abilitiesState.error
 );
+
 

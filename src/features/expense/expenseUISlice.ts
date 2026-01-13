@@ -12,22 +12,22 @@ const initialState = {
   },
 };
 
-export const expenseUISlice = (createSlice as any)({
+export const expenseUISlice = createSlice({
   name: 'expenseUI',
   initialState,
   reducers: {
-    toggleExpenseChartModal: (state) => {
+    toggleExpenseChartModal: (state: any) => {
       state.modals.chartExpenseModal.isOpen =
         !state.modals.chartExpenseModal.isOpen;
     },
-    toggleExpenseFormModal: (state) => {
+    toggleExpenseFormModal: (state: any) => {
       state.modals.expenseFormModal.isOpen =
         !state.modals.expenseFormModal.isOpen;
     },
-    openExpenseFormModal: (state) => {
+    openExpenseFormModal: (state: any) => {
       state.modals.expenseFormModal.isOpen = true;
     },
-    closeExpenseFormModal: (state) => {
+    closeExpenseFormModal: (state: any) => {
       state.modals.expenseFormModal.isOpen = false;
     },
     // ... otras acciones relacionadas con la UI

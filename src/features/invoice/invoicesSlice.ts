@@ -9,7 +9,7 @@ const initialState = {
   sortOrder: 'asc', // Orden de ordenamiento, 'asc' o 'desc'
 };
 
-const invoicesSlice = (createSlice as any)({
+const invoicesSlice = createSlice({
   name: 'invoices',
   initialState,
   reducers: {

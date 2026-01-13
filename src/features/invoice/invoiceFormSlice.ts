@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
 import {
@@ -141,19 +141,19 @@ const initialState = {
   authorizationRequest: null,
 };
 
-const invoiceFormSlice = (createSlice as any)({
+const invoiceFormSlice = createSlice({
   name: 'invoiceForm',
   initialState,
   reducers: {
     addInvoice(state, action) {
       const { mode, invoice, authorizationRequest = null } = action.payload;
 
-      // Asegúrate de que todos los productos tengan los cálculos correctos
+      // AsegÃºrate de que todos los productos tengan los cÃ¡lculos correctos
       const products = invoice.products.map((product) => {
         return updateProductAmount(product, product.amountToBuy);
       });
 
-      // Calcular totales, impuestos y cantidad de artículos
+      // Calcular totales, impuestos y cantidad de artÃ­culos
       const { totalPurchase, totalTaxes } = calculateTotals(products);
       const totalItems = calculateTotalItems(invoice.products);
       const totalWithoutTaxes = calculateTotalPurchaseWithoutTaxes(
@@ -211,7 +211,7 @@ const invoiceFormSlice = (createSlice as any)({
         (item) => item.id === productId,
       );
       if (index !== -1) {
-        // Si el producto ya está en la lista, actualizar la cantidad
+        // Si el producto ya estÃ¡ en la lista, actualizar la cantidad
         state.invoice.products[index] = updateProductAmount(
           state.invoice.products[index],
           state.invoice.products[index].amountToBuy.total + 1,
@@ -227,7 +227,7 @@ const invoiceFormSlice = (createSlice as any)({
       );
       state.invoice.totalPurchase.value = totalPurchase;
       state.invoice.totalTaxes.value = totalTaxes;
-      // Actualizar la cantidad total de artículos
+      // Actualizar la cantidad total de artÃ­culos
       state.invoice.totalShoppingItems.value = calculateTotalItems(
         state.invoice.products,
       );
@@ -250,7 +250,7 @@ const invoiceFormSlice = (createSlice as any)({
         );
       }
     },
-    cancelInvoice: (state, action) => {
+    cancelInvoice: (state: any, action: PayloadAction<any>) => {
       const { cancelationReason, user } = action.payload;
       state.invoice.cancel = {
         reason: cancelationReason,
@@ -346,7 +346,7 @@ const invoiceFormSlice = (createSlice as any)({
         (item) => item.id === product.id,
       );
       if (index === -1) {
-        return; // Si el producto no está en la lista, no hacer nada
+        return; // Si el producto no estÃ¡ en la lista, no hacer nada
       }
 
       let newAmount = state.invoice.products[index].amountToBuy;
@@ -376,7 +376,7 @@ const invoiceFormSlice = (createSlice as any)({
       );
       state.invoice.totalPurchase.value = totalPurchase;
       state.invoice.totalTaxes.value = totalTaxes;
-      // Actualizar cantidad total de artículos
+      // Actualizar cantidad total de artÃ­culos
       state.invoice.totalShoppingItems.value = calculateTotalItems(
         state.invoice.products,
       );
@@ -434,4 +434,5 @@ export const selectInvoice = (state) => state.invoiceForm;
 
 // Exportar el reducer
 export default invoiceFormSlice.reducer;
+
 

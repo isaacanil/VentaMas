@@ -1,13 +1,13 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-export const barcodePrintModalSlice = (createSlice as any)({
+export const barcodePrintModalSlice = createSlice({
   name: 'barcodePrintModal',
   initialState: {
     isOpen: false,
     product: null,
   },
   reducers: {
-    toggleBarcodeModal: (state, action) => {
+    toggleBarcodeModal: (state: any, action: PayloadAction<any>) => {
       const product = action.payload;
       if (product) {
         state.isOpen = true;
@@ -26,4 +26,5 @@ export const { toggleBarcodeModal } = barcodePrintModalSlice.actions;
 export default barcodePrintModalSlice.reducer;
 
 export const SelectBarcodePrintModal = (state) => state.barcodePrintModal;
+
 

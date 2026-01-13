@@ -52,6 +52,8 @@ const iconTypes = {
   info: icons.types.info,
 };
 
+type DialogType = 'error' | 'warning' | 'success' | 'info';
+
 const BaseButton = styled.button`
   position: relative;
   display: flex;
@@ -99,7 +101,7 @@ const BaseButton = styled.button`
 
 const CancelButton = styled(BaseButton)`
   color: #64748b;
-  background: ${(props) => props.theme.colors.background || '#ffffff'};
+  background: ${(props: { theme: any }) => props.theme.colors.background || '#ffffff'};
   border: 2px solid #e2e8f0;
 
   &:hover:not(:disabled) {
@@ -111,7 +113,7 @@ const CancelButton = styled(BaseButton)`
   }
 `;
 
-const ConfirmButton = styled(BaseButton)`
+const ConfirmButton = styled(BaseButton)<{ $type: DialogType }>`
   color: white;
   background: ${(props) => dialogTheme[props.$type]?.button || '#3b82f6'};
   border: none;
@@ -129,7 +131,7 @@ const ConfirmButton = styled(BaseButton)`
   }
 `;
 
-const CloseButton = styled(BaseButton)`
+const CloseButton = styled(BaseButton)<{ $type: DialogType }>`
   width: 32px;
   min-width: unset;
   height: 32px;
@@ -285,8 +287,8 @@ const Dialog = () => {
 
 export default Dialog;
 
-const getDialogSize = (size) => {
-  const sizes = {
+const getDialogSize = (size: 'small' | 'default' | 'large') => {
+  const sizes: Record<'small' | 'default' | 'large', ReturnType<typeof css>> = {
     small: css`
       max-width: 400px;
       min-height: 200px;
@@ -317,11 +319,11 @@ const Backdrop = styled(motion.div)`
   backdrop-filter: blur(4px) brightness(0.7);
 `;
 
-const Container = styled(motion.div)`
+const Container = styled(motion.div)<{ $size: 'small' | 'default' | 'large'; $type: DialogType }>`
   ${(props) => getDialogSize(props.$size)}
 
   width: 100%;
-  background-color: ${({ $type, theme }) =>
+  background-color: ${({ $type, theme }: { $type: DialogType; theme: any }) =>
     dialogTheme[$type]?.background || theme.colors.background};
   border-radius: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 8%);
@@ -338,7 +340,7 @@ const Container = styled(motion.div)`
   }
 `;
 
-const Header = styled.div`
+const Header = styled.div<{ $type: DialogType }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -352,7 +354,7 @@ const Body = styled.div`
   align-items: flex-start;
 `;
 
-const Description = styled.div`
+const Description = styled.div<{ $type: DialogType }>`
   display: flex;
   gap: 1rem;
   align-items: flex-start;
@@ -365,7 +367,7 @@ const Description = styled.div`
   border-radius: 12px;
 `;
 
-const IconWrapper = styled.div`
+const IconWrapper = styled.div<{ $type: DialogType }>`
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
 import { OPERATION_MODES } from '@/constants/modes';
@@ -6,9 +6,9 @@ import { OPERATION_MODES } from '@/constants/modes';
 const EmptyProductsOutflow = [];
 
 const EmptyProduct = {
-  id: null, // Identificador único del producto
-  product: null, // Identificador del producto específico que se vende
-  motive: '', //Identificador de la razón detrás de la salida del producto
+  id: null, // Identificador Ãºnico del producto
+  product: null, // Identificador del producto especÃ­fico que se vende
+  motive: '', //Identificador de la razÃ³n detrÃ¡s de la salida del producto
   quantityRemoved: 0,
   observations: '', // Cualquier comentario adicional o notas relacionadas con el producto
   status: false, // El estado de la salida del producto (si se ha completado o no)
@@ -24,11 +24,11 @@ const initialState = {
   },
 };
 
-export const productOutflowSlice = (createSlice as any)({
+export const productOutflowSlice = createSlice({
   name: 'productOutflow',
   initialState,
   reducers: {
-    selectProduct: (state, actions) => {
+    selectProduct: (state: any, actions: PayloadAction<any>) => {
       const newData = actions.payload;
       state.productSelected = {
         ...(state.productSelected || {}),
@@ -36,7 +36,7 @@ export const productOutflowSlice = (createSlice as any)({
         id: state.productSelected?.id || nanoid(10),
       };
     },
-    addProductToProductOutflow: (state, actions) => {
+    addProductToProductOutflow: (state: any, actions: PayloadAction<any>) => {
       let data = actions.payload;
       data = {
         ...data,
@@ -44,7 +44,7 @@ export const productOutflowSlice = (createSlice as any)({
       state.data.productList = [...state.data.productList, data];
       state.productSelected = EmptyProduct;
     },
-    updateProductFromProductOutflow: (state, action) => {
+    updateProductFromProductOutflow: (state: any, action: PayloadAction<any>) => {
       const { id, data } = action.payload;
       const updatedProductList = state.data.productList.map((product) => {
         if (product.id === id) {
@@ -54,7 +54,7 @@ export const productOutflowSlice = (createSlice as any)({
       });
       state.data.productList = updatedProductList;
     },
-    deleteProductFromProductOutflow: (state, actions) => {
+    deleteProductFromProductOutflow: (state: any, actions: PayloadAction<any>) => {
       const { id } = actions.payload;
       const checkingId = state.data.productList.filter(
         (item) => item.id !== id,
@@ -63,7 +63,7 @@ export const productOutflowSlice = (createSlice as any)({
         state.data.productList = checkingId;
       }
     },
-    setProductOutflowData: (state, actions) => {
+    setProductOutflowData: (state: any, actions: PayloadAction<any>) => {
       const { data } = actions.payload;
 
       return {
@@ -76,7 +76,7 @@ export const productOutflowSlice = (createSlice as any)({
         mode: data.mode,
       };
     },
-    deleteData: (state) => {
+    deleteData: (state: any) => {
       state.mode = OPERATION_MODES.CREATE.label;
       state.productSelected = EmptyProduct;
       state.data = EmptyProductOutflow;
@@ -101,4 +101,5 @@ export const SelectProductList = (state) =>
   state.productOutflow.data.productList;
 
 export default productOutflowSlice.reducer;
+
 

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   product: {
@@ -30,14 +30,14 @@ const initialState = {
   },
 };
 
-export const addProductSlice = (createSlice as any)({
+export const addProductSlice = createSlice({
   name: 'addProduct',
   initialState,
   reducers: {
-    addProductData: (state, action) => {
+    addProductData: (state: any, action: PayloadAction<any>) => {
       state.product.productImage = action.payload.productImage;
     },
-    priceTotal: (state) => {
+    priceTotal: (state: any) => {
       if (state.product.cost.total !== '' && state.product.tax.unit !== '') {
         state.product.price.total =
           state.product.cost.total * state.product.tax.value +
@@ -52,4 +52,5 @@ export const { addProductData, priceTotal } = addProductSlice.actions;
 export const selectProduct = (state) => state.addProduct.product;
 
 export default addProductSlice.reducer;
+
 

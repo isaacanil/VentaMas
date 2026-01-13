@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { fbUpdateTaxReceipt } from '@/firebase/taxReceipt/fbUpdateTaxReceipt';
 import { serializeFirestoreData } from '@/utils/serialization/serializeFirestoreData';
@@ -34,7 +34,7 @@ export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
     (c) => c.data.name === comprobanteName,
   );
 
-  // No se encontró el comprobante, manejar según sea necesario
+  // No se encontrÃ³ el comprobante, manejar segÃºn sea necesario
   if (comprobanteIndex === -1) {
     return null;
   }
@@ -55,7 +55,7 @@ export function getUpdatedSequenceForInvoice(comprobanteName, comprobantes) {
 
 const initialState = {
   settings: {
-    // Valor inicial conservador; el listener en tiempo real lo actualizará.
+    // Valor inicial conservador; el listener en tiempo real lo actualizarÃ¡.
     taxReceiptEnabled: false,
     // Indica si ya recibimos el valor real desde Firestore (o lo hidratamos localmente)
     settingsLoaded: false,
@@ -67,40 +67,40 @@ const initialState = {
   ncfTypeLocked: false, // Evita cambios mientras se procesa la factura
 };
 
-export const taxReceiptSlice = (createSlice as any)({
+export const taxReceiptSlice = createSlice({
   name: 'taxReceipt',
   initialState,
   reducers: {
-    getTaxReceiptData: (state, action) => {
+    getTaxReceiptData: (state: any, action: PayloadAction<any>) => {
       // Serialize the payload to ensure no Firestore timestamps remain
       const serializedPayload = serializeFirestoreData(action.payload);
       state.data = serializedPayload;
       // Actualizar la lista de tipos de comprobantes disponibles
       state.availableTypes = serializedPayload.map((item) => item.data.name);
     },
-    IncreaseEndConsumer: (state, action) => {
+    IncreaseEndConsumer: (state: any, action: PayloadAction<any>) => {
       if (state.settings.taxReceiptEnabled) {
-        // Si se proporciona un nombre específico del comprobante, usar ese
+        // Si se proporciona un nombre especÃ­fico del comprobante, usar ese
         const name = action.payload || 'CONSUMIDOR FINAL';
         updateComprobante(state, name);
       }
     },
-    IncreaseTaxCredit: (state, action) => {
+    IncreaseTaxCredit: (state: any, action: PayloadAction<any>) => {
       if (state.settings.taxReceiptEnabled) {
-        // Si se proporciona un nombre específico del comprobante, usar ese
+        // Si se proporciona un nombre especÃ­fico del comprobante, usar ese
         const name = action.payload || 'CREDITO FISCAL';
         updateComprobante(state, name);
       }
     },
     // Nuevo action para aumentar cualquier comprobante por su nombre
-    IncreaseSpecificReceipt: (state, action) => {
+    IncreaseSpecificReceipt: (state: any, action: PayloadAction<any>) => {
       if (state.settings.taxReceiptEnabled && action.payload) {
         updateComprobante(state, action.payload);
       }
     },
-    toggleTaxReceiptSettings: (state, action) => {
+    toggleTaxReceiptSettings: (state: any, action: PayloadAction<any>) => {
       const enabled = !!action.payload;
-      state.settings.taxReceiptEnabled = enabled; // Cambia el estado de activación
+      state.settings.taxReceiptEnabled = enabled; // Cambia el estado de activaciÃ³n
       state.settings.settingsLoaded = true;
       try {
         // Persistimos para hidratar en cargas directas posteriores
@@ -109,28 +109,28 @@ export const taxReceiptSlice = (createSlice as any)({
         // ignore storage errors (private mode, etc.)
       }
     },
-    setTaxReceiptSettingsLoaded: (state, action) => {
+    setTaxReceiptSettingsLoaded: (state: any, action: PayloadAction<any>) => {
       state.settings.settingsLoaded = !!action.payload;
     },
-    updateTaxCreditInFirebase: (state) => {
+    updateTaxCreditInFirebase: (state: any) => {
       const taxReceipt = state.data;
       (fbUpdateTaxReceipt as any)(taxReceipt);
     },
-    selectTaxReceiptType: (state, actions) => {
-      // Evitar cambiar el comprobante mientras está bloqueado
+    selectTaxReceiptType: (state: any, actions: PayloadAction<any>) => {
+      // Evitar cambiar el comprobante mientras estÃ¡ bloqueado
       if (state.ncfTypeLocked) return;
       state.ncfType = actions.payload;
     },
-    clearTaxReceiptData: (state) => {
+    clearTaxReceiptData: (state: any) => {
       state.ncfStatus = false;
       state.ncfCode = null;
       // Al limpiar datos aseguramos desbloqueo
       state.ncfTypeLocked = false;
     },
-    lockTaxReceiptType: (state) => {
+    lockTaxReceiptType: (state: any) => {
       state.ncfTypeLocked = true;
     },
-    unlockTaxReceiptType: (state) => {
+    unlockTaxReceiptType: (state: any) => {
       state.ncfTypeLocked = false;
     },
   },
@@ -164,4 +164,5 @@ export const selectTaxReceipt = (state) => state.taxReceipt;
 export const selectAvailableReceiptTypes = (state) =>
   state.taxReceipt.availableTypes;
 export const selectNcfTypeLocked = (state) => state.taxReceipt.ncfTypeLocked;
+
 

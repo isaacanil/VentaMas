@@ -8,7 +8,7 @@ import {
 } from '@/features/auth/userSlice';
 import { fbSearchUsers } from '@/firebase/Auth/fbAuthV2/fbGetUsers';
 
-export default async function executeCommand(command) {
+export default async function executeCommand(this: any, command: string) {
   // Add command echo first
   this.addCommandEcho(command);
 
@@ -44,7 +44,7 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           testItems,
           '🧪 Selección de prueba:',
-          (selectedItem) => {
+          (selectedItem: any) => {
             this.addOutput(`Has seleccionado: ${selectedItem.display}`);
           },
           'select test',
@@ -67,7 +67,7 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           colorItems,
           '🎨 Selección de Color:',
-          (selectedItem) => {
+          (selectedItem: any) => {
             this.addOutput(
               `Has seleccionado: ${selectedItem.display}\nValor hexadecimal: ${selectedItem.value}`,
             );
@@ -87,7 +87,7 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           numberItems,
           '🔢 Selección de Número:',
-          (selectedItem) => {
+          (selectedItem: any) => {
             this.addOutput(
               `Has seleccionado el número: ${selectedItem.value}`,
             );
@@ -198,7 +198,7 @@ Consola de desarrollador: ABIERTA`;
 
         result = `Buscando productos que coincidan con "${searchTerm}"...`;
         this.findProductsByName(searchTerm)
-          .then((matches) => {
+          .then((matches: any) => {
             if (matches.length === 0) {
               this.addOutput(
                 `No se encontró ningún producto que contenga "${searchTerm}".`,
@@ -215,7 +215,7 @@ Consola de desarrollador: ABIERTA`;
                 : `Productos encontrados para "${searchTerm}":\n\n`;
 
             const formattedMatches = limitedMatches
-              .map((product, index) => {
+              .map((product: any, index: number) => {
                 const brandName =
                   typeof product?.brand === 'string'
                     ? product.brand
@@ -239,7 +239,7 @@ Consola de desarrollador: ABIERTA`;
 
             this.addOutput(`${header}${formattedMatches}`);
           })
-          .catch((error) => {
+          .catch((error: any) => {
             this.addOutput(
               'Error al buscar productos: ' + error.message,
               'error',
@@ -357,7 +357,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               );
             } else {
               // Preparar items para el modo de selección
-              let selectionItems = businessesList.map((business) => {
+              let selectionItems = businessesList.map((business: any) => {
                 const businessId = business.id || business.businessID;
                 const businessName = business.business?.name || 'Sin nombre';
                 const isCurrent = businessId === this.user?.businessID;
@@ -373,7 +373,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
 
               if (this.isTemporaryMode && this.originalBusinessId) {
                 const originalBusinessData = businessesList.find(
-                  (business) =>
+                  (business: any) =>
                     (business.id || business.businessID) ===
                     this.originalBusinessId,
                 );
@@ -471,7 +471,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               : await this.loadBusinessesList();
 
           const targetBusiness = businessesToSearch.find(
-            (b) =>
+            (b: any) =>
               (b.id || b.businessID) === targetBusinessId ||
               b.business?.name
                 ?.toLowerCase()
@@ -504,7 +504,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
             'No está en modo temporal. Ya está en su negocio original.';
         } else {
           const originalBusiness = this.businesses.find(
-            (b) => (b.id || b.businessID) === this.originalBusinessId,
+            (b: any) => (b.id || b.businessID) === this.originalBusinessId,
           );
           this.dispatch(returnToOriginalBusiness());
           result = `✅ Regresado al negocio original: ${originalBusiness?.business?.name || 'Sin nombre'}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`;
@@ -550,14 +550,14 @@ BUSINESS STATUS             - Estado actual`;
           );
           if (
             originalRoleData &&
-            !rolesForDisplay.some((role) => role.id === originalRoleData.id)
+            !rolesForDisplay.some((role: any) => role.id === originalRoleData.id)
           ) {
             rolesForDisplay.unshift(originalRoleData);
           }
         }
 
         const availableRolesOutput = rolesForDisplay
-          .map((role) => {
+          .map((role: any) => {
             const parts = [role.label];
             if (this.user?.role === role.id) {
               parts.push('(Actual)');
@@ -586,7 +586,7 @@ BUSINESS STATUS             - Estado actual`;
           result = 'No tiene roles disponibles para cambio temporal.';
           break;
         }
-        const roleSelectionItems = userRolesForSelection.map((role) => {
+        const roleSelectionItems = userRolesForSelection.map((role: any) => {
           const isCurrent = role.id === this.user?.role;
           const isOriginal =
             hasOriginalRoleOption && this.originalRole === role.id;
@@ -612,7 +612,7 @@ BUSINESS STATUS             - Estado actual`;
 
         if (
           hasOriginalRoleOption &&
-          !roleSelectionItems.some((item) => item.id === this.originalRole)
+          !roleSelectionItems.some((item: any) => item.id === this.originalRole)
         ) {
           const originalRoleData = userRoles.find(
             (r) => r.id === this.originalRole,
@@ -636,7 +636,7 @@ BUSINESS STATUS             - Estado actual`;
         this.enterSelectionMode(
           roleSelectionItems,
           '👤 Seleccionar Role:',
-          (selectedItem) => {
+          (selectedItem: any) => {
             // Callback cuando se selecciona un item
             if (selectedItem.isOriginal) {
               this.dispatch(returnToOriginalRole());
@@ -670,7 +670,7 @@ BUSINESS STATUS             - Estado actual`;
           // Verificar si el role está disponible para este usuario
           const userAvailableRolesForSwitch = getAvailableRoles(this.user);
           const targetRole = userAvailableRolesForSwitch.find(
-            (r) => r.id === targetRoleId,
+            (r: any) => r.id === targetRoleId,
           );
           const isOriginalTarget =
             this.isTemporaryRoleMode && this.originalRole === targetRoleId;
@@ -680,7 +680,7 @@ BUSINESS STATUS             - Estado actual`;
             result = `✅ Cambiado al role: ${targetRole.label}\nID: ${targetRoleId}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`;
           } else if (isOriginalTarget) {
             const originalRoleData = userRoles.find(
-              (r) => r.id === this.originalRole,
+              (r: any) => r.id === this.originalRole,
             );
             this.dispatch(returnToOriginalRole());
             result = `🔄 Regresando al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
@@ -747,7 +747,7 @@ ROLE STATUS             - Estado actual`;
             } else {
               const usersListResult = `Lista de usuarios disponibles:\n\n${usersList
                 .map(
-                  ({ user }, index) =>
+                  ({ user }: any, index: number) =>
                     `${index + 1}. ${user.name} (${user.email})\n   Role: ${user.role} | ID: ${user?.id}`,
                 )
                 .join(
@@ -772,14 +772,14 @@ ROLE STATUS             - Estado actual`;
         } else {
           result = 'Buscando usuarios...';
           fbSearchUsers(searchTerm)
-            .then((users) => {
+            .then((users: any) => {
               if (users.length === 0) {
                 this.addOutput(
                   `No se encontraron usuarios que coincidan con "${searchTerm}".`,
                   'warning',
                 );
               } else {
-                const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users.map(({ user }, index) => `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`).join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
+                const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users.map(({ user }: any, index: number) => `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`).join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
                 this.addOutput(searchResult);
               }
             })
@@ -804,7 +804,7 @@ ROLE STATUS             - Estado actual`;
               );
             } else {
               // Preparar items para el modo de selección
-              const selectionItems = usersList.map(({ user }) => ({
+              const selectionItems = usersList.map(({ user }: any) => ({
                 id: user?.id,
                 display: `👤 ${user?.name} Negocio: (${user?.businessID}) - Role: ${user?.role} - Id: ${user?.id}`,
                 name: user?.name,
@@ -898,9 +898,9 @@ Solo usuarios con rol de desarrollador pueden usar estos comandos.`;
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error al ejecutar comando:', error);
-    this.addOutput(`Error: ${error.message}`, 'error');
+    this.addOutput(`Error: ${(error as Error).message}`, 'error');
     return { success: false, error };
   }
 }

@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Shelf } from '@/models/Warehouse/Shelf';
 
@@ -38,7 +38,7 @@ const initialState: ShelfModalState = {
   error: null,
 };
 
-const shelfModalSlice = (createSlice as any)({
+const shelfModalSlice = createSlice({
   name: 'shelfModal', // Updated slice name
   initialState,
   reducers: {
@@ -54,7 +54,7 @@ const shelfModalSlice = (createSlice as any)({
       state.loading = false;
       state.error = null;
     },
-    closeShelfForm: (state) => {
+    closeShelfForm: (state: any) => {
       state.isOpen = false;
       state.formData = createInitialShelfFormData();
       state.path = [];
@@ -67,7 +67,7 @@ const shelfModalSlice = (createSlice as any)({
     setShelfError: (state, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    clearShelfForm: (state) => {
+    clearShelfForm: (state: any) => {
       state.formData = createInitialShelfFormData();
       state.error = null;
       state.loading = false;
@@ -100,3 +100,4 @@ export default shelfModalSlice.reducer;
 // Selector para obtener el estado completo del shelf
 export const selectShelfState = (state: { shelfModal: ShelfModalState }) =>
   state.shelfModal;
+

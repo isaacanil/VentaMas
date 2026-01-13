@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
@@ -17,11 +17,11 @@ const initialState = {
     businessID: null,
   },
 };
-export const alertSlice = (createSlice as any)({
+export const alertSlice = createSlice({
   name: 'alert',
   initialState,
   reducers: {
-    handleDeleteProductAlert: (state, actions) => {
+    handleDeleteProductAlert: (state: any, actions: PayloadAction<any>) => {
       const id = actions.payload?.id,
         user = actions.payload?.user,
         isOpen = state.deleteProduct.isOpen;
@@ -30,12 +30,12 @@ export const alertSlice = (createSlice as any)({
       state.deleteProduct.id = id;
       state.deleteProduct.user = user;
     },
-    handleDeleteProductAlertSuccess: (state) => {
+    handleDeleteProductAlertSuccess: (state: any) => {
       const id = state.deleteProduct.id;
       const user = state.deleteProduct.user;
       fbDeleteProduct(user, id);
     },
-    handleDeleteClientAlert: (state, actions) => {
+    handleDeleteClientAlert: (state: any, actions: PayloadAction<any>) => {
       const id = actions.payload?.id;
       const businessID = actions.payload?.businessID;
       const isOpen = state.deleteProduct.isOpen;
@@ -43,7 +43,7 @@ export const alertSlice = (createSlice as any)({
       state.deleteProduct.id = id;
       state.deleteClient.businessID = businessID ?? null;
     },
-    handleDeleteClientAlertSuccess: (state) => {
+    handleDeleteClientAlertSuccess: (state: any) => {
       const id = state.deleteClient.id;
       fbDeleteClient(state.deleteClient.businessID, id);
     },
@@ -63,4 +63,5 @@ export const selectDeleteClientAlert = (state) =>
   state.alert.deleteClient.isOpen;
 
 export default alertSlice.reducer;
+
 

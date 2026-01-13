@@ -1,0 +1,372 @@
+import { createIconComponent } from './factory';
+import { iconGlyphs } from './registry';
+
+const antIcons = {
+  AlignLeftOutlined: createIconComponent(
+    iconGlyphs.alignLeft,
+    'AlignLeftOutlined'
+  ),
+  ApartmentOutlined: createIconComponent(
+    iconGlyphs.building,
+    'ApartmentOutlined'
+  ),
+  ApiOutlined: createIconComponent(iconGlyphs.code, 'ApiOutlined'),
+  ArrowLeftOutlined: createIconComponent(
+    iconGlyphs.arrowLeft,
+    'ArrowLeftOutlined'
+  ),
+  ArrowRightOutlined: createIconComponent(
+    iconGlyphs.arrowRight,
+    'ArrowRightOutlined'
+  ),
+  BankOutlined: createIconComponent(
+    iconGlyphs.buildingColumns,
+    'BankOutlined'
+  ),
+  BarChartOutlined: createIconComponent(
+    iconGlyphs.chartColumn,
+    'BarChartOutlined'
+  ),
+  BarcodeOutlined: createIconComponent(
+    iconGlyphs.barcode,
+    'BarcodeOutlined'
+  ),
+  BranchesOutlined: createIconComponent(
+    iconGlyphs.codeBranch,
+    'BranchesOutlined'
+  ),
+  BugOutlined: createIconComponent(iconGlyphs.bug, 'BugOutlined'),
+  BulbOutlined: createIconComponent(iconGlyphs.lightbulb, 'BulbOutlined'),
+  CalculatorOutlined: createIconComponent(
+    iconGlyphs.calculator,
+    'CalculatorOutlined'
+  ),
+  CalendarOutlined: createIconComponent(
+    iconGlyphs.calendar,
+    'CalendarOutlined'
+  ),
+  CheckCircleOutlined: createIconComponent(
+    iconGlyphs.circleCheck,
+    'CheckCircleOutlined'
+  ),
+  CheckOutlined: createIconComponent(iconGlyphs.check, 'CheckOutlined'),
+  ClearOutlined: createIconComponent(iconGlyphs.xmark, 'ClearOutlined'),
+  ClockCircleOutlined: createIconComponent(
+    iconGlyphs.clock,
+    'ClockCircleOutlined'
+  ),
+  CloseCircleOutlined: createIconComponent(
+    iconGlyphs.circleXmark,
+    'CloseCircleOutlined'
+  ),
+  CloseOutlined: createIconComponent(iconGlyphs.xmark, 'CloseOutlined'),
+  CloudUploadOutlined: createIconComponent(
+    iconGlyphs.cloudArrowUp,
+    'CloudUploadOutlined'
+  ),
+  CopyOutlined: createIconComponent(iconGlyphs.copy, 'CopyOutlined'),
+  CreditCardOutlined: createIconComponent(
+    iconGlyphs.creditCard,
+    'CreditCardOutlined'
+  ),
+  CustomerServiceOutlined: createIconComponent(
+    iconGlyphs.headset,
+    'CustomerServiceOutlined'
+  ),
+  DatabaseOutlined: createIconComponent(
+    iconGlyphs.database,
+    'DatabaseOutlined'
+  ),
+  DeleteOutlined: createIconComponent(iconGlyphs.trash, 'DeleteOutlined'),
+  DisconnectOutlined: createIconComponent(
+    iconGlyphs.linkSlash,
+    'DisconnectOutlined'
+  ),
+  DollarCircleOutlined: createIconComponent(
+    iconGlyphs.circleDollarToSlot,
+    'DollarCircleOutlined'
+  ),
+  DollarOutlined: createIconComponent(
+    iconGlyphs.dollarSign,
+    'DollarOutlined'
+  ),
+  DownOutlined: createIconComponent(
+    iconGlyphs.chevronDown,
+    'DownOutlined'
+  ),
+  DownloadOutlined: createIconComponent(
+    iconGlyphs.download,
+    'DownloadOutlined'
+  ),
+  EditOutlined: createIconComponent(iconGlyphs.pencil, 'EditOutlined'),
+  EllipsisOutlined: createIconComponent(
+    iconGlyphs.ellipsis,
+    'EllipsisOutlined'
+  ),
+  EnvironmentOutlined: createIconComponent(
+    iconGlyphs.locationDot,
+    'EnvironmentOutlined'
+  ),
+  ExclamationCircleOutlined: createIconComponent(
+    iconGlyphs.circleExclamation,
+    'ExclamationCircleOutlined'
+  ),
+  EyeInvisibleOutlined: createIconComponent(
+    iconGlyphs.eyeSlash,
+    'EyeInvisibleOutlined'
+  ),
+  EyeOutlined: createIconComponent(iconGlyphs.eye, 'EyeOutlined'),
+  FallOutlined: createIconComponent(
+    iconGlyphs.arrowTrendDown,
+    'FallOutlined'
+  ),
+  FieldTimeOutlined: createIconComponent(
+    iconGlyphs.clock,
+    'FieldTimeOutlined'
+  ),
+  FileAddOutlined: createIconComponent(
+    iconGlyphs.fileCirclePlus,
+    'FileAddOutlined'
+  ),
+  FileExcelOutlined: createIconComponent(
+    iconGlyphs.fileExcel,
+    'FileExcelOutlined'
+  ),
+  FileImageOutlined: createIconComponent(
+    iconGlyphs.fileImage,
+    'FileImageOutlined'
+  ),
+  FileOutlined: createIconComponent(iconGlyphs.file, 'FileOutlined'),
+  FilePdfOutlined: createIconComponent(iconGlyphs.filePdf, 'FilePdfOutlined'),
+  FileTextOutlined: createIconComponent(
+    iconGlyphs.fileLines,
+    'FileTextOutlined'
+  ),
+  FilterOutlined: createIconComponent(iconGlyphs.filter, 'FilterOutlined'),
+  FireOutlined: createIconComponent(iconGlyphs.fire, 'FireOutlined'),
+  FullscreenOutlined: createIconComponent(
+    iconGlyphs.expand,
+    'FullscreenOutlined'
+  ),
+  GlobalOutlined: createIconComponent(iconGlyphs.globe, 'GlobalOutlined'),
+  HeartFilled: createIconComponent(iconGlyphs.heart, 'HeartFilled'),
+  HomeOutlined: createIconComponent(iconGlyphs.home, 'HomeOutlined'),
+  InboxOutlined: createIconComponent(iconGlyphs.inbox, 'InboxOutlined'),
+  InfoCircleOutlined: createIconComponent(
+    iconGlyphs.circleInfo,
+    'InfoCircleOutlined'
+  ),
+  KeyOutlined: createIconComponent(iconGlyphs.key, 'KeyOutlined'),
+  LeftOutlined: createIconComponent(
+    iconGlyphs.chevronLeft,
+    'LeftOutlined'
+  ),
+  LoadingOutlined: createIconComponent(iconGlyphs.spinner, 'LoadingOutlined'),
+  LockOutlined: createIconComponent(iconGlyphs.lock, 'LockOutlined'),
+  MailOutlined: createIconComponent(iconGlyphs.envelope, 'MailOutlined'),
+  MedicineBoxOutlined: createIconComponent(
+    iconGlyphs.suitcaseMedical,
+    'MedicineBoxOutlined'
+  ),
+  MessageOutlined: createIconComponent(
+    iconGlyphs.message,
+    'MessageOutlined'
+  ),
+  MinusOutlined: createIconComponent(iconGlyphs.minus, 'MinusOutlined'),
+  MoreOutlined: createIconComponent(iconGlyphs.ellipsis, 'MoreOutlined'),
+  NumberOutlined: createIconComponent(iconGlyphs.hashtag, 'NumberOutlined'),
+  PercentageOutlined: createIconComponent(
+    iconGlyphs.percent,
+    'PercentageOutlined'
+  ),
+  PhoneOutlined: createIconComponent(iconGlyphs.phone, 'PhoneOutlined'),
+  PictureOutlined: createIconComponent(iconGlyphs.image, 'PictureOutlined'),
+  PlusOutlined: createIconComponent(iconGlyphs.plus, 'PlusOutlined'),
+  PrinterOutlined: createIconComponent(iconGlyphs.print, 'PrinterOutlined'),
+  ProfileOutlined: createIconComponent(iconGlyphs.idCard, 'ProfileOutlined'),
+  QuestionCircleOutlined: createIconComponent(
+    iconGlyphs.circleQuestion,
+    'QuestionCircleOutlined'
+  ),
+  ReloadOutlined: createIconComponent(
+    iconGlyphs.rotateRight,
+    'ReloadOutlined'
+  ),
+  RightOutlined: createIconComponent(
+    iconGlyphs.chevronRight,
+    'RightOutlined'
+  ),
+  RiseOutlined: createIconComponent(
+    iconGlyphs.arrowTrendUp,
+    'RiseOutlined'
+  ),
+  RocketOutlined: createIconComponent(iconGlyphs.rocket, 'RocketOutlined'),
+  RollbackOutlined: createIconComponent(
+    iconGlyphs.arrowRotateLeft,
+    'RollbackOutlined'
+  ),
+  SafetyCertificateOutlined: createIconComponent(
+    iconGlyphs.shield,
+    'SafetyCertificateOutlined'
+  ),
+  SafetyOutlined: createIconComponent(
+    iconGlyphs.shieldHalved,
+    'SafetyOutlined'
+  ),
+  SaveOutlined: createIconComponent(
+    iconGlyphs.floppyDisk,
+    'SaveOutlined'
+  ),
+  ScheduleOutlined: createIconComponent(
+    iconGlyphs.calendarDays,
+    'ScheduleOutlined'
+  ),
+  SearchOutlined: createIconComponent(
+    iconGlyphs.magnifyingGlass,
+    'SearchOutlined'
+  ),
+  SettingOutlined: createIconComponent(iconGlyphs.gear, 'SettingOutlined'),
+  ShopOutlined: createIconComponent(iconGlyphs.shop, 'ShopOutlined'),
+  ShoppingCartOutlined: createIconComponent(
+    iconGlyphs.cartShopping,
+    'ShoppingCartOutlined'
+  ),
+  ShoppingOutlined: createIconComponent(
+    iconGlyphs.bagShopping,
+    'ShoppingOutlined'
+  ),
+  SortAscendingOutlined: createIconComponent(
+    iconGlyphs.arrowDownAz,
+    'SortAscendingOutlined'
+  ),
+  StarOutlined: createIconComponent(iconGlyphs.star, 'StarOutlined'),
+  StopOutlined: createIconComponent(iconGlyphs.stop, 'StopOutlined'),
+  SwapOutlined: createIconComponent(iconGlyphs.rightLeft, 'SwapOutlined'),
+  SyncOutlined: createIconComponent(
+    iconGlyphs.arrowsRotate,
+    'SyncOutlined'
+  ),
+  TeamOutlined: createIconComponent(iconGlyphs.users, 'TeamOutlined'),
+  ThunderboltOutlined: createIconComponent(
+    iconGlyphs.bolt,
+    'ThunderboltOutlined'
+  ),
+  ToolOutlined: createIconComponent(iconGlyphs.wrench, 'ToolOutlined'),
+  UnorderedListOutlined: createIconComponent(
+    iconGlyphs.listUl,
+    'UnorderedListOutlined'
+  ),
+  UpOutlined: createIconComponent(iconGlyphs.chevronUp, 'UpOutlined'),
+  UploadOutlined: createIconComponent(iconGlyphs.upload, 'UploadOutlined'),
+  UserOutlined: createIconComponent(iconGlyphs.user, 'UserOutlined'),
+  WarningOutlined: createIconComponent(
+    iconGlyphs.triangleExclamation,
+    'WarningOutlined'
+  ),
+  WhatsAppOutlined: createIconComponent(
+    iconGlyphs.whatsapp,
+    'WhatsAppOutlined'
+  ),
+};
+
+export const {
+  AlignLeftOutlined,
+  ApartmentOutlined,
+  ApiOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  BankOutlined,
+  BarChartOutlined,
+  BarcodeOutlined,
+  BranchesOutlined,
+  BugOutlined,
+  BulbOutlined,
+  CalculatorOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  CheckOutlined,
+  ClearOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  CloseOutlined,
+  CloudUploadOutlined,
+  CopyOutlined,
+  CreditCardOutlined,
+  CustomerServiceOutlined,
+  DatabaseOutlined,
+  DeleteOutlined,
+  DisconnectOutlined,
+  DollarCircleOutlined,
+  DollarOutlined,
+  DownOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  EnvironmentOutlined,
+  ExclamationCircleOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  FallOutlined,
+  FieldTimeOutlined,
+  FileAddOutlined,
+  FileExcelOutlined,
+  FileImageOutlined,
+  FileOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  FilterOutlined,
+  FireOutlined,
+  FullscreenOutlined,
+  GlobalOutlined,
+  HeartFilled,
+  HomeOutlined,
+  InboxOutlined,
+  InfoCircleOutlined,
+  KeyOutlined,
+  LeftOutlined,
+  LoadingOutlined,
+  LockOutlined,
+  MailOutlined,
+  MedicineBoxOutlined,
+  MessageOutlined,
+  MinusOutlined,
+  MoreOutlined,
+  NumberOutlined,
+  PercentageOutlined,
+  PhoneOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  PrinterOutlined,
+  ProfileOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  RightOutlined,
+  RiseOutlined,
+  RocketOutlined,
+  RollbackOutlined,
+  SafetyCertificateOutlined,
+  SafetyOutlined,
+  SaveOutlined,
+  ScheduleOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
+  ShoppingOutlined,
+  SortAscendingOutlined,
+  StarOutlined,
+  StopOutlined,
+  SwapOutlined,
+  SyncOutlined,
+  TeamOutlined,
+  ThunderboltOutlined,
+  ToolOutlined,
+  UnorderedListOutlined,
+  UpOutlined,
+  UploadOutlined,
+  UserOutlined,
+  WarningOutlined,
+  WhatsAppOutlined,
+} = antIcons;
+
+export type AntdIconName = keyof typeof antIcons;

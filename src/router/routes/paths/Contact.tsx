@@ -4,12 +4,12 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const ClientAdmin = lazy(() =>
-  import('@/views/pages/Contact/Client/ClientAdmin').then((module) => ({
+  import('@/modules/contacts/pages/Contact/Client/ClientAdmin').then((module) => ({
     default: module.ClientAdmin,
   })),
 );
 const ProviderAdmin = lazy(() =>
-  import('@/views/pages/Contact/Provider/ProviderAdmin').then((module) => ({
+  import('@/modules/contacts/pages/Contact/Provider/ProviderAdmin').then((module) => ({
     default: module.ProviderAdmin,
   })),
 );

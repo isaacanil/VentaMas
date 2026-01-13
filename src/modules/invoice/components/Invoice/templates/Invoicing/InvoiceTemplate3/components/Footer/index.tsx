@@ -1,0 +1,184 @@
+import styled from 'styled-components';
+
+import { formatPrice } from '@/utils/format';
+import { toNumber } from '@/utils/number/toNumber';
+import {
+  getInvoiceGeneralDiscount,
+  getInvoiceSubtotal,
+  getInvoiceTotalsSnapshot,
+} from '@/utils/invoice/totals';
+import type { InvoiceData } from '@/types/invoice';
+
+
+const PAYMENT_METHODS = {
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  card: 'Tarjeta',
+};
+
+interface FooterProps {
+  data?: InvoiceData | null;
+}
+
+export default function Footer({ data }: FooterProps) {
+  const subtotal = getInvoiceSubtotal(data?.products);
+  const discount = getInvoiceGeneralDiscount(subtotal, data?.discount?.value);
+  const totalsSnapshot = getInvoiceTotalsSnapshot(data);
+  const totals = {
+    subtotal: formatPrice(totalsSnapshot.totalWithoutTaxes),
+    discount: `-${formatPrice(discount || 0)}`,
+    tax: formatPrice(totalsSnapshot.totalTaxes),
+    delivery: formatPrice(totalsSnapshot.delivery),
+    total: formatPrice(totalsSnapshot.totalPurchase),
+  };
+
+  return (
+    <FooterSection>
+      <Wrapper>
+        <SignatureGroup>
+          <Group>
+            <TextWithUpLine label={'Despachado Por:'} />
+            <TextWithUpLine label={'Recibido Conforme:'} />
+          </Group>
+          <PaymentMethodsContainer>
+            <div>
+              {data?.seller?.name && <p>Vendedor: {data.seller.name}</p>}
+              {data?.paymentMethod?.length > 0 && (
+                <PaymentMethodsSection>
+                  <BoldText>Métodos de Pago:</BoldText>
+                  {data.paymentMethod.map((method, index) => {
+                    if (!method?.status) return null;
+                    const methodKey =
+                      typeof method.method === 'string'
+                        ? method.method.toLowerCase()
+                        : '';
+                    return (
+                      <p key={index} style={{ margin: 0 }}>
+                        {PAYMENT_METHODS[methodKey] || method.method}
+                        : {formatPrice(toNumber(method.value))}
+                        {method.reference && ` - Ref: ${method.reference}`}
+                      </p>
+                    );
+                  })}
+                </PaymentMethodsSection>
+              )}
+            </div>
+            <div>
+              <p>{data?.copyType || 'COPIA'}</p>
+            </div>
+          </PaymentMethodsContainer>
+        </SignatureGroup>
+        <TotalsContainer>
+          <TotalRow>
+            <span>Sub-Total:</span>
+            <span className="value">{totals.subtotal}</span>
+          </TotalRow>
+          <TotalRow>
+            <span>ITBIS:</span>
+            <span className="value">{totals.tax}</span>
+          </TotalRow>
+          {data?.discount?.value ? (
+            <TotalRow>
+              <span>Descuento (%{data?.discount?.value}):</span>
+              <span className="value">{totals.discount}</span>
+            </TotalRow>
+          ) : null}
+          {data?.delivery?.status && (
+            <TotalRow>
+              <span>Delivery :</span>
+              <span className="value"> {totals.delivery}</span>
+            </TotalRow>
+          )}
+          <TotalRow className="bold">
+            <span>Total:</span>
+            <span className="value">{totals.total}</span>
+          </TotalRow>
+        </TotalsContainer>
+      </Wrapper>
+      {/* {truncateString(business?.invoice?.invoiceMessage, 200)} */}
+      {/* {business?.invoice?.invoiceMessage && (
+                <p>{business.invoice.invoiceMessage}</p>
+            )} */}
+    </FooterSection>
+  );
+}
+
+const TextWithUpLine = ({ label }: { label: string }) => {
+  return (
+    <p
+      style={{
+        padding: '0.2em',
+        width: '100%',
+        marginTop: '1em',
+        marginBottom: '0.2em',
+        fontWeight: '500',
+        color: '#1d1d1d',
+        borderTop: '1px solid #1f1f1f',
+      }}
+    >
+      {label}
+    </p>
+  );
+};
+const Group = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  column-gap: 2em;
+`;
+
+const PaymentMethodsContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 0.4fr;
+`;
+const SignatureGroup = styled.div`
+  display: grid;
+`;
+
+const FooterSection = styled.div`
+  display: grid;
+  gap: 2em;
+  padding: 0 1em 1em;
+  padding-top: 32px;
+  font-size: 0.875rem;
+
+  /* border: 1px solid red; */
+`;
+
+const TotalsContainer = styled.div`
+  /* display: grid; */
+`;
+
+const PaymentMethodsSection = styled.div`
+  /* margin-top: 1em; */
+  font-size: 14px;
+`;
+
+const TotalRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+  font-size: 14px;
+
+  span {
+    white-space: nowrap;
+  }
+
+    &.bold {
+    font-weight: bold;
+  }
+
+  .value {
+    text-align: right;
+  }
+`;
+const BoldText = styled.p`
+  font-size: 14px;
+  font-weight: bold;
+`;
+
+const Wrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 0.6fr;
+  column-gap: 1em;
+  align-items: end;
+`;

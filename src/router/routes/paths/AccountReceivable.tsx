@@ -2,27 +2,27 @@ import { lazy } from 'react';
 
 import { accountReceivableInfoLoader } from '@/router/routes/loaders/accountReceivableLoaders'; // Import loader
 import ROUTES_NAME from '@/router/routes/routesName';
-import { ErrorBoundary } from '@/views/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
+import { ErrorBoundary } from '@/modules/app/pages/ErrorElement/ErrorBoundary'; // Import ErrorBoundary
 
 import type { AppRoute } from '@/router/routes/routes';
 
 const AccountReceivableAudit = lazy(() =>
   import(
-    '@/views/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit'
+    '@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableAudit/AccountReceivableAudit'
   ),
 );
 const AccountReceivableInfo = lazy(() =>
   import(
-    '@/views/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo'
+    '@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableInfo/AccountReceivableInfo'
   ),
 );
 const AccountReceivableList = lazy(() =>
   import(
-    '@/views/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList'
+    '@/modules/accountsReceivable/pages/AccountReceivable/pages/AccountReceivableList/AccountReceivableList'
   ).then((module) => ({ default: module.AccountReceivableList })),
 );
 const ReceivablePaymentReceipt = lazy(() =>
-  import('@/views/pages/InvoicesPage/ReceivablePaymentReceipt').then(
+  import('@/modules/invoice/pages/InvoicesPage/ReceivablePaymentReceipt').then(
     (module) => ({ default: module.ReceivablePaymentReceipt }),
   ),
 );

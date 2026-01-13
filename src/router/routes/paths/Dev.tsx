@@ -5,66 +5,66 @@ import RoutesName from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const AllUsersControl = lazy(() =>
-  import('@/views/controlPanel/AllUsersControl/AllUsersControl').then(
+  import('@/modules/controlPanel/AllUsersControl/AllUsersControl').then(
     (module) => ({ default: module.AllUsersControl }),
   ),
 );
 const AppConfig = lazy(() =>
-  import('@/views/controlPanel/AppConfig/AppConfig'),
+  import('@/modules/controlPanel/AppConfig/AppConfig'),
 );
 const LoginImageConfig = lazy(() =>
-  import('@/views/controlPanel/AppConfig/LoginImageConfig'),
+  import('@/modules/controlPanel/AppConfig/LoginImageConfig'),
 );
 const ChangeLogCreate = lazy(() =>
   import(
-    '@/views/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate'
+    '@/modules/controlPanel/ChangeLogControl/ChangeLogCreate/ChangeLogCreate'
   ),
 );
 const BusinessControl = lazy(() =>
   import(
-    '@/views/controlPanel/CreateBusinessControl/BusinessControl'
+    '@/modules/controlPanel/CreateBusinessControl/BusinessControl'
   ).then((module) => ({ default: module.BusinessControl })),
 );
 const AiBusinessSeeding = lazy(() =>
-  import('@/views/pages/dev/AiBusinessSeeding/AiBusinessSeeding'),
+  import('@/modules/dev/pages/dev/AiBusinessSeeding/AiBusinessSeeding'),
 );
 const BSeriesInvoices = lazy(() =>
-  import('@/views/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
+  import('@/modules/dev/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
 );
 const CashCountAudit = lazy(() =>
-  import('@/views/pages/DevTools/CashCountAudit/CashCountAudit'),
+  import('@/modules/dev/pages/DevTools/CashCountAudit/CashCountAudit'),
 );
 const FiscalReceiptsAudit = lazy(() =>
-  import('@/views/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit').then(
+  import('@/modules/dev/pages/DevTools/FiscalReceiptsAudit/FiscalReceiptsAudit').then(
     (module) => ({ default: module.FiscalReceiptsAudit }),
   ),
 );
 const InventoryMigrationTool = lazy(() =>
-  import('@/views/pages/DevTools/InventoryMigrationTool'),
+  import('@/modules/dev/pages/DevTools/InventoryMigrationTool'),
 );
 const InvoiceV2Recovery = lazy(() =>
-  import('@/views/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
+  import('@/modules/dev/pages/DevTools/InvoiceV2Recovery/InvoiceV2Recovery'),
 );
 const SyncDiagnostics = lazy(() =>
-  import('@/views/pages/DevTools/SyncDiagnostics'),
+  import('@/modules/dev/pages/DevTools/SyncDiagnostics'),
 );
 const TestPlayground = lazy(() =>
-  import('@/views/pages/DevTools/TestPlayground'),
+  import('@/modules/dev/pages/DevTools/TestPlayground'),
 );
 const BusinessCreator = lazy(() =>
-  import('@/views/pages/setting/subPage/BusinessEditor/BusinessCreator'),
+  import('@/modules/settings/pages/setting/subPage/BusinessEditor/BusinessCreator'),
 );
 const CheckProductPriceAudit = lazy(() =>
   import(
-    '@/views/pages/test/pages/checkProductPriceField/CheckProductPriceAudit'
+    '@/modules/dev/pages/test/pages/checkProductPriceField/CheckProductPriceAudit'
   ),
 );
 const Doc = lazy(() =>
-  import('@/views/templates/system/AdvancedTable/Doc').then((module) => ({
+  import('@/components/ui/AdvancedTable/Doc').then((module) => ({
     default: module.Doc,
   })),
 );
-const Menu = lazy(() => import('@/views/templates/system/Menu/Menu'));
+const Menu = lazy(() => import('@/components/ui/Menu/Menu'));
 
 const {
   CREATE_BUSINESS,

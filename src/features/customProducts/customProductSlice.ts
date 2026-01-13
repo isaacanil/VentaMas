@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   product: {},
@@ -9,14 +9,14 @@ const initialState = {
   },
   totalProductPrice: 0,
 };
-const customProductSlice = (createSlice as any)({
+const customProductSlice = createSlice({
   name: 'customProduct',
   initialState,
   reducers: {
-    addProduct: (state, actions) => {
+    addProduct: (state: any, actions: PayloadAction<any>) => {
       state.product = actions.payload;
     },
-    addIngredient: (state, action) => {
+    addIngredient: (state: any, action: PayloadAction<any>) => {
       const ingredientExists = state.ingredient.find(
         ({ id }) => id === action.payload.id,
       );
@@ -24,7 +24,7 @@ const customProductSlice = (createSlice as any)({
         state.ingredient.push(action.payload);
       }
     },
-    deleteIngredient: (state, action) => {
+    deleteIngredient: (state: any, action: PayloadAction<any>) => {
       const checkingID = state.ingredient.find(
         ({ id }) => id === action.payload.id,
       );
@@ -34,19 +34,19 @@ const customProductSlice = (createSlice as any)({
         // Ingredient not found
       }
     },
-    gettingIngredientList: (state) => {
+    gettingIngredientList: (state: any) => {
       let list = [];
       state.ingredient.map((ingredient) => (list = [...list, ingredient.name]));
       state.ingredientList = list.toString();
     },
-    totalPurchase: (state) => {
+    totalPurchase: (state: any) => {
       const n = state.ingredient.reduce(
         (total, ingredient) => total + Number(ingredient.cost),
         0,
       );
       state.totalIngredients.value = n;
     },
-    formatData: (state) => {
+    formatData: (state: any) => {
       ((state.ingredient = []),
         (state.ingredientList = ''),
         (state.totalIngredients = {
@@ -71,4 +71,5 @@ export const selectTotalIngredientPrice = (state) =>
 export const selectIngredientList = (state) => state.customProduct.ingredient;
 export const SelectIngredientsListName = (state) =>
   state.customProduct.ingredientList;
+
 

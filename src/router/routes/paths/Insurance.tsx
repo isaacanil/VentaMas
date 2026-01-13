@@ -4,10 +4,10 @@ import { ROUTES } from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const InsuranceConfig = lazy(() =>
-  import('@/views/pages/Insurance/InsuranceConfig/InsuraceConfig'),
+  import('@/modules/insurance/pages/Insurance/InsuranceConfig/InsuraceConfig'),
 );
 const InsuranceConfigForm = lazy(() =>
-  import('@/views/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm'),
+  import('@/modules/insurance/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm'),
 );
 
 const { INSURANCE_CONFIG, INSURANCE_CREATE } = ROUTES.INSURANCE_TERM;

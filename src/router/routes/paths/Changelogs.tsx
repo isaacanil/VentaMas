@@ -5,12 +5,12 @@ import type { AppRoute } from '@/router/routes/routes';
 
 const ChangelogList = lazy(() =>
   import(
-    '@/views/controlPanel/ChangeLogControl/ChangelogList/ChangelogList'
+    '@/modules/controlPanel/ChangeLogControl/ChangelogList/ChangelogList'
   ).then((module) => ({ default: module.ChangelogList })),
 );
 const ChangelogManage = lazy(() =>
   import(
-    '@/views/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage'
+    '@/modules/controlPanel/ChangeLogControl/ChangelogManage/ChangelogManage'
   ).then((module) => ({ default: module.ChangelogManage })),
 );
 

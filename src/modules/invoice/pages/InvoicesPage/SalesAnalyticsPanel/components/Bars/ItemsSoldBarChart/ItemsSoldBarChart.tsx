@@ -1,0 +1,108 @@
+﻿import {
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  Chart,
+  Tooltip,
+} from 'chart.js';
+import React, { useMemo } from 'react';
+import { Bar } from 'react-chartjs-2';
+import styled from 'styled-components';
+import type { SalesRecord } from '../../../utils';
+import { toNumber } from '../../../utils';
+
+import Typography from '@/components/ui/Typografy/Typografy';
+
+Chart.register(LinearScale, CategoryScale, BarElement, Tooltip);
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Ãtems Vendidos',
+      },
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'CategorÃ­a de Producto',
+      },
+    },
+  },
+};
+
+const accumulateItemsSoldData = (sales: SalesRecord[]) => {
+  return sales.reduce<Record<string, number>>((acc, sale) => {
+    (sale.data.products ?? []).forEach((product) => {
+      const categoryValue = product.category;
+      let category = 'Sin categorÃ­a';
+      if (typeof categoryValue === 'string') {
+        category = categoryValue;
+      } else if (
+        categoryValue &&
+        typeof categoryValue === 'object' &&
+        'name' in categoryValue &&
+        typeof (categoryValue as { name?: unknown }).name === 'string'
+      ) {
+        category = (categoryValue as { name: string }).name;
+      }
+      const amount = toNumber(
+        typeof product.amountToBuy === 'number'
+          ? product.amountToBuy
+          : product.amountToBuy?.total ?? product.amountToBuy?.unit,
+      );
+      acc[category] = (acc[category] || 0) + amount;
+    });
+    return acc;
+  }, {});
+};
+
+export const ItemsSoldBarChart = ({ sales }: { sales: SalesRecord[] }) => {
+  const normalizedSales = useMemo(
+    () => (Array.isArray(sales) ? sales : []),
+    [sales],
+  );
+
+  const itemsSoldByCategory = useMemo(
+    () => accumulateItemsSoldData(normalizedSales),
+    [normalizedSales],
+  );
+
+  const data = useMemo(() => {
+    const labels = Object.keys(itemsSoldByCategory);
+    const dataTotals = labels.map((label) => itemsSoldByCategory[label]);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Ãtems Vendidos',
+          data: dataTotals,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [itemsSoldByCategory]);
+
+  if (!normalizedSales.length) {
+    return null; // or some fallback UI
+  }
+
+  return (
+    <Container>
+      <Typography variant="h3">Ãtems Vendidos por CategorÃ­a</Typography>
+      <Bar data={data} options={options} />
+    </Container>
+  );
+};
+
+const Container = styled.div`
+  height: 200px;
+`;
+

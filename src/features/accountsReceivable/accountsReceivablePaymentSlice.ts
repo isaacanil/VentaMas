@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+﻿import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { getLastInstallmentAmountByArId } from '@/firebase/accountsReceivable/installment/getLastInstallmentAmountByArId';
 
@@ -35,7 +35,7 @@ const paymentDetailsTemplate = {
   totalAmount: 0.0, // Monto total a pagar
   totalPaid: 0.0, // Monto total pagado
   printReceipt: true, // Si se debe imprimir el recibo de pago
-  creditNotePayment: [], // Notas de crédito aplicadas
+  creditNotePayment: [], // Notas de crÃ©dito aplicadas
 };
 
 const createDefaultPaymentDetails = (amount = 0) => {
@@ -68,7 +68,7 @@ const initialState = {
   error: null, // Para manejar errores
   isValid: true, // Para manejar validaciones
   methodErrors: {},
-  extra: null, // Para manejar información adicional
+  extra: null, // Para manejar informaciÃ³n adicional
   installment: null,
 };
 
@@ -88,14 +88,14 @@ export const fetchLastInstallmentAmount = (createAsyncThunk as any)(
   },
 );
 
-const accountsReceivablePaymentSlice = (createSlice as any)({
+const accountsReceivablePaymentSlice = createSlice({
   name: 'accountsReceivablePayment',
   initialState,
   reducers: {
-    openPaymentModal: (state) => {
+    openPaymentModal: (state: any) => {
       state.isOpen = true;
     },
-    closePaymentModal: (state) => {
+    closePaymentModal: (state: any) => {
       state.isOpen = false;
       state.paymentDetails = createDefaultPaymentDetails();
       state.error = null;
@@ -103,13 +103,13 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
       state.methodErrors = {};
       state.extra = null;
     },
-    setPaymentDetails: (state, action) => {
+    setPaymentDetails: (state: any, action: PayloadAction<any>) => {
       state.paymentDetails = {
         ...state.paymentDetails,
         ...action.payload,
       };
     },
-    setPaymentOption: (state, action) => {
+    setPaymentOption: (state: any, action: PayloadAction<any>) => {
       const { paymentOption } = action.payload;
       state.paymentDetails.paymentOption = paymentOption;
       if (
@@ -121,7 +121,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
         state.paymentDetails.totalAmount = state.extra.arBalance;
       }
     },
-    setAccountPayment: (state, action) => {
+    setAccountPayment: (state: any, action: PayloadAction<any>) => {
       const {
         isOpen,
         paymentDetails: paymentDetailsPayload,
@@ -169,14 +169,14 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
         state.paymentDetails.totalAmount = paymentDetailsPayload.totalAmount;
       }
 
-      // Recalcular total pagado con los métodos vigentes
+      // Recalcular total pagado con los mÃ©todos vigentes
       state.paymentDetails.totalPaid = state.paymentDetails.paymentMethods
         ? state.paymentDetails.paymentMethods.reduce((sum, method) => {
             return method.status ? sum + (Number(method.value) || 0) : sum;
           }, 0.0)
         : 0.0;
     },
-    updatePaymentMethod: (state, action) => {
+    updatePaymentMethod: (state: any, action: PayloadAction<any>) => {
       const { method, key, value } = action.payload;
       const methodIndex = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === method,
@@ -184,7 +184,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
       if (methodIndex !== -1) {
         const paymentMethod = state.paymentDetails.paymentMethods[methodIndex];
 
-        // Si la clave es 'reference' y el método es 'cash' o 'creditNote', no asignar el valor
+        // Si la clave es 'reference' y el mÃ©todo es 'cash' o 'creditNote', no asignar el valor
         if (
           !(
             key === 'reference' &&
@@ -200,22 +200,22 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
           }, 0.0);
       }
     },
-    setError: (state, action) => {
+    setError: (state: any, action: PayloadAction<any>) => {
       state.error = action.payload;
     },
-    setIsValid: (state, action) => {
+    setIsValid: (state: any, action: PayloadAction<any>) => {
       state.isValid = action.payload;
     },
-    setMethodError: (state, action) => {
+    setMethodError: (state: any, action: PayloadAction<any>) => {
       const { method, key, error } = action.payload;
       state.methodErrors[`${method}_${key}`] = error;
     },
-    clearMethodErrors: (state, action) => {
+    clearMethodErrors: (state: any, action: PayloadAction<any>) => {
       const { method } = action.payload;
       delete state.methodErrors[`${method}_value`];
       delete state.methodErrors[`${method}_reference`];
     },
-    setCreditNotePayment: (state, action) => {
+    setCreditNotePayment: (state: any, action: PayloadAction<any>) => {
       const creditNoteSelections = action.payload || [];
 
       // Calcular total aplicado
@@ -224,7 +224,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
         0,
       );
 
-      // Calcular total de otros métodos activos
+      // Calcular total de otros mÃ©todos activos
       const totalOtherPayments = state.paymentDetails.paymentMethods
         .filter((m) => m.status && m.method !== 'creditNote')
         .reduce((sum, m) => sum + (Number(m.value) || 0), 0);
@@ -243,7 +243,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
           originalAmount: sel.creditNote?.totalAmount || 0,
         }));
 
-      // Actualizar método de pago creditNote
+      // Actualizar mÃ©todo de pago creditNote
       const idx = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === 'creditNote',
       );
@@ -256,7 +256,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
       } else {
         state.paymentDetails.paymentMethods.push({
           method: 'creditNote',
-          name: 'Notas de Crédito',
+          name: 'Notas de CrÃ©dito',
           value: validAmount,
           status: validAmount > 0,
         });
@@ -269,7 +269,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
           0,
         );
     },
-    clearCreditNotePayment: (state) => {
+    clearCreditNotePayment: (state: any) => {
       state.paymentDetails.creditNotePayment = [];
       const idx = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === 'creditNote',
@@ -288,7 +288,7 @@ const accountsReceivablePaymentSlice = (createSlice as any)({
         );
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       .addCase(fetchLastInstallmentAmount.fulfilled, (state, action) => {
         const { arId, lastInstallmentAmount } = action.payload;
@@ -327,4 +327,5 @@ export default accountsReceivablePaymentSlice.reducer;
 
 export const selectAccountsReceivablePayment = (state) =>
   state.accountsReceivablePayment;
+
 

@@ -1,11 +1,11 @@
 import { lazy } from 'react';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import { Home } from '@/views/pages/Home/Home';
+import { Home } from '@/modules/home/pages/Home/Home';
 import type { AppRoute } from '@/router/routes/routes';
 
 const Welcome = lazy(() =>
-  import('@/views/pages/Welcome/Welcome').then((module) => ({
+  import('@/modules/welcome/pages/Welcome/Welcome').then((module) => ({
     default: module.Welcome,
   })),
 );

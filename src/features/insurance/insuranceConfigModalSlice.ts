@@ -1,19 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   isOpen: false,
   initialValues: null,
 };
 
-const insuranceConfigModalSlice = (createSlice as any)({
+const insuranceConfigModalSlice = createSlice({
   name: 'insuranceConfigModal',
   initialState,
   reducers: {
-    openInsuranceConfigModal: (state, action) => {
+    openInsuranceConfigModal: (state: any, action: PayloadAction<any>) => {
       state.isOpen = true;
       state.initialValues = action.payload;
     },
-    closeInsuranceConfigModal: (state) => {
+    closeInsuranceConfigModal: (state: any) => {
       state.isOpen = false;
       state.initialValues = null;
     },
@@ -25,4 +25,5 @@ export const { openInsuranceConfigModal, closeInsuranceConfigModal } =
 export default insuranceConfigModalSlice.reducer;
 
 export const selectInsuranceConfigModal = (state) => state.insuranceConfigModal;
+
 

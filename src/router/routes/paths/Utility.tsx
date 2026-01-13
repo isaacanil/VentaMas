@@ -4,7 +4,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 const Utility = lazy(() =>
-  import('@/views/pages/Utility/Utility').then((module) => ({
+  import('@/modules/utility/pages/Utility/Utility').then((module) => ({
     default: module.Utility,
   })),
 );

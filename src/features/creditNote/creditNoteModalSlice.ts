@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   isOpen: false,
@@ -8,31 +8,31 @@ const initialState = {
   creditNoteData: null,
 };
 
-const creditNoteModalSlice = (createSlice as any)({
+const creditNoteModalSlice = createSlice({
   name: 'creditNoteModal',
   initialState,
   reducers: {
-    openCreditNoteModal: (state, action) => {
+    openCreditNoteModal: (state: any, action: PayloadAction<any>) => {
       state.isOpen = true;
       state.mode = action.payload?.mode || 'create';
       state.selectedInvoice = action.payload?.invoice || null;
       state.selectedClient = action.payload?.client || null;
       state.creditNoteData = action.payload?.creditNoteData || null;
     },
-    closeCreditNoteModal: (state) => {
+    closeCreditNoteModal: (state: any) => {
       state.isOpen = false;
       state.selectedInvoice = null;
       state.selectedClient = null;
       state.creditNoteData = null;
       state.mode = 'create';
     },
-    setSelectedInvoice: (state, action) => {
+    setSelectedInvoice: (state: any, action: PayloadAction<any>) => {
       state.selectedInvoice = action.payload;
     },
-    setSelectedClient: (state, action) => {
+    setSelectedClient: (state: any, action: PayloadAction<any>) => {
       state.selectedClient = action.payload;
     },
-    setCreditNoteData: (state, action) => {
+    setCreditNoteData: (state: any, action: PayloadAction<any>) => {
       state.creditNoteData = action.payload;
     },
   },
@@ -49,4 +49,5 @@ export const {
 export const selectCreditNoteModal = (state) => state.creditNoteModal;
 
 export default creditNoteModalSlice.reducer;
+
 

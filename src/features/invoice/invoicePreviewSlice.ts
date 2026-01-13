@@ -1,21 +1,21 @@
-// src/features/invoicePreview/invoicePreviewSlice.js
+﻿// src/features/invoicePreview/invoicePreviewSlice.js
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   data: null,
   isOpen: false,
 };
 
-export const invoicePreviewSlice = (createSlice as any)({
+export const invoicePreviewSlice = createSlice({
   name: 'invoicePreview',
   initialState,
   reducers: {
-    openInvoicePreviewModal: (state, action) => {
+    openInvoicePreviewModal: (state: any, action: PayloadAction<any>) => {
       state.data = action.payload;
       state.isOpen = true;
     },
-    closeInvoicePreviewModal: (state) => {
+    closeInvoicePreviewModal: (state: any) => {
       state.data = null;
       state.isOpen = false;
     },
@@ -30,4 +30,5 @@ export const selectInvoicePreview = (state) => state.invoicePreview;
 export const selectIsModalOpen = (state) => state.invoicePreview.isModalOpen;
 
 export default invoicePreviewSlice.reducer;
+
 

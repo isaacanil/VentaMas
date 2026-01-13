@@ -1,15 +1,15 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   files: [],
   open: false,
 };
 
-const fileSlice = (createSlice as any)({
+const fileSlice = createSlice({
   name: 'files',
   initialState,
   reducers: {
-    openFileCenter: (state, action) => {
+    openFileCenter: (state: any, action: PayloadAction<any>) => {
       const files = action.payload;
       if (files.length) {
         state.open = true;
@@ -19,7 +19,7 @@ const fileSlice = (createSlice as any)({
         state.files = [];
       }
     },
-    closeFileCenter: (state) => {
+    closeFileCenter: (state: any) => {
       state.open = false;
       state.files = [];
     },
@@ -27,9 +27,6 @@ const fileSlice = (createSlice as any)({
 });
 
 export const {
-  addFiles,
-  removeFile,
-  setAttachmentUrls,
   openFileCenter,
   closeFileCenter,
 } = fileSlice.actions;
@@ -37,4 +34,5 @@ export const {
 export default fileSlice.reducer;
 
 export const selectFileCenter = (state) => state.files;
+
 

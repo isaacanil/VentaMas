@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { getClientInsuranceByClientId } from '@/firebase/insurance/clientInsuranceService';
 
@@ -32,7 +32,7 @@ export const fetchInsuranceAuthByClientId = (createAsyncThunk as any)(
     try {
       const insuranceData = await getClientInsuranceByClientId(user, clientId);
       if (insuranceData) {
-        // Solo extraemos los campos específicos que necesitamos
+        // Solo extraemos los campos especÃ­ficos que necesitamos
         const { insuranceId, insuranceType, birthDate } = insuranceData;
         return { insuranceId, insuranceType, birthDate };
       }
@@ -43,27 +43,27 @@ export const fetchInsuranceAuthByClientId = (createAsyncThunk as any)(
   },
 );
 
-export const insuranceAuthSlice = (createSlice as any)({
+export const insuranceAuthSlice = createSlice({
   name: 'insuranceAuth',
   initialState,
   reducers: {
-    setAuthData: (state, action) => {
+    setAuthData: (state: any, action: PayloadAction<any>) => {
       state.authData = { ...state.authData, ...action.payload };
     },
-    updateAuthField: (state, action) => {
+    updateAuthField: (state: any, action: PayloadAction<any>) => {
       const { field, value } = action.payload;
       state.authData[field] = value;
     },
-    clearAuthData: (state) => {
+    clearAuthData: (state: any) => {
       state.authData = initialState.authData;
     },
-    setLoading: (state, action) => {
+    setLoading: (state: any, action: PayloadAction<any>) => {
       state.loading = action.payload;
     },
-    setError: (state, action) => {
+    setError: (state: any, action: PayloadAction<any>) => {
       state.error = action.payload;
     },
-    openModal: (state, action) => {
+    openModal: (state: any, action: PayloadAction<any>) => {
       state.modal.open = true;
       if (action.payload?.initialValues) {
         // Actualiza el estado con los valores iniciales pasados al modal
@@ -77,7 +77,7 @@ export const insuranceAuthSlice = (createSlice as any)({
       state.modal.open = false;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       .addCase(fetchInsuranceAuthByClientId.pending, (state) => {
         state.loading = true;
@@ -86,7 +86,7 @@ export const insuranceAuthSlice = (createSlice as any)({
       .addCase(fetchInsuranceAuthByClientId.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
-          // Solo actualiza los campos específicos manteniendo el resto del estado
+          // Solo actualiza los campos especÃ­ficos manteniendo el resto del estado
           state.authData = {
             ...state.authData,
             ...action.payload,
@@ -119,4 +119,5 @@ export const selectInsuranceAuthError = (state) => state.insuranceAuth.error;
 export const selectInsuranceModal = (state) => state.insuranceAuth.modal;
 
 export default insuranceAuthSlice.reducer;
+
 

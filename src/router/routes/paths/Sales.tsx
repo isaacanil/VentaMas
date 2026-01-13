@@ -5,22 +5,22 @@ import type { AppRoute } from '@/router/routes/routes';
 
 // Lazy load components
 const CashReconciliation = lazy(() =>
-  import('@/views/pages/CashReconciliation/CashReconciliation').then(
+  import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation').then(
     (module) => ({ default: module.CashReconciliation }),
   ),
 );
 const InvoicesPage = lazy(() =>
-  import('@/views/pages/InvoicesPage/InvoicesPage').then((module) => ({
+  import('@/modules/invoice/pages/InvoicesPage/InvoicesPage').then((module) => ({
     default: module.InvoicesPage,
   })),
 );
 const Preorder = lazy(() =>
-  import('@/views/pages/PreorderSale/PreorderSale').then((module) => ({
+  import('@/modules/sales/pages/PreorderSale/PreorderSale').then((module) => ({
     default: module.Preorder,
   })),
 );
 const Sales = lazy(() =>
-  import('@/views/pages/Sale/Sale').then((module) => ({
+  import('@/modules/sales/pages/Sale/Sale').then((module) => ({
     default: module.Sales,
   })),
 );

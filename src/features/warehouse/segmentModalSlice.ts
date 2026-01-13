@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 type SegmentFormData = {
   id: string;
@@ -53,7 +53,7 @@ const initialState: SegmentModalState = {
   error: null,
 };
 
-const segmentModalSlice = (createSlice as any)({
+const segmentModalSlice = createSlice({
   name: 'segmentModal', // Updated slice name
   initialState,
   reducers: {
@@ -69,7 +69,7 @@ const segmentModalSlice = (createSlice as any)({
       state.loading = false;
       state.error = null;
     },
-    closeSegmentForm: (state) => {
+    closeSegmentForm: (state: any) => {
       state.isOpen = false;
       state.formData = createInitialSegmentFormData();
       state.path = [];
@@ -82,7 +82,7 @@ const segmentModalSlice = (createSlice as any)({
     setSegmentError: (state, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    clearSegmentForm: (state) => {
+    clearSegmentForm: (state: any) => {
       state.formData = createInitialSegmentFormData();
       state.error = null;
       state.loading = false;
@@ -115,3 +115,4 @@ export default segmentModalSlice.reducer;
 // Selector para obtener el estado completo del segmento
 export const selectSegmentState = (state: { segmentModal: SegmentModalState }) =>
   state.segmentModal;
+

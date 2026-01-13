@@ -19,7 +19,7 @@ import AuthorizationsPanelContent from './components/AuthorizationsPanelContent'
 
 const PRIVILEGED_ROLES = new Set(['admin', 'owner', 'dev', 'manager']);
 
-const resolveRequestModule = (request) => {
+const resolveRequestModule = (request: any): string => {
   if (!request || typeof request !== 'object') return 'authorizationRequests';
 
   const metadataModule =
@@ -38,7 +38,7 @@ const resolveRequestModule = (request) => {
   );
 };
 
-const toMillis = (value) => {
+const toMillis = (value: any): number => {
   if (!value) return 0;
   if (typeof value === 'number') {
     return value > 1e12 ? value : value * 1000;
@@ -55,8 +55,8 @@ const toMillis = (value) => {
   return 0;
 };
 
-const sortAuthorizations = (items) =>
-  (Array.isArray(items) ? items : []).slice().sort((a, b) => {
+const sortAuthorizations = (items: any[]): any[] =>
+  (Array.isArray(items) ? items : []).slice().sort((a: any, b: any) => {
     if (a.status === 'pending' && b.status !== 'pending') return -1;
     if (a.status !== 'pending' && b.status === 'pending') return 1;
 
@@ -69,9 +69,9 @@ const AuthorizationsPanel = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [authorizations, setAuthorizations] = useState([]);
+  const [authorizations, setAuthorizations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const handleNavigateToRequests = useCallback(() => {
     const targetPath = ROUTES_PATH.AUTHORIZATIONS_TERM.AUTHORIZATIONS_LIST;
@@ -99,13 +99,13 @@ const AuthorizationsPanel = () => {
 
     const unsubscribe = listenToAuthorizationsByStatus(
       businessID,
-      status,
+      'pending' as const,
       userId,
-      (data) => {
+      (data: any) => {
         setAuthorizations(sortAuthorizations(data));
         setLoading(false);
       },
-      (error) => {
+      (error: any) => {
         console.error('Error escuchando autorizaciones:', error);
         setLoading(false);
       },
@@ -115,7 +115,7 @@ const AuthorizationsPanel = () => {
   }, [businessID, isAdmin, user?.uid]);
 
   const executeAction = useCallback(
-    async (authId, type) => {
+    async (authId: string, type: 'approve' | 'reject') => {
       if (!user) {
         message.warning('Debes iniciar sesión para gestionar autorizaciones.');
         return;
@@ -130,7 +130,7 @@ const AuthorizationsPanel = () => {
 
       try {
         const requestSnapshot = authorizations.find(
-          (item) => item.id === authId || item.key === authId,
+          (item: any) => item.id === authId || item.key === authId,
         );
         const moduleForLog = resolveRequestModule(requestSnapshot);
         const requestedBySnapshot = requestSnapshot?.requestedBy || null;
@@ -157,7 +157,7 @@ const AuthorizationsPanel = () => {
                 status: requestSnapshot?.status || 'pending',
                 module: moduleForLog,
               },
-            },
+            } as any,
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
@@ -165,7 +165,7 @@ const AuthorizationsPanel = () => {
                 requestSnapshot?.reference ||
                 requestSnapshot?.invoiceNumber ||
                 null,
-            },
+            } as any,
           });
         } else {
           await rejectAuthorizationRequest(user, authId, user);
@@ -189,7 +189,7 @@ const AuthorizationsPanel = () => {
                 status: requestSnapshot?.status || 'pending',
                 module: moduleForLog,
               },
-            },
+            } as any,
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
@@ -197,10 +197,10 @@ const AuthorizationsPanel = () => {
                 requestSnapshot?.reference ||
                 requestSnapshot?.invoiceNumber ||
                 null,
-            },
+            } as any,
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         const actionLabel = type === 'approve' ? 'aprobar' : 'rechazar';
         console.error(`Error al ${actionLabel} la autorización:`, error);
         message.error(`No se pudo ${actionLabel} la autorización.`);
@@ -212,7 +212,7 @@ const AuthorizationsPanel = () => {
   );
 
   const handleApprove = useCallback(
-    (authId) => {
+    (authId: string) => {
       Modal.confirm({
         title: '¿Confirmar autorización?',
         content:
@@ -227,7 +227,7 @@ const AuthorizationsPanel = () => {
   );
 
   const handleReject = useCallback(
-    (authId) => {
+    (authId: string) => {
       Modal.confirm({
         title: '¿Rechazar solicitud?',
         content: 'Esta acción rechazará la solicitud y no podrá deshacerse.',

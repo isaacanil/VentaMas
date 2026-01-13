@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 let initialState = {
   cashReconciliation: {
@@ -7,19 +7,19 @@ let initialState = {
   },
 };
 
-const cashCountStateSlice = (createSlice as any)({
+const cashCountStateSlice = createSlice({
   name: 'cashCountState',
   initialState,
   reducers: {
-    setCashReconciliation: (state, action) => {
+    setCashReconciliation: (state: any, action: PayloadAction<any>) => {
       if (action.payload && typeof action.payload === 'object') {
-        // Validación básica, mejora según tus necesidades
+        // ValidaciÃ³n bÃ¡sica, mejora segÃºn tus necesidades
         state.cashReconciliation = action.payload;
       } else {
         state.cashReconciliation = null;
       }
     },
-    clearCashReconciliation: (state) => {
+    clearCashReconciliation: (state: any) => {
       state.cashReconciliation = {
         state: 'closed',
         cashCount: {},
@@ -35,4 +35,5 @@ export default cashCountStateSlice.reducer;
 
 export const selectCashReconciliation = (state) =>
   state.cashCountState.cashReconciliation;
+
 

@@ -6,57 +6,57 @@ import type { AppRoute } from '@/router/routes/routes';
 
 const AuthorizationFlowConfig = lazy(() =>
   import(
-    '@/views/component/GeneralConfig/configs/AuthorizationFlowConfig'
+    '@/modules/settings/components/GeneralConfig/configs/AuthorizationFlowConfig'
   ),
 );
 const BillingConfig = lazy(() =>
-  import('@/views/component/GeneralConfig/configs/BillingConfig'),
+  import('@/modules/settings/components/GeneralConfig/configs/BillingConfig'),
 );
 const InventoryConfig = lazy(() =>
-  import('@/views/component/GeneralConfig/configs/InventoryConfig'),
+  import('@/modules/settings/components/GeneralConfig/configs/InventoryConfig'),
 );
 const GeneralConfig = lazy(() =>
-  import('@/views/component/GeneralConfig/GeneralConfig'),
+  import('@/modules/settings/components/GeneralConfig/GeneralConfig'),
 );
 const SwitchBusiness = lazy(() =>
-  import('@/views/pages/dev/SwitchBusiness'),
+  import('@/modules/dev/pages/dev/SwitchBusiness'),
 );
 const Setting = lazy(() =>
-  import('@/views/pages/setting/setting').then((module) => ({
+  import('@/modules/settings/pages/setting/setting').then((module) => ({
     default: module.Setting,
   })),
 );
 const AppInfo = lazy(() =>
-  import('@/views/pages/setting/subPage/AppInfo/AppInfo'),
+  import('@/modules/settings/pages/setting/subPage/AppInfo/AppInfo'),
 );
 const BusinessCreator = lazy(() =>
-  import('@/views/pages/setting/subPage/BusinessEditor/BusinessCreator'),
+  import('@/modules/settings/pages/setting/subPage/BusinessEditor/BusinessCreator'),
 );
 const BusinessInfo = lazy(() =>
-  import('@/views/pages/setting/subPage/BusinessEditor/BusinessEditorProfile'),
+  import('@/modules/settings/pages/setting/subPage/BusinessEditor/BusinessEditorProfile'),
 );
 const TaxReceiptSetting = lazy(() =>
   import(
-    '@/views/pages/setting/subPage/TaxReceipts/TaxReceIptSetting'
+    '@/modules/settings/pages/setting/subPage/TaxReceipts/TaxReceIptSetting'
   ).then((module) => ({ default: module.TaxReceiptSetting })),
 );
 const UserList = lazy(() =>
   import(
-    '@/views/pages/setting/subPage/Users/components/UsersList/UserList'
+    '@/modules/settings/pages/setting/subPage/Users/components/UsersList/UserList'
   ).then((module) => ({ default: module.UserList })),
 );
 const UserActivity = lazy(() =>
-  import('@/views/pages/setting/subPage/Users/UserActivity').then(
+  import('@/modules/settings/pages/setting/subPage/Users/UserActivity').then(
     (module) => ({ default: module.UserActivity }),
   ),
 );
 const UserAdmin = lazy(() =>
-  import('@/views/pages/setting/subPage/Users/UserAdmin').then(
+  import('@/modules/settings/pages/setting/subPage/Users/UserAdmin').then(
     (module) => ({ default: module.UserAdmin }),
   ),
 );
 const UserSessionLogs = lazy(() =>
-  import('@/views/pages/setting/subPage/Users/UserSessionLogs').then(
+  import('@/modules/settings/pages/setting/subPage/Users/UserSessionLogs').then(
     (module) => ({ default: module.UserSessionLogs }),
   ),
 );
@@ -71,7 +71,6 @@ const {
   SETTING,
   APP_INFO,
   BUSINESS_INFO,
-  CREATE_BUSINESS,
   GENERAL_CONFIG_APP_INFO,
   GENERAL_CONFIG_BILLING,
   GENERAL_CONFIG_BUSINESS,
@@ -79,6 +78,8 @@ const {
   GENERAL_CONFIG_TAX_RECEIPT,
   GENERAL_CONFIG_AUTHORIZATION,
 } = ROUTES_NAME.SETTING_TERM;
+
+const { CREATE_BUSINESS } = ROUTES_NAME.DEV_VIEW_TERM;
 
 const basePath = SETTINGS;
 const Routes: AppRoute[] = [

@@ -19,7 +19,7 @@ import utility from '@/router/routes/paths/Utility';
 import { processRoute } from '@/router/routes/requiereAuthProvider';
 import { ROUTE_STATUS } from '@/router/routes/routeMeta';
 import { registerRoutes as registerRoutesIndex } from '@/router/routes/routeVisibility';
-import { NotFound } from '@/views/pages/NotFound/NotFound';
+import { NotFound } from '@/modules/app/pages/NotFound/NotFound';
 
 import type { RouteStatus } from '@/router/routes/routeMeta';
 import type { ReactElement } from 'react';

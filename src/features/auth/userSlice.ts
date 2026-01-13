@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   user: null,
@@ -6,27 +6,27 @@ const initialState = {
   originalRole: null, // Para guardar el role original como referencia
 };
 
-export const userSlice = (createSlice as any)({
+export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    login: (state, action) => {
+    login: (state: any, action: PayloadAction<any>) => {
       state.user = { ...(state.user || {}), ...action.payload };
     },
-    addUserData: (state, action) => {
+    addUserData: (state: any, action: PayloadAction<any>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
       }
     },
-    logout: (state) => {
+    logout: (state: any) => {
       state.user = null;
-      state.originalBusinessId = null; // Limpiar también la referencia original
-      state.originalRole = null; // Limpiar también el role original
+      state.originalBusinessId = null; // Limpiar tambiÃ©n la referencia original
+      state.originalRole = null; // Limpiar tambiÃ©n el role original
     },
     // Cambiar temporalmente de negocio (modo invitado)
-    switchToBusiness: (state, action) => {
+    switchToBusiness: (state: any, action: PayloadAction<any>) => {
       if (state.user) {
-        // Guardar el businessID original si no está guardado
+        // Guardar el businessID original si no estÃ¡ guardado
         if (!state.originalBusinessId) {
           state.originalBusinessId = state.user.businessID;
         }
@@ -34,16 +34,16 @@ export const userSlice = (createSlice as any)({
         state.user.businessID = action.payload;
       }
     }, // Volver al negocio original
-    returnToOriginalBusiness: (state) => {
+    returnToOriginalBusiness: (state: any) => {
       if (state.user && state.originalBusinessId) {
         state.user.businessID = state.originalBusinessId;
         state.originalBusinessId = null;
       }
     },
     // Cambiar temporalmente de role (modo desarrollador)
-    switchToRole: (state, action) => {
+    switchToRole: (state: any, action: PayloadAction<any>) => {
       if (state.user) {
-        // Guardar el role original si no está guardado
+        // Guardar el role original si no estÃ¡ guardado
         if (!state.originalRole) {
           state.originalRole = state.user.role;
         }
@@ -52,7 +52,7 @@ export const userSlice = (createSlice as any)({
       }
     },
     // Volver al role original
-    returnToOriginalRole: (state) => {
+    returnToOriginalRole: (state: any) => {
       if (state.user && state.originalRole) {
         state.user.role = state.originalRole;
         state.originalRole = null;
@@ -87,4 +87,5 @@ export const selectIsTemporaryRoleMode = (state) => !!state.user.originalRole;
 export const selectOriginalRole = (state) => state.user.originalRole;
 
 export default userSlice.reducer;
+
 

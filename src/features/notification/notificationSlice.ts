@@ -1,19 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   currentNotification: { title: '', message: '', visible: false, type: null },
 };
 
-const notificationSlice = (createSlice as any)({
+const notificationSlice = createSlice({
   name: 'notification',
   initialState,
   reducers: {
-    addNotification: (state, action) => {
-      // Validación de entrada
+    addNotification: (state: any, action: PayloadAction<any>) => {
+      // ValidaciÃ³n de entrada
       const { message, title, type } = action.payload;
       state.currentNotification = { message, title, type, visible: true };
     },
-    removeNotification: (state) => {
+    removeNotification: (state: any) => {
       state.currentNotification = {
         title: '',
         message: '',
@@ -30,4 +30,5 @@ export default notificationSlice.reducer;
 
 export const selectCurrentNotification = (state) =>
   state.notification.currentNotification;
+
 

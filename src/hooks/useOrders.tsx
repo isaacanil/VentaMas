@@ -7,7 +7,7 @@ import { toMillis } from '@/utils/date/toMillis';
 import type { UserIdentity } from '@/types/users';
 import type { Order } from '@/utils/order/types';
 import { sortOrders } from '@/utils/filterUtils';
-import type { FilterState } from '@/views/pages/OrderAndPurchase/Compra/components/FilterBar/types';
+import type { FilterState } from '@/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/FilterBar/types';
 
 const convertTimestamps = (data: Order): Order => {
   const timestampFields: Array<keyof Order> = [

@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
 
 type DeleteActionType = 'productStock' | 'batch';
 
@@ -22,7 +22,7 @@ const initialState: DeleteProductStockState = {
   actionType: 'productStock',
 };
 
-const deleteProductStockSlice = (createSlice as any)({
+const deleteProductStockSlice = createSlice({
   name: 'deleteProductStock',
   initialState,
   reducers: {
@@ -32,7 +32,7 @@ const deleteProductStockSlice = (createSlice as any)({
       state.batchId = action.payload.batchId;
       state.actionType = action.payload.actionType;
     },
-    closeDeleteModal: (state) => {
+    closeDeleteModal: (state: any) => {
       state.isOpen = false;
       state.productStockId = null;
       state.batchId = null;
@@ -49,3 +49,4 @@ export const selectDeleteModalState = (state: {
   deleteProductStock: DeleteProductStockState;
 }) => state.deleteProductStock;
 export default deleteProductStockSlice.reducer;
+

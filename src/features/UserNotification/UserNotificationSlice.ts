@@ -1,5 +1,5 @@
 import {
-  createSlice,
+  createSlice, PayloadAction,
   createSerializableStateInvariantMiddleware,
 } from '@reduxjs/toolkit';
 
@@ -18,14 +18,14 @@ const initialState = {
   },
 };
 
-const UserNotificationSlice = (createSlice as any)({
+const UserNotificationSlice = createSlice({
   name: 'userNotification',
   initialState,
   reducers: {
-    setUserNotification: (state, action) => {
+    setUserNotification: (state: any, action: PayloadAction<any>) => {
       state.currentDialog = action.payload;
     },
-    closeUserNotification: (state) => {
+    closeUserNotification: (state: any) => {
       const initialValue = {
         isOpen: false,
         title: 'Titulo',

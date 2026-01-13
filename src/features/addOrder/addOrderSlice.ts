@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 // Add missing import
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
@@ -8,7 +8,7 @@ import {
   getDefaultTransactionStatus,
 } from '@/constants/orderAndPurchaseState';
 
-// Agregar funciones auxiliares para cálculos (idénticas a las de addPurchaseSlice)
+// Agregar funciones auxiliares para cÃ¡lculos (idÃ©nticas a las de addPurchaseSlice)
 const calculateUnitCost = (product) => {
   const baseCost = Number(product.baseCost) || 0;
   const tax = (baseCost * (Number(product.taxPercentage) || 0)) / 100;
@@ -41,13 +41,13 @@ const EmptyOrder = {
   total: 0,
 };
 
-// Actualizar EmptyProductSelected para incluir propiedades usadas en la lógica de backorders y cálculos
+// Actualizar EmptyProductSelected para incluir propiedades usadas en la lÃ³gica de backorders y cÃ¡lculos
 const EmptyProductSelected = {
   id: '',
   name: '',
   quantity: 0,
   purchaseQuantity: 0, // Cantidad total a comprar
-  selectedBackOrders: [], // Solo contendrá {id, quantity}
+  selectedBackOrders: [], // Solo contendrÃ¡ {id, quantity}
   unitMeasurement: '', // agregado
   baseCost: 0, // agregado
   unitCost: 0, // agregado
@@ -58,19 +58,19 @@ const initialState = {
   productSelected: EmptyProductSelected,
   order: EmptyOrder,
 };
-const addOrderSlice = (createSlice as any)({
+const addOrderSlice = createSlice({
   name: 'addOrder',
   initialState,
   reducers: {
-    getOrderData: (state, actions) => {
+    getOrderData: (state: any, actions: PayloadAction<any>) => {
       const data = actions.payload;
       state.order = data ? data : null;
     },
-    setProductSelected: (state, actions) => {
+    setProductSelected: (state: any, actions: PayloadAction<any>) => {
       const newValue = actions.payload;
       state.productSelected = { ...state.productSelected, ...newValue };
     },
-    SelectProduct: (state, actions) => {
+    SelectProduct: (state: any, actions: PayloadAction<any>) => {
       const product = actions.payload;
       let productData = {
         key: nanoid(),
@@ -94,11 +94,11 @@ const addOrderSlice = (createSlice as any)({
       
       state.productSelected = productData;
     },
-    AddProductToOrder: (state) => {
+    AddProductToOrder: (state: any) => {
       state.order.replenishments.push(state.productSelected);
       state.productSelected = EmptyProductSelected; // Fix reference
     },
-    setOrder: (state, actions) => {
+    setOrder: (state: any, actions: PayloadAction<any>) => {
       const { ...rest } = actions.payload;
 
       state.order = {
@@ -106,16 +106,16 @@ const addOrderSlice = (createSlice as any)({
         ...rest,
       };
     },
-    getInitialCost: (state, actions) => {
+    getInitialCost: (state: any, actions: PayloadAction<any>) => {
       const { initialCost } = actions.payload;
       state.productSelected.initialCost = initialCost;
     },
-    cleanOrder: (state) => {
+    cleanOrder: (state: any) => {
       state.productSelected = EmptyProductSelected; // Fix reference
       state.order = EmptyOrder;
       state.mode = 'add';
     },
-    updateProduct: (state, action) => {
+    updateProduct: (state: any, action: PayloadAction<any>) => {
       const { value } = action.payload;
       const productIndex = state.order.replenishments.findIndex((item) => {
         const matchesKey = value?.key && item.key === value.key;
@@ -157,20 +157,20 @@ const addOrderSlice = (createSlice as any)({
         subtotal: calculateSubTotal(updatedProduct),
       };
     },
-    addAttachmentToOrder: (state, actions) => {
+    addAttachmentToOrder: (state: any, actions: PayloadAction<any>) => {
       state.order.attachmentUrls = [
         ...state.order.attachmentUrls,
         actions.payload,
       ];
     },
 
-    clearProductSelected: (state) => {
+    clearProductSelected: (state: any) => {
       state.productSelected = EmptyProductSelected;
     },
-    deleteReceiptImageFromOrder: (state) => {
+    deleteReceiptImageFromOrder: (state: any) => {
       state.order.receiptUrl = '';
     },
-    deleteProductFromOrder: (state, actions) => {
+    deleteProductFromOrder: (state: any, actions: PayloadAction<any>) => {
       const { id, key } = actions.payload;
       state.order.replenishments = state.order.replenishments.filter(
         (item) => {
@@ -180,7 +180,7 @@ const addOrderSlice = (createSlice as any)({
         },
       );
     },
-    setSelectedBackOrders: (state, action) => {
+    setSelectedBackOrders: (state: any, action: PayloadAction<any>) => {
       const { selectedBackOrders, purchaseQuantity } = action.payload;
       const totalBackordersQuantity = selectedBackOrders.reduce(
         (sum, order) => sum + order.quantity,
@@ -194,7 +194,7 @@ const addOrderSlice = (createSlice as any)({
         quantity: Math.max(0, purchaseQuantity - totalBackordersQuantity),
       };
     },
-    setPurchaseQuantity: (state, action) => {
+    setPurchaseQuantity: (state: any, action: PayloadAction<any>) => {
       const quantity = action.payload;
       const totalBackordersQuantity =
         state.productSelected.selectedBackOrders.reduce(
@@ -208,7 +208,7 @@ const addOrderSlice = (createSlice as any)({
         quantity: Math.max(0, quantity - totalBackordersQuantity),
       };
     },
-    clearSelectedBackOrders: (state) => {
+    clearSelectedBackOrders: (state: any) => {
       state.productSelected = {
         ...state.productSelected,
         selectedBackOrders: [],
@@ -243,4 +243,5 @@ export const selectOrderState = (state) => state.addOrder;
 export const selectTotalOrder = (state) => state.addOrder.order.total;
 
 export default addOrderSlice.reducer;
+
 

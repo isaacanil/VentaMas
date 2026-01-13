@@ -1,6 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const userRegistrationSlice = (createSlice as any)({
+const userRegistrationSlice = createSlice({
   name: 'userRegistration',
   initialState: {
     user: {
@@ -16,16 +16,16 @@ const userRegistrationSlice = (createSlice as any)({
     errorMessage: '',
   },
   reducers: {
-    updateUser: (state, action) => {
+    updateUser: (state: any, action: PayloadAction<any>) => {
       state.user = { ...state.user, ...action.payload };
     },
-    setManagementUser: (state, action) => {
+    setManagementUser: (state: any, action: PayloadAction<any>) => {
       state.user = { ...action.payload };
     },
-    setErrors: (state, action) => {
+    setErrors: (state: any, action: PayloadAction<any>) => {
       state.errors = action.payload;
     },
-    clear: (state) => {
+    clear: (state: any) => {
       state.user = {
         name: '',
         password: '',
@@ -43,4 +43,5 @@ export const { updateUser, setErrors, clear } = userRegistrationSlice.actions;
 export default userRegistrationSlice.reducer;
 
 export const selectUserManager = (state) => state.usersManagement;
+
 

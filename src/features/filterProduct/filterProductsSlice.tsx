@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
 import {
   fetchUserFilterPreferences,
@@ -39,15 +39,15 @@ const STORAGE_KEYS = {
 const capitalize = (value = '') =>
   value.charAt(0).toUpperCase() + value.slice(1);
 
-const toStorageKey = (context, field) => {
-  const suffix = STORAGE_KEYS[field];
+const toStorageKey = (context: any, field: any) => {
+  const suffix = STORAGE_KEYS[field as keyof typeof STORAGE_KEYS];
   if (!suffix) return null;
   if (!context || context === DEFAULT_FILTER_CONTEXT) return suffix;
   return `${context}${capitalize(suffix)}`;
 };
 
-const serializeForStorage = (field, value) => {
-  const defaultValue = DEFAULT_FILTERS[field];
+const serializeForStorage = (field: any, value: any) => {
+  const defaultValue = DEFAULT_FILTERS[field as keyof typeof DEFAULT_FILTERS];
 
   if (Array.isArray(defaultValue)) {
     const arrayValue = Array.isArray(value) ? value : defaultValue;
@@ -75,8 +75,8 @@ const serializeForStorage = (field, value) => {
   return String(value);
 };
 
-const deserializeStoredValue = (field, rawValue) => {
-  const defaultValue = DEFAULT_FILTERS[field];
+const deserializeStoredValue = (field: any, rawValue: any) => {
+  const defaultValue = DEFAULT_FILTERS[field as keyof typeof DEFAULT_FILTERS];
   if (rawValue === null || rawValue === undefined) return defaultValue;
 
   if (Array.isArray(defaultValue)) {
@@ -102,7 +102,7 @@ const deserializeStoredValue = (field, rawValue) => {
   return rawValue;
 };
 
-const readStoredValue = (key) => {
+const readStoredValue = (key: any) => {
   if (!key || typeof localStorage === 'undefined') return null;
   try {
     return localStorage.getItem(key);
@@ -111,7 +111,7 @@ const readStoredValue = (key) => {
   }
 };
 
-const writeStoredValue = (key, value) => {
+const writeStoredValue = (key: any, value: any) => {
   if (!key || typeof localStorage === 'undefined') return;
   try {
     localStorage.setItem(key, value);
@@ -120,8 +120,8 @@ const writeStoredValue = (key, value) => {
   }
 };
 
-const hydrateContextFilters = (context) => {
-  const filters = {};
+const hydrateContextFilters = (context: any) => {
+  const filters: any = {};
   Object.keys(DEFAULT_FILTERS).forEach((field) => {
     const storageKey = toStorageKey(context, field);
     const storedValue = readStoredValue(storageKey);
@@ -130,25 +130,25 @@ const hydrateContextFilters = (context) => {
   return filters;
 };
 
-const ensureContextState = (state, context = DEFAULT_FILTER_CONTEXT) => {
+const ensureContextState = (state: any, context = DEFAULT_FILTER_CONTEXT) => {
   if (!state.contexts[context]) {
     state.contexts[context] = { ...DEFAULT_FILTERS };
   }
   return state.contexts[context];
 };
 
-const persistContextField = (context, field, value) => {
+const persistContextField = (context: any, field: any, value: any) => {
   const key = toStorageKey(context, field);
   writeStoredValue(key, serializeForStorage(field, value));
 };
 
-const persistContextDefaults = (context) => {
+const persistContextDefaults = (context: any) => {
   Object.entries(DEFAULT_FILTERS).forEach(([field, value]) => {
     persistContextField(context, field, value);
   });
 };
 
-const extractPayload = (payload) => {
+const extractPayload = (payload: any) => {
   if (typeof payload === 'object' && payload !== null) {
     const { context = DEFAULT_FILTER_CONTEXT } = payload;
     const value =
@@ -160,12 +160,12 @@ const extractPayload = (payload) => {
   return { context: DEFAULT_FILTER_CONTEXT, value: payload };
 };
 
-const markContextDirty = (state, context) => {
+const markContextDirty = (state: any, context: any) => {
   state.meta.dirtyContexts[context] = true;
 };
 
 const initialState = {
-  contexts: KNOWN_FILTER_CONTEXTS.reduce((acc, context) => {
+  contexts: KNOWN_FILTER_CONTEXTS.reduce((acc: any, context) => {
     acc[context] = hydrateContextFilters(context);
     return acc;
   }, {}),
@@ -182,13 +182,13 @@ const initialState = {
 
 export const loadFilterPreferences = (createAsyncThunk as any)(
   'filterProducts/loadFilterPreferences',
-  async ({ userId }, { rejectWithValue }) => {
+  async ({ userId }: any, { rejectWithValue }: any) => {
     if (!userId) return { contexts: null, userId: null };
     try {
       const data = await fetchUserFilterPreferences(userId);
       const contexts = data?.contexts || data || {};
       return { contexts, userId };
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(
         error?.message || 'No se pudieron cargar los filtros',
       );
@@ -198,7 +198,7 @@ export const loadFilterPreferences = (createAsyncThunk as any)(
 
 export const persistFilterPreferences = (createAsyncThunk as any)(
   'filterProducts/persistFilterPreferences',
-  async ({ userId, context }, { getState, rejectWithValue }) => {
+  async ({ userId, context }: any, { getState, rejectWithValue }: any) => {
     if (!userId) return { userId: null };
     try {
       const {
@@ -206,7 +206,7 @@ export const persistFilterPreferences = (createAsyncThunk as any)(
       } = getState();
       await saveUserFilterPreferences(userId, contexts);
       return { userId, context };
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(
         error?.message || 'No se pudieron guardar los filtros',
       );
@@ -214,11 +214,11 @@ export const persistFilterPreferences = (createAsyncThunk as any)(
   },
 );
 
-export const filterProductsSlice = (createSlice as any)({
+export const filterProductsSlice = createSlice({
   name: 'filterProducts',
   initialState,
   reducers: {
-    setCriterio: (state, action) => {
+    setCriterio: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -226,7 +226,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'criterio', value);
       markContextDirty(state, context);
     },
-    setOrden: (state, action) => {
+    setOrden: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -234,7 +234,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'orden', value);
       markContextDirty(state, context);
     },
-    setInventariable: (state, action) => {
+    setInventariable: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -242,7 +242,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'inventariable', value);
       markContextDirty(state, context);
     },
-    setItbis: (state, action) => {
+    setItbis: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -250,7 +250,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'itbis', value);
       markContextDirty(state, context);
     },
-    setPriceStatus: (state, action) => {
+    setPriceStatus: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -258,7 +258,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'priceStatus', value);
       markContextDirty(state, context);
     },
-    setCostStatus: (state, action) => {
+    setCostStatus: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -266,7 +266,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'costStatus', value);
       markContextDirty(state, context);
     },
-    setPromotionStatus: (state, action) => {
+    setPromotionStatus: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -274,7 +274,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'promotionStatus', value);
       markContextDirty(state, context);
     },
-    setStockAvailability: (state, action) => {
+    setStockAvailability: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -282,7 +282,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'stockAvailability', value);
       markContextDirty(state, context);
     },
-    setStockAlertLevel: (state, action) => {
+    setStockAlertLevel: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -290,7 +290,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'stockAlertLevel', value);
       markContextDirty(state, context);
     },
-    setStockRequirement: (state, action) => {
+    setStockRequirement: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       if (value === undefined) return;
       const contextState = ensureContextState(state, context);
@@ -298,7 +298,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'stockRequirement', value);
       markContextDirty(state, context);
     },
-    setStockLocations: (state, action) => {
+    setStockLocations: (state: any, action: PayloadAction<any>) => {
       const { context, value } = extractPayload(action.payload);
       const contextState = ensureContextState(state, context);
       const normalized = Array.isArray(value) ? value.filter(Boolean) : [];
@@ -306,7 +306,7 @@ export const filterProductsSlice = (createSlice as any)({
       persistContextField(context, 'stockLocations', normalized);
       markContextDirty(state, context);
     },
-    resetFilters: (state, action) => {
+    resetFilters: (state: any, action: PayloadAction<any>) => {
       const context =
         action?.payload && typeof action.payload === 'object'
           ? action.payload.context
@@ -324,7 +324,7 @@ export const filterProductsSlice = (createSlice as any)({
       });
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       .addCase(loadFilterPreferences.pending, (state, action) => {
         state.meta.loading = true;

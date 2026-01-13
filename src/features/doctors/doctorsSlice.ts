@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { fbAddDoctor } from '@/firebase/doctors/fbAddDoctor';
 import { fbCheckDoctorExists } from '@/firebase/doctors/fbCheckDoctorExists';
@@ -24,7 +24,7 @@ export const addDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
       const doctorId = await fbAddDoctor(doctor, user);
       return { ...doctor, id: doctorId };
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al agregar médico');
+      return rejectWithValue(error.message || 'Error al agregar mÃ©dico');
     }
   },
 );
@@ -48,7 +48,7 @@ export const updateDoctor = createAsyncThunk<any, { doctor: any; user: any }>(
       await fbUpdateDoctor(doctor, user);
       return doctor;
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al actualizar médico');
+      return rejectWithValue(error.message || 'Error al actualizar mÃ©dico');
     }
   },
 );
@@ -60,7 +60,7 @@ export const deleteDoctor = createAsyncThunk<any, { doctorId: any; user: any }>(
       await fbDeleteDoctor(doctorId, user);
       return doctorId;
     } catch (error) {
-      return rejectWithValue(error.message || 'Error al eliminar médico');
+      return rejectWithValue(error.message || 'Error al eliminar mÃ©dico');
     }
   },
 );
@@ -77,34 +77,34 @@ const initialState = {
   error: null,
 };
 
-const doctorsSlice = (createSlice as any)({
+const doctorsSlice = createSlice({
   name: 'doctors',
   initialState,
   reducers: {
-    clearError: (state) => {
+    clearError: (state: any) => {
       state.error = null;
     },
-    setSelectedDoctor: (state, action) => {
+    setSelectedDoctor: (state: any, action: PayloadAction<any>) => {
       state.selectedDoctor = action.payload;
     },
-    clearSelectedDoctor: (state) => {
+    clearSelectedDoctor: (state: any) => {
       state.selectedDoctor = null;
     },
-    openModal: (state, action) => {
+    openModal: (state: any, action: PayloadAction<any>) => {
       state.modal.open = true;
       state.modal.mode = action.payload?.mode || 'add';
       if (action.payload?.doctor) {
         state.selectedDoctor = action.payload.doctor;
       }
     },
-    closeModal: (state) => {
+    closeModal: (state: any) => {
       state.modal.open = false;
       state.modal.mode = 'add';
       state.selectedDoctor = null;
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder: any) => {
     builder
       // Add doctor
       .addCase(addDoctor.pending, (state) => {
@@ -168,4 +168,5 @@ export const selectDoctorsLoading = (state) => state.doctors.loading;
 export const selectDoctorsError = (state) => state.doctors.error;
 
 export default doctorsSlice.reducer;
+
 

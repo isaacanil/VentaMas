@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
-import { calculatePaymentDates } from '@/views/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/receivableUtils';
+import { calculatePaymentDates } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/receivableUtils';
 import type { UserIdentity } from '@/types/users';
 import type {
   AccountsReceivableDoc,

@@ -1,0 +1,234 @@
+// @ts-nocheck
+import { DateTime } from 'luxon';
+
+export const END_EVENTS = new Set([
+  'logout',
+  'revoked',
+  'auto-revoked',
+  'expired',
+  'idle-timeout',
+  'terminated',
+  'idle',
+]);
+
+export const normalizeContext = (context) => {
+  if (!context || typeof context !== 'object') return {};
+
+  const metadata =
+    context.metadata && typeof context.metadata === 'object'
+      ? context.metadata
+      : {};
+  const actor =
+    context.actor && typeof context.actor === 'object' ? context.actor : {};
+
+  return {
+    ...context,
+    metadata,
+    actor,
+  };
+};
+
+export const toMillis = (value) => {
+  if (!value) return null;
+  if (typeof value === 'number') return value;
+  if (typeof value?.toMillis === 'function') return value.toMillis();
+
+  if (
+    typeof value === 'object' &&
+    typeof value.seconds === 'number' &&
+    typeof value.nanoseconds === 'number'
+  ) {
+    return value.seconds * 1000 + value.nanoseconds / 1_000_000;
+  }
+
+  if (
+    typeof value === 'object' &&
+    typeof value._seconds === 'number' &&
+    typeof value._nanoseconds === 'number'
+  ) {
+    return value._seconds * 1000 + value._nanoseconds / 1_000_000;
+  }
+
+  return null;
+};
+
+export const formatDateTime = (value) => {
+  const millis = toMillis(value);
+  if (!millis) return 'Sin registro';
+
+  return DateTime.fromMillis(millis).toLocaleString(
+    DateTime.DATETIME_MED_WITH_SECONDS,
+  );
+};
+
+export const formatDuration = (millis) => {
+  if (!millis || millis <= 0) return 'En curso';
+
+  const totalSeconds = Math.floor(millis / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
+};
+
+const LANGUAGE_CODE_REGEX = /^[a-z]{2}(?:-[A-Z]{2,3}|-[0-9]{3})?$/i;
+
+const detectBrowser = (userAgent = '', parts = []) => {
+  const haystack = `${userAgent} ${parts.join(' ')}`.toLowerCase();
+  if (haystack.includes('edg')) return 'Edge';
+  if (haystack.includes('opr') || haystack.includes('opera')) return 'Opera';
+  if (haystack.includes('firefox')) return 'Firefox';
+  if (haystack.includes('safari') && !haystack.includes('chrome')) {
+    return 'Safari';
+  }
+  if (haystack.includes('chrome') || haystack.includes('chromium')) {
+    return 'Chrome';
+  }
+  return null;
+};
+
+const detectOsLabel = (input = '') => {
+  const lower = input.toLowerCase();
+  if (lower.includes('android')) return 'Android';
+  if (lower.includes('iphone') || lower.includes('ipad') || lower.includes('ios'))
+    return 'iPhone';
+  if (lower.includes('mac')) return 'Mac';
+  if (lower.includes('windows')) return 'PC Windows';
+  if (lower.includes('linux')) return 'PC Linux';
+  return null;
+};
+
+const formatDeviceLabel = ({ deviceLabel, platform, userAgent }) => {
+  const normalizedLabel = typeof deviceLabel === 'string' ? deviceLabel : '';
+  const pieces = normalizedLabel
+    .split('•')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !LANGUAGE_CODE_REGEX.test(part));
+
+  const combined = [normalizedLabel, platform, userAgent]
+    .filter(Boolean)
+    .join(' ');
+
+  const osLabel = detectOsLabel(combined) || 'Dispositivo';
+  const browser = detectBrowser(userAgent, pieces);
+
+  const isMobile = osLabel === 'Android' || osLabel === 'iPhone';
+  if (isMobile) return osLabel;
+  return browser ? `${osLabel} (${browser})` : osLabel;
+};
+
+const getSessionKey = (log, index, fallbackCount) => {
+  if (log.sessionId) return log.sessionId;
+  if (log.id) return log.id;
+  return `session-${log.createdAt || Date.now()}-${fallbackCount + index}`;
+};
+
+export const buildSessionsFromLogs = (normalizedLogs = []) => {
+  const sessionMap = new Map();
+
+  normalizedLogs.forEach((log, index) => {
+    const key = getSessionKey(log, index, sessionMap.size);
+    const current = sessionMap.get(key) || {
+      sessionId: log.sessionId || 'Sin id',
+      login: null,
+      logout: null,
+      firstSeen: log.createdAt || null,
+      lastSeen: log.createdAt || null,
+    };
+
+    if (log.createdAt) {
+      current.firstSeen = Math.min(
+        current.firstSeen || log.createdAt,
+        log.createdAt,
+      );
+      current.lastSeen = Math.max(current.lastSeen || log.createdAt, log.createdAt);
+    }
+
+    if (log.event === 'login') {
+      if (
+        !current.login ||
+        (log.createdAt || 0) > (current.login.createdAt || 0)
+      ) {
+        current.login = log;
+      }
+    }
+
+    if (END_EVENTS.has(log.event)) {
+      if (
+        !current.logout ||
+        (log.createdAt || 0) > (current.logout.createdAt || 0)
+      ) {
+        current.logout = log;
+      }
+    }
+
+    sessionMap.set(key, current);
+  });
+
+  const sessions = Array.from(sessionMap.values()).map((session) => {
+    const startAt = session.login?.createdAt || session.firstSeen || null;
+    const endAt = session.logout?.createdAt || null;
+    const durationMs =
+      startAt && endAt && endAt >= startAt ? endAt - startAt : null;
+    const context =
+      session.login?.context || session.logout?.context || { metadata: {} };
+    const metadata = context.metadata || {};
+    const deviceLabel = formatDeviceLabel({
+      deviceLabel:
+        context.deviceLabel ||
+        metadata.deviceLabel ||
+        context.label ||
+        metadata.label,
+      platform: context.platform || metadata.platform || '',
+      userAgent: context.userAgent || metadata.userAgent || '',
+    });
+
+    const status = endAt ? 'closed' : 'open';
+    const endEvent = session.logout?.event || null;
+    const statusLabel = (() => {
+      if (status === 'open') return 'Activa';
+      if (!endEvent || endEvent === 'logout') return 'Cerrada';
+      if (endEvent === 'revoked') return 'Cerrada por administrador';
+      if (endEvent === 'auto-revoked') return 'Cerrada (limite de sesiones)';
+      if (endEvent === 'idle-timeout' || endEvent === 'idle')
+        return 'Cerrada por inactividad';
+      if (endEvent === 'expired') return 'Expirada';
+      if (endEvent === 'terminated') return 'Cerrada por seguridad';
+      return 'Cierre inesperado';
+    })();
+
+    return {
+      sessionId: session.sessionId,
+      startAt,
+      endAt,
+      durationMs,
+      durationDisplay: formatDuration(durationMs),
+      startDisplay: formatDateTime(startAt),
+      endDisplay: endAt ? formatDateTime(endAt) : statusLabel,
+      deviceLabel: deviceLabel || 'Sin datos',
+      ipAddress: context.ipAddress || metadata.ipAddress || 'Sin datos',
+      status,
+      statusLabel,
+      endEvent,
+    };
+  });
+
+  return sessions
+    .sort((a, b) => (b.startAt || 0) - (a.startAt || 0))
+    .map((session, index) => ({
+      ...session,
+      index: index + 1,
+    }));
+};

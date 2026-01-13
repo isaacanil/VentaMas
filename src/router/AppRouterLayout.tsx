@@ -7,7 +7,7 @@ import { ViewportContainer } from '@/components/layout/ViewportContainer/Viewpor
 import { selectUser } from '@/features/auth/userSlice';
 import { useAutomaticLogin } from '@/firebase/Auth/fbAuthV2/fbSignIn/checkSession';
 import SEO from '@/Seo/Seo';
-import { SessionManager } from '@/views/templates/system/SessionManager';
+import { SessionManager } from '@/components/ui/SessionManager';
 
 // Tipo básico para User (ajustar según la estructura real)
 export interface User {
@@ -27,11 +27,11 @@ const DeveloperSessionHelper = lazy(
         })),
 );
 const ModalManager = lazy(() =>
-    import('@/views/component/modals/ModalManager').then((module) => ({
+    import('@/components/modals/ModalManager').then((module) => ({
         default: module.ModalManager,
     })),
 );
-const NotificationCenter = lazy(() => import('@/views/templates/NotificationCenter/NotificationCenter'));
+const NotificationCenter = lazy(() => import('@/modules/notification/components/NotificationCenter/NotificationCenter'));
 
 const RoutePendingBar = styled.div`
   position: fixed;

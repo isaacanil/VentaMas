@@ -34,7 +34,7 @@ const initialState = {
 };
 
 // Create the slice
-const insuranceAccountsReceivableSlice = (createSlice as any)({
+const insuranceAccountsReceivableSlice = createSlice({
   name: 'insuranceAccountsReceivable',
   initialState,
   reducers: {

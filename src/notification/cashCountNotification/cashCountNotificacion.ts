@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { setUserNotification } from '@/features/UserNotification/UserNotificationSlice';
-import { CONFIRMATION_TASK_TYPE } from '@/views/component/modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction';
+import { CONFIRMATION_TASK_TYPE } from '@/components/modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction';
 
 // Clase base para los diferentes comportamientos de cuadre de caja
 class CashCountStrategy {

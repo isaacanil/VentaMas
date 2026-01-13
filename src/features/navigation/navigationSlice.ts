@@ -1,18 +1,18 @@
-// src/store/navigationSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+﻿// src/store/navigationSlice.js
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   history: [], // Array de objetos Location { pathname, search, hash, state, key }
-  maxLength: 20, // Puedes configurarlo aquí o pasarlo dinámicamente
+  maxLength: 20, // Puedes configurarlo aquÃ­ o pasarlo dinÃ¡micamente
   skipKey: null, // Clave para ignorar al buscar el anterior relevante
 };
 
-const navigationSlice = (createSlice as any)({
+const navigationSlice = createSlice({
   name: 'navigation',
   initialState,
   reducers: {
-    // Acción para añadir una nueva ubicación al historial
-    pushHistory: (state, action) => {
+    // AcciÃ³n para aÃ±adir una nueva ubicaciÃ³n al historial
+    pushHistory: (state: any, action: PayloadAction<any>) => {
       const newLocation = action.payload; // Esperamos recibir el objeto Location completo
       // Evitar duplicados consecutivos (basado en key o pathname)
       const lastLocation = state.history[state.history.length - 1];
@@ -30,8 +30,8 @@ const navigationSlice = (createSlice as any)({
         }
       }
     },
-    // Podrías añadir otras acciones si necesitas (ej. setMaxLength, setSkipKey)
-    setNavigationOptions: (state, action) => {
+    // PodrÃ­as aÃ±adir otras acciones si necesitas (ej. setMaxLength, setSkipKey)
+    setNavigationOptions: (state: any, action: PayloadAction<any>) => {
       if (action.payload.maxLength !== undefined) {
         state.maxLength = action.payload.maxLength;
       }
@@ -74,4 +74,5 @@ export const makeSelectPreviousRelevantRoute = (pathToIgnore) => {
 };
 
 export default navigationSlice.reducer;
+
 

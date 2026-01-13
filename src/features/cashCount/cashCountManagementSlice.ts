@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { initialBanknotes } from './initialBanknotes';
 
@@ -28,11 +28,11 @@ const initialCashCount = {
   totalSystem: 0,
 };
 
-const cashCountManagementSlice = (createSlice as any)({
+const cashCountManagementSlice = createSlice({
   name: 'cashCountManagement',
   initialState: initialCashCount,
   reducers: {
-    updateCashCountTotals: (state, action) => {
+    updateCashCountTotals: (state: any, action: PayloadAction<any>) => {
       const {
         totalCard,
         totalTransfer,
@@ -50,7 +50,7 @@ const cashCountManagementSlice = (createSlice as any)({
       state.totalRegister = totalRegister || 0;
       state.totalSystem = totalSystem || 0;
     },
-    setCashCountOpeningBanknotes: (state, action) => {
+    setCashCountOpeningBanknotes: (state: any, action: PayloadAction<any>) => {
       state.opening.banknotes = action.payload;
       state.opening.banknotesAmount = calculateTotalAmount(
         state.opening.banknotes,
@@ -60,19 +60,19 @@ const cashCountManagementSlice = (createSlice as any)({
         0,
       );
     },
-    setCashCountOpeningEmployee: (state, action) => {
+    setCashCountOpeningEmployee: (state: any, action: PayloadAction<any>) => {
       state.opening.employee = action.payload;
     },
-    setCashCountOpeningDate: (state, action) => {
+    setCashCountOpeningDate: (state: any, action: PayloadAction<any>) => {
       state.opening.date = action.payload;
     },
-    setCashCountOpeningComments: (state, action) => {
+    setCashCountOpeningComments: (state: any, action: PayloadAction<any>) => {
       state.opening.comments = action.payload;
     },
-    setCashCountOpening: (state, action) => {
+    setCashCountOpening: (state: any, action: PayloadAction<any>) => {
       state.opening = action.payload;
     },
-    setCashCountClosingBanknotes: (state, action) => {
+    setCashCountClosingBanknotes: (state: any, action: PayloadAction<any>) => {
       state.closing.banknotes = action.payload;
       state.closing.banknotesAmount = calculateTotalAmount(
         state.closing.banknotes,
@@ -82,23 +82,23 @@ const cashCountManagementSlice = (createSlice as any)({
         0,
       );
     },
-    setCashCountClosingComments: (state, action) => {
+    setCashCountClosingComments: (state: any, action: PayloadAction<any>) => {
       state.closing.comments = action.payload;
     },
-    addPropertiesToCashCount: (state, action) => {
+    addPropertiesToCashCount: (state: any, action: PayloadAction<any>) => {
       const payload = action.payload;
       return { ...state, ...payload };
     },
-    setCashCountSales: (state, action) => {
+    setCashCountSales: (state: any, action: PayloadAction<any>) => {
       state.sales = action.payload;
     },
-    setClosingCashTotalAndDiscrepancy: (state, action) => {
+    setClosingCashTotalAndDiscrepancy: (state: any, action: PayloadAction<any>) => {
       state.closing.totals = action.payload;
     },
-    setCashCount: (state, action) => {
+    setCashCount: (state: any, action: PayloadAction<any>) => {
       return action.payload;
     },
-    clearCashCount: (state) => {
+    clearCashCount: (state: any) => {
       state.opening = initialCashBoxStatus;
       state.closing = initialCashBoxStatus;
       state.totalCard = 0;
@@ -144,4 +144,5 @@ export const {
 export default cashCountManagementSlice.reducer;
 
 export const selectCashCount = (state) => state.cashCountManagement;
+
 

@@ -40,7 +40,7 @@ const DEFAULT_ICONS = {
   search: icons.forms.search,
 };
 
-const limpiarValorCadena = (valor, type) => {
+const limpiarValorCadena = (valor: string, type: string): string => {
   if (type !== 'number') {
     return valor;
   }
@@ -51,7 +51,7 @@ const limpiarValorCadena = (valor, type) => {
   return valor;
 };
 
-const limpiarValorNumero = (valor, type) => {
+const limpiarValorNumero = (valor: number, type: string): number => {
   if (type === 'number') {
     if (Number.isInteger(valor)) return valor;
     let valorComoCadena = valor.toString();
@@ -114,7 +114,7 @@ export const InputV4 = ({
   };
 
   const limpiarValor = useCallback(
-    (valor) => {
+    (valor: any) => {
       if (typeof valor === 'string') {
         return limpiarValorCadena(valor, type) || '';
       } else if (typeof valor === 'number') {
@@ -154,7 +154,7 @@ export const InputV4 = ({
             type={showPassword ? 'text' : type}
             autoComplete="off"
             value={limpiarValor(value)}
-            onInvalid={(e) => {
+            onInvalid={(e: any) => {
               e.preventDefault();
               e.target.setCustomValidity('Por favor, complete este campo.');
             }}
@@ -237,7 +237,7 @@ const Asterisk = styled.span`
   }
 `;
 
-const Backdrop = styled.div`
+const Backdrop = styled.div<{ marginBottom?: boolean }>`
   position: relative;
   ${(props) =>
     props.marginBottom &&
@@ -282,7 +282,7 @@ const PasswordToggle = styled.div`
   cursor: pointer;
 `;
 
-const ButtonsContainer = styled.div`
+const ButtonsContainer = styled.div<{ alignment?: string; size?: string }>`
   display: flex;
   align-items: ${(props) => {
     switch (props.alignment) {
@@ -312,7 +312,7 @@ const ButtonsContainer = styled.div`
 
 const InputWrapper = styled.div.attrs(() => ({
   tabIndex: 0,
-}))`
+}))<{ size?: string; bgColor?: string; search?: boolean; validate?: boolean; hasButtons?: boolean; disabled?: boolean; readOnly?: boolean; themeColor?: string }>`
   display: flex;
   align-items: center;
   gap: 4px;
@@ -412,7 +412,7 @@ const InputWrapper = styled.div.attrs(() => ({
   }}
 `;
 
-const StyledInput = styled.input`
+const StyledInput = styled.input<{ disabled?: boolean }>`
   border: none;
   outline: none;
   flex: 1;
@@ -450,7 +450,7 @@ const StyledInput = styled.input`
   `}
 `;
 
-const InputButton = styled.button`
+const InputButton = styled.button<{ isFirst?: boolean; isLast?: boolean; size?: string; color?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,7 +560,7 @@ const InputButton = styled.button`
   }}
 `;
 
-const Label = styled.label`
+const Label = styled.label<{ labelVariant?: string }>`
   font-size: 13px;
   color: var(--gray-5);
   margin-bottom: 4px;
@@ -631,8 +631,8 @@ const ErrorContainer = styled.ul`
   border-radius: var(--border-radius-light);
 `;
 
-const ErrorMessage = styled.li`
-  display: ${({ $show }) => ($show ? 'inline' : 'hidden')};
+const ErrorMessage = styled.li<{ show?: boolean }>`
+  display: ${({ show }) => (show ? 'inline' : 'hidden')};
   margin-left: 8px;
   font-size: 14px;
   color: #ff3547;

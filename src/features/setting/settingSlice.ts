@@ -15,11 +15,11 @@ const initialState = {
   },
 };
 
-export const settingSlice = (createSlice as any)({
+export const settingSlice = createSlice({
   name: 'setting',
   initialState,
   reducers: {
-    handleImageHidden: (state) => {
+    handleImageHidden: (state: any) => {
       let imageDisabled = state.userPreference.view.imageHidden;
       localStorage.setItem(
         'viewProductImageDisabled',
@@ -28,7 +28,7 @@ export const settingSlice = (createSlice as any)({
       let savedData = localStorage.getItem('viewProductImageDisabled');
       state.userPreference.view.imageHidden = JSON.parse(savedData);
     },
-    ReloadImageHiddenSetting: (state) => {
+    ReloadImageHiddenSetting: (state: any) => {
       let savedDataImageHidden = localStorage.getItem(
         'viewProductImageDisabled',
       );
@@ -42,13 +42,13 @@ export const settingSlice = (createSlice as any)({
         savedDataCategoryGrouped,
       );
     },
-    handleRowMode: (state) => {
+    handleRowMode: (state: any) => {
       let rowMode = state.userPreference.view.rowMode;
       localStorage.setItem('viewProductRowMode', JSON.stringify(!rowMode));
       let getData = localStorage.getItem('viewProductRowMode');
       state.userPreference.view.rowMode = JSON.parse(getData);
     },
-    toggleCategoryGrouped: (state) => {
+    toggleCategoryGrouped: (state: any) => {
       let categoryGrouped = state.userPreference.view.categoryGrouped;
       localStorage.setItem(
         'viewProductCategoryGrouped',
@@ -57,7 +57,7 @@ export const settingSlice = (createSlice as any)({
       let getData = localStorage.getItem('viewProductCategoryGrouped');
       state.userPreference.view.categoryGrouped = JSON.parse(getData);
     },
-    toggleFullScreen: (state) => {
+    toggleFullScreen: (state: any) => {
       let fullScreenMode = state.system.fullScreen;
 
       state.system.fullScreen = !fullScreenMode;

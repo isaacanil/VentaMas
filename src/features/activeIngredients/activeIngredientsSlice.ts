@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 // Estado inicial
 const initialState = {
@@ -10,28 +10,28 @@ const initialState = {
 };
 
 // Creamos el slice
-const activeIngredientsSlice = (createSlice as any)({
+const activeIngredientsSlice = createSlice({
   name: 'activeIngredients',
   initialState,
   reducers: {
-    openModal: (state, action) => {
+    openModal: (state: any, action: PayloadAction<any>) => {
       state.activeIngredientModal.isOpen = true;
       state.activeIngredientModal.initialValues =
         action.payload.initialValues || null;
     },
-    closeModal: (state) => {
+    closeModal: (state: any) => {
       state.activeIngredientModal.isOpen = false;
       state.activeIngredientModal.initialValues = null;
     },
-    addIngredient: (state, action) => {
+    addIngredient: (state: any, action: PayloadAction<any>) => {
       state.activeIngredients.push(action.payload);
     },
-    removeIngredient: (state, action) => {
+    removeIngredient: (state: any, action: PayloadAction<any>) => {
       state.activeIngredients = state.activeIngredients.filter(
         (ingredient) => ingredient.id !== action.payload,
       );
     },
-    updateIngredient: (state, action) => {
+    updateIngredient: (state: any, action: PayloadAction<any>) => {
       const index = state.activeIngredients.findIndex(
         (ingredient) => ingredient.id === action.payload.id,
       );
@@ -56,4 +56,5 @@ export default activeIngredientsSlice.reducer;
 // Selector para el modal de ingredientes activos
 export const selectActiveIngredientModal = (state) =>
   state.activeIngredients.activeIngredientModal;
+
 
