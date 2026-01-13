@@ -7,12 +7,18 @@ export function isValidBarcode(barcode) {
 
 export function getBarcodeInfo(barcode) {
   const analysis = analyzeBarcodeStructure(barcode);
+  const checkDigit = analysis.checkDigit ? {
+    ...analysis.checkDigit,
+    correctDigit: analysis.checkDigit.calculated
+  } : null;
+
   if (!analysis.isValid)
     return {
       valid: false,
       type: analysis.type || 'Desconocido',
       message: analysis.errorMessage || analysis.error || 'Código inválido',
       error: analysis.error,
+      checkDigit
     };
   let msg = `${analysis.type}`;
   if (analysis.country) msg += ` • ${analysis.country.country}`;
@@ -27,6 +33,7 @@ export function getBarcodeInfo(barcode) {
     structure: analysis.structure,
     isVariableWeight: analysis.isVariableWeight,
     message: msg,
+    checkDigit
   };
 }
 

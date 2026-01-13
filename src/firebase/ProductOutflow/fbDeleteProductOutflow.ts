@@ -1,25 +1,11 @@
-// @ts-nocheck
-// import { deleteDoc, doc } from 'firebase/firestore'
-// import React from 'react'
-// import { db } from '@/firebase/firebaseconfig'
-
-// export const fbDeleteProductOutflow = async (user, item) => {
-//     const docRef = doc(db, "businesses", user.businessID, "productOutflow", item.id)
-//     try {
-//         await deleteDoc(docRef)
-//         console.log("doc eliminado")
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }
-
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-import { fbUpdateStock } from './fbUpdateStock'; // Asegúrate de que esta función pueda manejar el ajuste de stock adecuadamente
+import { fbUpdateStock } from './fbUpdateStock';
 
-export const fbDeleteProductOutflow = async (user, item) => {
+export const fbDeleteProductOutflow = async (user: UserIdentity | null, item: any): Promise<void> => {
   if (!user?.businessID || !item?.id) return;
 
   const docRef = doc(
@@ -43,7 +29,7 @@ export const fbDeleteProductOutflow = async (user, item) => {
 
     // Paso 2: Ajustar el stock para cada producto en la salida de producto
     if (productOutflow.productList && productOutflow.productList.length > 0) {
-      const updates = productOutflow.productList.map((product) => ({
+      const updates = productOutflow.productList.map((product: any) => ({
         product: product.product,
 
         // Asegúrate de que la cantidad sea positiva para incrementar el stock

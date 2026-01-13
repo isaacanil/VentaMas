@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { LocationRefLike } from '@/utils/inventory/types';
 
@@ -94,5 +94,6 @@ export default productStockSlice.reducer;
 
 export const selectProductStock = (state: { productStock: ProductStockState }) =>
   state.productStock;
+
 
 

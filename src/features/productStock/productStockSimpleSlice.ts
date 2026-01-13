@@ -1,8 +1,7 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { InventoryStockItem } from '@/utils/inventory/types';
-
-type ProductRecord = { id: string } & Record<string, unknown>;
+import type { ProductRecord } from '@/types/products';
 
 type ProductStockSimpleState = {
   isOpen: boolean;
@@ -30,7 +29,7 @@ const productStockSimpleSlice = createSlice({
     ) => {
       state.isOpen = true;
       if (action.payload) {
-        state.productId = action.payload.id;
+        state.productId = action.payload.id ?? '';
         state.product = action.payload;
       } else {
         state.productId = initialState.productId;
@@ -66,4 +65,5 @@ export default productStockSimpleSlice.reducer;
 export const selectProductStockSimple = (state: {
   productStockSimple: ProductStockSimpleState;
 }) => state.productStockSimple;
+
 

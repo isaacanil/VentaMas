@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
 import { storage } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const fbAddProductImg = (user, file, onProgress) => {
+export const fbAddProductImg = (
+  user: UserIdentity | null,
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!user || !user?.businessID) {
       console.error('Invalid user or businessID');

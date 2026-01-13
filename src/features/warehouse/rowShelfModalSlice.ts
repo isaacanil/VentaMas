@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 
@@ -101,4 +101,5 @@ export default rowShelfModalSlice.reducer;
 export const selectRowShelfState = (state: {
   rowShelfModal: RowShelfModalState;
 }) => state.rowShelfModal;
+
 

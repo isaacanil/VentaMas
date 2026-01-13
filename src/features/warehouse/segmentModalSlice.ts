@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 type SegmentFormData = {
   id: string;
@@ -115,4 +115,5 @@ export default segmentModalSlice.reducer;
 // Selector para obtener el estado completo del segmento
 export const selectSegmentState = (state: { segmentModal: SegmentModalState }) =>
   state.segmentModal;
+
 

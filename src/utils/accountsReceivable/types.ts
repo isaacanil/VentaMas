@@ -36,6 +36,7 @@ export interface ReceivablePaymentMethod {
 export interface ReceivableInvoiceData {
   NCF?: string;
   numberID?: string | number;
+  date?: TimestampLike;
   paymentMethod?: ReceivablePaymentMethod[];
   products?: unknown[];
   totalPurchase?: { value?: number };
@@ -52,12 +53,14 @@ export interface ReceivableClient {
   id?: string;
   name?: string;
   personalID?: string;
+  tel?: string;
+  address?: string;
   error?: boolean;
 }
 
 export type ReceivableAccountType = 'insurance' | 'normal' | string;
 
-export interface AccountsReceivableDoc extends Record<string, unknown> {        
+export interface AccountsReceivableDoc extends Record<string, unknown> {
   id?: string;
   type?: ReceivableAccountType;
   insurance?: { name?: string };
@@ -121,7 +124,8 @@ export interface AccountsReceivablePayment {
   createdUserId?: string;
   totalPaid?: number;
   isActive?: boolean;
-  paymentMethods?: Array<{ status?: boolean; method?: string }>;
+  paymentMethods?: Array<{ status?: boolean; method?: string; value?: number }>;
+  comments?: string;
 }
 
 export interface AccountsReceivableDetail {
@@ -181,4 +185,24 @@ export interface AccountReceivableRow {
   actions: { account: AccountsReceivableRecord };
   type: ReceivableAccountType;
   dateGroup: string;
+}
+
+export type AccountsReceivableSummaryData = AccountsReceivableDetail;
+export type AccountsReceivableSummaryView = AccountReceivableRow;
+
+export interface AccountsReceivablePaymentReceipt {
+  account: AccountReceivableRow;
+  receiptNumber: string;
+  payment: AccountsReceivablePayment;
+  installmentsPaid: AccountsReceivableInstallment[];
+  client: ReceivableClient;
+}
+
+export type ReceivablePaidInstallment = AccountsReceivableInstallment;
+export type ReceivablePaymentReceiptAccount = AccountReceivableRow;
+
+export interface CreditLimitConfig {
+  enabled: boolean;
+  limit: number;
+  currentUsage: number;
 }

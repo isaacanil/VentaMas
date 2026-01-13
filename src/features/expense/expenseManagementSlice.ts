@@ -10,8 +10,11 @@ const initialState = {
       createdAt: '',
     },
     receiptImageUrl: '',
-    category: '', // Nombre de la categorÃ­a
-    categoryId: '', // ID de la categorÃ­a
+    category: '', // Nombre de la categoría
+    categoryId: '', // ID de la categoría
+    invoice: {},
+    payment: {},
+    attachments: [],
   },
 };
 

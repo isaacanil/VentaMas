@@ -1,5 +1,5 @@
 import {
-  createSlice, PayloadAction,
+  createSlice, type PayloadAction,
   createSerializableStateInvariantMiddleware,
 } from '@reduxjs/toolkit';
 

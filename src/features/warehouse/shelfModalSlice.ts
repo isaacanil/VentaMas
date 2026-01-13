@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Shelf } from '@/models/Warehouse/Shelf';
 
@@ -100,4 +100,5 @@ export default shelfModalSlice.reducer;
 // Selector para obtener el estado completo del shelf
 export const selectShelfState = (state: { shelfModal: ShelfModalState }) =>
   state.shelfModal;
+
 

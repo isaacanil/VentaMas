@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { nanoid } from 'nanoid';
 
 import { warrantyOptions } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
@@ -233,5 +233,6 @@ export const selectSaleUnitById = (state, id) =>
   state.updateProduct.product.saleUnits.find((unit) => unit.id === id);
 
 export default updateProductSlice.reducer;
+
 
 

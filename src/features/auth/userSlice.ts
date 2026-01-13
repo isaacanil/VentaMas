@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   user: null,
@@ -87,5 +87,6 @@ export const selectIsTemporaryRoleMode = (state) => !!state.user.originalRole;
 export const selectOriginalRole = (state) => state.user.originalRole;
 
 export default userSlice.reducer;
+
 
 

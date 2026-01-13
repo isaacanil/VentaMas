@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 type DeleteActionType = 'productStock' | 'batch';
 
@@ -49,4 +49,5 @@ export const selectDeleteModalState = (state: {
   deleteProductStock: DeleteProductStockState;
 }) => state.deleteProductStock;
 export default deleteProductStockSlice.reducer;
+
 

@@ -1,9 +1,13 @@
-// @ts-nocheck
 import { collection, onSnapshot } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { ProductImageRecord } from '@/types/products';
 
-export const fbGetProductsImg = async (user, SetAllImg) => {
+export const fbGetProductsImg = (
+  user: UserIdentity | null,
+  SetAllImg: (images: ProductImageRecord[]) => void,
+): void => {
   if (!user || !user?.businessID) {
     return;
   }
@@ -15,9 +19,9 @@ export const fbGetProductsImg = async (user, SetAllImg) => {
   );
 
   onSnapshot(imageRef, (querySnapshot) => {
-    const img = [];
+    const img: ProductImageRecord[] = [];
     querySnapshot.forEach((doc) => {
-      img.push(doc.data());
+      img.push(doc.data() as ProductImageRecord);
     });
 
     SetAllImg(img);

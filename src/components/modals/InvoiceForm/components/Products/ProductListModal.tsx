@@ -77,18 +77,18 @@ export const ProductListModal = ({
 
     const filteredBySearch = normalizedSearch
       ? list.filter((product) => {
-          const name = product?.name?.toLowerCase() ?? '';
-          return name.includes(normalizedSearch);
-        })
+        const name = product?.name?.toLowerCase() ?? '';
+        return name.includes(normalizedSearch);
+      })
       : [...list];
 
     const filtered =
       safeCategoryFilter === 'all'
         ? filteredBySearch
         : filteredBySearch.filter(
-            (product) =>
-              getCategoryName(product?.category) === safeCategoryFilter,
-          );
+          (product) =>
+            getCategoryName(product?.category) === safeCategoryFilter,
+        );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
 
@@ -388,8 +388,8 @@ const StockBadge = styled.div`
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: ${(props: { $isLow?: any }) => props.$isLow ($isLow ? '#991b1b' : '#047857')};
-  background: ${(props: { $isLow?: any }) => props.$isLow ($isLow ? '#fee2e2' : '#ecfdf5')};
+  color: ${(props) => (props.$isLow ? '#991b1b' : '#047857')};
+  background: ${(props) => (props.$isLow ? '#fee2e2' : '#ecfdf5')};
   border-radius: 999px;
 `;
 
@@ -411,9 +411,9 @@ const ActionButton = styled.button`
 
   &:hover {
     ${(props) =>
-      props.disabled
-        ? ''
-        : `
+    props.disabled
+      ? ''
+      : `
     background: #e5e7eb;
     transform: translateY(-1px);
     `}

@@ -397,8 +397,8 @@ const invoiceFormSlice = createSlice({
         state.invoice.payment.value,
       );
     },
-    closeInvoiceForm(state, action) {
-      const clear = action?.payload?.clear || true;
+    closeInvoiceForm(state, action: PayloadAction<{ clear?: boolean } | void>) {
+      const clear = (action?.payload as { clear?: boolean })?.clear ?? true;
       state.modal.isOpen = false;
       state.authorizationRequest = null;
 

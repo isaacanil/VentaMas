@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const fbAddProductImgData = async (user, url) => {
+export const fbAddProductImgData = async (user: UserIdentity | null, url: string): Promise<void> => {
   if (!user || !user?.businessID) {
     return;
   }

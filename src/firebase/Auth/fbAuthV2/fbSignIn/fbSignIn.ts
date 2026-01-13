@@ -1,13 +1,28 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { login } from '@/features/auth/userSlice';
 import { buildSessionInfo, storeSessionLocally } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { functions } from '@/firebase/firebaseconfig';
 
+export interface FbSignInUser {
+  id: string;
+  name?: string;
+  displayName?: string;
+  realName?: string;
+  businessID?: string;
+  role?: string;
+  [key: string]: any;
+}
+
+export interface FbSignInResult {
+  user: FbSignInUser;
+  session?: any;
+  activeSessions?: any[];
+}
+
 const clientLoginCallable = httpsCallable(functions, 'clientLogin');
 
-export function updateAppState(dispatch, userData) {
+export function updateAppState(dispatch: any, userData: FbSignInUser) {
   dispatch(
     login({
       uid: userData.id,
@@ -17,7 +32,7 @@ export function updateAppState(dispatch, userData) {
   );
 }
 
-export const fbSignIn = async (user) => {
+export const fbSignIn = async (user: { name: string; password?: string }): Promise<FbSignInResult> => {
   try {
     const sessionInfo = buildSessionInfo();
     const response = await clientLoginCallable({
@@ -26,7 +41,7 @@ export const fbSignIn = async (user) => {
       sessionInfo,
     });
 
-    const payload = response?.data || {};
+    const payload = (response?.data || {}) as any;
     if (!payload.ok) {
       throw new Error(payload?.message || 'Error al iniciar sesión');
     }
@@ -42,7 +57,7 @@ export const fbSignIn = async (user) => {
       session: payload.session,
       activeSessions: payload.activeSessions || [],
     };
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error?.message || 'Error al iniciar sesión');
   }
 };

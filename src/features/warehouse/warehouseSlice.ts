@@ -1,5 +1,5 @@
 ﻿// store/slices/warehouseSlice.js
-import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RowShelf } from '@/models/Warehouse/RowShelf';
 import type { Segment } from '@/models/Warehouse/Segment';
@@ -161,4 +161,5 @@ export default warehouseSlice.reducer;
 
 export const selectWarehouse = (state: { warehouse: WarehouseState }) =>
   state.warehouse;
+
 

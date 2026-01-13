@@ -1,4 +1,4 @@
-﻿import { createSlice, type type PayloadAction } from '@reduxjs/toolkit';
+﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Warehouse } from '@/models/Warehouse/Warehouse';
 
@@ -48,12 +48,12 @@ const warehouseModalSlice = createSlice({
   reducers: {
     openWarehouseForm: (
       state,
-      action: PayloadAction<Partial<WarehouseFormData> | undefined>,
+      action: PayloadAction<Partial<WarehouseFormData> | void | undefined>,
     ) => {
       state.isOpen = true;
       const data = action.payload;
-      if (data) {
-        state.formData = normalizeWarehouseFormData(action.payload);
+      if (data && typeof data === 'object') {
+        state.formData = normalizeWarehouseFormData(data as Partial<WarehouseFormData>);
       } else {
         state.formData = createInitialWarehouseFormData();
       }
@@ -105,4 +105,5 @@ export default warehouseModalSlice.reducer;
 export const selectWarehouseModalState = (state: {
   warehouseModal: WarehouseModalState;
 }) => state.warehouseModal;
+
 
