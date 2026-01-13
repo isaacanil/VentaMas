@@ -67,13 +67,13 @@ export const renderCalendarGrid = (currentDate: DateTime) => {
 };
 
 export const isPresetActive = (
-  value: DatePickerValue,
+  value: DatePickerValue | undefined,
   preset: DatePickerPreset,
-  mode: DatePickerMode,
+  mode: DatePickerMode = 'single',
 ) => {
   if (!value) return false;
 
-  if (mode === 'single' && DateTime.isDateTime(value)) {
+  if (mode === 'single' && DateTime.isDateTime(value) && DateTime.isDateTime(preset.value)) {
     return value.hasSame(preset.value, 'day');
   } else if (
     mode === 'range' &&

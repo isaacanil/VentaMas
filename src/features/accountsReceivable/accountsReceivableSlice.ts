@@ -1,12 +1,32 @@
 // accountsReceivableSlice.js
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
 import { getAccountReceivableDetails } from '@/firebase/accountsReceivable/fbGetAccountReceivableDetails'; // Asegúrate de que la ruta es correcta
 import { defaultAR } from '@/schema/accountsReceivable/accountsReceivable';
 import { applyUpdates } from '@/utils/reduxStateUtils';
 
+interface AccountsReceivableInfo {
+  ar: Record<string, unknown>;
+  client: Record<string, unknown>;
+  invoice: Record<string, unknown>;
+  payments: any[];
+  installments: any[];
+  paymentInstallment: any[];
+}
+
+interface AccountsReceivableState {
+  ar: typeof defaultAR;
+  arDetailsModal: {
+    isOpen: boolean;
+    arId: string;
+  };
+  info: AccountsReceivableInfo;
+  loading: boolean;
+  error: string | null;
+}
+
 // Estado inicial con un único objeto defaultAR
-const initialState = {
+const initialState: AccountsReceivableState = {
   ar: defaultAR,
   arDetailsModal: {
     isOpen: false,
@@ -27,12 +47,12 @@ const initialState = {
 // Crear un thunk asíncrono para obtener los detalles de la cuenta por cobrar
 export const fetchAccountReceivableDetails = (createAsyncThunk as any)(
   'accountsReceivable/fetchDetails',
-  async ({ arId, businessID }, { rejectWithValue }) => {
+  async ({ arId, businessID }: { arId: string; businessID: string }, { rejectWithValue }: { rejectWithValue: (value: string) => unknown }) => {
     try {
       const data = await getAccountReceivableDetails(arId, businessID);
       return data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue((error as Error).message);
     }
   },
 );
@@ -41,11 +61,11 @@ const accountsReceivableSlice = createSlice({
   name: 'accountsReceivable',
   initialState,
   reducers: {
-    setAR(state, action) {
+    setAR(state: AccountsReceivableState, action: PayloadAction<any>) {
       applyUpdates(state.ar, action.payload);
       console.log('AR updated:', action.payload);
     },
-    setAccountReceivableInfo(state, action) {
+    setAccountReceivableInfo(state: AccountsReceivableState, action: PayloadAction<any>) {
       const { ar, payments, installments, paymentInstallments } =
         action.payload;
       if (ar) {
@@ -61,18 +81,18 @@ const accountsReceivableSlice = createSlice({
         state.info.paymentInstallment = paymentInstallments;
       }
     },
-    toggleARInfoModal(state) {
+    toggleARInfoModal(state: AccountsReceivableState) {
       const isOpen = state.arDetailsModal.isOpen;
       state.arDetailsModal.isOpen = !isOpen;
       if (!isOpen) {
         state.arDetailsModal.arId = ''; // Resetar arId al cerrar
       }
     },
-    setARDetailsModal(state, action) {
+    setARDetailsModal(state: AccountsReceivableState, action: PayloadAction<{ isOpen: boolean; arId: string }>) {
       state.arDetailsModal.isOpen = action.payload.isOpen;
       state.arDetailsModal.arId = action.payload.arId;
     },
-    resetAR(state) {
+    resetAR(state: AccountsReceivableState) {
       state.ar = defaultAR;
       state.info = {
         ar: {},
@@ -88,22 +108,22 @@ const accountsReceivableSlice = createSlice({
   },
   extraReducers: (builder: any) => {
     builder
-      .addCase(fetchAccountReceivableDetails.pending, (state) => {
+      .addCase(fetchAccountReceivableDetails.pending, (state: AccountsReceivableState) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAccountReceivableDetails.fulfilled, (state, action) => {
+      .addCase(fetchAccountReceivableDetails.fulfilled, (state: AccountsReceivableState, action: PayloadAction<any>) => {
         state.loading = false;
         const { accountReceivable, client, invoice, installments } =
           action.payload;
 
         // Extraer todos los pagos de los installments
         const payments =
-          installments?.reduce((allPayments, installment) => {
+          installments?.reduce((allPayments: any[], installment: any) => {
             if (installment.payments && Array.isArray(installment.payments)) {
               return [
                 ...allPayments,
-                ...installment.payments.map((payment) => ({
+                ...installment.payments.map((payment: any) => ({
                   ...payment,
                   installmentNumber: installment.installmentNumber,
                   installmentDate: installment.installmentDate,
@@ -126,7 +146,7 @@ const accountsReceivableSlice = createSlice({
           paymentInstallment: [], // Si es necesario, podemos eliminarlo si no se usa
         };
       })
-      .addCase(fetchAccountReceivableDetails.rejected, (state, action) => {
+      .addCase(fetchAccountReceivableDetails.rejected, (state: AccountsReceivableState, action: PayloadAction<any>) => {
         state.loading = false;
         state.error =
           action.payload ||
@@ -146,10 +166,11 @@ export const {
 export default accountsReceivableSlice.reducer;
 
 // Selectores
-export const selectAR = (state) => state.accountsReceivable.ar;
-export const selectARInfo = (state) => state.accountsReceivable.info;
-export const selectARLoading = (state) => state.accountsReceivable.loading;
-export const selectARError = (state) => state.accountsReceivable.error;
-export const selectARDetailsModal = (state) =>
+export const selectAR = (state: { accountsReceivable: AccountsReceivableState }) => state.accountsReceivable.ar;
+export const selectARInfo = (state: { accountsReceivable: AccountsReceivableState }) => state.accountsReceivable.info;
+export const selectARLoading = (state: { accountsReceivable: AccountsReceivableState }) => state.accountsReceivable.loading;
+export const selectARError = (state: { accountsReceivable: AccountsReceivableState }) => state.accountsReceivable.error;
+export const selectARDetailsModal = (state: { accountsReceivable: AccountsReceivableState }) =>
   state.accountsReceivable.arDetailsModal;
+
 

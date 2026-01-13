@@ -1,9 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import type {
+  AutoCompleteSelectOptions,
+  AutoCompleteSuggestion,
+} from '../types';
 
 /**
  * Componente de autocompletado para la consola de desarrollador
  */
+type AutoCompleteProps = {
+  inputValue?: string;
+  suggestions?: AutoCompleteSuggestion[];
+  onSuggestionSelect?: (
+    suggestion: AutoCompleteSuggestion,
+    options?: AutoCompleteSelectOptions,
+  ) => void;
+  isVisible?: boolean;
+  selectedIndex?: number;
+  onSelectedIndexChange: (index: number) => void;
+  inputElement?: HTMLInputElement | null;
+};
+
+type AutoCompletePosition = 'above' | 'below';
+
 const AutoComplete = ({
   inputValue: _inputValue,
   suggestions,
@@ -12,9 +31,9 @@ const AutoComplete = ({
   selectedIndex = -1,
   onSelectedIndexChange,
   inputElement = null,
-}) => {
-  const [position, setPosition] = useState('above'); // 'above' or 'below'
-  const autoCompleteRef = useRef(null);
+}: AutoCompleteProps) => {
+  const [position, setPosition] = useState<AutoCompletePosition>('above'); // 'above' or 'below'
+  const autoCompleteRef = useRef<HTMLDivElement | null>(null);
   // Detectar la mejor posición para el autocompletado
   useEffect(() => {
     if (!isVisible || !inputElement || !autoCompleteRef.current) {
@@ -65,12 +84,15 @@ const AutoComplete = ({
     return null;
   }
 
-  const handleSuggestionClick = (suggestion, index) => {
+  const handleSuggestionClick = (
+    suggestion: AutoCompleteSuggestion,
+    index: number,
+  ) => {
     onSelectedIndexChange(index);
     onSuggestionSelect?.(suggestion, { trigger: 'click' });
   };
 
-  const handleMouseEnter = (index) => {
+  const handleMouseEnter = (index: number) => {
     onSelectedIndexChange(index);
   };
   return (
@@ -108,9 +130,21 @@ const AutoComplete = ({
 };
 
 // Estilos
+type AutoCompleteContainerProps = {
+  position: AutoCompletePosition;
+};
+
+type SuggestionItemProps = {
+  isSelected?: boolean;
+};
+
+type SuggestionTextProps = {
+  theme?: { isSelected?: boolean };
+};
+
 const AutoCompleteContainer = styled.div`
   position: absolute;
-  ${(props) =>
+  ${(props: AutoCompleteContainerProps) =>
     props.position === 'above'
       ? `
     bottom: 100%;
@@ -159,9 +193,11 @@ const SuggestionsList = styled.div`
 
 const SuggestionItem = styled.div`
   padding: 8px 12px;
-  color: ${(props) => (props.isSelected ? 'white' : '#e0e0e0')};
+  color: ${(props: SuggestionItemProps) =>
+    props.isSelected ? 'white' : '#e0e0e0'};
   cursor: pointer;
-  background: ${(props) => (props.isSelected ? '#0d3863' : 'transparent')};
+  background: ${(props: SuggestionItemProps) =>
+    props.isSelected ? '#0d3863' : 'transparent'};
   border-bottom: 1px solid #2a2a2a;
   transition: all 0.1s ease;
 
@@ -179,7 +215,8 @@ const CommandText = styled.div`
   margin-bottom: 2px;
   font-size: 13px;
   font-weight: bold;
-  color: ${(props) => (props.theme?.isSelected ? 'white' : '#8ee78e')};
+  color: ${(props: SuggestionTextProps) =>
+    props.theme?.isSelected ? 'white' : '#8ee78e'};
 `;
 
 const CommandRow = styled.div`
@@ -191,7 +228,8 @@ const CommandRow = styled.div`
 
 const DescriptionText = styled.div`
   font-size: 11px;
-  color: ${(props) => (props.theme?.isSelected ? 'white' : '#ccc')};
+  color: ${(props: SuggestionTextProps) =>
+    props.theme?.isSelected ? 'white' : '#ccc'};
   opacity: 0.8;
 `;
 

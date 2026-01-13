@@ -26,19 +26,21 @@ export const ActionIcon = ({
   );
 };
 
+type IconWrapperStyleProps = { $color: string; $hoverColor: string };
+
 const IconWrapper = styled.div<{ $color: string; $hoverColor: string }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 6px;
   font-size: 20px;
-  color: ${(props) => props.$color};
+  color: ${(props: IconWrapperStyleProps) => props.$color};
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.3s;
 
   &:hover {
-    color: ${(props) => props.$hoverColor};
+    color: ${(props: IconWrapperStyleProps) => props.$hoverColor};
     background-color: #f5f5f5;
   }
 `;

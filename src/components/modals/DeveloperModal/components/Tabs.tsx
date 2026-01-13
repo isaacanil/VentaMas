@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import styled from 'styled-components';
 
-export const Tabs = ({ tabs, defaultTab = 0 }) => {
+type TabItem = {
+  label: string;
+  icon?: ReactNode;
+  content: ReactNode;
+};
+
+type TabsProps = {
+  tabs: TabItem[];
+  defaultTab?: number;
+};
+
+export const Tabs = ({ tabs, defaultTab = 0 }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   return (
@@ -38,18 +49,24 @@ const TabsList = styled.div`
   border-bottom: 1px solid #333;
 `;
 
-const TabButton = styled.button`
+type TabButtonProps = {
+  $active: boolean;
+};
+
+const TabButton = styled.button<TabButtonProps>`
   padding: 12px 16px;
   font-size: 13px;
-  color: ${(props) => (props.$active ? '#00ff88' : '#999')};
+  color: ${(props: TabButtonProps) => (props.$active ? '#00ff88' : '#999')};
   cursor: pointer;
   background: none;
   border: none;
   border-bottom: 2px solid
-    ${(props) => (props.$active ? '#00ff88' : 'transparent')};
+    ${(props: TabButtonProps) =>
+      (props.$active ? '#00ff88' : 'transparent')};
 
   &:hover {
-    color: ${(props) => (props.$active ? '#00ff88' : '#fff')};
+    color: ${(props: TabButtonProps) =>
+      (props.$active ? '#00ff88' : '#fff')};
   }
 `;
 

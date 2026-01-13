@@ -1,0 +1,95 @@
+# Guía de corrección TypeScript (audit 2026-01-13)
+
+## Objetivo
+Corregir los errores del reporte **sin sobre‑tipar**: solo lo necesario y lógico. Priorizar reutilizar tipos existentes antes de crear nuevos para evitar redundancias.
+
+## Principios
+- **Tipar lo mínimo indispensable**: agrega tipos solo donde el compilador lo exige o donde mejora la claridad real.
+- **Reusar tipos existentes**: antes de crear un nuevo `type`/`interface`, busca si ya existe algo equivalente en `src/types`, `src/utils/*/types`, slices, o modelos de Firestore.
+- **Evitar “modelos paralelos”**: si ya hay un tipo fuente (por ejemplo, `InvoiceData`, `Product`, `UserIdentity`), úsalo en lugar de crear variantes con nombres similares.
+- **No usar `any` por conveniencia**: si el dato es dinámico, prefiere `unknown` + guardas de tipo.
+- **Evitar `as` innecesario**: solo usar casts cuando hay una validación previa clara.
+
+## Prioridad de corrección (por volumen de errores)
+En el reporte, los errores más frecuentes son:
+- `TS7006/TS7031`: parámetros/bindings con `any` implícito
+- `TS2322/TS2345`: incompatibilidad de tipos / argumentos
+- `TS2339`: propiedades en tipos mal inferidos (`never` o `{}`)
+- `TS18047/48/49`: posibles `null/undefined`
+- `TS7053`: indexación con keys no tipadas
+
+## Buenas prácticas específicas
+
+### 1) `TS7006/TS7031` — `any` implícito
+**Qué hacer:**
+- Tipar **props**, **callbacks**, **handlers**, y **styled‑props**.
+- En slices, tipar el `state` y `action` con `PayloadAction<...>`.
+
+**Evitar:**
+- Crear tipos nuevos si existe uno en el módulo o en el dominio.
+
+**Ejemplo mínimo recomendado:**
+```ts
+type Props = { onClose: () => void; isOpen: boolean };
+
+const Modal = ({ onClose, isOpen }: Props) => { /* ... */ };
+```
+
+### 2) `TS2322/TS2345` — tipos incompatibles
+**Qué hacer:**
+- Normalizar datos antes de pasarlos (ej. garantizar `string` en lugar de `string | undefined`).
+- Usar `as const` en objetos de configuración para preservar literales.
+- Ajustar firmas de funciones si la entrada puede ser opcional.
+
+**Evitar:**
+- Forzar con `as` sin validación previa.
+
+### 3) `TS2339` — propiedades sobre `never` / `{}`
+**Qué hacer:**
+- Revisar inicializaciones vacías: `useState([])` debe tiparse.
+- Tipar arreglos y objetos vacíos con el tipo correcto.
+
+**Ejemplo:**
+```ts
+const [items, setItems] = useState<Item[]>([]);
+```
+
+### 4) `TS18047/48/49` — posibles `null/undefined`
+**Qué hacer:**
+- Usar guardas simples antes de acceder.
+- Ajustar tipos solo donde realmente se permite `null`.
+
+**Ejemplo:**
+```ts
+if (!ref.current) return;
+ref.current.focus();
+```
+
+### 5) `TS7053` — indexación dinámica
+**Qué hacer:**
+- Tipar el mapa con `Record<Clave, Valor>` donde `Clave` sea un union/enum.
+
+**Ejemplo:**
+```ts
+type Status = 'pending' | 'approved' | 'rejected';
+const STATUS_META: Record<Status, StatusMeta> = { /* ... */ };
+```
+
+### 6) `TS7016` — tipos de librerías
+**Qué hacer:**
+- Revisar si ya existe un `.d.ts` interno.
+- Si no, instalar tipos o crear declaración local en `src/types`.
+
+## Reglas de “no sobre‑tipar”
+- Si el tipo puede inferirse bien, **no lo declares**.
+- Si hay dos tipos muy similares, **elige el existente** y ajusta su uso.
+- Si un dato viene de Firestore u otra API, **usa el tipo de ese módulo** o el mapeador existente.
+
+## Flujo sugerido
+1. Atacar primero los archivos con más errores.
+2. Resolver `TS7006/TS7031` y `TS2339` para estabilizar inferencia.
+3. Luego corregir incompatibilidades (`TS2322/TS2345`).
+4. Al final, revisar `null/undefined` y problemas de indexación.
+
+## Nota
+La meta es **estabilizar el tipado sin duplicar modelos**. Cualquier tipo nuevo debe justificarse porque no existe uno equivalente en el proyecto.

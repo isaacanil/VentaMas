@@ -1,7 +1,27 @@
 /**
  * Utilidades de factoría para crear handlers de comandos de manera estandarizada
  */
+type ItemLike = { name?: string; id?: string } | string | number | null | undefined;
+
+type CommandDescriptor = { command: string; description: string };
+
+type RouteConfig = { path: string; successMessage?: string };
+
+type ToggleConfig = {
+  setting: string;
+  getCurrentState: () => boolean;
+  toggleFunction: () => void;
+  messages?: Record<string, string>;
+};
+
 export class HandlerFactoryUtils {
+  private static formatItemLabel(item: ItemLike): string {
+    if (item && typeof item === 'object') {
+      const record = item as { name?: string; id?: string };
+      return record.name || record.id || String(item);
+    }
+    return String(item ?? '');
+  }
   /**
    * Valida la configuración de un handler
    * @param {Object} config - Configuración del handler
@@ -75,7 +95,7 @@ export class HandlerFactoryUtils {
         command: `list ${entityLower}`,
         loadFunction: () => service.getAll(),
         formatter:
-          formatter || ((item) => item.name || item.id || String(item)),
+          formatter || ((item: ItemLike) => this.formatItemLabel(item)),
         itemType: entityPlural,
       }),
 
@@ -83,12 +103,12 @@ export class HandlerFactoryUtils {
         context,
         name: `Create${entityName}Handler`,
         commandMap: {
-          [`create ${entityLower}`]: async (command) => {
+          [`create ${entityLower}`]: async (command: string) => {
             // Implementation would depend on specific requirements
             return context.handleArgumentCommand(
               command,
               `create ${entityLower}`,
-              (args) => service.create(args),
+              (args: string[]) => service.create(args),
               `create ${entityLower} <datos>`,
             );
           },
@@ -99,11 +119,11 @@ export class HandlerFactoryUtils {
         context,
         name: `Update${entityName}Handler`,
         commandMap: {
-          [`update ${entityLower}`]: async (command) => {
+          [`update ${entityLower}`]: async (command: string) => {
             return context.handleArgumentCommand(
               command,
               `update ${entityLower}`,
-              (args) => service.update(args),
+              (args: string[]) => service.update(args),
               `update ${entityLower} <id> <datos>`,
             );
           },
@@ -114,11 +134,11 @@ export class HandlerFactoryUtils {
         context,
         name: `Delete${entityName}Handler`,
         commandMap: {
-          [`delete ${entityLower}`]: async (command) => {
+          [`delete ${entityLower}`]: async (command: string) => {
             return context.handleArgumentCommand(
               command,
               `delete ${entityLower}`,
-              (args) => service.delete(args),
+              (args: string[]) => service.delete(args),
               `delete ${entityLower} <id>`,
             );
           },
@@ -151,7 +171,7 @@ export class HandlerFactoryUtils {
       return context.handleListCommand({
         loadFunction,
         formatFunction:
-          formatter || ((item) => item.name || item.id || String(item)),
+          formatter || ((item: ItemLike) => this.formatItemLabel(item)),
         itemType,
         title: title || `Lista de ${itemType}`,
       });
@@ -193,7 +213,7 @@ export class HandlerFactoryUtils {
   static createSearchHandler(config: any) {
     const { context, command, searchFunction, itemType = 'elementos' } = config;
 
-    return async (fullCommand) => {
+    return async (fullCommand: string) => {
       return context.handleSearchCommand(
         fullCommand,
         command,
@@ -228,7 +248,7 @@ export class HandlerFactoryUtils {
         'Comandos disponibles:',
       ];
 
-      commands.forEach((cmd) => {
+      commands.forEach((cmd: string | CommandDescriptor) => {
         if (typeof cmd === 'string') {
           helpText.push(`  ${cmd}`);
         } else if (cmd.command && cmd.description) {
@@ -253,15 +273,15 @@ export class HandlerFactoryUtils {
 
     const commandMap = {};
 
-    Object.entries(routes as Record<string, any>).forEach(
+    Object.entries(routes as Record<string, RouteConfig>).forEach(
       ([command, route]) => {
-      commandMap[command] = () => {
-        return context.handleNavigationCommand(
-          route.path,
-          route.successMessage || `Navegando a ${route.path}`,
-        );
-      };
-    },
+        commandMap[command] = () => {
+          return context.handleNavigationCommand(
+            route.path,
+            route.successMessage || `Navegando a ${route.path}`,
+          );
+        };
+      },
     );
 
     return this.createStandardHandler({
@@ -283,17 +303,17 @@ export class HandlerFactoryUtils {
 
     const commandMap = {};
 
-    Object.entries(toggles as Record<string, any>).forEach(
+    Object.entries(toggles as Record<string, ToggleConfig>).forEach(
       ([command, toggleConfig]) => {
-      commandMap[command] = () => {
-        return context.handleToggleCommand(
-          toggleConfig.setting,
-          toggleConfig.getCurrentState,
-          toggleConfig.toggleFunction,
-          toggleConfig.messages || {},
-        );
-      };
-    },
+        commandMap[command] = () => {
+          return context.handleToggleCommand(
+            toggleConfig.setting,
+            toggleConfig.getCurrentState,
+            toggleConfig.toggleFunction,
+            toggleConfig.messages || {},
+          );
+        };
+      },
     );
 
     return this.createStandardHandler({

@@ -34,12 +34,12 @@ const DatePickerContent = styled.div<DatePickerContentProps>`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: ${({ $isMobile }) => ($isMobile ? 'auto' : '540px')};
-  max-width: ${({ $isMobile }) => ($isMobile ? '100%' : '680px')};
-  height: ${({ $isMobile }) => ($isMobile ? 'auto' : '350px')};
+  min-width: ${({ $isMobile }: DatePickerContentProps) => ($isMobile ? 'auto' : '540px')};
+  max-width: ${({ $isMobile }: DatePickerContentProps) => ($isMobile ? '100%' : '680px')};
+  height: ${({ $isMobile }: DatePickerContentProps) => ($isMobile ? 'auto' : '350px')};
   min-height: 0;
-  max-height: ${({ $isMobile }) => ($isMobile ? 'none' : '460px')};
-  padding: ${({ $isMobile }) => ($isMobile ? '1em' : '10px 0px')};
+  max-height: ${({ $isMobile }: DatePickerContentProps) => ($isMobile ? 'none' : '460px')};
+  padding: ${({ $isMobile }: DatePickerContentProps) => ($isMobile ? '1em' : '10px 0px')};
 `;
 
 const ActionsSection = styled.div<ActionsSectionProps>`
@@ -48,7 +48,7 @@ const ActionsSection = styled.div<ActionsSectionProps>`
   z-index: 1;
   display: flex;
   gap: 8px;
-  padding: ${(props) => (props.$isMobile ? '1em' : '0px')};
+  padding: ${({ $isMobile }: ActionsSectionProps) => ($isMobile ? '1em' : '0px')};
   background: white;
   border-top: 1px solid #f0f0f0;
 `;
@@ -57,21 +57,21 @@ const ActionButton = styled.button<ActionButtonProps>`
   flex: 1;
   padding: 8px 16px;
   font-size: 14px;
-  color: ${(props) => (props.$primary ? 'white' : '#595959')};
+  color: ${({ $primary }: ActionButtonProps) => ($primary ? 'white' : '#595959')};
   cursor: pointer;
-  background: ${(props) => (props.$primary ? '#1890ff' : 'white')};
-  border: 1px solid ${(props) => (props.$primary ? '#1890ff' : '#d9d9d9')};
+  background: ${({ $primary }: ActionButtonProps) => ($primary ? '#1890ff' : 'white')};
+  border: 1px solid ${({ $primary }: ActionButtonProps) => ($primary ? '#1890ff' : '#d9d9d9')};
   border-radius: 4px;
   transition: all 0.3s;
 
   &:hover {
-    ${(props) =>
-      props.$primary
-        ? `
+    ${({ $primary }: ActionButtonProps) =>
+    $primary
+      ? `
             background: #40a9ff;
             border-color: #40a9ff;
         `
-        : `
+      : `
             border-color: #1890ff;
             color: #1890ff;
         `}

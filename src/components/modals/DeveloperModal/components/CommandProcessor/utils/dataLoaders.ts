@@ -88,15 +88,16 @@ export const createDataLoaders = (processor: CommandProcessorInterface) => {
         return value.toLowerCase().includes(normalizedSearch);
       }
       if (typeof value === 'object' && value !== null) {
+        const record = value as { name?: unknown; label?: unknown };
         if (
-          typeof value.name === 'string' &&
-          value.name.toLowerCase().includes(normalizedSearch)
+          typeof record.name === 'string' &&
+          record.name.toLowerCase().includes(normalizedSearch)
         ) {
           return true;
         }
         if (
-          typeof value.label === 'string' &&
-          value.label.toLowerCase().includes(normalizedSearch)
+          typeof record.label === 'string' &&
+          record.label.toLowerCase().includes(normalizedSearch)
         ) {
           return true;
         }

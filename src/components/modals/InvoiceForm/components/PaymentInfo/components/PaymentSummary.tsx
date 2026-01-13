@@ -44,13 +44,15 @@ const Summary = styled.div`
   }
 `;
 
+type SummaryVariantProps = { $variant?: 'positive' | 'negative' };
+
 const SummaryItem = styled.div<{ $variant?: 'positive' | 'negative' }>`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.75rem 1rem;
   text-align: center;
-  background: ${(props) => {
+  background: ${(props: SummaryVariantProps) => {
     if (props.$variant === 'positive') return '#d3faacff';
     if (props.$variant === 'negative') return '#ffc8deff';
     return '#f3f3f3';
@@ -60,7 +62,7 @@ const SummaryItem = styled.div<{ $variant?: 'positive' | 'negative' }>`
 
 const SummaryLabel = styled.span<{ $variant?: 'positive' | 'negative' }>`
   font-size: 12px;
-  color: ${(props) => {
+  color: ${(props: SummaryVariantProps) => {
     if (props.$variant === 'positive') return '#237804';
     if (props.$variant === 'negative') return '#a8071a';
     return '#3a3a3a';
@@ -72,7 +74,7 @@ const SummaryLabel = styled.span<{ $variant?: 'positive' | 'negative' }>`
 const SummaryValue = styled.span<{ $variant?: 'positive' | 'negative' }>`
   font-size: 16px;
   font-weight: 600;
-  color: ${(props) => {
+  color: ${(props: SummaryVariantProps) => {
     if (props.$variant === 'positive') return '#135200';
     if (props.$variant === 'negative') return '#a50e43';
     return '#262626';

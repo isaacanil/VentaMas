@@ -70,8 +70,8 @@ export const ProductOutflowModal = ({
   const user = useSelector(selectUser) as UserInfo | null;
 
   const onClose = () => {
-    dispatch(toggleAddProductOutflow());
-    dispatch(deleteData());
+    dispatch(toggleAddProductOutflow(undefined));
+    dispatch(deleteData(undefined));
   };
 
   const handleDeleteProductOutflow = (item: ProductOutflowItem) => {
@@ -258,7 +258,7 @@ const TableHeader = styled.div<{ $isScrolled: boolean }>`
   border-bottom: 1px solid transparent;
   z-index: 1;
   transition: all 0.2s linear;
-  ${(props) =>
+  ${(props: { $isScrolled: boolean }) =>
     props.$isScrolled &&
     `
     background-color: var(--white);

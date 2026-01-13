@@ -238,6 +238,10 @@ export const Client = ({ invoice, isEditLocked = false }: ClientProps) => {
   );
 };
 
+type DetailItemStyleProps = { $fullWidth?: boolean };
+type CollapsibleStyleProps = { isCollapsed?: boolean };
+type ButtonStyleProps = { disabled?: boolean };
+
 const Container = styled.div`
   width: 100%;
 `;
@@ -273,7 +277,8 @@ const PrimaryDetailsGrid = styled.div`
 
 const DetailItem = styled.div`
   display: flex;
-  grid-column: ${(props: any) => (props.$fullWidth ? '1 / -1' : 'auto')};
+  grid-column: ${(props: DetailItemStyleProps) =>
+    props.$fullWidth ? '1 / -1' : 'auto'};
   gap: 8px;
   align-items: flex-start;
   padding: 8px;
@@ -300,8 +305,10 @@ const DetailContent = styled.div`
 `;
 
 const CollapsibleContent = styled.div`
-  max-height: ${(props: any) => (props.isCollapsed ? '0' : '500px')};
-  padding: ${(props: any) => (props.isCollapsed ? '0 12px' : '0 12px 12px 12px')};
+  max-height: ${(props: CollapsibleStyleProps) =>
+    props.isCollapsed ? '0' : '500px'};
+  padding: ${(props: CollapsibleStyleProps) =>
+    props.isCollapsed ? '0 12px' : '0 12px 12px 12px'};
   overflow: hidden;
   transition:
     max-height 0.3s ease,
@@ -331,15 +338,16 @@ const ChangeClientButton = styled.button`
   color: #262626;
   white-space: nowrap;
   cursor: pointer;
-  cursor: ${(props: any) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props: ButtonStyleProps) =>
+    props.disabled ? 'not-allowed' : 'pointer'};
   background: #fff;
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  opacity: ${(props: any) => (props.disabled ? 0.6 : 1)};
+  opacity: ${(props: ButtonStyleProps) => (props.disabled ? 0.6 : 1)};
   transition: all 0.2s ease;
 
   &:hover {
-    ${(props) =>
+    ${(props: ButtonStyleProps) =>
       props.disabled
         ? ''
         : `
@@ -417,17 +425,18 @@ const GenericButton = styled.button`
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  cursor: ${(props: any) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props: ButtonStyleProps) =>
+    props.disabled ? 'not-allowed' : 'pointer'};
   background: #1890ff;
   border: 1px solid #1890ff;
   border-radius: 6px;
-  opacity: ${(props: any) => (props.disabled ? 0.6 : 1)};
+  opacity: ${(props: ButtonStyleProps) => (props.disabled ? 0.6 : 1)};
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
 
   &:hover {
-    ${(props) =>
+    ${(props: ButtonStyleProps) =>
       props.disabled
         ? ''
         : `

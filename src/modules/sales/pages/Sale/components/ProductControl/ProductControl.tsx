@@ -106,7 +106,7 @@ export const ProductControl = ({
               padding="bottom"
               columns="4"
               isRow={viewRowModeRef ? true : false}
-              onScroll={(e) =>
+              onScroll={(e: React.UIEvent<HTMLDivElement>) =>
                 (e.currentTarget.style.scrollBehavior = 'smooth')
               }
               variants={containerVariants}
@@ -135,11 +135,15 @@ export const ProductControl = ({
   );
 };
 
+type ContainerStyleProps = {
+  theme: { bg: { color2: string } };
+};
+
 const Container = styled.div`
   position: relative;
   height: 100%;
   overflow: hidden;
-  background-color: ${(props) => props.theme.bg.color2};
+  background-color: ${(props: ContainerStyleProps) => props.theme.bg.color2};
   border-radius: var(--border-radius-light);
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -158,7 +162,7 @@ const Wrapper = styled(motion.div)<WrapperProps>`
   /* padding-top: 1em; */
   overflow-y: scroll;
 
-  ${({ isScrolled }) =>
+  ${({ isScrolled }: WrapperProps) =>
     isScrolled
       ? `
     border-top: 1px solid #e0e0e08b;

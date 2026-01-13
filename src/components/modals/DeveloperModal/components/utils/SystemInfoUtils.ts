@@ -1,13 +1,88 @@
 /**
  * Utilidades para formateo de información del sistema
  */
+type UserInfo = {
+  displayName?: string;
+  email?: string;
+  uid?: string;
+  role?: string;
+  businessId?: string;
+  emailVerified?: boolean;
+  creationTime?: string | number | Date;
+  lastSignInTime?: string | number | Date;
+};
+
+type SystemStateInfo = {
+  isTestMode?: boolean;
+  isTemporaryMode?: boolean;
+  originalBusinessId?: string | null;
+  isTemporaryRoleMode?: boolean;
+  originalRole?: string | null;
+  reactScanLoaded?: boolean;
+};
+
+type DebugInfo = {
+  debugMode?: boolean;
+  systemState?: SystemStateInfo | null;
+};
+
+type TestModeInfo = {
+  isTestMode?: boolean;
+  systemState?: SystemStateInfo | null;
+};
+
+type SystemInfo = {
+  user?: UserInfo | null;
+  debugMode?: boolean;
+  systemState?: SystemStateInfo | null;
+  environment?: string;
+  version?: string;
+};
+
+type PerformanceMemory = {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+};
+
+type PerformanceTiming = {
+  domContentLoadedEventEnd: number;
+  navigationStart: number;
+  loadEventEnd: number;
+};
+
+type PerformanceNavigation = {
+  type: number | string;
+  redirectCount: number;
+};
+
+type PerformanceInfo = {
+  memory?: PerformanceMemory | null;
+  timing?: PerformanceTiming | null;
+  navigation?: PerformanceNavigation | null;
+};
+
+type BrowserInfo = {
+  userAgent: string;
+  platform: string;
+  language: string;
+  cookieEnabled: boolean;
+  onLine: boolean;
+  browser: string;
+  screen: {
+    width: number;
+    height: number;
+    colorDepth: number;
+  };
+};
+
 export class SystemInfoUtils {
   /**
    * Formatea información del usuario de manera consistente
    * @param {Object} user - Objeto usuario
    * @returns {string} - Información del usuario formateada
    */
-  static formatUserInfo(user) {
+  static formatUserInfo(user: UserInfo | null | undefined) {
     if (!user) {
       return 'Usuario: No autenticado';
     }
@@ -57,7 +132,7 @@ export class SystemInfoUtils {
    * @param {Object} debugInfo - Información de debug
    * @returns {string} - Información de debug formateada
    */
-  static formatDebugInfo(debugInfo) {
+  static formatDebugInfo(debugInfo: DebugInfo) {
     const { debugMode, systemState } = debugInfo;
 
     const info = [];
@@ -111,7 +186,7 @@ export class SystemInfoUtils {
    * @param {Object} testInfo - Información del modo test
    * @returns {string} - Información del modo test formateada
    */
-  static formatTestModeInfo(testInfo) {
+  static formatTestModeInfo(testInfo: TestModeInfo) {
     const { isTestMode, systemState } = testInfo;
 
     const info = [];
@@ -159,7 +234,7 @@ export class SystemInfoUtils {
    * @param {Object} systemInfo - Información completa del sistema
    * @returns {string} - Información del sistema formateada
    */
-  static formatSystemInfo(systemInfo) {
+  static formatSystemInfo(systemInfo: SystemInfo) {
     const { user, debugMode, systemState, environment, version } = systemInfo;
 
     const info = [];
@@ -195,7 +270,7 @@ export class SystemInfoUtils {
    * @param {Object} performanceInfo - Información de performance
    * @returns {string} - Información de performance formateada
    */
-  static formatPerformanceInfo(performanceInfo) {
+  static formatPerformanceInfo(performanceInfo: PerformanceInfo) {
     const { memory, timing, navigation } = performanceInfo;
 
     const info = [];
@@ -239,7 +314,7 @@ export class SystemInfoUtils {
    * Obtiene información del navegador
    * @returns {Object} - Información del navegador
    */
-  static getBrowserInfo() {
+  static getBrowserInfo(): BrowserInfo {
     const ua = navigator.userAgent;
     const info = {
       userAgent: ua,

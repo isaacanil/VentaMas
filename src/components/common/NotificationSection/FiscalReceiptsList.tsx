@@ -1,30 +1,48 @@
 import React from 'react';
 import styled from 'styled-components';
 
+type AlertLevel = 'critical' | 'warning' | 'normal';
+
+interface ReceiptItemProps {
+  alertLevel?: AlertLevel;
+}
+
+interface FiscalReceipt {
+  name: string;
+  series: string;
+  alertLevel: AlertLevel;
+  remainingNumbers: number;
+}
+
+interface FiscalReceiptsListProps {
+  receipts?: FiscalReceipt[];
+  showAll?: boolean;
+}
+
 const ReceiptListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
 
-const ReceiptItem = styled.div`
+const ReceiptItem = styled.div<ReceiptItemProps>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: ${(props) =>
-    props.alertLevel === 'critical'
+  background: ${({ alertLevel }: ReceiptItemProps) =>
+    alertLevel === 'critical'
       ? '#fff2f0'
-      : props.alertLevel === 'warning'
+      : alertLevel === 'warning'
         ? '#fffbe6'
         : '#f6ffed'};
   border: 1px solid
-    ${(props) =>
-      props.alertLevel === 'critical'
-        ? '#ffccc7'
-        : props.alertLevel === 'warning'
-          ? '#ffe58f'
-          : '#d9f7be'};
+    ${({ alertLevel }: ReceiptItemProps) =>
+    alertLevel === 'critical'
+      ? '#ffccc7'
+      : alertLevel === 'warning'
+        ? '#ffe58f'
+        : '#d9f7be'};
   border-radius: 6px;
   transition: all 0.2s;
 
@@ -54,16 +72,16 @@ const ReceiptSeries = styled.div`
   color: #8c8c8c;
 `;
 
-const ReceiptStatus = styled.div`
+const ReceiptStatus = styled.div<ReceiptItemProps>`
   display: flex;
   gap: 4px;
   align-items: center;
   font-size: 11px;
   font-weight: 500;
-  color: ${(props) =>
-    props.alertLevel === 'critical'
+  color: ${({ alertLevel }: ReceiptItemProps) =>
+    alertLevel === 'critical'
       ? '#cf1322'
-      : props.alertLevel === 'warning'
+      : alertLevel === 'warning'
         ? '#d48806'
         : '#389e0d'};
 `;
@@ -72,14 +90,14 @@ const StatusIcon = styled.i`
   font-size: 10px;
 `;
 
-const RemainingCount = styled.div`
+const RemainingCount = styled.div<ReceiptItemProps>`
   min-width: 40px;
   font-size: 13px;
   font-weight: 600;
-  color: ${(props) =>
-    props.alertLevel === 'critical'
+  color: ${({ alertLevel }: ReceiptItemProps) =>
+    alertLevel === 'critical'
       ? '#cf1322'
-      : props.alertLevel === 'warning'
+      : alertLevel === 'warning'
         ? '#d48806'
         : '#389e0d'};
   text-align: right;
@@ -101,7 +119,7 @@ const EmptyIcon = styled.i`
 /**
  * Componente para mostrar lista de comprobantes fiscales
  */
-const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
+const FiscalReceiptsList: React.FC<FiscalReceiptsListProps> = ({ receipts = [], showAll = false }) => {
   if (!receipts || receipts.length === 0) {
     return (
       <EmptyState>
@@ -111,7 +129,7 @@ const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
     );
   }
 
-  const getStatusIcon = (alertLevel) => {
+  const getStatusIcon = (alertLevel: AlertLevel): string => {
     switch (alertLevel) {
       case 'critical':
         return 'fa-exclamation-triangle';
@@ -122,7 +140,7 @@ const FiscalReceiptsList = ({ receipts = [], showAll = false }) => {
     }
   };
 
-  const getStatusText = (alertLevel, remainingNumbers) => {
+  const getStatusText = (alertLevel: AlertLevel, remainingNumbers: number): string => {
     switch (alertLevel) {
       case 'critical':
         return `¡Crítico! ${remainingNumbers} restantes`;

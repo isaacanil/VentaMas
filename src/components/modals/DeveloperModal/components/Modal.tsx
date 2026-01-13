@@ -24,7 +24,7 @@ export const Modal = ({ visible, onClose, children }: ModalProps) => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.2 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
         >
           <CloseButton onClick={onClose}>×</CloseButton>
           {children}

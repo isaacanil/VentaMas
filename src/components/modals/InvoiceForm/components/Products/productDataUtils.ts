@@ -1,6 +1,10 @@
 import type { InvoiceProduct } from '@/types/invoice';
 
-type CategoryLike = string | { name?: string | null } | null | undefined;
+export type CategoryLike =
+  | string
+  | { name?: string | null }
+  | null
+  | undefined;
 type ActiveIngredientLike =
   | string
   | { name?: string | null }

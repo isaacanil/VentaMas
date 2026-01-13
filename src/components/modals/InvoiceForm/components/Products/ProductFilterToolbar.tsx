@@ -54,7 +54,7 @@ export const ProductFilterToolbar = ({
     const total = categoryStats?.total ?? 0;
     const entries = categoryStats?.entries ?? [];
 
-    const buildLabel = (name, count) => (
+    const buildLabel = (name: string, count: number) => (
       <CategoryOption>
         <CategoryOptionText title={name}>{name}</CategoryOptionText>
         <CategoryOptionBadge>{count}</CategoryOptionBadge>
@@ -78,7 +78,9 @@ export const ProductFilterToolbar = ({
           <SearchIcon icon={faMagnifyingGlass} />
           <SearchInput
             value={searchTerm}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              onSearchChange(event.target.value)
+            }
             placeholder={searchPlaceholder}
           />
         </SearchBar>

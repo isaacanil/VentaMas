@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, type KeyboardEvent } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -228,11 +234,11 @@ export const DeveloperModal = () => {
 
   const triggerCommandExecution = useCallback((command: string) => {
     const commandText = command?.trim();
-    if (!commandText || !commandProcessorRef.current) return;
+    const processor = commandProcessorRef.current;
+    if (!commandText || !processor) return;
 
     const executeCommand = async () => {
-      const result =
-        await commandProcessorRef.current.executeCommand(commandText);
+      const result = await processor.executeCommand(commandText);
 
       if (result && result.clearConsole) {
         setConsoleOutput([]);
@@ -311,8 +317,15 @@ export const DeveloperModal = () => {
     }
   }, [modalData.isOpen, isDeveloper, dispatch]);
 
+  type KeyboardEventLike = {
+    key: string;
+    ctrlKey: boolean;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  };
+
   // Manejar entrada de teclado - DEBE ESTAR ANTES del useEffect que lo usa
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleKeyDownInternal = useCallback((e: KeyboardEventLike) => {
     // Si estamos en modo de selección, solo manejar ESC para cancelar
     if (selectionMode.active) {
       if (e.key === 'Escape') {
@@ -418,12 +431,16 @@ export const DeveloperModal = () => {
     }
   }, [selectionMode.active, showAutoComplete, autoCompleteSuggestions, autoCompleteSelectedIndex, commandInput, handleAutoCompleteSuggestionSelect, triggerCommandExecution]);
 
+  const handleKeyDown = useCallback((e: ReactKeyboardEvent) => {
+    handleKeyDownInternal(e);
+  }, [handleKeyDownInternal]);
+
   // Agregar listener global solo para ESC cuando estamos en modo selección
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Solo manejar ESC globalmente si el modal está abierto
       if (modalData.isOpen) {
-        handleKeyDown(e);
+        handleKeyDownInternal(e);
       }
     };
 
@@ -446,11 +463,11 @@ export const DeveloperModal = () => {
 
   const _triggerCommandExecution = (command: string) => {
     const commandText = command?.trim();
-    if (!commandText || !commandProcessorRef.current) return;
+    const processor = commandProcessorRef.current;
+    if (!commandText || !processor) return;
 
     const executeCommand = async () => {
-      const result =
-        await commandProcessorRef.current.executeCommand(commandText);
+      const result = await processor.executeCommand(commandText);
 
       if (result && result.clearConsole) {
         setConsoleOutput([]);

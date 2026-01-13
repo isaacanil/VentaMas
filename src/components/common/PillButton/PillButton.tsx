@@ -47,8 +47,8 @@ const base = css`
 const StyledPillButton = styled.button<PillButtonStyleProps>`
   ${base}
 
-  background-color: ${(props) => props.bg || 'white'};
-  color: ${(props) => props.color || 'black'};
+  background-color: ${(props: PillButtonStyleProps) => props.bg || 'white'};
+  color: ${(props: PillButtonStyleProps) => props.color || 'black'};
 `;
 
 const IconWrapper = styled.span`

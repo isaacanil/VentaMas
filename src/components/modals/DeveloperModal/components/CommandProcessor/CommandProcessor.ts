@@ -5,33 +5,34 @@ import {
 } from './utils/commandSuggestions';
 import { createDataLoaders } from './utils/dataLoaders';
 import { getAllRoutes, filterRoutes } from './utils/routeHelpers';
+import type { CommandProcessorInterface } from './types';
 
 /**
  * Procesa todos los comandos ingresados en la consola de desarrollador
  */
-class CommandProcessor {
-  dispatch: any;
-  navigate: any;
-  user: any;
-  isTestMode: any;
-  isTemporaryMode: any;
-  originalBusinessId: any;
-  isTemporaryRoleMode: any;
-  originalRole: any;
-  addOutput: any;
-  addCommandEcho: any;
-  setReactScanLoaded: any;
-  reactScanLoaded: any;
-  setBusinesses: any;
-  businesses: any;
-  enterSelectionMode: any;
-  loadBusinessesList: any;
-  loadUsersList: any;
-  loadProductsForLookup: any;
-  findProductsByName: any;
-  changeUserPassword: any;
+class CommandProcessor implements CommandProcessorInterface {
+  dispatch: CommandProcessorInterface['dispatch'];
+  navigate: CommandProcessorInterface['navigate'];
+  user: CommandProcessorInterface['user'];
+  isTestMode: CommandProcessorInterface['isTestMode'];
+  isTemporaryMode: CommandProcessorInterface['isTemporaryMode'];
+  originalBusinessId: CommandProcessorInterface['originalBusinessId'];
+  isTemporaryRoleMode: CommandProcessorInterface['isTemporaryRoleMode'];
+  originalRole: CommandProcessorInterface['originalRole'];
+  addOutput: CommandProcessorInterface['addOutput'];
+  addCommandEcho: CommandProcessorInterface['addCommandEcho'];
+  setReactScanLoaded: CommandProcessorInterface['setReactScanLoaded'];
+  reactScanLoaded: CommandProcessorInterface['reactScanLoaded'];
+  setBusinesses: CommandProcessorInterface['setBusinesses'];
+  businesses: CommandProcessorInterface['businesses'];
+  enterSelectionMode: CommandProcessorInterface['enterSelectionMode'];
+  loadBusinessesList: CommandProcessorInterface['loadBusinessesList'];
+  loadUsersList: CommandProcessorInterface['loadUsersList'];
+  loadProductsForLookup: CommandProcessorInterface['loadProductsForLookup'];
+  findProductsByName: CommandProcessorInterface['findProductsByName'];
+  changeUserPassword: CommandProcessorInterface['changeUserPassword'];
 
-  constructor(deps: any) {
+  constructor(deps: CommandProcessorInterface) {
     this.dispatch = deps.dispatch;
     this.navigate = deps.navigate;
     this.user = deps.user;
@@ -60,7 +61,7 @@ class CommandProcessor {
     return getAllCommandSuggestions();
   }
 
-  getCommandSuggestions(input) {
+  getCommandSuggestions(input: string) {
     return getCommandSuggestions(input);
   }
 
@@ -68,11 +69,11 @@ class CommandProcessor {
     return getAllRoutes();
   }
 
-  filterRoutes(searchText) {
+  filterRoutes(searchText: string) {
     return filterRoutes(searchText);
   }
 
-  async executeCommand(command) {
+  async executeCommand(command: string) {
     return executeCommand.call(this, command);
   }
 }

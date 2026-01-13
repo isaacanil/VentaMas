@@ -131,7 +131,11 @@ export const PreorderModal = ({
     <>
       {shouldRender && (
         <ModalOverlay onClick={closeModal}>
-          <ModalCard onClick={(event) => event.stopPropagation()}>
+          <ModalCard
+            onClick={(event: React.MouseEvent<HTMLDivElement>) =>
+              event.stopPropagation()
+            }
+          >
             <ModalHeader>
               <ModalTitle>
                 <IconLabel>
@@ -322,12 +326,14 @@ const ModalBody = styled.div`
   gap: 20px;
 `;
 
+type StatusBadgeStyleProps = { $tone?: string };
+
 const StatusBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: ${(props) => props.$tone || '#475569'};
+  background: ${(props: StatusBadgeStyleProps) => props.$tone || '#475569'};
   color: white;
   border-radius: 6px;
   font-size: 14px;

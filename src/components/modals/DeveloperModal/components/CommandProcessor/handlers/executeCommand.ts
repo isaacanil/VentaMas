@@ -7,8 +7,70 @@ import {
   returnToOriginalRole,
 } from '@/features/auth/userSlice';
 import { fbSearchUsers } from '@/firebase/Auth/fbAuthV2/fbGetUsers';
+import type { CommandProcessorInterface } from '../types';
+import type { SelectionItem } from '../../types';
 
-export default async function executeCommand(this: any, command: string) {
+type BusinessEntry = {
+  id?: string;
+  businessID?: string;
+  business?: { name?: string };
+};
+
+type RoleEntry = {
+  id: string;
+  label: string;
+};
+
+type UserEntry = {
+  user: {
+    id?: string;
+    name?: string;
+    email?: string;
+    role?: string;
+    businessID?: string;
+  };
+};
+
+type ProductMatch = {
+  id?: string;
+  name?: string;
+  brand?: string | { name?: string };
+  code?: string;
+  sku?: string;
+  barcode?: string;
+  internalCode?: string;
+};
+
+type BusinessSelectionItem = {
+  id?: string;
+  businessID?: string;
+  business?: { name?: string };
+  name?: string;
+  originalName?: string;
+  display?: string;
+  isCurrent?: boolean;
+  returnToOriginal?: boolean;
+};
+
+type UserSelectionItem = {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  userData?: UserEntry['user'];
+};
+
+type RoleSelectionItem = {
+  id?: string;
+  label?: string;
+  isOriginal?: boolean;
+  isCurrent?: boolean;
+};
+
+export default async function executeCommand(
+  this: CommandProcessorInterface,
+  command: string,
+) {
   // Add command echo first
   this.addCommandEcho(command);
 
@@ -44,8 +106,32 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           testItems,
           '🧪 Selección de prueba:',
-          (selectedItem: any) => {
-            this.addOutput(`Has seleccionado: ${selectedItem.display}`);
+          (selectedItem: {
+            id?: string;
+            label?: string;
+            isOriginal?: boolean;
+            isCurrent?: boolean;
+          }) => {
+            if (!selectedItem || typeof selectedItem !== 'object') {
+              this.addOutput(
+                'No se pudo determinar la selección. Intente nuevamente.',
+                'error',
+              );
+              return;
+            }
+            const value =
+              selectedItem &&
+              typeof selectedItem === 'object' &&
+              'value' in selectedItem
+                ? (selectedItem as { value?: unknown }).value
+                : selectedItem;
+            const display =
+              selectedItem &&
+              typeof selectedItem === 'object' &&
+              'display' in selectedItem
+                ? String((selectedItem as { display?: unknown }).display ?? '')
+                : String(selectedItem ?? '');
+            this.addOutput(`Has seleccionado: ${display}`);
           },
           'select test',
         );
@@ -67,9 +153,26 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           colorItems,
           '🎨 Selección de Color:',
-          (selectedItem: any) => {
+          (selectedItem: {
+            id?: string;
+            label?: string;
+            isOriginal?: boolean;
+            isCurrent?: boolean;
+          }) => {
+            const display =
+              selectedItem &&
+              typeof selectedItem === 'object' &&
+              'display' in selectedItem
+                ? String((selectedItem as { display?: unknown }).display ?? '')
+                : String(selectedItem ?? '');
+            const value =
+              selectedItem &&
+              typeof selectedItem === 'object' &&
+              'value' in selectedItem
+                ? String((selectedItem as { value?: unknown }).value ?? '')
+                : '';
             this.addOutput(
-              `Has seleccionado: ${selectedItem.display}\nValor hexadecimal: ${selectedItem.value}`,
+              `Has seleccionado: ${display}\nValor hexadecimal: ${value}`,
             );
           },
           'select colors',
@@ -87,9 +190,15 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           numberItems,
           '🔢 Selección de Número:',
-          (selectedItem: any) => {
+          (selectedItem: SelectionItem) => {
+            const value =
+              selectedItem &&
+              typeof selectedItem === 'object' &&
+              'value' in selectedItem
+                ? (selectedItem as { value?: unknown }).value
+                : selectedItem;
             this.addOutput(
-              `Has seleccionado el número: ${selectedItem.value}`,
+              `Has seleccionado el número: ${String(value ?? '')}`,
             );
           },
           'select numbers',
@@ -198,7 +307,7 @@ Consola de desarrollador: ABIERTA`;
 
         result = `Buscando productos que coincidan con "${searchTerm}"...`;
         this.findProductsByName(searchTerm)
-          .then((matches: any) => {
+          .then((matches: ProductMatch[]) => {
             if (matches.length === 0) {
               this.addOutput(
                 `No se encontró ningún producto que contenga "${searchTerm}".`,
@@ -215,7 +324,7 @@ Consola de desarrollador: ABIERTA`;
                 : `Productos encontrados para "${searchTerm}":\n\n`;
 
             const formattedMatches = limitedMatches
-              .map((product: any, index: number) => {
+              .map((product: ProductMatch, index: number) => {
                 const brandName =
                   typeof product?.brand === 'string'
                     ? product.brand
@@ -239,9 +348,11 @@ Consola de desarrollador: ABIERTA`;
 
             this.addOutput(`${header}${formattedMatches}`);
           })
-          .catch((error: any) => {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
             this.addOutput(
-              'Error al buscar productos: ' + error.message,
+              'Error al buscar productos: ' + message,
               'error',
             );
           });
@@ -319,7 +430,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
         result = 'Cargando lista de negocios...';
         // Cargar negocios de forma asíncrona
         this.loadBusinessesList()
-          .then((businessesList) => {
+          .then((businessesList: BusinessEntry[]) => {
             if (businessesList.length === 0) {
               this.addOutput(
                 'No se encontraron negocios disponibles.',
@@ -327,19 +438,21 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               );
             } else {
               const businessListResult = `Lista de negocios disponibles:\n\n${businessesList
-                .map(
-                  (business) =>
-                    `${business.business?.name || 'Sin nombre'} - ID: ${business.id || business.businessID}`,
-                )
+                .map((business: BusinessEntry) => {
+                  const businessId = business.id || business.businessID;
+                  return `${business.business?.name || 'Sin nombre'} - ID: ${businessId}`;
+                })
                 .join(
                   '\n',
                 )}\n\nPara cambiar de negocio use: BUSINESS SWITCH [ID]\nPara modo interactivo use: BUSINESS SELECT`;
               this.addOutput(businessListResult);
             }
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
             this.addOutput(
-              'Error al cargar la lista de negocios: ' + error.message,
+              'Error al cargar la lista de negocios: ' + message,
               'error',
             );
           });
@@ -349,7 +462,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
         result = 'Cargando lista de negocios para selección...';
         // Cargar negocios y entrar en modo de selección
         this.loadBusinessesList()
-          .then((businessesList) => {
+          .then((businessesList: BusinessEntry[]) => {
             if (businessesList.length === 0) {
               this.addOutput(
                 'No se encontraron negocios disponibles.',
@@ -357,7 +470,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               );
             } else {
               // Preparar items para el modo de selección
-              let selectionItems = businessesList.map((business: any) => {
+              let selectionItems = businessesList.map((business: BusinessEntry) => {
                 const businessId = business.id || business.businessID;
                 const businessName = business.business?.name || 'Sin nombre';
                 const isCurrent = businessId === this.user?.businessID;
@@ -373,7 +486,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
 
               if (this.isTemporaryMode && this.originalBusinessId) {
                 const originalBusinessData = businessesList.find(
-                  (business: any) =>
+                  (business: BusinessEntry) =>
                     (business.id || business.businessID) ===
                     this.originalBusinessId,
                 );
@@ -397,7 +510,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               this.enterSelectionMode(
                 selectionItems,
                 '📋 Seleccionar Negocio:',
-                (selectedItem) => {
+                (selectedItem: BusinessSelectionItem) => {
                   if (!selectedItem) {
                     this.addOutput(
                       'No se pudo determinar la selección. Intente nuevamente.',
@@ -447,9 +560,11 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               );
             }
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
             this.addOutput(
-              'Error al cargar la lista de negocios: ' + error.message,
+              'Error al cargar la lista de negocios: ' + message,
               'error',
             );
           });
@@ -471,7 +586,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               : await this.loadBusinessesList();
 
           const targetBusiness = businessesToSearch.find(
-            (b: any) =>
+            (b: BusinessEntry) =>
               (b.id || b.businessID) === targetBusinessId ||
               b.business?.name
                 ?.toLowerCase()
@@ -504,7 +619,8 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
             'No está en modo temporal. Ya está en su negocio original.';
         } else {
           const originalBusiness = this.businesses.find(
-            (b: any) => (b.id || b.businessID) === this.originalBusinessId,
+            (b: BusinessEntry) =>
+              (b.id || b.businessID) === this.originalBusinessId,
           );
           this.dispatch(returnToOriginalBusiness());
           result = `✅ Regresado al negocio original: ${originalBusiness?.business?.name || 'Sin nombre'}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`;
@@ -550,14 +666,16 @@ BUSINESS STATUS             - Estado actual`;
           );
           if (
             originalRoleData &&
-            !rolesForDisplay.some((role: any) => role.id === originalRoleData.id)
+            !rolesForDisplay.some(
+              (role: RoleEntry) => role.id === originalRoleData.id,
+            )
           ) {
             rolesForDisplay.unshift(originalRoleData);
           }
         }
 
         const availableRolesOutput = rolesForDisplay
-          .map((role: any) => {
+          .map((role: RoleEntry) => {
             const parts = [role.label];
             if (this.user?.role === role.id) {
               parts.push('(Actual)');
@@ -586,7 +704,7 @@ BUSINESS STATUS             - Estado actual`;
           result = 'No tiene roles disponibles para cambio temporal.';
           break;
         }
-        const roleSelectionItems = userRolesForSelection.map((role: any) => {
+        const roleSelectionItems = userRolesForSelection.map((role: RoleEntry) => {
           const isCurrent = role.id === this.user?.role;
           const isOriginal =
             hasOriginalRoleOption && this.originalRole === role.id;
@@ -612,7 +730,9 @@ BUSINESS STATUS             - Estado actual`;
 
         if (
           hasOriginalRoleOption &&
-          !roleSelectionItems.some((item: any) => item.id === this.originalRole)
+          !roleSelectionItems.some(
+            (item: { id?: string }) => item.id === this.originalRole,
+          )
         ) {
           const originalRoleData = userRoles.find(
             (r) => r.id === this.originalRole,
@@ -636,8 +756,22 @@ BUSINESS STATUS             - Estado actual`;
         this.enterSelectionMode(
           roleSelectionItems,
           '👤 Seleccionar Role:',
-          (selectedItem: any) => {
+          (selectedItem: RoleSelectionItem) => {
             // Callback cuando se selecciona un item
+            if (!selectedItem) {
+              this.addOutput(
+                'No se pudo determinar la selección. Intente nuevamente.',
+                'error',
+              );
+              return;
+            }
+            if (!selectedItem.id) {
+              this.addOutput(
+                'No se pudo determinar el role seleccionado. Intente nuevamente.',
+                'error',
+              );
+              return;
+            }
             if (selectedItem.isOriginal) {
               this.dispatch(returnToOriginalRole());
               this.addOutput(
@@ -670,7 +804,7 @@ BUSINESS STATUS             - Estado actual`;
           // Verificar si el role está disponible para este usuario
           const userAvailableRolesForSwitch = getAvailableRoles(this.user);
           const targetRole = userAvailableRolesForSwitch.find(
-            (r: any) => r.id === targetRoleId,
+            (r: RoleEntry) => r.id === targetRoleId,
           );
           const isOriginalTarget =
             this.isTemporaryRoleMode && this.originalRole === targetRoleId;
@@ -680,7 +814,7 @@ BUSINESS STATUS             - Estado actual`;
             result = `✅ Cambiado al role: ${targetRole.label}\nID: ${targetRoleId}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`;
           } else if (isOriginalTarget) {
             const originalRoleData = userRoles.find(
-              (r: any) => r.id === this.originalRole,
+              (r: RoleEntry) => r.id === this.originalRole,
             );
             this.dispatch(returnToOriginalRole());
             result = `🔄 Regresando al role original: ${originalRoleData?.label || 'Sin nombre'}\nID: ${this.originalRole}\n\n✅ MODO TEMPORAL DE ROLE DESACTIVADO`;
@@ -738,7 +872,7 @@ ROLE STATUS             - Estado actual`;
       case cmd === 'users list':
         result = 'Cargando lista de usuarios...';
         this.loadUsersList()
-          .then((usersList) => {
+          .then((usersList: UserEntry[]) => {
             if (usersList.length === 0) {
               this.addOutput(
                 'No se encontraron usuarios disponibles.',
@@ -747,7 +881,7 @@ ROLE STATUS             - Estado actual`;
             } else {
               const usersListResult = `Lista de usuarios disponibles:\n\n${usersList
                 .map(
-                  ({ user }: any, index: number) =>
+                  ({ user }: UserEntry, index: number) =>
                     `${index + 1}. ${user.name} (${user.email})\n   Role: ${user.role} | ID: ${user?.id}`,
                 )
                 .join(
@@ -756,9 +890,11 @@ ROLE STATUS             - Estado actual`;
               this.addOutput(usersListResult);
             }
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
             this.addOutput(
-              'Error al cargar la lista de usuarios: ' + error.message,
+              'Error al cargar la lista de usuarios: ' + message,
               'error',
             );
           });
@@ -772,20 +908,27 @@ ROLE STATUS             - Estado actual`;
         } else {
           result = 'Buscando usuarios...';
           fbSearchUsers(searchTerm)
-            .then((users: any) => {
+            .then((users: UserEntry[]) => {
               if (users.length === 0) {
                 this.addOutput(
                   `No se encontraron usuarios que coincidan con "${searchTerm}".`,
                   'warning',
                 );
               } else {
-                const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users.map(({ user }: any, index: number) => `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`).join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
+                const searchResult = `Usuarios encontrados para "${searchTerm}":\n\n${users
+                  .map(
+                    ({ user }: UserEntry, index: number) =>
+                      `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`,
+                  )
+                  .join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
                 this.addOutput(searchResult);
               }
             })
-            .catch((error) => {
+            .catch((error: unknown) => {
+              const message =
+                error instanceof Error ? error.message : String(error);
               this.addOutput(
-                'Error al buscar usuarios: ' + error.message,
+                'Error al buscar usuarios: ' + message,
                 'error',
               );
             });
@@ -796,7 +939,7 @@ ROLE STATUS             - Estado actual`;
       case cmd === 'users password':
         result = 'Iniciando proceso de cambio de contraseña...';
         this.loadUsersList()
-          .then((usersList) => {
+          .then((usersList: UserEntry[]) => {
             if (usersList.length === 0) {
               this.addOutput(
                 'No se encontraron usuarios disponibles.',
@@ -804,7 +947,7 @@ ROLE STATUS             - Estado actual`;
               );
             } else {
               // Preparar items para el modo de selección
-              const selectionItems = usersList.map(({ user }: any) => ({
+              const selectionItems = usersList.map(({ user }: UserEntry) => ({
                 id: user?.id,
                 display: `👤 ${user?.name} Negocio: (${user?.businessID}) - Role: ${user?.role} - Id: ${user?.id}`,
                 name: user?.name,
@@ -817,7 +960,7 @@ ROLE STATUS             - Estado actual`;
               this.enterSelectionMode(
                 selectionItems,
                 '🔑 Seleccionar Usuario para Cambiar Contraseña:',
-                (selectedItem) => {
+                (selectedItem: UserSelectionItem) => {
                   // Solicitar nueva contraseña
                   const newPassword = prompt(
                     `Ingrese la nueva contraseña para ${selectedItem.name}:`,
@@ -845,9 +988,13 @@ ROLE STATUS             - Estado actual`;
                           `✅ Contraseña cambiada exitosamente para:\n\nUsuario: ${selectedItem.name}\nEmail: ${selectedItem.email}\nID: ${selectedItem.id}\n\n🔐 La nueva contraseña ha sido encriptada y guardada.`,
                         );
                       })
-                      .catch((error) => {
+                      .catch((error: unknown) => {
+                        const message =
+                          error instanceof Error
+                            ? error.message
+                            : String(error);
                         this.addOutput(
-                          `❌ Error al cambiar la contraseña: ${error.message}`,
+                          `❌ Error al cambiar la contraseña: ${message}`,
                           'error',
                         );
                       });
@@ -862,9 +1009,11 @@ ROLE STATUS             - Estado actual`;
               );
             }
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof Error ? error.message : String(error);
             this.addOutput(
-              'Error al cargar la lista de usuarios: ' + error.message,
+              'Error al cargar la lista de usuarios: ' + message,
               'error',
             );
           });

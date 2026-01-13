@@ -18,6 +18,7 @@ import { getTotalPrice } from '@/utils/pricing';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
 import { getCategoryName, getCategoryStats } from './productDataUtils';
+import type { CategoryLike } from './productDataUtils';
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { ProductListModal } from './ProductListModal';
 import { StyledProductTable } from './ProductTables.styles';
@@ -108,7 +109,8 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
         ? filteredBySearch
         : filteredBySearch.filter(
           (product) =>
-            getCategoryName(product?.category) === safeCategoryFilter,
+            getCategoryName(product?.category as CategoryLike) ===
+            safeCategoryFilter,
         );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
@@ -157,7 +159,7 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
           />
           <Input
             value={getProductQuantity(record)}
-            onChange={(e: any) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               if (readOnly) {
                 message.warning('No puedes modificar productos después de 48 horas.');
                 return;
@@ -243,7 +245,7 @@ export const Products = ({ invoice, isEditLocked = false }: ProductsProps) => {
     current: currentPage,
     position: ['bottomCenter'],
     showSizeChanger: false,
-    onChange: (page, pageSize) => {
+    onChange: (page: number, pageSize: number) => {
       setPaginationState({ seed: paginationSeed, current: page, pageSize });
     },
   };

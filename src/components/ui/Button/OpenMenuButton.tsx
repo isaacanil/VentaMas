@@ -4,6 +4,11 @@ import styled from 'styled-components';
 import { toggleMenu } from '@/features/nav/navSlice';
 import type { OpenMenuButtonProps } from '@/types/ui';
 
+type MenuStyleProps = {
+  $isOpen?: boolean;
+  $zIndex?: number;
+};
+
 export const OpenMenuButton = ({
   onClick,
   zIndex,
@@ -37,7 +42,7 @@ const Container = styled.div`
   background-color: rgb(0 0 0 / 20%);
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition-delay: ${(props) => !props.$isOpen && '1s'};
+  transition-delay: ${(props: MenuStyleProps) => !props.$isOpen && '1s'};
 
   @media (width <= 768px) {
     width: 2.3em;
@@ -91,7 +96,7 @@ const MenuIcon = styled.div`
       margin-top: -7px;
     }
   }
-  ${(props) => {
+  ${(props: MenuStyleProps) => {
     switch (props.$isOpen) {
       case true:
         return `

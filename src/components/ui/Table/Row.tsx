@@ -20,11 +20,18 @@ export const Row = ({ children, col, element }: RowProps) => {
   );
 };
 
+type RowStyleProps = {
+  col?: ColumnSize[];
+  element?: string;
+};
+
 const Container = styled.div<{ col?: ColumnSize[]; element?: string }>`
   display: grid;
-  grid-template-columns: ${(props) => {
+  grid-template-columns: ${(props: RowStyleProps) => {
     if (props.col) {
-      return props.col.map(({ min, max }) => `minmax(${min},${max})`);
+      return props.col.map(({ min, max }: ColumnSize) =>
+        `minmax(${min},${max})`,
+      );
     }
     return 'none';
   }};

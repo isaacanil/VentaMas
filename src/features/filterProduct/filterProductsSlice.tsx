@@ -113,31 +113,34 @@ const serializeForStorage = (
   return String(value);
 };
 
-const deserializeStoredValue = (field: FilterField, rawValue: string | null) => {
-  const defaultValue = DEFAULT_FILTERS[field as keyof typeof DEFAULT_FILTERS];
+const deserializeStoredValue = <F extends FilterField>(
+  field: F,
+  rawValue: string | null,
+): FilterState[F] => {
+  const defaultValue = DEFAULT_FILTERS[field];
   if (rawValue === null || rawValue === undefined) return defaultValue;
 
   if (Array.isArray(defaultValue)) {
     try {
       const parsed = JSON.parse(rawValue);
-      return Array.isArray(parsed) ? parsed : defaultValue;
+      return (Array.isArray(parsed) ? parsed : defaultValue) as FilterState[F];
     } catch {
       return defaultValue;
     }
   }
 
   if (typeof defaultValue === 'boolean') {
-    if (rawValue === 'true') return true;
-    if (rawValue === 'false') return false;
+    if (rawValue === 'true') return true as unknown as FilterState[F];
+    if (rawValue === 'false') return false as unknown as FilterState[F];
     return defaultValue;
   }
 
   if (typeof defaultValue === 'number') {
     const numeric = Number(rawValue);
-    return Number.isFinite(numeric) ? numeric : defaultValue;
+    return (Number.isFinite(numeric) ? numeric : defaultValue) as unknown as FilterState[F];
   }
 
-  return rawValue;
+  return rawValue as FilterState[F];
 };
 
 const readStoredValue = (key: string | null) => {
@@ -159,11 +162,12 @@ const writeStoredValue = (key: string | null, value: string) => {
 };
 
 const hydrateContextFilters = (context: FilterContext): FilterState => {
-  const filters = {} as FilterState;
+  const filters = { ...DEFAULT_FILTERS };
   (Object.keys(DEFAULT_FILTERS) as FilterField[]).forEach((field) => {
     const storageKey = toStorageKey(context, field);
     const storedValue = readStoredValue(storageKey);
-    filters[field] = deserializeStoredValue(field, storedValue);
+    const deserializedValue = deserializeStoredValue(field, storedValue);
+    Object.assign(filters, { [field]: deserializedValue });
   });
   return filters;
 };
@@ -194,7 +198,7 @@ const persistContextDefaults = (context: FilterContext) => {
     });
 };
 
-const extractPayload = <T,>(payload: FilterPayload<T>) => {
+const extractPayload = <T,>(payload: FilterPayload<T>): { context: FilterContext; value: T } => {
   if (typeof payload === 'object' && payload !== null) {
     const { context = DEFAULT_FILTER_CONTEXT } = payload as {
       context?: FilterContext;
@@ -202,12 +206,12 @@ const extractPayload = <T,>(payload: FilterPayload<T>) => {
     };
     const value =
       (payload as { value?: T }).value !== undefined &&
-      (payload as { value?: T }).value !== null
-        ? (payload as { value?: T }).value
-        : payload;
+        (payload as { value?: T }).value !== null
+        ? (payload as { value?: T }).value!
+        : (payload as T);
     return { context, value };
   }
-  return { context: DEFAULT_FILTER_CONTEXT, value: payload };
+  return { context: DEFAULT_FILTER_CONTEXT, value: payload as T };
 };
 
 const markContextDirty = (state: FilterProductsState, context: FilterContext) => {
@@ -487,7 +491,7 @@ export const filterProductsSlice = createSlice({
         if (attemptedUser) {
           state.meta.loadedForUser = attemptedUser;
         }
-        state.meta.error = action.payload || action.error?.message || null;     
+        state.meta.error = action.payload || action.error?.message || null;
       })
       .addCase(persistFilterPreferences.pending, (state: FilterProductsState) => {
         state.meta.saving = true;
@@ -508,7 +512,7 @@ export const filterProductsSlice = createSlice({
       })
       .addCase(persistFilterPreferences.rejected, (state: FilterProductsState, action) => {
         state.meta.saving = false;
-        state.meta.error = action.payload || action.error?.message || null;     
+        state.meta.error = action.payload || action.error?.message || null;
       });
   },
 });

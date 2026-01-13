@@ -28,6 +28,21 @@ type SelectorProps = {
   };
 };
 
+interface TriggerProps {
+  $styles: Record<string, any>;
+  $width?: string | number;
+  $hasIcon: boolean;
+}
+
+interface ChevronProps {
+  $isOpen: boolean;
+}
+
+interface DropdownItemProps {
+  $styles: Record<string, any>;
+  $isSelected: boolean;
+}
+
 export const Selector = ({
   value,
   onChange,
@@ -72,8 +87,8 @@ export const Selector = ({
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(offsetValue), flip(), shift({ padding: 8 })],
   });
-  const setReference = useCallback((node) => refs.setReference(node), [refs]);
-  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
+  const setReference = useCallback((node: HTMLElement | null) => refs.setReference(node), [refs]);
+  const setFloating = useCallback((node: HTMLElement | null) => refs.setFloating(node), [refs]);
 
   const filteredOptions = options.filter((option) => {
     if (!option || !option.label) return false;
@@ -93,7 +108,7 @@ export const Selector = ({
       ...defaultStyles,
     };
 
-  const getOptionStyles = (option, isSelected) => {
+  const getOptionStyles = (option: any, isSelected: boolean) => {
     const defaultOptionStyles = {
       color: isSelected ? defaultStyles.selectedColor : defaultStyles.color,
       bgColor: isSelected
@@ -190,20 +205,20 @@ const Container = styled.div`
   position: relative;
 `;
 
-const Trigger = styled.button`
+const Trigger = styled.button<TriggerProps>`
   display: grid;
-  grid-template-columns: ${({ $hasIcon }) =>
+  grid-template-columns: ${({ $hasIcon }: TriggerProps) =>
     $hasIcon ? 'min-content 1fr min-content' : '1fr min-content'};
   gap: 8px;
   align-items: center;
-  width: ${({ $width }) => $width || 'min-content'};
+  width: ${({ $width }: TriggerProps) => $width || 'min-content'};
   min-width: 160px;
   padding: 7px 12px;
   font-size: 0.9rem;
-  color: ${({ $styles }) => $styles.color};
+  color: ${({ $styles }: TriggerProps) => $styles.color};
   cursor: pointer;
-  background: ${({ $styles }) => $styles.bgColor};
-  border: 1px solid ${({ $styles }) => $styles.borderColor};
+  background: ${({ $styles }: TriggerProps) => $styles.bgColor};
+  border: 1px solid ${({ $styles }: TriggerProps) => $styles.borderColor};
   border-radius: 6px;
 
   span {
@@ -218,8 +233,8 @@ const Trigger = styled.button`
   }
 `;
 
-const Chevron = styled.span`
-  transform: rotate(${(props) => (props.$isOpen ? '180deg' : '0deg')});
+const Chevron = styled.span<ChevronProps>`
+  transform: rotate(${({ $isOpen }: ChevronProps) => ($isOpen ? '180deg' : '0deg')});
   transition: transform 0.2s;
 `;
 
@@ -235,19 +250,19 @@ const Dropdown = styled.ul`
   box-shadow: 0 4px 10px rgb(0 0 0 / 15%);
 `;
 
-const DropdownItem = styled.li`
+const DropdownItem = styled.li<DropdownItemProps>`
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 8px 12px;
-  color: ${({ $styles }) => $styles.color};
+  color: ${({ $styles }: DropdownItemProps) => $styles.color};
   cursor: pointer;
-  background: ${({ $isSelected, $styles }) =>
+  background: ${({ $isSelected, $styles }: DropdownItemProps) =>
     $isSelected ? $styles.bgColor : 'white'};
   border-radius: 6px;
 
   &:hover {
-    background: ${({ $styles }) => $styles.hoverBgColor || $styles.bgColor};
+    background: ${({ $styles }: DropdownItemProps) => $styles.hoverBgColor || $styles.bgColor};
   }
 `;
 

@@ -46,6 +46,12 @@ const Console = ({
     null,
   );
   const terminalRef = useRef<HTMLDivElement | null>(null);
+  const handleAutoCompleteIndexChange = useCallback(
+    (index: number) => {
+      onAutoCompleteSelectedIndexChange?.(index);
+    },
+    [onAutoCompleteSelectedIndexChange],
+  );
 
   const setInputRef = useCallback((node: HTMLInputElement | null) => {
     inputRef.current = node;
@@ -86,13 +92,14 @@ const Console = ({
       return;
     }
 
+    const target = e.target instanceof Element ? e.target : null;
     // No enfocar si el clic fue en elementos interactivos
     if (
-      e.target.closest('.selectable-item') ||
-      e.target.closest('.autocomplete-container') ||
-      e.target.closest('button') ||
-      e.target.closest('a') ||
-      e.target.closest('[onclick]')
+      target?.closest('.selectable-item') ||
+      target?.closest('.autocomplete-container') ||
+      target?.closest('button') ||
+      target?.closest('a') ||
+      target?.closest('[onclick]')
     ) {
       return;
     }
@@ -150,7 +157,7 @@ const Console = ({
             onSuggestionSelect={onAutoCompleteSuggestionSelect}
             isVisible={showAutoComplete && !selectionMode.active}
             selectedIndex={autoCompleteSelectedIndex}
-            onSelectedIndexChange={onAutoCompleteSelectedIndexChange}
+            onSelectedIndexChange={handleAutoCompleteIndexChange}
             inputElement={inputElement}
           />
         )}
@@ -159,7 +166,7 @@ const Console = ({
           <ConsoleInput
             ref={setInputRef}
             value={commandInput}
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setCommandInput(e.target.value);
               // Si estamos en modo selección, filtrar las opciones
               if (selectionMode.active && onFilterSelection) {
@@ -268,7 +275,7 @@ interface ConsoleLineProps {
 }
 
 const ConsoleLine = styled.div<ConsoleLineProps>`
-  margin-bottom: ${(props) => {
+  margin-bottom: ${(props: ConsoleLineProps) => {
     switch (props.type) {
       case 'command':
         return '2px'; // Poco espacio después de comandos
@@ -286,7 +293,7 @@ const ConsoleLine = styled.div<ConsoleLineProps>`
   line-height: 1.2;
 
   .content {
-    color: ${(props) => {
+    color: ${(props: ConsoleLineProps) => {
       switch (props.type) {
         case 'command':
           return '#f5deb3'; // Color cremita para comandos del usuario

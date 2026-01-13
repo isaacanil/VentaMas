@@ -7,12 +7,13 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
+import type { InvoiceProduct, InvoiceFormSliceState, DiscountType } from '@/types/invoice';
 
-const roundToTwoDecimals = (num) => {
+const roundToTwoDecimals = (num: number): number => {
   return Math.round(num * 100) / 100;
 };
 
-const updateProductAmount = (product, newAmount) => {
+const updateProductAmount = (product: InvoiceProduct, newAmount: number): InvoiceProduct => {
   // Crear una copia profunda de los objetos anidados
   const updatedProduct = {
     ...product,
@@ -24,7 +25,7 @@ const updateProductAmount = (product, newAmount) => {
   return updatedProduct;
 };
 
-const calculateTotals = (products) => {
+const calculateTotals = (products: InvoiceProduct[]) => {
   let totalPurchase = getProductsTotalPrice(products);
   let totalTaxes = getProductsTax(products);
 
@@ -40,7 +41,7 @@ const calculateTotals = (products) => {
 //     return { updatedProducts, totalPurchase, totalTaxes };
 // };
 
-const calculateTotalItems = (products) => {
+const calculateTotalItems = (products: InvoiceProduct[]): number => {
   let totalItems = getTotalItems(products);
   // products.forEach(product => {
   //     totalItems += product.amountToBuy;
@@ -49,10 +50,10 @@ const calculateTotalItems = (products) => {
 };
 
 const applyDiscount = (
-  totalPurchase,
-  discountValue,
-  discountType = 'percentage',
-) => {
+  totalPurchase: number,
+  discountValue: number,
+  discountType: DiscountType = 'percentage',
+): number => {
   let discountAmount = 0;
 
   if (discountType === 'percentage') {
@@ -65,11 +66,11 @@ const applyDiscount = (
   return roundToTwoDecimals(totalPurchase - discountAmount);
 };
 
-const calculateChange = (totalPurchase, payment) => {
+const calculateChange = (totalPurchase: number, payment: number): number => {
   return roundToTwoDecimals(payment - totalPurchase);
 };
 
-const calculateTotalPurchaseWithoutTaxes = (products) => {
+const calculateTotalPurchaseWithoutTaxes = (products: InvoiceProduct[]): number => {
   const result = getProductsPrice(products);
   return roundToTwoDecimals(result);
 };
@@ -128,11 +129,11 @@ const invoice = {
   },
   discount: {
     value: 0,
-    type: 'percentage', // 'percentage' o 'fixed'
+    type: 'percentage' as DiscountType, // 'percentage' o 'fixed'
   },
 };
 
-const initialState = {
+const initialState: InvoiceFormSliceState = {
   invoice,
   modal: {
     isOpen: false,
@@ -145,7 +146,7 @@ const invoiceFormSlice = createSlice({
   name: 'invoiceForm',
   initialState,
   reducers: {
-    addInvoice(state, action) {
+    addInvoice(state: InvoiceFormSliceState, action: PayloadAction<{ mode?: string; invoice: any; authorizationRequest?: any }>) {
       const { mode, invoice, authorizationRequest = null } = action.payload;
 
       // AsegÃºrate de que todos los productos tengan los cÃ¡lculos correctos
@@ -197,7 +198,7 @@ const invoiceFormSlice = createSlice({
       state.modal.isOpen = true;
       state.authorizationRequest = authorizationRequest;
     },
-    addProductInvoiceForm(state, action) {
+    addProductInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ product: InvoiceProduct }>) {
       //esto agrega un producto a la factura
       const { product } = action.payload;
       if (!product) {
@@ -250,7 +251,7 @@ const invoiceFormSlice = createSlice({
         );
       }
     },
-    cancelInvoice: (state: any, action: PayloadAction<any>) => {
+    cancelInvoice: (state: InvoiceFormSliceState, action: PayloadAction<{ cancelationReason: string; user: any }>) => {
       const { cancelationReason, user } = action.payload;
       state.invoice.cancel = {
         reason: cancelationReason,
@@ -258,7 +259,7 @@ const invoiceFormSlice = createSlice({
         user: user,
       };
     },
-    changeValueInvoiceForm(state, action) {
+    changeValueInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ invoice: Partial<any> }>) {
       const { invoice } = action.payload;
       state.invoice = { ...state.invoice, ...invoice };
       // Recalcular los totales basados en los productos actuales
@@ -293,11 +294,11 @@ const invoiceFormSlice = createSlice({
         );
       }
     },
-    changeClientInvoiceForm(state, action) {
+    changeClientInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ client: any }>) {
       const { client } = action.payload;
       state.invoice.client = { ...state.invoice.client, ...client };
     },
-    deleteProductInvoiceForm(state, action) {
+    deleteProductInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ product: InvoiceProduct }>) {
       const { product } = action.payload;
       if (!product) {
         return;
@@ -337,7 +338,7 @@ const invoiceFormSlice = createSlice({
         state.invoice.payment.value,
       );
     },
-    changeAmountToBuyProduct(state, action) {
+    changeAmountToBuyProduct(state: InvoiceFormSliceState, action: PayloadAction<{ product: InvoiceProduct; type: string; amount?: number }>) {
       const { product, type, amount } = action.payload;
       if (!product) {
         return;
@@ -407,7 +408,7 @@ const invoiceFormSlice = createSlice({
         state.modal.mode = 'add';
       }
     },
-    clearInvoice(state) {
+    clearInvoice(state: InvoiceFormSliceState) {
       state.invoice = invoice;
       state.modal.mode = 'add';
       state.modal.isOpen = false;
@@ -430,7 +431,7 @@ export const {
 } = invoiceFormSlice.actions;
 
 // Exportar selectors
-export const selectInvoice = (state) => state.invoiceForm;
+export const selectInvoice = (state: { invoiceForm: InvoiceFormSliceState }) => state.invoiceForm;
 
 // Exportar el reducer
 export default invoiceFormSlice.reducer;

@@ -166,7 +166,7 @@ const PreviewContentInner = ({
   };
 
   useEffect(() => {
-    let localUrl;
+    let localUrl: string | null = null;
     if (previewFile) {
       if (previewFile.file instanceof File) {
         localUrl = URL.createObjectURL(previewFile.file);

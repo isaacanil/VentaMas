@@ -1,5 +1,22 @@
-import React from 'react';
+import React, { type ButtonHTMLAttributes, type ReactNode } from 'react';
 import styled from 'styled-components';
+
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success';
+
+type ButtonSize = 'small' | 'medium' | 'large';
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  children?: ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+};
+
+type StyledButtonProps = {
+  variant: ButtonVariant;
+  size: ButtonSize;
+};
+
+type StyledButtonStyleProps = StyledButtonProps & { disabled?: boolean };
 
 export const Button = ({
   children,
@@ -8,7 +25,7 @@ export const Button = ({
   size = 'medium',
   disabled = false,
   ...props
-}) => {
+}: ButtonProps) => {
   return (
     <StyledButton
       onClick={onClick}
@@ -22,14 +39,15 @@ export const Button = ({
   );
 };
 
-const StyledButton = styled.button`
+const StyledButton = styled.button<StyledButtonProps>`
   border: none;
   border-radius: 4px;
   font-weight: 500;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props: StyledButtonStyleProps) =>
+    (props.disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
 
-  ${(props) => {
+  ${(props: StyledButtonStyleProps) => {
     switch (props.size) {
       case 'small':
         return 'padding: 6px 12px; font-size: 12px;';
@@ -40,7 +58,7 @@ const StyledButton = styled.button`
     }
   }}
 
-  ${(props) => {
+  ${(props: StyledButtonStyleProps) => {
     if (props.disabled) {
       return `
                 background: #333;

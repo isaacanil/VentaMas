@@ -28,18 +28,18 @@ interface PresetButtonProps {
 const PresetsContainer = styled.div<PresetsContainerProps>`
   border: 1px solid #d9d9d9;
   border-radius: 6px;
-  padding: ${({ $layout }) =>
+  padding: ${({ $layout }: PresetsContainerProps) =>
     $layout === 'sidebar' ? '12px 2px 12px 12px' : '12px'};
-  padding-bottom: ${({ $layout }) => ($layout === 'sidebar' ? '0' : '12px')};
+  padding-bottom: ${({ $layout }: PresetsContainerProps) => ($layout === 'sidebar' ? '0' : '12px')};
 
-  /* border-bottom: ${({ $layout }) =>
+  /* border-bottom: ${({ $layout }: PresetsContainerProps) =>
     $layout === 'sidebar' ? 'none' : '1px solid #f0f0f0'}; */
-  height: ${({ $layout }) => ($layout === 'sidebar' ? '100%' : 'auto')};
+  height: ${({ $layout }: PresetsContainerProps) => ($layout === 'sidebar' ? '100%' : 'auto')};
 `;
 
 const PresetsGrid = styled.div<PresetsGridProps>`
   display: grid;
-  grid-template-columns: ${({ $isMobile }) =>
+  grid-template-columns: ${({ $isMobile }: PresetsGridProps) =>
     $isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)'};
   gap: 12px;
 `;
@@ -105,8 +105,8 @@ const DropdownItem = styled.button<DropdownItemProps>`
   width: 100%;
   padding: 14px 18px;
   border: none;
-  background: ${({ $active }) => ($active ? '#e6f7ff' : 'white')};
-  color: ${({ $active }) => ($active ? '#1890ff' : '#374151')};
+  background: ${({ $active }: DropdownItemProps) => ($active ? '#e6f7ff' : 'white')};
+  color: ${({ $active }: DropdownItemProps) => ($active ? '#1890ff' : '#374151')};
   font-size: 15px;
   text-align: left;
   cursor: pointer;
@@ -114,32 +114,32 @@ const DropdownItem = styled.button<DropdownItemProps>`
   white-space: nowrap;
 
   &:hover {
-    background: ${({ $active }) => ($active ? '#bae7ff' : '#f5f5f5')};
-    color: ${({ $active }) => ($active ? '#1890ff' : '#1d4ed8')};
+    background: ${({ $active }: DropdownItemProps) => ($active ? '#bae7ff' : '#f5f5f5')};
+    color: ${({ $active }: DropdownItemProps) => ($active ? '#1890ff' : '#1d4ed8')};
   }
 `;
 
 const PresetButton = styled.button<PresetButtonProps>`
-  width: ${({ $layout }) => ($layout === 'sidebar' ? '100%' : 'auto')};
-  text-align: ${({ $layout }) => ($layout === 'sidebar' ? 'left' : 'center')};
-  justify-content: ${({ $layout }) =>
+  width: ${({ $layout }: PresetButtonProps) => ($layout === 'sidebar' ? '100%' : 'auto')};
+  text-align: ${({ $layout }: PresetButtonProps) => ($layout === 'sidebar' ? 'left' : 'center')};
+  justify-content: ${({ $layout }: PresetButtonProps) =>
     $layout === 'sidebar' ? 'flex-start' : 'center'};
   display: flex;
   align-items: center;
-  gap: ${({ $layout }) => ($layout === 'sidebar' ? '10px' : '0')};
+  gap: ${({ $layout }: PresetButtonProps) => ($layout === 'sidebar' ? '10px' : '0')};
   padding: 10px 16px;
   border: 1px solid
-    ${({ $active, $isToggle }) => {
+    ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#bfbfbf';
     return $active ? '#1890ff' : '#d9d9d9';
   }};
-  border-width: ${({ $isToggle }) => ($isToggle ? '2px' : '1px')};
+  border-width: ${({ $isToggle }: PresetButtonProps) => ($isToggle ? '2px' : '1px')};
   border-radius: 4px;
-  background: ${({ $active, $isToggle }) => {
+  background: ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#f5f5f5';
     return $active ? '#1890ff' : 'white';
   }};
-  color: ${({ $active, $isToggle }) => {
+  color: ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#6b7280';
     return $active ? 'white' : '#374151';
   }};
@@ -149,12 +149,12 @@ const PresetButton = styled.button<PresetButtonProps>`
   font-weight: 500;
 
   &:hover {
-    border-color: ${({ $isToggle }) => ($isToggle ? '#8a8a8a' : '#1890ff')};
-    color: ${({ $active, $isToggle }) => {
+    border-color: ${({ $isToggle }: PresetButtonProps) => ($isToggle ? '#8a8a8a' : '#1890ff')};
+    color: ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#374151';
     return $active ? 'white' : '#1890ff';
   }};
-    background: ${({ $active, $isToggle }) => {
+    background: ${({ $active, $isToggle }: PresetButtonProps) => {
     if ($isToggle) return '#f1f5f9';
     return $active ? '#1890ff' : 'white';
   }};
@@ -402,7 +402,7 @@ export const PresetsSection = ({
               <MobileDrawerOverlay
                 onClick={() => setShowPresetsDropdown?.(false)}
               >
-                <MobileDrawer onClick={(event) => event.stopPropagation()}>
+                <MobileDrawer onClick={(event: React.MouseEvent) => event.stopPropagation()}>
                   <MobileDrawerHeader>
                     <MobileDrawerTitle>Más rangos</MobileDrawerTitle>
                     <MobileDrawerClose

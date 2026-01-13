@@ -2,7 +2,24 @@ import { Spin } from 'antd';
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-export const RncPanel = ({ rncInfo, loading }) => {
+type RncInfo = {
+  rnc_number?: string;
+  full_name?: string;
+  status?: string;
+  registration_date?: string;
+  economic_activity?: string;
+};
+
+type RncPanelProps = {
+  rncInfo?: RncInfo | null;
+  loading: boolean;
+};
+
+type PanelStyleProps = {
+  $dimmed?: boolean;
+};
+
+export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
   if (!rncInfo && !loading) return null;
 
   return (
@@ -56,5 +73,5 @@ const Panel = styled.div`
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
-  opacity: ${(props) => (props.$dimmed ? 0.6 : 1)};
+  opacity: ${(props: PanelStyleProps) => (props.$dimmed ? 0.6 : 1)};
 `;
