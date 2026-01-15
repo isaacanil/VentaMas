@@ -7,7 +7,14 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
-import type { InvoiceProduct, InvoiceFormSliceState, DiscountType } from '@/types/invoice';
+import { applyDiscount, calculateChange } from '@/features/invoice/utils/invoiceTotals';
+import type {
+  InvoiceProduct,
+  InvoiceData,
+  InvoiceFormSliceState,
+  DiscountType,
+  InvoiceProductAmount,
+} from '@/types/invoice';
 
 const roundToTwoDecimals = (num: number): number => {
   return Math.round(num * 100) / 100;
@@ -25,7 +32,7 @@ const updateProductAmount = (product: InvoiceProduct, newAmount: number): Invoic
   return updatedProduct;
 };
 
-const calculateTotals = (products: InvoiceProduct[]) => {
+const calculateTotals = (products: any[]) => {
   let totalPurchase = getProductsTotalPrice(products);
   let totalTaxes = getProductsTax(products);
 
@@ -41,7 +48,7 @@ const calculateTotals = (products: InvoiceProduct[]) => {
 //     return { updatedProducts, totalPurchase, totalTaxes };
 // };
 
-const calculateTotalItems = (products: InvoiceProduct[]): number => {
+const calculateTotalItems = (products: any[]): number => {
   let totalItems = getTotalItems(products);
   // products.forEach(product => {
   //     totalItems += product.amountToBuy;
@@ -49,33 +56,12 @@ const calculateTotalItems = (products: InvoiceProduct[]): number => {
   return totalItems;
 };
 
-const applyDiscount = (
-  totalPurchase: number,
-  discountValue: number,
-  discountType: DiscountType = 'percentage',
-): number => {
-  let discountAmount = 0;
-
-  if (discountType === 'percentage') {
-    discountAmount = totalPurchase * (discountValue / 100);
-  } else if (discountType === 'fixed') {
-    // Para descuento fijo, el descuento no puede exceder el total
-    discountAmount = Math.min(discountValue, totalPurchase);
-  }
-
-  return roundToTwoDecimals(totalPurchase - discountAmount);
-};
-
-const calculateChange = (totalPurchase: number, payment: number): number => {
-  return roundToTwoDecimals(payment - totalPurchase);
-};
-
-const calculateTotalPurchaseWithoutTaxes = (products: InvoiceProduct[]): number => {
+const calculateTotalPurchaseWithoutTaxes = (products: any[]): number => {
   const result = getProductsPrice(products);
   return roundToTwoDecimals(result);
 };
 
-const invoice = {
+const invoice: InvoiceData = {
   id: '',
   sourceOfPurchase: '',
   paymentMethod: [
@@ -146,19 +132,22 @@ const invoiceFormSlice = createSlice({
   name: 'invoiceForm',
   initialState,
   reducers: {
-    addInvoice(state: InvoiceFormSliceState, action: PayloadAction<{ mode?: string; invoice: any; authorizationRequest?: any }>) {
+    addInvoice(state: InvoiceFormSliceState, action: PayloadAction<{ mode?: string; invoice: InvoiceData; authorizationRequest?: any }>) {
       const { mode, invoice, authorizationRequest = null } = action.payload;
 
-      // AsegÃºrate de que todos los productos tengan los cÃ¡lculos correctos
-      const products = invoice.products.map((product) => {
-        return updateProductAmount(product, product.amountToBuy);
+      // Asegúrate de que todos los productos tengan los cálculos correctos
+      const products = (invoice.products || []).map((product: InvoiceProduct) => {
+        const amount = typeof product.amountToBuy === 'object' && product.amountToBuy !== null
+          ? (product.amountToBuy as InvoiceProductAmount).total || 0
+          : (product.amountToBuy as number) || 0;
+        return updateProductAmount(product, amount);
       });
 
-      // Calcular totales, impuestos y cantidad de artÃ­culos
+      // Calcular totales, impuestos y cantidad de artículos
       const { totalPurchase, totalTaxes } = calculateTotals(products);
-      const totalItems = calculateTotalItems(invoice.products);
+      const totalItems = calculateTotalItems(invoice.products || []);
       const totalWithoutTaxes = calculateTotalPurchaseWithoutTaxes(
-        invoice.products,
+        invoice.products || [],
       );
 
       // Actualizar el estado de la factura
@@ -172,22 +161,22 @@ const invoiceFormSlice = createSlice({
       };
 
       // Aplicar descuento si existe
-      if (invoice.discount && invoice.discount.value) {
+      if (invoice.discount && invoice.discount.value && state.invoice.totalPurchase) {
         const discountType = invoice.discount.type || 'percentage';
         state.invoice.totalPurchase.value = applyDiscount(
-          state.invoice.totalPurchase.value,
-          invoice.discount.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(invoice.discount.value) || 0,
           discountType,
         );
       }
 
       // Calcular el cambio si es necesario
-      if (invoice.payment && invoice.payment.value) {
+      if (invoice.payment && invoice.payment.value && state.invoice.totalPurchase) {
         // Crear una nueva copia del objeto change
-        const newChange = { ...state.invoice.change };
+        const newChange = { ...(state.invoice.change || { value: 0 }) };
         newChange.value = calculateChange(
-          state.invoice.totalPurchase.value,
-          invoice.payment.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(invoice.payment.value) || 0,
         );
 
         // Actualizar el estado con el nuevo objeto
@@ -208,47 +197,53 @@ const invoiceFormSlice = createSlice({
       if (!productId) {
         return;
       }
-      const index = state.invoice.products.findIndex(
+
+      const products = state.invoice.products || [];
+      const index = products.findIndex(
         (item) => item.id === productId,
       );
       if (index !== -1) {
-        // Si el producto ya estÃ¡ en la lista, actualizar la cantidad
-        state.invoice.products[index] = updateProductAmount(
-          state.invoice.products[index],
-          state.invoice.products[index].amountToBuy.total + 1,
+        // Si el producto ya está en la lista, actualizar la cantidad
+        const currentAmountToBuy = products[index].amountToBuy;
+        const currentAmount = typeof currentAmountToBuy === 'object' && currentAmountToBuy !== null
+          ? (currentAmountToBuy as InvoiceProductAmount).total || 0
+          : (currentAmountToBuy as number) || 0;
+
+        products[index] = updateProductAmount(
+          products[index],
+          currentAmount + 1,
         );
       } else {
-        state.invoice.products = [...state.invoice.products, product];
+        state.invoice.products = [...products, product];
       }
 
       // Recalcular los totales de compra e impuestos
+      const updatedProducts = state.invoice.products || [];
+      const { totalPurchase, totalTaxes } = calculateTotals(updatedProducts);
 
-      const { totalPurchase, totalTaxes } = calculateTotals(
-        state.invoice.products,
-      );
-      state.invoice.totalPurchase.value = totalPurchase;
-      state.invoice.totalTaxes.value = totalTaxes;
-      // Actualizar la cantidad total de artÃ­culos
-      state.invoice.totalShoppingItems.value = calculateTotalItems(
-        state.invoice.products,
-      );
+      state.invoice.totalPurchase = { value: totalPurchase };
+      state.invoice.totalTaxes = { value: totalTaxes };
+      // Actualizar la cantidad total de artículos
+      state.invoice.totalShoppingItems = { value: calculateTotalItems(updatedProducts) };
 
       // Aplicar descuento si existe
-      if (state.invoice.discount.value) {
+      if (state.invoice.discount?.value && state.invoice.totalPurchase) {
         const discountType = state.invoice.discount.type || 'percentage';
         state.invoice.totalPurchase.value = applyDiscount(
-          state.invoice.totalPurchase.value,
-          state.invoice.discount.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(state.invoice.discount.value) || 0,
           discountType,
         );
       }
 
       // Calcular el cambio si es necesario
-      if (state.invoice.payment.value) {
-        state.invoice.change.value = calculateChange(
-          state.invoice.totalPurchase.value,
-          state.invoice.payment.value,
-        );
+      if (state.invoice.payment?.value && state.invoice.totalPurchase) {
+        state.invoice.change = {
+          value: calculateChange(
+            Number(state.invoice.totalPurchase.value) || 0,
+            Number(state.invoice.payment.value) || 0,
+          ),
+        };
       }
     },
     cancelInvoice: (state: InvoiceFormSliceState, action: PayloadAction<{ cancelationReason: string; user: any }>) => {
@@ -259,146 +254,156 @@ const invoiceFormSlice = createSlice({
         user: user,
       };
     },
-    changeValueInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ invoice: Partial<any> }>) {
+    changeValueInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ invoice: Partial<InvoiceData> }>) {
       const { invoice } = action.payload;
       state.invoice = { ...state.invoice, ...invoice };
+
+      const products = state.invoice.products || [];
       // Recalcular los totales basados en los productos actuales
-      const { totalPurchase, totalTaxes } = calculateTotals(
-        state.invoice.products,
-      );
-      state.invoice.totalPurchase.value = totalPurchase;
-      state.invoice.totalTaxes.value = totalTaxes;
-      state.invoice.totalShoppingItems.value = calculateTotalItems(
-        state.invoice.products,
-      );
+      const { totalPurchase, totalTaxes } = calculateTotals(products);
+      state.invoice.totalPurchase = { value: totalPurchase };
+      state.invoice.totalTaxes = { value: totalTaxes };
+      state.invoice.totalShoppingItems = { value: calculateTotalItems(products) };
 
       // Calcular el total de la compra sin impuestos
-      state.invoice.totalPurchaseWithoutTaxes.value =
-        calculateTotalPurchaseWithoutTaxes(state.invoice.products);
+      state.invoice.totalPurchaseWithoutTaxes = {
+        value: calculateTotalPurchaseWithoutTaxes(products)
+      };
 
       // Aplicar descuento si existe
-      if (state.invoice.discount && state.invoice.discount.value) {
+      if (state.invoice.discount?.value && state.invoice.totalPurchase) {
         const discountType = state.invoice.discount.type || 'percentage';
         state.invoice.totalPurchase.value = applyDiscount(
-          state.invoice.totalPurchase.value,
-          state.invoice.discount.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(state.invoice.discount.value) || 0,
           discountType,
         );
       }
 
       // Calcular el cambio si es necesario
-      if (state.invoice.payment && state.invoice.payment.value) {
-        state.invoice.change.value = calculateChange(
-          state.invoice.totalPurchase.value,
-          state.invoice.payment.value,
-        );
+      if (state.invoice.payment?.value && state.invoice.totalPurchase) {
+        state.invoice.change = {
+          value: calculateChange(
+            Number(state.invoice.totalPurchase.value) || 0,
+            Number(state.invoice.payment.value) || 0,
+          )
+        };
       }
     },
     changeClientInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ client: any }>) {
       const { client } = action.payload;
-      state.invoice.client = { ...state.invoice.client, ...client };
+      state.invoice.client = { ...(state.invoice.client || {}), ...client };
     },
     deleteProductInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ product: InvoiceProduct }>) {
       const { product } = action.payload;
       if (!product) {
         return;
       }
-      const index = state.invoice.products.findIndex(
+      const products = state.invoice.products || [];
+      const index = products.findIndex(
         (item) => item.id === product.id,
       );
       if (index === -1) {
         return;
       }
-      state.invoice.products.splice(index, 1);
+      products.splice(index, 1);
+      state.invoice.products = products;
 
-      const { totalPurchase, totalTaxes } = calculateTotals(
-        state.invoice.products,
-      );
-      state.invoice.totalPurchase.value = totalPurchase;
-      state.invoice.totalTaxes.value = totalTaxes;
+      const { totalPurchase, totalTaxes } = calculateTotals(products);
+      state.invoice.totalPurchase = { value: totalPurchase };
+      state.invoice.totalTaxes = { value: totalTaxes };
 
-      state.invoice.totalShoppingItems.value = calculateTotalItems(
-        state.invoice.products,
-      );
+      state.invoice.totalShoppingItems = { value: calculateTotalItems(products) };
 
-      state.invoice.totalPurchaseWithoutTaxes.value =
-        calculateTotalPurchaseWithoutTaxes(state.invoice.products);
+      state.invoice.totalPurchaseWithoutTaxes = {
+        value: calculateTotalPurchaseWithoutTaxes(products)
+      };
 
-      if (state.invoice.discount.value) {
+      if (state.invoice.discount?.value && state.invoice.totalPurchase) {
         const discountType = state.invoice.discount.type || 'percentage';
         state.invoice.totalPurchase.value = applyDiscount(
-          state.invoice.totalPurchase.value,
-          state.invoice.discount.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(state.invoice.discount.value) || 0,
           discountType,
         );
       }
 
-      state.invoice.change.value = calculateChange(
-        state.invoice.totalPurchase.value,
-        state.invoice.payment.value,
-      );
+      if (state.invoice.payment?.value && state.invoice.totalPurchase) {
+        state.invoice.change = {
+          value: calculateChange(
+            Number(state.invoice.totalPurchase.value) || 0,
+            Number(state.invoice.payment.value) || 0,
+          ),
+        };
+      }
     },
     changeAmountToBuyProduct(state: InvoiceFormSliceState, action: PayloadAction<{ product: InvoiceProduct; type: string; amount?: number }>) {
       const { product, type, amount } = action.payload;
       if (!product) {
         return;
       }
-      const index = state.invoice.products.findIndex(
+      const products = state.invoice.products || [];
+      const index = products.findIndex(
         (item) => item.id === product.id,
       );
       if (index === -1) {
-        return; // Si el producto no estÃ¡ en la lista, no hacer nada
+        return; // Si el producto no está en la lista, no hacer nada
       }
 
-      let newAmount = state.invoice.products[index].amountToBuy;
+      let currentAmountToBuy = products[index].amountToBuy;
+      let numericAmount = typeof currentAmountToBuy === 'object' && currentAmountToBuy !== null
+        ? (currentAmountToBuy as InvoiceProductAmount).total || 0
+        : (currentAmountToBuy as number) || 0;
+
       switch (type) {
         case 'add':
-          newAmount += 1;
+          numericAmount += 1;
           break;
         case 'subtract':
-          newAmount = Math.max(1, newAmount - 1); // Evitar valores negativos
+          numericAmount = Math.max(1, numericAmount - 1); // Evitar valores negativos
           break;
         case 'change':
-          newAmount = Math.max(1, amount); // Establecer la cantidad directamente, evitando negativos
+          numericAmount = Math.max(1, Number(amount) || 0); // Establecer la cantidad directamente, evitando negativos
           break;
         default:
           break;
       }
 
       // Actualizar la cantidad y el precio del producto
-      state.invoice.products[index] = updateProductAmount(
-        state.invoice.products[index],
-        newAmount,
+      products[index] = updateProductAmount(
+        products[index],
+        numericAmount,
       );
+      state.invoice.products = products;
 
       // Recalcular el total de la compra y los impuestos
-      const { totalPurchase, totalTaxes } = calculateTotals(
-        state.invoice.products,
-      );
-      state.invoice.totalPurchase.value = totalPurchase;
-      state.invoice.totalTaxes.value = totalTaxes;
-      // Actualizar cantidad total de artÃ­culos
-      state.invoice.totalShoppingItems.value = calculateTotalItems(
-        state.invoice.products,
-      );
+      const { totalPurchase, totalTaxes } = calculateTotals(products);
+      state.invoice.totalPurchase = { value: totalPurchase };
+      state.invoice.totalTaxes = { value: totalTaxes };
+      // Actualizar cantidad total de artículos
+      state.invoice.totalShoppingItems = { value: calculateTotalItems(products) };
 
       // Aplicar descuento si existe
-      if (state.invoice.discount.value) {
+      if (state.invoice.discount?.value && state.invoice.totalPurchase) {
         const discountType = state.invoice.discount.type || 'percentage';
         state.invoice.totalPurchase.value = applyDiscount(
-          state.invoice.totalPurchase.value,
-          state.invoice.discount.value,
+          Number(state.invoice.totalPurchase.value) || 0,
+          Number(state.invoice.discount.value) || 0,
           discountType,
         );
       }
 
       // Calcular el cambio
-      state.invoice.change.value = calculateChange(
-        state.invoice.totalPurchase.value,
-        state.invoice.payment.value,
-      );
+      if (state.invoice.payment?.value && state.invoice.totalPurchase) {
+        state.invoice.change = {
+          value: calculateChange(
+            Number(state.invoice.totalPurchase.value) || 0,
+            Number(state.invoice.payment.value) || 0,
+          ),
+        };
+      }
     },
-    closeInvoiceForm(state, action: PayloadAction<{ clear?: boolean } | void>) {
+    closeInvoiceForm(state: InvoiceFormSliceState, action: PayloadAction<{ clear?: boolean } | void>) {
       const clear = (action?.payload as { clear?: boolean })?.clear ?? true;
       state.modal.isOpen = false;
       state.authorizationRequest = null;

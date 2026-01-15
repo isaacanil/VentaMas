@@ -1,10 +1,13 @@
+import 'styled-components';
+
 declare module 'styled-components' {
-  const styled: any;
-  export const css: any;
-  export const keyframes: any;
-  export const createGlobalStyle: any;
-  export const ThemeProvider: any;
-  export const useTheme: any;
-  export type DefaultTheme = any;
-  export default styled;
+  export interface DefaultTheme {
+    colors: Record<string, Record<string, string>>;
+    text?: Record<string, string>;
+    divider?: string;
+    bg?: Record<string, string>;
+    border?: Record<string, string>;
+    action?: Record<string, string | number>;
+    [key: string]: unknown;
+  }
 }

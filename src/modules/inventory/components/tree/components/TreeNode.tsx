@@ -13,30 +13,30 @@ import { formatLots } from './nodeName.helpers';
 import type { TreeConfig, TreeNodeData, TreeNodeId, TreeNodeTheme } from '../types';
 
 // Estilos con styled-components
-const NodeContainer = styled.div`
+const NodeContainer = styled.div<{ $hasLabel?: boolean; isSelected?: boolean; disabled?: boolean }>`
   display: grid;
   grid-template-columns: min-content 1fr min-content;
   align-items: center;
   margin: 0;
-  padding: ${({ $hasLabel }) => ($hasLabel ? '6px 0.2em' : '0 0.2em')};
+  padding: ${({ $hasLabel }: { $hasLabel?: boolean }) => ($hasLabel ? '6px 0.2em' : '0 0.2em')};
   border-radius: 6px;
-  background-color: ${(props) =>
+  background-color: ${(props: { isSelected?: boolean }) =>
     props.isSelected ? '#e9e9e9' : 'transparent'};
   cursor: pointer; /* Replace the 'not-allowed' logic */
   opacity: 1; /* Remove the disabled opacity */
-  min-height: ${({ $hasLabel }) => ($hasLabel ? '48px' : '40px')};
+  min-height: ${({ $hasLabel }: { $hasLabel?: boolean }) => ($hasLabel ? '48px' : '40px')};
   height: auto;
   position: relative;
   width: 100%;
   overflow: hidden;
 
   &:hover {
-    background-color: ${(props) =>
-      !props.disabled && (props.isSelected ? '#f0f0f0' : '#f0f0f0')};
+    background-color: ${(props: { disabled?: boolean; isSelected?: boolean }) =>
+    !props.disabled && (props.isSelected ? '#f0f0f0' : '#f0f0f0')};
   }
 `;
 
-const CountPill = styled.span`
+const CountPill = styled.span<{ $empty?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -45,9 +45,9 @@ const CountPill = styled.span`
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
-  background-color: ${({ $empty }) =>
+  background-color: ${({ $empty }: { $empty?: boolean }) =>
     $empty ? 'rgba(148, 163, 184, 0.18)' : 'rgba(22, 119, 255, 0.15)'};
-  color: ${({ $empty }) => ($empty ? '#6b7280' : '#1677ff')};
+  color: ${({ $empty }: { $empty?: boolean }) => ($empty ? '#6b7280' : '#1677ff')};
 `;
 
 const ActionsSlot = styled.div`
@@ -196,7 +196,7 @@ const TreeNode = ({
             onClick={handleToggle}
           />
           <NodeName
-            title={node.name}
+            title={node.name || ''}
             isMatch={match}
             isLoading={node.isLoading}
             searchTerm={searchTerm}
@@ -225,6 +225,7 @@ const TreeNode = ({
 
       {isExpanded &&
         hasChildren &&
+        node.children &&
         node.children.map((child) => (
           <TreeNode
             key={child.id}

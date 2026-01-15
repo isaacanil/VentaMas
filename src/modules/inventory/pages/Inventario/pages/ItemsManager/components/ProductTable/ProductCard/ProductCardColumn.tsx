@@ -67,14 +67,14 @@ export const ProductCardColumn = ({
         </ProductName>
 
         <Item>
-          <span>costo: {formatPrice(product.cost.unit)}</span>
+          <span>costo: {formatPrice(product.cost?.unit)}</span>
         </Item>
         <Item>
           <span>stock: {product.stock}</span>
         </Item>
 
         <Item>
-          <span>Total: {formatPrice(product.price.unit)}</span>
+          <span>Total: {formatPrice(product.price?.unit)}</span>
         </Item>
       </Body>
     </Container>

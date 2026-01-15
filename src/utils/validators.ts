@@ -1,7 +1,6 @@
-// @ts-nocheck
 export const { isArray } = Array;
 
-export function toNumber(value) {
+export function toNumber(value: string | number | null | undefined): number {
   if (value == null) return 0;
   if (typeof value === 'string') {
     const parsed = parseFloat(value.replace(',', '.'));

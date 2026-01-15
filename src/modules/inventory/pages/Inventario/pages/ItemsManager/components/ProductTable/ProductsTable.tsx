@@ -326,14 +326,14 @@ const FloatingTotals = styled.div<{ $hidden?: boolean }>`
   bottom: 50px;
   z-index: 1000;
   padding: 8px 12px;
-  pointer-events: ${(p) => (p.$hidden ? 'none' : 'auto')};
+  pointer-events: ${(p: { $hidden?: boolean }) => (p.$hidden ? 'none' : 'auto')};
   background: rgb(255 255 255 / 92%);
   border: 1px solid rgb(0 0 0 / 8%);
   border-radius: 999px;
   box-shadow: 0 6px 16px rgb(0 0 0 / 12%);
-  opacity: ${(p) => (p.$hidden ? 0 : 1)};
+  opacity: ${(p: { $hidden?: boolean }) => (p.$hidden ? 0 : 1)};
   backdrop-filter: blur(6px);
-  transform: translateY(${(p) => (p.$hidden ? '8px' : '0')});
+  transform: translateY(${(p: { $hidden?: boolean }) => (p.$hidden ? '8px' : '0')});
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;

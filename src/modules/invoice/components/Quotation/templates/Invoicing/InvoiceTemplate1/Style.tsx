@@ -30,7 +30,7 @@ type HiddenPrintWrapperProps = {
 };
 
 export const HiddenPrintWrapper = styled.div<HiddenPrintWrapperProps>`
-  display: ${({ ignoreHidden }) => !ignoreHidden && 'none'};
+  display: ${({ ignoreHidden }: HiddenPrintWrapperProps) => !ignoreHidden && 'none'};
 `;
 
 type InfoItemProps = {
@@ -77,7 +77,7 @@ type SubtitleProps = {
 
 export const Subtitle = styled.p<SubtitleProps>`
   display: flex;
-  justify-content: ${({ align }) => align};
+  justify-content: ${({ align }: SubtitleProps) => align};
   padding: 0;
   margin: 0;
   font-weight: 600;
@@ -93,7 +93,7 @@ export const Paragraph = styled.p<ParagraphProps>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${({ align }) => {
+  ${({ align }: ParagraphProps) => {
     switch (align) {
       case 'center':
         return 'text-align: center;';
@@ -116,7 +116,7 @@ type SpacingProps = {
 
 export const Spacing = styled.div<SpacingProps>`
   margin-bottom: 0.8em;
-  ${({ size }) => {
+  ${({ size }: SpacingProps) => {
     switch (size) {
       case 'small':
         return 'margin-bottom: 0.2em;';

@@ -25,12 +25,12 @@ const getEmptyDates = () => {
   };
 };
 
-type DateRangeValue = {
+export type DateRangeValue = {
   startDate: number | null;
   endDate: number | null;
 };
 
-type DatePickerProps = {
+export type DatePickerProps = {
   setDates: (dates: DateRangeValue) => void;
   dates: DateRangeValue | null;
   datesDefault?: 'today' | 'empty' | string;

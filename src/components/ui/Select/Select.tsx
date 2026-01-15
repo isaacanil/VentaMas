@@ -12,12 +12,25 @@ import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-const getValueByKeyOrPath = (obj, keyOrPath) => {
+const getValueByKeyOrPath = (obj: any, keyOrPath: string | number): any => {
   if (typeof keyOrPath === 'string' && keyOrPath.includes('.')) {
-    return keyOrPath.split('.').reduce((o, key) => o && o[key], obj);
+    return keyOrPath.split('.').reduce((o: any, key: string) => o && (o as any)[key], obj);
   }
-  return obj[keyOrPath];
+  return (obj as any)[keyOrPath as string];
 };
+
+interface SelectProps {
+  title?: string;
+  data: any[];
+  value: any;
+  onChange: (e: { target: { value: any } }) => void;
+  displayKey: string;
+  labelVariant?: 'primary' | 'label2' | 'label1';
+  onNoneOptionSelected?: () => void;
+  isLoading?: boolean;
+  required?: boolean;
+  [key: string]: any;
+}
 
 export const Select = ({
   title,
@@ -29,32 +42,38 @@ export const Select = ({
   onNoneOptionSelected,
   isLoading = false,
   ...props
-}) => {
+}: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const SelectRef = useRef(null);
+  const SelectRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
-  const setReference = useCallback((node) => refs.setReference(node), [refs]);
-  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
+  const setReference = useCallback(
+    (node: HTMLElement | null) => refs.setReference(node),
+    [refs],
+  );
+  const setFloating = useCallback(
+    (node: HTMLElement | null) => refs.setFloating(node),
+    [refs],
+  );
 
-  const handleSelect = (select) => {
+  const handleSelect = (select: any) => {
     setIsOpen(false);
     onChange({ target: { value: select } });
   };
 
   const filteredItems = Array.isArray(data)
     ? data.filter((item) => {
-        const value = getValueByKeyOrPath(item, displayKey);
-        return (
-          value &&
-          (typeof value === 'string' || typeof value === 'number') &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      })
+      const value = getValueByKeyOrPath(item, displayKey);
+      return (
+        value &&
+        (typeof value === 'string' || typeof value === 'number') &&
+        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
     : [];
 
   const handleReset = () => {
@@ -72,7 +91,7 @@ export const Select = ({
     }
   }, [value]);
 
-  useClickOutSide(SelectRef, isOpen, () => {
+  useClickOutSide(SelectRef as React.RefObject<HTMLElement>, isOpen, () => {
     setIsOpen(false);
   });
 
@@ -80,7 +99,7 @@ export const Select = ({
     <Container ref={SelectRef}>
       <OtherContainer>
         {(value || labelVariant === 'label2' || labelVariant === 'label1') && (
-          <Label labelVariant={labelVariant}>{title}:</Label>
+          <Label $labelVariant={labelVariant}>{title}:</Label>
         )}
         {props.required && (
           <Asterisk style={{ color: 'red' }}>{icons.forms.asterisk}</Asterisk>
@@ -116,9 +135,7 @@ export const Select = ({
                 />
               </SearchSection>
               <Item
-                style={
-                  !value ? { backgroundColor: 'blue', color: 'white' } : null
-                }
+                $selected={!value}
                 onClick={() => handleReset()}
               >
                 Ninguno
@@ -126,11 +143,7 @@ export const Select = ({
               {filteredItems.map((item, index) => (
                 <Item
                   key={index}
-                  style={
-                    value === getValueByKeyOrPath(item, displayKey)
-                      ? { backgroundColor: 'blue', color: 'white' }
-                      : null
-                  }
+                  $selected={value === getValueByKeyOrPath(item, displayKey)}
                   onClick={() => handleSelect(item)}
                 >
                   {getValueByKeyOrPath(item, displayKey)}
@@ -229,7 +242,11 @@ const Group = styled.div`
   }
 `;
 
-const Item = styled.p`
+interface ItemProps {
+  $selected?: boolean;
+}
+
+const Item = styled.p<ItemProps>`
   list-style: none;
   padding: 0 1em;
   display: flex;
@@ -241,8 +258,8 @@ const Item = styled.p`
     background-color: var(--color);
   }
 
-  ${(props) => {
-    if (props.selected) {
+  ${({ $selected }: ItemProps) => {
+    if ($selected) {
       return `
                 background-color: #4081d6;
                 color: white;
@@ -266,12 +283,16 @@ const SearchSection = styled.div`
 const NoneItemMessageContainer = styled.div`
   padding: 1em;
 `;
-const Label = styled.label`
+interface LabelProps {
+  $labelVariant?: 'primary' | 'label2' | 'label1';
+}
+
+const Label = styled.label<LabelProps>`
   font-size: 13px;
   color: var(--gray-5);
   margin-bottom: 4px;
-  ${(props) => {
-    switch (props.labelVariant) {
+  ${({ $labelVariant }: LabelProps) => {
+    switch ($labelVariant) {
       case 'primary':
         return `
         font-size: 11px;

@@ -33,12 +33,12 @@ type UtilityProductInput = InvoiceProduct & {
   selectedSaleUnit?: { pricing?: PricingLike };
   pricing?: PricingLike;
   amountToBuy?:
-    | number
-    | string
-    | {
-        total?: number;
-        unit?: number;
-      };
+  | number
+  | string
+  | {
+    total?: number;
+    unit?: number;
+  };
   price?: { total?: number | string; unit?: number | string } | number | string;
   totalPrice?: number | string;
   unitPrice?: number | string;
@@ -256,7 +256,7 @@ export const buildFinancialMetrics = (
     millis?: number | null,
   ): { sales: number; cost: number; taxes: number; expenses: number } | null => {
     if (!millis) return null;
-    const isoDate = DateTime.fromMillis(millis).startOf('day').toISODate();
+    const isoDate = DateTime.fromMillis(millis).startOf('day').toISODate() || '';
     if (!daily.has(isoDate)) {
       daily.set(isoDate, {
         sales: 0,
@@ -265,7 +265,7 @@ export const buildFinancialMetrics = (
         expenses: 0,
       });
     }
-    return daily.get(isoDate);
+    return daily.get(isoDate) || null;
   };
 
   const ensureHourlyEntry = (
@@ -333,10 +333,10 @@ export const buildFinancialMetrics = (
     const invoiceSales =
       toNumber(invoiceData?.totalPurchase?.value) ||
       invoiceProducts.reduce((acc, entry) => {
-      const product = (entry as { product?: UtilityProductInput })?.product ??
-        entry ??
-        {};
-      return acc + resolveSaleTotal(product as UtilityProductInput, taxEnabled);
+        const product = (entry as { product?: UtilityProductInput })?.product ??
+          entry ??
+          {};
+        return acc + resolveSaleTotal(product as UtilityProductInput, taxEnabled);
       }, 0);
     let invoiceCost = 0;
     let aggregatedProductTaxes = 0;
@@ -351,12 +351,12 @@ export const buildFinancialMetrics = (
           : null;
       const hasNestedDetails = Boolean(
         nestedRecord &&
-          (nestedRecord.pricing ||
-            nestedRecord.selectedSaleUnit ||
-            nestedRecord.amountToBuy ||
-            nestedRecord.cost ||
-            nestedRecord.quantity ||
-            nestedRecord.units),
+        (nestedRecord.pricing ||
+          nestedRecord.selectedSaleUnit ||
+          nestedRecord.amountToBuy ||
+          nestedRecord.cost ||
+          nestedRecord.quantity ||
+          nestedRecord.units),
       );
       const product = (hasNestedDetails
         ? { ...productRest, ...nestedRecord }
@@ -494,7 +494,7 @@ export const buildFinancialMetrics = (
   if (startDay && endDay) {
     let cursor = startDay;
     while (cursor.toMillis() <= endDay.toMillis()) {
-      const key = cursor.toISODate();
+      const key = cursor.toISODate() || '';
       if (!daily.has(key)) {
         daily.set(key, {
           sales: 0,
@@ -539,7 +539,7 @@ export const buildFinancialMetrics = (
     return {
       isoDate: key,
       timestamp: date.toMillis(),
-      dateLabel: date.setLocale('es').toFormat('cccc dd/LL/yyyy'),
+      dateLabel: (date.isValid ? date.setLocale('es').toFormat('cccc dd/LL/yyyy') : 'Fecha inválida'),
       sales: value.sales,
       cost: value.cost,
       taxes: value.taxes,
@@ -557,7 +557,7 @@ export const buildFinancialMetrics = (
     const netProfit = profitBeforeExpenses - value.expenses;
 
     return {
-      isoDate: date.toISO(),
+      isoDate: date.toISO() || '',
       timestamp: date.toMillis(),
       dateLabel: date.setLocale('es').toFormat('HH:mm'),
       sales: value.sales,
@@ -601,17 +601,17 @@ export const getDistributionDetails = (
   const netSegment: DistributionBase =
     netProfitValue >= 0
       ? {
-          key: 'netProfit',
-          label: 'Ganancia neta',
-          value: netProfitValue,
-          color: colors.netProfit,
-        }
+        key: 'netProfit',
+        label: 'Ganancia neta',
+        value: netProfitValue,
+        color: colors.netProfit,
+      }
       : {
-          key: 'netLoss',
-          label: 'Pérdida neta',
-          value: netProfitValue,
-          color: colors.netLoss,
-        };
+        key: 'netLoss',
+        label: 'Pérdida neta',
+        value: netProfitValue,
+        color: colors.netLoss,
+      };
 
   const segments: DistributionBase[] = [
     { key: 'cost', label: 'Costos', value: totalCost, color: colors.cost },

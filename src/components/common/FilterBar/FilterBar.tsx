@@ -35,7 +35,7 @@ const DEFAULT_LABELS = {
   drawerTrigger: 'Filtros',
   drawerTitle: 'Filtros',
   modalTitle: 'Filtros adicionales',
-  more: 'MÃƒ¡s filtros',
+  more: 'Más filtros',
   clear: 'Limpiar filtros',
 };
 

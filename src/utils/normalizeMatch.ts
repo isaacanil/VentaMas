@@ -1,6 +1,6 @@
-// @ts-nocheck
-import type { MatchConfig } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
 import type { PathPattern } from 'react-router-dom';
+
+export type MatchConfig = string | PathPattern;
 
 /**
  * Normalizes a match configuration into a PathPattern

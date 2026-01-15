@@ -59,7 +59,7 @@ const createChartOptions = (
   plugins: {
     tooltip: {
       callbacks: {
-        label: function (context) {
+        label: function (context: any) {
           if (isMobile && context.dataset.label === 'Total Ventas') {
             // En móvil, mostrar desglose detallado en el tooltip
             const dateKey = sortedDateKeys[context.dataIndex];
@@ -523,19 +523,19 @@ const PeriodTypeButtons = styled.div`
   }
 `;
 
-const PeriodButton = styled.button`
+const PeriodButton = styled.button<{ $active: boolean }>`
   padding: 0.5em 1em;
   font-size: 0.9em;
-  color: ${(props) => (props.$active ? '#fff' : '#333')};
+  color: ${(props: { $active: boolean }) => (props.$active ? '#fff' : '#333')};
   white-space: nowrap;
   cursor: pointer;
-  background-color: ${(props) => (props.$active ? '#007bff' : '#fff')};
+  background-color: ${(props: { $active: boolean }) => (props.$active ? '#007bff' : '#fff')};
   border: 1px solid #ddd;
   border-radius: 0.25em;
   transition: all 0.2s ease;
 
     &:hover {
-    background-color: ${(props) => (props.$active ? '#0056b3' : '#f8f9fa')};
+    background-color: ${(props: { $active: boolean }) => (props.$active ? '#0056b3' : '#f8f9fa')};
   }
 
   @media (width <= 768px) {

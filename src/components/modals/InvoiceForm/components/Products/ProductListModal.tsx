@@ -19,6 +19,7 @@ import {
   getCategoryName,
   getPrimaryActiveIngredient,
   getCategoryStats,
+  type CategoryLike,
 } from './productDataUtils';
 import { ProductFilterToolbar } from './ProductFilterToolbar';
 import { StyledProductTable } from './ProductTables.styles';
@@ -87,7 +88,7 @@ export const ProductListModal = ({
         ? filteredBySearch
         : filteredBySearch.filter(
           (product) =>
-            getCategoryName(product?.category) === safeCategoryFilter,
+            getCategoryName(product?.category as CategoryLike) === safeCategoryFilter,
         );
 
     const directionMultiplier = sortDirection === 'desc' ? -1 : 1;
@@ -118,9 +119,9 @@ export const ProductListModal = ({
       ellipsis: true,
       sorter: (a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''),
       render: (_value, record) => {
-        const category = getCategoryName(record?.category);
+        const category = getCategoryName(record?.category as CategoryLike);
         const activeIngredient = getPrimaryActiveIngredient(
-          record?.activeIngredients,
+          record?.activeIngredients as unknown,
         );
         const hasMeta = Boolean(category || activeIngredient);
 
@@ -393,18 +394,18 @@ const StockBadge = styled.div`
   border-radius: 999px;
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled.button<{ disabled?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 42px;
   height: 42px;
   padding: 0;
-  cursor: ${(props: any) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
   background: #f3f4f6;
   border: none;
   border-radius: 999px;
-  opacity: ${(props: any) => (props.disabled ? 0.5 : 1)};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -425,7 +426,7 @@ const ActionButton = styled.button`
   }
 
   &:active {
-    ${(props: any) => (props.disabled ? '' : 'transform: translateY(0);')}
+    ${(props) => (props.disabled ? '' : 'transform: translateY(0);')}
   }
 `;
 

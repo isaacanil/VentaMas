@@ -72,7 +72,7 @@ export const RegistroToolbar = ({
           case 'Resumen': {
             const resumenCallback = createProfessionalReportCallback(
               'Resumen',
-              'REPORTE DE FACTURACIÃ“N - RESUMEN',
+              'REPORTE DE FACTURACIÓN - RESUMEN',
             );
             await exportToExcel(
               transformedResumenBillsData(),
@@ -85,7 +85,7 @@ export const RegistroToolbar = ({
           case 'Detailed': {
             const detailedCallback = createProfessionalReportCallback(
               'Detailed',
-              'REPORTE DE FACTURACIÃ“N - DETALLE POR PRODUCTO',
+              'REPORTE DE FACTURACIÓN - DETALLE POR PRODUCTO',
             );
             await exportToExcel(
               transformedDetailedBillsData(),

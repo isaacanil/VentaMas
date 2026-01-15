@@ -103,10 +103,10 @@ const MenuButton = styled.button`
   place-items: center;
   width: 32px;
   height: 32px;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props: { disabled?: boolean }) => (props.disabled ? 'not-allowed' : 'pointer')};
   background: transparent;
   border: none;
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  opacity: ${(props: { disabled?: boolean }) => (props.disabled ? 0.6 : 1)};
 `;
 
 const DotsIcon = styled.span<DotsIconProps>`
@@ -162,24 +162,24 @@ const MenuItem = styled.button<ThemeProps>`
   padding: 10px;
   font-size: 15px;
   font-weight: 500;
-  color: ${(props) => props.$theme?.color || '#475569'};
+  color: ${(props: ThemeProps) => props.$theme?.color || '#475569'};
   text-align: left;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  background: ${(props) => props.$theme?.background || '#ffffff'};
+  cursor: ${(props: ThemeProps) => (props.disabled ? 'not-allowed' : 'pointer')};
+  background: ${(props: ThemeProps) => props.$theme?.background || '#ffffff'};
   border: none;
   border-radius: 6px;
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  opacity: ${(props: ThemeProps) => (props.disabled ? 0.6 : 1)};
   transition: all 0.2s;
 
   &&:hover {
-    color: ${(props) => {
-      if (props.disabled) return props.$theme?.color || '#475569';
-      return props.$theme?.colorHover || '#0f172a';
-    }};
-    background: ${(props) => {
-      if (props.disabled) return props.$theme?.background || '#ffffff';
-      return props.$theme?.backgroundHover || '#f0f0f0';
-    }};
+    color: ${(props: ThemeProps) => {
+    if (props.disabled) return props.$theme?.color || '#475569';
+    return props.$theme?.colorHover || '#0f172a';
+  }};
+    background: ${(props: ThemeProps) => {
+    if (props.disabled) return props.$theme?.background || '#ffffff';
+    return props.$theme?.backgroundHover || '#f0f0f0';
+  }};
   }
 `;
 
@@ -187,7 +187,7 @@ const IconWrapper = styled.span<ThemeProps>`
   display: flex;
   align-items: center;
   font-size: 16px;
-  color: ${(props) => props.$theme?.iconColor || '#64748b'};
+  color: ${(props: ThemeProps) => props.$theme?.iconColor || '#64748b'};
 `;
 
 const CloseButton = styled.button`

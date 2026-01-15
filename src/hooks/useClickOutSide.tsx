@@ -1,25 +1,22 @@
-// @ts-nocheck
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 export const useClickOutSide = (
-  ref,
-  executedWhenIsTrue,
-  fn,
-  eventType = 'mousedown',
+  ref: RefObject<HTMLElement>,
+  executedWhenIsTrue: boolean,
+  fn: () => void,
+  eventType: keyof DocumentEventMap = 'mousedown',
 ) => {
   useEffect(() => {
     if (executedWhenIsTrue && ref.current && fn) {
-      const handleClickOutSide = (e) => {
-        if (!ref.current.contains(e.target)) {
+      const handleClickOutSide = (e: MouseEvent | TouchEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
           fn();
         }
       };
-      document.addEventListener(eventType, handleClickOutSide);
+      document.addEventListener(eventType as any, handleClickOutSide);
       return () => {
-        document.removeEventListener(eventType, handleClickOutSide);
+        document.removeEventListener(eventType as any, handleClickOutSide);
       };
-    } else {
-      return;
     }
   }, [ref, executedWhenIsTrue, fn, eventType]);
 };

@@ -72,10 +72,10 @@ export const cartSlice = createSlice({
         if (processedCart.preorderDetails?.date) {
           const date = processedCart.preorderDetails.date;
           // Check if it's a Firestore Timestamp (has seconds and nanoseconds)
-          if (date.seconds !== undefined && date.nanoseconds !== undefined) {
+          if (typeof date === 'object' && date !== null && 'seconds' in date) {
             processedCart.preorderDetails = {
               ...processedCart.preorderDetails,
-              date: date.seconds * 1000, // Convert to milliseconds
+              date: (date as { seconds: number }).seconds * 1000, // Convert to milliseconds
             };
           }
         }
@@ -87,12 +87,13 @@ export const cartSlice = createSlice({
               const date = historyItem.date;
               // Check if it's a Firestore Timestamp
               if (
-                date.seconds !== undefined &&
-                date.nanoseconds !== undefined
+                typeof date === 'object' &&
+                date !== null &&
+                'seconds' in date
               ) {
                 return {
                   ...historyItem,
-                  date: date.seconds * 1000, // Convert to milliseconds
+                  date: (date as { seconds: number }).seconds * 1000, // Convert to milliseconds
                 };
               }
             }
@@ -192,7 +193,7 @@ export const cartSlice = createSlice({
     ) => {
       try {
         const paymentMethod = actions.payload;
-        // Asegurarse de que paymentMethod tenga un value numÃ©rico y no negativo
+        // Asegurarse de que paymentMethod tenga un value numérico y no negativo
         if (paymentMethod.value !== undefined) {
           paymentMethod.value = Math.max(0, Number(paymentMethod.value) || 0);
         }
@@ -205,8 +206,8 @@ export const cartSlice = createSlice({
           state.data.paymentMethod[index] = paymentMethod;
         }
 
-        // Los totales se calcularÃ¡n a travÃ©s del middleware cartTotalsListener
-        // que llama a recalcTotals() despuÃ©s de cada cambio en setPaymentMethod
+        // Los totales se calcularán a través del middleware cartTotalsListener
+        // que llama a recalcTotals() después de cada cambio en setPaymentMethod
       } catch (error) {
         console.error('Error in setPaymentMethod:', error);
       }
@@ -282,7 +283,7 @@ export const cartSlice = createSlice({
       } else {
         const productData = {
           ...product,
-          cid: checkingID?.weightDetail?.isSoldByWeight
+          cid: checkingID && (checkingID as Product).weightDetail?.isSoldByWeight
             ? nanoid(8)
             : product.id,
           insurance: product.insurance || { mode: null, value: 0 },
@@ -349,31 +350,33 @@ export const cartSlice = createSlice({
     },
     setCashPaymentToTotal: (state: CartState) => {
       const total = state.data.totalPurchase.value;
-      // Ajustar array de mÃ©todos de pago
+      // Ajustar array de métodos de pago
       state.data.paymentMethod = state.data.paymentMethod.map((m) => ({
         ...m,
         value: m.method === 'cash' ? total : 0,
         status: m.method === 'cash',
       }));
-      // TambiÃ©n actualizar payment.value y change
+      // También actualizar payment.value y change
       state.data.payment.value = total;
       state.data.change.value = 0;
     },
-    resetCart: (state: CartState) => ({
-      ...initialState,
-      settings: {
-        ...initialState.settings,
-        ...state.settings,
-        billing: { ...state.settings.billing },
-      },
-    }),
+    resetCart: (state: CartState) => {
+      return {
+        ...initialState,
+        settings: {
+          ...initialState.settings,
+          ...state.settings,
+          billing: { ...state.settings.billing },
+        },
+      } as CartState;
+    },
     changeProductWeight: (
       state: CartState,
       action: PayloadAction<ChangeProductWeightPayload>,
     ) => {
       const { id, weight } = action.payload;
       const product = state.data.products.find((product) => product.cid === id);
-      if (product) {
+      if (product && product.weightDetail) {
         product.weightDetail.weight = weight;
       }
     },
@@ -459,9 +462,9 @@ export const cartSlice = createSlice({
       const { priceKey } = action.payload || {};
       if (!priceKey) return;
 
-      const applyPrice = (pricing: Product['pricing'] | undefined) => {
+      const applyPrice = (pricing: Product['pricing'] | { price: number;[key: string]: any } | undefined) => {
         if (!pricing) return false;
-        const candidate = Number(pricing?.[priceKey]);
+        const candidate = Number(pricing[priceKey as keyof typeof pricing]);
         if (Number.isFinite(candidate) && candidate > 0) {
           pricing.price = candidate;
           return true;
@@ -471,7 +474,7 @@ export const cartSlice = createSlice({
 
       state.data.products.forEach((product) => {
         if (!product) return;
-        const { pricing = {}, selectedSaleUnit } = product;
+        const { pricing, selectedSaleUnit } = product;
         applyPrice(pricing);
         if (selectedSaleUnit?.pricing) {
           applyPrice(selectedSaleUnit.pricing);
@@ -531,13 +534,13 @@ export const cartSlice = createSlice({
     ) => {
       const creditNoteSelections = action.payload || [];
 
-      // Calcular el total de notas de crÃ©dito aplicadas
+      // Calcular el total de notas de crédito aplicadas
       const totalCreditNoteAmount = creditNoteSelections.reduce(
         (sum, selection) => sum + (selection.amountToUse || 0),
         0,
       );
 
-      // Calcular cuÃ¡nto se ha pagado con otros mÃ©todos
+      // Calcular cuánto se ha pagado con otros métodos
       const totalOtherPayments = state.data.paymentMethod
         .filter((method) => method.status && method.method !== 'creditNote')
         .reduce((sum, method) => sum + (Number(method.value) || 0), 0);
@@ -550,7 +553,7 @@ export const cartSlice = createSlice({
         remainingToPay,
       );
 
-      // Si el monto de notas de crÃ©dito es vÃ¡lido, aplicarlo
+      // Si el monto de notas de crédito es válido, aplicarlo
       if (validCreditNoteAmount >= 0) {
         state.data.creditNotePayment = creditNoteSelections
           .filter((selection) => selection.amountToUse > 0)
@@ -564,7 +567,7 @@ export const cartSlice = createSlice({
           }));
       }
 
-      // Actualizar el mÃ©todo de pago de notas de crÃ©dito
+      // Actualizar el método de pago de notas de crédito
       const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
         (method) => method.method === 'creditNote',
       );
@@ -576,10 +579,10 @@ export const cartSlice = createSlice({
           status: validCreditNoteAmount > 0,
         };
       } else if (validCreditNoteAmount > 0) {
-        // Si no existe el mÃ©todo de pago de notas de crÃ©dito, agregarlo
+        // Si no existe el método de pago de notas de crédito, agregarlo
         state.data.paymentMethod.push({
           method: 'creditNote',
-          name: 'Notas de CrÃ©dito',
+          name: 'Notas de Crédito',
           value: validCreditNoteAmount,
           status: true,
         });
@@ -588,7 +591,7 @@ export const cartSlice = createSlice({
     clearCreditNotePayment: (state: CartState) => {
       state.data.creditNotePayment = [];
 
-      // Desactivar el mÃ©todo de pago de notas de crÃ©dito
+      // Desactivar el método de pago de notas de crédito
       const creditNoteMethodIndex = state.data.paymentMethod.findIndex(
         (method) => method.method === 'creditNote',
       );
@@ -698,8 +701,10 @@ export const selectTotalIndividualDiscounts = createSelector(
   ],
   (discountedProducts, taxReceiptEnabled) =>
     discountedProducts.reduce((total, product) => {
-      const productPrice = product.pricing?.price || product.price || 0;
-      const taxPercentage = Number(product.pricing?.tax) || 0;
+      const rawPrice = product.pricing?.price || product.price || 0;
+      const productPrice = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice?.unit || 0);
+
+      const taxPercentage = product.pricing?.tax ? Number(product.pricing.tax) : 0;
       const quantity = product.amountToBuy || 1;
 
       const unitPriceWithTax = taxReceiptEnabled
@@ -707,11 +712,11 @@ export const selectTotalIndividualDiscounts = createSelector(
         : productPrice;
       const totalPriceWithTax = unitPriceWithTax * quantity;
 
-      if (product.discount.type === 'percentage') {
+      if (product.discount?.type === 'percentage') {
         return total + totalPriceWithTax * (product.discount.value / 100);
       }
 
-      return total + product.discount.value;
+      return total + (product.discount?.value || 0);
     }, 0),
 );
 

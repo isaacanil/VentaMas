@@ -2,7 +2,7 @@ import { Modal, Alert } from 'antd';
 import { motion } from 'framer-motion';
 import React, { useState, forwardRef, memo, useCallback } from 'react';
 import type { HTMLAttributes } from 'react';
-import type { Product } from '@/features/cart/types';
+import type { Product as CartProduct } from '@/features/cart/types';
 import { useSelector, useDispatch } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
@@ -21,23 +21,23 @@ import Typography from '@/components/ui/Typografy/Typografy';
 import { BatchInfoModal } from './components/BatchInfoModal/BatchInfoModal';
 import { CommentModal } from './components/CommentModal/CommentModal';
 
-type CartProduct = Product;
+
 
 const VirtuosoList = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ style, children, ...props }, ref) => (
-  <Body ref={ref} style={style} {...props}>
-    {children}
-  </Body>
-));
+    <Body ref={ref} style={style} {...props}>
+      {children}
+    </Body>
+  ));
 VirtuosoList.displayName = 'VirtuosoList';
 
 // VirtuosoItem ahora es un contenedor simple, sin animación
 const VirtuosoItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ children, ...props }, ref) => (
-  <div ref={ref} {...props}>
-    {children}
-  </div>
-));
+    <div ref={ref} {...props}>
+      {children}
+    </div>
+  ));
 VirtuosoItem.displayName = 'VirtuosoItem';
 
 const ProductCardForCartMemo = memo(ProductCardForCart);
@@ -70,7 +70,7 @@ export const ProductsList = () => {
     setSelectedProduct(product);
     setDiscountModalOpen(true);
   }, []);
-  
+
   const handleOpenBatchInfoModal = useCallback((product: CartProduct | null) => {
     if (product) {
       setSelectedProduct(product);
@@ -98,7 +98,7 @@ export const ProductsList = () => {
   };
 
   const itemContent = useCallback(
-    (_index, item: CartProduct) => (
+    (_index: number, item: CartProduct) => (
       <ProductCardForCartMemo
         item={item}
         onOpenCommentModal={handleOpenCommentModal}

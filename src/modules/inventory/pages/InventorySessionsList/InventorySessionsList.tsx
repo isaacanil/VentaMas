@@ -686,7 +686,7 @@ const StatusBadge = styled.span<{ status?: string }>`
 
 // Badge de usuarios activos eliminado
 
-// Lista de editores (mÃƒÆ’Â¡x 3 visibles + overflow)
+// Lista de editores (máx 3 visibles + overflow)
 const EditorsInline = styled.div`
   display: flex;
   flex-wrap: wrap;

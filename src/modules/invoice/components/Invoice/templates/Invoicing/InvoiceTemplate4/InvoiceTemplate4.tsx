@@ -39,14 +39,14 @@ const CENTER_WIDTH = 40;
 type FormatPhone = (value?: string | null) => string;
 type TaxReceiptConfig = { enabled?: boolean };
 type NumberFormatter = (value: number | string | null | undefined) => string;
-type ProductCalculator = (products?: InvoiceProduct[], enabled?: boolean) => number;
+type ProductCalculator = (products: InvoiceProduct[], enabled?: boolean) => number;
 
 /* =========================================================
    Funciones auxiliares
    ========================================================= */
 
 // Ajustamos wrapText para que corte en maxWidth (40) sin guión
-const wrapText = (text: string, maxWidth = CENTER_WIDTH) => {
+const wrapText = (text: string, maxWidth = CENTER_WIDTH): string => {
   // Si el texto no sobrepasa el ancho, lo retornamos tal cual
   if (text.length <= maxWidth) return text;
 
@@ -68,7 +68,7 @@ const wrapAndCenter = (text: string, maxWidth = CENTER_WIDTH) => {
   const wrapped = wrapText(text, maxWidth);
   return wrapped
     .split('\n')
-    .map((line) => centerText(line, maxWidth))
+    .map((line: string) => centerText(line, maxWidth))
     .join('\n');
 };
 
@@ -86,7 +86,7 @@ const formatColumn = (
   text: string | number,
   width: number,
   align: 'left' | 'right' | 'center' = 'left',
-) => {
+): string => {
   let str = text.toString();
 
   // Si excede el ancho, lo envolvemos
@@ -95,14 +95,14 @@ const formatColumn = (
   }
 
   // Según la alineación
-  if (align === 'left') {
-    return str.padEnd(width, ' ');
-  } else if (align === 'right') {
+  if (align === 'right') {
     return str.padStart(width, ' ');
   } else if (align === 'center') {
     const spaces = Math.floor((width - str.length) / 2);
     return ' '.repeat(spaces) + str + ' '.repeat(width - str.length - spaces);
   }
+  
+  return str.padEnd(width, ' ');
 };
 
 // Concatenar nombre del producto con medida y pie
@@ -127,7 +127,7 @@ const renderBusinessHeader = (
   let header = '';
   header += wrapAndCenter(business.name || 'Nombre del Negocio') + '\n';
   header += wrapAndCenter(business.address || 'Dirección del Negocio') + '\n';
-  header += wrapAndCenter(phoneFormatter(business.tel) || 'Teléfono') + '\n';
+  header += wrapAndCenter(phoneFormatter(business.tel || '') || 'Teléfono') + '\n';
   if (business.rnc) {
     header += wrapAndCenter(`RNC: ${business.rnc}`) + '\n';
   }
@@ -139,7 +139,7 @@ const renderBusinessHeader = (
 // ----------------- Invoice Header -----------------
 const renderInvoiceHeader = (data: InvoiceData | null | undefined, fechaActual: string) => {
   let header = '';
-  const identity = resolveDocumentIdentity(data);
+  const identity = resolveDocumentIdentity(data as any);
   header += 'Fecha: ' + fechaActual + '\n';
   if (identity.label) {
     header +=
@@ -185,7 +185,7 @@ const renderClientInfo = (
     clientText += 'CEDULA/RNC: ' + client.personalID + '\n';
   }
   if (client.tel) {
-    clientText += 'TEL: ' + phoneFormatter(client.tel) + '\n';
+    clientText += 'TEL: ' + phoneFormatter(client.tel || '') + '\n';
   }
   if (client.address) {
     const prefix = 'DIR: ';
@@ -230,7 +230,7 @@ const renderProducts = (
       // Columna izquierda
       let leftCol = '';
       if (product?.weightDetail?.isSoldByWeight) {
-        leftCol = `${product.weightDetail.weight} ${product.weightDetail.weightUnit}x${separator(
+        leftCol = `${product.weightDetail?.weight} ${product.weightDetail?.weightUnit}x${separator(
           getTotalPriceFn(
             resetAmountFn(product),
             taxReceiptEnabled,
@@ -270,7 +270,7 @@ const renderProducts = (
       }
 
       // Descuento individual (si aplica)
-      if (product?.discount && product?.discount?.value > 0) {
+      if (product?.discount && (product?.discount?.value ?? 0) > 0) {
         const discountAmount = getProductIndividualDiscount(product);
         const discountType =
           product.discount.type === 'percentage'
@@ -278,7 +278,7 @@ const renderProducts = (
             : 'Monto fijo';
         prodText +=
           wrapText(
-            `Descuento: -${formatter(discountAmount)} (${discountType})`,
+            `Descuento: -${formatter(discountAmount || 0)} (${discountType})`,
             CENTER_WIDTH,
           ) + '\n';
       }
@@ -389,7 +389,7 @@ const renderPaymentArea = (
       (item) => {
         const methodKey = typeof item?.method === 'string' ? item.method : 'cash';
         return {
-          label: paymentLabel[methodKey] ?? paymentLabel.cash,
+          label: paymentLabel[methodKey as keyof typeof paymentLabel] ?? paymentLabel.cash,
           value2: formatNumber(item?.value),
           condition: true,
         };
@@ -474,9 +474,9 @@ export const InvoiceTemplate4 = React.forwardRef<HTMLDivElement, InvoiceTemplate
 
     // Concatenamos todas las secciones
     const factura =
-      renderBusinessHeader(business, formatPhoneNumber) +
+      renderBusinessHeader(business, formatPhoneNumber as any) +
       renderInvoiceHeader(data, fechaActual) +
-      renderClientInfo(data?.client, formatPhoneNumber) +
+      renderClientInfo(data?.client, formatPhoneNumber as any) +
       renderProducts(
         data?.products,
         taxReceiptEnabled,
@@ -488,8 +488,8 @@ export const InvoiceTemplate4 = React.forwardRef<HTMLDivElement, InvoiceTemplate
       renderPaymentArea(
         data,
         separator,
-        getProductsPrice,
-        getProductsTax,
+        getProductsPrice as unknown as ProductCalculator,
+        getProductsTax as unknown as ProductCalculator,
         getTotalDiscount,
       ) +
       renderFooter();
@@ -510,5 +510,5 @@ export default InvoiceTemplate4;
    Estilo Wrapper
    ========================================================= */
 const HiddenPrintWrapper = styled.div<{ ignoreHidden?: boolean }>`
-  display: ${({ ignoreHidden }) => (!ignoreHidden ? 'none' : 'block')};
+  display: ${({ ignoreHidden }: { ignoreHidden?: boolean }) => (!ignoreHidden ? 'none' : 'block')};
 `;

@@ -5,20 +5,35 @@ import {
   defineAbilitiesForWithDynamic,
 } from '@/abilities';
 
-// AcciÃ³n asÃ­ncrona para cargar abilities con permisos dinÃ¡micos
-export const loadUserAbilities = (createAsyncThunk as any)(
+// Acción asíncrona para cargar abilities con permisos dinámicos
+export const loadUserAbilities = createAsyncThunk<
+  any[],
+  any,
+  { rejectValue: string }
+>(
   'abilities/loadUserAbilities',
-  async (user, { rejectWithValue }) => {
+  async (user: any, { rejectWithValue }) => {
     try {
       const abilities = await defineAbilitiesForWithDynamic(user);
-      return abilities;
-    } catch (error) {
+      return abilities as any[];
+    } catch (error: any) {
       return rejectWithValue(error.message);
     }
   },
 );
 
-const initialState = {
+interface AbilitiesState {
+  abilities: any[];
+  loading: boolean;
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  error: string | null;
+}
+
+interface AbilitiesRootState {
+  abilities: AbilitiesState;
+}
+
+const initialState: AbilitiesState = {
   abilities: [],
   loading: false,
   status: 'idle',
@@ -29,37 +44,36 @@ const abilitiesSlice = createSlice({
   name: 'abilities',
   initialState,
   reducers: {
-    setAbilities: (state: any, action: PayloadAction<any>) => {
+    setAbilities: (state: AbilitiesState, action: PayloadAction<any>) => {
       state.abilities = defineAbilitiesFor(action.payload);
       state.loading = false;
       state.status = 'succeeded';
       state.error = null;
     },
-    clearAbilities: (state: any) => {
+    clearAbilities: (state: AbilitiesState) => {
       state.abilities = [];
       state.loading = false;
       state.status = 'idle';
       state.error = null;
     },
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(loadUserAbilities.pending, (state) => {
+      .addCase(loadUserAbilities.pending, (state: AbilitiesState) => {
         state.loading = true;
         state.status = 'loading';
         state.error = null;
       })
-      .addCase(loadUserAbilities.fulfilled, (state, action) => {
+      .addCase(loadUserAbilities.fulfilled, (state: AbilitiesState, action: PayloadAction<any[]>) => {
         state.abilities = action.payload;
         state.loading = false;
         state.status = 'succeeded';
         state.error = null;
       })
-      .addCase(loadUserAbilities.rejected, (state, action) => {
+      .addCase(loadUserAbilities.rejected, (state: AbilitiesState, action) => {
         state.loading = false;
         state.status = 'failed';
-        state.error = action.payload;
-        // Mantener abilities existentes en caso de error
+        state.error = action.payload as string;
       });
   },
 });
@@ -69,26 +83,24 @@ export const { setAbilities, clearAbilities } = abilitiesSlice.actions;
 export default abilitiesSlice.reducer;
 
 // Memoized selectors to prevent unnecessary re-renders
-const selectAbilitiesState = (state) => state.abilities;
+const selectAbilitiesState = (state: AbilitiesRootState) => state.abilities;
 
 export const selectAbilities = createSelector(
   [selectAbilitiesState],
-  (abilitiesState) => abilitiesState.abilities
+  (abilitiesState: AbilitiesState) => abilitiesState.abilities
 );
 
 export const selectAbilitiesLoading = createSelector(
   [selectAbilitiesState],
-  (abilitiesState) => abilitiesState.loading
+  (abilitiesState: AbilitiesState) => abilitiesState.loading
 );
 
 export const selectAbilitiesStatus = createSelector(
   [selectAbilitiesState],
-  (abilitiesState) => abilitiesState.status
+  (abilitiesState: AbilitiesState) => abilitiesState.status
 );
 
 export const selectAbilitiesError = createSelector(
   [selectAbilitiesState],
-  (abilitiesState) => abilitiesState.error
+  (abilitiesState: AbilitiesState) => abilitiesState.error
 );
-
-

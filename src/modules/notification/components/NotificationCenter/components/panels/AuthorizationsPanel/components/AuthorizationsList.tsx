@@ -2,15 +2,29 @@ import styled from 'styled-components';
 
 import AuthorizationRow from './AuthorizationRow';
 
+
+interface Authorization {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface AuthorizationsListProps {
+  authorizations: Authorization[];
+  isAdmin: boolean;
+  processingId: string | null;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}
+
 const AuthorizationsList = ({
   authorizations,
   isAdmin,
   processingId,
   onApprove,
   onReject,
-}) => (
+}: AuthorizationsListProps) => (
   <AuthorizationsListContainer>
-    {authorizations.map((authorization) => (
+    {authorizations.map((authorization: Authorization) => (
       <AuthorizationRow
         key={authorization.id}
         auth={authorization}

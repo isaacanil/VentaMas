@@ -12,10 +12,21 @@ import {
 import { formatPrice } from '@/utils/format';
 
 
-export const IngredientCard = ({ item, index }) => {
+interface Ingredient {
+  id: string;
+  name: string;
+  cost: number;
+}
+
+interface IngredientCardProps {
+  item: Ingredient;
+  index: string;
+}
+
+export const IngredientCard = ({ item, index }: IngredientCardProps) => {
   const dispatch = useDispatch();
   const IngredientsList = useSelector(selectIngredientList);
-  const handleIngredient = (status, item) => {
+  const handleIngredient = (status: boolean, item: Ingredient) => {
     status
       ? (dispatch(addIngredient(item)),
         dispatch(totalPurchase()),
@@ -24,8 +35,8 @@ export const IngredientCard = ({ item, index }) => {
         dispatch(totalPurchase()),
         dispatch(gettingIngredientList()));
   };
-  const IngredientSelected = (array, id) =>
-    array.some((element) => element.id === id);
+  const IngredientSelected = (array: Ingredient[], id: string) =>
+    array.some((element: Ingredient) => element.id === id);
 
   return (
     <Container htmlFor={index}>
@@ -53,7 +64,7 @@ const Container = styled.label`
   background-color: #f1efef;
   border-radius: 8px;
 `;
-const Col = styled.div`
+const Col = styled.div<{ align?: 'center' | 'end' | 'start' }>`
   display: flex;
   align-items: center;
   gap: 0.4em;

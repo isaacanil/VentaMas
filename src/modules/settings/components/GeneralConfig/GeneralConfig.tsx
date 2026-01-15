@@ -59,7 +59,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
   {
     key: 'inventory-default-warehouse',
-    label: 'Inventario Â· Almacén predeterminado',
+    label: 'Inventario · Almacén predeterminado',
     description: 'Define el almacén que se usará por defecto en operaciones.',
     tab: 'inventory',
     route: TAB_ROUTES.inventory,
@@ -69,7 +69,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
   {
     key: 'inventory-stock-alerts',
-    label: 'Inventario Â· Reportes y alertas',
+    label: 'Inventario · Reportes y alertas',
     description: 'Configura reportes y alertas de stock por correo.',
     tab: 'inventory',
     route: TAB_ROUTES.inventory,
@@ -88,7 +88,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
   {
     key: 'billing-mode',
-    label: 'Ventas Â· Modo de Facturación',
+    label: 'Ventas · Modo de Facturación',
     description: 'Selecciona si facturas al contado, crédito u otro modo.',
     tab: 'billing',
     route: TAB_ROUTES.billing,
@@ -98,7 +98,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
   {
     key: 'billing-invoice-settings',
-    label: 'Ventas Â· Configuración de Factura',
+    label: 'Ventas · Configuración de Factura',
     description: 'Define los campos y mensajes que verán tus clientes.',
     tab: 'billing',
     route: TAB_ROUTES.billing,
@@ -108,7 +108,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
   {
     key: 'billing-quote-settings',
-    label: 'Ventas Â· Configuración de Cotizaciones',
+    label: 'Ventas · Configuración de Cotizaciones',
     description: 'Personaliza los parámetros predeterminados de cotizaciones.',
     tab: 'billing',
     route: TAB_ROUTES.billing,

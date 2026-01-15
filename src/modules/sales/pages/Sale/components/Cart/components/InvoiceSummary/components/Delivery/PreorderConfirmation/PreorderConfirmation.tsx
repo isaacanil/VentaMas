@@ -174,7 +174,7 @@ const Title = styled.h2`
   color: #0f172a;
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled.button<{ disabled?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -210,7 +210,7 @@ const Footer = styled.footer`
   justify-content: flex-end;
 `;
 
-const BaseButton = styled.button`
+const BaseButton = styled.button<{ disabled?: boolean }>`
   min-width: 120px;
   padding: 10px 16px;
   font-size: 0.95rem;
@@ -225,22 +225,22 @@ const BaseButton = styled.button`
     background 0.2s ease;
 `;
 
-const PrimaryButton = styled(BaseButton)`
+const PrimaryButton = styled(BaseButton) <{ disabled?: boolean }>`
   color: #fff;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   box-shadow: 0 12px 22px rgb(37 99 235 / 25%);
 
   &:hover {
     box-shadow: ${({ disabled }) =>
-      disabled
-        ? '0 12px 22px rgba(37, 99, 235, 0.25)'
-        : '0 16px 28px rgba(37, 99, 235, 0.3)'};
+    disabled
+      ? '0 12px 22px rgba(37, 99, 235, 0.25)'
+      : '0 16px 28px rgba(37, 99, 235, 0.3)'};
     transform: ${({ disabled }) =>
-      disabled ? 'none' : 'translateY(-1px) scale(1.01)'};
+    disabled ? 'none' : 'translateY(-1px) scale(1.01)'};
   }
 `;
 
-const SecondaryButton = styled(BaseButton)`
+const SecondaryButton = styled(BaseButton) <{ disabled?: boolean }>`
   color: #1f2937;
   background: #e2e8f0;
 

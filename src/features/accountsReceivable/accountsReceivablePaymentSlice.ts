@@ -102,7 +102,7 @@ const paymentDetailsTemplate: PaymentDetails = {
   totalAmount: 0.0, // Monto total a pagar
   totalPaid: 0.0, // Monto total pagado
   printReceipt: true, // Si se debe imprimir el recibo de pago
-  creditNotePayment: [], // Notas de crÃ©dito aplicadas
+  creditNotePayment: [], // Notas de crédito aplicadas
 };
 
 const createDefaultPaymentDetails = (amount = 0): PaymentDetails => {
@@ -135,19 +135,20 @@ const initialState: AccountsReceivablePaymentState = {
   error: null, // Para manejar errores
   isValid: true, // Para manejar validaciones
   methodErrors: {},
-  extra: null, // Para manejar informaciÃ³n adicional
+  extra: null, // Para manejar información adicional
   installment: null,
 };
 
 // Thunk to fetch last installment amount
-export const fetchLastInstallmentAmount = (createAsyncThunk as any)(
+export const fetchLastInstallmentAmount = createAsyncThunk<
+  { arId: string; lastInstallmentAmount: number },
+  { user: UserIdentity; arId: string },
+  { rejectValue: string }
+>(
   'accountsReceivablePayment/fetchLastInstallmentAmount',
-  async (
-    { user, arId }: { user: UserIdentity; arId: string },
-    { rejectWithValue }: { rejectWithValue: (value: string) => unknown },
-  ) => {
+  async ({ user, arId }, { rejectWithValue }) => {
     try {
-      const lastInstallmentAmount = await getLastInstallmentAmountByArId(       
+      const lastInstallmentAmount = await getLastInstallmentAmountByArId(
         user,
         arId,
       );
@@ -156,7 +157,7 @@ export const fetchLastInstallmentAmount = (createAsyncThunk as any)(
       return rejectWithValue(
         error instanceof Error
           ? error.message
-          : 'No se pudo obtener el monto de la Ãºltima cuota.',
+          : 'No se pudo obtener el monto de la última cuota.',
       );
     }
   },
@@ -197,10 +198,10 @@ const accountsReceivablePaymentSlice = createSlice({
         state.paymentDetails.paymentOption === 'installment'
       ) {
         state.paymentDetails.totalAmount =
-          state.extra?.installmentAmount ?? state.paymentDetails.totalAmount;
+          (state.extra?.installmentAmount as number) ?? state.paymentDetails.totalAmount;
       } else if (state.paymentDetails.paymentScope === 'account') {
         state.paymentDetails.totalAmount =
-          state.extra?.arBalance ?? state.paymentDetails.totalAmount;
+          (state.extra?.arBalance as number) ?? state.paymentDetails.totalAmount;
       }
     },
     setAccountPayment: (
@@ -221,8 +222,8 @@ const accountsReceivablePaymentSlice = createSlice({
       if (opening) {
         const incomingAmount =
           paymentDetailsPayload?.totalAmount ??
-          paymentDetailsPayload?.balance ??
-          state.extra?.installmentAmount ??
+          (paymentDetailsPayload as any)?.balance ??
+          (state.extra?.installmentAmount as number) ??
           0;
         state.paymentDetails = createDefaultPaymentDetails(incomingAmount);
         state.methodErrors = {};
@@ -249,16 +250,16 @@ const accountsReceivablePaymentSlice = createSlice({
         state.paymentDetails.paymentOption === 'installment'
       ) {
         state.paymentDetails.totalAmount =
-          state.extra?.installmentAmount || state.paymentDetails.totalAmount;
+          (state.extra?.installmentAmount as number) || state.paymentDetails.totalAmount;
       } else if (paymentDetailsPayload?.totalAmount !== undefined) {
         state.paymentDetails.totalAmount = paymentDetailsPayload.totalAmount;
       }
 
-      // Recalcular total pagado con los mÃ©todos vigentes
+      // Recalcular total pagado con los métodos vigentes
       state.paymentDetails.totalPaid = state.paymentDetails.paymentMethods
         ? state.paymentDetails.paymentMethods.reduce((sum, method) => {
-            return method.status ? sum + (Number(method.value) || 0) : sum;
-          }, 0.0)
+          return method.status ? sum + (Number(method.value) || 0) : sum;
+        }, 0.0)
         : 0.0;
     },
     updatePaymentMethod: (
@@ -276,14 +277,14 @@ const accountsReceivablePaymentSlice = createSlice({
       if (methodIndex !== -1) {
         const paymentMethod = state.paymentDetails.paymentMethods[methodIndex];
 
-        // Si la clave es 'reference' y el mÃ©todo es 'cash' o 'creditNote', no asignar el valor
+        // Si la clave es 'reference' y el método es 'cash' o 'creditNote', no asignar el valor
         if (
           !(
             key === 'reference' &&
             (method === 'cash' || method === 'creditNote')
           )
         ) {
-          paymentMethod[key] = value;
+          (paymentMethod as any)[key] = value;
         }
         // Recalculate totalPaid only if the method is active
         state.paymentDetails.totalPaid =
@@ -331,7 +332,7 @@ const accountsReceivablePaymentSlice = createSlice({
         0,
       );
 
-      // Calcular total de otros mÃ©todos activos
+      // Calcular total de otros métodos activos
       const totalOtherPayments = state.paymentDetails.paymentMethods
         .filter((m) => m.status && m.method !== 'creditNote')
         .reduce((sum, m) => sum + (Number(m.value) || 0), 0);
@@ -350,7 +351,7 @@ const accountsReceivablePaymentSlice = createSlice({
           originalAmount: sel.creditNote?.totalAmount || 0,
         }));
 
-      // Actualizar mÃ©todo de pago creditNote
+      // Actualizar método de pago creditNote
       const idx = state.paymentDetails.paymentMethods.findIndex(
         (m) => m.method === 'creditNote',
       );
@@ -363,7 +364,7 @@ const accountsReceivablePaymentSlice = createSlice({
       } else {
         state.paymentDetails.paymentMethods.push({
           method: 'creditNote',
-          name: 'Notas de CrÃ©dito',
+          name: 'Notas de Crédito',
           value: validAmount,
           status: validAmount > 0,
         });
@@ -400,23 +401,23 @@ const accountsReceivablePaymentSlice = createSlice({
       .addCase(
         fetchLastInstallmentAmount.fulfilled,
         (state: AccountsReceivablePaymentState, action) => {
-        const { arId, lastInstallmentAmount } = action.payload;
-        if (state.paymentDetails.arId === arId) {
-          state.extra = {
-            ...(state.extra ?? {}),
-            installmentAmount: lastInstallmentAmount,
-          };
-          if (state.paymentDetails.paymentOption === 'installment') {
-            state.paymentDetails.totalAmount = lastInstallmentAmount;
+          const { arId, lastInstallmentAmount } = action.payload;
+          if (state.paymentDetails.arId === arId) {
+            state.extra = {
+              ...(state.extra ?? {}),
+              installmentAmount: lastInstallmentAmount,
+            };
+            if (state.paymentDetails.paymentOption === 'installment') {
+              state.paymentDetails.totalAmount = lastInstallmentAmount;
+            }
           }
-        }
-      },
+        },
       )
       .addCase(
         fetchLastInstallmentAmount.rejected,
         (state: AccountsReceivablePaymentState, action) => {
-        state.error = action.payload;
-      },
+          state.error = action.payload ?? 'Error desconocido';
+        },
       );
   },
 });
@@ -445,5 +446,3 @@ type AccountsReceivablePaymentRootState = {
 export const selectAccountsReceivablePayment = (
   state: AccountsReceivablePaymentRootState,
 ) => state.accountsReceivablePayment;
-
-

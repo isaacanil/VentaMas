@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import type { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
@@ -36,6 +35,7 @@ const getVariantStyles = (props: StyledBadgeProps) => {
         padding-left: 0;
         color: ${props.$color};
         background-color: transparent;
+        border: none;
 
         &:hover {
           background-color: transparent;

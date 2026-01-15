@@ -36,7 +36,7 @@ const updateStructureElement = async (
   elementId: string,
   data: StructurePayload,
 ) => {
-  const structureDoc = getStructureDoc(user.businessID, type);
+  const structureDoc = getStructureDoc(user.businessID!, type);
   try {
     const docSnapshot = await getDoc(structureDoc);
     const existingData = docSnapshot.exists()
@@ -104,7 +104,7 @@ export const createStructureFromExisting = async (
     const batch = writeBatch(db);
 
     // Procesar almacenes
-    const warehousesDoc = getStructureDoc(user.businessID, 'warehouses');
+    const warehousesDoc = getStructureDoc(user.businessID!, 'warehouses');
     const warehouseElements: Record<string, StructureElement> = {};
     structureData.warehouses.forEach((warehouse) => {
       warehouseElements[warehouse.id] = {
@@ -119,7 +119,7 @@ export const createStructureFromExisting = async (
     batch.set(warehousesDoc, { elements: warehouseElements });
 
     // Procesar estantes
-    const shelvesDoc = getStructureDoc(user.businessID, 'shelves');
+    const shelvesDoc = getStructureDoc(user.businessID!, 'shelves');
     const shelfElements: Record<string, StructureElement> = {};
     structureData.shelves.forEach((shelf) => {
       shelfElements[shelf.id] = {
@@ -137,7 +137,7 @@ export const createStructureFromExisting = async (
     batch.set(shelvesDoc, { elements: shelfElements });
 
     // Procesar filas
-    const rowsDoc = getStructureDoc(user.businessID, 'rows');
+    const rowsDoc = getStructureDoc(user.businessID!, 'rows');
     const rowElements: Record<string, StructureElement> = {};
     structureData.rows.forEach((row) => {
       rowElements[row.id] = {
@@ -156,7 +156,7 @@ export const createStructureFromExisting = async (
     batch.set(rowsDoc, { elements: rowElements });
 
     // Procesar segmentos
-    const segmentsDoc = getStructureDoc(user.businessID, 'segments');
+    const segmentsDoc = getStructureDoc(user.businessID!, 'segments');
     const segmentElements: Record<string, StructureElement> = {};
     structureData.segments.forEach((segment) => {
       segmentElements[segment.id] = {
@@ -187,7 +187,7 @@ export const createStructureFromExisting = async (
 // Función para verificar si la estructura ya está migrada
 export const checkStructureMigration = async (user: InventoryUser) => {
   try {
-    const structureDoc = getStructureDoc(user.businessID, 'warehouses');
+    const structureDoc = getStructureDoc(user.businessID!, 'warehouses');
     const docSnap = await getDoc(structureDoc);
     return docSnap.exists();
   } catch (error) {
@@ -202,7 +202,7 @@ const listenToStructure = (
   type: StructureType,
   callback: (elements: StructureElement[]) => void,
 ) => {
-  const structureDoc = getStructureDoc(user.businessID, type);
+  const structureDoc = getStructureDoc(user.businessID!, type);
 
   return onSnapshot(structureDoc, (docSnap) => {
     if (docSnap.exists()) {

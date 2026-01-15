@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { useWarehouseHierarchy } from '@/firebase/warehouse/warehouseNestedServise';
 import { shortenLocationPath } from '@/modules/inventory/pages/InventoryControl/components/inventoryTableUtils';
-import { DatePicker } from '@/components/ui/Dates/DatePicker/DatePicker';
+import { DatePicker, type DateRangeValue } from '@/components/ui/Dates/DatePicker/DatePicker';
 
 type MovementFilterType = 'in' | 'out' | null;
 
@@ -75,7 +75,7 @@ const MovementsFilterBar = ({
   loading,
   dates,
   setDates,
-  defaultDate,
+  // defaultDate, // removing this as it's not compatible with DatePicker's datesDefault
   type,
   onTypeChange,
 }: MovementsFilterBarProps) => {
@@ -84,7 +84,7 @@ const MovementsFilterBar = ({
 
   // Build Cascader options from warehouse hierarchy
   const options = useMemo<CascaderOption[]>(() => {
-    const toOptions = (items: HierarchyNode[]) =>
+    const toOptions = (items: HierarchyNode[]): CascaderOption[] =>
       (items || []).flatMap((item) => {
         if (!item.id) return [];
         return [
@@ -129,9 +129,8 @@ const MovementsFilterBar = ({
       >
         <Form.Item label="Fecha">
           <DatePicker
-            dates={dates}
-            setDates={setDates}
-            datesDefault={defaultDate}
+            dates={dates as DateRangeValue}
+            setDates={setDates as (d: DateRangeValue) => void}
           />
         </Form.Item>
         <Form.Item label="Ubicación">

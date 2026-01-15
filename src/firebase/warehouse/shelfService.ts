@@ -65,6 +65,7 @@ const createShelf = async (
 
   try {
     const shelfCollectionRef = getShelfCollectionRef(user.businessID);
+    if (!shelfCollectionRef) throw new Error('Could not get collection reference');
     const shelfDocRef = doc(shelfCollectionRef, id);
 
     await setDoc(shelfDocRef, {
@@ -174,6 +175,7 @@ const updateShelf = async (
 // Marcar un estante como eliminado
 const deleteShelf = async (user: InventoryUser, id: string) => {
   try {
+    if (!user.businessID) throw new Error('businessID is required');
     const shelfDocRef = doc(db, 'businesses', user.businessID, 'shelves', id);
     await updateDoc(shelfDocRef, {
       isDeleted: true,
@@ -207,7 +209,7 @@ const useListenShelves = (warehouseId: string | null) => {
           setLoading(false);
         },
       );
-      return () => unsubscribe(); // Cleanup al desmontar
+      return () => unsubscribe?.(); // Cleanup al desmontar
     }
   }, [warehouseId, user]);
 

@@ -60,7 +60,7 @@ export const StatBox = styled.div<{ color?: string }>`
   .stat-value {
     font-size: 20px;
     font-weight: 600;
-    color: ${(props) => props.color || 'var(--color-text-primary)'};
+    color: ${(props: { color?: string }) => props.color || 'var(--color-text-primary)'};
   }
 `;
 
@@ -82,10 +82,10 @@ export const ProductGroupsContainer = styled.div`
   gap: 0.6em;
 `;
 
-export const ProductGroup = styled(motion.div)<{ isCollapsed?: boolean }>`
+export const ProductGroup = styled(motion.div) <{ isCollapsed?: boolean }>`
 
   /* height: fit-content; */
-  height: ${(props) => (props.isCollapsed ? 'fit-content' : 'auto')};
+  height: ${(props: { isCollapsed?: boolean }) => (props.isCollapsed ? 'fit-content' : 'auto')};
   overflow: hidden;
   background-color: #fff;
   border-radius: var(--radius-lg);
@@ -155,26 +155,26 @@ export const StatusBadge = styled.div<{ status?: string }>`
   align-items: center;
   justify-content: center;
   min-width: 70px;
-  color: ${(props) =>
+  color: ${(props: { status?: string }) =>
     props.status === 'pending'
       ? '#d46b08'
       : props.status === 'reserved'
         ? '#1890ff'
         : '#52c41a'};
   white-space: nowrap;
-  background: ${(props) =>
+  background: ${(props: { status?: string }) =>
     props.status === 'pending'
       ? '#fff7e6'
       : props.status === 'reserved'
         ? '#e6f7ff'
         : '#f6ffed'};
   border: 1px solid
-    ${(props) =>
-      props.status === 'pending'
-        ? '#ffd591'
-        : props.status === 'reserved'
-          ? '#91d5ff'
-          : '#b7eb8f'};
+    ${(props: { status?: string }) =>
+    props.status === 'pending'
+      ? '#ffd591'
+      : props.status === 'reserved'
+        ? '#91d5ff'
+        : '#b7eb8f'};
 `;
 
 export const CardContent = styled.div`
@@ -219,8 +219,8 @@ export const QuantityBox = styled.div<{ highlight?: boolean }>`
   .value {
     font-size: 16px;
     font-weight: 600;
-    color: ${(props) =>
-      props.highlight ? 'var(--color-pending)' : 'var(--color-text-primary)'};
+    color: ${(props: { highlight?: boolean }) =>
+    props.highlight ? 'var(--color-pending)' : 'var(--color-text-primary)'};
     letter-spacing: -0.5px;
   }
 `;
@@ -232,14 +232,14 @@ export const ProgressBar = styled.div<{ progress: number }>`
   border-radius: 2px;
 
   .fill {
-    width: ${(props) => props.progress}%;
+    width: ${(props: { progress: number }) => props.progress}%;
     height: 100%;
-    background: ${(props) =>
-      props.progress >= 80
-        ? '#22c55e'
-        : props.progress >= 50
-          ? '#f59e0b'
-          : '#d1d5db'};
+    background: ${(props: { progress: number }) =>
+    props.progress >= 80
+      ? '#22c55e'
+      : props.progress >= 50
+        ? '#f59e0b'
+        : '#d1d5db'};
     transition: all 0.3s ease;
   }
 `;
@@ -267,7 +267,7 @@ export const CardFooter = styled.div`
 `;
 
 export const LoadingPlaceholder = styled.div<{ height?: string }>`
-  height: ${(props) => props.height || '20px'};
+  height: ${(props: { height?: string }) => props.height || '20px'};
   background: linear-gradient(90deg, #f5f5f5 0%, #eee 50%, #f5f5f5 100%);
   background-size: 200% 100%;
   border-radius: var(--radius-sm);
@@ -291,13 +291,13 @@ export const GroupProgress = styled.div<{ progress: number }>`
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 12px;
   font-weight: 500;
-  color: ${(props) =>
+  color: ${(props: { progress: number }) =>
     props.progress >= 80
       ? '#166534'
       : props.progress >= 50
         ? '#854d0e'
         : 'var(--color-text-secondary)'};
-  background: ${(props) =>
+  background: ${(props: { progress: number }) =>
     props.progress >= 80
       ? '#f0fdf4'
       : props.progress >= 50

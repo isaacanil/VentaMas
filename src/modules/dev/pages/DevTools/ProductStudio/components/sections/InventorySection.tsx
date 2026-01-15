@@ -19,7 +19,7 @@ export const InventorySection = ({ domId }) => (
     <SectionHeader>
       <SectionTitle level={4}>Inventario</SectionTitle>
       <SectionDescription>
-        Define cÃ³mo se moverÃ¡ el stock y los permisos de venta.
+        Define cómo se moverá el stock y los permisos de venta.
       </SectionDescription>
     </SectionHeader>
     <FieldGrid>

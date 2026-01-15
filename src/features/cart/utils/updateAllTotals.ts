@@ -5,7 +5,7 @@ import {
   getProductsTotalPrice,
   getTotalItems,
 } from '@/utils/pricing';
-import type { CartState } from '../types';
+import type { CartState, Product } from '../types';
 
 export const updateAllTotals = (
   state: CartState,
@@ -29,8 +29,8 @@ export const updateAllTotals = (
       },
       data: {
         products = [],
-        discount = {},
-        delivery = {},
+        discount = { value: 0 },
+        delivery = { value: 0 },
         paymentMethod = [],
         totalPurchase,
         totalInsurance,
@@ -47,20 +47,21 @@ export const updateAllTotals = (
 
     // Calcula los valores de precios
     const totalPrice = getProductsTotalPrice(
-      products,
+      products as Product[],
       discountValue,
       deliveryValue,
       taxReceiptEnabled,
     );
-    const insurance = getProductsInsuranceExtra(products);
+    const insurance = getProductsInsuranceExtra(products as Product[]);
     const purchaseValue = totalPrice - insurance;
+
     // Calcula el total de pagos de manera segura
     const totalPaymentFromMethods = paymentMethod.reduce((total, method) => {
       if (!method) return total;
       return method.status ? total + (Number(method.value) || 0) : total;
     }, 0);
+
     // Determina el valor de pago a utilizar
-    // Si se proporciona paymentValue específico, se usa. Si no, siempre utiliza la suma de métodos de pago habilitados.
     const pay =
       paymentValue !== undefined
         ? Number(paymentValue)
@@ -70,10 +71,10 @@ export const updateAllTotals = (
     if (totalPurchase) totalPurchase.value = purchaseValue;
     if (totalInsurance) Object.assign(totalInsurance, { value: insurance });
     if (totalTaxes)
-      totalTaxes.value = getProductsTax(products, taxReceiptEnabled);
-    if (totalShoppingItems) totalShoppingItems.value = getTotalItems(products);
+      totalTaxes.value = getProductsTax(products as Product[], taxReceiptEnabled);
+    if (totalShoppingItems) totalShoppingItems.value = getTotalItems(products as Product[]);
     if (totalPurchaseWithoutTaxes)
-      totalPurchaseWithoutTaxes.value = getProductsPrice(products);
+      totalPurchaseWithoutTaxes.value = getProductsPrice(products as Product[]);
 
     if (payment) payment.value = pay;
     if (change) change.value = pay - purchaseValue;

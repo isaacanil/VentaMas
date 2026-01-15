@@ -23,20 +23,37 @@ import {
   MetaValue,
 } from '@/modules/notification/components/NotificationCenter/components/panels/shared/PanelPrimitives';
 
-const resolveIcon = (account) => {
+interface Installment {
+  isActive?: boolean;
+  installmentAmount?: number;
+  installmentDate?: any;
+}
+
+interface Account {
+  isOverdue?: boolean;
+  type?: string;
+  daysUntilNextDue?: number;
+  installments?: Installment[];
+  invoiceNumber?: string;
+  invoiceId?: string;
+  clientName?: string;
+  arBalance?: number;
+}
+
+const resolveIcon = (account: Account) => {
   if (account?.isOverdue) return faExclamationTriangle;
   if (account?.type === 'insurance') return faShieldAlt;
   return faFileInvoice;
 };
 
-const resolveAccentColor = (account) => {
+const resolveAccentColor = (account: Account) => {
   if (account?.isOverdue) return '#ef4444';
   const days = account?.daysUntilNextDue;
   if (typeof days === 'number' && days <= 3) return '#f59e0b';
   return '#2563eb';
 };
 
-const resolveStatus = (account) => {
+const resolveStatus = (account: Account) => {
   const days = account?.daysUntilNextDue;
   if (account?.isOverdue || (typeof days === 'number' && days < 0)) {
     const overdueDays = Math.abs(Math.round(days ?? 0));
@@ -78,7 +95,7 @@ const resolveStatus = (account) => {
   };
 };
 
-const getNextInstallment = (account) => {
+const getNextInstallment = (account: Account) => {
   const installments = Array.isArray(account?.installments)
     ? account.installments
     : [];
@@ -90,7 +107,7 @@ const getNextInstallment = (account) => {
   return active[0];
 };
 
-const formatInstallmentDate = (value) => {
+const formatInstallmentDate = (value: any) => {
   if (!value) return '';
   if (typeof value.toFormat === 'function') {
     return value.toFormat('dd/MM/yyyy');
@@ -105,7 +122,7 @@ const formatInstallmentDate = (value) => {
   return new Intl.DateTimeFormat('es-ES').format(date);
 };
 
-const AccountRow = ({ account }) => {
+const AccountRow = ({ account }: { account: Account }) => {
   const icon = resolveIcon(account);
   const accentColor = resolveAccentColor(account);
   const status = resolveStatus(account);
@@ -117,7 +134,7 @@ const AccountRow = ({ account }) => {
       : null;
   const nextDate = formatInstallmentDate(nextInstallment?.installmentDate);
   const nextSummary = nextAmount
-    ? `${formatNumber(nextAmount)}${nextDate ? ` Â· ${nextDate}` : ''}`
+    ? `${formatNumber(nextAmount)}${nextDate ? ` · ${nextDate}` : ''}`
     : nextDate || '-';
 
   return (

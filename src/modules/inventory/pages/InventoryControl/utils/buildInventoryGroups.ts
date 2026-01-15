@@ -85,7 +85,7 @@ export function buildInventoryGroups({
         session?.frozenChildrenStock &&
         Object.prototype.hasOwnProperty.call(session.frozenChildrenStock, key)
       ) {
-        stock = Number(session.frozenChildrenStock[key] ?? stock);
+        stock = Number(session.frozenChildrenStock[key] ?? stock) || 0;
       }
       children.push({
         key,
@@ -110,9 +110,9 @@ export function buildInventoryGroups({
               expirationEdits,
               countsMeta,
             ),
-            location: locationKey,
-            locationKey,
-            locationLabel: locationNames?.[locationKey] || '',
+            location: locationKey || '',
+            locationKey: locationKey || '',
+            locationLabel: (locationKey && locationNames?.[locationKey]) || '',
           };
         }),
       });
@@ -143,11 +143,11 @@ export function buildInventoryGroups({
           const byId = sample?.batchId && String(sample.batchId);
           const byNumber =
             sample?.batchNumberId !== undefined &&
-            sample?.batchNumberId !== null
+              sample?.batchNumberId !== null
               ? `bn:${String(sample.batchNumberId)}`
               : null;
           const fallbackKeys = arr
-            .map((x) => (x.id ? `batchGroup:stock:${String(x.id)}` : null))
+            .map((x) => (x.id ? `batchGroup:stock:${String(x.id)}` : ''))
             .filter(Boolean);
           if (byId) altKeys.push(`batchGroup:${byId}`);
           if (byNumber) altKeys.push(`batchGroup:${byNumber}`);
@@ -159,7 +159,7 @@ export function buildInventoryGroups({
             ),
           );
           if (foundKey) {
-            stock = Number(session.frozenChildrenStock[foundKey] ?? stock);
+            stock = Number(session.frozenChildrenStock[foundKey] ?? stock) || 0;
           }
         }
         const sample = arr[0];
@@ -192,9 +192,9 @@ export function buildInventoryGroups({
                 expirationEdits,
                 countsMeta,
               ),
-              location: locationKey,
-              locationKey,
-              locationLabel: locationNames?.[locationKey] || '',
+              location: locationKey || '',
+              locationKey: locationKey || '',
+              locationLabel: (locationKey && locationNames?.[locationKey]) || '',
             };
           }),
         });
@@ -211,7 +211,7 @@ export function buildInventoryGroups({
           const sumSourcesReal = child.sources.reduce(
             (s, src) =>
               s +
-              Number(counts[src.id || src.key] ?? src.real ?? src.stock ?? 0),
+              Number(counts[src.id || (src.key as string)] ?? src.real ?? src.stock ?? 0),
             0,
           );
           child.real = sumSourcesReal;
@@ -230,8 +230,8 @@ export function buildInventoryGroups({
         )
       ) {
         totalStock = Number(
-          session?.frozenProductTotals[frozenKey] ?? totalStock,
-        );
+          (session?.frozenProductTotals && session.frozenProductTotals[frozenKey]) ?? totalStock,
+        ) || 0;
       }
     }
     const totalReal = sum(
@@ -239,20 +239,20 @@ export function buildInventoryGroups({
         if (Array.isArray(c.sources) && c.sources.length) {
           const hasSourceEdits =
             c.sources.some((src) =>
-              Object.prototype.hasOwnProperty.call(counts, src.id || src.key),
+              Object.prototype.hasOwnProperty.call(counts, src.id || (src.key as string)),
             ) ||
             (!Object.prototype.hasOwnProperty.call(counts, c.key) &&
               c.sources.some((src) =>
                 Object.prototype.hasOwnProperty.call(
                   serverCounts || {},
-                  src.id || src.key,
+                  src.id || (src.key as string),
                 ),
               ));
           if (hasSourceEdits) {
             return c.sources.reduce(
               (s, src) =>
                 s +
-                Number(counts[src.id || src.key] ?? src.real ?? src.stock ?? 0),
+                Number(counts[src.id || (src.key as string)] ?? src.real ?? src.stock ?? 0),
               0,
             );
           }

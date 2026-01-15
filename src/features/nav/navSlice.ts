@@ -1,6 +1,14 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface NavState {
+  isOpen: boolean;
+}
+
+interface NavRootState {
+  nav: NavState;
+}
+
+const initialState: NavState = {
   isOpen: false,
 };
 
@@ -8,13 +16,13 @@ const navSlice = createSlice({
   name: 'nav',
   initialState,
   reducers: {
-    setMenuOpen: (state: any, action: PayloadAction<any>) => {
+    setMenuOpen: (state: NavState, action: PayloadAction<boolean>) => {
       state.isOpen = Boolean(action.payload);
     },
-    toggleMenu: (state: any) => {
+    toggleMenu: (state: NavState) => {
       state.isOpen = !state.isOpen;
     },
-    closeMenu: (state: any) => {
+    closeMenu: (state: NavState) => {
       state.isOpen = false;
     },
   },
@@ -22,8 +30,6 @@ const navSlice = createSlice({
 
 export const { setMenuOpen, toggleMenu, closeMenu } = navSlice.actions;
 
-export const selectMenuOpenStatus = (state) => state.nav.isOpen;
+export const selectMenuOpenStatus = (state: NavRootState) => state.nav.isOpen;
 
 export default navSlice.reducer;
-
-

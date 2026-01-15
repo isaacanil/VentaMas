@@ -2,7 +2,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import styled from 'styled-components';
 
-export const ProcessViewer = ({ status, progress, currentProduct, error }) => {
+interface ProcessViewerProps {
+  status: string;
+  progress: number;
+  currentProduct: {
+    id: string;
+    name: string;
+    stock: number;
+  } | null;
+  error: boolean;
+}
+
+export const ProcessViewer = ({ status, progress, currentProduct, error }: ProcessViewerProps) => {
   return (
     <Container>
       <ProcessCard
@@ -81,10 +92,11 @@ const ProgressBar = styled.div`
   border-radius: 5px;
 `;
 
-const ProgressFill = styled.div`
+
+const ProgressFill = styled.div<{ $error: boolean }>`
   width: 0%;
   height: 100%;
-  background: ${(props) => (props.$error ? '#ff4d4f' : '#4caf50')};
+  background: ${({ $error }: { $error: boolean }) => ($error ? '#ff4d4f' : '#4caf50')};
 `;
 
 const ProductInfo = styled.div`

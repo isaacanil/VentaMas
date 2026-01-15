@@ -40,6 +40,7 @@ import type {
 } from '@/types/products';
 import type { InvoiceProduct } from '@/types/invoice';
 import type { PriceOption } from './utils/priceUtils';
+import type { Product as CartProduct } from '@/features/cart/types';
 
 
 interface DiscountInfo {
@@ -62,16 +63,11 @@ type BatchInfo = Omit<ProductBatchInfo, 'expirationDate'> & {
   batchNumberId?: string | number | null;
 };
 
-type CartItem = CartProductRecord & {
-  id: string;
-  name?: string;
-  comment?: string;
-  discount?: DiscountInfo | null;
-  pricing?: ProductPricing & { price?: number | string };
-  price?: number | string;
-  amountToBuy?: number;
+export type CartItem = CartProduct & {
   batchNumber?: string | number | null;
   batchInfo?: BatchInfo | null;
+  pricing?: ProductPricing & { price?: number | string };
+  discount?: DiscountInfo | null;
 };
 
 type SaleUnitRecord = Partial<ProductSaleUnit> & { id: string };

@@ -65,10 +65,10 @@ export const InvoiceForm = () => {
     try {
       setLoading(true);
       await form.validateFields();
-      const invoiceToUpdate: InvoiceData & { id: string } = {
+      const invoiceToUpdate = {
         ...invoice,
-        id: invoice.id,
-      };
+        id: invoice?.id ?? '',
+      } as InvoiceData & { id: string };
       await fbUpdateInvoice(user, invoiceToUpdate);
 
       if (authorizationRequest?.id) {
@@ -132,8 +132,9 @@ export const InvoiceForm = () => {
       return;
     }
 
+
     if (key === 'client') {
-      dispatch(changeClientInvoiceForm(value));
+      dispatch(changeClientInvoiceForm({ client: value.client }));
       return;
     }
     if (key === 'discount') {
@@ -205,9 +206,9 @@ export const InvoiceForm = () => {
             gap: 16,
           }}
         >
-          <div>Total: {formatPrice(invoice.totalPurchase.value)}</div>
-          <div>Itbis: {formatPrice(invoice.totalTaxes.value)}</div>
-          <div>Items: {invoice.totalShoppingItems.value}</div>
+          <div>Total: {formatPrice(invoice?.totalPurchase?.value ?? 0)}</div>
+          <div>Itbis: {formatPrice(invoice?.totalTaxes?.value ?? 0)}</div>
+          <div>Items: {invoice?.totalShoppingItems?.value ?? 0}</div>
         </div>,
 
         <Button key="back" onClick={handleCancel} disabled={loading}>

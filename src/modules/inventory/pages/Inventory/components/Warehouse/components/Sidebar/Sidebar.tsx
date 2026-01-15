@@ -76,7 +76,7 @@ const SummaryStatus = styled.span<{ $loading: boolean }>`
   gap: 6px;
   align-items: center;
   font-size: 0.72rem;
-  color: ${({ $loading }) => ($loading ? '#bfdbfe' : '#bef264')};
+  color: ${({ $loading }: { $loading: boolean }) => ($loading ? '#bfdbfe' : '#bef264')};
 `;
 
 type StockSummary = {
@@ -306,12 +306,12 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
   }, [defaultWarehouse, items]);
 
   const handleAddWarehouse = () => {
-    dispatch(openWarehouseForm({}));
+    dispatch(openWarehouseForm() as any);
   };
 
   const handleUpdateWarehouse = (node: SidebarNodeRecord) => {
     const warehouseData = node?.record || null;
-    dispatch(openWarehouseForm(warehouseData ?? undefined));
+    dispatch(openWarehouseForm(warehouseData as any));
   };
 
   const handleAddShelf = (clickedNode: SidebarNodeRecord) => {
@@ -361,7 +361,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     if (!path) return;
     dispatch(
       openShelfForm({
-        data: node?.record || null,
+        data: node?.record as any,
         path: path.map((pathNode) => ({
           id: pathNode.id,
           name: pathNode.name,
@@ -375,7 +375,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     if (!path) return;
     dispatch(
       openRowShelfForm({
-        data: node?.record || null,
+        data: node?.record as any,
         path: path.map((pathNode) => ({
           id: pathNode.id,
           name: pathNode.name,
@@ -389,7 +389,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     if (!path) return;
     dispatch(
       openSegmentForm({
-        data: node?.record || null,
+        data: node?.record as any,
         path: path.map((pathNode) => ({
           id: pathNode.id,
           name: pathNode.name,
@@ -406,12 +406,14 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
   > = {
     Almacén: {
       deleteFn: async (_path, node) => {
+        if (!user) return;
         const warehouseId = node.id;
         await deleteWarehouse(user, warehouseId);
       },
     },
     Estante: {
       deleteFn: async (path, node) => {
+        if (!user) return;
         const warehouseId = path[0].id;
         const shelfId = node.id;
         await deleteShelf(user, shelfId);
@@ -419,6 +421,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     },
     Fila: {
       deleteFn: async (path, node) => {
+        if (!user) return;
         const warehouseId = path[0].id;
         const shelfId = path[1].id;
         const rowShelfId = node.id;
@@ -427,6 +430,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     },
     Segmento: {
       deleteFn: async (path, node) => {
+        if (!user) return;
         const warehouseId = path[0].id;
         const shelfId = path[1].id;
         const rowShelfId = path[2].id;
@@ -551,9 +555,9 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
       ? subLevelParts.join(' · ')
       : extraLocations > 0
         ? pluralize(extraLocations, {
-            singular: 'ubicación adicional',
-            plural: 'ubicaciones adicionales',
-          })
+          singular: 'ubicación adicional',
+          plural: 'ubicaciones adicionales',
+        })
         : '';
 
     return {
@@ -645,15 +649,15 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
             },
             actions.delete && !isDefault
               ? {
-                  name: actions.delete,
-                  icon: faTrash,
-                  handler: (currentNode: SidebarNodeRecord, nodeLevel: number) =>
-                    handleDelete(currentNode, nodeLevel),
-                  danger: true,
-                }
+                name: actions.delete,
+                icon: faTrash,
+                handler: (currentNode: SidebarNodeRecord, nodeLevel: number) =>
+                  handleDelete(currentNode, nodeLevel),
+                danger: true,
+              }
               : null,
           );
-          return menuItems.filter(Boolean);
+          return menuItems.filter(Boolean) as any[];
         },
       },
     ],
@@ -711,6 +715,7 @@ const Sidebar = ({ onSelectNode: _onSelectNode, items = [] }: SidebarProps) => {
     setLoadingStockSummaries(true);
 
     try {
+      if (!user) return;
       const summaries = (await getStockAggregatesByLocationPaths(
         user,
         locationPaths,

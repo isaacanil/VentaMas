@@ -102,13 +102,13 @@ export const ReceivableManagementPanel = ({
     currentBalance,
     paymentDate,
     comments,
-  } = useSelector(selectAR) as AccountsReceivableState;
+  } = useSelector(selectAR) as any as AccountsReceivableState;
 
   const cartData = useSelector(SelectCartData);
   const client = useSelector(selectClient) as ClientIdentity | null;
   const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
   const isReceivable = receivableStatus && isChangeNegative;
-  const maxInstallments = getMaxInstallments(paymentFrequency);
+  const maxInstallments = getMaxInstallments(paymentFrequency || 'monthly');
   const generalBalance = useMemo(
     () => getPositive(change) + currentBalance,
     [change, currentBalance],
@@ -192,17 +192,17 @@ export const ReceivableManagementPanel = ({
   );
 
   const { paymentDates, nextPaymentDate } = usePaymentDates(
-    paymentFrequency,
+    paymentFrequency || 'monthly',
     totalInstallments,
     userModifiedDate ? paymentDate : baseCalculationDate,
   );
 
   useGetPendingBalance({
     dependencies: [user?.businessID, client?.id, isOpen],
-    onBalanceChange: setCurrentBalance,
+    onBalanceChange: setCurrentBalance as any,
   });
 
-  usePendingBalance(user?.businessID, client?.id, setCurrentBalance);
+  usePendingBalance(user?.businessID, client?.id, setCurrentBalance as any);
 
   useEffect(() => {
     const shouldAutoSet =
@@ -220,7 +220,7 @@ export const ReceivableManagementPanel = ({
         // Actualizar el form también
         if (form) {
           form.setFieldsValue({
-            paymentDate: toDateTime(nextPaymentDate),
+            paymentDate: toDateTime(nextPaymentDate) as any,
           });
         }
       }
@@ -280,7 +280,7 @@ export const ReceivableManagementPanel = ({
         paymentFrequency: defaultFrequency,
         totalInstallments: defaultInstallments,
         paymentDate: paymentDate
-          ? toDateTime(paymentDate)
+          ? (toDateTime(paymentDate) as any)
           : null,
         comments: comments || '',
       });
@@ -298,7 +298,7 @@ export const ReceivableManagementPanel = ({
   useEffect(() => {
     if (form && paymentDate) {
       form.setFieldsValue({
-        paymentDate: toDateTime(paymentDate),
+        paymentDate: toDateTime(paymentDate) as any,
       });
     }
   }, [form, paymentDate]);
@@ -307,12 +307,12 @@ export const ReceivableManagementPanel = ({
     if (form) {
       form.setFieldsValue({ paymentFrequency, totalInstallments });
     }
-  }, [form, paymentFrequency, totalInstallments]); 
+  }, [form, paymentFrequency, totalInstallments]);
 
   // Inicializar valores por defecto cuando se abre el modal por primera vez
   useEffect(() => {
     if (!isOpen || !isReceivable) return;
-    
+
     // Solo inicializar si los valores están vacíos o son por defecto
     const needsInitialization =
       !paymentFrequency || !totalInstallments || totalInstallments === 0;
@@ -403,14 +403,14 @@ export const ReceivableManagementPanel = ({
                 style={{ width: '100%' }}
                 value={
                   paymentDate
-                    ? toDateTime(paymentDate)
+                    ? (toDateTime(paymentDate) as any)
                     : null
                 }
                 onChange={handleDateChange}
                 disabledDate={(current) =>
                   !!current &&
                   current.toMillis() <
-                    DateTime.now().startOf('day').toMillis()
+                  DateTime.now().startOf('day').toMillis()
                 }
               />
             </FormItem>

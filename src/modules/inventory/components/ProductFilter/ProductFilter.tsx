@@ -38,16 +38,16 @@ export const ProductFilter = ({
   };
   const productListRef = useRef<HTMLDivElement | null>(null);
 
-  const { products = [] } = useGetProducts();
+  const { products = [] } = useGetProducts() as any;
   const productsTrackInventoryFilter =
-    products.filter((product) => product.trackInventory === true) || [];
+    (products as any[]).filter((product) => product.trackInventory === true) || [];
   
   const productsFiltered =
     typeof searchTerm == 'string'
       ? filterData(productsTrackInventoryFilter, searchTerm) ?? []
       : [];
 
-  useClickOutSide(productListRef, isOpen, close);
+  useClickOutSide(productListRef as any, isOpen, close);
 
   return (
     <Component>
@@ -70,7 +70,7 @@ export const ProductFilter = ({
             </span>
           </ProductsListHead>
           <ProductsListBody>
-            {productsFiltered.map((data, index) => (
+            {productsFiltered.map((data: any, index: number) => (
               <ProductCard
                 fn={handleSelectProduct}
                 key={index}

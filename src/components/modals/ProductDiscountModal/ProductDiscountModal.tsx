@@ -380,39 +380,39 @@ const PriceRow = styled.div<PriceRowProps>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${(props) => (props.$isFinal ? '8px 0 4px 0' : '4px 0')};
-  padding-right: ${(props) =>
-    props.$isFinal || props.$isDiscount ? '8px' : '0'};
-  padding-left: ${(props) =>
-    props.$isFinal || props.$isDiscount ? '8px' : '0'};
-  margin: ${(props) => (props.$isFinal || props.$isDiscount ? '0 -8px' : '0')};
-  background-color: ${(props) =>
-    props.$isFinal
+  padding: ${({ $isFinal }: PriceRowProps) => ($isFinal ? '8px 0 4px 0' : '4px 0')};
+  padding-right: ${({ $isFinal, $isDiscount }: PriceRowProps) =>
+    $isFinal || $isDiscount ? '8px' : '0'};
+  padding-left: ${({ $isFinal, $isDiscount }: PriceRowProps) =>
+    $isFinal || $isDiscount ? '8px' : '0'};
+  margin: ${({ $isFinal, $isDiscount }: PriceRowProps) => ($isFinal || $isDiscount ? '0 -8px' : '0')};
+  background-color: ${({ $isFinal, $isDiscount }: PriceRowProps) =>
+    $isFinal
       ? 'rgba(82, 196, 26, 0.1)'
-      : props.$isDiscount
+      : $isDiscount
         ? 'rgba(255, 77, 79, 0.05)'
         : 'transparent'};
-  border-radius: ${(props) =>
-    props.$isFinal || props.$isDiscount ? '6px' : '0'};
+  border-radius: ${({ $isFinal, $isDiscount }: PriceRowProps) =>
+    $isFinal || $isDiscount ? '6px' : '0'};
 `;
 
 const PriceLabel = styled.span<PriceLabelProps>`
   font-size: 14px;
-  font-weight: ${(props) => (props.$isFinal ? '600' : '500')};
-  color: ${(props) =>
-    props.$isFinal ? '#52c41a' : props.$isDiscount ? '#ff4d4f' : '#6c757d'};
+  font-weight: ${({ $isFinal }: PriceLabelProps) => ($isFinal ? '600' : '500')};
+  color: ${({ $isFinal, $isDiscount }: PriceLabelProps) =>
+    $isFinal ? '#52c41a' : $isDiscount ? '#ff4d4f' : '#6c757d'};
 `;
 
 const PriceValue = styled.span<PriceValueProps>`
-  font-size: ${(props) =>
-    props.$isFinal ? '18px' : props.$isTotal ? '16px' : '14px'};
+  font-size: ${({ $isFinal, $isTotal }: PriceValueProps) =>
+    $isFinal ? '18px' : $isTotal ? '16px' : '14px'};
   font-weight: 700;
-  color: ${(props) =>
-    props.$isFinal
+  color: ${({ $isFinal, $isDiscount, $isTotal }: PriceValueProps) =>
+    $isFinal
       ? '#52c41a'
-      : props.$isDiscount
+      : $isDiscount
         ? '#ff4d4f'
-        : props.$isTotal
+        : $isTotal
           ? '#2c3e50'
           : '#495057'};
 `;
@@ -476,15 +476,15 @@ const PresetPill = styled.div<PresetPillProps>`
   padding: 0 12px;
   font-size: 12px;
   font-weight: 500;
-  color: ${(props) => (props.$isSelected ? 'white' : '#595959')};
+  color: ${({ $isSelected }: PresetPillProps) => ($isSelected ? 'white' : '#595959')};
   cursor: pointer;
-  background-color: ${(props) => (props.$isSelected ? '#1890ff' : 'white')};
-  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#d9d9d9')};
+  background-color: ${({ $isSelected }: PresetPillProps) => ($isSelected ? '#1890ff' : 'white')};
+  border: 1px solid ${({ $isSelected }: PresetPillProps) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   border-radius: 16px;
   transition: all 0.2s ease;
 
   &:hover {
-    color: ${(props) => (props.$isSelected ? 'white' : '#1890ff')};
+    color: ${({ $isSelected }: PresetPillProps) => ($isSelected ? 'white' : '#1890ff')};
     border-color: #1890ff;
     box-shadow: 0 2px 4px rgb(24 144 255 / 20%);
     transform: translateY(-1px);

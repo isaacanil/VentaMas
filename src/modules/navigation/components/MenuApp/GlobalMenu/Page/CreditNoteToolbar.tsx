@@ -88,7 +88,7 @@ export const CreditNoteToolbar = ({
     return formatCreditNote({ data: creditNotes, type: 'Detailed' });
   };
 
-  const handleExportButton = async (type) => {
+  const handleExportButton = async (type: string) => {
     if (creditNotes.length === 0) {
       message.error('No hay Notas de Crédito para exportar');
       return;
@@ -103,9 +103,9 @@ export const CreditNoteToolbar = ({
           case 'Resumen': {
             const resumenCallback = createProfessionalCreditNoteReportCallback(
               'Resumen',
-              'REPORTE DE NOTAS DE CRÃ‰DITO - RESUMEN',
+              'REPORTE DE NOTAS DE CRÉDITO - RESUMEN',
             );
-            await exportToExcel(
+            await (exportToExcel as any)(
               transformedResumenCreditNotesData(),
               'Resumen de Notas de Crédito',
               `resumen_notas_credito_${currentDate}.xlsx`,
@@ -116,9 +116,9 @@ export const CreditNoteToolbar = ({
           case 'Detailed': {
             const detailedCallback = createProfessionalCreditNoteReportCallback(
               'Detailed',
-              'REPORTE DE NOTAS DE CRÃ‰DITO - DETALLE POR PRODUCTO',
+              'REPORTE DE NOTAS DE CRÉDITO - DETALLE POR PRODUCTO',
             );
-            await exportToExcel(
+            await (exportToExcel as any)(
               transformedDetailedCreditNotesData(),
               'Detalle de Notas de Crédito',
               `detalle_notas_credito_${currentDate}.xlsx`,

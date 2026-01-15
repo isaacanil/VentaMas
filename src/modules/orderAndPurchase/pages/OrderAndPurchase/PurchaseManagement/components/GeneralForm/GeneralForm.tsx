@@ -120,7 +120,7 @@ const GeneralForm = ({
     deliveryAt,
     paymentAt,
     note,
-  } = useSelector(selectPurchase) as Purchase;
+  } = useSelector(selectPurchase) as unknown as Purchase;
 
   const noteValue = typeof note === 'string' ? note : '';
   const invoiceNumberValue =
@@ -430,7 +430,7 @@ const GeneralForm = ({
               }
             >
               <DatePicker
-                value={parseDate(deliveryAt)}
+                value={parseDate(deliveryAt) as any}
                 onChange={(value) => handleDateChange('deliveryAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}
@@ -444,7 +444,7 @@ const GeneralForm = ({
               help={errors?.paymentAt ? 'La fecha de pago es requerida' : ''}
             >
               <DatePicker
-                value={parseDate(paymentAt)}
+                value={parseDate(paymentAt) as any}
                 onChange={(value) => handleDateChange('paymentAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}

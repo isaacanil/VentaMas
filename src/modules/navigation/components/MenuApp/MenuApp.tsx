@@ -73,7 +73,7 @@ export const MenuApp = ({
   onReportSaleOpen, // Nueva prop para el gráfico de ventas
 }: MenuAppProps) => {
   const dispatch = useDispatch();
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLElement | null>(null);
 
   const isOpenMenu = useSelector(selectMenuOpenStatus);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
@@ -163,7 +163,7 @@ export const MenuApp = ({
     </Fragment>
   );
 };
-const Backdrop = styled.div`
+const Backdrop = styled.div<{ $isOpen: boolean }>`
   height: calc(100vh);
   width: 100%;
   position: absolute;
@@ -173,7 +173,7 @@ const Backdrop = styled.div`
   z-index: 10;
   pointer-events: none;
   transition: all 1s ease;
-  ${({ $isOpen }) => {
+  ${({ $isOpen }: { $isOpen: boolean }) => {
     switch ($isOpen) {
       case true:
         return `
@@ -189,7 +189,7 @@ const Backdrop = styled.div`
     }
   }}
 `;
-const Container = styled.div`
+const Container = styled.div<{ $isOpen: boolean; $borderRadius?: string }>`
   background-color: ${(props) => props.theme.bg.color};
   width: 100%;
   height: 2.75em;
@@ -203,7 +203,7 @@ const Container = styled.div`
     padding: 0 1em;
   }
 
-  ${({ $isOpen }) => {
+  ${({ $isOpen }: { $isOpen: boolean }) => {
     switch ($isOpen) {
       case true:
         return `
@@ -217,7 +217,7 @@ const Container = styled.div`
         break;
     }
   }}
-  ${({ $borderRadius }) => {
+  ${({ $borderRadius }: { $borderRadius?: string }) => {
     switch ($borderRadius) {
       case 'bottom-right':
         return `

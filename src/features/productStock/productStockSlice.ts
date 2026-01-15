@@ -20,6 +20,10 @@ type ProductStockState = {
   error: unknown | null;
 };
 
+interface ProductStockRootState {
+  productStock: ProductStockState;
+}
+
 const initialState: ProductStockState = {
   isOpen: false,
   formData: {
@@ -41,7 +45,7 @@ const productStockSlice = createSlice({
   initialState,
   reducers: {
     openProductStock: (
-      state,
+      state: ProductStockState,
       action: PayloadAction<Partial<ProductStockFormData> | undefined>,
     ) => {
       state.isOpen = true;
@@ -54,23 +58,23 @@ const productStockSlice = createSlice({
         state.formData = initialState.formData;
       }
     },
-    closeProductStock: (state: any) => {
+    closeProductStock: (state: ProductStockState) => {
       state.isOpen = false;
       state.formData = initialState.formData;
     },
-    setProductStockLoading: (state, action: PayloadAction<boolean>) => {
+    setProductStockLoading: (state: ProductStockState, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setProductStockError: (state, action: PayloadAction<unknown | null>) => {
+    setProductStockError: (state: ProductStockState, action: PayloadAction<unknown | null>) => {
       state.error = action.payload;
     },
-    setProductStockClear: (state: any) => {
+    setProductStockClear: (state: ProductStockState) => {
       state.formData = initialState.formData;
       state.error = null;
       state.loading = false;
     },
     updateProductStockFormData: (
-      state,
+      state: ProductStockState,
       action: PayloadAction<Partial<ProductStockFormData>>,
     ) => {
       state.formData = {
@@ -92,8 +96,5 @@ export const {
 
 export default productStockSlice.reducer;
 
-export const selectProductStock = (state: { productStock: ProductStockState }) =>
+export const selectProductStock = (state: ProductStockRootState) =>
   state.productStock;
-
-
-

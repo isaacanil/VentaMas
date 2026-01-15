@@ -1,6 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface ModalState {
+  isOpen: boolean;
+}
+
+interface ExpenseUIState {
+  modals: {
+    chartExpenseModal: ModalState;
+    expenseFormModal: ModalState;
+  };
+}
+
+interface ExpenseUIRootState {
+  expenseUI: ExpenseUIState;
+}
+
+const initialState: ExpenseUIState = {
   modals: {
     chartExpenseModal: {
       isOpen: false,
@@ -16,18 +31,18 @@ export const expenseUISlice = createSlice({
   name: 'expenseUI',
   initialState,
   reducers: {
-    toggleExpenseChartModal: (state: any) => {
+    toggleExpenseChartModal: (state: ExpenseUIState) => {
       state.modals.chartExpenseModal.isOpen =
         !state.modals.chartExpenseModal.isOpen;
     },
-    toggleExpenseFormModal: (state: any) => {
+    toggleExpenseFormModal: (state: ExpenseUIState) => {
       state.modals.expenseFormModal.isOpen =
         !state.modals.expenseFormModal.isOpen;
     },
-    openExpenseFormModal: (state: any) => {
+    openExpenseFormModal: (state: ExpenseUIState) => {
       state.modals.expenseFormModal.isOpen = true;
     },
-    closeExpenseFormModal: (state: any) => {
+    closeExpenseFormModal: (state: ExpenseUIState) => {
       state.modals.expenseFormModal.isOpen = false;
     },
     // ... otras acciones relacionadas con la UI
@@ -43,8 +58,7 @@ export const {
 
 export default expenseUISlice.reducer;
 
-export const selectExpenseChartModal = (state) =>
+export const selectExpenseChartModal = (state: ExpenseUIRootState) =>
   state.expenseUI.modals.chartExpenseModal;
-export const selectExpenseFormModal = (state) =>
+export const selectExpenseFormModal = (state: ExpenseUIRootState) =>
   state.expenseUI.modals.expenseFormModal;
-

@@ -31,7 +31,7 @@ const options = {
     x: {
       title: {
         display: true,
-        text: 'CategorÃ­a de Producto',
+        text: 'Categoría de Producto',
       },
     },
   },
@@ -54,7 +54,7 @@ const accumulateCategorySalesData = (sales: SalesRecord[]) => {
   return sales.reduce<Record<string, number>>((acc, sale) => {
     (sale.data.products ?? []).forEach((product) => {
       const categoryValue = product?.category;
-      let category = 'Sin categorÃ­a';
+      let category = 'Sin categoría';
       if (typeof categoryValue === 'string') {
         category = categoryValue;
       } else if (
@@ -115,7 +115,7 @@ export const ProductCategorySalesBarChart = ({ sales }: { sales: SalesRecord[] }
 
   return (
     <Container>
-      <Typography variant="h3">Ventas por CategorÃ­a de Producto</Typography>
+      <Typography variant="h3">Ventas por Categoría de Producto</Typography>
       <Bar data={data} options={options} />
     </Container>
   );

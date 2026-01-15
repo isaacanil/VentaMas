@@ -97,7 +97,7 @@ export default function TaxReceiptForm({
     }
   }, [currentEditItem, form]);
 
-  const toNumberIfPossible = (value: unknown) => {
+  const toNumberIfPossible = (value: any) => {
     if (value === '' || value === null || value === undefined) return value;
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : value;
@@ -206,7 +206,7 @@ export default function TaxReceiptForm({
     quantityValue,
   ]);
 
-  const confirmZeroQuantity = (quantity) => {
+  const confirmZeroQuantity = (quantity: any) => {
     const numericQuantity = Number(quantity);
     if (!Number.isFinite(numericQuantity) || numericQuantity !== 0) {
       return Promise.resolve(true);
@@ -293,7 +293,7 @@ export default function TaxReceiptForm({
           sequenceValidation.hasImmediateNextConflict
         ) {
           const conflictExamples = (sequenceValidation.conflicts ?? [])
-            .map((c) => c.ncf)
+            .map((c: any) => c.ncf)
             .filter(Boolean)
             .slice(0, 3);
 
@@ -366,10 +366,10 @@ export default function TaxReceiptForm({
         ...finalValues,
       } as TaxReceiptData;
 
-      await updateTaxReceipt(user, data);
+      await updateTaxReceipt(user as any, data);
       message.success('Comprobante fiscal actualizado correctamente');
       setEditModalVisible(false);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.errorFields) return;
       console.error('Error al guardar el comprobante fiscal:', error);
       message.error(

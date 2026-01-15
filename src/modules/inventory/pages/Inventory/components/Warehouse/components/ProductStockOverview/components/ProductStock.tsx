@@ -96,7 +96,7 @@ const ProductStock = ({
       <div className="cell cell-actions">
         <ActionButton
           type="button"
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             handleLocationPress();
           }}
@@ -112,7 +112,7 @@ const ProductStock = ({
           <MenuButton
             type="button"
             aria-label="Acciones de la ubicación"
-            onClick={(e) => e.preventDefault()}
+            onClick={(e: React.MouseEvent) => e.preventDefault()}
           >
             <EllipsisOutlined />
           </MenuButton>
@@ -211,8 +211,8 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
   padding: 0 14px;
   font-weight: 600;
   color: #0f172a;
-  background: ${({ $status }) => `${$status.background}18`};
-  border: 1px solid ${({ $status }) => `${$status.color}26`};
+  background: ${({ $status }: { $status: StockStatus }) => `${$status.background}18`};
+  border: 1px solid ${({ $status }: { $status: StockStatus }) => `${$status.color}26`};
   border-radius: 16px;
 
   .quantity-main {
@@ -223,7 +223,7 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
 
   .quantity-icon {
     font-size: 0.85rem;
-    color: ${({ $status }) => $status.color};
+    color: ${({ $status }: { $status: StockStatus }) => $status.color};
   }
 
   .quantity-value {
@@ -241,7 +241,7 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
   .quantity-status {
     font-size: 0.7rem;
     font-weight: 600;
-    color: ${({ $status }) => $status.color};
+    color: ${({ $status }: { $status: StockStatus }) => $status.color};
     text-transform: uppercase;
   }
 `;
@@ -253,10 +253,10 @@ const LifecycleBadge = styled.span<{ $state: 'inactive' | 'active' }>`
   padding: 3px 10px;
   font-size: 0.7rem;
   font-weight: 600;
-  color: ${({ $state }) => ($state === 'inactive' ? '#b91c1c' : '#047857')};
+  color: ${({ $state }: { $state: 'inactive' | 'active' }) => ($state === 'inactive' ? '#b91c1c' : '#047857')};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: ${({ $state }) =>
+  background: ${({ $state }: { $state: 'inactive' | 'active' }) =>
     $state === 'inactive' ? '#fee2e2' : '#dcfce7'};
   border-radius: 999px;
 

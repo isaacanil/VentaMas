@@ -87,19 +87,19 @@ const expandedRowRender = (facturas: CustomerInvoiceRow[]) => {
       title: 'Precio',
       dataIndex: 'precio',
       key: 'precio',
-      render: (value) => formatPrice(value),
+      render: (value: number) => formatPrice(value),
     },
     {
       title: 'Cantidad',
       dataIndex: 'cantidad',
       key: 'cantidad',
-      render: (value) => formatNumber(value),
+      render: (value: number) => formatNumber(value),
     },
     {
       title: 'SubTotal',
       dataIndex: 'subtotal',
       key: 'subtotal',
-      render: (value) => formatPrice(value),
+      render: (value: number) => formatPrice(value),
     },
   ];
 
@@ -134,14 +134,14 @@ export const CustomerSalesReportTable = ({ sales }: { sales: SalesRecord[] }) =>
       dataIndex: 'items',
       key: 'items',
       align: 'right',
-      render: (value) => `${formatNumber(value)}`,
+      render: (value: number) => `${formatNumber(value)}`,
     },
     {
       title: 'Total',
       dataIndex: 'total',
       key: 'total',
       align: 'right',
-      render: (value) => `${formatPrice(value)}`,
+      render: (value: number) => `${formatPrice(value)}`,
     },
   ];
 

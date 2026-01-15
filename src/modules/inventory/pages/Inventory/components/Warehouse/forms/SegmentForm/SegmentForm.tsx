@@ -55,6 +55,9 @@ export default function SegmentForm(_props: SegmentFormProps) {
 
   const handleFinish = async (values: SegmentFormValues) => {
     try {
+      if (!user) {
+        throw new Error('No se encontró información del usuario');
+      }
       dispatch(setSegmentError(null));
       dispatch(setSegmentLoading(true));
 
@@ -76,11 +79,10 @@ export default function SegmentForm(_props: SegmentFormProps) {
       };
 
       if (formData?.id) {
-        await updateSegment(user, sanitizedSegment);
+        await updateSegment(user, sanitizedSegment as any);
         message.success('Segmento actualizado con éxito.');
       } else {
-        const payload = { ...sanitizedSegment };
-        delete payload.id;
+        const { id, ...payload } = sanitizedSegment;
         await createSegment({
           user,
           segmentData: payload,

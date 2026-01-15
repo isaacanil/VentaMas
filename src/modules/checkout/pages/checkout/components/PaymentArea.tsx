@@ -42,14 +42,14 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const clientId = data?.client?.id ?? null;
 
   const products = Array.isArray(data?.products) ? data?.products : [];
-  const subtotal = getProductsPrice(products) + getProductsTax(products);
+  const subtotal = getProductsPrice(products as any[]) + getProductsTax(products as any[]);
   const discount = getTotalDiscount(
     subtotal,
     toNumber(data?.discount?.value, 0),
   );
   const formatNumber = (num?: number | string | null) => formatPrice(num, '');
 
-  usePendingBalance(businessID, clientId, setPendingBalance);
+  usePendingBalance(businessID, clientId as any, setPendingBalance as any);
 
   const paymentLabel: Record<string, string> = {
     cash: 'Efectivo',
@@ -65,7 +65,7 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const items: PaymentRow[] = [
     {
       label: 'ENVIO',
-      value1: null,
+      value1: undefined,
       value2: formatNumber(data?.delivery?.value),
       condition: Boolean(data?.delivery?.status),
     },

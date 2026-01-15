@@ -72,7 +72,7 @@ export const CashRegisterOpening: React.FC = () => {
             : new Error('No se pudo autorizar la apertura.');
         }
 
-        await fbRecordAuthorizationApproval({
+        await (fbRecordAuthorizationApproval as any)({
           businessId: actualUser.businessID,
           module: 'cashRegister',
           action: 'cash-register-opening',

@@ -40,7 +40,7 @@ export const ProductList = ({ data }: ProductListProps) => {
   return (
     <Container>
       <Products>
-        {products?.length > 0
+        {(products?.length || 0) > 0
           ? products?.map((product, index) => (
               <Product key={index}>
                 <Row cols="3">
@@ -107,11 +107,11 @@ export const ProductList = ({ data }: ProductListProps) => {
                   <Row>
                     <InsuranceCoverage>
                       Cobertura de seguro: {product.insurance.mode} -{' '}
-                      {formatPrice(product.insurance.value)}
+                      {formatPrice(product.insurance.value || 0)}
                     </InsuranceCoverage>
                   </Row>
                 )}
-                {product?.discount && product?.discount?.value > 0 && (
+                {product?.discount && (product?.discount?.value || 0) > 0 && (
                   <Row>
                     <ProductDiscount>
                       Descuento: -

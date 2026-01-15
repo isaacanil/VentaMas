@@ -1,13 +1,23 @@
 import {
   createSlice, type PayloadAction,
-  createSerializableStateInvariantMiddleware,
 } from '@reduxjs/toolkit';
 
-createSerializableStateInvariantMiddleware({
-  isSerializable: (value) => typeof value !== 'function',
-});
+interface UserNotificationState {
+  currentDialog: {
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: (() => void) | null;
+    btnSubmitName: string | null;
+    btnCancelName: string | null;
+  };
+}
 
-const initialState = {
+interface UserNotificationRootState {
+  userNotification: UserNotificationState;
+}
+
+const initialState: UserNotificationState = {
   currentDialog: {
     isOpen: false,
     title: '[title]',
@@ -22,17 +32,18 @@ const UserNotificationSlice = createSlice({
   name: 'userNotification',
   initialState,
   reducers: {
-    setUserNotification: (state: any, action: PayloadAction<any>) => {
+    setUserNotification: (state: UserNotificationState, action: PayloadAction<UserNotificationState['currentDialog']>) => {
       state.currentDialog = action.payload;
     },
-    closeUserNotification: (state: any) => {
-      const initialValue = {
+    closeUserNotification: (state: UserNotificationState) => {
+      state.currentDialog = {
         isOpen: false,
         title: 'Titulo',
         description: 'Descripcion',
         onConfirm: null,
+        btnSubmitName: null,
+        btnCancelName: null,
       };
-      state.currentDialog = initialValue;
     },
   },
 });
@@ -42,6 +53,5 @@ export const { setUserNotification, closeUserNotification } =
 
 export default UserNotificationSlice.reducer;
 
-export const selectCurrentUserNotification = (state) =>
+export const selectCurrentUserNotification = (state: UserNotificationRootState) =>
   state.userNotification.currentDialog;
-

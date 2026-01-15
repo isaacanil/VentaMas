@@ -116,6 +116,28 @@ const normalizeTimestamp = (value) => {
   return null;
 };
 
+const resolveNumberCandidate = (value) => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const numeric = Number(trimmed);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+  return null;
+};
+
+const pickFirstNumber = (candidates) => {
+  if (!Array.isArray(candidates)) return null;
+  for (const candidate of candidates) {
+    const parsed = resolveNumberCandidate(candidate);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+};
+
 export const processInvoiceOutbox = firestore
   .document('businesses/{businessId}/invoicesV2/{invoiceId}/outbox/{taskId}')
   .onCreate(async (snap, context) => {
@@ -297,8 +319,26 @@ export const processInvoiceOutbox = firestore
             cashCountId = openCashCount?.cashCountId || null;
           }
 
-          let numberID = existingCanon?.numberID || cart?.numberID || null;
-          if (!numberID) {
+          let numberID = pickFirstNumber([
+            existingCanon?.numberID,
+            existingCanon?.number,
+            existingCanon?.invoiceNumber,
+            cart?.numberID,
+            cart?.number,
+            cart?.invoiceNumber,
+            payload?.numberID,
+            payload?.number,
+            invoice?.snapshot?.cart?.numberID,
+            invoice?.snapshot?.cart?.number,
+            invoice?.snapshot?.cart?.invoiceNumber,
+            invoice?.snapshot?.numberID,
+            invoice?.snapshot?.number,
+            invoice?.snapshot?.invoiceNumber,
+            invoice?.numberID,
+            invoice?.number,
+            invoice?.invoiceNumber,
+          ]);
+          if (numberID == null) {
             const nextIdSnap = await getNextIDTransactionalSnap(
               tx,
               user,

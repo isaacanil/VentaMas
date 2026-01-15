@@ -70,8 +70,8 @@ const Container = styled.div`
 
 const Group = styled.div<{ $narrow: boolean }>`
   display: grid;
-  grid-template-columns: ${(props) =>
-    props.$narrow ? '1fr' : 'repeat(2, 1fr)'};
+  grid-template-columns: ${({ $narrow }) =>
+    $narrow ? '1fr' : 'repeat(2, 1fr)'};
   gap: 3em;
   justify-content: space-between;
 `;
@@ -88,16 +88,16 @@ const PillToggle = styled.div`
 
 const ToggleButton = styled.button<{ $active: boolean }>`
   padding: 8px 16px;
-  font-weight: ${(props) => (props.$active ? '600' : '400')};
-  color: ${(props) => (props.$active ? 'white' : '#333')};
+  font-weight: ${({ $active }) => ($active ? '600' : '400')};
+  color: ${({ $active }) => ($active ? 'white' : '#333')};
   cursor: pointer;
-  background: ${(props) => (props.$active ? '#4285F4' : 'transparent')};
+  background: ${({ $active }) => ($active ? '#4285F4' : 'transparent')};
   border: none;
   border-radius: 20px;
   transition: all 0.3s ease;
 
   &:hover {
-    background: ${(props) => (props.$active ? '#4285F4' : '#e0e0e0')};
+    background: ${({ $active }) => ($active ? '#4285F4' : '#e0e0e0')};
   }
 
   &:focus {

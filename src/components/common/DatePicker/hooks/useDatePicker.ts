@@ -19,8 +19,8 @@ export const useDatePicker = ({
     if (value) {
       if (mode === 'range' && Array.isArray(value) && value[0]) {
         return value[0];
-      } else if (mode === 'single' && value) {
-        return value;
+      } else if (mode === 'single' && !Array.isArray(value) && value) {
+        return value as DateTime;
       }
     }
     return DateTime.local();
@@ -36,12 +36,13 @@ export const useDatePicker = ({
   if (value !== prevValue) {
     setPrevValue(value);
     if (value) {
-      const nextDate =
-        mode === 'range' && Array.isArray(value) && value[0]
-          ? value[0]
-          : mode === 'single'
-            ? value
-            : null;
+      let nextDate: DateTime | null = null;
+
+      if (mode === 'range' && Array.isArray(value) && value[0]) {
+        nextDate = value[0];
+      } else if (mode === 'single' && !Array.isArray(value)) {
+        nextDate = value as DateTime;
+      }
 
       if (nextDate) {
         setCurrentDate(nextDate);
@@ -54,7 +55,7 @@ export const useDatePicker = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         presetsDropdownRef.current &&
-        !presetsDropdownRef.current.contains(event.target)
+        !presetsDropdownRef.current.contains(event.target as Node)
       ) {
         setShowPresetsDropdown(false);
       }
@@ -92,7 +93,8 @@ export const useDatePicker = ({
       onChange(date);
     } else {
       // Range mode
-      if (!rangeStart || (rangeStart && value && value[1])) {
+      const hasRangeEnd = Array.isArray(value) && value[1] !== null;
+      if (!rangeStart || (rangeStart && hasRangeEnd)) {
         // Start new range
         setRangeStart(date);
         onChange([date, null]);

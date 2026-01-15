@@ -1,8 +1,18 @@
 ﻿// Import necessary libraries
 import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+interface ProductExpirySelectorState {
+  inventory: any[];
+  product: any;
+  productId: string | null;
+  filter: string;
+  orderBy: string | null;
+  orderAscending: boolean;
+  isOpen: boolean;
+}
+
 // Initial inventory state
-const initialState = {
+const initialState: ProductExpirySelectorState = {
   inventory: [],
   product: null,
   productId: null,
@@ -17,15 +27,15 @@ const productExpirySelectorSlice = createSlice({
   name: 'productExpirySelector',
   initialState,
   reducers: {
-    setFilter: (state: any, action: PayloadAction<any>) => {
+    setFilter: (state, action: PayloadAction<string>) => {
       state.filter = action.payload;
     },
-    openProductExpirySelector: (state: any, action: PayloadAction<any>) => {
+    openProductExpirySelector: (state, action: PayloadAction<any>) => {
       state.isOpen = true;
       state.product = action.payload;
       state.productId = action.payload.id;
     },
-    setOrderBy: (state: any, action: PayloadAction<any>) => {
+    setOrderBy: (state, action: PayloadAction<string>) => {
       if (state.orderBy === action.payload) {
         state.orderAscending = !state.orderAscending;
       } else {
@@ -33,19 +43,19 @@ const productExpirySelectorSlice = createSlice({
         state.orderAscending = true;
       }
     },
-    setProductExpiryState: (state: any, action: PayloadAction<any>) => {
+    setProductExpiryState: (state, action: PayloadAction<Partial<ProductExpirySelectorState>>) => {
       return {
         ...state,
         ...action.payload,
       };
     },
-    updateInventory: (state: any, action: PayloadAction<any>) => {
+    updateInventory: (state, action: PayloadAction<any[]>) => {
       state.inventory = action.payload;
     },
-    setModalOpen: (state: any, action: PayloadAction<any>) => {
+    setModalOpen: (state, action: PayloadAction<boolean>) => {
       state.isOpen = action.payload;
     },
-    clearProductExpirySelector: (_state) => {
+    clearProductExpirySelector: () => {
       return initialState;
     },
   },
@@ -63,27 +73,27 @@ export const {
 } = productExpirySelectorSlice.actions;
 export default productExpirySelectorSlice.reducer;
 
-const selectInventory = (state) => state.productExpirySelector.inventory;
-const selectFilter = (state) => state.productExpirySelector.filter;
-const selectOrderBy = (state) => state.productExpirySelector.orderBy;
-const selectOrderAscending = (state) =>
+const selectInventory = (state: any) => state.productExpirySelector.inventory;
+const selectFilter = (state: any) => state.productExpirySelector.filter;
+const selectOrderBy = (state: any) => state.productExpirySelector.orderBy;
+const selectOrderAscending = (state: any) =>
   state.productExpirySelector.orderAscending;
-export const selectProduct = (state) => state.productExpirySelector.product;
-export const selectProductId = (state) => state.productExpirySelector.productId;
-export const selectModalOpen = (state) => state.productExpirySelector.isOpen;
+export const selectProduct = (state: any) => state.productExpirySelector.product;
+export const selectProductId = (state: any) => state.productExpirySelector.productId;
+export const selectModalOpen = (state: any) => state.productExpirySelector.isOpen;
 
 export const selectFilteredInventory = createSelector(
   [selectInventory, selectFilter, selectOrderBy, selectOrderAscending],
-  (inventory, filter, orderBy, orderAscending) => {
-    const filteredInventory = inventory.filter((item) =>
-      Object.values(item).some((value) =>
+  (inventory: any[], filter: string, orderBy: string | null, orderAscending: boolean) => {
+    const filteredInventory = inventory.filter((item: any) =>
+      Object.values(item).some((value: any) =>
         value?.toString().toLowerCase().includes(filter.toLowerCase()),
       ),
     );
 
     if (!orderBy) return filteredInventory;
 
-    return filteredInventory.sort((a, b) => {
+    return filteredInventory.sort((a: any, b: any) => {
       if (a[orderBy] < b[orderBy]) return orderAscending ? -1 : 1;
       if (a[orderBy] > b[orderBy]) return orderAscending ? 1 : -1;
       return 0;

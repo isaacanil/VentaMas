@@ -67,9 +67,7 @@ const OrderManagement = () => {
   const mode: OrderMode = id ? 'update' : 'create';
 
   const user = useSelector(selectUser) as UserIdentity | null;
-  const { order: orderData } = useSelector(selectOrderState) as {
-    order: Order;
-  };
+  const { order: orderData } = useSelector(selectOrderState) as any;
 
   const { ORDERS } = ROUTES_PATH.ORDER_TERM;
 
@@ -93,7 +91,7 @@ const OrderManagement = () => {
   };
 
   const updateOrderState = useCallback(
-    (updates: Partial<Order>) => {
+    (updates: any) => {
       dispatch(setOrder(updates));
     },
     [dispatch],

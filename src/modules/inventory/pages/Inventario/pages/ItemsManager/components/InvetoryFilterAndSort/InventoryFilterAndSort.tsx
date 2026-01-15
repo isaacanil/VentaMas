@@ -93,12 +93,12 @@ export const InventoryFilterAndSort = ({
 }: InventoryFilterAndSortProps) => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLElement | null>(null);
+  const menuRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const user = useSelector(selectUser) as UserLike;
-  const filters = useSelector((state) =>
+  const filters = useSelector((state: any) =>
     selectFiltersByContext(state, contextKey),
-  ) as FilterState;
+  ) as any;
   const meta = useSelector(selectFilterMeta) as FilterMeta;
   const userId = useMemo(() => {
     if (!user) return null;

@@ -33,7 +33,7 @@ const PAYMENT_LABEL_TRANSLATIONS = {
   check: 'Cheque',
 };
 
-const formatPaymentMethodLabel = (rawLabel) => {
+const formatPaymentMethodLabel = (rawLabel: any) => {
   if (!rawLabel) return 'Método';
   const normalized = String(rawLabel)
     .toLowerCase()
@@ -370,8 +370,8 @@ const RowText = styled.div`
   gap: 2px;
 `;
 
-const RowLabel = styled.div`
-  font-size: ${(props) => {
+const RowLabel = styled.div<{ $status?: string; $context?: string }>`
+  font-size: ${(props: { $status?: string; $context?: string }) => {
     if (props.$context === 'detail') {
       if (
         props.$status === 'primary' ||
@@ -383,7 +383,7 @@ const RowLabel = styled.div`
     }
     return '13px';
   }};
-  font-weight: ${(props) => {
+  font-weight: ${(props: { $status?: string; $context?: string }) => {
     if (props.$context === 'detail') {
       if (
         props.$status === 'primary' ||
@@ -395,7 +395,7 @@ const RowLabel = styled.div`
     }
     return 600;
   }};
-  color: ${(props) => {
+  color: ${(props: { $status?: string; $context?: string }) => {
     // Cambio en verde, Pendiente en rojo
     if (props.$status === 'returned') return '#237804';
     if (props.$status === 'pending') return '#d4380d';
@@ -414,9 +414,9 @@ const RowHelper = styled.div`
   color: #8a97ab;
 `;
 
-const RowValue = styled.div`
+const RowValue = styled.div<{ $status?: string; $context?: string }>`
   min-width: 96px;
-  font-size: ${(props) => {
+  font-size: ${(props: { $status?: string; $context?: string }) => {
     if (props.$context === 'detail') {
       if (
         props.$status === 'primary' ||
@@ -428,7 +428,7 @@ const RowValue = styled.div`
     }
     return '15px';
   }};
-  font-weight: ${(props) => {
+  font-weight: ${(props: { $status?: string; $context?: string }) => {
     if (props.$context === 'detail') {
       if (
         props.$status === 'primary' ||
@@ -440,7 +440,7 @@ const RowValue = styled.div`
     }
     return 600;
   }};
-  color: ${(props) => {
+  color: ${(props: { $status?: string; $context?: string }) => {
     if (props.$status === 'returned') return '#237804';
     if (props.$status === 'balanced') return '#1f2933';
     if (props.$status === 'pending') return '#d4380d';

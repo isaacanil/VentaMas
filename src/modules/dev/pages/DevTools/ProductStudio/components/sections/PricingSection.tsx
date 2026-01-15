@@ -113,7 +113,7 @@ const PRICE_ROWS = [
     },
   },
   { key: 'midPrice', label: 'Precio medio' },
-  { key: 'minPrice', label: 'Precio mÃ­nimo' },
+  { key: 'minPrice', label: 'Precio mínimo' },
   {
     key: 'cardPrice',
     label: 'Precio con tarjeta',
@@ -125,14 +125,14 @@ const PRICE_ROWS = [
 
 const formatCurrency = (value) => {
   if (value === null || Number.isNaN(value) || value === 0) {
-    return 'â€”';
+    return '—';
   }
   return `RD$ ${value.toFixed(2)}`;
 };
 
 const formatPercent = (value) => {
   if (value === null || Number.isNaN(value) || value === 0) {
-    return 'â€”';
+    return '—';
   }
   return `${value.toFixed(1)}%`;
 };
@@ -177,7 +177,7 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
           <SectionTitle level={4}>Estrategia de precios</SectionTitle>
         </Space>
         <SectionDescription>
-          Controla tus mÃ¡rgenes antes de publicar.
+            Controla tus márgenes antes de publicar.
         </SectionDescription>
       </SectionHeader>
 
@@ -198,7 +198,7 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
           <Form.Item
             name={['pricing', 'tax']}
             label="ITBIS %"
-            tooltip="AsegÃºrate de usar siempre el ITBIS vigente."
+            tooltip="Asegúrate de usar siempre el ITBIS vigente."
           >
             <InputNumber
               min={0}
@@ -250,17 +250,17 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
                 <GainCell>
                   {hasGainValue(row.margin, row.gainPercent) ? (
                     <>
-                      {formatCurrency(row.margin) !== 'â€”' && (
+                      {formatCurrency(row.margin) !== '—' && (
                         <span>{formatCurrency(row.margin)}</span>
                       )}
-                      {formatPercent(row.gainPercent) !== 'â€”' && (
+                      {formatPercent(row.gainPercent) !== '—' && (
                         <span className="percent">
                           {formatPercent(row.gainPercent)}
                         </span>
                       )}
                     </>
                   ) : (
-                    <span className="placeholder">â€”</span>
+                    <span className="placeholder">—</span>
                   )}
                 </GainCell>
                 <NumericCell>{formatCurrency(row.total)}</NumericCell>
@@ -268,7 +268,7 @@ export const PricingSection = ({ domId, pricingValues = {} }) => {
             ))}
           </PriceTableWrapper>
           <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-            Completa tus precios para ver cÃ³mo varÃ­an el ITBIS, la ganancia y el
+            Completa tus precios para ver cómo varían el ITBIS, la ganancia y el
             total.
           </Text>
         </div>

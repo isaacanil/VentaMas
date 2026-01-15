@@ -27,16 +27,16 @@ const CodesSpacer = styled.div`
 export const CodesSection = ({ domId }) => (
   <CodesCard id={domId}>
     <SectionHeader>
-      <SectionTitle level={4}>Identificadores y cÃ³digos</SectionTitle>
+      <SectionTitle level={4}>Identificadores y códigos</SectionTitle>
       <SectionDescription>
         Conecta tu producto con lectores de barras o QR.
       </SectionDescription>
     </SectionHeader>
     <FieldGrid>
-      <Form.Item name="barcode" label="CÃ³digo de barras">
-        <Input placeholder="Escanea o pega el cÃ³digo" />
+      <Form.Item name="barcode" label="Código de barras">
+        <Input placeholder="Escanea o pega el código" />
       </Form.Item>
-      <Form.Item name="qrcode" label="CÃ³digo QR">
+      <Form.Item name="qrcode" label="Código QR">
         <Input placeholder="Enlace o valor codificado" />
       </Form.Item>
     </FieldGrid>

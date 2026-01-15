@@ -1,4 +1,4 @@
-﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 import { nanoid } from 'nanoid';
 
@@ -6,6 +6,65 @@ import {
   getDefaultTransactionCondition,
   getDefaultTransactionStatus,
 } from '@/constants/orderAndPurchaseState';
+
+interface BackOrderSelection {
+  id: string;
+  quantity: number;
+}
+
+interface ProductSelected {
+  key?: string;
+  id: string;
+  name: string;
+  expirationDate?: string | null;
+  quantity: number;
+  purchaseQuantity: number;
+  selectedBackOrders: BackOrderSelection[];
+  unitMeasurement: string;
+  baseCost: number;
+  taxPercentage?: number;
+  freight?: number;
+  otherCosts?: number;
+  unitCost: number;
+  subtotal: number;
+  initialCost?: number;
+  originalId?: string;
+  pricing?: { cost?: number; tax?: number };
+  product?: { stock?: number };
+}
+
+interface PurchaseState {
+  id: string | null;
+  numberId: string;
+  replenishments: ProductSelected[];
+  condition?: string;
+  note: string;
+  orderId: string;
+  invoiceNumber: string;
+  proofOfPurchase: string;
+  completedAt: string | null;
+  deliveryAt: string | null;
+  paymentAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  deletedAt: string | null;
+  status?: string;
+  attachmentUrls: any[];
+  provider: any;
+  receiptUrl?: string;
+}
+
+interface AddPurchaseState {
+  mode: string;
+  productSelected: ProductSelected;
+  purchase: PurchaseState;
+  pendingOrders?: any[];
+  products?: any[];
+}
+
+interface AddPurchaseRootState {
+  addPurchase: AddPurchaseState;
+}
 
 const EmptyPurchase = {
   id: null,
@@ -33,7 +92,7 @@ const EmptyProduct = {
   expirationDate: null,
   quantity: 0,
   purchaseQuantity: 0, // Cantidad total a comprar
-  selectedBackOrders: [], // Solo contendrÃ¡ {id, quantity}
+  selectedBackOrders: [], // Solo contendrá {id, quantity}
   unitMeasurement: '',
   baseCost: 0,
   taxPercentage: 0,
@@ -43,7 +102,7 @@ const EmptyProduct = {
   subtotal: 0,
 };
 
-const initialState = {
+const initialState: AddPurchaseState = {
   mode: 'create',
   productSelected: EmptyProduct,
   purchase: EmptyPurchase,
@@ -52,18 +111,18 @@ export const addPurchaseSlice = createSlice({
   name: 'addPurchase',
   initialState,
   reducers: {
-    setAddPurchaseMode: (state: any, actions: PayloadAction<any>) => {
+    setAddPurchaseMode: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       state.mode = actions.payload;
     },
-    getOrderData: (state: any, actions: PayloadAction<any>) => {
+    getOrderData: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const data = actions.payload;
       state.purchase = data ? data : EmptyPurchase;
     },
-    setProductSelected: (state: any, actions: PayloadAction<any>) => {
+    setProductSelected: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const newValue = actions.payload;
       state.productSelected = { ...state.productSelected, ...newValue };
     },
-    SelectProduct: (state: any, actions: PayloadAction<any>) => {
+    SelectProduct: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const product = actions.payload;
       let productData = {
         key: nanoid(),
@@ -89,15 +148,15 @@ export const addPurchaseSlice = createSlice({
 
       state.productSelected = productData;
     },
-    AddProductToPurchase: (state: any) => {
+    AddProductToPurchase: (state: AddPurchaseState) => {
       state.purchase.replenishments.push(state.productSelected);
       state.productSelected = EmptyProduct;
     },
-    updateStock: (state: any, actions: PayloadAction<any>) => {
+    updateStock: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const { stock } = actions.payload;
       state.productSelected.product.stock = stock;
     },
-    setPurchase: (state: any, actions: PayloadAction<any>) => {
+    setPurchase: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const { ...rest } = actions.payload;
 
       state.purchase = {
@@ -105,19 +164,19 @@ export const addPurchaseSlice = createSlice({
         ...rest,
       };
     },
-    getInitialCost: (state: any, actions: PayloadAction<any>) => {
+    getInitialCost: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const { initialCost } = actions.payload;
       state.productSelected.initialCost = initialCost;
     },
-    cleanPurchase: (state: any) => {
+    cleanPurchase: (state: AddPurchaseState) => {
       state.productSelected = EmptyProduct;
       state.purchase = EmptyPurchase;
       state.mode = 'add';
     },
-    updateProduct: (state: any, actions: PayloadAction<any>) => {
+    updateProduct: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const { value } = actions.payload;
       // Buscar producto por key o por id (para datos antiguos sin key)
-      const productIndex = state.purchase.replenishments.findIndex((item) => {
+      const productIndex = state.purchase.replenishments.findIndex((item: ProductSelected) => {
         const matchesKey = value?.key && item.key === value.key;
         const matchesId = value?.id && item.id === value.id;
         const matchesOriginalId =
@@ -134,7 +193,7 @@ export const addPurchaseSlice = createSlice({
           ? value.selectedBackOrders
           : currentProduct.selectedBackOrders || [];
       const totalBackordersQuantity = selectedBackOrders.reduce(
-        (sum, order) => sum + order.quantity,
+        (sum: number, order: BackOrderSelection) => sum + order.quantity,
         0,
       );
 
@@ -164,40 +223,40 @@ export const addPurchaseSlice = createSlice({
       const unitCost = calculateUnitCost(updatedProduct);
       const subtotal = calculateSubTotal(updatedProduct);
 
-      // Actualizar el producto en el estado utilizando el Ã­ndice encontrado
+      // Actualizar el producto en el estado utilizando el índice encontrado
       state.purchase.replenishments[productIndex] = {
         ...updatedProduct,
         unitCost,
         subtotal,
       };
     },
-    addAttachmentToPurchase: (state: any, actions: PayloadAction<any>) => {
+    addAttachmentToPurchase: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       state.purchase.attachmentUrls = [
         ...state.purchase.attachmentUrls,
         actions.payload,
       ];
     },
 
-    clearProductSelected: (state: any) => {
+    clearProductSelected: (state: AddPurchaseState) => {
       state.productSelected = EmptyProduct;
     },
-    deleteReceiptImageFromPurchase: (state: any) => {
+    deleteReceiptImageFromPurchase: (state: AddPurchaseState) => {
       state.purchase.receiptUrl = '';
     },
-    deleteProductFromPurchase: (state: any, actions: PayloadAction<any>) => {
+    deleteProductFromPurchase: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const { id, key } = actions.payload;
       state.purchase.replenishments = state.purchase.replenishments.filter(
-        (item) => {
+        (item: ProductSelected) => {
           const matchesKey = key && item.key === key;
           const matchesId = id && item.id === id;
           return !(matchesKey || matchesId);
         },
       );
     },
-    setSelectedBackOrders: (state: any, action: PayloadAction<any>) => {
+    setSelectedBackOrders: (state: AddPurchaseState, action: PayloadAction<any>) => {
       const { selectedBackOrders, purchaseQuantity } = action.payload;
       const totalBackordersQuantity = selectedBackOrders.reduce(
-        (sum, order) => sum + order.quantity,
+        (sum: number, order: BackOrderSelection) => sum + order.quantity,
         0,
       );
 
@@ -208,11 +267,11 @@ export const addPurchaseSlice = createSlice({
         quantity: Math.max(0, purchaseQuantity - totalBackordersQuantity),
       };
     },
-    setPurchaseQuantity: (state: any, action: PayloadAction<any>) => {
+    setPurchaseQuantity: (state: AddPurchaseState, action: PayloadAction<any>) => {
       const quantity = action.payload;
       const totalBackordersQuantity =
         state.productSelected.selectedBackOrders.reduce(
-          (sum, order) => sum + order.quantity,
+          (sum: number, order: BackOrderSelection) => sum + order.quantity,
           0,
         );
 
@@ -222,7 +281,7 @@ export const addPurchaseSlice = createSlice({
         quantity: Math.max(0, quantity - totalBackordersQuantity),
       };
     },
-    clearSelectedBackOrders: (state: any) => {
+    clearSelectedBackOrders: (state: AddPurchaseState) => {
       state.productSelected = {
         ...state.productSelected,
         selectedBackOrders: [],
@@ -233,8 +292,8 @@ export const addPurchaseSlice = createSlice({
   },
 });
 
-// Funciones auxiliares para cÃ¡lculos
-const calculateUnitCost = (product) => {
+// Funciones auxiliares para cálculos
+const calculateUnitCost = (product: Partial<ProductSelected>): number => {
   const baseCost = Number(product.baseCost) || 0;
   const rawTaxPercentage = Number(product.taxPercentage) || 0;
   const taxRate =
@@ -251,7 +310,7 @@ const calculateUnitCost = (product) => {
   return baseCost + tax + freightPerUnit + otherCostsPerUnit;
 };
 
-const calculateSubTotal = (product) => {
+const calculateSubTotal = (product: Partial<ProductSelected>): number => {
   const quantity = Number(product.quantity) || Number(product.purchaseQuantity) || 0;
   const unitCost = calculateUnitCost(product);
   return quantity * unitCost;
@@ -278,13 +337,14 @@ export const {
 } = addPurchaseSlice.actions;
 
 //selectors
-export const SelectProductSelected = (state) =>
+export const SelectProductSelected = (state: AddPurchaseRootState) =>
   state.addPurchase.productSelected;
-export const selectAddPurchaseList = (state) => state.addPurchase.pendingOrders;
-export const selectProducts = (state) => state.addPurchase.products;
-export const selectPurchase = (state) => state.addPurchase.purchase;
-export const selectPurchaseState = (state) => state.addPurchase;
+export const selectAddPurchaseList = (state: AddPurchaseRootState) => state.addPurchase.pendingOrders;
+export const selectProducts = (state: AddPurchaseRootState) => state.addPurchase.products;
+export const selectPurchase = (state: AddPurchaseRootState) => state.addPurchase.purchase;
+export const selectPurchaseState = (state: AddPurchaseRootState) => state.addPurchase;
 
 export default addPurchaseSlice.reducer;
+
 
 

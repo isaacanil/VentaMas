@@ -210,7 +210,7 @@ export const InventoryControl = () => {
     Modal.confirm({
       title: 'Finalizar inventario',
       content:
-        'Â¿Deseas finalizar este inventario? Guardaremos cambios pendientes y luego se aplicarán ajustes de stock en el servidor. No podrás seguir editando.',
+        '¿Deseas finalizar este inventario? Guardaremos cambios pendientes y luego se aplicarán ajustes de stock en el servidor. No podrás seguir editando.',
       okText: 'Finalizar',
       cancelText: 'Cancelar',
       onOk: async () => {

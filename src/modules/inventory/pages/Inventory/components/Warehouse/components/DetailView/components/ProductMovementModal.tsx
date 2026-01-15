@@ -33,7 +33,7 @@ const QuantityContainer = styled.div`
   align-items: center;
 `;
 
-type MovementProduct = {
+export type MovementProduct = {
   id?: string;
   productId?: string;
   productName?: string;
@@ -173,11 +173,11 @@ export const ProductMovementModal = ({
       }
 
       await moveProduct({
-        user,
-        productId: product.productId,
-        productName: product.productName,
-        productStockId: product.productStockId,
-        batchId: product.batchId,
+        user: user as any,
+        productId: product?.productId as any,
+        productName: product?.productName as any,
+        productStockId: product?.productStockId as any,
+        batchId: product?.batchId as any,
         quantityToMove: values.quantity ?? 0,
         sourceLocation: getLocationPath(sourcePath),
         destinationLocation: getLocationPath(destinationPath),
@@ -256,7 +256,7 @@ export const ProductMovementModal = ({
       <TreeContainer>
         <Tree
           data={treeData}
-          config={treeConfig}
+          config={treeConfig as any}
           selectedId={selectedDestination?.id}
         />
       </TreeContainer>

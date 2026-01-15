@@ -58,6 +58,7 @@ const updatePurchaseWarehouseStock = async (
   }
 
   const productBatches: Record<string, PurchaseBatchGroup> = {};
+  const businessID = user.businessID as string;
   const auditFields = {
     createdAt: serverTimestamp(),
     createdBy: user.uid,
@@ -113,7 +114,7 @@ const updatePurchaseWarehouseStock = async (
     const productRef = doc(
       db,
       'businesses',
-      user.businessID,
+      businessID,
       'products',
       batch.productId,
     );
@@ -149,11 +150,11 @@ const updatePurchaseWarehouseStock = async (
       : 'sin-fecha';
 
     const providerId = resolveProviderId(purchase.provider);
-    const batchData = await createBatch(user, {
+    const batchData = await createBatch(user as any, {
       ...batchBaseFields,
       productId: batch.productId,
       purchaseId: purchase.id,
-      numberId: await getNextID(user, 'batches'),
+      numberId: await getNextID(user as any, 'batches'),
       shortName: `${batch.productName}_${shortDate}`,
       batchNumber: batchId,
       status: totalStock === 0 ? BatchStatus.Inactive : BatchStatus.Active,
@@ -161,7 +162,7 @@ const updatePurchaseWarehouseStock = async (
       providerId,
       quantity: totalStock,
       initialQuantity: totalStock,
-    });
+    } as any);
     const batchNumberId = (batchData as { numberId?: string | number }).numberId;
 
     const productStockData = {
@@ -179,13 +180,13 @@ const updatePurchaseWarehouseStock = async (
       expirationDate,
     };
 
-    await createProductStock(user, productStockData);
+    await createProductStock(user as any, productStockData);
 
     const movementId = nanoid();
     const movementRef = doc(
       db,
       'businesses',
-      user.businessID,
+      businessID,
       'movements',
       movementId,
     );
@@ -217,7 +218,7 @@ const updatePurchaseWarehouseStock = async (
           const backOrderRef = doc(
             db,
             'businesses',
-            user.businessID,
+            businessID,
             'backOrders',
             backOrder.id,
           );
@@ -267,7 +268,7 @@ export const fbCompletePurchase = async ({
     const purchaseRef = doc(
       db,
       'businesses',
-      user.businessID,
+      user.businessID as string,
       'purchases',
       purchase.id,
     );
@@ -275,7 +276,7 @@ export const fbCompletePurchase = async ({
     let destinationWarehouse: WarehouseRecord | null = null;
     if (warehouseId) {
       try {
-        destinationWarehouse = (await getWarehouse(user, warehouseId)) as
+        destinationWarehouse = (await getWarehouse(user as any, warehouseId)) as
           | WarehouseRecord
           | null;
       } catch (error) {
@@ -287,7 +288,7 @@ export const fbCompletePurchase = async ({
     }
 
     if (!destinationWarehouse) {
-      destinationWarehouse = (await getDefaultWarehouse(user)) as
+      destinationWarehouse = (await getDefaultWarehouse(user as any)) as
         | WarehouseRecord
         | null;
     }

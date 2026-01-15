@@ -12,6 +12,15 @@ import { quitarCeros } from '@/utils/number/number';
 
 const { Title, Paragraph } = Typography;
 
+interface CustomInputProps {
+  options: number[];
+  value: number;
+  discount: number;
+  disabled?: boolean;
+  onRequestAccess?: () => boolean | void;
+  width?: string;
+}
+
 const CustomInput = ({
   options,
   value,
@@ -19,10 +28,10 @@ const CustomInput = ({
   disabled = false,
   onRequestAccess,
   width = '170px',
-}) => {
+}: CustomInputProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const dispatch = useDispatch();
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLDivElement>(null);
 
   const ensureAccess = () => {
     if (typeof onRequestAccess === 'function') {
@@ -38,7 +47,7 @@ const CustomInput = ({
     }
   };
 
-  const handleChange = (newValue) => {
+  const handleChange = (newValue: number | null) => {
     if (disabled) return;
     if (!ensureAccess()) {
       blurInput();
@@ -56,7 +65,7 @@ const CustomInput = ({
     setShowMenu((prev) => !prev);
   };
 
-  const handleSelect = (option) => {
+  const handleSelect = (option: number) => {
     if (disabled) return;
     if (!ensureAccess()) {
       blurInput();

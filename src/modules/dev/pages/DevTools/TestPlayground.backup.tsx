@@ -136,7 +136,7 @@ export default function TestPlaygroundBackup() {
         ? ` Falló en ${failedSummaries.length} negocios: ${failedSummaries
             .slice(0, 5)
             .map((item) => item.businessID)
-            .join(', ')}${failedSummaries.length > 5 ? 'â€¦' : ''}`
+          .join(', ')}${failedSummaries.length > 5 ? '…' : ''}`
         : '';
 
     return (
@@ -228,7 +228,7 @@ export default function TestPlaygroundBackup() {
         ? ` Falló en ${failedSummaries.length} negocios: ${failedSummaries
             .slice(0, 5)
             .map((item) => item.businessID)
-            .join(', ')}${failedSummaries.length > 5 ? 'â€¦' : ''}`
+          .join(', ')}${failedSummaries.length > 5 ? '…' : ''}`
         : '';
 
     return (
@@ -419,11 +419,11 @@ export default function TestPlaygroundBackup() {
         ? ` Con errores en ${errorSummaries.length} negocios: ${errorSummaries
             .slice(0, 5)
             .map((item) => item.businessID)
-            .join(', ')}${errorSummaries.length > 5 ? 'â€¦' : ''}.`
+          .join(', ')}${errorSummaries.length > 5 ? '…' : ''}.`
         : '';
 
       const sampleText = sampleEntries.length
-        ? ` Ejemplos: ${sampleEntries.join(' Â· ')}.`
+        ? ` Ejemplos: ${sampleEntries.join(' · ')}.`
         : '';
 
       return (
@@ -450,7 +450,7 @@ export default function TestPlaygroundBackup() {
       data.sample?.length > 0
         ? ` Ejemplos: ${data.sample
             .map((item) => `${item.id} (${item.fields.join(', ')})`)
-            .join(' Â· ')}`
+            .join(' · ')}`
         : '';
 
     return (
@@ -476,7 +476,7 @@ export default function TestPlaygroundBackup() {
         {progress && (
           <Text type="secondary">
             Procesando negocio {progress.processed}/{progress.total}
-            {progress.businessID ? ` Â· Último: ${progress.businessID}` : ''}
+            {progress.businessID ? ` · Último: ${progress.businessID}` : ''}
           </Text>
         )}
       </Space>
@@ -493,10 +493,10 @@ export default function TestPlaygroundBackup() {
             Procesando negocio {clientNormalizationState.progress.processed}/
             {clientNormalizationState.progress.total}
             {clientNormalizationState.progress.businessID
-              ? ` Â· Último: ${clientNormalizationState.progress.businessID}`
+              ? ` · Último: ${clientNormalizationState.progress.businessID}`
               : ''}
             {clientNormalizationState.progress.normalized !== null
-              ? ` Â· Ajustados: ${clientNormalizationState.progress.normalized}`
+              ? ` · Ajustados: ${clientNormalizationState.progress.normalized}`
               : ''}
           </Text>
         )}

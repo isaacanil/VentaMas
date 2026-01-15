@@ -17,7 +17,6 @@ import styled from 'styled-components';
 
 import { useFbGetAvailableCreditNotes } from '@/hooks/creditNote/useFbGetAvailableCreditNotes';
 import { formatPrice } from '@/utils/format';
-import type { TimestampLike } from '@/utils/date/types';
 import type { CreditNoteRecord, CreditNoteSelection } from '@/types/creditNote';
 
 const { Title, Text } = Typography;
@@ -42,8 +41,8 @@ const toDateTime = (value?: CreditNoteRecord['createdAt']) => {
     const iso = DateTime.fromISO(value);
     return iso.isValid ? iso : DateTime.fromJSDate(new Date(value));
   }
-  if (typeof value?.toDate === 'function') {
-    return DateTime.fromJSDate(value.toDate());
+  if (typeof (value as any)?.toDate === 'function') {
+    return DateTime.fromJSDate((value as any).toDate());
   }
   return null;
 };
@@ -61,7 +60,7 @@ const CreditNoteSelector = ({
       loading: boolean;
       totalAvailable: number;
     };
-  
+
   // Derivar selecciones locales directamente del prop
   const localSelections = useMemo<Record<string, number>>(() => {
     const newSelections: Record<string, number> = {};
@@ -83,7 +82,7 @@ const CreditNoteSelector = ({
     if (!creditNote) return;
 
     const maxAmount = Math.min(
-      creditNote.availableAmount ?? 0,
+      (creditNote.availableAmount as number) ?? 0,
       totalPurchase - totalSelected + (localSelections[creditNoteId] || 0),
     );
     const validAmount = Math.max(0, Math.min(amount || 0, maxAmount));
@@ -171,9 +170,9 @@ const CreditNoteSelector = ({
       <List
         dataSource={creditNotes}
         renderItem={(creditNote) => {
-          const selectedAmount = localSelections[creditNote.id] || 0;
+          const selectedAmount = localSelections[creditNote.id as string] || 0;
           const maxUsable = Math.min(
-            creditNote.availableAmount,
+            (creditNote.availableAmount as number) || 0,
             totalPurchase - totalSelected + selectedAmount,
           );
           const isSelected = selectedAmount > 0;
@@ -192,7 +191,7 @@ const CreditNoteSelector = ({
                     </Text>
                   </ItemTitle>
                   <Text strong style={{ color: '#1890ff' }}>
-                    {formatPrice(creditNote.availableAmount)}
+                    {formatPrice((creditNote.availableAmount as number) || 0)}
                   </Text>
                 </ItemHeader>
 
@@ -209,7 +208,7 @@ const CreditNoteSelector = ({
                         step={0.01}
                         value={selectedAmount}
                         onChange={(value) =>
-                          handleAmountChange(creditNote.id, value)
+                          handleAmountChange(creditNote.id as string, value)
                         }
                         style={{ width: '100px' }}
                         placeholder="0.00"
@@ -218,7 +217,7 @@ const CreditNoteSelector = ({
                         size="small"
                         type="link"
                         onClick={() =>
-                          handleQuickSelect(creditNote.id, maxUsable)
+                          handleQuickSelect(creditNote.id as string, maxUsable)
                         }
                         disabled={maxUsable === 0}
                       >
@@ -229,13 +228,13 @@ const CreditNoteSelector = ({
                           size="small"
                           type="link"
                           danger
-                          onClick={() => handleQuickSelect(creditNote.id, 0)}
+                          onClick={() => handleQuickSelect(creditNote.id as string, 0)}
                         >
                           Limpiar
                         </Button>
                       )}
                     </Space>
-                    {maxUsable < creditNote.availableAmount && (
+                    {maxUsable < (creditNote.availableAmount as number) && (
                       <Tooltip title="El monto máximo está limitado por el total de la compra">
                         <Text type="secondary" style={{ fontSize: '11px' }}>
                           <InfoCircleOutlined /> Máximo disponible:{' '}
@@ -297,11 +296,11 @@ const HeaderRight = styled.div`
   gap: 8px;
 `;
 
-const CreditNoteItem = styled(List.Item)`
+const CreditNoteItem = styled(List.Item) <{ $isSelected?: boolean }>`
   padding: 12px !important;
   margin-bottom: 8px !important;
-  background-color: ${(props) => (props.$isSelected ? '#f6ffed' : 'white')};
-  border: 1px solid ${(props) => (props.$isSelected ? '#52c41a' : '#f0f0f0')} !important;
+  background-color: ${({ $isSelected }) => ($isSelected ? '#f6ffed' : 'white')};
+  border: 1px solid ${({ $isSelected }) => ($isSelected ? '#52c41a' : '#f0f0f0')} !important;
   border-radius: 6px;
   transition: all 0.2s ease;
 

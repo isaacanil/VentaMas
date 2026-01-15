@@ -12,7 +12,7 @@ import type {
   TreeStockSummary,
 } from '../types';
 
-const NameContainer = styled.div`
+const NameContainer = styled.div<{ isMatch: boolean }>`
   display: flex;
   flex: 1;
   gap: 8px;
@@ -41,7 +41,7 @@ const TitleText = styled.span`
   white-space: nowrap;
 `;
 
-const ThemeTag = styled.span`
+const ThemeTag = styled.span<{ $color?: string; $background?: string }>`
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
@@ -50,17 +50,17 @@ const ThemeTag = styled.span`
   font-size: 0.7rem;
   font-weight: 600;
   line-height: 1.2;
-  color: ${({ $color }) => $color || '#0f172a'};
-  background-color: ${({ $background }) =>
+  color: ${({ $color }: { $color?: string }) => $color || '#0f172a'};
+  background-color: ${({ $background }: { $background?: string }) =>
     $background || 'rgba(22, 119, 255, 0.16)'};
   border-radius: 999px;
 `;
 
-const DetailLine = styled.span`
+const DetailLine = styled.span<{ $variant?: string }>`
   font-size: 0.72rem;
-  font-weight: ${({ $variant }) => ($variant === 'actual' ? 600 : 400)};
+  font-weight: ${({ $variant }: { $variant?: string }) => ($variant === 'actual' ? 600 : 400)};
   line-height: 1.1;
-  color: ${({ $variant }) => {
+  color: ${({ $variant }: { $variant?: string }) => {
     switch ($variant) {
       case 'actual':
         return '#1677ff';
@@ -158,16 +158,16 @@ const NodeName = ({
       };
     }
 
-    const totalLots = Number.isFinite(stockSummary.totalLots)
+    const totalLots = typeof stockSummary.totalLots === 'number'
       ? stockSummary.totalLots
       : null;
-    const directLots = Number.isFinite(stockSummary.directLots)
+    const directLots = typeof stockSummary.directLots === 'number'
       ? stockSummary.directLots
       : null;
-    const totalUnits = Number.isFinite(stockSummary.totalUnits)
+    const totalUnits = typeof stockSummary.totalUnits === 'number'
       ? stockSummary.totalUnits
       : null;
-    const directUnits = Number.isFinite(stockSummary.directUnits)
+    const directUnits = typeof stockSummary.directUnits === 'number'
       ? stockSummary.directUnits
       : null;
 
@@ -205,10 +205,10 @@ const NodeName = ({
       unitsValue: number | null,
     ): string | null => {
       const parts = [];
-      if (Number.isFinite(lotsValue) && lotsValue > 0)
+      if (typeof lotsValue === 'number' && lotsValue > 0)
         parts.push(formatLots(lotsValue));
       const unitLabel = formatUnits(unitsValue);
-      if (unitLabel && unitsValue > 0) parts.push(unitLabel);
+      if (unitLabel && typeof unitsValue === 'number' && unitsValue > 0) parts.push(unitLabel);
       if (parts.length) return `${label}: ${parts.join(' · ')}`;
       return null;
     };
@@ -216,17 +216,17 @@ const NodeName = ({
     const totalLine = buildLine('Inventario total', totalLots, totalUnits);
     if (totalLine) tooltipLines.push(totalLine);
 
-    const directLabel = Number.isFinite(directLots)
+    const directLabel = typeof directLots === 'number'
       ? formatLots(directLots)
       : null;
-    const directEmpty = Number.isFinite(directLots)
+    const directEmpty = typeof directLots === 'number'
       ? (directLots ?? 0) <= 0
       : false;
 
     const directLine = buildLine('Nivel actual', directLots, directUnits);
     if (directLine) tooltipLines.push(directLine);
 
-    if (Number.isFinite(childLots) && (childLots ?? 0) > 0) {
+    if (typeof childLots === 'number' && (childLots ?? 0) > 0) {
       details.push({
         type: 'children',
         text: `Subniveles: ${formatLots(childLots)}`,
@@ -273,7 +273,7 @@ const NodeName = ({
         }
         return null;
       })
-      .filter(Boolean);
+      .filter((detail): detail is string => detail !== null && detail !== undefined);
   }, [tooltipDetails]);
 
   const tooltipLines = tooltipDetailsNormalized.length
@@ -294,7 +294,7 @@ const NodeName = ({
   const normalizedExtraDetails = useMemo<TreeNodeDetail[]>(() => {
     if (!extraDetails) return [];
     if (Array.isArray(extraDetails)) {
-      return extraDetails
+      return (extraDetails as any[])
         .filter(Boolean)
         .map((detail) => {
           if (typeof detail === 'string') {

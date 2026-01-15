@@ -10,6 +10,28 @@ import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+interface PurchaseItem {
+  quantity?: number;
+  name?: string;
+  unitCost?: number;
+  subtotal?: number;
+  [key: string]: unknown;
+}
+
+interface PurchaseData {
+  replenishments?: PurchaseItem[];
+  destinationWarehouseId?: string;
+  warehouse?: { id?: string };
+  [key: string]: unknown;
+}
+
+interface PurchaseCompletionSummaryProps {
+  visible: boolean;
+  onClose: () => void;
+  purchase?: PurchaseData | null;
+}
+
+
 const StyledModal = styled(Modal)`
   .ant-modal-content {
     background: rgb(255 255 255 / 98%);
@@ -116,11 +138,11 @@ export default function PurchaseCompletionSummary({
   visible,
   onClose,
   purchase,
-}) {
+}: PurchaseCompletionSummaryProps) {
   const navigate = useNavigate();
   const total =
     purchase?.replenishments?.reduce(
-      (sum, item) => sum + (item.subtotal || 0),
+      (sum: number, item: PurchaseItem) => sum + (item.subtotal || 0),
       0,
     ) || 0;
   const destinationWarehouseId =
@@ -129,10 +151,10 @@ export default function PurchaseCompletionSummary({
     ? `/inventory/warehouses/warehouse/${destinationWarehouseId}`
     : null;
 
-  const formatProductsList = (products) => {
+  const formatProductsList = (products: PurchaseItem[] | undefined) => {
     if (!products?.length) return '';
     return products
-      .map((item) => `• ${item.quantity} × ${item.name} · $${item.unitCost}`)
+      .map((item: PurchaseItem) => `• ${item.quantity} × ${item.name} · $${item.unitCost}`)
       .join('\n');
   };
 
@@ -156,15 +178,15 @@ export default function PurchaseCompletionSummary({
 
         <Title>¡Compra Completada!</Title>
 
-        {purchase?.replenishments?.length > 0 && (
+        {(purchase?.replenishments?.length ?? 0) > 0 && (
           <>
             <ProductSummary>
               <ReactMarkdown>
-                {formatProductsList(purchase.replenishments)}
+                {formatProductsList(purchase?.replenishments)}
               </ReactMarkdown>
             </ProductSummary>
             <ProductCount>
-              {purchase.replenishments.length} productos agregados
+              {purchase?.replenishments?.length} productos agregados
             </ProductCount>
           </>
         )}

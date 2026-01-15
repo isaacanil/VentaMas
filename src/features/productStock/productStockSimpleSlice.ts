@@ -3,13 +3,17 @@
 import type { InventoryStockItem } from '@/utils/inventory/types';
 import type { ProductRecord } from '@/types/products';
 
-type ProductStockSimpleState = {
+interface ProductStockSimpleState {
   isOpen: boolean;
   productId: string;
   productStockSelected: string;
   product: ProductRecord | null;
   selectedProductStock: InventoryStockItem | null;
-};
+}
+
+interface ProductStockSimpleRootState {
+  productStockSimple: ProductStockSimpleState;
+}
 
 const initialState: ProductStockSimpleState = {
   isOpen: false,
@@ -24,7 +28,7 @@ const productStockSimpleSlice = createSlice({
   initialState,
   reducers: {
     openProductStockSimple: (
-      state,
+      state: ProductStockSimpleState,
       action: PayloadAction<ProductRecord | null | undefined>,
     ) => {
       state.isOpen = true;
@@ -36,16 +40,16 @@ const productStockSimpleSlice = createSlice({
         state.product = initialState.product;
       }
     },
-    closeProductStockSimple: (state: any) => {
+    closeProductStockSimple: (state: ProductStockSimpleState) => {
       state.isOpen = false;
       state.productId = initialState.productId;
       state.product = initialState.product;
     },
-    updateProductId: (state, action: PayloadAction<string>) => {
+    updateProductId: (state: ProductStockSimpleState, action: PayloadAction<string>) => {
       state.productId = action.payload;
     },
     setSelectedProductStock: (
-      state,
+      state: ProductStockSimpleState,
       action: PayloadAction<InventoryStockItem | null>,
     ) => {
       state.selectedProductStock = action.payload;
@@ -62,8 +66,4 @@ export const {
 
 export default productStockSimpleSlice.reducer;
 
-export const selectProductStockSimple = (state: {
-  productStockSimple: ProductStockSimpleState;
-}) => state.productStockSimple;
-
-
+export const selectProductStockSimple = (state: ProductStockSimpleRootState) => state.productStockSimple;

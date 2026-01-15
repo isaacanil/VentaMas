@@ -35,7 +35,7 @@ type InventoryLocationSelectorProps = {
   onChange?: (value: string[]) => void;
 };
 
-const ChevronDown = (props) => (
+const ChevronDown = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     width="16"
     height="16"
@@ -306,18 +306,18 @@ const SelectorButton = styled.button<{ $active?: boolean }>`
   width: 100%;
   min-height: 2.4rem;
   padding: 0.55rem 0.75rem;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-  background: ${({ disabled }) => (disabled ? '#f3f4f6' : '#ffffff')};
-  border: 1px solid ${({ $active }) => ($active ? '#228df1ff' : '#d7dce3')};
+  cursor: ${({ disabled }: { disabled?: boolean }) => (disabled ? 'not-allowed' : 'pointer')};
+  background: ${({ disabled }: { disabled?: boolean }) => (disabled ? '#f3f4f6' : '#ffffff')};
+  border: 1px solid ${({ $active }: { $active?: boolean }) => ($active ? '#228df1ff' : '#d7dce3')};
   border-radius: 8px;
-  box-shadow: ${({ $active }) =>
+  box-shadow: ${({ $active }: { $active?: boolean }) =>
     $active ? '0 0 0 3px rgba(30, 64, 175, 0.1)' : 'none'};
   transition:
     border 0.18s ease,
     box-shadow 0.18s ease;
 
   &:hover {
-    border-color: ${({ disabled }) => (disabled ? '#d7dce3' : '#1e40af')};
+    border-color: ${({ disabled }: { disabled?: boolean }) => (disabled ? '#d7dce3' : '#1e40af')};
   }
 
   &:focus-visible {
@@ -365,7 +365,7 @@ const Chip = styled.span`
 const Chevron = styled.span<{ $open?: boolean }>`
   display: inline-flex;
   color: #475569;
-  transform: ${({ $open }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transform: ${({ $open }: { $open?: boolean }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
   transition: transform 0.18s ease;
 `;
 
@@ -435,14 +435,14 @@ const OptionItem = styled.label<{ $checked?: boolean }>`
   padding: 0.55rem 0.65rem;
   margin: 0 0.35rem;
   cursor: pointer;
-  background: ${({ $checked }) =>
+  background: ${({ $checked }: { $checked?: boolean }) =>
     $checked ? 'rgba(30, 64, 175, 0.08)' : 'transparent'};
   border-radius: 12px;
   transition: background 0.18s ease;
 
   &:hover {
-    background: ${({ $checked }) =>
-      $checked ? 'rgba(30, 64, 175, 0.12)' : '#f3f6ff'};
+    background: ${({ $checked }: { $checked?: boolean }) =>
+    $checked ? 'rgba(30, 64, 175, 0.12)' : '#f3f6ff'};
   }
 `;
 

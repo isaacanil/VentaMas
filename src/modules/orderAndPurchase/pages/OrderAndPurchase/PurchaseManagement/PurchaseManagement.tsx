@@ -21,7 +21,7 @@ import ROUTES_PATH from '@/router/routes/routesName';
 import type { UserIdentity } from '@/types/users';
 import { getLocalURL } from '@/utils/fileUtils';
 import type { WarehouseRecord } from '@/utils/inventory/types';
-import type { Purchase, PurchaseAttachment } from '@/utils/purchase/types';
+import type { Purchase } from '@/utils/purchase/types';
 import type { EvidenceFileInput } from '@/components/common/EvidenceUpload/types';
 import Loader from '@/components/common/Loader/Loader';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
@@ -58,11 +58,17 @@ const ButtonsContainer = styled.div`
 
 type PurchaseMode = 'create' | 'complete' | 'convert' | 'update';
 
+interface PurchaseManagementLocationState {
+  showSummary?: boolean;
+  completedPurchase?: Purchase | null;
+}
+
 const PurchaseManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  const locationState = location.state as PurchaseManagementLocationState | null;
 
   // Determine mode based on the current path
   const mode = useMemo<PurchaseMode>(() => {
@@ -73,27 +79,19 @@ const PurchaseManagement = () => {
   }, [id, location.pathname]);
 
   const user = useSelector(selectUser) as UserIdentity | null;
-  const { purchase: purchaseData } = useSelector(selectPurchaseState) as {
-    purchase: Purchase;
+  const { purchase: purchaseData } = useSelector(selectPurchaseState) as unknown as {
+    purchase: Purchase | null;
+    isLoading?: boolean;
   };
-
-  const backOrderAssociationId = getBackOrderAssociationId({
-    mode,
-    purchaseId: id,
-    orderId: purchaseData?.orderId,
-    operationType: 'purchase',
-  });
-
-  const { PURCHASES } = ROUTES_PATH.PURCHASE_TERM;
 
   const [localFiles, setLocalFiles] = useState<EvidenceFileInput[]>([]);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({
-    provider: false,
-    deliveryAt: false,
-    paymentAt: false,
-    note: false,
-  });
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const PURCHASES = ROUTES_PATH.purchases;
+  const backOrderAssociationId = useMemo(
+    () => getBackOrderAssociationId(purchaseData),
+    [purchaseData],
+  );
 
   const { purchase: fetchedPurchase, isLoading: purchaseLoading } =
     useListenPurchase(id) as { purchase?: Purchase; isLoading?: boolean };
@@ -127,8 +125,12 @@ const PurchaseManagement = () => {
     [warehouses],
   );
 
-  const [showSummary, setShowSummary] = useState(false);
-  const [completedPurchase] = useState<Purchase | null>(null);
+  const [showSummary, setShowSummary] = useState(
+    locationState?.showSummary || false,
+  );
+  const [completedPurchase, setCompletedPurchase] = useState<Purchase | null>(
+    locationState?.completedPurchase || null,
+  );
   const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
 
@@ -161,25 +163,25 @@ const PurchaseManagement = () => {
 
       updatePurchaseState({
         attachmentUrls: [
-          ...(purchaseData.attachmentUrls || []),
+          ...(purchaseData?.attachmentUrls || []),
           ...newAttachments,
         ],
       });
       setLocalFiles((prev) => [...prev, ...newFiles]);
     },
-    [purchaseData.attachmentUrls, updatePurchaseState],
+    [purchaseData?.attachmentUrls, updatePurchaseState],
   );
 
   const handleRemoveFile = useCallback(
     (fileId: string) => {
       setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
       updatePurchaseState({
-        attachmentUrls: (purchaseData.attachmentUrls || []).filter(
+        attachmentUrls: (purchaseData?.attachmentUrls || []).filter(
           (f) => f.id !== fileId,
         ),
       });
     },
-    [purchaseData.attachmentUrls, updatePurchaseState],
+    [purchaseData?.attachmentUrls, updatePurchaseState],
   );
 
   useEffect(() => {
@@ -194,18 +196,22 @@ const PurchaseManagement = () => {
 
   const performSubmit = useCallback(
     async (warehouseIdOverride: string | null = null) => {
+      if (!purchaseData) return false;
       setLoading(true);
       try {
         const submitData = sanitizeData(purchaseData, defaultsMap) as Purchase;
 
         switch (mode) {
           case 'create':
+            if (!user) throw new Error('Usuario no disponible');
             await addPurchase({ user, purchase: submitData, localFiles });
             break;
           case 'update':
+            if (!user) throw new Error('Usuario no disponible');
             await fbUpdatePurchase({ user, purchase: submitData, localFiles });
             break;
           case 'complete': {
+            if (!user) throw new Error('Usuario no disponible');
             const completionResult = await fbCompletePurchase({
               user,
               purchase: submitData,
@@ -231,6 +237,7 @@ const PurchaseManagement = () => {
             break;
           }
           case 'convert':
+            if (!user) throw new Error('Usuario no disponible');
             await addPurchase({ user, purchase: submitData, localFiles });
             break;
           default:
@@ -255,6 +262,15 @@ const PurchaseManagement = () => {
   );
 
   const handleSubmit = useCallback(async () => {
+    if (!purchaseData) {
+      notification.error({
+        message: 'Error',
+        description: 'No hay datos de compra disponibles.',
+        duration: 5,
+      });
+      return;
+    }
+
     // 1. Validar Proveedor
     if (!purchaseData.provider) {
       notification.warning({
@@ -334,6 +350,7 @@ const PurchaseManagement = () => {
 
   const handleCloseSummary = useCallback(() => {
     setShowSummary(false);
+    setCompletedPurchase(null);
     dispatch(cleanPurchase());
     navigate(PURCHASES);
   }, [dispatch, navigate, PURCHASES]);
@@ -387,7 +404,7 @@ const PurchaseManagement = () => {
           <Form layout="vertical">
             <GeneralForm
               files={localFiles}
-              attachmentUrls={purchaseData.attachmentUrls || []}
+              attachmentUrls={purchaseData?.attachmentUrls || []}
               onAddFiles={handleAddFiles}
               onRemoveFiles={handleRemoveFile}
               errors={errors}
@@ -447,4 +464,3 @@ const PurchaseManagement = () => {
 };
 
 export default PurchaseManagement;
-

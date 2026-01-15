@@ -14,7 +14,7 @@ export const PRODUCT_ITEM_TYPE_OPTIONS = [
 ];
 const DEFAULT_ITEM_TYPE = PRODUCT_ITEM_TYPE_OPTIONS[0].value;
 
-const normalizeBrand = (value) => {
+const normalizeBrand = (value: any) => {
   if (typeof value !== 'string') {
     return DEFAULT_BRAND;
   }
@@ -118,7 +118,7 @@ export const updateProductSlice = createSlice({
       };
       const hasPricing =
         action?.payload?.pricing && typeof action.payload.pricing === 'object';
-      // Si se actualiza el listPrice (aunque sea 0), tambiÃ©n actualizar el price principal
+      // Si se actualiza el listPrice (aunque sea 0), también actualizar el price principal
       if (
         hasPricing &&
         Object.prototype.hasOwnProperty.call(
@@ -128,7 +128,7 @@ export const updateProductSlice = createSlice({
       ) {
         state.product.pricing.price = action.payload.pricing.listPrice;
       }
-      // Si se actualiza el price directamente, mantenerlo (tiene prioridad explÃ­cita)
+      // Si se actualiza el price directamente, mantenerlo (tiene prioridad explícita)
       if (
         hasPricing &&
         Object.prototype.hasOwnProperty.call(action.payload.pricing, 'price')
@@ -142,7 +142,7 @@ export const updateProductSlice = createSlice({
       state.product.isSoldInUnits = isSoldInUnits;
 
       if (isSoldInUnits && state.product.saleUnits.length === 0) {
-        // Inicializar saleUnits con ejemplos si se activa y estÃ¡ vacÃ­o
+        // Inicializar saleUnits con ejemplos si se activa y está vacío
         state.product.saleUnits = [
           {
             id: nanoid(),
@@ -189,7 +189,7 @@ export const updateProductSlice = createSlice({
         state.product.selectedSaleUnitId = null;
       }
     },
-    // Selecciona una unidad de venta especÃ­fica
+    // Selecciona una unidad de venta específica
     selectSaleUnit: (state: any, action: PayloadAction<any>) => {
       const { saleUnitId } = action.payload;
       const exists = state.product.saleUnits.some(
@@ -219,18 +219,18 @@ export const {
 } = updateProductSlice.actions;
 
 //selectors
-export const selectUpdateProductData = (state) => state.updateProduct;
-export const selectUpdateProductStatus = (state) => state.updateProduct.status;
-export const selectProduct = (state) => state.updateProduct.product;
-export const selectSaleUnits = (state) => state.updateProduct.product.saleUnits;
-export const selectIsSoldInUnits = (state) =>
+export const selectUpdateProductData = (state: any) => state.updateProduct;
+export const selectUpdateProductStatus = (state: any) => state.updateProduct.status;
+export const selectProduct = (state: any) => state.updateProduct.product;
+export const selectSaleUnits = (state: any) => state.updateProduct.product.saleUnits;
+export const selectIsSoldInUnits = (state: any) =>
   state.updateProduct.product.isSoldInUnits;
-export const selectSelectedSaleUnit = (state) => {
+export const selectSelectedSaleUnit = (state: any) => {
   const { selectedSaleUnitId, saleUnits } = state.updateProduct.product;
-  return saleUnits.find((unit) => unit.id === selectedSaleUnitId) || null;
+  return (saleUnits || []).find((unit: any) => unit.id === selectedSaleUnitId) || null;
 };
-export const selectSaleUnitById = (state, id) =>
-  state.updateProduct.product.saleUnits.find((unit) => unit.id === id);
+export const selectSaleUnitById = (state: any, id: any) =>
+  (state.updateProduct.product.saleUnits || []).find((unit: any) => unit.id === id);
 
 export default updateProductSlice.reducer;
 

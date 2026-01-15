@@ -53,21 +53,17 @@ export const InvoiceTemplate1 = React.forwardRef<
 
 InvoiceTemplate1.displayName = 'InvoiceTemplate1';
 
-type Align = 'left' | 'center' | 'right';
-type SpaceSize = 'small' | 'medium' | 'large';
+type TextAlignProps = { align?: 'left' | 'right' | 'center' };
+type SpaceProps = { size?: 'small' | 'medium' | 'large' };
 
-type AlignProps = {
-  align?: Align;
-};
-
-export const SubTitle = styled.p<AlignProps>`
+export const SubTitle = styled.p<TextAlignProps>`
   font-weight: 600;
   line-height: 12px;
   padding: 0;
   margin: 0;
   white-space: nowrap;
 
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -78,11 +74,11 @@ export const SubTitle = styled.p<AlignProps>`
     }
   }}
 `;
-export const P = styled.p<AlignProps>`
+export const P = styled.p<TextAlignProps>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -97,13 +93,9 @@ export const Line = styled.div`
   border: none;
   border-top: 1px dashed black;
 `;
-type SpaceProps = {
-  size?: SpaceSize;
-};
-
 const Space = styled.div<SpaceProps>`
   margin-bottom: 0.6em;
-  ${(props) => {
+  ${(props: SpaceProps) => {
     switch (props.size) {
       case 'small':
         return 'margin-bottom: 0.2em;';

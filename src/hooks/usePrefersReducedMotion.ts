@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 
 /**
@@ -6,8 +5,8 @@ import { useState, useEffect } from 'react';
  * Initializes state lazily to avoid hydration mismatches or unnecessary work.
  * Subscribes to changes in the media query.
  */
-export function usePrefersReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+export function usePrefersReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
     // Lazy initialization: read the value only once during mount
     if (typeof window === 'undefined' || !window.matchMedia) return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -17,7 +16,7 @@ export function usePrefersReducedMotion() {
     if (typeof window === 'undefined' || !window.matchMedia) return;
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleChange = (event) => {
+    const handleChange = (event: MediaQueryListEvent) => {
       setPrefersReducedMotion(event.matches);
     };
 
@@ -26,14 +25,14 @@ export function usePrefersReducedMotion() {
       mediaQuery.addEventListener('change', handleChange);
     } else {
       // Fallback for older browsers
-      mediaQuery.addListener(handleChange);
+      (mediaQuery as any).addListener(handleChange);
     }
 
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handleChange);
       } else {
-        mediaQuery.removeListener(handleChange);
+        (mediaQuery as any).removeListener(handleChange);
       }
     };
   }, []);

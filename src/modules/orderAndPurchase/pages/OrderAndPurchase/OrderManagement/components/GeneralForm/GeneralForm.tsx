@@ -117,7 +117,7 @@ const GeneralForm = ({
     provider: providerId,
     deliveryAt,
     note,
-  } = useSelector(selectOrder) as Order;
+  } = (useSelector(selectOrder) as unknown) as Order;
   const noteValue = typeof note === 'string' ? note : '';
   const providerIdValue = typeof providerId === 'string' ? providerId : null;
   const providerFromState =
@@ -235,7 +235,7 @@ const GeneralForm = ({
       )) as BackOrderRecord[];
 
       if (
-        fullProduct.selectedBackOrders?.length > 0 ||
+        (fullProduct.selectedBackOrders?.length ?? 0) > 0 ||
         fetchedBackOrders.length > 0
       ) {
         setBackOrders(fetchedBackOrders);
@@ -248,7 +248,7 @@ const GeneralForm = ({
             : undefined;
         const updatedValues = {
           key: productKey,
-          purchaseQuantity: fullProduct.quantity || 0,
+          purchaseQuantity: Number(fullProduct.quantity || 0),
           selectedBackOrders: [],
         };
         handleProductUpdate({ index: productKey, ...updatedValues });
@@ -275,14 +275,15 @@ const GeneralForm = ({
         ? selectedProductForBackorders.key
         : undefined;
     const updatedValues = {
-      ...backOrderData,
-      key: selectedProductKey,
-      selectedBackOrders: backOrderData.selectedBackOrders,
+      id: backOrderData.id,
+      selectedBackOrders: backOrderData.selectedBackOrders.map(bo => ({
+        id: bo.id,
+        quantity: bo.quantity
+      })),
       purchaseQuantity,
       quantity,
-      index: selectedProductKey,
     };
-    handleProductUpdate({ ...updatedValues });
+    handleProductUpdate({ index: selectedProductKey, ...updatedValues });
     setIsBackOrderModalVisible(false);
     setSelectedProductForBackorders(null);
   };
@@ -379,7 +380,7 @@ const GeneralForm = ({
               }
             >
               <DatePicker
-                value={parseDate(deliveryAt)}
+                value={parseDate(deliveryAt) as any}
                 onChange={(value) => handleDateChange('deliveryAt', value)}
                 format="DD/MM/YYYY"
                 style={{ width: '100%' }}
@@ -411,7 +412,7 @@ const GeneralForm = ({
           productId={selectedProductForBackorders.id ?? null}
           backOrderAssociationId={backOrderAssociationId}
           mode={mode}
-          purchaseId={numberId} // Pasamos el ID de la orden/compra
+          purchaseId={numberId as any} // Pasamos el ID de la orden/compra
         />
       )}
     </>

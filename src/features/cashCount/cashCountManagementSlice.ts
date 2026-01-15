@@ -2,7 +2,42 @@
 
 import { initialBanknotes } from './initialBanknotes';
 
-const initialCashBoxStatus = {
+interface CashBoxStatus {
+  initialized: boolean;
+  employee: any | null;
+  approvalEmployee: any | null;
+  date: any | null;
+  banknotes: any;
+  banknotesTotal: number;
+  banknotesAmount: number;
+  comments: string | null;
+  totals?: any;
+}
+
+interface CashCountState {
+  state: string | null;
+  opening: CashBoxStatus;
+  closing: CashBoxStatus;
+  sales: any[];
+  receivablePayments: any[];
+  totalCard: number;
+  totalTransfer: number;
+  totalCharged: number;
+  totalReceivables: number;
+  totalDiscrepancy: number;
+  totalRegister: number;
+  totalSystem: number;
+  updatedAt?: any | null;
+  createdAt?: any | null;
+  id?: string | null;
+  incrementNumber?: number | null;
+}
+
+interface CashCountManagementRootState {
+  cashCountManagement: CashCountState;
+}
+
+const initialCashBoxStatus: CashBoxStatus = {
   initialized: false,
   employee: null,
   approvalEmployee: null,
@@ -13,7 +48,7 @@ const initialCashBoxStatus = {
   comments: null,
 };
 
-const initialCashCount = {
+const initialCashCount: CashCountState = {
   state: null,
   opening: initialCashBoxStatus,
   closing: initialCashBoxStatus,
@@ -32,7 +67,7 @@ const cashCountManagementSlice = createSlice({
   name: 'cashCountManagement',
   initialState: initialCashCount,
   reducers: {
-    updateCashCountTotals: (state: any, action: PayloadAction<any>) => {
+    updateCashCountTotals: (state: CashCountState, action: PayloadAction<any>) => {
       const {
         totalCard,
         totalTransfer,
@@ -50,55 +85,54 @@ const cashCountManagementSlice = createSlice({
       state.totalRegister = totalRegister || 0;
       state.totalSystem = totalSystem || 0;
     },
-    setCashCountOpeningBanknotes: (state: any, action: PayloadAction<any>) => {
+    setCashCountOpeningBanknotes: (state: CashCountState, action: PayloadAction<any>) => {
       state.opening.banknotes = action.payload;
       state.opening.banknotesAmount = calculateTotalAmount(
         state.opening.banknotes,
       );
       state.opening.banknotesTotal = state.opening.banknotes.reduce(
-        (acc, curr) => acc + curr.value * curr.quantity,
+        (acc: number, curr: any) => acc + curr.value * curr.quantity,
         0,
       );
     },
-    setCashCountOpeningEmployee: (state: any, action: PayloadAction<any>) => {
+    setCashCountOpeningEmployee: (state: CashCountState, action: PayloadAction<any>) => {
       state.opening.employee = action.payload;
     },
-    setCashCountOpeningDate: (state: any, action: PayloadAction<any>) => {
+    setCashCountOpeningDate: (state: CashCountState, action: PayloadAction<any>) => {
       state.opening.date = action.payload;
     },
-    setCashCountOpeningComments: (state: any, action: PayloadAction<any>) => {
+    setCashCountOpeningComments: (state: CashCountState, action: PayloadAction<any>) => {
       state.opening.comments = action.payload;
     },
-    setCashCountOpening: (state: any, action: PayloadAction<any>) => {
+    setCashCountOpening: (state: CashCountState, action: PayloadAction<any>) => {
       state.opening = action.payload;
     },
-    setCashCountClosingBanknotes: (state: any, action: PayloadAction<any>) => {
+    setCashCountClosingBanknotes: (state: CashCountState, action: PayloadAction<any>) => {
       state.closing.banknotes = action.payload;
       state.closing.banknotesAmount = calculateTotalAmount(
         state.closing.banknotes,
       );
       state.closing.banknotesTotal = state.closing.banknotes.reduce(
-        (acc, curr) => acc + curr.value * curr.quantity,
+        (acc: number, curr: any) => acc + curr.value * curr.quantity,
         0,
       );
     },
-    setCashCountClosingComments: (state: any, action: PayloadAction<any>) => {
+    setCashCountClosingComments: (state: CashCountState, action: PayloadAction<any>) => {
       state.closing.comments = action.payload;
     },
-    addPropertiesToCashCount: (state: any, action: PayloadAction<any>) => {
-      const payload = action.payload;
-      return { ...state, ...payload };
+    addPropertiesToCashCount: (state: CashCountState, action: PayloadAction<any>) => {
+      return { ...state, ...action.payload };
     },
-    setCashCountSales: (state: any, action: PayloadAction<any>) => {
+    setCashCountSales: (state: CashCountState, action: PayloadAction<any[]>) => {
       state.sales = action.payload;
     },
-    setClosingCashTotalAndDiscrepancy: (state: any, action: PayloadAction<any>) => {
+    setClosingCashTotalAndDiscrepancy: (state: CashCountState, action: PayloadAction<any>) => {
       state.closing.totals = action.payload;
     },
-    setCashCount: (state: any, action: PayloadAction<any>) => {
+    setCashCount: (_state, action: PayloadAction<CashCountState>) => {
       return action.payload;
     },
-    clearCashCount: (state: any) => {
+    clearCashCount: (state: CashCountState) => {
       state.opening = initialCashBoxStatus;
       state.closing = initialCashBoxStatus;
       state.totalCard = 0;
@@ -119,7 +153,7 @@ const cashCountManagementSlice = createSlice({
   },
 });
 
-function calculateTotalAmount(banknotesByCurrency) {
+function calculateTotalAmount(banknotesByCurrency: any[]) {
   let total = banknotesByCurrency.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return Number(total);
@@ -143,6 +177,4 @@ export const {
 
 export default cashCountManagementSlice.reducer;
 
-export const selectCashCount = (state) => state.cashCountManagement;
-
-
+export const selectCashCount = (state: CashCountManagementRootState) => state.cashCountManagement;

@@ -1,14 +1,28 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const Message = ({ title, bgColor, fontSize, width }) => {
+interface MessageProps {
+  title: string;
+  bgColor?: 'error' | 'primary';
+  fontSize?: 'small' | 'normal' | 'large';
+  width?: 'auto';
+}
+
+interface ContainerProps {
+  bgColor?: 'error' | 'primary';
+  fontSize?: 'small' | 'normal' | 'large';
+  width?: 'auto';
+}
+
+
+export const Message = ({ title, bgColor, fontSize, width }: MessageProps) => {
   return (
     <Container bgColor={bgColor} fontSize={fontSize} width={width}>
       {title}
     </Container>
   );
 };
-const Container = styled.div`
+const Container = styled.div<ContainerProps>`
   height: 1.6em;
   display: flex;
   align-items: center;
@@ -17,7 +31,7 @@ const Container = styled.div`
   color: black;
   width: min-content;
 
-  ${(props) => {
+  ${(props: ContainerProps) => {
     switch (props.width) {
       case 'auto':
         return `
@@ -28,7 +42,7 @@ const Container = styled.div`
         break;
     }
   }}
-  ${(props) => {
+  ${(props: ContainerProps) => {
     switch (props.fontSize) {
       case 'small':
         return `
@@ -47,7 +61,7 @@ const Container = styled.div`
         break;
     }
   }}
-    ${(props) => {
+    ${(props: ContainerProps) => {
     switch (props.bgColor) {
       case 'error':
         return `

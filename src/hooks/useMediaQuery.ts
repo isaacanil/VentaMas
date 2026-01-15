@@ -1,16 +1,17 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 
-export const useMediaQuery = (query) => {
-  const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches,
+export const useMediaQuery = (query: string): boolean => {
+  const [matches, setMatches] = useState<boolean>(
+    () => typeof window !== 'undefined' ? window.matchMedia(query).matches : false,
   );
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const media = window.matchMedia(query);
 
     // Create listener function
-    const listener = (event) => {
+    const listener = (event: MediaQueryListEvent) => {
       setMatches(event.matches);
     };
 
@@ -19,7 +20,7 @@ export const useMediaQuery = (query) => {
       media.addEventListener('change', listener);
     } else {
       // Fallback for older browsers
-      media.addListener(listener);
+      (media as any).addListener(listener);
     }
 
     // Cleanup function
@@ -28,7 +29,7 @@ export const useMediaQuery = (query) => {
         media.removeEventListener('change', listener);
       } else {
         // Fallback for older browsers
-        media.removeListener(listener);
+        (media as any).addListener(listener);
       }
     };
   }, [query]);

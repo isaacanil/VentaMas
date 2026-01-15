@@ -89,37 +89,37 @@ const CalendarDay = styled.div<CalendarDayProps>`
   border-radius: 4px;
   transition: all 0.3s;
   position: relative;
-  color: ${(props) => {
+  color: ${(props: CalendarDayProps) => {
     if (!props.$isCurrentMonth) return '#bfbfbf';
     if (props.$isSelected) return 'white';
     if (props.$isToday) return '#1890ff';
     return '#262626';
   }};
-  background: ${(props) => {
+  background: ${(props: CalendarDayProps) => {
     if (props.$isSelected) return '#1890ff';
     if (props.$isInRange && !props.$isSelected) return '#e6f7ff';
     return 'transparent';
   }};
-  font-weight: ${(props) => {
+  font-weight: ${(props: CalendarDayProps) => {
     if (props.$isSelected || props.$isToday) return '500';
     return '400';
   }};
 
-  ${(props) =>
+  ${(props: CalendarDayProps) =>
     props.$isRangeStart &&
     `
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
     `}
 
-  ${(props) =>
+  ${(props: CalendarDayProps) =>
     props.$isRangeEnd &&
     `
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     `}
     
-    ${(props) =>
+  ${(props: CalendarDayProps) =>
     props.$isInRange &&
     !props.$isRangeStart &&
     !props.$isRangeEnd &&
@@ -127,8 +127,8 @@ const CalendarDay = styled.div<CalendarDayProps>`
         border-radius: 0;
     `}
     
-    &:hover {
-    ${(props) =>
+  &:hover {
+    ${(props: CalendarDayProps) =>
     !props.$isSelected &&
     `
             background: #f5f5f5;
@@ -136,7 +136,7 @@ const CalendarDay = styled.div<CalendarDayProps>`
         `}
   }
 
-  ${(props) =>
+  ${(props: CalendarDayProps) =>
     props.$isToday &&
     !props.$isSelected &&
     `
@@ -213,9 +213,9 @@ export const CalendarSection = ({
 
           let isInRange = false;
           if (mode === 'range') {
-            if (currentRangeStart && (currentRangeEnd || hoverDate)) {
-              const start = currentRangeStart;
-              const end = currentRangeEnd || hoverDate;
+            const start = currentRangeStart;
+            const end = currentRangeEnd || hoverDate;
+            if (start && end) {
               const isBefore = start.toMillis() < end.toMillis();
               const s = isBefore ? start : end;
               const e = isBefore ? end : start;

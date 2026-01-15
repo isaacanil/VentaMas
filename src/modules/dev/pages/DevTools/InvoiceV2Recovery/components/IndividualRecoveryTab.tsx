@@ -208,7 +208,7 @@ export const IndividualRecoveryTab = ({
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Card title="Resumen general" extra={statusTag}>
             <Space wrap>
-              <Statistic title="invoiceId" value={resolvedInvoiceId || 'â€”'} />
+              <Statistic title="invoiceId" value={resolvedInvoiceId || '—'} />
               <Statistic title="Pendientes" value={summary.pending || 0} />
               <Statistic title="Completadas" value={summary.done || 0} />
               <Statistic title="Fallidas" value={summary.failed || 0} />
@@ -219,16 +219,16 @@ export const IndividualRecoveryTab = ({
             </Space>
           </Card>
 
-          <Card title="NÃºmero de factura y contador">
+          <Card title="Número de factura y contador">
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <Space wrap>
                 <Statistic
-                  title="NÃºmero (Invoice V2)"
-                  value={resolvedInvoiceNumber ?? 'â€”'}
+                  title="Número (Invoice V2)"
+                  value={resolvedInvoiceNumber ?? '—'}
                 />
                 <Statistic
-                  title="NÃºmero en invoices"
-                  value={canonicalInvoiceNumber ?? 'â€”'}
+                  title="Número en invoices"
+                  value={canonicalInvoiceNumber ?? '—'}
                 />
                 <Statistic
                   title="Contador lastInvoiceId"
@@ -241,20 +241,20 @@ export const IndividualRecoveryTab = ({
               </Space>
               {invoiceCounterUpdatedAt && (
                 <Text type="secondary">
-                  Ãšltima actualizaciÃ³n: {formatDateTime(invoiceCounterUpdatedAt)}
+                  Última actualización: {formatDateTime(invoiceCounterUpdatedAt)}
                 </Text>
               )}
               {shouldWarnInvoiceNumber && (
                 <Alert
                   type="warning"
                   showIcon
-                  message="El contador no coincide con el nÃºmero recuperado"
-                  description="Ajusta el contador para evitar saltos en la numeraciÃ³n de facturas."
+                  message="El contador no coincide con el número recuperado"
+                  description="Ajusta el contador para evitar saltos en la numeración de facturas."
                 />
               )}
               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                 Usa estas acciones para corregir el contador <code>counters/lastInvoiceId</code>{' '}
-                cuando el consecutivo quede desfasado del nÃºmero real de la factura.
+                cuando el consecutivo quede desfasado del número real de la factura.
               </Paragraph>
               <Space wrap align="center">
                 <Button onClick={refreshInvoiceCounter} loading={loadingInvoiceCounter}>
@@ -266,7 +266,7 @@ export const IndividualRecoveryTab = ({
                   loading={updatingInvoiceCounter}
                   disabled={resolvedInvoiceNumber == null}
                 >
-                  Ajustar al nÃºmero actual
+                  Ajustar al número actual
                 </Button>
                 <Space align="center">
                   <InputNumber
@@ -288,7 +288,7 @@ export const IndividualRecoveryTab = ({
                 </Space>
               </Space>
               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                TambiÃ©n puedes asignar manualmente el nÃºmero correcto en Invoice V2 e invoices
+                También puedes asignar manualmente el número correcto en Invoice V2 e invoices
                 y luego sincronizar el contador en un solo paso.
               </Paragraph>
               <Space align="center" wrap>
@@ -296,7 +296,7 @@ export const IndividualRecoveryTab = ({
                   value={customInvoiceNumber}
                   onChange={(value) => setCustomInvoiceNumber(value)}
                   min={0}
-                  placeholder="Nuevo nÃºmero de factura"
+                  placeholder="Nuevo número de factura"
                   style={{ width: 200 }}
                 />
                 <Button
@@ -325,7 +325,7 @@ export const IndividualRecoveryTab = ({
                         <Tag color="red">{task.status || 'failed'}</Tag>
                       </Space>
                       <Text type="secondary">
-                        Intentos: {task.attempts ?? 0} Â· Ãšltima actualizaciÃ³n:{' '}
+                        Intentos: {task.attempts ?? 0} · Última actualización:{' '}
                         {formatDateTime(task.updatedAt)}
                       </Text>
                       {task.lastError ? (
@@ -334,7 +334,7 @@ export const IndividualRecoveryTab = ({
                         </Text>
                       ) : (
                         <Text type="secondary">
-                          No se registrÃ³ un motivo de error.
+                          No se registró un motivo de error.
                         </Text>
                       )}
                     </Space>
@@ -347,10 +347,10 @@ export const IndividualRecoveryTab = ({
           <Card title="Detalles del snapshot">
             <Descriptions column={2} bordered>
               <Descriptions.Item label="NCF">
-                {snapshot?.ncf?.code || 'â€”'}
+                {snapshot?.ncf?.code || '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Tipo NCF">
-                {snapshot?.ncf?.type || 'â€”'}
+                {snapshot?.ncf?.type || '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Cliente">
                 {snapshot?.client?.name || 'Sin cliente'}
@@ -362,19 +362,19 @@ export const IndividualRecoveryTab = ({
                 {canonicalDateLabel}
               </Descriptions.Item>
               <Descriptions.Item label="Due date">
-                {snapshot?.dueDate ? formatDateTime(snapshot.dueDate) : 'â€”'}
+                {snapshot?.dueDate ? formatDateTime(snapshot.dueDate) : '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Comentario">
-                {snapshot?.invoiceComment || 'â€”'}
+                {snapshot?.invoiceComment || '—'}
               </Descriptions.Item>
               <Descriptions.Item label="NCF reservado">
-                {snapshot?.ncf?.status || 'â€”'}
+                {snapshot?.ncf?.status || '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Cuadre previsto">
-                {intendedCashCountId || 'â€”'}
+                {intendedCashCountId || '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Cuadre registrado">
-                {effectiveResolvedCashCountId || 'â€”'}
+                {effectiveResolvedCashCountId || '—'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
@@ -385,7 +385,7 @@ export const IndividualRecoveryTab = ({
                 type="warning"
                 showIcon
                 message="No encontramos el documento en businesses/{businessId}/invoices."
-                description="Utiliza la acciÃ³n de recuperaciÃ³n para replicar nuevamente la factura."
+                description="Utiliza la acción de recuperación para replicar nuevamente la factura."
               />
             ) : (
               <CodeBlock>
@@ -397,7 +397,7 @@ export const IndividualRecoveryTab = ({
           <Card title="Cuadres detectados">
             {linkedCashCounts.length === 0 ? (
               <Text type="secondary">
-                No hemos encontrado esta factura en ningÃºn cuadre de caja.
+                No hemos encontrado esta factura en ningún cuadre de caja.
               </Text>
             ) : (
               <List
@@ -415,7 +415,7 @@ export const IndividualRecoveryTab = ({
                         )}
                       </Space>
                       {item.number && (
-                        <Text type="secondary">NÃºmero: {item.number}</Text>
+                        <Text type="secondary">Número: {item.number}</Text>
                       )}
                       {item.opening?.employee?.name && (
                         <Text type="secondary">
@@ -456,7 +456,7 @@ export const IndividualRecoveryTab = ({
                   type="warning"
                   showIcon
                   message="Fechas diferentes entre Invoice V2 e invoices"
-                  description={`Invoice V2: ${v2CreatedAtLabel} Â· invoices: ${canonicalDateLabel}`}
+                  description={`Invoice V2: ${v2CreatedAtLabel} · invoices: ${canonicalDateLabel}`}
                 />
               )}
               {shouldWarnCashCount && (
@@ -466,7 +466,7 @@ export const IndividualRecoveryTab = ({
                   message="Cuadre de caja no vinculado"
                   description={
                     intendedCashCountId
-                      ? `La factura se creÃ³ con el cuadre ${intendedCashCountId}, pero actualmente no estÃ¡ registrada allÃ­. Reintenta 'attachToCashCount' para vincularla.`
+                      ? `La factura se creó con el cuadre ${intendedCashCountId}, pero actualmente no está registrada allí. Reintenta 'attachToCashCount' para vincularla.`
                       : 'No pudimos identificar el cuadre de caja asociado a esta factura.'
                   }
                 />
@@ -492,7 +492,7 @@ export const IndividualRecoveryTab = ({
                           <Text strong>{key}</Text>
                           <Text type="secondary">{label}</Text>
                           {isDisabled && (
-                            <Text type="secondary">Ya estÃ¡ registrada en un cuadre.</Text>
+                            <Text type="secondary">Ya está registrada en un cuadre.</Text>
                           )}
                         </Space>
                       </Checkbox>
@@ -538,7 +538,7 @@ export const IndividualRecoveryTab = ({
                 <Alert
                   type="info"
                   showIcon
-                  message="Resultado de reprogramaciÃ³n"
+                  message="Resultado de reprogramación"
                   description={
                     <ul>
                       {repairResult.results?.map((item) => (

@@ -61,14 +61,10 @@ export const useProductStockStatus = (
       stockCriticalThreshold?: number;
     };
   };
-  const billing = settingsCart?.billing || {};
-  const lowThreshold = Number.isFinite(billing?.stockLowThreshold)
-    ? billing.stockLowThreshold
-    : 20;
+  const billing = settingsCart?.billing;
+  const lowThreshold = billing?.stockLowThreshold ?? 20;
 
-  const criticalThreshold = Number.isFinite(billing?.stockCriticalThreshold)
-    ? billing.stockCriticalThreshold
-    : Math.min(lowThreshold, 10);
+  const criticalThreshold = billing?.stockCriticalThreshold ?? Math.min(lowThreshold, 10);
 
   if (!productInCart && !originalProduct) {
     return { isLowStock: false, isCriticalStock: false, isOutOfStock: false };

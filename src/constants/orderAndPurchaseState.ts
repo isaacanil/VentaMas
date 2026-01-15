@@ -44,12 +44,12 @@ export const getDefaultTransactionCondition = () => {
   return transactionConditions.find((condition) => condition.id === 'cash'); // Cambiar de condition.value a condition.id
 };
 
-export const getTransactionConditionById = (conditionKey) => {
+export const getTransactionConditionById = (conditionKey: string | null | undefined) => {
   if (!conditionKey) return null;
   return transactionConditions.find((c) => c.id === conditionKey) || null; // Cambiar de c.value a c.id
 };
 
-export const getTransactionStateById = (stateKey) => {
+export const getTransactionStateById = (stateKey: string | null | undefined) => {
   if (stateKey) {
     const state = transactionStatuses.find((s) => s.id === stateKey);
     return state || null;
@@ -57,21 +57,21 @@ export const getTransactionStateById = (stateKey) => {
   return stateKey || null;
 };
 
-export const getOrderConditionByID = (conditionID) => {
+export const getOrderConditionByID = (conditionID: string | null | undefined) => {
   if (conditionID) {
     const condition = orderAndDataCondition.find((c) => c.id === conditionID);
     return condition;
   }
   return conditionID || null;
 };
-export const getOrderStateByID = (stateID) => {
+export const getOrderStateByID = (stateID: string | null | undefined) => {
   if (stateID) {
     const state = orderAndDataState.find((s) => s.id === stateID);
     return state;
   }
   return stateID || '';
 };
-export const selectItemByName = (array, name) => {
+export const selectItemByName = (array: Array<{ id: string; name: string }>, name: string) => {
   const item = array.find((i) => i.name === name);
-  return item.id;
+  return item?.id;
 };

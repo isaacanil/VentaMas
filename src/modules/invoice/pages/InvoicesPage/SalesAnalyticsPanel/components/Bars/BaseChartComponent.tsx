@@ -15,7 +15,7 @@ type ContainerProps = {
   $height: string;
 };
 
-// Hook para detectar tamaÃ±o de pantalla
+// Hook para detectar tamaño de pantalla
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -33,7 +33,7 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-// Componente base para grÃ¡ficos
+// Componente base para gráficos
 export const BaseChartContainer = ({ title, children, height = '200px' }: BaseChartContainerProps) => {
   const isMobile = useIsMobile();
 
@@ -49,15 +49,15 @@ export const BaseChartContainer = ({ title, children, height = '200px' }: BaseCh
 
 const Container = styled.div<ContainerProps>`
   display: grid;
-  gap: ${(props) => (props.$isMobile ? '0.5em' : '1em')};
-  height: ${(props) => {
+  gap: ${(props: ContainerProps) => (props.$isMobile ? '0.5em' : '1em')};
+  height: ${(props: ContainerProps) => {
     const baseHeight = parseInt(props.$height);
     return props.$isMobile ? `${baseHeight - 20}px` : props.$height;
   }};
 
   @media (width <= 768px) {
     gap: 0.5em;
-    height: ${(props) => {
+    height: ${(props: ContainerProps) => {
       const baseHeight = parseInt(props.$height);
       return `${baseHeight - 20}px`;
     }};
@@ -65,7 +65,7 @@ const Container = styled.div<ContainerProps>`
 
   @media (width <= 480px) {
     gap: 0.25em;
-    height: ${(props) => {
+    height: ${(props: ContainerProps) => {
       const baseHeight = parseInt(props.$height);
       return `${baseHeight - 40}px`;
     }};

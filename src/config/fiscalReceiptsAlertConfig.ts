@@ -3,7 +3,30 @@
  * Este archivo permite configurar cuándo mostrar alertas basadas en la cantidad restante
  */
 
-export const FISCAL_RECEIPTS_ALERT_CONFIG = {
+interface ThresholdConfig {
+  warning: number;
+  critical: number;
+}
+
+interface MessageConfig {
+  template: string;
+  action: string;
+}
+
+interface FiscalReceiptsAlertConfig {
+  DEFAULT_WARNING_THRESHOLD: number;
+  DEFAULT_CRITICAL_THRESHOLD: number;
+  CUSTOM_THRESHOLDS: Record<string, ThresholdConfig>;
+  MESSAGES: Record<string, MessageConfig>;
+  NOTIFICATIONS: {
+    SHOW_POPUP_ON_CRITICAL: boolean;
+    SHOW_BADGE_ON_ALERTS: boolean;
+    CHECK_FREQUENCY_MINUTES: number;
+    EMAIL_REMINDERS: boolean;
+  };
+}
+
+export const FISCAL_RECEIPTS_ALERT_CONFIG: FiscalReceiptsAlertConfig = {
   // Umbrales por defecto
   DEFAULT_WARNING_THRESHOLD: 100, // Mostrar alerta de advertencia cuando queden menos de 100
   DEFAULT_CRITICAL_THRESHOLD: 50, // Mostrar alerta crítica cuando queden menos de 50
@@ -71,7 +94,7 @@ export const FISCAL_RECEIPTS_ALERT_CONFIG = {
  * @param {string} receiptType - Tipo de comprobante
  * @returns {Object} Umbrales de advertencia y crítico
  */
-export const getThresholdsForReceiptType = (receiptType) => {
+export const getThresholdsForReceiptType = (receiptType: string): ThresholdConfig => {
   const customConfig =
     FISCAL_RECEIPTS_ALERT_CONFIG.CUSTOM_THRESHOLDS[receiptType];
 
@@ -91,11 +114,11 @@ export const getThresholdsForReceiptType = (receiptType) => {
 /**
  * Formatea un mensaje usando una plantilla
  * @param {string} template - Plantilla del mensaje
- * @param {Object} data - Datos para reemplazar en la plantilla
+ * @param {Record<string, any>} data - Datos para reemplazar en la plantilla
  * @returns {string} Mensaje formateado
  */
-export const formatMessage = (template, data) => {
-  return template.replace(/\{(\w+)\}/g, (match, key) => {
+export const formatMessage = (template: string, data: Record<string, any>): string => {
+  return template.replace(/\{(\w+)\}/g, (match: string, key: string) => {
     return data[key] !== undefined ? data[key] : match;
   });
 };
@@ -103,10 +126,10 @@ export const formatMessage = (template, data) => {
 /**
  * Obtiene el mensaje configurado para un tipo de alerta
  * @param {string} alertType - Tipo de alerta (critical, warning, info, success)
- * @param {Object} receiptData - Datos del comprobante
+ * @param {Record<string, any>} receiptData - Datos del comprobante
  * @returns {Object} Mensaje y acción configurados
  */
-export const getAlertMessage = (alertType, receiptData = {}) => {
+export const getAlertMessage = (alertType: string, receiptData: Record<string, any> = {}) => {
   const messageConfig =
     FISCAL_RECEIPTS_ALERT_CONFIG.MESSAGES[alertType.toUpperCase()];
 

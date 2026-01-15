@@ -88,7 +88,7 @@ export const LocationDisplay = ({
 
 const LocationPath = styled.div<{ $variant: LocationDisplayVariant }>`
   display: flex;
-  flex-wrap: ${({ $variant }) => ($variant === 'inline' ? 'wrap' : 'nowrap')};
+  flex-wrap: ${({ $variant }: { $variant: LocationDisplayVariant }) => ($variant === 'inline' ? 'wrap' : 'nowrap')};
   gap: 8px;
   align-items: center;
   width: 100%;
@@ -161,7 +161,7 @@ const LocationPath = styled.div<{ $variant: LocationDisplayVariant }>`
   }
 
   .navigation-icon {
-    display: ${({ $variant }) => ($variant === 'inline' ? 'none' : 'block')};
+    display: ${({ $variant }: { $variant: LocationDisplayVariant }) => ($variant === 'inline' ? 'none' : 'block')};
     flex-shrink: 0;
     font-size: 0.9rem;
     color: #2563eb;
@@ -172,30 +172,30 @@ const LocationPath = styled.div<{ $variant: LocationDisplayVariant }>`
 const LocationBadge = styled.div<{ $variant: LocationDisplayVariant }>`
   position: relative;
   display: flex;
-  flex-direction: ${({ $variant }) =>
+  flex-direction: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
     $variant === 'inline' ? 'row' : 'column'};
-  gap: ${({ $variant }) => ($variant === 'inline' ? '8px' : '6px')};
-  align-items: ${({ $variant }) =>
+  gap: ${({ $variant }: { $variant: LocationDisplayVariant }) => ($variant === 'inline' ? '8px' : '6px')};
+  align-items: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
     $variant === 'inline' ? 'center' : 'flex-start'};
-  padding: ${({ $variant }) => ($variant === 'inline' ? '6px 0' : '8px')};
-  margin-top: ${({ $variant }) => ($variant === 'inline' ? '0' : 'auto')};
+  padding: ${({ $variant }: { $variant: LocationDisplayVariant }) => ($variant === 'inline' ? '6px 0' : '8px')};
+  margin-top: ${({ $variant }: { $variant: LocationDisplayVariant }) => ($variant === 'inline' ? '0' : 'auto')};
   font-size: 0.9rem;
   color: #1e293b;
   cursor: pointer;
-  background: ${({ $variant }) =>
+  background: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
     $variant === 'inline' ? 'transparent' : '#ffffff'};
-  border: ${({ $variant }) =>
+  border: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
     $variant === 'inline' ? 'none' : '1px solid #e2e8f0'};
   border-radius: 10px;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${({ $variant }) =>
-      $variant === 'inline' ? 'transparent' : '#2563eb'};
-    box-shadow: ${({ $variant }) =>
-      $variant === 'inline'
-        ? 'none'
-        : '0 4px 12px rgba(37, 99, 235, 0.1)'};
+    border-color: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
+    $variant === 'inline' ? 'transparent' : '#2563eb'};
+    box-shadow: ${({ $variant }: { $variant: LocationDisplayVariant }) =>
+    $variant === 'inline'
+      ? 'none'
+      : '0 4px 12px rgba(37, 99, 235, 0.1)'};
 
     .navigation-icon {
       transform: translateX(4px);

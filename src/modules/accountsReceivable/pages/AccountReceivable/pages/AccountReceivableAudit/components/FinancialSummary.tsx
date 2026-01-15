@@ -96,8 +96,8 @@ const ProgressBarContainer = styled.div`
 
 const ProgressSegment = styled.div<{ $width: number; $color: string }>`
   height: 100%;
-  width: ${({ $width }) => $width}%;
-  background-color: ${({ $color }) => $color};
+  width: ${({ $width }: { $width: number }) => $width}%;
+  background-color: ${({ $color }: { $color: string }) => $color};
 `;
 
 const Legend = styled.div`
@@ -113,7 +113,7 @@ const Dot = styled.span<{ $color: string }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: ${({ $color }) => $color};
+  background-color: ${({ $color }: { $color: string }) => $color};
   margin-right: 4px;
 `;
 

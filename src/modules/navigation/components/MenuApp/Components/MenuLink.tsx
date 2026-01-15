@@ -23,19 +23,19 @@ export const MenuLink = ({ item, onActionDone }: MenuLinkProps) => {
     end: true,
   });
 
-  const isRouteActive = (route) => {
+  const isRouteActive = (route: string) => {
     const currentPath = location.pathname;
     return currentPath === route || currentPath.startsWith(route + '/');
   };
 
   const isCurrentRoute = item?.submenu?.some((subItem) =>
-    isRouteActive(subItem.route),
+    subItem.route ? isRouteActive(subItem.route) : false,
   );
 
   // Inicializar abierto si la ruta coincide
   const [isOpenSubMenu, setIsOpenSubMenu] = useState(() => !!isCurrentRoute);
 
-  const toggleSubMenu = (e) => {
+  const toggleSubMenu = (e: React.MouseEvent) => {
     e?.preventDefault?.();
     setIsOpenSubMenu((prev) => !prev);
   };
@@ -44,11 +44,11 @@ export const MenuLink = ({ item, onActionDone }: MenuLinkProps) => {
     setIsOpenSubMenu(false);
   };
 
-  const handleAction = (e) => {
+  const handleAction = (e: React.MouseEvent) => {
     e?.preventDefault?.();
     if (!item?.action) return;
     if (item.action === 'openDeveloperModal') {
-      dispatch(toggleDeveloperModal());
+      dispatch(toggleDeveloperModal(undefined));
     }
     if (typeof onActionDone === 'function') onActionDone();
   };
@@ -111,11 +111,11 @@ const commonStyles = css`
   }
 
   &:hover {
-    color: ${(props) => props.theme.bg.color};
+    color: ${(props: any) => props.theme.bg.color};
     transition: background-color 400ms ease;
 
     svg {
-      color: ${(props) => props.theme.bg.color};
+      color: ${(props: any) => props.theme.bg.color};
     }
   }
 
@@ -130,7 +130,7 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
   &.active {
     font-weight: 600;
     color: white;
-    background-color: ${(props) => props.theme.bg.color};
+    background-color: ${(props: any) => props.theme.bg.color};
     border-radius: 0.4em;
 
     svg {

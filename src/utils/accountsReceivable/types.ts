@@ -39,12 +39,19 @@ export interface ReceivableInvoiceData {
   number?: string | number;
   emissionDate?: TimestampLike;
   date?: TimestampLike;
+  discount?: { value?: number };
+  delivery?: { value?: number };
+  totalInsurance?: number;
+  totalTaxes?: number;
+  totalPurchaseWithoutTaxes?: number;
+  payment?: number;
+  change?: number;
   paymentMethod?: ReceivablePaymentMethod[];
   products?: unknown[];
   items?: unknown[];
   itemsCount?: number;
   totalShoppingItems?: number | { value?: number };
-  totalPurchase?: { value?: number };
+  totalPurchase?: number | { value?: number };
   totalAmount?: number;
   insurance?: { name?: string };
 }
@@ -71,7 +78,7 @@ export type ReceivableAccountType = 'insurance' | 'normal' | string;
 export interface AccountsReceivableDoc extends Record<string, unknown> {
   id?: string;
   type?: ReceivableAccountType;
-  insurance?: { name?: string };
+  insurance?: { name?: string; insuranceId?: string };
   numberId?: string | number;
   invoiceId?: string;
   clientId?: string;
@@ -91,6 +98,20 @@ export interface AccountsReceivableDoc extends Record<string, unknown> {
   createdBy?: string;
   updatedBy?: string;
   comments?: string;
+  // New fields
+  total?: number;
+  totalPaid?: number;
+  initialAmount?: number;
+  invoiceNumber?: string;
+  ncf?: string;
+  clientName?: string;
+  insuranceName?: string;
+  hasInsurance?: boolean;
+  isInsurance?: boolean;
+  date?: TimestampLike;
+  dateGroup?: string;
+  arNumber?: string;
+  paidInstallments?: AccountsReceivableInstallment[];
 }
 
 export interface AccountsReceivableInstallment {
@@ -105,6 +126,10 @@ export interface AccountsReceivableInstallment {
   createdBy?: string;
   updatedBy?: string;
   isActive?: boolean;
+  // Compatibilidad con recibos/vistas
+  number?: string | number;
+  amount?: number;
+  status?: string;
 }
 
 export interface AccountsReceivableInstallmentPayment {
@@ -141,6 +166,8 @@ export interface AccountsReceivableDetail {
   installments: AccountsReceivableInstallment[];
   installmentPayments: AccountsReceivableInstallmentPayment[];
   payments: AccountsReceivablePayment[];
+  client?: ReceivableClient | null;
+  invoice?: ReceivableInvoice | null;
 }
 
 export interface AccountsReceivableDetailsModal {
@@ -193,6 +220,11 @@ export interface AccountReceivableRow {
   actions: { account: AccountsReceivableRecord };
   type: ReceivableAccountType;
   dateGroup: string;
+  // Nuevos campos para integración
+  arId?: string;
+  arNumber?: string;
+  paidInstallments?: AccountsReceivableInstallment[];
+  arBalance?: number;
 }
 
 export type AccountsReceivableSummaryData = AccountsReceivableDetail;
@@ -202,7 +234,7 @@ export type AccountsReceivableSummaryView = Omit<
 > & {
   ar?: AccountsReceivableDoc | null;
   client?: ReceivableClient | null;
-  invoice?: ReceivableInvoiceData | ReceivableInvoice | null;
+  invoice?: ReceivableInvoiceData | null;
   installments?: AccountsReceivableInstallment[];
   installmentPayments?: AccountsReceivableInstallmentPayment[];
   payments?: AccountsReceivablePayment[];
@@ -210,10 +242,13 @@ export type AccountsReceivableSummaryView = Omit<
 
 export interface AccountsReceivablePaymentReceipt {
   account: AccountReceivableRow;
+  accounts?: AccountReceivableRow[]; // Soporte para múltiples cuentas en un recibo
   receiptNumber: string;
   payment: AccountsReceivablePayment;
   installmentsPaid: AccountsReceivableInstallment[];
   client: ReceivableClient;
+  change?: number;
+  paymentMethod?: string;
 }
 
 export type ReceivablePaidInstallment = AccountsReceivableInstallment;

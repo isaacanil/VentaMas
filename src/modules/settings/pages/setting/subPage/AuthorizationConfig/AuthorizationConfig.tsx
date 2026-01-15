@@ -118,8 +118,8 @@ export const AuthorizationConfig = () => {
 
   const handleDeactivatePin = async (userId, userName) => {
     Modal.confirm({
-      title: 'Â¿Desactivar PIN?',
-      content: `Â¿Está seguro de desactivar el PIN del usuario ${userName}? Esta acción no se puede deshacer.`,
+      title: '¿Desactivar PIN?',
+      content: `¿Está seguro de desactivar el PIN del usuario ${userName}? Esta acción no se puede deshacer.`,
       okText: 'Desactivar',
       okType: 'danger',
       cancelText: 'Cancelar',

@@ -27,12 +27,12 @@ export const ProductsSection = ({ location }: ProductsSectionProps) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as InventoryUser | null;
   const navigate = useNavigate();
-  const { data: products } = useListenProductsStockByLocation(location);
+  const { data: products } = useListenProductsStockByLocation(location as any);
 
   const handleDelete = async (product: ProductStockRecord | undefined) => {
     if (!product?.id) return;
     try {
-      await deleteProductStock({ user, productStockId: product.id });
+      await deleteProductStock({ user: user as any, productStockId: product.id });
     } catch (error) {
       console.error('Failed to delete product stock', error);
     }
@@ -48,7 +48,7 @@ export const ProductsSection = ({ location }: ProductsSectionProps) => {
       <SectionContainer
         title="Productos"
         items={products}
-        onAdd={() => dispatch(openProductStock({ location }))}
+        onAdd={() => dispatch(openProductStock({ location: location as any }))}
         renderItem={(product) => (
           <List.Item
             key={product.id || product.productId}
@@ -58,7 +58,7 @@ export const ProductsSection = ({ location }: ProductsSectionProps) => {
                 icon={<FontAwesomeIcon icon={faEdit} />}
                 onClick={(e) => {
                   e.stopPropagation();
-                  dispatch(openProductStock({ ...product, location }));
+                  dispatch(openProductStock({ ...product, location: location as any }));
                 }}
               />,
               <Button

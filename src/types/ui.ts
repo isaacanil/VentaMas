@@ -46,9 +46,21 @@ export interface CenteredTextProps {
 
 export interface DropdownMenuProps {
   title?: string;
-  options?: any[];
+  options?: DropdownMenuOption[];
   customButton?: ReactNode;
   [key: string]: any;
+}
+
+export interface DropdownMenuOption {
+  id?: string | number;
+  text?: ReactNode;
+  description?: ReactNode;
+  icon?: ReactNode;
+  isActive?: boolean;
+  disabled?: boolean;
+  closeWhenAction?: boolean;
+  action?: () => void;
+  [key: string]: unknown;
 }
 
 export interface FormattedValueProps {

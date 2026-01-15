@@ -9,6 +9,10 @@ import {
   CategoryContext,
   initCategory,
   initCategoryState,
+  type Category,
+  type CategoryState as CategoryStateType,
+  type CategorySubmitFunction,
+  type CategoryUser,
 } from './contextState';
 
 const warning = {
@@ -29,23 +33,27 @@ export const useCategoryState = () => {
     setCategory(initCategory);
   };
 
-  const onSubmit = (cat) => {
+  const onSubmit = (cat: Category): void => {
     if (typeof categoryState.onSubmit === 'function') {
-      categoryState.onSubmit(user, cat);
+      categoryState.onSubmit(user as CategoryUser, cat);
       onClose();
     } else {
       throw new Error('No onSubmit function provided in categoryState.');
     }
   };
 
-  const configureCategoryModal = (data) => {
+  const configureCategoryModal = (data: Partial<CategoryStateType>): void => {
     setCategoryState({
       ...categoryState,
       ...data,
     });
   };
 
-  const configureModal = (isOpen, type, onSubmitFunction) => {
+  const configureModal = (
+    isOpen: boolean,
+    type: 'create' | 'edit',
+    onSubmitFunction: CategorySubmitFunction
+  ): void => {
     configureCategoryModal({ isOpen, type, onSubmit: onSubmitFunction });
   };
 

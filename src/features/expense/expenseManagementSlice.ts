@@ -1,6 +1,30 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface Expense {
+  description: string;
+  amount: number;
+  dates: {
+    expenseDate: number;
+    createdAt: string;
+  };
+  receiptImageUrl: string;
+  category: string;
+  categoryId: string;
+  invoice: any;
+  payment: any;
+  attachments: any[];
+}
+
+interface ExpenseManagementState {
+  mode: string;
+  expense: Expense;
+}
+
+interface ExpenseManagementRootState {
+  expenseManagement: ExpenseManagementState;
+}
+
+const initialState: ExpenseManagementState = {
   mode: 'add',
   expense: {
     description: '',
@@ -22,7 +46,7 @@ export const expenseManagementSlice = createSlice({
   name: 'expenseManagement',
   initialState,
   reducers: {
-    setExpense: (state, { payload }) => {
+    setExpense: (state: ExpenseManagementState, { payload }: PayloadAction<Partial<Expense>>) => {
       state.expense = {
         ...state.expense,
         ...payload,
@@ -32,11 +56,11 @@ export const expenseManagementSlice = createSlice({
         attachments: payload.attachments ?? state.expense.attachments,
       };
     },
-    resetExpense: (state: any) => {
+    resetExpense: (state: ExpenseManagementState) => {
       state.expense = initialState.expense;
       state.mode = initialState.mode;
     },
-    setExpenseMode: (state: any, action: PayloadAction<any>) => {
+    setExpenseMode: (state: ExpenseManagementState, action: PayloadAction<string>) => {
       state.mode = action.payload;
     },
   },
@@ -46,6 +70,4 @@ export const { setExpense, resetExpense, setExpenseMode } =
   expenseManagementSlice.actions;
 export default expenseManagementSlice.reducer;
 
-export const selectExpense = (state) => state.expenseManagement;
-
-
+export const selectExpense = (state: ExpenseManagementRootState) => state.expenseManagement;

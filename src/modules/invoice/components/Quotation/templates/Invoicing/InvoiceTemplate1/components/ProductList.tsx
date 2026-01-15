@@ -7,23 +7,16 @@ import { separator } from '@/utils/number/number';
 import {
   getTax,
   getTotalPrice,
+  getProductIndividualDiscount,
   resetAmountToBuyForProduct,
 } from '@/utils/pricing';
-import { resolveInvoiceProductQuantity } from '@/utils/invoice/product';
+import { resolveInvoiceAmount } from '@/utils/invoice/amount';
 import { convertTimeToSpanish } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
+import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 
 import { Col } from './Table/Col';
 import { Row } from './Table/Row';
 
-
-const productIndividualDiscount = (product: InvoiceProduct): number => {
-  if (!product?.discount?.value) return 0;
-  if (product.discount.type === 'percentage') {
-    const basePrice = getTotalPrice(product, false);
-    return (basePrice * product.discount.value) / 100;
-  }
-  return product.discount.value;
-};
 
 type TaxReceiptLike = { enabled?: boolean } | null | undefined;
 
@@ -32,9 +25,10 @@ type ProductListProps = {
   taxReceipt?: TaxReceiptLike;
 };
 
-export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
+export const ProductList = ({ data, taxReceipt }: ProductListProps) => {        
   const { products, NCF } = data;
-  const taxReceiptEnabled = Boolean(taxReceipt?.enabled) || Boolean(NCF);
+  const insuranceEnabled = data?.insuranceEnabled;
+  const taxReceiptEnabled = Boolean(taxReceipt?.enabled) || Boolean(NCF);       
   const getFullProductName = ({
     name,
     measurement,
@@ -44,7 +38,7 @@ export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
   return (
     <Container>
       <Products>
-        {products?.length > 0
+        {(products?.length || 0) > 0
           ? products?.map((product, index) => (
               <Product key={index}>
                 <Row cols="3">
@@ -62,7 +56,7 @@ export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
                       </div>
                     ) : (
                       <div>
-                        {resolveInvoiceProductQuantity(product)} x{' '}
+                        {resolveInvoiceAmount(product?.amountToBuy)} x{' '}
                         {separator(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
@@ -81,7 +75,23 @@ export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
                 </Row>
                 <Row>
                   <ProductName>{getFullProductName(product)} </ProductName>
-                </Row>{' '}
+                </Row>
+                {(() => {
+                  const rawBrand =
+                    typeof product?.brand === 'string'
+                      ? product.brand.trim()
+                      : '';
+                  const hasBrand =
+                    rawBrand &&
+                    rawBrand.toLowerCase() !==
+                      PRODUCT_BRAND_DEFAULT.toLowerCase();
+                  if (!hasBrand) return null;
+                  return (
+                    <Row>
+                      <ProductBrand>Marca: {rawBrand}</ProductBrand>
+                    </Row>
+                  );
+                })()}
                 {product?.warranty?.status && (
                   <Row>
                     {convertTimeToSpanish(
@@ -91,11 +101,19 @@ export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
                     de Garantía
                   </Row>
                 )}
-                {product?.discount && product?.discount?.value > 0 && (
+                {insuranceEnabled && product?.insurance?.mode && (
+                  <Row>
+                    <InsuranceCoverage>
+                      Cobertura de seguro: {product.insurance.mode} -{' '}
+                      {formatPrice(product.insurance.value || 0)}
+                    </InsuranceCoverage>
+                  </Row>
+                )}
+                {product?.discount && (product?.discount?.value || 0) > 0 && (
                   <Row>
                     <ProductDiscount>
                       Descuento: -
-                      {formatPrice(productIndividualDiscount(product))}(
+                      {formatPrice(getProductIndividualDiscount(product))}(
                       {product.discount.type === 'percentage'
                         ? `${product.discount.value}%`
                         : 'Monto fijo'}
@@ -151,4 +169,15 @@ const ProductDiscount = styled.div`
   font-weight: 600;
   color: #52c41a;
   border-left: 2px solid #52c41a;
+`;
+
+const ProductBrand = styled.div`
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #333;
+`;
+
+const InsuranceCoverage = styled.div`
+  font-size: 1em;
+  font-style: italic;
 `;

@@ -73,9 +73,9 @@ const ContentContainer = styled.div`
   overflow: hidden;
 `;
 
-const ScrollableContent = styled.div`
+const ScrollableContent = styled.div<{ offset: number }>`
   display: flex;
-  transform: translateX(${(props) => props.offset}px);
+  transform: translateX(${({ offset }: { offset: number }) => offset}px);
   transition: transform 0.3s ease;
 `;
 
@@ -93,6 +93,18 @@ const PageContainer = styled.div`
  * @param {number} itemsPerPage - Elementos por página (para cálculo automático)
  * @param {Array} data - Datos para dividir automáticamente en páginas
  */
+import type { ReactNode } from 'react';
+
+interface NotificationSectionProps {
+  title: string;
+  pages?: unknown[];
+  showNavigation?: boolean;
+  renderPage?: (pageData: unknown, index: number) => ReactNode;
+  itemsPerPage?: number;
+  data?: unknown[];
+  children?: ReactNode;
+}
+
 const NotificationSection = ({
   title,
   pages = [],
@@ -101,7 +113,7 @@ const NotificationSection = ({
   itemsPerPage = 3,
   data = [],
   children,
-}) => {
+}: NotificationSectionProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef(null);
@@ -123,7 +135,7 @@ const NotificationSection = ({
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
+        setContainerWidth((containerRef.current as HTMLDivElement).offsetWidth);
       }
     };
 

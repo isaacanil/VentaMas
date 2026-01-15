@@ -189,7 +189,7 @@ export function ProductStockForm(_props: ProductStockFormProps) {
         okText: 'Sí, actualizar',
         cancelText: 'No',
         onOk: () => {
-          dispatch(openProductStock(existingProductStock));
+          dispatch(openProductStock(existingProductStock as any));
         },
         onCancel: () => {
           dispatch(
@@ -239,13 +239,13 @@ export function ProductStockForm(_props: ProductStockFormProps) {
           ...formData,
           stock: updatedStock,
         };
-        await updateProductStock(user, updatedData);
+        await updateProductStock(user as any, updatedData as any);
         message.success('Stock actualizado exitosamente.');
       } else {
         const data = {
           ...formData,
         };
-        await createProductStock(user, data);
+        await createProductStock(user as any, data as any);
         message.success('Producto creado exitosamente.');
       }
 

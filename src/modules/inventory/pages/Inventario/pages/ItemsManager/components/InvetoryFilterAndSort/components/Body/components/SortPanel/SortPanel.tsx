@@ -11,6 +11,7 @@ import {
   selectOrden,
   setCriterio,
   setOrden,
+  type FilterRootState,
 } from '@/features/filterProduct/filterProductsSlice';
 import { opcionesCriterio } from '@/modules/inventory/pages/Inventario/pages/ItemsManager/components/InvetoryFilterAndSort/InventoryFilterAndSortMetadata';
 
@@ -22,10 +23,10 @@ type OrdenValue = string | boolean;
 
 export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: SortPanelProps) => {
   const dispatch = useDispatch();
-  const criterio = useSelector((state) => selectCriterio(state, contextKey)) as string;
+  const criterio = useSelector((state: FilterRootState) => selectCriterio(state, contextKey)) as string;
 
   // Función para manejar el cambio de criterio
-  const orden = useSelector((state) => selectOrden(state, contextKey)) as OrdenValue;
+  const orden = useSelector((state: FilterRootState) => selectOrden(state, contextKey)) as unknown as OrdenValue;
 
   const handleCriterioChange = useCallback(
     (newCriterio: string) => {
@@ -36,13 +37,13 @@ export const SortPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: SortPanelProp
 
   const handleOrdenChange = useCallback(
     (nuevoOrden: OrdenValue) => {
-      dispatch(setOrden({ context: contextKey, value: nuevoOrden }));
+      dispatch(setOrden({ context: contextKey, value: nuevoOrden as string }));
     },
     [contextKey, dispatch],
   );
 
   useEffect(() => {
-    const ordenPorCriterio = {
+    const ordenPorCriterio: Record<string, OrdenValue> = {
       nombre: 'asc',
       categoria: 'asc',
       stock: 'ascNum',

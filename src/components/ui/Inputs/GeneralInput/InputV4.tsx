@@ -154,7 +154,7 @@ export const InputV4 = ({
             type={showPassword ? 'text' : type}
             autoComplete="off"
             value={limpiarValor(value as string | number)}
-            onInvalid={(e) => {
+            onInvalid={(e: React.FormEvent<HTMLInputElement>) => {
               e.preventDefault();
               (e.target as HTMLInputElement).setCustomValidity('Por favor, complete este campo.');
             }}
@@ -240,8 +240,8 @@ const Asterisk = styled.span`
 
 const Backdrop = styled.div<{ $marginBottom?: boolean }>`
   position: relative;
-  ${(props) =>
-    props.$marginBottom &&
+  ${({ $marginBottom }) =>
+    $marginBottom &&
     `
     margin-bottom: 1em;
   `}
@@ -285,8 +285,8 @@ const PasswordToggle = styled.div`
 
 const ButtonsContainer = styled.div<{ $alignment?: string; $size?: string }>`
   display: flex;
-  align-items: ${(props) => {
-    switch (props.$alignment) {
+  align-items: ${({ $alignment }) => {
+    switch ($alignment) {
       case 'start':
         return 'flex-start';
       case 'stretch':
@@ -296,19 +296,6 @@ const ButtonsContainer = styled.div<{ $alignment?: string; $size?: string }>`
         return 'flex-end';
     }
   }};
-
-  /* ${(props) => {
-    switch (props.size) {
-      case 'small':
-        return `height: 2.4em;`;
-      case 'medium':
-        return `height: 2.6em;`;
-      case 'large':
-        return `height: 2.2em;`;
-      default:
-        return `height: 2.3em;`;
-    }
-  }} */
 `;
 
 interface InputWrapperProps {
@@ -424,7 +411,7 @@ const InputWrapper = styled.div.attrs(() => ({
   }}
 `;
 
-const StyledInput = styled.input`
+const StyledInput = styled.input<{ disabled?: boolean }>`
   border: none;
   outline: none;
   flex: 1;
@@ -455,8 +442,8 @@ const StyledInput = styled.input`
 
   background-color: transparent;
 
-  ${(props) =>
-    props.disabled &&
+  ${({ disabled }) =>
+    disabled &&
     `
     background-color: transparent;
   `}
@@ -651,7 +638,7 @@ const ErrorContainer = styled.ul`
 `;
 
 const ErrorMessage = styled.li<{ $show?: boolean }>`
-  display: ${({ $show }) => ($show ? 'inline' : 'hidden')};
+  display: ${({ $show }: { $show?: boolean }) => ($show ? 'inline' : 'hidden')};
   margin-left: 8px;
   font-size: 14px;
   color: #ff3547;

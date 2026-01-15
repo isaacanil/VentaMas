@@ -451,7 +451,7 @@ export const DeveloperModal = () => {
     return () => {
       document.removeEventListener('keydown', handleGlobalKeyDown);
     };
-  }, [modalData.isOpen, handleKeyDown]);
+  }, [modalData.isOpen, handleKeyDownInternal]);
 
   // Si no es desarrollador, no renderizar nada
   if (!isDeveloper) return null;

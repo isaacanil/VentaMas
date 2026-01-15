@@ -188,12 +188,12 @@ export const useIndividualInvoiceRecovery = ({
             Boolean(
               v2CreatedAtTs &&
               canonicalDateTs &&
-              !canonicalDateTs.isSame(v2CreatedAtTs),
+              canonicalDateTs.toMillis() !== v2CreatedAtTs.toMillis(),
             );
           const labelParts = [];
           const createdAtLabel = formatDateTime(createdAtSource);
           const canonicalLabel = formatDateTime(canonicalDateSource);
-          if (createdAtLabel && createdAtLabel !== 'â€”') {
+          if (createdAtLabel && createdAtLabel !== '—') {
             labelParts.push(createdAtLabel);
           }
           if (invoiceNumber != null) labelParts.push(`#${invoiceNumber}`);
@@ -214,7 +214,7 @@ export const useIndividualInvoiceRecovery = ({
           }
           return {
             value: docSnap.id,
-            label: labelParts.join(' Â· '),
+            label: labelParts.join(' · '),
             meta: {
               hasV2: true,
               v2Status: invoiceStatus,
@@ -366,7 +366,7 @@ export const useIndividualInvoiceRecovery = ({
       }
       const parsedValue = parseCounterNumber(nextValue);
       if (!Number.isFinite(parsedValue)) {
-        message.warning('Ingresa un nÃºmero vÃ¡lido para el contador.');
+        message.warning('Ingresa un número válido para el contador.');
         return;
       }
       setUpdatingInvoiceCounter(true);
@@ -424,7 +424,7 @@ export const useIndividualInvoiceRecovery = ({
         });
         setRepairResult(response);
         message.success(
-          'Tareas reprogramadas. El worker procesarÃ¡ los cambios.',
+          'Tareas reprogramadas. El worker procesará los cambios.',
         );
         await handleFetch(activeQuery);
       } catch (err) {
@@ -462,7 +462,7 @@ export const useIndividualInvoiceRecovery = ({
   const v2CreatedAtTs = parseTimestamp(v2CreatedAtSource);
   const canonicalDateTs = parseTimestamp(canonicalDateSource);
   const hasDateMismatch =
-    Boolean(v2CreatedAtTs && canonicalDateTs && !canonicalDateTs.isSame(v2CreatedAtTs));
+    Boolean(v2CreatedAtTs && canonicalDateTs && canonicalDateTs.toMillis() !== v2CreatedAtTs.toMillis());
   const v2CreatedAtLabel = formatDateTime(v2CreatedAtSource);
   const canonicalDateLabel = formatDateTime(canonicalDateSource);
   const cashCountMeta = snapshot?.meta?.cashCount || {};
@@ -514,7 +514,7 @@ export const useIndividualInvoiceRecovery = ({
 
   const syncCounterWithInvoiceNumber = useCallback(() => {
     if (resolvedInvoiceNumber == null) {
-      message.warning('No se pudo determinar el nÃºmero de factura para sincronizar.');
+      message.warning('No se pudo determinar el número de factura para sincronizar.');
       return;
     }
     updateInvoiceCounter(resolvedInvoiceNumber);
@@ -523,12 +523,12 @@ export const useIndividualInvoiceRecovery = ({
   const updateInvoiceNumberEverywhere = useCallback(
     async (nextNumber) => {
       if (!activeQuery?.businessId || !activeQuery?.invoiceId) {
-        message.warning('Busca primero una factura para actualizar su nÃºmero.');
+        message.warning('Busca primero una factura para actualizar su número.');
         return false;
       }
       const parsedNumber = parseCounterNumber(nextNumber);
       if (!Number.isFinite(parsedNumber)) {
-        message.warning('Ingresa un nÃºmero de factura vÃ¡lido.');
+        message.warning('Ingresa un número de factura válido.');
         return false;
       }
       setUpdatingInvoiceNumber(true);
@@ -576,18 +576,18 @@ export const useIndividualInvoiceRecovery = ({
           writes.push(updateDoc(canonicalRef, canonicalUpdates));
         } else {
           message.info(
-            'No se encontrÃ³ documento en invoices; se omitiÃ³ esa actualizaciÃ³n.',
+            'No se encontró documento en invoices; se omitió esa actualización.',
           );
         }
         writes.push(updateDoc(v2Ref, v2Updates));
         await Promise.all(writes);
-        message.success('NÃºmero sincronizado en Invoice V2.');
+        message.success('Número sincronizado en Invoice V2.');
         await updateInvoiceCounter(parsedNumber);
         await handleFetch(activeQuery);
         return true;
       } catch (err) {
         console.error('[useIndividualInvoiceRecovery] update number', err);
-        message.error('No se pudo actualizar el nÃºmero de la factura.');
+        message.error('No se pudo actualizar el número de la factura.');
         return false;
       } finally {
         setUpdatingInvoiceNumber(false);
@@ -656,7 +656,7 @@ export const useIndividualInvoiceRecovery = ({
 
   const handleSingleAutoRecovery = useCallback(() => {
     if (!availableAutoRecoveryTasks.length) {
-      message.warning('No hay tareas automÃ¡ticas disponibles para esta factura.');
+      message.warning('No hay tareas automáticas disponibles para esta factura.');
       return;
     }
     runRepairTasks({

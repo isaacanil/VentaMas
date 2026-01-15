@@ -115,7 +115,7 @@ export function GroupedLotsRecordRow({
     meta?.manualExpirationDate && meta.manualExpirationDate !== CLEAR_SENTINEL
       ? meta.manualExpirationDate
       : record.type === 'batch'
-        ? formatInputDate(record.expirationDate)
+        ? formatInputDate(record.expirationDate as any)
         : '';
   currentPersistedExp = normalizeExpirationValue(currentPersistedExp);
   const baseExp = baselineExp[record.key];
@@ -135,16 +135,16 @@ export function GroupedLotsRecordRow({
       meta?.manualExpirationDate &&
       meta.manualExpirationDate !== CLEAR_SENTINEL
     )
-      baseStr = formatInputDate(meta.manualExpirationDate);
+      baseStr = formatInputDate(meta.manualExpirationDate as any);
     else if (record.type === 'batch')
-      baseStr = formatInputDate(record.expirationDate);
+      baseStr = formatInputDate(record.expirationDate as any);
   }
   if (baseStr) {
     const d = DateTime.fromISO(baseStr);
     if (d.isValid) dateValue = d;
   }
   const originalDateStr =
-    record.type === 'batch' ? formatInputDate(record.expirationDate) : '';
+    record.type === 'batch' ? formatInputDate(record.expirationDate as any) : '';
   const currentEditStr = isMarkedForRemoval
     ? CLEAR_SENTINEL
     : dateValue

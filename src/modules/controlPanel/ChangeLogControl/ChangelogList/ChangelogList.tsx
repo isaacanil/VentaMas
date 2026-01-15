@@ -53,7 +53,7 @@ export const ChangelogList = () => {
     return (
       <Container>
         <Wrapper>
-          <h1>Ventamax â€” Notas del lanzamiento</h1>
+          <h1>Ventamax — Notas del lanzamiento</h1>
           <p>
             No se pudieron cargar las notas de la versión. Intenta nuevamente.
           </p>
@@ -67,7 +67,7 @@ export const ChangelogList = () => {
       <MenuApp />
       <Container>
         <Wrapper>
-          <h1>Ventamax â€” Notas del lanzamiento</h1>
+          <h1>Ventamax — Notas del lanzamiento</h1>
           <br />
           {changelogs
             .sort(

@@ -55,7 +55,7 @@ interface FilterProductsState {
 }
 
 type FilterPayload<T> = { context?: FilterContext; value?: T } | T;
-type FilterRootState = { filterProducts: FilterProductsState };
+export type FilterRootState = { filterProducts: FilterProductsState };
 
 const STORAGE_KEYS = {
   criterio: 'filterCriterio',

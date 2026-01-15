@@ -167,7 +167,7 @@ export const AuthorizationRequests = ({
     }
 
     Modal.confirm({
-      title: 'Ã‚¿Confirmar autorización?',
+      title: '¿Confirmar autorización?',
       content:
         'Esta acción aprobará la solicitud y quedará registrada en el historial.',
       okText: 'Autorizar',

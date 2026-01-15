@@ -157,7 +157,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
   }, [canAccessGeneralConfig, navigate, GENERAL_CONFIG_BUSINESS]);
 
   const handleOpenNotifications = useCallback(() => {
-    dispatch(openNotificationCenter('taxReceipt'));
+    dispatch(openNotificationCenter());
     handleOpenMenu();
   }, [dispatch, handleOpenMenu]);
 
@@ -298,7 +298,7 @@ const Wrapper = styled.div`
 const NavigationBody = styled.div`
   padding: 0.6em 0.9em;
   overflow: hidden auto;
-  background-color: ${(props) => props.theme.bg.color2};
+  background-color: ${(props: any) => props.theme.bg.color2};
 `;
 
 const NavigationLinks = styled.div`
@@ -314,7 +314,7 @@ const MenuGroup = styled.div`
 const MenuContainer = styled.div`
   padding: 0.25rem;
   overflow: hidden;
-  background-color: ${(props) => props.theme.bg.shade};
+  background-color: ${(props: any) => props.theme.bg.shade};
   border: 1px solid rgb(0 0 0 / 10%);
   border-radius: var(--border-radius, 8px);
 `;
@@ -328,7 +328,7 @@ const Header = styled.div`
   width: 100%;
   height: 2.75em;
   padding: 1rem;
-  background-color: ${(props) => props.theme.bg.color};
+  background-color: ${(props: any) => props.theme.bg.color};
 
   @media (width <= 768px) {
     height: 2.75em;

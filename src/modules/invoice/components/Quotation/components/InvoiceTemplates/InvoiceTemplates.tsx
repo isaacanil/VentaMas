@@ -37,9 +37,9 @@ type InvoiceContainerProps = {
 };
 
 const InvoiceContainer = styled.div<InvoiceContainerProps>`
-  width: ${({ $template }) => TEMPLATES_CONFIG[$template]?.width};
-  height: ${({ $template }) => TEMPLATES_CONFIG[$template]?.height};
-  padding: ${({ $template }) => TEMPLATES_CONFIG[$template]?.padding};
+  width: ${({ $template }: InvoiceContainerProps) => TEMPLATES_CONFIG[$template]?.width};
+  height: ${({ $template }: InvoiceContainerProps) => TEMPLATES_CONFIG[$template]?.height};
+  padding: ${({ $template }: InvoiceContainerProps) => TEMPLATES_CONFIG[$template]?.padding};
   margin: 20px auto;
   background: white;
   box-shadow: 0 0 10px rgb(0 0 0 / 10%);

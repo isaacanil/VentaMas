@@ -46,14 +46,14 @@ const LocationCell = styled.div<{
   padding: 2px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: ${({ isEntry }) =>
+  background: ${({ isEntry }: { isEntry: boolean }) =>
     isEntry ? 'rgba(76, 175, 80, 0.08)' : 'rgba(239, 83, 80, 0.08)'};
   border-radius: 8px;
   border: 1px solid
-    ${({ isEntry }) =>
-      isEntry ? 'rgba(76, 175, 80, 0.25)' : 'rgba(239, 83, 80, 0.25)'};
-  opacity: ${({ isExternal }) => (isExternal ? 0.85 : 1)};
-  ${({ isExternal }) =>
+    ${({ isEntry }: { isEntry: boolean }) =>
+    isEntry ? 'rgba(76, 175, 80, 0.25)' : 'rgba(239, 83, 80, 0.25)'};
+  opacity: ${({ isExternal }: { isExternal?: boolean }) => (isExternal ? 0.85 : 1)};
+  ${({ isExternal }: { isExternal?: boolean }) =>
     isExternal &&
     `
     background: #f5f5f5;
@@ -62,11 +62,11 @@ const LocationCell = styled.div<{
   `}
 
   &:hover {
-    background: ${({ isEntry }) =>
-      isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
+    background: ${({ isEntry }: { isEntry: boolean }) =>
+    isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
     box-shadow: 0 2px 8px
-      ${({ isEntry }) =>
-        isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
+      ${({ isEntry }: { isEntry: boolean }) =>
+    isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
     transform: translateY(-1px);
   }
 `;
@@ -77,7 +77,7 @@ const LocationName = styled.div<{ isEntry: boolean }>`
   text-overflow: ellipsis;
   font-size: 1em;
   font-weight: 600;
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ isEntry }: { isEntry: boolean }) => (isEntry ? '#2E7D32' : '#C62828')};
   letter-spacing: -0.3px;
   white-space: nowrap;
 `;
@@ -91,7 +91,7 @@ const DirectionWrapper = styled.div`
 const DirectionArrow = styled.span<{ isEntry: boolean }>`
   font-size: 1.1em;
   font-weight: bold;
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ isEntry }: { isEntry: boolean }) => (isEntry ? '#2E7D32' : '#C62828')};
 `;
 
 const DirectionLabel = styled.span<{ isEntry: boolean }>`
@@ -100,7 +100,7 @@ const DirectionLabel = styled.span<{ isEntry: boolean }>`
   align-items: center;
   font-size: 0.85em;
   font-weight: 500;
-  color: ${({ isEntry }) => (isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ isEntry }: { isEntry: boolean }) => (isEntry ? '#2E7D32' : '#C62828')};
   opacity: 0.9;
 `;
 
@@ -110,7 +110,7 @@ const ReasonBadge = styled.span<{ reasonType?: MovementReason | string }>`
   font-size: 0.85em;
   font-weight: 500;
   white-space: nowrap;
-  ${({ reasonType }) => {
+  ${({ reasonType }: { reasonType?: MovementReason | string }) => {
     switch (reasonType) {
       case MovementReason.Purchase:
         return `background: rgba(25, 118, 210, 0.1); color: #1976D2; border: 1px solid rgba(25, 118, 210, 0.2);`;
@@ -214,9 +214,9 @@ const MovementTypeBadge = styled.span<{ isEntry: boolean }>`
   padding: 6px 12px;
   font-size: 0.9em;
   font-weight: 500;
-  color: ${({ isEntry }) => (isEntry ? '#1976D2' : '#7B1FA2')};
+  color: ${({ isEntry }: { isEntry: boolean }) => (isEntry ? '#1976D2' : '#7B1FA2')};
   letter-spacing: -0.2px;
-  background: ${({ isEntry }) =>
+  background: ${({ isEntry }: { isEntry: boolean }) =>
     isEntry ? 'rgba(33, 150, 243, 0.1)' : 'rgba(156, 39, 176, 0.1)'};
   border-radius: 8px;
 `;
@@ -273,9 +273,9 @@ const AllMovements = () => {
         date: dateObj ? formatLocaleDate(dateObj) : 'Sin fecha',
         time: dateObj
           ? dateObj.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })
+            hour: '2-digit',
+            minute: '2-digit',
+          })
           : 'Sin hora',
         product: productName,
         location: mv,
@@ -293,8 +293,8 @@ const AllMovements = () => {
         accessor: 'movementType',
         minWidth: '110px',
         keepWidth: true,
-        cell: ({ value }) => {
-          const isEntry = value === 'in';
+        cell: ({ value }: { value: unknown }) => {
+          const isEntry = (value as string) === 'in';
           return (
             <MovementTypeBadge isEntry={isEntry}>
               {isEntry ? 'Entrada' : 'Salida'}
@@ -306,7 +306,7 @@ const AllMovements = () => {
         Header: 'Ubicación',
         accessor: 'location',
         minWidth: '230px',
-        cell: ({ value }) => {
+        cell: ({ value }: { value: unknown }) => {
           const movement = value as Movement | undefined;
           if (!movement) return null;
           const isEntry = movement.movementType === 'in';
@@ -323,7 +323,7 @@ const AllMovements = () => {
               <LocationName isEntry={isEntry}>{locationDisplay}</LocationName>
               <DirectionWrapper>
                 <DirectionLabel isEntry={isEntry}>
-                  <DirectionArrow isEntry={isEntry}>{isEntry ? 'â†' : 'â†’'}</DirectionArrow>
+                  <DirectionArrow isEntry={isEntry}>{isEntry ? '←' : '→'}</DirectionArrow>
                   {isEntry ? 'Origen' : 'Destino'}
                 </DirectionLabel>
               </DirectionWrapper>
@@ -335,7 +335,7 @@ const AllMovements = () => {
         Header: 'Motivo',
         accessor: 'movementReason',
         minWidth: '140px',
-        cell: ({ value }) => (
+        cell: ({ value }: { value: unknown }) => (
           <ReasonBadge reasonType={value as MovementReason | string}>
             {formatMovementReason(String(value))}
           </ReasonBadge>

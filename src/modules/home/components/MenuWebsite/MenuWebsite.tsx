@@ -30,7 +30,7 @@ export const MenuWebsite = () => {
       title: 'Cerrar sesión',
       isOpen: true,
       type: 'warning',
-      message: 'Â¿Está seguro que desea cerrar sesión?',
+      message: '¿Está seguro que desea cerrar sesión?',
       onConfirm: () => {
         handleLogout();
         onClose();

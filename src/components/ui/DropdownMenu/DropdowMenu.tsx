@@ -20,7 +20,7 @@ export const DropdownMenu = ({
   ...props
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const DropDownMenuRef = useRef(null);
+  const DropDownMenuRef = useRef<HTMLDivElement>(null);
 
   // Popper
   const { refs, floatingStyles } = useFloating({
@@ -28,8 +28,14 @@ export const DropdownMenu = ({
     whileElementsMounted: autoUpdate,
     middleware: [floatingOffset(8), flip(), shift({ padding: 8 })],
   });
-  const setReference = useCallback((node) => refs.setReference(node), [refs]);
-  const setFloating = useCallback((node) => refs.setFloating(node), [refs]);
+  const setReference = useCallback(
+    (node: HTMLElement | null) => refs.setReference(node),
+    [refs]
+  );
+  const setFloating = useCallback(
+    (node: HTMLElement | null) => refs.setFloating(node),
+    [refs]
+  );
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

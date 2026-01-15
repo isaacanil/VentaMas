@@ -27,53 +27,67 @@ const mobileCardStyles = css`
   padding: 1em;
 `;
 
-const Container = styled.div`
+interface ClientData {
+  id: string;
+  name?: string;
+  personalID?: string;
+  tel?: string;
+  numberId?: string | number;
+}
+
+interface ContainerProps {
+  hasMissingName: boolean;
+  hasMissingID: boolean;
+  isSelected: boolean;
+}
+
+const Container = styled.div<ContainerProps>`
   position: relative;
   ${desktopCardStyles};
   min-height: 70px;
   font-size: 0.9rem;
   color: #1f2937;
   cursor: pointer;
-  background-color: ${(props) =>
-    props.hasMissingName
+  background-color: ${({ hasMissingName, hasMissingID }: ContainerProps) =>
+    hasMissingName
       ? '#fff7f7'
-      : props.hasMissingID
+      : hasMissingID
         ? '#fffaf0'
         : '#ffffff'};
   border: 1px solid
-    ${(props) =>
-      props.hasMissingName
-        ? '#fecaca'
-        : props.hasMissingID
-          ? '#fcd34d'
-          : props.isSelected
-            ? '#4096ff'
-            : '#e5e7eb'};
+    ${({ hasMissingName, hasMissingID, isSelected }: ContainerProps) =>
+    hasMissingName
+      ? '#fecaca'
+      : hasMissingID
+        ? '#fcd34d'
+        : isSelected
+          ? '#4096ff'
+          : '#e5e7eb'};
   border-radius: 12px;
-  box-shadow: ${(props) =>
-    props.isSelected
+  box-shadow: ${({ isSelected }: ContainerProps) =>
+    isSelected
       ? '0 8px 20px rgba(64, 150, 255, 0.16)'
       : '0 2px 8px rgba(15, 23, 42, 0.05)'};
   transition: border-color 0.2s ease, box-shadow 0.2s ease,
     background-color 0.2s ease;
-
+ 
   &:hover {
-    border-color: ${(props) =>
-      props.hasMissingName
-        ? '#f87171'
-        : props.hasMissingID
-          ? '#fbbf24'
-          : '#1677ff'};
-    box-shadow: ${(props) =>
-      props.isSelected
-        ? '0 10px 24px rgba(64, 150, 255, 0.2)'
-        : '0 6px 16px rgba(15, 23, 42, 0.08)'};
-    background-color: ${(props) =>
-      props.hasMissingName
-        ? '#fff3f3'
-        : props.hasMissingID
-          ? '#fff7ea'
-          : '#f7fbff'};
+    border-color: ${({ hasMissingName, hasMissingID }: ContainerProps) =>
+    hasMissingName
+      ? '#f87171'
+      : hasMissingID
+        ? '#fbbf24'
+        : '#1677ff'};
+    box-shadow: ${({ isSelected }: ContainerProps) =>
+    isSelected
+      ? '0 10px 24px rgba(64, 150, 255, 0.2)'
+      : '0 6px 16px rgba(15, 23, 42, 0.08)'};
+    background-color: ${({ hasMissingName, hasMissingID }: ContainerProps) =>
+    hasMissingName
+      ? '#fff3f3'
+      : hasMissingID
+        ? '#fff7ea'
+        : '#f7fbff'};
   }
 
   @media (width <= 700px) {
@@ -252,6 +266,15 @@ const ActionButtons = styled.div`
   }
 `;
 
+interface ClientProps {
+  client: ClientData;
+  Close: () => void;
+  updateClientMode: (client: ClientData) => void;
+  onDelete: (id: string | undefined) => void;
+  searchTerm: string;
+  selectedClient: ClientData | null;
+}
+
 export const Client = ({
   client,
   Close,
@@ -259,14 +282,14 @@ export const Client = ({
   onDelete,
   searchTerm,
   selectedClient,
-}) => {
+}: ClientProps) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const hasMissingName = !client.name;
   const hasMissingID = !client.personalID;
 
-  const handleSubmit = (client) => {
-    dispatch(addClient(client));
+  const handleSubmit = (client: ClientData) => {
+    dispatch(addClient(client as any));
 
     if (!client.id || !user) {
       dispatch(clearAuthData());

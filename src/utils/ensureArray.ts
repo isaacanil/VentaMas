@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Ensures the value is an array
  * @param value - Single value or array

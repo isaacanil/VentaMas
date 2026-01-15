@@ -30,6 +30,6 @@ const Container = styled.div<{ cols?: number | string; space?: boolean }>`
   align-items: center;
   display: grid;
   gap: 0.4em;
-  ${({ space }) => paddingStyles[space]}
-  ${({ cols }) => columnStyles[cols] || columnStyles.default}
+  ${({ space }: { space?: boolean }) => (space ? paddingStyles.true : paddingStyles.false)}
+  ${({ cols }: { cols?: number | string }) => columnStyles[cols as keyof typeof columnStyles] || columnStyles.default}
 `;

@@ -21,6 +21,7 @@ import { addProduct } from '@/features/cart/cartSlice';
 import {
   DEFAULT_FILTER_CONTEXT,
   selectStockLocations,
+  type FilterRootState,
 } from '@/features/filterProduct/filterProductsSlice';
 import {
   selectProductStockSimple,
@@ -34,12 +35,6 @@ import { normalizeLocationId } from '@/utils/inventory/locations';
 import type { ProductStockRecord } from '@/utils/inventory/types';
 
 const numberFormatter = new Intl.NumberFormat('es-DO');
-
-type FilterState = {
-  filterProducts?: {
-    contexts?: Record<string, unknown>;
-  };
-};
 
 const StyledWrapper = styled.div`
   .batch-select-button {
@@ -126,27 +121,29 @@ const LocationBadge = styled.span`
   line-height: 1.3;
 `;
 
-const BatchCard = styled.div<{
+interface BatchCardProps {
   $selected?: boolean;
   $expired?: boolean;
   $disabled?: boolean;
-}>`
+}
+
+const BatchCard = styled.div<BatchCardProps>`
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 6px 10px;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ $disabled }: BatchCardProps) => ($disabled ? 'not-allowed' : 'pointer')};
   background: white;
   border: 2px solid
-    ${({ $selected, $expired, $disabled }) => {
-      if ($disabled) return '#cbd5f5';
-      if ($selected && $expired) return '#dc2626';
-      if ($selected) return '#2563eb';
-      return '#e2e8f0';
-    }};
+    ${({ $selected, $expired, $disabled }: BatchCardProps) => {
+    if ($disabled) return '#cbd5f5';
+    if ($selected && $expired) return '#dc2626';
+    if ($selected) return '#2563eb';
+    return '#e2e8f0';
+  }};
   border-radius: 12px;
-  box-shadow: ${({ $selected, $expired, $disabled }) => {
+  box-shadow: ${({ $selected, $expired, $disabled }: BatchCardProps) => {
     if ($disabled) return 'none';
     if ($selected && $expired) return '0 4px 12px rgba(220, 38, 38, 0.2)';
     if ($selected) return '0 4px 12px rgba(37, 99, 235, 0.15)';
@@ -155,9 +152,9 @@ const BatchCard = styled.div<{
   transition: all 0.2s ease;
 
   &:hover {
-    box-shadow: ${({ $disabled }) =>
-      $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
-    transform: ${({ $disabled }) => ($disabled ? 'none' : 'translateY(-2px)')};
+    box-shadow: ${({ $disabled }: BatchCardProps) =>
+    $disabled ? 'none' : '0 6px 16px rgb(0 0 0 / 10%)'};
+    transform: ${({ $disabled }: BatchCardProps) => ($disabled ? 'none' : 'translateY(-2px)')};
   }
 
   .batch-number {
@@ -237,8 +234,8 @@ const BatchCard = styled.div<{
   .check-icon {
     font-size: 18px;
     color: #2563eb;
-    opacity: ${({ $selected }) => ($selected ? 1 : 0)};
-    transform: ${({ $selected }) => ($selected ? 'scale(1)' : 'scale(0.5)')};
+    opacity: ${({ $selected }: BatchCardProps) => ($selected ? 1 : 0)};
+    transform: ${({ $selected }: BatchCardProps) => ($selected ? 'scale(1)' : 'scale(0.5)')};
     transition: all 0.2s ease;
   }
 `;
@@ -260,10 +257,10 @@ export function ProductBatchModal() {
   const [rawSelectedBatch, setRawSelectedBatch] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
 
-  const inventoryLocations = useSelector((state: FilterState) =>
+  const inventoryLocations = useSelector((state: FilterRootState) =>
     selectStockLocations(state, DEFAULT_FILTER_CONTEXT),
   ) as string[] | undefined;
-  const salesLocations = useSelector((state: FilterState) =>
+  const salesLocations = useSelector((state: FilterRootState) =>
     selectStockLocations(state, 'sales'),
   ) as string[] | undefined;
   const selectedLocations = salesLocations?.length
@@ -300,9 +297,9 @@ export function ProductBatchModal() {
     const term = searchText.trim().toLowerCase();
     const source = hideExpired
       ? sanitizedProductStocks.filter((stock) => {
-          const exp = toExpirationTimestamp(stock?.expirationDate ?? null);
-          return exp === null || exp >= todayTimestamp;
-        })
+        const exp = toExpirationTimestamp(stock?.expirationDate ?? null);
+        return exp === null || exp >= todayTimestamp;
+      })
       : sanitizedProductStocks;
     if (!term) return source;
     return source.filter((stock) => {
@@ -616,6 +613,25 @@ export function ProductBatchModal() {
   );
 }
 
+const Section = styled.div`
+  & + & {
+    margin-top: 24px;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  margin: 12px 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const SectionNotice = styled.p`
+  margin: 12px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+`;
+
 type RenderBatchCardParams = {
   stock: ProductStockItem;
   selectedBatch: string | null;
@@ -678,22 +694,3 @@ function renderBatchCard({
     </BatchCard>
   );
 }
-
-const Section = styled.div`
-  & + & {
-    margin-top: 24px;
-  }
-`;
-
-const SectionTitle = styled.h3`
-  margin: 12px 0 4px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1e293b;
-`;
-
-const SectionNotice = styled.p`
-  margin: 12px 0;
-  font-size: 0.9rem;
-  color: #64748b;
-`;

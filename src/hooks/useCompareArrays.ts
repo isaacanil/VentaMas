@@ -1,9 +1,8 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 
 import { isEqual } from '@/utils/lodash-minimal';
 
-export const useCompareArrays = (array1, array2) => {
+export const useCompareArrays = <T>(array1: T[], array2: T[]): boolean => {
   return useMemo(() => {
     // Si los arreglos tienen longitudes diferentes, no son iguales
     if (array1.length !== array2.length) return false;

@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
-import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
-import type { InvoiceData } from '@/types/invoice';
+import { resolveDocumentIdentity, type DocumentIdentity } from '@/utils/invoice/documentIdentity.js';
+import type { InvoiceData, InvoiceBusinessInfo } from '@/types/invoice';
 
 import { Header } from './components/Header/Header';
 import { PaymentArea } from './components/PaymentArea';
@@ -19,21 +19,10 @@ type ReceiptProps = {
   ignoreHidden?: boolean;
 };
 
-type DocumentIdentity = {
-  description?: string;
-  label?: string;
-  value?: string | number | null;
-};
-
-type BusinessData = {
-  name?: string;
-  invoice?: { invoiceMessage?: string };
-};
-
 export const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
   ({ data, ignoreHidden }, ref) => {
-    const business = useSelector(selectBusinessData) as BusinessData | null;
-    const documentIdentity = resolveDocumentIdentity(data) as DocumentIdentity;
+    const business = useSelector(selectBusinessData) as InvoiceBusinessInfo | null;
+    const documentIdentity: DocumentIdentity = resolveDocumentIdentity(data);
     const ncfType = documentIdentity.description ?? '';
 
     if (!data) return null;
@@ -87,7 +76,7 @@ export const SubTitle = styled.p<TextAlignProps>`
   margin: 0;
   white-space: nowrap;
 
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -103,7 +92,7 @@ export const P = styled.p<TextAlignProps>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -122,7 +111,7 @@ export const Line = styled.div`
 
 const Space = styled.div<SpaceProps>`
   margin-bottom: 0.6em;
-  ${(props) => {
+  ${(props: SpaceProps) => {
     switch (props.size) {
       case 'small':
         return 'margin-bottom: 0.2em;';

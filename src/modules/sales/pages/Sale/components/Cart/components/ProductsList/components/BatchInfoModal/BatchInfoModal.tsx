@@ -4,36 +4,17 @@ import styled from 'styled-components';
 
 import { useLocationNames } from '@/hooks/useLocationNames';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
+import type { Product as CartProduct } from '@/features/cart/types';
 
 type TimestampLike = {
   seconds?: number;
   toDate?: () => Date;
 };
 
-type BatchInfo = {
-  batchNumber?: string | number | null;
-  quantity?: number | null;
-  expirationDate?: number | string | TimestampLike | null;
-  locationId?: string | null;
-  locationName?: string | null;
-};
-
-type BatchProduct = {
-  name?: string;
-  batchInfo?: BatchInfo | null;
-  batchNumberId?: string | number | null;
-  batchId?: string | number | null;
-  productStockId?: string | null;
-  stock?: number | null;
-  expirationDate?: number | string | TimestampLike | null;
-  locationId?: string | null;
-  location?: string | null;
-};
-
 type BatchInfoModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  product?: BatchProduct | null;
+  product?: CartProduct | null;
 };
 
 const InfoList = styled.div`

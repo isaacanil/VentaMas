@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -11,7 +12,13 @@ import styled from 'styled-components';
 
 import { resolveModuleMeta } from '@/modules/authorizations/pages/Authorizations/components/AuthorizationRequests/utils/utils';
 
-const STATUS_CONFIG = {
+interface StatusConfigItem {
+  icon: React.ReactNode;
+  color: string;
+  text: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfigItem> = {
   pending: {
     icon: <ClockCircleOutlined />,
     color: '#f59e0b',
@@ -39,36 +46,36 @@ const STATUS_CONFIG = {
   },
 };
 
-const getStatusConfig = (status) =>
+const getStatusConfig = (status: string): StatusConfigItem =>
   STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
-const toMillis = (value) => {
+const toMillis = (value: any): number => {
   if (!value) return 0;
   if (typeof value === 'number') {
     return value > 1e12 ? value : value * 1000;
   }
-  if (typeof value.toMillis === 'function') {
+  if (value && typeof value.toMillis === 'function') {
     return value.toMillis();
   }
   if (value instanceof Date) {
     return value.getTime();
   }
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
+  if (value && typeof value === 'object' && typeof value.seconds === 'number') {
     return value.seconds * 1000;
   }
   return 0;
 };
 
-const formatTimeAgo = (timestamp) => {
+const formatTimeAgo = (timestamp: any): string => {
   const millis = toMillis(timestamp);
   if (!millis) return '';
   return DateTime.fromMillis(millis).setLocale('es').toRelative() || '';
 };
 
-const resolveReference = (auth) => {
+const resolveReference = (auth: any): string => {
   if (!auth) return '-';
   const metadata =
-    typeof auth.metadata === 'object' && auth.metadata !== null
+    auth.metadata && typeof auth.metadata === 'object'
       ? auth.metadata
       : {};
   return (
@@ -82,10 +89,18 @@ const resolveReference = (auth) => {
   );
 };
 
-const resolvePersonName = (person) => {
+const resolvePersonName = (person: any): string => {
   if (!person) return '';
   return person.displayName || person.name || person.email || '';
 };
+
+interface AuthorizationRowProps {
+  auth: any;
+  isAdmin: boolean;
+  processingId: string | null;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}
 
 const AuthorizationRow = ({
   auth,
@@ -93,7 +108,7 @@ const AuthorizationRow = ({
   processingId,
   onApprove,
   onReject,
-}) => {
+}: AuthorizationRowProps) => {
   const statusConfig = getStatusConfig(auth.status);
   const isPending = auth.status === 'pending';
   const isProcessing = processingId === auth.id;
@@ -253,13 +268,17 @@ const StatusCell = styled.div`
   min-width: 110px;
 `;
 
-const StatusPill = styled.span`
+interface StatusPillProps {
+  $color?: string;
+}
+
+const StatusPill = styled.span<StatusPillProps>`
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 600;
-  color: ${({ $color }) => $color || '#2563eb'};
+  color: ${({ $color }: StatusPillProps) => $color || '#2563eb'};
   text-transform: capitalize;
-  background: ${({ $color }) => `${$color || '#2563eb'}1a`};
+  background: ${({ $color }: StatusPillProps) => `${$color || '#2563eb'}1a`};
   border-radius: 999px;
 `;
 

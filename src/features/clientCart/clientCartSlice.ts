@@ -30,7 +30,37 @@ const EmptyClient = {
   id: '',
 };
 
-const initialState = {
+interface Client {
+  name: string;
+  tel: string;
+  address: string;
+  personalID: string;
+  delivery: {
+    status: boolean;
+    value: number;
+  };
+  id: string;
+  [key: string]: any;
+}
+
+interface ClientCartState {
+  mode: string;
+  labelClientMode: string;
+  searchTerm: string;
+  client: Client;
+  copyClient: Client | null;
+  isOpen: boolean;
+  showClientList?: boolean;
+}
+
+interface ClientCartRootState {
+  clientCart: ClientCartState;
+  user: {
+    userData: any;
+  };
+}
+
+const initialState: ClientCartState = {
   mode: CLIENT_MODE_BAR.SEARCH.id,
   labelClientMode: CLIENT_MODE_BAR.SEARCH.label,
   searchTerm: '',
@@ -43,10 +73,10 @@ export const clientSlice = createSlice({
   name: 'clientCart',
   initialState,
   reducers: {
-    setClient: (state: any, action: PayloadAction<any>) => {
+    setClient: (state: ClientCartState, action: PayloadAction<Partial<Client>>) => {
       state.client = { ...state.client, ...action.payload };
     },
-    setClientMode: (state: any, action: PayloadAction<any>) => {
+    setClientMode: (state: ClientCartState, action: PayloadAction<string>) => {
       const { SEARCH, CREATE, UPDATE } = CLIENT_MODE_BAR;
       state.mode = action.payload;
 
@@ -72,28 +102,28 @@ export const clientSlice = createSlice({
           state.showClientList = SEARCH.showClientList;
       }
     },
-    setClientSearchTerm: (state: any, action: PayloadAction<any>) => {
+    setClientSearchTerm: (state: ClientCartState, action: PayloadAction<string>) => {
       state.searchTerm = action.payload;
     },
-    addClient: (state: any, action: PayloadAction<any>) => {
+    addClient: (state: ClientCartState, action: PayloadAction<Client>) => {
       state.client = { ...action.payload };
       state.mode = CLIENT_MODE_BAR.UPDATE.id;
       state.copyClient = { ...action.payload };
     },
-    setIsOpen: (state: any, action: PayloadAction<any>) => {
+    setIsOpen: (state: ClientCartState, action: PayloadAction<boolean | undefined>) => {
       if (action.payload === undefined) {
         state.isOpen = !state.isOpen;
       } else {
         state.isOpen = action.payload;
       }
     },
-    deleteClient: (state: any) => {
+    deleteClient: (state: ClientCartState) => {
       state.client = EmptyClient;
       state.isOpen = false;
       state.mode = CLIENT_MODE_BAR.SEARCH.id;
       state.labelClientMode = CLIENT_MODE_BAR.SEARCH.label;
     },
-    handleClient: (state: any, action: PayloadAction<any>) => {
+    handleClient: (state: ClientCartState, action: PayloadAction<{ user: any }>) => {
       const { user } = action.payload;
       if (!state.client.id) {
         state.client = GenericClient;
@@ -110,7 +140,7 @@ export const clientSlice = createSlice({
       if (
         !state?.client?.id &&
         state?.client?.name.length > 0 &&
-        state.client.name !== 'Cliente GenÃ©rico'
+        state.client.name !== 'Cliente Genérico'
       ) {
         fbAddClient(user, state.client);
         return;
@@ -120,7 +150,7 @@ export const clientSlice = createSlice({
 });
 
 // Create a thunk to handle both client selection and auth data fetching
-export const selectClientWithAuth = (client) => (dispatch, getState) => {
+export const selectClientWithAuth = (client: Client) => (dispatch: any, getState: any) => {
   dispatch(addClient(client));
 
   const user = getState().user.userData;
@@ -146,13 +176,11 @@ export const {
 } = clientSlice.actions;
 
 //selectors
-export const selectClient = (state) => state.clientCart.client;
-export const selectClientMode = (state) => state.clientCart.mode;
-export const selectLabelClientMode = (state) =>
+export const selectClient = (state: ClientCartRootState) => state.clientCart.client;
+export const selectClientMode = (state: ClientCartRootState) => state.clientCart.mode;
+export const selectLabelClientMode = (state: ClientCartRootState) =>
   state.clientCart.labelClientMode;
-export const selectIsOpen = (state) => state.clientCart.isOpen;
-export const selectClientSearchTerm = (state) => state.clientCart.searchTerm;
+export const selectIsOpen = (state: ClientCartRootState) => state.clientCart.isOpen;
+export const selectClientSearchTerm = (state: ClientCartRootState) => state.clientCart.searchTerm;
 
 export default clientSlice.reducer;
-
-

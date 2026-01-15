@@ -1,6 +1,25 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface SettingState {
+  status: boolean;
+  userPreference: {
+    view: {
+      imageHidden: boolean;
+      rowMode: boolean;
+      categoryGrouped: boolean;
+    };
+  };
+  system: {
+    isConnected: boolean | undefined;
+    fullScreen: boolean;
+  };
+}
+
+interface SettingRootState {
+  setting: SettingState;
+}
+
+const initialState: SettingState = {
   status: false,
   userPreference: {
     view: {
@@ -19,50 +38,61 @@ export const settingSlice = createSlice({
   name: 'setting',
   initialState,
   reducers: {
-    handleImageHidden: (state: any) => {
+    handleImageHidden: (state: SettingState) => {
       let imageDisabled = state.userPreference.view.imageHidden;
       localStorage.setItem(
         'viewProductImageDisabled',
         JSON.stringify(!imageDisabled),
       );
       let savedData = localStorage.getItem('viewProductImageDisabled');
-      state.userPreference.view.imageHidden = JSON.parse(savedData);
+      if (savedData) {
+        state.userPreference.view.imageHidden = JSON.parse(savedData);
+      }
     },
-    ReloadImageHiddenSetting: (state: any) => {
+    ReloadImageHiddenSetting: (state: SettingState) => {
       let savedDataImageHidden = localStorage.getItem(
         'viewProductImageDisabled',
       );
-      state.userPreference.view.imageHidden = JSON.parse(savedDataImageHidden);
+      if (savedDataImageHidden) {
+        state.userPreference.view.imageHidden = JSON.parse(savedDataImageHidden);
+      }
       let savedDataRowMode = localStorage.getItem('viewProductRowMode');
-      state.userPreference.view.rowMode = JSON.parse(savedDataRowMode);
+      if (savedDataRowMode) {
+        state.userPreference.view.rowMode = JSON.parse(savedDataRowMode);
+      }
       let savedDataCategoryGrouped = localStorage.getItem(
         'viewProductCategoryGrouped',
       );
-      state.userPreference.view.categoryGrouped = JSON.parse(
-        savedDataCategoryGrouped,
-      );
+      if (savedDataCategoryGrouped) {
+        state.userPreference.view.categoryGrouped = JSON.parse(
+          savedDataCategoryGrouped,
+        );
+      }
     },
-    handleRowMode: (state: any) => {
+    handleRowMode: (state: SettingState) => {
       let rowMode = state.userPreference.view.rowMode;
       localStorage.setItem('viewProductRowMode', JSON.stringify(!rowMode));
       let getData = localStorage.getItem('viewProductRowMode');
-      state.userPreference.view.rowMode = JSON.parse(getData);
+      if (getData) {
+        state.userPreference.view.rowMode = JSON.parse(getData);
+      }
     },
-    toggleCategoryGrouped: (state: any) => {
+    toggleCategoryGrouped: (state: SettingState) => {
       let categoryGrouped = state.userPreference.view.categoryGrouped;
       localStorage.setItem(
         'viewProductCategoryGrouped',
         JSON.stringify(!categoryGrouped),
       );
       let getData = localStorage.getItem('viewProductCategoryGrouped');
-      state.userPreference.view.categoryGrouped = JSON.parse(getData);
+      if (getData) {
+        state.userPreference.view.categoryGrouped = JSON.parse(getData);
+      }
     },
-    toggleFullScreen: (state: any) => {
+    toggleFullScreen: (state: SettingState) => {
       let fullScreenMode = state.system.fullScreen;
 
       state.system.fullScreen = !fullScreenMode;
     },
-    // Removido método vacío isConnected
   },
 });
 
@@ -75,11 +105,10 @@ export const {
 } = settingSlice.actions;
 
 //selectors
-export const selectCategoryGrouped = (state) =>
+export const selectCategoryGrouped = (state: SettingRootState) =>
   state.setting.userPreference.view.categoryGrouped;
-export const selectImageHidden = (state) =>
+export const selectImageHidden = (state: SettingRootState) =>
   state.setting.userPreference.view.imageHidden;
-export const selectIsRow = (state) => state.setting.userPreference.view.rowMode;
-export const selectFullScreen = (state) => state.setting.system.fullScreen;
+export const selectIsRow = (state: SettingRootState) => state.setting.userPreference.view.rowMode;
+export const selectFullScreen = (state: SettingRootState) => state.setting.system.fullScreen;
 export default settingSlice.reducer;
-

@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { DateTime } from 'luxon';
-import { cloneElement, isValidElement } from 'react';
+import React, { cloneElement, isValidElement } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import styled from 'styled-components';
 
@@ -23,12 +22,12 @@ const defaultConfig: BadgeDateConfig = {
 };
 
 const BadgeContainer = styled.div<{ $bgColor?: string; $simple?: boolean }>`
-  display: ${(props: { $simple?: any }) => props.$simple ($simple ? 'flex' : 'inline-block')};
-  align-items: ${(props: { $simple?: any }) => props.$simple ($simple ? 'center' : 'initial')};
-  justify-content: ${(props: { $simple?: any }) => props.$simple ($simple ? 'center' : 'initial')};
+  display: ${({ $simple }: { $simple?: boolean }) => ($simple ? 'flex' : 'inline-block')};
+  align-items: ${({ $simple }: { $simple?: boolean }) => ($simple ? 'center' : 'initial')};
+  justify-content: ${({ $simple }: { $simple?: boolean }) => ($simple ? 'center' : 'initial')};
   min-width: 115px;
-  padding: ${(props: { $simple?: any }) => props.$simple ($simple ? '8px 16px' : '1px 8px')};
-  background-color: ${({ $simple, $bgColor }) =>
+  padding: ${({ $simple }: { $simple?: boolean }) => ($simple ? '8px 16px' : '1px 8px')};
+  background-color: ${({ $simple, $bgColor }: { $simple?: boolean; $bgColor?: string }) =>
     $simple ? '#f8f9fa' : $bgColor || '#E3F2FD'};
   border-radius: 6px;
 `;
@@ -37,18 +36,18 @@ const DateIconContainer = styled.div<{ $simple?: boolean }>`
   display: flex;
   gap: 4px;
   align-items: center;
-  justify-content: ${(props: { $simple?: any }) => props.$simple ($simple ? 'center' : 'space-between')};
+  justify-content: ${({ $simple }: { $simple?: boolean }) => ($simple ? 'center' : 'space-between')};
 `;
 
 const DateText = styled.span<{ $color: string; $simple?: boolean }>`
-  font-size: ${(props: { $simple?: any }) => props.$simple ($simple ? '14px' : '14px')};
-  color: ${({ $simple, $color }) => ($simple ? '#495057' : $color)};
+  font-size: 14px;
+  color: ${({ $simple, $color }: { $simple?: boolean; $color: string }) => ($simple ? '#495057' : $color)};
 `;
 
 const BadgeText = styled.div<{ $color: string }>`
   font-size: 12px;
   font-weight: 500;
-  color: ${(props: { $color?: any }) => props.$color};
+  color: ${({ $color }: { $color: string }) => $color};
 `;
 
 interface IconProps {
@@ -75,8 +74,8 @@ export const BadgeDate = ({
     text: config?.text || defaultConfig.text,
   };
 
-  const formattedDate = dateTime?.isValid
-    ? dateTime.toFormat('dd/MM/yyyy')
+  const formattedDate = (dateTime?.isValid ?? false)
+    ? (dateTime as DateTime).toFormat('dd/MM/yyyy')
     : DateTime.now().toFormat('dd/MM/yyyy');
 
   if (!config) {

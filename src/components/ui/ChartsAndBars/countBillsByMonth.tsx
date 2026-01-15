@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 
-export function useBillsByMonth(bills) {
+export function useBillsByMonth(bills: any[]) {
   const billCounts = useMemo(() => {
     // Creamos un objeto vacío para almacenar el número de facturas por mes
-    const billCountsByMonth = {};
+    const billCountsByMonth: Record<number, number> = {};
 
     // Iteramos sobre el array de facturas
-    bills.forEach(({ data }) => {
+    bills.forEach(({ data }: any) => {
       // Obtenemos el mes de la factura
       const month = new Date(data.date.seconds * 1000).getMonth();
 
@@ -31,10 +31,10 @@ export function useBillsByMonth(bills) {
   return billCounts;
 }
 
-export function useBillsByDay(bills) {
+export function useBillsByDay(bills: any[]) {
   const billCounts = useMemo(() => {
     // Creamos un objeto vacío para almacenar el número de facturas por día
-    const billCountsByDay = {};
+    const billCountsByDay: Record<number, number> = {};
 
     // Iteramos sobre el array de facturas
     bills.forEach(({ data }) => {

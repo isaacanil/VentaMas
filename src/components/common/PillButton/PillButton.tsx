@@ -1,10 +1,11 @@
+import React from 'react';
 import type { ReactNode } from 'react';
 import { Badge, Spin } from 'antd';
 import styled, { css } from 'styled-components';
 
 interface PillButtonStyleProps {
-  bg?: string;
-  color?: string;
+  $bg?: string;
+  $color?: string;
 }
 
 interface PillButtonProps {
@@ -47,8 +48,8 @@ const base = css`
 const StyledPillButton = styled.button<PillButtonStyleProps>`
   ${base}
 
-  background-color: ${(props: PillButtonStyleProps) => props.bg || 'white'};
-  color: ${(props: PillButtonStyleProps) => props.color || 'black'};
+  background-color: ${({ $bg }) => $bg || 'white'};
+  color: ${({ $color }) => $color || 'black'};
 `;
 
 const IconWrapper = styled.span`
@@ -71,8 +72,8 @@ export const PillButton = ({
   badgeCount,
 }: PillButtonProps) => (
   <StyledPillButton
-    bg={bg}
-    color={color}
+    $bg={bg}
+    $color={color}
     disabled={disabled || loading}
     onClick={onClick}
   >

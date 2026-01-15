@@ -1,9 +1,27 @@
 ﻿// src/store/navigationSlice.js
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface LocationObject {
+  pathname: string;
+  search: string;
+  hash: string;
+  state: any;
+  key: string;
+}
+
+interface NavigationState {
+  history: LocationObject[];
+  maxLength: number;
+  skipKey: string | null;
+}
+
+interface NavigationRootState {
+  navigation: NavigationState;
+}
+
+const initialState: NavigationState = {
   history: [], // Array de objetos Location { pathname, search, hash, state, key }
-  maxLength: 20, // Puedes configurarlo aquÃ­ o pasarlo dinÃ¡micamente
+  maxLength: 20, // Puedes configurarlo aquí o pasarlo dinámicamente
   skipKey: null, // Clave para ignorar al buscar el anterior relevante
 };
 
@@ -11,8 +29,8 @@ const navigationSlice = createSlice({
   name: 'navigation',
   initialState,
   reducers: {
-    // AcciÃ³n para aÃ±adir una nueva ubicaciÃ³n al historial
-    pushHistory: (state: any, action: PayloadAction<any>) => {
+    // Acción para añadir una nueva ubicación al historial
+    pushHistory: (state: NavigationState, action: PayloadAction<LocationObject>) => {
       const newLocation = action.payload; // Esperamos recibir el objeto Location completo
       // Evitar duplicados consecutivos (basado en key o pathname)
       const lastLocation = state.history[state.history.length - 1];
@@ -30,8 +48,8 @@ const navigationSlice = createSlice({
         }
       }
     },
-    // PodrÃ­as aÃ±adir otras acciones si necesitas (ej. setMaxLength, setSkipKey)
-    setNavigationOptions: (state: any, action: PayloadAction<any>) => {
+    // Podrías añadir otras acciones si necesitas (ej. setMaxLength, setSkipKey)
+    setNavigationOptions: (state: NavigationState, action: PayloadAction<{ maxLength?: number; skipKey?: string | null }>) => {
       if (action.payload.maxLength !== undefined) {
         state.maxLength = action.payload.maxLength;
       }
@@ -45,13 +63,13 @@ const navigationSlice = createSlice({
 export const { pushHistory, setNavigationOptions } = navigationSlice.actions;
 
 // Selectores para acceder a los datos desde los componentes
-export const selectNavigationHistory = (state) => state.navigation.history;
-export const selectNavigationSkipKey = (state) => state.navigation.skipKey;
+export const selectNavigationHistory = (state: NavigationRootState) => state.navigation.history;
+export const selectNavigationSkipKey = (state: NavigationRootState) => state.navigation.skipKey;
 
 // Selector Factory: Creates a selector to get the previous relevant route, ignoring a specific path prefix.
-export const makeSelectPreviousRelevantRoute = (pathToIgnore) => {
+export const makeSelectPreviousRelevantRoute = (pathToIgnore?: string) => {
   // Returns the actual selector function
-  return (state) => {
+  return (state: NavigationRootState) => {
     const history = state.navigation.history;
 
     if (history.length < 2) {
@@ -74,5 +92,3 @@ export const makeSelectPreviousRelevantRoute = (pathToIgnore) => {
 };
 
 export default navigationSlice.reducer;
-
-

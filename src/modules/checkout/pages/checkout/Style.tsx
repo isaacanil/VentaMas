@@ -65,13 +65,13 @@ const Group = styled.div<{
 }>`
   display: flex;
   gap: 12px;
-  justify-content: ${({ justifyContent }) => justifyContent};
-  text-transform: ${({ textTransform }) => textTransform};
+  justify-content: ${({ justifyContent }: { justifyContent?: CSSProperties['justifyContent'] }) => justifyContent};
+  text-transform: ${({ textTransform }: { textTransform?: CSSProperties['textTransform'] }) => textTransform};
 `;
 
 export const Subtitle = styled.p<{ align?: Align }>`
   display: flex;
-  justify-content: ${({ align }) => align};
+  justify-content: ${({ align }: { align?: Align }) => align};
   padding: 0;
   margin: 0;
   font-weight: 600;
@@ -83,7 +83,7 @@ export const Paragraph = styled.p<{ align?: Align }>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${({ align }) => {
+  ${({ align }: { align?: Align }) => {
     switch (align) {
       case 'center':
         return 'text-align: center;';
@@ -104,7 +104,7 @@ type SpacingSize = 'small' | 'medium' | 'large';
 
 export const Spacing = styled.div<{ size?: SpacingSize }>`
   margin-bottom: 0.8em;
-  ${({ size }) => {
+  ${({ size }: { size?: SpacingSize }) => {
     switch (size) {
       case 'small':
         return 'margin-bottom: 0.2em;';

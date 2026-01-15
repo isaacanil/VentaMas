@@ -191,6 +191,13 @@ export const General = ({ showImageManager }: GeneralProps) => {
     }
     dispatch(ChangeProductData({ product: { ...changeValue } }));
   };
+
+  // Type guard for validation errors
+  interface ValidationError {
+    errorFields?: Array<{ errors?: string[] }>;
+    message?: string;
+  }
+
   const onFinish = async (_values: ProductRecord) => {
     setSubmit(true);
     try {
@@ -225,8 +232,10 @@ export const General = ({ showImageManager }: GeneralProps) => {
       dispatch(closeModalUpdateProd());
       dispatch(clearUpdateProductData());
     } catch (err) {
-      if (err?.errorFields?.length) {
-        err.errorFields.forEach((error) => {
+      const validationError = err as ValidationError;
+
+      if (validationError?.errorFields?.length) {
+        validationError.errorFields.forEach((error) => {
           notification.error({
             message: 'Error',
             description: error.errors?.[0] || 'Revisa los valores ingresados.',
@@ -238,7 +247,7 @@ export const General = ({ showImageManager }: GeneralProps) => {
       console.error('Error al guardar el producto:', err);
       notification.error({
         message: 'No se pudo completar la operación',
-        description: err?.message || 'Intenta de nuevo más tarde.',
+        description: (err as Error)?.message || 'Intenta de nuevo más tarde.',
         duration: 10,
       });
     } finally {

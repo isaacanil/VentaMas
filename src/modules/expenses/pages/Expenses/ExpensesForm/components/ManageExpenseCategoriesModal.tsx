@@ -127,11 +127,11 @@ const ManageExpenseCategoriesModal = ({
   };
 
   const handleEdit = (category: ExpenseCategory) => {
-    setCategory(category);
+    setCategory(category as any);
     configureCategoryModal({
       isOpen: true,
-      type: 'update',
-      onSubmit: fbUpdateExpenseCategory,
+      type: 'edit',
+      onSubmit: fbUpdateExpenseCategory as any,
     });
   };
 
@@ -185,7 +185,7 @@ const ManageExpenseCategoriesModal = ({
   };
 
   const formatDate = (value: unknown) => {
-    const date = toValidDate(value);
+    const date = toValidDate(value as any);
     if (!date) return null;
     return formatLocaleDate(date, {
       day: '2-digit',

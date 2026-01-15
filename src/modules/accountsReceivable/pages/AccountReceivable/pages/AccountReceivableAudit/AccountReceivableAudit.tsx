@@ -215,11 +215,11 @@ export const AccountReceivableAudit = () => {
         .toISOString()
         .replace(/[-:T]/g, '')
         .split('.')[0];
-      await exportToExcel(
+      await (exportToExcel as any)(
         rows,
         'Facturas CxC',
         `auditoria-cxc-${timestamp}.xlsx`,
-        (worksheet, dataSet: unknown[], columns) => {
+        (worksheet: any, dataSet: unknown[], columns: any[]) => {
           applyProfessionalStyling(worksheet, Array.isArray(dataSet) ? dataSet.length : 0);
           formatCurrencyColumns(worksheet, columns, ['Monto total']);
           addReportHeader(worksheet, 'Auditoría de Cuentas por Cobrar');

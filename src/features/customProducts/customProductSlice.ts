@@ -1,6 +1,27 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface Ingredient {
+  id: string | number;
+  name: string;
+  cost: number | string;
+  [key: string]: any;
+}
+
+interface CustomProductState {
+  product: any;
+  ingredient: Ingredient[];
+  ingredientList: string;
+  totalIngredients: {
+    value: number;
+  };
+  totalProductPrice: number;
+}
+
+interface CustomProductRootState {
+  customProduct: CustomProductState;
+}
+
+const initialState: CustomProductState = {
   product: {},
   ingredient: [],
   ingredientList: '',
@@ -13,10 +34,10 @@ const customProductSlice = createSlice({
   name: 'customProduct',
   initialState,
   reducers: {
-    addProduct: (state: any, actions: PayloadAction<any>) => {
+    addProduct: (state: CustomProductState, actions: PayloadAction<any>) => {
       state.product = actions.payload;
     },
-    addIngredient: (state: any, action: PayloadAction<any>) => {
+    addIngredient: (state: CustomProductState, action: PayloadAction<Ingredient>) => {
       const ingredientExists = state.ingredient.find(
         ({ id }) => id === action.payload.id,
       );
@@ -24,7 +45,7 @@ const customProductSlice = createSlice({
         state.ingredient.push(action.payload);
       }
     },
-    deleteIngredient: (state: any, action: PayloadAction<any>) => {
+    deleteIngredient: (state: CustomProductState, action: PayloadAction<{ id: string | number }>) => {
       const checkingID = state.ingredient.find(
         ({ id }) => id === action.payload.id,
       );
@@ -34,25 +55,25 @@ const customProductSlice = createSlice({
         // Ingredient not found
       }
     },
-    gettingIngredientList: (state: any) => {
-      let list = [];
-      state.ingredient.map((ingredient) => (list = [...list, ingredient.name]));
+    gettingIngredientList: (state: CustomProductState) => {
+      let list: string[] = [];
+      state.ingredient.forEach((ingredient) => (list = [...list, ingredient.name]));
       state.ingredientList = list.toString();
     },
-    totalPurchase: (state: any) => {
+    totalPurchase: (state: CustomProductState) => {
       const n = state.ingredient.reduce(
-        (total, ingredient) => total + Number(ingredient.cost),
+        (total: number, ingredient: Ingredient) => total + Number(ingredient.cost),
         0,
       );
       state.totalIngredients.value = n;
     },
-    formatData: (state: any) => {
-      ((state.ingredient = []),
-        (state.ingredientList = ''),
-        (state.totalIngredients = {
-          value: 0,
-        }),
-        (state.totalProductPrice = 0));
+    formatData: (state: CustomProductState) => {
+      state.ingredient = [];
+      state.ingredientList = '';
+      state.totalIngredients = {
+        value: 0,
+      };
+      state.totalProductPrice = 0;
     },
   },
 });
@@ -66,10 +87,8 @@ export const {
 
 export default customProductSlice.reducer;
 
-export const selectTotalIngredientPrice = (state) =>
+export const selectTotalIngredientPrice = (state: CustomProductRootState) =>
   state.customProduct.totalIngredients.value;
-export const selectIngredientList = (state) => state.customProduct.ingredient;
-export const SelectIngredientsListName = (state) =>
+export const selectIngredientList = (state: CustomProductRootState) => state.customProduct.ingredient;
+export const SelectIngredientsListName = (state: CustomProductRootState) =>
   state.customProduct.ingredientList;
-
-

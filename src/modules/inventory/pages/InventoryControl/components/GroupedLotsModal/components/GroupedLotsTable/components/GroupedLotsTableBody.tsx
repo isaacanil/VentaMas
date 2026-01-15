@@ -48,10 +48,10 @@ export function GroupedLotsTableBody({
   const baselineCounts = baselineSnapshot?.counts || {};
   const baselineExp = baselineSnapshot?.expirations || {};
 
-  const getLocationDisplay = (locKey: string | null | undefined, fallbackLabel = '') =>
+  const getLocationDisplay = (locKey: string | null | undefined, fallbackLabel?: string | null) =>
     resolveLocationDisplay(
       locKey,
-      fallbackLabel,
+      fallbackLabel || '',
       locationNamesMap,
       resolvingLocations,
     );
@@ -100,7 +100,7 @@ export function GroupedLotsTableBody({
           (record.type === 'batch' || record.type === 'noexp') &&
           (record.sources?.length || 0) > 0
         ) {
-          return record.sources.map((src, idx) => {
+          return record.sources?.map((src, idx) => {
             const sourceKey = String(
               src.id ?? src.key ?? `${record.key}-src-${idx}`,
             );

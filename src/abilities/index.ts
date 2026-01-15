@@ -16,11 +16,11 @@ const ROLE_ABILITIES = {
   devAbilities: defineAbilitiesForDev, //desarrollador
 };
 
-export function defineAbilitiesFor(user) {
+export function defineAbilitiesFor(user: any) {
   return getBaseAbilitiesForRole(user);
 }
 
-export async function defineAbilitiesForWithDynamic(user) {
+export async function defineAbilitiesForWithDynamic(user: any) {
   // Obtener permisos base del rol
   const baseAbilities = getBaseAbilitiesForRole(user);
   const resolvedBusinessId =
@@ -61,7 +61,7 @@ export async function defineAbilitiesForWithDynamic(user) {
   }
 }
 
-function getBaseAbilitiesForRole(user) {
+function getBaseAbilitiesForRole(user: any) {
   const {
     adminAbilities,
     cashierAbilities,
@@ -90,7 +90,7 @@ function getBaseAbilitiesForRole(user) {
   }
 }
 
-function combineAbilities(baseAbilities, dynamicPermissions) {
+function combineAbilities(baseAbilities: any, dynamicPermissions: any) {
   // Convertir abilities base a array si no lo es
   let combinedAbilities = Array.isArray(baseAbilities)
     ? [...baseAbilities]
@@ -98,10 +98,10 @@ function combineAbilities(baseAbilities, dynamicPermissions) {
 
   // Agregar permisos adicionales (esto puede anular restricciones previas)
   if (dynamicPermissions.additionalPermissions) {
-    dynamicPermissions.additionalPermissions.forEach((permission) => {
+    dynamicPermissions.additionalPermissions.forEach((permission: any) => {
       // Primero, remover cualquier restricción existente para este permiso
       combinedAbilities = combinedAbilities.filter(
-        (rule) =>
+        (rule: any) =>
           !(
             rule.action === permission.action &&
             rule.subject === permission.subject &&
@@ -111,7 +111,7 @@ function combineAbilities(baseAbilities, dynamicPermissions) {
 
       // Luego, verificar que no esté ya incluido como "can"
       const exists = combinedAbilities.some(
-        (rule) =>
+        (rule: any) =>
           rule.action === permission.action &&
           rule.subject === permission.subject &&
           !rule.inverted, // Solo verificar rules que son "can" (no inverted)
@@ -129,10 +129,10 @@ function combineAbilities(baseAbilities, dynamicPermissions) {
 
   // Agregar permisos restringidos (esto anula permisos previos)
   if (dynamicPermissions.restrictedPermissions) {
-    dynamicPermissions.restrictedPermissions.forEach((restriction) => {
+    dynamicPermissions.restrictedPermissions.forEach((restriction: any) => {
       // Remover cualquier permiso existente para esta acción/subject
       combinedAbilities = combinedAbilities.filter(
-        (rule) =>
+        (rule: any) =>
           !(
             rule.action === restriction.action &&
             rule.subject === restriction.subject

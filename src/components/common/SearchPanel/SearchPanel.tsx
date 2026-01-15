@@ -8,6 +8,15 @@ import styled from 'styled-components';
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 
+interface SearchPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  searchData?: string;
+  setSearchData?: (value: string) => void;
+  displayName?: string;
+  sectionName?: string;
+}
+
 export const SearchPanel = ({
   isOpen,
   onClose,
@@ -15,8 +24,8 @@ export const SearchPanel = ({
   setSearchData,
   displayName = '',
   sectionName = '',
-}) => {
-  const searchDrawerRef = useRef(null);
+}: SearchPanelProps) => {
+  const searchDrawerRef = useRef<HTMLDivElement>(null);
   // Derivar el estado de searchData directamente
   const [tempSearchData, setTempSearchData] = useState(searchData || '');
 
@@ -37,15 +46,16 @@ export const SearchPanel = ({
   useEffect(() => {
     if (isOpen) {
       // Enfocar el input después de que se abra el panel
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         const input =
           document.querySelector<HTMLInputElement>('#search-panel-input');
         input?.focus();
       }, 100);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setTempSearchData(value);
     if (setSearchData) {
@@ -53,7 +63,7 @@ export const SearchPanel = ({
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onClose();
     }
@@ -112,7 +122,7 @@ export const SearchPanel = ({
                 placeholder={`Buscar ${displayName || sectionName || ''}...`}
                 value={tempSearchData}
                 onChange={handleSearchChange}
-                onKeyPress={handleKeyPress}
+                onPressEnter={onClose}
                 size="large"
                 autoFocus
                 allowClear
@@ -124,7 +134,7 @@ export const SearchPanel = ({
                 role="button"
                 aria-label="Cerrar búsqueda"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && onClose()}
+                onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && onClose()}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </CloseButton>

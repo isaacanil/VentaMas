@@ -1,9 +1,28 @@
-﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { fbDeleteProduct } from '@/firebase/products/fbDeleteproduct';
 
-const initialState = {
+interface AlertState {
+  deleteProduct: {
+    isOpen: boolean;
+    isSuccess: boolean;
+    id: string | null;
+    user: any;
+  };
+  deleteClient: {
+    isOpen: boolean;
+    isSuccess: boolean;
+    id: string | null;
+    businessID: string | null;
+  };
+}
+
+interface AlertRootState {
+  alert: AlertState;
+}
+
+const initialState: AlertState = {
   deleteProduct: {
     isOpen: false,
     isSuccess: false,
@@ -21,31 +40,36 @@ export const alertSlice = createSlice({
   name: 'alert',
   initialState,
   reducers: {
-    handleDeleteProductAlert: (state: any, actions: PayloadAction<any>) => {
-      const id = actions.payload?.id,
-        user = actions.payload?.user,
-        isOpen = state.deleteProduct.isOpen;
+    handleDeleteProductAlert: (state: AlertState, actions: PayloadAction<{ id: string | null; user: any } | undefined>) => {
+      const id = actions.payload?.id ?? null;
+      const user = actions.payload?.user ?? null;
+      const isOpen = state.deleteProduct.isOpen;
 
       state.deleteProduct.isOpen = !isOpen;
       state.deleteProduct.id = id;
       state.deleteProduct.user = user;
     },
-    handleDeleteProductAlertSuccess: (state: any) => {
+    handleDeleteProductAlertSuccess: (state: AlertState) => {
       const id = state.deleteProduct.id;
       const user = state.deleteProduct.user;
-      fbDeleteProduct(user, id);
+      if (id && user) {
+        fbDeleteProduct(user, id);
+      }
     },
-    handleDeleteClientAlert: (state: any, actions: PayloadAction<any>) => {
-      const id = actions.payload?.id;
-      const businessID = actions.payload?.businessID;
-      const isOpen = state.deleteProduct.isOpen;
-      state.deleteProduct.isOpen = !isOpen;
-      state.deleteProduct.id = id;
-      state.deleteClient.businessID = businessID ?? null;
+    handleDeleteClientAlert: (state: AlertState, actions: PayloadAction<{ id: string | null; businessID: string | null } | undefined>) => {
+      const id = actions.payload?.id ?? null;
+      const businessID = actions.payload?.businessID ?? null;
+      const isOpen = state.deleteClient.isOpen;
+      state.deleteClient.isOpen = !isOpen;
+      state.deleteClient.id = id;
+      state.deleteClient.businessID = businessID;
     },
-    handleDeleteClientAlertSuccess: (state: any) => {
+    handleDeleteClientAlertSuccess: (state: AlertState) => {
       const id = state.deleteClient.id;
-      fbDeleteClient(state.deleteClient.businessID, id);
+      const businessID = state.deleteClient.businessID;
+      if (id && businessID) {
+        fbDeleteClient(businessID, id);
+      }
     },
   },
 });
@@ -58,10 +82,8 @@ export const {
 } = alertSlice.actions;
 
 //selectors
-export const selectDeleteProductAlert = (state) => state.alert.deleteProduct;
-export const selectDeleteClientAlert = (state) =>
+export const selectDeleteProductAlert = (state: AlertRootState) => state.alert.deleteProduct;
+export const selectDeleteClientAlert = (state: AlertRootState) =>
   state.alert.deleteClient.isOpen;
 
 export default alertSlice.reducer;
-
-

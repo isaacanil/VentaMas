@@ -64,7 +64,7 @@ const SalesAnalyticsPanel = ({ sales, isOpen, onOpen }: SalesAnalyticsPanelProps
     },
   };
 
-  useClickOutSide(componentRef, isOpen, onOpen);
+  useClickOutSide(componentRef as React.RefObject<HTMLElement>, isOpen, onOpen);
 
   if (!isOpen) {
     return null;
@@ -122,9 +122,13 @@ const SalesAnalyticsPanel = ({ sales, isOpen, onOpen }: SalesAnalyticsPanelProps
 
 export default SalesAnalyticsPanel;
 
-const Group = styled.div`
+interface StyledProps {
+  $isMobile?: boolean;
+}
+
+const Group = styled.div<StyledProps>`
   display: grid;
-  grid-template-columns: ${(props) => (props.$isMobile ? '1fr' : '1fr 1fr')};
+  grid-template-columns: ${({ $isMobile }: StyledProps) => ($isMobile ? '1fr' : '1fr 1fr')};
   gap: 1em;
 
   @media (width <= 768px) {
@@ -133,17 +137,17 @@ const Group = styled.div`
   }
 `;
 
-const Component = styled(motion.div)`
+const Component = styled(motion.div) <StyledProps>`
   display: grid;
-  gap: ${(props) => (props.$isMobile ? '2em' : '4em')};
-  width: ${(props) => (props.$isMobile ? '100vw' : '90vw')};
-  max-width: ${(props) => (props.$isMobile ? '100vw' : '1200px')};
+  gap: ${({ $isMobile }: StyledProps) => ($isMobile ? '2em' : '4em')};
+  width: ${({ $isMobile }: StyledProps) => ($isMobile ? '100vw' : '90vw')};
+  max-width: ${({ $isMobile }: StyledProps) => ($isMobile ? '100vw' : '1200px')};
   height: 100%;
-  padding: ${(props) => (props.$isMobile ? '0.75em' : '1em')};
+  padding: ${({ $isMobile }: StyledProps) => ($isMobile ? '0.75em' : '1em')};
   overflow-y: scroll;
   background-color: #fff;
   border: 1px solid #1d1d1d37;
-  border-radius: ${(props) => (props.$isMobile ? '0' : '0.5em')};
+  border-radius: ${({ $isMobile }: StyledProps) => ($isMobile ? '0' : '0.5em')};
 
   @media (width <= 768px) {
     gap: 1.5em;
@@ -158,12 +162,12 @@ const Component = styled(motion.div)`
   }
 `;
 
-const Backdrop = styled(motion.div)`
+const Backdrop = styled(motion.div) <StyledProps>`
   position: absolute;
   top: 0;
   z-index: 3000000000000000000;
   display: grid;
-  align-items: ${(props) => (props.$isMobile ? 'stretch' : 'center')};
+  align-items: ${({ $isMobile }: StyledProps) => ($isMobile ? 'stretch' : 'center')};
   justify-content: center;
   width: 100%;
   height: calc(100vh);
@@ -174,7 +178,7 @@ const Backdrop = styled(motion.div)`
   }
 `;
 
-const Header = styled.div`
+const Header = styled.div<StyledProps>`
   position: sticky;
   top: 0;
   z-index: 10;
@@ -182,8 +186,8 @@ const Header = styled.div`
   grid-template-columns: 1fr max-content;
   gap: 1em;
   align-items: center;
-  padding: ${(props) => (props.$isMobile ? '0.5em 0' : '0')};
-  margin: ${(props) => (props.$isMobile ? '0 -0.5em' : '0')};
+  padding: ${({ $isMobile }: StyledProps) => ($isMobile ? '0.5em 0' : '0')};
+  margin: ${({ $isMobile }: StyledProps) => ($isMobile ? '0 -0.5em' : '0')};
   background-color: #fff;
 
   @media (width <= 768px) {
@@ -216,11 +220,11 @@ const TitleContainer = styled.div`
   }
 `;
 
-const CloseButton = styled(Button)`
-  min-width: ${(props) => (props.$isMobile ? '40px' : 'auto')};
-  height: ${(props) => (props.$isMobile ? '40px' : 'auto')};
-  padding: ${(props) => (props.$isMobile ? '0' : '0.5em 1em')};
-  font-size: ${(props) => (props.$isMobile ? '1.2em' : '1em')};
+const CloseButton = styled(Button) <StyledProps>`
+  min-width: ${({ $isMobile }: StyledProps) => ($isMobile ? '40px' : 'auto')};
+  height: ${({ $isMobile }: StyledProps) => ($isMobile ? '40px' : 'auto')};
+  padding: ${({ $isMobile }: StyledProps) => ($isMobile ? '0' : '0.5em 1em')};
+  font-size: ${({ $isMobile }: StyledProps) => ($isMobile ? '1.2em' : '1em')};
 
   @media (width <= 768px) {
     min-width: 36px;
@@ -235,9 +239,9 @@ const CloseButton = styled(Button)`
   }
 `;
 
-const ChartsContainer = styled.div`
+const ChartsContainer = styled.div<StyledProps>`
   display: grid;
-  gap: ${(props) => (props.$isMobile ? '2em' : '4em')};
+  gap: ${({ $isMobile }: StyledProps) => ($isMobile ? '2em' : '4em')};
 
   @media (width <= 768px) {
     gap: 1.5em;

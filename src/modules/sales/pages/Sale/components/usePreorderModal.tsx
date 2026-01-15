@@ -94,7 +94,7 @@ const HeaderNote = styled.span`
   color: #64748b;
 `;
 
-const IconButton = styled.button`
+const IconButton = styled.button<{ disabled?: boolean; type?: string }>`
   display: inline-flex;
   gap: 6px;
   align-items: center;
@@ -102,16 +102,16 @@ const IconButton = styled.button`
   font-size: 0.8rem;
   font-weight: 600;
   color: #1d4ed8;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ disabled }: { disabled?: boolean }) => (disabled ? 'not-allowed' : 'pointer')};
   background: #fff;
   border: 1px solid #cbd5f5;
   border-radius: 999px;
-  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+  opacity: ${({ disabled }: { disabled?: boolean }) => (disabled ? 0.6 : 1)};
   transition: all 0.18s ease;
 
   &:hover {
-    background: ${({ disabled }) => (disabled ? '#fff' : '#eff6ff')};
-    border-color: ${({ disabled }) => (disabled ? '#cbd5f5' : '#93c5fd')};
+    background: ${({ disabled }: { disabled?: boolean }) => (disabled ? '#fff' : '#eff6ff')};
+    border-color: ${({ disabled }: { disabled?: boolean }) => (disabled ? '#cbd5f5' : '#93c5fd')};
   }
 `;
 
@@ -178,9 +178,9 @@ const StatusPill = styled.span<{ $tone?: StatusTone }>`
   padding: 2px 10px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: ${({ $tone }) => $tone?.text || '#0f172a'};
+  color: ${({ $tone }: { $tone?: StatusTone }) => $tone?.text || '#0f172a'};
   text-transform: capitalize;
-  background: ${({ $tone }) => $tone?.background || '#e2e8f0'};
+  background: ${({ $tone }: { $tone?: StatusTone }) => $tone?.background || '#e2e8f0'};
   border-radius: 999px;
 `;
 
@@ -247,7 +247,7 @@ const STATUS_TONES: Record<string, StatusTone> = {
   cancelled: { text: '#b91c1c', background: '#fee2e2' },
 };
 
-const STATUS_LABELS = {
+const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
   completed: 'Completada',
   cancelled: 'Cancelada',
@@ -279,14 +279,13 @@ export const usePreorderModal = () => {
     }
 
     let isSubscribed = true;
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    let unsubscribe = () => {};
+    let unsubscribe: (() => void) | undefined = undefined;
     const payload = { businessID };
 
     const subscribe = async () => {
       try {
         setIsLoading(true);
-        unsubscribe = await fbGetPreorders(payload, (docs) => {
+        unsubscribe = await fbGetPreorders(payload, (docs: any) => {
           if (!isSubscribed) return;
           setPreorders((docs as PreorderDoc[]) || []);
           setIsLoading(false);
@@ -344,8 +343,8 @@ export const usePreorderModal = () => {
     const mappedEntries = preorders.map((preorder, index) => {
       const data =
         (preorder &&
-        typeof preorder === 'object' &&
-        'data' in preorder
+          typeof preorder === 'object' &&
+          'data' in preorder
           ? preorder.data
           : preorder) ?? {};
       const normalizedData = data as PreorderData;
@@ -468,14 +467,14 @@ export const usePreorderModal = () => {
     const serializedPreorder = convertTimestampsToMillis(preorder) as PreorderData;
 
     dispatch(loadCart(serializedPreorder));
-    dispatch(setCartId());
+    dispatch(setCartId(undefined));
     const storedTaxReceiptType =
       resolvePreorderTaxReceiptType(serializedPreorder);
     if (storedTaxReceiptType) {
       dispatch(selectTaxReceiptType(storedTaxReceiptType));
     }
     if (serializedPreorder?.client) {
-      dispatch(selectClientWithAuth(serializedPreorder.client));
+      dispatch(selectClientWithAuth(serializedPreorder.client as any));
     }
 
     const params = new URLSearchParams(location.search);

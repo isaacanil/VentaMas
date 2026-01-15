@@ -19,6 +19,12 @@ export interface PurchaseBackOrderRef {
   [key: string]: unknown;
 }
 
+export interface PurchaseBackOrderSelection {
+  id: string;
+  quantity: number;
+  [key: string]: unknown;
+}
+
 export interface PurchaseReplenishment {
   id?: string;
   productId?: string;
@@ -62,5 +68,6 @@ export interface Purchase {
   attachmentUrls?: PurchaseAttachment[];
   replenishments?: PurchaseReplenishment[];
   dates?: PurchaseDates;
+  note?: string;
   [key: string]: unknown;
 }

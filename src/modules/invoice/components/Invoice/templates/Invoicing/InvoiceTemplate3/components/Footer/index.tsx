@@ -43,10 +43,10 @@ export default function Footer({ data }: FooterProps) {
           <PaymentMethodsContainer>
             <div>
               {data?.seller?.name && <p>Vendedor: {data.seller.name}</p>}
-              {data?.paymentMethod?.length > 0 && (
+              {(data?.paymentMethod?.length ?? 0) > 0 && (
                 <PaymentMethodsSection>
                   <BoldText>Métodos de Pago:</BoldText>
-                  {data.paymentMethod.map((method, index) => {
+                  {data?.paymentMethod?.map((method, index) => {
                     if (!method?.status) return null;
                     const methodKey =
                       typeof method.method === 'string'
@@ -54,7 +54,7 @@ export default function Footer({ data }: FooterProps) {
                         : '';
                     return (
                       <p key={index} style={{ margin: 0 }}>
-                        {PAYMENT_METHODS[methodKey] || method.method}
+                        {PAYMENT_METHODS[methodKey as keyof typeof PAYMENT_METHODS] || method.method}
                         : {formatPrice(toNumber(method.value))}
                         {method.reference && ` - Ref: ${method.reference}`}
                       </p>

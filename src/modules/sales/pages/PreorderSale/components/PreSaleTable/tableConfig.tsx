@@ -30,11 +30,12 @@ export const tableConfig: ColumnConfig[] = [
     accessor: 'date',
     sortable: true,
     align: 'left',
-    cell: ({ value }: { value: number | null | undefined }) => {
-      if (!value || !Number.isFinite(value)) {
+    cell: ({ value }: { value: unknown }) => {
+      const numValue = value as number | null | undefined;
+      if (!numValue || !Number.isFinite(numValue)) {
         return 'Sin fecha';
       }
-      const time = value * 1000;
+      const time = numValue * 1000;
       return getTimeElapsed(time, 0);
     },
     maxWidth: '1fr',
@@ -44,8 +45,8 @@ export const tableConfig: ColumnConfig[] = [
     Header: 'ITBIS',
     accessor: 'itbis',
     align: 'right',
-    cell: ({ value }: { value: number | null | undefined }) => (
-      <PriceCell value={value} />
+    cell: ({ value }: { value: unknown }) => (
+      <PriceCell value={value as number} />
     ),
     maxWidth: '1fr',
     minWidth: '100px',
@@ -61,8 +62,8 @@ export const tableConfig: ColumnConfig[] = [
     Header: 'Total',
     accessor: 'total',
     align: 'right',
-    cell: ({ value }: { value: number | null | undefined }) => (
-      <PriceCell value={value} />
+    cell: ({ value }: { value: unknown }) => (
+      <PriceCell value={value as number} />
     ),
     maxWidth: '1fr',
     minWidth: '110px',
@@ -73,8 +74,8 @@ export const tableConfig: ColumnConfig[] = [
     align: 'right',
     maxWidth: '1fr',
     minWidth: '100px',
-    cell: ({ value }: { value: string | null | undefined }) => (
-      <StatusCell value={value} />
+    cell: ({ value }: { value: unknown }) => (
+      <StatusCell value={value as string} />
     ),
   },
   {

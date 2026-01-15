@@ -73,7 +73,7 @@ const buildDataset = (invoices) =>
     return {
       key,
       raw: invoice,
-      ncf: data?.NCF || invoice?.NCF || 'â€”',
+      ncf: data?.NCF || invoice?.NCF || '—',
       serie,
       type,
       sequence,
@@ -95,19 +95,19 @@ const columns = [
     title: 'Serie',
     dataIndex: 'serie',
     key: 'serie',
-    render: (value) => <Tag color="geekblue">{value || 'â€”'}</Tag>,
+    render: (value) => <Tag color="geekblue">{value || '—'}</Tag>,
   },
   {
     title: 'Tipo',
     dataIndex: 'type',
     key: 'type',
-    render: (value) => <Tag color="gold">{value || 'â€”'}</Tag>,
+    render: (value) => <Tag color="gold">{value || '—'}</Tag>,
   },
   {
     title: 'Secuencia',
     dataIndex: 'sequence',
     key: 'sequence',
-    render: (value) => <Text>{value || 'â€”'}</Text>,
+    render: (value) => <Text>{value || '—'}</Text>,
   },
   {
     title: 'Cliente',
@@ -118,7 +118,7 @@ const columns = [
     title: 'Fecha',
     dataIndex: 'createdAt',
     key: 'createdAt',
-    render: (value) => (value ? value.toFormat('dd/MM/yyyy HH:mm') : 'â€”'),
+    render: (value) => (value ? value.toFormat('dd/MM/yyyy HH:mm') : '—'),
     sorter: (a, b) => {
       if (!a.createdAt && !b.createdAt) return 0;
       if (!a.createdAt) return -1;
@@ -163,7 +163,7 @@ export default function BSeriesInvoices() {
 
   const typeCounts = useMemo(() => {
     return dataset.reduce((acc, item) => {
-      const type = item.type || 'â€”';
+      const type = item.type || '—';
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {});

@@ -21,7 +21,7 @@ import { Container, HiddenPrintWrapper } from './Style';
 
 export const InvoiceTemplate1 = React.forwardRef<HTMLDivElement, InvoiceTemplateProps>(
   ({ data, ignoreHidden }, ref) => {
-    const business = useSelector(selectBusinessData) || '';
+    const business = useSelector(selectBusinessData) || null;
     const insuranceStatus = data?.insuranceEnabled;
     const insuranceData = useSelector(selectInsuranceData);
     const invoiceComment = useSelector(SelectInvoiceComment);
@@ -92,14 +92,17 @@ export const InvoiceTemplate1 = React.forwardRef<HTMLDivElement, InvoiceTemplate
 
 InvoiceTemplate1.displayName = 'InvoiceTemplate1';
 
-export const SubTitle = styled.p`
+type TextAlignProps = { align?: 'left' | 'right' | 'center' };
+type SpaceProps = { size?: 'small' | 'medium' | 'large' };
+
+export const SubTitle = styled.p<TextAlignProps>`
   font-weight: 600;
   line-height: 12px;
   padding: 0;
   margin: 0;
   white-space: nowrap;
 
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -110,11 +113,11 @@ export const SubTitle = styled.p`
     }
   }}
 `;
-export const P = styled.p`
+export const P = styled.p<TextAlignProps>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${(props) => {
+  ${(props: TextAlignProps) => {
     switch (props.align) {
       case 'center':
         return 'text-align: center;';
@@ -129,9 +132,9 @@ export const Line = styled.div`
   border: none;
   border-top: 1px dashed black;
 `;
-const Space = styled.div`
+const Space = styled.div<SpaceProps>`
   margin-bottom: 0.6em;
-  ${(props) => {
+  ${(props: SpaceProps) => {
     switch (props.size) {
       case 'small':
         return 'margin-bottom: 0.2em;';

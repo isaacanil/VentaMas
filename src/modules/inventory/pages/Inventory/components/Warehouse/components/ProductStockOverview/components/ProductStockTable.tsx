@@ -31,7 +31,7 @@ type ProductStockRow = ProductStockItem & {
   actions: string;
 };
 
-const toDateMs = (value: TimestampLike): number | null => {
+const toDateMs = (value: TimestampLike | undefined | null): number | null => {
   if (!value) return null;
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.getTime();
   if (typeof value === 'number' || typeof value === 'string') {
@@ -208,7 +208,7 @@ const ProductStockTable = ({
               <MenuButton
                 type="button"
                 aria-label="Acciones de la ubicación"
-                onClick={(e) => e.preventDefault()}
+                onClick={(e: React.MouseEvent) => e.preventDefault()}
               >
                 <EllipsisOutlined />
               </MenuButton>
@@ -254,8 +254,8 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
   padding: 2px;
   font-weight: 600;
   color: #0f172a;
-  background: ${({ $status }) => `${$status.background}1f`};
-  border: 1px solid ${({ $status }) => `${$status.color}30`};
+  background: ${({ $status }: { $status: StockStatus }) => `${$status.background}1f`};
+  border: 1px solid ${({ $status }: { $status: StockStatus }) => `${$status.color}30`};
   border-radius: 16px;
 
   .quantity-main {
@@ -266,7 +266,7 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
 
   .quantity-icon {
     font-size: 0.85rem;
-    color: ${({ $status }) => $status.color};
+    color: ${({ $status }: { $status: StockStatus }) => $status.color};
   }
 
   .quantity-value {
@@ -284,7 +284,7 @@ const QuantityBadge = styled.div<{ $status: StockStatus }>`
   .quantity-status {
     font-size: 0.7rem;
     font-weight: 600;
-    color: ${({ $status }) => $status.color};
+    color: ${({ $status }: { $status: StockStatus }) => $status.color};
     text-transform: uppercase;
   }
 `;
@@ -294,10 +294,10 @@ const BatchBadge = styled.span<{ $empty?: boolean }>`
   padding: 6px 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: ${({ $empty }) => ($empty ? '#64748b' : '#1d4ed8')};
+  color: ${({ $empty }: { $empty?: boolean }) => ($empty ? '#64748b' : '#1d4ed8')};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: ${({ $empty }) => ($empty ? '#f1f5f9' : '#dbeafe')};
+  background: ${({ $empty }: { $empty?: boolean }) => ($empty ? '#f1f5f9' : '#dbeafe')};
   border-radius: 999px;
 `;
 
@@ -306,8 +306,8 @@ const ExpirationBadge = styled.span<{ $empty?: boolean }>`
   padding: 6px 10px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: ${({ $empty }) => ($empty ? '#94a3b8' : '#4d7c0f')};
-  background: ${({ $empty }) => ($empty ? '#f8fafc' : '#ecfccb')};
+  color: ${({ $empty }: { $empty?: boolean }) => ($empty ? '#94a3b8' : '#4d7c0f')};
+  background: ${({ $empty }: { $empty?: boolean }) => ($empty ? '#f8fafc' : '#ecfccb')};
   border-radius: 10px;
 `;
 

@@ -138,6 +138,7 @@ const updateRowShelf = async (
   updatedData: RowShelfRecord,
 ) => {
   try {
+    if (!user.businessID) throw new Error('businessID is required');
     const rowShelfDocRef = doc(
       db,
       'businesses',
@@ -165,6 +166,7 @@ const deleteRowShelf = async (
   rowId: string,
 ) => {
   try {
+    if (!user.businessID) throw new Error('businessID is required');
     const rowShelfDocRef = doc(
       db,
       'businesses',
@@ -209,7 +211,7 @@ const useListenRowShelves = (
           setLoading(false);
         },
       );
-      return () => unsubscribe();
+      return () => unsubscribe?.();
     }
   }, [warehouseId, shelfId, user]);
   return { data, loading, error };

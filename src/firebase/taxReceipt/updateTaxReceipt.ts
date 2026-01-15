@@ -105,7 +105,7 @@ export const updateTaxReceipt = async (
       data.id,
     );
 
-  const normalizedData = normalizeTaxReceiptData(data);
+    const normalizedData = normalizeTaxReceiptData(data);
 
     // Asegurar que el ID siempre esté presente en los datos guardados
     normalizedData.id = data.id;
@@ -113,9 +113,10 @@ export const updateTaxReceipt = async (
     await updateDoc(receiptRef, { data: normalizedData });
     console.log(`Tax receipt ${data.id} updated successfully.`);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`Error updating tax receipt ${data.id}:`, error);
     throw new Error(
-      `Failed to update tax receipt ${data.id}: ${error.message}`,
+      `Failed to update tax receipt ${data.id}: ${errorMessage}`,
     );
   }
 };
@@ -163,11 +164,12 @@ export async function validateSequenceUpdate(
       lastUsedSequence,
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error validating sequence:', error);
     // En caso de error, permitir pero loggearlo
     return {
       isValid: true,
-      reason: `Validación falló, pero se permite la operación: ${error.message}`,
+      reason: `Validación falló, pero se permite la operación: ${errorMessage}`,
     };
   }
 }
@@ -248,7 +250,7 @@ export async function diagnoseTaxReceiptSync(
     }
 
     // Estadísticas de uso
-    const statusCounts = {};
+    const statusCounts: Record<string, number> = {};
     usageSnapshot.docs.forEach((doc) => {
       const status = doc.data().status || 'unknown';
       statusCounts[status] = (statusCounts[status] || 0) + 1;
@@ -257,10 +259,11 @@ export async function diagnoseTaxReceiptSync(
 
     return diagnosis;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in diagnosis:', error);
     return {
       ncfType,
-      error: error.message,
+      error: errorMessage,
       isInSync: false,
     };
   }

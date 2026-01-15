@@ -39,7 +39,7 @@ export function meetsMinimumInvoiceRequirement(cart, minimumRequiredAmount) {
  * @param {Number} minimumRequiredAmount Minimum required amount for processing the invoice.
  * @returns {Object} Object containing the validation status and error messages if any.
  */
-export function validateInvoiceCart(cart, _minimumRequiredAmount) {
+export function validateInvoiceCart(cart, _minimumRequiredAmount?: number) {
   if (!cart) {
     return {
       isValid: false,

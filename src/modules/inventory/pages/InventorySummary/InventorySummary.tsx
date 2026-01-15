@@ -381,7 +381,7 @@ export const InventorySummary = () => {
       <MenuApp sectionName={'Resumen de Inventario'} />
       <Content>
         {loading ? (
-          <Center>Cargando inventarioâ€¦</Center>
+          <Center>Cargando inventario…</Center>
         ) : (
           <>
             <Header>

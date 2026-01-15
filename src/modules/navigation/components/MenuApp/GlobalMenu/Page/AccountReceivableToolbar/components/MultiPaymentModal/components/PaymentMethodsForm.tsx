@@ -57,8 +57,8 @@ const PaymentMethodsForm = ({
     const activeMethod = paymentMethods.find((m) => m.status);
     if (activeMethod && inputRefs.current[activeMethod.method]) {
       setTimeout(() => {
-        inputRefs.current[activeMethod.method].focus();
-        inputRefs.current[activeMethod.method].select();
+        inputRefs.current[activeMethod.method]?.focus();
+        inputRefs.current[activeMethod.method]?.select();
       }, 100);
     }
   }, [paymentMethods]);
@@ -90,8 +90,8 @@ const PaymentMethodsForm = ({
     // Enfocar el input correspondiente
     if (checked && inputRefs.current[method.method]) {
       setTimeout(() => {
-        inputRefs.current[method.method].focus();
-        inputRefs.current[method.method].select?.();
+        inputRefs.current[method.method]?.focus();
+        inputRefs.current[method.method]?.select?.();
       }, 0);
     }
   };

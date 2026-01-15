@@ -41,22 +41,24 @@ export const Delivery = ({
   }, [client?.delivery?.status]);
   const updateClientStatus = (e: CheckboxChangeEvent) => {
     const value = e.target.checked;
+    if (!client) return;
     dispatch(
       setClient({
         ...client,
         delivery: {
-          ...client.delivery,
           status: value,
+          value: client.delivery?.value ?? 0,
         },
       }),
     );
   };
   const updateClient = (value: number | null) => {
+    if (!client) return;
     dispatch(
       setClient({
         ...client,
         delivery: {
-          ...client.delivery,
+          status: client.delivery?.status ?? false,
           value: Number(value),
         },
       }),

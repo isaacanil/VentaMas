@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { DateTime } from 'luxon';
 
@@ -13,7 +12,7 @@ import { BadgeDate } from './BadgeDate';
 import type { ConfigItem } from '@/config/statusActionConfig';
 
 interface EnhancedDateDisplayProps {
-  timestamp: number;
+  timestamp: number | string | Date;
 }
 
 export const EnhancedDateDisplay: React.FC<EnhancedDateDisplayProps> = ({
@@ -21,7 +20,7 @@ export const EnhancedDateDisplay: React.FC<EnhancedDateDisplayProps> = ({
 }) => {
   const millis = toMillis(timestamp);
   const dateTime = millis ? DateTime.fromMillis(millis) : null;
-  if (!dateTime) return '-';
+  if (!dateTime) return <span>-</span>;
 
   const status = getDateStatus(timestamp);
   const config: ConfigItem = getDateStatusConfig(status.status);

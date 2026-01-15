@@ -27,6 +27,20 @@ const BUTTON_SIZE = 48;
 const PANEL_MIN_WIDTH = 420;
 const PANEL_MAX_WIDTH = 720;
 
+interface DeveloperShortcut {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  category: string;
+  route?: string;
+  action?: string;
+}
+
+interface ShortcutGroup {
+  category: string;
+  items: DeveloperShortcut[];
+}
+
 export const DeveloperSessionHelper = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -56,15 +70,16 @@ export const DeveloperSessionHelper = () => {
     originalBusinessId &&
     (originalRole === 'dev' || user?.role === 'dev'),
   );
+
   const developerOptions = useMemo(() => {
     if (!developerAccess) return [];
-    return developerShortcuts.map((item) => ({ ...item }));
+    return developerShortcuts.map((item) => ({ ...item })) as DeveloperShortcut[];
   }, [developerAccess]);
 
   const groupedShortcuts = useMemo(() => {
     if (!developerOptions.length) return [];
 
-    return developerOptions.reduce((groups, shortcut) => {
+    return developerOptions.reduce<ShortcutGroup[]>((groups, shortcut) => {
       const existingGroup = groups.find(
         (group) => group.category === shortcut.category,
       );
@@ -83,7 +98,7 @@ export const DeveloperSessionHelper = () => {
   const shouldRender =
     roleSectionEnabled || businessSectionEnabled || hasDeveloperShortcuts;
 
-  const clampPosition = useCallback((x, y) => {
+  const clampPosition = useCallback((x: number, y: number) => {
     if (typeof window === 'undefined') {
       return { x, y };
     }
@@ -111,7 +126,6 @@ export const DeveloperSessionHelper = () => {
     const initialX = window.innerWidth - BUTTON_SIZE - padding;
     const initialY = window.innerHeight - BUTTON_SIZE - padding;
 
-    // Usar setTimeout para evitar setState síncrono
     const timeoutId = setTimeout(() => {
       setPosition({ x: initialX, y: initialY });
       setHasInitialPosition(true);
@@ -121,7 +135,7 @@ export const DeveloperSessionHelper = () => {
   }, [hasInitialPosition]);
 
   const handlePointerMove = useCallback(
-    (event) => {
+    (event: PointerEvent) => {
       const { isDragging, offsetX, offsetY } = dragState.current;
       if (!isDragging) return;
 
@@ -152,7 +166,7 @@ export const DeveloperSessionHelper = () => {
   }, [handlePointerMove]);
 
   const handlePointerDown = useCallback(
-    (event) => {
+    (event: React.PointerEvent) => {
       if (!shouldRender) return;
 
       if (event.pointerType === 'mouse' && event.button !== 0) {
@@ -169,7 +183,7 @@ export const DeveloperSessionHelper = () => {
         moved: false,
       };
 
-      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointermove', handlePointerMove as any);
       window.addEventListener('pointerup', handlePointerUp, { once: true });
     },
     [handlePointerMove, handlePointerUp, position.x, position.y, shouldRender],
@@ -190,13 +204,13 @@ export const DeveloperSessionHelper = () => {
 
   useEffect(
     () => () => {
-      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointermove', handlePointerMove as any);
       window.removeEventListener('pointerup', handlePointerUp);
     },
     [handlePointerMove, handlePointerUp],
   );
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       setIsOpen((prev) => !prev);
@@ -211,7 +225,7 @@ export const DeveloperSessionHelper = () => {
     dispatch(returnToOriginalBusiness());
   };
 
-  const handleShortcutSelect = (shortcut) => {
+  const handleShortcutSelect = (shortcut: DeveloperShortcut) => {
     if (shortcut.action === 'openDeveloperModal') {
       dispatch(toggleDeveloperModal(undefined));
       setIsOpen(false);
@@ -564,6 +578,7 @@ const ShortcutInfo = styled.span`
   gap: 1px;
   align-items: flex-start;
   text-align: left;
+  line-height: 1.2;
 `;
 
 const ShortcutName = styled.span`

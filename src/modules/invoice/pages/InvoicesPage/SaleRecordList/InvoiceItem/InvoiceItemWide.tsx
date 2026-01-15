@@ -71,7 +71,7 @@ export const InvoiceItemWide = ({ data }: InvoiceItemWideProps) => {
   });
 
   const proceedToEdit = useCallback(
-    (authorization) => {
+    (authorization: any) => {
       const preparedInvoice = prepareInvoiceForEdit(data);
       if (preparedInvoice) {
         dispatch(
@@ -295,7 +295,7 @@ const DateInfo = styled.div`
   white-space: nowrap;
 `;
 
-const StatusTag = styled.div`
+const StatusTag = styled.div<{ $isPaid: boolean }>`
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 4px;
@@ -383,7 +383,7 @@ const PaymentLine = styled.div`
   color: #595959;
 `;
 
-const PaymentDot = styled.span`
+const PaymentDot = styled.span<{ $type?: string }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -439,7 +439,7 @@ const ActionButtons = styled.div`
   gap: 6px;
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled.button<{ variant?: string }>`
   width: 32px;
   height: 32px;
   border-radius: 6px;

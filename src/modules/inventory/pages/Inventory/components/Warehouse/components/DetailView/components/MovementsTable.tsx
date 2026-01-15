@@ -26,16 +26,14 @@ const LocationCell = styled.div<{ $isEntry: boolean; $isExternal: boolean }>`
   padding: 2px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: ${({ $isEntry }) =>
-    $isEntry
-      ? 'rgba(76, 175, 80, 0.08)'
-      : 'rgba(239, 83, 80, 0.08)'};
+  background: ${({ $isEntry }: { $isEntry: boolean }) =>
+    $isEntry ? 'rgba(76, 175, 80, 0.08)' : 'rgba(239, 83, 80, 0.08)'};
   border-radius: 8px;
   border: 1px solid
-    ${({ $isEntry }) =>
-      $isEntry ? 'rgba(76, 175, 80, 0.25)' : 'rgba(239, 83, 80, 0.25)'};
-  opacity: ${({ $isExternal }) => ($isExternal ? 0.85 : 1)};
-  ${({ $isExternal }) =>
+    ${({ $isEntry }: { $isEntry: boolean }) =>
+    $isEntry ? 'rgba(76, 175, 80, 0.25)' : 'rgba(239, 83, 80, 0.25)'};
+  opacity: ${({ $isExternal }: { $isExternal: boolean }) => ($isExternal ? 0.85 : 1)};
+  ${({ $isExternal }: { $isExternal: boolean }) =>
     $isExternal &&
     `
     background: #f5f5f5;
@@ -48,17 +46,17 @@ const LocationCell = styled.div<{ $isEntry: boolean; $isExternal: boolean }>`
 
   &:hover {
     transform: translateY(-1px);
-    background: ${({ $isEntry }) =>
-      $isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
+    background: ${({ $isEntry }: { $isEntry: boolean }) =>
+    $isEntry ? 'rgba(76, 175, 80, 0.15)' : 'rgba(239, 83, 80, 0.15)'};
     box-shadow: 0 2px 8px
-      ${({ $isEntry }) =>
-        $isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
+      ${({ $isEntry }: { $isEntry: boolean }) =>
+    $isEntry ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 83, 80, 0.2)'};
   }
 `;
 
 const LocationName = styled.div<{ $isEntry: boolean }>`
   font-weight: 600;
-  color: ${({ $isEntry }) => ($isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ $isEntry }: { $isEntry: boolean }) => ($isEntry ? '#2E7D32' : '#C62828')};
   font-size: 1em;
   white-space: nowrap;
   letter-spacing: -0.3px;
@@ -72,12 +70,12 @@ const DirectionWrapper = styled.div`
 
 const DirectionArrow = styled.span<{ $isEntry: boolean }>`
   font-size: 1.1em;
-  color: ${({ $isEntry }) => ($isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ $isEntry }: { $isEntry: boolean }) => ($isEntry ? '#2E7D32' : '#C62828')};
   font-weight: bold;
 `;
 
 const DirectionLabel = styled.span<{ $isEntry: boolean }>`
-  color: ${({ $isEntry }) => ($isEntry ? '#2E7D32' : '#C62828')};
+  color: ${({ $isEntry }: { $isEntry: boolean }) => ($isEntry ? '#2E7D32' : '#C62828')};
   font-size: 0.85em;
   font-weight: 500;
   opacity: 0.9;
@@ -87,9 +85,9 @@ const DirectionLabel = styled.span<{ $isEntry: boolean }>`
 `;
 
 const MovementTypeBadge = styled.span<{ $isEntry: boolean }>`
-  background: ${({ $isEntry }) =>
+  background: ${({ $isEntry }: { $isEntry: boolean }) =>
     $isEntry ? 'rgba(33, 150, 243, 0.1)' : 'rgba(156, 39, 176, 0.1)'};
-  color: ${({ $isEntry }) => ($isEntry ? '#1976D2' : '#7B1FA2')};
+  color: ${({ $isEntry }: { $isEntry: boolean }) => ($isEntry ? '#1976D2' : '#7B1FA2')};
   padding: 6px 12px;
   border-radius: 8px;
   font-weight: 500;
@@ -98,8 +96,8 @@ const MovementTypeBadge = styled.span<{ $isEntry: boolean }>`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ $isEntry }) =>
-      $isEntry ? 'rgba(33, 150, 243, 0.15)' : 'rgba(156, 39, 176, 0.15)'};
+    background: ${({ $isEntry }: { $isEntry: boolean }) =>
+    $isEntry ? 'rgba(33, 150, 243, 0.15)' : 'rgba(156, 39, 176, 0.15)'};
   }
 `;
 
@@ -111,8 +109,8 @@ const ReasonBadge = styled.span<{ $reasonType: MovementReasonType }>`
   font-size: 0.85em;
   font-weight: 500;
   white-space: nowrap;
-
-  ${({ $reasonType }) => {
+ 
+  ${({ $reasonType }: { $reasonType: MovementReasonType }) => {
     switch ($reasonType) {
       case MovementReason.Purchase:
         return `
@@ -308,25 +306,25 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
     () =>
       movementsData.map((mov) => {
         const dateObj = (() => {
-        const createdAt = mov.createdAt;
-        if (createdAt instanceof Date) return createdAt;
-        if (createdAt && typeof (createdAt as { toDate?: () => Date }).toDate === 'function') {
-          return (createdAt as { toDate: () => Date }).toDate();
-        }
-        if (createdAt && typeof (createdAt as { seconds?: number }).seconds === 'number') {
-          return new Date((createdAt as { seconds: number }).seconds * 1000);
-        }
-        return null;
-      })();
+          const createdAt = mov.createdAt;
+          if (createdAt instanceof Date) return createdAt;
+          if (createdAt && typeof (createdAt as { toDate?: () => Date }).toDate === 'function') {
+            return (createdAt as { toDate: () => Date }).toDate();
+          }
+          if (createdAt && typeof (createdAt as { seconds?: number }).seconds === 'number') {
+            return new Date((createdAt as { seconds: number }).seconds * 1000);
+          }
+          return null;
+        })();
         return {
           ...mov,
           key: String(mov.id ?? ''),
           date: dateObj ? formatLocaleDate(dateObj) : 'Sin fecha',
           time: dateObj
             ? dateObj.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })
+              hour: '2-digit',
+              minute: '2-digit',
+            })
             : 'Sin hora',
           product: mov.productName ? String(mov.productName) : 'Sin producto',
           location: mov,
@@ -355,8 +353,8 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
         Header: 'Tipo',
         accessor: 'movementType',
         minWidth: '120px',
-        cell: ({ value }) => {
-          const isEntry = value === 'in';
+        cell: ({ value }: { value: unknown }) => {
+          const isEntry = (value as string) === 'in';
           return (
             <MovementTypeBadge $isEntry={isEntry}>
               {isEntry ? 'Entrada' : 'Salida'}
@@ -368,7 +366,7 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
         Header: 'Ubicación',
         accessor: 'location',
         minWidth: '200px',
-        cell: ({ value }) => {
+        cell: ({ value }: { value: unknown }) => {
           const movement = value as MovementRecord;
           const isEntry = movement.movementType === 'in';
           const route = generateRoute(isEntry, movement);
@@ -399,7 +397,7 @@ export const MovementsTable = ({ location }: MovementsTableProps) => {
         Header: 'Motivo',
         accessor: 'movementReason',
         minWidth: '150px',
-        cell: ({ value }) => (
+        cell: ({ value }: { value: unknown }) => (
           <ReasonBadge $reasonType={value as MovementReasonType}>
             {formatMovementReason(value as string | undefined)}
           </ReasonBadge>

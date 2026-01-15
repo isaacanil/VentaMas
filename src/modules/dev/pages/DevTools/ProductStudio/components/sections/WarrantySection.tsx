@@ -22,30 +22,30 @@ const WarrantyCard = styled(SectionCard)`
 export const WarrantySection = ({ domId }) => (
   <WarrantyCard id={domId}>
     <SectionHeader>
-      <SectionTitle level={4}>GarantÃ­a y cobertura</SectionTitle>
+      <SectionTitle level={4}>Garantía y cobertura</SectionTitle>
       <SectionDescription>
-        Define si el producto cuenta con garantÃ­a o mantenimiento.
+        Define si el producto cuenta con garantía o mantenimiento.
       </SectionDescription>
     </SectionHeader>
     <FieldGrid>
       <SwitchField
         name={['warranty', 'status']}
-        label="GarantÃ­a activa"
-        tooltip="Indica si este producto incluye garantÃ­a o servicio de mantenimiento."
+        label="Garantía activa"
+        tooltip="Indica si este producto incluye garantía o servicio de mantenimiento."
         valuePropName="checked"
       >
         <Switch />
       </SwitchField>
-      <Form.Item name={['warranty', 'quantity']} label="DuraciÃ³n">
+      <Form.Item name={['warranty', 'quantity']} label="Duración">
         <InputNumber min={0} style={{ width: '100%' }} />
       </Form.Item>
       <Form.Item name={['warranty', 'unit']} label="Unidad de tiempo">
         <Select
           options={[
-            { value: 'days', label: 'DÃ­as' },
+            { value: 'days', label: 'Días' },
             { value: 'weeks', label: 'Semanas' },
             { value: 'months', label: 'Meses' },
-            { value: 'years', label: 'AÃ±os' },
+            { value: 'years', label: 'Años' },
           ]}
         />
       </Form.Item>

@@ -139,13 +139,13 @@ export const ProductItem = ({ data, taxReceiptEnabled }: ProductItemProps) => {
       </FinancialDetails>
 
       {/* Acciones */}
-      <ActionBar onClick={(e) => e.stopPropagation()}>
+      <ActionBar onClick={(e: React.MouseEvent) => e.stopPropagation()}>
         <TotalPriceSection>
           <TotalLabel>Precio de venta:</TotalLabel>
           <TotalValue>
             {isSoldByWeight ? (
               <span>
-                {formatPrice(price)} / {unit}
+                {formatPrice(price)} / {unit ?? ''}
               </span>
             ) : (
               <span>{formatPrice(price)}</span>
@@ -269,7 +269,7 @@ const VisibilityIndicator = styled.div<{ $isVisible?: boolean }>`
   justify-content: center;
   width: 24px;
 
-  ${({ $isVisible }) =>
+  ${({ $isVisible }: { $isVisible?: boolean }) =>
     $isVisible
       ? `
     background: #f6ffed;
@@ -288,7 +288,7 @@ const StockDetailValue = styled.div<{ $status: StockStatus }>`
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  color: ${({ $status }) => {
+  color: ${({ $status }: { $status: StockStatus }) => {
     switch ($status) {
       case 'out':
         return '#ff4d4f';
@@ -390,7 +390,7 @@ const ActionButton = styled.button<{ variant: ActionVariant }>`
   transition: all 0.2s ease;
   width: 32px;
 
-  ${({ variant }) => {
+  ${({ variant }: { variant: ActionVariant }) => {
     switch (variant) {
       case 'edit':
         return `

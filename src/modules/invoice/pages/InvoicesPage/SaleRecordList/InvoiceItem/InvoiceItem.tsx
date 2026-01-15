@@ -72,7 +72,7 @@ export const InvoiceItem = ({ data }: InvoiceItemProps) => {
   });
 
   const proceedToEdit = useCallback(
-    (authorization) => {
+    (authorization: unknown) => {
       const preparedInvoice = prepareInvoiceForEdit(data);
       if (preparedInvoice) {
         dispatch(
@@ -300,7 +300,7 @@ const StatusTag = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.5px;
 
-  ${({ $isPaid }) =>
+  ${({ $isPaid }: { $isPaid: boolean }) =>
     $isPaid
       ? `
     background: #f6ffed;
@@ -439,9 +439,9 @@ const PaymentDot = styled.span`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: ${({ $type }) => ($type === 'pending' ? '#d4380d' : '#52c41a')};
+  background: ${({ $type }: { $type?: string }) => ($type === 'pending' ? '#d4380d' : '#52c41a')};
   box-shadow: 0 0 0 1px
-    ${({ $type }) =>
+    ${({ $type }: { $type?: string }) =>
     $type === 'pending'
       ? 'rgba(212, 56, 13, 0.35)'
       : 'rgba(82, 196, 26, 0.35)'};
@@ -468,7 +468,7 @@ const ActionButton = styled.button`
     opacity: 0.6;
   }
 
-  ${({ variant }) => {
+  ${({ variant }: { variant?: 'edit' | 'print' | 'more' }) => {
     switch (variant) {
       case 'edit':
         return `

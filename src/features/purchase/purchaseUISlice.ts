@@ -1,6 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface ModalState {
+  isOpen: boolean;
+}
+
+interface PurchaseUIState {
+  modals: {
+    chartPurchaseModal: ModalState;
+  };
+}
+
+interface PurchaseUIRootState {
+  purchaseUI: PurchaseUIState;
+}
+
+const initialState: PurchaseUIState = {
   modals: {
     chartPurchaseModal: {
       isOpen: false,
@@ -13,7 +27,7 @@ export const purchaseUISlice = createSlice({
   name: 'purchaseUI',
   initialState,
   reducers: {
-    togglePurchaseChartModal: (state: any) => {
+    togglePurchaseChartModal: (state: PurchaseUIState) => {
       state.modals.chartPurchaseModal.isOpen =
         !state.modals.chartPurchaseModal.isOpen;
     },
@@ -24,6 +38,5 @@ export const purchaseUISlice = createSlice({
 export const { togglePurchaseChartModal } = purchaseUISlice.actions;
 export default purchaseUISlice.reducer;
 
-export const selectPurchaseChartModal = (state) =>
+export const selectPurchaseChartModal = (state: PurchaseUIRootState) =>
   state.purchaseUI.modals.chartPurchaseModal;
-

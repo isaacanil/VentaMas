@@ -12,7 +12,7 @@ type WarningPillProps = {
 };
 
 
-const WarningPill = ({ message, icon = '⚠️' }) => {
+const WarningPill = ({ message, icon = '⚠️' }: WarningPillProps) => {
   const [showMessage, setShowMessage] = useState(false);
   const messageRef = useRef<HTMLDivElement | null>(null);
 

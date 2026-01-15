@@ -63,7 +63,7 @@ export interface PaymentMethod {
 }
 
 export interface PreorderDetails {
-    date?: number;
+    date?: number | { seconds: number; nanoseconds: number };
     preorderNumber?: string | null;
     createdAt?: number | null;
 }
@@ -128,6 +128,7 @@ export interface CartSettings {
     isInvoicePanelOpen: boolean;
     billing: {
         billingMode: string;
+        invoiceType?: string;
         authorizationFlowEnabled: boolean;
         enabledAuthorizationModules: {
             invoices: boolean;
@@ -136,6 +137,7 @@ export interface CartSettings {
         };
         isLoading: boolean;
         isError: string | boolean | null;
+        stockAlertsEnabled?: boolean;
     };
     isPreOrderEnabled?: boolean;
 }

@@ -58,8 +58,8 @@ interface DoctorCardProps {
 const DoctorCard = styled.div<DoctorCardProps>`
   padding: 12px;
   cursor: pointer;
-  background-color: ${(props) => (props.$isSelected ? '#e6f7ff' : 'white')};
-  border: 1px solid ${(props) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
+  background-color: ${(props: DoctorCardProps) => (props.$isSelected ? '#e6f7ff' : 'white')};
+  border: 1px solid ${(props: DoctorCardProps) => (props.$isSelected ? '#1890ff' : '#e8e8e8')};
   border-radius: 8px;
   transition: all 0.2s ease;
 
@@ -177,10 +177,10 @@ const DoctorSelector = ({
 
   const filteredDoctors = search
     ? doctors.filter(
-        (doctor) =>
-          normalizeText(doctor.name || '').includes(normalizeText(search)) ||
-          normalizeText(doctor.specialty || '').includes(normalizeText(search)),
-      )
+      (doctor) =>
+        normalizeText(doctor.name || '').includes(normalizeText(search)) ||
+        normalizeText(doctor.specialty || '').includes(normalizeText(search)),
+    )
     : doctors;
 
   const handleDoctorSelect = (doctor: DoctorRecord) => {
@@ -214,7 +214,7 @@ const DoctorSelector = ({
       key: 'edit',
       label: 'Editar',
       icon: <EditOutlined />,
-      onClick: (e) => openModalUpdateMode(e, doctor),
+      onClick: (e: { domEvent: Event }) => openModalUpdateMode(e, doctor),
     },
   ];
 
@@ -271,7 +271,7 @@ const DoctorSelector = ({
                 ref={searchInputRef}
                 placeholder="Buscar médicos..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
               />
             </div>
             <Tooltip title="Agregar médico">
@@ -295,7 +295,7 @@ const DoctorSelector = ({
                   <div className="name">{doctor.name}</div>
                   <div
                     className="dropdown-container"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e: ReactMouseEvent<HTMLDivElement>) => e.stopPropagation()}
                   >
                     <Dropdown
                       menu={{ items: getMenuItems(doctor) }}

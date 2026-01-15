@@ -26,6 +26,7 @@ import {
   selectStockRequirement,
   setStockLocations,
   selectStockLocations,
+  type FilterRootState,
 } from '@/features/filterProduct/filterProductsSlice';
 import { getWarehousesStockAggregates } from '@/firebase/warehouse/productStockService';
 import { useListenWarehouses } from '@/firebase/warehouse/warehouseService';
@@ -125,29 +126,29 @@ type FilterPanelProps = {
 };
 
 export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanelProps) => {
-  const inventariable = useSelector((state) =>
+  const inventariable = useSelector((state: FilterRootState) =>
     selectInventariable(state, contextKey),
   ) as string;
-  const itbis = useSelector((state) => selectItbis(state, contextKey)) as string;
-  const priceStatus = useSelector((state) =>
+  const itbis = useSelector((state: FilterRootState) => selectItbis(state, contextKey)) as string;
+  const priceStatus = useSelector((state: FilterRootState) =>
     selectPriceStatus(state, contextKey),
   ) as string;
-  const costStatus = useSelector((state) =>
+  const costStatus = useSelector((state: FilterRootState) =>
     selectCostStatus(state, contextKey),
   ) as string;
-  const promotionStatus = useSelector((state) =>
+  const promotionStatus = useSelector((state: FilterRootState) =>
     selectPromotionStatus(state, contextKey),
   ) as string;
-  const stockAvailability = useSelector((state) =>
+  const stockAvailability = useSelector((state: FilterRootState) =>
     selectStockAvailability(state, contextKey),
   ) as string;
-  const stockAlertLevel = useSelector((state) =>
+  const stockAlertLevel = useSelector((state: FilterRootState) =>
     selectStockAlertLevel(state, contextKey),
   ) as string;
-  const stockRequirement = useSelector((state) =>
+  const stockRequirement = useSelector((state: FilterRootState) =>
     selectStockRequirement(state, contextKey),
   ) as string;
-  const stockLocations = useSelector((state) =>
+  const stockLocations = useSelector((state: FilterRootState) =>
     selectStockLocations(state, contextKey),
   ) as string[];
   const user = useSelector(selectUser) as InventoryUser | null;
@@ -200,19 +201,19 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
     };
   }, [user, warehouseIds]);
 
-  const handleItbisChange = (newItbis: string) => {
+  const handleItbisChange = (newItbis: any) => {
     dispatch(setItbis({ context: contextKey, value: newItbis }));
   };
-  const handlePriceStatusChange = (value: string) => {
+  const handlePriceStatusChange = (value: any) => {
     dispatch(setPriceStatus({ context: contextKey, value }));
   };
-  const handleCostStatusChange = (value: string) => {
+  const handleCostStatusChange = (value: any) => {
     dispatch(setCostStatus({ context: contextKey, value }));
   };
-  const handlePromotionStatusChange = (value: string) => {
+  const handlePromotionStatusChange = (value: any) => {
     dispatch(setPromotionStatus({ context: contextKey, value }));
   };
-  const handleInventariableChange = (newInventariable: string) => {
+  const handleInventariableChange = (newInventariable: any) => {
     dispatch(
       setInventariable({ context: contextKey, value: newInventariable }),
     );
@@ -225,7 +226,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
     );
     dispatch(setStockAlertLevel({ context: contextKey, value: option.alert }));
   };
-  const handleStockRequirementChange = (v: string) => {
+  const handleStockRequirementChange = (v: any) => {
     dispatch(setStockRequirement({ context: contextKey, value: v }));
   };
   const handleStockLocationsChange = (values: string[]) => {
@@ -355,7 +356,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
             block
             size="middle"
             value={inventariable}
-            options={inventariableOptions}
+            options={inventariableOptions as any}
             onChange={handleInventariableChange}
           />
         </GroupContainer>
@@ -398,7 +399,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
                     { value: 'todos', label: 'Todos' },
                     { value: 'requiere', label: 'Sí' },
                     { value: 'noRequiere', label: 'No' },
-                  ]}
+                  ] as any}
                 />
               </GroupContainer>
             </FieldGrid>
@@ -417,7 +418,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
               size="middle"
               value={itbis}
               onChange={handleItbisChange}
-              options={itbisSegments}
+              options={itbisSegments as any}
             />
           </GroupContainer>
           <GroupContainer>
@@ -429,7 +430,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
               size="middle"
               value={priceStatus}
               onChange={handlePriceStatusChange}
-              options={PRICE_STATUS_SEGMENTS}
+              options={PRICE_STATUS_SEGMENTS as any}
             />
           </GroupContainer>
           <GroupContainer>
@@ -441,7 +442,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
               size="middle"
               value={costStatus}
               onChange={handleCostStatusChange}
-              options={COST_STATUS_SEGMENTS}
+              options={COST_STATUS_SEGMENTS as any}
             />
           </GroupContainer>
           <GroupContainer>
@@ -453,7 +454,7 @@ export const FilterPanel = ({ contextKey = DEFAULT_FILTER_CONTEXT }: FilterPanel
               size="middle"
               value={promotionStatus}
               onChange={handlePromotionStatusChange}
-              options={PROMOTION_STATUS_OPTIONS}
+              options={PROMOTION_STATUS_OPTIONS as any}
             />
           </GroupContainer>
         </FieldGrid>

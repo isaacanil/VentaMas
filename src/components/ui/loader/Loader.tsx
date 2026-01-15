@@ -74,7 +74,7 @@ const Container = styled.div<{ show?: boolean; theme?: LoaderTheme }>`
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: ${(props) => getThemeStyles(props.theme).backgroundColor};
+  background-color: ${({ theme }) => getThemeStyles(theme).backgroundColor};
 `;
 const LoaderWrapper = styled.div`
   display: flex;
@@ -85,8 +85,8 @@ const LoaderWrapper = styled.div`
 const Spinner = styled.div<{ theme?: LoaderTheme }>`
   width: 44px;
   height: 44px;
-  border: ${(props) => getThemeStyles(props.theme).spinnerBorder};
-  border-top-color: ${(props) => getThemeStyles(props.theme).spinnerTopColor};
+  border: ${({ theme }) => getThemeStyles(theme).spinnerBorder};
+  border-top-color: ${({ theme }) => getThemeStyles(theme).spinnerTopColor};
   border-radius: 50%;
   animation: ${SpinnerAnimation} 0.8s linear infinite;
 `;
@@ -95,7 +95,7 @@ const Message = styled.p<{ theme?: LoaderTheme }>`
   font-family: 'Poppins', sans-serif;
   font-size: 20px;
   font-weight: bold;
-  color: ${(props) => getThemeStyles(props.theme).textColor};
+  color: ${({ theme }) => getThemeStyles(theme).textColor};
   text-align: center;
   letter-spacing: 0.5px;
 `;

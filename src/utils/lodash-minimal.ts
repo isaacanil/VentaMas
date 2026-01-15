@@ -1,21 +1,25 @@
-// @ts-nocheck
 /**
  * Minimal debounce implementation to replace lodash.debounce
  */
-export const debounce = (func, wait) => {
-    let timeout;
-    const debounced = (...args) => {
-        clearTimeout(timeout);
+export const debounce = <T extends (...args: any[]) => any>(
+    func: T,
+    wait: number,
+) => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const debounced = (...args: Parameters<T>) => {
+        if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => func(...args), wait);
     };
-    debounced.cancel = () => clearTimeout(timeout);
+    debounced.cancel = () => {
+        if (timeout) clearTimeout(timeout);
+    };
     return debounced;
 };
 
 /**
  * Minimal deep equal implementation to replace lodash.isEqual
  */
-export const isEqual = (a, b) => {
+export const isEqual = (a: any, b: any): boolean => {
     if (a === b) return true;
     if (
         typeof a !== 'object' ||
@@ -31,7 +35,7 @@ export const isEqual = (a, b) => {
     if (keysA.length !== keysB.length) return false;
 
     for (const key of keysA) {
-        if (!keysB.includes(key) || !isEqual(a[key], b[key])) return false;
+        if (!Object.prototype.hasOwnProperty.call(b, key) || !isEqual(a[key], b[key])) return false;
     }
 
     return true;

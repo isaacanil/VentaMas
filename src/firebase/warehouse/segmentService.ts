@@ -43,6 +43,7 @@ const createSegment = async ({
     if (!segmentData.name || typeof segmentData.capacity !== 'number') {
       throw new Error('Datos inválidos para crear un segmento');
     }
+    if (!user.businessID) throw new Error('No businessID provided');
     const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
     const segmentDocRef = doc(segmentCollectionRef, id);
 
@@ -73,6 +74,7 @@ const getAllSegments = async (
   _rowShelfId: string,
 ): Promise<SegmentRecord[]> => {
   try {
+    if (!user.businessID) throw new Error('No businessID provided');
     const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
     const querySnapshot = await getDocs(segmentCollectionRef);
     const segments = querySnapshot.docs.map((doc) => ({
@@ -111,7 +113,7 @@ const listenAllSegments = (
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
-  const segmentCollectionRef = getSegmentCollectionRef(user.businessID);
+  const segmentCollectionRef = getSegmentCollectionRef(user.businessID as string);
   const q = query(
     segmentCollectionRef,
     where('warehouseId', '==', _warehouseId),
@@ -140,6 +142,7 @@ const updateSegment = async (
   data: SegmentUpdate,
 ): Promise<SegmentUpdate> => {
   try {
+    if (!user.businessID) throw new Error('No businessID provided');
     const segmentDocRef = doc(
       db,
       'businesses',
@@ -168,6 +171,7 @@ const deleteSegment = async (
   segmentId: string,
 ): Promise<string> => {
   try {
+    if (!user.businessID) throw new Error('No businessID provided');
     const segmentDocRef = doc(
       db,
       'businesses',

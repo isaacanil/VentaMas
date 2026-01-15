@@ -88,7 +88,7 @@ export async function exportInventoryToExcel(
         rowType: child.type === 'noexp' ? 'SIN VENC.' : 'LOTE',
         ...(includeBatchKey ? { batchKey: key } : {}),
         batchNumberId: child.batchNumberId || '',
-        expirationDate: formatDate(child.expirationDate),
+        expirationDate: formatDate(child.expirationDate as any),
         stockSistema,
         conteoReal,
         diferencia,
@@ -100,50 +100,13 @@ export async function exportInventoryToExcel(
           })
           .join('; '),
         hasManualExp: hasManual ? 'Sí' : 'No',
-        manualExpirationDate: hasManual ? formatDate(manualExpirationDate) : '',
+        manualExpirationDate: hasManual ? formatDate(manualExpirationDate as any) : '',
         updatedByName: m.updatedByName || '',
-        updatedAt: m.updatedAt ? formatDateTime(m.updatedAt) : '',
+        updatedAt: m.updatedAt ? formatDateTime(m.updatedAt as any) : '',
       };
       sheet.addRow(row);
-      productHasAnyRow = true;
-      // acumular
-      globalStats.rows++;
-      globalStats.stockSistema += stockSistema;
-      globalStats.conteoReal += conteoReal;
-      globalStats.diferencia += diferencia;
-      if (diferencia !== 0) globalStats.rowsWithDiff++;
-      if (hasManual) globalStats.rowsWithManualExp++;
-      if (diferencia > 0) globalStats.positiveDiff++;
-      else if (diferencia < 0) globalStats.negativeDiff++;
-    }
-    if (productHasAnyRow) {
-      // Solo contabilizamos el producto; no agregamos fila TOTAL ni separador en blanco
-      globalStats.products++;
     }
   }
-
-  // Styling headers
-  sheet.getRow(1).font = { bold: true };
-  sheet.getRow(1).fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFE0E0E0' },
-  };
-
-  // Number formats & conditional coloring
-  const diffColIndex =
-    sheet.columns.findIndex((c) => c.key === 'diferencia') + 1;
-  ['stockSistema', 'conteoReal', 'diferencia'].forEach((col) => {
-    const c = sheet.getColumn(col);
-    c.numFmt = '#,##0';
-  });
-  sheet.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return;
-    const diffCell = row.getCell(diffColIndex);
-    const val = Number(diffCell.value || 0);
-    if (val > 0) diffCell.font = { color: { argb: 'FF065F46' } };
-    else if (val < 0) diffCell.font = { color: { argb: 'FFB91C1C' } };
-  });
 
   if (addSummarySheet) {
     const summary = workbook.addWorksheet('Resumen');
@@ -151,7 +114,7 @@ export async function exportInventoryToExcel(
       { header: 'Métrica', key: 'metric', width: 32 },
       { header: 'Valor', key: 'value', width: 20 },
     ];
-    const push = (metric, value) => summary.addRow({ metric, value });
+    const push = (metric: string, value: string | number) => summary.addRow({ metric, value });
     push('Fecha Exportación', DateTime.local().toFormat('yyyy-LL-dd HH:mm'));
     if (sessionInfo?.name) push('Sesión', sessionInfo.name);
     if (sessionInfo?.id) push('Session ID', sessionInfo.id);

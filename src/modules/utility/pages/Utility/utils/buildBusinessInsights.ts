@@ -37,7 +37,7 @@ export const buildBusinessInsights = ({
   const taxRatio = totalSales > 0 ? (totalTaxes / totalSales) * 100 : null;
 
   const negativeDays = source.filter((day) => (day?.netProfit ?? 0) < 0);
-  const bestDay = source.reduce(
+  const bestDay = source.reduce<UtilityDailyMetric | null>(
     (acc, day) =>
       (day?.netProfit ?? -Infinity) > (acc?.netProfit ?? -Infinity) ? day : acc,
     null,
@@ -45,7 +45,7 @@ export const buildBusinessInsights = ({
 
   const insights: UtilityInsight[] = [];
 
-  if (Number.isFinite(netMargin)) {
+  if (Number.isFinite(netMargin) && netMargin !== null) {
     if (netMargin < 0) {
       insights.push({
         key: 'netMarginNegative',
@@ -78,7 +78,7 @@ export const buildBusinessInsights = ({
     }
   }
 
-  if (Number.isFinite(expenseRatio)) {
+  if (Number.isFinite(expenseRatio) && expenseRatio !== null) {
     if (expenseRatio >= 35) {
       insights.push({
         key: 'expenseRatioHigh',
@@ -104,7 +104,7 @@ export const buildBusinessInsights = ({
     }
   }
 
-  if (Number.isFinite(taxRatio) && taxRatio >= 18) {
+  if (Number.isFinite(taxRatio) && taxRatio !== null && taxRatio >= 18) {
     insights.push({
       key: 'taxRatioHigh',
       type: 'info',
@@ -145,7 +145,7 @@ export const buildBusinessInsights = ({
       type: 'success',
       title: 'Mejor día del período',
       description: `El ${bestDay.dateLabel} generó la mayor ganancia neta.`,
-      value: formatCurrency(bestDay.netProfit),
+      value: formatCurrency(bestDay.netProfit ?? 0),
       measurement:
         'Identificación del día con mayor utilidad neta dentro del rango seleccionado.',
       meta: {

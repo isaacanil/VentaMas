@@ -87,7 +87,10 @@ export const AccountReceivableToolbar = ({ side = 'left', data }: AccountReceiva
         initialAmount: account?.initialAmountAr || 0,
         totalPaid: totalPaid,
         balance: account?.balance || 0,
-        total: invoiceData?.totalPurchase?.value || 0,
+        total:
+          typeof invoiceData?.totalPurchase === 'object'
+            ? invoiceData.totalPurchase?.value || 0
+            : (invoiceData?.totalPurchase as number) || 0,
         ver: { account },
         actions: { account },
         type: account?.account?.type || 'normal',
@@ -153,7 +156,7 @@ export const AccountReceivableToolbar = ({ side = 'left', data }: AccountReceiva
       const sheetName = 'Cuentas por cobrar';
       const fileName = `cuentas_por_cobrar_${DateTime.now().toFormat('ddMMyyyy')}.xlsx`;
 
-      const onBeforeExport = (ws, exportData, columns) => {
+      const onBeforeExport = (ws: any, exportData: any[], columns: any[]) => {
         addReportHeader(ws, 'REPORTE DE CUENTAS POR COBRAR');
         applyProfessionalStyling(ws, exportData.length);
         // Re-estilizar la fila de encabezados que queda en la fila 4

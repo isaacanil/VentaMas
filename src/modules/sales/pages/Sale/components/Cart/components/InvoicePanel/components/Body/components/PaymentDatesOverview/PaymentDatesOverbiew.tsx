@@ -132,7 +132,11 @@ const ViewButton = styled(Button)`
   margin-top: 10px;
 `;
 
-const ListItemContent = styled.div`
+interface ListItemContentProps {
+  isNext?: boolean;
+}
+
+const ListItemContent = styled.div<ListItemContentProps>`
   display: flex;
   align-items: center;
   justify-content: space-between;

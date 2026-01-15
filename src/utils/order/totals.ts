@@ -12,7 +12,7 @@ export interface ReplenishmentTotals {
 export const calculateReplenishmentTotals = (
   items: PurchaseReplenishment[] = [],
 ): ReplenishmentTotals => {
-  return items.reduce(
+  return items.reduce<ReplenishmentTotals>(
     (acc, item) => {
       const quantity = Number(item.purchaseQuantity ?? item.quantity ?? 0);
       const baseCost = Number(item.baseCost) || 0;

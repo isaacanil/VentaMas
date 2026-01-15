@@ -53,29 +53,29 @@ const SelectorOption = styled.div<{
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
-  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
-  background-color: ${({ $isSelected }) =>
+  cursor: ${({ $disabled }: { $disabled?: boolean }) => ($disabled ? 'not-allowed' : 'pointer')};
+  background-color: ${({ $isSelected }: { $isSelected?: boolean }) =>
     $isSelected ? '#e6f7ff' : 'white'};
   border: 2px solid
-    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
+    ${({ $isSelected }: { $isSelected?: boolean }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   border-radius: 6px;
-  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
+  opacity: ${({ $disabled }: { $disabled?: boolean }) => ($disabled ? 0.5 : 1)};
   transition: all 0.3s;
 
   &:hover {
-    border-color: ${({ $disabled }) => (!$disabled ? '#1890ff' : undefined)};
+    border-color: ${({ $disabled }: { $disabled?: boolean }) => (!$disabled ? '#1890ff' : undefined)};
   }
 `;
 
 const IconWrapper = styled.div<{ $isSelected?: boolean }>`
   font-size: 1.2rem;
-  color: ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#595959')};
+  color: ${({ $isSelected }: { $isSelected?: boolean }) => ($isSelected ? '#1890ff' : '#595959')};
 `;
 
 const OptionLabel = styled.span<{ $isSelected?: boolean }>`
   font-size: 0.9rem;
   font-weight: 500;
-  color: ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#595959')};
+  color: ${({ $isSelected }: { $isSelected?: boolean }) => ($isSelected ? '#1890ff' : '#595959')};
 `;
 
 type DeleteActionType = 'batch' | 'productStock';
@@ -150,7 +150,7 @@ export const DeleteProductStockModal = () => {
       const movementData = {
         ...values,
         reason: resolveMovementReason(values.reason),
-        quantity: stockData.quantity,
+        quantity: (stockData as any).quantity,
         ...(actionType === 'batch' ? { batchId } : { productStockId }),
       };
 
@@ -158,13 +158,13 @@ export const DeleteProductStockModal = () => {
         await deleteBatch({
           user,
           batchId,
-          movement: movementData,
+          movement: movementData as any,
         });
       } else {
         await deleteProductStock({
           user,
           productStockId,
-          movement: movementData,
+          movement: movementData as any,
         });
       }
 
@@ -175,16 +175,16 @@ export const DeleteProductStockModal = () => {
     } catch (error) {
       const maybeResponseMessage =
         typeof error === 'object' &&
-        error &&
-        'response' in error &&
-        typeof (error as { response?: { data?: { message?: string } } }).response
-          ?.data?.message === 'string'
+          error &&
+          'response' in error &&
+          typeof (error as { response?: { data?: { message?: string } } }).response
+            ?.data?.message === 'string'
           ? (error as { response?: { data?: { message?: string } } }).response
-              ?.data?.message
+            ?.data?.message
           : null;
       const fallbackMessage =
         error instanceof Error ? error.message : 'Error al procesar la solicitud';
-      message.error(maybeResponseMessage || fallbackMessage);
+      message.error(((maybeResponseMessage as string) || fallbackMessage) as any);
       console.error('Error:', error);
     } finally {
       setIsSubmitting(false);
@@ -194,7 +194,7 @@ export const DeleteProductStockModal = () => {
   const renderStockInfo = () => {
     if (!stockData) return null;
 
-    const expirationLabel = formatExpirationDate(stockData.expirationDate);
+    const expirationLabel = formatExpirationDate((stockData as any).expirationDate);
 
     return (
       <Descriptions
@@ -205,13 +205,13 @@ export const DeleteProductStockModal = () => {
         contentStyle={{ padding: '4px 8px' }}
         labelStyle={{ padding: '4px 8px' }}
       >
-        {stockData.numberId && (
+        {(stockData as any).numberId && (
           <Descriptions.Item label="Número de Lote">
-            {String(stockData.numberId)}
+            {String((stockData as any).numberId ?? '')}
           </Descriptions.Item>
         )}
         <Descriptions.Item label="Cantidad Total">
-          {stockData.quantity} unidades
+          {(stockData as any).quantity} unidades
         </Descriptions.Item>
         {expirationLabel && (
           <Descriptions.Item label="Fecha de Vencimiento">
@@ -219,8 +219,8 @@ export const DeleteProductStockModal = () => {
           </Descriptions.Item>
         )}
         <Descriptions.Item label="Ubicaciones">
-          {stockData.locations}{' '}
-          {stockData.locations > 1 ? 'ubicaciones' : 'ubicación'}
+          {(stockData as any).locations}{' '}
+          {(stockData as any).locations > 1 ? 'ubicaciones' : 'ubicación'}
         </Descriptions.Item>
       </Descriptions>
     );

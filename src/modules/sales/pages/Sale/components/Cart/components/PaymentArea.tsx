@@ -106,7 +106,7 @@ export const PaymentArea = () => {
         </LeftSide>
         <RightSide>
           <CustomInput
-            options={['10', '20', '30', '50']}
+            options={[10, 20, 30, 50]}
             value={discountPercent}
             discount={discount}
             onRequestAccess={() => true}
@@ -116,7 +116,7 @@ export const PaymentArea = () => {
             labelVariant="primary"
             size="large"
             type="number"
-            value={paymentValue}
+            value={paymentValue as any}
             onChange={handleChange}
           />
         </RightSide>

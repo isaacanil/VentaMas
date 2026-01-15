@@ -6,10 +6,13 @@ import { colors } from './colors';
 import { fontSize } from './fontSize';
 import { variants } from './variants';
 
+type VariantKey = keyof typeof variants;
+type ColorKey = keyof typeof colors;
+
 export interface TypographyStyleProps {
   $context?: 'app' | 'web';
-  $variant?: string;
-  $size?: string;
+  $variant?: VariantKey;
+  $size?: keyof typeof generalSize;
   $align?: string;
   $gutterBottom?: boolean;
   $disableMargins?: boolean;
@@ -23,7 +26,7 @@ export interface TypographyStyleProps {
   $letterSpacing?: string;
   $textTransform?: string;
   $display?: string;
-  $color?: string;
+  $color?: ColorKey;
   $strikethrough?: boolean;
   $textShadow?: string;
   as?: any;
@@ -87,9 +90,9 @@ const boldScale: Record<string, string> = {
 const baseTypography = css<TypographyStyleProps>`
   font-size: ${({ $context, $variant, $size }: TypographyStyleProps) =>
     getFontSize({
-      context: $context,
-      variant: $variant,
-      size: $size,
+      context: $context ?? 'app',
+      variant: $variant ?? 'body1',
+      size: $size ?? 'medium',
       variantToSizeMap,
       generalSize,
     })};
@@ -112,9 +115,10 @@ const baseTypography = css<TypographyStyleProps>`
   ${({ $display }: TypographyStyleProps) => $display && `display: ${$display};`}
 `;
 export const TypographyStyle = styled.div<TypographyStyleProps>`
-  ${({ $variant }: TypographyStyleProps) => ($variant ? variants[$variant] : variants.body1) || variants.body1}
+  ${({ $variant }: TypographyStyleProps) =>
+    variants[$variant ?? 'body1'] || variants.body1}
   ${baseTypography}
-  ${({ $color }: TypographyStyleProps) => ($color ? colors[$color] : colors.dark) || colors.dark}
+  ${({ $color }: TypographyStyleProps) => colors[$color ?? 'dark'] || colors.dark}
       
   ${({ $strikethrough }: TypographyStyleProps) =>
     $strikethrough && 'text-decoration: line-through;'}

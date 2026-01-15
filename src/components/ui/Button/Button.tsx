@@ -1,10 +1,53 @@
 import styled, { css } from 'styled-components';
 
-type ButtonProps = Record<string, any>;
+interface ContainerProps {
+  $size?: string;
+  $color: string;
+  $width?: string;
+  $height?: string;
+  $variant?: string;
+  $borderRadius?: string;
+  $isActivated?: boolean;
+  $titlePosition?: string;
+  $border?: string;
+  $iconColor?: string;
+  $isActivatedColors?: string;
+  $hidden?: boolean;
+  $alignText?: string;
+  theme?: any;
+  disabled?: boolean;
+}
+
+type ButtonProps = {
+  border?: string;
+  color?: string;
+  bgcolor?: string;
+  title?: React.ReactNode;
+  alignText?: string;
+  size?: string;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  onClick?: any;
+  width?: string;
+  height?: string;
+  hidden?: boolean;
+  variant?: string;
+  disabled?: boolean;
+  borderRadius?: string;
+  isActivated?: boolean;
+  isActivatedColors?: string;
+  iconOn?: React.ReactNode;
+  iconOff?: React.ReactNode;
+  iconColor?: string;
+  titlePosition?: string;
+  type?: 'button' | 'submit' | 'reset';
+  ref?: any;
+};
 
 export const Button = ({
   border,
   color = 'on-gray',
+  bgcolor,
   title,
   alignText = 'center',
   size = 'small',
@@ -28,13 +71,13 @@ export const Button = ({
 }: ButtonProps) => {
   const handleClick = (e: any) => {
     e.stopPropagation();
-    onClick();
+    if (onClick) onClick();
   };
   return (
     <Container
       $size={size}
-      $color={color}
-      onClick={onClick && handleClick}
+      $color={bgcolor || color}
+      onClick={onClick ? handleClick : undefined}
       $width={width}
       $height={height}
       $variant={variant}
@@ -60,14 +103,14 @@ export const Button = ({
 
 Button.displayName = 'Button';
 
-const styleByDefault = css`
+const styleByDefault = css<ContainerProps>`
   display: flex;
   gap: 0.6em;
   align-items: center;
-  justify-content: ${(props) => props.$alignText || 'center'};
+  justify-content: ${(props: ContainerProps) => props.$alignText || 'center'};
   font-size: 16px;
   font-weight: 500;
-  text-align: ${(props) => props.$alignText || 'center'};
+  text-align: ${(props: ContainerProps) => props.$alignText || 'center'};
   text-transform: capitalize;
   white-space: nowrap;
   text-decoration: none;
@@ -91,7 +134,8 @@ const styleByDefault = css`
     outline: none;
   }
 `;
-const sizes = {
+
+const sizes: Record<string, string> = {
   small: `
     height: 2em;
     padding: 0 0.6em;
@@ -138,7 +182,8 @@ const sizes = {
     }
   `,
 };
-const borderRadius = {
+
+const borderRadiusConfig: Record<string, string> = {
   normal: `
     border-radius: var(--border-radius);
   `,
@@ -153,22 +198,21 @@ const borderRadius = {
   `,
 };
 
-const Container = styled.button`
+const Container = styled.button<ContainerProps>`
   ${styleByDefault}
-  ${(props: any) => (props.$size ? sizes[props.$size] : sizes.medium)}
+  ${(props: ContainerProps) => (props.$size ? sizes[props.$size] : sizes.medium)}
   
   &:hover {
-    ${(props) =>
+    ${(props: ContainerProps) =>
     !props.$isActivated
       ? `
-      
        opacity: 0.8;
     `
       : null}
   }
 
-  ${(props) => props.$borderRadius && borderRadius[props.$borderRadius]}
-  ${(props) => {
+  ${(props: ContainerProps) => props.$borderRadius && borderRadiusConfig[props.$borderRadius]}
+  ${(props: ContainerProps) => {
     switch (props.$variant) {
       case 'contained':
         return `
@@ -203,7 +247,7 @@ const Container = styled.button`
             `;
     }
   }}
-  ${(props) => {
+  ${(props: ContainerProps) => {
     switch (props.$width) {
       case 'w100':
         return `
@@ -242,7 +286,7 @@ const Container = styled.button`
         `;
     }
   }}
-   ${(props) => {
+   ${(props: ContainerProps) => {
     switch (props.$height) {
       case 'small':
         return `
@@ -270,7 +314,7 @@ const Container = styled.button`
           `;
     }
   }}
-   ${(props) => {
+   ${(props: ContainerProps) => {
     switch (props.$border) {
       case 'light':
         return `
@@ -279,7 +323,7 @@ const Container = styled.button`
           `;
     }
   }}
-  ${(props) => {
+  ${(props: ContainerProps) => {
     switch (props.disabled) {
       case true:
         return `
@@ -291,7 +335,7 @@ const Container = styled.button`
     }
   }}
 
-  ${(props) => {
+  ${(props: ContainerProps) => {
     switch (props.$isActivatedColors) {
       case 'style1':
         switch (props.$isActivated) {
@@ -338,13 +382,13 @@ const Container = styled.button`
           }
          
         `;
-      case false:
+      case 'false':
         return `
           background-color: rgba(0, 0, 0, 0.26);
           color: white;
       
         `;
-      case props.$isActivated:
+      case props.$isActivated ? 'true' : 'false':
         return `
           background-color: ${props.$isActivated};
         `;

@@ -3,20 +3,41 @@ import { nanoid } from 'nanoid';
 
 import { OPERATION_MODES } from '@/constants/modes';
 
-const EmptyProductsOutflow = [];
+interface ProductSelected {
+  id: string | null;
+  product?: any;
+  motive?: string;
+  quantityRemoved?: number;
+  observations?: string;
+  status?: boolean;
+}
 
-const EmptyProduct = {
-  id: null, // Identificador Ãºnico del producto
-  product: null, // Identificador del producto especÃ­fico que se vende
-  motive: '', //Identificador de la razÃ³n detrÃ¡s de la salida del producto
+interface ProductOutflowData {
+  id?: string | null;
+  productList: ProductSelected[];
+  date?: any;
+}
+
+interface ProductOutflowState {
+  mode: string;
+  productSelected: ProductSelected;
+  data: ProductOutflowData;
+}
+
+const EmptyProductsOutflow: ProductSelected[] = [];
+
+const EmptyProduct: ProductSelected = {
+  id: null, // Identificador único del producto
+  product: null, // Identificador del producto específico que se vende
+  motive: '', //Identificador de la razón detrás de la salida del producto
   quantityRemoved: 0,
   observations: '', // Cualquier comentario adicional o notas relacionadas con el producto
   status: false, // El estado de la salida del producto (si se ha completado o no)
 };
-const EmptyProductOutflow = {
+const EmptyProductOutflow: ProductOutflowData = {
   productList: EmptyProductsOutflow, // Lista de productos que se venden
 };
-const initialState = {
+const initialState: ProductOutflowState = {
   mode: OPERATION_MODES.CREATE.label,
   productSelected: EmptyProduct,
   data: {
@@ -28,7 +49,7 @@ export const productOutflowSlice = createSlice({
   name: 'productOutflow',
   initialState,
   reducers: {
-    selectProduct: (state: any, actions: PayloadAction<any>) => {
+    selectProduct: (state: ProductOutflowState, actions: PayloadAction<Partial<ProductSelected>>) => {
       const newData = actions.payload;
       state.productSelected = {
         ...(state.productSelected || {}),
@@ -36,17 +57,16 @@ export const productOutflowSlice = createSlice({
         id: state.productSelected?.id || nanoid(10),
       };
     },
-    addProductToProductOutflow: (state: any, actions: PayloadAction<any>) => {
-      let data = actions.payload;
-      data = {
-        ...data,
+    addProductToProductOutflow: (state: ProductOutflowState, actions: PayloadAction<ProductSelected>) => {
+      const data = {
+        ...actions.payload,
       };
       state.data.productList = [...state.data.productList, data];
       state.productSelected = EmptyProduct;
     },
-    updateProductFromProductOutflow: (state: any, action: PayloadAction<any>) => {
+    updateProductFromProductOutflow: (state: ProductOutflowState, action: PayloadAction<{ id: string; data: Partial<ProductSelected> }>) => {
       const { id, data } = action.payload;
-      const updatedProductList = state.data.productList.map((product) => {
+      const updatedProductList = state.data.productList.map((product: ProductSelected) => {
         if (product.id === id) {
           return { ...product, ...data };
         }
@@ -54,16 +74,16 @@ export const productOutflowSlice = createSlice({
       });
       state.data.productList = updatedProductList;
     },
-    deleteProductFromProductOutflow: (state: any, actions: PayloadAction<any>) => {
+    deleteProductFromProductOutflow: (state: ProductOutflowState, actions: PayloadAction<{ id: string }>) => {
       const { id } = actions.payload;
       const checkingId = state.data.productList.filter(
-        (item) => item.id !== id,
+        (item: ProductSelected) => item.id !== id,
       );
       if (checkingId) {
         state.data.productList = checkingId;
       }
     },
-    setProductOutflowData: (state: any, actions: PayloadAction<any>) => {
+    setProductOutflowData: (state: ProductOutflowState, actions: PayloadAction<any>) => {
       const { data } = actions.payload;
 
       return {
@@ -76,7 +96,7 @@ export const productOutflowSlice = createSlice({
         mode: data.mode,
       };
     },
-    deleteData: (state: any) => {
+    deleteData: (state: ProductOutflowState) => {
       state.mode = OPERATION_MODES.CREATE.label;
       state.productSelected = EmptyProduct;
       state.data = EmptyProductOutflow;
@@ -93,11 +113,15 @@ export const {
   setProductOutflowData,
 } = productOutflowSlice.actions;
 
+interface ProductOutflowRootState {
+  productOutflow: ProductOutflowState;
+}
+
 //selectors
-export const SelectProductOutflow = (state) => state.productOutflow;
-export const SelectProductSelected = (state) =>
+export const SelectProductOutflow = (state: ProductOutflowRootState) => state.productOutflow;
+export const SelectProductSelected = (state: ProductOutflowRootState) =>
   state.productOutflow.productSelected;
-export const SelectProductList = (state) =>
+export const SelectProductList = (state: ProductOutflowRootState) =>
   state.productOutflow.data.productList;
 
 export default productOutflowSlice.reducer;

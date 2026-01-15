@@ -40,7 +40,7 @@ export const formatDate = (date: any) => {
   return DateTime.fromMillis(millis).toFormat('dd/MM/yyyy');
 };
 
-export const convertDayjsToMillis = (dateObj) => {
+export const convertDayjsToMillis = (dateObj: any) => {
   if (!dateObj) return null;
   if (typeof dateObj?.toMillis === 'function') return dateObj.toMillis();
   if (dateObj instanceof Date) return dateObj.getTime();
@@ -48,18 +48,18 @@ export const convertDayjsToMillis = (dateObj) => {
   return null;
 };
 
-export const convertDayjsToTimestamp = (dateObj) => {
+export const convertDayjsToTimestamp = (dateObj: any) => {
   const millis = convertDayjsToMillis(dateObj);
   return millis ? Timestamp.fromMillis(millis) : null;
 };
 
-export const convertMillisToTimestamp = (millis) =>
+export const convertMillisToTimestamp = (millis: any) =>
   millis ? Timestamp.fromMillis(millis) : null;
 
-export const convertTimestampToDayjs = (timestamp) =>
+export const convertTimestampToDayjs = (timestamp: any) =>
   timestamp?.seconds ? DateTime.fromMillis(timestamp.seconds * 1000) : null;
 
-export const convertMillisToDayjs = (input, dateFormat = 'DD-MM-YYYY') => {
+export const convertMillisToDayjs = (input: any, dateFormat = 'DD-MM-YYYY') => {
   if (typeof input === 'string' && /^\d+$/.test(input)) input = Number(input);
   if (typeof input === 'number') return DateTime.fromMillis(input);
   if (typeof input === 'string') {
@@ -69,7 +69,7 @@ export const convertMillisToDayjs = (input, dateFormat = 'DD-MM-YYYY') => {
   return null;
 };
 
-export const convertMillisToISODate = (milliseconds, format = 'dd/MM/yyyy') => {
+export const convertMillisToISODate = (milliseconds: any, format = 'dd/MM/yyyy') => {
   if (!milliseconds) return null;
   if (typeof milliseconds === 'object' && milliseconds.seconds !== undefined) {
     milliseconds =
@@ -81,24 +81,24 @@ export const convertMillisToISODate = (milliseconds, format = 'dd/MM/yyyy') => {
   return date.toFormat(format);
 };
 
-export const convertTimestampToMillis = (timestamp) => {
+export const convertTimestampToMillis = (timestamp: any) => {
   if (!timestamp) return null;
   return timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
 };
 
-export const convertMillisToLuxonDate = (millis) => {
+export const convertMillisToLuxonDate = (millis: any) => {
   if (!millis) return null;
   if (typeof millis === 'string') millis = JSON.parse(millis);
   return DateTime.fromMillis(millis);
 };
 
-export const convertMillisToLuxonDateTime = (millis) => {
+export const convertMillisToLuxonDateTime = (millis: any) => {
   if (!millis) return null;
   if (typeof millis === 'string') millis = JSON.parse(millis);
   return DateTime.fromMillis(millis);
 };
 
-export const convertMillisToFriendlyDate = (millis) => {
+export const convertMillisToFriendlyDate = (millis: any) => {
   if (!millis)
     return new Date().toLocaleString('en-US', {
       timeZone: 'America/New_York',
@@ -117,14 +117,14 @@ export const convertMillisToFriendlyDate = (millis) => {
     : 'Invalid milliseconds';
 };
 
-export const formatLuxonDateTime = (dateTime) => {
+export const formatLuxonDateTime = (dateTime: any) => {
   if (!dateTime) return '';
   if (!(dateTime instanceof DateTime))
     dateTime = convertMillisToLuxonDate(dateTime);
   return dateTime?.toFormat('dd/MM/yyyy HH:mm') || '';
 };
 
-export const formatLuxonDate = (dateTime) => {
+export const formatLuxonDate = (dateTime: any) => {
   if (!dateTime) return '';
   const millis = toMillis(dateTime);
   if (!(dateTime instanceof DateTime))
@@ -132,7 +132,7 @@ export const formatLuxonDate = (dateTime) => {
   return dateTime?.toFormat('dd/MM/yyyy') || '';
 };
 
-export const convertDateToMillis = (jsDate) =>
+export const convertDateToMillis = (jsDate: any) =>
   jsDate instanceof Date ? jsDate.valueOf() : null;
 
 const DateUtils = {

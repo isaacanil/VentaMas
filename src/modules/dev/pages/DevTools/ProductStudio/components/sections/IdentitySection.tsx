@@ -101,7 +101,7 @@ export const IdentitySection = ({
     <SectionHeader>
       <SectionTitle level={4}>General</SectionTitle>
       <SectionDescription>
-        Define cÃ³mo se verÃ¡ y clasificarÃ¡ tu artÃ­culo.
+        Define cómo se verá y clasificará tu artículo.
       </SectionDescription>
     </SectionHeader>
 
@@ -133,7 +133,7 @@ export const IdentitySection = ({
           Restablecer
         </PreviewButton>
         <Text type="secondary">
-          Usa una imagen cuadrada para que tu producto se vea mejor en catÃ¡logos
+          Usa una imagen cuadrada para que tu producto se vea mejor en catálogos
           y POS.
         </Text>
       </PreviewActions>
@@ -148,7 +148,7 @@ export const IdentitySection = ({
           { type: 'string', min: 4, message: 'Usa al menos 4 caracteres.' },
         ]}
       >
-        <Input placeholder="Ej: AcetaminofÃ©n 500mg 24 tablets" />
+        <Input placeholder="Ej: Acetaminofén 500mg 24 tablets" />
       </Form.Item>
 
       <Form.Item
@@ -168,14 +168,14 @@ export const IdentitySection = ({
 
       <Form.Item
         name="type"
-        label="Familia / lÃ­nea"
+        label="Familia / línea"
         rules={[{ required: true, message: 'Especifica la familia.' }]}
       >
-        <Input placeholder="Farmacia, CosmÃ©ticos, Bebidasâ€¦" />
+        <Input placeholder="Farmacia, Cosméticos, Bebidas…" />
       </Form.Item>
 
       <Form.Item name="netContent" label="Contenido neto">
-        <Input placeholder="Ej: 500 ml, 30 cÃ¡psulas" />
+        <Input placeholder="Ej: 500 ml, 30 cápsulas" />
       </Form.Item>
     </FieldGrid>
 
@@ -210,11 +210,11 @@ export const IdentitySection = ({
         </Form.Item>
       </Col>
       <Col xs={24} md={12}>
-        <Form.Item name="category" label="CategorÃ­a">
+        <Form.Item name="category" label="Categoría">
           <FieldWithAction>
             <Select
               showSearch
-              placeholder="Asigna una categorÃ­a"
+              placeholder="Asigna una categoría"
               optionFilterProp="children"
               filterOption={(input, option) =>
                 (option?.children || '')
@@ -240,7 +240,7 @@ export const IdentitySection = ({
               type="default"
               shape="circle"
               onClick={onAddCategory}
-              aria-label="Agregar categorÃ­a"
+              aria-label="Agregar categoría"
             />
           </FieldWithAction>
         </Form.Item>
@@ -248,14 +248,14 @@ export const IdentitySection = ({
     </Row>
 
     <FieldGrid>
-      <Form.Item name="size" label="PresentaciÃ³n / tamaÃ±o">
-        <Input placeholder="Caja x 24, Frasco 1Lâ€¦" />
+      <Form.Item name="size" label="Presentación / tamaño">
+        <Input placeholder="Caja x 24, Frasco 1L…" />
       </Form.Item>
       <Form.Item name="measurement" label="Medida interna">
-        <Input placeholder="Ãštil para reportes internos" />
+        <Input placeholder="Útil para reportes internos" />
       </Form.Item>
       <Form.Item name="footer" label="Pie / nota adicional">
-        <Input placeholder="InformaciÃ³n legal u observaciones" />
+        <Input placeholder="Información legal u observaciones" />
       </Form.Item>
       <Form.Item name="activeIngredients" label="Principio activo">
         <FieldWithAction>
@@ -299,8 +299,8 @@ export const IdentitySection = ({
     <FieldGrid>
       <SwitchField
         name="isVisible"
-        label="Mostrar en catÃ¡logos"
-        tooltip="Controla si este producto aparece en tus catÃ¡logos y punto de venta."
+        label="Mostrar en catálogos"
+        tooltip="Controla si este producto aparece en tus catálogos y punto de venta."
         valuePropName="checked"
       >
         <Switch />

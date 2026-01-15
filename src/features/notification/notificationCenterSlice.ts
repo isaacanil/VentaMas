@@ -1,6 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface NotificationCenterState {
+  isOpen: boolean;
+}
+
+interface NotificationCenterRootState {
+  notificationCenter: NotificationCenterState;
+}
+
+const initialState: NotificationCenterState = {
   isOpen: false,
 };
 
@@ -8,10 +16,10 @@ export const notificationCenterSlice = createSlice({
   name: 'notificationCenter',
   initialState,
   reducers: {
-    openNotificationCenter: (state: any) => {
+    openNotificationCenter: (state: NotificationCenterState) => {
       state.isOpen = true;
     },
-    closeNotificationCenter: (state: any) => {
+    closeNotificationCenter: (state: NotificationCenterState) => {
       state.isOpen = false;
     },
   },
@@ -22,7 +30,6 @@ export const {
   closeNotificationCenter,
 } = notificationCenterSlice.actions;
 
-export const selectNotificationCenter = (state) => state.notificationCenter;
+export const selectNotificationCenter = (state: NotificationCenterRootState) => state.notificationCenter;
 
 export default notificationCenterSlice.reducer;
-

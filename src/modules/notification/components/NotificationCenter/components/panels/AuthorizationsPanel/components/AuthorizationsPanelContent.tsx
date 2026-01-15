@@ -1,7 +1,17 @@
 import styled from 'styled-components';
-
+import { AuthorizationRequest } from '../AuthorizationsPanel';
 import AuthorizationsHeader from './AuthorizationsHeader';
 import AuthorizationsList from './AuthorizationsList';
+
+interface AuthorizationsPanelContentProps {
+  authorizations: AuthorizationRequest[];
+  pendingCount: number;
+  isAdmin: boolean;
+  processingId: string | null;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onNavigateToRequests: () => void;
+}
 
 const AuthorizationsPanelContent = ({
   authorizations,
@@ -11,7 +21,7 @@ const AuthorizationsPanelContent = ({
   onApprove,
   onReject,
   onNavigateToRequests,
-}) => (
+}: AuthorizationsPanelContentProps) => (
   <PanelContainer>
     <AuthorizationsHeader
       pendingCount={pendingCount}

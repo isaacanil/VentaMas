@@ -329,7 +329,7 @@ export const ExpensesTable = ({ searchTerm = '' }: { searchTerm?: string }) => {
           dispatch(openExpenseFormModal());
         };
         const handleDelete = async () => {
-          await fbDeleteExpense(user, value);
+          await fbDeleteExpense(user, value as any);
         };
         return <EditDelBtns onUpdate={handleUpdate} onDelete={handleDelete} />;
       },
@@ -364,12 +364,12 @@ export const ExpensesTable = ({ searchTerm = '' }: { searchTerm?: string }) => {
         </ErrorBanner>
       )}
       <FilterExpenses
-        filters={filters}
-        onFiltersChange={handleFilterChange}
-        categoryOptions={categoryOptions}
+        filters={filters as any}
+        onFiltersChange={handleFilterChange as any}
+        categoryOptions={categoryOptions as any}
       />
       <AdvancedTable
-        columns={columns}
+        columns={columns as any}
         data={data}
         loading={loading}
         elementName={'Gasto'}

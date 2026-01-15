@@ -17,7 +17,7 @@ interface CashCountDocData {
 export const fbAddBillToOpenCashCount = async (
   user: UserIdentity | null | undefined,
   invoiceRef: DocumentReference,
-  transaction: Transaction | null = null,
+  transaction?: Transaction,
 ): Promise<string | void> => {
   if (!user?.businessID || !user?.uid) {
     return;

@@ -8,7 +8,7 @@ import {
 } from '@/features/auth/userSlice';
 import { fbSearchUsers } from '@/firebase/Auth/fbAuthV2/fbGetUsers';
 import type { CommandProcessorInterface } from '../types';
-import type { SelectionItem } from '../../types';
+import type { SelectionItem } from '../../../types';
 
 type BusinessEntry = {
   id?: string;
@@ -106,12 +106,13 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           testItems,
           '🧪 Selección de prueba:',
-          (selectedItem: {
-            id?: string;
-            label?: string;
-            isOriginal?: boolean;
-            isCurrent?: boolean;
-          }) => {
+          (item: SelectionItem) => {
+            const selectedItem = item as {
+              id?: string;
+              label?: string;
+              isOriginal?: boolean;
+              isCurrent?: boolean;
+            };
             if (!selectedItem || typeof selectedItem !== 'object') {
               this.addOutput(
                 'No se pudo determinar la selección. Intente nuevamente.',
@@ -121,14 +122,14 @@ Pulse ESC para cancelar.`;
             }
             const value =
               selectedItem &&
-              typeof selectedItem === 'object' &&
-              'value' in selectedItem
+                typeof selectedItem === 'object' &&
+                'value' in selectedItem
                 ? (selectedItem as { value?: unknown }).value
                 : selectedItem;
             const display =
               selectedItem &&
-              typeof selectedItem === 'object' &&
-              'display' in selectedItem
+                typeof selectedItem === 'object' &&
+                'display' in selectedItem
                 ? String((selectedItem as { display?: unknown }).display ?? '')
                 : String(selectedItem ?? '');
             this.addOutput(`Has seleccionado: ${display}`);
@@ -153,22 +154,23 @@ Pulse ESC para cancelar.`;
         this.enterSelectionMode(
           colorItems,
           '🎨 Selección de Color:',
-          (selectedItem: {
-            id?: string;
-            label?: string;
-            isOriginal?: boolean;
-            isCurrent?: boolean;
-          }) => {
+          (item: SelectionItem) => {
+            const selectedItem = item as {
+              id?: string;
+              label?: string;
+              isOriginal?: boolean;
+              isCurrent?: boolean;
+            };
             const display =
               selectedItem &&
-              typeof selectedItem === 'object' &&
-              'display' in selectedItem
+                typeof selectedItem === 'object' &&
+                'display' in selectedItem
                 ? String((selectedItem as { display?: unknown }).display ?? '')
                 : String(selectedItem ?? '');
             const value =
               selectedItem &&
-              typeof selectedItem === 'object' &&
-              'value' in selectedItem
+                typeof selectedItem === 'object' &&
+                'value' in selectedItem
                 ? String((selectedItem as { value?: unknown }).value ?? '')
                 : '';
             this.addOutput(
@@ -193,8 +195,8 @@ Pulse ESC para cancelar.`;
           (selectedItem: SelectionItem) => {
             const value =
               selectedItem &&
-              typeof selectedItem === 'object' &&
-              'value' in selectedItem
+                typeof selectedItem === 'object' &&
+                'value' in selectedItem
                 ? (selectedItem as { value?: unknown }).value
                 : selectedItem;
             this.addOutput(
@@ -409,11 +411,10 @@ Estado actual: ${localStorage.getItem('debugMode') ? 'ACTIVADO' : 'DESACTIVADO'}
       case cmd === 'testmode status':
         result = `Estado del modo de prueba: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}
 
-${
-this.isTestMode
-  ? 'Las facturas se procesan en modo de prueba sin afectar la base de datos.'
-  : 'Las facturas se guardan normalmente en la base de datos.'
-}`;
+${this.isTestMode
+            ? 'Las facturas se procesan en modo de prueba sin afectar la base de datos.'
+            : 'Las facturas se guardan normalmente en la base de datos.'
+          }`;
         break;
 
       case cmd === 'testmode':
@@ -470,7 +471,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               );
             } else {
               // Preparar items para el modo de selección
-              let selectionItems = businessesList.map((business: BusinessEntry) => {
+              let selectionItems: any[] = businessesList.map((business: BusinessEntry) => {
                 const businessId = business.id || business.businessID;
                 const businessName = business.business?.name || 'Sin nombre';
                 const isCurrent = businessId === this.user?.businessID;
@@ -510,7 +511,8 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
               this.enterSelectionMode(
                 selectionItems,
                 '📋 Seleccionar Negocio:',
-                (selectedItem: BusinessSelectionItem) => {
+                (item: SelectionItem) => {
+                  const selectedItem = item as BusinessSelectionItem;
                   if (!selectedItem) {
                     this.addOutput(
                       'No se pudo determinar la selección. Intente nuevamente.',
@@ -551,7 +553,7 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
                     return;
                   }
 
-                  this.dispatch(switchToBusiness(selectedItem.id));
+                  this.dispatch(switchToBusiness(selectedItem.id as string));
                   this.addOutput(
                     `✅ Cambiado al negocio: ${targetName}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL ACTIVADO\nPara volver al negocio original use: BUSINESS RETURN`,
                   );
@@ -619,9 +621,9 @@ Estado actual: ${this.isTestMode ? '🧪 ACTIVADO' : '✅ DESACTIVADO'}`;
             'No está en modo temporal. Ya está en su negocio original.';
         } else {
           const originalBusiness = this.businesses.find(
-            (b: BusinessEntry) =>
+            (b: any) =>
               (b.id || b.businessID) === this.originalBusinessId,
-          );
+          ) as any;
           this.dispatch(returnToOriginalBusiness());
           result = `✅ Regresado al negocio original: ${originalBusiness?.business?.name || 'Sin nombre'}\nID: ${this.originalBusinessId}\n\n✅ MODO TEMPORAL DESACTIVADO`;
         }
@@ -634,11 +636,10 @@ Negocio actual: ${this.user?.businessID || 'No asignado'}
 Modo temporal: ${this.isTemporaryMode ? '⚠️  ACTIVADO' : '✅ DESACTIVADO'}
 Negocio original: ${this.originalBusinessId || 'N/A'}
 
-${
-this.isTemporaryMode
-  ? 'Está trabajando temporalmente en otro negocio.\nUse BUSINESS RETURN para volver al original.'
-  : 'Está trabajando en su negocio original.'
-}`;
+${this.isTemporaryMode
+            ? 'Está trabajando temporalmente en otro negocio.\nUse BUSINESS RETURN para volver al original.'
+            : 'Está trabajando en su negocio original.'
+          }`;
         break;
       case cmd === 'business':
         result = `Utilización: BUSINESS [LIST | SELECT | SWITCH | RETURN | STATUS]
@@ -756,7 +757,8 @@ BUSINESS STATUS             - Estado actual`;
         this.enterSelectionMode(
           roleSelectionItems,
           '👤 Seleccionar Role:',
-          (selectedItem: RoleSelectionItem) => {
+          (item: SelectionItem) => {
+            const selectedItem = item as RoleSelectionItem;
             // Callback cuando se selecciona un item
             if (!selectedItem) {
               this.addOutput(
@@ -783,7 +785,7 @@ BUSINESS STATUS             - Estado actual`;
                 `🔄 Ya tiene asignado el role: ${selectedItem.label}\nID: ${selectedItem.id}`,
               );
             } else {
-              this.dispatch(switchToRole(selectedItem.id));
+              this.dispatch(switchToRole(selectedItem.id as string));
               this.addOutput(
                 `✅ Cambiado al role: ${selectedItem.label}\nID: ${selectedItem.id}\n\n⚠️  MODO TEMPORAL DE ROLE ACTIVADO\nPara volver al role original use: ROLE RETURN`,
               );
@@ -845,11 +847,10 @@ Role actual: ${this.user?.role || 'No asignado'}
 Modo temporal de role: ${this.isTemporaryRoleMode ? '⚠️  ACTIVADO' : '✅ DESACTIVADO'}
 Role original: ${this.originalRole || 'N/A'}
 
-${
-this.isTemporaryRoleMode
-  ? 'Está usando temporalmente otro role.\nUse ROLE RETURN para volver al original.'
-  : 'Está usando su role original.'
-}`;
+${this.isTemporaryRoleMode
+            ? 'Está usando temporalmente otro role.\nUse ROLE RETURN para volver al original.'
+            : 'Está usando su role original.'
+          }`;
         break;
       case cmd === 'role':
         result = `Utilización: ROLE [LIST | SELECT | SWITCH | RETURN | STATUS]
@@ -908,7 +909,8 @@ ROLE STATUS             - Estado actual`;
         } else {
           result = 'Buscando usuarios...';
           fbSearchUsers(searchTerm)
-            .then((users: UserEntry[]) => {
+            .then((users: any[]) => {
+              const userEntries = users as UserEntry[];
               if (users.length === 0) {
                 this.addOutput(
                   `No se encontraron usuarios que coincidan con "${searchTerm}".`,
@@ -920,7 +922,7 @@ ROLE STATUS             - Estado actual`;
                     ({ user }: UserEntry, index: number) =>
                       `${index + 1}. ${user?.name} (${user?.email})\n   Role: ${user?.role} | ID: ${user?.id}`,
                   )
-                  .join('\n\n')}\n\nEncontrados ${users?.length} usuarios.`;
+                  .join('\n\n')}\n\nEncontrados ${userEntries?.length} usuarios.`;
                 this.addOutput(searchResult);
               }
             })
@@ -960,7 +962,8 @@ ROLE STATUS             - Estado actual`;
               this.enterSelectionMode(
                 selectionItems,
                 '🔑 Seleccionar Usuario para Cambiar Contraseña:',
-                (selectedItem: UserSelectionItem) => {
+                (item: SelectionItem) => {
+                  const selectedItem = item as UserSelectionItem;
                   // Solicitar nueva contraseña
                   const newPassword = prompt(
                     `Ingrese la nueva contraseña para ${selectedItem.name}:`,
@@ -980,7 +983,7 @@ ROLE STATUS             - Estado actual`;
                     );
 
                     this.changeUserPassword(
-                      selectedItem.id,
+                      selectedItem.id as string,
                       newPassword.trim(),
                     )
                       .then(() => {

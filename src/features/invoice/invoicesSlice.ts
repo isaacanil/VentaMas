@@ -36,15 +36,15 @@ const invoicesSlice = createSlice({
   initialState,
   reducers: {
     // Acción para establecer las facturas (útil cuando se cargan desde una API)
-    setInvoices(state, action: PayloadAction<InvoiceSummary[]>) {
+    setInvoices(state: InvoicesState, action: PayloadAction<InvoiceSummary[]>) {
       state.items = action.payload;
     },
     // Acción para filtrar las facturas por estado
-    filterInvoicesByStatus(state, action: PayloadAction<InvoiceStatusFilter>) {
+    filterInvoicesByStatus(state: InvoicesState, action: PayloadAction<InvoiceStatusFilter>) {
       state.statusFilter = action.payload;
     },
     // Acción para ordenar las facturas
-    sortInvoices(state, action: PayloadAction<InvoicesSortPayload>) {
+    sortInvoices(state: InvoicesState, action: PayloadAction<InvoicesSortPayload>) {
       const { sortKey, sortOrder } = action.payload;
       state.sortKey = sortKey;
       state.sortOrder = sortOrder;
@@ -80,4 +80,3 @@ export const selectFilteredSortedInvoices = (state: InvoicesRootState) => {
 
 // Exporta el reducer
 export default invoicesSlice.reducer;
-

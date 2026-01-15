@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { faUserCog } from '@fortawesome/free-solid-svg-icons';
 import { faExternalLink } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -40,7 +39,7 @@ export const Account = () => {
       >
         <ul className={Style.Items}>
           <li className={Style.Item}>
-            <Link to className={Style.Item_Link}>
+            <Link to="/" className={Style.Item_Link}>
               Cuenta
             </Link>{' '}
             <div className={Style.Icon_wrapper}>
@@ -48,7 +47,7 @@ export const Account = () => {
             </div>
           </li>
           <li className={Style.Item}>
-            <Link to className={Style.Item_Link}>
+            <Link to="/" className={Style.Item_Link}>
               Ayuda
             </Link>
             <div className={Style.Icon_wrapper}>

@@ -1,6 +1,17 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface UploadImageState {
+  img: any;
+  url: string | null;
+  loading: boolean;
+  status: number;
+}
+
+interface UploadImageRootState {
+  uploadImg: UploadImageState;
+}
+
+const initialState: UploadImageState = {
   img: null,
   url: null,
   loading: false,
@@ -11,7 +22,7 @@ export const UploadImgSlice = createSlice({
   name: 'uploadImg',
   initialState,
   reducers: {
-    SaveImg: (state: any, action: PayloadAction<any>) => {
+    SaveImg: (state: UploadImageState, action: PayloadAction<{ img?: any; url?: string | null }>) => {
       const { img, url } = action.payload;
       if (img) {
         state.img = img;
@@ -20,15 +31,15 @@ export const UploadImgSlice = createSlice({
         state.url = url;
       }
     },
-    clearImg: (state: any) => {
+    clearImg: (state: UploadImageState) => {
       state.img = null;
       state.url = null;
     },
-    UploadProgress: (state: any, action: PayloadAction<any>) => {
+    UploadProgress: (state: UploadImageState, action: PayloadAction<{ progress?: number }>) => {
       const { progress } = action.payload;
       state.status = progress || 0;
     },
-    UploadImgLoading: (state: any, action: PayloadAction<any>) => {
+    UploadImgLoading: (state: UploadImageState, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
   },
@@ -37,10 +48,10 @@ export const UploadImgSlice = createSlice({
 export const { SaveImg, clearImg, UploadImgLoading, UploadProgress } =
   UploadImgSlice.actions;
 
-export const selectImg = (state) => state.uploadImg.img;
-export const selectUploadImageUrl = (state) => state.uploadImg.url;
-export const selectUploadImageLoading = (state) => state.uploadImg.loading;
-export const selectUploadImageStatus = (state) => state.uploadImg.status;
+export const selectImg = (state: UploadImageRootState) => state.uploadImg.img;
+export const selectUploadImageUrl = (state: UploadImageRootState) => state.uploadImg.url;
+export const selectUploadImageLoading = (state: UploadImageRootState) => state.uploadImg.loading;
+export const selectUploadImageStatus = (state: UploadImageRootState) => state.uploadImg.status;
 
 export default UploadImgSlice.reducer;
 

@@ -1,0 +1,26 @@
+import { useMemo } from 'react';
+
+interface LoadingEntry {
+  loading: boolean;
+  tip?: string;
+}
+
+interface LoadingStatus {
+  isLoading: boolean;
+  tip: string;
+}
+
+export function useLoadingStatus(entries: LoadingEntry[]): LoadingStatus {
+  // entries: Array<{ loading: boolean, tip: string }>
+  // Utilizamos useMemo para evitar recálculos innecesarios
+  const result = useMemo(() => {
+    const isLoading =
+      Array.isArray(entries) && entries.some((entry) => entry.loading === true);
+    const active =
+      Array.isArray(entries) && entries.find((entry) => entry.loading === true);
+    const tip = active?.tip || '';
+    return { isLoading, tip };
+  }, [entries]);
+
+  return result;
+}

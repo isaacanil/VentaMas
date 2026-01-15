@@ -1,38 +1,53 @@
-﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  selectedInsurance: false,
-  insuranceData: {
-    recurrence: false,
-    validity: false,
-    authNumber: '',
-  },
+interface Insurance {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface InsuranceState {
+  selectedInsurance: Insurance | null;
+  insuranceList: Insurance[];
+  recurrence: boolean;
+  authNumber: string;
+}
+
+interface InsuranceRootState {
+  insurance: InsuranceState;
+}
+
+const initialState: InsuranceState = {
+  selectedInsurance: null,
+  insuranceList: [],
+  recurrence: false,
+  authNumber: '',
 };
 
 const insuranceSlice = createSlice({
   name: 'insurance',
   initialState,
   reducers: {
-    setInsuranceStatus: (state: any, action: PayloadAction<any>) => {
+    setSelectedInsurance: (state: InsuranceState, action: PayloadAction<Insurance | null>) => {
       state.selectedInsurance = action.payload;
     },
-    toggleInsurance: (state: any, action: PayloadAction<any>) => {
-      // If explicit value provided, use it, otherwise toggle current value
-      state.selectedInsurance = action.payload ?? !state.selectedInsurance;
+    setInsuranceList: (state: InsuranceState, action: PayloadAction<Insurance[]>) => {
+      state.insuranceList = action.payload;
     },
-    updateInsuranceData: (state: any, action: PayloadAction<any>) => {
-      state.insuranceData = { ...state.insuranceData, ...action.payload };
+    updateInsuranceData: (state: InsuranceState, action: PayloadAction<Partial<InsuranceState>>) => {
+      return { ...state, ...action.payload };
+    },
+    clearInsurance: (state: InsuranceState) => {
+      state.selectedInsurance = null;
+      state.recurrence = false;
+      state.authNumber = '';
     },
   },
 });
 
-export const { setInsuranceStatus, toggleInsurance, updateInsuranceData } =
-  insuranceSlice.actions;
-
-export const selectInsuranceStatus = (state) =>
-  state.insurance.selectedInsurance;
-export const selectInsuranceData = (state) => state.insurance.insuranceData;
-
+export const { setSelectedInsurance, setInsuranceList, updateInsuranceData, clearInsurance } = insuranceSlice.actions;
 export default insuranceSlice.reducer;
 
-
+export const selectSelectedInsurance = (state: InsuranceRootState) => state.insurance.selectedInsurance;
+export const selectInsuranceList = (state: InsuranceRootState) => state.insurance.insuranceList;
+export const selectInsuranceData = (state: InsuranceRootState) => state.insurance;

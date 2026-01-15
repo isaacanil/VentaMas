@@ -40,7 +40,7 @@ type SegmentNode = SegmentRecord & {
   productStock?: InventoryStockItem[];
 };
 
-type WarehouseStockMap = Record<string, InventoryStockItem[]>;
+type WarehouseStockMap = Record<string, ProductStockRecord[]>;
 
 type LoadingMap = Record<string, boolean>;
 
@@ -79,7 +79,7 @@ export const useWarehouseHierarchy = () => {
     warehouseUnsubscribeRef.current?.();
 
     const unsubscribe = listenAllWarehouses(
-      user,
+      user!,
       (warehouseData) => {
         setWarehouses(warehouseData as WarehouseNode[]);
         setWarehousesLoadedFor(businessId);
@@ -113,7 +113,7 @@ export const useWarehouseHierarchy = () => {
       setShelvesLoading((prev) => ({ ...prev, [warehouse.id as string]: true }));
 
       const unsubscribe = listenAllShelves(
-        user,
+        user!,
         warehouse.id as string,
         (shelfData) => {
           setShelves((prev) => ({
@@ -159,7 +159,7 @@ export const useWarehouseHierarchy = () => {
         setRowsLoading((prev) => ({ ...prev, [shelf.id as string]: true }));
 
         const unsubscribe = listenAllRowShelves(
-          user,
+          user!,
           warehouseId,
           shelf.id as string,
           (rowData) => {
@@ -207,9 +207,9 @@ export const useWarehouseHierarchy = () => {
         setSegmentsLoading((prev) => ({ ...prev, [row.id as string]: true }));
 
         const unsubscribe = listenAllSegments(
-          user,
-          row.warehouseId,
-          row.shelfId,
+          user!,
+          row.warehouseId as string,
+          row.shelfId as string,
           row.id as string,
           (segmentData) => {
             setSegments((prev) => ({
@@ -256,7 +256,7 @@ export const useWarehouseHierarchy = () => {
       const locationPath = buildLocationPath({ warehouseId: warehouse.id });
       if (!locationPath) return;
       const unsubscribe = listenAllProductStockByLocation(
-        user,
+        user!,
         locationPath,
         (stockData) => {
           setProductStock((prev) => ({
@@ -279,7 +279,7 @@ export const useWarehouseHierarchy = () => {
         });
         if (!locationPath) return;
         const unsubscribe = listenAllProductStockByLocation(
-          user,
+          user!,
           locationPath,
           (stockData) => {
             setProductStock((prev) => ({
@@ -379,22 +379,22 @@ export const useTransformedWarehouseData = () => {
 
   const transformData = (entries: WarehouseNode[]): TreeNode[] => {
     return entries.map((warehouse) => ({
-      id: warehouse.id,
+      id: warehouse.id || '',
       name: warehouse.name as string | undefined,
       type: 'warehouse',
       record: sanitizeWarehouse(warehouse as Record<string, unknown>),
       children: warehouse.shelves?.map((shelf) => ({
-        id: shelf.id,
+        id: shelf.id || '',
         name: shelf.name as string | undefined,
         type: 'shelf',
         record: sanitizeShelf(shelf as Record<string, unknown>),
         children: shelf.rows?.map((row) => ({
-          id: row.id,
+          id: row.id || '',
           name: row.name as string | undefined,
           type: 'row',
           record: sanitizeRow(row as Record<string, unknown>),
           children: row.segments?.map((segment) => ({
-            id: segment.id,
+            id: segment.id || '',
             name: segment.name as string | undefined,
             type: 'segment',
             record: sanitizeSegment(segment as Record<string, unknown>),

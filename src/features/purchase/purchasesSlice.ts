@@ -1,6 +1,14 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface PurchasesState {
+  purchases: any[];
+}
+
+interface PurchasesRootState {
+  purchases: PurchasesState;
+}
+
+const initialState: PurchasesState = {
   purchases: [],
 };
 
@@ -8,7 +16,7 @@ export const purchasesSlice = createSlice({
   name: 'purchases',
   initialState,
   reducers: {
-    updatePurchases: (state: any, actions: PayloadAction<any>) => {
+    updatePurchases: (state: PurchasesState, actions: PayloadAction<any[]>) => {
       const data = actions.payload;
       state.purchases = data;
     },
@@ -17,8 +25,6 @@ export const purchasesSlice = createSlice({
 
 export const { updatePurchases } = purchasesSlice.actions;
 
-export const selectPurchaseList = (state) => state.purchases.purchases;
+export const selectPurchaseList = (state: PurchasesRootState) => state.purchases.purchases;
 
 export default purchasesSlice.reducer;
-
-

@@ -1,6 +1,20 @@
 ﻿import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+interface FileItem {
+  id: string | number;
+  [key: string]: any;
+}
+
+interface FileState {
+  files: FileItem[];
+  open: boolean;
+}
+
+interface FileRootState {
+  files: FileState;
+}
+
+const initialState: FileState = {
   files: [],
   open: false,
 };
@@ -9,7 +23,7 @@ const fileSlice = createSlice({
   name: 'files',
   initialState,
   reducers: {
-    openFileCenter: (state: any, action: PayloadAction<any>) => {
+    openFileCenter: (state: FileState, action: PayloadAction<FileItem[]>) => {
       const files = action.payload;
       if (files.length) {
         state.open = true;
@@ -19,7 +33,7 @@ const fileSlice = createSlice({
         state.files = [];
       }
     },
-    closeFileCenter: (state: any) => {
+    closeFileCenter: (state: FileState) => {
       state.open = false;
       state.files = [];
     },
@@ -33,6 +47,4 @@ export const {
 
 export default fileSlice.reducer;
 
-export const selectFileCenter = (state) => state.files;
-
-
+export const selectFileCenter = (state: FileRootState) => state.files;

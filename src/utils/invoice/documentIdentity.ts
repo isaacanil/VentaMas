@@ -1,5 +1,34 @@
-// @ts-nocheck
-const RECEIPT_MAP = {
+/**
+ * Document identity types for invoices and receipts
+ */
+
+export interface DocumentIdentity {
+  title: string;
+  label: string;
+  value: string | number | null;
+  description: string;
+  type: 'fiscal-credit' | 'fiscal-consumer' | 'fiscal-generic' | 'preorder' | 'receipt';
+}
+
+interface InvoiceLike {
+  NCF?: string;
+  comprobante?: string;
+  type?: string;
+  status?: string;
+  numberID?: string | number;
+  id?: string;
+  preorderDetails?: {
+    isOrWasPreorder?: boolean;
+    numberID?: string | number;
+  };
+  [key: string]: unknown;
+}
+
+interface PreorderCheckOptions {
+  rawNcf?: string;
+}
+
+const RECEIPT_MAP: Record<string, Omit<DocumentIdentity, 'value'>> = {
   B01: {
     title: 'FACTURA DE CRÉDITO FISCAL',
     label: 'NCF',
@@ -14,7 +43,7 @@ const RECEIPT_MAP = {
   },
 };
 
-const RECEIPT_FALLBACK = {
+const RECEIPT_FALLBACK: Omit<DocumentIdentity, 'value'> = {
   title: 'COMPROBANTE FISCAL',
   label: 'NCF',
   description: 'COMPROBANTE FISCAL',
@@ -27,7 +56,10 @@ const PREORDER_ACTIVE_STATUSES = new Set([
   'cancelled-preorder',
 ]);
 
-export const isPreorderDocument = (invoice = {}, { rawNcf } = {}) => {
+export const isPreorderDocument = (
+  invoice: InvoiceLike | null | undefined = {},
+  { rawNcf }: PreorderCheckOptions = {}
+): boolean => {
   if (!invoice) {
     return false;
   }
@@ -56,7 +88,9 @@ export const isPreorderDocument = (invoice = {}, { rawNcf } = {}) => {
   );
 };
 
-export function resolveDocumentIdentity(invoice = {}) {
+export function resolveDocumentIdentity(
+  invoice: InvoiceLike | null | undefined = {}
+): DocumentIdentity {
   const rawNcf = (invoice?.NCF ?? invoice?.comprobante ?? '').toString().trim();
   const isPreorder = isPreorderDocument(invoice, { rawNcf });
   const preorderNumber =
@@ -69,7 +103,7 @@ export function resolveDocumentIdentity(invoice = {}) {
     return {
       title: 'PREVENTA',
       label: 'Número de Preventa',
-      value: preorderNumber,
+      value: preorderNumber ?? null,
       description: 'PREVENTA',
       type: 'preorder',
     };

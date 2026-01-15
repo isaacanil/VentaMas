@@ -54,13 +54,13 @@ export function InfoItem({
 const Group = styled.div<{ textTransform?: string; justifyContent?: string }>`
   display: flex;
   gap: 12px;
-  justify-content: ${(props) => props.justifyContent};
-  text-transform: ${(props) => props.textTransform};
+  justify-content: ${(props: { justifyContent?: string }) => props.justifyContent};
+  text-transform: ${(props: { textTransform?: string }) => props.textTransform};
 `;
 
 export const Subtitle = styled.p<{ align?: string }>`
   display: flex;
-  justify-content: ${({ align }) => align};
+  justify-content: ${({ align }: { align?: string }) => align};
   padding: 0;
   margin: 0;
   font-weight: 600;
@@ -72,7 +72,7 @@ export const Paragraph = styled.p<{ align?: string }>`
   margin: 0;
   padding: 0.2em 0;
   text-transform: uppercase;
-  ${({ align }) => {
+  ${({ align }: { align?: string }) => {
     switch (align) {
       case 'center':
         return 'text-align: center;';

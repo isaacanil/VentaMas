@@ -96,7 +96,7 @@ const EditableCell = (props: EditableCellProps) => {
           formatter={(value) =>
             `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
           }
-          parser={(value) => String(value ?? '').replace(/\$\s?|(,*)/g, '')}
+          parser={(value) => String(value ?? '').replace(/\$\s?|(,*)/g, '') as any}
           placeholder={placeholder}
         />
       );
@@ -106,7 +106,7 @@ const EditableCell = (props: EditableCellProps) => {
         <DatePicker
           value={
             record[dataIndex]
-              ? DateTime.fromMillis(Number(record[dataIndex]))
+              ? (DateTime.fromMillis(Number(record[dataIndex])) as any)
               : null
           }
           onChange={handleDateChange}
@@ -198,7 +198,7 @@ const ProductsTable = ({
       } else {
         const backordersQuantity = (
           newData.selectedBackOrders as PurchaseBackOrderRef[]
-        ).reduce((sum, bo) => sum + (bo.quantity || 0), 0);
+        ).reduce((sum, bo) => sum + (Number((bo as any).quantity) || 0), 0);
         newData.quantity = finalQty;
         newData.purchaseQuantity = finalQty + backordersQuantity;
       }
@@ -297,7 +297,7 @@ const ProductsTable = ({
             ...product,
             key: product.key || product.id || index,
           }))}
-          rowKey={(record) => record.key}
+          rowKey="key"
           pagination={false}
           summary={(pageData) => {
             let totalQuantity = 0;

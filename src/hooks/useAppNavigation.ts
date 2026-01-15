@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNavigate } from 'react-router-dom';
 
 import { replacePathParams } from '@/router/routes/replacePathParams';
@@ -31,13 +30,13 @@ export function useAppNavigation() {
 
     // Inventario
     createProduct: () => navigate(ROUTES_NAME.INVENTORY_TERM.CREATE_PRODUCT),
-    product: (productId) =>
+    product: (productId: string) =>
       navigate(
         replacePathParams(ROUTES_NAME.INVENTORY_TERM.PRODUCT, productId),
       ),
     inventoryItems: () => navigate(ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS),
     warehouses: () => navigate(ROUTES_NAME.INVENTORY_TERM.WAREHOUSES),
-    warehouse: (warehouseId) =>
+    warehouse: (warehouseId: string) =>
       navigate(
         replacePathParams(ROUTES_NAME.INVENTORY_TERM.WAREHOUSE, warehouseId),
       ),
@@ -45,7 +44,7 @@ export function useAppNavigation() {
     // Cuentas por cobrar
     accountReceivableList: () =>
       navigate(ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST),
-    accountReceivableInfo: (id) =>
+    accountReceivableInfo: (id: string) =>
       navigate(
         replacePathParams(
           ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_INFO,
@@ -58,13 +57,13 @@ export function useAppNavigation() {
     // Compras
     purchases: () => navigate(ROUTES_NAME.PURCHASE_TERM.PURCHASES),
     purchasesCreate: () => navigate(ROUTES_NAME.PURCHASE_TERM.PURCHASES_CREATE),
-    purchasesUpdate: (id) =>
+    purchasesUpdate: (id: string | number) =>
       navigate(
-        replacePathParams(ROUTES_NAME.PURCHASE_TERM.PURCHASES_UPDATE, id),
+        replacePathParams(ROUTES_NAME.PURCHASE_TERM.PURCHASES_UPDATE, String(id)),
       ),
-    purchasesComplete: (id) =>
+    purchasesComplete: (id: string | number) =>
       navigate(
-        replacePathParams(ROUTES_NAME.PURCHASE_TERM.PURCHASES_COMPLETE, id),
+        replacePathParams(ROUTES_NAME.PURCHASE_TERM.PURCHASES_COMPLETE, String(id)),
       ),
     backorders: () => navigate(ROUTES_NAME.PURCHASE_TERM.BACKORDERS),
 
@@ -74,11 +73,11 @@ export function useAppNavigation() {
     insuranceList: () => navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_LIST),
     insuranceCreate: () =>
       navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_CREATE),
-    insuranceEdit: (id) =>
+    insuranceEdit: (id: string) =>
       navigate(
         replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_EDIT, id),
       ),
-    insuranceDetails: (id) =>
+    insuranceDetails: (id: string) =>
       navigate(
         replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_DETAILS, id),
       ),

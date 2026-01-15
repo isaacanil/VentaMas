@@ -28,10 +28,12 @@ function StockIndicator({ stock, trackInventory }: StockIndicatorProps) {
 
 export default StockIndicator;
 
-const StockContainer = styled.div<{
+interface StockContainerProps {
   stock?: number | null;
   trackInventory?: boolean;
-}>`
+}
+
+const StockContainer = styled.div<StockContainerProps>`
   display: flex;
   align-items: center;
   width: 100%;
@@ -40,7 +42,7 @@ const StockContainer = styled.div<{
   justify-content: right;
   padding: 0 0.4em;
   border-radius: var(--border-radius-light);
-  ${(props) =>
+  ${(props: StockContainerProps) =>
     !props.stock &&
     `
     white-space: nowrap;
@@ -49,7 +51,7 @@ const StockContainer = styled.div<{
     color: #616161 !important;
     `}
 
-  ${(props) => {
+  ${(props: StockContainerProps) => {
     switch (props.trackInventory) {
       case false:
         return `
@@ -59,14 +61,14 @@ const StockContainer = styled.div<{
         break;
     }
   }}
-    ${(props) => {
+    ${(props: StockContainerProps) => {
     switch (true) {
-      case props.stock < 10:
+      case (props.stock ?? 0) < 10:
         return `
           justify-content: right;
           background-color: rgb(255, 220, 220);
         `;
-      case props.stock >= 10:
+      case (props.stock ?? 0) >= 10:
         return `
             justify-content: right;
             background-color: rgb(220, 255, 220);
@@ -75,7 +77,7 @@ const StockContainer = styled.div<{
         break;
     }
   }}
-    ${(props) => {
+    ${(props: StockContainerProps) => {
     switch (!props.trackInventory) {
       case true:
         return `

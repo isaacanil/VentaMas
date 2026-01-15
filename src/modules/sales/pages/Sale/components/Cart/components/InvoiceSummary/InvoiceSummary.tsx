@@ -137,7 +137,7 @@ const InvoiceSummary = () => {
   const user = useSelector(selectUser) as Authorizer | null;
   const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] =
     useState(false);
-  const cartData = useSelector(SelectCartData) as InvoiceData | null;
+  const cartData = useSelector(SelectCartData) as unknown as InvoiceData | null;
   const insuranceExtra = cartData?.totalInsurance?.value ?? 0;
   const selectedNcfType = useSelector(selectNcfType);
   const isTaxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
@@ -174,7 +174,7 @@ const InvoiceSummary = () => {
   ) as number;
   const hasIndividualDiscounts = productsWithIndividualDiscounts.length > 0;
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
   const insuranceEnabled = useInsuranceEnabled();
   const { shouldDisableButton: insuranceFormIncomplete } =
     useInsuranceFormComplete();
@@ -230,7 +230,7 @@ const InvoiceSummary = () => {
     modalProps: discountPinModalProps,
     isModalOpen: isDiscountPinModalOpen,
   } = useAuthorizationPin({
-    onAuthorized: (authorizer) => {
+    onAuthorized: (authorizer: Authorizer) => {
       setIsDiscountAuthorized(true);
       setDiscountAuthorizer(authorizer);
 
@@ -438,7 +438,7 @@ const InvoiceSummary = () => {
         okText: 'Limpiar',
         cancelText: 'Mantener',
         onOk: () => {
-          handleCancelShipping({ dispatch, closeInvoicePanel: false });
+          handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
           notification.success({
             message: 'Cotización eliminada',
             description: 'Los datos de la cotización han sido eliminados.',
@@ -463,7 +463,7 @@ const InvoiceSummary = () => {
       okText: 'Limpiar',
       cancelText: 'Mantener',
       onOk: () => {
-        handleCancelShipping({ dispatch, closeInvoicePanel: false });
+        handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
         message.success('Se han restablecido los datos');
       },
       onCancel: () => {
@@ -507,7 +507,7 @@ const InvoiceSummary = () => {
 
       const preorderPayload = buildPreorderPayload() || cartData;
       await fbAddPreOrder(user, preorderPayload);
-      handleCancelShipping({ dispatch, closeInvoicePanel: false });
+      handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
       setIsOpenPreorderConfirmation(false);
       activateSaleMode();
       notification.success({
@@ -518,7 +518,7 @@ const InvoiceSummary = () => {
       console.error('Error al guardar la preorden:', error);
       notification.error({
         message: 'No se pudo guardar la preorden',
-        description: error?.message || 'Intenta nuevamente en unos segundos.',
+        description: (error as any)?.message || 'Intenta nuevamente en unos segundos.',
       });
     } finally {
       setIsSavingPreorder(false);
@@ -547,7 +547,7 @@ const InvoiceSummary = () => {
       const preorderPayload = buildPreorderPayload() || cartData;
       await fbUpdatePreOrder(user, preorderPayload);
 
-      handleCancelShipping({ dispatch, closeInvoicePanel: false });
+      handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
       activateSaleMode();
 
       notification.success({
@@ -558,7 +558,7 @@ const InvoiceSummary = () => {
       console.error('Error al actualizar la preorden:', error);
       notification.error({
         message: 'No se pudo actualizar la preventa',
-        description: error?.message || 'Intenta nuevamente en unos segundos.',
+        description: (error as any)?.message || 'Intenta nuevamente en unos segundos.',
       });
     } finally {
       setIsSavingPreorder(false);
@@ -687,7 +687,7 @@ const InvoiceSummary = () => {
       text: 'Cancelar venta',
       action: () => {
         activateSaleMode();
-        handleCancelShipping({ dispatch, closeInvoicePanel: false });
+        handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
       },
       icon: icons.operationModes.close,
       disabled: false, // Siempre habilitado

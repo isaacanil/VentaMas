@@ -1,15 +1,21 @@
-// @ts-nocheck
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
-const LoaderWrapper = styled.div`
+interface LoaderProps {
+  loading?: boolean;
+  children: React.ReactNode;
+  minHeight?: string;
+  overlay?: boolean;
+}
+
+const LoaderWrapper = styled.div<{ $minHeight?: string }>`
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: ${(props) => props.minHeight || '40px'};
+  min-height: ${({ $minHeight }) => $minHeight || '40px'};
 `;
 
-const LoadingOverlay = styled.div`
+const LoadingOverlay = styled.div<{ $visible?: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -20,7 +26,7 @@ const LoadingOverlay = styled.div`
   width: 100%;
   height: 100%;
   background: rgb(255 255 255 / 80%);
-  opacity: ${(props: any) => (props.$fadeOut ? 0 : 1)};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transition: opacity 0.5s ease-in-out;
 `;
 
@@ -43,46 +49,21 @@ const Spinner = styled.div`
   }
 `;
 
-const ContentWrapper = styled.div`
+const ContentWrapper = styled.div<{ $loading?: boolean }>`
   display: grid;
   height: 100%;
-  opacity: ${(props: any) => (props.$loading ? 0.6 : 1)};
+  opacity: ${({ $loading }) => ($loading ? 0.6 : 1)};
   transition: opacity 0.3s ease-in-out;
 `;
 
-const Loader = ({ loading = false, children, minHeight, overlay = true }) => {
-  const [showLoader, setShowLoader] = useState(loading);
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    if (loading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShowLoader(true);
-      setFadeOut(false);
-    } else {
-      // Start fade out sequence
-      setFadeOut(true);
-    }
-  }, [loading]);
-
-  const handleTransitionEnd = (e: any) => {
-    // Only handle opacity transitions on the overlay itself
-    if (e.target !== e.currentTarget || e.propertyName !== 'opacity') return;
-
-    // If we finished fading out and are still not loading, unmount
-    if (!loading) {
-      setShowLoader(false);
-      setFadeOut(false);
-    }
-  };
-
+const Loader = ({ loading = false, children, minHeight, overlay = true }: LoaderProps) => {
   return (
-    <LoaderWrapper minHeight={minHeight}>
-      {showLoader && overlay && (
+    <LoaderWrapper $minHeight={minHeight}>
+      {overlay && (
         <LoadingOverlay
-          $fadeOut={fadeOut}
-          onTransitionEnd={handleTransitionEnd}
-          style={{ pointerEvents: fadeOut ? 'none' : 'auto' }}
+          $visible={loading}
+          style={{ pointerEvents: loading ? 'auto' : 'none' }}
+          aria-hidden={!loading}
         >
           <Spinner />
         </LoadingOverlay>

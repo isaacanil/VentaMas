@@ -34,10 +34,10 @@ const TEMPLATES_CONFIG = {
   { format: string; width: string; height: string; padding: string }
 >;
 
-const InvoiceContainer = styled.div`
-  width: ${({ $template }) => TEMPLATES_CONFIG[$template]?.width};
-  height: ${({ $template }) => TEMPLATES_CONFIG[$template]?.height};
-  padding: ${({ $template }) => TEMPLATES_CONFIG[$template]?.padding};
+const InvoiceContainer = styled.div<{ $template: TemplateKey }>`
+  width: ${({ $template }: { $template: TemplateKey }) => TEMPLATES_CONFIG[$template]?.width};
+  height: ${({ $template }: { $template: TemplateKey }) => TEMPLATES_CONFIG[$template]?.height};
+  padding: ${({ $template }: { $template: TemplateKey }) => TEMPLATES_CONFIG[$template]?.padding};
   margin: 20px auto;
   background: white;
   box-shadow: 0 0 10px rgb(0 0 0 / 10%);
@@ -85,8 +85,8 @@ export default function InvoiceTemplates({
   const componentRef = useRef<HTMLDivElement | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleTemplateChange = (value: TemplateKey) => {
-    setSelectedTemplate(value);
+  const handleTemplateChange = (value: string) => {
+    setSelectedTemplate(value as TemplateKey);
   };
 
   const handlePrint = useReactToPrint({
@@ -141,7 +141,7 @@ export default function InvoiceTemplates({
           style={{
             position: 'relative',
             width: '100%',
-            backgroundColor: 'red',
+            backgroundColor: 'transparent',
           }}
         >
           {renderInvoice()}

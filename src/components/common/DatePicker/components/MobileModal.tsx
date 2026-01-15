@@ -2,11 +2,23 @@ import { CloseOutlined } from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
 
-const ModalOverlay = styled.div`
+interface MobileModalProps {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+interface ModalOverlayProps {
+  $open: boolean;
+}
+
+
+const ModalOverlay = styled.div<ModalOverlayProps>`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: ${(props) => (props.$open ? 'flex' : 'none')};
+  display: ${(props: ModalOverlayProps) => (props.$open ? 'flex' : 'none')};
   align-items: flex-end;
   background: rgb(0 0 0 / 50%);
 
@@ -83,10 +95,10 @@ const ModalBody = styled.div`
   overflow-y: auto;
 `;
 
-export const MobileModal = ({ open, onClose, title, children }) => {
+export const MobileModal = ({ open, onClose, title, children }: MobileModalProps) => {
   return (
     <ModalOverlay $open={open} onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
+      <ModalContent onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
         <ModalHeader>
           <ModalTitle>{title}</ModalTitle>
           <CloseButton onClick={onClose} aria-label="Cerrar">

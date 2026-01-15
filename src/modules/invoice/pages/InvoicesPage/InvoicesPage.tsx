@@ -100,19 +100,19 @@ export const InvoicesPage = () => {
             }
           >
             <SaleReportTable
-              bills={processedInvoices}
+              bills={processedInvoices as any}
               searchTerm={searchTerm}
               loading={loading}
             />
           </Suspense>
         ) : (
-          <SaleRecordList invoices={processedInvoices} searchTerm={searchTerm} />
+          <SaleRecordList invoices={processedInvoices as any} searchTerm={searchTerm} />
         )}
       </Container>
       <SalesAnalyticsPanel
         isOpen={isReportSaleOpen}
         onOpen={onReportSaleOpen}
-        sales={invoices}
+        sales={invoices as any}
       />
     </Fragment>
   );

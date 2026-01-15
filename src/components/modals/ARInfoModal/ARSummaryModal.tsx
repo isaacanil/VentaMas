@@ -89,17 +89,17 @@ const HeaderBar = styled.div`
   }
 `;
 
-const StatusPill = styled.span`
+const StatusPill = styled.span<{ $bg?: string; $color?: string; $border?: string }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
   border-radius: 99px;
-  background: ${(props) => props.$bg || '#f5f5f5'};
-  color: ${(props) => props.$color || '#595959'};
+  background: ${({ $bg }) => $bg || '#f5f5f5'};
+  color: ${({ $color }) => $color || '#595959'};
   font-weight: 500;
   font-size: 12px;
-  border: 1px solid ${(props) => props.$border || 'transparent'};
+  border: 1px solid ${({ $border }) => $border || 'transparent'};
 `;
 
 // Styled components moved to styles.js
@@ -108,7 +108,7 @@ const StatusPill = styled.span`
 
 export default function ARSummaryModal() {
   const dispatch = useDispatch();
-  const rawData = useSelector(selectARInfo) as AccountsReceivableSummaryData;
+  const rawData = useSelector(selectARInfo) as any;
   const { isOpen, arId } = useSelector(selectARDetailsModal) as {
     isOpen: boolean;
     arId?: string;
@@ -126,8 +126,8 @@ export default function ARSummaryModal() {
     const client =
       (clientSource && typeof clientSource === 'object' && ('client' in clientSource || 'data' in clientSource)
         ? (clientSource as { client?: ReceivableClient; data?: ReceivableClient }).client ??
-          (clientSource as { client?: ReceivableClient; data?: ReceivableClient }).data ??
-          null
+        (clientSource as { client?: ReceivableClient; data?: ReceivableClient }).data ??
+        null
         : clientSource ?? null) as ReceivableClient | null;
 
     const invoiceSource = rawData?.invoice as
@@ -138,8 +138,8 @@ export default function ARSummaryModal() {
     const invoice =
       (invoiceSource && typeof invoiceSource === 'object' && ('data' in invoiceSource || 'invoice' in invoiceSource)
         ? (invoiceSource as { data?: ReceivableInvoiceData; invoice?: ReceivableInvoiceData }).data ??
-          (invoiceSource as { data?: ReceivableInvoiceData; invoice?: ReceivableInvoiceData }).invoice ??
-          null
+        (invoiceSource as { data?: ReceivableInvoiceData; invoice?: ReceivableInvoiceData }).invoice ??
+        null
         : invoiceSource ?? null) as ReceivableInvoiceData | null;
 
     const ar = (rawData?.ar?.ar || rawData?.ar || null) as AccountsReceivableDoc | null;
@@ -175,7 +175,7 @@ export default function ARSummaryModal() {
   }, [data, isOpen, arId]);
 
   const handleCloseModal = () => {
-    dispatch(setARDetailsModal({ isOpen: false }));
+    dispatch(setARDetailsModal({ isOpen: false, arId: arId || '' }));
     setTimeout(() => {
       dispatch(resetAR());
     }, 300);
@@ -183,15 +183,16 @@ export default function ARSummaryModal() {
 
   const balance = toNumber(
     data.ar?.arBalance ??
-      data.ar?.currentBalance ??
-      data.ar?.balance ??
-      data.ar?.totalReceivable,
+    data.ar?.currentBalance ??
+    data.ar?.balance ??
+    data.ar?.totalReceivable,
   );
   const totalAmount = toNumber(
     data.ar?.totalReceivable ??
-      data.ar?.totalAmount ??
-      data.invoice?.totalPurchase?.value ??
-      data.invoice?.totalPurchase,
+    data.ar?.totalAmount ??
+    (typeof data.invoice?.totalPurchase === 'object' && data.invoice?.totalPurchase !== null
+      ? data.invoice.totalPurchase.value
+      : data.invoice?.totalPurchase),
   );
 
   const invoiceNumber =
@@ -219,8 +220,8 @@ export default function ARSummaryModal() {
     const installmentAmount =
       toNumber(
         data.ar?.installmentAmount ??
-          nextPaymentInfo?.amount ??
-          data.installments?.[0]?.installmentAmount,
+        nextPaymentInfo?.amount ??
+        data.installments?.[0]?.installmentAmount,
       ) || balance;
 
     dispatch(

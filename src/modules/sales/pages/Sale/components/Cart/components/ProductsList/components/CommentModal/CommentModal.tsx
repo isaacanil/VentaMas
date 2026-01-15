@@ -6,7 +6,7 @@ import {
 } from '@/constants/icons/antd';
 import { Modal, Button, Input, Tooltip } from 'antd';
 import React from 'react';
-import type { CartProductRecord } from '@/types/products';
+import type { Product as CartProduct } from '@/features/cart/types';
 import styled from 'styled-components';
 
 const { TextArea } = Input;
@@ -14,7 +14,7 @@ const { TextArea } = Input;
 type CommentModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  selectedProduct?: CartProductRecord | null;
+  selectedProduct?: CartProduct | null;
   comment: string;
   onCommentChange: (value: string) => void;
   onSave: () => void;

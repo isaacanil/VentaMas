@@ -75,7 +75,7 @@ const buildValidationFailures = ({
   const reasons = [];
   if (isOlderThan48h) {
     reasons.push(
-      'La factura supera el lÃ­mite de 48 horas para solicitar la ediciÃ³n.',
+      'La factura supera el límite de 48 horas para solicitar la edición.',
     );
   }
 
@@ -91,15 +91,15 @@ const buildValidationFailures = ({
   }
 
   if (!cashCountInfo.exists) {
-    reasons.push('No se encontrÃ³ el cuadre de caja relacionado.');
+    reasons.push('No se encontró el cuadre de caja relacionado.');
     return reasons;
   }
 
   if (cashCountInfo.state && cashCountInfo.state !== 'open') {
     if (cashCountInfo.state === 'closed') {
-      reasons.push('El cuadre de caja relacionado ya estÃ¡ cerrado.');
+      reasons.push('El cuadre de caja relacionado ya está cerrado.');
     } else {
-      reasons.push('El cuadre de caja relacionado no estÃ¡ abierto.');
+      reasons.push('El cuadre de caja relacionado no está abierto.');
     }
   }
 
@@ -107,8 +107,8 @@ const buildValidationFailures = ({
 };
 
 const buildRequestReasons = () => [
-  'Se requiere autorizaciÃ³n de un supervisor para editar esta factura.',
-  'La solicitud serÃ¡ revisada desde la pantalla de autorizaciones.',
+  'Se requiere autorización de un supervisor para editar esta factura.',
+  'La solicitud será revisada desde la pantalla de autorizaciones.',
 ];
 
 export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }: InvoiceEditAuthorizationOptions) => {
@@ -191,7 +191,7 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }: InvoiceEd
 
       if (validationFailures.length) {
         message.warning(
-          `No puedes solicitar la ediciÃ³n de esta factura. ${validationFailures.join(' ')}`,
+          `No puedes solicitar la edición de esta factura. ${validationFailures.join(' ')}`,
         );
         return;
       }
@@ -200,13 +200,13 @@ export const useInvoiceEditAuthorization = ({ invoice, onAuthorized }: InvoiceEd
       setIsModalOpen(true);
     } catch (error) {
       console.error(
-        'Error validando autorizaciÃ³n de ediciÃ³n de factura',
+        'Error validando autorización de edición de factura',
         error,
       );
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'No se pudo validar la autorizaciÃ³n. Intenta nuevamente.';
+          : 'No se pudo validar la autorización. Intenta nuevamente.';
       message.error(errorMessage);
     } finally {
       setIsProcessing(false);

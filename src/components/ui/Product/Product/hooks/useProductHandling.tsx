@@ -64,6 +64,8 @@ export const useProductHandling = (
     const handleGetThisProduct = async (e?: MouseEvent) => {
         if (e) e.stopPropagation();
 
+        if (!user) return;
+
         if (isProductInCart) {
             // Check stock limit for current batch
             const currentStock = Number(productInCart?.stock);
@@ -86,7 +88,7 @@ export const useProductHandling = (
         // Always check stock availability to determine if we need to show the modal
         setIsFirebaseLoading(true);
         try {
-            const stocks = (await getProductStockByProductId(user, {
+            const stocks = (await getProductStockByProductId(user as InventoryUser, {
                 productId: product.id,
             })) as InventoryStockItem[];
             // Filter only positive quantity stocks to decide auto-selection
@@ -113,14 +115,14 @@ export const useProductHandling = (
                 const expirationTimestamp = toMillis(chosenStock.expirationDate);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const isExpired = expirationTimestamp !== null && expirationTimestamp < today.getTime();
+                const isExpired = expirationTimestamp !== undefined && expirationTimestamp < today.getTime();
 
                 // If expired, we might want to show the modal so user sees it's expired
                 // If NOT expired, auto-select it.
                 if (!isExpired) {
                     const locationPath = buildLocationPath(chosenStock.location);
                     const locationName = locationPath
-                        ? await getLocationName(user, locationPath)
+                        ? await getLocationName(user as InventoryUser, locationPath)
                         : '';
                     const batchInfo = {
                         productStockId: chosenStock.id ?? null,

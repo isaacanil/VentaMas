@@ -16,8 +16,11 @@ import { selectUser } from '@/features/auth/userSlice.js';
 import { openDeleteModal } from '@/features/productStock/deleteProductStockSlice';
 import { reconcileBatchStatus } from '@/firebase/functions/inventory/reconcileBatchStatus.js';
 import { getBatchById } from '@/firebase/warehouse/batchService';
-import BatchViewModal from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal';
-import { ProductMovementModal } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal';
+import BatchViewModal, { type BatchData } from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/BatchViewModal';
+import {
+  ProductMovementModal,
+  type MovementProduct,
+} from '@/modules/inventory/pages/Inventory/components/Warehouse/components/DetailView/components/ProductMovementModal';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { AdvancedFilterModal } from './components/AdvancedFilterModal';
@@ -35,6 +38,7 @@ import {
   ToolbarButton,
 } from './styles';
 import { normalizeToDateTime, toMillis } from '@/utils/inventory/dates';
+import type { InventoryUser } from '@/utils/inventory/types';
 import {
   NO_BATCH_VALUE,
   getProductFilterKey,
@@ -49,15 +53,6 @@ import type {
   SortConfig,
   SortMenuItems,
 } from './types';
-
-interface AppUser {
-  uid?: string;
-  businessID?: string | null;
-  [key: string]: unknown;
-}
-
-const isAppUser = (value: unknown): value is AppUser =>
-  typeof value === 'object' && value !== null;
 
 interface ReconcileBatchStatusResult {
   batchesUpdated?: number;
@@ -74,12 +69,13 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const rawUser: unknown = useSelector(selectUser);
-  const user = isAppUser(rawUser) ? rawUser : null;
+  const user = useSelector(selectUser) as InventoryUser | null;
   const { productsStock, loading } = useProductsStock(location);
   const [syncingBatches, setSyncingBatches] = useState(false);
-  const { productOptions, productBatchMap } =
-    useProductFilterOptions(productsStock);
+  const {
+    productOptions,
+    productBatchMap,
+  } = useProductFilterOptions(productsStock);
   const {
     showOnlyWithExpiration,
     selectedProductFilter,
@@ -101,14 +97,14 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
   const [moveModalVisible, setMoveModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] =
-    useState<ProductStockLike | null>(null);
+    useState<MovementProduct | null>(null);
   const [dateFilter, setDateFilter] = useState<DateRangeValue>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: null,
     order: null,
   });
   const [batchModalVisible, setBatchModalVisible] = useState(false);
-  const [selectedBatch, setSelectedBatch] = useState<unknown>(null);
+  const [selectedBatch, setSelectedBatch] = useState<BatchData | null>(null);
 
   const dateRangePresets = useMemo(
     () => [
@@ -157,7 +153,14 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   }, [dateFilter]);
 
   const handleMove = useCallback((record: ProductStockLike) => {
-    setSelectedProduct(record);
+    setSelectedProduct({
+      id: record.id,
+      productId: record.productId,
+      productName: record.productName,
+      productStockId: record.id,
+      batchId: record.batchId ?? undefined,
+      quantity: record.quantity,
+    });
     setMoveModalVisible(true);
   }, []);
 
@@ -221,11 +224,11 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   );
 
   const handleViewBatch = useCallback(
-    async (batchId?: string | null) => {
+    async (batchId?: string | null | undefined) => {
       if (!batchId || !user) return;
       const batchData = await getBatchById(user, batchId);
       if (batchData) {
-        setSelectedBatch(batchData);
+        setSelectedBatch(batchData as unknown as BatchData);
         setBatchModalVisible(true);
       }
     },
@@ -279,7 +282,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         activatedBatches = 0,
         deactivatedBatches = 0,
       } = result;
-      return `Actualizados: ${batchesUpdated} Â· Activados: ${activatedBatches} Â· Desactivados: ${deactivatedBatches}`;
+      return `Actualizados: ${batchesUpdated} · Activados: ${activatedBatches} · Desactivados: ${deactivatedBatches}`;
     },
     [],
   );
@@ -297,7 +300,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       setSyncingBatches(true);
       try {
         const result = (await reconcileBatchStatus({
-          businessId: user.businessID,          dryRun,
+          businessId: user.businessID, dryRun,
         })) as ReconcileBatchStatusResult;
 
         notification.success({
@@ -326,7 +329,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         label: (
           <MenuItemContent>
             <SyncOutlined spin={syncingBatches} />
-            {syncingBatches ? 'Sincronizandoâ€¦' : 'Sincronizar lotes'}
+            {syncingBatches ? 'Sincronizando…' : 'Sincronizar lotes'}
           </MenuItemContent>
         ),
         disabled: syncingBatches,
@@ -501,8 +504,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         const todayStartMillis = DateTime.now().startOf('day').toMillis();
         const isExpired = expirationDateMillis
           ? DateTime.fromMillis(expirationDateMillis)
-              .startOf('day')
-              .toMillis() < todayStartMillis
+            .startOf('day')
+            .toMillis() < todayStartMillis
           : false;
         const expiryDate = expirationDateMillis
           ? {
@@ -523,7 +526,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           batch: {
             batchNumberId: stock.batchNumberId || 'Sin lote',
             batchId: stock.batchId ?? null,
-          },
+          } as { batchNumberId: string; batchId: string | null },
           batchId: stock.batchId ?? null,
           actions: stock,
           expirationDateMillis,

@@ -418,13 +418,13 @@ const SaleReportTable = ({ bills = [], searchTerm, loading }: SaleReportTablePro
     const paymentInfo = getInvoicePaymentInfo(data);
 
     return {
-      numberID: data?.numberID as string | number | undefined,
-      ncf: data?.NCF,
+      numberID: (data?.numberID ?? undefined) as string | number | undefined,
+      ncf: data?.NCF as string | undefined,
       client: data?.client?.name || 'Generic Client',
       date: invoiceDateSeconds,
-      itbis: getProductsTax(data?.products),
+      itbis: getProductsTax((data?.products || []) as any),
       payment: Number(data?.payment?.value ?? 0),
-      products: getTotalItems(data?.products),
+      products: getTotalItems((data?.products || []) as any),
       change: Number(data?.change?.value ?? 0),
       total: paymentInfo.total,
       paymentStatus: paymentInfo,
@@ -516,18 +516,18 @@ const PaymentStatusCell = styled.div`
   gap: 4px;
 `;
 
-const PaymentBadge = styled.span<{ $complete?: boolean }>`
+const PaymentBadge = styled.span<{ $complete: boolean }>`
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  color: ${({ $complete }) => ($complete ? '#237804' : '#d48806')};
-  background: ${({ $complete }) =>
+  color: ${({ $complete }: { $complete: boolean }) => ($complete ? '#237804' : '#d48806')};
+  background: ${({ $complete }: { $complete: boolean }) =>
     $complete ? 'rgba(82, 196, 26, 0.12)' : 'rgba(250, 173, 20, 0.14)'};
   border: 1px solid
-    ${({ $complete }) => ($complete ? '#b7eb8f' : '#ffd591')};
+    ${({ $complete }: { $complete: boolean }) => ($complete ? '#b7eb8f' : '#ffd591')};
 `;
 
 const PendingChip = styled.span`

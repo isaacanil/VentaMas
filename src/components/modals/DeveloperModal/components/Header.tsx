@@ -3,11 +3,10 @@ import styled from 'styled-components';
 
 type HeaderProps = {
   title?: React.ReactNode;
-  subtitle?: React.ReactNode;
 };
 
 
-export const Header = ({ title, subtitle: _subtitle }: HeaderProps) => {
+export const Header = ({ title }: HeaderProps) => {
   return (
     <HeaderContainer>
       <Title>{title}</Title>

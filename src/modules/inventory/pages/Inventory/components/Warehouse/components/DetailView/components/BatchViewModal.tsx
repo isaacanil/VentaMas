@@ -71,7 +71,7 @@ const QuantityCard = styled(Card)`
   }
 `;
 
-type BatchData = {
+export type BatchData = {
   numberId?: string | number | null;
   shortName?: string | null;
   productName?: string | null;

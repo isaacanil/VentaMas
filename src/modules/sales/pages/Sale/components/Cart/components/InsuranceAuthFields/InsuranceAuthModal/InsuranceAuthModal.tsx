@@ -163,9 +163,7 @@ const SectionHeader = styled.h3`
 export const InsuranceAuthModal = () => {
   // Se obtienen los valores desde el slice
   const { open } = useSelector(selectInsuranceModal) as { open: boolean };
-  const authData = useSelector(selectInsuranceAuthData) as
-    | InsuranceAuthData
-    | null;
+  const authData = useSelector(selectInsuranceAuthData) as any;
   const isLoading = useSelector(selectInsuranceAuthLoading) as boolean;
   const user = useSelector(selectUser) as UserIdentity | null;
   const client = useSelector(selectClient) as ClientIdentity | null;
@@ -548,7 +546,7 @@ export const InsuranceAuthModal = () => {
       };
 
       // Guardamos en el estado de Redux
-      dispatch(setAuthData(formattedValues));
+      dispatch(setAuthData(formattedValues as any));
 
       // Guardamos en Firebase si tenemos un cliente seleccionado
       if (client?.id) {

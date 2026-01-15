@@ -13,27 +13,27 @@ const Card = styled(motion.div)`
   border-radius: 4px;
 `;
 
-const StatusBadge = styled.div`
+const StatusBadge = styled.div<{ $status: string }>`
   align-self: center;
   height: fit-content;
   padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  color: ${({ $status }) =>
+  color: ${({ $status }: { $status: string }) =>
     $status === 'pending'
       ? '#d46b08'
       : $status === 'reserved'
         ? '#096dd9'
         : '#595959'};
   text-transform: capitalize;
-  background: ${({ $status }) =>
+  background: ${({ $status }: { $status: string }) =>
     $status === 'pending'
       ? '#fff7e6'
       : $status === 'reserved'
         ? '#e6f7ff'
         : '#f5f5f5'};
   border: 1px solid
-    ${({ $status }) =>
+    ${({ $status }: { $status: string }) =>
       $status === 'pending'
         ? '#ffd591'
         : $status === 'reserved'

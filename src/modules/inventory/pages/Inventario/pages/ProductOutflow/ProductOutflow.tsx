@@ -14,7 +14,8 @@ import {
 import { fbDeleteProductOutflow } from '@/firebase/ProductOutflow/fbDeleteProductOutflow';
 import { fbGetProductOutflow } from '@/firebase/ProductOutflow/fbGetProductOutflow';
 import useScroll from '@/hooks/useScroll';
-import { formatDate, toMillis } from '@/utils/date/dateUtils';
+import DateUtils from '@/utils/date/dateUtils';
+const { formatDate, toMillis } = DateUtils;
 import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
 import { CenteredText } from '@/components/ui/CentredText';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
@@ -39,8 +40,8 @@ type ProductOutflowItem = {
 type ProductOutflowRecord = {
   id?: string | null;
   productList?: ProductOutflowItem[];
-  createdAt?: unknown;
-  date?: unknown;
+  createdAt?: any;
+  date?: any;
 };
 
 type ProductOutflowState = ReturnType<typeof SelectProductOutflow>;
@@ -81,7 +82,7 @@ export const ProductOutflow = () => {
         fbDeleteProductOutflow(user, productOutflowList);
       }
     }
-  }, [outflowList]);
+  }, [outflowList, user]);
   useEffect(() => {
     if (outflowProduct.mode === OPERATION_MODES.UPDATE.id) {
       outflowList.forEach((doc) => {
@@ -123,8 +124,8 @@ export const ProductOutflow = () => {
           {outflowListLoader ? null : outflowList.length > 0 ? (
             outflowList
               .sort((a, b) => {
-                const aMillis = toMillis(a.createdAt) ?? 0;
-                const bMillis = toMillis(b.createdAt) ?? 0;
+                const aMillis = toMillis(a.createdAt as unknown) ?? 0;
+                const bMillis = toMillis(b.createdAt as unknown) ?? 0;
                 return aMillis - bMillis;
               })
               .reverse()
@@ -200,7 +201,7 @@ const TableItems = styled.div`
   align-content: flex-start;
   height: calc(100% - 2.6em);
 `;
-const TableHeader = styled.div`
+const TableHeader = styled.div<{ isScrolled?: boolean }>`
   display: grid;
   grid-template-columns: 6em 1fr 1fr 5em;
   align-items: center;
@@ -212,7 +213,7 @@ const TableHeader = styled.div`
   top: 0;
   border: 1px solid rgb(0 0 0 / 0%);
   transition: all 0.2s linear;
-  ${({ isScrolled }) =>
+  ${({ isScrolled }: { isScrolled?: boolean }) =>
     isScrolled &&
     `
     border-bottom: 1px solid rgba(0, 0, 0, 0.100);

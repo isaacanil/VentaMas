@@ -41,7 +41,7 @@ const ItemContainer = styled.div`
   display: flex; /* Ensure children expand */
 `;
 
-const ProductCard = styled.button`
+const ProductCard = styled.button<{ $isSelected?: boolean }>`
   display: flex;
   gap: 12px;
   align-items: center;
@@ -169,7 +169,7 @@ const TooltipContent = styled.div`
   max-width: 260px;
 `;
 
-const TooltipRow = styled.p`
+const TooltipRow = styled.p<{ $muted?: boolean }>`
   margin: 0;
   font-size: ${({ $muted }) => ($muted ? '0.78rem' : '0.82rem')};
   line-height: 1.35;

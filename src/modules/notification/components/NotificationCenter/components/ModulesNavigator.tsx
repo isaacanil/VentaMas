@@ -17,11 +17,11 @@ import FiscalReceiptsPanel from './panels/FiscalReceiptsPanel/FiscalReceiptsPane
  * Sistema de módulos con navegación por tabs
  * Muestra diferentes módulos según el rol del usuario
  */
-const ModulesNavigator = ({ fiscalReceiptsData }) => {
+const ModulesNavigator = ({ fiscalReceiptsData }: { fiscalReceiptsData: any }) => {
   const user = useSelector(selectUser);
   const [activeModule, setActiveModule] = useState('authorizations');
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'dev';
+  const isAdmin = (user as any)?.role === 'admin' || (user as any)?.role === 'dev';
 
   // Configuración de módulos según rol
   const getModulesConfig = () => {
@@ -100,38 +100,38 @@ const ModulesBar = styled.div`
   box-shadow: 0 1px 3px rgb(0 0 0 / 4%);
 `;
 
-const ModuleTab = styled.button`
+const ModuleTab = styled.button<{ $active?: boolean }>`
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: ${(props) => (props.$active ? '600' : '500')};
-  color: ${(props) => (props.$active ? '#ffffff' : '#6b7280')};
+  font-weight: ${({ $active }: { $active?: boolean }) => ($active ? '600' : '500')};
+  color: ${({ $active }: { $active?: boolean }) => ($active ? '#ffffff' : '#6b7280')};
   cursor: pointer;
-  background: ${(props) =>
-    props.$active
+  background: ${({ $active }: { $active?: boolean }) =>
+    $active
       ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
       : '#ffffff'};
-  border: 1px solid ${(props) => (props.$active ? '#1890ff' : '#e5e7eb')};
+  border: 1px solid ${({ $active }: { $active?: boolean }) => ($active ? '#1890ff' : '#e5e7eb')};
   border-radius: 12px;
-  box-shadow: ${(props) =>
-    props.$active
+  box-shadow: ${({ $active }: { $active?: boolean }) =>
+    $active
       ? '0 4px 12px rgba(24, 144, 255, 0.25), 0 2px 6px rgba(24, 144, 255, 0.15)'
       : '0 1px 2px rgba(0, 0, 0, 0.05)'};
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    color: ${(props) => (props.$active ? '#ffffff' : '#374151')};
-    background: ${(props) =>
-      props.$active
-        ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
-        : '#f8fafc'};
-    border-color: ${(props) => (props.$active ? '#1890ff' : '#cbd5e1')};
-    box-shadow: ${(props) =>
-      props.$active
-        ? '0 6px 16px rgba(24, 144, 255, 0.3), 0 3px 8px rgba(24, 144, 255, 0.2)'
-        : '0 2px 8px rgba(0, 0, 0, 0.08)'};
+    color: ${({ $active }: { $active?: boolean }) => ($active ? '#ffffff' : '#374151')};
+    background: ${({ $active }: { $active?: boolean }) =>
+    $active
+      ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)'
+      : '#f8fafc'};
+    border-color: ${({ $active }: { $active?: boolean }) => ($active ? '#1890ff' : '#cbd5e1')};
+    box-shadow: ${({ $active }: { $active?: boolean }) =>
+    $active
+      ? '0 6px 16px rgba(24, 144, 255, 0.3), 0 3px 8px rgba(24, 144, 255, 0.2)'
+      : '0 2px 8px rgba(0, 0, 0, 0.08)'};
     transform: translateY(-1px);
   }
 

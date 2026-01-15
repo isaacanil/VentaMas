@@ -189,6 +189,17 @@ const CustomPinInput = ({
  * - module: string (e.g., 'invoices', 'accountsReceivable')
  * - allowPasswordFallback: boolean (default true) - permitir usar contraseña si falla PIN
  */
+interface PinAuthorizationModalProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  onAuthorized: (authorizer: any) => void;
+  description?: string;
+  allowedRoles?: string[];
+  reasonList?: string[];
+  module?: string;
+  allowPasswordFallback?: boolean;
+}
+
 export const PinAuthorizationModal = ({
   isOpen,
   setIsOpen,
@@ -198,7 +209,7 @@ export const PinAuthorizationModal = ({
   reasonList = [],
   module = 'invoices',
   allowPasswordFallback = true,
-}) => {
+}: PinAuthorizationModalProps) => {
   const currentUser = useSelector(selectUser);
   const [form] = Form.useForm();
   const [error, setError] = useState('');

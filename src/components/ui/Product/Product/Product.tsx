@@ -20,7 +20,7 @@ type ContainerProps = ProductStockThemeProps & {
   $isDisabled?: boolean;
 };
 
-const Container = styled(motion.li)<ContainerProps>`
+const Container = styled(motion.li) <ContainerProps>`
   position: relative;
   display: flex;
   gap: 6px;
@@ -55,7 +55,7 @@ type ProductProps = {
 
 const ProductComponent = memo(({ product }: ProductProps) => {
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  const settingsCart = useSelector(SelectSettingCart) || {};
+  const settingsCart = (useSelector(SelectSettingCart) || {}) as any;
   const alertsEnabled = !!settingsCart.billing?.stockAlertsEnabled;
 
   const {

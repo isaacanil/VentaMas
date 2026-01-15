@@ -54,7 +54,7 @@ export const ProductCardRow = ({
     Col ?? (({ children }: GridComponentProps) => <div>{children}</div>);
   const dispatch = useDispatch();
   const defaultHandleDeleteProduct = (id: string | number | null | undefined) => {
-    dispatch(handleDeleteProductAlert({ id }));
+    dispatch(handleDeleteProductAlert({ id: id as string | null, user: null }));
   };
   const defaultHandleUpdateProduct = (product: LegacyProductRecord) => {
     dispatch(openModalUpdateProd());
@@ -133,7 +133,7 @@ export const ProductCardRow = ({
               width="icon32"
               color={'gray-dark'}
               borderRadius="normal"
-              onClick={() => onDelete(product?.id)}
+              onClick={() => onDelete(product?.id as any)}
             />
           </ButtonGroup>
         </ColComponent>
@@ -161,8 +161,8 @@ const Img = styled.img<{ noFound?: boolean }>`
   object-fit: cover;
   object-position: center;
   width: 100%;
-  ${(props) => {
-    switch (props.noFound) {
+  ${({ noFound }: { noFound?: boolean }) => {
+    switch (noFound) {
       case true:
         return `
         object-fit: contain;`;
@@ -185,8 +185,8 @@ const ProductName = styled.span`
 `;
 
 const Item = styled.div<{ position?: string }>`
-  ${(props) => {
-    switch (props.position) {
+  ${({ position }: { position?: string }) => {
+    switch (position) {
       case 'right':
         return `
                 justify-self: end;

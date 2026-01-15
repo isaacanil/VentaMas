@@ -97,9 +97,9 @@ const Container = styled.div<{ $config: StatusConfig }>`
   width: min-content;
   font-size: 13px;
   font-weight: 600;
-  background-color: ${(props) => props.$config.bgColor}cc;
-  color: ${(props) => props.$config.color};
-  border: 1px solid ${(props) => props.$config.color}30;
+  background-color: ${(props: { $config: StatusConfig }) => props.$config.bgColor}cc;
+  color: ${(props: { $config: StatusConfig }) => props.$config.color};
+  border: 1px solid ${(props: { $config: StatusConfig }) => props.$config.color}30;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -109,7 +109,7 @@ const Container = styled.div<{ $config: StatusConfig }>`
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
       0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transform: translateY(-1px);
-    background-color: ${(props) => props.$config.bgColor};
+    background-color: ${(props: { $config: StatusConfig }) => props.$config.bgColor};
   }
 `;
 
@@ -117,7 +117,7 @@ const IconWrapper = styled.div<{ $pulse: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  ${(props) =>
+  ${(props: { $pulse: boolean }) =>
     props.$pulse &&
     css`
       animation: ${pulse} 2s infinite ease-in-out;

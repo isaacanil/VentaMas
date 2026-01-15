@@ -23,13 +23,13 @@ const options = {
       beginAtZero: true,
       title: {
         display: true,
-        text: 'Ãtems Vendidos',
+        text: 'Ítems Vendidos',
       },
     },
     x: {
       title: {
         display: true,
-        text: 'CategorÃ­a de Producto',
+        text: 'Categoría de Producto',
       },
     },
   },
@@ -39,7 +39,7 @@ const accumulateItemsSoldData = (sales: SalesRecord[]) => {
   return sales.reduce<Record<string, number>>((acc, sale) => {
     (sale.data.products ?? []).forEach((product) => {
       const categoryValue = product.category;
-      let category = 'Sin categorÃ­a';
+      let category = 'Sin categoría';
       if (typeof categoryValue === 'string') {
         category = categoryValue;
       } else if (
@@ -80,7 +80,7 @@ export const ItemsSoldBarChart = ({ sales }: { sales: SalesRecord[] }) => {
       labels,
       datasets: [
         {
-          label: 'Ãtems Vendidos',
+          label: 'Ítems Vendidos',
           data: dataTotals,
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           borderColor: 'rgba(75, 192, 192, 1)',
@@ -96,7 +96,7 @@ export const ItemsSoldBarChart = ({ sales }: { sales: SalesRecord[] }) => {
 
   return (
     <Container>
-      <Typography variant="h3">Ãtems Vendidos por CategorÃ­a</Typography>
+      <Typography variant="h3">Ítems Vendidos por Categoría</Typography>
       <Bar data={data} options={options} />
     </Container>
   );

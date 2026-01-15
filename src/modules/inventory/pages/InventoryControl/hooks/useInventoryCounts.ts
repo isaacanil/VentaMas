@@ -110,10 +110,10 @@ export function useInventoryCounts({
           const data = docSnap.data() || {};
           if (!data.productStockId) return;
           // Backward compatibility: prefer English key, fallback to legacy Spanish
-          savedCounts[data.productStockId] = data.realCount ?? data.conteoReal;
+          savedCounts[data.productStockId] = (data.realCount ?? data.conteoReal ?? 0) as number;
           meta[data.productStockId] = {
-            updatedBy: data.updatedBy ?? null,
-            updatedByName: data.updatedByName ?? null,
+            updatedBy: (data.updatedBy ?? null) as string | null,
+            updatedByName: (data.updatedByName ?? null) as string | null,
             updatedAt: data.updatedAt ?? null,
             manualExpirationDate: data.manualExpirationDate ?? null,
           };
@@ -236,7 +236,7 @@ export function useInventoryCounts({
             });
             productName = subset[0]?.productName || '';
           }
-          const stockSistema = sum(
+          const stockSistema: number = sum(
             subset.map((s) => s.quantity ?? s.stock ?? 0),
           );
           const diferencia = Number(conteoReal ?? stockSistema) - stockSistema;
@@ -257,7 +257,7 @@ export function useInventoryCounts({
             realCount: Number(conteoReal ?? stockSistema),
             difference: diferencia,
             updatedAt: serverTimestamp(),
-            updatedBy: user.uid || user.id,
+            updatedBy: (user.uid || user.id) as any,
             updatedByName:
               currentUserResolvedName ||
               user.displayName ||
@@ -302,7 +302,7 @@ export function useInventoryCounts({
             }
             productName = subset[0]?.productName || '';
           }
-          const stockSistema = sum(
+          const stockSistema: number = sum(
             subset.map((s) => s.quantity ?? s.stock ?? 0),
           );
           const diferencia = Number(conteoReal ?? stockSistema) - stockSistema;
@@ -343,7 +343,7 @@ export function useInventoryCounts({
             realCount: Number(conteoReal ?? stockSistema),
             difference: diferencia,
             updatedAt: serverTimestamp(),
-            updatedBy: user.uid || user.id,
+            updatedBy: (user.uid || user.id) as any,
             updatedByName:
               currentUserResolvedName ||
               user.displayName ||
@@ -381,10 +381,10 @@ export function useInventoryCounts({
           productName: item?.productName || '',
           // New English keys
           systemStock: stockSistema,
-          realCount: conteoReal ?? stockSistema,
+          realCount: Number(conteoReal ?? stockSistema),
           difference: diferencia,
           updatedAt: serverTimestamp(),
-          updatedBy: user.uid || user.id,
+          updatedBy: (user.uid || user.id) as any,
           updatedByName:
             currentUserResolvedName ||
             user.displayName ||
@@ -413,7 +413,7 @@ export function useInventoryCounts({
           'counts',
           id,
         );
-        await setDoc(countRef, count, { merge: true });
+        await setDoc(countRef, count as any, { merge: true });
       }
 
       // Actualizar baseline local

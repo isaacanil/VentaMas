@@ -87,12 +87,12 @@ export default function WarehouseContent() {
     [warehouseId],
   );
   const { data: warehouse, loading: warehouseLoading } =
-    useListenWarehouse(warehouseId);
-  const { data: shelves } = useListenShelves(warehouse?.id);
+    useListenWarehouse(warehouseId || null);
+  const { data: shelves } = useListenShelves(warehouse?.id || null);
 
   const handleEditWarehouseInfo = () => {
     if (!warehouse) return;
-    dispatch(openWarehouseForm(warehouse));
+    dispatch(openWarehouseForm(warehouse as any));
   };
 
   type ShelfRecord = (typeof shelves)[number];

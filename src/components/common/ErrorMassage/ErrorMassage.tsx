@@ -1,7 +1,11 @@
-import { Fragment } from 'react';
+import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
-export const ErrorMessage = ({ text }) => {
+interface ErrorMessageProps {
+  text: string;
+}
+
+export const ErrorMessage = ({ text }: ErrorMessageProps) => {
   return (
     <Fragment>
       <Container>

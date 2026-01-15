@@ -2,18 +2,22 @@
 
 type DeleteActionType = 'productStock' | 'batch';
 
-type DeleteProductStockState = {
+interface DeleteProductStockState {
   isOpen: boolean;
   productStockId: string | null;
   batchId: string | null;
   actionType: DeleteActionType;
-};
+}
 
-type OpenDeletePayload = {
+interface OpenDeletePayload {
   productStockId: string | null;
   batchId: string | null;
   actionType: DeleteActionType;
-};
+}
+
+interface DeleteProductStockRootState {
+  deleteProductStock: DeleteProductStockState;
+}
 
 const initialState: DeleteProductStockState = {
   isOpen: false,
@@ -26,18 +30,18 @@ const deleteProductStockSlice = createSlice({
   name: 'deleteProductStock',
   initialState,
   reducers: {
-    openDeleteModal: (state, action: PayloadAction<OpenDeletePayload>) => {
+    openDeleteModal: (state: DeleteProductStockState, action: PayloadAction<OpenDeletePayload>) => {
       state.isOpen = true;
       state.productStockId = action.payload.productStockId;
       state.batchId = action.payload.batchId;
       state.actionType = action.payload.actionType;
     },
-    closeDeleteModal: (state: any) => {
+    closeDeleteModal: (state: DeleteProductStockState) => {
       state.isOpen = false;
       state.productStockId = null;
       state.batchId = null;
     },
-    changeActionType: (state, action: PayloadAction<DeleteActionType>) => {
+    changeActionType: (state: DeleteProductStockState, action: PayloadAction<DeleteActionType>) => {
       state.actionType = action.payload;
     },
   },
@@ -45,9 +49,5 @@ const deleteProductStockSlice = createSlice({
 
 export const { openDeleteModal, closeDeleteModal, changeActionType } =
   deleteProductStockSlice.actions;
-export const selectDeleteModalState = (state: {
-  deleteProductStock: DeleteProductStockState;
-}) => state.deleteProductStock;
+export const selectDeleteModalState = (state: DeleteProductStockRootState) => state.deleteProductStock;
 export default deleteProductStockSlice.reducer;
-
-

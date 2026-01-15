@@ -160,7 +160,7 @@ const LegendDot = styled.span<{ $color: string }>`
   display: inline-flex;
   width: 8px;
   height: 8px;
-  background: ${({ $color }) => $color};
+  background: ${({ $color }: { $color: string }) => $color};
   border-radius: 50%;
 `;
 
@@ -308,7 +308,7 @@ function ProductStockOverview() {
     dispatch(
       openDeleteModal({
         productStockId: null,
-        batchId: group.batchId,
+        batchId: group.batchId ?? null,
         actionType: 'batch',
       }),
     );
@@ -355,7 +355,7 @@ function ProductStockOverview() {
               placeholder="Buscar por ubicación o número de lote..."
               prefix={<SearchOutlined />}
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             />
           </SearchWrapper>
           <ViewModeToggle
@@ -364,7 +364,7 @@ function ProductStockOverview() {
               { label: 'Tabla', value: 'table' },
             ]}
             value={viewMode}
-            onChange={(value) => setViewMode(value as ViewMode)}
+            onChange={(value: string | number) => setViewMode(value as ViewMode)}
           />
         </ControlsBar>
         <ThresholdLegend>
@@ -374,7 +374,7 @@ function ProductStockOverview() {
           </LegendItem>
           <LegendItem>
             <LegendDot $color="#ea580c" />
-            Stock bajo â‰¤ {lowThreshold.toLocaleString()} uds
+            Stock bajo ≤ {lowThreshold.toLocaleString()} uds
           </LegendItem>
         </ThresholdLegend>
         {filteredStock.length === 0 ? (

@@ -71,7 +71,7 @@ const CreditSelector = ({
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  
+
   // Derivar selecciones locales directamente del prop
   const localSelections = useMemo<Record<string, number>>(() => {
     const map: Record<string, number> = {};
@@ -312,9 +312,26 @@ const CreditSelector = ({
 };
 
 /* ---------------------------- styled components --------------------------- */
-const WidgetCard = styled.div`
+interface WidgetCardProps {
+  $disabled?: boolean;
+}
+
+interface ListItemProps {
+  $selected?: boolean;
+}
+
+interface CustomCheckboxProps {
+  $checked?: boolean;
+  $disabled?: boolean;
+}
+
+interface InfoIconProps {
+  $disabled?: boolean;
+}
+
+const WidgetCard = styled.div<WidgetCardProps>`
   padding: 16px;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ $disabled }: WidgetCardProps) => ($disabled ? 'not-allowed' : 'pointer')};
   user-select: none;
   background: white;
   border: 1px solid #d9d9d9;
@@ -322,8 +339,8 @@ const WidgetCard = styled.div`
   transition: all 0.2s ease;
 
   &&:hover {
-    box-shadow: ${(props) =>
-    props.$disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'};
+    box-shadow: ${({ $disabled }: WidgetCardProps) =>
+    $disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.08)'};
   }
 `;
 
@@ -337,13 +354,13 @@ const Placeholder = styled.div`
   color: #8c8c8c;
 `;
 
-const ListItem = styled.div`
+const ListItem = styled.div<ListItemProps>`
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 8px 12px;
   margin-bottom: 8px;
-  border: 1px solid ${(props) => (props.$selected ? '#495057' : '#f0f0f0')};
+  border: 1px solid ${({ $selected }: ListItemProps) => ($selected ? '#495057' : '#f0f0f0')};
   border-radius: 6px;
 
   &&:hover {
@@ -444,7 +461,7 @@ const EmptyMessage = styled.div`
   text-align: center;
 `;
 
-const CustomCheckbox = styled.div`
+const CustomCheckbox = styled.div<CustomCheckboxProps>`
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -452,25 +469,25 @@ const CustomCheckbox = styled.div`
   width: 20px;
   height: 20px;
   color: white;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
-  background: ${(props) => (props.$checked ? '#495057' : 'white')};
+  cursor: ${({ $disabled }: CustomCheckboxProps) => ($disabled ? 'not-allowed' : 'pointer')};
+  background: ${({ $checked }: CustomCheckboxProps) => ($checked ? '#495057' : 'white')};
   border: 1px solid
-    ${(props) =>
-    props.$disabled ? '#d9d9d9' : props.$checked ? '#495057' : '#d9d9d9'};
+    ${({ $disabled, $checked }: CustomCheckboxProps) =>
+    $disabled ? '#d9d9d9' : $checked ? '#495057' : '#d9d9d9'};
   border-radius: 4px;
 
   &&:hover {
-    border-color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
+    border-color: ${({ $disabled }: CustomCheckboxProps) => ($disabled ? '#d9d9d9' : '#495057')};
   }
 `;
 
-const InfoIcon = styled.div`
+const InfoIcon = styled.div<InfoIconProps>`
   margin-left: 8px;
-  color: ${(props) => (props.$disabled ? '#d9d9d9' : '#8c8c8c')};
+  color: ${({ $disabled }: InfoIconProps) => ($disabled ? '#d9d9d9' : '#8c8c8c')};
   cursor: pointer;
 
   &&:hover {
-    color: ${(props) => (props.$disabled ? '#d9d9d9' : '#495057')};
+    color: ${({ $disabled }: InfoIconProps) => ($disabled ? '#d9d9d9' : '#495057')};
   }
 `;
 
@@ -542,3 +559,4 @@ const RightSection = styled.div`
 `;
 
 export default CreditSelector;
+

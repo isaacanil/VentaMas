@@ -112,18 +112,18 @@ const AuthorizationsPanel = () => {
   useEffect(() => {
     if (!businessID) return;
 
-    const status = 'pending';
+    const status: any = 'pending';
     const userId = isAdmin ? null : user?.uid;
 
     const unsubscribe = listenToAuthorizationsByStatus(
       businessID,
       status,
       userId,
-      (data) => {
+      (data: any) => {
         setAuthorizations(sortAuthorizations(data as AuthorizationRequest[]));
         setLoading(false);
       },
-      (error) => {
+      (error: any) => {
         console.error('Error escuchando autorizaciones:', error);
         setLoading(false);
       },
@@ -175,7 +175,7 @@ const AuthorizationsPanel = () => {
                 status: requestSnapshot?.status || 'pending',
                 module: moduleForLog,
               },
-            },
+            } as any,
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
@@ -183,8 +183,8 @@ const AuthorizationsPanel = () => {
                 requestSnapshot?.reference ||
                 requestSnapshot?.invoiceNumber ||
                 null,
-            },
-          });
+            } as any,
+          } as any);
         } else {
           await rejectAuthorizationRequest(user, authId, user);
           message.info('Solicitud rechazada');
@@ -207,7 +207,7 @@ const AuthorizationsPanel = () => {
                 status: requestSnapshot?.status || 'pending',
                 module: moduleForLog,
               },
-            },
+            } as any,
             metadata: {
               context: 'notification-panel',
               module: moduleForLog,
@@ -215,8 +215,8 @@ const AuthorizationsPanel = () => {
                 requestSnapshot?.reference ||
                 requestSnapshot?.invoiceNumber ||
                 null,
-            },
-          });
+            } as any,
+          } as any);
         }
       } catch (error) {
         const actionLabel = type === 'approve' ? 'aprobar' : 'rechazar';
