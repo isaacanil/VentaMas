@@ -76,7 +76,7 @@ export function useIsOpenCashReconciliation() {
         }
       },
       (error) => {
-        console.error('Error en la suscripci?n a Firestore: ', error);
+        console.error('Error en la suscripción a Firestore: ', error);
       },
     );
 

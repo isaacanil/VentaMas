@@ -27,13 +27,13 @@ export function generateInstallments({
     return [];
   }
 
-  // Generaci?n de fechas de pago utilizando calculatePaymentDates
+  // Generación de fechas de pago utilizando calculatePaymentDates
   const { paymentDates } = calculatePaymentDates(
     ar.paymentFrequency ?? 'monthly',
     totalInstallments,
   );
 
-  // C?lculo del monto de cada cuota
+  // Cálculo del monto de cada cuota
   const precisePart = totalReceivable / totalInstallments;
   const roundedPart = roundToTwo(precisePart);
   const roundedTotal = roundToTwo(roundedPart * totalInstallments);
@@ -56,7 +56,7 @@ export function generateInstallments({
       updatedAt: now,
       installmentDate: date,
       installmentAmount,
-      installmentNumber: index + 1, // A?adiendo el n?mero de cuota
+      installmentNumber: index + 1, // Añadiendo el número de cuota
       installmentBalance: installmentAmount,
       createdBy: user?.uid,
       updatedBy: user?.uid,

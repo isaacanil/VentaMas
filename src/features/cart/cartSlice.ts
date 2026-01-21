@@ -621,6 +621,7 @@ export const {
   addSourceOfPurchase,
   addTaxReceiptInState,
   resetCart,
+  changePaymentValue,
   changeProductPrice,
   changeProductWeight,
   setCashPaymentToTotal,

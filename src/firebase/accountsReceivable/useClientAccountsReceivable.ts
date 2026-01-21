@@ -19,7 +19,7 @@ import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
  * @param {string} params.clientId         - ID del cliente
  * @param {boolean|null} params.isActive   - true: abiertas, false: cerradas, null: todas
  * @param {string} params.orderField       - Campo en Firestore para ordenar
- * @param {'asc'|'desc'} params.orderDirection - Direcci?n del ordenamiento
+ * @param {'asc'|'desc'} params.orderDirection - Dirección del ordenamiento
  */
 interface UseClientAccountsReceivableParams {
   user?: UserIdentity | null;
@@ -53,7 +53,7 @@ export const useClientAccountsReceivable = ({
   const loading = isReady && loadedKey !== subscriptionKey;
 
   useEffect(() => {
-    // validaci?n m?nima
+    // validación mínima
     if (!isReady) return;
 
     const colRef = collection(
@@ -69,7 +69,7 @@ export const useClientAccountsReceivable = ({
       clauses.push(where('isActive', '==', isActive));
     }
 
-    // orderBy debe ir despu?s de where seg?n la API de Firestore v9
+    // orderBy debe ir después de where según la API de Firestore v9
     clauses.push(orderBy(orderField, orderDirection));
 
     const q = query(colRef, ...clauses);

@@ -16,7 +16,7 @@ interface InvoiceDataSnapshot {
   paymentMethod?: string;
 }
 
-// Funciones auxiliares para c?lculos
+// Funciones auxiliares para cálculos
 const calculateTotalSales = (invoices: InvoiceDataSnapshot[]) =>
   invoices.reduce((sum, inv) => sum + (inv.totalPurchasePrice || 0), 0);
 const calculateTotalCash = (invoices: InvoiceDataSnapshot[]) =>

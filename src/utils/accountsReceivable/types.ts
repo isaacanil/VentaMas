@@ -98,6 +98,11 @@ export interface AccountsReceivableDoc extends Record<string, unknown> {
   createdBy?: string;
   updatedBy?: string;
   comments?: string;
+  originType?: string;
+  originId?: string;
+  preorderId?: string;
+  originStage?: string;
+  createdFrom?: string;
   // New fields
   total?: number;
   totalPaid?: number;
@@ -159,6 +164,11 @@ export interface AccountsReceivablePayment {
   isActive?: boolean;
   paymentMethods?: Array<{ status?: boolean; method?: string; value?: number }>;
   comments?: string;
+  originType?: string;
+  originId?: string;
+  preorderId?: string;
+  originStage?: string;
+  createdFrom?: string;
 }
 
 export interface AccountsReceivableDetail {
@@ -270,3 +280,4 @@ export interface CreditLimitConfig {
   };
   currentBalance?: number;
 }
+

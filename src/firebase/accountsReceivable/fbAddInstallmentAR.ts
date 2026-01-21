@@ -49,7 +49,7 @@ export async function fbAddInstallmentAR({
   ar,
 }: FbAddInstallmentARParams): Promise<void> {
   try {
-    // Verificaci?n inicial de los par?metros
+    // Verificación inicial de los parámetros
     if (!user?.businessID) {
       throw new Error('User business ID is missing');
     }
@@ -57,7 +57,7 @@ export async function fbAddInstallmentAR({
       throw new Error('Accounts receivable data is missing');
     }
 
-    // Generaci?n de documentos de cuotas
+    // Generación de documentos de cuotas
     const installments = generateInstallments({ user, ar });
     const installmentsData = prepareInstallmentForFirebase(installments);
 
@@ -69,14 +69,14 @@ export async function fbAddInstallmentAR({
       'accountsReceivableInstallments',
     );
 
-    // Uso de un batch para escribir m?ltiples documentos
+    // Uso de un batch para escribir múltiples documentos
     const batch = writeBatch(db);
     installmentsData.forEach((installment) => {
       const installmentRef = doc(baseInstallmentsRef, installment.id);
       batch.set(installmentRef, installment);
     });
 
-    // Confirmaci?n de la operaci?n batch
+    // Confirmación de la operación batch
     await batch.commit();
   } catch (error) {
     console.error('Error adding installments for accounts receivable:', error);

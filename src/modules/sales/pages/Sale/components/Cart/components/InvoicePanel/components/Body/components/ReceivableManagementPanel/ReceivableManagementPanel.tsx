@@ -1,4 +1,4 @@
-import { Input, InputNumber, Select, Form, Modal } from 'antd';
+﻿import { Button, Input, InputNumber, Select, Form, Modal } from 'antd';
 import type { FormInstance } from 'antd';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -67,6 +67,11 @@ type ReceivableManagementPanelProps = {
   creditLimit?: CreditLimitConfig | null;
   isChangeNegative: boolean;
   receivableStatus: boolean;
+  showActions?: boolean;
+  confirmText?: string;
+  cancelText?: string;
+  confirmLoading?: boolean;
+  onConfirm?: () => void | Promise<void>;
 };
 
 export const ReceivableManagementPanel = ({
@@ -76,6 +81,11 @@ export const ReceivableManagementPanel = ({
   creditLimit,
   isChangeNegative,
   receivableStatus,
+  showActions = false,
+  confirmText = 'Continuar',
+  cancelText = 'Cancelar',
+  confirmLoading = false,
+  onConfirm,
 }: ReceivableManagementPanelProps) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity;
@@ -94,6 +104,12 @@ export const ReceivableManagementPanel = ({
     // Call the original close panel function
     closePanel();
   }, [form, closePanel]);
+
+  const handleConfirm = useCallback(async () => {
+    if (onConfirm) {
+      await onConfirm();
+    }
+  }, [onConfirm]);
 
   const {
     paymentFrequency,
@@ -339,7 +355,18 @@ export const ReceivableManagementPanel = ({
       title="Gestión de Cuentas por Cobrar"
       open={isOpen}
       onCancel={handleModalClose}
-      footer={null}
+      footer={
+        showActions
+          ? [
+            <Button key="cancel" onClick={handleModalClose} disabled={confirmLoading}>
+              {cancelText}
+            </Button>,
+            <Button key="confirm" type="primary" onClick={handleConfirm} loading={confirmLoading}>
+              {confirmText}
+            </Button>,
+          ]
+          : null
+      }
       destroyOnHidden={true}
       width={600}
       style={{ top: 20 }}
@@ -496,3 +523,4 @@ const Group = styled.div`
   grid-template-columns: 1fr 0.8fr;
   gap: 1em;
 `;
+

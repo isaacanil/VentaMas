@@ -48,7 +48,7 @@ export async function getAccountReceivableDetails(
 
     const arData = arSnap.data() as AccountsReceivableDoc;
 
-    // 2. Obtener informaci?n del cliente
+    // 2. Obtener información del cliente
     const clientRef = doc(
       collection(db, 'businesses', businessID, 'clients'),
       arData.clientId || '',
@@ -58,7 +58,7 @@ export async function getAccountReceivableDetails(
       ? (clientSnap.data() as ReceivableClient)
       : null;
 
-    // 3. Obtener informaci?n de la factura
+    // 3. Obtener información de la factura
     const invoiceRef = doc(
       collection(db, 'businesses', businessID, 'invoices'),
       arData.invoiceId || '',
@@ -96,7 +96,7 @@ export async function getAccountReceivableDetails(
     let installmentPayments: AccountsReceivableInstallmentPayment[] = [];
 
     if (installmentIds.length > 0) {
-      // Firestore no permite usar 'in' con m?s de 10 elementos, as? que se divide en lotes si es necesario
+      // Firestore no permite usar 'in' con más de 10 elementos, así que se divide en lotes si es necesario
       const batches: string[][] = [];
       const batchSize = 10;
       for (let i = 0; i < installmentIds.length; i += batchSize) {

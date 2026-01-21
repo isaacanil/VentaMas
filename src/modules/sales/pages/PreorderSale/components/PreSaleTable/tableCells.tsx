@@ -4,7 +4,7 @@ import {
   PrinterOutlined,
   ShoppingCartOutlined,
 } from '@/constants/icons/antd';
-import { Button, Dropdown, Tooltip, notification } from 'antd';
+import { Button, Dropdown, Form, Modal, Tooltip, notification } from 'antd';
 import type { MenuProps } from 'antd';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,23 +16,39 @@ import { icons } from '@/constants/icons/icons';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import {
+  SelectCartData,
   SelectSettingCart,
+  changePaymentValue,
   loadCart,
   setCartId,
   toggleInvoicePanelOpen,
+  toggleReceivableStatus,
 } from '@/features/cart/cartSlice';
-import { selectClientWithAuth } from '@/features/clientCart/clientCartSlice';
+import {
+  resetAR,
+  selectAR,
+  setAR,
+} from '@/features/accountsReceivable/accountsReceivableSlice';
+import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
+import { fbAddAR } from '@/firebase/accountsReceivable/fbAddAR';
+import { fbAddInstallmentAR } from '@/firebase/accountsReceivable/fbAddInstallmentAR';
+import { fbGetAccountReceivableByInvoiceOnce } from '@/firebase/accountsReceivable/fbGetAccountReceivableByInvoiceOnce';
+import { selectClient, selectClientWithAuth } from '@/features/clientCart/clientCartSlice';
 import { selectTaxReceiptType } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbCancelPreorder } from '@/firebase/invoices/fbCancelPreorder';
 import { downloadInvoiceLetterPdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { getTimeElapsed } from '@/hooks/useFormatTime';
 import { formatPrice } from '@/utils/format';
+import { calculateInvoiceChange } from '@/utils/invoice';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
 import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
+import { ReceivableManagementPanel } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/ReceivableManagementPanel/ReceivableManagementPanel';
+import { MiniClientSelector } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/components/Body/components/MarkAsReceivableButton/components/ARValidateMessage/components/MiniClientSelector/MiniClientSelector';
 import { ConfirmModal } from '@/components/modals/ConfirmModal/ConfirmModal';
 import PreorderModal from '@/components/modals/PreorderModal/PreorderModal';
 import { Tag } from '@/components/ui/Tag/Tag';
 import type { InvoiceBusinessInfo, InvoiceData } from '@/types/invoice';
+import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 import type { UserIdentity } from '@/types/users';
 
 export type PreorderActionCellValue = {
@@ -43,6 +59,16 @@ type TimestampRecord = {
   seconds?: number;
   nanoseconds?: number;
   toMillis?: () => number;
+};
+
+type AccountsReceivableState = {
+  paymentFrequency?: string;
+  totalInstallments?: number;
+  installmentAmount?: number;
+  paymentDate?: number | null;
+  comments?: string;
+  totalReceivable?: number;
+  currentBalance?: number;
 };
 
 const resolvePreorderTaxReceiptType = (preorder: InvoiceData | null | undefined) =>
@@ -94,7 +120,25 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
   >;
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [isPreorderModalOpen, setIsPreorderModalOpen] = useState(false);
+  const [isReceivableDecisionOpen, setIsReceivableDecisionOpen] = useState(false);
+  const [isReceivableConfigOpen, setIsReceivableConfigOpen] = useState(false);
+  const [isReceivableLoading, setIsReceivableLoading] = useState(false);
+  const [isClientSelectorOpen, setIsClientSelectorOpen] = useState(false);
+  const [receivableForm] = Form.useForm();
+  const cartData = useSelector(SelectCartData);
+  const accountsReceivable = useSelector(selectAR) as AccountsReceivableState;
+  const selectedClient = useSelector(selectClient);
   const printRef = useRef<HTMLDivElement | null>(null);
+
+  const change = useMemo(() => calculateInvoiceChange(cartData), [cartData]);
+  const isChangeNegative = change < 0;
+  const receivableStatus = Boolean(cartData?.isAddedToReceivables);
+  const invoiceTiming = useMemo(
+    () =>
+      (cartSettings as { billing?: { invoiceGenerationTiming?: string | null } } | null)
+        ?.billing?.invoiceGenerationTiming ?? 'always-ask',
+    [cartSettings],
+  );
 
   const printablePreorder = useMemo<InvoiceData | null>(() => {
     if (!data) return null;
@@ -106,6 +150,15 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
       type: data?.type || 'preorder',
     };
   }, [data]);
+
+  const isValidClient = (client?: { id?: string | null } | null) =>
+    Boolean(client?.id && client.id !== 'GC-0000');
+
+  const effectiveClient = useMemo(() => {
+    if (isValidClient(selectedClient)) return selectedClient;
+    if (isValidClient(data?.client)) return data?.client ?? null;
+    return null;
+  }, [data?.client, isValidClient, selectedClient]);
 
   const resolvedInvoiceType = useMemo(() => {
     const invoiceTypeFromSettings = (
@@ -268,6 +321,341 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
     }
   }, [convertToCart, data, dispatch]);
 
+
+  const buildOriginMeta = useCallback(
+    (preorderId?: string, account?: AccountsReceivableDoc | null) => ({
+      originType: account?.originType ?? 'preorder',
+      originId: account?.originId ?? preorderId ?? null,
+      preorderId: account?.preorderId ?? preorderId ?? null,
+      originStage: account?.originStage ?? 'preorder',
+      createdFrom: account?.createdFrom ?? 'preorders',
+    }),
+    [],
+  );
+
+  const openReceivablePayment = useCallback(
+    (account: AccountsReceivableDoc, preorderId?: string) => {
+      if (!account?.id) {
+        notification.error({
+          message: 'No se pudo abrir el pago',
+          description: 'La cuenta por cobrar no tiene un identificador válido.',
+        });
+        return;
+      }
+
+      const arBalance = Number(
+        account?.arBalance ??
+          account?.currentBalance ??
+          account?.totalReceivable ??
+          0,
+      );
+      const installmentAmount = Number(
+        account?.installmentAmount ?? arBalance,
+      );
+      const originMeta = buildOriginMeta(preorderId, account);
+
+      dispatch(
+        setAccountPayment({
+          isOpen: true,
+          paymentDetails: {
+            clientId: account?.clientId || data?.client?.id || '',
+            arId: account.id,
+            paymentScope: 'account',
+            paymentOption: 'installment',
+            totalAmount: installmentAmount,
+            ...originMeta,
+          },
+          extra: {
+            ...account,
+            arBalance,
+            installmentAmount,
+          },
+        }),
+      );
+    },
+    [buildOriginMeta, data?.client?.id, dispatch],
+  );
+
+  const fetchExistingReceivable = useCallback(
+    async (preorderId?: string) => {
+      if (!user?.businessID || !preorderId) return null;
+      const accounts = await fbGetAccountReceivableByInvoiceOnce(
+        user.businessID,
+        preorderId,
+      );
+      return (accounts?.[0] ?? null) as AccountsReceivableDoc | null;
+    },
+    [user?.businessID],
+  );
+
+  const handleExistingReceivable = useCallback(
+    (account: AccountsReceivableDoc | null, preorderId?: string) => {
+      if (!account) return false;
+
+      const arBalance = Number(
+        account?.arBalance ??
+          account?.currentBalance ??
+          account?.totalReceivable ??
+          0,
+      );
+
+      if (arBalance <= 0) {
+        notification.info({
+          message: 'Saldo completado',
+          description:
+            'La cuenta por cobrar está saldada. Puedes convertir la preventa en factura.',
+        });
+        handleInvoicePanelOpen();
+        return true;
+      }
+
+      openReceivablePayment(account, preorderId);
+      return true;
+    },
+    [handleInvoicePanelOpen, openReceivablePayment],
+  );
+
+  const closeReceivableConfig = useCallback(() => {
+    setIsReceivableConfigOpen(false);
+    dispatch(toggleReceivableStatus(false));
+    dispatch(resetAR());
+  }, [dispatch]);
+
+  const handleUseReceivable = useCallback(async () => {
+    if (!data) return;
+
+    const { isValid, message } = validateInvoiceCart(data);
+    if (!isValid) {
+      notification.warning({
+        message: 'No se pudo iniciar CxC',
+        description: message || 'Verifica el contenido antes de continuar.',
+      });
+      return;
+    }
+
+    const serializedPreorder = convertToCart(data);
+    const preorderId = serializedPreorder?.id;
+    const client =
+      effectiveClient ||
+      (isValidClient(serializedPreorder?.client)
+        ? serializedPreorder?.client
+        : null);
+    const clientId = client?.id;
+
+    if (!clientId || clientId === 'GC-0000') {
+      notification.error({
+        message: 'Cliente inv?lido',
+        description: 'Selecciona un cliente espec?fico para usar CxC.',
+      });
+      setIsClientSelectorOpen(true);
+      return;
+    }
+
+    if (client && clientId !== serializedPreorder?.client?.id) {
+      dispatch(selectClientWithAuth(client));
+    }
+
+    if (!preorderId) {
+      notification.error({
+        message: 'Preventa sin ID',
+        description: 'No se pudo identificar la preventa para CxC.',
+      });
+      return;
+    }
+
+    try {
+      const existing = await fetchExistingReceivable(preorderId);
+      if (existing && handleExistingReceivable(existing, preorderId)) {
+        setIsReceivableDecisionOpen(false);
+        return;
+      }
+    } catch (error) {
+      notification.error({
+        message: 'No se pudo validar CxC',
+        description:
+          error instanceof Error ? error.message : 'Intenta nuevamente.',
+      });
+    }
+
+    dispatch(resetAR());
+    dispatch(
+      setAR({
+        clientId,
+        invoiceId: preorderId,
+        paymentFrequency: 'monthly',
+        totalInstallments: 1,
+        paymentDate: null,
+        originType: 'preorder',
+        originId: preorderId,
+        preorderId,
+        originStage: 'preorder',
+        createdFrom: 'preorders',
+      }),
+    );
+    dispatch(changePaymentValue(0));
+    dispatch(toggleReceivableStatus(true));
+    setIsReceivableDecisionOpen(false);
+    setIsReceivableConfigOpen(true);
+  }, [
+    convertToCart,
+    data,
+    dispatch,
+    effectiveClient,
+    fetchExistingReceivable,
+    handleExistingReceivable,
+    isValidClient,
+  ]);
+
+  const handleConfirmReceivable = useCallback(async () => {
+    if (!data) return;
+
+    setIsReceivableLoading(true);
+    try {
+      await receivableForm.validateFields();
+
+      if (!user?.businessID) {
+        notification.error({
+          message: 'No se pudo crear CxC',
+          description: 'No se pudo identificar el negocio.',
+        });
+        return;
+      }
+
+      const preorderId = data?.id;
+      const client = effectiveClient || (isValidClient(data?.client) ? data?.client : null);
+      const clientId = client?.id;
+
+      if (!clientId || clientId === 'GC-0000') {
+        notification.error({
+          message: 'Cliente inv?lido',
+          description: 'Selecciona un cliente espec?fico para usar CxC.',
+        });
+        setIsClientSelectorOpen(true);
+        return;
+      }
+
+      if (!preorderId) {
+        notification.error({
+          message: 'Preventa sin ID',
+          description: 'No se pudo identificar la preventa para CxC.',
+        });
+        return;
+      }
+
+      const totalReceivable = Number(
+        accountsReceivable?.totalReceivable ?? Math.abs(change),
+      );
+      const totalInstallments = Number(
+        accountsReceivable?.totalInstallments ?? 1,
+      );
+      const installmentAmount = Number(
+        accountsReceivable?.installmentAmount ??
+          (totalInstallments > 0
+            ? totalReceivable / totalInstallments
+            : totalReceivable),
+      );
+
+      const originMeta = buildOriginMeta(preorderId, null);
+
+      const arPayload: AccountsReceivableDoc = {
+        ...accountsReceivable,
+        clientId,
+        invoiceId: preorderId,
+        paymentFrequency: accountsReceivable?.paymentFrequency || 'monthly',
+        totalInstallments,
+        installmentAmount,
+        totalReceivable,
+        arBalance: totalReceivable,
+        isActive: true,
+        isClosed: false,
+        ...originMeta,
+      };
+
+      const created = await fbAddAR({ user, accountsReceivable: arPayload });
+      if (!created?.id) {
+        notification.error({
+          message: 'No se pudo crear CxC',
+          description: 'Intenta nuevamente.',
+        });
+        return;
+      }
+
+      await fbAddInstallmentAR({ user, ar: created });
+
+      closeReceivableConfig();
+      openReceivablePayment({ ...created, ...arPayload }, preorderId);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Intenta nuevamente.';
+      notification.error({
+        message: 'No se pudo crear la cuenta por cobrar',
+        description: errorMessage,
+      });
+    } finally {
+      setIsReceivableLoading(false);
+    }
+  }, [
+    accountsReceivable,
+    buildOriginMeta,
+    change,
+    closeReceivableConfig,
+    data,
+    effectiveClient,
+    isValidClient,
+    openReceivablePayment,
+    receivableForm,
+    user,
+  ]);
+
+  const handleCompletePreorder = useCallback(async () => {
+    if (!data) return;
+
+    const { isValid, message } = validateInvoiceCart(data);
+    if (!isValid) {
+      notification.warning({
+        message: 'No se pudo completar la preventa',
+        description: message || 'Verifica el contenido antes de continuar.',
+      });
+      return;
+    }
+
+    const serializedPreorder = convertToCart(data);
+    const preorderId = serializedPreorder?.id;
+
+    if (invoiceTiming === 'manual') {
+      await handleUseReceivable();
+      return;
+    }
+
+    if (invoiceTiming !== 'full-payment' && invoiceTiming !== 'always-ask') {
+      dispatch(toggleInvoicePanelOpen());
+      return;
+    }
+
+    try {
+      const existing = await fetchExistingReceivable(preorderId);
+      if (existing && handleExistingReceivable(existing, preorderId)) {
+        return;
+      }
+    } catch (error) {
+      notification.error({
+        message: 'No se pudo validar CxC',
+        description:
+          error instanceof Error ? error.message : 'Intenta nuevamente.',
+      });
+    }
+
+    setIsReceivableDecisionOpen(true);
+  }, [
+    convertToCart,
+    data,
+    dispatch,
+    fetchExistingReceivable,
+    handleExistingReceivable,
+    handleUseReceivable,
+    invoiceTiming,
+  ]);
+
   const handleCancelPreorder = async () => {
     try {
       await fbCancelPreorder(user, data);
@@ -298,7 +686,7 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
     {
       key: 'complete',
       label: 'Completar preventa',
-      onClick: handleInvoicePanelOpen,
+      onClick: handleCompletePreorder,
       icon: icons.editingActions.complete,
     },
     {
@@ -349,7 +737,7 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
           icon={icons.editingActions.complete}
           onClick={(e) => {
             e.stopPropagation();
-            handleInvoicePanelOpen();
+            handleCompletePreorder();
           }}
         />
       </Tooltip>
@@ -372,6 +760,66 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
         danger
         data={data?.preorderDetails?.numberID}
       />
+
+      <Modal
+        title="Completar preventa"
+        open={isReceivableDecisionOpen}
+        onCancel={() => setIsReceivableDecisionOpen(false)}
+        footer={[
+          <Button
+            key="invoice"
+            type="primary"
+            onClick={() => {
+              setIsReceivableDecisionOpen(false);
+              handleInvoicePanelOpen();
+            }}
+          >
+            Pagar todo y facturar
+          </Button>,
+          <Button key="cxc" onClick={handleUseReceivable}>
+            Usar CxC (primer pago)
+          </Button>,
+        ]}
+      >
+        <p>
+          Selecciona cómo deseas completar la preventa. Si usas CxC, se
+          configurará la cuenta por cobrar y se registrará el primer pago.
+        </p>
+        <div style={{ marginTop: 16 }}>
+          <p style={{ marginBottom: 8 }}>
+            <strong>Cliente:</strong>{' '}
+            {effectiveClient?.name?.trim()
+              ? effectiveClient.name
+              : 'Sin cliente seleccionado'}
+          </p>
+          <Button size="small" onClick={() => setIsClientSelectorOpen(true)}>
+            Seleccionar cliente
+          </Button>
+        </div>
+      </Modal>
+      <ReceivableManagementPanel
+        form={receivableForm}
+        creditLimit={null}
+        isChangeNegative={isChangeNegative}
+        receivableStatus={receivableStatus}
+        isOpen={isReceivableConfigOpen}
+        closePanel={closeReceivableConfig}
+        showActions
+        confirmText="Crear CxC y cobrar"
+        cancelText="Cancelar"
+        confirmLoading={isReceivableLoading}
+        onConfirm={handleConfirmReceivable}
+      />
+      <MiniClientSelector
+        isOpen={isClientSelectorOpen}
+        onClose={() => setIsClientSelectorOpen(false)}
+      />
     </div>
   );
 };
+
+
+
+
+
+

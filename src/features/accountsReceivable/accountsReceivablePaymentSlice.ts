@@ -41,6 +41,11 @@ interface PaymentDetails {
   totalPaid: number;
   printReceipt: boolean;
   creditNotePayment: CreditNotePayment[];
+  originType?: string;
+  originId?: string;
+  preorderId?: string;
+  originStage?: string;
+  createdFrom?: string;
   balance?: number;
 }
 
@@ -446,3 +451,4 @@ type AccountsReceivablePaymentRootState = {
 export const selectAccountsReceivablePayment = (
   state: AccountsReceivablePaymentRootState,
 ) => state.accountsReceivablePayment;
+

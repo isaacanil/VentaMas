@@ -98,8 +98,18 @@ export const getInstallmentsByArId = async (user, arId) => {
  * @returns {string} El ID del nuevo pago.
  */
 export const createPaymentRecord = (writer, { user, paymentDetails }) => {
-  const { totalPaid, paymentMethods, comments, clientId, arId } =
-    paymentDetails;
+  const {
+    totalPaid,
+    paymentMethods,
+    comments,
+    clientId,
+    arId,
+    originType,
+    originId,
+    preorderId,
+    originStage,
+    createdFrom,
+  } = paymentDetails;
   const paymentId = nanoid();
   const paymentsRef = doc(
     db,
@@ -120,6 +130,11 @@ export const createPaymentRecord = (writer, { user, paymentDetails }) => {
     totalPaid,
     clientId,
     comments,
+    originType,
+    originId,
+    preorderId,
+    originStage,
+    createdFrom,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
     createdUserId: user?.uid,
@@ -130,6 +145,7 @@ export const createPaymentRecord = (writer, { user, paymentDetails }) => {
   writer.set(paymentsRef, paymentData);
   return paymentId;
 };
+
 
 /**
  * Aplica un monto a una cuota específica, actualizando su saldo y creando un registro de pago de cuota.
@@ -356,8 +372,8 @@ export const validatePaymentAmounts = (paymentDetails) => {
       totalPaymentAndCredit,
     },
   };
-};
 
+};
 /**
  * Crea los datos base para un recibo de pago
  * @param {Object} params - Parámetros para crear el recibo
@@ -584,7 +600,7 @@ export const updateInvoiceTotals = (
 
   const invoiceRef = doc(db, 'businesses', businessId, 'invoices', invoiceId);
   const invoiceData = invoice.data || invoice;
-  
+
   const invoiceTotal = roundToTwoDecimals(
     invoiceData.totalAmount ??
       invoiceData.totalPurchase?.value ??
@@ -606,15 +622,58 @@ export const updateInvoiceTotals = (
     type: 'ar_payment',
   };
 
-  const invoiceUpdate = {
+  const baseUpdate = {
     accumulatedPaid: newAccumulatedPaid,
     balanceDue: newBalanceDue,
-    status: newBalanceDue <= THRESHOLD ? 'paid' : 'partial',
     'data.accumulatedPaid': newAccumulatedPaid,
     'data.balanceDue': newBalanceDue,
-    'data.status': newBalanceDue <= THRESHOLD,
     paymentHistory: arrayUnion(newPaymentHistoryEntry),
     'data.paymentHistory': arrayUnion(newPaymentHistoryEntry),
+  };
+
+  const isPreorder =
+    invoiceData?.type === 'preorder' ||
+    invoiceData?.preorderDetails?.isOrWasPreorder === true ||
+    invoice?.data?.preorderDetails?.isOrWasPreorder === true;
+
+  if (isPreorder) {
+    const paymentStatus =
+      newBalanceDue <= THRESHOLD
+        ? 'paid'
+        : newAccumulatedPaid > 0
+          ? 'partial'
+          : 'unpaid';
+
+    const invoiceUpdate = {
+      ...baseUpdate,
+      'preorderDetails.paymentStatus': paymentStatus,
+      'data.preorderDetails.paymentStatus': paymentStatus,
+      'preorderDetails.balanceDue': newBalanceDue,
+      'data.preorderDetails.balanceDue': newBalanceDue,
+      'preorderDetails.accumulatedPaid': newAccumulatedPaid,
+      'data.preorderDetails.accumulatedPaid': newAccumulatedPaid,
+    };
+
+    writer.update(invoiceRef, invoiceUpdate);
+
+    return {
+      ...invoiceData,
+      accumulatedPaid: newAccumulatedPaid,
+      balanceDue: newBalanceDue,
+      preorderDetails: {
+        ...(invoiceData?.preorderDetails ?? {}),
+        paymentStatus,
+        balanceDue: newBalanceDue,
+        accumulatedPaid: newAccumulatedPaid,
+      },
+      paymentHistory: [newPaymentHistoryEntry],
+    };
+  }
+
+  const invoiceUpdate = {
+    ...baseUpdate,
+    status: newBalanceDue <= THRESHOLD ? 'paid' : 'partial',
+    'data.status': newBalanceDue <= THRESHOLD,
   };
 
   // NOTE: We deliberately DO NOT update 'totalPaid', 'paymentMethod', or 'change'.
@@ -626,9 +685,11 @@ export const updateInvoiceTotals = (
     ...invoiceData,
     accumulatedPaid: newAccumulatedPaid,
     balanceDue: newBalanceDue,
-    paymentHistory: [newPaymentHistoryEntry], // Approximation for return value
+    paymentHistory: [newPaymentHistoryEntry],
   };
 };
+
+
 
 /**
  * Crea el recibo de pago completo con datos formateados
@@ -680,10 +741,10 @@ export const createFullPaymentReceipt = ({
   );
   if (undefinedFields.length > 0) {
     console.error(
-      '❌ Undefined fields found in payment receipt:',
+      'âŒ Undefined fields found in payment receipt:',
       undefinedFields,
     );
-    console.error('❌ Full receipt data:', receiptData);
+    console.error('âŒ Full receipt data:', receiptData);
     throw new Error(
       `Payment receipt has undefined fields: ${undefinedFields.map(([key]) => key).join(', ')}`,
     );
@@ -956,10 +1017,10 @@ export const validateFirestoreData = (data, context = 'data') => {
   const undefinedPath = hasUndefined(cleanedData);
   if (undefinedPath) {
     console.error(
-      `❌ Undefined field found in ${context} at path: ${undefinedPath}`,
+      `âŒ Undefined field found in ${context} at path: ${undefinedPath}`,
     );
-    console.error(`❌ Original data:`, data);
-    console.error(`❌ Cleaned data:`, cleanedData);
+    console.error(`âŒ Original data:`, data);
+    console.error(`âŒ Cleaned data:`, cleanedData);
     throw new Error(
       `Cannot save ${context} to Firestore: undefined field at ${undefinedPath}`,
     );
@@ -1093,3 +1154,5 @@ export const validatePaymentAmount = (paymentAmount, accountBalance) => {
     exceedsBalance: false,
   };
 };
+
+

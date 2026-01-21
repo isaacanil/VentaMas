@@ -34,7 +34,7 @@ import {
 import { useIsOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { fbAddPreOrder } from '@/firebase/invoices/fbAddPreocer';
 import { fbUpdatePreOrder } from '@/firebase/invoices/fbUpdatePreorder';
-import { downloadQuotationPdf } from '@/firebase/quotation/downloadQuotationPDF';
+import { downloadInvoiceLetterPdf, downloadQuotationPdf } from '@/firebase/quotation/downloadQuotationPDF';
 import { addQuotation } from '@/firebase/quotation/quotationService';
 import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
@@ -46,9 +46,11 @@ import type {
   InvoiceProduct,
 } from '@/types/invoice';
 import { formatPrice } from '@/utils/format';
+import { resolveInvoiceDateMillis } from '@/utils/invoice/date';
 import { validateInvoiceCart } from '@/utils/invoiceValidation';
 import { getTotalDiscount } from '@/utils/pricing';
 import { PinAuthorizationModal } from '@/components/modals/PinAuthorizationModal/PinAuthorizationModal';
+import { Invoice } from '@/modules/invoice/components/Invoice/components/Invoice/Invoice';
 import { Quotation } from '@/modules/invoice/components/Quotation/components/Quotation/Quotation';
 import { handleCancelShipping } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/handleCancelShipping';
 import { CashRegisterAlertModal } from '@/modules/sales/pages/Sale/components/modals/CashRegisterAlertModal';
@@ -89,6 +91,7 @@ type BillingSettings = {
   quoteEnabled?: boolean;
   quoteValidity?: number | null;
   quoteDefaultNote?: string | null;
+  invoiceType?: string | null;
 };
 
 type CartSummary = {
@@ -122,6 +125,8 @@ type MenuOption = {
   theme?: MenuTheme;
 };
 
+type PreorderConfirmationAction = 'complete' | 'update';
+
 const resolveAuthorizerName = (authorizer?: Authorizer | null) =>
   authorizer?.displayName ||
   authorizer?.name ||
@@ -137,6 +142,12 @@ const InvoiceSummary = () => {
   const user = useSelector(selectUser) as Authorizer | null;
   const [isOpenPreorderConfirmation, setIsOpenPreorderConfirmation] =
     useState(false);
+  const [preorderConfirmationAction, setPreorderConfirmationAction] =
+    useState<PreorderConfirmationAction>('complete');
+  const [shouldPrintPreorder, setShouldPrintPreorder] = useState(() => {
+    const saved = localStorage.getItem('shouldPrintPreorder');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const cartData = useSelector(SelectCartData) as unknown as InvoiceData | null;
   const insuranceExtra = cartData?.totalInsurance?.value ?? 0;
   const selectedNcfType = useSelector(selectNcfType);
@@ -148,19 +159,24 @@ const InvoiceSummary = () => {
   const discountAuthorizationContext =
     authorizationContext?.discount ?? null;
   const billingSettings = cart?.settings?.billing;
-  const business = (useSelector(selectBusinessData) || {}) as InvoiceBusinessInfo;
+  const rawBusinessData = useSelector(selectBusinessData);
+  const business = useMemo(() => (rawBusinessData || {}) as InvoiceBusinessInfo, [rawBusinessData]);
   const total = Number(cartData?.totalPurchase?.value ?? 0);
   const subTotal = Number(cartData?.totalPurchaseWithoutTaxes?.value ?? 0);
   const itbis = Number(cartData?.totalTaxes?.value ?? 0);
   const discountPercent = Number(cartData?.discount?.value ?? 0);
   const quotationPrintRef = useRef<HTMLDivElement | null>(null);
+  const preorderPrintRef = useRef<HTMLDivElement | null>(null);
   const [quotationData] = useState<InvoiceData | null>(null);
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(false);
   const [isSavingPreorder, setIsSavingPreorder] = useState(false);
+  const [preorderPrintData, setPreorderPrintData] = useState<InvoiceData | null>(null);
+  const [pendingPreorderPrint, setPendingPreorderPrint] = useState(false);
   const discount = getTotalDiscount(subTotal, discountPercent);
-  const { billing } = useSelector(SelectSettingCart) as {
+  const cartSettings = useSelector(SelectSettingCart) as {
     billing?: BillingSettings;
   };
+  const { billing } = cartSettings;
   const { shouldUsePinForModule } = useAuthorizationModules();
   const { openModal: openPreorderModal, Modal: PreorderModal } =
     usePreorderModal();
@@ -287,7 +303,7 @@ const InvoiceSummary = () => {
     if (!shouldRequirePinForDiscount) {
       setIsDiscountAuthorized(true);
       setDiscountAuthorizer(null);
-      dispatch(clearDiscountAuthorizationContext());
+      dispatch(clearDiscountAuthorizationContext(null));
       return;
     }
 
@@ -402,11 +418,11 @@ const InvoiceSummary = () => {
 
     const { isValid, message } = validateInvoiceCart(cartData);
     if (isValid) {
-      dispatch(setCashPaymentToTotal());
+      dispatch(setCashPaymentToTotal(null));
       if (!cart?.settings?.isInvoicePanelOpen) {
-        dispatch(toggleInvoicePanelOpen());
+        dispatch(toggleInvoicePanelOpen(null));
       }
-      dispatch(setCartId());
+      dispatch(setCartId(null));
     } else {
       notification.error({
         description: message,
@@ -438,7 +454,7 @@ const InvoiceSummary = () => {
         okText: 'Limpiar',
         cancelText: 'Mantener',
         onOk: () => {
-          handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
+          handleCancelShipping({ dispatch: dispatch, closeInvoicePanel: false });
           notification.success({
             message: 'Cotización eliminada',
             description: 'Los datos de la cotización han sido eliminados.',
@@ -455,6 +471,145 @@ const InvoiceSummary = () => {
       });
     },
   });
+
+  const handlePreorderPrint = useReactToPrint({
+    contentRef: preorderPrintRef,
+  });
+
+  const convertTimestampsToMillis = useCallback(
+    function convertTimestampsToMillis(obj: unknown): unknown {
+      if (obj === null || obj === undefined || typeof obj !== 'object') return obj;
+
+      // Evitar procesar objetos que ya son de fecha o complejos
+      if (obj instanceof Date || (obj as any).isLuxonDateTime) return obj;
+
+      // Si es un Timestamp de Firebase (tiene toMillis)
+      if (typeof (obj as any).toMillis === 'function') {
+        return (obj as any).toMillis();
+      }
+
+      // Si es un registro de timestamp (POJO con seconds y nanoseconds)
+      if (
+        typeof (obj as any).seconds === 'number' &&
+        typeof (obj as any).nanoseconds === 'number'
+      ) {
+        return (obj as any).seconds * 1000 + Math.floor((obj as any).nanoseconds / 1000000);
+      }
+
+      if (Array.isArray(obj)) {
+        return obj.map((item) => convertTimestampsToMillis(item));
+      }
+
+      // Solo recursar si es un objeto plano
+      const isPlainObject =
+        obj.constructor === Object || Object.getPrototypeOf(obj) === null;
+      if (!isPlainObject) return obj;
+
+      const converted: Record<string, unknown> = {};
+      Object.keys(obj).forEach((key) => {
+        converted[key] = convertTimestampsToMillis((obj as any)[key]);
+      });
+      return converted;
+    },
+    [],
+  );
+
+  const normalizePreorderForPrint = useCallback(
+    (source: InvoiceData | null | undefined) => {
+      if (!source) return null;
+      const fallbackMillis = Date.now();
+      const preorderMillis = resolveInvoiceDateMillis(source?.preorderDetails?.date);
+      const invoiceMillis = resolveInvoiceDateMillis(source?.date);
+      const resolvedPreorderMillis =
+        preorderMillis ?? invoiceMillis ?? fallbackMillis;
+      const resolvedInvoiceMillis = invoiceMillis ?? resolvedPreorderMillis;
+
+      return {
+        ...source,
+        numberID: source?.numberID || source?.preorderDetails?.numberID,
+        date: resolvedInvoiceMillis,
+        preorderDetails: {
+          ...(source?.preorderDetails ?? {}),
+          date: resolvedPreorderMillis,
+        },
+        copyType: source?.copyType || 'PREVENTA',
+        type: source?.type || 'preorder',
+      };
+    },
+    [],
+  );
+
+  const resolvePreorderInvoiceType = useCallback(
+    (source?: InvoiceData | null) => {
+      const type =
+        billing?.invoiceType ||
+        (source as any)?.billing?.invoiceType ||
+        (source as any)?.invoiceType ||
+        (source as any)?.preorderDetails?.invoiceType ||
+        null;
+      return typeof type === 'string' && type ? type.toLowerCase() : null;
+    },
+    [billing?.invoiceType],
+  );
+
+  const triggerPreorderPrint = useCallback(
+    async (source: InvoiceData) => {
+      const printablePreorder = normalizePreorderForPrint(source);
+      if (!printablePreorder) return;
+      const printableData =
+        (convertTimestampsToMillis(printablePreorder) as InvoiceData) ??
+        printablePreorder;
+      const resolvedInvoiceType = resolvePreorderInvoiceType(printableData);
+
+      setPreorderPrintData(printableData);
+
+      if (resolvedInvoiceType === 'template2') {
+        try {
+          await downloadInvoiceLetterPdf(business, printableData, () => {});
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'No se pudo generar el PDF de la preventa.';
+          console.error(
+            '[InvoiceSummary] downloadInvoiceLetterPdf failed',
+            error,
+          );
+          notification.error({
+            message: 'Error al imprimir',
+            description: errorMessage,
+          });
+        }
+        return;
+      }
+
+      setPendingPreorderPrint(true);
+    },
+    [
+      business,
+      convertTimestampsToMillis,
+      normalizePreorderForPrint,
+      resolvePreorderInvoiceType,
+    ],
+  );
+
+  useEffect(() => {
+    if (!pendingPreorderPrint) return;
+    if (!preorderPrintData) return;
+
+    const hasProducts =
+      Array.isArray(preorderPrintData?.products) &&
+      preorderPrintData.products.length > 0;
+    const hasId = !!preorderPrintData?.id;
+
+    if (hasProducts || hasId) {
+      const timeout = setTimeout(() => {
+        handlePreorderPrint();
+        setPendingPreorderPrint(false);
+      }, 80);
+      return () => clearTimeout(timeout);
+    }
+  }, [pendingPreorderPrint, preorderPrintData, handlePreorderPrint]);
 
   function showCleanQuotationModal() {
     Modal.confirm({
@@ -486,7 +641,27 @@ const InvoiceSummary = () => {
     }
   }
 
-  const handleSavePreOrder = async () => {
+  const buildPreorderPayload = useCallback(() => {
+    if (!cartData) return cartData;
+
+    const basePreorderDetails = cartData?.preorderDetails ?? {};
+    const normalizedSelectedType = isTaxReceiptEnabled
+      ? selectedNcfType || null
+      : null;
+
+    return {
+      ...cartData,
+      selectedTaxReceiptType: normalizedSelectedType,
+      preorderDetails: {
+        ...basePreorderDetails,
+        selectedTaxReceiptType: normalizedSelectedType,
+      },
+    };
+  }, [cartData, isTaxReceiptEnabled, selectedNcfType]);
+
+  const handleSavePreOrder = useCallback(async (
+    { shouldPrint = false }: { shouldPrint?: boolean } = {},
+  ) => {
     if (isSavingPreorder) return;
 
     const { isValid, message: validationMessage } =
@@ -506,10 +681,16 @@ const InvoiceSummary = () => {
       setIsSavingPreorder(true);
 
       const preorderPayload = buildPreorderPayload() || cartData;
-      await fbAddPreOrder(user, preorderPayload);
-      handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
+      const savedPreorder = (await fbAddPreOrder(
+        user,
+        preorderPayload,
+      )) as InvoiceData;
+      handleCancelShipping({ dispatch: dispatch, closeInvoicePanel: false });
       setIsOpenPreorderConfirmation(false);
       activateSaleMode();
+      if (shouldPrint && savedPreorder) {
+        await triggerPreorderPrint(savedPreorder);
+      }
       notification.success({
         message: 'Preorden guardada con éxito',
         type: 'success',
@@ -523,9 +704,11 @@ const InvoiceSummary = () => {
     } finally {
       setIsSavingPreorder(false);
     }
-  };
+  }, [activateSaleMode, buildPreorderPayload, cartData, dispatch, isSavingPreorder, triggerPreorderPrint, user]);
 
-  const handleUpdatePreOrder = async () => {
+  const handleUpdatePreOrder = useCallback(async (
+    { shouldPrint = false }: { shouldPrint?: boolean } = {},
+  ) => {
     if (isSavingPreorder) return;
 
     const { isValid, message: validationMessage } =
@@ -545,10 +728,17 @@ const InvoiceSummary = () => {
       setIsSavingPreorder(true);
 
       const preorderPayload = buildPreorderPayload() || cartData;
-      await fbUpdatePreOrder(user, preorderPayload);
+      const updatedPreorder = (await fbUpdatePreOrder(
+        user,
+        preorderPayload,
+      )) as InvoiceData;
 
-      handleCancelShipping({ dispatch: dispatch as any, closeInvoicePanel: false });
+      handleCancelShipping({ dispatch: dispatch, closeInvoicePanel: false });
+      setIsOpenPreorderConfirmation(false);
       activateSaleMode();
+      if (shouldPrint && updatedPreorder) {
+        await triggerPreorderPrint(updatedPreorder);
+      }
 
       notification.success({
         message: 'Preventa actualizada con éxito',
@@ -563,7 +753,39 @@ const InvoiceSummary = () => {
     } finally {
       setIsSavingPreorder(false);
     }
-  };
+  }, [activateSaleMode, buildPreorderPayload, cartData, dispatch, isSavingPreorder, triggerPreorderPrint, user]);
+
+  useEffect(() => {
+    localStorage.setItem('shouldPrintPreorder', JSON.stringify(shouldPrintPreorder));
+  }, [shouldPrintPreorder]);
+
+  const openPreorderConfirmation = useCallback(
+    (action: PreorderConfirmationAction) => {
+      setPreorderConfirmationAction(action);
+      setIsOpenPreorderConfirmation(true);
+    },
+    [],
+  );
+
+  const handlePreorderConfirmation = useCallback(() => {
+    if (preorderConfirmationAction === 'update') {
+      void handleUpdatePreOrder({ shouldPrint: shouldPrintPreorder });
+      return;
+    }
+    void handleSavePreOrder({ shouldPrint: shouldPrintPreorder });
+  }, [
+    handleSavePreOrder,
+    handleUpdatePreOrder,
+    preorderConfirmationAction,
+    shouldPrintPreorder,
+  ]);
+
+  const handleClosePreorderConfirmation = useCallback(() => {
+    setIsOpenPreorderConfirmation(false);
+    if (preorderConfirmationAction === 'complete') {
+      activateSaleMode();
+    }
+  }, [activateSaleMode, preorderConfirmationAction]);
 
   // Calculamos si el botón debe estar deshabilitado combinando las validaciones
   const isButtonDisabled =
@@ -583,24 +805,6 @@ const InvoiceSummary = () => {
     return null;
   }, [insuranceFormIncomplete, validateInsuranceCoverage]);
 
-  const buildPreorderPayload = useCallback(() => {
-    if (!cartData) return cartData;
-
-    const basePreorderDetails = cartData?.preorderDetails ?? {};
-    const normalizedSelectedType = isTaxReceiptEnabled
-      ? selectedNcfType || null
-      : null;
-
-    return {
-      ...cartData,
-      selectedTaxReceiptType: normalizedSelectedType,
-      preorderDetails: {
-        ...basePreorderDetails,
-        selectedTaxReceiptType: normalizedSelectedType,
-      },
-    };
-  }, [cartData, isTaxReceiptEnabled, selectedNcfType]);
-
   const billingButtons: Record<
     string,
     { text: string; action?: () => void; disabled: boolean }
@@ -613,14 +817,14 @@ const InvoiceSummary = () => {
     deferred: isEditingPreorder
       ? {
         text: isSavingPreorder ? 'Actualizando...' : 'Actualizar',
-        action: handleUpdatePreOrder,
+        action: () => openPreorderConfirmation('update'),
         disabled: isButtonDisabled,
       }
       : {
         text: 'Preventa',
         action: () => {
           activatePreorderMode();
-          setIsOpenPreorderConfirmation(true);
+          openPreorderConfirmation('complete');
         },
         disabled: isButtonDisabled,
       },
@@ -704,6 +908,14 @@ const InvoiceSummary = () => {
   return (
     <Fragment>
       {PreorderModal}
+      {preorderPrintData && (
+        <div
+          style={{ position: 'absolute', top: -9999, left: -9999 }}
+          aria-hidden="true"
+        >
+          <Invoice ref={preorderPrintRef} data={preorderPrintData} ignoreHidden />
+        </div>
+      )}
       {isLoadingQuotation && (
         <div
           style={{
@@ -747,7 +959,7 @@ const InvoiceSummary = () => {
               <CustomInput
                 discount={discount}
                 value={discountPercent}
-                options={['10', '20', '30', '40', '50']}
+                options={[10, 20, 30, 40, 50]}
                 disabled={hasIndividualDiscounts}
                 onRequestAccess={handleDiscountAccess}
                 width={SUMMARY_INPUT_WIDTH}
@@ -790,11 +1002,11 @@ const InvoiceSummary = () => {
       <PinAuthorizationModal {...discountPinModalProps} />
       <PreorderConfirmation
         open={isOpenPreorderConfirmation}
-        onCancel={() => {
-          setIsOpenPreorderConfirmation(false);
-          activateSaleMode();
-        }}
-        onConfirm={handleSavePreOrder}
+        actionType={preorderConfirmationAction}
+        onCancel={handleClosePreorderConfirmation}
+        onConfirm={handlePreorderConfirmation}
+        shouldPrint={shouldPrintPreorder}
+        onTogglePrint={setShouldPrintPreorder}
         preorder={{ data: cartData }}
         loading={isSavingPreorder}
       />

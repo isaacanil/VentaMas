@@ -1,74 +1,191 @@
-// @ts-nocheck
-import { Radio, message, Card } from 'antd';
-import React from 'react';
+import { Switch, message, Modal, Button, Select, Space, Typography, Divider } from 'antd';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { ShoppingOutlined, SettingOutlined, RocketOutlined, AuditOutlined } from '@ant-design/icons';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { setBillingSettings } from '@/firebase/billing/billingSetting';
+import SettingCard from './SettingCard';
 
-const InnerCard = styled(Card)`
-  margin-bottom: 16px;
-  cursor: pointer;
-  background-color: ${({ $selected }) => ($selected ? '#e6f7ff' : '#ffffff')};
-  border: ${({ $selected }) =>
-    $selected ? '2px solid #1890ff' : '1px solid #f0f0f0'};
+const { Text, Title, Paragraph } = Typography;
+const { Option } = Select;
 
-  &:hover {
-    background-color: #e6f7ff;
-    border-color: #1890ff;
+const ModalSection = styled.div`
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
   }
 `;
 
-const ConfigItem = styled.div`
-  padding-left: ${({ $level }) => ($level || 0) * 16}px;
-  margin-bottom: 8px;
+const ModalSectionTitle = styled.h4`
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 12px;
 `;
 
-const BillingModeConfig = ({ billingMode }) => {
-  const user = useSelector(selectUser);
+const ModalDescription = styled.p`
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 16px;
+  line-height: 1.5;
+`;
 
-  const handleCardClick = async (value) => {
+const StatusPill = styled.div<{ $type: 'direct' | 'deferred' }>`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: ${({ $type }) => ($type === 'deferred' ? '#fff7e6' : '#f6ffed')};
+  color: ${({ $type }) => ($type === 'deferred' ? '#faad14' : '#52c41a')};
+  border: 1px solid ${({ $type }) => ($type === 'deferred' ? '#ffd591' : '#b7eb8f')};
+`;
+
+const BillingModeConfig = ({ billingSettings }) => {
+  const user = useSelector(selectUser);
+  const billingMode = billingSettings?.billingMode || 'direct';
+  const isPresaleMode = billingMode === 'deferred';
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localMode, setLocalMode] = useState(billingMode);
+  const [invoiceTiming, setInvoiceTiming] = useState(billingSettings?.invoiceGenerationTiming || 'always-ask');
+
+  React.useEffect(() => {
+    setLocalMode(billingSettings?.billingMode || 'direct');
+    if (billingSettings?.invoiceGenerationTiming) {
+      setInvoiceTiming(billingSettings.invoiceGenerationTiming);
+    }
+  }, [billingSettings]);
+
+  const handleSaveSettings = async () => {
     try {
-      await setBillingSettings(user, { billingMode: value });
+      await setBillingSettings(user, {
+        billingMode: localMode,
+        invoiceGenerationTiming: invoiceTiming
+      });
+      message.success('Configuración actualizada correctamente');
+      setIsModalOpen(false);
     } catch {
       message.error('Error al guardar la configuración');
     }
   };
 
+  const timingOptions = [
+    { value: 'always-ask', label: 'Siempre preguntar', description: 'Confirmación manual en cada venta.' },
+    { value: 'first-payment', label: 'Con el primer Pago', description: 'Factura generada automáticamente al recibir abonos.' },
+    { value: 'full-payment', label: 'Al finalizar (pago total)', description: 'Factura generada solo al completar el saldo.' },
+    { value: 'manual', label: 'Nunca (Manual)', description: 'Debes generar la factura manualmente desde órdenes.' },
+  ];
+
+  const timingLabels = {
+    'first-payment': 'Primer Pago',
+    'full-payment': 'Pago Total',
+    'always-ask': 'Preguntar Siempre',
+    'manual': 'Manual'
+  };
+
+  const summary = [
+    {
+      label: 'Modo Actual',
+      value: <StatusPill $type={billingMode}>{isPresaleMode ? 'Preventa' : 'Venta Directa'}</StatusPill>
+    },
+    {
+      label: 'Generación de Factura',
+      value: isPresaleMode ? timingLabels[invoiceTiming] : 'Inmediata'
+    },
+  ];
+
   return (
-    <ConfigItem $level={0}>
-      <Radio.Group value={billingMode} style={{ width: '100%' }}>
-        <InnerCard
-          type="inner"
-          $selected={billingMode === 'direct'}
-          onClick={() => handleCardClick('direct')}
-          hoverable
-        >
-          <Radio value="direct">
-            <strong>Facturación Directa</strong> (Predeterminada)
-          </Radio>
-          <p>
-            Crea y emite la factura en el momento en que seleccionas los
-            productos.
-          </p>
-        </InnerCard>
-        <InnerCard
-          type="inner"
-          $selected={billingMode === 'deferred'}
-          onClick={() => handleCardClick('deferred')}
-          hoverable
-        >
-          <Radio value="deferred">
-            <strong>Facturación Diferida</strong>
-          </Radio>
-          <p>
-            Registra las ventas como órdenes preliminares que puedes revisar,
-            completar o cancelar antes de generar la factura final.
-          </p>
-        </InnerCard>
-      </Radio.Group>
-    </ConfigItem>
+    <>
+      <SettingCard
+        icon={<ShoppingOutlined />}
+        title="Modo de Operación"
+        description="Selecciona cómo procesar tus ventas: facturación inmediata o abonos y preventas."
+        onConfigClick={() => setIsModalOpen(true)}
+        summary={summary}
+      />
+
+      <Modal
+        title={
+          <span>
+            <SettingOutlined style={{ marginRight: 8 }} />
+            Configuración de Operación
+          </span>
+        }
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        style={{ top: 10 }}
+        footer={[
+          <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+            Cancelar
+          </Button>,
+          <Button key="save" type="primary" onClick={handleSaveSettings}>
+            Guardar Cambios
+          </Button>,
+        ]}
+        width={550}
+      >
+        <ModalSection>
+          <ModalSectionTitle>Tipo de Facturación</ModalSectionTitle>
+          <ModalDescription>
+            Elige el flujo de trabajo que mejor se adapte a tu negocio.
+          </ModalDescription>
+
+          <Select
+            value={localMode}
+            onChange={setLocalMode}
+            style={{ width: '100%' }}
+            size="large"
+          >
+            <Option value="direct">
+              <div>
+                <div style={{ fontWeight: 600 }}>Venta Directa</div>
+                <div style={{ fontSize: '12px', color: '#8c8c8c' }}>Las ventas se facturan y completan de inmediato.</div>
+              </div>
+            </Option>
+            <Option value="deferred">
+              <div>
+                <div style={{ fontWeight: 600 }}>Modo Preventa</div>
+                <div style={{ fontSize: '12px', color: '#8c8c8c' }}>Registra órdenes preliminares, maneja abonos y facturación diferida.</div>
+              </div>
+            </Option>
+          </Select>
+        </ModalSection>
+
+        {localMode === 'deferred' && (
+          <>
+            <Divider />
+            <ModalSection>
+              <ModalSectionTitle>Conversión a Factura (Preventa)</ModalSectionTitle>
+              <ModalDescription>
+                Define cuándo se debe emitir el comprobante fiscal.
+              </ModalDescription>
+
+              <Select
+                value={invoiceTiming}
+                onChange={setInvoiceTiming}
+                style={{ width: '100%' }}
+                size="large"
+              >
+                {timingOptions.map(opt => (
+                  <Option key={opt.value} value={opt.value}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{opt.label}</div>
+                      <div style={{ fontSize: '12px', color: '#8c8c8c' }}>{opt.description}</div>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            </ModalSection>
+          </>
+        )}
+      </Modal>
+    </>
   );
 };
 

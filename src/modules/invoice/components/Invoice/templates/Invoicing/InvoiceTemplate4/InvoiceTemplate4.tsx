@@ -101,7 +101,7 @@ const formatColumn = (
     const spaces = Math.floor((width - str.length) / 2);
     return ' '.repeat(spaces) + str + ' '.repeat(width - str.length - spaces);
   }
-  
+
   return str.padEnd(width, ' ');
 };
 

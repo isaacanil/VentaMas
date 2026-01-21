@@ -9,7 +9,7 @@ interface EmployeeDoc {
 export async function getEmployeeData(
   employeeRef?: DocumentReference | null,
 ): Promise<CashCountEmployee | null> {
-  // Comprobaci?n anticipada para un argumento nulo
+  // Comprobación anticipada para un argumento nulo
   if (!employeeRef) return null;
   try {
     const employeeDoc = (await getDoc(employeeRef)).data() as EmployeeDoc | undefined;
@@ -23,7 +23,7 @@ export async function getEmployeeData(
       name: employeeUser.realName?.trim() ? employeeUser.realName : employeeUser.name,
     };
   } catch (error) {
-    // Manejo adecuado de cualquier error que pueda ocurrir durante la recuperaci?n del documento
+    // Manejo adecuado de cualquier error que pueda ocurrir durante la recuperación del documento
     console.error('Error al obtener datos del empleado:', error);
     return null;
   }

@@ -45,6 +45,12 @@ const SIDEBAR_VARIANTS = {
   },
 };
 
+const { SALES_TERM } = ROUTES_PATH;
+const DEV_PREFETCH_ROUTES = new Set<string>([
+  SALES_TERM.SALES,
+  SALES_TERM.BILLS,
+]);
+
 interface CartSettings {
   billing?: {
     billingMode?: string;
@@ -170,6 +176,9 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
     const collectPreloaders = (items: MenuItem[] = []) => {
       items.forEach((item) => {
         if (item?.route && typeof item?.preload === 'function') {
+          if (!DEV_PREFETCH_ROUTES.has(item.route)) {
+            return;
+          }
           if (!seenRoutes.has(item.route)) {
             seenRoutes.add(item.route);
             preloaders.push(item.preload);

@@ -605,8 +605,8 @@ const Container = styled.div<{ $hasTitle: boolean; $hasToolbar: boolean }>`
       .join(' ')};
   height: 100%;
   overflow: hidden;
-  background-color: ${(props: { theme?: any }) => props.theme
-    (theme as AdvancedTheme).bg?.shade ?? 'transparent'};
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme)?.bg?.shade ?? 'transparent'};
   border: var(--border-primary);
   border-radius: 0.4em;
 `;
@@ -616,8 +616,8 @@ const TableTitle = styled.div`
   padding: 0.8em 1em;
   font-size: 1.1em;
   font-weight: 600;
-  background-color: ${(props: { theme?: any }) => props.theme
-    (theme as AdvancedTheme).bg?.primary ?? 'transparent'};
+  background-color: ${({ theme }) =>
+    (theme as AdvancedTheme)?.bg?.primary ?? 'transparent'};
   border-bottom: var(--border-primary);
 `;
 

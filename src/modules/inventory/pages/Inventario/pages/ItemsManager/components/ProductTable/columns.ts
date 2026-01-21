@@ -20,7 +20,7 @@ export const columns: Array<{
     sortDirections: ['descend', 'ascend'],
   },
   {
-    title: 'Descripci?n',
+    title: 'Descripción',
     dataIndex: 'description',
     key: 'description',
     width: '20%',

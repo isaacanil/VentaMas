@@ -15,11 +15,15 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { FilterBar } from './components/FilterBar/FilterBar';
 import { sortInvoices, useInvoiceSorting } from './components/FilterBar/hooks';
 import { SaleRecordList } from './SaleRecordList/RecordList';
-import SalesAnalyticsPanel from './SalesAnalyticsPanel/SalesAnalyticsPanel';
 
 const SaleReportTable = lazyWithRetry(
   () => import('./SaleReportTable/SaleReportTable'),
   'SaleReportTable',
+);
+
+const SalesAnalyticsPanel = lazyWithRetry(
+  () => import('./SalesAnalyticsPanel/SalesAnalyticsPanel'),
+  'SalesAnalyticsPanel',
 );
 
 export const InvoicesPage = () => {
@@ -109,11 +113,15 @@ export const InvoicesPage = () => {
           <SaleRecordList invoices={processedInvoices as any} searchTerm={searchTerm} />
         )}
       </Container>
-      <SalesAnalyticsPanel
-        isOpen={isReportSaleOpen}
-        onOpen={onReportSaleOpen}
-        sales={invoices as any}
-      />
+      {isReportSaleOpen ? (
+        <Suspense fallback={null}>
+          <SalesAnalyticsPanel
+            isOpen={isReportSaleOpen}
+            onOpen={onReportSaleOpen}
+            sales={invoices as any}
+          />
+        </Suspense>
+      ) : null}
     </Fragment>
   );
 };

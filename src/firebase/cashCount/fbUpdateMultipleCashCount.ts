@@ -14,7 +14,7 @@ interface CashCountDocData {
   cashCount?: CashCountRecord;
 }
 
-// Esta funci?n recorre todos los negocios y actualiza los cuadres de caja en cada uno
+// Esta función recorre todos los negocios y actualiza los cuadres de caja en cada uno
 export const fbUpdateAllBusinessCashCounts = async () => {
   try {
     const businesses = await getBusinesses();

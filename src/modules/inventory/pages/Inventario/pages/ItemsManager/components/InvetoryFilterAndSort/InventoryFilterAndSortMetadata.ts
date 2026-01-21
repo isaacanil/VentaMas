@@ -16,7 +16,7 @@ export const ordenNumerico: FilterOption[] = [
 ];
 
 export const ordenBooleano: FilterOption[] = [
-  { valor: true, etiqueta: 'S?' },
+  { valor: true, etiqueta: 'Sí' },
   { valor: false, etiqueta: 'No' },
 ];
 
@@ -34,7 +34,7 @@ export const opcionesCriterio: FilterOption[] = [
   { valor: 'nombre', etiqueta: 'Nombre del Producto' },
   { valor: 'stock', etiqueta: 'Stock' },
   { valor: 'inventariable', etiqueta: 'Inventariable' },
-  { valor: 'categoria', etiqueta: 'Categor?a' },
+  { valor: 'categoria', etiqueta: 'Categoría' },
   { valor: 'costo', etiqueta: 'Costo' },
   { valor: 'precio', etiqueta: 'Precio' },
   { valor: 'impuesto', etiqueta: 'Impuesto' },
@@ -42,7 +42,7 @@ export const opcionesCriterio: FilterOption[] = [
 
 export const opcionesInventariable: FilterOption[] = [
   { valor: 'todos', etiqueta: 'Todos' },
-  { valor: 'si', etiqueta: 'S?' },
+  { valor: 'si', etiqueta: 'Sí' },
   { valor: 'no', etiqueta: 'No' },
 ];
 
@@ -55,6 +55,6 @@ export const opcionesItbis: FilterOption[] = [
 
 export const opcionesVisible: FilterOption[] = [
   { valor: 'todos', etiqueta: 'Todos' },
-  { valor: 'si', etiqueta: 'S?' },
+  { valor: 'si', etiqueta: 'Sí' },
   { valor: 'no', etiqueta: 'No' },
 ];

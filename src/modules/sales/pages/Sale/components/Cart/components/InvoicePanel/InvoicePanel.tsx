@@ -506,8 +506,8 @@ export const InvoicePanel = () => {
           invoiceId:
             typedError?.invoiceId ??
             (typedError?.invoice &&
-            typeof typedError.invoice === 'object' &&
-            'id' in typedError.invoice
+              typeof typedError.invoice === 'object' &&
+              'id' in typedError.invoice
               ? (typedError.invoice as { id?: string }).id
               : null),
           idempotencyKey: typedError?.idempotencyKey ?? null,

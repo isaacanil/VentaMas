@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+﻿import bcrypt from 'bcryptjs';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { nanoid } from 'nanoid';
 
@@ -25,6 +25,16 @@ const MAX_PARALLEL_ACTIVE_SESSIONS =
 const SESSION_EXTENSION_MS =
   Number(process.env.CLIENT_AUTH_SESSION_EXTENSION_MS) || SESSION_DURATION_MS;
 
+const CLIENT_AUTH_CORS_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173',
+  'https://ventamaxpos-staging.web.app',
+  'https://ventamaxpos.web.app',
+  'https://ventamax.web.app',
+  'https://ventamax.vercel.app',
+];
 const usersCol = db.collection(USERS_COLLECTION);
 const sessionsCol = db.collection(SESSION_COLLECTION);
 const sessionLogsCol = db.collection(SESSION_LOG_COLLECTION);
@@ -606,46 +616,51 @@ export const clientValidateSession = onCall(async (request) => {
   };
 });
 
-export const clientRefreshSession = onCall(async (request) => {
-  const { data = {} } = request || {};
-  const { sessionToken, extend = true } = data;
-  const sessionInfo = extractRequestInfo(request);
+export const clientRefreshSession = onCall(
+  {
+    cors: CLIENT_AUTH_CORS_ORIGINS,
+  },
+  async (request) => {
+    const { data = {} } = request || {};
+    const { sessionToken, extend = true } = data;
+    const sessionInfo = extractRequestInfo(request);
 
-  const snap = await ensureActiveSession(sessionToken, {
-    eventContext: { action: 'refresh-session' },
-  });
+    const snap = await ensureActiveSession(sessionToken, {
+      eventContext: { action: 'refresh-session' },
+    });
 
-  const updates = {
-    lastActivity: FieldValue.serverTimestamp(),
-    status: 'active',
-  };
-
-  if (extend) {
-    updates.expiresAt = Timestamp.fromMillis(Date.now() + SESSION_EXTENSION_MS);
-  }
-  if (sessionInfo.deviceLabel) updates.deviceLabel = sessionInfo.deviceLabel;
-  if (sessionInfo.deviceId) updates.deviceId = sessionInfo.deviceId;
-  if (sessionInfo.userAgent) updates.userAgent = sessionInfo.userAgent;
-  if (sessionInfo.ipAddress) updates.ipAddress = sessionInfo.ipAddress;
-  if (sessionInfo.platform) updates.platform = sessionInfo.platform;
-  if (sessionInfo.metadata) {
-    updates.metadata = {
-      ...(snap.get('metadata') || {}),
-      ...sessionInfo.metadata,
+    const updates = {
+      lastActivity: FieldValue.serverTimestamp(),
+      status: 'active',
     };
-  }
 
-  await snap.ref.set(updates, { merge: true });
-  const refreshedSnap = await snap.ref.get();
-  const session = buildSessionPayload(refreshedSnap);
-  const activeSessions = await syncUserPresence(session.userId);
+    if (extend) {
+      updates.expiresAt = Timestamp.fromMillis(Date.now() + SESSION_EXTENSION_MS);
+    }
+    if (sessionInfo.deviceLabel) updates.deviceLabel = sessionInfo.deviceLabel;
+    if (sessionInfo.deviceId) updates.deviceId = sessionInfo.deviceId;
+    if (sessionInfo.userAgent) updates.userAgent = sessionInfo.userAgent;
+    if (sessionInfo.ipAddress) updates.ipAddress = sessionInfo.ipAddress;
+    if (sessionInfo.platform) updates.platform = sessionInfo.platform;
+    if (sessionInfo.metadata) {
+      updates.metadata = {
+        ...(snap.get('metadata') || {}),
+        ...sessionInfo.metadata,
+      };
+    }
 
-  return {
-    ok: true,
-    session,
-    activeSessions,
-  };
-});
+    await snap.ref.set(updates, { merge: true });
+    const refreshedSnap = await snap.ref.get();
+    const session = buildSessionPayload(refreshedSnap);
+    const activeSessions = await syncUserPresence(session.userId);
+
+    return {
+      ok: true,
+      session,
+      activeSessions,
+    };
+  },
+);
 
 export const clientListSessionLogs = onCall(
   {
@@ -997,3 +1012,7 @@ export const clientSetUserPassword = onCall(async ({ data }) => {
 
   return { ok: true, sessionsRevoked: revoked };
 });
+
+
+
+

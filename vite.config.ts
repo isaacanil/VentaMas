@@ -300,7 +300,7 @@ export default defineConfig({
     commonjsOptions: { transformMixedEsModules: true },
   },
   plugins,
-  server: { host: '0.0.0.0', hmr: false },
+  server: { host: '0.0.0.0' },
   define: { global: 'globalThis' },
   optimizeDeps: {
     include: ['react-compiler-runtime'],

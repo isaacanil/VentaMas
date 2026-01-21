@@ -58,7 +58,7 @@ export const fbAddBillToOpenCashCount = async (
 
     if (!cashCountDoc) {
       console.error(
-        'No se encontr? un cuadre de caja abierto para el cajero actual',
+        'No se encontró un cuadre de caja abierto para el cajero actual',
       );
       return;
     }
@@ -73,6 +73,6 @@ export const fbAddBillToOpenCashCount = async (
     }
     console.error('Error al encontrar el id del cuadre');
   } catch (error) {
-    console.error('Error al a?adir la factura al cuadre: ', error);
+    console.error('Error al añadir la factura al cuadre: ', error);
   }
 };
