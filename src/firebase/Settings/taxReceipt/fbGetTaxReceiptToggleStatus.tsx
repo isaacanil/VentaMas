@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { doc, onSnapshot } from 'firebase/firestore';
+﻿import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -8,11 +7,20 @@ import { setTaxReceiptEnabled } from '@/features/cart/cartSlice';
 import { toggleTaxReceiptSettings } from '@/features/taxReceipt/taxReceiptSlice';
 import { db } from '@/firebase/firebaseconfig';
 
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type TaxReceiptSettingsDoc = {
+  taxReceiptEnabled?: boolean;
+};
+
 export const useFbTaxReceiptToggleStatus = () => {
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(
+    selectUser,
+  );
   const dispatch = useDispatch();
+
   useEffect(() => {
-    if (!user || !user?.businessID) return;
+    if (!user || !user?.businessID) return undefined;
 
     const settingRef = doc(
       db,
@@ -27,8 +35,10 @@ export const useFbTaxReceiptToggleStatus = () => {
       settingRef,
       (docSnap) => {
         if (docSnap.exists()) {
-          dispatch(toggleTaxReceiptSettings(docSnap.data().taxReceiptEnabled));
-          dispatch(setTaxReceiptEnabled(docSnap.data().taxReceiptEnabled));
+          const data = docSnap.data() as TaxReceiptSettingsDoc;
+          const enabled = Boolean(data.taxReceiptEnabled);
+          dispatch(toggleTaxReceiptSettings(enabled));
+          dispatch(setTaxReceiptEnabled(enabled));
         } else {
           dispatch(toggleTaxReceiptSettings(false));
           dispatch(setTaxReceiptEnabled(false));
@@ -36,13 +46,13 @@ export const useFbTaxReceiptToggleStatus = () => {
       },
       (error) => {
         console.error(
-          'Ocurrió un error al obtener el comprobante fiscal:',
+          'Ocurrio un error al obtener el comprobante fiscal:',
           error,
         );
       },
     );
 
-    // Limpiar la suscripción cuando el componente se desmonta
+    // Limpiar la suscripcion cuando el componente se desmonta
     return () => unsubscribe();
   }, [user, dispatch]); // Dependencias del efecto
 };

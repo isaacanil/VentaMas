@@ -1,12 +1,32 @@
-// @ts-nocheck
 import { collection, query, getDocs, deleteDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { TaxReceiptData, TaxReceiptDocument } from '@/types/taxReceipt';
+import type { TimestampLike } from '@/utils/date/types';
 
 // Valor por defecto de sequence (ajústalo según tu lógica)
 const DEFAULT_SEQUENCE = '0000000000';
 
-export const removeDuplicateTaxReceipts = async (businessID) => {
+type ReceiptWithMeta = TaxReceiptData & {
+  id: string;
+  docRef: Parameters<typeof deleteDoc>[0];
+  createdAt?: TimestampLike;
+};
+
+const toMillisSafe = (value: TimestampLike): number | null => {
+  if (!value) return null;
+  if (typeof value === 'number') return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'object' && typeof value.toMillis === 'function') {
+    return value.toMillis();
+  }
+  if (typeof value === 'object' && typeof value.seconds === 'number') {
+    return value.seconds * 1000;
+  }
+  return null;
+};
+
+export const removeDuplicateTaxReceipts = async (businessID: string) => {
   try {
     const taxReceiptsRef = collection(
       db,
@@ -18,17 +38,17 @@ export const removeDuplicateTaxReceipts = async (businessID) => {
     const querySnapshot = await getDocs(q);
 
     // Agrupar recibos por serie
-    const receiptsBySeries = {};
+    const receiptsBySeries: Record<string, ReceiptWithMeta[]> = {};
     querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data().data;
-      const serie = data.serie;
+      const data = (docSnap.data() as TaxReceiptDocument)?.data;
+      const serie = data?.serie || data?.series || 'unknown';
       if (!receiptsBySeries[serie]) {
         receiptsBySeries[serie] = [];
       }
       receiptsBySeries[serie].push({
         id: docSnap.id,
         ...data,
-        docRef: docSnap.ref,
+        docRef: docSnap.ref as Parameters<typeof deleteDoc>[0],
       });
     });
 
@@ -38,7 +58,7 @@ export const removeDuplicateTaxReceipts = async (businessID) => {
 
       // Si hay más de un documento con la misma serie, se procede a revisar duplicados
       if (receipts.length > 1) {
-        let receiptToKeep = null;
+        let receiptToKeep: ReceiptWithMeta | null = null;
 
         // 1. Priorizar recibos con sequence "consumido" (diferente al default)
         const consumedReceipts = receipts.filter(
@@ -50,17 +70,17 @@ export const removeDuplicateTaxReceipts = async (businessID) => {
             // Si alguno no tiene createdAt, se prioriza el que sí lo tenga
             if (!prev.createdAt) return current;
             if (!current.createdAt) return prev;
-            return prev.createdAt.toMillis() < current.createdAt.toMillis()
-              ? prev
-              : current;
+            const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
+            const currentMillis = toMillisSafe(current.createdAt) ?? 0;
+            return prevMillis < currentMillis ? prev : current;
           });
         } else {
           // 2. Si ninguno tiene un sequence "consumido", usar la fecha de creación
           if (receipts.every((r) => r.createdAt)) {
             receiptToKeep = receipts.reduce((prev, current) => {
-              return prev.createdAt.toMillis() < current.createdAt.toMillis()
-                ? prev
-                : current;
+              const prevMillis = toMillisSafe(prev.createdAt) ?? 0;
+              const currentMillis = toMillisSafe(current.createdAt) ?? 0;
+              return prevMillis < currentMillis ? prev : current;
             });
           } else {
             // 3. Fallback: usar el primer documento
@@ -72,9 +92,9 @@ export const removeDuplicateTaxReceipts = async (businessID) => {
         // Si existen varios con el mismo name y serie, podrías filtrar para quedarte con uno.
         // Por ejemplo, si hay otros con name igual a receiptToKeep.name, se eliminarán.
         const sameNameDuplicates = receipts.filter(
-          (r) => r.name === receiptToKeep.name,
+          (r) => r.name === receiptToKeep?.name,
         );
-        if (sameNameDuplicates.length > 1) {
+        if (sameNameDuplicates.length > 1 && receiptToKeep) {
           // En este ejemplo se conserva receiptToKeep y se eliminan los demás
           sameNameDuplicates.forEach((r) => {
             if (r.id !== receiptToKeep.id) {
@@ -90,7 +110,7 @@ export const removeDuplicateTaxReceipts = async (businessID) => {
         } else {
           // Eliminar el resto de los duplicados de esta serie
           receipts.forEach(async (r) => {
-            if (r.id !== receiptToKeep.id) {
+            if (r.id !== receiptToKeep?.id) {
               await deleteDoc(r.docRef);
               console.log(
                 `Eliminado duplicado con id: ${r.id} para la serie: ${serie}`,

@@ -1,19 +1,37 @@
-// @ts-nocheck
 import { updateDoc, doc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/date/dateUtils';
+import type { UserIdentity } from '@/types/users';
 
-export async function fbUpdateNCFInvoices(user, invoices) {
+import { isInvoiceUser, type InvoiceDoc } from './types';
+
+type InvoiceWithDate = {
+  data: InvoiceDoc['data'] & { date?: Date };
+};
+
+export async function fbUpdateNCFInvoices(
+  user: UserIdentity | null | undefined,
+  invoices: InvoiceDoc[],
+): Promise<void> {
+  if (!isInvoiceUser(user)) return;
   // Convertimos y ordenamos las facturas por fecha de manera ascendente
 
-  const sortedInvoices = invoices
-    .map(({ data }) => ({
-      data: {
-        ...data,
-        date: new Date(data.date.seconds * 1000), // Convertimos a objeto de fecha
-      },
-    }))
-    .sort((a, b) => a.data.date - b.data.date);
+  const sortedInvoices: InvoiceWithDate[] = invoices
+    .map(({ data }) => {
+      const millis = toMillis(data?.date);
+      return {
+        data: {
+          ...data,
+          date: millis ? new Date(millis) : undefined,
+        },
+      };
+    })
+    .sort((a, b) => {
+      const aTime = a.data.date?.getTime() ?? 0;
+      const bTime = b.data.date?.getTime() ?? 0;
+      return aTime - bTime;
+    });
 
   // Número inicial para NCF
   let ncfNumber = 1609;
@@ -34,8 +52,12 @@ export async function fbUpdateNCFInvoices(user, invoices) {
   }
 }
 
-async function fbUpdateInvoiceNCF(user, invoiceID, ncfNumber) {
-  if (!user || !user?.businessID) return;
+async function fbUpdateInvoiceNCF(
+  user: UserIdentity,
+  invoiceID: string,
+  ncfNumber: number,
+): Promise<void> {
+  if (!isInvoiceUser(user)) return;
 
   // Construimos el string NCF usando template string
   const ncfString = `B02${String(ncfNumber).padStart(10, '0')}`;

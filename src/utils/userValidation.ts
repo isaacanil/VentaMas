@@ -1,21 +1,29 @@
+﻿import type { TaxReceiptUser } from '@/types/taxReceipt';
+import type { UserIdentity } from '@/types/users';
+import type { InventoryUser } from '@/utils/inventory/types';
+
+type UserLike = UserIdentity | TaxReceiptUser | InventoryUser;
+
 // @ts-nocheck
 class UserValidationError extends Error {
-  constructor(message) {
+  constructor(message: string) {
     super(message);
     this.name = 'UserValidationError';
   }
 }
 
-const validateUser = (user) => {
-  if (!user || !user?.businessID) {
+const validateUser = (
+  user: UserLike | null | undefined,
+): UserValidationError | undefined => {
+  if (!user?.businessID) {
     return new UserValidationError('User is not valid');
   }
 };
 
 export { UserValidationError, validateUser };
 
-// Definimos una función personalizada para mostrar mensajes en la consola
-function _print(message, type = 'info') {
+// Definimos una funciÃ³n personalizada para mostrar mensajes en la consola
+function _print(message: string, type: 'info' | 'warning' | 'error' = 'info') {
   // Verificamos si estamos en modo desarrollo
   if (process.env.NODE_ENV === 'development') {
     const timestamp = new Date().toISOString(); // Obtenemos la fecha y hora actuales
@@ -34,3 +42,4 @@ function _print(message, type = 'info') {
     }
   }
 }
+

@@ -148,6 +148,9 @@ export interface CartSettings {
         isLoading: boolean;
         isError: string | boolean | null;
         stockAlertsEnabled?: boolean;
+        stockLowThreshold?: number;
+        stockCriticalThreshold?: number;
+        stockAlertEmail?: string;
     };
     isPreOrderEnabled?: boolean;
 }

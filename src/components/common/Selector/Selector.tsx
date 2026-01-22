@@ -6,6 +6,7 @@ import {
   useFloating,
 } from '@floating-ui/react';
 import type { Placement } from '@floating-ui/react';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -13,23 +14,54 @@ import styled from 'styled-components';
 
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 
-type SelectorProps = {
-  value?: any;
-  onChange?: (value: any) => void;
-  options?: any[];
+type SelectorOptionStyles = {
+  color?: string;
+  bgColor?: string;
+  borderColor?: string;
+  hoverBgColor?: string;
+  selectedBgColor?: string;
+  selectedColor?: string;
+  icon?: IconProp | null;
+};
+
+type SelectorOption<TValue = string | number> = SelectorOptionStyles & {
+  value: TValue;
+  label: string | number;
+};
+
+type SelectorDisplayOption<TValue = string | number> = SelectorOptionStyles & {
+  value?: TValue | null;
+  label: string | number;
+};
+
+type SelectorPopperModifier = {
+  name: string;
+  options?: {
+    offset?: number | [number, number];
+    [key: string]: unknown;
+  };
+};
+
+type SelectorProps<TValue = string | number> = {
+  value?: TValue | null;
+  onChange?: (value: TValue | null) => void;
+  options?: Array<SelectorOption<TValue>>;
   placeholder?: string;
   allowClear?: boolean;
   clearText?: string;
   width?: string | number;
-  defaultStyles?: Record<string, any>;
+  defaultStyles?: SelectorOptionStyles;
   popperConfig?: {
     placement?: Placement;
-    modifiers?: any[];
+    modifiers?: SelectorPopperModifier[];
   };
+  showSearch?: boolean;
+  showAllOption?: boolean;
+  icon?: IconProp;
 };
 
 interface TriggerProps {
-  $styles: Record<string, any>;
+  $styles: SelectorOptionStyles;
   $width?: string | number;
   $hasIcon: boolean;
 }
@@ -39,7 +71,7 @@ interface ChevronProps {
 }
 
 interface DropdownItemProps {
-  $styles: Record<string, any>;
+  $styles: SelectorOptionStyles;
   $isSelected: boolean;
 }
 
@@ -70,7 +102,7 @@ export const Selector = ({
 }: SelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterText, setFilterText] = useState('');
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const offsetOption = useMemo(
     () =>
       popperConfig?.modifiers?.find((m) => m.name === 'offset')?.options
@@ -100,7 +132,7 @@ export const Selector = ({
 
   useClickOutSide(containerRef, isOpen, () => setIsOpen(false));
 
-  const selectedOption = value
+  const selectedOption: SelectorDisplayOption | undefined = value
     ? options.find((opt) => opt?.value === value)
     : {
       label: placeholder,
@@ -108,7 +140,10 @@ export const Selector = ({
       ...defaultStyles,
     };
 
-  const getOptionStyles = (option: any, isSelected: boolean) => {
+  const getOptionStyles = (
+    option: SelectorDisplayOption,
+    isSelected: boolean,
+  ) => {
     const defaultOptionStyles = {
       color: isSelected ? defaultStyles.selectedColor : defaultStyles.color,
       bgColor: isSelected
@@ -168,7 +203,7 @@ export const Selector = ({
             <DropdownItem
               key="null-option"
               onClick={() => {
-                onChange(null);
+                onChange?.(null);
                 setIsOpen(false);
               }}
               $styles={{
@@ -185,7 +220,7 @@ export const Selector = ({
             <DropdownItem
               key={option.value}
               onClick={() => {
-                onChange(option.value);
+                onChange?.(option.value);
                 setIsOpen(false);
               }}
               $styles={getOptionStyles(option, value === option.value)}

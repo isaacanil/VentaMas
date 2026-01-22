@@ -1,10 +1,19 @@
-// @ts-nocheck
 import { deleteDoc, doc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export async function fbDeleteMultipleInvoices(user, invoices) {
-  const ids = invoices.map(({ data }) => data.id);
+import { isInvoiceUser, type InvoiceDoc } from './types';
+
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
+
+export async function fbDeleteMultipleInvoices(
+  user: UserIdentity | null | undefined,
+  invoices: InvoiceDoc[],
+): Promise<void> {
+  if (!isInvoiceUser(user)) return;
+  const ids = invoices.map(({ data }) => data?.id).filter(isNonEmptyString);
 
   for (const id of ids) {
     console.log(id);
@@ -16,8 +25,11 @@ export async function fbDeleteMultipleInvoices(user, invoices) {
   }
 }
 
-async function fbDeleteInvoiceById(user, ventaID) {
-  if (!user || !user?.businessID) return;
+async function fbDeleteInvoiceById(
+  user: UserIdentity,
+  ventaID: string,
+): Promise<void> {
+  if (!isInvoiceUser(user)) return;
   const ventaRef = doc(db, 'businesses', user.businessID, 'invoices', ventaID);
   await deleteDoc(ventaRef);
   console.log(`Venta con ID ${ventaID} eliminada exitosamente`);

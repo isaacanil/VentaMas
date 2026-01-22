@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   writeBatch,
   collection,
@@ -11,7 +10,7 @@ import {
 
 import { db } from '@/firebase/firebaseconfig';
 
-async function updateInvoicesInBatches(businessID) {
+async function updateInvoicesInBatches(businessID: string): Promise<void> {
   const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
   const q = query(invoicesRef, orderBy('data.date'));
   const querySnapshot = await getDocs(q);
@@ -86,7 +85,7 @@ const businessIDs = [
 // ];
 // Función para procesar varios negocios, asumiendo que cada uno puede tener más de 500 facturas
 export async function fbAddNumberIdToInvoices() {
-  for (let businessID of businessIDs) {
+  for (const businessID of businessIDs) {
     await updateInvoicesInBatches(businessID);
   }
 }

@@ -1,5 +1,6 @@
 // functions/src/modules/keepAlive/services/keepAlive.service.ts
 
+import type { PostgrestError } from '@supabase/supabase-js';
 import * as logger from 'firebase-functions/logger';
 import { getSupabase } from '../../../core/config/supabaseConfig.js';
 
@@ -17,7 +18,12 @@ export async function keepAliveLogic(): Promise<void> {
     }
 
     logger.info('✅ Consulta exitosa a Supabase:', data);
-  } catch (err: any) {
-    logger.error('❌ Excepción inesperada:', err.message);
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error
+        ? err.message
+        : (err as PostgrestError | null)?.message ?? 'Error desconocido';
+    logger.error('❌ Excepción inesperada:', message);
   }
 }
+

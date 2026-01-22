@@ -1,30 +1,46 @@
-// @ts-nocheck
-import { doc, getDoc } from 'firebase/firestore';
+﻿import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { getNextID } from '@/firebase/Tools/getNextID';
 import { generateGTIN13RD } from '@/utils/barcode/barcode';
+import type { UserIdentity } from '@/types/users';
 
 import { getBarcodeSettings } from './barcodeSettings';
+import type { BarcodeSettings } from './types';
+
+interface BarcodeGenerationResult {
+  fullCode: string;
+  companyPrefix: string;
+  itemReference: string;
+  configuration: {
+    companyPrefixLength?: number;
+    itemReferenceLength?: number;
+    name?: string;
+  };
+}
+
+interface CounterDoc {
+  value: number;
+}
 
 /**
- * Genera automáticamente el siguiente Item Reference para un negocio
- * @param {Object} user - Usuario con businessID
- * @returns {Promise<string>} Item Reference generado
+ * Genera automaticamente el siguiente Item Reference para un negocio
  */
-export const generateNextItemReference = async (user) => {
+export const generateNextItemReference = async (
+  user: UserIdentity | null | undefined,
+): Promise<string> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
 
   try {
-    // Obtener configuración de códigos de barras (opcional)
+    // Obtener configuracion de codigos de barras (opcional)
     const barcodeSettings = await getBarcodeSettings(user).catch(() => null);
 
     // Obtener el siguiente ID del contador
     const nextId = await getNextID(user, 'lastItemReference', 1);
 
-    // Formatear el ID con ceros a la izquierda según la longitud configurada
+    // Formatear el ID con ceros a la izquierda segun la longitud configurada
     const length = barcodeSettings?.itemReferenceLength ?? 9;
     const paddedId = String(nextId).padStart(length, '0');
 
@@ -39,23 +55,23 @@ export const generateNextItemReference = async (user) => {
 };
 
 /**
- * Genera un código de barras completo automáticamente
- * @param {Object} user - Usuario con businessID
- * @param {string} companyPrefix - Prefijo de empresa (opcional, usa el guardado si no se proporciona)
- * @returns {Promise<Object>} Objeto con el código completo y sus partes
+ * Genera un codigo de barras completo automaticamente
  */
-export const generateAutoBarcode = async (user, companyPrefix = null) => {
+export const generateAutoBarcode = async (
+  user: UserIdentity | null | undefined,
+  companyPrefix: string | null = null,
+): Promise<BarcodeGenerationResult> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
 
   try {
-    // Obtener configuración guardada
+    // Obtener configuracion guardada
     const barcodeSettings = await getBarcodeSettings(user);
 
     if (!barcodeSettings) {
       throw new Error(
-        'Configuración de códigos de barras no encontrada. Configure primero su empresa.',
+        'Configuracion de codigos de barras no encontrada. Configure primero su empresa.',
       );
     }
 
@@ -71,7 +87,7 @@ export const generateAutoBarcode = async (user, companyPrefix = null) => {
     // Generar el siguiente Item Reference
     const itemReference = await generateNextItemReference(user);
 
-    // Generar el código completo
+    // Generar el codigo completo
     const fullCode = generateGTIN13RD(finalCompanyPrefix, itemReference);
 
     return {
@@ -86,7 +102,7 @@ export const generateAutoBarcode = async (user, companyPrefix = null) => {
     };
   } catch (error) {
     console.error(
-      '[barcodeGeneration] Error al generar código automático:',
+      '[barcodeGeneration] Error al generar codigo automatico:',
       error,
     );
     throw error;
@@ -94,12 +110,12 @@ export const generateAutoBarcode = async (user, companyPrefix = null) => {
 };
 
 /**
- * Valida si un Item Reference es válido según la configuración actual
- * @param {Object} user - Usuario con businessID
- * @param {string} itemReference - Item Reference a validar
- * @returns {Promise<boolean>} True si es válido
+ * Valida si un Item Reference es valido segun la configuracion actual
  */
-export const validateItemReference = async (user, itemReference) => {
+export const validateItemReference = async (
+  user: UserIdentity | null | undefined,
+  itemReference: string,
+): Promise<boolean> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
@@ -116,7 +132,7 @@ export const validateItemReference = async (user, itemReference) => {
       return false;
     }
 
-    // Validar que solo contenga números
+    // Validar que solo contenga numeros
     return /^\d+$/.test(itemReference);
   } catch (error) {
     console.error(
@@ -128,21 +144,21 @@ export const validateItemReference = async (user, itemReference) => {
 };
 
 /**
- * Obtiene el próximo Item Reference sin incrementar el contador
- * @param {Object} user - Usuario con businessID
- * @returns {Promise<string>} Próximo Item Reference
+ * Obtiene el proximo Item Reference sin incrementar el contador
  */
-export const previewNextItemReference = async (user) => {
+export const previewNextItemReference = async (
+  user: UserIdentity | null | undefined,
+): Promise<string> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
 
   try {
-    // Configuración opcional; si no existe, usar longitud 9 por defecto
+    // Configuracion opcional; si no existe, usar longitud 9 por defecto
     const barcodeSettings = await getBarcodeSettings(user).catch(() => null);
 
     // Obtener el valor actual del contador directamente desde Firebase
-    const counterRef = doc(
+    const counterRef = doc<CounterDoc>(
       db,
       'businesses',
       user.businessID,
@@ -151,11 +167,7 @@ export const previewNextItemReference = async (user) => {
     );
     const counterSnap = await getDoc(counterRef);
 
-    let currentValue = 0;
-    if (counterSnap.exists()) {
-      currentValue = counterSnap.data().value;
-    }
-
+    const currentValue = counterSnap.data()?.value ?? 0;
     const previewId = currentValue + 1;
 
     const length = barcodeSettings?.itemReferenceLength ?? 9;

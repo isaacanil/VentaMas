@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQueryClient } from '@tanstack/react-query';
 import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
@@ -6,10 +5,12 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { setBillingSettings } from '@/features/cart/cartSlice';
+import type { CartSettings } from '@/features/cart/types';
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
 export const useInitializeBillingSettings = () => {
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
 
@@ -23,7 +24,7 @@ export const useInitializeBillingSettings = () => {
       'settings',
       'billing',
     );
-    const defaultSettings = {
+    const defaultSettings: CartSettings['billing'] = {
       billingMode: 'direct',
       invoiceType: 'template1',
       authorizationFlowEnabled: false,
@@ -36,6 +37,8 @@ export const useInitializeBillingSettings = () => {
       stockLowThreshold: 20,
       stockCriticalThreshold: 10,
       stockAlertEmail: '',
+      isLoading: false,
+      isError: null,
     };
 
     const initializeSettings = async () => {
@@ -60,7 +63,7 @@ export const useInitializeBillingSettings = () => {
         const data = {
           ...defaultSettings,
           ...(docSnapshot.data() || {}),
-        };
+        } as CartSettings['billing'];
 
         queryClient.setQueryData(['billingSettings', user.businessID], data);
 

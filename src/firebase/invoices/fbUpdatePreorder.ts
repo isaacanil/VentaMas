@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { sanitizeFirestoreDocument } from '@/utils/firebase/sanitizeFirestoreDocument';
+import type { InvoiceData, InvoicePreorderDetails } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
+import type { TimestampLike } from '@/utils/date/types';
 
-const toFirestoreTimestamp = (value) => {
+import { isInvoiceUser } from './types';
+
+const toFirestoreTimestamp = (value: TimestampLike) => {
   if (value === undefined || value === null) return value;
   if (value instanceof Timestamp) return value;
   if (typeof value === 'number') return Timestamp.fromMillis(value);
@@ -12,10 +16,12 @@ const toFirestoreTimestamp = (value) => {
   return value;
 };
 
-const normalizeHistory = (history = []) =>
+type HistoryEntry = Record<string, unknown> & { date?: TimestampLike };
+
+const normalizeHistory = (history: HistoryEntry[] = []) =>
   history.filter(Boolean).map((entry) => {
     if (!entry || typeof entry !== 'object') return entry;
-    const normalizedEntry = { ...entry };
+    const normalizedEntry: HistoryEntry = { ...entry };
     if (normalizedEntry.date !== undefined && normalizedEntry.date !== null) {
       const parsedDate = toFirestoreTimestamp(normalizedEntry.date);
       if (parsedDate) {
@@ -23,10 +29,18 @@ const normalizeHistory = (history = []) =>
       }
     }
     return normalizedEntry;
-  });
+  }) as HistoryEntry[];
 
-export const fbUpdatePreOrder = async (user, cartData) => {
-  if (!user?.businessID) {
+type PreorderInput = InvoiceData & {
+  preorderDetails?: InvoicePreorderDetails | null;
+  selectedTaxReceiptType?: string | null;
+};
+
+export const fbUpdatePreOrder = async (
+  user: UserIdentity | null | undefined,
+  cartData: PreorderInput,
+): Promise<PreorderInput> => {
+  if (!isInvoiceUser(user)) {
     throw new Error(
       'El negocio asociado al usuario es requerido para actualizar la preventa.',
     );
@@ -67,7 +81,7 @@ export const fbUpdatePreOrder = async (user, cartData) => {
     updatedAt: serverTimestamp(),
   };
 
-  const sanitizedPayload = sanitizeFirestoreDocument(payload);
+  const sanitizedPayload = sanitizeFirestoreDocument(payload) as PreorderInput;
 
   await updateDoc(invoiceRef, { data: sanitizedPayload });
 

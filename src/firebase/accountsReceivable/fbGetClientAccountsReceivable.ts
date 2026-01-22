@@ -1,11 +1,20 @@
-// @ts-nocheck
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 
-export const fbGetClientAccountsReceivable = ({ user, clientId, onUpdate }) => {
-  if (!user?.businessID) {
-    return;
+export const fbGetClientAccountsReceivable = ({
+  user,
+  clientId,
+  onUpdate,
+}: {
+  user: UserIdentity | null | undefined;
+  clientId: string | null | undefined;
+  onUpdate?: (accounts: AccountsReceivableDoc[]) => void;
+}) => {
+  if (!user?.businessID || !clientId) {
+    return undefined;
   }
   const accountsReceivableRef = collection(
     db,
@@ -17,7 +26,9 @@ export const fbGetClientAccountsReceivable = ({ user, clientId, onUpdate }) => {
   const unSnapshot = onSnapshot(
     q,
     (snapshot) => {
-      const accountsReceivable = snapshot.docs.map((doc) => doc.data());
+      const accountsReceivable = snapshot.docs.map(
+        (doc) => doc.data() as AccountsReceivableDoc,
+      );
       if (onUpdate) {
         onUpdate(accountsReceivable);
       }

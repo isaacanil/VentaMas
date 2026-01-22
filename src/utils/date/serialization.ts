@@ -38,12 +38,11 @@ export const serializeDates = <T>(obj: T): T => {
   }
 
   // Si es un objeto, recorrer sus claves
-  const serialized: any = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const value = (obj as any)[key];
-      serialized[key] = serializeDates(value);
-    }
+  const serialized: Record<string, unknown> = {};
+  const record = obj as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    const value = record[key];
+    serialized[key] = serializeDates(value);
   }
 
   return serialized as T;

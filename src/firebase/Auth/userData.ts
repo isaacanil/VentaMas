@@ -1,14 +1,17 @@
-// @ts-nocheck
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 
-const handleNoData = (user) => {
+type User = ReturnType<typeof selectUser>;
+type HandleNoData = (() => void) | undefined;
+
+const handleNoData = (user: User): HandleNoData => {
   if (!user || !user?.businessID) {
     return () => {
       return;
     };
   }
+  return undefined;
 };
 
 export const useGetUser = () => {

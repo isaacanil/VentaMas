@@ -1,10 +1,15 @@
-// @ts-nocheck
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useCallback, useState, useEffect } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export function fbGetPendingBalance(businessID, clientId, callback) {
+type BalanceCallback = (balance: number) => void;
+
+export function fbGetPendingBalance(
+  businessID: string | null | undefined,
+  clientId: string | null | undefined,
+  callback?: BalanceCallback | null,
+) {
   const safeCb = typeof callback === 'function' ? callback : () => { /* noop */ };
 
   if (!businessID || !clientId) {
@@ -27,7 +32,7 @@ export function fbGetPendingBalance(businessID, clientId, callback) {
       //
       let totalPendingBalance = 0;
       querySnapshot.forEach((doc) => {
-        const data = doc.data();
+        const data = doc.data() as Record<string, unknown>;
         totalPendingBalance += Number(data.arBalance) || 0;
       });
 
@@ -42,13 +47,21 @@ export function fbGetPendingBalance(businessID, clientId, callback) {
   }
 }
 
-function usePendingBalance(businessID, clientId, onBalanceChange = null) {
+function usePendingBalance(
+  businessID: string | null | undefined,
+  clientId: string | null | undefined,
+  onBalanceChange: BalanceCallback | null = null,
+) {
   const [pendingBalance, setPendingBalance] = useState(0);
 
-  if ((!businessID || !clientId) && pendingBalance !== 0) {
-    setPendingBalance(0);
-    if (onBalanceChange) onBalanceChange(0);
-  }
+  useEffect(() => {
+    if (!businessID || !clientId) {
+      if (pendingBalance !== 0) {
+        setPendingBalance(0);
+        onBalanceChange?.(0);
+      }
+    }
+  }, [businessID, clientId, onBalanceChange, pendingBalance]);
 
   useEffect(() => {
     if (!businessID || !clientId) {
@@ -69,11 +82,14 @@ function usePendingBalance(businessID, clientId, onBalanceChange = null) {
 export function useGetPendingBalance({
   dependencies = [],
   onBalanceChange = null,
+}: {
+  dependencies?: [string | null | undefined, string | null | undefined];
+  onBalanceChange?: BalanceCallback | null;
 }) {
   const [pendingBalance, setPendingBalance] = useState(0);
 
   const updateBalance = useCallback(
-    (balance) => {
+    (balance: number) => {
       setPendingBalance(balance);
       if (onBalanceChange) {
         onBalanceChange(balance);

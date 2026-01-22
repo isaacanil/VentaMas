@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   addDoc,
   collection,
@@ -17,6 +16,38 @@ import {
 
 import { fbGetCashCountState } from '@/firebase/cashCount/fbCashCountStatus';
 import { db } from '@/firebase/firebaseconfig';
+import type { InvoiceData } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
+import type { TimestampLike } from '@/utils/date/types';
+
+type AuthorizationStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'used'
+  | 'expired'
+  | 'completed'
+  | 'all'
+  | string;
+
+type AuthorizationRequest = Record<string, unknown> & {
+  id?: string;
+  status?: AuthorizationStatus;
+  module?: string;
+  collectionKey?: string;
+  createdAt?: TimestampLike;
+  created_at?: TimestampLike;
+  created?: TimestampLike;
+  approvedAt?: TimestampLike;
+  requestedBy?: { uid?: string | null } | null;
+};
+
+type AuthorizationDoc = AuthorizationRequest & { id: string };
+
+type CashCountInfo = {
+  exists?: boolean;
+  state?: string | null;
+};
 
 const LEGACY_COLLECTION_NAME = 'invoiceEditAuthorizations';
 const GENERIC_COLLECTION_NAME = 'authorizationRequests';
@@ -27,9 +58,9 @@ const MAX_EDIT_WINDOW_SECONDS = EDIT_WINDOW_HOURS * 60 * 60;
 const COMPLETED_STATUSES = ['approved', 'rejected', 'used', 'expired'];
 const GENERIC_FETCH_MULTIPLIER = 3;
 
-const getLegacyColRef = (businessID) =>
+const getLegacyColRef = (businessID: string) =>
   collection(db, 'businesses', businessID, LEGACY_COLLECTION_NAME);
-const getGenericColRef = (businessID) =>
+const getGenericColRef = (businessID: string) =>
   collection(db, 'businesses', businessID, GENERIC_COLLECTION_NAME);
 
 const calcExpiresAt = (hours = EDIT_WINDOW_HOURS) => {
@@ -37,7 +68,7 @@ const calcExpiresAt = (hours = EDIT_WINDOW_HOURS) => {
   return Timestamp.fromMillis(ms);
 };
 
-const extractTimestampSeconds = (value) => {
+const extractTimestampSeconds = (value: TimestampLike): number | null => {
   if (!value) return null;
   if (typeof value === 'number') {
     return value > 1e12 ? value / 1000 : value;
@@ -64,7 +95,9 @@ const extractTimestampSeconds = (value) => {
   return null;
 };
 
-const resolveInvoiceTimestampSeconds = (invoice) => {
+const resolveInvoiceTimestampSeconds = (
+  invoice: InvoiceData | null | undefined,
+): number | null => {
   if (!invoice) return null;
   return (
     extractTimestampSeconds(invoice.date) ??
@@ -74,7 +107,7 @@ const resolveInvoiceTimestampSeconds = (invoice) => {
   );
 };
 
-const toMillisFromAny = (value) => {
+const toMillisFromAny = (value: TimestampLike): number | null => {
   if (!value) return null;
   if (typeof value === 'object') {
     if (typeof value.toMillis === 'function') return value.toMillis();
@@ -92,13 +125,13 @@ const toMillisFromAny = (value) => {
   return null;
 };
 
-const shouldExpirePending = (data) => {
+const shouldExpirePending = (data: AuthorizationRequest | null | undefined) => {
   if (!data || data.status !== 'pending') return false;
   const expiresMillis = toMillisFromAny(data.expiresAt);
   return typeof expiresMillis === 'number' && expiresMillis < Date.now();
 };
 
-const normalizeModuleFromData = (data = {}) => {
+const normalizeModuleFromData = (data: Record<string, unknown> = {}) => {
   if (typeof data.module === 'string' && data.module.trim()) return data.module;
   if (data.metadata && typeof data.metadata.module === 'string')
     return data.metadata.module;
@@ -107,8 +140,11 @@ const normalizeModuleFromData = (data = {}) => {
   return 'generic';
 };
 
-const mapDocToAuthorization = (docSnap, collectionKey) => {
-  const data = docSnap.data() || {};
+const mapDocToAuthorization = (
+  docSnap: { id: string; data: () => Record<string, unknown> },
+  collectionKey: string,
+): AuthorizationDoc => {
+  const data = (docSnap.data() || {}) as AuthorizationRequest;
   const moduleKey = normalizeModuleFromData(data);
   return {
     id: docSnap.id,
@@ -123,7 +159,13 @@ const mapDocToAuthorization = (docSnap, collectionKey) => {
   };
 };
 
-const resolveRequestDoc = async (businessID, requestId) => {
+const resolveRequestDoc = async (
+  businessID: string,
+  requestId: string,
+): Promise<
+  | { ref: ReturnType<typeof doc>; snap: Awaited<ReturnType<typeof getDoc>>; collectionKey: string }
+  | null
+> => {
   const genericRef = doc(
     db,
     'businesses',
@@ -159,7 +201,15 @@ const resolveRequestDoc = async (businessID, requestId) => {
   return null;
 };
 
-const ensurePendingExpiration = async ({ docSnap, status, collectionKey }) => {
+const ensurePendingExpiration = async ({
+  docSnap,
+  status,
+  collectionKey,
+}: {
+  docSnap: { id: string; data: () => AuthorizationRequest; ref: unknown };
+  status: AuthorizationStatus;
+  collectionKey: string;
+}): Promise<AuthorizationDoc | null> => {
   const data = docSnap.data();
   if (!shouldExpirePending(data)) {
     return mapDocToAuthorization(docSnap, collectionKey);
@@ -171,7 +221,7 @@ const ensurePendingExpiration = async ({ docSnap, status, collectionKey }) => {
     // Ignore failures when marking as expired to avoid interrupting the listing
   }
 
-  const normalized = {
+  const normalized: AuthorizationDoc = {
     id: docSnap.id,
     ...data,
     status: 'expired',
@@ -186,7 +236,10 @@ const ensurePendingExpiration = async ({ docSnap, status, collectionKey }) => {
   return normalized;
 };
 
-const filterByStatus = (requests, status) => {
+const filterByStatus = (
+  requests: AuthorizationDoc[],
+  status: AuthorizationStatus,
+) => {
   if (status === 'all') return requests;
   if (status === 'completed') {
     return requests.filter((item) => COMPLETED_STATUSES.includes(item.status));
@@ -194,7 +247,7 @@ const filterByStatus = (requests, status) => {
   return requests.filter((item) => (item.status || 'pending') === status);
 };
 
-const sortRequestsByDate = (requests) => {
+const sortRequestsByDate = (requests: AuthorizationDoc[]) => {
   const clone = [...requests];
   clone.sort((a, b) => {
     const aMillis =
@@ -215,9 +268,13 @@ const sortRequestsByDate = (requests) => {
 };
 
 const fetchGenericRequests = async (
-  businessID,
-  { status, limitCount, modules },
-) => {
+  businessID: string,
+  {
+    status,
+    limitCount,
+    modules,
+  }: { status: AuthorizationStatus; limitCount: number; modules?: string[] | null },
+): Promise<AuthorizationDoc[]> => {
   const colRef = getGenericColRef(businessID);
   const fetchLimit = Math.max(
     limitCount * GENERIC_FETCH_MULTIPLIER,
@@ -225,7 +282,7 @@ const fetchGenericRequests = async (
   );
   const qy = query(colRef, orderBy('createdAt', 'desc'), limit(fetchLimit));
   const snap = await getDocs(qy);
-  const items = [];
+  const items: AuthorizationDoc[] = [];
 
   for (const docSnap of snap.docs) {
     const normalized = await ensurePendingExpiration({
@@ -252,9 +309,9 @@ const fetchGenericRequests = async (
 };
 
 const fetchLegacyInvoiceRequests = async (
-  businessID,
-  { status, limitCount },
-) => {
+  businessID: string,
+  { status, limitCount }: { status: AuthorizationStatus; limitCount: number },
+): Promise<AuthorizationDoc[]> => {
   const colRef = getLegacyColRef(businessID);
   const fetchLimit = Math.max(
     limitCount * GENERIC_FETCH_MULTIPLIER,
@@ -262,7 +319,7 @@ const fetchLegacyInvoiceRequests = async (
   );
   const qy = query(colRef, orderBy('createdAt', 'desc'), limit(fetchLimit));
   const snap = await getDocs(qy);
-  const items = [];
+  const items: AuthorizationDoc[] = [];
 
   for (const docSnap of snap.docs) {
     const normalized = await ensurePendingExpiration({
@@ -283,9 +340,13 @@ const fetchLegacyInvoiceRequests = async (
 };
 
 const listRequestsInternal = async (
-  user,
-  { status = 'pending', limitCount = 200, modules } = {},
-) => {
+  user: UserIdentity | null | undefined,
+  {
+    status = 'pending',
+    limitCount = 200,
+    modules,
+  }: { status?: AuthorizationStatus; limitCount?: number; modules?: string[] } = {},
+): Promise<AuthorizationDoc[]> => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
 
   const normalizedModules =
@@ -297,7 +358,7 @@ const listRequestsInternal = async (
     modules: normalizedModules,
   });
 
-  let legacyRequests = [];
+  let legacyRequests: AuthorizationDoc[] = [];
   if (!normalizedModules || normalizedModules.includes(REQUEST_MODULE)) {
     legacyRequests = await fetchLegacyInvoiceRequests(user.businessID, {
       status,
@@ -311,13 +372,20 @@ const listRequestsInternal = async (
   return sorted.slice(0, limitCount);
 };
 
-const buildUserSnapshot = (userLike, fallbackRole) => ({
+const buildUserSnapshot = (
+  userLike: UserIdentity | null | undefined,
+  fallbackRole: string,
+) => ({
   uid: userLike?.uid ?? '',
   name: userLike?.displayName || userLike?.name || '',
   role: userLike?.role || fallbackRole,
 });
 
-const updateAuthorizationRequest = async (user, requestId, payload) => {
+const updateAuthorizationRequest = async (
+  user: UserIdentity | null | undefined,
+  requestId: string,
+  payload: Record<string, unknown>,
+) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
   const resolved = await resolveRequestDoc(user.businessID, requestId);
   if (!resolved) throw new Error('Solicitud de autorización no encontrada');
@@ -325,7 +393,10 @@ const updateAuthorizationRequest = async (user, requestId, payload) => {
   return resolved.collectionKey;
 };
 
-const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
+const checkExistingPendingInvoiceRequest = async (
+  businessID: string,
+  invoiceId: string,
+) => {
   const genericColRef = getGenericColRef(businessID);
   const genericQuery = query(
     genericColRef,
@@ -379,7 +450,10 @@ const checkExistingPendingInvoiceRequest = async (businessID, invoiceId) => {
   return null;
 };
 
-const validateInvoiceConstraints = async (user, invoice) => {
+const validateInvoiceConstraints = async (
+  user: UserIdentity,
+  invoice: InvoiceData,
+) => {
   const createdSeconds = resolveInvoiceTimestampSeconds(invoice);
   if (
     createdSeconds &&
@@ -392,7 +466,10 @@ const validateInvoiceConstraints = async (user, invoice) => {
 
   const cashCountId = invoice?.cashCountId ?? invoice?.cashCountID ?? null;
   if (cashCountId) {
-    const cashCountInfo = await fbGetCashCountState(user, cashCountId);
+    const cashCountInfo = (await fbGetCashCountState(
+      user,
+      cashCountId,
+    )) as CashCountInfo | null;
 
     if (!cashCountInfo?.exists) {
       throw new Error(
@@ -413,9 +490,9 @@ const validateInvoiceConstraints = async (user, invoice) => {
 };
 
 export const requestInvoiceEditAuthorization = async (
-  user,
-  invoice,
-  reasons = [],
+  user: UserIdentity | null | undefined,
+  invoice: InvoiceData | null | undefined,
+  reasons: string[] = [],
   note = '',
 ) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
@@ -431,7 +508,7 @@ export const requestInvoiceEditAuthorization = async (
     return duplicate;
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     businessID: user.businessID,
     module: REQUEST_MODULE,
     type: REQUEST_TYPE,
@@ -465,9 +542,9 @@ export const requestInvoiceEditAuthorization = async (
 };
 
 export const approveAuthorizationRequest = async (
-  user,
-  requestId,
-  approver,
+  user: UserIdentity | null | undefined,
+  requestId: string,
+  approver: UserIdentity | null | undefined,
 ) => {
   await updateAuthorizationRequest(user, requestId, {
     status: 'approved',
@@ -478,7 +555,11 @@ export const approveAuthorizationRequest = async (
 
 export const approveInvoiceEditAuthorization = approveAuthorizationRequest;
 
-export const rejectAuthorizationRequest = async (user, requestId, approver) => {
+export const rejectAuthorizationRequest = async (
+  user: UserIdentity | null | undefined,
+  requestId: string,
+  approver: UserIdentity | null | undefined,
+) => {
   await updateAuthorizationRequest(user, requestId, {
     status: 'rejected',
     approvedAt: serverTimestamp(),
@@ -488,7 +569,10 @@ export const rejectAuthorizationRequest = async (user, requestId, approver) => {
 
 export const rejectInvoiceEditAuthorization = rejectAuthorizationRequest;
 
-export const expireIfNeeded = async (businessID, requestId) => {
+export const expireIfNeeded = async (
+  businessID: string,
+  requestId: string,
+) => {
   if (!businessID) throw new Error('Falta businessID del negocio');
   const resolved = await resolveRequestDoc(businessID, requestId);
   if (!resolved) return false;
@@ -500,7 +584,11 @@ export const expireIfNeeded = async (businessID, requestId) => {
   return false;
 };
 
-export const markAuthorizationRequestUsed = async (user, requestId, usedBy) => {
+export const markAuthorizationRequestUsed = async (
+  user: UserIdentity | null | undefined,
+  requestId: string,
+  usedBy: UserIdentity | null | undefined,
+) => {
   await updateAuthorizationRequest(user, requestId, {
     status: 'used',
     usedAt: serverTimestamp(),
@@ -511,8 +599,8 @@ export const markAuthorizationRequestUsed = async (user, requestId, usedBy) => {
 export const markAuthorizationUsed = markAuthorizationRequestUsed;
 
 export const getActiveApprovedAuthorizationForInvoice = async (
-  user,
-  invoice,
+  user: UserIdentity | null | undefined,
+  invoice: InvoiceData | null | undefined,
 ) => {
   if (!user?.businessID) throw new Error('Falta businessID del usuario');
 
@@ -564,7 +652,9 @@ export const getActiveApprovedAuthorizationForInvoice = async (
   return null;
 };
 
-export const listPendingInvoiceEditAuthorizations = async (user) => {
+export const listPendingInvoiceEditAuthorizations = async (
+  user: UserIdentity | null | undefined,
+) => {
   return listRequestsInternal(user, {
     status: 'pending',
     limitCount: 200,
@@ -573,7 +663,7 @@ export const listPendingInvoiceEditAuthorizations = async (user) => {
 };
 
 export const listInvoiceEditAuthorizations = async (
-  user,
+  user: UserIdentity | null | undefined,
   { status = 'pending', limitCount = 200 } = {},
 ) => {
   return listRequestsInternal(user, {
@@ -583,7 +673,10 @@ export const listInvoiceEditAuthorizations = async (
   });
 };
 
-export const listAuthorizationRequests = async (user, options = {}) => {
+export const listAuthorizationRequests = async (
+  user: UserIdentity | null | undefined,
+  options: { status?: AuthorizationStatus; limitCount?: number; modules?: string[] } = {},
+) => {
   return listRequestsInternal(user, options);
 };
 
@@ -599,18 +692,18 @@ export const markAuthorizationRequestExpiredIfNeeded = expireIfNeeded;
  * @returns {Function} - Función para cancelar el listener
  */
 export const listenToAuthorizationsByStatus = (
-  businessID,
-  status = null,
-  userId = null,
-  onUpdate,
-  onError,
-) => {
+  businessID: string,
+  status: AuthorizationStatus | null = null,
+  userId: string | null = null,
+  onUpdate: (items: AuthorizationDoc[]) => void,
+  onError?: (error: Error) => void,
+): (() => void) | undefined => {
   if (!businessID) {
     onError?.(new Error('businessID is required'));
     return undefined;
   }
 
-  const buildQuery = (colRef) => {
+  const buildQuery = (colRef: ReturnType<typeof collection>) => {
     const constraints = [];
     const shouldFilterByStatus =
       status && status !== 'completed' && status !== 'all';
@@ -625,8 +718,8 @@ export const listenToAuthorizationsByStatus = (
     return query(colRef, ...constraints);
   };
 
-  let latestGeneric = [];
-  let latestLegacy = [];
+  let latestGeneric: AuthorizationDoc[] = [];
+  let latestLegacy: AuthorizationDoc[] = [];
 
   const emitUpdate = () => {
     const merged = [...latestGeneric, ...latestLegacy];
@@ -638,8 +731,11 @@ export const listenToAuthorizationsByStatus = (
     onUpdate(sorted);
   };
 
-  const processSnapshot = async (snapshot, collectionKey) => {
-    const processed = [];
+  const processSnapshot = async (
+    snapshot: { docs: Array<{ id: string; data: () => AuthorizationRequest; ref: unknown }> },
+    collectionKey: string,
+  ) => {
+    const processed: AuthorizationDoc[] = [];
     for (const docSnap of snapshot.docs) {
       const normalized = await ensurePendingExpiration({
         docSnap,

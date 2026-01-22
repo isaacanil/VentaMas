@@ -1,20 +1,31 @@
-// @ts-nocheck
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import type { Dispatch } from 'redux';
+import type { NavigateFunction } from 'react-router-dom';
 
 import { login } from '@/features/auth/userSlice';
 import { auth } from '@/firebase/firebaseconfig';
 
-export const fbLogin = async (user, homePath, navigate, dispatch) => {
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export const fbLogin = async (
+  user: LoginCredentials,
+  homePath: string,
+  navigate: NavigateFunction,
+  dispatch: Dispatch,
+): Promise<void> => {
   const { email, password } = user;
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredencial) => {
-      const user = userCredencial.user;
+  return signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const authedUser = userCredential.user;
       dispatch(
         login({
-          email: user.email,
-          uid: user.uid,
-          displayName: user.displayName,
+          email: authedUser.email,
+          uid: authedUser.uid,
+          displayName: authedUser.displayName,
         }),
       );
       navigate(homePath);

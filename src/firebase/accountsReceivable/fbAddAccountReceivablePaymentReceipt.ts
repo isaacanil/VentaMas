@@ -1,21 +1,48 @@
-// @ts-nocheck
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { fbGetClient } from '@/firebase/client/fbGetClient';
 import { db } from '@/firebase/firebaseconfig';
+import type { AccountsReceivablePaymentReceipt, ReceivableClient } from '@/utils/accountsReceivable/types';
+import type { UserIdentity } from '@/types/users';
+
+type ReceiptParams = {
+  user: UserIdentity;
+  clientId?: string | null;
+  paymentReceipt: Partial<AccountsReceivablePaymentReceipt>;
+};
+
+const removeUndefined = (value: unknown): unknown => {
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(removeUndefined);
+  }
+
+  const newObj: Record<string, unknown> = {};
+  Object.keys(value).forEach((key) => {
+    const rawValue = (value as Record<string, unknown>)[key];
+    const sanitized = removeUndefined(rawValue);
+    if (sanitized !== undefined) {
+      newObj[key] = sanitized;
+    }
+  });
+  return newObj;
+};
 
 export async function fbAddAccountReceivablePaymentReceipt({
   user,
   clientId,
   paymentReceipt,
-}) {
-  let client = null;
+}: ReceiptParams): Promise<AccountsReceivablePaymentReceipt> {
+  let client: ReceivableClient | null = null;
 
   // Solo intentar obtener el cliente si hay un clientId válido
   if (clientId && typeof clientId === 'string' && clientId.trim() !== '') {
     try {
-      client = await fbGetClient(user, clientId);
+      client = (await fbGetClient(user, clientId)) as ReceivableClient | null;
     } catch (error) {
       console.warn('No se pudo obtener el cliente:', error);
       // Continuar sin los datos del cliente
@@ -24,7 +51,7 @@ export async function fbAddAccountReceivablePaymentReceipt({
     console.warn('clientId no válido, omitiendo la obtención del cliente');
   }
 
-  const receipt = {
+  const receipt: AccountsReceivablePaymentReceipt = {
     id: nanoid(),
     client: client || null, // Ensure client is null if falsy
     user: {
@@ -38,27 +65,7 @@ export async function fbAddAccountReceivablePaymentReceipt({
     ...paymentReceipt,
   };
 
-  // Helper function to recursively remove undefined values
-  const removeUndefined = (obj) => {
-    if (typeof obj !== 'object' || obj === null) {
-      return obj;
-    }
-
-    if (Array.isArray(obj)) {
-      return obj.map(removeUndefined);
-    }
-
-    const newObj = {};
-    Object.keys(obj).forEach((key) => {
-      const value = removeUndefined(obj[key]);
-      if (value !== undefined) {
-        newObj[key] = value;
-      }
-    });
-    return newObj;
-  };
-
-  const sanitizedReceipt = removeUndefined(receipt);
+  const sanitizedReceipt = removeUndefined(receipt) as AccountsReceivablePaymentReceipt;
 
   const paymentReceiptRef = doc(
     db,

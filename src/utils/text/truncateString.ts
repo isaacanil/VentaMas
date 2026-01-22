@@ -1,5 +1,4 @@
-// @ts-nocheck
-export const truncateString = (str, num) => {
+export const truncateString = (str: string | null | undefined, num: number) => {
   if (!str) {
     // Verifica si str es undefined o null
     return '';

@@ -1,9 +1,10 @@
-// @ts-nocheck
-import { deleteDoc, getDocs, collection, query } from 'firebase/firestore';
+﻿import { collection, deleteDoc, getDocs, query } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const cleanInventoryData = async (businessID) => {
+export const cleanInventoryData = async (
+  businessID: string,
+): Promise<{ success: true; message: string }> => {
   if (!businessID) throw new Error('BusinessID es requerido');
 
   const collectionsToClean = [
@@ -22,8 +23,8 @@ export const cleanInventoryData = async (businessID) => {
 
       const querySnapshot = await getDocs(q);
 
-      const deletePromises = querySnapshot.docs.map((doc) =>
-        deleteDoc(doc.ref),
+      const deletePromises = querySnapshot.docs.map((docSnap) =>
+        deleteDoc(docSnap.ref),
       );
 
       await Promise.all(deletePromises);

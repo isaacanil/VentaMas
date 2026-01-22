@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   addDoc,
   collection,
@@ -9,11 +8,61 @@ import {
   query,
   where,
   Timestamp,
+  type DocumentSnapshot,
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { TimestampLike } from '@/utils/date/types';
 
-const sanitizeUserSnapshot = (userLike) => {
+type UserSnapshot = {
+  uid: string;
+  name: string;
+  role: string;
+  email: string;
+};
+
+type TargetSnapshot = {
+  type: string;
+  id: string;
+  name: string;
+  details?: unknown;
+};
+
+type UserLike = UserIdentity & {
+  displayName?: string;
+  username?: string;
+  email?: string;
+};
+
+type ApprovalLogPayload = {
+  module: string;
+  action: string;
+  description: string;
+  requestedBy: UserSnapshot | null;
+  authorizer: UserSnapshot | null;
+  targetUser: UserSnapshot | null;
+  target: TargetSnapshot | null;
+  metadata: Record<string, unknown> | null;
+  sameUser: boolean;
+  createdAt: ReturnType<typeof serverTimestamp>;
+};
+
+type ApprovalLogEntry = {
+  id: string;
+  module: string;
+  action: string;
+  description: string;
+  requestedBy: UserSnapshot | null;
+  authorizer: UserSnapshot | null;
+  targetUser: UserSnapshot | null;
+  target: TargetSnapshot | null;
+  metadata: Record<string, unknown> | null;
+  sameUser: boolean;
+  createdAt: Date | null;
+};
+
+const sanitizeUserSnapshot = (userLike: UserLike | null | undefined): UserSnapshot | null => {
   if (!userLike || typeof userLike !== 'object') return null;
   return {
     uid: userLike.uid || userLike.id || '',
@@ -28,13 +77,17 @@ const sanitizeUserSnapshot = (userLike) => {
   };
 };
 
-const sanitizeTarget = (targetLike) => {
+const sanitizeTarget = (targetLike: Record<string, unknown> | null | undefined): TargetSnapshot | null => {
   if (!targetLike || typeof targetLike !== 'object') return null;
   return {
-    type: targetLike.type || '',
-    id: targetLike.id || targetLike.key || '',
-    name: targetLike.name || targetLike.title || targetLike.reference || '',
-    details: targetLike.details || undefined,
+    type: (targetLike.type as string) || '',
+    id: (targetLike.id as string) || (targetLike.key as string) || '',
+    name:
+      (targetLike.name as string) ||
+      (targetLike.title as string) ||
+      (targetLike.reference as string) ||
+      '',
+    details: targetLike.details,
   };
 };
 
@@ -51,12 +104,22 @@ export const fbRecordAuthorizationApproval = async ({
   targetUser = null,
   target = null,
   metadata = null,
-}) => {
+}: {
+  businessId: string;
+  module?: string;
+  action?: string;
+  description?: string;
+  requestedBy?: UserLike | null;
+  authorizer: UserLike | null;
+  targetUser?: UserLike | null;
+  target?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+}): Promise<void> => {
   if (!businessId || !authorizer?.uid) {
     return;
   }
 
-  const payload = {
+  const payload: ApprovalLogPayload = {
     module,
     action,
     description,
@@ -84,10 +147,10 @@ export const fbRecordAuthorizationApproval = async ({
 
 export default fbRecordAuthorizationApproval;
 
-const parseTimestamp = (value) => {
+const parseTimestamp = (value: TimestampLike): Date | null => {
   if (!value) return null;
   if (value instanceof Date) return value;
-  if (typeof value.toDate === 'function') {
+  if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
     return value.toDate();
   }
   if (typeof value === 'number') {
@@ -100,33 +163,39 @@ const parseTimestamp = (value) => {
   return null;
 };
 
-const normalizeLogEntry = (docSnap) => {
-  const data = docSnap.data() || {};
+const normalizeLogEntry = (docSnap: DocumentSnapshot): ApprovalLogEntry => {
+  const data = (docSnap.data() || {}) as Record<string, unknown>;
   return {
     id: docSnap.id,
-    module: data.module || 'generic',
-    action: data.action || 'authorization',
-    description: data.description || '',
-    requestedBy: sanitizeUserSnapshot(data.requestedBy) || null,
-    authorizer: sanitizeUserSnapshot(data.authorizer) || null,
-    targetUser: sanitizeUserSnapshot(data.targetUser) || null,
-    target: sanitizeTarget(data.target),
-    metadata: data.metadata || null,
+    module: (data.module as string) || 'generic',
+    action: (data.action as string) || 'authorization',
+    description: (data.description as string) || '',
+    requestedBy: sanitizeUserSnapshot(data.requestedBy as UserLike) || null,
+    authorizer: sanitizeUserSnapshot(data.authorizer as UserLike) || null,
+    targetUser: sanitizeUserSnapshot(data.targetUser as UserLike) || null,
+    target: sanitizeTarget(data.target as Record<string, unknown>),
+    metadata: (data.metadata as Record<string, unknown>) || null,
     sameUser: Boolean(data.sameUser),
-    createdAt: parseTimestamp(data.createdAt),
+    createdAt: parseTimestamp(data.createdAt as TimestampLike),
   };
 };
 
 export const fbListApprovalLogs = async (
-  currentUser,
+  currentUser: UserIdentity | null | undefined,
   {
     limitCount = 150,
     module: moduleFilter,
     authorizerId,
     startDate,
     endDate,
+  }: {
+    limitCount?: number;
+    module?: string;
+    authorizerId?: string;
+    startDate?: TimestampLike;
+    endDate?: TimestampLike;
   } = {},
-) => {
+): Promise<ApprovalLogEntry[]> => {
   if (!currentUser?.businessID) {
     throw new Error('Falta businessID del usuario para listar la bitácora.');
   }

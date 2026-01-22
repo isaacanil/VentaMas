@@ -1,18 +1,27 @@
-// @ts-nocheck
-import {
+﻿import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   setDoc,
   updateDoc,
-  deleteDoc,
-  getDoc,
-  doc,
-  collection,
+  type CollectionReference,
+  type DocumentData,
+  type DocumentReference,
+  type DocumentSnapshot,
+  type Query,
+  type QuerySnapshot,
+  type Transaction,
 } from 'firebase/firestore';
 
 import { db } from './firebaseconfig';
 
-// Función para leer datos de Firestore
-export async function fbGetDocs(refOrQuery, transaction = null) {
+// Funcion para leer datos de Firestore
+export async function fbGetDocs<T = DocumentData>(
+  refOrQuery: Query<T> | CollectionReference<T>,
+  transaction: Transaction | null = null,
+): Promise<QuerySnapshot<T>> {
   try {
     return transaction
       ? await transaction.get(refOrQuery)
@@ -23,7 +32,10 @@ export async function fbGetDocs(refOrQuery, transaction = null) {
   }
 }
 
-export async function fbReadData(refOrQuery, transaction = null) {
+export async function fbReadData<T = DocumentData>(
+  refOrQuery: Query<T> | CollectionReference<T>,
+  transaction: Transaction | null = null,
+): Promise<QuerySnapshot<T>> {
   try {
     return transaction
       ? await transaction.get(refOrQuery)
@@ -34,7 +46,10 @@ export async function fbReadData(refOrQuery, transaction = null) {
   }
 }
 
-export async function fbGetDoc(refOrQuery, transaction = null) {
+export async function fbGetDoc<T = DocumentData>(
+  refOrQuery: DocumentReference<T>,
+  transaction: Transaction | null = null,
+): Promise<DocumentSnapshot<T>> {
   try {
     return transaction
       ? await transaction.get(refOrQuery)
@@ -44,17 +59,22 @@ export async function fbGetDoc(refOrQuery, transaction = null) {
     throw error;
   }
 }
-export const getDocRef = (...segments) => {
+
+export const getDocRef = (...segments: [string, ...string[]]) => {
   return doc(db, ...segments);
 };
 
 // Function to get a collection reference using destructured array segments
-export const getCollectionRef = (...segments) => {
+export const getCollectionRef = (...segments: [string, ...string[]]) => {
   return collection(db, ...segments);
 };
 
-// Función para escribir datos en Firestore
-export async function fbSetDoc(ref, data, transaction = null) {
+// Funcion para escribir datos en Firestore
+export async function fbSetDoc<T = DocumentData>(
+  ref: DocumentReference<T>,
+  data: T,
+  transaction: Transaction | null = null,
+): Promise<void> {
   try {
     return transaction
       ? await transaction.set(ref, data)
@@ -65,8 +85,12 @@ export async function fbSetDoc(ref, data, transaction = null) {
   }
 }
 
-// Función para actualizar datos en Firestore
-export async function fbUpdateDoc(ref, data, transaction = null) {
+// Funcion para actualizar datos en Firestore
+export async function fbUpdateDoc<T = DocumentData>(
+  ref: DocumentReference<T>,
+  data: Partial<T>,
+  transaction: Transaction | null = null,
+): Promise<void> {
   try {
     return transaction
       ? await transaction.update(ref, data)
@@ -77,8 +101,11 @@ export async function fbUpdateDoc(ref, data, transaction = null) {
   }
 }
 
-// Función para eliminar datos de Firestore
-export async function fbDeleteDoc(ref, transaction = null) {
+// Funcion para eliminar datos de Firestore
+export async function fbDeleteDoc(
+  ref: DocumentReference,
+  transaction: Transaction | null = null,
+): Promise<void> {
   try {
     return transaction ? await transaction.delete(ref) : await deleteDoc(ref);
   } catch (error) {

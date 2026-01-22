@@ -1,5 +1,9 @@
 // Helper to check if values are different for numeric values (with tolerance)
-const hasValueChanged = (oldValue: any, newValue: any, tolerance = 0.01): boolean => {
+const hasValueChanged = (
+  oldValue: unknown,
+  newValue: unknown,
+  tolerance = 0.01,
+): boolean => {
   // Considerar un cambio si uno de los valores es null y el otro no
   if (oldValue === null || newValue === null) {
     return oldValue !== newValue;
@@ -11,7 +15,11 @@ const hasValueChanged = (oldValue: any, newValue: any, tolerance = 0.01): boolea
   return oldValue !== newValue;
 };
 
-const applyUpdates = (stateObject: any, updates: Record<string, any>, tolerance = 0.01): boolean => {
+const applyUpdates = (
+  stateObject: Record<string, unknown> | null | undefined,
+  updates: Record<string, unknown> | null | undefined,
+  tolerance = 0.01,
+): boolean => {
   if (!stateObject || typeof stateObject !== 'object') return false;
   if (!updates || typeof updates !== 'object') return false;
   if (Object.keys(updates).length === 0) return false;

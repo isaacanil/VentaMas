@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, getDocs, query, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -6,8 +5,32 @@ import {
   convertDecimalToPercentage,
   getPriceWithoutTax,
 } from '@/utils/pricing';
+import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
-import { isString } from './fbFixInvoice';
+type LegacyInvoiceProduct = InvoiceProduct & {
+  productName?: string;
+  productImageURL?: string;
+  barCode?: string;
+  qrCode?: string;
+  listPrice?: number;
+  averagePrice?: number;
+  minimumPrice?: number;
+  cost?: { unit?: number };
+  tax?: { value?: number };
+  isVisible?: boolean;
+  trackInventory?: boolean;
+  netContent?: string;
+  size?: string;
+  type?: string;
+  amountToBuy?: number | { total?: number };
+};
+
+type InvoiceDocData = {
+  data?: InvoiceData & { products?: LegacyInvoiceProduct[] };
+};
+
+const toStringValue = (value: unknown): string =>
+  typeof value === 'string' ? value.trim() : '';
 
 // Función asincrónica para actualizar facturas para múltiples negocios
 const businessIDs = [
@@ -22,7 +45,7 @@ const businessIDs = [
   'vvRKlKT9UOK4fX9FgJxN',
 ];
 
-export const fbFixInvoicesForMultipleBusinesses = async () => {
+export const fbFixInvoicesForMultipleBusinesses = async (): Promise<void> => {
   try {
     for (const businessID of businessIDs) {
       console.log(`Procesando negocio ${businessID}...`);
@@ -42,7 +65,7 @@ export const fbFixInvoicesForMultipleBusinesses = async () => {
 
       for (let i = 0; i < snapshot.docs.length; i++) {
         const docSnapshot = snapshot.docs[i];
-        const invoice = docSnapshot.data();
+        const invoice = docSnapshot.data() as InvoiceDocData;
         const data = invoice.data;
 
         if (data && data.products) {
@@ -52,10 +75,12 @@ export const fbFixInvoicesForMultipleBusinesses = async () => {
               const taxPercentage =
                 convertDecimalToPercentage(product?.tax?.value) || 0;
               const total = getPriceWithoutTax(price, taxPercentage);
+              const taxValue =
+                typeof product?.tax?.value === 'number' ? product.tax.value : 0;
 
               return {
                 id: product.id,
-                name: product.productName.trim(),
+                name: toStringValue(product.productName),
                 category: product.category || '',
                 image: product.productImageURL || '',
                 pricing: {
@@ -64,7 +89,7 @@ export const fbFixInvoicesForMultipleBusinesses = async () => {
                   avgPrice: product?.averagePrice || total,
                   minPrice: product?.minimumPrice || total,
                   price: total || price,
-                  tax: product.tax.value * 100,
+                  tax: taxValue * 100,
                 },
                 promotions: {
                   isActive: false,
@@ -75,13 +100,17 @@ export const fbFixInvoicesForMultipleBusinesses = async () => {
                 stock: product.stock || 0,
                 barcode: product.barCode || '',
                 qrcode: product.qrCode || '',
-                isVisible: product.isVisible || true,
-                trackInventory: product.trackInventory || true,
+                isVisible: product.isVisible ?? true,
+                trackInventory: product.trackInventory ?? true,
                 netContent: product.netContent || '',
-                size: isString(product.size) || '',
-                type: isString(product.type) || '',
+                size: toStringValue(product.size),
+                type: toStringValue(product.type),
                 status: 'disponible',
-                amountToBuy: product.amountToBuy.total,
+                amountToBuy:
+                  typeof product?.amountToBuy === 'object' &&
+                  product?.amountToBuy !== null
+                    ? product.amountToBuy.total
+                    : product?.amountToBuy,
               };
             } else {
               return product; // Devuelve el producto sin cambios si no tiene nombre

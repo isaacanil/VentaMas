@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -9,9 +8,14 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { AccountsReceivableInstallment } from '@/utils/accountsReceivable/types';
 
 // Function to get the last installment amount for a specific AR ID
-export const getLastInstallmentAmountByArId = async (user, arId) => {
+export const getLastInstallmentAmountByArId = async (
+  user: UserIdentity,
+  arId: string,
+): Promise<number | null> => {
   try {
     const installmentsRef = collection(
       db,
@@ -32,8 +36,8 @@ export const getLastInstallmentAmountByArId = async (user, arId) => {
       return null;
     }
 
-    const lastInstallment = querySnapshot.docs[0].data();
-    return lastInstallment?.installmentBalance;
+    const lastInstallment = querySnapshot.docs[0].data() as AccountsReceivableInstallment;
+    return lastInstallment?.installmentBalance ?? null;
   } catch (error) {
     console.error('Error getting last installment amount by AR ID:', error);
     throw error;

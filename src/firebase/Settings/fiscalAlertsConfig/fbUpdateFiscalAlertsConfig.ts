@@ -1,18 +1,20 @@
-// @ts-nocheck
-import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+﻿import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+
+import type { FiscalAlertsConfig } from './types';
 
 /**
- * Actualiza o crea la configuración de alertas de comprobantes fiscales
- * @param {Object} user - Usuario actual
- * @param {Object} alertConfig - Configuración de alertas
- * @returns {Promise} Promesa de la operación
+ * Actualiza o crea la configuracion de alertas de comprobantes fiscales
  */
-export const fbUpdateFiscalAlertsConfig = async (user, alertConfig) => {
+export const fbUpdateFiscalAlertsConfig = async (
+  user: UserIdentity | null | undefined,
+  alertConfig: FiscalAlertsConfig,
+): Promise<{ success: true }> => {
   try {
     if (!user?.id) {
-      throw new Error('Usuario no válido');
+      throw new Error('Usuario no valido');
     }
 
     const configRef = doc(
@@ -24,7 +26,7 @@ export const fbUpdateFiscalAlertsConfig = async (user, alertConfig) => {
     );
 
     // Estructura de datos para guardar
-    const configData = {
+    const configData: FiscalAlertsConfig = {
       alertsEnabled: alertConfig.alertsEnabled,
       globalThresholds: {
         warning: alertConfig.globalThresholds.warning,
@@ -46,10 +48,10 @@ export const fbUpdateFiscalAlertsConfig = async (user, alertConfig) => {
       await setDoc(configRef, configData);
     }
 
-    console.log('Configuración de alertas guardada exitosamente');
+    console.log('Configuracion de alertas guardada exitosamente');
     return { success: true };
   } catch (error) {
-    console.error('Error al guardar la configuración de alertas:', error);
+    console.error('Error al guardar la configuracion de alertas:', error);
     throw error;
   }
 };

@@ -1,5 +1,4 @@
-// @ts-nocheck
-import {
+﻿import {
   goOffline,
   goOnline,
   onDisconnect,
@@ -8,6 +7,8 @@ import {
   serverTimestamp,
   set,
   update,
+  type DatabaseReference,
+  type OnDisconnect,
 } from 'firebase/database';
 import { useEffect, useRef } from 'react';
 
@@ -16,22 +17,44 @@ import {
   getStoredSession,
 } from '@/firebase/Auth/fbAuthV2/sessionClient.js';
 import { realtimeDB } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
 const PRESENCE_BASE_PATH = 'presence';
 const HEARTBEAT_INTERVAL_MS = 20 * 1000; // Mantener actualizado el timestamp antes de que el backend lo marque como inactivo
 
-export const useRealtimePresence = (user) => {
-  const disconnectHandlerRef = useRef(null);
-  const heartbeatRef = useRef(null);
-  const presenceRefState = useRef(null);
+interface PresenceRefState {
+  presenceRef: DatabaseReference;
+  connectionId: string;
+}
+
+interface PresenceActor {
+  uid?: string;
+  role?: UserIdentity['role'] | null;
+}
+
+interface PresencePayload {
+  state: 'online' | 'offline';
+  updatedAt: object;
+  sessionId: string | null;
+  deviceId: string | null;
+  businessId: string | null;
+  actor: PresenceActor;
+}
+
+export const useRealtimePresence = (
+  user: UserIdentity | null | undefined,
+): void => {
+  const disconnectHandlerRef = useRef<OnDisconnect | null>(null);
+  const heartbeatRef = useRef<number | null>(null);
+  const presenceRefState = useRef<PresenceRefState | null>(null);
   const hasConnectedRef = useRef(false);
-  const latestUserRef = useRef(user);
+  const latestUserRef = useRef<UserIdentity | null | undefined>(user);
 
   useEffect(() => {
     latestUserRef.current = user;
   }, [user]);
 
-  const stopHeartbeat = () => {
+  const stopHeartbeat = (): void => {
     if (heartbeatRef.current) {
       clearInterval(heartbeatRef.current);
       heartbeatRef.current = null;
@@ -55,7 +78,7 @@ export const useRealtimePresence = (user) => {
 
     const { sessionId } = getStoredSession();
     const deviceId = ensureDeviceId();
-    const resolveConnectionId = () => {
+    const resolveConnectionId = (): string => {
       const baseId = sessionId || deviceId || user.uid;
       if (typeof window === 'undefined') {
         return `${baseId}-${Date.now()}`;
@@ -99,7 +122,7 @@ export const useRealtimePresence = (user) => {
         hasConnectedRef.current = true;
 
         if (disconnectHandlerRef.current) {
-          await disconnectHandlerRef.current.cancel().catch(Function.prototype);
+          await disconnectHandlerRef.current.cancel().catch(() => undefined);
         }
 
         const disconnectHandler = onDisconnect(presenceRef);
@@ -110,10 +133,10 @@ export const useRealtimePresence = (user) => {
             state: 'offline',
             updatedAt: serverTimestamp(),
           })
-          .catch(Function.prototype);
+          .catch(() => undefined);
 
         const latestUser = latestUserRef.current || {};
-        const payload = {
+        const payload: PresencePayload = {
           state: 'online',
           updatedAt: serverTimestamp(),
           sessionId: sessionId || null,
@@ -127,11 +150,11 @@ export const useRealtimePresence = (user) => {
 
         await set(presenceRef, payload);
         if (!heartbeatRef.current) {
-          heartbeatRef.current = setInterval(() => {
+          heartbeatRef.current = window.setInterval(() => {
             if (!hasConnectedRef.current) return;
             update(presenceRef, {
               updatedAt: serverTimestamp(),
-            }).catch(Function.prototype);
+            }).catch(() => undefined);
           }, HEARTBEAT_INTERVAL_MS);
         }
       } catch {
@@ -139,14 +162,14 @@ export const useRealtimePresence = (user) => {
       }
     });
 
-    const forceOffline = () => {
+    const forceOffline = (): void => {
       stopHeartbeat();
       try {
         if (hasConnectedRef.current) {
           set(presenceRef, {
             state: 'offline',
             updatedAt: serverTimestamp(),
-          }).catch(Function.prototype);
+          }).catch(() => undefined);
         }
       } finally {
         if (hasConnectedRef.current) {
@@ -171,16 +194,14 @@ export const useRealtimePresence = (user) => {
       const disconnectHandler = disconnectHandlerRef.current;
       disconnectHandlerRef.current = null;
       if (disconnectHandler) {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        disconnectHandler.cancel().catch(() => {});
+        disconnectHandler.cancel().catch(() => undefined);
       }
 
       if (hasConnectedRef.current) {
         set(presenceRef, {
           state: 'offline',
           updatedAt: serverTimestamp(),
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        }).catch(() => {});
+        }).catch(() => undefined);
       }
 
       window.removeEventListener('pagehide', forceOffline, true);
@@ -206,8 +227,7 @@ export const useRealtimePresence = (user) => {
         role: user.role || null,
       },
       updatedAt: serverTimestamp(),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    }).catch(() => {});
+    }).catch(() => undefined);
 
     return undefined;
   }, [user?.uid, user?.businessID, user?.role]);

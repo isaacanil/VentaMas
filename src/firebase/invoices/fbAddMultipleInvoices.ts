@@ -1,20 +1,46 @@
-// @ts-nocheck
 import { Timestamp, doc, setDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { InvoiceData } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-export async function fbAddMultipleInvoices(user, invoices) {
-  if (!user || !user?.businessID) return;
+import { isInvoiceUser, type InvoiceDoc, type InvoiceUser } from './types';
+
+const normalizeInvoiceDate = (
+  value: InvoiceData['date'],
+): InvoiceData['date'] => {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'seconds' in value &&
+    typeof value.seconds === 'number'
+  ) {
+    const nanoseconds =
+      'nanoseconds' in value && typeof value.nanoseconds === 'number'
+        ? value.nanoseconds
+        : 0;
+    return new Timestamp(value.seconds, nanoseconds);
+  }
+  return value;
+};
+
+export async function fbAddMultipleInvoices(
+  user: UserIdentity | null | undefined,
+  invoices: InvoiceDoc[],
+): Promise<void> {
+  if (!isInvoiceUser(user)) return;
 
   for (const invoice of invoices) {
     await fbAddInvoiceById(user, invoice);
   }
 }
 
-async function fbAddInvoiceById(user, factura) {
+async function fbAddInvoiceById(
+  user: InvoiceUser,
+  factura: InvoiceDoc,
+): Promise<void> {
   try {
-    const { seconds, nanoseconds } = factura.data.date;
-    factura.data.date = new Timestamp(seconds, nanoseconds);
+    factura.data.date = normalizeInvoiceDate(factura.data.date);
 
     const facturaRef = doc(
       db,

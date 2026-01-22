@@ -1,15 +1,17 @@
-// @ts-nocheck
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+﻿import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+
+import type { BarcodeSettings } from './types';
 
 /**
- * Guarda la configuración de códigos de barras para un negocio
- * @param {Object} user - Usuario con businessID
- * @param {Object} settings - Configuración de códigos de barras
- * @returns {Promise<void>}
+ * Guarda la configuracion de codigos de barras para un negocio
  */
-export const setBarcodeSettings = async (user, settings) => {
+export const setBarcodeSettings = async (
+  user: UserIdentity | null | undefined,
+  settings: BarcodeSettings,
+): Promise<void> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
@@ -25,7 +27,7 @@ export const setBarcodeSettings = async (user, settings) => {
 
     const docSnapshot = await getDoc(settingsRef);
 
-    const dataToSave = {
+    const dataToSave: BarcodeSettings = {
       ...settings,
       updatedAt: new Date().toISOString(),
     };
@@ -39,17 +41,17 @@ export const setBarcodeSettings = async (user, settings) => {
       });
     }
   } catch (error) {
-    console.error('[barcodeSettings] Error al guardar configuración:', error);
+    console.error('[barcodeSettings] Error al guardar configuracion:', error);
     throw error;
   }
 };
 
 /**
- * Obtiene la configuración de códigos de barras para un negocio
- * @param {Object} user - Usuario con businessID
- * @returns {Promise<Object|null>}
+ * Obtiene la configuracion de codigos de barras para un negocio
  */
-export const getBarcodeSettings = async (user) => {
+export const getBarcodeSettings = async (
+  user: UserIdentity | null | undefined,
+): Promise<BarcodeSettings | null> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
@@ -65,23 +67,23 @@ export const getBarcodeSettings = async (user) => {
     const docSnapshot = await getDoc(settingsRef);
 
     if (docSnapshot.exists()) {
-      return docSnapshot.data();
+      return docSnapshot.data() as BarcodeSettings;
     }
 
     return null;
   } catch (error) {
-    console.error('[barcodeSettings] Error al obtener configuración:', error);
+    console.error('[barcodeSettings] Error al obtener configuracion:', error);
     throw error;
   }
 };
 
 /**
- * Actualiza solo el company prefix en la configuración
- * @param {Object} user - Usuario con businessID
- * @param {string} companyPrefix - Nuevo company prefix
- * @returns {Promise<void>}
+ * Actualiza solo el company prefix en la configuracion
  */
-export const updateCompanyPrefix = async (user, companyPrefix) => {
+export const updateCompanyPrefix = async (
+  user: UserIdentity | null | undefined,
+  companyPrefix: string,
+): Promise<void> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
@@ -108,12 +110,12 @@ export const updateCompanyPrefix = async (user, companyPrefix) => {
 };
 
 /**
- * Inicializa la configuración de códigos de barras con valores por defecto
- * @param {Object} user - Usuario con businessID
- * @param {Object} config - Configuración inicial
- * @returns {Promise<void>}
+ * Inicializa la configuracion de codigos de barras con valores por defecto
  */
-export const initializeBarcodeSettings = async (user, config) => {
+export const initializeBarcodeSettings = async (
+  user: UserIdentity | null | undefined,
+  config: BarcodeSettings,
+): Promise<void> => {
   if (!user?.businessID) {
     throw new Error('BusinessID no encontrado');
   }
@@ -137,7 +139,7 @@ export const initializeBarcodeSettings = async (user, config) => {
     }
   } catch (error) {
     console.error(
-      '[barcodeSettings] Error al inicializar configuración:',
+      '[barcodeSettings] Error al inicializar configuracion:',
       error,
     );
     throw error;

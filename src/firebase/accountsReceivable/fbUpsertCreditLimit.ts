@@ -1,14 +1,25 @@
-// @ts-nocheck
 import { doc, setDoc, updateDoc, getDoc, Timestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
 
-export async function fbUpsertCreditLimit({ user, client, creditLimitData }) {
+type CreditLimitPayload = CreditLimitConfig & { id?: string; clientId?: string | null };
+
+export async function fbUpsertCreditLimit({
+  user,
+  client,
+  creditLimitData,
+}: {
+  user: UserIdentity | null | undefined;
+  client: { id?: string | null } | null | undefined;
+  creditLimitData: CreditLimitPayload | null | undefined;
+}): Promise<CreditLimitPayload | undefined> {
   if (!user?.businessID) return;
   if (!creditLimitData) return;
   if (!client?.id) return;
 
-  let creditLimit = {
+  let creditLimit: CreditLimitPayload = {
     ...creditLimitData,
     updatedBy: user?.uid,
     updatedAt: Timestamp.now(),
@@ -25,12 +36,13 @@ export async function fbUpsertCreditLimit({ user, client, creditLimitData }) {
   const docSnapshot = await getDoc(creditLimitRef);
 
   if (docSnapshot.exists()) {
+    const existing = docSnapshot.data() as CreditLimitPayload;
     await updateDoc(creditLimitRef, {
       ...creditLimit,
-      id: docSnapshot.data().id,
-      clientId: docSnapshot.data().clientId,
-      createdAt: docSnapshot.data().createdAt,
-      createdBy: docSnapshot.data().createdBy,
+      id: existing.id,
+      clientId: existing.clientId,
+      createdAt: existing.createdAt,
+      createdBy: existing.createdBy,
     });
   } else {
     creditLimit = {

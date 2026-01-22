@@ -1,5 +1,7 @@
+import type { Transaction } from 'firebase-admin/firestore';
 import { NCF_TYPES } from '../config/ncfTypes.js';
 import { _generateNfcTx } from '../utils/rncUtils.js';
+import type { ExtraValue, TaxReceiptUser } from '../utils/rncUtils.js';
 
 /**
  * Función de servicio para generar el comprobante fiscal.
@@ -8,18 +10,18 @@ import { _generateNfcTx } from '../utils/rncUtils.js';
  *   - {Object} user: Objeto de usuario (debe incluir businessID).
  *   - {boolean} taxReceiptEnabled: Indica si la generación del comprobante está habilitada.
  *   - {string} ncfType: Tipo de NCF a generar (se resuelve a partir de NCF_TYPES).
- *   - {Object} [transaction=null]: Objeto de transacción para operaciones atómicas.
- *   - {any} [extraValue=null]: Valor extra para la generación del NCF.
+ *   - {Transaction} [transaction=null]: Objeto de transacción para operaciones atómicas.
+ *   - {ExtraValue} [extraValue=null]: Valor extra para la generación del NCF.
  *
  * @returns {Promise<string|null>} - Código NCF generado o null en caso de error o incumplimiento de validaciones.
  */
 
 interface GenerateTaxReceiptParams {
-  user: { businessID: string; uid: string }; // Define a more specific type if possible
+  user: TaxReceiptUser & { uid: string };
   taxReceiptEnabled: boolean;
   ncfType: string;
-  transaction?: any | null; // Define a more specific type if possible
-  extraValue?: any | null; // Define a more specific type if possible
+  transaction?: Transaction | null;
+  extraValue?: ExtraValue;
 }
 
 export const generateTaxReceipt = async ({
@@ -55,3 +57,4 @@ export const generateTaxReceipt = async ({
     }
   }
 };
+

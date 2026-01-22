@@ -1,26 +1,26 @@
-// @ts-nocheck
-// Import the functions you need from the SDKs you need
+﻿// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
 //TODO ***AUTH**************************************
 import { getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
-import { getDatabase } from 'firebase/database';
+import { getDatabase, type Database } from 'firebase/database';
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   getDocs,
-  query,
-  updateDoc,
-  where,
-  arrayUnion,
-  arrayRemove,
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  query,
+  updateDoc,
+  where,
 } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
 import { getStorage } from 'firebase/storage';
+import type { GenerativeModel } from 'firebase/vertexai';
 
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 const hasRealtimeDatabase = Boolean(databaseURL);
@@ -49,13 +49,13 @@ export const storage = getStorage(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
 
-export const realtimeDB = hasRealtimeDatabase
+export const realtimeDB: Database | null = hasRealtimeDatabase
   ? getDatabase(app, databaseURL)
   : null;
 
-let _generativeModelInstance = null;
+let _generativeModelInstance: GenerativeModel | null = null;
 
-export const getLazyGenerativeModel = async () => {
+export const getLazyGenerativeModel = async (): Promise<GenerativeModel> => {
   if (!_generativeModelInstance) {
     const { getVertexAI, getGenerativeModel } = await import('firebase/vertexai');
     const vertexAI = getVertexAI(app);
@@ -66,15 +66,21 @@ export const getLazyGenerativeModel = async () => {
   return _generativeModelInstance;
 };
 
+interface UserDocument {
+  user?: {
+    name?: string;
+  };
+}
 
-export const listFirst5UserNames = async () => {
+export const listFirst5UserNames = async (): Promise<string[]> => {
   const usersRef = collection(db, 'users');
   const q = query(usersRef, where('user.name', '==', 'dev#3407'));
   const snap = await getDocs(q);
 
   return snap.docs
-    .map((doc) => doc.data()) // {name, email, …}
-    .map((user) => user.user.name); // solo el nombre
+    .map((docSnap) => docSnap.data() as UserDocument)
+    .map((user) => user.user?.name)
+    .filter((name): name is string => Boolean(name));
 };
 
 // function servicesEmulator() {
@@ -113,7 +119,17 @@ export const listFirst5UserNames = async () => {
 //   if (taxesArray.length === 0) return;
 //   if (taxesArray.length > 0) return setTaxes(taxesArray)
 // }
-export const addIngredientTypePizza = async (ingredient) => {
+
+export interface IngredientInput {
+  id?: string | number;
+  name?: string;
+  cost?: number | string;
+  [key: string]: unknown;
+}
+
+export const addIngredientTypePizza = async (
+  ingredient: IngredientInput,
+): Promise<void> => {
   const IngredientRef = doc(db, 'products', '6dssod');
   // Atomically add a new region to the "regions" array field.
   try {
@@ -124,7 +140,9 @@ export const addIngredientTypePizza = async (ingredient) => {
     console.error('Error adding ingredient:', error);
   }
 };
-export const deleteIngredientTypePizza = async (ingredient) => {
+export const deleteIngredientTypePizza = async (
+  ingredient: IngredientInput,
+): Promise<void> => {
   const IngredientRef = doc(db, 'products', '6dssod');
   try {
     await updateDoc(IngredientRef, {

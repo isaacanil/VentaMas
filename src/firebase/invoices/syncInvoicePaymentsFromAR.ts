@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -12,8 +11,21 @@ import {
 import { db } from '@/firebase/firebaseconfig';
 import { mergePaymentMethods } from '@/firebase/proccessAccountsReceivablePayments/arPaymentUtils';
 import { THRESHOLD, roundToTwoDecimals } from '@/firebase/proccessAccountsReceivablePayments/financeUtils';
+import type { InvoicePaymentMethod } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-const parseAmountFromPayment = (payment) => {
+import { isInvoiceUser, type InvoiceDoc } from './types';
+
+type AccountsReceivablePayment = {
+  amount?: number | string;
+  totalPaid?: number | string;
+  totalAmount?: number | string;
+  paymentAmount?: number | string;
+  paymentMethods?: InvoicePaymentMethod[];
+  paymentMethod?: InvoicePaymentMethod[];
+} & Record<string, unknown>;
+
+const parseAmountFromPayment = (payment: AccountsReceivablePayment): number => {
   const candidates = [
     payment?.amount,
     payment?.totalPaid,
@@ -30,8 +42,14 @@ const parseAmountFromPayment = (payment) => {
   return 0;
 };
 
-const collectPaymentsByAccount = async ({ businessId, arIds }) => {
-  const payments = [];
+const collectPaymentsByAccount = async ({
+  businessId,
+  arIds,
+}: {
+  businessId: string;
+  arIds: string[];
+}): Promise<AccountsReceivablePayment[]> => {
+  const payments: AccountsReceivablePayment[] = [];
 
   for (const arId of arIds) {
     const paymentsRef = collection(
@@ -48,8 +66,16 @@ const collectPaymentsByAccount = async ({ businessId, arIds }) => {
   return payments;
 };
 
-export const syncInvoicePaymentsFromAR = async (user, invoiceId) => {
-  if (!user?.businessID) {
+export const syncInvoicePaymentsFromAR = async (
+  user: UserIdentity | null | undefined,
+  invoiceId: string,
+): Promise<{
+  totalPaid: number;
+  balanceDue: number;
+  paymentMethod: InvoicePaymentMethod[];
+  totalInvoice: number;
+}> => {
+  if (!isInvoiceUser(user)) {
     throw new Error('Sin empresa activa para actualizar la factura.');
   }
   if (!invoiceId) {
@@ -69,7 +95,7 @@ export const syncInvoicePaymentsFromAR = async (user, invoiceId) => {
     throw new Error('Factura no encontrada.');
   }
 
-  const invoiceData = invoiceSnap.data();
+  const invoiceData = invoiceSnap.data() as InvoiceDoc;
 
   const arRef = collection(db, 'businesses', user.businessID, 'accountsReceivable');
   const arQuery = query(arRef, where('invoiceId', '==', invoiceId));
@@ -91,7 +117,7 @@ export const syncInvoicePaymentsFromAR = async (user, invoiceId) => {
   }
 
   let totalPaid = 0;
-  let aggregatedMethods = [];
+  let aggregatedMethods: InvoicePaymentMethod[] = [];
 
   payments.forEach((payment) => {
     totalPaid += parseAmountFromPayment(payment);
@@ -122,7 +148,7 @@ export const syncInvoicePaymentsFromAR = async (user, invoiceId) => {
 
   const batch = writeBatch(db);
 
-  const updatePayload = {
+  const updatePayload: Record<string, unknown> = {
     totalPaid,
     balanceDue,
     status: isPaid,

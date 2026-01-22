@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   arrayUnion,
   doc,
@@ -8,12 +7,20 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { InvoiceData } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-export async function fbCancelPreorder(user, preorder) {
+import { isInvoiceUser } from './types';
+
+export async function fbCancelPreorder(
+  user: UserIdentity | null | undefined,
+  preorder: InvoiceData | null | undefined,
+): Promise<InvoiceData | undefined> {
   try {
     if (
       !preorder?.preorderDetails?.isOrWasPreorder ||
-      !preorder?.status == 'pending'
+      preorder?.status !== 'pending' ||
+      !isInvoiceUser(user)
     ) {
       throw new Error('Preorder details are missing or invalid.');
     }

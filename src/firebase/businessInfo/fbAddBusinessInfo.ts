@@ -1,5 +1,4 @@
-// @ts-nocheck
-import {
+﻿import {
   doc,
   getDoc,
   serverTimestamp,
@@ -7,17 +6,22 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import {
+  deleteObject,
+  getDownloadURL,
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL,
-  deleteObject,
 } from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const createBusiness = async (businessData) => {
+import type { BusinessInfoData } from './fbGetBusinessInfo';
+
+export const createBusiness = async (
+  businessData: BusinessInfoData,
+): Promise<string> => {
   try {
     const business = {
       ...businessData,
@@ -26,14 +30,17 @@ export const createBusiness = async (businessData) => {
     };
     const businessRef = doc(db, 'businesses', business.id);
     await setDoc(businessRef, { business });
-    return business.id;
+    return business.id as string;
   } catch (error) {
     console.error('Error creating business info:', error);
     throw error;
   }
 };
 
-export const fbUpdateBusinessInfo = async (user, businessInfo) => {
+export const fbUpdateBusinessInfo = async (
+  user: UserIdentity | null | undefined,
+  businessInfo: BusinessInfoData,
+): Promise<void> => {
   if (!user || !user.businessID) return;
 
   const businessInfoRef = doc(db, 'businesses', user.businessID);
@@ -49,19 +56,22 @@ export const fbUpdateBusinessInfo = async (user, businessInfo) => {
   }
 };
 
-export const fbUpdateBusinessLogo = async (user, newLogoFile) => {
+export const fbUpdateBusinessLogo = async (
+  user: UserIdentity | null | undefined,
+  newLogoFile: File,
+): Promise<string | void> => {
   if (!user || !user.businessID) return;
 
-  const storage = getStorage();
+  const storageInstance = getStorage();
   const businessInfoRef = doc(db, 'businesses', user.businessID);
-  const sectionName = 'logo'; // podemos usar esto para diferentes secciones de imágenes
+  const sectionName = 'logo'; // podemos usar esto para diferentes secciones de imagenes
 
   try {
     const businessDoc = await getDoc(businessInfoRef);
-    const currentData = businessDoc.data();
+    const currentData = businessDoc.data() as { business?: { logoUrl?: string } } | undefined;
 
     if (currentData?.business?.logoUrl) {
-      const oldLogoRef = ref(storage, currentData.business.logoUrl);
+      const oldLogoRef = ref(storageInstance, currentData.business.logoUrl);
       try {
         await deleteObject(oldLogoRef);
       } catch (error) {
@@ -71,7 +81,7 @@ export const fbUpdateBusinessLogo = async (user, newLogoFile) => {
     }
 
     const storageRef = ref(
-      storage,
+      storageInstance,
       `businesses/${user.businessID}/${sectionName}/${newLogoFile.name}`,
     );
     await uploadBytes(storageRef, newLogoFile);
@@ -89,7 +99,10 @@ export const fbUpdateBusinessLogo = async (user, newLogoFile) => {
   }
 };
 
-export const fbUpdateInvoiceType = async (user, invoiceType) => {
+export const fbUpdateInvoiceType = async (
+  user: UserIdentity | null | undefined,
+  invoiceType: string,
+): Promise<boolean | void> => {
   if (!user || !user.businessID) return;
 
   const businessInfoRef = doc(db, 'businesses', user.businessID);
@@ -104,7 +117,10 @@ export const fbUpdateInvoiceType = async (user, invoiceType) => {
   }
 };
 
-export const fbUpdateInvoiceMessage = async (user, invoiceMessage) => {
+export const fbUpdateInvoiceMessage = async (
+  user: UserIdentity | null | undefined,
+  invoiceMessage: string,
+): Promise<boolean | void> => {
   if (!user || !user.businessID) return;
 
   const businessInfoRef = doc(db, 'businesses', user.businessID);

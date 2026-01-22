@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
@@ -6,12 +5,20 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { validateUser } from '@/utils/userValidation';
+import type { UserIdentity } from '@/types/users';
+import type { AccountsReceivablePaymentReceipt } from '@/utils/accountsReceivable/types';
 
-const fetchPaymentReceipts = async ({ queryKey }) => {
-  const [_, time, user] = queryKey;
+type TimeRange = { startDate?: string | number | Date; endDate?: string | number | Date };
+
+const fetchPaymentReceipts = async ({
+  queryKey,
+}: {
+  queryKey: [string, TimeRange | null | undefined, UserIdentity | null | undefined];
+}): Promise<AccountsReceivablePaymentReceipt[]> => {
+  const [, time, user] = queryKey;
 
   validateUser(user);
-  const { businessID, uid, role } = user;
+  const { businessID, uid, role } = user as UserIdentity;
 
   const start = new Date(time.startDate);
   const end = new Date(time.endDate);
@@ -60,15 +67,16 @@ const fetchPaymentReceipts = async ({ queryKey }) => {
   return snapshot.docs
     .map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...(doc.data() as AccountsReceivablePaymentReceipt),
     }))
     .filter((item) =>
+      Array.isArray(item.paymentMethod) &&
       item.paymentMethod.some((method) => method.status === true),
     );
 };
 
-export const useAccountsReceivablePaymentReceipts = (time) => {
-  const user = useSelector(selectUser);
+export const useAccountsReceivablePaymentReceipts = (time: TimeRange | null | undefined) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
 
   const { data: paymentReceipts, isLoading: loading } = useQuery({
     queryKey: ['paymentReceipts', time, user],

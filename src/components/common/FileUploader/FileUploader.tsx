@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { FileOutlined } from '@/constants/icons/antd';
 import { message, Badge, Button } from 'antd';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -18,9 +17,66 @@ import FileUploadControls from './FileUploadControls';
 import ImageLightbox from './ImageLightbox';
 import PreviewContent from './PreviewContent';
 
+type FileTypeKey = string;
+
+type FileUploaderLocalFileInput = {
+  id?: string;
+  name: string;
+  type?: FileTypeKey;
+  file?: File;
+};
+
+type FileUploaderRemoteFileInput = {
+  id?: string;
+  name?: string;
+  type?: FileTypeKey;
+  url?: string;
+};
+
+type FileUploaderLocalFile = {
+  id: string;
+  name: string;
+  type: FileTypeKey;
+  file: File;
+  isLocal: true;
+};
+
+type FileUploaderRemoteFile = {
+  id: string;
+  name: string;
+  type: FileTypeKey;
+  url: string;
+  isLocal: false;
+};
+
+type FileUploaderListItem =
+  | (FileUploaderLocalFile & { preview?: string | null })
+  | FileUploaderRemoteFile;
+
+type FileLightboxSlide = {
+  src: string;
+  title: string;
+  description?: string;
+};
+
 type FileUploaderProps = {
+  files?: FileUploaderLocalFileInput[];
+  attachmentUrls?: FileUploaderRemoteFileInput[];
+  onAddFiles?: ((files: FileUploaderLocalFile[]) => void) | null;
+  onRemoveFiles?: ((fileId: string) => void) | null;
+  showFileList?: boolean;
+  defaultFileType?: FileTypeKey;
+  fileTypes?: FileTypeKey[];
   fileTypeLabels?: Record<string, string>;
-  [key: string]: any;
+  maxFiles?: number | null;
+  acceptedFileTypes?: string | null;
+  uploaderTitle?: string;
+  successMessage?: string;
+  errorMaxFilesMessage?: string;
+  errorFileTypeMessage?: string;
+  compact?: boolean;
+  alwaysShowTypeSelector?: boolean;
+  inlineLayout?: boolean;
 };
 
 /**
@@ -65,9 +121,11 @@ const FileUploader = ({
   alwaysShowTypeSelector = false,
   inlineLayout = false,
 }: FileUploaderProps) => {
-  const [fileType, setFileType] = useState(defaultFileType);
+  const [fileType, setFileType] = useState<FileTypeKey>(defaultFileType);
   const [isDragging, setIsDragging] = useState(false);
-  const [previewFile, setPreviewFile] = useState(null);
+  const [previewFile, setPreviewFile] = useState<FileUploaderListItem | null>(
+    null,
+  );
   const [previewVisible, setPreviewVisible] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);

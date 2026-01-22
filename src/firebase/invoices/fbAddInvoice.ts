@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { doc, serverTimestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -6,17 +5,27 @@ import { fbAddBillToOpenCashCount } from '@/firebase/cashCount/fbAddBillToOpenCa
 import { db } from '@/firebase/firebaseconfig';
 import { fbSetDoc } from '@/firebase/firebaseOperations';
 import { getNextID } from '@/firebase/Tools/getNextID';
+import type { InvoiceData } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
 import { fbGetInvoice } from './fbGetInvoice';
+import { isInvoiceUser } from './types';
 
-export const fbAddInvoice = async (data, user) => {
-  if (!user || !user.businessID) return;
+type InvoiceWriteData = InvoiceData & {
+  date?: InvoiceData['date'] | ReturnType<typeof serverTimestamp>;
+};
+
+export const fbAddInvoice = async (
+  data: InvoiceData,
+  user: UserIdentity | null | undefined,
+): Promise<InvoiceData | null> => {
+  if (!isInvoiceUser(user)) return null;
 
   try {
     const userRef = doc(db, 'users', user.uid);
     const nextNumberId = await getNextID(user, 'lastInvoiceId');
 
-    let bill = {
+    const bill: InvoiceWriteData = {
       ...data,
       id: data?.id || nanoid(),
       date: serverTimestamp(),
@@ -33,8 +42,9 @@ export const fbAddInvoice = async (data, user) => {
 
     const invoice = await fbGetInvoice(user.businessID, bill.id);
 
-    return invoice.data;
+    return invoice?.data ?? null;
   } catch (error) {
     console.log(error);
+    return null;
   }
 };

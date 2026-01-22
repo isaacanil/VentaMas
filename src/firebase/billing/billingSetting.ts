@@ -1,9 +1,13 @@
-// @ts-nocheck
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
+import type { CartSettings } from '@/features/cart/types';
 
-export const setBillingSettings = async (user, setting) => {
+export const setBillingSettings = async (
+  user: UserIdentity | null | undefined,
+  setting: Partial<CartSettings['billing']>,
+) => {
   if (!user?.businessID) {
     return;
   }

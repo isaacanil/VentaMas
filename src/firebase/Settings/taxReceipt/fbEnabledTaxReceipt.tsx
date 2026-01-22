@@ -1,9 +1,15 @@
-// @ts-nocheck
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+﻿import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const fbEnabledTaxReceipt = async (user) => {
+type TaxReceiptSettingsDoc = {
+  taxReceiptEnabled?: boolean;
+};
+
+export const fbEnabledTaxReceipt = async (
+  user: UserIdentity | null | undefined,
+): Promise<void> => {
   if (!user || !user?.businessID) return;
 
   try {
@@ -16,16 +22,16 @@ export const fbEnabledTaxReceipt = async (user) => {
     );
     const docSnap = await getDoc(settingRef);
     if (docSnap.exists()) {
-      const currentValue = docSnap.data().taxReceiptEnabled;
+      const data = docSnap.data() as TaxReceiptSettingsDoc;
+      const currentValue = Boolean(data.taxReceiptEnabled);
       await updateDoc(settingRef, { taxReceiptEnabled: !currentValue });
     } else {
       await setDoc(settingRef, { taxReceiptEnabled: true });
     }
   } catch (error) {
     console.error(
-      'Ocurrió un error al actualizar el comprobante fiscal:',
+      'Ocurrio un error al actualizar el comprobante fiscal:',
       error,
     );
-    // Puedes manejar el error de la forma que consideres adecuada, como mostrar un mensaje al usuario.
   }
 };

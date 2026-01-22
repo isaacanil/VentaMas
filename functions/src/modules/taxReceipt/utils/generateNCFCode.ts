@@ -10,19 +10,21 @@ export const increaseSequence = (
   return resultStr;
 };
 
-export interface ReceiptData {
-  data: {
-    type: string;
-    serie: string;
-    sequence: string | number;
-    increase: string | number;
-    quantity: string | number;
-    name?: string;
-    id?: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
+export type ReceiptNumericLike = string | number;
+
+export interface ReceiptDataFields {
+  type: string;
+  serie: string;
+  sequence: ReceiptNumericLike;
+  increase: ReceiptNumericLike;
+  quantity: ReceiptNumericLike;
+  name?: string;
+  id?: string;
 }
+
+export type ReceiptData = {
+  data: ReceiptDataFields & Record<string, unknown>;
+} & Record<string, unknown>;
 
 export const generateNCFCode = (
   receiptData: ReceiptData,

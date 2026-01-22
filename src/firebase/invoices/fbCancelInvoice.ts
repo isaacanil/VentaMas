@@ -1,16 +1,22 @@
-// @ts-nocheck
 import { runTransaction, doc, Timestamp, increment } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { InvoiceData } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-export const fbCancelInvoice = async (user, invoice, cancellationReason) => {
+import { getInvoiceProductQuantity, isInvoiceUser } from './types';
+
+export const fbCancelInvoice = async (
+  user: UserIdentity | null | undefined,
+  invoice: InvoiceData | null | undefined,
+  cancellationReason: string,
+): Promise<void> => {
   try {
     if (
       !invoice ||
-      !user ||
-      !user.businessID ||
       !invoice.id ||
-      !invoice.products
+      !Array.isArray(invoice.products) ||
+      !isInvoiceUser(user)
     ) {
       throw new Error('No se ha podido cancelar la factura. Faltan datos.');
     }
@@ -25,6 +31,9 @@ export const fbCancelInvoice = async (user, invoice, cancellationReason) => {
 
       // Aquí actualizamos cada producto dentro de la transacción
       for (const product of invoice.products) {
+        if (!product?.id) continue;
+        const quantity = getInvoiceProductQuantity(product);
+        if (!quantity) continue;
         const productRef = doc(
           db,
           'businesses',
@@ -33,7 +42,7 @@ export const fbCancelInvoice = async (user, invoice, cancellationReason) => {
           product.id,
         );
         transaction.update(productRef, {
-          'product.stock': increment(product.amountToBuy.total),
+          'product.stock': increment(quantity),
         });
       }
 

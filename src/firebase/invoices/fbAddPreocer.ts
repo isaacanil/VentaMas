@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Guarda una preorden en Firestore.
  * @param {Object} user - Información del usuario.
@@ -12,8 +11,25 @@ import { nanoid } from 'nanoid';
 import { db } from '@/firebase/firebaseconfig';
 import { getNextID } from '@/firebase/Tools/getNextID';
 import { sanitizeFirestoreDocument } from '@/utils/firebase/sanitizeFirestoreDocument';
+import type { InvoiceData, InvoicePreorderDetails } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-export const fbAddPreOrder = async (user, cartData) => {
+import { isInvoiceUser } from './types';
+
+type PreorderInput = InvoiceData & {
+  preorderDetails?: InvoicePreorderDetails | null;
+  selectedTaxReceiptType?: string | null;
+};
+
+type PreorderWriteData = PreorderInput & {
+  date: ReturnType<typeof serverTimestamp> | null;
+};
+
+export const fbAddPreOrder = async (
+  user: UserIdentity | null | undefined,
+  cartData: PreorderInput,
+): Promise<PreorderInput | null> => {
+  if (!isInvoiceUser(user)) return null;
   try {
     const existingPreorderDetails = cartData?.preorderDetails ?? {};
     const selectedTaxReceiptType =
@@ -23,7 +39,7 @@ export const fbAddPreOrder = async (user, cartData) => {
     const preorderNumberId =
       existingPreorderDetails?.numberID ?? (await getNextID(user, 'preorder'));
 
-    const data = {
+    const data: PreorderWriteData = {
       ...cartData,
       selectedTaxReceiptType,
       id: nanoid(),
@@ -53,10 +69,11 @@ export const fbAddPreOrder = async (user, cartData) => {
       `businesses/${user.businessID}/invoices/${data.id}`,
     );
 
-    const sanitizedData = sanitizeFirestoreDocument(data);
+    const sanitizedData = sanitizeFirestoreDocument(data) as PreorderInput;
     await setDoc(invoiceRef, { data: sanitizedData });
     return sanitizedData;
   } catch (error) {
-    throw new Error(error.message);
+    const message = error instanceof Error ? error.message : 'Error inesperado';
+    throw new Error(message);
   }
 };

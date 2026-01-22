@@ -22,7 +22,7 @@ export const firstLetter = (word: string | null | undefined): string => {
 /**
  * Convierte un valor a string, retornando string vacío si es null o undefined
  */
-export const parseToString = (value: any): string => {
+export const parseToString = (value: unknown): string => {
   if (value === null || value === undefined) {
     return '';
   } else {

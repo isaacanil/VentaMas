@@ -61,6 +61,15 @@ function scanFiles() {
         anyType: 0,
     };
 
+    const fileCounts = {
+        tsNocheck: 0,
+        tsIgnore: 0,
+        tsExpectError: 0,
+        eslintDisableFile: 0,
+        eslintDisableLine: 0,
+        anyType: 0,
+    };
+
     const fileResults = [];
 
     files.forEach((file) => {
@@ -76,6 +85,7 @@ function scanFiles() {
             if (matches) {
                 fileIssues[key] = matches.length;
                 stats[key] += matches.length;
+                fileCounts[key]++;
                 hasIssues = true;
             }
         }
@@ -101,7 +111,7 @@ function scanFiles() {
     });
 
     // Output Report
-    console.log(`${BOLD}📊 Found issues in ${filesWithIssues} out of ${totalFiles} files:${RESET}\n`);
+    console.log(`${BOLD}📊 Found issues in ${filesWithIssues} out of ${totalFiles} files (${((filesWithIssues / totalFiles) * 100).toFixed(1)}%):${RESET}\n`);
 
     fileResults.forEach((res) => {
         console.log(`${BOLD}${res.path}${RESET}`);
@@ -112,21 +122,46 @@ function scanFiles() {
         console.log(''); // spacer
     });
 
-    console.log(`${BOLD}📈 Summary Statistics:${RESET}`);
-    console.log('----------------------------------------');
+    console.log(`${BOLD}📈 Summary Statistics (Total Files: ${totalFiles}):${RESET}`);
+    console.log('------------------------------------------------------------');
+
+    // Header
+    console.log(
+        `${GRAY}` +
+        'Type'.padEnd(25) +
+        'Count'.padEnd(10) +
+        'Files'.padEnd(10) +
+        'Percentage'.padEnd(10) +
+        `${RESET}`
+    );
+    console.log('------------------------------------------------------------');
+
     for (const [key, config] of Object.entries(PATTERNS)) {
         const count = stats[key];
+        const affectedFiles = fileCounts[key];
+        const percentage = ((affectedFiles / totalFiles) * 100).toFixed(1);
+
         const color = count > 0 ? config.color : GRAY;
-        console.log(`${color}${config.label.padEnd(25)}: ${count}${RESET}`);
+
+        console.log(
+            `${color}${config.label.padEnd(25)}` +
+            `${count.toString().padEnd(10)}` +
+            `${affectedFiles.toString().padEnd(10)}` +
+            `${percentage}%${RESET}`
+        );
     }
-    console.log('----------------------------------------');
+    console.log('------------------------------------------------------------');
+
+    const cleanFiles = totalFiles - filesWithIssues;
+    const cleanPercentage = ((cleanFiles / totalFiles) * 100).toFixed(1);
+    console.log(`${GREEN}✅ Clean Files: ${cleanFiles} (${cleanPercentage}%)${RESET}`);
 
     // Save to file
     if (!fs.existsSync(REPORTS_DIR)) {
         fs.mkdirSync(REPORTS_DIR, { recursive: true });
     }
     const reportPath = path.join(REPORTS_DIR, 'suppressions-audit.json');
-    fs.writeFileSync(reportPath, JSON.stringify({ stats, fileResults }, null, 2));
+    fs.writeFileSync(reportPath, JSON.stringify({ stats, fileCounts, totalFiles, fileResults }, null, 2));
     console.log(`\n${GRAY}Full JSON report saved to: reports/suppressions-audit.json${RESET}\n`);
 }
 

@@ -1,12 +1,14 @@
-// @ts-nocheck
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { InvoiceDoc, InvoiceDocWithId } from './types';
 
-const getSerieBounds = (serie) => {
+type UserRootState = Parameters<typeof selectUser>[0];
+
+const getSerieBounds = (serie: string | null | undefined) => {
   if (!serie) return null;
   const normalized = serie.toUpperCase();
 
@@ -22,10 +24,10 @@ const getSerieBounds = (serie) => {
 };
 
 export const useFbGetInvoicesBySerie = (
-  serie,
-  { includeCancelled = false } = {},
+  serie: string | null | undefined,
+  { includeCancelled = false }: { includeCancelled?: boolean } = {},
 ) => {
-  const businessID = useSelector((s) => selectUser(s)?.businessID);
+  const businessID = useSelector((s: UserRootState) => selectUser(s)?.businessID);
 
   const bounds = useMemo(() => getSerieBounds(serie), [serie]);
 
@@ -39,7 +41,7 @@ export const useFbGetInvoicesBySerie = (
     ? ''
     : `${businessID}|${boundsNormalized}|${includeCancelled}`;
 
-  const [state, setState] = useState({
+  const [state, setState] = useState<{ invoices: InvoiceDocWithId[] }>({
     invoices: [],
   });
   const [resolvedKey, setResolvedKey] = useState('');
@@ -62,9 +64,9 @@ export const useFbGetInvoicesBySerie = (
     return onSnapshot(
       q,
       (snapshot) => {
-        const rawInvoices = snapshot.docs.map((doc) => ({
+        const rawInvoices: InvoiceDocWithId[] = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as InvoiceDoc),
         }));
 
         const filtered = rawInvoices.filter((invoice) => {

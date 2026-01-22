@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Timestamp,
   doc,
@@ -9,8 +8,20 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/date/dateUtils';
+import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
+import type { UserIdentity } from '@/types/users';
 
-const saveLastInvoiceChange = async (user, lastInvoiceChange) => {
+import {
+  getInvoiceProductQuantity,
+  isInvoiceUser,
+  type InvoiceDoc,
+} from './types';
+
+const saveLastInvoiceChange = async (
+  user: UserIdentity,
+  lastInvoiceChange: InvoiceDoc,
+): Promise<void> => {
   const { id } = lastInvoiceChange.data;
   const previousInvoiceRef = doc(
     db,
@@ -24,16 +35,31 @@ const saveLastInvoiceChange = async (user, lastInvoiceChange) => {
   });
 };
 
+const getProductKey = (product: InvoiceProduct): string | null =>
+  product.id ?? product.productId ?? product.cid ?? null;
+
 const updateProductsStock = async (
-  user,
-  newInvoiceVersion,
-  previousInvoiceVersion,
-) => {
+  user: UserIdentity,
+  newInvoiceVersion: InvoiceData,
+  previousInvoiceVersion: InvoiceData,
+): Promise<void> => {
+  const newProducts = newInvoiceVersion.products ?? [];
+  const prevProducts = previousInvoiceVersion.products ?? [];
   const newProductsMap = new Map(
-    newInvoiceVersion.products.map((product) => [product.id, product]),
+    newProducts
+      .map((product) => {
+        const key = getProductKey(product);
+        return key ? [key, product] : null;
+      })
+      .filter((entry): entry is [string, InvoiceProduct] => Boolean(entry)),
   );
   const prevProductsMap = new Map(
-    previousInvoiceVersion.products.map((product) => [product.id, product]),
+    prevProducts
+      .map((product) => {
+        const key = getProductKey(product);
+        return key ? [key, product] : null;
+      })
+      .filter((entry): entry is [string, InvoiceProduct] => Boolean(entry)),
   );
 
   // Procesar los productos en la nueva versión de la factura
@@ -44,10 +70,11 @@ const updateProductsStock = async (
     if (prevProduct) {
       // Si el producto existía antes, calcula el cambio en la cantidad
       stockChange =
-        prevProduct.amountToBuy.total - newProduct.amountToBuy.total;
+        getInvoiceProductQuantity(prevProduct) -
+        getInvoiceProductQuantity(newProduct);
     } else {
       // Si es un producto nuevo, el cambio es igual a la cantidad comprada (se reduce el stock)
-      stockChange = -newProduct.amountToBuy.total;
+      stockChange = -getInvoiceProductQuantity(newProduct);
     }
 
     // Actualizar el stock en la base de datos
@@ -58,11 +85,19 @@ const updateProductsStock = async (
   for (const [productId, prevProduct] of prevProductsMap) {
     if (!newProductsMap.has(productId)) {
       // Si un producto anterior ya no está en la nueva factura, incrementa el stock
-      await updateProductStock(user, productId, prevProduct.amountToBuy.total);
+      await updateProductStock(
+        user,
+        productId,
+        getInvoiceProductQuantity(prevProduct),
+      );
     }
   }
 };
-const updateProductStock = async (user, productId, stockChange) => {
+const updateProductStock = async (
+  user: UserIdentity,
+  productId: string,
+  stockChange: number,
+): Promise<void> => {
   // Simular la actualización del stock del producto
   console.log(
     `Simulando la actualización del stock del producto ${productId} en ${stockChange} unidades.`,
@@ -84,13 +119,17 @@ const updateProductStock = async (user, productId, stockChange) => {
   );
 };
 
-export const fbUpdateInvoice = async (user, invoice) => {
+export const fbUpdateInvoice = async (
+  user: UserIdentity | null | undefined,
+  invoice: InvoiceData,
+): Promise<void> => {
+  if (!isInvoiceUser(user)) return;
   const { id } = invoice;
   const invoiceRef = doc(db, 'businesses', user.businessID, 'invoices', id);
   try {
     const currentInvoiceSnap = await getDoc(invoiceRef);
     if (currentInvoiceSnap.exists()) {
-      const currentInvoice = currentInvoiceSnap.data();
+      const currentInvoice = currentInvoiceSnap.data() as InvoiceDoc;
       // Guardar la versión actual en la colección de versiones anteriores
       await saveLastInvoiceChange(user, currentInvoice);
 
@@ -98,9 +137,10 @@ export const fbUpdateInvoice = async (user, invoice) => {
       await updateProductsStock(user, invoice, currentInvoice.data);
 
       // Preparar los nuevos datos de la factura
-      let invoiceData = {
+      const invoiceMillis = toMillis(invoice.date);
+      const invoiceData: InvoiceData & { date?: Timestamp; updateAt?: Timestamp } = {
         ...invoice,
-        date: Timestamp.fromMillis(invoice.date),
+        date: invoiceMillis ? Timestamp.fromMillis(invoiceMillis) : Timestamp.now(),
         updateAt: Timestamp.now(),
       };
 

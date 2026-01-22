@@ -41,6 +41,8 @@ interface ShortcutGroup {
   items: DeveloperShortcut[];
 }
 
+type WindowPointerHandler = (event: PointerEvent) => void;
+
 export const DeveloperSessionHelper = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -134,8 +136,8 @@ export const DeveloperSessionHelper = () => {
     return () => clearTimeout(timeoutId);
   }, [hasInitialPosition]);
 
-  const handlePointerMove = useCallback(
-    (event: PointerEvent) => {
+  const handlePointerMove = useCallback<WindowPointerHandler>(
+    (event) => {
       const { isDragging, offsetX, offsetY } = dragState.current;
       if (!isDragging) return;
 
@@ -148,25 +150,28 @@ export const DeveloperSessionHelper = () => {
     [clampPosition],
   );
 
-  const handlePointerUp = useCallback(() => {
-    window.removeEventListener('pointermove', handlePointerMove);
+  const handlePointerUp = useCallback<WindowPointerHandler>(
+    (_event) => {
+      window.removeEventListener('pointermove', handlePointerMove);
 
-    const { moved } = dragState.current;
-    dragState.current = {
-      isDragging: false,
-      offsetX: 0,
-      offsetY: 0,
-      moved: false,
-    };
+      const { moved } = dragState.current;
+      dragState.current = {
+        isDragging: false,
+        offsetX: 0,
+        offsetY: 0,
+        moved: false,
+      };
 
-    if (!moved) {
-      setIsOpen((prev) => !prev);
-    }
+      if (!moved) {
+        setIsOpen((prev) => !prev);
+      }
 
-  }, [handlePointerMove]);
+    },
+    [handlePointerMove],
+  );
 
   const handlePointerDown = useCallback(
-    (event: React.PointerEvent) => {
+    (event: React.PointerEvent<HTMLButtonElement>) => {
       if (!shouldRender) return;
 
       if (event.pointerType === 'mouse' && event.button !== 0) {
@@ -183,7 +188,7 @@ export const DeveloperSessionHelper = () => {
         moved: false,
       };
 
-      window.addEventListener('pointermove', handlePointerMove as any);
+      window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp, { once: true });
     },
     [handlePointerMove, handlePointerUp, position.x, position.y, shouldRender],
@@ -204,13 +209,13 @@ export const DeveloperSessionHelper = () => {
 
   useEffect(
     () => () => {
-      window.removeEventListener('pointermove', handlePointerMove as any);
+      window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     },
     [handlePointerMove, handlePointerUp],
   );
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       setIsOpen((prev) => !prev);

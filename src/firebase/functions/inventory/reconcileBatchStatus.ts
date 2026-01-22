@@ -1,16 +1,22 @@
-// @ts-nocheck
-import { httpsCallable } from 'firebase/functions';
+﻿import { httpsCallable, type HttpsCallableResult } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 
 const callable = httpsCallable(functions, 'reconcileBatchStatusFromStocks');
 
+export interface ReconcileBatchStatusPayload {
+  businessId: string;
+  batchIds?: string[];
+  limit?: number;
+  dryRun?: boolean;
+}
+
 /**
  * Sincroniza estados y cantidades de lotes en Cloud Functions
- * @param {{ businessId: string; batchIds?: string[]; limit?: number; dryRun?: boolean }} payload
- * @returns {Promise<any>}
  */
-export async function reconcileBatchStatus(payload) {
-  const { data } = await callable(payload);
+export async function reconcileBatchStatus(
+  payload: ReconcileBatchStatusPayload,
+): Promise<unknown> {
+  const { data } = (await callable(payload)) as HttpsCallableResult<unknown>;
   return data;
 }

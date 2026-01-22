@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -8,8 +7,15 @@ import {
 import { useEffect, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const useClientAccountsReceivableCounts = ({ user, clientId }) => {
+export const useClientAccountsReceivableCounts = ({
+  user,
+  clientId,
+}: {
+  user: UserIdentity | null | undefined;
+  clientId: string | null | undefined;
+}) => {
   const [counts, setCounts] = useState({ open: 0, closed: 0 });
 
   useEffect(() => {

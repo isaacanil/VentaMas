@@ -1,11 +1,19 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 
 const callable = httpsCallable(functions, 'getNcfLedgerInsights');
 
-export const getNcfLedgerInsights = async (payload = {}) => {
+type NcfLedgerInsightsPayload = {
+  businessId: string;
+  prefix: string;
+  userId: string;
+  [key: string]: unknown;
+};
+
+export const getNcfLedgerInsights = async (
+  payload: NcfLedgerInsightsPayload,
+): Promise<unknown> => {
   if (!payload?.businessId) {
     throw new Error(
       'businessId es requerido para obtener insights del ledger.',

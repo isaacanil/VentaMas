@@ -1,11 +1,66 @@
-// @ts-nocheck
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+﻿import {
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+  type FirebaseStorage,
+  type StorageReference,
+  type UploadMetadata,
+  type UploadTaskSnapshot,
+} from 'firebase/storage';
 import { nanoid } from 'nanoid';
 
 import { storage } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-// Validación de archivos
-export const validateFile = (file, allowedTypes = [], maxSize = null) => {
+export interface UploadResult {
+  url: string;
+  location: 'remote';
+  name: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: number;
+  timestamp?: number;
+}
+
+export interface UploadError {
+  error: string;
+  fileName: string;
+}
+
+export interface UploadGlobalProgress {
+  totalBytes: number;
+  totalBytesTransferred: number;
+  progress: number;
+}
+
+export type UploadProgressHandler = (
+  snapshot: UploadTaskSnapshot,
+  file?: File,
+) => void;
+
+export type GlobalProgressHandler = (snapshot: UploadTaskSnapshot) => void;
+
+export interface UploadOptions {
+  allowedTypes?: string[];
+  maxSizeInBytes?: number | null;
+  onProgress?: UploadProgressHandler;
+  customMetadata?: Record<string, string>;
+  normalizeFileName?: boolean;
+}
+
+export interface UploadFilesOptions extends UploadOptions {
+  fileProperty?: string | null;
+  updateGlobalProgress?: (payload: UploadGlobalProgress) => void;
+  handleErrorsIndividually?: boolean;
+  addTimestamp?: boolean;
+}
+
+// Validacion de archivos
+export const validateFile = (
+  file: File,
+  allowedTypes: string[] = [],
+  maxSize: number | null = null,
+): void => {
   if (!file) throw new Error('Invalid file');
   if (allowedTypes.length && !allowedTypes.includes(file.type)) {
     throw new Error(`Unsupported type: ${file.type}`);
@@ -17,29 +72,29 @@ export const validateFile = (file, allowedTypes = [], maxSize = null) => {
 
 // Crear referencia de almacenamiento
 export const createStorageRef = (
-  storage,
-  businessID,
-  sectionName,
-  fileName,
+  targetStorage: FirebaseStorage,
+  businessID: string,
+  sectionName: string,
+  fileName: string,
   normalize = true,
-) => {
+): StorageReference => {
   const processedName = normalize
     ? fileName.replace(/[^a-z0-9.]/gi, '_').toLowerCase()
     : fileName;
   return ref(
-    storage,
+    targetStorage,
     `businesses/${businessID}/${sectionName}/${nanoid()}${processedName}`,
   );
 };
 
-// Subir un archivo único
+// Subir un archivo unico
 export const uploadSingleFile = async (
-  storageRef,
-  file,
-  metadata,
-  onProgress,
-  onGlobalProgress,
-) => {
+  storageRef: StorageReference,
+  file: File,
+  metadata?: UploadMetadata,
+  onProgress?: UploadProgressHandler,
+  onGlobalProgress?: GlobalProgressHandler,
+): Promise<UploadResult> => {
   const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
   return new Promise((resolve, reject) => {
@@ -74,8 +129,8 @@ export const uploadSingleFile = async (
   });
 };
 
-// Validación de nombre de sección
-export const validateSectionName = (sectionName) => {
+// Validacion de nombre de seccion
+export const validateSectionName = (sectionName: string): void => {
   if (!sectionName || typeof sectionName !== 'string') {
     throw new Error('Invalid section name');
   }
@@ -85,7 +140,30 @@ export const validateSectionName = (sectionName) => {
   }
 };
 
-export const fbUploadFile = async (user, sectionName, file, options = {}) => {
+const resolveFile = (
+  fileObj: File | Record<string, File>,
+  fileProperty?: string | null,
+): File => {
+  if (fileProperty && typeof fileObj === 'object' && fileProperty in fileObj) {
+    const candidate = fileObj[fileProperty];
+    if (candidate instanceof File) {
+      return candidate;
+    }
+  }
+
+  if (fileObj instanceof File) {
+    return fileObj;
+  }
+
+  throw new Error('Invalid file entry');
+};
+
+export const fbUploadFile = async (
+  user: UserIdentity,
+  sectionName: string,
+  file: File,
+  options: UploadOptions = {},
+): Promise<UploadResult> => {
   const {
     allowedTypes = [],
     maxSizeInBytes = null,
@@ -114,15 +192,18 @@ export const fbUploadFile = async (user, sectionName, file, options = {}) => {
   return await uploadSingleFile(storageRef, file, metadata, onProgress);
 };
 
-export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
+export const fbUploadFiles = async (
+  user: UserIdentity,
+  sectionName: string,
+  files: Array<File | Record<string, File>>,
+  options: UploadFilesOptions = {},
+): Promise<Array<UploadResult | UploadError>> => {
   const {
     fileProperty = null,
     allowedTypes = [],
     maxSizeInBytes = null,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onProgress = () => { },
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    updateGlobalProgress = () => { },
+    onProgress,
+    updateGlobalProgress = () => undefined,
     customMetadata = {},
     normalizeFileName = true,
     handleErrorsIndividually = false,
@@ -138,7 +219,7 @@ export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
   }
 
   const totalBytes = files.reduce((sum, fileObj) => {
-    const file = fileProperty ? fileObj[fileProperty] : fileObj;
+    const file = resolveFile(fileObj, fileProperty);
     return sum + (file?.size || 0);
   }, 0);
 
@@ -146,7 +227,7 @@ export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
 
   const results = await Promise.allSettled(
     files.map(async (fileObj) => {
-      const file = fileProperty ? fileObj[fileProperty] : fileObj;
+      const file = resolveFile(fileObj, fileProperty);
 
       try {
         validateFile(file, allowedTypes, maxSizeInBytes);
@@ -160,7 +241,7 @@ export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
           normalizeFileName,
         );
 
-        const metadata = {
+        const metadata: UploadMetadata = {
           contentType: file.type,
           ...customMetadata,
         };
@@ -183,7 +264,8 @@ export const fbUploadFiles = async (user, sectionName, files, options = {}) => {
         return addTimestamp ? { ...result, timestamp: Date.now() } : result;
       } catch (error) {
         if (handleErrorsIndividually) {
-          return { error: error.message, fileName: file.name };
+          const message = error instanceof Error ? error.message : String(error);
+          return { error: message, fileName: file.name };
         }
         throw error;
       }

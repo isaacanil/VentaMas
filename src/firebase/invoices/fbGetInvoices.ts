@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
@@ -12,13 +11,21 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/userSlice';
 import { validateUser } from '../../utils/userValidation';
 import { db } from '../firebaseconfig';
+import type { InvoiceDoc } from './types';
 
-export const useFbGetInvoices = (time) => {
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type TimeRange = {
+  startDate?: string | number | Date;
+  endDate?: string | number | Date;
+};
+
+export const useFbGetInvoices = (time: TimeRange | null | undefined) => {
   const [loading, setLoading] = useState(
     () => Boolean(time?.startDate && time?.endDate),
   );
-  const [invoices, setInvoices] = useState([]);
-  const user = useSelector(selectUser);
+  const [invoices, setInvoices] = useState<InvoiceDoc[]>([]);
+  const user = useSelector((state: UserRootState) => selectUser(state));
 
    
   if ((!time?.startDate || !time?.endDate || !user?.businessID) && (invoices.length > 0 || loading)) {
@@ -88,8 +95,8 @@ export const useFbGetInvoices = (time) => {
             return;
           }
           const data = snapshot.docs
-            .map((item) => item.data())
-            .filter((item) => item.data.status !== 'cancelled');
+            .map((item) => item.data() as InvoiceDoc)
+            .filter((item) => item?.data?.status !== 'cancelled');
 
           setInvoices(data);
           setLoading(false);
@@ -111,7 +118,14 @@ export const useFbGetInvoices = (time) => {
         unsubscribe();
       }
     };
-  }, [time?.startDate, time?.endDate, user?.businessID, user?.uid, user?.role, user]);
+  }, [
+    time?.startDate,
+    time?.endDate,
+    user?.businessID,
+    user?.uid,
+    user?.role,
+    user,
+  ]);
 
   return { invoices, loading };
 };

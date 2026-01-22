@@ -1,9 +1,12 @@
-// @ts-nocheck
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export async function fbGetActiveARCount(businessID, clientId) {
+export async function fbGetActiveARCount(
+  businessID: string | null | undefined,
+  clientId: string | null | undefined,
+): Promise<number> {
+  if (!businessID || !clientId) return 0;
   const accountsReceivableRef = collection(
     db,
     `businesses/${businessID}/accountsReceivable`,

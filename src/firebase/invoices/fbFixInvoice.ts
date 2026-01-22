@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -16,8 +15,32 @@ import {
   convertDecimalToPercentage,
   getPriceWithoutTax,
 } from '@/utils/pricing';
+import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
-export const fbFixInvoices = async (businessID) => {
+type LegacyInvoiceProduct = InvoiceProduct & {
+  productName?: string;
+  productImageURL?: string;
+  barCode?: string;
+  qrCode?: string;
+  listPrice?: number;
+  averagePrice?: number;
+  minimumPrice?: number;
+  cost?: { unit?: number };
+  tax?: { value?: number };
+  promotions?: { isActive?: boolean; discount?: number; start?: unknown; end?: unknown };
+  isVisible?: boolean;
+  trackInventory?: boolean;
+  netContent?: string;
+  size?: string;
+  type?: string;
+  amountToBuy?: number | { total?: number };
+};
+
+type InvoiceDocData = {
+  data?: InvoiceData & { products?: LegacyInvoiceProduct[] };
+};
+
+export const fbFixInvoices = async (businessID: string): Promise<void> => {
   try {
     const _transformedProducts = [];
     const startOfThisMonth = DateTime.now().minus({ years: 1 }).startOf('year');
@@ -34,7 +57,7 @@ export const fbFixInvoices = async (businessID) => {
     const batch = writeBatch(db);
 
     for (const docSnapshot of snapshot.docs) {
-      const invoice = docSnapshot.data();
+      const invoice = docSnapshot.data() as InvoiceDocData;
       const data = invoice.data;
       if (data && data.products) {
         const productsTransformed = data.products.map((product) => {
@@ -43,9 +66,11 @@ export const fbFixInvoices = async (businessID) => {
             const taxPercentage =
               convertDecimalToPercentage(product?.tax?.value) || 0;
             const total = getPriceWithoutTax(price, taxPercentage);
+            const taxValue =
+              typeof product?.tax?.value === 'number' ? product.tax.value : 0;
             return {
               id: product.id,
-              name: isString(product.productName),
+              name: toStringValue(product.productName),
               category: product?.category || '',
               image: product?.productImageURL || '',
               pricing: {
@@ -54,7 +79,7 @@ export const fbFixInvoices = async (businessID) => {
                 avgPrice: product?.averagePrice || total,
                 minPrice: product?.minimumPrice || total,
                 price: total,
-                tax: product.tax.value * 100,
+                tax: taxValue * 100,
               },
               promotions: {
                 isActive: false,
@@ -65,13 +90,17 @@ export const fbFixInvoices = async (businessID) => {
               stock: product.stock || 0,
               barcode: product.barCode || '',
               qrcode: product.qrCode || '',
-              isVisible: product.isVisible || true,
-              trackInventory: product.trackInventory || true,
+              isVisible: product.isVisible ?? true,
+              trackInventory: product.trackInventory ?? true,
               netContent: product.netContent || '',
-              size: isString(product?.size) || '',
-              type: isString(product?.type) || '',
+              size: toStringValue(product?.size),
+              type: toStringValue(product?.type),
               status: 'disponible',
-              amountToBuy: product?.amountToBuy?.total,
+              amountToBuy:
+                typeof product?.amountToBuy === 'object' &&
+                product?.amountToBuy !== null
+                  ? product.amountToBuy.total
+                  : product?.amountToBuy,
             };
           } else {
             return product; // Devuelve el producto sin cambios si no tiene nombre
@@ -92,10 +121,16 @@ export const fbFixInvoices = async (businessID) => {
   }
 };
 
-export const isString = (value) =>
-  typeof value === 'string' ? value.trim() : value;
+export const isString = (value: unknown): value is string =>
+  typeof value === 'string';
 
-export const fbPreviewProcessedInvoice = async (businessID, invoiceID) => {
+const toStringValue = (value: unknown): string =>
+  typeof value === 'string' ? value.trim() : '';
+
+export const fbPreviewProcessedInvoice = async (
+  businessID: string,
+  invoiceID: string,
+): Promise<InvoiceDocData | null> => {
   try {
     // Referencia al documento específico de la factura
     const invoiceRef = doc(db, 'businesses', businessID, 'invoices', invoiceID);
@@ -104,7 +139,7 @@ export const fbPreviewProcessedInvoice = async (businessID, invoiceID) => {
     const docSnapshot = await getDoc(invoiceRef);
 
     if (docSnapshot.exists()) {
-      const invoice = docSnapshot.data();
+      const invoice = docSnapshot.data() as InvoiceDocData;
       const data = invoice.data;
       if (data && data.products) {
         const productsTransformed = data.products.map((product) => {
@@ -114,9 +149,11 @@ export const fbPreviewProcessedInvoice = async (businessID, invoiceID) => {
             const taxPercentage =
               convertDecimalToPercentage(product?.tax?.value) || 0;
             const total = getPriceWithoutTax(price, taxPercentage);
+            const taxValue =
+              typeof product?.tax?.value === 'number' ? product.tax.value : 0;
             return {
               id: product.id,
-              name: isString(product.productName),
+              name: toStringValue(product.productName),
               category: product?.category || '',
               image: product?.productImageURL || '',
               pricing: {
@@ -125,7 +162,7 @@ export const fbPreviewProcessedInvoice = async (businessID, invoiceID) => {
                 avgPrice: product?.averagePrice || total,
                 minPrice: product?.minimumPrice || total,
                 price: total,
-                tax: product.tax.value * 100,
+                tax: taxValue * 100,
               },
               promotions: {
                 isActive: false,
@@ -136,13 +173,17 @@ export const fbPreviewProcessedInvoice = async (businessID, invoiceID) => {
               stock: product.stock || 0,
               barcode: product.barCode || '',
               qrcode: product.qrCode || '',
-              isVisible: product.isVisible || true,
-              trackInventory: product.trackInventory || true,
+              isVisible: product.isVisible ?? true,
+              trackInventory: product.trackInventory ?? true,
               netContent: product.netContent || '',
-              size: isString(product?.size),
-              type: isString(product?.type) || '',
+              size: toStringValue(product?.size),
+              type: toStringValue(product?.type),
               status: 'disponible',
-              amountToBuy: product?.amountToBuy?.total,
+              amountToBuy:
+                typeof product?.amountToBuy === 'object' &&
+                product?.amountToBuy !== null
+                  ? product.amountToBuy.total
+                  : product?.amountToBuy,
             };
           } else {
             return product; // Devuelve el producto sin cambios si no tiene nombre

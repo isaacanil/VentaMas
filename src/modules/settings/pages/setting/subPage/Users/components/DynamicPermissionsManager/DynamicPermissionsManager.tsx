@@ -1,7 +1,7 @@
 import { Alert, Button, Empty, Modal, Spin, Switch } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { type DefaultTheme } from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
@@ -300,6 +300,8 @@ const Content = styled.div`
   gap: 1.25rem;
 `;
 
+type ThemeProps = { theme: DefaultTheme };
+
 const ModalHeader = styled.div`
   display: flex;
   flex-direction: column;
@@ -310,12 +312,12 @@ const ModalTitle = styled.h4`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.primary ?? '#111827'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.primary ?? '#111827'};
 `;
 
 const ModalMeta = styled.span`
   font-size: 0.85rem;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.secondary ?? '#4b5563'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.secondary ?? '#4b5563'};
 `;
 
 const SectionHeader = styled.div`
@@ -328,13 +330,13 @@ const SectionHeading = styled.h5`
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.primary ?? '#111827'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.primary ?? '#111827'};
 `;
 
 const Subtitle = styled.p`
   margin: 0;
   font-size: 0.88rem;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.secondary ?? '#4b5563'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.secondary ?? '#4b5563'};
 `;
 
 const PermissionGroupsWrapper = styled.div`
@@ -347,7 +349,7 @@ const PermissionsContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid ${({ theme }: { theme?: any }) => theme?.border?.primary ?? '#f0f0f0'};
+  border: 1px solid ${({ theme }: ThemeProps) => theme?.border?.primary ?? '#f0f0f0'};
   border-radius: 12px;
 `;
 
@@ -360,22 +362,22 @@ const PermissionTitle = styled.h5`
   margin: 0;
   font-size: 0.96rem;
   font-weight: 600;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.primary ?? '#111827'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.primary ?? '#111827'};
 `;
 
 const PermissionDescription = styled.p`
   margin: 0;
   font-size: 0.85rem;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.secondary ?? '#4b5563'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.secondary ?? '#4b5563'};
 `;
 
 const PermissionGroupHeader = styled.div`
   padding: 0.75rem 1.1rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.secondary ?? '#4b5563'};
-  background: ${({ theme }: { theme?: any }) => theme?.background?.muted ?? '#f9fafb'};
-  border-bottom: 1px solid ${({ theme }: { theme?: any }) => theme?.border?.primary ?? '#f0f0f0'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.secondary ?? '#4b5563'};
+  background: ${({ theme }: ThemeProps) => theme?.background?.muted ?? '#f9fafb'};
+  border-bottom: 1px solid ${({ theme }: ThemeProps) => theme?.border?.primary ?? '#f0f0f0'};
 `;
 
 const InfoAlert = styled(Alert)`
@@ -386,7 +388,7 @@ const SummaryText = styled.span`
   display: block;
   margin-top: 0.75rem;
   font-size: 0.85rem;
-  color: ${({ theme }: { theme?: any }) => theme?.text?.secondary ?? '#4b5563'};
+  color: ${({ theme }: ThemeProps) => theme?.text?.secondary ?? '#4b5563'};
 `;
 
 const PermissionRow = styled.div`
@@ -397,6 +399,6 @@ const PermissionRow = styled.div`
   padding: 0.85rem 1.1rem;
 
   &:not(:last-child) {
-    border-bottom: 1px solid ${({ theme }: { theme?: any }) => theme?.border?.primary ?? '#f0f0f0'};
+    border-bottom: 1px solid ${({ theme }: ThemeProps) => theme?.border?.primary ?? '#f0f0f0'};
   }
 `;

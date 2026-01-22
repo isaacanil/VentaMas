@@ -1,25 +1,27 @@
-// @ts-nocheck
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import { toMillis } from '@/utils/date/dateUtils';
+import type { InvoiceData } from '@/types/invoice';
+import type { TimestampLike } from '@/utils/date/types';
 
-const toMs = (v) => {
-  if (v == null) return null;
-  if (typeof v?.toMillis === 'function') return v.toMillis(); // Firestore Timestamp
-  if (v instanceof Date) return v.getTime();
-  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-  if (typeof v === 'string') {
-    const ms = Date.parse(v);
-    return Number.isNaN(ms) ? null : ms;
-  }
-  return null;
+type UserRootState = Parameters<typeof selectUser>[0];
+
+const toMs = (value: TimestampLike): number | null => {
+  const millis = toMillis(value);
+  return typeof millis === 'number' && Number.isFinite(millis) ? millis : null;
 };
 
-export const useFbGetInvoicesByClient = (clientId, dateRange = null) => {
-  const businessID = useSelector((s) => selectUser(s)?.businessID);
+type DateRange = [TimestampLike, TimestampLike] | null;
+
+export const useFbGetInvoicesByClient = (
+  clientId: string | null | undefined,
+  dateRange: DateRange = null,
+) => {
+  const businessID = useSelector((s: UserRootState) => selectUser(s)?.businessID);
 
   const startMs = toMs(dateRange?.[0]);
   const endMs = toMs(dateRange?.[1]);
@@ -29,7 +31,7 @@ export const useFbGetInvoicesByClient = (clientId, dateRange = null) => {
     ? ''
     : `${businessID}|${clientId}|${startMs ?? ''}|${endMs ?? ''}`;
 
-  const [invoicesState, setInvoicesState] = useState([]);
+  const [invoicesState, setInvoicesState] = useState<InvoiceData[]>([]);
   const [resolvedKey, setResolvedKey] = useState(''); // último snapshot aplicado
 
   useEffect(() => {
@@ -56,7 +58,10 @@ export const useFbGetInvoicesByClient = (clientId, dateRange = null) => {
       (snapshot) => {
         const invoicesData = snapshot.empty
           ? []
-          : snapshot.docs.map((doc) => doc.data().data);
+          : snapshot.docs
+              .map((doc) => doc.data())
+              .map((docData) => docData?.data)
+              .filter(Boolean) as InvoiceData[];
 
         setInvoicesState(invoicesData);
         setResolvedKey(queryKeyLocal);

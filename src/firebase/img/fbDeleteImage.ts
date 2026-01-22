@@ -1,9 +1,8 @@
-// @ts-nocheck
-import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
+﻿import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 
 import { storage } from '@/firebase/firebaseconfig';
 
-export const fbDeleteImage = async (imgUrl) => {
+export const fbDeleteImage = async (imgUrl: string): Promise<void> => {
   const imgRef = ref(storage, imgUrl);
 
   try {
@@ -14,6 +13,6 @@ export const fbDeleteImage = async (imgUrl) => {
     await deleteObject(imgRef);
     // Image deleted successfully
   } catch (error) {
-    console.error(`Error deleting image: ${error}`);
+    console.error(`Error deleting image: ${String(error)}`);
   }
 };

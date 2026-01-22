@@ -1,32 +1,33 @@
-// @ts-nocheck
-import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
+﻿import { doc, onSnapshot, Timestamp, type Unsubscribe } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
+export type BusinessInfoData = Record<string, unknown>;
+
+type BusinessInfoHandler = (business: BusinessInfoData | null) => void;
+
+type ErrorHandler = (error: unknown) => void;
+
 /**
  * Subscribes to real-time updates of a business document in Firestore.
- *
- * @param {string} businessID - Firestore document ID of the business.
- * @param {Function} dispatch - Redux dispatch function.
- * @returns {Function} Unsubscribe callback to stop listening.
  */
 export const subscribeToBusinessInfo = (
-  businessID,
-  onNext,
-  onError = console.error,
-) => {
+  businessID: string,
+  onNext: BusinessInfoHandler,
+  onError: ErrorHandler = console.error,
+): Unsubscribe | undefined => {
   if (typeof businessID !== 'string' || !businessID.trim()) {
-    console.warn('subscribeToBusinessInfo: businessID inválido');
+    console.warn('subscribeToBusinessInfo: businessID invalido');
     return undefined;
   }
   if (typeof onNext !== 'function') {
-    console.warn('subscribeToBusinessInfo: onNext no es una función');
+    console.warn('subscribeToBusinessInfo: onNext no es una funcion');
     return undefined;
   }
 
   const businessRef = doc(db, 'businesses', businessID);
 
-  const sanitizeTimestamps = (value) => {
+  const sanitizeTimestamps = (value: unknown): unknown => {
     if (value === null || value === undefined) return value;
     if (value instanceof Timestamp) {
       return value.toMillis();
@@ -35,10 +36,14 @@ export const subscribeToBusinessInfo = (
       return value.map(sanitizeTimestamps);
     }
     if (typeof value === 'object') {
-      return Object.entries(value).reduce((acc, [key, entryValue]) => {
-        acc[key] = sanitizeTimestamps(entryValue);
-        return acc;
-      }, {});
+      const record = value as Record<string, unknown>;
+      return Object.entries(record).reduce<Record<string, unknown>>(
+        (acc, [key, entryValue]) => {
+          acc[key] = sanitizeTimestamps(entryValue);
+          return acc;
+        },
+        {},
+      );
     }
     return value;
   };
@@ -51,9 +56,9 @@ export const subscribeToBusinessInfo = (
         onNext(null);
         return;
       }
-      const business = snapshot.get('business') ?? null;
+      const business = (snapshot.get('business') ?? null) as BusinessInfoData | null;
 
-      onNext(sanitizeTimestamps(business));
+      onNext(sanitizeTimestamps(business) as BusinessInfoData | null);
     },
     (err) => {
       onError(err);

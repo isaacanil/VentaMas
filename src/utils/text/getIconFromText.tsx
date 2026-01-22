@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faAsterisk,
   faBeer,
@@ -9,8 +8,14 @@ import {
   faPizzaSlice,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-const keywords = [
+type KeywordConfig = {
+  words: string[];
+  icon: IconDefinition;
+};
+
+const keywords: KeywordConfig[] = [
   { words: ['cafe', 'café', 'coffee', 'cafes'], icon: faCoffee },
   { words: ['pizza'], icon: faPizzaSlice },
   { words: ['cerveza'], icon: faBeer },
@@ -20,7 +25,10 @@ const keywords = [
   { words: ['general'], icon: faAsterisk },
 ];
 
-const getIconFromText = (text) => {
+const getIconFromText = (text: string | null | undefined) => {
+  if (!text) {
+    return null;
+  }
   for (const keyword of keywords) {
     if (
       new RegExp(`\\b(${keyword.words.join('|')})\\b`).test(text.toLowerCase())

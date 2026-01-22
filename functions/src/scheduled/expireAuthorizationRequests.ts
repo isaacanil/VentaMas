@@ -4,7 +4,23 @@ import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 const COLLECTION = 'authorizationRequests';
 const EXPIRED_STATUS = 'expired';
 
-const shouldExpire = (data: any): boolean => {
+type AuthorizationExpiresAt =
+  | Timestamp
+  | { seconds: number }
+  | number
+  | string
+  | null
+  | undefined;
+
+interface AuthorizationRequestData {
+  status?: string;
+  expiresAt?: AuthorizationExpiresAt;
+  expires_at?: AuthorizationExpiresAt;
+}
+
+const shouldExpire = (
+  data: AuthorizationRequestData | null | undefined,
+): boolean => {
   if (!data || data.status !== 'pending') {
     return false;
   }

@@ -1,14 +1,21 @@
-// @ts-nocheck
-import { httpsCallable } from 'firebase/functions';
+﻿import { httpsCallable, type HttpsCallableResult } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 
 const callProcessInvoice = httpsCallable(functions, 'processInvoiceEndpoint');
 
-export async function testInvoiceFunction(inputData) {
+interface ProcessInvoicePayload {
+  message: string;
+  timestamp: string;
+  type: 'test-request';
+}
+
+export async function testInvoiceFunction(
+  inputData: string | null | undefined,
+): Promise<unknown> {
   try {
     // Crear el objeto de datos a enviar basado en la entrada del usuario
-    const dataToSend = {
+    const dataToSend: ProcessInvoicePayload = {
       // Utilizamos el inputData como campo de texto si existe, o un valor por defecto
       message: inputData || 'Sin datos',
       timestamp: new Date().toISOString(),
@@ -16,7 +23,7 @@ export async function testInvoiceFunction(inputData) {
     };
 
     // Calling invoice processing function
-    const result = await callProcessInvoice(dataToSend);
+    const result = (await callProcessInvoice(dataToSend)) as HttpsCallableResult<unknown>;
 
     // result.data contiene lo que tu función backend retornó
     console.info('Invoice function executed successfully');

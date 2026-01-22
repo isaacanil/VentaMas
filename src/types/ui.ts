@@ -1,26 +1,33 @@
-import type { ReactNode, RefObject } from 'react';
+import type {
+  ElementType,
+  MouseEventHandler,
+  ReactNode,
+  RefObject,
+} from 'react';
+
+type ClickHandler = MouseEventHandler<HTMLElement>;
 
 export interface ButtonIconMenuProps {
-  icon?: any;
-  onClick?: any;
+  icon?: ReactNode;
+  onClick?: ClickHandler;
   tooltip?: string;
   tooltipDescription?: string;
   tooltipPlacement?: string;
   indicator?: boolean;
   indicatorCount?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface OpenMenuButtonProps {
-  onClick?: any;
+  onClick?: ClickHandler;
   zIndex?: number;
   isOpen?: boolean;
 }
 
 export interface NotificationButtonProps {
-  handleCloseMenu?: any;
+  handleCloseMenu?: () => void;
   className?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ButtonGroupProps {
@@ -29,9 +36,9 @@ export interface ButtonGroupProps {
 }
 
 export interface TooltipProps {
-  description?: any;
+  description?: ReactNode;
   Children: ReactNode;
-  placement?: any;
+  placement?: string;
 }
 
 export interface CenteredTextProps {
@@ -39,16 +46,16 @@ export interface CenteredTextProps {
   containerVariant?: string;
   text?: ReactNode;
   buttonText?: ReactNode;
-  handleAction?: any;
+  handleAction?: ClickHandler;
   showAfter?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface DropdownMenuProps {
   title?: string;
   options?: DropdownMenuOption[];
   customButton?: ReactNode;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface DropdownMenuOption {
@@ -64,14 +71,14 @@ export interface DropdownMenuOption {
 }
 
 export interface FormattedValueProps {
-  type?: any;
-  value?: any;
-  size?: any;
+  type?: string;
+  value?: string | number | null | undefined;
+  size?: string | number;
   bold?: boolean;
   noWrap?: boolean;
-  color?: any;
+  color?: string;
   transformValue?: boolean;
-  align?: any;
+  align?: string;
 }
 
 export interface TypographyProps {
@@ -83,12 +90,12 @@ export interface TypographyProps {
   gutterBottom?: boolean;
   disableMargins?: boolean;
   noWrap?: boolean;
-  component?: any;
+  component?: ElementType;
   className?: string;
   size?: string;
   italic?: boolean;
   strikethrough?: boolean;
-  textShadow?: any;
+  textShadow?: string;
   children?: ReactNode;
   bold?: boolean;
   underline?: boolean;
@@ -97,43 +104,43 @@ export interface TypographyProps {
   lowercase?: boolean;
   letterSpacing?: string;
   textTransform?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface LoaderProps {
   useRedux?: boolean;
-  show?: any;
-  message?: any;
+  show?: boolean;
+  message?: ReactNode;
   theme?: string;
 }
 
 export interface SimplePanelHeaderProps {
-  icon?: any;
-  title?: any;
+  icon?: ReactNode;
+  title?: ReactNode;
   badgeCount?: number;
-  metaItems?: any[];
+  metaItems?: ReactNode[];
   showMeta?: boolean;
 }
 
 export interface FiscalReceiptsPanelProps {
-  data?: any;
+  data?: unknown;
 }
 
 export interface InventoryFilterAndSortProps {
-  tooltip?: any;
-  tooltipDescription?: any;
-  tooltipPlacement?: any;
+  tooltip?: ReactNode;
+  tooltipDescription?: ReactNode;
+  tooltipPlacement?: string;
   contextKey?: string;
 }
 
 export interface PresetsSectionProps {
-  presets?: any[];
-  value?: any;
-  mode?: any;
+  presets?: unknown[];
+  value?: unknown;
+  mode?: string;
   isMobile?: boolean;
-  onPresetClick?: (preset: any) => void;
+  onPresetClick?: (preset: unknown) => void;
   showPresetsDropdown?: boolean;
   setShowPresetsDropdown?: (value: boolean) => void;
-  presetsDropdownRef?: RefObject<any>;
+  presetsDropdownRef?: RefObject<HTMLElement>;
   layout?: string;
 }

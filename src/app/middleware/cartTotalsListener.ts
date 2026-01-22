@@ -5,6 +5,9 @@ import { cartSlice, recalcTotals } from '@/features/cart/cartSlice';
 export const totalsListener = createListenerMiddleware();
 
 /* Acciones que deben disparar el recálculo (sin paymentValue) */
+type CartActionCreator =
+  (typeof cartSlice.actions)[keyof typeof cartSlice.actions];
+
 const basicRecalcActions = [
   cartSlice.actions.addProduct,
   cartSlice.actions.deleteProduct,
@@ -21,11 +24,13 @@ const basicRecalcActions = [
   cartSlice.actions.setClient,
   cartSlice.actions.loadCart,
   cartSlice.actions.resetCart,
-];
+] as const satisfies ReadonlyArray<CartActionCreator>;
+
+const isBasicRecalcAction = isAnyOf(...basicRecalcActions);
 
 /* Listener genérico (sin paymentValue) */
 totalsListener.startListening({
-  matcher: (isAnyOf as any)(...basicRecalcActions),
+  matcher: isBasicRecalcAction,
   effect: async (_, listenerApi) => {
     listenerApi.dispatch(recalcTotals(undefined));
   },
