@@ -9,11 +9,12 @@ export interface TaxReceiptData {
   id?: string;
   name: string;
   type: string;
-  serie: string;
+  serie?: string;
+  series?: string;
   sequence?: number | string;
   sequenceLength?: number;
   increase?: number;
-  quantity?: number;
+  quantity?: number | string;
   disabled?: boolean;
   description?: string;
   createdAt?: unknown;

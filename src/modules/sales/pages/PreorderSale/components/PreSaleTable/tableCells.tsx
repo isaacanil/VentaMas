@@ -313,7 +313,7 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
     const { isValid, message } = validateInvoiceCart(data);
     if (isValid) {
       convertToCart(data);
-      dispatch(toggleInvoicePanelOpen());
+      dispatch(toggleInvoicePanelOpen(undefined));
     } else {
       notification.error({
         description: message,
@@ -628,7 +628,7 @@ export const PreorderActionsCell = ({ value }: { value: PreorderActionCellValue 
     }
 
     if (invoiceTiming !== 'full-payment' && invoiceTiming !== 'always-ask') {
-      dispatch(toggleInvoicePanelOpen());
+      dispatch(toggleInvoicePanelOpen(undefined));
       return;
     }
 

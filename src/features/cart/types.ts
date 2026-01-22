@@ -62,6 +62,12 @@ export interface PaymentMethod {
     reference?: string;
 }
 
+export interface DuePeriod {
+    months?: number;
+    weeks?: number;
+    days?: number;
+}
+
 export interface PreorderDetails {
     date?: number | { seconds: number; nanoseconds: number };
     preorderNumber?: string | null;
@@ -129,6 +135,10 @@ export interface CartSettings {
     billing: {
         billingMode: string;
         invoiceType?: string;
+        duePeriod?: DuePeriod | null;
+        hasDueDate?: boolean;
+        useCustomConfig?: boolean;
+        selectedOption?: string | null;
         authorizationFlowEnabled: boolean;
         enabledAuthorizationModules: {
             invoices: boolean;

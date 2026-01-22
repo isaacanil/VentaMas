@@ -24,6 +24,7 @@ import {
   toggleInvoicePanelOpen,
   setPaymentMethod,
 } from '@/features/cart/cartSlice';
+import type { CartData, CartSettings, PaymentMethod } from '@/features/cart/types';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { selectInsuranceAR } from '@/features/insurance/insuranceAccountsReceivableSlice';
 import { selectInsuranceAuthData } from '@/features/insurance/insuranceAuthSlice';
@@ -60,64 +61,10 @@ import { getInvoiceErrorNotification } from './utils/getInvoiceErrorNotification
 import { getTaxReceiptAvailability } from './utils/getTaxReceiptAvailability';
 import { isTaxReceiptDepletedError } from './utils/isTaxReceiptDepletedError';
 
-type PaymentMethod = {
-  method?: string;
-  status?: boolean;
-  value?: number | string;
-};
-
-type CartProduct = {
-  id?: string;
-  name?: string;
-  comment?: string;
-  [key: string]: unknown;
-};
-
-type CartData = {
-  id?: string;
-  cartId?: string;
-  cartIdRef?: string;
-  products?: CartProduct[];
-  paymentMethod?: PaymentMethod[];
-  change?: { value?: number };
-  totalPurchase?: { value?: number };
-  isAddedToReceivables?: boolean;
-  authorizationContext?: unknown;
-  [key: string]: unknown;
-};
-
-type BillingSettings = {
-  duePeriod?: DuePeriod | null;
-  hasDueDate?: boolean;
-  invoiceType?: string;
-  [key: string]: unknown;
-};
-
-type DuePeriod = {
-  months?: number;
-  weeks?: number;
-  days?: number;
-};
-
 type BusinessLike = {
   id?: string | null;
   businessID?: string | null;
   businessId?: string | null;
-  [key: string]: unknown;
-};
-
-type CartSettings = {
-  isInvoicePanelOpen: boolean;
-  printInvoice: boolean;
-  billing: BillingSettings;
-  [key: string]: unknown;
-};
-
-type TaxReceiptState = {
-  settings: {
-    taxReceiptEnabled: boolean;
-  };
-  data?: TaxReceiptItem[];
   [key: string]: unknown;
 };
 
@@ -163,7 +110,7 @@ export const InvoicePanel = () => {
   const viewport = useViewportWidth();
 
   const handleInvoicePanel = useCallback(() => {
-    dispatch(toggleInvoicePanelOpen());
+    dispatch(toggleInvoicePanelOpen(undefined));
   }, [dispatch]);
 
   const cart = useSelector(SelectCartData) as CartData;
@@ -171,8 +118,9 @@ export const InvoicePanel = () => {
   const invoicePanel = Boolean(cartSettings?.isInvoicePanelOpen);
   const shouldPrintInvoice = Boolean(cartSettings?.printInvoice);
 
-  const billing = cartSettings?.billing ?? {};
-  const { duePeriod, hasDueDate } = billing;
+  const billing = cartSettings?.billing;
+  const duePeriod = billing?.duePeriod;
+  const hasDueDate = billing?.hasDueDate ?? false;
 
   const componentToPrintRef = useRef<HTMLDivElement | null>(null);
   const user = useSelector(selectUser) as UserIdentity | null;
@@ -181,7 +129,9 @@ export const InvoicePanel = () => {
   const accountsReceivable = useSelector(selectAR) as
     | AccountsReceivableDoc
     | Record<string, unknown>;
-  const taxReceiptState = useSelector(selectTaxReceipt) as TaxReceiptState;
+  const taxReceiptState = useSelector(selectTaxReceipt) as ReturnType<
+    typeof selectTaxReceipt
+  >;
   const {
     settings: { taxReceiptEnabled },
   } = taxReceiptState;
@@ -206,7 +156,9 @@ export const InvoicePanel = () => {
   );
   const change = Number(cart?.change?.value ?? 0);
   const isChangeNegative = change < 0;
-  const insuranceAR = useSelector(selectInsuranceAR) as Record<string, unknown> | null;
+  const insuranceAR = useSelector(selectInsuranceAR) as ReturnType<
+    typeof selectInsuranceAR
+  >;
   const insuranceAuth = useSelector(selectInsuranceAuthData) || null;
   const invoiceType = cartSettings?.billing?.invoiceType ?? '';
   const isTestMode = useSelector(selectAppMode) as boolean;
@@ -673,10 +625,6 @@ export const InvoicePanel = () => {
 };
 
 export const Modal = styled(AntdModal)`
-  /* stylelint-disable-next-line block-no-empty -- overridden by Antd defaults */
-  .ant-modal-content {
-  }
-
   .ant-modal-header {
     padding: 1em 1em 0;
   }

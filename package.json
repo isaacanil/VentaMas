@@ -27,6 +27,7 @@
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit",
     "audit:ts": "node tools/audit-report.js",
+    "audit:suppressions": "node tools/scan-suppressions.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "deploy:beta": "firebase hosting:channel:deploy beta",

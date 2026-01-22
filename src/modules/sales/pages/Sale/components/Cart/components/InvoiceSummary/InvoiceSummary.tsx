@@ -420,7 +420,7 @@ const InvoiceSummary = () => {
     if (isValid) {
       dispatch(setCashPaymentToTotal(null));
       if (!cart?.settings?.isInvoicePanelOpen) {
-        dispatch(toggleInvoicePanelOpen(null));
+        dispatch(toggleInvoicePanelOpen(undefined));
       }
       dispatch(setCartId(null));
     } else {
