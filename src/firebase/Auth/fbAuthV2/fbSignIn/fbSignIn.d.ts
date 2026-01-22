@@ -1,4 +1,3 @@
-// @ts-nocheck
 interface FbSignInOptions {
   name: string;
   password: string;

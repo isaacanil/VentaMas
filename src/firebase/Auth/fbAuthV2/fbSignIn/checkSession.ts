@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal } from 'antd';
 import { doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -47,9 +46,66 @@ const TRANSIENT_SESSION_ERROR_CODES = [
   'internal',
 ];
 
-const isInvalidSessionError = (error) => {
-  const code = (error?.code || '').toLowerCase();
-  const message = (error?.message || '').toLowerCase();
+type SessionStatus = 'idle' | 'checking' | 'ready';
+
+type RefreshOptions = {
+  extend?: boolean;
+};
+
+type SessionData = {
+  id?: string;
+  expiresAt?: number;
+  userId?: string;
+  [key: string]: unknown;
+};
+
+type RefreshResult = {
+  ok: boolean;
+  reason?: string;
+  session?: SessionData;
+  error?: unknown;
+};
+
+type SessionCallableResponse = {
+  ok?: boolean;
+  message?: string;
+  session?: SessionData;
+};
+
+type RefreshSessionRequest = {
+  sessionToken: string;
+  extend: boolean;
+  sessionInfo: ReturnType<typeof buildSessionInfo>;
+};
+
+const getErrorCode = (error: unknown): string => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof (error as { code?: unknown }).code === 'string'
+  ) {
+    return (error as { code: string }).code;
+  }
+  return '';
+};
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+  return '';
+};
+
+const isInvalidSessionError = (error: unknown): boolean => {
+  const code = getErrorCode(error).toLowerCase();
+  const message = getErrorMessage(error).toLowerCase();
 
   const hasInvalidCode = INVALID_SESSION_ERROR_CODES.some((errCode) =>
     code.includes(errCode),
@@ -69,9 +125,9 @@ const isInvalidSessionError = (error) => {
   return invalidMessageHints.some((hint) => message.includes(hint));
 };
 
-const isTransientSessionError = (error) => {
-  const code = (error?.code || '').toLowerCase();
-  const message = (error?.message || '').toLowerCase();
+const isTransientSessionError = (error: unknown): boolean => {
+  const code = getErrorCode(error).toLowerCase();
+  const message = getErrorMessage(error).toLowerCase();
 
   const hasTransientCode = TRANSIENT_SESSION_ERROR_CODES.some((errCode) =>
     code.includes(errCode),
@@ -95,15 +151,16 @@ export function useAutomaticLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const modalKeyRef = useRef(null);
-  const lastActivityRef = useRef(Date.now());
-  const userIdRef = useRef(null);
+  const modalKeyRef = useRef<string | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  const userIdRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const refreshLockRef = useRef(false);
-  const [status, setStatus] = useState('idle');
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState<SessionStatus>('idle');
+  const [error, setError] = useState<Error | null>(null);
 
-  const openModalOnce = useCallback((key, renderModal) => {
+  const openModalOnce = useCallback(
+    (key: string, renderModal: (reset: () => void) => void) => {
     if (modalKeyRef.current) return;
     modalKeyRef.current = key;
     renderModal(() => {
@@ -112,7 +169,7 @@ export function useAutomaticLogin() {
   }, []);
 
   const handleLogout = useCallback(
-    async ({ redirect = true } = {}) => {
+    async ({ redirect = true }: { redirect?: boolean } = {}) => {
       if (isMountedRef.current) {
         setStatus('ready');
         setError(null);
@@ -121,10 +178,13 @@ export function useAutomaticLogin() {
       const { sessionToken } = getStoredSession();
       if (sessionToken) {
         try {
-          const logoutCallable = httpsCallable(functions, 'clientLogout');
+          const logoutCallable = httpsCallable<
+            { sessionToken: string },
+            { ok?: boolean; message?: string }
+          >(functions, 'clientLogout');
           await logoutCallable({ sessionToken });
         } catch (error) {
-          console.error('logout callable error:', error?.message || error);
+          console.error('logout callable error:', getErrorMessage(error) || error);
         }
       }
       userIdRef.current = null;
@@ -138,26 +198,27 @@ export function useAutomaticLogin() {
   );
 
   const loadUserData = useCallback(
-    async (userId) => {
+    async (userId: string | null) => {
       if (!userId || userIdRef.current === userId) return;
       try {
         const userSnapshot = await getDoc(doc(db, 'users', userId));
         if (userSnapshot.exists()) {
-          const userData = userSnapshot.data()?.user;
+          const userData = (userSnapshot.data() as { user?: Record<string, unknown> | null })?.user;
           if (userData) {
             dispatch(
               login({
                 uid: userSnapshot.id,
-                displayName: userData.realName || userData.name,
-                username: userData.name,
-                realName: userData.realName,
+                displayName: (userData as { realName?: string; name?: string }).realName ||
+                  (userData as { name?: string }).name,
+                username: (userData as { name?: string }).name,
+                realName: (userData as { realName?: string }).realName,
               }),
             );
             userIdRef.current = userId;
           }
         }
       } catch (error) {
-        console.error('user data load error:', error?.message || error);
+        console.error('user data load error:', getErrorMessage(error) || error);
       }
     },
     [dispatch],
@@ -180,16 +241,19 @@ export function useAutomaticLogin() {
 
   // Define refreshSession before callbacks that use it
   const refreshSession = useCallback(
-    async (source = 'auto', options = {}) => {
+    async (
+      source = 'auto',
+      options: RefreshOptions = {},
+    ): Promise<RefreshResult> => {
       if (refreshLockRef.current) {
         return { ok: false, reason: 'locked' };
       }
-        refreshLockRef.current = true;
-        try {
-          const { sessionToken } = getStoredSession();
-          if (!sessionToken) {
-            if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
-              if (isMountedRef.current) {
+      refreshLockRef.current = true;
+      try {
+        const { sessionToken } = getStoredSession();
+        if (!sessionToken) {
+          if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
+            if (isMountedRef.current) {
               setStatus('ready');
               setError(null);
             }
@@ -201,7 +265,10 @@ export function useAutomaticLogin() {
           return { ok: false, reason: 'missing-token' };
         }
 
-        const refreshSessionCallable = httpsCallable(functions, 'clientRefreshSession');
+        const refreshSessionCallable = httpsCallable<
+          RefreshSessionRequest,
+          SessionCallableResponse
+        >(functions, 'clientRefreshSession');
         const response = await refreshSessionCallable({
           sessionToken,
           extend: options.extend !== false,
@@ -231,9 +298,10 @@ export function useAutomaticLogin() {
 
         await loadUserData(session.userId);
 
-        const remaining = session.expiresAt
-          ? session.expiresAt - Date.now()
-          : null;
+        const remaining =
+          typeof session.expiresAt === 'number'
+            ? session.expiresAt - Date.now()
+            : null;
         if (
           remaining !== null &&
           remaining > 0 &&
@@ -246,7 +314,7 @@ export function useAutomaticLogin() {
         lastActivityRef.current = Date.now();
         return { ok: true, session };
       } catch (error) {
-        console.error('session refresh error:', error?.message || error);
+        console.error('session refresh error:', getErrorMessage(error) || error);
         if (isLogoutInProgress() || Date.now() - getLastLogoutAt() < 3000) {
           if (isMountedRef.current) {
             setStatus('ready');
@@ -262,8 +330,8 @@ export function useAutomaticLogin() {
               error instanceof Error
                 ? error
                 : new Error(
-                  'No se pudo renovar la sesión. Reintentaremos en unos minutos.',
-                ),
+                    'No se pudo renovar la sesión. Reintentaremos en unos minutos.',
+                  ),
             );
           }
           return { ok: false, reason: 'transient-error', error };
@@ -326,7 +394,7 @@ export function useAutomaticLogin() {
   }, [handleLogout, openModalOnce, refreshSession]);
 
   // Store ref to showSessionExpiringWarning for use in refreshSession
-  const showSessionExpiringWarningRef = useRef(null);
+  const showSessionExpiringWarningRef = useRef<(() => void) | null>(null);
   showSessionExpiringWarningRef.current = showSessionExpiringWarning;
 
   const handleActivity = useCallback(() => {
@@ -336,13 +404,13 @@ export function useAutomaticLogin() {
   useEffect(() => {
     isMountedRef.current = true;
 
-    const setStatusSafe = (value) => {
+    const setStatusSafe = (value: SessionStatus) => {
       if (isMountedRef.current) {
         setStatus(value);
       }
     };
 
-    const setErrorSafe = (value) => {
+    const setErrorSafe = (value: Error | null) => {
       if (isMountedRef.current) {
         setError(value);
       }
@@ -361,7 +429,11 @@ export function useAutomaticLogin() {
             ['error', 'transient-error'].includes(result?.reason) &&
             result.error
           ) {
-            setErrorSafe(result.error);
+            const err =
+              result.error instanceof Error
+                ? result.error
+                : new Error(getErrorMessage(result.error) || 'Error de sesión');
+            setErrorSafe(err);
           }
           setStatusSafe('ready');
           return;

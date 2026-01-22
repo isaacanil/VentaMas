@@ -1,27 +1,36 @@
-// @ts-nocheck
 import { ReloadOutlined, HomeOutlined } from '@/constants/icons/antd';
 import { Result, Button } from 'antd';
 import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(_error) {
+  static getDerivedStateFromError(_error: Error): Partial<ErrorBoundaryState> {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log the error to an error reporting service
     console.error('Error caught by ErrorBoundary:', error, errorInfo);
     this.setState({
-      error: error,
-      errorInfo: errorInfo,
+      error,
+      errorInfo,
     });
   }
 
@@ -80,7 +89,7 @@ class ErrorBoundary extends React.Component {
                 </ErrorText>
                 <ErrorText>
                   <strong>Stack Trace:</strong>{' '}
-                  {this.state.errorInfo.componentStack}
+                  {this.state.errorInfo?.componentStack ?? ''}
                 </ErrorText>
               </details>
             </ErrorDetails>

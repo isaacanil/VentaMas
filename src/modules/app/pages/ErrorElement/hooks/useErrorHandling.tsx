@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { WarningOutlined } from '@/constants/icons/antd';
 import { notification } from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useState, createElement } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,12 @@ import { fbRecordError } from '@/firebase/errors/fbRecordError';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { MESSAGES } from '@/modules/app/pages/ErrorElement/constants';
 
-export const useErrorHandling = (errorInfo, errorStackTrace) => {
+type ErrorMessage = string | null | undefined;
+
+export const useErrorHandling = (
+  errorInfo: ErrorMessage,
+  errorStackTrace: ErrorMessage,
+) => {
   const user = useSelector(selectUser);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -19,12 +24,12 @@ export const useErrorHandling = (errorInfo, errorStackTrace) => {
   const [canGoBack] = useState(() => window.history.length > 2);
   const { HOME } = ROUTES_NAME.BASIC_TERM;
 
-  const handleReportChange = (e) => {
+  const handleReportChange = (e: CheckboxChangeEvent) => {
     setReportError(e.target.checked);
   };
 
-  const handleBack = async (e) => {
-    e.preventDefault();
+  const handleBack = async (event?: React.MouseEvent<HTMLElement>) => {
+    event?.preventDefault();
     try {
       setLoading(true);
       if (reportError) {

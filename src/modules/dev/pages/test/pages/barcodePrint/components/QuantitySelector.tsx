@@ -1,19 +1,25 @@
-// @ts-nocheck
 import { InputNumber } from 'antd';
 import React from 'react';
 
-const clampInt = (n, min, max) => {
+const clampInt = (n: number, min: number, max: number) => {
   const x = Number.isFinite(n) ? Math.floor(n) : min;
   return Math.max(min, Math.min(max, x));
 };
+
+interface QuantitySelectorProps {
+  quantity: number;
+  onChange: (value: number) => void;
+  max?: number;
+  disabled?: boolean;
+}
 
 const QuantitySelector = ({
   quantity,
   onChange,
   max = 100,
   disabled = false,
-}) => {
-  const handleChange = (value) => {
+}: QuantitySelectorProps) => {
+  const handleChange = (value: number | string | null) => {
     // AntD InputNumber puede entregar number o '' (string vacía) al limpiar
     // Normalizamos a entero entre 1 y max
     if (value === '' || value === null || value === undefined) {
@@ -24,8 +30,8 @@ const QuantitySelector = ({
     onChange(clampInt(n, 1, max));
   };
 
-  const handleBlur = (e) => {
-    const raw = e?.target?.value;
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
     const n = raw === '' ? 1 : Number(raw);
     onChange(clampInt(n, 1, max));
   };

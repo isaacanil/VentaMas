@@ -1,11 +1,36 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 
-const clientSignUpCallable = httpsCallable(functions, 'clientSignUp');
+type SignUpInput = {
+  name: string;
+  password: string;
+  businessID: string;
+  role: string;
+  [key: string]: unknown;
+};
 
-const validateUserInput = ({ name, password, businessID, role }) => {
+type SignUpRequest = {
+  userData: SignUpInput;
+};
+
+type SignUpResponse = {
+  ok?: boolean;
+  message?: string;
+  [key: string]: unknown;
+};
+
+const clientSignUpCallable = httpsCallable<SignUpRequest, SignUpResponse>(
+  functions,
+  'clientSignUp',
+);
+
+const validateUserInput = ({
+  name,
+  password,
+  businessID,
+  role,
+}: SignUpInput): void => {
   if (!name) {
     throw new Error('Error: Es obligatorio proporcionar un nombre de usuario.');
   }
@@ -20,13 +45,15 @@ const validateUserInput = ({ name, password, businessID, role }) => {
   }
 };
 
-export const fbSignUp = async (userData) => {
+export const fbSignUp = async (userData: SignUpInput): Promise<SignUpResponse> => {
   validateUserInput(userData);
 
   try {
     const response = await clientSignUpCallable({ userData });
     return response?.data;
   } catch (error) {
-    throw new Error(error?.message || 'Error creando usuario');
+    const message =
+      error instanceof Error ? error.message : 'Error creando usuario';
+    throw new Error(message);
   }
 };

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   getDocs,
@@ -11,6 +10,8 @@ import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
 
+type CategoryDoc = Record<string, unknown>;
+
 /**
  * Transfiere categorías de productos de un negocio a otro.
  *
@@ -18,10 +19,10 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} businessIdB - ID del negocio de destino.
  */
 export const transferProductCategories = async (
-  businessIdA,
-  businessIdB,
+  businessIdA: string,
+  businessIdB: string,
   limit = 0,
-) => {
+): Promise<void> => {
   const productCategoriesBusinessA = collection(
     db,
     `businesses/${businessIdA}/categories`,
@@ -39,7 +40,7 @@ export const transferProductCategories = async (
 
   const batch = writeBatch(db);
   categorySnapshot.docs.forEach((item) => {
-    const category = item.data();
+    const category = item.data() as CategoryDoc;
     const id = nanoid(12);
     const newCategoryRef = doc(productCategoriesBusinessB, id);
     batch.set(newCategoryRef, { ...category, id: id });

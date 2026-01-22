@@ -1,10 +1,20 @@
-// @ts-nocheck
 import React, { Component } from 'react';
 
 import { ErrorElement } from './ErrorElement';
 
-export class ErrorBoundary extends Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorStackTrace: string | null;
+  errorInfo: string | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     // Asegúrate de inicializar el estado con error y errorInfo
     this.state = {
@@ -15,14 +25,14 @@ export class ErrorBoundary extends Component {
     };
   }
 
-  static getDerivedStateFromError(_error) {
+  static getDerivedStateFromError(_error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const errorStackTrace = error.stack;
-    errorInfo = errorInfo.componentStack;
-    this.setState({ errorStackTrace, errorInfo });
+    const componentStack = errorInfo.componentStack;
+    this.setState({ error, errorStackTrace, errorInfo: componentStack });
   }
 
   render() {

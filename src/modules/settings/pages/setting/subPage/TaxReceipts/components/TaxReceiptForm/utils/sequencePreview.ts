@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   buildPrefix,
   calculateSequenceNumber,
@@ -7,7 +6,32 @@ import {
   toDigits,
 } from './ncfUtils';
 
-const EMPTY_PREVIEW = {
+type SequenceLengthValue = string | number | null | undefined;
+
+type ResolveSequenceLength = (
+  normalizedDigitsLength: number,
+  customSequenceLength?: SequenceLengthValue,
+) => number;
+
+interface SequencePreviewInput {
+  serieValue?: string;
+  tipoValue?: string;
+  sequenceValue?: string | number | null;
+  sequenceLengthValue?: SequenceLengthValue;
+  increaseValue?: string | number | null;
+  quantityValue?: string | number | null;
+  resolveSequenceLength?: ResolveSequenceLength;
+}
+
+interface SequencePreview {
+  current: string;
+  next: string;
+  last: string;
+  prefix: string;
+  sequenceLength: number;
+}
+
+const EMPTY_PREVIEW: SequencePreview = {
   current: '',
   next: '',
   last: '',
@@ -23,7 +47,7 @@ export const buildSequencePreview = ({
   increaseValue,
   quantityValue,
   resolveSequenceLength,
-} = {}) => {
+}: SequencePreviewInput = {}): SequencePreview => {
   const prefix = buildPrefix(serieValue, tipoValue);
   const digits = toDigits(sequenceValue ?? '');
   const quantityNumeric = Number(quantityValue);
@@ -32,7 +56,7 @@ export const buildSequencePreview = ({
     return EMPTY_PREVIEW;
   }
 
-  const resolver =
+  const resolver: ResolveSequenceLength =
     typeof resolveSequenceLength === 'function'
       ? resolveSequenceLength
       : (length) => length;

@@ -1,14 +1,26 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 
-const clientSetUserPasswordCallable = httpsCallable(
-  functions,
-  'clientSetUserPassword',
-);
+type SetPasswordRequest = {
+  userId: string;
+  newPassword: string;
+};
 
-export const fbUpdateUserPassword = async (userId, newPassword) => {
+type SetPasswordResponse = {
+  ok?: boolean;
+  message?: string;
+};
+
+const clientSetUserPasswordCallable = httpsCallable<
+  SetPasswordRequest,
+  SetPasswordResponse
+>(functions, 'clientSetUserPassword');
+
+export const fbUpdateUserPassword = async (
+  userId: string,
+  newPassword: string,
+): Promise<void> => {
   try {
     await clientSetUserPasswordCallable({
       userId,
@@ -16,6 +28,10 @@ export const fbUpdateUserPassword = async (userId, newPassword) => {
     });
   } catch (error) {
     console.error('Error updating password:', error);
-    throw new Error(error?.message || 'Error actualizando la contraseña');
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error actualizando la contraseña';
+    throw new Error(message);
   }
 };

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Importa React, styled-components y los componentes de antd que necesitarás
 import { HeartFilled } from '@/constants/icons/antd';
 import { Row, Col, Divider } from 'antd';

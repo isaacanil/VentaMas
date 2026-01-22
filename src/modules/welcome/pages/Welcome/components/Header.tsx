@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from 'antd';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -6,14 +5,18 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
-import WelcomeData from '../WelcomeData.json';
 import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
+
+import welcomeDataRaw from '../WelcomeData.json';
+import type { WelcomeData } from '../types';
+
+const welcomeData: WelcomeData = welcomeDataRaw;
 
 const Header = () => {
   const { LOGIN } = ROUTES_NAME.AUTH_TERM;
   const navigate = useNavigate();
 
-  const handleNavigate = (path) => {
+  const handleNavigate = (path: string) => {
     navigate(path);
   };
 
@@ -34,7 +37,7 @@ const Header = () => {
       animate="visible"
     >
       <Group>
-        <WebName>{WelcomeData.webName}</WebName>
+        <WebName>{welcomeData.webName}</WebName>
       </Group>
       <Group>
         <ButtonGroup>

@@ -1,5 +1,9 @@
-// @ts-nocheck
-export const toFriendlyFirestoreError = (err) => {
+type FirestoreErrorLike = {
+  code?: string;
+  message?: string;
+};
+
+export const toFriendlyFirestoreError = (err?: FirestoreErrorLike | null) => {
   const code = err?.code;
   switch (code) {
     case 'permission-denied':

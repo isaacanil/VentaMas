@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   RocketOutlined,
   SafetyOutlined,
@@ -12,12 +11,17 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { Logo } from '@/assets/logo/Logo';
+import type { WelcomeData } from '../../../types';
 
-export const CardWelcome = ({ welcomeData }) => {
+interface CardWelcomeProps {
+  welcomeData: WelcomeData;
+}
+
+export const CardWelcome = ({ welcomeData }: CardWelcomeProps) => {
   const loginPath = '/login';
   const navigate = useNavigate();
 
-  const handleNavigate = (path) => {
+  const handleNavigate = (path: string) => {
     navigate(path);
   };
 

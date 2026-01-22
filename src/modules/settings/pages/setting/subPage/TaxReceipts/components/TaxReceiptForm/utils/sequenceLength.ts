@@ -1,8 +1,18 @@
-// @ts-nocheck
-export const createSequenceLengthResolver = ({
-  currentSequence,
-  currentSequenceLength,
-} = {}) => {
+type SequenceLengthValue = string | number | null | undefined;
+
+interface SequenceLengthResolverOptions {
+  currentSequence?: SequenceLengthValue;
+  currentSequenceLength?: SequenceLengthValue;
+}
+
+type SequenceLengthResolver = (
+  normalizedDigitsLength?: SequenceLengthValue,
+  customSequenceLength?: SequenceLengthValue,
+) => number;
+
+export const createSequenceLengthResolver = (
+  { currentSequence, currentSequenceLength }: SequenceLengthResolverOptions = {},
+): SequenceLengthResolver => {
   const initialLength = (() => {
     if (currentSequence === undefined || currentSequence === null) return null;
     const length = String(currentSequence).length;

@@ -1,7 +1,11 @@
-// @ts-nocheck
 import { nanoid } from '@reduxjs/toolkit';
 
-export const providers = [
+interface ProviderOption {
+  id: string;
+  name: string;
+}
+
+export const providers: ProviderOption[] = [
   {
     id: nanoid(),
     name: 'Jose Marcos Perez',

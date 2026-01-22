@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faUser, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Card, Row, Col, Typography, Rate, Avatar } from 'antd';
@@ -6,7 +5,10 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
-import welcomeData from '../../WelcomeData.json';
+import welcomeDataRaw from '../../WelcomeData.json';
+import type { WelcomeData } from '../../types';
+
+const welcomeData: WelcomeData = welcomeDataRaw;
 
 const { Title, Paragraph, Text } = Typography;
 

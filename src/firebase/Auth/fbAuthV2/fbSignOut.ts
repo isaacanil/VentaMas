@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
@@ -9,9 +8,21 @@ import {
   setLogoutInProgress,
 } from './sessionClient';
 
-const clientLogoutCallable = httpsCallable(functions, 'clientLogout');
+type LogoutRequest = {
+  sessionToken: string;
+};
 
-export const fbSignOut = async () => {
+type LogoutResponse = {
+  ok?: boolean;
+  message?: string;
+};
+
+const clientLogoutCallable = httpsCallable<LogoutRequest, LogoutResponse>(
+  functions,
+  'clientLogout',
+);
+
+export const fbSignOut = async (): Promise<void> => {
   setLogoutInProgress(true);
   try {
     const { sessionToken } = getStoredSession();
@@ -19,7 +30,8 @@ export const fbSignOut = async () => {
       try {
         await clientLogoutCallable({ sessionToken });
       } catch (error) {
-        console.error('logout error:', error?.message || error);
+        const message = error instanceof Error ? error.message : error;
+        console.error('logout error:', message);
       }
     }
     clearStoredSession();

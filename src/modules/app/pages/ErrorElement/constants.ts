@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const MESSAGES = {
   ERROR_TITLE: '¡Ups! Algo salió mal',
   ERROR_DESCRIPTION:
@@ -14,7 +13,7 @@ export const MESSAGES = {
   ERROR_REPORTED: 'Error reportado',
   ERROR_REPORTED_DESC:
     'El error ha sido reportado con éxito. Gracias por tu colaboración.',
-};
+} as const;
 
 export const ANIMATIONS = {
   container: {
@@ -30,4 +29,4 @@ export const ANIMATIONS = {
     hidden: { opacity: 0, height: 0 },
     visible: { opacity: 1, height: 'auto', transition: { delay: 0.5 } },
   },
-};
+} as const;

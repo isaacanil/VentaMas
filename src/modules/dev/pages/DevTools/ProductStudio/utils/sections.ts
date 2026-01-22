@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   BarcodeOutlined,
   DollarOutlined,
@@ -6,8 +5,17 @@ import {
   SafetyCertificateOutlined,
   TagOutlined,
 } from '@/constants/icons/antd';
+import type { ComponentType } from 'react';
 
-export const FORM_SECTIONS = [
+export type SectionId = 'identity' | 'pricing' | 'inventory' | 'warranty' | 'codes';
+
+export interface SectionConfig {
+  id: SectionId;
+  label: string;
+  icon: ComponentType;
+}
+
+export const FORM_SECTIONS: SectionConfig[] = [
   { id: 'identity', label: 'Identidad', icon: TagOutlined },
   { id: 'pricing', label: 'Precios', icon: DollarOutlined },
   { id: 'inventory', label: 'Inventario', icon: BarcodeOutlined },
@@ -15,4 +23,4 @@ export const FORM_SECTIONS = [
   { id: 'codes', label: 'Códigos', icon: QrcodeOutlined },
 ];
 
-export const getSectionDomId = (sectionId) => `section-${sectionId}`;
+export const getSectionDomId = (sectionId: SectionId) => `section-${sectionId}`;

@@ -4,7 +4,6 @@ import type { InventoryUser } from '@/utils/inventory/types';
 
 type UserLike = UserIdentity | TaxReceiptUser | InventoryUser;
 
-// @ts-nocheck
 class UserValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -42,4 +41,6 @@ function _print(message: string, type: 'info' | 'warning' | 'error' = 'info') {
     }
   }
 }
+
+
 

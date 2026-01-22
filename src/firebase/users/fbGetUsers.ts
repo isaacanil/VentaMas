@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
@@ -9,7 +8,22 @@ import {
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const fbGetUsers = (currentUser, setUsers, onError, onLoad) => {
+type BusinessUser = Record<string, unknown> & { number: number };
+
+type CurrentUser = {
+  businessID?: string | null;
+};
+
+type UsersCallback = (users: BusinessUser[]) => void;
+type ErrorCallback = (error: unknown) => void;
+type LoadCallback = () => void;
+
+export const fbGetUsers = (
+  currentUser: CurrentUser,
+  setUsers: UsersCallback,
+  onError?: ErrorCallback,
+  onLoad?: LoadCallback,
+): (() => void) | undefined => {
   if (!currentUser?.businessID) {
     return;
   }
@@ -23,8 +37,8 @@ export const fbGetUsers = (currentUser, setUsers, onError, onLoad) => {
   const unsubscribe = onSnapshot(
     q,
     (snapshot) => {
-      const usersArray = snapshot.docs.map((doc, i) => ({
-        ...doc.data(),
+      const usersArray: BusinessUser[] = snapshot.docs.map((doc, i) => ({
+        ...(doc.data() ?? {}),
         number: i + 1,
       }));
 

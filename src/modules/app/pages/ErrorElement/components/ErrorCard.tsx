@@ -1,9 +1,12 @@
-// @ts-nocheck
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
-export const ErrorCard = ({ children }) => {
+interface ErrorCardProps {
+  children: React.ReactNode;
+}
+
+export const ErrorCard = ({ children }: ErrorCardProps) => {
   return <StyledCard>{children}</StyledCard>;
 };
 

@@ -1,9 +1,12 @@
-// @ts-nocheck
 import { updateProfile } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
-export const updateUserProfile = async (userAuth, name) => {
+export const updateUserProfile = async (
+  user: User,
+  name: string,
+): Promise<void> => {
   try {
-    return await updateProfile(userAuth.user, {
+    await updateProfile(user, {
       displayName: name,
     });
   } catch (error) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   deleteUser,
   EmailAuthProvider,
@@ -8,15 +7,20 @@ import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/firebase/firebaseconfig';
 
-export const fbDeleteUser = async (uid, password) => {
+type FirestoreUserData = Record<string, unknown> | null;
+
+export const fbDeleteUser = async (
+  uid: string,
+  password: string,
+): Promise<void> => {
   const userDocRef = doc(db, 'users', uid);
 
   // Obtiene los datos del usuario antes de intentar borrarlo
-  let userData = null;
+  let userData: FirestoreUserData = null;
   try {
     const docSnapshot = await getDoc(userDocRef);
     if (docSnapshot.exists()) {
-      userData = docSnapshot.data();
+      userData = docSnapshot.data() ?? null;
     } else {
       console.error(`User ${uid} not found in database`);
       return;
@@ -37,6 +41,9 @@ export const fbDeleteUser = async (uid, password) => {
 
   // Intenta borrar la autenticación del usuario
   try {
+    if (!auth.currentUser?.email) {
+      throw new Error('No hay usuario autenticado para reautenticar.');
+    }
     const credential = EmailAuthProvider.credential(
       auth.currentUser.email,
       password,

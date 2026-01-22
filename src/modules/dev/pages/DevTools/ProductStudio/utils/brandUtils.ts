@@ -1,11 +1,31 @@
-// @ts-nocheck
 import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 import {
   BRAND_DEFAULT_OPTION_VALUE,
   BRAND_LEGACY_OPTION_VALUE,
 } from '@/components/modals/ProductForm/constants/brandOptions';
 
-export const brandFieldMetaByType = (typeValue) => {
+interface BrandFieldMeta {
+  label: string;
+  placeholder: string;
+  helper: string;
+}
+
+interface ProductBrand {
+  id: string;
+  name: string;
+}
+
+interface ProductBrandInput {
+  brandId?: string | null;
+  brand?: string | null;
+}
+
+interface BrandOption {
+  value: string;
+  label: string;
+}
+
+export const brandFieldMetaByType = (typeValue?: string | null): BrandFieldMeta => {
   const normalizedType = (typeValue || '').toLowerCase();
   if (
     normalizedType.includes('medic') ||
@@ -48,7 +68,10 @@ export const brandFieldMetaByType = (typeValue) => {
   };
 };
 
-export const buildBrandOptions = (productBrands = [], product) => {
+export const buildBrandOptions = (
+  productBrands: ProductBrand[] = [],
+  product?: ProductBrandInput,
+): BrandOption[] => {
   const normalizedBrands = Array.isArray(productBrands)
     ? productBrands
         .map(({ id, name }) => ({

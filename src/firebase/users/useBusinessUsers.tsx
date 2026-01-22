@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -6,7 +5,16 @@ import { selectUser } from '@/features/auth/userSlice';
 
 import { fbGetUsers } from './fbGetUsers';
 
-const makeBaseState = (businessID) => ({
+type BusinessUser = Record<string, unknown> & { number?: number };
+
+type BusinessUsersSnapshot = {
+  businessID: string | null;
+  users: BusinessUser[];
+  loading: boolean;
+  error: unknown | null;
+};
+
+const makeBaseState = (businessID: string | null): BusinessUsersSnapshot => ({
   businessID: businessID ?? null,
   users: [],
   loading: Boolean(businessID),
@@ -17,7 +25,9 @@ export function useBusinessUsers() {
   const currentUser = useSelector(selectUser);
   const businessID = currentUser?.businessID ?? null;
 
-  const [snapshot, setSnapshot] = useState(() => makeBaseState(businessID));
+  const [snapshot, setSnapshot] = useState<BusinessUsersSnapshot>(() =>
+    makeBaseState(businessID),
+  );
 
   const isSameBusiness = snapshot.businessID === businessID;
 
@@ -28,34 +38,34 @@ export function useBusinessUsers() {
   useEffect(() => {
     if (!businessID) return undefined;
 
-    let unsubscribe;
+    let unsubscribe: (() => void) | undefined;
     let cancelled = false;
 
-      unsubscribe = fbGetUsers(
-        { businessID },
-        (usersArray) => {
-          if (cancelled) return;
-          setSnapshot({
-            businessID,
-            users: usersArray,
-            loading: false,
-            error: null,
-          });
-        },
-        (err) => {
-          if (cancelled) return;
-          setSnapshot((prevState) => ({
-            ...prevState,
-            loading: false,
-            error: err,
-          }));
-        },
-      );
+    unsubscribe = fbGetUsers(
+      { businessID },
+      (usersArray) => {
+        if (cancelled) return;
+        setSnapshot({
+          businessID,
+          users: usersArray,
+          loading: false,
+          error: null,
+        });
+      },
+      (err) => {
+        if (cancelled) return;
+        setSnapshot((prevState) => ({
+          ...prevState,
+          loading: false,
+          error: err,
+        }));
+      },
+    );
   
 
     return () => {
       cancelled = true;
-       unsubscribe?.();
+      unsubscribe?.();
     };
   }, [businessID]);
   

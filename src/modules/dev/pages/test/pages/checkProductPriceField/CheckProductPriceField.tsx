@@ -1,14 +1,26 @@
-// @ts-nocheck
 import React, { useMemo, useState } from 'react';
 
 // Simple utility to coerce input value to a safe number
-const toNumber = (value) => {
+const toNumber = (value: unknown) => {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 };
 
 // Demo initial product to play with on this test screen
-const initialProduct = {
+interface ProductPricing {
+  currency: string;
+  listPrice: number;
+  tax: number;
+  price: number;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  pricing: ProductPricing;
+}
+
+const initialProduct: Product = {
   id: 'demo-1',
   name: 'Producto Demo',
   pricing: {
@@ -21,7 +33,7 @@ const initialProduct = {
 };
 
 export default function CheckProductPriceField() {
-  const [product, setProduct] = useState(initialProduct);
+  const [product, setProduct] = useState<Product>(initialProduct);
 
   const { listPrice, tax, price, currency } = product.pricing;
 
@@ -31,7 +43,9 @@ export default function CheckProductPriceField() {
     [listPrice, tax],
   );
 
-  const setPricing = (updater) => {
+  const setPricing = (
+    updater: (prev: ProductPricing) => Partial<ProductPricing>,
+  ) => {
     setProduct((prev) => ({
       ...prev,
       pricing: {
@@ -41,13 +55,13 @@ export default function CheckProductPriceField() {
     }));
   };
 
-  const handleListPriceChange = (e) => {
+  const handleListPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextListPrice = toNumber(e.target.value);
     // BUSINESS RULE: pricing.price debe ser una COPIA de pricing.listPrice
     setPricing(() => ({ listPrice: nextListPrice, price: nextListPrice }));
   };
 
-  const handleTaxChange = (e) => {
+  const handleTaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextTax = toNumber(e.target.value);
     // Impuesto no afecta pricing.price en este flujo de datos
     setPricing(() => ({ tax: nextTax }));
@@ -57,17 +71,31 @@ export default function CheckProductPriceField() {
     setPricing((p) => ({ price: toNumber(p.listPrice) }));
   };
 
-  const handlePasteProductJson = (e) => {
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null;
+
+  const handlePasteProductJson = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value.trim();
     try {
-      const parsed = JSON.parse(value);
-      if (parsed && parsed.pricing) {
+      const parsed = JSON.parse(value) as unknown;
+      if (isRecord(parsed) && isRecord(parsed.pricing)) {
+        const parsedPricing = parsed.pricing;
+        const nextListPrice = toNumber(parsedPricing.listPrice);
+        const nextTax = toNumber(parsedPricing.tax);
+        const nextCurrency =
+          typeof parsedPricing.currency === 'string'
+            ? parsedPricing.currency
+            : initialProduct.pricing.currency;
         // Aseguramos la regla al cargar: price = listPrice
-        const next = {
-          ...parsed,
+        const next: Product = {
+          id: typeof parsed.id === 'string' ? parsed.id : initialProduct.id,
+          name:
+            typeof parsed.name === 'string' ? parsed.name : initialProduct.name,
           pricing: {
-            ...parsed.pricing,
-            price: toNumber(parsed.pricing.listPrice),
+            currency: nextCurrency,
+            listPrice: nextListPrice,
+            tax: nextTax,
+            price: nextListPrice,
           },
         };
         setProduct(next);

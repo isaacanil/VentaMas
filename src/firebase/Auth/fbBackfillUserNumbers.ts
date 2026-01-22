@@ -1,4 +1,3 @@
-// @ts-nocheck
 // client/backfillUserNumbers.js
 import {
   doc,
@@ -16,6 +15,26 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 
+type UserNumberData = {
+  number?: number | null;
+};
+
+type UserDocData = {
+  user?: UserNumberData | null;
+};
+
+type BackfillResult = {
+  ok: boolean;
+  last: number;
+  processed: number;
+};
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Error desconocido';
+};
+
 /**
  * Backfill de números de usuario desde el cliente.
  * Consulta todos los usuarios de un negocio, asigna un número secuencial
@@ -24,7 +43,9 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} businessID - ID del negocio
  * @returns {Promise<{ok: boolean, last: number, processed: number}>}
  */
-export async function backfillUserNumbers(businessID) {
+export async function backfillUserNumbers(
+  businessID: string,
+): Promise<BackfillResult> {
   if (!businessID || typeof businessID !== 'string') {
     throw new Error('Debe proporcionar un businessID válido');
   }
@@ -55,12 +76,13 @@ export async function backfillUserNumbers(businessID) {
   let processed = 0;
 
   usersSnap.forEach((docSnap) => {
-    const user = docSnap.data().user;
-    if (user.number == null) {
+    const data = docSnap.data() as UserDocData;
+    const user = data?.user;
+    if (user && user.number == null) {
       currentNumber++;
       batch.update(docSnap.ref, { 'user.number': currentNumber });
       processed++;
-    } else if (typeof user.number === 'number' && user.number > currentNumber) {
+    } else if (typeof user?.number === 'number' && user.number > currentNumber) {
       currentNumber = user.number;
     }
   });
@@ -82,8 +104,8 @@ export async function backfillUserNumbers(businessID) {
 
 export const useBackfillUserNumbers = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState<BackfillResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const user = useSelector(selectUser);
 
@@ -108,7 +130,7 @@ export const useBackfillUserNumbers = () => {
         localStorage.setItem(backfillKey, 'completed');
       } catch (err) {
         console.error('Error al hacer backfill de números de usuario:', err);
-        setError(err.message || 'Error desconocido');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   ShopOutlined,
   DollarOutlined,
@@ -13,7 +12,10 @@ import { Card, Row, Col, Typography } from 'antd';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 
-import welcomeData from '../../WelcomeData.json';
+import welcomeDataRaw from '../../WelcomeData.json';
+import type { WelcomeData, WelcomeFeature } from '../../types';
+
+const welcomeData: WelcomeData = welcomeDataRaw;
 
 const { Title, Paragraph } = Typography;
 
@@ -42,7 +44,7 @@ const Features = () => {
     },
   };
 
-  const getIcon = (iconName) => {
+  const getIcon = (iconName: WelcomeFeature['icon']) => {
     const iconsMap = {
       ShopOutlined,
       DollarOutlined,
@@ -228,7 +230,11 @@ const FeatureCard = styled(motion.div)`
   }
 `;
 
-const IconContainer = styled.div`
+interface IconContainerProps {
+  $color: string;
+}
+
+const IconContainer = styled.div<IconContainerProps>`
   display: flex;
   align-items: center;
   justify-content: center;

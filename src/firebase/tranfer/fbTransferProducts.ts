@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   getDocs,
@@ -12,7 +11,13 @@ import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
+type ProductDoc = Record<string, unknown>;
+
+export const transferProducts = async (
+  businessIdA: string,
+  businessIdB: string,
+  limit = 0,
+): Promise<void> => {
   const productsBusinessA = collection(
     db,
     `businesses/${businessIdA}/products`,
@@ -45,7 +50,7 @@ export const transferProducts = async (businessIdA, businessIdB, limit = 0) => {
   for (let i = 0; i < totalProducts; i += batchSize) {
     const batch = writeBatch(db);
     querySnapshot.docs.slice(i, i + batchSize).forEach((item) => {
-      const product = item.data();
+      const product = item.data() as ProductDoc;
       const id = nanoid(12);
       const changeProduct = {
         ...product,

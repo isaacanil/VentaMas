@@ -1,31 +1,40 @@
-// @ts-nocheck
 import { EyeOutlined, FullscreenOutlined } from '@/constants/icons/antd';
 import { Spin, Modal } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useCallback } from 'react';
 import styled from 'styled-components';
 
-export const ImageGallery = ({ images = [], loading = false }) => {
+interface ImageGalleryImage {
+  img: string;
+  title?: string;
+}
+
+interface ImageGalleryProps {
+  images?: ImageGalleryImage[];
+  loading?: boolean;
+}
+
+export const ImageGallery = ({ images = [], loading = false }: ImageGalleryProps) => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
-  const [imageLoading, setImageLoading] = useState({});
+  const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({});
 
-  const handlePreview = useCallback((image, index) => {
+  const handlePreview = useCallback((image: ImageGalleryImage, index: number) => {
     setPreviewImage(image.img);
     setPreviewTitle(`Imagen ${index + 1}`);
     setPreviewVisible(true);
   }, []);
 
-  const handleImageLoad = useCallback((index) => {
+  const handleImageLoad = useCallback((index: number) => {
     setImageLoading((prev) => ({ ...prev, [index]: false }));
   }, []);
 
-  const handleImageError = useCallback((index) => {
+  const handleImageError = useCallback((index: number) => {
     setImageLoading((prev) => ({ ...prev, [index]: false }));
   }, []);
 
-  const handleImageStart = useCallback((index) => {
+  const handleImageStart = useCallback((index: number) => {
     setImageLoading((prev) => ({ ...prev, [index]: true }));
   }, []);
 

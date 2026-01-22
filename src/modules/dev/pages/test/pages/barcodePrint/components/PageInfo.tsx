@@ -1,7 +1,18 @@
-// @ts-nocheck
-const PageInfo = ({ quantity, codesPerPage, barcodeType, barcodeTypes }) => {
-  const calculatePages = (quantity) => {
-    return Math.ceil(quantity / codesPerPage);
+interface BarcodeTypeOption {
+  value: string;
+  label: string;
+}
+
+interface PageInfoProps {
+  quantity: number;
+  codesPerPage: number;
+  barcodeType: string;
+  barcodeTypes?: BarcodeTypeOption[];
+}
+
+const PageInfo = ({ quantity, codesPerPage, barcodeType, barcodeTypes }: PageInfoProps) => {
+  const calculatePages = (quantityValue: number) => {
+    return Math.ceil(quantityValue / codesPerPage);
   };
 
   const pages = calculatePages(quantity);

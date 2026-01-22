@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { onSnapshot, doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -7,7 +6,16 @@ import { login, logout } from '@/features/auth/userSlice';
 import { addUserData } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 
-export function useUserDocListener(userId) {
+type UserDocData = {
+  user?: {
+    realName?: string;
+    name?: string;
+    businessID?: string;
+    role?: string;
+  } | null;
+};
+
+export function useUserDocListener(userId: string | null | undefined): void {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -16,7 +24,8 @@ export function useUserDocListener(userId) {
         doc(db, 'users', userId),
         (userSnapshot) => {
           if (userSnapshot.exists()) {
-            const userData = userSnapshot.data().user;
+            const data = userSnapshot.data() as UserDocData;
+            const userData = data?.user;
             const username = userData?.realName
               ? userData?.realName
               : userData?.name;

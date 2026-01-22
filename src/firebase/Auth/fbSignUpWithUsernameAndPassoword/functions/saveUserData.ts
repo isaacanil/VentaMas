@@ -1,13 +1,18 @@
-// @ts-nocheck
 import { doc, setDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const saveUserData = async (userAuth, user) => {
+import type { SignUpUserInput } from './types';
+
+export const saveUserData = async (
+  userAuth: User,
+  user: SignUpUserInput,
+): Promise<void> => {
   try {
-    const uid = userAuth.user.uid;
+    const uid = userAuth.uid;
     const userRef = doc(db, 'users', uid);
-    return await setDoc(userRef, {
+    await setDoc(userRef, {
       user: {
         ...user,
         id: uid,

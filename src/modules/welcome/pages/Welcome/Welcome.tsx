@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Spin } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, Suspense } from 'react';

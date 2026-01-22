@@ -1,7 +1,31 @@
-// @ts-nocheck
 import { Modal, Select, Form, Spin, Alert } from 'antd';
 
 import QuantitySelector from './QuantitySelector';
+
+interface BarcodeTypeOption {
+  value: string;
+  label: string;
+}
+
+interface SelectedBarcode {
+  name?: string | null;
+  number: string | number;
+}
+
+interface PrintModalProps {
+  show: boolean;
+  onClose: () => void;
+  onPrint: () => void;
+  selectedBarcode?: SelectedBarcode | null;
+  quantity: number;
+  onQuantityChange: (value: number) => void;
+  codesPerPage: number;
+  onCodesPerPageChange: (value: number) => void;
+  barcodeType: string;
+  onBarcodeTypeChange: (value: string) => void;
+  barcodeTypes: BarcodeTypeOption[];
+  isLoading: boolean;
+}
 
 const PrintModal = ({
   show,
@@ -16,7 +40,7 @@ const PrintModal = ({
   onBarcodeTypeChange,
   barcodeTypes,
   isLoading,
-}) => {
+}: PrintModalProps) => {
   const handleOk = () => {
     onPrint();
   };

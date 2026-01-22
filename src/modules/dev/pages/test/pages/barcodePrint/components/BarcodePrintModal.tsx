@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Select, Form, Spin, Alert } from 'antd';
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -7,6 +6,29 @@ import styled from 'styled-components';
 
 import BarcodeItem from './BarcodeItem';
 import QuantitySelector from './QuantitySelector';
+
+type BarcodeType = 'code128' | 'code39' | 'ean13' | 'ean8' | 'upca' | 'qrcode';
+
+interface BarcodeTypeOption {
+  value: BarcodeType;
+  label: string;
+}
+
+interface SelectedBarcode {
+  name?: string | null;
+  number: string | number;
+}
+
+interface PrintBarcodeItem extends SelectedBarcode {
+  id: string;
+  barcodeType: BarcodeType;
+}
+
+interface BarcodePrintModalProps {
+  show: boolean;
+  onClose: () => void;
+  selectedBarcode?: SelectedBarcode | null;
+}
 
 const BarcodeGrid = styled.div`
   /* Pantalla: 1 columna (sin columnas visuales) */
@@ -36,8 +58,8 @@ const BarcodeGrid = styled.div`
 `;
 
 /** Portal para montar el contenido de impresión fuera del Modal */
-const PrintPortal = ({ children }) => {
-  const [containerEl] = useState(() => {
+const PrintPortal = ({ children }: { children: React.ReactNode }) => {
+  const [containerEl] = useState<HTMLDivElement | null>(() => {
     if (typeof document === 'undefined') return null;
     const el = document.createElement('div');
     el.id = 'barcode-print-root';
@@ -59,21 +81,21 @@ const PrintPortal = ({ children }) => {
   return createPortal(children, containerEl);
 };
 
-const clampInt = (n, min, max) => {
+const clampInt = (n: number, min: number, max: number) => {
   const x = Number.isFinite(n) ? Math.floor(n) : min;
   return Math.max(min, Math.min(max, x));
 };
 
-const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
+const BarcodePrintModal = ({ show, onClose, selectedBarcode }: BarcodePrintModalProps) => {
   // Número de páginas a imprimir; cada página contiene 4 códigos
   const [pagesCount, setPagesCount] = useState(1);
-  const [barcodeType, setBarcodeType] = useState('code128');
+  const [barcodeType, setBarcodeType] = useState<BarcodeType>('code128');
   const [isLoading, setIsLoading] = useState(false);
-  const [printBarcodes, setPrintBarcodes] = useState([]);
+  const [printBarcodes, setPrintBarcodes] = useState<PrintBarcodeItem[]>([]);
 
-  const printRef = useRef(null);
+  const printRef = useRef<HTMLDivElement | null>(null);
 
-  const barcodeTypes = [
+  const barcodeTypes: BarcodeTypeOption[] = [
     { value: 'code128', label: 'Code 128' },
     { value: 'code39', label: 'Code 39' },
     { value: 'ean13', label: 'EAN-13' },
@@ -145,7 +167,7 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
     // Cada página imprime 4 códigos; el usuario controla páginas, no cantidad directa
     const safePages = clampInt(pagesCount, 1, 100);
     const qty = safePages * 4;
-    const generated = Array.from({ length: qty }, (_, i) => ({
+    const generated: PrintBarcodeItem[] = Array.from({ length: qty }, (_, i) => ({
       ...selectedBarcode,
       id: `${selectedBarcode.number}-${i + 1}`,
       barcodeType,
@@ -158,9 +180,9 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
     onClose();
   };
 
-  const divideBarcodesByPages = (codes) => {
+  const divideBarcodesByPages = (codes: PrintBarcodeItem[]) => {
     const perPage = 4; // fijo: 4 códigos por página
-    const pages = [];
+    const pages: PrintBarcodeItem[][] = [];
     for (let i = 0; i < codes.length; i += perPage) {
       pages.push(codes.slice(i, i + perPage));
     }
@@ -262,3 +284,4 @@ const BarcodePrintModal = ({ show, onClose, selectedBarcode }) => {
 };
 
 export default BarcodePrintModal;
+

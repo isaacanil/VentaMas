@@ -1,5 +1,6 @@
-// @ts-nocheck
-export const validateInputs = (user) => {
+import type { SignUpUserInput } from './types';
+
+export const validateInputs = (user: SignUpUserInput): string => {
   const { name, email, password, confirmPassword, businessID } = user;
 
   if (!name || !email || !password || !businessID) {

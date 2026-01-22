@@ -1,13 +1,17 @@
-// @ts-nocheck
 import { Typography } from 'antd';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
 
 const { Title, Paragraph } = Typography;
 
-export const ErrorDetails = ({ errorStackTrace, variants }) => {
+interface ErrorDetailsProps {
+  errorStackTrace?: string | null;
+  variants?: Variants;
+}
+
+export const ErrorDetails = ({ errorStackTrace, variants }: ErrorDetailsProps) => {
   return (
     <Container variants={variants}>
       <Title level={5}>Detalles del error:</Title>

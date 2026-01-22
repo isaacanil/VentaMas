@@ -1,9 +1,16 @@
-// @ts-nocheck
 import { useRef, useEffect, useState } from 'react';
 
-const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
-  const canvasRef = useRef(null);
-  const [error, setError] = useState(null);
+type BarcodeType = 'code128' | 'code39' | 'ean13' | 'ean8' | 'upca' | 'qrcode';
+
+interface BarcodeItemProps {
+  name?: string | null;
+  number: string | number;
+  barcodeType?: BarcodeType;
+}
+
+const BarcodeItem = ({ name, number, barcodeType = 'code128' }: BarcodeItemProps) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,13 +25,13 @@ const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
         // Limpiar canvas anterior
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
 
         try {
           const { toCanvas } = await import('bwip-js');
           if (!isMounted) return;
 
-          const config = {
+          const config: Record<string, unknown> = {
             bcid: barcodeType, // Tipo de código de barras dinámico
             text: String(number), // Asegurar que sea string
             scale: 3, // Factor de escala aumentado
@@ -52,7 +59,7 @@ const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
         } catch (e) {
           console.error('Error generando código de barras:', e);
           if (isMounted) {
-            setError(e.message);
+            setError(e instanceof Error ? e.message : 'Error desconocido');
             setIsLoading(false);
           }
 
@@ -61,10 +68,12 @@ const BarcodeItem = ({ name, number, barcodeType = 'code128' }) => {
           canvas.width = 200;
           canvas.height = 50;
           const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#000';
-          ctx.font = '12px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(`Error: ${number}`, canvas.width / 2, canvas.height / 2);
+          if (ctx) {
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Error: ${number}`, canvas.width / 2, canvas.height / 2);
+          }
         }
       }
     };

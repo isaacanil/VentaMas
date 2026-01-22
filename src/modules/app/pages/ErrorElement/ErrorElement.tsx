@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BugOutlined, HomeOutlined, RollbackOutlined } from '@/constants/icons/antd';
 import { Button, Checkbox, Typography, Space, Alert } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +14,12 @@ import { useErrorHandling } from './hooks/useErrorHandling';
 
 const { Title: AntTitle, Text } = Typography;
 
-export const ErrorElement = ({ errorInfo, errorStackTrace }) => {
+interface ErrorElementProps {
+  errorInfo?: string | null;
+  errorStackTrace?: string | null;
+}
+
+export const ErrorElement = ({ errorInfo, errorStackTrace }: ErrorElementProps) => {
   const {
     user,
     loading,
