@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
@@ -12,10 +11,12 @@ import { useSelector } from 'react-redux';
 import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
 
-export const useFbGetAvailableCreditNotes = (clientId) => {
-  const user = useSelector(selectUser);
-  const [creditNotes, setCreditNotes] = useState([]);
+export const useFbGetAvailableCreditNotes = (clientId: string | null | undefined) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [creditNotes, setCreditNotes] = useState<CreditNoteRecord[]>([]);
   const [loading, setLoading] = useState(
     () => Boolean(user?.businessID && clientId),
   );
@@ -40,14 +41,14 @@ export const useFbGetAvailableCreditNotes = (clientId) => {
       q,
       (snap) => {
         const list = snap.docs.map((d) => {
-          const data = d.data();
+          const data = d.data() as CreditNoteRecord;
           return {
             ...data,
             id: d.id,
             availableAmount: data.availableAmount ?? (data.totalAmount || 0),
           };
         });
-        setCreditNotes(list.filter((n) => n.availableAmount > 0));
+        setCreditNotes(list.filter((n) => (n.availableAmount || 0) > 0));
         setLoading(false);
       },
       (err) => {

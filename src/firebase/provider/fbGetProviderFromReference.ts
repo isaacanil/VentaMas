@@ -1,9 +1,11 @@
-// @ts-nocheck
-import { getDoc } from 'firebase/firestore';
+import { getDoc, type DocumentReference } from 'firebase/firestore';
 
-export const fbGetDocFromReference = async (ref) => {
+export const fbGetDocFromReference = async <T>(
+  ref: DocumentReference<T>,
+): Promise<T | null> => {
   try {
-    let doc = (await getDoc(ref)).data(); // Intenta obtener el documento a partir de la referencia
+    const snapshot = await getDoc(ref);
+    const doc = snapshot.data();
 
     if (doc) {
       // Si el documento existe

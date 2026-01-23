@@ -1,18 +1,22 @@
-// @ts-nocheck
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { fbGetProductsImg } from '@/firebase/products/productsImg/fbGetProductsImg';
+import type { ProductImageRecord } from '@/types/products';
 
 import { Body } from './components/Body/Body';
 import { Header } from './components/Header/Header';
 
-export const UploadImg = ({ isOpen, setIsOpen }) => {
-  const [ImgToUpload, setImgToUpload] = useState(null);
-  const [images, setImages] = useState([]);
+type UploadImgProps = {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const UploadImg = ({ isOpen, setIsOpen }: UploadImgProps) => {
+  const [ImgToUpload, setImgToUpload] = useState<File | null>(null);
+  const [images, setImages] = useState<ProductImageRecord[]>([]);
   const user = useSelector(selectUser);
   useEffect(() => {
     fbGetProductsImg(user, setImages);

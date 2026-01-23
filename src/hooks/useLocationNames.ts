@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { getLocationName } from '@/firebase/warehouse/locationService';
 import type { LocationNamesMap } from '@/utils/inventory/types';
+import type { UserIdentity } from '@/types/users';
 
 type LocationCacheEntry = {
   name?: string;
@@ -65,7 +65,7 @@ interface UseLocationNamesResult {
 }
 
 export const useLocationNames = (): UseLocationNamesResult => {
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
   const [locationNames, setLocationNames] = useState<LocationNamesMap>(() => {
     // Inicializar con los valores del caché al montar
     const cached: LocationNamesMap = {};

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -6,11 +5,67 @@ import { FISCAL_RECEIPTS_ALERT_CONFIG } from '@/config/fiscalReceiptsAlertConfig
 import { selectUser } from '@/features/auth/userSlice';
 import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import { fbGetFiscalAlertsConfig } from '@/firebase/Settings/fiscalAlertsConfig/fbGetFiscalAlertsConfig';
+import type { FiscalAlertsConfig, FiscalAlertThresholds } from '@/firebase/Settings/fiscalAlertsConfig/types';
 import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
+import type { UserIdentity } from '@/types/users';
 import {
   generateFiscalReceiptsWidgetData,
   processFiscalReceipts,
 } from '@/utils/fiscalReceiptsUtils';
+
+type FiscalAlertLevel = 'critical' | 'warning' | 'normal';
+
+type FiscalReceiptStatus = {
+  id?: string;
+  name: string;
+  series: string;
+  totalNumbers: number;
+  usedNumbers: number;
+  remainingNumbers: number;
+  percentageRemaining: number;
+  alertLevel: FiscalAlertLevel;
+  isActive: boolean;
+  needsAttention: boolean;
+  thresholds?: FiscalAlertThresholds;
+  [key: string]: unknown;
+};
+
+type FiscalReceiptsSummary = {
+  totalReceipts: number;
+  activeReceipts: number;
+  receiptsNeedingAttention: number;
+  criticalReceipts: number;
+  warningReceipts: number;
+  totalRemaining: number;
+  lowestRemaining: FiscalReceiptStatus | null;
+  mostCritical: FiscalReceiptStatus | null;
+};
+
+type FiscalReceiptsAnalysis = {
+  receipts: FiscalReceiptStatus[];
+  summary: FiscalReceiptsSummary;
+};
+
+type FiscalReceiptsWidgetData = {
+  title: string;
+  alertType: string;
+  message: string;
+  percentage: number;
+  seriesInfo: string;
+  hasIssues: boolean;
+  [key: string]: unknown;
+};
+
+type FiscalReceiptsState = {
+  hasIssues: boolean;
+  hasChanges: boolean;
+  isLoading?: boolean;
+  isEnabled?: boolean;
+  configLoaded?: boolean;
+  widgetData: FiscalReceiptsWidgetData;
+  analysis: FiscalReceiptsAnalysis;
+};
 
 /**
  * Hook personalizado para manejar las alertas de comprobantes fiscales
@@ -19,14 +74,14 @@ import {
 export const useFiscalReceiptsAlerts = () => {
   const { taxReceipt, isLoading } = useFbGetTaxReceipt();
   const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
   const userId = user?.id ?? null;
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
-  const [alertConfig, setAlertConfig] = useState(null);
+  const [alertConfig, setAlertConfig] = useState<FiscalAlertsConfig | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
   // Use useRef to store lastCheck to avoid circular dependencies
-  const lastCheckRef = useRef(null);
+  const lastCheckRef = useRef<FiscalReceiptStatus | null>(null);
 
   // Cargar configuración de alertas personalizada
   useEffect(() => {
@@ -46,6 +101,8 @@ export const useFiscalReceiptsAlerts = () => {
               critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
             },
             customThresholds: {},
+            lastUpdated: null,
+            version: '1.0',
           });
         } finally {
           setLoadingConfig(false);
@@ -59,6 +116,8 @@ export const useFiscalReceiptsAlerts = () => {
             critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
           },
           customThresholds: {},
+          lastUpdated: null,
+          version: '1.0',
         });
         setLoadingConfig(false);
       }
@@ -68,7 +127,7 @@ export const useFiscalReceiptsAlerts = () => {
   }, [userId]);
 
   // Procesar datos de comprobantes fiscales con configuración personalizada
-  const fiscalData = useMemo(() => {
+  const fiscalData = useMemo<FiscalReceiptsState>(() => {
     // Si aún está cargando la configuración, mostrar estado de carga
     if (loadingConfig) {
       return {
@@ -158,11 +217,14 @@ export const useFiscalReceiptsAlerts = () => {
     }
 
     // Procesar con configuración personalizada
-    const analysis = processFiscalReceipts(taxReceipt, alertConfig);
-    const widgetData = generateFiscalReceiptsWidgetData(
-      taxReceipt,
+    const analysis = processFiscalReceipts(
+      taxReceipt as TaxReceiptDocument[],
       alertConfig,
-    );
+    ) as FiscalReceiptsAnalysis;
+    const widgetData = generateFiscalReceiptsWidgetData(
+      taxReceipt as TaxReceiptDocument[],
+      alertConfig,
+    ) as FiscalReceiptsWidgetData;
     const hasIssues = analysis.summary.receiptsNeedingAttention > 0;
 
     // Detectar si hay cambios desde la última verificación usando ref
@@ -211,7 +273,7 @@ export const useFiscalReceiptsAlerts = () => {
     setShouldShowNotification(false);
   };
 
-  const getReceiptsByAlertLevel = (level) => {
+  const getReceiptsByAlertLevel = (level: FiscalAlertLevel) => {
     return fiscalData.analysis.receipts.filter(
       (receipt) => receipt.isActive && receipt.alertLevel === level,
     );
@@ -248,7 +310,7 @@ export const useFiscalReceiptsAlerts = () => {
     };
   };
 
-  const formatReceiptForDisplay = (receipt) => {
+  const formatReceiptForDisplay = (receipt: FiscalReceiptStatus | null) => {
     if (!receipt) return null;
 
     return {

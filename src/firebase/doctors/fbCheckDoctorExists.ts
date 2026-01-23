@@ -1,14 +1,13 @@
-// @ts-nocheck
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
 export const fbCheckDoctorExists = async (
-  businessID,
-  name,
-  specialty,
-  currentDoctorId = null,
-) => {
+  businessID: string,
+  name: string | null | undefined,
+  specialty: string | null | undefined,
+  currentDoctorId: string | null = null,
+): Promise<{ name: boolean; specialty: boolean }> => {
   const doctorsRef = collection(db, 'businesses', businessID, 'doctors');
 
   // Check for name and specialty combination (case insensitive)

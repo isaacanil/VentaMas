@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button, Popconfirm, message } from 'antd';
 import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,12 +8,52 @@ import { selectUser } from '@/features/auth/userSlice';
 import { toggleProviderModal } from '@/features/modals/modalSlice';
 import { fbDeleteProvider } from '@/firebase/provider/fbDeleteProvider';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import type { ProviderInfo } from '@/utils/provider/types';
 import { truncateString } from '@/utils/text/truncateString';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 
 const UPDATE_MODE = OPERATION_MODES.UPDATE.id;
 
-export const ProviderCard = ({ Row, Col, e: provider = {}, index = 0 }) => {
+type RowBorder = 'border-bottom';
+type RowFill = 'fill';
+type RowContainer = 'first';
+type RowColor = 'header' | 'item';
+
+type ColPosition = 'right';
+type ColSize = 'limit';
+
+interface RowProps {
+  border?: RowBorder;
+  fill?: RowFill;
+  container?: RowContainer;
+  color?: RowColor;
+}
+
+interface ColProps {
+  position?: ColPosition;
+  size?: ColSize;
+}
+
+interface ProviderCardData extends ProviderInfo {
+  id?: string;
+  tel?: string;
+  address?: string;
+  name?: string;
+}
+
+interface ProviderCardProps {
+  Row: React.ComponentType<React.PropsWithChildren<RowProps>>;
+  Col: React.ComponentType<React.PropsWithChildren<ColProps>>;
+  e?: ProviderCardData;
+  index?: number;
+}
+
+export const ProviderCard = ({
+  Row,
+  Col,
+  e: provider = {},
+  index = 0,
+}: ProviderCardProps) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [isDeleting, setIsDeleting] = useState(false);

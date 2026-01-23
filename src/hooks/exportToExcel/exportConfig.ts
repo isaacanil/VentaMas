@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { Worksheet } from 'exceljs';
+
 // ---------------------------  EXCEL EXPORT UTIL  ---------------------------
 // Colores corporativos elegantes
 const CORPORATE_COLORS = {
@@ -10,42 +11,51 @@ const CORPORATE_COLORS = {
   border: 'FFCCCCCC', // Gris medio para bordes
 };
 
+type ExportRow = Record<string, unknown>;
+
+type ExportCallback = (
+  ws: Worksheet,
+  data: ExportRow[],
+  cols: string[],
+) => void;
+
 /* ------------------------------------------------------------------------- *
  *  UTILIDADES GENERALES                                                     *
  * ------------------------------------------------------------------------- */
 
 // Convierte un número de columna (1-based) a letra(s) de Excel (A, …, AA…)
-const getColumnLetter = (num) => {
+const getColumnLetter = (num: number) => {
   let letter = '';
-  while (num > 0) {
-    const mod = (num - 1) % 26;
+  let column = num;
+  while (column > 0) {
+    const mod = (column - 1) % 26;
     letter = String.fromCharCode(65 + mod) + letter;
-    num = Math.floor((num - 1) / 26);
+    column = Math.floor((column - 1) / 26);
   }
   return letter;
 };
 
 // ----- helpers para anchos dinámicos --------------------------------------
-const calculateDynamicWidth = (data, header = '') => {
+const calculateDynamicWidth = (data: unknown[], header = '') => {
   let maxLen = header?.length ?? 0;
   data.forEach((v) => {
     maxLen = Math.max(maxLen, String(v).length);
   });
   return maxLen + getDynamicPadding(data);
 };
-const getDynamicPadding = (data) => {
+const getDynamicPadding = (data: unknown[]) => {
   const hasNumbers = data.some((v) => typeof v === 'number');
   const hasLongText = data.some((v) => String(v).length > 20);
   if (hasNumbers) return 4;
   if (hasLongText) return 2;
   return 3;
 };
-const getMinimumWidth = (data) => {
+const getMinimumWidth = (data: unknown[]) => {
   if (data.every((v) => String(v).length <= 5)) return 6;
   if (data.some((v) => typeof v === 'number')) return 10;
   return 8;
 };
-const getMaximumWidth = (data) => {
+const getMaximumWidth = (data: unknown[]) => {
   const hasVeryLong = data.some((v) => String(v).length > 50);
   const hasNumbers = data.some((v) => typeof v === 'number');
   const avgLen = data.reduce((s, v) => s + String(v).length, 0) / data.length;
@@ -59,7 +69,7 @@ const getMaximumWidth = (data) => {
 /* ------------------------------------------------------------------------- *
  *  ESTILO PROFESIONAL + AUTO-WIDTH                                          *
  * ------------------------------------------------------------------------- */
-export const applyProfessionalStyling = (worksheet, dataRowCount) => {
+export const applyProfessionalStyling = (worksheet: Worksheet, dataRowCount: number) => {
   /* 1. HEADER */
   const headerRow = worksheet.getRow(1);
   headerRow.height = 35;
@@ -107,7 +117,7 @@ export const applyProfessionalStyling = (worksheet, dataRowCount) => {
   worksheet.columns.forEach((column, idx) => {
     const colIdx = idx + 1;
     const header = column.header ?? '';
-    const values = [];
+    const values: string[] = [];
 
     worksheet.getColumn(colIdx).eachCell({ includeEmpty: false }, (c) => {
       if (c.text) values.push(c.text);
@@ -117,7 +127,7 @@ export const applyProfessionalStyling = (worksheet, dataRowCount) => {
       ? Math.max(
           getMinimumWidth(values),
           Math.min(
-            calculateDynamicWidth(values, header),
+            calculateDynamicWidth(values, String(header)),
             getMaximumWidth(values),
           ),
         )
@@ -135,7 +145,11 @@ export const applyProfessionalStyling = (worksheet, dataRowCount) => {
 /* ------------------------------------------------------------------------- *
  *  FORMATOS (moneda, número)                                                *
  * ------------------------------------------------------------------------- */
-export const formatCurrencyColumns = (ws, columns, currencyCols) => {
+export const formatCurrencyColumns = (
+  ws: Worksheet,
+  columns: string[],
+  currencyCols: string[],
+) => {
   currencyCols.forEach((name) => {
     const idx = columns.indexOf(name) + 1;
     if (idx > 0) {
@@ -146,7 +160,11 @@ export const formatCurrencyColumns = (ws, columns, currencyCols) => {
   });
 };
 
-export const formatNumberColumns = (ws, columns, numberCols) => {
+export const formatNumberColumns = (
+  ws: Worksheet,
+  columns: string[],
+  numberCols: string[],
+) => {
   numberCols.forEach((name) => {
     const idx = columns.indexOf(name) + 1;
     if (idx > 0) {
@@ -161,14 +179,14 @@ export const formatNumberColumns = (ws, columns, numberCols) => {
  *  TOTALES                                                                  *
  * ------------------------------------------------------------------------- */
 export const addTotalsRow = (
-  ws,
-  data,
-  columns,
-  sumCols,
+  ws: Worksheet,
+  data: ExportRow[],
+  columns: string[],
+  sumCols: string[],
   label = 'TOTALES',
   bgColor = CORPORATE_COLORS.totalsBg,
 ) => {
-  const totalsRow = {};
+  const totalsRow: ExportRow = {};
   let labelPlaced = false;
 
   columns.forEach((col) => {
@@ -209,7 +227,7 @@ export const addTotalsRow = (
 /* ------------------------------------------------------------------------- *
  *  CALLBACKS DE EXPORTACIÓN                                                 *
  * ------------------------------------------------------------------------- */
-export const getBillExportCallback = (type) => {
+export const getBillExportCallback = (type: 'Resumen' | 'Detailed'): ExportCallback | null => {
   switch (type) {
     case 'Resumen':
       return (ws, data, cols) => {
@@ -244,14 +262,14 @@ export const getBillExportCallback = (type) => {
 };
 
 export const createTotalsCallback =
-  (sumCols, label = 'TOTALES', bg = CORPORATE_COLORS.totalsBg) =>
+  (sumCols: string[], label = 'TOTALES', bg = CORPORATE_COLORS.totalsBg): ExportCallback =>
   (ws, data, cols) =>
     addTotalsRow(ws, data, cols, sumCols, label, bg);
 
 /* ------------------------------------------------------------------------- *
  *  HEADER DEL REPORTE                                                       *
  * ------------------------------------------------------------------------- */
-export const addReportHeader = (ws, title, company = 'VentaMax') => {
+export const addReportHeader = (ws: Worksheet, title: string, company = 'VentaMax') => {
   ws.spliceRows(1, 0, [], [], []);
   const totalCols = ws.columns.length;
   const lastCol = getColumnLetter(totalCols);
@@ -300,7 +318,10 @@ export const addReportHeader = (ws, title, company = 'VentaMax') => {
 /* ------------------------------------------------------------------------- *
  *  CALLBACK PROFESIONAL COMPLETO                                            *
  * ------------------------------------------------------------------------- */
-export const createProfessionalReportCallback = (type, title) => {
+export const createProfessionalReportCallback = (
+  type: 'Resumen' | 'Detailed',
+  title: string,
+): ExportCallback => {
   const base = getBillExportCallback(type);
   return (ws, data, cols) => {
     addReportHeader(ws, title);
@@ -327,7 +348,9 @@ export const createProfessionalReportCallback = (type, title) => {
 /* ------------------------------------------------------------------------- *
  *  CALLBACK ESPECÍFICO PARA NOTAS DE CRÉDITO                               *
  * ------------------------------------------------------------------------- */
-export const getCreditNoteExportCallback = (type) => {
+export const getCreditNoteExportCallback = (
+  type: 'Resumen' | 'Detailed',
+): ExportCallback | null => {
   switch (type) {
     case 'Resumen':
       return (ws, data, cols) => {
@@ -357,7 +380,10 @@ export const getCreditNoteExportCallback = (type) => {
   }
 };
 
-export const createProfessionalCreditNoteReportCallback = (type, title) => {
+export const createProfessionalCreditNoteReportCallback = (
+  type: 'Resumen' | 'Detailed',
+  title: string,
+): ExportCallback => {
   const base = getCreditNoteExportCallback(type);
   return (ws, data, cols) => {
     addReportHeader(ws, title);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { Fragment, useState } from 'react';
@@ -8,10 +7,30 @@ import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
 
 import { Input } from './Input';
 import { modifyOrderMenuData } from './modifyOrderMenuData';
+import type { OrderMenuItem, OrderMenuOption } from './types';
 
-export const Item = ({ data, array, setArray, index }) => {
+interface ItemProps {
+  data: OrderMenuItem;
+  array: OrderMenuItem[];
+  setArray: React.Dispatch<React.SetStateAction<OrderMenuItem[]>>;
+  index: number;
+}
+
+interface BodyProps {
+  $isOpen: boolean;
+  $index: number;
+}
+
+interface FilterOptionProps {
+  $isSelected: boolean;
+}
+
+export const Item = ({ data, array, setArray, index }: ItemProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const optionsFiltered = useSearchFilterOrderMenuOption(data, searchTerm);
+  const optionsFiltered = useSearchFilterOrderMenuOption(
+    data.Items,
+    searchTerm,
+  ) as OrderMenuOption[];
 
   const [isItemOpen, setIsItemOpen] = useState(false);
   const handleOpenItem = () => setIsItemOpen(!isItemOpen);
@@ -20,26 +39,26 @@ export const Item = ({ data, array, setArray, index }) => {
       <Head onClick={handleOpenItem}>
         <FontAwesomeIcon icon={faChevronRight} /> <span>{data.name}</span>
       </Head>
-      <Body $isOpen={isItemOpen ? true : false} $index={index}>
+      <Body $isOpen={Boolean(isItemOpen)} $index={index}>
         {
           <Fragment>
             <Input
               data={data}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
               fn={() => setSearchTerm('')}
             />
             <Items>
               {optionsFiltered.map((item, subIndex) =>
                 subIndex <= 2 ? (
                   <FilterOption
-                    key={subIndex}
-                    $isSelected={item.selected ? true : false}
+                    key={`${item.name}-${subIndex}`}
+                    $isSelected={Boolean(item.selected)}
                   >
                     <input
                       type="checkbox"
                       name="selected"
-                      id={subIndex}
-                      onChange={(e) => {
+                      id={String(subIndex)}
+                      onChange={(event) => {
                         modifyOrderMenuData(
                           array,
                           setArray,
@@ -47,11 +66,11 @@ export const Item = ({ data, array, setArray, index }) => {
                           'Items',
                           'selected',
                           subIndex,
-                          e.target.checked,
+                          event.target.checked,
                         );
                       }}
                     />
-                    <label htmlFor={subIndex}>{item.name}</label>
+                    <label htmlFor={String(subIndex)}>{item.name}</label>
                   </FilterOption>
                 ) : null,
               )}
@@ -66,7 +85,7 @@ export const Item = ({ data, array, setArray, index }) => {
 const Container = styled.div`
   /* Container for the item */
 `;
-const Body = styled.div`
+const Body = styled.div<BodyProps>`
   background-color: rgb(242 242 242);
   display: grid;
   gap: 1em;
@@ -125,7 +144,7 @@ const Items = styled.ul`
   padding: 0;
   list-style: none;
 `;
-const FilterOption = styled.li`
+const FilterOption = styled.li<FilterOptionProps>`
   background-color: rgb(254 254 254);
   border-radius: 0.4em;
   display: grid;

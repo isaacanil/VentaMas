@@ -1,14 +1,19 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
-export function money(n) {
-  const num = Number(n) || 0;
+import type { TimestampLike } from '@/utils/date/types';
+import type { InvoiceProduct } from '@/types/invoice';
+import type { InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
+
+type DiscountSource = Pick<InvoicePdfData, 'discount' | 'products'> | null | undefined;
+
+export function money(value: number | string | null | undefined): string {
+  const num = Number(value) || 0;
   const parts = num.toFixed(2).split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `RD$ ${parts.join('.')}`;
 }
 
-export function formatDate(ts) {
+export function formatDate(ts: TimestampLike): string {
   if (!ts) return '';
 
   const ms =
@@ -24,8 +29,10 @@ export function formatDate(ts) {
   return DateTime.fromMillis(ms).toFormat('dd/MM/yyyy');
 }
 
-export function getDiscount(d) {
-  const products = Array.isArray(d?.products) ? d.products : [];
+export function getDiscount(d: DiscountSource): number {
+  const products: InvoiceProduct[] = Array.isArray(d?.products)
+    ? d.products
+    : [];
   const discountValue = Number(d?.discount?.value) || 0;
 
   if (!discountValue || products.length === 0) return 0;
@@ -39,7 +46,7 @@ export function getDiscount(d) {
   return subtotal * (discountValue / 100);
 }
 
-export function getProductIndividualDiscount(product) {
+export function getProductIndividualDiscount(product: InvoiceProduct): number {
   if (!product.discount || product.discount.value <= 0) return 0;
 
   const price = +product.pricing?.price || 0;
@@ -54,13 +61,15 @@ export function getProductIndividualDiscount(product) {
   }
 }
 
-export function getProductsIndividualDiscounts(products) {
+export function getProductsIndividualDiscounts(
+  products: InvoiceProduct[],
+): number {
   return products.reduce((total, product) => {
     return total + getProductIndividualDiscount(product);
   }, 0);
 }
 
-export function hasIndividualDiscounts(products) {
+export function hasIndividualDiscounts(products: InvoiceProduct[]): boolean {
   return products.some(
     (product) => product.discount && product.discount.value > 0,
   );

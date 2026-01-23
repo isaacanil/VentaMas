@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
 import {
@@ -6,15 +5,17 @@ import {
   getTax,
   getProductIndividualDiscount as getAppProductIndividualDiscount,
 } from '@/utils/pricing.js';
+import type { TimestampLike } from '@/utils/date/types';
+import type { InvoiceProduct } from '@/types/invoice';
 
-export function money(n) {
-  const num = Number(n) || 0;
+export function money(value: number | string | null | undefined): string {
+  const num = Number(value) || 0;
   const parts = num.toFixed(2).split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return `RD$ ${parts.join('.')}`;
 }
 
-export function formatDate(ts) {
+export function formatDate(ts: TimestampLike): string {
   if (!ts) return '';
 
   const ms =
@@ -31,32 +32,34 @@ export function formatDate(ts) {
 }
 
 // Usar la función de la aplicación para mantener consistencia
-export function getProductIndividualDiscount(product) {
+export function getProductIndividualDiscount(product: InvoiceProduct): number {
   return getAppProductIndividualDiscount(product);
 }
 
-export function getProductsIndividualDiscounts(products) {
+export function getProductsIndividualDiscounts(
+  products: InvoiceProduct[],
+): number {
   return products.reduce((total, product) => {
     return total + getProductIndividualDiscount(product);
   }, 0);
 }
 
-export function hasIndividualDiscounts(products) {
+export function hasIndividualDiscounts(products: InvoiceProduct[]): boolean {
   return products.some(
     (product) => product.discount && product.discount.value > 0,
   );
 }
 
 // Nuevas funciones para usar en el PDF que mantienen consistencia con la app
-export function getProductTotalPrice(product) {
+export function getProductTotalPrice(product: InvoiceProduct): number {
   return getTotalPrice(product, true, true);
 }
 
-export function getProductTax(product) {
+export function getProductTax(product: InvoiceProduct): number {
   return getTax(product, true);
 }
 
-export function getProductSubtotal(product) {
+export function getProductSubtotal(product: InvoiceProduct): number {
   const { price, amountToBuy } = product?.pricing
     ? {
         price: product.pricing.price || 0,

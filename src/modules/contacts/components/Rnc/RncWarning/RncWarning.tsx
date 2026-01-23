@@ -1,11 +1,22 @@
-// @ts-nocheck
 import { WarningOutlined } from '@/constants/icons/antd';
 import { Typography, Space } from 'antd';
 import styled from 'styled-components';
 
 const { Text, Paragraph } = Typography;
 
-const WarningBox = styled.div`
+type RncStatus = 'ACTIVO' | 'SUSPENDIDO' | 'CESE_TEMPORAL' | 'DADO DE BAJA';
+
+interface WarningBoxProps {
+  $status?: RncStatus | (string & {});
+}
+
+interface StatusInfo {
+  title: string;
+  description: string;
+  details: string;
+}
+
+const WarningBox = styled.div<WarningBoxProps>`
   border: 1px solid;
   border-radius: 8px;
   margin: 16px 0;
@@ -106,7 +117,7 @@ const Content = styled.div`
   align-items: flex-start;
 `;
 
-const STATUS_MESSAGES = {
+const STATUS_MESSAGES: Record<RncStatus, StatusInfo> = {
   ACTIVO: {
     title: 'RNC Activo',
     description: 'Contribuyente habilitado para fines tributarios.',
@@ -148,14 +159,21 @@ const STATUS_MESSAGES = {
   },
 };
 
-export const RncWarning = ({ status }) => {
-  const statusInfo = STATUS_MESSAGES[status] || {
+interface RncWarningProps {
+  status?: RncStatus | (string & {});
+}
+
+export const RncWarning = ({ status }: RncWarningProps) => {
+  const statusInfo =
+    status && status in STATUS_MESSAGES
+      ? STATUS_MESSAGES[status as RncStatus]
+      : {
     title: 'Estado No Especificado',
     description: 'No hay información disponible sobre este estado.',
     details: '',
   };
 
-  const formatDetails = (details) => {
+  const formatDetails = (details: string) => {
     return details.split('\n').map((line, index) => {
       const trimmedLine = line.trim();
       if (trimmedLine.startsWith('•')) {

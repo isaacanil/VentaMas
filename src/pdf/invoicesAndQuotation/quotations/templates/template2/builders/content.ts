@@ -1,8 +1,14 @@
-// @ts-nocheck
 import { money, getProductIndividualDiscount } from '../utils/formatters.js';
 
-export function buildContent(d) {
-  const headerRow = [
+import type {
+  PdfContent,
+  PdfTableBody,
+  PdfTableRow,
+} from '@/pdf/types';
+import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
+
+export function buildContent(d: QuotationData): PdfContent[] {
+  const headerRow: PdfTableRow = [
     'CANT',
     'CODIGO',
     'DESCRIPCION',
@@ -16,9 +22,10 @@ export function buildContent(d) {
     alignment: 'center',
   }));
 
-  const body = [
+  const products = Array.isArray(d.products) ? d.products : [];
+  const body: PdfTableBody = [
     headerRow,
-    ...d.products.flatMap((p) => {
+    ...products.flatMap((p) => {
       const price = p.pricing.price;
       const tax = price * (p.pricing.tax / 100);
       const tot = (price + tax) * p.amountToBuy;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -20,6 +19,106 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../../firebase/firebaseconfig';
 
+type User = ReturnType<typeof selectUser>;
+
+type ClientData = {
+  name?: string;
+  tel?: string;
+  phone?: string;
+};
+
+type InvoiceData = {
+  numberID?: string | number;
+  date?: unknown;
+  totalAmount?: number;
+  status?: string;
+};
+
+type AccountsReceivableData = {
+  isActive?: boolean;
+  clientId?: string;
+  invoiceId?: string;
+  totalReceivable?: number;
+  arBalance?: number;
+  createdAt?: unknown;
+  numberId?: string | number;
+  paymentFrequency?: string;
+  totalInstallments?: number;
+  type?: string;
+  insurance?: unknown;
+};
+
+type InstallmentData = {
+  arId?: string;
+  installmentDate?: { toDate: () => Date };
+  installmentNumber?: number;
+  installmentAmount?: number;
+  installmentBalance?: number;
+  isActive?: boolean;
+};
+
+type AccountInstallment = {
+  id: string;
+  installmentNumber?: number;
+  installmentAmount?: number;
+  installmentBalance?: number;
+  installmentDate: DateTime;
+  daysUntilDue: number;
+  isOverdue: boolean;
+  isActive?: boolean;
+};
+
+type DueAccount = {
+  id: string;
+  invoiceId?: string;
+  invoiceNumber?: string | number;
+  clientId?: string;
+  clientName: string;
+  clientPhone: string;
+  totalReceivable?: number;
+  arBalance?: number;
+  createdAt?: unknown;
+  installments: AccountInstallment[];
+  nextDueDate: DateTime | null;
+  daysUntilNextDue: number | null;
+  isOverdue: boolean;
+  numberId?: string | number;
+  paymentFrequency?: string;
+  totalInstallments?: number;
+  type?: string;
+  insurance?: unknown;
+  invoiceDate?: unknown;
+  invoiceTotal?: number;
+  invoiceStatus?: string;
+  pendingInstallments: number;
+  paidInstallments: number;
+};
+
+type Stats = {
+  totalDueSoon: number;
+  totalOverdue: number;
+  totalAlerts: number;
+  totalAmountDueSoon: number;
+  totalAmountOverdue: number;
+  averageAmount: number;
+  totalAccounts: number;
+};
+
+type AggregatedStats = {
+  overdueCount: number;
+  dueSoonCount: number;
+  totalAmount: number;
+  averageAmount: number;
+  totalCount: number;
+};
+
+type CacheStore = {
+  clients: Map<string, ClientData>;
+  invoices: Map<string, InvoiceData>;
+  accounts: Map<string, AccountsReceivableData>;
+  lastUpdated: number | null;
+};
+
 /**
  * Hook personalizado para obtener cuentas por cobrar próximas a vencer
  * Optimizado con funciones recientes de Firebase Firestore v10+
@@ -28,11 +127,11 @@ import { db } from '../../firebase/firebaseconfig';
  * @returns {Object} { dueSoonAccounts, overdueAccounts, loading, error, stats }
  */
 export const useDueDatesReceivable = (daysThreshold = 7) => {
-  const [dueSoonAccounts, setDueSoonAccounts] = useState([]);
-  const [overdueAccounts, setOverdueAccounts] = useState([]);
+  const [dueSoonAccounts, setDueSoonAccounts] = useState<DueAccount[]>([]);
+  const [overdueAccounts, setOverdueAccounts] = useState<DueAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [stats, setStats] = useState({
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<Stats>({
     totalDueSoon: 0,
     totalOverdue: 0,
     totalAlerts: 0,
@@ -42,7 +141,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     totalAccounts: 0,
   });
 
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as User;
 
   // Memoizar fechas para evitar recálculos innecesarios
   const dateThresholds = useMemo(() => {
@@ -52,7 +151,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
   }, [daysThreshold]);
 
   // Cache para datos relacionados - usar useRef para evitar problemas de dependencias
-  const dataCacheRef = useRef({
+  const dataCacheRef = useRef<CacheStore>({
     clients: new Map(),
     invoices: new Map(),
     accounts: new Map(),
@@ -74,7 +173,8 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
   // Función optimizada para obtener datos de clientes en lote
   const fetchClientsInBatch = useCallback(
-    async (clientIds) => {
+    async (clientIds: string[]) => {
+      if (!user?.businessID) return;
       const dataCache = dataCacheRef.current;
       const uncachedClientIds = clientIds.filter(
         (id) => !dataCache.clients.has(id),
@@ -97,15 +197,15 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
         const clientsSnap = await getDocs(clientsQuery);
 
-        clientsSnap.forEach((doc) => {
-          const clientData = doc.data();
-          dataCache.clients.set(doc.id, clientData.client || clientData);
+        clientsSnap.forEach((docSnap) => {
+          const clientData = docSnap.data() as { client?: ClientData } & ClientData;
+          dataCache.clients.set(docSnap.id, clientData.client || clientData);
         });
 
         // Si hay más de 10 clientes, hacer consultas adicionales
         if (uncachedClientIds.length > 10) {
           const remainingIds = uncachedClientIds.slice(10);
-          const batches = [];
+          const batches: string[][] = [];
           for (let i = 0; i < remainingIds.length; i += 10) {
             batches.push(remainingIds.slice(i, i + 10));
           }
@@ -120,22 +220,23 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
           const batchResults = await Promise.all(batchPromises);
           batchResults.forEach((snapshot) => {
-            snapshot.forEach((doc) => {
-              const clientData = doc.data();
-              dataCache.clients.set(doc.id, clientData.client || clientData);
+            snapshot.forEach((docSnap) => {
+              const clientData = docSnap.data() as { client?: ClientData } & ClientData;
+              dataCache.clients.set(docSnap.id, clientData.client || clientData);
             });
           });
         }
-      } catch (error) {
-        console.warn('Error fetching clients in batch:', error);
+      } catch (err) {
+        console.warn('Error fetching clients in batch:', err);
       }
     },
-    [user],
+    [user?.businessID],
   );
 
   // Función optimizada para obtener datos de facturas en lote
   const fetchInvoicesInBatch = useCallback(
-    async (invoiceIds) => {
+    async (invoiceIds: string[]) => {
+      if (!user?.businessID) return;
       const dataCache = dataCacheRef.current;
       const uncachedInvoiceIds = invoiceIds.filter(
         (id) => !dataCache.invoices.has(id),
@@ -157,15 +258,15 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
         const invoicesSnap = await getDocs(invoicesQuery);
 
-        invoicesSnap.forEach((doc) => {
-          const invoiceData = doc.data();
-          dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
+        invoicesSnap.forEach((docSnap) => {
+          const invoiceData = docSnap.data() as { data?: InvoiceData } & InvoiceData;
+          dataCache.invoices.set(docSnap.id, invoiceData.data || invoiceData);
         });
 
         // Manejar lotes adicionales si hay más de 10 facturas
         if (uncachedInvoiceIds.length > 10) {
           const remainingIds = uncachedInvoiceIds.slice(10);
-          const batches = [];
+          const batches: string[][] = [];
           for (let i = 0; i < remainingIds.length; i += 10) {
             batches.push(remainingIds.slice(i, i + 10));
           }
@@ -180,24 +281,23 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
           const batchResults = await Promise.all(batchPromises);
           batchResults.forEach((snapshot) => {
-            snapshot.forEach((doc) => {
-              const invoiceData = doc.data();
-              dataCache.invoices.set(doc.id, invoiceData.data || invoiceData);
+            snapshot.forEach((docSnap) => {
+              const invoiceData = docSnap.data() as { data?: InvoiceData } & InvoiceData;
+              dataCache.invoices.set(docSnap.id, invoiceData.data || invoiceData);
             });
           });
         }
-      } catch (error) {
-        console.warn('Error fetching invoices in batch:', error);
+      } catch (err) {
+        console.warn('Error fetching invoices in batch:', err);
       }
     },
-    [user],
+    [user?.businessID],
   );
 
   useEffect(() => {
     if (!user?.businessID) {
       return;
     }
-
 
     // Limpiar cache periódicamente
     cleanCache();
@@ -219,7 +319,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
     );
 
     // Consulta separada para estadísticas usando agregaciones
-    const getAggregatedStats = async () => {
+    const getAggregatedStats = async (): Promise<AggregatedStats | null> => {
       try {
         // Consulta de agregación para cuentas vencidas
         const overdueQuery = query(
@@ -258,7 +358,11 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           },
         );
 
-        const aggregateData = aggregateSnapshot.data();
+        const aggregateData = aggregateSnapshot.data() as {
+          totalAmount?: number;
+          averageAmount?: number;
+          totalCount?: number;
+        };
 
         return {
           overdueCount: overdueCount.data().count,
@@ -267,8 +371,8 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           averageAmount: aggregateData.averageAmount || 0,
           totalCount: aggregateData.totalCount || 0,
         };
-      } catch (error) {
-        console.warn('Error getting aggregated stats:', error);
+      } catch (err) {
+        console.warn('Error getting aggregated stats:', err);
         return null;
       }
     };
@@ -298,15 +402,17 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           // Obtener estadísticas agregadas en paralelo
           const aggregatedStatsPromise = getAggregatedStats();
 
-          const accountsMap = new Map();
-          const clientIds = new Set();
-          const invoiceIds = new Set();
-          const arIds = new Set();
+          const accountsMap = new Map<string, DueAccount>();
+          const clientIds = new Set<string>();
+          const invoiceIds = new Set<string>();
+          const arIds = new Set<string>();
 
           // Primera pasada: recopilar IDs únicos
           querySnapshot.forEach((docSnap) => {
-            const installment = docSnap.data();
-            arIds.add(installment.arId);
+            const installment = docSnap.data() as InstallmentData;
+            if (installment.arId) {
+              arIds.add(installment.arId);
+            }
           });
 
           // Obtener datos de cuentas por cobrar en lote
@@ -317,7 +423,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
             'accountsReceivable',
           );
           const arIdsArray = Array.from(arIds);
-          const arBatches = [];
+          const arBatches: string[][] = [];
 
           for (let i = 0; i < arIdsArray.length; i += 10) {
             arBatches.push(arIdsArray.slice(i, i + 10));
@@ -332,12 +438,16 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
           // Procesar datos de AR y recopilar IDs de clientes e facturas
           arResults.forEach((snapshot) => {
-            snapshot.forEach((doc) => {
-              const arData = doc.data();
+            snapshot.forEach((docSnap) => {
+              const arData = docSnap.data() as AccountsReceivableData;
               if (arData.isActive) {
-                dataCache.accounts.set(doc.id, arData);
-                clientIds.add(arData.clientId);
-                invoiceIds.add(arData.invoiceId);
+                dataCache.accounts.set(docSnap.id, arData);
+                if (arData.clientId) {
+                  clientIds.add(arData.clientId);
+                }
+                if (arData.invoiceId) {
+                  invoiceIds.add(arData.invoiceId);
+                }
               }
             });
           });
@@ -350,7 +460,9 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
 
           // Segunda pasada: procesar cuotas con datos completos
           querySnapshot.forEach((docSnap) => {
-            const installment = docSnap.data();
+            const installment = docSnap.data() as InstallmentData;
+            if (!installment.arId || !installment.installmentDate?.toDate) return;
+
             const installmentDate = DateTime.fromJSDate(
               installment.installmentDate.toDate(),
             );
@@ -359,8 +471,12 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
             const arData = dataCache.accounts.get(installment.arId);
             if (!arData || !arData.isActive) return;
 
-            const clientData = dataCache.clients.get(arData.clientId);
-            const invoiceData = dataCache.invoices.get(arData.invoiceId);
+            const clientData = arData.clientId
+              ? dataCache.clients.get(arData.clientId)
+              : undefined;
+            const invoiceData = arData.invoiceId
+              ? dataCache.invoices.get(arData.invoiceId)
+              : undefined;
 
             // Agrupar por cuenta
             if (!accountsMap.has(installment.arId)) {
@@ -392,8 +508,10 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
             }
 
             const account = accountsMap.get(installment.arId);
+            if (!account) return;
+
             account.installments.push({
-              id: installment.id,
+              id: docSnap.id,
               installmentNumber: installment.installmentNumber,
               installmentAmount: installment.installmentAmount,
               installmentBalance: installment.installmentBalance,
@@ -406,7 +524,7 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
             // Actualizar la fecha de vencimiento más próxima
             if (
               installment.isActive &&
-              (!account.nextDueDate || installmentDate < account.nextDueDate)
+              (!account.nextDueDate || installmentDate.toMillis() < account.nextDueDate.toMillis())
             ) {
               account.nextDueDate = installmentDate;
               account.daysUntilNextDue = Math.ceil(daysUntilDue);
@@ -450,10 +568,10 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
                   account.totalInstallments =
                     account.pendingInstallments + account.paidInstallments;
                 }
-              } catch (error) {
+              } catch (err) {
                 console.warn(
                   `Error fetching installment counts for AR ${arId}:`,
-                  error,
+                  err,
                 );
               }
             },
@@ -467,21 +585,26 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           // Ordenar cuotas por fecha para cada cuenta
           allAccounts.forEach((account) => {
             account.installments.sort(
-              (a, b) => a.installmentDate - b.installmentDate,
+              (a, b) => a.installmentDate.toMillis() - b.installmentDate.toMillis(),
             );
           });
 
           const dueSoon = allAccounts.filter(
             (account) =>
               !account.isOverdue &&
+              account.daysUntilNextDue !== null &&
               account.daysUntilNextDue <= daysThreshold &&
               account.daysUntilNextDue >= 0,
           );
           const overdue = allAccounts.filter((account) => account.isOverdue);
 
           // Ordenar por proximidad al vencimiento
-          dueSoon.sort((a, b) => a.daysUntilNextDue - b.daysUntilNextDue);
-          overdue.sort((a, b) => a.daysUntilNextDue - b.daysUntilNextDue);
+          dueSoon.sort(
+            (a, b) => (a.daysUntilNextDue ?? 0) - (b.daysUntilNextDue ?? 0),
+          );
+          overdue.sort(
+            (a, b) => (a.daysUntilNextDue ?? 0) - (b.daysUntilNextDue ?? 0),
+          );
 
           setDueSoonAccounts(dueSoon);
           setOverdueAccounts(overdue);
@@ -516,13 +639,15 @@ export const useDueDatesReceivable = (daysThreshold = 7) => {
           setLoading(false);
         } catch (err) {
           console.error('Error processing due dates:', err);
-          setError(err.message);
+          const message = err instanceof Error ? err.message : 'Unknown error';
+          setError(message);
           setLoading(false);
         }
       },
       (err) => {
         console.error('Error fetching installments:', err);
-        setError(err.message);
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        setError(message);
         setLoading(false);
       },
     );

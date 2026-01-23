@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CheckCircleOutlined,
   WarningOutlined,
@@ -7,8 +6,33 @@ import {
 } from '@/constants/icons/antd';
 import { Spin, Button, Modal } from 'antd';
 import { DateTime } from 'luxon';
-import { createElement, useState } from 'react';
+import { createElement, useState, type ComponentType } from 'react';
 import styled from 'styled-components';
+
+type RncStatus = 'ACTIVO' | 'SUSPENDIDO' | 'DADO DE BAJA';
+
+interface StatusBoxProps {
+  $status?: RncStatus | (string & {});
+}
+
+interface RncInfo {
+  status?: RncStatus | (string & {});
+  rnc_number?: string;
+  full_name?: string;
+  business_name?: string;
+  business_activity?: string;
+  registration_date?: string;
+  condition?: string;
+  [key: string]: unknown;
+}
+
+interface StatusInfo {
+  color: 'success' | 'warning' | 'error' | 'default';
+  title: string;
+  description: string;
+  details: string;
+  icon: ComponentType;
+}
 
 const Panel = styled.div`
   position: sticky;
@@ -74,7 +98,7 @@ const Field = styled.div`
   }
 `;
 
-const StatusBox = styled.div`
+const StatusBox = styled.div<StatusBoxProps>`
   border: 1px solid;
   border-radius: 8px;
   margin-top: 16px;
@@ -142,7 +166,7 @@ const StatusBox = styled.div`
   }
 `;
 
-const STATUS_INFO = {
+const STATUS_INFO: Record<RncStatus, StatusInfo> = {
   ACTIVO: {
     color: 'success',
     title: 'RNC Activo',
@@ -176,9 +200,15 @@ const STATUS_INFO = {
   },
 };
 
-export const RncPanel = ({ rncInfo, loading }) => {
-  const formatDate = (dateString) => {
+interface RncPanelProps {
+  rncInfo?: RncInfo | null;
+  loading?: boolean;
+}
+
+export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
+  const formatDate = (dateString?: string) => {
     try {
+      if (!dateString) return '';
       return DateTime.fromISO(dateString)
         .setLocale('es')
         .toFormat('dd/MM/yyyy');
@@ -190,17 +220,20 @@ export const RncPanel = ({ rncInfo, loading }) => {
   const [isStatusModalVisible, setStatusModalVisible] = useState(false);
 
   const status = rncInfo?.status;
-  const statusInfo = STATUS_INFO[status] || {
-    color: 'default',
-    title: 'Estado No Especificado',
-    description: 'No hay información disponible',
-    details: '',
-    icon: QuestionCircleOutlined,
-  };
+  const statusInfo =
+    status && status in STATUS_INFO
+      ? STATUS_INFO[status as RncStatus]
+      : {
+          color: 'default',
+          title: 'Estado No Especificado',
+          description: 'No hay información disponible',
+          details: '',
+          icon: QuestionCircleOutlined,
+        };
 
   if (!rncInfo && !loading) return null;
 
-  const formatDetails = (details) => {
+  const formatDetails = (details: string) => {
     return details
       .split('\n')
       .map((line, index) => {

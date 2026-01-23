@@ -1,9 +1,9 @@
-// @ts-nocheck
+import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { Page } from './Page';
 
-export default {
+const meta: Meta<typeof Page> = {
   title: 'Example/Page',
   component: Page,
   parameters: {
@@ -12,10 +12,14 @@ export default {
   },
 };
 
-export const LoggedOut = {};
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const LoggedOut: Story = {};
 
 // More on component testing: https://storybook.js.org/docs/writing-tests/interaction-testing
-export const LoggedIn = {
+export const LoggedIn: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const loginButton = canvas.getByRole('button', { name: /Log in/i });

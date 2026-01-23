@@ -1,17 +1,27 @@
-// @ts-nocheck
-import { baseColors } from './colors/light/baseColors';
+import { baseColors, type ColorScale } from './colors/light/baseColors';
+
+export type ThemeMode = 'light' | 'dark';
+
+export type ContrastColorPair = {
+  bg: string;
+  text: string;
+  hover: string;
+  disabled: string;
+};
+
+export type ContrastColorPairs = Record<string, ContrastColorPair>;
 
 export const getContrastColorPairs = (
-  name = 'primary',
-  color,
-  theme = 'light',
-) => {
+  name: string = 'primary',
+  color?: ColorScale,
+  theme: ThemeMode = 'light',
+): ContrastColorPairs => {
   if (!color) {
-    return;
+    return {};
   }
   const { white } = baseColors;
 
-  const variants = {
+  const variants: ContrastColorPairs = {
     [`${name}`]: {
       bg: color[600],
       text: white,
@@ -38,7 +48,7 @@ export const getContrastColorPairs = (
     },
   };
 
-  const variantsDark = {
+  const variantsDark: ContrastColorPairs = {
     [`${name}`]: {
       bg: color[300],
       text: color[900],

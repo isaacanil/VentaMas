@@ -1,8 +1,13 @@
-// @ts-nocheck
 import { doc, onSnapshot } from 'firebase/firestore';
+import type { FirestoreError } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
+
+type BusinessUser = {
+  businessID?: string | null;
+} | null | undefined;
 
 /**
  * Hook personalizado para obtener el límite de crédito en tiempo real usando onSnapshot
@@ -10,12 +15,12 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} clientId - ID del cliente
  * @returns {Object} { creditLimit, isLoading, error }
  */
-export const useCreditLimitRealtime = (user, clientId) => {
-  const [creditLimit, setCreditLimit] = useState(null);
-  const [isLoading, setIsLoading] = useState(
+export const useCreditLimitRealtime = (user: BusinessUser, clientId: string) => {
+  const [creditLimit, setCreditLimit] = useState<CreditLimitConfig | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(
     () => Boolean(user?.businessID && clientId),
   );
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<FirestoreError | null>(null);
 
   useEffect(() => {
     // Si no hay user o clientId, no hacer nada (lazy init ya puso loading=false)
@@ -36,17 +41,17 @@ export const useCreditLimitRealtime = (user, clientId) => {
       (docSnapshot) => {
         setIsLoading(false);
         if (docSnapshot.exists()) {
-          setCreditLimit(docSnapshot.data());
+          setCreditLimit(docSnapshot.data() as CreditLimitConfig);
         } else {
           setCreditLimit(null);
         }
         setError(null);
       },
-      (error) => {
+      (snapshotError) => {
         setIsLoading(false);
-        setError(error);
+        setError(snapshotError);
         setCreditLimit(null);
-        console.error('Error listening to credit limit:', error);
+        console.error('Error listening to credit limit:', snapshotError);
       },
     );
 

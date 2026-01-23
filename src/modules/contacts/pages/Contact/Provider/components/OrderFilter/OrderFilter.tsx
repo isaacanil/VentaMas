@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
@@ -9,8 +8,8 @@ import { Button } from '@/components/ui/Button/Button';
 import { OrderMenuFilter } from './OrderMenuFilter/OrderMenuFilter';
 
 export const OrderFilter = () => {
-  const [MenuIsOpen, setMenuIsOpen] = useState(false);
-  const handleOpenMenu = () => setMenuIsOpen(!MenuIsOpen);
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const handleOpenMenu = () => setMenuIsOpen((prev) => !prev);
   return (
     <Container>
       {' '}
@@ -21,7 +20,7 @@ export const OrderFilter = () => {
         color="gray-dark"
         onClick={handleOpenMenu}
       />
-      <OrderMenuFilter MenuIsOpen={MenuIsOpen} />
+      <OrderMenuFilter MenuIsOpen={menuIsOpen} />
     </Container>
   );
 };

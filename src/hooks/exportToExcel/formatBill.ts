@@ -1,17 +1,33 @@
-// @ts-nocheck
 import { formatTimestamp } from '@/utils/format';
+import type {
+  InvoiceData,
+  InvoiceMonetaryValue,
+  InvoicePaymentMethod,
+} from '@/types/invoice';
 
-const unwrapInvoice = (raw) => raw?.data ?? raw?.ver?.data ?? raw ?? {};
-
-const ensureNumber = (value) => {
-  const num = Number(value);
-  return isNaN(num) ? 0 : num;
+type InvoiceWrapper = {
+  data?: InvoiceData;
+  ver?: { data?: InvoiceData };
 };
 
-const translatePaymentMethod = (method) => {
+type InvoiceLike = InvoiceData | InvoiceWrapper;
+
+type PaymentMethodLike = InvoicePaymentMethod[] | null | undefined;
+
+type PaymentValueLike = InvoiceMonetaryValue | null | undefined;
+
+const unwrapInvoice = (raw: InvoiceLike): InvoiceData =>
+  (raw as InvoiceWrapper)?.data ?? (raw as InvoiceWrapper)?.ver?.data ?? (raw as InvoiceData) ?? {};
+
+const ensureNumber = (value: unknown): number => {
+  const num = Number(value);
+  return Number.isNaN(num) ? 0 : num;
+};
+
+const translatePaymentMethod = (method?: string | null): string => {
   if (!method || method === 'N/A') return 'N/A';
 
-  const translations = {
+  const translations: Record<string, string> = {
     cash: 'Efectivo',
     card: 'Tarjeta',
     transfer: 'Transferencia',
@@ -36,18 +52,20 @@ const translatePaymentMethod = (method) => {
   return method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
 };
 
-const getPrimaryPaymentMethod = (paymentMethod = []) => {
+const getPrimaryPaymentMethod = (paymentMethod: PaymentMethodLike = []): string => {
   const method = (paymentMethod.find((pm) => pm.status) || {}).method ?? 'N/A';
   return translatePaymentMethod(method);
 };
 
-const getPrimaryPaymentValue = (paymentMethod = [], fallbackPayment) => {
-  if (fallbackPayment?.value != null)
-    return ensureNumber(fallbackPayment.value);
+const getPrimaryPaymentValue = (
+  paymentMethod: PaymentMethodLike = [],
+  fallbackPayment: PaymentValueLike,
+): number => {
+  if (fallbackPayment?.value != null) return ensureNumber(fallbackPayment.value);
   const pm = paymentMethod.find((pm) => pm.status);
   return pm ? ensureNumber(pm.value) : 0;
 };
-const formatBillResumen = (data) => {
+const formatBillResumen = (data: InvoiceData) => {
   const {
     date,
     id: _id,
@@ -77,8 +95,8 @@ const formatBillResumen = (data) => {
     ['Total']: ensureNumber(totalPurchase.value),
   };
 };
-const formatBillDetailed = (facturas) => {
-  const resultados = [];
+const formatBillDetailed = (facturas: InvoiceLike[]) => {
+  const resultados: Record<string, unknown>[] = [];
 
   facturas.forEach((raw) => {
     const factura = unwrapInvoice(raw);
@@ -109,12 +127,18 @@ const formatBillDetailed = (facturas) => {
   return resultados;
 };
 
-export const formatBill = ({ type, data }) => {
+export const formatBill = ({
+  type,
+  data,
+}: {
+  type: 'Resumen' | 'Detailed';
+  data: InvoiceData | InvoiceLike[];
+}) => {
   switch (type) {
     case 'Resumen':
-      return formatBillResumen(data);
+      return formatBillResumen(data as InvoiceData);
     case 'Detailed':
-      return formatBillDetailed(data);
+      return formatBillDetailed(data as InvoiceLike[]);
     default:
       return [];
   }

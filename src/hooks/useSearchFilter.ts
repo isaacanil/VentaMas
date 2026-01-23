@@ -1,50 +1,65 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 
-export const useSearchFilter = (clients, searchTerm) => {
+type ClientWrapper = { client: { name?: string } };
+
+type SearchableRecord = Record<string, unknown>;
+
+export const useSearchFilter = <T extends ClientWrapper>(
+  clients: T[],
+  searchTerm: string,
+) => {
   const filteredClients = useMemo(() => {
     if (String(searchTerm).trim() === '') {
       return clients;
     }
-    const serachRegex = new RegExp(searchTerm, 'i');
-    return clients.filter(({ client }) =>
-      serachRegex.test(client.name),
-    );
+    const searchRegex = new RegExp(searchTerm, 'i');
+    return clients.filter(({ client }) => searchRegex.test(client.name ?? ''));
   }, [clients, searchTerm]);
   return filteredClients;
 };
 
-export const useSearchFilterX = (list, searchTerm, filterField) => {
+export const useSearchFilterX = <T extends SearchableRecord>(
+  list: T[],
+  searchTerm: string,
+  filterField: string,
+) => {
   const filteredList = useMemo(() => {
     if (String(searchTerm).trim() === '') {
       return list;
     }
     const searchRegex = new RegExp(searchTerm, 'i');
-    return list.filter((item) =>
-      searchRegex.test(
-        item[filterField.split('.')[0]][filterField.split('.')[1]],
-      ),
-    );
+    return list.filter((item) => {
+      const [parentKey, childKey] = filterField.split('.');
+      const parentValue = item[parentKey] as SearchableRecord | undefined;
+      const childValue = parentValue?.[childKey];
+      return searchRegex.test(String(childValue ?? ''));
+    });
   }, [list, searchTerm, filterField]);
   return filteredList;
 };
 
-export const useSearchFilterOrderMenuOption = (data, searchTerm) => {
+export const useSearchFilterOrderMenuOption = <T extends { name?: string }>(
+  data: T[],
+  searchTerm: string,
+) => {
   const filteredData = useMemo(() => {
     if (String(searchTerm).trim() === '') {
       return data;
     }
     const searchRegex = new RegExp(searchTerm, 'i');
-    const filtered = data.filter((item) => searchRegex.test(item.name));
+    const filtered = data.filter((item) => searchRegex.test(item.name ?? ''));
     return filtered.slice(0, 3);
   }, [searchTerm, data]);
   return filteredData;
 };
 
-export function searchAndFilter(products, searchQuery) {
+export function searchAndFilter<T extends { product: SearchableRecord }>(
+  products: T[],
+  searchQuery: string,
+) {
   const searchTerms = searchQuery.trim().toLowerCase().split(' ');
 
-  const deepStringify = (obj) => {
+  const deepStringify = (obj: unknown): string => {
     if (typeof obj !== 'object' || obj === null) {
       return String(obj);
     }
@@ -60,7 +75,10 @@ export function searchAndFilter(products, searchQuery) {
   });
 }
 
-export const filtrarDatos = (array, searchTerm) => {
+export const filtrarDatos = <T extends SearchableRecord>(
+  array: T[],
+  searchTerm: string,
+) => {
   if (!searchTerm) {
     return array;
   }
@@ -68,14 +86,16 @@ export const filtrarDatos = (array, searchTerm) => {
   return array.filter((item) => buscarEnPropiedades(item, term));
 };
 
-const buscarEnPropiedades = (objeto, term) => {
+const buscarEnPropiedades = (objeto: SearchableRecord, term: string) => {
   return Object.values(objeto).some((value) => {
     if (typeof value === 'string' || typeof value === 'number') {
       return value.toString().toLowerCase().includes(term);
-    } else if (Array.isArray(value)) {
-      return value.some((item) => buscarEnPropiedades(item, term));
-    } else if (typeof value === 'object' && value !== null) {
-      return buscarEnPropiedades(value, term);
+    }
+    if (Array.isArray(value)) {
+      return value.some((item) => buscarEnPropiedades(item as SearchableRecord, term));
+    }
+    if (typeof value === 'object' && value !== null) {
+      return buscarEnPropiedades(value as SearchableRecord, term);
     }
     return false;
   });

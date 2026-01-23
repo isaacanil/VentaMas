@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
@@ -11,15 +10,17 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { CreditNoteApplicationRecord } from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
 
 /**
  * Hook para obtener aplicaciones de notas de crédito por factura
  * @param {string} invoiceId - ID de la factura
  * @returns {Object} - { applications, loading }
  */
-export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId) => {
-  const user = useSelector(selectUser);
-  const [applications, setApplications] = useState([]);
+export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId: string | null | undefined) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [applications, setApplications] = useState<CreditNoteApplicationRecord[]>([]);
   const [loading, setLoading] = useState(
     () => Boolean(user?.businessID && invoiceId),
   );
@@ -44,9 +45,9 @@ export const useFbGetCreditNoteApplicationsByInvoice = (invoiceId) => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const list = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
+        const list = snapshot.docs.map((docSnap) => ({
+          ...(docSnap.data() as CreditNoteApplicationRecord),
+          id: docSnap.id,
         }));
         setApplications(list);
         setLoading(false);

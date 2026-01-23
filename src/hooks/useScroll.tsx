@@ -1,7 +1,6 @@
-// @ts-nocheck
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type RefObject } from 'react';
 
-const useScroll = (ref) => {
+const useScroll = (ref: RefObject<HTMLElement>) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {

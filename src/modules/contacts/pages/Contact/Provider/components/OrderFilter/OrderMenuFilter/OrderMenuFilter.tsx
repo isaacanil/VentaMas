@@ -1,13 +1,21 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { Item } from './Item';
+import type { OrderMenuItem } from './types';
 
-export const OrderMenuFilter = ({ MenuIsOpen }) => {
-  const [orderMenuData, setOrderMenuData] = useState([]);
+interface OrderMenuFilterProps {
+  MenuIsOpen?: boolean;
+}
+
+interface ContainerProps {
+  $isOpen: boolean;
+}
+
+export const OrderMenuFilter = ({ MenuIsOpen }: OrderMenuFilterProps) => {
+  const [orderMenuData, setOrderMenuData] = useState<OrderMenuItem[]>([]);
   return (
-    <Container $isOpen={MenuIsOpen ? true : false}>
+    <Container $isOpen={Boolean(MenuIsOpen)}>
       <Head>
         <h3>Filtros</h3>
       </Head>
@@ -18,15 +26,15 @@ export const OrderMenuFilter = ({ MenuIsOpen }) => {
             array={orderMenuData}
             setArray={setOrderMenuData}
             index={index}
-            key={index}
-          ></Item>
+            key={`${item.name}-${index}`}
+          />
         ))}
       </Body>
     </Container>
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<ContainerProps>`
   background-color: #fff;
   border: 1px solid rgb(0 0 0 / 15%);
   border-radius: 6px;

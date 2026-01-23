@@ -1,4 +1,3 @@
-// @ts-nocheck
 const PX_PER_PT = 96 / 72;
 const FONT_FAMILY = 'Roboto, Arial, sans-serif';
 const FONT_WEIGHT_MAP = {
@@ -6,9 +5,19 @@ const FONT_WEIGHT_MAP = {
   normal: '400',
 };
 
-let cachedContext = null;
+type MeasureTextOptions = {
+  text: string;
+  fontSize?: number;
+  lineHeight?: number;
+  maxWidth?: number;
+  fontWeight?: keyof typeof FONT_WEIGHT_MAP;
+};
 
-const getContext = () => {
+type MeasureTextResult = { lines: number; height: number };
+
+let cachedContext: CanvasRenderingContext2D | null = null;
+
+const getContext = (): CanvasRenderingContext2D | null => {
   if (typeof document === 'undefined') {
     return null;
   }
@@ -20,9 +29,14 @@ const getContext = () => {
   return cachedContext;
 };
 
-const sanitizeFragment = (fragment) => fragment.replace(/\r?\n$/g, '');
+const sanitizeFragment = (fragment: string): string =>
+  fragment.replace(/\r?\n$/g, '');
 
-const measureLongFragment = (ctx, fragment, maxWidthPx) => {
+const measureLongFragment = (
+  ctx: CanvasRenderingContext2D,
+  fragment: string,
+  maxWidthPx: number,
+) => {
   let localWidth = 0;
   let extraLines = 0;
   for (const char of fragment) {
@@ -43,7 +57,7 @@ export const measurePreciseTextBlock = ({
   lineHeight = 1.15,
   maxWidth,
   fontWeight = 'normal',
-}) => {
+}: MeasureTextOptions): MeasureTextResult => {
   if (!text) {
     return { lines: 0, height: 0 };
   }
@@ -105,7 +119,7 @@ export const measurePreciseTextBlock = ({
   return { lines, height };
 };
 
-const tokenize = (text) => {
+const tokenize = (text: string): string[] => {
   const tokens = [];
   const parts = text.split(/(\r?\n)/);
   parts.forEach((part) => {

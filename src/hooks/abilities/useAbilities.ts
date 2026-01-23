@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useAbility } from '@casl/react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,18 +12,27 @@ import {
 } from '@/features/abilities/abilitiesSlice';
 import { selectUser } from '@/features/auth/userSlice';
 
+type AbilitiesRootState = Parameters<typeof selectAbilities>[0];
+type UserRootState = Parameters<typeof selectUser>[0];
+
 export const useAbilities = () => {
-  const abilities = useSelector(selectAbilities);
-  const loading = useSelector(selectAbilitiesLoading);
-  const error = useSelector(selectAbilitiesError);
+  const abilities = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilities>>(selectAbilities);
+  const loading = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilitiesLoading>>(
+    selectAbilitiesLoading,
+  );
+  const error = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilitiesError>>(
+    selectAbilitiesError,
+  );
 
   return { abilities, loading, error };
 };
 
 export const useLoadUserAbilities = () => {
-  const user = useSelector(selectUser);
-  const abilities = useSelector(selectAbilities);
-  const loading = useSelector(selectAbilitiesLoading);
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
+  const abilities = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilities>>(selectAbilities);
+  const loading = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilitiesLoading>>(
+    selectAbilitiesLoading,
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -38,9 +46,13 @@ export const useLoadUserAbilities = () => {
 
 export function useUserAccess() {
   const abilities = useAbility(AbilityContext);
-  const loading = useSelector(selectAbilitiesLoading);
-  const status = useSelector(selectAbilitiesStatus);
-  const user = useSelector(selectUser);
+  const loading = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilitiesLoading>>(
+    selectAbilitiesLoading,
+  );
+  const status = useSelector<AbilitiesRootState, ReturnType<typeof selectAbilitiesStatus>>(
+    selectAbilitiesStatus,
+  );
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
 
   // Consider loading if:
   // 1. Explicit loading from Redux

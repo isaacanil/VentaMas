@@ -1,10 +1,15 @@
-// @ts-nocheck
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { DoctorRecord } from '@/types/doctors';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbUpdateDoctor = async (doctor, user) => {
-  if (!user || !user?.businessID) return;
+export const fbUpdateDoctor = async (
+  doctor: DoctorRecord,
+  user: UserWithBusiness | null | undefined,
+): Promise<boolean> => {
+  if (!user?.businessID) return false;
+  if (!doctor?.id) return false;
 
   try {
     const doctorRef = doc(

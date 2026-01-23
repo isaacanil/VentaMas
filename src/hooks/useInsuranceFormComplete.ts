@@ -1,16 +1,19 @@
-// @ts-nocheck
 import { useSelector } from 'react-redux';
 
 import { selectInsuranceAuthData } from '@/features/insurance/insuranceAuthSlice';
 
 import useInsuranceEnabled from './useInsuranceEnabled';
 
+type InsuranceAuthData = ReturnType<typeof selectInsuranceAuthData>;
+
+type InsuranceAuthField = keyof InsuranceAuthData;
+
 /**
  * Custom hook to check if the insurance form is complete
  * Returns an object with isValid and insurance status
  */
 const useInsuranceFormComplete = () => {
-  const authData = useSelector(selectInsuranceAuthData);
+  const authData = useSelector(selectInsuranceAuthData) as InsuranceAuthData;
   const insuranceEnabled = useInsuranceEnabled();
 
   // Si el seguro no está habilitado, no necesitamos validar
@@ -23,7 +26,7 @@ const useInsuranceFormComplete = () => {
   }
 
   // Campos requeridos para la autorización de seguro
-  const requiredFields = [
+  const requiredFields: InsuranceAuthField[] = [
     'insuranceId',
     'insuranceType',
     'affiliateNumber',

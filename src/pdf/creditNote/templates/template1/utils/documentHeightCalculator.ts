@@ -1,5 +1,7 @@
-// @ts-nocheck
 // src/utils/documentHeightCalculator.js
+
+import type { TimestampLike } from '@/utils/date/types';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
 
 // Constantes basadas en los estilos del PDF
 const STYLES = {
@@ -26,11 +28,11 @@ const LAYOUT = {
  * Calcula la altura precisa de un texto considerando fuente y ancho
  */
 export function calculateTextHeight(
-  text,
+  text: string | null | undefined,
   fontSize = 10,
   lineHeight = 1.15,
   maxWidth = LAYOUT.pageWidth,
-) {
+): number {
   if (!text) return 0;
 
   // Estimación más precisa basada en caracteres por línea según el tamaño de fuente
@@ -44,7 +46,10 @@ export function calculateTextHeight(
 /**
  * Calcula la altura necesaria para el header dinámico de nota de crédito
  */
-export function calcHeaderHeight(biz, d) {
+export function calcHeaderHeight(
+  biz: CreditNoteBusinessInfo,
+  d: CreditNoteData,
+): number {
   let height = LAYOUT.headerMargin; // margen superior inicial
 
   // 1. Logo (si existe)
@@ -124,16 +129,17 @@ export function calcHeaderHeight(biz, d) {
   height += LAYOUT.separatorMargin;
 
   // 5. Bloque de información del cliente (si existe y no es genérico)
-  if (shouldShowClientBlock(d)) {
+  const client = d.client ?? null;
+  if (client && shouldShowClientBlock(d)) {
     let clientHeight = 0;
     const clientFields = [
-      `Cliente: ${d.client.name}`,
-      d.client?.address?.trim()
-        ? `Dirección: ${d.client.address.trim()}`
+      `Cliente: ${client.name}`,
+      client.address?.trim()
+        ? `Dirección: ${client.address.trim()}`
         : null,
-      d.client?.tel?.trim() ? `Tel: ${d.client.tel.trim()}` : null,
-      d.client?.rnc?.trim() || d.client?.personalID?.trim()
-        ? `RNC cliente: ${(d.client.rnc || d.client.personalID).trim()}`
+      client.tel?.trim() ? `Tel: ${client.tel.trim()}` : null,
+      client.rnc?.trim() || client.personalID?.trim()
+        ? `RNC cliente: ${(client.rnc || client.personalID).trim()}`
         : null,
     ].filter(Boolean);
 
@@ -152,7 +158,10 @@ export function calcHeaderHeight(biz, d) {
 /**
  * Calcula la altura necesaria para el footer de nota de crédito
  */
-export function calcFooterHeight(biz, d) {
+export function calcFooterHeight(
+  biz: CreditNoteBusinessInfo,
+  d: CreditNoteData,
+): number {
   let height = 0;
 
   // 1. Bloque de firmas (siempre presente)
@@ -204,24 +213,24 @@ export function calcFooterHeight(biz, d) {
 }
 
 // Funciones auxiliares
-function shouldShowClientBlock(d) {
+function shouldShowClientBlock(d: CreditNoteData): boolean {
   const rawName = d.client?.name?.trim() || '';
   const esGenerico = !rawName || rawName.toLowerCase() === 'generic client';
   return !esGenerico;
 }
 
-function getComprobanteTitle(ncf) {
+function getComprobanteTitle(ncf?: string | null): string {
   if (!ncf) return 'NOTA DE CRÉDITO';
   if (ncf.startsWith('B04')) return 'NOTA DE CRÉDITO FISCAL';
   return 'NOTA DE CRÉDITO';
 }
 
-function getComprobanteLabel(ncf) {
+function getComprobanteLabel(ncf?: string | null): string {
   if (!ncf) return 'Número de Nota';
   return 'NCF';
 }
 
-function formatDateForCalculation(date) {
+function formatDateForCalculation(date: TimestampLike): string {
   if (!date) return '';
   const ms = date?.seconds ? date.seconds * 1000 : new Date(date).getTime();
   if (isNaN(ms)) return '';

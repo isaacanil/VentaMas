@@ -1,10 +1,13 @@
-// @ts-nocheck
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbDeleteDoctor = async (doctorId, user) => {
-  if (!user || !user?.businessID || !doctorId) return;
+export const fbDeleteDoctor = async (
+  doctorId: string,
+  user: UserWithBusiness | null | undefined,
+): Promise<boolean> => {
+  if (!user?.businessID || !doctorId) return false;
 
   try {
     const doctorRef = doc(

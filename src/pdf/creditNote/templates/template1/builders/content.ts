@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   money,
   getProductIndividualDiscount,
@@ -6,10 +5,13 @@ import {
   getProductTax,
 } from '../utils/formatters.js';
 
+import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
+import type { CreditNoteData } from '../../../types.js';
+
 /* ──────────────────────────────────────────────── */
-export function buildContent(d) {
+export function buildContent(d: CreditNoteData): PdfContent[] {
   /* cabecera de la tabla */
-  const headerRow = [
+  const headerRow: PdfTableRow = [
     'CANT',
     'CODIGO',
     'DESCRIPCIÓN',
@@ -25,9 +27,10 @@ export function buildContent(d) {
   }));
 
   /* cuerpo */
-  const body = [
+  const products = Array.isArray(d.items) ? d.items : [];
+  const body: PdfTableBody = [
     headerRow,
-    ...(d.items || []).flatMap((p) => {
+    ...products.flatMap((p) => {
       const price = +p.pricing?.price || 0;
       const quantity = +p.amountToBuy || 1;
 

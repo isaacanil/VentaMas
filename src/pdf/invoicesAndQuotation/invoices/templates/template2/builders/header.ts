@@ -1,14 +1,28 @@
-// @ts-nocheck
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 import { formatDate } from '../utils/formatters.js';
 
 import { buildClientBlock } from './clientBlock.js';
 
+import type {
+  PdfContent,
+  PdfHeaderFooter,
+  PdfImageMap,
+  PdfTableBody,
+} from '@/pdf/types';
+import type { InvoicePdfBusiness, InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
+
+const compact = <T>(items: Array<T | null | undefined | false>): T[] =>
+  items.filter(Boolean) as T[];
+
 const CLIENT_BLOCK_MIN_HEIGHT = 70;
 
 /* ──────────────────────────────────────────────── */
-export function buildHeader(biz, d, images) {
+export function buildHeader(
+  biz: InvoicePdfBusiness,
+  d: InvoicePdfData,
+  images: PdfImageMap,
+): PdfHeaderFooter {
   return () => {
     const clientBlock = buildClientBlock(d);
     const {
@@ -27,7 +41,7 @@ export function buildHeader(biz, d, images) {
         : d.numberID || '-';
 
     /* columna izquierda (datos del negocio) */
-    const leftStack = [
+    const leftStack = compact<PdfContent>([
       {
         text: biz.name,
         style: 'title',
@@ -49,10 +63,10 @@ export function buildHeader(biz, d, images) {
         style: 'headerInfo',
         bold: true,
       },
-    ].filter(Boolean);
+    ]);
 
     /* columna derecha (datos de la factura / recibo) */
-    const rightStack = [
+    const rightStack = compact<PdfContent>([
       {
         text: comprobanteTitle,
         style: 'title',
@@ -88,9 +102,9 @@ export function buildHeader(biz, d, images) {
         alignment: 'right',
         bold: true,
       },
-    ].filter(Boolean);
+    ]);
 
-    const rows = []; /* fila del logo */
+    const rows: PdfTableBody = []; /* fila del logo */
     if (images.logo) {
       rows.push([
         {
@@ -135,16 +149,19 @@ export function buildHeader(biz, d, images) {
       {},
     ]); /* bloque de cliente (si existe) */
     if (clientBlock) {
+      const [leftColumn, rightColumn] = clientBlock.columns;
+      const leftStack = leftColumn?.stack ?? [];
+      const rightStack = rightColumn?.stack ?? [];
       rows.push([
         {
           columns: [
             {
               width: '*',
-              stack: clientBlock.columns[0].stack,
+              stack: leftStack,
             },
             {
               width: 'auto',
-              stack: clientBlock.columns[1].stack,
+              stack: rightStack,
             },
           ],
           columnGap: 10,

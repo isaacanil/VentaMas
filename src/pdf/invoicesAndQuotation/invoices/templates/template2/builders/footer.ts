@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   getDiscount,
   money,
@@ -6,8 +5,15 @@ import {
   hasIndividualDiscounts,
 } from '../utils/formatters.js';
 
+import type {
+  PdfContent,
+  PdfHeaderFooter,
+  PdfTableBody,
+} from '@/pdf/types';
+import type { InvoicePdfBusiness, InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
+
 /* Mapeo a texto de los métodos de pago */
-const PAYMENT_METHODS = {
+const PAYMENT_METHODS: Record<string, string> = {
   cash: 'Efectivo',
   transfer: 'Transferencia',
   card: 'Tarjeta',
@@ -15,7 +21,7 @@ const PAYMENT_METHODS = {
 };
 
 /* ───── bloque firma + etiqueta opcional ───── */
-function signatureBlock(label, extraLine) {
+function signatureBlock(label?: string, extraLine?: string): PdfContent {
   return {
     stack: [
       {
@@ -33,7 +39,10 @@ function signatureBlock(label, extraLine) {
 }
 
 /* ───────────────────────────────────────────── */
-export function buildFooter(biz, d) {
+export function buildFooter(
+  biz: InvoicePdfBusiness,
+  d: InvoicePdfData,
+): PdfHeaderFooter {
   /* Métodos de pago */
   const paymentStack = d.paymentMethod?.filter((m) => m?.status).length
     ? [
@@ -75,7 +84,7 @@ export function buildFooter(biz, d) {
   const generalDiscount = hasIndividualDisc ? 0 : getDiscount(d);
 
   /* Tabla de totales */
-  const totalsBody = [
+  const totalsBody: PdfTableBody = [
     [
       'Sub-Total:',
       {

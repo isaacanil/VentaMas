@@ -1,13 +1,18 @@
-// @ts-nocheck
 import { money, getProductIndividualDiscount } from '../utils/formatters.js';
 
+import type {
+  PdfContent,
+  PdfTableBody,
+  PdfTableRow,
+} from '@/pdf/types';
+import type { InvoicePdfData, InvoicePdfProduct } from '@/pdf/invoicesAndQuotation/types';
 
 const DEFAULT_BRAND = 'Sin marca';
 
 /* ──────────────────────────────────────────────── */
-export function buildContent(d) {
+export function buildContent(d: InvoicePdfData): PdfContent[] {
   /* cabecera de la tabla */
-  const headerRow = [
+  const headerRow: PdfTableRow = [
     'CANT',
     'CODIGO',
     'DESCRIPCIÓN',
@@ -23,9 +28,11 @@ export function buildContent(d) {
   }));
 
   /* cuerpo */
-  const body = [
+  const products: InvoicePdfProduct[] =
+    d && Array.isArray(d.products) ? d.products : [];
+  const body: PdfTableBody = [
     headerRow,
-    ...(d && Array.isArray(d.products) ? d.products : []).flatMap((p) => {
+    ...products.flatMap((p) => {
       const price = +p.pricing?.price || 0;
       const taxP = +p.pricing?.tax || 0; // porcentaje
       const tax = price * (taxP / 100);

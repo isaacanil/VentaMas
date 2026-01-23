@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
 
 import { buildContent } from './builders/content.js';
@@ -9,8 +8,14 @@ import {
   calcHeaderHeight,
 } from './utils/documentHeightCalculator.js';
 
-export const generateCreditNoteLetterPdf = async (biz, creditNoteData) => {
-  const images = {};
+import type { PdfDocDefinition, PdfImageMap, PdfMakeLike } from '@/pdf/types';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../types.js';
+
+export const generateCreditNoteLetterPdf = async (
+  biz: CreditNoteBusinessInfo,
+  creditNoteData: CreditNoteData,
+): Promise<string> => {
+  const images: PdfImageMap = {};
 
   if (biz.logoUrl) {
     try {
@@ -23,7 +28,7 @@ export const generateCreditNoteLetterPdf = async (biz, creditNoteData) => {
   const top = calcHeaderHeight(biz, creditNoteData);
   const bottom = calcFooterHeight(biz, creditNoteData);
 
-  const docDefinition = {
+  const docDefinition: PdfDocDefinition = {
     images,
     pageSize: 'A4',
     pageMargins: [32, top, 32, bottom],
@@ -53,7 +58,7 @@ export const generateCreditNoteLetterPdf = async (biz, creditNoteData) => {
     footer: buildFooter(biz, creditNoteData),
   };
 
-  const pdfMake = await getPdfMake();
+  const pdfMake = (await getPdfMake()) as PdfMakeLike;
 
   try {
     const base64 = await new Promise((res, rej) =>

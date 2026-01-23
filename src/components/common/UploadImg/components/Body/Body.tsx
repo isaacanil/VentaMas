@@ -1,16 +1,24 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
+import type { ProductImageRecord, ProductRecord } from '@/types/products';
 
 import { GalleryAdmin } from './GalleryAdmin';
 import { UploadImgAdmin } from './UploadImgAdmin';
 
-export const Body = ({ images, ImgToUpload, setImgToUpload }) => {
-  const { product } = useSelector(selectUpdateProductData);
-  const [img, setImg] = useState(product?.image);
+type BodyProps = {
+  images: ProductImageRecord[];
+  ImgToUpload: File | null;
+  setImgToUpload: React.Dispatch<React.SetStateAction<File | null>>;
+};
+
+export const Body = ({ images, ImgToUpload, setImgToUpload }: BodyProps) => {
+  const { product } = useSelector(selectUpdateProductData) as {
+    product: ProductRecord;
+  };
+  const [img, setImg] = useState<string | null>(product?.image ?? null);
   return (
     <Container>
       <BodyWrapper>

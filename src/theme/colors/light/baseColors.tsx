@@ -1,4 +1,5 @@
-// @ts-nocheck
+export type ColorScale = Record<string, string>;
+
 export const baseColors = {
   inherit: 'inherit',
   transparent: 'transparent',
@@ -291,3 +292,5 @@ export const baseColors = {
     950: 'rgb(76, 5, 25)',
   },
 };
+
+export type BaseColors = typeof baseColors;

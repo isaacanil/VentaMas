@@ -1,10 +1,13 @@
-// @ts-nocheck
 import { doc, deleteDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbDeleteProvider = async (id, user) => {
-  if (!user || !user?.businessID) return;
+export const fbDeleteProvider = async (
+  id: string,
+  user: UserWithBusiness | null | undefined,
+): Promise<void> => {
+  if (!user?.businessID) return;
   const providerRef = doc(db, 'businesses', user.businessID, 'providers', id);
   try {
     await deleteDoc(providerRef);

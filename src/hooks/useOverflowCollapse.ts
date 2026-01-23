@@ -1,5 +1,9 @@
-// @ts-nocheck
 import { useState, useLayoutEffect, useRef, useCallback } from 'react';
+
+type OverflowCollapseOptions = {
+  moreButtonWidth?: number;
+  gap?: number;
+};
 
 /**
  * Hook para colapsar elementos cuando no caben en el contenedor.
@@ -11,18 +15,17 @@ import { useState, useLayoutEffect, useRef, useCallback } from 'react';
  * @param {number} options.gap - Espacio entre elementos en píxeles
  * @returns {Object} - containerRef, register function, visibleCount
  */
-export const useOverflowCollapse = ({
-  moreButtonWidth = 48,
-  gap = 16,
-} = {}) => {
-  const containerRef = useRef(null);
-  const itemRefs = useRef([]); // refs individuales
-  const [visibleCount, setVisibleCount] = useState(Infinity);
+export const useOverflowCollapse = (
+  { moreButtonWidth = 48, gap = 16 }: OverflowCollapseOptions = {},
+) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Array<HTMLElement | null>>([]); // refs individuales
+  const [visibleCount, setVisibleCount] = useState<number>(Infinity);
   const [itemCount, setItemCount] = useState(0);
 
   // Registrar refs de cada item
   const register = useCallback(
-    (index) => (node) => {
+    (index: number) => (node: HTMLElement | null) => {
       itemRefs.current[index] = node;
       setItemCount(itemRefs.current.filter(Boolean).length);
     },
@@ -34,7 +37,7 @@ export const useOverflowCollapse = ({
     if (!containerRef.current) return;
 
     const calculateVisibleItems = () => {
-      const containerWidth = containerRef.current.offsetWidth;
+      const containerWidth = containerRef.current?.offsetWidth ?? 0;
       const items = itemRefs.current.filter(Boolean);
 
       if (items.length === 0) {

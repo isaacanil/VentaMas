@@ -1,16 +1,15 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 
 const MAX_DEPTH = 3;
 
-const removeAccents = (str) =>
+const removeAccents = (str: string) =>
   str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-const createSearchPredicate = (normalizedTerm) => {
-  const searchInString = (str) => str.includes(normalizedTerm);
-  const searchInNumber = (number) => number.toString().includes(normalizedTerm);
+const createSearchPredicate = (normalizedTerm: string) => {
+  const searchInString = (str: string) => str.includes(normalizedTerm);
+  const searchInNumber = (number: number) => number.toString().includes(normalizedTerm);
 
-  const searchInArray = (array, depth) => {
+  const searchInArray = (array: unknown[], depth: number) => {
     if (depth > MAX_DEPTH) return false;
     for (const item of array) {
       if (searchInItem(item, depth + 1)) return true;
@@ -18,7 +17,7 @@ const createSearchPredicate = (normalizedTerm) => {
     return false;
   };
 
-  const searchInObject = (obj, depth) => {
+  const searchInObject = (obj: Record<string, unknown>, depth: number) => {
     if (depth > MAX_DEPTH) return false;
     for (const value of Object.values(obj)) {
       if (searchInItem(value, depth + 1)) return true;
@@ -26,35 +25,38 @@ const createSearchPredicate = (normalizedTerm) => {
     return false;
   };
 
-  const searchInItem = (item, depthLevel = 0) => {
+  const searchInItem = (item: unknown, depthLevel = 0): boolean => {
     if (item == null) return false;
 
-    const searchByType = {
-      string: () => searchInString(removeAccents(item.toLowerCase())),
-      number: () => searchInNumber(item),
+    const searchByType: Record<string, () => boolean> = {
+      string: () => searchInString(removeAccents(String(item).toLowerCase())),
+      number: () => searchInNumber(item as number),
       object: () => {
         if (depthLevel > MAX_DEPTH) return false;
         if (Array.isArray(item)) {
           return searchInArray(item, depthLevel);
-        } else if (item instanceof Date) {
+        }
+        if (item instanceof Date) {
           return searchInString(
             removeAccents(item.toISOString().toLowerCase()),
           );
-        } else {
-          return searchInObject(item, depthLevel);
         }
+        return searchInObject(item as Record<string, unknown>, depthLevel);
       },
       default: () => false,
     };
 
     const type = typeof item;
-    return (searchByType[type] || searchByType['default'])();
+    return (searchByType[type] || searchByType.default)();
   };
 
-  return (item) => searchInItem(item);
+  return (item: unknown) => searchInItem(item);
 };
 
-const validateFilterDataParams = (array, searchTerm) => {
+const validateFilterDataParams = (
+  array: unknown,
+  searchTerm: string | null | undefined,
+) => {
   if (!array) {
     console.warn('useFilter: The first parameter must be a non-null array');
     return false;
@@ -76,7 +78,10 @@ const validateFilterDataParams = (array, searchTerm) => {
   return true;
 };
 
-export const filterData = (array, searchTerm) => {
+export const filterData = <T,>(
+  array: T[] | null | undefined,
+  searchTerm: string | null | undefined,
+) => {
   if (!validateFilterDataParams(array, searchTerm)) return array;
 
   const trimmedTerm = searchTerm?.trim() ?? '';
@@ -86,14 +91,14 @@ export const filterData = (array, searchTerm) => {
   const searchPredicate = createSearchPredicate(normalizedTerm);
 
   try {
-    return array.filter(searchPredicate);
+    return array?.filter(searchPredicate);
   } catch (e) {
     console.warn('useFilter: Error filtering data', e);
     return array;
   }
 };
 
-const useFilter = (data = [], searchTerm = '') => {
+const useFilter = <T,>(data: T[] = [], searchTerm = ''): T[] => {
   // Ensure data and searchTerm have default values
 
   return useMemo(() => {

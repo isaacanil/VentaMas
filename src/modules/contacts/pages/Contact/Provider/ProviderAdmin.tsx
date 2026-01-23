@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 
@@ -10,9 +9,9 @@ import { ToolBar } from './ToolBar';
 export const ProviderAdmin = () => {
   return (
     <Fragment>
-      <MenuApp></MenuApp>
+      <MenuApp />
       <Container>
-        <ToolBar></ToolBar>
+        <ToolBar />
         <ProviderTable />
       </Container>
     </Fragment>

@@ -1,13 +1,18 @@
-// @ts-nocheck
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { ChangeProductImage } from '@/features/updateProduct/updateProductSlice';
+import type { ProductImageRecord } from '@/types/products';
 
-export const GalleryAdmin = ({ images, setImg }) => {
+type GalleryAdminProps = {
+  images: ProductImageRecord[];
+  setImg: React.Dispatch<React.SetStateAction<string | null>>;
+};
+
+export const GalleryAdmin = ({ images, setImg }: GalleryAdminProps) => {
   const dispatch = useDispatch();
-  const AddImg = (img) => {
+  const AddImg = (img: string) => {
     dispatch(ChangeProductImage(img));
   };
   return (
@@ -18,10 +23,10 @@ export const GalleryAdmin = ({ images, setImg }) => {
       <Body>
         <div className="wrapper">
           {images.length > 0
-            ? images.map((img, index) => (
+            ? images.map((img) => (
                 <div
                   className="imgContainer"
-                  key={index}
+                  key={img.id}
                   onClick={() => {
                     setImg(img.url);
                     AddImg(img.url);

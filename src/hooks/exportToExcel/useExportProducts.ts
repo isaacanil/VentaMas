@@ -1,13 +1,13 @@
-// @ts-nocheck
 import { formatPrice } from '@/utils/format';
+import type { ProductItemType, ProductRecord } from '@/types/products';
 
-const ITEM_TYPE_LABELS = {
+const ITEM_TYPE_LABELS: Record<ProductItemType, string> = {
   product: 'Producto',
   service: 'Servicio',
   combo: 'Combo',
 };
 
-export const ExportProducts = async (products) => {
+export const ExportProducts = async (products: ProductRecord[]): Promise<void> => {
   const ExcelJS = (await import('exceljs')).default;
   // Crear una instancia de Workbook
   const workbook = new ExcelJS.Workbook();
@@ -37,10 +37,12 @@ export const ExportProducts = async (products) => {
 
   // Ordenar los datos en orden ascendente según el nombre del producto
   products.sort((a, b) => {
-    if (a.name < b.name) {
+    const nameA = a.name ?? '';
+    const nameB = b.name ?? '';
+    if (nameA < nameB) {
       return -1;
     }
-    if (a.name > b.name) {
+    if (nameA > nameB) {
       return 1;
     }
     return 0;
@@ -53,12 +55,12 @@ export const ExportProducts = async (products) => {
     product.size,
     product.netContent,
     product.stock,
-    product.pricing.tax,
-    ITEM_TYPE_LABELS[product.itemType] || '',
+    product.pricing?.tax,
+    product.itemType ? ITEM_TYPE_LABELS[product.itemType] : '',
     product.isVisible ? 'Sí' : 'No',
     product.trackInventory ? 'Sí' : 'No',
     product.barcode,
-    formatPrice(product.pricing.cost),
+    formatPrice(product.pricing?.cost),
     formatPrice(product.pricing?.listPrice),
     formatPrice(product.pricing?.cardPrice),
     formatPrice(product.pricing?.offerPrice),

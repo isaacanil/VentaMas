@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
 
 import { buildContent } from './builders/content';
@@ -9,10 +8,15 @@ import {
   calcHeaderHeight,
 } from './utils/documentHeightCalculator';
 
-export const generateQuotationPdf = async (req) => {
+import type { PdfDocDefinition, PdfImageMap, PdfMakeLike } from '@/pdf/types';
+import type { QuotationRequest } from '@/pdf/invoicesAndQuotation/types';
+
+export const generateQuotationPdf = async (
+  req: QuotationRequest,
+): Promise<string> => {
   const { business: biz, data: d } = req.data;
 
-  const images = {};
+  const images: PdfImageMap = {};
   if (biz.logoUrl) {
     try {
       images.logo = biz.logoUrl;
@@ -23,7 +27,7 @@ export const generateQuotationPdf = async (req) => {
 
   const top = calcHeaderHeight(biz, d);
   const bottom = calcFooterHeight(biz, d);
-  const docDefinition = {
+  const docDefinition: PdfDocDefinition = {
     images,
     pageSize: 'A4',
     pageMargins: [32, top, 32, bottom],
@@ -53,7 +57,7 @@ export const generateQuotationPdf = async (req) => {
     footer: buildFooter(biz, d),
   };
 
-  const pdfMake = await getPdfMake();
+  const pdfMake = (await getPdfMake()) as PdfMakeLike;
 
   try {
     const base64 = await new Promise((res, rej) =>

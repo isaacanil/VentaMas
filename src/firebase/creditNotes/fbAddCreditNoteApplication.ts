@@ -1,8 +1,17 @@
-// @ts-nocheck
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type {
+  CreditNoteApplicationInput,
+  CreditNoteApplicationRecord,
+  CreditNoteActor,
+} from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
+
+type CreditNoteUser = UserIdentity & {
+  displayName?: string | null;
+};
 
 /**
  * Registra la aplicación de una nota de crédito en una factura
@@ -19,19 +28,24 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {number} applicationData.newBalance - Nuevo saldo de la nota
  * @returns {Promise<Object>} - Los datos de la aplicación guardada
  */
-export const fbAddCreditNoteApplication = async (user, applicationData) => {
+export const fbAddCreditNoteApplication = async (
+  user: CreditNoteUser | null | undefined,
+  applicationData: CreditNoteApplicationInput,
+): Promise<CreditNoteApplicationRecord> => {
   if (!user?.businessID) throw new Error('Usuario sin businessID');
 
   const id = nanoid();
 
-  const data = {
+  const appliedBy: CreditNoteActor = {
+    uid: user.uid,
+    displayName: user.displayName || user.name || '',
+  };
+
+  const data: CreditNoteApplicationRecord = {
     id,
     ...applicationData,
     appliedAt: Timestamp.now(),
-    appliedBy: {
-      uid: user.uid,
-      displayName: user.displayName || user.name || '',
-    },
+    appliedBy,
     createdAt: Timestamp.now(),
   };
 

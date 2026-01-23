@@ -1,7 +1,10 @@
-// @ts-nocheck
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 import { measurePreciseTextBlock } from './textMeasurement.js';
+
+import type { TimestampLike } from '@/utils/date/types';
+import type { InvoiceClient, InvoicePaymentMethod } from '@/types/invoice';
+import type { InvoicePdfBusiness, InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
 
 // src/utils/documentHeightCalculator.js
 
@@ -33,11 +36,11 @@ const LAYOUT = {
  * Calcula la altura precisa de un texto considerando fuente y ancho
  */
 export function calculateTextHeight(
-  text,
+  text: string | null | undefined,
   fontSize = 10,
   lineHeight = 1.15,
   maxWidth = LAYOUT.pageWidth,
-) {
+): number {
   if (!text) return 0;
 
   // Estimación más precisa basada en caracteres por línea según el tamaño de fuente
@@ -48,16 +51,20 @@ export function calculateTextHeight(
   return lines * fontSize * lineHeight;
 }
 
-const normalizeClientValue = (value) => {
+const normalizeClientValue = (value: unknown): string | number | null => {
   if (value === null || value === undefined) return null;
   if (typeof value === 'string') {
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
   }
-  return value;
+  if (typeof value === 'number') return value;
+  return String(value);
 };
 
-const pickClientField = (d, ...keys) => {
+const pickClientField = (
+  d: InvoicePdfData,
+  ...keys: Array<keyof InvoiceClient | string>
+): string | number | null => {
   for (const key of keys) {
     const nested = normalizeClientValue(d?.client?.[key]);
     if (nested !== null && nested !== undefined) {
@@ -82,9 +89,13 @@ const pickClientField = (d, ...keys) => {
  * @returns {number} Altura estimada (pt).
  */
 export function estimateTextHeight(
-  text,
-  { charsPerLine = 40, lineHeight = 15, marginTop = 8 } = {},
-) {
+  text: string | null | undefined,
+  {
+    charsPerLine = 40,
+    lineHeight = 15,
+    marginTop = 8,
+  }: { charsPerLine?: number; lineHeight?: number; marginTop?: number } = {},
+): number {
   const len = text?.length || 0;
   const lines = Math.ceil(len / charsPerLine) || 1;
   return marginTop + lines * lineHeight;
@@ -93,7 +104,10 @@ export function estimateTextHeight(
  * Calcula la altura necesaria para el header dinámico con precisión máxima
  * Considera todos los elementos reales: logo, información del negocio, separadores y cliente
  */
-export function calcHeaderHeight(biz, d) {
+export function calcHeaderHeight(
+  biz: InvoicePdfBusiness,
+  d: InvoicePdfData,
+): number {
   let height = LAYOUT.headerMargin; // margen superior inicial
 
   // 1. Logo (si existe)
@@ -234,7 +248,10 @@ export function calcHeaderHeight(biz, d) {
  * Calcula la altura necesaria para el footer dinámico con máxima precisión
  * Considera firmas, métodos de pago, tabla de totales y comentarios
  */
-export function calcFooterHeight(biz, d) {
+export function calcFooterHeight(
+  biz: InvoicePdfBusiness,
+  d: InvoicePdfData,
+): number {
   let height = 0;
 
   // 1. Bloque de firmas (siempre presente)
@@ -300,11 +317,13 @@ export function calcFooterHeight(biz, d) {
 
 // Funciones auxiliares para mejorar la precisión
 
-function _shouldShowClientBlock(d) {
+function _shouldShowClientBlock(d: InvoicePdfData): boolean {
   return Boolean(buildClientLines(d));
 }
 
-function buildClientLines(d) {
+function buildClientLines(
+  d: InvoicePdfData,
+): { left: string[]; right: string[] } | null {
   const rawName = pickClientField(d, 'name', 'clientName');
   const normalizedName =
     typeof rawName === 'string' ? rawName.toLowerCase() : '';
@@ -349,7 +368,7 @@ function buildClientLines(d) {
   return { left, right };
 }
 
-function formatDateForCalculation(date) {
+function formatDateForCalculation(date: TimestampLike): string {
   if (!date) return '-';
   if (date.seconds) {
     const ts = date.seconds * 1000 + Math.floor(date.nanoseconds / 1e6);
@@ -358,8 +377,8 @@ function formatDateForCalculation(date) {
   return new Date(date).toLocaleDateString('es-DO');
 }
 
-function getPaymentMethodText(method) {
-  const methodNames = {
+function getPaymentMethodText(method: InvoicePaymentMethod): string {
+  const methodNames: Record<string, string> = {
     cash: 'Efectivo',
     transfer: 'Transferencia',
     card: 'Tarjeta', // Added missing comma

@@ -1,11 +1,12 @@
-// @ts-nocheck
-import React from 'react';
+import { useState } from 'react';
 
 import { Header } from './Header';
 import './page.css';
 
+type StoryUser = { name: string };
+
 export const Page = () => {
-  const [user, setUser] = React.useState();
+  const [user, setUser] = useState<StoryUser | undefined>();
 
   return (
     <article>

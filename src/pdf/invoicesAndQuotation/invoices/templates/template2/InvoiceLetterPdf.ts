@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getPdfMake } from '@/utils/pdf/pdfMakeLoader.js';
 
 import { buildContent } from './builders/content.js';
@@ -9,8 +8,14 @@ import {
   calcHeaderHeight,
 } from './utils/documentHeightCalculator.js';
 
-export const generateInvoiceLetterPdf = async (biz, d) => {
-  const images = {};
+import type { PdfDocDefinition, PdfImageMap, PdfMakeLike } from '@/pdf/types';
+import type { InvoicePdfBusiness, InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
+
+export const generateInvoiceLetterPdf = async (
+  biz: InvoicePdfBusiness,
+  d: InvoicePdfData,
+): Promise<string> => {
+  const images: PdfImageMap = {};
 
   if (biz.logoUrl) {
     try {
@@ -22,7 +27,7 @@ export const generateInvoiceLetterPdf = async (biz, d) => {
 
   const top = calcHeaderHeight(biz, d);
   const bottom = calcFooterHeight(biz, d);
-  const docDefinition = {
+  const docDefinition: PdfDocDefinition = {
     images,
     pageSize: 'A4',
     pageMargins: [32, top, 32, bottom],
@@ -52,7 +57,7 @@ export const generateInvoiceLetterPdf = async (biz, d) => {
     footer: buildFooter(biz, d),
   };
 
-  const pdfMake = await getPdfMake();
+  const pdfMake = (await getPdfMake()) as PdfMakeLike;
   try {
     const base64 = await new Promise((res, rej) =>
       pdfMake.createPdf(docDefinition).getBase64(res, rej),

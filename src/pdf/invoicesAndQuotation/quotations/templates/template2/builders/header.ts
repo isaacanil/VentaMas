@@ -1,27 +1,42 @@
-// @ts-nocheck
 import { formatDate } from '../utils/formatters.js';
 
 import { buildClientBlock } from './clientBlock.js';
 
-export function buildHeader(biz, d) {
+import type {
+  PdfContent,
+  PdfHeaderFooter,
+  PdfTableBody,
+} from '@/pdf/types';
+import type {
+  InvoicePdfBusiness,
+  QuotationData,
+} from '@/pdf/invoicesAndQuotation/types';
+
+const compact = <T>(items: Array<T | null | undefined | false>): T[] =>
+  items.filter(Boolean) as T[];
+
+export function buildHeader(
+  biz: InvoicePdfBusiness,
+  d: QuotationData,
+): PdfHeaderFooter {
   return () => {
     const clientBlock = buildClientBlock(d);
 
     const headerCols = [
       {
         width: '*',
-        stack: [
+        stack: compact<PdfContent>([
           { text: biz.name, style: 'title' },
           biz.address && { text: biz.address, style: 'headerInfo' },
           biz.tel && { text: `Tel: ${biz.tel}`, style: 'headerInfo' },
           biz.email && { text: biz.email, style: 'headerInfo' },
           biz.rnc && { text: `RNC: ${biz.rnc}`, style: 'headerInfo' },
-        ].filter(Boolean),
+        ]),
       },
       {
         width: 'auto',
         alignment: 'right',
-        stack: [
+        stack: compact<PdfContent>([
           { text: 'Cotización', style: 'title', alignment: 'right' },
           {
             text: `Fecha: ${formatDate(d.date)}`,
@@ -38,11 +53,11 @@ export function buildHeader(biz, d) {
             style: 'headerInfo',
             alignment: 'right',
           },
-        ].filter(Boolean),
+        ]),
       },
     ];
 
-    const rows = [];
+    const rows: PdfTableBody = [];
 
     if (biz.logo) {
       rows.push([
@@ -59,11 +74,14 @@ export function buildHeader(biz, d) {
     ]);
 
     if (clientBlock) {
+      const [leftColumn, rightColumn] = clientBlock.columns;
+      const leftStack = leftColumn?.stack ?? [];
+      const rightStack = rightColumn?.stack ?? [];
       rows.push([
         {
           columns: [
-            { width: '*', stack: clientBlock.columns[0].stack },
-            { width: '*', stack: clientBlock.columns[1].stack },
+            { width: '*', stack: leftStack },
+            { width: '*', stack: rightStack },
           ],
           colSpan: 2,
         },

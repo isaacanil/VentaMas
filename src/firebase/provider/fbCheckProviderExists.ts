@@ -1,15 +1,19 @@
-// @ts-nocheck
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
 export const fbCheckProviderExists = async (
-  businessID,
-  rnc,
-  name,
-  currentProviderId = null,
-) => {
-  const providersRef = collection(db, 'businesses', businessID, 'providers');
+  businessID: string,
+  rnc: string | null | undefined,
+  name: string | null | undefined,
+  currentProviderId: string | null = null,
+): Promise<{ rnc: boolean; name: boolean }> => {
+  const providersRef = collection(
+    db,
+    'businesses',
+    businessID,
+    'providers',
+  );
 
   // Check for RNC
   const rncQuery = query(providersRef, where('provider.rnc', '==', rnc));

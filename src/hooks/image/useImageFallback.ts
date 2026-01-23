@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 
-const useImageFallback = (initialImageURL, fallbackImageURL) => {
-  const [imageURL, setImageURL] = useState(initialImageURL);
+const useImageFallback = (initialImageURL: string, fallbackImageURL: string) => {
+  const [imageURL, setImageURL] = useState<string>(initialImageURL);
 
   useEffect(() => {
     const loadImage = () => {
@@ -19,7 +18,7 @@ const useImageFallback = (initialImageURL, fallbackImageURL) => {
     loadImage();
   }, [initialImageURL, fallbackImageURL]);
 
-  return [imageURL];
+  return [imageURL] as const;
 };
 
 export default useImageFallback;

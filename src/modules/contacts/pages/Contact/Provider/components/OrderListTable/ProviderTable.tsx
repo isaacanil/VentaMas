@@ -1,11 +1,31 @@
-// @ts-nocheck
 import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { useFbGetProviders } from '@/firebase/provider/useFbGetProvider';
+import type { ProviderDocument } from '@/firebase/provider/types';
 import { ProviderCard } from '@/modules/contacts/pages/Contact/Provider/ListItem/ProviderCard';
+
+type RowBorder = 'border-bottom';
+type RowFill = 'fill';
+type RowContainer = 'first';
+type RowColor = 'header' | 'item';
+
+type ColPosition = 'right';
+type ColSize = 'limit';
+
+interface RowProps {
+  border?: RowBorder;
+  fill?: RowFill;
+  container?: RowContainer;
+  color?: RowColor;
+}
+
+interface ColProps {
+  position?: ColPosition;
+  size?: ColSize;
+}
 
 export const ProviderTable = () => {
   const user = useSelector(selectUser);
@@ -27,13 +47,13 @@ export const ProviderTable = () => {
           </Row>
 
           <TableBody>
-            {Array(providers).length > 0
-              ? providers.map(({ provider }, index) => (
+            {providers.length > 0
+              ? providers.map((item: ProviderDocument, index) => (
                   <ProviderCard
                     Row={Row}
                     Col={Col}
-                    key={index}
-                    e={provider}
+                    key={item.provider?.id ?? index}
+                    e={item.provider}
                     index={index}
                   />
                 ))
@@ -99,7 +119,7 @@ const TitleContainer = styled.div`
     margin: 0;
   }
 `;
-const Row = styled.div`
+const Row = styled.div<RowProps>`
   display: grid;
   align-items: center;
   height: 3em;
@@ -172,7 +192,7 @@ const Row = styled.div`
     }
   }}
 `;
-const Col = styled.div`
+const Col = styled.div<ColProps>`
   padding: 0 0.6em;
   ${(props) => {
     switch (props.position) {

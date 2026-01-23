@@ -1,6 +1,11 @@
-// @ts-nocheck
-// constants.js
-export const comprobantesOptions = [
+// constants.ts
+export interface ComprobanteOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export const comprobantesOptions: ComprobanteOption[] = [
   {
     value: '01',
     label: 'Factura de Crédito Fiscal',

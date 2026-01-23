@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -12,15 +11,35 @@ import { httpsCallable } from 'firebase/functions';
 import { nanoid } from 'nanoid';
 
 import { functions, db } from '@/firebase/firebaseconfig';
+import type { InvoiceData } from '@/types/invoice';
 
-const createInvoiceCallable = httpsCallable(functions, 'createInvoiceV2');
+import type {
+  InvoiceCart,
+  InvoiceCartProduct,
+  InvoiceNcfPayload,
+  InvoiceReceivablePayload,
+  InvoiceRequestParams,
+  InvoiceRequestPayload,
+  InvoiceServiceError,
+  InvoiceSubmitResponse,
+  InvoiceSubmitResult,
+  InvoiceWaitResult,
+  NormalizedUser,
+  UnknownRecord,
+} from './types';
+
+const createInvoiceCallable = httpsCallable<
+  InvoiceRequestPayload,
+  InvoiceSubmitResponse
+>(functions, 'createInvoiceV2');
 
 const DEFAULT_POLL_INTERVAL_MS = 700;
 const DEFAULT_TIMEOUT_MS = 45000;
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
-const isPlainObject = (value) => {
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return false;
   }
@@ -28,7 +47,7 @@ const isPlainObject = (value) => {
   return prototype === Object.prototype || prototype === null;
 };
 
-const sanitizeNumericValues = (input) => {
+const sanitizeNumericValues = (input: unknown): unknown => {
   if (input === undefined) {
     return null;
   }
@@ -38,10 +57,13 @@ const sanitizeNumericValues = (input) => {
   }
 
   if (isPlainObject(input)) {
-    return Object.entries(input).reduce((acc, [key, value]) => {
-      acc[key] = sanitizeNumericValues(value);
-      return acc;
-    }, {});
+    return Object.entries(input).reduce<Record<string, unknown>>(
+      (acc, [key, value]) => {
+        acc[key] = sanitizeNumericValues(value);
+        return acc;
+      },
+      {},
+    );
   }
 
   if (typeof input === 'number') {
@@ -51,20 +73,20 @@ const sanitizeNumericValues = (input) => {
   return input;
 };
 
-const normalizeCart = (cart) => {
+const normalizeCart = (cart: InvoiceCart | null | undefined): InvoiceCart | null => {
   if (cart == null || typeof cart !== 'object') {
     return cart ?? null;
   }
 
-  const normalizedCart = { ...cart };
+  const normalizedCart: InvoiceCart = { ...cart };
 
   if (Array.isArray(cart.products)) {
     normalizedCart.products = cart.products.map((product) => {
       if (product == null || typeof product !== 'object') {
-        return product ?? null;
+        return product as InvoiceCartProduct;
       }
 
-      const normalizedProduct = { ...product };
+      const normalizedProduct: InvoiceCartProduct = { ...product };
       if (normalizedProduct.productStockId === undefined) {
         normalizedProduct.productStockId = null;
       }
@@ -78,7 +100,9 @@ const normalizeCart = (cart) => {
   return normalizedCart;
 };
 
-const normalizeUser = (user) => {
+const normalizeUser = (
+  user: InvoiceRequestParams['user'],
+): NormalizedUser | null => {
   if (!user) return null;
   const businessId =
     user.businessID ||
@@ -94,7 +118,15 @@ const normalizeUser = (user) => {
   };
 };
 
-const normalizeNcf = ({ taxReceiptEnabled, ncfType, ncf }) => {
+const normalizeNcf = ({
+  taxReceiptEnabled,
+  ncfType,
+  ncf,
+}: {
+  taxReceiptEnabled?: boolean;
+  ncfType?: string | null;
+  ncf?: InvoiceNcfPayload | null;
+}) => {
   const enabled = Boolean(taxReceiptEnabled || (ncf && ncf.enabled));
   const type = ncf?.type || ncfType || null;
   if (!enabled) {
@@ -103,7 +135,7 @@ const normalizeNcf = ({ taxReceiptEnabled, ncfType, ncf }) => {
   return { enabled: true, type };
 };
 
-const toMilliseconds = (value) => {
+const toMilliseconds = (value: unknown): number | null => {
   if (value == null) {
     return null;
   }
@@ -124,19 +156,31 @@ const toMilliseconds = (value) => {
     return Number.isFinite(millis) ? millis : null;
   }
 
-  if (typeof value?.toMillis === 'function') {
-    const millis = value.toMillis();
-    return Number.isFinite(millis) ? millis : null;
-  }
-
   if (typeof value === 'object') {
-    const seconds = value?.seconds ?? value?._seconds;
+    const valueObj = value as {
+      toMillis?: () => number;
+      seconds?: number;
+      _seconds?: number;
+      nanoseconds?: number;
+      nanosecond?: number;
+      _nanoseconds?: number;
+      nanoSeconds?: number;
+      nanos?: number;
+      valueOf?: () => unknown;
+    };
+
+    if (typeof valueObj.toMillis === 'function') {
+      const millis = valueObj.toMillis();
+      return Number.isFinite(millis) ? millis : null;
+    }
+
+    const seconds = valueObj.seconds ?? valueObj._seconds;
     const nanos =
-      value?.nanoseconds ??
-      value?.nanosecond ??
-      value?._nanoseconds ??
-      value?.nanoSeconds ??
-      value?.nanos ??
+      valueObj.nanoseconds ??
+      valueObj.nanosecond ??
+      valueObj._nanoseconds ??
+      valueObj.nanoSeconds ??
+      valueObj.nanos ??
       0;
 
     if (Number.isFinite(seconds)) {
@@ -149,8 +193,8 @@ const toMilliseconds = (value) => {
       }
     }
 
-    if (typeof value.valueOf === 'function') {
-      const raw = value.valueOf();
+    if (typeof valueObj.valueOf === 'function') {
+      const raw = valueObj.valueOf();
       if (typeof raw === 'number') {
         return Number.isFinite(raw) ? raw : null;
       }
@@ -163,14 +207,14 @@ const toMilliseconds = (value) => {
 };
 
 const normalizeReceivablePayload = (
-  receivable,
-  { requirePaymentDate = false } = {},
-) => {
+  receivable: InvoiceReceivablePayload | UnknownRecord | null | undefined,
+  { requirePaymentDate = false }: { requirePaymentDate?: boolean } = {},
+): InvoiceReceivablePayload | null => {
   if (!receivable) {
     if (requirePaymentDate) {
       throw new Error(
         'La configuración de cuentas por cobrar es requerida para completar la venta a crédito.',
-      );
+      ) as InvoiceServiceError;
     }
     return null;
   }
@@ -179,11 +223,12 @@ const normalizeReceivablePayload = (
     throw new Error('Formato inválido para la cuenta por cobrar.');
   }
 
+  const receivableRecord = receivable as InvoiceReceivablePayload;
   const now = Date.now();
-  const createdAt = toMilliseconds(receivable.createdAt) ?? now;
-  const updatedAt = toMilliseconds(receivable.updatedAt) ?? now;
-  const paymentDate = toMilliseconds(receivable.paymentDate);
-  const lastPaymentDate = toMilliseconds(receivable.lastPaymentDate);
+  const createdAt = toMilliseconds(receivableRecord.createdAt) ?? now;
+  const updatedAt = toMilliseconds(receivableRecord.updatedAt) ?? now;
+  const paymentDate = toMilliseconds(receivableRecord.paymentDate);
+  const lastPaymentDate = toMilliseconds(receivableRecord.lastPaymentDate);
 
   if (requirePaymentDate && paymentDate == null) {
     throw new Error(
@@ -192,7 +237,7 @@ const normalizeReceivablePayload = (
   }
 
   return {
-    ...receivable,
+    ...receivableRecord,
     createdAt,
     updatedAt,
     paymentDate: paymentDate ?? null,
@@ -222,7 +267,7 @@ export const buildInvoiceRequestPayload = ({
   preorder,
   idempotencyKey,
   isTestMode,
-}) => {
+}: InvoiceRequestParams & { idempotencyKey: string }): InvoiceRequestPayload => {
   const normalizedUser = normalizeUser(user);
   const resolvedBusinessId =
     businessId ||
@@ -232,7 +277,15 @@ export const buildInvoiceRequestPayload = ({
     null;
   const resolvedUserId = userId || normalizedUser?.uid || null;
 
-  const payload = {
+  if (!resolvedBusinessId) {
+    throw new Error('businessId es requerido para iniciar la factura');
+  }
+
+  if (!resolvedUserId) {
+    throw new Error('userId es requerido para iniciar la factura');
+  }
+
+  const payload: InvoiceRequestPayload = {
     idempotencyKey,
     businessId: resolvedBusinessId,
     userId: resolvedUserId,
@@ -269,19 +322,13 @@ export const buildInvoiceRequestPayload = ({
     payload.user = normalizedUser;
   }
 
-  if (!payload.businessId) {
-    throw new Error('businessId es requerido para iniciar la factura');
-  }
-
-  if (!payload.userId) {
-    throw new Error('userId es requerido para iniciar la factura');
-  }
-
-  return sanitizeNumericValues(payload);
+  return sanitizeNumericValues(payload) as InvoiceRequestPayload;
 };
 
-export const submitInvoice = async (params) => {
-  const idempotencyKey = params?.idempotencyKey || generateIdempotencyKey();
+export const submitInvoice = async (
+  params: InvoiceRequestParams,
+): Promise<InvoiceSubmitResult> => {
+  const idempotencyKey = params.idempotencyKey || generateIdempotencyKey();
   const payload = buildInvoiceRequestPayload({ ...params, idempotencyKey });
 
   const { data } = await createInvoiceCallable(payload);
@@ -294,11 +341,22 @@ export const submitInvoice = async (params) => {
   };
 };
 
-const fetchFailedTask = async ({ businessId, invoiceId }) => {
+type FailedTaskRecord = UnknownRecord & {
+  lastError?: string;
+  type?: string;
+};
+
+const fetchFailedTask = async ({
+  businessId,
+  invoiceId,
+}: {
+  businessId: string;
+  invoiceId: string;
+}): Promise<(FailedTaskRecord & { id: string }) | null> => {
   const outboxRef = collection(
     db,
     `businesses/${businessId}/invoicesV2/${invoiceId}/outbox`,
-  );
+  ) as InvoiceServiceError;
   const failedQuery = query(
     outboxRef,
     where('status', '==', 'failed'),
@@ -307,7 +365,7 @@ const fetchFailedTask = async ({ businessId, invoiceId }) => {
   const failedSnap = await getDocs(failedQuery);
   if (failedSnap.empty) return null;
   const docSnap = failedSnap.docs[0];
-  return { id: docSnap.id, ...docSnap.data() };
+  return { id: docSnap.id, ...(docSnap.data() as FailedTaskRecord) };
 };
 
 export const waitForInvoiceResult = async ({
@@ -316,7 +374,13 @@ export const waitForInvoiceResult = async ({
   signal,
   pollInterval = DEFAULT_POLL_INTERVAL_MS,
   timeoutMs = DEFAULT_TIMEOUT_MS,
-}) => {
+}: {
+  businessId: string;
+  invoiceId: string;
+  signal?: AbortSignal;
+  pollInterval?: number;
+  timeoutMs?: number;
+}): Promise<InvoiceWaitResult> => {
   if (!businessId) {
     throw new Error('businessId es requerido para consultar la factura');
   }
@@ -334,7 +398,7 @@ export const waitForInvoiceResult = async ({
   );
 
   const startedAt = Date.now();
-  let lastSnapshot = null;
+  let lastSnapshot: UnknownRecord | null = null;
   const MAX_RETRIES = 10;
   let retryCount = 0;
 
@@ -348,30 +412,39 @@ export const waitForInvoiceResult = async ({
 
     const invoiceSnap = await getDoc(invoiceRef);
     retryCount++;
-    const invoiceData = invoiceSnap.exists() ? invoiceSnap.data() : null;
+    const invoiceData = invoiceSnap.exists()
+      ? (invoiceSnap.data() as UnknownRecord & { status?: string })
+      : null;
     if (invoiceData) {
       lastSnapshot = invoiceData;
-      if (invoiceData.status === 'failed') {
+      const invoiceStatus = invoiceData.status;
+      if (invoiceStatus === 'failed') {
         const failedTask = await fetchFailedTask({ businessId, invoiceId });
         const errorMessage =
           failedTask?.lastError ||
           (failedTask?.type
             ? `La tarea ${failedTask.type} falló durante el procesamiento.`
             : 'El proceso de factura falló.');
-        const error = new Error(errorMessage);
-        error.code = 'invoice-failed';
-        error.invoice = invoiceData;
-        error.failedTask = failedTask;
+        const error: InvoiceServiceError = Object.assign(
+          new Error(errorMessage),
+          {
+            code: 'invoice-failed',
+            invoice: invoiceData,
+            failedTask,
+          },
+        );
         throw error;
       }
 
-      const isFrontendReady = invoiceData.status === 'frontend_ready';
-      const isCommitted = invoiceData.status === 'committed';
+      const isFrontendReady = invoiceStatus === 'frontend_ready';
+      const isCommitted = invoiceStatus === 'committed';
 
       if (isFrontendReady || isCommitted) {
         const canonicalSnap = await getDoc(canonicalRef);
         if (canonicalSnap.exists()) {
-          const canonicalData = canonicalSnap.data();
+          const canonicalData = canonicalSnap.data() as UnknownRecord & {
+            data?: InvoiceData | null;
+          };
           return {
             invoice: canonicalData?.data ?? null,
             canonical: canonicalData ?? null,
@@ -382,7 +455,7 @@ export const waitForInvoiceResult = async ({
     }
 
     if (Date.now() - startedAt >= timeoutMs) {
-      const timeoutError = new Error(
+      const timeoutError: InvoiceServiceError = new Error(
         'Tiempo de espera agotado al confirmar la factura. Verifica el estado en el historial de facturación.',
       );
       timeoutError.code = 'invoice-timeout';
@@ -393,7 +466,7 @@ export const waitForInvoiceResult = async ({
     await delay(pollInterval);
   }
 
-  const exhaustedError = new Error(
+  const exhaustedError: InvoiceServiceError = new Error(
     'No se pudo confirmar la factura después de varios intentos. Verifica el historial de facturación o intenta nuevamente.',
   );
   exhaustedError.code = 'invoice-retries-exceeded';

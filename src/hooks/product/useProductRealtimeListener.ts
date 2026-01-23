@@ -1,8 +1,27 @@
-// @ts-nocheck
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { ProductRecord } from '@/types/products';
+
+type ProductListenerError = {
+  type: 'not_found' | 'listener_error';
+  message: string;
+  details?: string;
+};
+
+type ProductMetadata = {
+  lastUpdated?: unknown;
+  exists: boolean;
+  hasPendingWrites: boolean;
+};
+
+type ProductSnapshotState = {
+  key: string | null;
+  productData: (ProductRecord & { _metadata: ProductMetadata }) | null;
+  error: ProductListenerError | null;
+  isConnected: boolean;
+};
 
 /**
  * Hook para escuchar cambios en tiempo real de un producto específico
@@ -12,14 +31,14 @@ import { db } from '@/firebase/firebaseconfig';
  * @returns {Object} Estado del producto en tiempo real
  */
 export const useProductRealtimeListener = (
-  businessId,
-  productId,
+  businessId: string | null | undefined,
+  productId: string | null | undefined,
   enabled = true,
 ) => {
   const shouldListen = Boolean(enabled && businessId && productId);
   const listenerKey = shouldListen ? `${businessId}:${productId}` : null;
 
-  const [snapshot, setSnapshot] = useState(() => ({
+  const [snapshot, setSnapshot] = useState<ProductSnapshotState>(() => ({
     key: null,
     productData: null,
     error: null,
@@ -27,7 +46,7 @@ export const useProductRealtimeListener = (
   }));
 
   useEffect(() => {
-    if (!shouldListen) return;
+    if (!shouldListen || !businessId || !productId) return;
 
     let isActive = true;
     const key = `${businessId}:${productId}`;
@@ -41,7 +60,7 @@ export const useProductRealtimeListener = (
         if (!isActive) return;
 
         if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
+          const data = docSnapshot.data() as ProductRecord;
           setSnapshot({
             key,
             isConnected: true,

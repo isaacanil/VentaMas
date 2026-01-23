@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 
 import { listenAllBatches } from '../../firebase/warehouse/batchService';
@@ -12,7 +11,7 @@ export const useListenBatches = (
   productID: string | null = null,
 ) => {
   const [batches, setBatches] = useState<BatchRecord[]>([]);
-  const [loading, setLoading] = useState(() => Boolean(productID && user));
+  const [loading, setLoading] = useState<boolean>(() => Boolean(productID && user));
   const [error] = useState<unknown | null>(null);
 
   useEffect(() => {

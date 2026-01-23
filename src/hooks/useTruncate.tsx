@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useRef, useEffect, type RefObject } from 'react';
 
 

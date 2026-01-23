@@ -1,11 +1,16 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
-export function money(n) {
-  return Number(n).toFixed(2);
+import type { TimestampLike } from '@/utils/date/types';
+
+import type { InvoicePdfData, InvoicePdfProduct } from '../types';
+
+type DiscountSource = Pick<InvoicePdfData, 'discount' | 'products'> | null | undefined;
+
+export function money(value: number | string | null | undefined): string {
+  return Number(value).toFixed(2);
 }
 
-export function formatDate(ts) {
+export function formatDate(ts: TimestampLike): string {
   const millis =
     ts instanceof Date
       ? ts.getTime()
@@ -16,8 +21,10 @@ export function formatDate(ts) {
   return DateTime.fromMillis(millis).toFormat('dd/MM/yyyy');
 }
 
-export function getDiscount(d) {
-  const products = Array.isArray(d?.products) ? d.products : [];
+export function getDiscount(d: DiscountSource): number {
+  const products: InvoicePdfProduct[] = Array.isArray(d?.products)
+    ? d.products
+    : [];
   const discountValue = Number(d?.discount?.value) || 0;
 
   if (!discountValue || products.length === 0) return 0;

@@ -1,14 +1,22 @@
-// @ts-nocheck
-const formatTextValue = (value) => {
+import type { PdfColumnsBlock, PdfContent } from '@/pdf/types';
+import type { InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
+import type { InvoiceClient } from '@/types/invoice';
+
+const formatTextValue = (value: unknown): string | number | null => {
   if (value === null || value === undefined) return null;
   const trimmed = typeof value === 'string' ? value.trim() : value;
   if (typeof trimmed === 'string' && trimmed.length === 0) {
     return null;
   }
-  return trimmed;
+  if (typeof trimmed === 'number') return trimmed;
+  if (typeof trimmed === 'string') return trimmed;
+  return String(trimmed);
 };
 
-const pickClientField = (d, ...keys) => {
+const pickClientField = (
+  d: InvoicePdfData,
+  ...keys: Array<keyof InvoiceClient | string>
+): string | number | null => {
   for (const key of keys) {
     const nested = formatTextValue(d?.client?.[key]);
     if (nested !== null && nested !== undefined) {
@@ -22,7 +30,7 @@ const pickClientField = (d, ...keys) => {
   return null;
 };
 
-export function buildClientBlock(d) {
+export function buildClientBlock(d: InvoicePdfData): PdfColumnsBlock | null {
   const rawName = pickClientField(d, 'name');
   const normalizedName =
     typeof rawName === 'string' ? rawName.toLowerCase() : '';
@@ -41,7 +49,7 @@ export function buildClientBlock(d) {
     return null;
   }
 
-  const detailLeft = [
+  const detailLeft: PdfContent[] = [
     { label: 'Cliente', value: name },
     { label: 'Dirección', value: address },
   ]
@@ -54,7 +62,7 @@ export function buildClientBlock(d) {
       style: 'headerInfo',
     }));
 
-  const detailRight = [
+  const detailRight: PdfContent[] = [
     { label: 'Tel', value: tel },
     { label: 'Tel 2', value: tel2 },
     { label: 'RNC/Cédula', value: personalId },

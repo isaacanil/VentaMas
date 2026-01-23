@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 
 export const useViewportHeight = () => {
-  const [viewportHeight, setViewportHeight] = useState(() => {
+  const [viewportHeight, setViewportHeight] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       return window.innerHeight;
     }

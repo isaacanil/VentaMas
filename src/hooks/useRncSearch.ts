@@ -1,9 +1,20 @@
-// @ts-nocheck
 import { useState, useCallback } from 'react';
+import type { FormInstance } from 'antd';
 
 import supabase from '@/supabase/config';
 
-const FIELD_MAPPINGS = {
+type FieldType = 'rnc' | 'personalID';
+
+type DgiiRecord = Record<string, string | number | null | undefined>;
+
+type Difference = {
+  field: string;
+  label: string;
+  currentValue: string | number;
+  dgiiValue: string | number;
+};
+
+const FIELD_MAPPINGS: Record<FieldType, { formKey: string; dgiiKey: string; label: string }> = {
   rnc: {
     formKey: 'rnc',
     dgiiKey: 'rnc_number',
@@ -21,11 +32,14 @@ const COMPARABLE_FIELDS = [
   // Add other common fields here
 ];
 
-export const useRncSearch = (form, fieldType = 'rnc') => {
+export const useRncSearch = (
+  form: FormInstance,
+  fieldType: FieldType = 'rnc',
+) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rncInfo, setRncInfo] = useState(null);
-  const [differences, setDifferences] = useState([]);
+  const [rncInfo, setRncInfo] = useState<DgiiRecord | null>(null);
+  const [differences, setDifferences] = useState<Difference[]>([]);
 
   const clearAll = () => {
     setRncInfo(null);
@@ -34,7 +48,7 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
   };
 
   const compareDgiiData = useCallback(
-    (formData, dgiiData) => {
+    (formData: Record<string, string | number>, dgiiData: DgiiRecord | null) => {
       if (!dgiiData) {
         setDifferences([]);
         return false;
@@ -45,7 +59,7 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
         FIELD_MAPPINGS[fieldType], // Add the dynamic RNC/personalID field
       ];
 
-      const diffs = fieldsToCompare.reduce((acc, field) => {
+      const diffs = fieldsToCompare.reduce<Difference[]>((acc, field) => {
         const currentValue = formData[field.formKey];
         const dgiiValue = dgiiData[field.dgiiKey];
 
@@ -76,8 +90,8 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
     try {
       const fieldsToSync = [...COMPARABLE_FIELDS, FIELD_MAPPINGS[fieldType]];
 
-      const updates = fieldsToSync.reduce((acc, field) => {
-        if (rncInfo[field.dgiiKey]) {
+      const updates = fieldsToSync.reduce<Record<string, unknown>>((acc, field) => {
+        if (rncInfo[field.dgiiKey] != null) {
           acc[field.formKey] = rncInfo[field.dgiiKey];
         }
         return acc;
@@ -89,15 +103,15 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
       setDifferences([]); // Clear differences after successful sync
 
       return true;
-    } catch (error) {
-      console.error('Error syncing with DGII:', error);
+    } catch (err) {
+      console.error('Error syncing with DGII:', err);
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const consultarRNC = async (value, silent = false) => {
+  const consultarRNC = async (value: string, silent = false) => {
     if (!value) {
       clearAll();
       return;
@@ -119,7 +133,7 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
         .from('rnc')
         .select('*')
         .eq('rnc_number', value)
-        .single();
+        .single<DgiiRecord>();
 
       if (supabaseError) throw supabaseError;
 
@@ -134,8 +148,8 @@ export const useRncSearch = (form, fieldType = 'rnc') => {
 
       const fieldsToUpdate = [...COMPARABLE_FIELDS, FIELD_MAPPINGS[fieldType]];
 
-      const updates = fieldsToUpdate.reduce((acc, field) => {
-        if (data[field.dgiiKey]) {
+      const updates = fieldsToUpdate.reduce<Record<string, unknown>>((acc, field) => {
+        if (data[field.dgiiKey] != null) {
           acc[field.formKey] = data[field.dgiiKey];
         }
         return acc;

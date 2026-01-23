@@ -1,4 +1,12 @@
-// @ts-nocheck
+const background = {
+  shade: 'rgb(20, 20, 20)',
+  shade2: 'rgb(45, 45, 45)',
+  shade3: 'rgb(55, 55, 55)',
+  color: '#1b415f',
+  color2: '#525252',
+  color3: '#444444',
+};
+
 const darkPalette = {
   grey: {
     50: '#424242',
@@ -70,14 +78,8 @@ const darkPalette = {
     hint: 'rgba(255,255,255,.38)',
   },
   divider: 'rgba(255,255,255,.12)',
-  bg: {
-    shade: 'rgb(20, 20, 20)',
-    shade2: 'rgb(45, 45, 45)',
-    shade3: 'rgb(55, 55, 55)',
-    color: '#1b415f',
-    color2: '#525252',
-    color3: '#444444',
-  },
+  bg: background,
+  background,
   borders: {
     basic: '1px solid #e2e8f0',
     highlighted: '2px solid #a0aec0',

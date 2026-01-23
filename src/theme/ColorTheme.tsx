@@ -1,4 +1,3 @@
-// @ts-nocheck
 //colores de la aplicacion
 import darkPalette from './colors/dark/DarkPalette';
 import palette from './colors/light/Palette';

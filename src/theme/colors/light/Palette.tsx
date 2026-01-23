@@ -1,7 +1,24 @@
-// @ts-nocheck
 import { getContrastColorPairs } from '@/theme/getContrastColorPairs';
 
 import { baseColors } from './baseColors';
+
+const background = {
+  shade: baseColors.white,
+  shade2: baseColors.blue[100],
+  shade3: baseColors.blue[200],
+  color: 'rgb(66, 165, 245)',
+  color2: baseColors.blue[50],
+  color3: '#67B8DE',
+  color4: baseColors.blue[500],
+  // Propiedades adicionales para el Centro de Notificaciones
+  light: '#ffffff',
+  card: '#ffffff',
+};
+
+const common = {
+  black: baseColors.black,
+  white: baseColors.white,
+};
 
 // Paleta de colores para la aplicación
 export const palette = {
@@ -26,18 +43,9 @@ export const palette = {
   },
   // Color del divisor, utilizado para separar secciones de la interfaz
   divider: 'rgba(0, 0, 0, 0.12)', // Fondo de diferentes secciones de la UI
-  bg: {
-    shade: baseColors.white,
-    shade2: baseColors.blue[100],
-    shade3: baseColors.blue[200],
-    color: 'rgb(66, 165, 245)',
-    color2: baseColors.blue[50],
-    color3: '#67B8DE',
-    color4: baseColors.blue[500],
-    // Propiedades adicionales para el Centro de Notificaciones
-    light: '#ffffff',
-    card: '#ffffff',
-  },
+  bg: background,
+  background,
+  common,
   border: {
     base: '1px solid #ced2d6',
     highlighted: '2px solid #a0aec0',

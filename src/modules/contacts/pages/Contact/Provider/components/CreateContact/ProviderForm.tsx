@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { InfoCircleOutlined, GlobalOutlined } from '@/constants/icons/antd';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,8 +11,12 @@ import {
   Tooltip,
   Space,
 } from 'antd';
-import { getCountries, getCountryCallingCode } from 'libphonenumber-js/min';
-import { useEffect, useState } from 'react';
+import {
+  getCountries,
+  getCountryCallingCode,
+  type CountryCode,
+} from 'libphonenumber-js/min';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -50,8 +53,29 @@ const Wrapper = styled.div`
   gap: 1em;
 `;
 
+interface CountryOption {
+  value: CountryCode;
+  label: ReactNode;
+  searchText: string;
+}
+
+interface ProviderFormValues {
+  rnc: string;
+  name: string;
+  email?: string;
+  tel?: string;
+  address?: string;
+  voucherType?: string;
+  notes?: string;
+  country?: CountryCode;
+}
+
+type ProviderModalData = ProviderFormValues & {
+  id?: string;
+};
+
 // Generate country options
-const countryOptions = getCountries().map((country) => ({
+const countryOptions: CountryOption[] = getCountries().map((country) => ({
   value: country,
   label: (
     <Space>
@@ -64,7 +88,11 @@ const countryOptions = getCountries().map((country) => ({
   searchText: `${country} +${getCountryCallingCode(country)}`,
 }));
 
-const OptionalLabel = ({ children }) => (
+interface OptionalLabelProps {
+  children: ReactNode;
+}
+
+const OptionalLabel = ({ children }: OptionalLabelProps) => (
   <span>
     {children}
     <span style={{ color: '#999', marginLeft: '4px', fontSize: '13px' }}>
@@ -76,10 +104,16 @@ const OptionalLabel = ({ children }) => (
 export const ProviderForm = () => {
   const dispatch = useDispatch();
 
-  const { isOpen, mode, data } = useSelector(SelectProviderModalData);
+  const { isOpen, mode, data } = useSelector(
+    SelectProviderModalData,
+  ) as {
+    isOpen: boolean;
+    mode: string;
+    data?: ProviderModalData | null;
+  };
   const user = useSelector(selectUser);
-  const [form] = Form.useForm();
-  const [selectedCountry, setSelectedCountry] = useState('DO');
+  const [form] = Form.useForm<ProviderFormValues>();
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>('DO');
   const {
     loading,
     error,
@@ -91,7 +125,7 @@ export const ProviderForm = () => {
   } = useRncSearch(form);
 
   // Reemplazar el useEffect problemático con Form.useWatch
-  const formValues = Form.useWatch([], form);
+  const formValues = Form.useWatch([], form) as ProviderFormValues | undefined;
 
   useEffect(() => {
     if (rncInfo && formValues) {
@@ -122,7 +156,7 @@ export const ProviderForm = () => {
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      const values = (await form.validateFields()) as ProviderFormValues;
 
       if (rncInfo?.status === 'DADO DE BAJA') {
         message.warning({
@@ -142,7 +176,14 @@ export const ProviderForm = () => {
     }
   };
 
-  const submitForm = async (values) => {
+  const submitForm = async (values: ProviderFormValues) => {
+    if (!user?.businessID) {
+      message.error({
+        content: 'No se encontró el negocio activo.',
+        key: 'providerSubmit',
+      });
+      return;
+    }
     try {
       message.loading({ content: 'Validando...', key: 'providerSubmit' });
 
@@ -151,7 +192,7 @@ export const ProviderForm = () => {
         user.businessID,
         values.rnc.trim(),
         values.name.trim(),
-        mode === updateMode ? data.id : null,
+        mode === updateMode ? data?.id ?? null : null,
       );
 
       if (duplicates.rnc || duplicates.name) {
@@ -165,7 +206,7 @@ export const ProviderForm = () => {
 
       const provider = {
         ...values,
-        tel: unformatPhoneNumber(values.tel),
+        tel: unformatPhoneNumber(values.tel ?? ''),
         email: values.email || '',
         notes: values.notes || '',
         address: values.address || '',
@@ -178,7 +219,7 @@ export const ProviderForm = () => {
           key: 'providerSubmit',
         });
       } else {
-        await fbUpdateProvider({ ...provider, id: data.id }, user);
+        await fbUpdateProvider({ ...provider, id: data?.id }, user);
         message.success({
           content: 'Proveedor actualizado exitosamente',
           key: 'providerSubmit',
@@ -194,13 +235,13 @@ export const ProviderForm = () => {
     }
   };
 
-  const onPhoneChange = (e) => {
-    const { value } = e.target;
+  const onPhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
     const formattedPhoneNumber = formatPhoneNumber(value, selectedCountry);
     form.setFieldsValue({ tel: formattedPhoneNumber });
   };
 
-  const onCountryChange = (value) => {
+  const onCountryChange = (value: CountryCode) => {
     setSelectedCountry(value);
     const currentPhone = form.getFieldValue('tel');
     if (currentPhone) {
@@ -209,7 +250,7 @@ export const ProviderForm = () => {
     }
   };
 
-  const handleRNCSearch = (value) => {
+  const handleRNCSearch = (value?: string) => {
     const rnc = (value || form.getFieldValue('rnc'))?.trim();
     if (rnc && rnc.length >= 9 && rnc.length <= 11) {
       consultarRNC(rnc);
@@ -373,9 +414,9 @@ export const ProviderForm = () => {
                       }
                       optionLabelProp="label"
                       filterOption={(input, option) =>
-                        option?.searchText
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
+                        (option as CountryOption | undefined)?.searchText
+                          ?.toLowerCase()
+                          .includes(input.toLowerCase()) ?? false
                       }
                       popupMatchSelectWidth={false}
                       style={{ minWidth: '150px' }}

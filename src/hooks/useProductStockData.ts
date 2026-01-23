@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -9,6 +8,7 @@ import {
   getProductStockById,
 } from '@/firebase/warehouse/productStockService';
 import { selectUser } from '@/features/auth/userSlice';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 type StockData = {
   quantity: number;
@@ -28,11 +28,11 @@ type ActionType = 'batch' | 'productStock';
 export const useProductStockData = () => {
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<unknown | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const { productStockId, batchId, actionType, isOpen } = useSelector(
     selectDeleteModalState,
-  ) as DeleteModalState;
-  const user = useSelector(selectUser);
+  ) as DeleteModalState & { actionType?: ActionType };
+  const user = useSelector(selectUser) as InventoryUser | null;
 
   useEffect(() => {
     let isMounted = true;
@@ -95,9 +95,10 @@ export const useProductStockData = () => {
           }
         }
       } catch (error) {
-        if (isMounted && error?.name !== 'AbortError') {
-          console.error('Error loading stock data:', error);
-          setError(error);
+        const err = error as Error;
+        if (isMounted && err?.name !== 'AbortError') {
+          console.error('Error loading stock data:', err);
+          setError(err);
           setStockData(null);
         }
       } finally {

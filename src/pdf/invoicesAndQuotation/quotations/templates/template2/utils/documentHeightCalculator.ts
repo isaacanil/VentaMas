@@ -1,11 +1,15 @@
-// @ts-nocheck
 // src/utils/documentHeightCalculator.js
+
+import type { InvoicePdfBusiness, QuotationData } from '@/pdf/invoicesAndQuotation/types';
 
 /**
  * Calcula la altura necesaria para el header dinámico
  * Basado en si hay logo, líneas de información del negocio y bloque de cliente
  */
-export function calcHeaderHeight(biz, d) {
+export function calcHeaderHeight(
+  biz: InvoicePdfBusiness,
+  d: QuotationData,
+): number {
   let height = biz.logoUrl ? 100 : 60; // espacio para logo o título
   const infoKeys = ['name', 'address', 'tel', 'email', 'rnc'];
   const infoLines = infoKeys.filter((k) => biz[k]).length;
@@ -21,7 +25,7 @@ export function calcHeaderHeight(biz, d) {
  * Calcula la altura necesaria para el footer dinámico
  * Basado en filas de totales, descuento y delivery
  */
-export function calcFooterHeight(d) {
+export function calcFooterHeight(d: QuotationData): number {
   let height = 50; // espacio base para footer
   let rows = 2; // Sub-Total + ITBIS
   if (d.discount?.value) rows += 1; // fila de descuento

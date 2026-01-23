@@ -1,19 +1,25 @@
-// @ts-nocheck
 import { useSelector } from 'react-redux';
 
 import { SelectSettingCart } from '@/features/cart/cartSlice';
+
+type CartSettingsState = ReturnType<typeof SelectSettingCart>;
+
+type AuthorizationModuleKey = 'invoices' | 'accountsReceivable' | 'cashRegister';
+
+type AuthorizationModulesConfig = Partial<Record<AuthorizationModuleKey, boolean>>;
 
 /**
  * Hook para verificar qué módulos de autorización están activos
  * @returns {Object} Estado de los módulos de autorización
  */
 export const useAuthorizationModules = () => {
-  const settings = useSelector(SelectSettingCart) || {};
+  const settings = useSelector(SelectSettingCart) as CartSettingsState | undefined;
 
   const authorizationFlowEnabled =
     !!settings?.billing?.authorizationFlowEnabled;
 
-  const rawModules = settings?.billing?.enabledAuthorizationModules || {};
+  const rawModules: AuthorizationModulesConfig =
+    settings?.billing?.enabledAuthorizationModules || {};
   const normalizedModules = {
     invoices: rawModules.invoices ?? true,
     accountsReceivable:
@@ -30,12 +36,12 @@ export const useAuthorizationModules = () => {
    * @param {string} moduleName - Nombre del módulo ('invoices' o 'accountsReceivable')
    * @returns {boolean} True si el módulo está activo
    */
-  const normalizeModuleKey = (moduleName) => {
+  const normalizeModuleKey = (moduleName: AuthorizationModuleKey) => {
     if (moduleName === 'cashRegister') return 'accountsReceivable';
     return moduleName;
   };
 
-  const isModuleEnabled = (moduleName) => {
+  const isModuleEnabled = (moduleName: AuthorizationModuleKey) => {
     if (!authorizationFlowEnabled) return false;
     const key = normalizeModuleKey(moduleName);
     return normalizedModules[key] !== false;
@@ -46,7 +52,7 @@ export const useAuthorizationModules = () => {
    * @param {string} moduleName - Nombre del módulo
    * @returns {boolean} True si debe usar PIN
    */
-  const shouldUsePinForModule = (moduleName) => {
+  const shouldUsePinForModule = (moduleName: AuthorizationModuleKey) => {
     return authorizationFlowEnabled && isModuleEnabled(moduleName);
   };
 

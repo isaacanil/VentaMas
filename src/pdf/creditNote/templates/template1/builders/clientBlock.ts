@@ -1,10 +1,12 @@
-// @ts-nocheck
-export function buildClientBlock(d) {
+import type { PdfColumnsBlock, PdfContent } from '@/pdf/types';
+import type { CreditNoteData } from '../../../types.js';
+
+export function buildClientBlock(d: CreditNoteData): PdfColumnsBlock | null {
   const rawName = d.client?.name?.trim() || '';
   const esGenerico = !rawName || rawName.toLowerCase() === 'generic client';
   const name = esGenerico ? 'Cliente Genérico' : rawName;
 
-  const left = [
+  const left: PdfContent[] = [
     {
       text: [
         { text: 'Cliente:  ', bold: true },
@@ -25,7 +27,7 @@ export function buildClientBlock(d) {
       : []),
   ];
 
-  const right = [
+  const right: PdfContent[] = [
     ...(!esGenerico && d.client?.tel?.trim()
       ? [
           {

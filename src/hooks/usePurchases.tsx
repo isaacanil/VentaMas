@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -11,11 +10,13 @@ import { subscribeSinglePurchase } from '../firebase/purchase/fbGetPurchase';
 import {
   subscribeToPurchase,
   processPurchase,
+  type PurchaseFilters,
 } from '../firebase/purchase/fbGetPurchases';
 import { sortPurchases } from '../utils/filterUtils';
+import type { UserIdentity } from '@/types/users';
 
 // Función auxiliar para convertir timestamps
-const convertTimestamps = (data) => {
+const convertTimestamps = <T,>(data: T): T => {
   if (!data) return data;
 
   const timestampFields = [
@@ -29,17 +30,18 @@ const convertTimestamps = (data) => {
 
   // Handle arrays
   if (Array.isArray(data)) {
-    return data.map((item) => convertTimestamps(item));
+    return data.map((item) => convertTimestamps(item)) as unknown as T;
   }
 
   // Handle objects
   if (typeof data === 'object') {
-    const converted = { ...data };
+    const converted = { ...(data as Record<string, unknown>) };
 
     // Convert direct timestamp fields
     timestampFields.forEach((field) => {
-      if (converted[field] && typeof converted[field].toMillis === 'function') {
-        converted[field] = converted[field].toMillis();
+      const value = converted[field] as { toMillis?: () => number } | undefined;
+      if (value && typeof value.toMillis === 'function') {
+        converted[field] = value.toMillis();
       }
     });
 
@@ -50,15 +52,23 @@ const convertTimestamps = (data) => {
       }
     });
 
-    return converted;
+    return converted as T;
   }
 
   return data;
 };
-export const useListenPurchases = (filterState) => {
+
+type PurchaseRecord = Record<string, unknown>;
+
+type PurchaseFilterState = {
+  isAscending?: boolean;
+  filters?: PurchaseFilters | null;
+};
+
+export const useListenPurchases = (filterState?: PurchaseFilterState) => {
   const dispatch = useDispatch();
-  const purchases = useSelector(selectPurchaseList);
-  const user = useSelector(selectUser);
+  const purchases = useSelector(selectPurchaseList) as PurchaseRecord[];
+  const user = useSelector(selectUser) as UserIdentity | null;
   const [isLoading, setIsLoading] = useState(false);
 
   const sortedPurchases = useMemo(() => {
@@ -75,12 +85,12 @@ export const useListenPurchases = (filterState) => {
 
     const unsubscribe = subscribeToPurchase(
       user.businessID,
-      filterState?.filters,
+      filterState?.filters ?? null,
       async (snapshot) => {
         try {
           const purchasesList = await Promise.all(
             snapshot.docs.map(async (doc) => {
-              const purchaseData = doc.data();
+              const purchaseData = doc.data() as PurchaseRecord;
               const processedData = convertTimestamps(purchaseData);
               return processPurchase(processedData, user.businessID);
             }),
@@ -107,10 +117,10 @@ export const useListenPurchases = (filterState) => {
   };
 };
 
-export const useListenPurchase = (purchaseId) => {
-  const [purchase, setPurchase] = useState(null);
+export const useListenPurchase = (purchaseId: string | null | undefined) => {
+  const [purchase, setPurchase] = useState<PurchaseRecord | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
 
   useEffect(() => {
     if (!user?.businessID || !purchaseId) return;
@@ -127,7 +137,7 @@ export const useListenPurchase = (purchaseId) => {
             return;
           }
 
-          const purchaseData = snapshot.data();
+          const purchaseData = snapshot.data() as PurchaseRecord;
           const processedData = convertTimestamps(purchaseData);
 
           setPurchase(processedData);
@@ -144,7 +154,7 @@ export const useListenPurchase = (purchaseId) => {
       unsubscribe();
       setIsLoading(false);
     };
-  }, [user, purchaseId]);
+  }, [user?.businessID, purchaseId]);
 
   return {
     purchase,

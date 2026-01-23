@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   money,
   getProductsIndividualDiscounts,
@@ -6,8 +5,15 @@ import {
   getProductTax,
 } from '../utils/formatters.js';
 
+import type {
+  PdfContent,
+  PdfHeaderFooter,
+  PdfTableBody,
+} from '@/pdf/types';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
+
 /* ───── bloque firma + etiqueta opcional ───── */
-function signatureBlock(label, extraLine) {
+function signatureBlock(label?: string, extraLine?: string): PdfContent {
   return {
     stack: [
       {
@@ -25,7 +31,10 @@ function signatureBlock(label, extraLine) {
 }
 
 /* ───────────────────────────────────────────── */
-export function buildFooter(biz, d) {
+export function buildFooter(
+  biz: CreditNoteBusinessInfo,
+  d: CreditNoteData,
+): PdfHeaderFooter {
   /* Calcular descuentos */
   const individualDiscounts = getProductsIndividualDiscounts(d.items || []);
   const hasIndividualDisc = hasIndividualDiscounts(d.items || []);
@@ -51,7 +60,7 @@ export function buildFooter(biz, d) {
   // El total final debe coincidir exactamente con el totalAmount de la aplicación
   const totalFinal = d.totalAmount || subtotalAfterDiscounts + totalItbis;
 
-  const totalsBody = [
+  const totalsBody: PdfTableBody = [
     [
       'Sub-Total:',
       {

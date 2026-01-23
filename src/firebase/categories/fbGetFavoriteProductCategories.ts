@@ -46,8 +46,11 @@ export const fbGetFavoriteProductCategories = (
   const unsubscribe = onSnapshot(
     favoriteCategoriesRef,
     (snapshot) => {
-      if (doc.exists()) {
-        const favoriteCategories = doc.data().favoriteCategories;
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        const favoriteCategories = Array.isArray(data.favoriteCategories)
+          ? data.favoriteCategories.filter((id): id is string => typeof id === 'string')
+          : [];
         callback(favoriteCategories); // Llama al callback con las categorías favoritas
       } else {
         callback([]); // Llama al callback con un arreglo vacío si el documento no existe
@@ -63,12 +66,15 @@ export const fbGetFavoriteProductCategories = (
 };
 
 export const useGetFavoriteProductCategories = () => {
-  const user = useSelector(selectUser);
-  const [favoriteCategories, setFavoriteCategories] = useState([]);
+  const user = useSelector(selectUser) as UserIdentity | null | undefined;
+  const [favoriteCategories, setFavoriteCategories] = useState<string[]>([]);
   useEffect(() => {
-    let unsubscribe = null;
-    if (user && user.businessID && user.uid) {
-      unsubscribe = fbGetFavoriteProductCategories(user, setFavoriteCategories);
+    let unsubscribe: Unsubscribe | null = null;
+    if (user?.businessID && user.uid) {
+      unsubscribe = fbGetFavoriteProductCategories(
+        user as UserWithBusinessAndUid,
+        setFavoriteCategories,
+      );
     }
     return () => {
       // Asegúrate de que unsubscribe sea una función antes de llamarla

@@ -1,22 +1,23 @@
-// @ts-nocheck
 import { setUserNotification } from '@/features/UserNotification/UserNotificationSlice';
 import { CONFIRMATION_TASK_TYPE } from '@/components/modals/UserNotification/components/ConfirmationDialog/HandleConfirmationAction';
+import type { AnyAction, Dispatch } from '@reduxjs/toolkit';
 
 // Clase base para los diferentes comportamientos de cuadre de caja
 class CashCountStrategy {
-  constructor(dispatch) {
+  protected dispatch: Dispatch<AnyAction>;
+  constructor(dispatch: Dispatch<AnyAction>) {
     this.dispatch = dispatch;
   }
 
   // Método base para ser sobrescrito por subclases
-  handleConfirm() {
+  handleConfirm(): void {
     // Implementación base vacía - debe ser sobrescrita
   }
 }
 
 // Estrategia para cuando no hay cuadre abierto
 class NoOpenCashCountStrategy extends CashCountStrategy {
-  handleConfirm() {
+  handleConfirm(): void {
     this.dispatch(
       setUserNotification({
         isOpen: true,
@@ -33,7 +34,7 @@ class NoOpenCashCountStrategy extends CashCountStrategy {
 
 // Estrategia para cuando hay cuadre en proceso de cierre
 class ClosingCashCountStrategy extends CashCountStrategy {
-  handleConfirm() {
+  handleConfirm(): void {
     this.dispatch(
       setUserNotification({
         isOpen: true,
@@ -48,7 +49,12 @@ class ClosingCashCountStrategy extends CashCountStrategy {
 }
 
 // Función para obtener la estrategia correspondiente según el estado de cuadre
-export function getCashCountStrategy(checkCashCountStatus, dispatch) {
+export type CashCountStatus = 'closed' | 'closing' | 'open' | 'none';
+
+export function getCashCountStrategy(
+  checkCashCountStatus: CashCountStatus | null | undefined,
+  dispatch: Dispatch<AnyAction>,
+): CashCountStrategy {
   switch (checkCashCountStatus) {
     case 'closed':
       return new NoOpenCashCountStrategy(dispatch);

@@ -1,16 +1,21 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
   orderBy,
   query,
   where,
+  type QueryConstraint,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type {
+  CreditNoteApplicationFilters,
+  CreditNoteApplicationRecord,
+} from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
 
 /**
  * Hook para obtener aplicaciones de notas de crédito
@@ -28,9 +33,9 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} filters.clientId - ID del cliente
  * @returns {Object} - { applications, loading }
  */
-export const useFbGetCreditNoteApplications = (filters = {}) => {
-  const user = useSelector(selectUser);
-  const [applications, setApplications] = useState([]);
+export const useFbGetCreditNoteApplications = (filters: CreditNoteApplicationFilters = {}) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [applications, setApplications] = useState<CreditNoteApplicationRecord[]>([]);
   const [loading, setLoading] = useState(
     () => Boolean(user?.businessID && (filters.creditNoteId || filters.invoiceId || filters.clientId)),
   );
@@ -53,7 +58,7 @@ export const useFbGetCreditNoteApplications = (filters = {}) => {
     );
 
     // Construir la consulta con filtros dinámicos
-    let queryConstraints = [orderBy('appliedAt', 'desc')];
+    const queryConstraints: QueryConstraint[] = [orderBy('appliedAt', 'desc')];
 
     // Filtro por nota de crédito
     if (filters.creditNoteId) {
@@ -75,9 +80,9 @@ export const useFbGetCreditNoteApplications = (filters = {}) => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const list = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
+        const list = snapshot.docs.map((docSnap) => ({
+          ...(docSnap.data() as CreditNoteApplicationRecord),
+          id: docSnap.id,
         }));
         setApplications(list);
         setLoading(false);

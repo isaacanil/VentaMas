@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
 import { auth } from '@/firebase/firebaseconfig';
 
@@ -26,7 +25,7 @@ const FUNCTIONS_BASE_URL = CUSTOM_BASE_URL
     ? `https://${DEFAULT_REGION}-${PROJECT_ID}.cloudfunctions.net`
     : null;
 
-const ensureBaseUrl = () => {
+const ensureBaseUrl = (): string => {
   if (!FUNCTIONS_BASE_URL) {
     throw new Error(
       'No se pudo determinar la URL de Cloud Functions. Verifica la configuración.',
@@ -70,7 +69,9 @@ const getStoredSessionSafe = (): StoredSession => {
 
 export const getFunctionsBaseUrl = () => ensureBaseUrl();
 
-export const buildFunctionsAuthHeaders = async () => {
+export const buildFunctionsAuthHeaders = async (): Promise<
+  Record<string, string>
+> => {
   const headers: Record<string, string> = {};
   const currentUser = auth.currentUser;
   if (currentUser) {

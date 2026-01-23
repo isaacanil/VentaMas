@@ -1,10 +1,31 @@
-// @ts-nocheck
 import { doc, Timestamp, runTransaction } from 'firebase/firestore';
 
 import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
 import { db } from '@/firebase/firebaseconfig';
+import type {
+  CreditNoteApplicationInput,
+  CreditNoteInvoiceInput,
+  CreditNotePayment,
+  CreditNoteRecord,
+} from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
 
 import { fbAddCreditNoteApplication } from './fbAddCreditNoteApplication';
+
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const getAvailableAmount = (creditNote: CreditNoteRecord): number => {
+  const available = toNumber(creditNote.availableAmount);
+  const total = toNumber(creditNote.totalAmount);
+  return available ?? total ?? 0;
+};
 
 /**
  * Consume el saldo disponible de notas de crédito cuando se aplican a una factura
@@ -16,11 +37,11 @@ import { fbAddCreditNoteApplication } from './fbAddCreditNoteApplication';
  * @returns {Promise<void>}
  */
 export const fbConsumeCreditNotes = async (
-  user,
-  creditNotePayments,
-  invoiceId,
-  invoiceData = {},
-) => {
+  user: UserIdentity | null | undefined,
+  creditNotePayments: CreditNotePayment[],
+  invoiceId: string,
+  invoiceData: CreditNoteInvoiceInput = {},
+): Promise<void> => {
   if (!user?.businessID) throw new Error('Usuario sin businessID');
   if (!creditNotePayments?.length) return; // No hay notas de crédito para consumir
   if (!invoiceId) throw new Error('invoiceId requerido');
@@ -36,7 +57,13 @@ export const fbConsumeCreditNotes = async (
       async (transaction) => {
         // Leer todas las notas de crédito primero
         const creditNoteRefs = creditNotePayments.map((payment) =>
-          doc(db, 'businesses', user.businessID, 'creditNotes', payment.id),
+          doc<CreditNoteRecord>(
+            db,
+            'businesses',
+            user.businessID,
+            'creditNotes',
+            payment.id,
+          ),
         );
 
         const creditNoteSnapshots = await Promise.all(
@@ -52,26 +79,39 @@ export const fbConsumeCreditNotes = async (
           }
 
           const creditNoteData = snapshot.data();
-          const currentAvailable =
-            creditNoteData.availableAmount ?? creditNoteData.totalAmount;
-          const amountToConsume = creditNotePayments[index].amountUsed;
+          const currentAvailable = getAvailableAmount(creditNoteData);
+          const amountToConsume = toNumber(creditNotePayments[index].amountUsed);
+          const creditNoteLabel =
+            creditNoteData.ncf ??
+            creditNoteData.number ??
+            creditNotePayments[index].id;
+
+          if (amountToConsume === null) {
+            throw new Error(`Monto inválido en nota de crédito ${creditNoteLabel}`);
+          }
 
           if (currentAvailable < amountToConsume) {
             throw new Error(
-              `Saldo insuficiente en nota de crédito ${creditNoteData.ncf || creditNoteData.number}`,
+              `Saldo insuficiente en nota de crédito ${creditNoteLabel}`,
             );
           }
         });
 
         // Actualizar cada nota de crédito y crear registros de aplicación
-        const applicationPromises = [];
+        const applicationPromises: CreditNoteApplicationInput[] = [];
 
         creditNoteSnapshots.forEach((snapshot, index) => {
           const creditNoteData = snapshot.data();
           const payment = creditNotePayments[index];
-          const currentAvailable =
-            creditNoteData.availableAmount ?? creditNoteData.totalAmount;
-          const newAvailable = currentAvailable - payment.amountUsed;
+          const currentAvailable = getAvailableAmount(creditNoteData);
+          const amountToConsume = toNumber(payment.amountUsed);
+          const creditNoteLabel =
+            creditNoteData.ncf ?? creditNoteData.number ?? payment.id;
+
+          if (amountToConsume === null) {
+            throw new Error(`Monto inválido en nota de crédito ${creditNoteLabel}`);
+          }
+          const newAvailable = currentAvailable - amountToConsume;
 
           const updates = {
             availableAmount: newAvailable,
@@ -93,7 +133,7 @@ export const fbConsumeCreditNotes = async (
             invoiceNcf: invoiceData.NCF,
             invoiceNumber: invoiceData.numberID,
             clientId: invoiceData.client?.id || creditNoteData.client?.id,
-            amountApplied: payment.amountUsed,
+            amountApplied: amountToConsume,
             previousBalance: currentAvailable,
             newBalance: newAvailable,
           };
@@ -121,6 +161,7 @@ export const fbConsumeCreditNotes = async (
     );
   } catch (error) {
     console.error('❌ Error consumiendo notas de crédito:', error);
-    throw new Error(`Error al consumir notas de crédito: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Error al consumir notas de crédito: ${message}`);
   }
 };

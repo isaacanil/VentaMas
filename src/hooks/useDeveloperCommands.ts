@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { toggleDeveloperModal } from '@/features/modals/modalSlice';
+import type { UserIdentity } from '@/types/users';
 
 /**
  * Hook para manejar comandos globales de desarrollador
@@ -11,7 +11,7 @@ import { toggleDeveloperModal } from '@/features/modals/modalSlice';
  */
 export const useDeveloperCommands = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
 
   const isDeveloper = user?.role === 'dev';
 
@@ -19,11 +19,11 @@ export const useDeveloperCommands = () => {
     if (!isDeveloper) return;
 
     let sequence = '';
-    let sequenceTimer = null;
+    let sequenceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       // Ignorar si el usuario está escribiendo en un input o textarea
-      const activeElement = document.activeElement;
+      const activeElement = document.activeElement as HTMLElement | null;
       if (
         activeElement &&
         (activeElement.tagName === 'INPUT' ||

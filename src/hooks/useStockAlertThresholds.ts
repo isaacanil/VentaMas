@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -8,9 +7,9 @@ const DEFAULT_LOW_THRESHOLD = 20;
 const DEFAULT_CRITICAL_THRESHOLD = 10;
 
 export const useStockAlertThresholds = () => {
-  const settingsCart = useSelector(SelectSettingCart) || {};
+  const settingsCart = useSelector(SelectSettingCart) as ReturnType<typeof SelectSettingCart>;
   const billing = useMemo(
-    () => settingsCart.billing || {},
+    () => settingsCart?.billing || {},
     [settingsCart.billing],
   );
 

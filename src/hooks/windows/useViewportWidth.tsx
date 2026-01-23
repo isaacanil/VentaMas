@@ -1,9 +1,8 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 
 export function useViewportWidth() {
   // Establecer el ancho inicial del viewport.
-  const [width, setWidth] = useState(window.innerWidth);
+  const [width, setWidth] = useState<number>(window.innerWidth);
 
   useEffect(() => {
     // Función para manejar el cambio de tamaño y actualizar el estado.

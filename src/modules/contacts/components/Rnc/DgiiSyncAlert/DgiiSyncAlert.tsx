@@ -1,7 +1,23 @@
-// @ts-nocheck
 import { SyncOutlined } from '@/constants/icons/antd';
 import { Alert, Button, Popover, List, Tag, Space } from 'antd';
 import styled from 'styled-components';
+
+interface DgiiDifference {
+  field: string;
+  label: string;
+  currentValue?: string | number | null;
+  dgiiValue?: string | number | null;
+}
+
+interface DiffListProps {
+  differences: DgiiDifference[];
+}
+
+interface DgiiSyncAlertProps {
+  differences?: DgiiDifference[];
+  onSync: () => void;
+  loading?: boolean;
+}
 
 const DiffItem = styled.div`
   display: flex;
@@ -23,11 +39,11 @@ const ValueComparison = styled.div`
   font-size: 0.9em;
 `;
 
-const DiffList = ({ differences }) => (
+const DiffList = ({ differences }: DiffListProps) => (
   <List
     size="small"
     dataSource={differences}
-    renderItem={(diff) => (
+    renderItem={(diff: DgiiDifference) => (
       <DiffItem>
         <strong>{diff.label}</strong>
         <ValueComparison>
@@ -40,7 +56,11 @@ const DiffList = ({ differences }) => (
   />
 );
 
-export const DgiiSyncAlert = ({ differences, onSync, loading }) => {
+export const DgiiSyncAlert = ({
+  differences,
+  onSync,
+  loading,
+}: DgiiSyncAlertProps) => {
   if (!differences?.length) return null;
 
   const content = (

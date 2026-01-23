@@ -1,10 +1,20 @@
-// @ts-nocheck
 import { formatDate } from '../utils/formatters.js';
 
 import { buildClientBlock } from './clientBlock.js';
 
+import type {
+  PdfContent,
+  PdfHeaderFooter,
+  PdfImageMap,
+  PdfTableBody,
+} from '@/pdf/types';
+import type { CreditNoteBusinessInfo, CreditNoteData } from '../../../types.js';
+
+const compact = <T>(items: Array<T | null | undefined | false>): T[] =>
+  items.filter(Boolean) as T[];
+
 /* ───── utilitario título/etiqueta para notas de crédito ───── */
-function getComprobanteInfo(ncf) {
+function getComprobanteInfo(ncf?: string | null) {
   if (!ncf) return { title: 'NOTA DE CRÉDITO', label: 'Número de Nota' };
   if (ncf.startsWith('B04'))
     return { title: 'NOTA DE CRÉDITO FISCAL', label: 'NCF' };
@@ -12,14 +22,18 @@ function getComprobanteInfo(ncf) {
 }
 
 /* ──────────────────────────────────────────────── */
-export function buildHeader(biz, d, images) {
+export function buildHeader(
+  biz: CreditNoteBusinessInfo,
+  d: CreditNoteData,
+  images: PdfImageMap,
+): PdfHeaderFooter {
   return () => {
     const clientBlock = buildClientBlock(d);
     const { title: comprobanteTitle, label: comprobanteLabel } =
       getComprobanteInfo(d.ncf);
 
     /* columna izquierda (datos del negocio) */
-    const leftStack = [
+    const leftStack = compact<PdfContent>([
       {
         text: biz.name,
         style: 'title',
@@ -41,10 +55,10 @@ export function buildHeader(biz, d, images) {
         style: 'headerInfo',
         bold: true,
       },
-    ].filter(Boolean);
+    ]);
 
     /* columna derecha (datos de la nota de crédito) */
-    const rightStack = [
+    const rightStack = compact<PdfContent>([
       {
         text: comprobanteTitle,
         style: 'title',
@@ -73,9 +87,9 @@ export function buildHeader(biz, d, images) {
         bold: true,
         color: '#d32f2f',
       },
-    ].filter(Boolean);
+    ]);
 
-    const rows = [];
+    const rows: PdfTableBody = [];
 
     /* fila del logo */
     if (images.logo) {
@@ -126,16 +140,19 @@ export function buildHeader(biz, d, images) {
 
     /* bloque de cliente (si existe) */
     if (clientBlock) {
+      const [leftColumn, rightColumn] = clientBlock.columns;
+      const leftStack = leftColumn?.stack ?? [];
+      const rightStack = rightColumn?.stack ?? [];
       rows.push([
         {
           columns: [
             {
               width: '*',
-              stack: clientBlock.columns[0].stack,
+              stack: leftStack,
             },
             {
               width: 'auto',
-              stack: clientBlock.columns[1].stack,
+              stack: rightStack,
             },
           ],
           columnGap: 10,

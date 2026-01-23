@@ -1,10 +1,11 @@
-// @ts-nocheck
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, type Unsubscribe } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '../../features/auth/userSlice';
 import { db } from '../../firebase/firebaseconfig';
+import type { ProductRecord } from '@/types/products';
+import type { UserIdentity } from '@/types/users';
 
 /**
  * Configura una suscripción a Firestore para obtener productos con fecha de expiración.
@@ -14,7 +15,11 @@ import { db } from '../../firebase/firebaseconfig';
  * @returns {Function} - Función para cancelar la suscripción.
  */
 
-export const getProductsWithBatchListener = (businessID, onData, onError) => {
+export const getProductsWithBatchListener = (
+  businessID: string | null | undefined,
+  onData: (products: ProductRecord[]) => void,
+  onError: (error: Error) => void,
+): Unsubscribe | undefined => {
   if (!businessID) {
     onError(new Error('businessID no proporcionado'));
     return undefined;
@@ -32,7 +37,7 @@ export const getProductsWithBatchListener = (businessID, onData, onError) => {
     (snapshot) => {
       const productsArray = snapshot.docs.map((doc) => ({
         id: doc.id, // Incluir el ID del documento si es necesario
-        ...doc.data(),
+        ...(doc.data() as ProductRecord),
       }));
       onData(productsArray);
     },
@@ -47,11 +52,11 @@ export const getProductsWithBatchListener = (businessID, onData, onError) => {
 };
 
 export const useGetProductsWithBatch = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<ProductRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
 
   useEffect(() => {
     if (!user || !user.businessID) {
@@ -70,8 +75,8 @@ export const useGetProductsWithBatch = () => {
         setLoading(false);
       },
     );
-    return () => unsubscribe();
-  }, [user]);
+    return () => unsubscribe?.();
+  }, [user?.businessID]);
 
   return { products, loading, error };
 };

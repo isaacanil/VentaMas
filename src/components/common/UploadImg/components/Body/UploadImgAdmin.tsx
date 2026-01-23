@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSelector } from 'react-redux';
@@ -14,14 +13,32 @@ import {
   ButtonGroup,
 } from '@/components/ui/Button/Button';
 
-export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
+type UploadImgAdminProps = {
+  ImgToUpload: File | null;
+  setImgToUpload: React.Dispatch<React.SetStateAction<File | null>>;
+  img: string | null;
+};
+
+export const UploadImgAdmin = ({
+  ImgToUpload,
+  setImgToUpload,
+  img,
+}: UploadImgAdminProps) => {
   const user = useSelector(selectUser);
 
-  const handleSubmit = (img) => {
-    fbAddProductImg(user, img).then((url) => {
-      fbAddProductImgData(user, url);
-      setImgToUpload(null);
-    });
+  const handleSubmit = (file: File | null) => {
+    if (!file) {
+      return;
+    }
+    setImgToUpload(file);
+    fbAddProductImg(user, file)
+      .then((url) => {
+        fbAddProductImgData(user, url);
+        setImgToUpload(null);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
@@ -41,8 +58,6 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
           )}
           <AddFileBtn
             title="Agregar"
-            setFile={setImgToUpload}
-            file={ImgToUpload}
             startIcon={<FontAwesomeIcon icon={faUpload} />}
             id="addImg"
             fn={handleSubmit}
@@ -51,8 +66,8 @@ export const UploadImgAdmin = ({ ImgToUpload, setImgToUpload, img }) => {
             title="subir"
             borderRadius="normal"
             bgcolor="primary"
-            onClick={handleSubmit}
-            disabled={ImgToUpload ? false : true}
+            onClick={() => handleSubmit(ImgToUpload)}
+            disabled={!ImgToUpload}
           />
         </ButtonGroup>
       </div>

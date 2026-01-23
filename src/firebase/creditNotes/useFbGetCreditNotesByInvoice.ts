@@ -1,54 +1,59 @@
-// @ts-nocheck
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
 
-export const useFbGetCreditNotesByInvoice = (invoiceId) => {
-  const user = useSelector(selectUser);
-  const [creditNotes, setCreditNotes] = useState([]);
-  const [loading, setLoading] = useState(false);
+export const useFbGetCreditNotesByInvoice = (
+  invoiceId?: string | null,
+): { creditNotes: CreditNoteRecord[]; loading: boolean } => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [creditNotes, setCreditNotes] = useState<CreditNoteRecord[]>([]);
+  const [resolvedQueryKey, setResolvedQueryKey] = useState<string | null>(null);
 
-  const queryKey = `${user?.businessID}-${invoiceId}`;
-  const [prevQueryKey, setPrevQueryKey] = useState(queryKey);
-
-  if (queryKey !== prevQueryKey) {
-    setPrevQueryKey(queryKey);
-    if (user?.businessID && invoiceId) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-      setCreditNotes([]);
-    }
-  }
+  const businessID = user?.businessID ?? null;
+  const queryKey = useMemo(
+    () => `${businessID ?? 'no-business'}-${invoiceId ?? 'no-invoice'}`,
+    [businessID, invoiceId],
+  );
 
   useEffect(() => {
-    if (!user?.businessID || !invoiceId) {
+    if (!businessID || !invoiceId) {
       return undefined;
     }
 
-    // setLoading(true) handled by derived state above
-
-    const ref = collection(db, 'businesses', user.businessID, 'creditNotes');
+    const ref = collection<CreditNoteRecord>(
+      db,
+      'businesses',
+      businessID,
+      'creditNotes',
+    );
     const q = query(ref, where('invoiceId', '==', invoiceId));
 
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((doc) => doc.data());
+        const list = snap.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
         setCreditNotes(list);
-        setLoading(false);
+        setResolvedQueryKey(queryKey);
       },
       (err) => {
         console.error('Error fetching credit notes by invoice:', err);
-        setLoading(false);
+        setResolvedQueryKey(queryKey);
       },
     );
 
     return () => unsubscribe();
-  }, [user?.businessID, invoiceId]);
+  }, [businessID, invoiceId, queryKey]);
 
-  return { creditNotes, loading };
+  const loading = Boolean(businessID && invoiceId) && queryKey !== resolvedQueryKey;
+  const visibleCreditNotes = businessID && invoiceId ? creditNotes : [];
+
+  return { creditNotes: visibleCreditNotes, loading };
 };

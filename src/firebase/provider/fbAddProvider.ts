@@ -1,26 +1,32 @@
-// @ts-nocheck
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
+import type { ProviderInfo } from '@/utils/provider/types';
 
-export const fbAddProvider = async (provider, user) => {
-  if (!user || !user?.businessID) return;
-  provider = {
+import type { ProviderDocument, ProviderRecord } from './types';
+
+export const fbAddProvider = async (
+  provider: ProviderInfo,
+  user: UserWithBusiness | null | undefined,
+): Promise<void> => {
+  if (!user?.businessID) return;
+  const providerRecord: ProviderRecord = {
     ...provider,
     id: nanoid(10),
     createdAt: Timestamp.now(),
     status: 'active',
   };
   try {
-    const providerRef = doc(
+    const providerRef = doc<ProviderDocument>(
       db,
       'businesses',
       user.businessID,
       'providers',
-      provider.id,
+      providerRecord.id,
     );
-    await setDoc(providerRef, { provider });
+    await setDoc(providerRef, { provider: providerRecord });
     console.info('Provider created successfully');
   } catch (error) {
     console.error('Error adding document: ', error);

@@ -1,17 +1,38 @@
-// @ts-nocheck
 import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { GenericClient } from '@/features/clientCart/clientCartSlice';
 import { getCashCountStrategy } from '@/notification/cashCountNotification/cashCountNotificacion';
+import type { InvoiceData } from '@/types/invoice';
 
 import {
   submitInvoice,
   waitForInvoiceResult,
   generateIdempotencyKey,
 } from './invoice.service';
+import type {
+  InvoiceAttemptResult,
+  InvoiceProcessParams,
+  InvoiceServiceError,
+  InvoiceSubmitResult,
+  InvoiceWaitResult,
+  UnknownRecord,
+} from './types';
 
-const simulateDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+type CashCountState = 'none' | 'closed' | 'closing' | 'open';
+
+type TestModeInvoiceParams = Pick<
+  InvoiceProcessParams,
+  'cart' | 'client' | 'taxReceiptEnabled' | 'ncfType' | 'dueDate' | 'invoiceComment'
+>;
+
+type TestModeInvoiceResult = {
+  invoice: InvoiceData;
+  invoiceId: string;
+};
+
+const simulateDelay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 const buildTestModeInvoice = async ({
   cart,
@@ -20,15 +41,16 @@ const buildTestModeInvoice = async ({
   ncfType,
   dueDate,
   invoiceComment,
-}) => {
+}: TestModeInvoiceParams): Promise<TestModeInvoiceResult> => {
   const now = Date.now();
   const mockNcfCode = taxReceiptEnabled
     ? `TEST-${ncfType || 'NCF'}-${now}`
     : null;
-  const mockClient = client && client.id ? client : GenericClient;
+  const clientLike = client as (UnknownRecord & { id?: string | number }) | null;
+  const mockClient = clientLike?.id ? client : GenericClient;
 
-  const invoice = {
-    ...cart,
+  const invoice: InvoiceData = {
+    ...(cart as UnknownRecord),
     id: cart?.id || `TEST-INVOICE-${now}`,
     NCF: mockNcfCode,
     client: mockClient,
@@ -61,7 +83,9 @@ const buildTestModeInvoice = async ({
 const CASH_COUNT_REGEX =
   /cash[\s_-]*count(?:[\s_-]*(?:status|state|is|=))?[\s_-]*([a-z_]+)/i;
 
-const normalizeCashCountState = (rawState) => {
+const normalizeCashCountState = (
+  rawState: string | null | undefined,
+): CashCountState | null => {
   if (!rawState) return null;
   const normalized = rawState.replace(/[^a-z]/gi, '').toLowerCase();
   if (!normalized) return null;
@@ -91,24 +115,30 @@ const normalizeCashCountState = (rawState) => {
   return null;
 };
 
-const safeAssign = (error, key, value) => {
-  if (!error || value === undefined) return;
+const safeAssign = (error: unknown, key: string, value: unknown): void => {
+  if (!error || value === undefined || typeof error !== 'object') return;
   try {
-    if (error[key] === undefined) {
-      error[key] = value;
+    const target = error as Record<string, unknown>;
+    if (target[key] === undefined) {
+      target[key] = value;
     }
   } catch {
     // Algunos objetos de error (p. ej. DOMException) son inmutables.
   }
 };
 
-const extractCashCountState = (err) => {
-  if (!err) return null;
+const extractCashCountState = (err: unknown): CashCountState | null => {
+  if (!err || typeof err !== 'object') return null;
+  const error = err as {
+    message?: unknown;
+    details?: unknown;
+    code?: unknown;
+  };
 
   const rawSegments = [
-    typeof err.message === 'string' ? err.message : null,
-    typeof err.details === 'string' ? err.details : null,
-    typeof err.code === 'string' ? err.code : null,
+    typeof error.message === 'string' ? error.message : null,
+    typeof error.details === 'string' ? error.details : null,
+    typeof error.code === 'string' ? error.code : null,
   ].filter(Boolean);
 
   for (const segment of rawSegments) {
@@ -137,10 +167,10 @@ const extractCashCountState = (err) => {
 
 export default function useInvoice() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<InvoiceServiceError | null>(null);
   const dispatch = useDispatch();
 
-  const shouldRetryWithFreshInvoice = (err) => {
+  const shouldRetryWithFreshInvoice = (err: InvoiceServiceError | null) => {
     if (!err) return false;
     if (err.code !== 'invoice-failed') return false;
     if (!err.reused) return false;
@@ -151,15 +181,18 @@ export default function useInvoice() {
   };
 
   const performInvoiceAttempt = useCallback(
-    async (params = {}, attemptLabel = 'primary') => {
-      let submission = null;
+    async (
+      params: InvoiceProcessParams = {},
+      attemptLabel = 'primary',
+    ): Promise<InvoiceAttemptResult> => {
+      let submission: InvoiceSubmitResult | null = null;
 
       const { signal, ...submissionPayload } = params;
 
       try {
         submission = await submitInvoice(submissionPayload);
 
-        const result = await waitForInvoiceResult({
+        const result: InvoiceWaitResult = await waitForInvoiceResult({
           businessId: submission.businessId,
           invoiceId: submission.invoiceId,
           signal,
@@ -176,11 +209,12 @@ export default function useInvoice() {
           attempt: attemptLabel,
         };
       } catch (err) {
+        const errObj = err as InvoiceServiceError;
         if (submission) {
-          safeAssign(err, 'invoiceId', submission.invoiceId);
-          safeAssign(err, 'idempotencyKey', submission.idempotencyKey);
-          if (typeof err.reused !== 'boolean') {
-            safeAssign(err, 'reused', Boolean(submission.reused));
+          safeAssign(errObj, 'invoiceId', submission.invoiceId);
+          safeAssign(errObj, 'idempotencyKey', submission.idempotencyKey);
+          if (typeof errObj.reused !== 'boolean') {
+            safeAssign(errObj, 'reused', Boolean(submission.reused));
           }
         }
         throw err;
@@ -190,7 +224,7 @@ export default function useInvoice() {
   );
 
   const processInvoice = useCallback(
-    async (params) => {
+    async (params: InvoiceProcessParams): Promise<InvoiceAttemptResult> => {
       setLoading(true);
       setError(null);
 
@@ -216,21 +250,25 @@ export default function useInvoice() {
           const strategy = getCashCountStrategy(cashCountState, dispatch);
           strategy.handleConfirm();
 
-          const formattedError = new Error(
-            'No se puede procesar la factura sin cuadre de caja',
+          const invoiceError = err as InvoiceServiceError;
+          const formattedError: InvoiceServiceError = Object.assign(
+            new Error('No se puede procesar la factura sin cuadre de caja'),
+            {
+              code: `cashCount-${cashCountState}`,
+              invoiceId: invoiceError.invoiceId,
+              idempotencyKey: invoiceError.idempotencyKey,
+              reused: invoiceError.reused,
+              invoiceMeta:
+                invoiceError.invoice || invoiceError.invoiceMeta || null,
+              originalError: err,
+            },
           );
-          formattedError.code = `cashCount-${cashCountState}`;
-          formattedError.invoiceId = err.invoiceId;
-          formattedError.idempotencyKey = err.idempotencyKey;
-          formattedError.reused = err.reused;
-          formattedError.invoiceMeta = err.invoice || err.invoiceMeta || null;
-          formattedError.originalError = err;
 
           setError(formattedError);
           throw formattedError;
         }
 
-        if (shouldRetryWithFreshInvoice(err)) {
+        if (shouldRetryWithFreshInvoice(err as InvoiceServiceError)) {
           try {
             const recoveryAttempt = await performInvoiceAttempt(
               {
@@ -241,12 +279,12 @@ export default function useInvoice() {
             );
             return recoveryAttempt;
           } catch (recoveryError) {
-            setError(recoveryError);
+            setError(recoveryError as InvoiceServiceError);
             throw recoveryError;
           }
         }
 
-        setError(err);
+        setError(err as InvoiceServiceError);
         throw err;
       } finally {
         setLoading(false);

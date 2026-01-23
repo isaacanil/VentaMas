@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   getDiscount,
   money,
@@ -6,7 +5,10 @@ import {
   hasIndividualDiscounts,
 } from '../utils/formatters.js';
 
-export function buildFooter(d) {
+import type { PdfHeaderFooter } from '@/pdf/types';
+import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
+
+export function buildFooter(d: QuotationData): PdfHeaderFooter {
   /* Calcular descuentos */
   const individualDiscounts = getProductsIndividualDiscounts(d.products || []);
   const hasIndividualDisc = hasIndividualDiscounts(d.products || []);

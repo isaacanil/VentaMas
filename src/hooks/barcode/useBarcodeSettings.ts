@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { message } from 'antd';
 import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
@@ -12,17 +11,21 @@ import {
   getBarcodeSettings,
   setBarcodeSettings,
 } from '../../firebase/barcode/barcodeSettings';
+import type { BarcodeSettings } from '../../firebase/barcode/types';
+import type { UserIdentity } from '@/types/users';
+
+type BarcodeGenerationResult = Awaited<ReturnType<typeof generateAutoBarcode>>;
 
 /**
  * Hook para manejar la configuración de códigos de barras
  * @returns {Object} Estado y funciones para manejar códigos de barras
  */
 export const useBarcodeSettings = () => {
-  const user = useSelector(selectUser);
-  const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [nextItemReference, setNextItemReference] = useState('');
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [settings, setSettings] = useState<BarcodeSettings | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [nextItemReference, setNextItemReference] = useState<string>('');
 
   /**
    * Carga la configuración desde Firebase
@@ -47,7 +50,8 @@ export const useBarcodeSettings = () => {
         setNextItemReference('000000001');
       }
     } catch (err) {
-      setError(err.message);
+      const messageText = err instanceof Error ? err.message : 'Unknown error';
+      setError(messageText);
       console.error('Error al cargar configuración de códigos de barras:', err);
     } finally {
       setLoading(false);
@@ -65,7 +69,7 @@ export const useBarcodeSettings = () => {
    * Guarda la configuración en Firebase
    * @param {Object} newSettings - Nueva configuración
    */
-  const saveSettings = async (newSettings) => {
+  const saveSettings = async (newSettings: BarcodeSettings): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -91,7 +95,8 @@ export const useBarcodeSettings = () => {
       message.success('Configuración guardada exitosamente');
       console.log('Configuración guardada y estado actualizado:', newSettings);
     } catch (err) {
-      setError(err.message);
+      const messageText = err instanceof Error ? err.message : 'Unknown error';
+      setError(messageText);
       message.error('Error al guardar la configuración');
       console.error('Error al guardar configuración:', err);
       throw err; // Re-throw para que el componente pueda manejar el error
@@ -105,7 +110,9 @@ export const useBarcodeSettings = () => {
    * @param {string} companyPrefix - Prefijo de empresa (opcional)
    * @returns {Promise<Object>} Código generado
    */
-  const generateBarcode = async (companyPrefix = null) => {
+  const generateBarcode = async (
+    companyPrefix: string | null = null,
+  ): Promise<BarcodeGenerationResult> => {
     try {
       const result = await generateAutoBarcode(user, companyPrefix);
 
@@ -124,10 +131,10 @@ export const useBarcodeSettings = () => {
    * Actualiza solo el company prefix
    * @param {string} companyPrefix - Nuevo company prefix
    */
-  const updateCompanyPrefix = async (companyPrefix) => {
+  const updateCompanyPrefix = async (companyPrefix: string): Promise<void> => {
     try {
-      const updatedSettings = {
-        ...settings,
+      const updatedSettings: BarcodeSettings = {
+        ...(settings ?? {}),
         companyPrefix,
       };
 
@@ -143,11 +150,11 @@ export const useBarcodeSettings = () => {
    * @returns {boolean} True si está configurado
    */
   const isConfigured = () => {
-    return (
+    return Boolean(
       settings &&
-      settings.companyPrefix &&
-      settings.companyPrefixLength &&
-      settings.itemReferenceLength
+        settings.companyPrefix &&
+        settings.companyPrefixLength &&
+        settings.itemReferenceLength,
     );
   };
 

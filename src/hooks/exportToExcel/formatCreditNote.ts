@@ -1,25 +1,29 @@
-// @ts-nocheck
 import { CREDIT_NOTE_STATUS_LABEL } from '@/constants/creditNoteStatus';
 import { formatTimestamp } from '@/utils/format';
 import { getTax, getTotalPrice } from '@/utils/pricing';
-
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { InvoiceProduct } from '@/types/invoice';
 
 /**
  * Convierte un valor a número, retornando 0 si no es válido
  */
-const ensureNumber = (value) => {
+const ensureNumber = (value: unknown): number => {
   const num = Number(value);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 };
 
 /**
  * Calcula el ITBIS total de una nota de crédito sumando el impuesto de cada item
  */
-const calculateTotalItbis = (items) => {
+const calculateTotalItbis = (items: InvoiceProduct[]) => {
   return items.reduce((acc, item) => acc + getTax(item, true), 0);
 };
 
-const formatCreditNoteResumen = (creditNote) => {
+const resolveStatusLabel = (status: string) => {
+  return CREDIT_NOTE_STATUS_LABEL[status as keyof typeof CREDIT_NOTE_STATUS_LABEL] || status;
+};
+
+const formatCreditNoteResumen = (creditNote: CreditNoteRecord) => {
   const {
     createdAt,
     ncf,
@@ -38,18 +42,18 @@ const formatCreditNoteResumen = (creditNote) => {
     Fecha: formatTimestamp(createdAt || new Date()),
     NCF: ncf || NCFUpper || 'N/A',
     'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
-    Cliente: client.name || 'Cliente Genérico',
-    Teléfono: client.tel || 'N/A',
-    'RNC/Cédula': client.rnc || client.personalID || 'N/A',
+    Cliente: client?.name || 'Cliente Genérico',
+    Teléfono: client?.tel || 'N/A',
+    'RNC/Cédula': client?.rnc || client?.personalID || 'N/A',
     'Cantidad Items': items.length || 0,
     'Total ITBIS': ensureNumber(totalItbis),
     'Monto Total': ensureNumber(totalAmount),
-    Estado: CREDIT_NOTE_STATUS_LABEL[status] || status,
+    Estado: resolveStatusLabel(String(status)),
   };
 };
 
-const formatCreditNoteDetailed = (creditNotes) => {
-  const resultados = [];
+const formatCreditNoteDetailed = (creditNotes: CreditNoteRecord[]) => {
+  const resultados: Record<string, unknown>[] = [];
 
   creditNotes.forEach((creditNote) => {
     const {
@@ -74,7 +78,7 @@ const formatCreditNoteDetailed = (creditNotes) => {
         Fecha: formatTimestamp(createdAt || new Date()),
         NCF: ncf || NCFUpper || 'N/A',
         'NCF Factura': invoiceNcf || invoiceNCF || 'N/A',
-        Cliente: client.name || 'Cliente Genérico',
+        Cliente: client?.name || 'Cliente Genérico',
         Producto: item.name || 'N/A',
         Categoría: item.category || 'N/A',
         Cantidad: ensureNumber(item.amountToBuy || 1),
@@ -83,7 +87,7 @@ const formatCreditNoteDetailed = (creditNotes) => {
         'Total Item': ensureNumber(itemTotal),
         'Total ITBIS NC': ensureNumber(totalItbis),
         'Total NC': ensureNumber(totalAmount),
-        Estado: CREDIT_NOTE_STATUS_LABEL[status] || status,
+        Estado: resolveStatusLabel(String(status)),
       });
     });
   });
@@ -98,7 +102,13 @@ const formatCreditNoteDetailed = (creditNotes) => {
  * @param {Object|Object[]} options.data - Nota(s) de crédito a formatear
  * @returns {Object[]} Array con los datos formateados
  */
-export const formatCreditNote = ({ type, data }) => {
+export const formatCreditNote = ({
+  type,
+  data,
+}: {
+  type: 'Resumen' | 'Detailed';
+  data: CreditNoteRecord | CreditNoteRecord[];
+}) => {
   switch (type) {
     case 'Resumen':
       return Array.isArray(data)

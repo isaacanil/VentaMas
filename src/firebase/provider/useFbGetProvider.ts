@@ -1,23 +1,25 @@
-// @ts-nocheck
 import { collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const useFbGetProviders = () => {
-  const [providers, setProviders] = useState([]);
+import type { ProviderDocument } from './types';
+
+export const useFbGetProviders = (userOverride?: UserIdentity | null) => {
+  const [providers, setProviders] = useState<ProviderDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const user = useSelector(selectUser);
+  const user = userOverride ?? (useSelector(selectUser) as UserIdentity | null);
 
   useEffect(() => {
-    if (!user || !user?.businessID) {
+    if (!user?.businessID) {
       setLoading(false);
       return;
     }
 
-    const providersRef = collection(
+    const providersRef = collection<ProviderDocument>(
       db,
       'businesses',
       user.businessID,
@@ -29,7 +31,7 @@ export const useFbGetProviders = () => {
 
       try {
         const unsubscribe = onSnapshot(providersRef, (snapshot) => {
-          let providersArray = snapshot.docs.map((item) => item.data());
+          const providersArray = snapshot.docs.map((item) => item.data());
           setProviders(providersArray);
           setLoading(false);
         });

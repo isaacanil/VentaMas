@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { nanoid } from 'nanoid';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -10,10 +9,31 @@ import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button/Button';
 import { Message } from '@/components/ui/message/Message';
 
+interface CreateContactProps {
+  isOpen?: boolean;
+}
 
-export const CreateContact = ({ isOpen }) => {
+interface NewClient {
+  id?: string;
+  name: string;
+  address: string;
+  tel: string;
+  personalID: string;
+  delivery: {
+    status: boolean;
+    value: string;
+  };
+}
+
+type NewClientField = 'name' | 'address' | 'tel' | 'personalID';
+
+interface SideBarProps {
+  $isOpen: boolean;
+}
+
+export const CreateContact = ({ isOpen }: CreateContactProps) => {
   const dispatch = useDispatch();
-  const [newClient, setNewClient] = useState({
+  const [newClient, setNewClient] = useState<NewClient>({
     name: '',
     address: '',
     tel: '',
@@ -23,12 +43,23 @@ export const CreateContact = ({ isOpen }) => {
       value: '',
     },
   });
+  const handleFieldChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    const field = name as NewClientField;
+
+    setNewClient((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
   const addIdToNewClient = async () => {
     try {
-      setNewClient({
-        ...newClient,
+      setNewClient((prev) => ({
+        ...prev,
         id: nanoid(8),
-      });
+      }));
     } catch (error) {
       console.error('Failed to add ID to new client', error);
     }
@@ -42,7 +73,7 @@ export const CreateContact = ({ isOpen }) => {
   };
   return (
     <Container>
-      <SideBar $isOpen={isOpen ? true : false}>
+      <SideBar $isOpen={Boolean(isOpen)}>
         <ToolBar>
           <Button
             color="gray-dark"
@@ -61,12 +92,7 @@ export const CreateContact = ({ isOpen }) => {
             <input
               name="name"
               type="text"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
               placeholder="Juan Pérez."
             />
           </Group>
@@ -85,12 +111,7 @@ export const CreateContact = ({ isOpen }) => {
               name="tel"
               placeholder="8496503586"
               value={newClient.tel}
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
@@ -107,12 +128,7 @@ export const CreateContact = ({ isOpen }) => {
               type="text"
               placeholder="110056007"
               name="personalID"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
@@ -124,12 +140,7 @@ export const CreateContact = ({ isOpen }) => {
               cols="20"
               rows="5"
               placeholder="27 de Febrero #12, Ensanche Ozama, Santo Domingo"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             ></textarea>
           </Group>
         </Body>
@@ -154,7 +165,7 @@ const Container = styled.div`
   overflow: hidden;
   pointer-events: none;
 `;
-const SideBar = styled.div`
+const SideBar = styled.div<SideBarProps>`
   position: absolute;
   max-width: 26em;
   width: 100%;

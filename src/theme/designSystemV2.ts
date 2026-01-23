@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Design system v2 tokens to standardize colors, typography, spacing and effects.
 export const designSystemV2 = Object.freeze({
   colors: {
@@ -102,5 +101,7 @@ export const designSystemV2 = Object.freeze({
     maxContentWidth: '1200px',
   },
 });
+
+export type DesignSystemV2 = typeof designSystemV2;
 
 export default designSystemV2;

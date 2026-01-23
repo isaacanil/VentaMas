@@ -1,20 +1,24 @@
-// @ts-nocheck
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectAR } from '../../features/accountsReceivable/accountsReceivableSlice';
 import { fbGetActiveARCount } from '../../firebase/accountsReceivable/fbGetActiveARCount';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
+
+type AccountsReceivableRootState = Parameters<typeof selectAR>[0];
+type AccountsReceivableData = ReturnType<typeof selectAR>;
 
 export const useCreditLimitCheck = (
-  creditLimit,
-  change,
-  clientId,
-  userBusinessId,
+  creditLimit: CreditLimitConfig | null | undefined,
+  change: number,
+  clientId: string | null | undefined,
+  userBusinessId: string | null | undefined,
 ) => {
-  const { currentBalance } = useSelector(selectAR);
-  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] =
-    useState(0);
-  const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState(null);
+  const { currentBalance } = useSelector<AccountsReceivableRootState, AccountsReceivableData>(
+    selectAR,
+  );
+  const [activeAccountsReceivableCount, setActiveAccountsReceivableCount] = useState<number>(0);
+  const [isWithinInvoiceCount, setIsWithinInvoiceCount] = useState<boolean | null>(null);
 
   useEffect(() => {
     const fetchInvoiceAvailableCount = async () => {

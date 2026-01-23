@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -8,10 +7,19 @@ import {
   selectUser,
   switchToBusiness,
 } from '@/features/auth/userSlice';
+import type { UserIdentity } from '@/types/users';
 
 const STORAGE_KEY = 'vmx_dev_business_override';
 
-const getStorage = () => {
+type StoredSession = {
+  originalBusinessId: string;
+  overrideBusinessId: string;
+  updatedAt?: number;
+};
+
+type StorageData = Record<string, StoredSession>;
+
+const getStorage = (): StorageData => {
   if (typeof window === 'undefined' || !window.localStorage) {
     return {};
   }
@@ -22,14 +30,14 @@ const getStorage = () => {
       return {};
     }
 
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as StorageData;
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
     return {};
   }
 };
 
-const setStorage = (data) => {
+const setStorage = (data: StorageData) => {
   if (typeof window === 'undefined' || !window.localStorage) {
     return;
   }
@@ -46,7 +54,7 @@ const setStorage = (data) => {
   }
 };
 
-const getStoredSession = (userId) => {
+const getStoredSession = (userId?: string | null) => {
   if (!userId) return null;
   const data = getStorage();
   const session = data[userId];
@@ -56,7 +64,10 @@ const getStoredSession = (userId) => {
   return session;
 };
 
-const persistSession = (userId, session) => {
+const persistSession = (
+  userId: string | null | undefined,
+  session: Omit<StoredSession, 'updatedAt'> | null | undefined,
+) => {
   if (!userId || !session) return;
   const data = getStorage();
   data[userId] = {
@@ -66,7 +77,7 @@ const persistSession = (userId, session) => {
   setStorage(data);
 };
 
-const clearSession = (userId) => {
+const clearSession = (userId?: string | null) => {
   if (!userId) return;
   const data = getStorage();
   if (!data[userId]) {
@@ -78,12 +89,12 @@ const clearSession = (userId) => {
 
 export const usePersistentDeveloperBusiness = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserIdentity | null;
   const isTemporaryMode = useSelector(selectIsTemporaryMode);
   const originalBusinessId = useSelector(selectOriginalBusinessId);
 
-  const userId = user?.uid;
-  const currentBusinessId = user?.businessID;
+  const userId = user?.uid ?? user?.id ?? null;
+  const currentBusinessId = user?.businessID ?? null;
 
   // Persistir cambios cuando se activa o desactiva el modo temporal
   useEffect(() => {

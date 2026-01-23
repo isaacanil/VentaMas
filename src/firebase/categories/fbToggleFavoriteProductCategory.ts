@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   arrayUnion,
   arrayRemove,
@@ -10,8 +9,19 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserIdentity } from '@/types/users';
 
-export const fbToggleFavoriteProductCategory = async (user, category) => {
+import type { CategoryRecord, FavoriteCategoriesDocument } from './types';
+
+type UserWithBusinessAndUid = UserIdentity & {
+  businessID: string;
+  uid: string;
+};
+
+export const fbToggleFavoriteProductCategory = async (
+  user: UserWithBusinessAndUid,
+  category: CategoryRecord,
+): Promise<void> => {
   const { businessID, uid } = user;
   const categoryId = category?.id;
 
@@ -22,7 +32,7 @@ export const fbToggleFavoriteProductCategory = async (user, category) => {
     return;
   }
 
-  const favoriteProductCategoryRef = doc(
+  const favoriteProductCategoryRef = doc<FavoriteCategoriesDocument>(
     db,
     'businesses',
     businessID,
@@ -37,7 +47,9 @@ export const fbToggleFavoriteProductCategory = async (user, category) => {
 
     if (docSnapshot.exists()) {
       const data = docSnapshot.data();
-      const favoriteCategories = data.favoriteCategories || [];
+      const favoriteCategories = Array.isArray(data.favoriteCategories)
+        ? data.favoriteCategories
+        : [];
 
       if (favoriteCategories.includes(categoryId)) {
         // Si la categoría ya está en favoritos, la eliminamos

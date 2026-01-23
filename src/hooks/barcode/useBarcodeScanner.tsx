@@ -1,15 +1,18 @@
-// @ts-nocheck
 import { useEffect, useRef } from 'react';
 
-export const useBarcodeScanner = (products, fn) => {
+export const useBarcodeScanner = <T,>(
+  products: T[],
+  fn: (products: T[], barcode: string) => void,
+) => {
   const barcodeRef = useRef('');
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
       // Ignorar eventos que vengan de elementos input o textarea
       if (
-        event.target.tagName === 'INPUT' ||
-        event.target.tagName === 'TEXTAREA'
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA'
       ) {
         return;
       }

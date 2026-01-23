@@ -1,13 +1,17 @@
-// @ts-nocheck
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
+import type { DoctorRecord } from '@/types/doctors';
 
-export const fbAddDoctor = async (doctor, user) => {
-  if (!user || !user?.businessID) return;
+export const fbAddDoctor = async (
+  doctor: DoctorRecord,
+  user: UserWithBusiness | null | undefined,
+): Promise<string | undefined> => {
+  if (!user?.businessID) return;
 
-  const doctorData = {
+  const doctorData: DoctorRecord = {
     ...doctor,
     id: nanoid(10),
     createdAt: Timestamp.now(),
