@@ -1,8 +1,16 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
-export const DetailSummary = ({ items = [] }) => {
+interface DetailSummaryItem {
+  label?: React.ReactNode;
+  value?: React.ReactNode;
+}
+
+interface DetailSummaryProps {
+  items?: DetailSummaryItem[];
+}
+
+export const DetailSummary: React.FC<DetailSummaryProps> = ({ items = [] }) => {
   return (
     <AccountSection>
       {items.map((item, index) => (

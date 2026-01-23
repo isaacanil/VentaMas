@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { List, Tag } from 'antd';
@@ -10,6 +9,9 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 import { listenAllBatches } from '@/firebase/warehouse/batchService';
+import type { Batch } from '@/models/Warehouse/Batch';
+import type { ProductRecord } from '@/types/products';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 // Styled Components
 const StyledContainer = styled.div`
@@ -28,10 +30,19 @@ const StyledTitle = styled.h2`
   font-weight: 700;
 `;
 
+type BatchListItem = Partial<Batch> & {
+  key?: React.Key;
+  numberId?: string | number | null;
+  quantity?: number | null;
+  expirationDate?: string | null;
+} & Record<string, unknown>;
+
 const BatchList = () => {
-  const { product } = useSelector(selectUpdateProductData);
-  const [batches, setBatches] = useState([]);
-  const user = useSelector(selectUser);
+  const { product } = useSelector(selectUpdateProductData) as {
+    product: ProductRecord | null;
+  };
+  const [batches, setBatches] = useState<BatchListItem[]>([]);
+  const user = useSelector(selectUser) as InventoryUser | null;
 
   useEffect(() => {
     if (!user || !product?.id) return;
@@ -74,9 +85,9 @@ const BatchList = () => {
                     </div>
                     <div>
                       Fecha de Expiración:{' '}
-                      {DateTime.fromISO(item.expirationDate).toLocaleString(
-                        DateTime.DATE_MED,
-                      )}
+                      {DateTime.fromISO(
+                        item.expirationDate ?? '',
+                      ).toLocaleString(DateTime.DATE_MED)}
                     </div>
                   </>
                 }

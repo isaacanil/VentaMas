@@ -1,5 +1,10 @@
-// @ts-nocheck
-export const clients = [
+import type { ClientInput } from './clientNormalizer';
+
+type ClientSeedEntry = {
+  client: ClientInput;
+};
+
+export const clients: ClientSeedEntry[] = [
   {
     client: {
       address: '',

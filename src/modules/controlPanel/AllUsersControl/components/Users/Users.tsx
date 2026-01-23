@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { fbGetUsers } from '@/firebase/Auth/fbGetUser';
@@ -8,10 +7,29 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { TableUser } from './TableUser';
 import { UsersFilterBar } from './UsersFilterBar';
 
-export const Users = () => {
-  const [users, setUsers] = useState([]);
-  const [businesses, setBusinesses] = useState([]);
-  const [filters, setFilters] = useState({
+import type { UserRow } from './TableUser';
+import type {
+  BusinessOption,
+  RoleOption,
+  UsersFilterBarFilters,
+} from './UsersFilterBar';
+
+interface BusinessDoc {
+  id?: string;
+  business?: {
+    name?: string;
+  };
+  name?: string;
+}
+
+const toArray = <T,>(value: unknown): T[] => {
+  return Array.isArray(value) ? (value as T[]) : [];
+};
+
+export const Users: React.FC = () => {
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessDoc[]>([]);
+  const [filters, setFilters] = useState<UsersFilterBarFilters>({
     search: '',
     businessID: '',
     role: '',
@@ -27,10 +45,8 @@ export const Users = () => {
         ]);
 
         if (isMounted) {
-          setUsers(Array.isArray(usersResponse) ? usersResponse : []);
-          setBusinesses(
-            Array.isArray(businessesResponse) ? businessesResponse : [],
-          );
+          setUsers(toArray<UserRow>(usersResponse));
+          setBusinesses(toArray<BusinessDoc>(businessesResponse));
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -49,7 +65,7 @@ export const Users = () => {
   }, []);
 
   const businessNameMap = useMemo(() => {
-    return businesses.reduce((map, businessDoc) => {
+    return businesses.reduce<Map<string, string>>((map, businessDoc) => {
       const businessId = businessDoc?.id;
       if (!businessId) {
         return map;
@@ -58,10 +74,10 @@ export const Users = () => {
       const name = businessDoc?.business?.name || businessDoc?.name || '';
       map.set(String(businessId), name);
       return map;
-    }, new Map());
+    }, new Map<string, string>());
   }, [businesses]);
 
-  const businessOptions = useMemo(() => {
+  const businessOptions = useMemo<BusinessOption[]>(() => {
     return businesses.map((businessDoc) => {
       const value = String(businessDoc?.id ?? '');
       const name = businessDoc?.business?.name || businessDoc?.name || value;
@@ -75,8 +91,8 @@ export const Users = () => {
     });
   }, [businesses]);
 
-  const roleOptions = useMemo(() => {
-    const set = new Set();
+  const roleOptions = useMemo<RoleOption[]>(() => {
+    const set = new Set<string>();
 
     users.forEach((item) => {
       const role = item?.user?.role;
@@ -120,7 +136,10 @@ export const Users = () => {
     });
   }, [filters, users, businessNameMap]);
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = (
+    key: keyof UsersFilterBarFilters,
+    value: string,
+  ) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,

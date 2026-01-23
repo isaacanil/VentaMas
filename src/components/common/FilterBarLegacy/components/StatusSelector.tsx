@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faCheckCircle,
   faClock,
@@ -6,10 +5,32 @@ import {
   faSpinner,
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 import { Selector } from '@/components/common/Selector/Selector';
 
-const defaultStatusOptions = [
+type StatusOption = {
+  value: string;
+  label: string;
+  icon: IconProp;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+};
+
+type StatusSelectorProps = {
+  value?: string | null;
+  onChange?: (value: string | null) => void;
+  statusOptions?: StatusOption[];
+  visibleStatus?: string[];
+  placeholder?: string;
+  showAllOption?: boolean;
+  allowClear?: boolean;
+  clearText?: string;
+  width?: string | number;
+};
+
+const defaultStatusOptions: StatusOption[] = [
   {
     value: 'active',
     label: 'Activo',
@@ -70,7 +91,7 @@ export const StatusSelector = ({
   allowClear = false,
   clearText,
   width,
-}) => {
+}: StatusSelectorProps) => {
   // Filtrar las opciones seg├║n los estados visibles
   const filteredOptions =
     visibleStatus.length > 0
@@ -81,7 +102,7 @@ export const StatusSelector = ({
     color: '#666',
     bgColor: '#ffffff',
     borderColor: '#d9d9d9',
-    icon: faClock,
+    icon: faClock as IconProp,
   };
 
   return (

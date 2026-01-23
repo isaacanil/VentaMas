@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { setDoc, doc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 import React, { useState } from 'react';
@@ -10,10 +9,39 @@ import { db } from '@/firebase/firebaseconfig';
 import { Modal } from '@/components/modals/Modal';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-export const AddClientModal = ({ isOpen }) => {
+interface AddClientModalProps {
+  isOpen: boolean;
+}
+
+interface ClientData {
+  name: string;
+  address: string;
+  tel: string;
+  email: string;
+  id: string;
+  personalID: string;
+}
+
+type ClientEditableField =
+  | 'name'
+  | 'address'
+  | 'tel'
+  | 'email'
+  | 'personalID';
+
+const isClientEditableField = (
+  field: string,
+): field is ClientEditableField =>
+  field === 'name' ||
+  field === 'address' ||
+  field === 'tel' ||
+  field === 'email' ||
+  field === 'personalID';
+
+export const AddClientModal = ({ isOpen }: AddClientModalProps) => {
   const dispatch = useDispatch();
 
-  const [client, setClient] = useState({
+  const [client, setClient] = useState<ClientData>({
     name: '',
     address: '',
     tel: '',
@@ -22,16 +50,20 @@ export const AddClientModal = ({ isOpen }) => {
     personalID: '',
   });
 
-  const HandleChange = (e: any) => {
-    setClient({
-      ...client,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (!isClientEditableField(name)) {
+      return;
+    }
+    setClient((prevClient) => ({
+      ...prevClient,
+      [name]: value,
+    }));
   };
   //console.log(client)
   const closeModal = () => dispatch(closeModalAddClient());
 
-  const HandleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     try {
       const clientRef = doc(db, 'client', client.id);
       await setDoc(clientRef, { client });
@@ -47,7 +79,7 @@ export const AddClientModal = ({ isOpen }) => {
       nameRef="Agregar Cliente"
       btnSubmitName="Guardar"
       close={closeModal}
-      handleSubmit={HandleSubmit}
+      handleSubmit={handleSubmit}
     >
       <Container>
         <FormControl>
@@ -56,7 +88,7 @@ export const AddClientModal = ({ isOpen }) => {
             <InputV4
               id="name"
               name={'name'}
-              onChange={HandleChange}
+              onChange={handleChange}
               placeholder="Nombre"
             />
           </Group>
@@ -65,9 +97,7 @@ export const AddClientModal = ({ isOpen }) => {
             <InputV4
               id="DocumentType"
               name={'personalID'}
-              onChange={(e) =>
-                setClient({ ...client, personalID: e.target.value })
-              }
+              onChange={handleChange}
               placeholder="RNC / Cédula"
             />
           </Group>
@@ -75,7 +105,7 @@ export const AddClientModal = ({ isOpen }) => {
             <Label>Dirección: </Label>
             <InputV4
               name={'address'}
-              onChange={HandleChange}
+              onChange={handleChange}
               placeholder="Dirección"
             />
           </Group>
@@ -85,14 +115,14 @@ export const AddClientModal = ({ isOpen }) => {
               name={'tel'}
               placeholder="Teléfono"
               pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-              onChange={(e) => setClient({ ...client, tel: e.target.value })}
+              onChange={handleChange}
             />
           </Group>
           <Group>
             <Label>Correo:</Label>
             <InputV4
               name={'email'}
-              onChange={HandleChange}
+              onChange={handleChange}
               placeholder="ejemplo@ejemplo.com"
             />
           </Group>
@@ -112,7 +142,11 @@ const FormControl = styled.form`
   gap: 1em;
   overflow: auto;
 `;
-const Group = styled.div`
+interface GroupProps {
+  span?: '2';
+}
+
+const Group = styled.div<GroupProps>`
   display: grid;
   gap: 1em;
 

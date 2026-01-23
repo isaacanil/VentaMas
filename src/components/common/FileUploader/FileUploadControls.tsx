@@ -1,10 +1,21 @@
-// @ts-nocheck
 import { Select, Form } from 'antd';
 import React from 'react';
 
 import UploadButton from './UploadButton';
 
 const { Option } = Select;
+
+type FileUploadControlsProps = {
+  fileType: string;
+  setFileType: (value: string) => void;
+  handleFileInput?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  fileTypes?: string[];
+  fileTypeLabels?: Record<string, string>;
+  title?: string;
+  acceptedFileTypes?: string | null;
+  compact?: boolean;
+  alwaysShowTypeSelector?: boolean;
+};
 
 const FileUploadControls = ({
   fileType,
@@ -16,7 +27,7 @@ const FileUploadControls = ({
   acceptedFileTypes = null,
   compact = false,
   alwaysShowTypeSelector = false,
-}) => {
+}: FileUploadControlsProps) => {
   if (!handleFileInput) {
     return null;
   }

@@ -1,9 +1,11 @@
-// @ts-nocheck
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const fbDeleteClient = async (businessID, id) => {
+export const fbDeleteClient = async (
+  businessID: string,
+  id: string,
+): Promise<void> => {
   try {
     if (!businessID) throw new Error('No businessID');
     if (!id) throw new Error('No id');
@@ -21,7 +23,10 @@ export const fbDeleteClient = async (businessID, id) => {
   }
 };
 
-export const deleteMultipleClients = (businessID, ids = []) => {
+export const deleteMultipleClients = (
+  businessID: string,
+  ids: string[] = [],
+): void => {
   ids.forEach((id) => {
     fbDeleteClient(businessID, id);
   });

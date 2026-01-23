@@ -1,11 +1,39 @@
-// @ts-nocheck
 import { Form, Input, Modal, Typography, message } from 'antd';
 import { useCallback, useState } from 'react';
 
 import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUserPassword';
 
-export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
-  const [form] = Form.useForm();
+import type { FC } from 'react';
+import type { UserRow } from './TableUser';
+
+interface ChangePasswordFormValues {
+  password: string;
+}
+
+interface ChangerPasswordModalProps {
+  isOpen: boolean;
+  data?: UserRow | null;
+  onClose?: () => void;
+}
+
+const getErrorMessage = (error: unknown): string | null => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return null;
+};
+
+export const ChangerPasswordModal: FC<ChangerPasswordModalProps> = ({
+  isOpen,
+  data,
+  onClose,
+}) => {
+  const [form] = Form.useForm<ChangePasswordFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const closeModal = useCallback(() => {
@@ -14,7 +42,7 @@ export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
   }, [form, onClose]);
 
   const handleFinish = useCallback(
-    async ({ password }) => {
+    async ({ password }: ChangePasswordFormValues) => {
       if (!data?.user?.id) {
         message.error('No se pudo identificar al usuario seleccionado.');
         return;
@@ -26,8 +54,10 @@ export const ChangerPasswordModal = ({ isOpen, data, onClose }) => {
         await fbUpdateUserPassword(data.user.id, password);
         message.success('Contraseña actualizada correctamente');
         closeModal();
-      } catch (error) {
-        message.error(error?.message || 'Error actualizando la contraseña');
+      } catch (error: unknown) {
+        message.error(
+          getErrorMessage(error) || 'Error actualizando la contraseña',
+        );
       } finally {
         setIsSubmitting(false);
       }

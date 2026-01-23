@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { Spin } from 'antd';
 import { lazy, Suspense } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { MenuWebsite } from '@/modules/home/components/MenuWebsite/MenuWebsite';
+import type { UserRoleLike } from '@/types/users';
 
 import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
 import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';
@@ -17,19 +17,16 @@ const DashboardShortcuts = lazy(() =>
   ),
 );
 
+type AuthUser = { role?: UserRoleLike | null } | null | false;
+
 interface RootState {
   user?: {
-    user?:
-    | {
-      role?: string | null;
-    }
-    | null
-    | boolean;
+    user?: AuthUser;
   };
 }
 
 // Memoized selector to extract user role
-const selectUserRole = (state: RootState): string | null | false => {
+const selectUserRole = (state: RootState): UserRoleLike | null | false => {
   const user = state.user?.user;
   if (user === undefined) return false;
   if (user === false || user === null) return false;
@@ -38,10 +35,7 @@ const selectUserRole = (state: RootState): string | null | false => {
 };
 
 export const Home = (): JSX.Element => {
-  const userRole = useSelector(selectUserRole, shallowEqual) as
-    | string
-    | null
-    | false;
+  const userRole = useSelector(selectUserRole, shallowEqual);
 
   if (!userRole) {
     return (

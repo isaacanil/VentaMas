@@ -1,11 +1,18 @@
-// @ts-nocheck
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
 import { buildClientWritePayload } from './clientNormalizer';
+import type { ClientInput } from './clientNormalizer';
 
-export const fbUpdateClient = async (user, client) => {
+type UserWithBusiness = {
+  businessID: string;
+};
+
+export const fbUpdateClient = async (
+  user: UserWithBusiness | null | undefined,
+  client: ClientInput & { id: string },
+): Promise<void> => {
   // Updating client data
   if (!user || !user.businessID) return;
 

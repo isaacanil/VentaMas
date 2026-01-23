@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faTicket,
   faWarehouse,
@@ -9,12 +8,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { developerShortcuts } from '@/constants/devtools/developerShortcuts';
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
+import type { MenuItem } from '@/types/menu';
+import type { UserIdentity, UserRoleLike } from '@/types/users';
 import {
   useFilterMenuItemsByAccess,
 } from '@/utils/menuAccess';
 
-const createMenuItems = (items) =>
-  items.map((item, index) => ({ ...item, id: index + 1 }));
+interface MenuCardItem extends MenuItem {
+  id: number;
+  category: string;
+  roles?: UserRoleLike[];
+}
+
+const createMenuItems = <T extends MenuItem>(items: T[]): MenuCardItem[] =>
+  items.map((item, index) => ({
+    ...item,
+    id: index + 1,
+  })) as MenuCardItem[];
 
 const { UTILITY_TERM, SETTING_TERM, AUTHORIZATIONS_TERM } = ROUTES_NAME;
 const { UTILITY_REPORT } = UTILITY_TERM;
@@ -162,9 +172,9 @@ const menuItems = createMenuItems([
 
 const developerItems = createMenuItems(developerShortcuts);
 
-export const useMenuCardData = (user) => {
+export const useMenuCardData = (user?: UserIdentity | null) => {
   const filteredItems = useFilterMenuItemsByAccess(menuItems);
-  return filteredItems.filter((item) => {
+  return filteredItems.filter((item): item is MenuCardItem => {
     // Si el item tiene roles definidos, verificar que el usuario tenga uno de esos roles
     if (item.roles && Array.isArray(item.roles)) {
       return item.roles.includes(user?.role);

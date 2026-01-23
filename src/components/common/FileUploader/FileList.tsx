@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   FileOutlined,
   DeleteOutlined,
@@ -78,13 +77,29 @@ const FileIcon = styled.span`
   font-size: 16px;
 `;
 
+type FileListItem = {
+  id?: string;
+  url?: string;
+  name: string;
+  type?: string;
+  file?: File;
+  preview?: string | null;
+};
+
+type FileListProps = {
+  files?: FileListItem[];
+  removeFile?: (fileId: string) => void;
+  handlePreview?: (file: FileListItem) => void;
+  fileTypeLabels?: Record<string, string>;
+};
+
 const FileList = ({
   files = [],
   removeFile,
   handlePreview,
   fileTypeLabels = {},
-}) => {
-  const getTagColor = (type) => {
+}: FileListProps) => {
+  const getTagColor = (type?: string) => {
     const colors = {
       document: 'default',
       receipts: 'green',
@@ -96,17 +111,20 @@ const FileList = ({
     return colors[type?.toLowerCase()] || 'default';
   };
 
-  const isImageFile = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
+  const isImageFile = (filename: string) => {
+    const extension = filename.split('.').pop()?.toLowerCase() ?? '';
     return ['jpg', 'jpeg', 'png', 'gif'].includes(extension);
   };
 
-  const isPDFFile = (filename) => {
-    return filename.split('.').pop().toLowerCase() === 'pdf';
+  const isPDFFile = (filename: string) => {
+    return (filename.split('.').pop()?.toLowerCase() ?? '') === 'pdf';
   };
 
   const groupedFiles = useMemo(() => {
-    const groups = {};
+    const groups: Record<
+      string,
+      { title: string; files: FileListItem[] }
+    > = {};
 
     files?.forEach((file) => {
       const type = file.type?.toLowerCase() || 'document';
@@ -126,8 +144,8 @@ const FileList = ({
     return Object.entries(groups);
   }, [files, fileTypeLabels]);
 
-  const renderFileItem = (file) => (
-    <FileItem key={file.id || file.url}>
+  const renderFileItem = (file: FileListItem) => (
+    <FileItem key={file.id || file.url || file.name}>
       <FileIcon>
         {isImageFile(file.name) ? (
           <FileImageOutlined style={{ color: '#52c41a' }} />
@@ -146,12 +164,19 @@ const FileList = ({
       </FileInfo>
       <div>
         {(isImageFile(file.name) || isPDFFile(file.name)) && (
-          <PreviewButton onClick={() => handlePreview(file)}>
+          <PreviewButton onClick={() => handlePreview?.(file)}>
             <EyeOutlined />
           </PreviewButton>
         )}
         {removeFile && (
-          <DeleteButton onClick={() => removeFile(file.id || file.url)}>
+          <DeleteButton
+            onClick={() => {
+              const id = file.id ?? file.url;
+              if (id) {
+                removeFile(id);
+              }
+            }}
+          >
             <DeleteOutlined />
           </DeleteButton>
         )}

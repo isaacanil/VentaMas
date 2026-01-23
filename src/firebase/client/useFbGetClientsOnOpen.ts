@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -10,12 +9,27 @@ import {
   CLIENT_ROOT_FIELDS,
   extractNormalizedClient,
 } from './clientNormalizer';
+import type { ClientDocumentData, NormalizedClient } from './clientNormalizer';
 
-export const useFbGetClientsOnOpen = ({ isOpen }) => {
-  const user = useSelector(selectUser);
+type UserWithBusiness = {
+  businessID: string;
+};
+
+type ClientListItem = {
+  id: string;
+  client: NormalizedClient;
+} & Record<string, unknown>;
+
+type ClientsState = {
+  businessID: string | null;
+  clients: ClientListItem[];
+};
+
+export const useFbGetClientsOnOpen = ({ isOpen }: { isOpen: boolean }) => {
+  const user = useSelector(selectUser) as UserWithBusiness | null;
   const businessID = user?.businessID ?? null;
 
-  const [clientsState, setClientsState] = useState(() => ({
+  const [clientsState, setClientsState] = useState<ClientsState>(() => ({
     businessID: null,
     clients: [],
   }));
@@ -31,12 +45,12 @@ export const useFbGetClientsOnOpen = ({ isOpen }) => {
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.reduce((acc, doc) => {
-          const data = doc.data() || {};
+        const list = snap.docs.reduce<ClientListItem[]>((acc, doc) => {
+          const data = (doc.data() || {}) as ClientDocumentData;
           if (data.isDeleted) return acc;
 
           const client = extractNormalizedClient(data);
-          const extras = {};
+          const extras: Record<string, unknown> = {};
 
           for (const [key, value] of Object.entries(data)) {
             if (key === 'client') continue;
@@ -45,11 +59,13 @@ export const useFbGetClientsOnOpen = ({ isOpen }) => {
             }
           }
 
-          acc.push({
+          const item: ClientListItem = {
             id: doc.id,
             ...extras,
             client,
-          });
+          };
+
+          acc.push(item);
           return acc;
         }, []);
 

@@ -1,9 +1,9 @@
-// @ts-nocheck
 import {
   InboxOutlined,
   FileImageOutlined,
   FilePdfOutlined,
 } from '@/constants/icons/antd';
+import type { DragEventHandler } from 'react';
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
@@ -18,28 +18,32 @@ const floatAnimation = keyframes`
   100% { transform: translateY(0); }
 `;
 
-const DragOverlayContainer = styled.div`
+type DragOverlayContainerProps = {
+  isDragging: boolean;
+};
+
+const DragOverlayContainer = styled.div<DragOverlayContainerProps>`
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: flex;
-  visibility: ${(props: any) => (props.isDragging ? 'visible' : 'hidden')};
+  visibility: ${(props) => (props.isDragging ? 'visible' : 'hidden')};
   align-items: center;
   justify-content: center;
   background: rgb(0 0 0 / 75%);
-  opacity: ${(props: any) => (props.isDragging ? 1 : 0)};
+  opacity: ${(props) => (props.isDragging ? 1 : 0)};
   backdrop-filter: blur(4px);
   transition: all 0.3s ease-in-out;
   animation: ${fadeIn} 0.3s ease-in-out;
 `;
 
-const DropMessage = styled.div`
+const DropMessage = styled.div<DragOverlayContainerProps>`
   padding: 48px 64px;
   text-align: center;
   background: rgb(255 255 255 / 95%);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
-  transform: scale(${(props: any) => (props.isDragging ? '1.02' : '1')});
+  transform: scale(${(props) => (props.isDragging ? '1.02' : '1')});
   transition: transform 0.2s ease-in-out;
 
   .icon-wrapper {
@@ -61,7 +65,7 @@ const DropMessage = styled.div`
   }
 `;
 
-const getFileIcon = (fileType) => {
+const getFileIcon = (fileType: string) => {
   switch (fileType.toLowerCase()) {
     case 'imagen':
       return <FileImageOutlined style={{ fontSize: '56px', color: '#1890ff' }} />;
@@ -72,13 +76,21 @@ const getFileIcon = (fileType) => {
   }
 };
 
+type DragOverlayProps = {
+  isDragging: boolean;
+  onDrop?: DragEventHandler<HTMLDivElement>;
+  onDragOver?: DragEventHandler<HTMLDivElement>;
+  onDragLeave?: DragEventHandler<HTMLDivElement>;
+  fileType?: string;
+};
+
 const DragOverlay = ({
   isDragging,
   onDrop,
   onDragOver,
   onDragLeave,
-  fileType,
-}) => (
+  fileType = '',
+}: DragOverlayProps) => (
   <DragOverlayContainer
     isDragging={isDragging}
     onDrop={onDrop}

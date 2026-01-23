@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CalendarOutlined,
   EditOutlined,
@@ -13,6 +12,7 @@ import {
   Modal,
   notification,
 } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { DateTime } from 'luxon';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -24,14 +24,41 @@ import {
   createBatch,
   updateBatch,
 } from '@/firebase/warehouse/batchService';
+import type { Batch } from '@/models/Warehouse/Batch';
+import type { ProductRecord } from '@/types/products';
 import { toMillis, toTimestamp } from '@/utils/date/dateUtils';
+import type { TimestampLike } from '@/utils/date/types';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 // Styled Components
 const StyledContainer = styled.div`
   padding: 16px;
 `;
 
-const toDateTime = (val) => {
+type BatchFormMode = 'create' | 'update';
+
+type BatchFormData = Partial<Batch> & {
+  expirationDate?: TimestampLike;
+  manufacturingDate?: TimestampLike;
+  receivedDate?: TimestampLike;
+} & Record<string, unknown>;
+
+type BatchFormValues = {
+  shortName: string;
+  quantity: number;
+  notes?: string;
+  expirationDate?: TimestampLike | null;
+  manufacturingDate?: TimestampLike | null;
+  receivedDate?: TimestampLike | null;
+};
+
+type BatchFormProps = {
+  initialData?: BatchFormData | null;
+  mode?: BatchFormMode;
+  justIcon?: boolean;
+};
+
+const toDateTime = (val: TimestampLike) => {
   const ms = toMillis(val);
   return ms ? DateTime.fromMillis(ms) : null;
 };
@@ -40,13 +67,15 @@ export const BatchForm = ({
   initialData,
   mode = 'create',
   justIcon = false,
-}) => {
+}: BatchFormProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<BatchFormValues>();
   const [loading, setLoading] = useState(false);
-  const user = useSelector(selectUser);
-  const { product } = useSelector(selectUpdateProductData);
-  const convertedData = {
+  const user = useSelector(selectUser) as InventoryUser | null;
+  const { product } = useSelector(selectUpdateProductData) as {
+    product: ProductRecord | null;
+  };
+  const convertedData: BatchFormData = {
     ...initialData,
     expirationDate: toDateTime(initialData?.expirationDate),
     manufacturingDate: toDateTime(initialData?.manufacturingDate),
@@ -74,7 +103,7 @@ export const BatchForm = ({
     form.resetFields();
   };
 
-  const onFinish = async (values) => {
+  const onFinish = async (values: BatchFormValues) => {
     const batchData = {
       ...initialData,
       ...values,
@@ -122,7 +151,7 @@ export const BatchForm = ({
     });
   };
 
-  const disablePastDates = (current) => {
+  const disablePastDates = (current: Dayjs | null) => {
     return current && current < DateTime.now().startOf('day');
   };
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -10,10 +9,22 @@ import {
   extractNormalizedClient,
   getDuplicatedRootFields,
 } from './clientNormalizer';
+import type { ClientDocumentData, NormalizedClient } from './clientNormalizer';
 
 const MAX_BATCH_SIZE = 450;
 
-export async function fbNormalizeClients(user) {
+type UserWithBusiness = {
+  businessID: string;
+};
+
+type NormalizeClientsSummary = {
+  total: number;
+  normalized: number;
+};
+
+export async function fbNormalizeClients(
+  user: UserWithBusiness,
+): Promise<NormalizeClientsSummary> {
   if (!user?.businessID) {
     throw new Error('fbNormalizeClients: user without businessID');
   }
@@ -37,13 +48,13 @@ export async function fbNormalizeClients(user) {
   };
 
   for (const docSnap of snapshot.docs) {
-    const data = docSnap.data() || {};
+    const data = (docSnap.data() || {}) as ClientDocumentData;
     const normalizedClient = extractNormalizedClient(data);
     const currentClient = data?.client ?? {};
 
     const clientMatches = compareObjects({
-      object1: currentClient,
-      object2: normalizedClient,
+      object1: currentClient as Record<string, unknown>,
+      object2: normalizedClient as NormalizedClient,
       maxDepth: 5,
       strictTypeCheck: false,
     });
@@ -58,7 +69,7 @@ export async function fbNormalizeClients(user) {
     }
 
     const { payload } = buildClientWritePayload(normalizedClient);
-    const extras = {};
+    const extras: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(data)) {
       if (key === 'client') continue;

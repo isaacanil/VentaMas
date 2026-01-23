@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faUser, faStore, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal, Button, Typography, Divider, Card, Space } from 'antd';
@@ -7,10 +6,27 @@ import { useDispatch } from 'react-redux';
 
 import { toggleSignUpUser } from '@/features/modals/modalSlice';
 
-export const BusinessEditModal = ({ isOpen, onClose, business }) => {
+interface BusinessInfo {
+  id?: string;
+  name?: string;
+  address?: string;
+  tel?: string;
+}
+
+interface BusinessEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  business?: BusinessInfo | null;
+}
+
+export const BusinessEditModal: React.FC<BusinessEditModalProps> = ({
+  isOpen,
+  onClose,
+  business,
+}) => {
   const dispatch = useDispatch();
 
-  const handleOpenSignUpModal = (e) => {
+  const handleOpenSignUpModal = (e: React.MouseEvent<HTMLElement>) => {
     // Evitar propagación del evento
     e.stopPropagation();
     dispatch(
@@ -21,7 +37,9 @@ export const BusinessEditModal = ({ isOpen, onClose, business }) => {
     );
   };
   // Asegurarse de que el modal capture el evento de cierre
-  const handleCancel = (e) => {
+  const handleCancel = (
+    e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+  ) => {
     if (e) {
       e.stopPropagation();
     }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Instala las dependencias:
 // npm i browser-image-compression
 // npm i firebase antd styled-components
@@ -20,21 +19,23 @@ import styled from 'styled-components';
 import { storage } from '@/firebase/firebaseconfig';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
+import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
+
 // Parámetros de compresión
 const TARGET_SIZE_MB = 0.4; // Tamaño máximo deseado en MB (ajustado para mejor calidad)
 const MAX_DIMENSION = 1024; // Máx. ancho/alto en px
 const QUALITY_STEP = 0.1;
 const MIN_QUALITY = 0.1;
 
-const LoginImageConfig = () => {
+const LoginImageConfig: React.FC = () => {
   const navigate = useNavigate();
-  const [fileList, setFileList] = useState([]);
-  const [currentImage, setCurrentImage] = useState(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [loadingFetch, setLoadingFetch] = useState(true);
   const [loadingAction, setLoadingAction] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [originalSize, setOriginalSize] = useState(null);
-  const [compressedSize, setCompressedSize] = useState(null);
+  const [originalSize, setOriginalSize] = useState<number | null>(null);
+  const [compressedSize, setCompressedSize] = useState<number | null>(null);
 
   const loginImageRef = ref(storage, 'app-config/login-image');
 
@@ -57,7 +58,7 @@ const LoginImageConfig = () => {
     fetchCurrentImage();
   }, [fetchCurrentImage]);
 
-  const compressImageIterative = async (file) => {
+  const compressImageIterative = async (file: File): Promise<File> => {
     const baseOptions = {
       maxWidthOrHeight: MAX_DIMENSION,
       useWebWorker: true,
@@ -82,13 +83,22 @@ const LoginImageConfig = () => {
     return compFile;
   };
 
-  const beforeUpload = (file) => {
+  const beforeUpload: UploadProps['beforeUpload'] = (file) => {
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
       message.error('Solo puedes subir imágenes');
       return Upload.LIST_IGNORE;
     }
-    setFileList([file]);
+    setFileList([
+      {
+        uid: file.uid,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        originFileObj: file,
+        status: 'done',
+      },
+    ]);
     return false;
   };
 
@@ -113,13 +123,18 @@ const LoginImageConfig = () => {
     setProgress(0);
     try {
       // Registrar tamaño original
-      const file = fileList[0];
-      const origKB = (file.size / 1024).toFixed(1);
+      const selectedFile = fileList[0];
+      const file = selectedFile.originFileObj;
+      if (!file) {
+        message.error('No se pudo leer el archivo seleccionado');
+        return;
+      }
+      const origKB = Number((file.size / 1024).toFixed(1));
       setOriginalSize(origKB);
 
       // Comprimir
       const compressedFile = await compressImageIterative(file);
-      const compKB = (compressedFile.size / 1024).toFixed(1);
+      const compKB = Number((compressedFile.size / 1024).toFixed(1));
       setCompressedSize(compKB);
 
       // Eliminar previa en Firebase
@@ -127,7 +142,7 @@ const LoginImageConfig = () => {
       await Promise.all(files.items.map((f) => deleteObject(f)));
 
       // Subir nueva imagen
-      const imageRef = ref(loginImageRef, file.name);
+      const imageRef = ref(loginImageRef, selectedFile.name);
       await uploadBytes(
         imageRef,
         compressedFile.size < file.size ? compressedFile : file,
@@ -204,10 +219,10 @@ const LoginImageConfig = () => {
         {loadingAction && progress > 0 && (
           <ProgressBar>
             <Progress percent={Math.round(progress)} />
-            {originalSize && compressedSize && (
+            {originalSize !== null && compressedSize !== null && (
               <Stats>
-                <p>Original: {originalSize} KB</p>
-                <p>Optimizado: {compressedSize} KB</p>
+                <p>Original: {originalSize.toFixed(1)} KB</p>
+                <p>Optimizado: {compressedSize.toFixed(1)} KB</p>
                 <p>
                   Reducción:{' '}
                   {(

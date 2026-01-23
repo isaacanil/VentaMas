@@ -1,18 +1,25 @@
-// @ts-nocheck
 import { useCallback, useState } from 'react';
 
-export const useFilterBar = (
-  defaultFilters = {},
-  defaultSort = { isAscending: false },
+type FilterBarState<TFilters extends Record<string, unknown>> = {
+  filters: TFilters;
+  isAscending: boolean;
+};
+
+type FilterBarSort = {
+  isAscending?: boolean;
+};
+
+export const useFilterBar = <TFilters extends Record<string, unknown>>(
+  defaultFilters: TFilters = {} as TFilters,
+  defaultSort: FilterBarSort = { isAscending: false },
 ) => {
-  const [state, setState] = useState({
+  const [state, setState] = useState<FilterBarState<TFilters>>({
     filters: defaultFilters,
-    isAscending: defaultSort.isAscending,
+    isAscending: defaultSort.isAscending ?? false,
   });
 
-  const [prevDefaultFiltersSerialized, setPrevDefaultFiltersSerialized] = useState(
-    JSON.stringify(defaultFilters)
-  );
+  const [prevDefaultFiltersSerialized, setPrevDefaultFiltersSerialized] =
+    useState(() => JSON.stringify(defaultFilters));
 
   // PATR├ôN RECOMENDADO REACT: Ajustar estado durante render al cambiar props
   const currentDefaultFiltersSerialized = JSON.stringify(defaultFilters);
@@ -24,17 +31,17 @@ export const useFilterBar = (
     }));
   }
 
-  const setFilters = useCallback((newFilters) => {
+  const setFilters = useCallback((newFilters: TFilters) => {
     const cleanedFilters = Object.fromEntries(
       Object.entries(newFilters).filter(([_, value]) => value !== null),
-    );
+    ) as TFilters;
     setState((prev) => ({
       ...prev,
       filters: cleanedFilters,
     }));
   }, []);
 
-  const setSorting = useCallback((ascending) => {
+  const setSorting = useCallback((ascending: boolean) => {
     setState((prev) => ({
       ...prev,
       isAscending: ascending,

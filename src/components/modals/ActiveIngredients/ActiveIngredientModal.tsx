@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Input, message, Form } from 'antd';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,12 +12,22 @@ import {
   fbUpdateActiveIngredient,
 } from '@/firebase/products/activeIngredient/activeIngredients';
 
+interface ActiveIngredientFormValues {
+  name: string;
+}
+
 const ActiveIngredientModal = () => {
   const dispatch = useDispatch();
-  const { isOpen, initialValues } = useSelector(selectActiveIngredientModal);
-  const user = useSelector(selectUser);
+  type ActiveIngredientModalRootState = Parameters<
+    typeof selectActiveIngredientModal
+  >[0];
+  const { isOpen, initialValues } = useSelector(
+    (state: ActiveIngredientModalRootState) => selectActiveIngredientModal(state),
+  );
+  type UserRootState = Parameters<typeof selectUser>[0];
+  const user = useSelector((state: UserRootState) => selectUser(state));
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ActiveIngredientFormValues>();
 
   // Determinar si es una creación o actualización
   const isUpdate = initialValues !== null;
@@ -42,7 +51,12 @@ const ActiveIngredientModal = () => {
       // Validar los campos del formulario
       const values = await form.validateFields();
 
-      if (isUpdate) {
+      if (!user) {
+        message.error('No se encontró un usuario válido.');
+        return;
+      }
+
+      if (isUpdate && initialValues) {
         // Actualizar el principio activo
         await fbUpdateActiveIngredient(user, {
           id: initialValues.id,

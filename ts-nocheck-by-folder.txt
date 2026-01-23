@@ -1,0 +1,755 @@
+﻿
+.\docs (1)
+  - .\docs\migration-progress.md
+
+.\src\components\common\base\animation (1)
+  - .\src\components\common\base\animation\MotionWrapper.tsx
+
+.\src\components\common\CardList (1)
+  - .\src\components\common\CardList\CardList.tsx
+
+.\src\components\common\FileUploader (7)
+  - .\src\components\common\FileUploader\DragOverlay.tsx
+  - .\src\components\common\FileUploader\FileList.tsx
+  - .\src\components\common\FileUploader\FileListDrawer.tsx
+  - .\src\components\common\FileUploader\FileUploadControls.tsx
+  - .\src\components\common\FileUploader\ImageLightbox.tsx
+  - .\src\components\common\FileUploader\PreviewContent.tsx
+  - .\src\components\common\FileUploader\UploadButton.tsx
+
+.\src\components\common\FilterBarLegacy (1)
+  - .\src\components\common\FilterBarLegacy\FilterBar.tsx
+
+.\src\components\common\FilterBarLegacy\components (1)
+  - .\src\components\common\FilterBarLegacy\components\StatusSelector.tsx
+
+.\src\components\common\FilterBarLegacy\hooks (1)
+  - .\src\components\common\FilterBarLegacy\hooks\useFilterBar.ts
+
+.\src\components\common\MultiDisplayControl (1)
+  - .\src\components\common\MultiDisplayControl\MultiDisplayControl.tsx
+
+.\src\components\common\SearchBar (1)
+  - .\src\components\common\SearchBar\Container.tsx
+
+.\src\components\layout\ResizebleSidebar (1)
+  - .\src\components\layout\ResizebleSidebar\ResizebleSidebar.tsx
+
+.\src\components\modals (1)
+  - .\src\components\modals\ModalManager.tsx
+
+.\src\components\modals\ActiveIngredients (1)
+  - .\src\components\modals\ActiveIngredients\ActiveIngredientModal.tsx
+
+.\src\components\modals\AddCategory (1)
+  - .\src\components\modals\AddCategory\AddCategory.tsx
+
+.\src\components\modals\addClient (1)
+  - .\src\components\modals\addClient\AddClientModal.tsx
+
+.\src\components\modals\AddCustomProductModal (1)
+  - .\src\components\modals\AddCustomProductModal\AddCustomProductModal.tsx
+
+.\src\components\modals\AddExpenseCategory (1)
+  - .\src\components\modals\AddExpenseCategory\AddExpensesCategory.tsx
+
+.\src\components\modals\AddProduct&Services (1)
+  - .\src\components\modals\AddProduct&Services\AddProduct&Services.tsx
+
+.\src\components\modals\AddProvider (1)
+  - .\src\components\modals\AddProvider\AddProvider.tsx
+
+.\src\components\modals\BarcodePrintModal (2)
+  - .\src\components\modals\BarcodePrintModal\Barcode.tsx
+  - .\src\components\modals\BarcodePrintModal\BarcodePrintModal.tsx
+
+.\src\components\modals\CreditNoteModal (1)
+  - .\src\components\modals\CreditNoteModal\CreditNoteModal.tsx
+
+.\src\components\modals\CreditNoteModal\components (12)
+  - .\src\components\modals\CreditNoteModal\components\ApplicationHistoryTab.tsx
+  - .\src\components\modals\CreditNoteModal\components\ClientSelector.tsx
+  - .\src\components\modals\CreditNoteModal\components\CreditNoteActions.tsx
+  - .\src\components\modals\CreditNoteModal\components\CreditNoteModalLayout.tsx
+  - .\src\components\modals\CreditNoteModal\components\CreditNotePanel.tsx
+  - .\src\components\modals\CreditNoteModal\components\CreditNoteSetupSection.tsx
+  - .\src\components\modals\CreditNoteModal\components\InvoiceSelector.tsx
+  - .\src\components\modals\CreditNoteModal\components\ProductCard.tsx
+  - .\src\components\modals\CreditNoteModal\components\ProductList.tsx
+  - .\src\components\modals\CreditNoteModal\components\ProductsTab.tsx
+  - .\src\components\modals\CreditNoteModal\components\RelatedNotesTab.tsx
+  - .\src\components\modals\CreditNoteModal\components\ResponsiveContainer.tsx
+
+.\src\components\modals\CreditNoteModal\hooks (2)
+  - .\src\components\modals\CreditNoteModal\hooks\useCreditNoteColumns.tsx
+  - .\src\components\modals\CreditNoteModal\hooks\useCreditNoteSelection.ts
+
+.\src\components\modals\CustomProduct (1)
+  - .\src\components\modals\CustomProduct\getPizzaType.ts
+
+.\src\components\modals\CustomProduct\setCustomProduct (1)
+  - .\src\components\modals\CustomProduct\setCustomProduct\SetCustomProduct.tsx
+
+.\src\components\modals\CustomProduct\setCustomProduct\Components (3)
+  - .\src\components\modals\CustomProduct\setCustomProduct\Components\getPrice.ts
+  - .\src\components\modals\CustomProduct\setCustomProduct\Components\Header.tsx
+  - .\src\components\modals\CustomProduct\setCustomProduct\Components\IngredientList.tsx
+
+.\src\components\modals\OrderDetailModal (3)
+  - .\src\components\modals\OrderDetailModal\Card.tsx
+  - .\src\components\modals\OrderDetailModal\Header.tsx
+  - .\src\components\modals\OrderDetailModal\OrderDetailModal.tsx
+
+.\src\components\modals\OrderDetailModal\components (1)
+  - .\src\components\modals\OrderDetailModal\components\NoteViewer.tsx
+
+.\src\components\modals\PeerReviewAuthorization (1)
+  - .\src\components\modals\PeerReviewAuthorization\PeerReviewAuthorization.tsx
+
+.\src\components\modals\PeerReviewAuthorization\components\Body (1)
+  - .\src\components\modals\PeerReviewAuthorization\components\Body\Body.tsx
+
+.\src\components\modals\PeerReviewAuthorization\components\Footer (1)
+  - .\src\components\modals\PeerReviewAuthorization\components\Footer\Footer.tsx
+
+.\src\components\modals\PeerReviewAuthorization\components\Header (1)
+  - .\src\components\modals\PeerReviewAuthorization\components\Header\Header.tsx
+
+.\src\components\modals\PinAuthorizationModal (1)
+  - .\src\components\modals\PinAuthorizationModal\PinAuthorizationModal.tsx
+
+.\src\components\modals\ProductExpirySelection (2)
+  - .\src\components\modals\ProductExpirySelection\fbFetchAllInventoryData.ts
+  - .\src\components\modals\ProductExpirySelection\ProductExpirySelection.tsx
+
+.\src\components\modals\ProductExpirySelection\components (2)
+  - .\src\components\modals\ProductExpirySelection\components\FilterInput.tsx
+  - .\src\components\modals\ProductExpirySelection\components\InventoryCard.tsx
+
+.\src\components\modals\ProductForm\components\Batch (1)
+  - .\src\components\modals\ProductForm\components\Batch\BatchForm.tsx
+
+.\src\components\modals\ProductForm\components\Batch\BatchList (1)
+  - .\src\components\modals\ProductForm\components\Batch\BatchList\BatchList.tsx
+
+.\src\components\modals\ProductForm\components\SaleUnits (1)
+  - .\src\components\modals\ProductForm\components\SaleUnits\SaleUnitsConfig.tsx
+
+.\src\components\modals\ProductForm\components\SaleUnits\components (6)
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\Component.tsx
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\PricingModal.tsx
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\SaleUnit.tsx
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\SaleUnitForm.tsx
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\SaleUnitsManager.tsx
+  - .\src\components\modals\ProductForm\components\SaleUnits\components\SaleUnitsPrices.tsx
+
+.\src\components\modals\ProductForm\components\sections\BarcodeCorrector (1)
+  - .\src\components\modals\ProductForm\components\sections\BarcodeCorrector\BarcodeCorrector.tsx
+
+.\src\components\modals\ProductForm\components\sections\BarcodeFloatingHelper (2)
+  - .\src\components\modals\ProductForm\components\sections\BarcodeFloatingHelper\BarcodeFloatingHelper.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeFloatingHelper\index.ts
+
+.\src\components\modals\ProductForm\components\sections\BarcodeGenerator (1)
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\BarcodeGenerator.tsx
+
+.\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components (7)
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\BarcodePreview.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\BarcodeResult.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\CodeStructure.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\ConfigurationTab.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\ConfirmBarcodeModal.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\GenerateTab.tsx
+  - .\src\components\modals\ProductForm\components\sections\BarcodeGenerator\components\InternalModeTab.tsx
+
+.\src\components\modals\ProductForm\components\sections\BarcodePrintModal (1)
+  - .\src\components\modals\ProductForm\components\sections\BarcodePrintModal\BarcodePrintModal.tsx
+
+.\src\components\modals\RequestInvoiceEditAuthorization (1)
+  - .\src\components\modals\RequestInvoiceEditAuthorization\RequestInvoiceEditAuthorization.tsx
+
+.\src\components\modals\SettingsModal (1)
+  - .\src\components\modals\SettingsModal\ConfigModal.tsx
+
+.\src\components\modals\SettingsModal\components (1)
+  - .\src\components\modals\SettingsModal\components\Header.tsx
+
+.\src\components\modals\SettingsModal\components\Body (1)
+  - .\src\components\modals\SettingsModal\components\Body\Body.tsx
+
+.\src\components\modals\SettingsModal\components\Body\components (1)
+  - .\src\components\modals\SettingsModal\components\Body\components\ConfigMenu.tsx
+
+.\src\components\modals\UpdateProduct\components\BarCodeControl (1)
+  - .\src\components\modals\UpdateProduct\components\BarCodeControl\BarCodeControl.tsx
+
+.\src\components\modals\UpdateProduct\components\Buttons (2)
+  - .\src\components\modals\UpdateProduct\components\Buttons\InventariableButton.tsx
+  - .\src\components\modals\UpdateProduct\components\Buttons\ProductVisibilityButton.tsx
+
+.\src\components\modals\UpdateProduct\components\PaymentDetailTable (1)
+  - .\src\components\modals\UpdateProduct\components\PaymentDetailTable\PaymentDetailTable.tsx
+
+.\src\components\modals\UpdateProduct\components\ProductPaymentDetails (1)
+  - .\src\components\modals\UpdateProduct\components\ProductPaymentDetails\ProductPaymentDetails.tsx
+
+.\src\components\modals\UpdateProduct\components\QRCodeControl (1)
+  - .\src\components\modals\UpdateProduct\components\QRCodeControl\QRCodeControl.tsx
+
+.\src\components\ui\AdvancedTable (2)
+  - .\src\components\ui\AdvancedTable\AdvancedTable.tsx
+  - .\src\components\ui\AdvancedTable\Doc.tsx
+
+.\src\components\ui\AdvancedTable\components\Cells\Img (1)
+  - .\src\components\ui\AdvancedTable\components\Cells\Img\ImgCell.tsx
+
+.\src\components\ui\AdvancedTable\components\Cells\Text (1)
+  - .\src\components\ui\AdvancedTable\components\Cells\Text\TextCerll.tsx
+
+.\src\components\ui\AdvancedTable\components\ColumnMenu (1)
+  - .\src\components\ui\AdvancedTable\components\ColumnMenu\ColumnMenu.tsx
+
+.\src\components\ui\AdvancedTable\components\MenuFilter (2)
+  - .\src\components\ui\AdvancedTable\components\MenuFilter\Item.tsx
+  - .\src\components\ui\AdvancedTable\components\MenuFilter\MenuFilter.tsx
+
+.\src\components\ui\AdvancedTable\components\Pagination (1)
+  - .\src\components\ui\AdvancedTable\components\Pagination\Pagination.tsx
+
+.\src\components\ui\AdvancedTable\components\Table\TableBody (2)
+  - .\src\components\ui\AdvancedTable\components\Table\TableBody\TableBody.tsx
+  - .\src\components\ui\AdvancedTable\components\Table\TableBody\VirtualTableBody.tsx
+
+.\src\components\ui\AdvancedTable\components\Table\TableFooter (1)
+  - .\src\components\ui\AdvancedTable\components\Table\TableFooter\TableFooter.tsx
+
+.\src\components\ui\AdvancedTable\components\Table\TableHeader (1)
+  - .\src\components\ui\AdvancedTable\components\Table\TableHeader\TableHeader.tsx
+
+.\src\components\ui\AdvancedTable\hooks (4)
+  - .\src\components\ui\AdvancedTable\hooks\useColumnOrder.tsx
+  - .\src\components\ui\AdvancedTable\hooks\usePagination.tsx
+  - .\src\components\ui\AdvancedTable\hooks\useTableFilter.tsx
+  - .\src\components\ui\AdvancedTable\hooks\useTableSorting.tsx
+
+.\src\components\ui\AdvancedTable\types (1)
+  - .\src\components\ui\AdvancedTable\types\ColumnTypes.tsx
+
+.\src\firebase\client (10)
+  - .\src\firebase\client\clientNormalizer.ts
+  - .\src\firebase\client\clients.ts
+  - .\src\firebase\client\fbAddClient.ts
+  - .\src\firebase\client\fbDeleteClient.ts
+  - .\src\firebase\client\fbGetClient.ts
+  - .\src\firebase\client\fbNormalizeAllBusinessesClients.ts
+  - .\src\firebase\client\fbNormalizeClients.ts
+  - .\src\firebase\client\fbUpdateClient.ts
+  - .\src\firebase\client\useFbGetClients.ts
+  - .\src\firebase\client\useFbGetClientsOnOpen.ts
+
+.\src\firebase\dev\businesses (2)
+  - .\src\firebase\dev\businesses\fbGetBusinesses.ts
+  - .\src\firebase\dev\businesses\fbGetBusinessesList.ts
+
+.\src\firebase\insurance (3)
+  - .\src\firebase\insurance\clientInsuranceService.ts
+  - .\src\firebase\insurance\insuranceBeneficiaryService.ts
+  - .\src\firebase\insurance\insuranceService.ts
+
+.\src\firebase\order (7)
+  - .\src\firebase\order\fbAddOrder.ts
+  - .\src\firebase\order\fbDeleteOrder.ts
+  - .\src\firebase\order\fbGetOrder.ts
+  - .\src\firebase\order\fbGetOrders.ts
+  - .\src\firebase\order\fbGetPedingOrder.ts
+  - .\src\firebase\order\fbUpdateOrder.ts
+  - .\src\firebase\order\usefbGetOrders.tsx
+
+.\src\firebase\proccessAccountsReceivablePayments (6)
+  - .\src\firebase\proccessAccountsReceivablePayments\arPaymentUtils.ts
+  - .\src\firebase\proccessAccountsReceivablePayments\fbApplyPartialPaymentToAccount.ts
+  - .\src\firebase\proccessAccountsReceivablePayments\fbPayActiveInstallmentForAccount.ts
+  - .\src\firebase\proccessAccountsReceivablePayments\fbPayAllInstallmentsForAccount.ts
+  - .\src\firebase\proccessAccountsReceivablePayments\fbPayBalanceForAccounts.ts
+  - .\src\firebase\proccessAccountsReceivablePayments\fbProccessClientPaymentAR.ts
+
+.\src\firebase\proccessAccountsReceivablePayments\insurance (1)
+  - .\src\firebase\proccessAccountsReceivablePayments\insurance\fbProcessMultiplePaymentsAR.ts
+
+.\src\firebase\ProductOutflow (6)
+  - .\src\firebase\ProductOutflow\fbAddProductOutflow.ts
+  - .\src\firebase\ProductOutflow\fbDeleteItemFromProductOutflow.ts
+  - .\src\firebase\ProductOutflow\fbGetProductOutflow.ts
+  - .\src\firebase\ProductOutflow\fbRemoveOutputRestoreQuantity.ts
+  - .\src\firebase\ProductOutflow\fbUpdateProductOutflow.ts
+  - .\src\firebase\ProductOutflow\fbUpdateStock.ts
+
+.\src\firebase\products (26)
+  - .\src\firebase\products\fbAddProduct.ts
+  - .\src\firebase\products\fbAddProducts.ts
+  - .\src\firebase\products\fbAuditPriceListMismatches.ts
+  - .\src\firebase\products\fbBackFIllBusinessIDProducts.ts
+  - .\src\firebase\products\fbBackfillListPriceFromPrice.ts
+  - .\src\firebase\products\fbChangeAllProducts.ts
+  - .\src\firebase\products\fbCheckDuplicateProducts.ts
+  - .\src\firebase\products\fbDeleteproduct.ts
+  - .\src\firebase\products\fbDeleteProducts.ts
+  - .\src\firebase\products\fbEqualizeProductPrice.ts
+  - .\src\firebase\products\fbFixMissingProductIds.ts
+  - .\src\firebase\products\fbFixProductsWithoutId.ts
+  - .\src\firebase\products\fbGetProduct.ts
+  - .\src\firebase\products\fbGetProducts.ts
+  - .\src\firebase\products\fbInitializedProductInventoryForAllBusinesses.ts
+  - .\src\firebase\products\fbInitializeProductInventory.ts
+  - .\src\firebase\products\fbListenProduct.ts
+  - .\src\firebase\products\fbMigrateProduct.ts
+  - .\src\firebase\products\fbNormalizeAllBusinessesProductTaxes.ts
+  - .\src\firebase\products\fbNormalizeProductTaxes.ts
+  - .\src\firebase\products\fbTransferProductsToAnotherBusiness.ts
+  - .\src\firebase\products\fbUpdateProduct.ts
+  - .\src\firebase\products\fbUpdateProductsStock.ts
+  - .\src\firebase\products\fbUpdateProductStock.ts
+  - .\src\firebase\products\fbUpdateProductStructure.ts
+  - .\src\firebase\products\fbUpdateProductWithNewFormat.ts
+
+.\src\firebase\products\activeIngredient (1)
+  - .\src\firebase\products\activeIngredient\activeIngredients.tsx
+
+.\src\firebase\products\brands (1)
+  - .\src\firebase\products\brands\productBrands.tsx
+
+.\src\firebase\products\customProduct (2)
+  - .\src\firebase\products\customProduct\fbGetCustomProductByType.ts
+  - .\src\firebase\products\customProduct\fbGetCustomProductTypePizza.ts
+
+.\src\firebase\products\productsImg (2)
+  - .\src\firebase\products\productsImg\fbDeleteProductImg.ts
+  - .\src\firebase\products\productsImg\fbDeleteProductImgData.ts
+
+.\src\firebase\products\saleUnits (1)
+  - .\src\firebase\products\saleUnits\fbUpdateSaleUnit.ts
+
+.\src\firebase\quotation (2)
+  - .\src\firebase\quotation\downloadQuotationPDF.ts
+  - .\src\firebase\quotation\quotationService.ts
+
+.\src\firebase\tranfer (2)
+  - .\src\firebase\tranfer\fbTransferClients.ts
+  - .\src\firebase\tranfer\fbTransferDataToAnotherBusiness.ts
+
+.\src\modules\accountsReceivable\components\DetailSummary (1)
+  - .\src\modules\accountsReceivable\components\DetailSummary\DetailSummary.tsx
+
+.\src\modules\accountsReceivable\components\PaymentForm (1)
+  - .\src\modules\accountsReceivable\components\PaymentForm\PaymentForm.tsx
+
+.\src\modules\accountsReceivable\components\PaymentForm\components (1)
+  - .\src\modules\accountsReceivable\components\PaymentForm\components\PaymentFields.tsx
+
+.\src\modules\contacts\components\ClientControl (2)
+  - .\src\modules\contacts\components\ClientControl\ClienteControl.tsx
+  - .\src\modules\contacts\components\ClientControl\mode.ts
+
+.\src\modules\contacts\components\ClientControl\ClientDetails (1)
+  - .\src\modules\contacts\components\ClientControl\ClientDetails\ClientDetails.tsx
+
+.\src\modules\contacts\components\ClientControl\ClientSelector (1)
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\ClientSelector.tsx
+
+.\src\modules\contacts\components\ClientControl\ClientSelector\components (5)
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\ClientListContainer.tsx
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\ClientPaginationBar.tsx
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\ClientSelectionModal.tsx
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\ClientSelectionToolbar.tsx
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\ClientSelectorHeader.tsx
+
+.\src\modules\contacts\components\ClientControl\ClientSelector\components\Client (1)
+  - .\src\modules\contacts\components\ClientControl\ClientSelector\components\Client\Client.tsx
+
+.\src\modules\contacts\pages\Contact\Client (2)
+  - .\src\modules\contacts\pages\Contact\Client\ClientAdmin.tsx
+  - .\src\modules\contacts\pages\Contact\Client\ToolBar.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm (2)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\ClientForm.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\ClientFormAnt.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm\components (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientGeneralInfo.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\ClientFinancialInfo.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\AccountCard (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\AccountCard\AccountCard.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\AccountCard\components (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\AccountCard\components\Payment.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\components (4)
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\components\ClientBalanceInfo.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\components\CreditLimitModal.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\components\CreditLimits.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\ClientForm\components\ClientFinancialInfo\components\FilterBar.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\OrderFilter (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderFilter.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderMenuFilter (4)
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderMenuFilter\Input.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderMenuFilter\Item.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderMenuFilter\modifyOrderMenuData.ts
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderFilter\OrderMenuFilter\OrderMenuFilter.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\OrderListTable (2)
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderListTable\ClientsListTable.tsx
+  - .\src\modules\contacts\pages\Contact\Client\components\OrderListTable\tableConfig.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\StatusIndicatorDot (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\StatusIndicatorDot\StatusIndicatorDot.tsx
+
+.\src\modules\contacts\pages\Contact\Client\components\UpdateContact (1)
+  - .\src\modules\contacts\pages\Contact\Client\components\UpdateContact\CreateContact.tsx
+
+.\src\modules\controlPanel\AllUsersControl (1)
+  - .\src\modules\controlPanel\AllUsersControl\AllUsersControl.tsx
+
+.\src\modules\controlPanel\AllUsersControl\components\Users (4)
+  - .\src\modules\controlPanel\AllUsersControl\components\Users\ChangerPasswordModal.tsx
+  - .\src\modules\controlPanel\AllUsersControl\components\Users\TableUser.tsx
+  - .\src\modules\controlPanel\AllUsersControl\components\Users\Users.tsx
+  - .\src\modules\controlPanel\AllUsersControl\components\Users\UsersFilterBar.tsx
+
+.\src\modules\controlPanel\AppConfig (2)
+  - .\src\modules\controlPanel\AppConfig\AppConfig.tsx
+  - .\src\modules\controlPanel\AppConfig\LoginImageConfig.tsx
+
+.\src\modules\controlPanel\BusinessEditModal (1)
+  - .\src\modules\controlPanel\BusinessEditModal\BusinessEditModal.tsx
+
+.\src\modules\controlPanel\ChangeLogControl\ChangeLogCreate (1)
+  - .\src\modules\controlPanel\ChangeLogControl\ChangeLogCreate\ChangeLogCreate.tsx
+
+.\src\modules\controlPanel\ChangeLogControl\ChangelogList (1)
+  - .\src\modules\controlPanel\ChangeLogControl\ChangelogList\ChangelogList.tsx
+
+.\src\modules\controlPanel\ChangeLogControl\ChangelogManage (1)
+  - .\src\modules\controlPanel\ChangeLogControl\ChangelogManage\ChangelogManage.tsx
+
+.\src\modules\controlPanel\CreateBusinessControl (2)
+  - .\src\modules\controlPanel\CreateBusinessControl\BusinessControl.tsx
+  - .\src\modules\controlPanel\CreateBusinessControl\CreateBusiness.tsx
+
+.\src\modules\controlPanel\CreateBusinessControl\components\BusinessCard (1)
+  - .\src\modules\controlPanel\CreateBusinessControl\components\BusinessCard\BusinessCard.tsx
+
+.\src\modules\controlPanel\CreateBusinessControl\components\FiltersDrawer (1)
+  - .\src\modules\controlPanel\CreateBusinessControl\components\FiltersDrawer\FiltersDrawer.tsx
+
+.\src\modules\controlPanel\Dev (1)
+  - .\src\modules\controlPanel\Dev\Dev.tsx
+
+.\src\modules\dev\pages\dev\AiBusinessSeeding (1)
+  - .\src\modules\dev\pages\dev\AiBusinessSeeding\AiBusinessSeeding.tsx
+
+.\src\modules\dev\pages\dev\AiBusinessSeeding\modules (2)
+  - .\src\modules\dev\pages\dev\AiBusinessSeeding\modules\chat.tsx
+  - .\src\modules\dev\pages\dev\AiBusinessSeeding\modules\createBusiness.tsx
+
+.\src\modules\dev\pages\DevTools (1)
+  - .\src\modules\dev\pages\DevTools\TestPlayground.backup.tsx
+
+.\src\modules\dev\pages\DevTools\CashCountAudit (1)
+  - .\src\modules\dev\pages\DevTools\CashCountAudit\CashCountAudit.tsx
+
+.\src\modules\dev\pages\DevTools\FiscalReceiptsAudit (1)
+  - .\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\FiscalReceiptsAudit.tsx
+
+.\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\utils (4)
+  - .\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\utils\exportWorkbook.ts
+  - .\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\utils\invoiceAnalysis.ts
+  - .\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\utils\ncfUtils.ts
+  - .\src\modules\dev\pages\DevTools\FiscalReceiptsAudit\utils\presets.ts
+
+.\src\modules\dev\pages\DevTools\InvoiceV2Recovery (1)
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\InvoiceV2Recovery.tsx
+
+.\src\modules\dev\pages\DevTools\InvoiceV2Recovery\components (3)
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\components\BulkRecoveryTab.tsx
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\components\IndividualRecoveryTab.tsx
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\components\StyledComponents.ts
+
+.\src\modules\dev\pages\DevTools\InvoiceV2Recovery\hooks (2)
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\hooks\useBulkInvoiceRecovery.ts
+  - .\src\modules\dev\pages\DevTools\InvoiceV2Recovery\hooks\useIndividualInvoiceRecovery.ts
+
+.\src\modules\dev\pages\DevTools\ProductStudio (1)
+  - .\src\modules\dev\pages\DevTools\ProductStudio\ProductStudio.tsx
+
+.\src\modules\dev\pages\DevTools\ProductStudio\components (6)
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\ActionBar.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\ModeBanner.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\ProductSummary.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\SectionLayout.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\SectionNavigator.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\StudioLayout.tsx
+
+.\src\modules\dev\pages\DevTools\ProductStudio\components\form (1)
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\form\ProductForm.tsx
+
+.\src\modules\dev\pages\DevTools\ProductStudio\components\sections (5)
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\sections\CodesSection.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\sections\IdentitySection.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\sections\InventorySection.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\sections\PricingSection.tsx
+  - .\src\modules\dev\pages\DevTools\ProductStudio\components\sections\WarrantySection.tsx
+
+.\src\modules\dev\pages\DevTools\ProductStudio\hooks (2)
+  - .\src\modules\dev\pages\DevTools\ProductStudio\hooks\useProductPreviewMetrics.ts
+  - .\src\modules\dev\pages\DevTools\ProductStudio\hooks\useSectionNavigation.ts
+
+.\src\modules\home\pages\Home (2)
+  - .\src\modules\home\pages\Home\CardData.tsx
+  - .\src\modules\home\pages\Home\Home.tsx
+
+.\src\modules\home\pages\Home\components\AppVersionBadge (1)
+  - .\src\modules\home\pages\Home\components\AppVersionBadge\AppVersionBadge.tsx
+
+.\src\modules\home\pages\Home\components\BusinessInfoPill (2)
+  - .\src\modules\home\pages\Home\components\BusinessInfoPill\BusinessInfoModal.tsx
+  - .\src\modules\home\pages\Home\components\BusinessInfoPill\BusinessInfoPill.tsx
+
+.\src\modules\home\pages\Home\components\DashboardShortcuts (1)
+  - .\src\modules\home\pages\Home\components\DashboardShortcuts\DashboardShortcuts.tsx
+
+.\src\modules\home\pages\Home\components\FeatureCardList (1)
+  - .\src\modules\home\pages\Home\components\FeatureCardList\FeatureCardList.tsx
+
+.\src\modules\home\pages\Home\components\PersonalizedGreeting (1)
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\PersonalizedGreeting.tsx
+
+.\src\modules\home\pages\Home\components\PersonalizedGreeting\components (6)
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\BusinessName.tsx
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\BusinessPill.tsx
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\CombinedPill.tsx
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\GreetingMessage.tsx
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\SessionInfoModal.tsx
+  - .\src\modules\home\pages\Home\components\PersonalizedGreeting\components\UserPill.tsx
+
+.\src\modules\home\pages\Home\HomeScreen (1)
+  - .\src\modules\home\pages\Home\HomeScreen\HomeScreen.tsx
+
+.\src\modules\home\pages\Home\HomeScreen\components\Cards (1)
+  - .\src\modules\home\pages\Home\HomeScreen\components\Cards\CardWithPorcent.tsx
+
+.\src\modules\home\pages\Home\HomeScreen\components\HomeScreenContent (3)
+  - .\src\modules\home\pages\Home\HomeScreen\components\HomeScreenContent\Body.tsx
+  - .\src\modules\home\pages\Home\HomeScreen\components\HomeScreenContent\Header.tsx
+  - .\src\modules\home\pages\Home\HomeScreen\components\HomeScreenContent\HomeScreenContent.tsx
+
+.\src\modules\home\pages\Home\HomeScreen\components\Menu (2)
+  - .\src\modules\home\pages\Home\HomeScreen\components\Menu\Nav.tsx
+  - .\src\modules\home\pages\Home\HomeScreen\components\Menu\SidebarItem.tsx
+
+.\src\modules\insurance\pages\Insurance\components\InsuranceStateIndicator (1)
+  - .\src\modules\insurance\pages\Insurance\components\InsuranceStateIndicator\InsuranceStateIndicator.tsx
+
+.\src\modules\insurance\pages\Insurance\InsuranceConfig (1)
+  - .\src\modules\insurance\pages\Insurance\InsuranceConfig\InsuraceConfig.tsx
+
+.\src\modules\insurance\pages\Insurance\InsuranceConfig\components (1)
+  - .\src\modules\insurance\pages\Insurance\InsuranceConfig\components\InsuranceTypesDisplay.tsx
+
+.\src\modules\insurance\pages\Insurance\InsuranceConfigForm (2)
+  - .\src\modules\insurance\pages\Insurance\InsuranceConfigForm\constants.ts
+  - .\src\modules\insurance\pages\Insurance\InsuranceConfigForm\InsuranceConfigForm.tsx
+
+.\src\modules\insurance\pages\Insurance\InsuranceConfigForm\components (1)
+  - .\src\modules\insurance\pages\Insurance\InsuranceConfigForm\components\PeriodSelectionModal.tsx
+
+.\src\modules\invoice\pages\CreditNote\CreditNoteCreate (1)
+  - .\src\modules\invoice\pages\CreditNote\CreditNoteCreate\CreditNoteCreate.tsx
+
+.\src\modules\invoice\pages\CreditNote\CreditNoteList (1)
+  - .\src\modules\invoice\pages\CreditNote\CreditNoteList\CreditNoteList.tsx
+
+.\src\modules\invoice\pages\CreditNote\CreditNoteList\components (1)
+  - .\src\modules\invoice\pages\CreditNote\CreditNoteList\components\CreditNoteFilters.tsx
+
+.\src\modules\products\components\Carrusel (2)
+  - .\src\modules\products\components\Carrusel\Carrusel.tsx
+  - .\src\modules\products\components\Carrusel\Category.tsx
+
+.\src\modules\products\components\CategorySelector (2)
+  - .\src\modules\products\components\CategorySelector\categoryColors.ts
+  - .\src\modules\products\components\CategorySelector\CategorySelector.tsx
+
+.\src\modules\products\components\CategorySelector\components\CategoryBar (1)
+  - .\src\modules\products\components\CategorySelector\components\CategoryBar\CategoryBar.tsx
+
+.\src\modules\products\components\CategorySelector\components\DropdownMenu (2)
+  - .\src\modules\products\components\CategorySelector\components\DropdownMenu\Category.tsx
+  - .\src\modules\products\components\CategorySelector\components\DropdownMenu\DropdownMenu.tsx
+
+.\src\modules\products\components\ControlSearchProduct (2)
+  - .\src\modules\products\components\ControlSearchProduct\ControlSearchProduct.tsx
+  - .\src\modules\products\components\ControlSearchProduct\SearchList.tsx
+
+.\src\modules\products\components\ProductCategoryBar (1)
+  - .\src\modules\products\components\ProductCategoryBar\ProductCategoryBar.tsx
+
+.\src\modules\products\components\ProductListSelected (2)
+  - .\src\modules\products\components\ProductListSelected\ProductCard.tsx
+  - .\src\modules\products\components\ProductListSelected\ProductListSelected.tsx
+
+.\src\modules\sales\components\Receipts\Sale\Template2 (1)
+  - .\src\modules\sales\components\Receipts\Sale\Template2\Template2.tsx
+
+.\src\modules\settings\components\GeneralConfig (1)
+  - .\src\modules\settings\components\GeneralConfig\GeneralConfig.tsx
+
+.\src\modules\settings\components\GeneralConfig\components\Header (1)
+  - .\src\modules\settings\components\GeneralConfig\components\Header\Header.tsx
+
+.\src\modules\settings\components\GeneralConfig\components\Search (1)
+  - .\src\modules\settings\components\GeneralConfig\components\Search\GeneralConfigSearch.tsx
+
+.\src\modules\settings\components\GeneralConfig\configs (3)
+  - .\src\modules\settings\components\GeneralConfig\configs\AuthorizationFlowConfig.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\BillingConfig.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\InventoryConfig.tsx
+
+.\src\modules\settings\components\GeneralConfig\configs\components (7)
+  - .\src\modules\settings\components\GeneralConfig\configs\components\AuthorizationFlowSettingsSection.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\BillingSection.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\DueDateConfig.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\InvoiceSettingsSection.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\QuoteSettingsSection.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\SettingCard.tsx
+  - .\src\modules\settings\components\GeneralConfig\configs\components\StockAlertSettingsSection.tsx
+
+.\src\modules\settings\components\SettingsExample (1)
+  - .\src\modules\settings\components\SettingsExample\SettingsExample.tsx
+
+.\src\modules\settings\pages\setting (3)
+  - .\src\modules\settings\pages\setting\GoBackToSetting.tsx
+  - .\src\modules\settings\pages\setting\setting.tsx
+  - .\src\modules\settings\pages\setting\SettingData.tsx
+
+.\src\modules\settings\pages\setting\Components (1)
+  - .\src\modules\settings\pages\setting\Components\Card.tsx
+
+.\src\modules\settings\pages\setting\subPage\AppInfo (1)
+  - .\src\modules\settings\pages\setting\subPage\AppInfo\AppInfo.tsx
+
+.\src\modules\settings\pages\setting\subPage\AuthorizationConfig (1)
+  - .\src\modules\settings\pages\setting\subPage\AuthorizationConfig\AuthorizationConfig.tsx
+
+.\src\modules\settings\pages\setting\subPage\AuthorizationConfig\components (2)
+  - .\src\modules\settings\pages\setting\subPage\AuthorizationConfig\components\GeneratePinModal.tsx
+  - .\src\modules\settings\pages\setting\subPage\AuthorizationConfig\components\PinDetailsModal.tsx
+
+.\src\modules\settings\pages\setting\subPage\BusinessEditor (3)
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\BusinessCreator.tsx
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\BusinessEditor.tsx
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\BusinessEditorProfile.tsx
+
+.\src\modules\settings\pages\setting\subPage\BusinessEditor\components (1)
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\components\BusinessProfileSections.tsx
+
+.\src\modules\settings\pages\setting\subPage\BusinessEditor\hooks (1)
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\hooks\useUnsavedChangesPrompt.ts
+
+.\src\modules\settings\pages\setting\subPage\BusinessEditor\utils (2)
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\utils\formValues.ts
+  - .\src\modules\settings\pages\setting\subPage\BusinessEditor\utils\imageUpload.ts
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts (2)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\taxConfigTable.tsx
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\UpdateTaxReceipt.ts
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\AddReceiptModal (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\AddReceiptModal\AddReceiptModal.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\DisabledReceiptsModal (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\DisabledReceiptsModal\DisabledReceiptsModal.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertSettings (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertSettings\FiscalReceiptsAlertSettings.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertWidget (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\FiscalReceiptsAlertWidget\FiscalReceiptsAlertWidget.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\ReceiptSettingsSection (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\ReceiptSettingsSection\ReceiptSettingsSection.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\ReceiptTableSection (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\ReceiptTableSection\ReceiptTableSection.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TableTaxReceipt (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TableTaxReceipt\TableTaxReceipt.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptAuthorizationModal (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptAuthorizationModal\TaxReceiptAuthorizationModal.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\TaxReceiptForm.styled.ts
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\components (2)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\components\NcfSequenceSummary.tsx
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\components\SequenceLedgerInsights.tsx
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\hooks (1)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\hooks\useSequenceFinder.ts
+
+.\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\utils (3)
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\utils\confirmSequenceWarnings.tsx
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\utils\ncfUtils.ts
+  - .\src\modules\settings\pages\setting\subPage\TaxReceipts\components\TaxReceiptForm\utils\sequenceConflicts.ts
+
+.\src\modules\settings\pages\setting\subPage\Users (3)
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserAdmin.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserSessionLogs.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components (2)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\Modal.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UserForm.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components\EditUser (1)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\EditUser\EditUser.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components\EditUser\ChangePassword (1)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\EditUser\ChangePassword\ChangePassword.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components\UsersList (3)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\ChangeUserPasswordModal.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\ToggleUserStatusModal.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\UserList.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table (2)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table\Body.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table\Header.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table\Item (2)
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table\Item\Item.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\components\UsersList\Table\Item\UserStatusInput.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\UserActivity\components (7)
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\DateCell.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\SessionsTable.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\UserActivityCharts.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\UserActivityHeader.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\UserActivityList.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\UserActivitySummary.tsx
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\components\UserInfoCard.tsx
+
+.\src\modules\settings\pages\setting\subPage\Users\UserActivity\hooks (2)
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\hooks\useUserActivityData.ts
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\hooks\useUserRealActivity.ts
+
+.\src\modules\settings\pages\setting\subPage\Users\UserActivity\utils (1)
+  - .\src\modules\settings\pages\setting\subPage\Users\UserActivity\utils\activityUtils.ts
+
+.\tools (1)
+  - .\tools\scan-suppressions.js

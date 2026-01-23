@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { doc, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -6,14 +5,23 @@ import { db } from '@/firebase/firebaseconfig';
 import { getNextID } from '@/firebase/Tools/getNextID';
 
 import { buildClientWritePayload } from './clientNormalizer';
+import type { ClientInput, NormalizedClient } from './clientNormalizer';
 
-export const fbAddClient = async (user, client) => {
+type UserWithBusiness = {
+  businessID: string;
+};
+
+export const fbAddClient = async (
+  user: UserWithBusiness | null | undefined,
+  client: ClientInput,
+): Promise<NormalizedClient | undefined> => {
   try {
     if (!user || !user.businessID) throw new Error('No user or businessID');
     // Processing client data
-    client = {
+    const clientId = nanoid(8);
+    const nextClient: ClientInput = {
       ...client,
-      id: nanoid(8),
+      id: clientId,
       numberId: await getNextID(user, 'lastClientId'),
       isDeleted: false,
     };
@@ -23,11 +31,11 @@ export const fbAddClient = async (user, client) => {
       'businesses',
       user.businessID,
       'clients',
-      client.id,
+      clientId,
     );
 
     const { payload, client: normalizedClient } =
-      buildClientWritePayload(client);
+      buildClientWritePayload(nextClient);
 
     await setDoc(clientRef, payload, { merge: true });
     return normalizedClient;

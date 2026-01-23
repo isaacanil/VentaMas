@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SettingOutlined } from '@/constants/icons/antd';
 import { Card, List } from 'antd';
 import React from 'react';
@@ -8,9 +7,15 @@ import styled from 'styled-components';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
-const AppConfig = () => {
+interface ConfigOption {
+  title: string;
+  description: string;
+  route: string;
+}
+
+const AppConfig: React.FC = () => {
   const navigate = useNavigate();
-  const configOptions = [
+  const configOptions: ConfigOption[] = [
     {
       title: 'Imagen de Login',
       description:

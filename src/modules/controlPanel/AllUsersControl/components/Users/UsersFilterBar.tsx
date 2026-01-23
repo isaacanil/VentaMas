@@ -1,6 +1,43 @@
-// @ts-nocheck
 import { Input, Select, Space } from 'antd';
 import { useMemo } from 'react';
+
+import type { ChangeEvent, FC, ReactNode } from 'react';
+
+export interface UsersFilterBarFilters {
+  search: string;
+  businessID: string;
+  role: string;
+}
+
+export interface BusinessOption {
+  value: string;
+  id?: string;
+  name?: string;
+  label?: ReactNode;
+  searchText?: string;
+}
+
+export interface RoleOption {
+  value: string;
+  label?: ReactNode;
+  searchText?: string;
+}
+
+type RoleOptionInput = RoleOption | string;
+
+interface UsersFilterBarProps {
+  filters: UsersFilterBarFilters;
+  onFilterChange: (key: keyof UsersFilterBarFilters, value: string) => void;
+  businessOptions: BusinessOption[];
+  roleOptions: RoleOptionInput[];
+}
+
+interface SearchableOption {
+  value: string;
+  label?: ReactNode;
+  name?: ReactNode;
+  searchText?: string;
+}
 
 const optionContainerStyle = {
   display: 'flex',
@@ -17,25 +54,25 @@ const optionSecondaryStyle = {
   color: '#6b7280',
 };
 
-export const UsersFilterBar = ({
+export const UsersFilterBar: FC<UsersFilterBarProps> = ({
   filters,
   onFilterChange,
   businessOptions,
   roleOptions,
 }) => {
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     onFilterChange('search', event.target.value ?? '');
   };
 
-  const handleBusinessChange = (value) => {
+  const handleBusinessChange = (value: string | undefined) => {
     onFilterChange('businessID', value ?? '');
   };
 
-  const handleRoleChange = (value) => {
+  const handleRoleChange = (value: string | undefined) => {
     onFilterChange('role', value ?? '');
   };
 
-  const businessSelectOptions = useMemo(
+  const businessSelectOptions = useMemo<SearchableOption[]>(
     () =>
       businessOptions.map((option) => {
         const name = option.name ?? option.label ?? option.value;
@@ -58,12 +95,15 @@ export const UsersFilterBar = ({
     [businessOptions],
   );
 
-  const roleSelectOptions = useMemo(
+  const roleSelectOptions = useMemo<SearchableOption[]>(
     () =>
       roleOptions.map((option) => {
-        const value = option.value ?? option;
-        const label = option.label ?? value;
-        const searchText = option.searchText ?? String(label).toLowerCase();
+        const normalized =
+          typeof option === 'string' ? { value: option } : option;
+        const value = normalized.value;
+        const label = normalized.label ?? value;
+        const searchText =
+          normalized.searchText ?? String(label).toLowerCase();
 
         return {
           value,
@@ -93,7 +133,9 @@ export const UsersFilterBar = ({
           showSearch
           optionLabelProp="name"
           filterOption={(input, option) =>
-            (option?.searchText ?? '').includes(input.trim().toLowerCase())
+            ((option as SearchableOption | undefined)?.searchText ?? '').includes(
+              input.trim().toLowerCase(),
+            )
           }
         />
         <Select
@@ -106,7 +148,9 @@ export const UsersFilterBar = ({
           showSearch
           optionFilterProp="label"
           filterOption={(input, option) =>
-            (option?.searchText ?? '').includes(input.trim().toLowerCase())
+            ((option as SearchableOption | undefined)?.searchText ?? '').includes(
+              input.trim().toLowerCase(),
+            )
           }
         />
       </Space>

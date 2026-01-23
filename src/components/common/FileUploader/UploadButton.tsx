@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { InboxOutlined } from '@/constants/icons/antd';
 import React from 'react';
 import styled from 'styled-components';
@@ -20,13 +19,26 @@ const Button = styled.button`
   }
 `;
 
+type UploadButtonProps = {
+  onFileInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  buttonText?: string;
+  acceptedFileTypes?: string | null;
+};
+
 const UploadButton = ({
   onFileInput,
   buttonText = 'Cargar',
   acceptedFileTypes = null,
-}) => (
+}: UploadButtonProps) => (
   <>
-    <Button onClick={() => document.getElementById('fileInput').click()}>
+    <Button
+      onClick={() => {
+        const input = document.getElementById(
+          'fileInput',
+        ) as HTMLInputElement | null;
+        input?.click();
+      }}
+    >
       <InboxOutlined />
       {buttonText}
     </Button>

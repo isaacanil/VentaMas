@@ -1,5 +1,5 @@
-// @ts-nocheck
 import { Form, Checkbox, Select, Button, notification } from 'antd';
+import type { FormInstance } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
@@ -25,27 +25,78 @@ import CreditSelector from '@/modules/sales/pages/Sale/components/Cart/component
 import { modalStyles } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/constants/modalStyles';
 import { Modal } from '@/modules/sales/pages/Sale/components/Cart/components/InvoicePanel/InvoicePanel';
 import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
+import type { CreditNoteSelection } from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
+import type { AccountsReceivablePaymentReceipt as AccountsReceivablePaymentReceiptData } from '@/utils/accountsReceivable/types';
 
 import { PaymentFields } from './components/PaymentFields';
 
 const { Option } = Select;
 
+type AccountsReceivablePaymentRootState = Parameters<
+  typeof selectAccountsReceivablePayment
+>[0];
+type UserRootState = Parameters<typeof selectUser>[0];
+type ClientRootState = Parameters<typeof selectClient>[0];
+
+type AccountsReceivablePaymentMethod = {
+  method: string;
+  value: number;
+  status: boolean;
+  reference?: string;
+  name?: string;
+};
+
+type PaymentDetails = {
+  paymentScope: string;
+  paymentOption: string;
+  clientId: string;
+  arId?: string;
+  paymentMethods: AccountsReceivablePaymentMethod[];
+  comments: string;
+  totalAmount: number;
+  totalPaid: number;
+  totalAmountDue?: number;
+  printReceipt: boolean;
+  creditNotePayment?: CreditNoteSelection[];
+};
+
+type ClientSummary = {
+  id?: string;
+  name?: string;
+  tel?: string;
+  address?: string;
+  personalID?: string;
+  delivery?: {
+    status?: boolean;
+    value?: number;
+  };
+} & Record<string, unknown>;
+
+type FormValidationError = {
+  errorFields?: unknown[];
+  message?: string;
+};
+
 export const PaymentForm = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm() as [FormInstance];
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-  const componentToPrintRef = useRef(null);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
+  const componentToPrintRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [receipt, setReceipt] = useState(null);
-  const client = useSelector(selectClient);
+  const [receipt, setReceipt] =
+    useState<AccountsReceivablePaymentReceiptData | null>(null);
+  const client = useSelector<ClientRootState, ClientSummary>(selectClient);
   const [printPending, setPrintPending] = useState(false);
 
-  const { isOpen, paymentDetails } = useSelector(
-    selectAccountsReceivablePayment,
-  );
+  const { isOpen, paymentDetails } = useSelector<
+    AccountsReceivablePaymentRootState,
+    ReturnType<typeof selectAccountsReceivablePayment>
+  >(selectAccountsReceivablePayment);
 
-  const selectedCreditNotes = paymentDetails.creditNotePayment || [];
+  const selectedCreditNotes: CreditNoteSelection[] =
+    paymentDetails.creditNotePayment || [];
 
   const handlePrint = useReactToPrint({
     contentRef: componentToPrintRef,
@@ -70,7 +121,12 @@ export const PaymentForm = () => {
 
   useEffect(() => {
     if (isOpen && paymentDetails.arId) {
-      dispatch(fetchLastInstallmentAmount({ user, arId: paymentDetails.arId }));
+      dispatch(
+        fetchLastInstallmentAmount({
+          user: user as UserIdentity,
+          arId: paymentDetails.arId,
+        }),
+      );
     }
   }, [isOpen, user, paymentDetails.arId, dispatch]);
 
@@ -80,13 +136,15 @@ export const PaymentForm = () => {
     }
   }, [isOpen]);
 
-  const handlePaymentConceptChange = (value) =>
+  const handlePaymentConceptChange = (value: string) =>
     dispatch(setPaymentOption({ paymentOption: value }));
 
   // Calculamos el change automáticamente
   const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount;
 
-  const handleCreditNoteSelect = (creditNoteSelections) => {
+  const handleCreditNoteSelect = (
+    creditNoteSelections: CreditNoteSelection[],
+  ) => {
     dispatch(setCreditNotePayment(creditNoteSelections));
   };
 
@@ -144,7 +202,11 @@ export const PaymentForm = () => {
       validate();
       await form.validateFields();
 
-      await fbProcessClientPaymentAR(user, paymentDetails, setReceipt);
+      await fbProcessClientPaymentAR(
+        user as UserIdentity,
+        paymentDetails as PaymentDetails,
+        setReceipt,
+      );
       setSubmitted(true);
 
       if (paymentDetails.printReceipt) {

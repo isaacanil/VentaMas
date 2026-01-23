@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { message, Grid, Skeleton, Tabs } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo } from 'react';
@@ -34,19 +33,95 @@ import { ResponsiveContainer } from './components/ResponsiveContainer';
 import { useCreditNoteColumns } from './hooks/useCreditNoteColumns';
 import { useCreditNoteSelection } from './hooks/useCreditNoteSelection';
 
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type {
+  InvoiceClient,
+  InvoiceData,
+  InvoiceProduct,
+  InvoiceProductAmount,
+} from '@/types/invoice';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
+import type { UserIdentity } from '@/types/users';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { TimestampLike } from '@/utils/date/types';
 
 const { useBreakpoint } = Grid;
+
+type CreditNoteModalState = ReturnType<typeof selectCreditNoteModal>;
+type CreditNoteModalRootState = Parameters<typeof selectCreditNoteModal>[0];
+type UserRootState = Parameters<typeof selectUser>[0];
+type TaxReceiptRootState = Parameters<typeof selectTaxReceiptEnabled>[0];
+
+type CreditNoteModalTypedState = Omit<
+  CreditNoteModalState,
+  'selectedInvoice' | 'selectedClient' | 'creditNoteData'
+> & {
+  selectedInvoice: InvoiceData | null;
+  selectedClient: InvoiceClient | null;
+  creditNoteData: CreditNoteRecord | null;
+};
+
+type ClientWrapper = {
+  client: InvoiceClient & { id?: string | number };
+} & Record<string, unknown>;
+
+type InvoiceItemWithAvailability = InvoiceProduct & {
+  maxAvailableQty: number;
+};
+
+type QuantityByItem = Record<string, number>;
+
+const resolveQuantity = (amount: InvoiceProduct['amountToBuy']): number => {
+  if (typeof amount === 'number' && Number.isFinite(amount)) return amount;
+  if (typeof amount === 'object' && amount !== null) {
+    const amountObj = amount as InvoiceProductAmount;
+    if (typeof amountObj.unit === 'number' && Number.isFinite(amountObj.unit)) {
+      return amountObj.unit;
+    }
+    if (typeof amountObj.total === 'number' && Number.isFinite(amountObj.total)) {
+      return amountObj.total;
+    }
+  }
+  return 1;
+};
+
+const resolveDate = (value: TimestampLike | null | undefined): Date | null => {
+  if (!value) return null;
+  if (typeof value === 'object' && 'seconds' in value && typeof value.seconds === 'number') {
+    return new Date(value.seconds * 1000);
+  }
+  if (value instanceof Date) return value;
+  if (typeof value === 'number' || typeof value === 'string') {
+    return new Date(value);
+  }
+  if (typeof value === 'object' && typeof value.toMillis === 'function') {
+    return new Date(value.toMillis());
+  }
+  if (typeof value === 'object' && typeof value.toDate === 'function') {
+    return value.toDate();
+  }
+  return null;
+};
 
 export const CreditNoteModal = () => {
   const dispatch = useDispatch();
   const { isOpen, selectedInvoice, selectedClient, mode, creditNoteData } =
-    useSelector(selectCreditNoteModal);
-  const user = useSelector(selectUser);
+    useSelector<CreditNoteModalRootState, CreditNoteModalState>(
+      selectCreditNoteModal,
+    ) as CreditNoteModalTypedState;
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
   const { clients: fetchedClients, loading: clientsLoading } =
-    useFbGetClientsOnOpen({ isOpen });
+    useFbGetClientsOnOpen({ isOpen }) as {
+      clients: ClientWrapper[];
+      loading: boolean;
+    };
   const { pdfLoading, handlePrintPdf } = useCreditNotePDF();
-  const { taxReceipt } = useFbGetTaxReceipt();
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const { taxReceipt } = useFbGetTaxReceipt() as {
+    taxReceipt: TaxReceiptDocument[];
+  };
+  const taxReceiptEnabled = useSelector<TaxReceiptRootState, boolean>(
+    selectTaxReceiptEnabled,
+  );
 
   const clients = fetchedClients.map((c) => c.client);
 
@@ -54,7 +129,7 @@ export const CreditNoteModal = () => {
   const [selectedClientId, setSelectedClientId] = useState(
     selectedClient?.id || null,
   );
-  const [dateRange, setDateRange] = useState([
+  const [dateRange, setDateRange] = useState<DatePickerRangeValue>([
     DateTime.now().startOf('month'),
     DateTime.now().endOf('month'),
   ]);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Captions from 'yet-another-react-lightbox/plugins/captions';
@@ -8,13 +7,27 @@ import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import 'yet-another-react-lightbox/plugins/captions.css';
 
+type LightboxSlide = {
+  src: string;
+  title: string;
+  description?: string;
+};
+
+type ImageLightboxProps = {
+  lightboxOpen: boolean;
+  setLightboxOpen: (open: boolean) => void;
+  lightboxIndex: number;
+  setLightboxIndex?: (index: number) => void;
+  getImageFiles: () => LightboxSlide[];
+};
+
 const ImageLightbox = ({
   lightboxOpen,
   setLightboxOpen,
   lightboxIndex,
   setLightboxIndex: _setLightboxIndex,
   getImageFiles,
-}) => (
+}: ImageLightboxProps) => (
   <Lightbox
     open={lightboxOpen}
     close={() => setLightboxOpen(false)}

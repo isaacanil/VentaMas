@@ -1,9 +1,13 @@
-// @ts-nocheck
 import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
 import { extractNormalizedClient } from './clientNormalizer';
+import type { NormalizedClient } from './clientNormalizer';
+
+type UserWithBusiness = {
+  businessID: string;
+};
 
 /**
  * Fetches a client from the database by ID to check if they exist.
@@ -12,7 +16,10 @@ import { extractNormalizedClient } from './clientNormalizer';
  * @param {function} fetchByIdFunction - Function to fetch the client by ID from the database.
  * @returns {Promise<object|null>} Returns the client object if found, or null if not found.
  */
-export async function fbGetClient(user, clientId) {
+export async function fbGetClient(
+  user: UserWithBusiness,
+  clientId: string,
+): Promise<NormalizedClient | null> {
   try {
     // Verbose logs eliminados para producción
 

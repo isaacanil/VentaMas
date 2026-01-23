@@ -1,8 +1,7 @@
-// @ts-nocheck
 import React from 'react';
 
 import { Users } from './components/Users/Users';
 
-export const AllUsersControl = () => {
+export const AllUsersControl: React.FC = () => {
   return <Users />;
 };

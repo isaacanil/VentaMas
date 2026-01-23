@@ -1,28 +1,56 @@
-// @ts-nocheck
-import { Table, Button } from 'antd';
+import { Button, Table } from 'antd';
 import { useState } from 'react';
 import styled from 'styled-components';
 
 import { ChangerPasswordModal } from './ChangerPasswordModal';
 
-export const TableUser = ({ users = [] }) => {
+import type { FC } from 'react';
+import type { TableProps } from 'antd';
+
+interface UserInfo {
+  id?: string;
+  name?: string;
+  businessID?: string;
+  role?: string;
+  active?: boolean;
+  loginAttempts?: number;
+}
+
+export interface UserRow {
+  id?: string;
+  user?: UserInfo;
+}
+
+interface TableUserProps {
+  users?: UserRow[];
+}
+
+interface BusinessIdFilterOption {
+  text: string;
+  value: string;
+}
+
+export const TableUser: FC<TableUserProps> = ({ users = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [userSelected, setUserSelected] = useState(null);
+  const [userSelected, setUserSelected] = useState<UserRow | null>(null);
   const userList = Array.isArray(users) ? users : [];
-  const businessIDFilters = userList.reduce((acc, current) => {
+  const businessIDFilters = userList.reduce<BusinessIdFilterOption[]>(
+    (acc, current) => {
     // Check if current and current.user exist before accessing businessID
-    if (current && current.user && current.user.businessID) {
-      const businessID = current.user.businessID;
-      if (!acc.find((filter) => filter.value === businessID)) {
-        acc.push({
-          text: businessID,
-          value: businessID,
-        });
+      if (current?.user?.businessID) {
+        const businessID = current.user.businessID;
+        if (!acc.find((filter) => filter.value === businessID)) {
+          acc.push({
+            text: businessID,
+            value: businessID,
+          });
+        }
       }
-    }
-    return acc;
-  }, []);
-  const columnas = [
+      return acc;
+    },
+    [],
+  );
+  const columnas: TableProps<UserRow>['columns'] = [
     {
       title: 'ID',
       dataIndex: ['user', 'id'],
@@ -49,7 +77,7 @@ export const TableUser = ({ users = [] }) => {
       title: 'Activo',
       dataIndex: ['user', 'active'],
       key: 'active',
-      render: (text, record) => (record.user.active ? 'Sí' : 'No'),
+      render: (_text, record) => (record.user?.active ? 'Sí' : 'No'),
     },
     {
       title: 'Intentos de Ingreso',
@@ -59,7 +87,7 @@ export const TableUser = ({ users = [] }) => {
     {
       title: 'Acción',
       key: 'action',
-      render: (text, record) => {
+      render: (_text, record) => {
         const handleOpenModal = () => {
           setIsOpen(true);
           setUserSelected(record);
@@ -73,7 +101,7 @@ export const TableUser = ({ users = [] }) => {
     },
     // Puedes agregar más columnas según necesites
   ];
-  const pagination = {
+  const pagination: TableProps<UserRow>['pagination'] = {
     pageSize: 6,
   };
 

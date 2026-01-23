@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Drawer, Image, Spin, Alert } from 'antd';
 import React, { useEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
@@ -40,14 +39,30 @@ const AccessibleStatus = styled.div`
   clip-path: inset(50%);
 `;
 
+type PreviewFile = {
+  id?: string;
+  name: string;
+  type?: string;
+  url?: string;
+  preview?: string | null;
+  file?: File;
+};
+
+type PreviewContentProps = {
+  previewFile: PreviewFile | null;
+  previewVisible: boolean;
+  setPreviewVisible: (visible: boolean) => void;
+  setPreviewFile: (file: PreviewFile | null) => void;
+};
+
 const PreviewContent = ({
   previewFile,
   previewVisible,
   setPreviewVisible,
   setPreviewFile,
-}) => {
+}: PreviewContentProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [pdfLoadAttempts, setPdfLoadAttempts] = useState(0);
 
   const handlePdfLoad = useCallback(() => {
@@ -71,11 +86,11 @@ const PreviewContent = ({
   const renderPreview = () => {
     if (!previewFile) return null;
 
-    const extension = previewFile.name.split('.').pop().toLowerCase();
+    const extension = previewFile.name.split('.').pop()?.toLowerCase() ?? '';
     const fileUrl =
-      previewFile.url ||
-      previewFile.preview ||
-      (previewFile.file && URL.createObjectURL(previewFile.file));
+      previewFile.url ??
+      previewFile.preview ??
+      (previewFile.file ? URL.createObjectURL(previewFile.file) : '');
 
     if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
       return (
@@ -156,7 +171,7 @@ const PreviewContent = ({
   };
 
   useEffect(() => {
-    let localUrl;
+    let localUrl: string | undefined;
     if (previewFile) {
       if (previewFile.file instanceof File) {
         localUrl = URL.createObjectURL(previewFile.file);
@@ -164,7 +179,9 @@ const PreviewContent = ({
     }
 
     return () => {
-      if (localUrl) URL.revokeObjectURL(localUrl);
+      if (localUrl) {
+        URL.revokeObjectURL(localUrl);
+      }
     };
   }, [previewFile]);
 

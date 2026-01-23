@@ -1,23 +1,14 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { fbGetAppVersion } from '@/firebase/app/fbGetAppVersion';
+import type { AppVersionDoc } from '@/firebase/app/fbGetAppVersion';
+import type { Timestamp } from 'firebase/firestore';
 
 import type { JSX } from 'react';
 
-interface FirestoreTimestamp {
-  seconds: number;
-  nanoseconds?: number;
-}
-
-type AppVersionDoc = {
-  version?: FirestoreTimestamp | null;
-  [key: string]: unknown;
-} | null;
-
-function timestampToVersion(timestamp?: FirestoreTimestamp | null): string {
+function timestampToVersion(timestamp?: Timestamp | null): string {
   if (!timestamp || typeof timestamp.seconds !== 'number') return '';
   const date = new Date(timestamp.seconds * 1000);
   const day = `0${date.getDate()}`.slice(-2);
@@ -51,7 +42,7 @@ export const AppVersionBadge = ({
   className,
 }: AppVersionBadgeProps): JSX.Element => {
   const navigate = useNavigate();
-  const [appVersion, setAppVersion] = useState<AppVersionDoc>(null);
+  const [appVersion, setAppVersion] = useState<AppVersionDoc | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -61,7 +52,7 @@ export const AppVersionBadge = ({
       try {
         const version = await fbGetAppVersion();
         if (isMounted) {
-          setAppVersion(version as AppVersionDoc);
+          setAppVersion(version);
         }
       } finally {
         if (isMounted) {

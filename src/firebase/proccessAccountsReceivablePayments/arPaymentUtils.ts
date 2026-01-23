@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -11,18 +10,75 @@ import {
   setDoc,
   arrayUnion,
 } from 'firebase/firestore';
+import type { Transaction, WriteBatch } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
 import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
 import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
+import type { InvoiceCreditNote, InvoiceData, InvoiceFirestoreDoc, InvoicePaymentMethod } from '@/types/invoice';
+import type { UserWithBusiness } from '@/types/users';
 
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
+
+type FirestoreWriter = WriteBatch | Transaction;
+type FirestoreData = Record<string, unknown>;
+type FirestoreDoc<T extends FirestoreData = FirestoreData> = T & { id: string };
+
+interface AccountsReceivableInstallment extends FirestoreData {
+  id: string;
+  installmentBalance: number;
+  installmentNumber?: number | string;
+  installmentDate?: unknown;
+  isActive?: boolean;
+}
+
+interface AccountsReceivableAccount extends FirestoreData {
+  id?: string;
+  numberId?: string | number;
+  invoiceId?: string | null;
+  invoiceNumber?: string | number | null;
+  totalInstallments?: number;
+  paidInstallments?: string[];
+  arBalance: number;
+  isActive?: boolean;
+  isClosed?: boolean;
+}
+
+type CreditNotePayment = InvoiceCreditNote & { amountToUse?: number };
+
+interface PaymentDetails {
+  totalPaid: number;
+  paymentMethods: InvoicePaymentMethod[];
+  comments?: string;
+  clientId?: string | null;
+  arId?: string | null;
+  originType?: string | null;
+  originId?: string | null;
+  preorderId?: string | null;
+  originStage?: string | null;
+  createdFrom?: string | null;
+  totalAmount?: number | string;
+  creditNotePayment?: CreditNotePayment[];
+}
+
+type InvoiceDataWithTotals = InvoiceData & {
+  totalAmount?: number;
+  totalPaid?: number;
+  accumulatedPaid?: number;
+  balanceDue?: number;
+  paymentHistory?: Array<Record<string, unknown>>;
+};
+
+type InvoiceLike = (InvoiceFirestoreDoc & { data?: InvoiceData }) | InvoiceData;
 
 /**
  * Obtiene una cuenta por cobrar por su ID.
  */
-export const getAccountReceivableById = async (businessId, arId) => {
+export const getAccountReceivableById = async (
+  businessId: string,
+  arId: string,
+): Promise<AccountsReceivableAccount> => {
   const accountRef = doc(
     db,
     'businesses',
@@ -34,7 +90,7 @@ export const getAccountReceivableById = async (businessId, arId) => {
   if (!accountDoc.exists()) {
     throw new Error(`Account with ID ${arId} not found.`);
   }
-  return accountDoc.data();
+  return accountDoc.data() as AccountsReceivableAccount;
 };
 
 /**
@@ -43,7 +99,10 @@ export const getAccountReceivableById = async (businessId, arId) => {
  * @param {string} arId - ID de la cuenta por cobrar
  * @returns {Promise<Array>} Lista de cuotas con id y datos
  */
-export const getAllInstallmentsByArId = async (businessId, arId) => {
+export const getAllInstallmentsByArId = async (
+  businessId: string,
+  arId: string,
+): Promise<FirestoreDoc<AccountsReceivableInstallment>[]> => {
   const installmentsRef = collection(
     db,
     'businesses',
@@ -56,7 +115,10 @@ export const getAllInstallmentsByArId = async (businessId, arId) => {
     orderBy('installmentDate', 'asc'),
   );
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as AccountsReceivableInstallment),
+  }));
 };
 
 /**
@@ -65,7 +127,10 @@ export const getAllInstallmentsByArId = async (businessId, arId) => {
  * @param {string} arId - ID de la cuenta por cobrar
  * @returns {Promise<Array>} Lista de cuotas activas
  */
-export const getActiveInstallmentsByArId = async (user, arId) => {
+export const getActiveInstallmentsByArId = async (
+  user: UserWithBusiness,
+  arId: string,
+): Promise<FirestoreDoc<AccountsReceivableInstallment>[]> => {
   const installmentsRef = collection(
     db,
     'businesses',
@@ -79,7 +144,10 @@ export const getActiveInstallmentsByArId = async (user, arId) => {
     orderBy('installmentDate', 'asc'),
   );
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as AccountsReceivableInstallment),
+  }));
 };
 
 /**
@@ -88,7 +156,10 @@ export const getActiveInstallmentsByArId = async (user, arId) => {
  * @param {string} arId - ID de la cuenta por cobrar
  * @returns {Promise<Array>} Lista de todas las cuotas
  */
-export const getInstallmentsByArId = async (user, arId) => {
+export const getInstallmentsByArId = async (
+  user: UserWithBusiness,
+  arId: string,
+): Promise<FirestoreDoc<AccountsReceivableInstallment>[]> => {
   return await getAllInstallmentsByArId(user.businessID, arId);
 };
 
@@ -97,7 +168,10 @@ export const getInstallmentsByArId = async (user, arId) => {
  * @param {object} writer - El objeto de transacción o batch de Firestore.
  * @returns {string} El ID del nuevo pago.
  */
-export const createPaymentRecord = (writer, { user, paymentDetails }) => {
+export const createPaymentRecord = (
+  writer: FirestoreWriter,
+  { user, paymentDetails }: { user: UserWithBusiness; paymentDetails: PaymentDetails },
+): string => {
   const {
     totalPaid,
     paymentMethods,
@@ -152,9 +226,23 @@ export const createPaymentRecord = (writer, { user, paymentDetails }) => {
  * @param {object} writer - El objeto de transacción o batch de Firestore.
  */
 export const applyPaymentToInstallment = (
-  writer,
-  { user, installment, amountToApply, paymentId, clientId, arId },
-) => {
+  writer: FirestoreWriter,
+  {
+    user,
+    installment,
+    amountToApply,
+    paymentId,
+    clientId,
+    arId,
+  }: {
+    user: UserWithBusiness;
+    installment: AccountsReceivableInstallment;
+    amountToApply: number;
+    paymentId: string;
+    clientId?: string | null;
+    arId?: string | null;
+  },
+): { newInstallmentBalance: number } => {
   const newInstallmentBalance = roundToTwoDecimals(
     installment.installmentBalance - amountToApply,
   );
@@ -204,7 +292,7 @@ export const applyPaymentToInstallment = (
  * @param {object} writer - El objeto de transacción o batch de Firestore.
  */
 export const updateAccountReceivableState = (
-  writer,
+  writer: FirestoreWriter,
   {
     businessId,
     arId,
@@ -212,8 +300,15 @@ export const updateAccountReceivableState = (
     newArBalance,
     paidInstallmentIds,
     existingPaidInstallments = [],
+  }: {
+    businessId: string;
+    arId: string;
+    totalPaid: number;
+    newArBalance: number;
+    paidInstallmentIds: string[];
+    existingPaidInstallments?: string[];
   },
-) => {
+): void => {
   const arRef = doc(db, 'businesses', businessId, 'accountsReceivable', arId);
   const allPaidInstallments = [
     ...new Set([...existingPaidInstallments, ...paidInstallmentIds]),
@@ -234,9 +329,13 @@ export const updateAccountReceivableState = (
  * @param {object} writer - El objeto de transacción o batch de Firestore.
  */
 export const updateInvoiceOnPayment = async (
-  writer,
-  { businessId, invoiceId, amountPaid },
-) => {
+  writer: FirestoreWriter,
+  {
+    businessId,
+    invoiceId,
+    amountPaid,
+  }: { businessId: string; invoiceId?: string | null; amountPaid: number },
+): Promise<InvoiceDataWithTotals | null> => {
   if (!invoiceId) return null;
 
   const invoiceRef = doc(db, 'businesses', businessId, 'invoices', invoiceId);
@@ -248,7 +347,7 @@ export const updateInvoiceOnPayment = async (
     return null;
   }
 
-  const invoiceData = invoiceDoc.data();
+  const invoiceData = invoiceDoc.data() as InvoiceDataWithTotals;
   const newTotalPaid = roundToTwoDecimals(
     (invoiceData.totalPaid || 0) + amountPaid,
   );
@@ -270,7 +369,10 @@ export const updateInvoiceOnPayment = async (
  * @param {string} accountId - ID de la cuenta
  * @returns {Object|null} Datos de la cuenta o null si no existe
  */
-export const getClientAccountById = async (user, accountId) => {
+export const getClientAccountById = async (
+  user: UserWithBusiness,
+  accountId: string,
+): Promise<FirestoreDoc<AccountsReceivableAccount> | null> => {
   try {
     const accountRef = doc(
       db,
@@ -281,7 +383,10 @@ export const getClientAccountById = async (user, accountId) => {
     );
     const accountDoc = await getDoc(accountRef);
     if (accountDoc.exists()) {
-      return { id: accountDoc.id, ...accountDoc.data() };
+      return {
+        id: accountDoc.id,
+        ...(accountDoc.data() as AccountsReceivableAccount),
+      };
     } else {
       console.log('No account found with the specified ID.');
       return null;
@@ -298,7 +403,10 @@ export const getClientAccountById = async (user, accountId) => {
  * @param {string} arId - ID de la cuenta por cobrar
  * @returns {Object|null} Cuota activa más antigua o null
  */
-export const getOldestActiveInstallmentByArId = async (user, arId) => {
+export const getOldestActiveInstallmentByArId = async (
+  user: UserWithBusiness,
+  arId: string,
+): Promise<FirestoreDoc<AccountsReceivableInstallment> | undefined> => {
   try {
     const installmentsRef = collection(
       db,
@@ -313,7 +421,10 @@ export const getOldestActiveInstallmentByArId = async (user, arId) => {
       orderBy('installmentDate', 'asc'),
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0];
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as AccountsReceivableInstallment),
+    }))[0];
   } catch (error) {
     console.error('Error getting oldest active installment by AR ID:', error);
     throw error;
@@ -325,15 +436,32 @@ export const getOldestActiveInstallmentByArId = async (user, arId) => {
  * @param {Object} paymentDetails - Detalles del pago
  * @returns {Object} Resultado de la validación { isValid, error, amounts }
  */
-export const validatePaymentAmounts = (paymentDetails) => {
+export const validatePaymentAmounts = (
+  paymentDetails: Pick<
+    PaymentDetails,
+    'totalAmount' | 'totalPaid' | 'creditNotePayment'
+  >,
+): {
+  isValid: boolean;
+  error: string | null;
+  amounts: {
+    paymentAmountFloat: number;
+    totalPaidFloat: number;
+    creditNoteTotal: number;
+    totalPaymentAndCredit?: number;
+  };
+} => {
   const { totalAmount, totalPaid, creditNotePayment = [] } = paymentDetails;
 
-  const paymentAmountFloat = roundToTwoDecimals(parseFloat(totalAmount || 0));
-  const totalPaidFloat = roundToTwoDecimals(parseFloat(totalPaid || 0));
+  const paymentAmountFloat = roundToTwoDecimals(
+    parseFloat(String(totalAmount ?? 0)),
+  );
+  const totalPaidFloat = roundToTwoDecimals(parseFloat(String(totalPaid ?? 0)));
 
   // Calcular el total de notas de crédito aplicadas
   const creditNoteTotal = creditNotePayment.reduce(
-    (sum, note) => sum + parseFloat(note.amountUsed || note.amountToUse || 0),
+    (sum, note) =>
+      sum + parseFloat(String(note.amountUsed || note.amountToUse || 0)),
     0,
   );
 
@@ -387,7 +515,26 @@ export const createPaymentReceiptBase = ({
   totalAmount,
   paymentMethods,
   change = 0,
-}) => {
+}: {
+  paymentId: string;
+  clientId: string;
+  arId: string;
+  user: UserWithBusiness;
+  totalAmount: number;
+  paymentMethods: InvoicePaymentMethod[];
+  change?: number;
+}): {
+  receiptId: string;
+  paymentId: string;
+  clientId: string;
+  arId: string;
+  businessId: string;
+  createdAt: ReturnType<typeof Timestamp.now>;
+  createdBy: string;
+  totalAmount: number;
+  paymentMethod: InvoicePaymentMethod[];
+  change: number;
+} => {
   return {
     receiptId: nanoid(),
     paymentId,
@@ -407,22 +554,55 @@ export const createPaymentReceiptBase = ({
  * @param {Object} params - Parámetros de la cuenta
  * @returns {Object} Datos de la cuenta para el recibo
  */
+type PaidInstallmentInfo = {
+  number?: number | string;
+  id: string;
+  amount: number;
+};
+
 export const createAccountReceiptData = ({
   account,
   invoice,
   paidInstallments,
   totalPaid,
   newBalance,
-}) => {
-  const safeString = (val) => (val !== undefined && val !== null ? val : null);
+}: {
+  account: AccountsReceivableAccount;
+  invoice?: InvoiceLike | null;
+  paidInstallments: PaidInstallmentInfo[];
+  totalPaid: number;
+  newBalance: number;
+}): {
+  arNumber: string | number | null | undefined;
+  arId: string | null | undefined;
+  invoiceNumber: string;
+  invoiceId: string | number | null;
+  paidInstallments: Array<{
+    number?: number | string;
+    id: string;
+    amount: number;
+    status: string;
+  }>;
+  remainingInstallments: number;
+  totalInstallments: number | undefined;
+  totalPaid: number;
+  arBalance: number;
+} => {
+  const safeString = (val: unknown) =>
+    val !== undefined && val !== null ? val : null;
 
-  const invoiceNumber = invoice?.numberID || invoice?.data?.numberID;
+  const invoiceNumber =
+    (invoice as InvoiceData | undefined)?.numberID ||
+    (invoice as InvoiceFirestoreDoc | undefined)?.data?.numberID;
 
   return {
     arNumber: account.numberId,
     arId: account.id,
     invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
-    invoiceId: safeString(invoice?.id || invoice?.data?.id),
+    invoiceId: safeString(
+      (invoice as InvoiceData | undefined)?.id ||
+        (invoice as InvoiceFirestoreDoc | undefined)?.data?.id,
+    ),
     paidInstallments: paidInstallments.map((installmentInfo) => ({
       number: installmentInfo.number,
       id: installmentInfo.id,
@@ -444,7 +624,7 @@ export const createAccountReceiptData = ({
  * @param {number} val - Valor a validar
  * @returns {number} Valor seguro para cálculos
  */
-export const safeNumber = (val) =>
+export const safeNumber = (val: unknown): number =>
   typeof val === 'number' && !isNaN(val) ? val : 0;
 
 /**
@@ -452,7 +632,7 @@ export const safeNumber = (val) =>
  * @param {any} val - Valor a validar
  * @returns {string|null} Valor seguro para strings
  */
-export const safeString = (val) =>
+export const safeString = (val: unknown): string | null =>
   val !== undefined && val !== null ? String(val) : null;
 
 /**
@@ -461,7 +641,10 @@ export const safeString = (val) =>
  * @param {string} clientId - ID del cliente
  * @returns {Array} Lista de cuentas ordenadas
  */
-export const getSortedClientAccountsAR = async (user, clientId) => {
+export const getSortedClientAccountsAR = async (
+  user: UserWithBusiness,
+  clientId: string,
+): Promise<FirestoreDoc<AccountsReceivableAccount>[]> => {
   const accountsRef = collection(
     db,
     'businesses',
@@ -474,7 +657,10 @@ export const getSortedClientAccountsAR = async (user, clientId) => {
     orderBy('createdAt', 'asc'),
   );
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as AccountsReceivableAccount),
+  }));
 };
 
 /**
@@ -484,9 +670,27 @@ export const getSortedClientAccountsAR = async (user, clientId) => {
  * @returns {Object} Resultado del procesamiento { amountToApply, newInstallmentBalance, newAccountBalance }
  */
 export const processInstallmentPayment = (
-  writer,
-  { user, installment, remainingAmount, paymentId, clientId, arId },
-) => {
+  writer: FirestoreWriter,
+  {
+    user,
+    installment,
+    remainingAmount,
+    paymentId,
+    clientId,
+    arId,
+  }: {
+    user: UserWithBusiness;
+    installment: AccountsReceivableInstallment;
+    remainingAmount: number;
+    paymentId: string;
+    clientId?: string | null;
+    arId?: string | null;
+  },
+): {
+  amountToApply: number;
+  newInstallmentBalance: number;
+  isPaid: boolean;
+} => {
   const amountToApply = Math.min(
     remainingAmount,
     installment.installmentBalance,
@@ -544,10 +748,18 @@ export const processInstallmentPayment = (
  * @param {Object} writer - Batch o transacción de Firestore
  * @param {Object} params - Parámetros de actualización
  */
-export const mergePaymentMethods = (existingMethods = [], newMethods = []) => {
+const isPaymentMethodWithKey = (
+  method: InvoicePaymentMethod | null | undefined,
+): method is InvoicePaymentMethod & { method: string } =>
+  typeof method?.method === 'string' && method.method.trim().length > 0;
+
+export const mergePaymentMethods = (
+  existingMethods: InvoicePaymentMethod[] = [],
+  newMethods: InvoicePaymentMethod[] = [],
+): InvoicePaymentMethod[] => {
   const sanitizedExisting = Array.isArray(existingMethods)
     ? existingMethods
-        .filter((m) => m && m.method)
+        .filter(isPaymentMethodWithKey)
         .map((m) => ({
           ...m,
           value: roundToTwoDecimals(Number(m.value) || 0),
@@ -557,7 +769,7 @@ export const mergePaymentMethods = (existingMethods = [], newMethods = []) => {
 
   const incomingMethods = Array.isArray(newMethods)
     ? newMethods
-        .filter((m) => m && m.method && m.status)
+        .filter((m) => isPaymentMethodWithKey(m) && m.status === true)
         .map((m) => ({
           ...m,
           value: roundToTwoDecimals(Number(m.value) || 0),
@@ -565,7 +777,7 @@ export const mergePaymentMethods = (existingMethods = [], newMethods = []) => {
         }))
     : [];
 
-  const methodMap = new Map();
+  const methodMap = new Map<string, InvoicePaymentMethod>();
 
   sanitizedExisting.forEach((method) => {
     methodMap.set(method.method, method);
@@ -593,25 +805,39 @@ export const mergePaymentMethods = (existingMethods = [], newMethods = []) => {
 };
 
 export const updateInvoiceTotals = (
-  writer,
-  { businessId, invoiceId, amountPaid, invoice, paymentMethods = [] },
-) => {
+  writer: FirestoreWriter,
+  {
+    businessId,
+    invoiceId,
+    amountPaid,
+    invoice,
+    paymentMethods = [],
+  }: {
+    businessId: string;
+    invoiceId?: string | null;
+    amountPaid: number;
+    invoice?: InvoiceLike | null;
+    paymentMethods?: InvoicePaymentMethod[];
+  },
+): InvoiceDataWithTotals | undefined => {
   if (!invoice || !invoiceId) return;
 
   const invoiceRef = doc(db, 'businesses', businessId, 'invoices', invoiceId);
-  const invoiceData = invoice.data || invoice;
+  const invoiceData =
+    (('data' in invoice && invoice.data) ? invoice.data : invoice) as InvoiceDataWithTotals;
 
   const invoiceTotal = roundToTwoDecimals(
     invoiceData.totalAmount ??
       invoiceData.totalPurchase?.value ??
-      invoice.totalAmount ??
-      invoice.totalPurchase?.value ??
+      ('totalAmount' in invoice ? invoice.totalAmount : undefined) ??
+      ('totalPurchase' in invoice ? invoice.totalPurchase?.value : undefined) ??
       0,
   );
 
   // Double Truth Logic:
   // accumulatedPaid starts at totalPaid (initial) if not present.
-  const currentAccumulated = invoiceData.accumulatedPaid ?? invoiceData.totalPaid ?? 0;
+  const currentAccumulated =
+    invoiceData.accumulatedPaid ?? invoiceData.totalPaid ?? 0;
   const newAccumulatedPaid = roundToTwoDecimals(currentAccumulated + amountPaid);
   const newBalanceDue = roundToTwoDecimals(invoiceTotal - newAccumulatedPaid);
 
@@ -696,6 +922,18 @@ export const updateInvoiceTotals = (
  * @param {Object} params - Parámetros del recibo
  * @returns {Object} Recibo de pago completo
  */
+type PaymentReceiptAccount = {
+  arNumber?: string | number | null;
+  arId?: string | null;
+  invoiceNumber?: string | null;
+  invoiceId?: string | number | null;
+  paidInstallments?: PaidInstallmentInfo[];
+  remainingInstallments?: number;
+  totalInstallments?: number;
+  totalPaid?: number;
+  arBalance?: number;
+};
+
 export const createFullPaymentReceipt = ({
   paymentId,
   clientId,
@@ -705,7 +943,38 @@ export const createFullPaymentReceipt = ({
   paymentMethods,
   accounts = [],
   change = 0,
-}) => {
+}: {
+  paymentId: string;
+  clientId: string;
+  arId: string;
+  user?: UserWithBusiness | null;
+  totalAmount: number;
+  paymentMethods: InvoicePaymentMethod[];
+  accounts?: PaymentReceiptAccount[];
+  change?: number;
+}): {
+  receiptId: string;
+  paymentId: string | null;
+  clientId: string | null;
+  arId: string | null;
+  businessId: string | null;
+  createdAt: ReturnType<typeof Timestamp.now>;
+  createdBy: string | null;
+  accounts: Array<{
+    arNumber: string | null;
+    arId: string | null;
+    invoiceNumber: string | null;
+    invoiceId: string | null;
+    paidInstallments: PaidInstallmentInfo[];
+    remainingInstallments: number;
+    totalInstallments: number;
+    totalPaid: number;
+    arBalance: number;
+  }>;
+  totalAmount: number;
+  paymentMethod: InvoicePaymentMethod[];
+  change: number;
+} => {
   // Validar que todos los campos requeridos existan
   const receiptData = {
     receiptId: nanoid(),
@@ -722,7 +991,7 @@ export const createFullPaymentReceipt = ({
         invoiceNumber: safeString(account.invoiceNumber),
         invoiceId: safeString(account.invoiceId),
         paidInstallments: Array.isArray(account.paidInstallments)
-          ? account.paidInstallments
+          ? (account.paidInstallments as PaidInstallmentInfo[])
           : [],
         remainingInstallments: safeNumber(account.remainingInstallments),
         totalInstallments: safeNumber(account.totalInstallments),
@@ -759,7 +1028,10 @@ export const createFullPaymentReceipt = ({
  * @param {Array} allInstallments - Todas las cuotas de la cuenta
  * @returns {Array} Información de cuotas pagadas formateada
  */
-export const formatPaidInstallments = (paidInstallmentIds, allInstallments) => {
+export const formatPaidInstallments = (
+  paidInstallmentIds: string[],
+  allInstallments: AccountsReceivableInstallment[],
+): PaidInstallmentInfo[] => {
   return paidInstallmentIds.map((id) => {
     const installment = allInstallments.find((inst) => inst.id === id);
     return {
@@ -781,7 +1053,12 @@ export const validateBasicPaymentParams = ({
   clientId,
   totalPaid,
   paymentMethods,
-}) => {
+}: {
+  user?: UserWithBusiness | null;
+  clientId?: string | null;
+  totalPaid: number | string;
+  paymentMethods?: InvoicePaymentMethod[] | null;
+}): { isValid: boolean; error?: string; totalPaidFloat?: number } => {
   if (!user || !user.businessID) {
     return { isValid: false, error: 'User or business ID missing' };
   }
@@ -790,7 +1067,7 @@ export const validateBasicPaymentParams = ({
     return { isValid: false, error: 'Client ID is required' };
   }
 
-  const totalPaidFloat = parseFloat(totalPaid);
+  const totalPaidFloat = parseFloat(String(totalPaid));
   if (isNaN(totalPaidFloat) || totalPaidFloat <= 0) {
     return { isValid: false, error: 'Invalid total paid amount' };
   }
@@ -808,7 +1085,15 @@ export const validateBasicPaymentParams = ({
  * @param {number} totalAmount - Monto total esperado
  * @returns {Object} Resultado de validación
  */
-export const validatePaymentMethods = (paymentMethods, totalAmount) => {
+export const validatePaymentMethods = (
+  paymentMethods: InvoicePaymentMethod[],
+  totalAmount: number | string,
+): {
+  isValid: boolean;
+  error?: string;
+  totals?: { expected: number; actual: number };
+  totalFromMethods?: number;
+} => {
   if (!Array.isArray(paymentMethods) || paymentMethods.length === 0) {
     return {
       isValid: false,
@@ -821,7 +1106,7 @@ export const validatePaymentMethods = (paymentMethods, totalAmount) => {
     .filter((method) => method.status === true)
     .reduce((sum, method) => sum + (parseFloat(method.value) || 0), 0);
 
-  const expectedTotal = roundToTwoDecimals(totalAmount);
+  const expectedTotal = roundToTwoDecimals(Number(totalAmount));
   const actualTotal = roundToTwoDecimals(totalFromMethods);
 
   // Permitir una pequeña diferencia por redondeo
@@ -842,9 +1127,13 @@ export const validatePaymentMethods = (paymentMethods, totalAmount) => {
  * @param {Object} params - Parámetros de actualización
  */
 export const updateAccountAfterPayment = (
-  writer,
-  { user, account, totalPaid },
-) => {
+  writer: FirestoreWriter,
+  { user, account, totalPaid }: {
+    user: UserWithBusiness;
+    account: AccountsReceivableAccount;
+    totalPaid: number;
+  },
+): void => {
   const accountRef = doc(
     db,
     'businesses',
@@ -868,7 +1157,10 @@ export const updateAccountAfterPayment = (
  * @param {Object} paymentDetails - Detalles del pago
  * @returns {string} ID del pago creado
  */
-export const createPaymentWithSetDoc = async (user, paymentDetails) => {
+export const createPaymentWithSetDoc = async (
+  user: UserWithBusiness,
+  paymentDetails: PaymentDetails,
+): Promise<string> => {
   const { totalPaid, paymentMethods, comments } = paymentDetails;
   const paymentId = nanoid();
   const paymentsRef = doc(

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Typography, Input, Form, notification } from 'antd';
 import { useEffect } from 'react';
 
@@ -6,10 +5,14 @@ import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
 
 const { Title } = Typography;
 
+interface AddCategoryFormValues {
+  name: string;
+}
+
 const AddCategoryModal = () => {
   const { category, categoryState, onSubmit, onClose } = useCategoryState();
   const { type, isOpen } = categoryState;
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<AddCategoryFormValues>();
 
   useEffect(() => {
     if (isOpen) {

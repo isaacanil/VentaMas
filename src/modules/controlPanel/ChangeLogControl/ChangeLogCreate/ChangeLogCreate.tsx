@@ -1,9 +1,8 @@
-// @ts-nocheck
 import React from 'react';
 
 import MyEditor from '@/components/ui/BlockEditor/TextEditor';
 
-const ChangeLogCreate = () => {
+const ChangeLogCreate: React.FC = () => {
   return <MyEditor />;
 };
 

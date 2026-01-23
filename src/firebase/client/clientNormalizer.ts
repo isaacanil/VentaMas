@@ -1,14 +1,63 @@
-// @ts-nocheck
 import { deleteField } from 'firebase/firestore';
 
-const DEFAULT_DELIVERY = { status: false, value: 0 };
+export interface ClientDeliveryRaw {
+  status?: boolean | number | string;
+  value?: number | string;
+  cash?: number | string;
+  [key: string]: unknown;
+}
+
+export type ClientDeliveryInput = number | string | ClientDeliveryRaw | null;
+
+export interface ClientInput {
+  id?: string | number;
+  name?: string;
+  address?: string;
+  email?: string;
+  tel?: string;
+  tel2?: string;
+  personalID?: string;
+  personalId?: string;
+  personalIdentification?: string;
+  personalIdNumber?: string;
+  rnc?: string;
+  rncCedula?: string;
+  numberId?: number | string;
+  pendingBalance?: number | string;
+  delivery?: ClientDeliveryInput;
+  province?: string;
+  sector?: string;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  isDeleted?: boolean;
+  deletedAt?: unknown;
+  [key: string]: unknown;
+}
+
+export interface ClientDocumentData extends Record<string, unknown> {
+  client?: ClientInput;
+  isDeleted?: boolean;
+  deletedAt?: unknown;
+}
+
+export interface NormalizedDelivery {
+  status: boolean;
+  value: number;
+}
+
+export interface NormalizedClient extends Omit<ClientInput, 'delivery' | 'pendingBalance'> {
+  delivery: NormalizedDelivery;
+  pendingBalance: number;
+}
+
+const DEFAULT_DELIVERY: NormalizedDelivery = { status: false, value: 0 };
 
 const FIELD_ALIASES = {
   personalId: 'personalID',
   personalIdNumber: 'personalID',
   personalIdentification: 'personalID',
   rncCedula: 'rnc',
-};
+} as const;
 
 const FIELDS_TO_EXTRACT = [
   'address',
@@ -26,28 +75,43 @@ const FIELDS_TO_EXTRACT = [
   'tel2',
   'updatedAt',
   'rnc',
-];
+] as const;
+
+const toNumber = (value: unknown): number => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
 
 /**
  * Normaliza la estructura del objeto delivery.
  * @param {*} delivery
  * @returns {{status: boolean, value: number}}
  */
-function normalizeDelivery(delivery) {
+function normalizeDelivery(delivery: ClientDeliveryInput | undefined): NormalizedDelivery {
   if (delivery == null) {
     return { ...DEFAULT_DELIVERY };
   }
 
   if (typeof delivery === 'number') {
-    const value = Number.isFinite(delivery) ? delivery : Number(delivery) || 0;
+    const value = toNumber(delivery);
     return { status: value > 0, value };
   }
 
-  if (typeof delivery === 'object') {
-    const status = Boolean(delivery.status);
-    const numericValue = Number.isFinite(delivery.value)
-      ? delivery.value
-      : Number(delivery.value) || 0;
+  if (typeof delivery === 'string') {
+    const value = toNumber(delivery);
+    return { status: value > 0, value };
+  }
+
+  if (typeof delivery === 'object' && delivery !== null) {
+    const deliveryObj = delivery as ClientDeliveryRaw;
+    const status = Boolean(deliveryObj.status);
+    const numericValue = toNumber(deliveryObj.value);
 
     return {
       status,
@@ -63,7 +127,7 @@ function normalizeDelivery(delivery) {
  * @param {object} docData
  * @returns {object}
  */
-export function extractNormalizedClient(docData = {}) {
+export function extractNormalizedClient(docData: ClientDocumentData = {}): NormalizedClient {
   const base =
     docData && typeof docData.client === 'object' && docData.client !== null
       ? { ...docData.client }
@@ -90,8 +154,8 @@ export function extractNormalizedClient(docData = {}) {
  * @param {object} client
  * @returns {object}
  */
-export function normalizeClientObject(client = {}) {
-  const next = { ...client };
+export function normalizeClientObject(client: ClientInput = {}): NormalizedClient {
+  const next: ClientInput = { ...client };
 
   if (next.personalId && !next.personalID) {
     next.personalID = next.personalId;
@@ -118,16 +182,16 @@ export function normalizeClientObject(client = {}) {
     next.numberId = Number.isNaN(numericValue) ? next.numberId : numericValue;
   }
 
-  if (next.pendingBalance != null) {
-    const numericBalance = Number(next.pendingBalance);
-    next.pendingBalance = Number.isNaN(numericBalance) ? 0 : numericBalance;
-  } else {
-    next.pendingBalance = 0;
-  }
+  const pendingBalance = next.pendingBalance != null ? toNumber(next.pendingBalance) : 0;
+  const delivery = normalizeDelivery(next.delivery);
 
-  next.delivery = normalizeDelivery(next.delivery);
+  const normalized: NormalizedClient = {
+    ...next,
+    pendingBalance,
+    delivery,
+  };
 
-  return next;
+  return normalized;
 }
 
 /**
@@ -136,12 +200,14 @@ export function normalizeClientObject(client = {}) {
  * @param {object} client
  * @returns {{ payload: object, client: object }}
  */
-export function buildClientWritePayload(client = {}) {
+export function buildClientWritePayload(
+  client: ClientInput = {},
+): { payload: Record<string, unknown>; client: NormalizedClient } {
   const normalizedClient = normalizeClientObject(client);
 
   const { isDeleted, deletedAt, ...clientData } = normalizedClient;
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     client: clientData,
   };
 
@@ -173,7 +239,7 @@ export function buildClientWritePayload(client = {}) {
  * @param {object} docData
  * @returns {Set<string>}
  */
-export function getDuplicatedRootFields(docData = {}) {
+export function getDuplicatedRootFields(docData: ClientDocumentData = {}): Set<string> {
   const normalized = extractNormalizedClient(docData);
   const duplicated = new Set(Object.keys(normalized));
 
@@ -186,7 +252,7 @@ export function getDuplicatedRootFields(docData = {}) {
   return duplicated;
 }
 
-export const CLIENT_ROOT_FIELDS = new Set([
+export const CLIENT_ROOT_FIELDS = new Set<string>([
   ...FIELDS_TO_EXTRACT,
   ...Object.keys(FIELD_ALIASES),
   'isDeleted',

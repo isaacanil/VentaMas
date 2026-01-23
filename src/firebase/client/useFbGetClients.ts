@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -10,11 +9,22 @@ import {
   CLIENT_ROOT_FIELDS,
   extractNormalizedClient,
 } from './clientNormalizer';
+import type { ClientDocumentData, NormalizedClient } from './clientNormalizer';
+
+type UserWithBusiness = {
+  businessID: string;
+};
+
+type ClientListItem = {
+  id: string;
+  isDeleted: boolean;
+  client: NormalizedClient;
+} & Record<string, unknown>;
 
 export const useFbGetClients = ({ includeDeleted = false } = {}) => {
-  const [clients, setClients] = useState([]);
+  const [clients, setClients] = useState<ClientListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserWithBusiness | null;
   if ((!user || !user.businessID) && loading) {
     setLoading(false);
   }
@@ -34,13 +44,14 @@ export const useFbGetClients = ({ includeDeleted = false } = {}) => {
         setLoading(false);
         return;
       }
-      const clientArray = snapshot.docs.reduce((acc, docSnap) => {
-        const data = docSnap.data() || {};
+      const clientArray = snapshot.docs.reduce<ClientListItem[]>(
+        (acc, docSnap) => {
+          const data = (docSnap.data() || {}) as ClientDocumentData;
         const isDeleted = Boolean(data.isDeleted);
         if (!includeDeleted && isDeleted) return acc;
 
         const client = extractNormalizedClient(data);
-        const extras = {};
+        const extras: Record<string, unknown> = {};
 
         for (const [key, value] of Object.entries(data)) {
           if (key === 'client') continue;
@@ -49,14 +60,18 @@ export const useFbGetClients = ({ includeDeleted = false } = {}) => {
           }
         }
 
-        acc.push({
+        const item: ClientListItem = {
           id: docSnap.id,
           isDeleted,
           ...extras,
           client,
-        });
+        };
+
+        acc.push(item);
         return acc;
-      }, []);
+      },
+      [],
+    );
 
       setClients(clientArray);
       setLoading(false);
