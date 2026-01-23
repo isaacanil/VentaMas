@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   SafetyOutlined,
   EyeOutlined,
@@ -9,10 +8,35 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { fbViewUserPins } from '@/firebase/authorization/pinAuth';
+import type { UserIdentity } from '@/types/users';
 
 const { Text, Title } = Typography;
 
-const MODULE_LABELS = {
+type AuthUser = UserIdentity & { uid?: string };
+
+interface PinSecretEntry {
+  module?: string;
+  pin?: string;
+  createdAt?: Date | null;
+  expiresAt?: Date | null;
+  [key: string]: unknown;
+}
+
+interface ViewPinsResponse {
+  schema: string;
+  pins: PinSecretEntry[];
+  targetUser: unknown;
+}
+
+interface ViewPinModalProps {
+  visible: boolean;
+  onClose: () => void;
+  user: AuthUser | null;
+  moduleKey: string;
+  moduleLabel?: string;
+}
+
+const MODULE_LABELS: Record<string, string> = {
   invoices: 'Facturación',
   accountsReceivable: 'Cuadre de Caja',
 };
@@ -35,11 +59,11 @@ export const ViewPinModal = ({
   user,
   moduleKey,
   moduleLabel,
-}) => {
+}: ViewPinModalProps) => {
   const [loading, setLoading] = useState(false);
-  const [pinValue, setPinValue] = useState(null);
+  const [pinValue, setPinValue] = useState<string | null>(null);
   const [isPinVisible, setIsPinVisible] = useState(false);
-  const pinVisibilityTimer = useRef(null);
+  const pinVisibilityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedModuleLabel =
     moduleLabel || MODULE_LABELS[moduleKey] || moduleKey;
 
@@ -56,20 +80,26 @@ export const ViewPinModal = ({
   }, [visible]);
 
   const loadPin = useCallback(async () => {
-    if (!visible || !user?.uid || !moduleKey) {
+    if (!visible || !user || !user.uid || !moduleKey) {
       return;
     }
 
     setLoading(true);
     try {
-      const pinSecrets = await fbViewUserPins(user, user.uid);
+      const pinSecrets = (await fbViewUserPins(
+        user,
+        user.uid,
+      )) as ViewPinsResponse;
+      const pins = Array.isArray(pinSecrets.pins)
+        ? (pinSecrets.pins as PinSecretEntry[])
+        : [];
 
-      if (!pinSecrets?.pins || pinSecrets.pins.length === 0) {
+      if (pins.length === 0) {
         message.error('No tienes PINs configurados');
         return;
       }
 
-      const modulePinData = pinSecrets.pins.find((p) => p.module === moduleKey);
+      const modulePinData = pins.find((p) => p.module === moduleKey);
 
       if (!modulePinData || !modulePinData.pin) {
         message.error(`No se encontró el PIN para ${resolvedModuleLabel}`);
@@ -79,7 +109,9 @@ export const ViewPinModal = ({
       setPinValue(modulePinData.pin);
     } catch (error) {
       console.error('Error obteniendo el PIN:', error);
-      message.error(error?.message || 'No se pudo obtener el PIN.');
+      const errorMessage =
+        error instanceof Error ? error.message : 'No se pudo obtener el PIN.';
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }

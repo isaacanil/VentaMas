@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 
 import InventoryMigration from '@/modules/dev/pages/Prueba/InventoryMigration';

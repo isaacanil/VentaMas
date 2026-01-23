@@ -1,10 +1,11 @@
-// @ts-nocheck
-export function formatNumber(input) {
-  const inputAsString = String(input);
+export type NumberInput = number | string | null | undefined;
+
+export function formatNumber(input: NumberInput): number {
+  const inputAsString = String(input ?? '');
   // Elimina los ceros a la izquierda solo si están antes del punto decimal y no son el único dígito antes del punto
   const formattedString = inputAsString.replace(/^(0+)(\d)/, '$2');
   const result = Number(formattedString);
-  return isNaN(result) ? 0 : result;
+  return Number.isNaN(result) ? 0 : result;
 }
 
 /**
@@ -12,9 +13,9 @@ export function formatNumber(input) {
  * @param {number} numb - El número a formatear
  * @returns {string} Número formateado con separadores de miles
  */
-export const separator = (numb) => {
+export const separator = (numb: NumberInput): string => {
   const toNumber = Number(numb);
-  if (isNaN(toNumber)) return 0;
+  if (Number.isNaN(toNumber)) return '0';
   const n = toNumber.toFixed(2);
   const str = n.toString().split('.');
   str[0] = str[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -26,9 +27,10 @@ export const separator = (numb) => {
  * @param {string|number} s - El valor a procesar
  * @returns {number} Número sin ceros a la izquierda
  */
-export const quitarCeros = (s) => {
-  const n = s.toString();
-  return Number(n.replace(/^0+/, ''));
+export const quitarCeros = (s: NumberInput): number => {
+  const n = String(s ?? '');
+  const value = Number(n.replace(/^0+/, ''));
+  return Number.isNaN(value) ? 0 : value;
 };
 
 /**
@@ -36,6 +38,6 @@ export const quitarCeros = (s) => {
  * @param {number} n - El número a redondear
  * @returns {number} Número redondeado a 2 decimales
  */
-export const roundToTwoDecimals = (n) => {
+export const roundToTwoDecimals = (n: number): number => {
   return Math.round(n * 100) / 100;
 };

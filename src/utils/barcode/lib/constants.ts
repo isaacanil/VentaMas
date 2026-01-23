@@ -1,6 +1,7 @@
-// @ts-nocheck
 // Prefijos de país según GS1 (lista expandida y optimizada)
-export const GS1_COUNTRY_PREFIXES = {
+import type { BarcodeCountryInfo } from './types';
+
+export const GS1_COUNTRY_PREFIXES: Record<string, BarcodeCountryInfo> = {
   // América del Norte
   0: { country: 'Estados Unidos y Canadá', region: 'América del Norte' },
   1: { country: 'Estados Unidos y Canadá', region: 'América del Norte' },
@@ -149,5 +150,5 @@ export const PREFIXES_SORTED = Object.keys(GS1_COUNTRY_PREFIXES).sort(
 );
 
 // Constantes para cálculos GTIN y UPC
-export const GTIN_MULTIPLIERS = [1, 3];
-export const UPC_MULTIPLIERS = [3, 1];
+export const GTIN_MULTIPLIERS = [1, 3] as const;
+export const UPC_MULTIPLIERS = [3, 1] as const;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import DateUtils from './date/dateUtils';
 import { isReference } from './refereceUtils';
 

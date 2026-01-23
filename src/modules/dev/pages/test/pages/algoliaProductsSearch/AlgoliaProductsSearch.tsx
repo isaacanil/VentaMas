@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DatabaseOutlined, SearchOutlined } from '@/constants/icons/antd';
 import { algoliasearch } from 'algoliasearch';
 import {
@@ -16,12 +15,34 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import type { ColumnsType } from 'antd/es/table';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { debounce } from '@/utils/lodash-minimal';
 
 const { Title, Paragraph, Text } = Typography;
+
+type AlgoliaClient = ReturnType<typeof algoliasearch>;
+type AlgoliaIndex = ReturnType<AlgoliaClient['initIndex']>;
+
+interface AlgoliaHit {
+  objectID: string;
+  name?: string;
+  path?: string;
+  pricing?: { price?: number | string | null };
+  businessID?: string;
+  category?: string | string[];
+  stock?: number | string | null;
+  _highlightResult?: {
+    name?: {
+      value?: string;
+    };
+  };
+  [key: string]: unknown;
+}
+
+type DebouncedSearch = ((value: string) => void) & { cancel: () => void };
 
 // Permite definir credenciales via variables de entorno (Vite) y deja valores de respaldo
 const ALGOLIA_APP_ID = import.meta.env.VITE_ALGOLIA_APP_ID || '2GBM9XH33Y';
@@ -36,7 +57,7 @@ const currencyFormatter = new Intl.NumberFormat('es-DO', {
   maximumFractionDigits: 2,
 });
 
-const formatCurrency = (value) => {
+const formatCurrency = (value: unknown) => {
   if (value === undefined || value === null) return '—';
   const amount = Number(value);
   if (Number.isNaN(amount)) return '—';
@@ -51,18 +72,18 @@ export function AlgoliaProductsSearch() {
   const user = useSelector(selectUser);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [hits, setHits] = useState([]);
-  const [index, setIndex] = useState(null);
+  const [hits, setHits] = useState<AlgoliaHit[]>([]);
+  const [index, setIndex] = useState<AlgoliaIndex | null>(null);
 
   const [isInitializing, setIsInitializing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [connectionError, setConnectionError] = useState(null);
-  const [searchError, setSearchError] = useState(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedHit, setSelectedHit] = useState(null);
-  const [firestoreDoc, setFirestoreDoc] = useState(null);
-  const [firestoreError, setFirestoreError] = useState(null);
+  const [selectedHit, setSelectedHit] = useState<AlgoliaHit | null>(null);
+  const [firestoreDoc, setFirestoreDoc] = useState<Record<string, unknown> | null>(null);
+  const [firestoreError, setFirestoreError] = useState<string | null>(null);
   const [firestoreLoading, setFirestoreLoading] = useState(false);
 
   const isConfigured =
@@ -103,7 +124,7 @@ export function AlgoliaProductsSearch() {
   }, [connectToAlgolia]);
 
   const performSearch = useCallback(
-    async (queryValue = '') => {
+    async (queryValue: string = '') => {
       if (!index) return;
       setIsSearching(true);
       setSearchError(null);
@@ -125,7 +146,7 @@ export function AlgoliaProductsSearch() {
           hitsPerPage: 30,
         });
 
-        setHits(response.hits ?? []);
+        setHits((response.hits ?? []) as AlgoliaHit[]);
       } catch (error) {
         console.error('Algolia search error', error);
         setSearchError(
@@ -141,7 +162,7 @@ export function AlgoliaProductsSearch() {
     [index],
   );
 
-  const debouncedSearch = useMemo(
+  const debouncedSearch = useMemo<DebouncedSearch>(
     () =>
       debounce((value) => {
         performSearch(value);
@@ -161,7 +182,7 @@ export function AlgoliaProductsSearch() {
     }
   }, [index, performSearch]);
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchQuery(value);
 
@@ -185,7 +206,7 @@ export function AlgoliaProductsSearch() {
     performSearch('');
   };
 
-  const openFirestorePreview = useCallback(async (record) => {
+  const openFirestorePreview = useCallback(async (record: AlgoliaHit) => {
     setSelectedHit(record);
     setFirestoreDoc(null);
     setFirestoreError(null);
@@ -208,7 +229,7 @@ export function AlgoliaProductsSearch() {
         return;
       }
 
-      setFirestoreDoc(snapshot.data());
+      setFirestoreDoc(snapshot.data() as Record<string, unknown>);
     } catch (error) {
       console.error('Firestore fetch error', error);
       setFirestoreError(
@@ -226,12 +247,12 @@ export function AlgoliaProductsSearch() {
     setFirestoreError(null);
   };
 
-  const columns = [
+  const columns: ColumnsType<AlgoliaHit> = [
     {
       title: 'Nombre',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
+      render: (text: string | undefined, record) => (
         <Space direction="vertical" size={4}>
           <Text strong>{text || 'Sin nombre'}</Text>
           {record?._highlightResult?.name?.value && (
@@ -260,7 +281,7 @@ export function AlgoliaProductsSearch() {
       title: 'Categoría',
       dataIndex: 'category',
       key: 'category',
-      render: (value) => {
+      render: (value: AlgoliaHit['category']) => {
         if (!value) return <Tag color="default">Sin categoría</Tag>;
         if (Array.isArray(value)) {
           return (
@@ -280,7 +301,7 @@ export function AlgoliaProductsSearch() {
       title: 'Stock',
       dataIndex: 'stock',
       key: 'stock',
-      render: (stock) => (
+      render: (stock: AlgoliaHit['stock']) => (
         <Tag color={Number(stock) > 0 ? 'green' : 'red'}>
           {Number.isFinite(Number(stock)) ? Number(stock) : 0}
         </Tag>
@@ -290,7 +311,7 @@ export function AlgoliaProductsSearch() {
       title: 'Business ID',
       dataIndex: 'businessID',
       key: 'businessID',
-      render: (businessID) => {
+      render: (businessID: AlgoliaHit['businessID']) => {
         if (!businessID) {
           return <Tag color="red">Sin businessID</Tag>;
         }
@@ -517,3 +538,6 @@ export function AlgoliaProductsSearch() {
     </>
   );
 }
+
+
+

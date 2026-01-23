@@ -1,5 +1,14 @@
-// @ts-nocheck
-function isObjectOrArray(item) {
+type ObjectOrArray = Record<string, unknown> | unknown[];
+
+type CompareObjectsOptions = {
+  object1: unknown;
+  object2: unknown;
+  currentDepth?: number;
+  maxDepth?: number;
+  strictTypeCheck?: boolean;
+};
+
+function isObjectOrArray(item: unknown): item is ObjectOrArray {
   return item != null && (typeof item === 'object' || Array.isArray(item));
 }
 
@@ -9,7 +18,7 @@ export function compareObjects({
   currentDepth = 0,
   maxDepth = 2,
   strictTypeCheck = true,
-}) {
+}: CompareObjectsOptions): boolean {
   if (currentDepth > maxDepth) {
     return true; // Detener la comparación más allá de la profundidad máxima especificada
   }
@@ -25,17 +34,19 @@ export function compareObjects({
     return false;
   }
 
-  const keys1 = Object.keys(object1);
-  const keys2 = Object.keys(object2);
+  const obj1 = object1 as Record<string, unknown>;
+  const obj2 = object2 as Record<string, unknown>;
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
 
   if (keys1.length !== keys2.length) {
     return false;
   }
 
   for (const key of keys1) {
-    if (Object.hasOwn(object2, key)) {
-      const val1 = object1[key];
-      const val2 = object2[key];
+    if (Object.hasOwn(obj2, key)) {
+      const val1 = obj1[key];
+      const val2 = obj2[key];
       const areItems = isObjectOrArray(val1) && isObjectOrArray(val2);
       if (
         (areItems &&
@@ -59,7 +70,7 @@ export function compareObjects({
   return true;
 }
 
-function isEqualValue(val1, val2) {
+function isEqualValue(val1: unknown, val2: unknown): boolean {
   if (typeof val1 === 'number' && typeof val2 === 'number') {
     return val1 === val2;
   }

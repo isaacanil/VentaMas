@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ReloadOutlined } from '@/constants/icons/antd';
 import { Button, Card, Pagination, Select, Spin, message, Modal } from 'antd';
 import { DateTime } from 'luxon';

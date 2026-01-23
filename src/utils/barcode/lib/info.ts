@@ -1,16 +1,18 @@
-// @ts-nocheck
 import { analyzeBarcodeStructure } from './analyzer';
+import type { BarcodeCheckDigitInfo, BarcodeInfo } from './types';
 
-export function isValidBarcode(barcode) {
+export function isValidBarcode(barcode: string): boolean {
   return analyzeBarcodeStructure(barcode).isValid;
 }
 
-export function getBarcodeInfo(barcode) {
+export function getBarcodeInfo(barcode: string): BarcodeInfo {
   const analysis = analyzeBarcodeStructure(barcode);
-  const checkDigit = analysis.checkDigit ? {
-    ...analysis.checkDigit,
-    correctDigit: analysis.checkDigit.calculated
-  } : null;
+  const checkDigit: BarcodeCheckDigitInfo | null = analysis.checkDigit
+    ? {
+        ...analysis.checkDigit,
+        correctDigit: analysis.checkDigit.calculated,
+      }
+    : null;
 
   if (!analysis.isValid)
     return {
@@ -18,7 +20,7 @@ export function getBarcodeInfo(barcode) {
       type: analysis.type || 'Desconocido',
       message: analysis.errorMessage || analysis.error || 'Código inválido',
       error: analysis.error,
-      checkDigit
+      checkDigit,
     };
   let msg = `${analysis.type}`;
   if (analysis.country) msg += ` • ${analysis.country.country}`;
@@ -33,22 +35,28 @@ export function getBarcodeInfo(barcode) {
     structure: analysis.structure,
     isVariableWeight: analysis.isVariableWeight,
     message: msg,
-    checkDigit
+    checkDigit,
   };
 }
 
-export function isGS1RDCode(barcode) {
+export function isGS1RDCode(barcode: string): boolean {
   const c = analyzeBarcodeStructure(barcode);
   return c.country?.prefix === '746' && c.isValid;
 }
 
-export function extractCompanyPrefix(barcode, len = 4) {
+export function extractCompanyPrefix(
+  barcode: string,
+  len: number = 4,
+): string | null {
   if (!isGS1RDCode(barcode)) return null;
   const clean = barcode.replace(/\s/g, '');
   return clean.slice(3, 3 + len);
 }
 
-export function extractItemReference(barcode, companyPrefixLength = 4) {
+export function extractItemReference(
+  barcode: string,
+  companyPrefixLength: number = 4,
+): string | null {
   if (!isGS1RDCode(barcode)) return null;
   const clean = barcode.replace(/\s/g, '');
   const itemLength = 9 - companyPrefixLength;

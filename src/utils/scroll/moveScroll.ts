@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useElementSize } from '@/hooks/useElementSize';
 
 export const useMoveScroll = (ref) => {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 let pdfMakePromise = null;
 
 export async function getPdfMake() {

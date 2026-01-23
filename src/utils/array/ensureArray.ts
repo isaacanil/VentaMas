@@ -1,10 +1,11 @@
 /**
  * Asegura que el valor dado sea un array.
  */
-export const ensureArray = <T>(value: ReadonlyArray<T> | null | undefined): T[];
-export const ensureArray = <T = unknown>(value: unknown): T[];
-export const ensureArray = <T>(value: unknown): T[] =>
-  Array.isArray(value) ? (value as T[]) : [];
+export function ensureArray<T>(value: ReadonlyArray<T> | null | undefined): T[];
+export function ensureArray<T = unknown>(value: unknown): T[];
+export function ensureArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
 
 /**
  * Devuelve true si `value` no es un array con al menos un elemento.

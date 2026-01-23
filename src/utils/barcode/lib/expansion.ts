@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { calculateUPCACheckDigit } from './digits';
 
 // Convierte UPC-E a UPC-A
-export function expandUPCEToUPCA(upce) {
+export function expandUPCEToUPCA(upce: string): string | null {
   if (!upce) return null;
   const cleanCode = upce.replace(/[^0-9]/g, '');
   let centerDigits;

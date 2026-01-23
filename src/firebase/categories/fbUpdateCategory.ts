@@ -1,14 +1,23 @@
-// @ts-nocheck
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbUpdateCategory = async (category, user) => {
-  if (!user || !user?.businessID) {
+import type { CategoryDocument, CategoryRecord } from './types';
+
+export const fbUpdateCategory = async (
+  category: CategoryRecord,
+  user: UserWithBusiness | null | undefined,
+): Promise<void> => {
+  if (!user?.businessID) {
     return console.warn('No tienes permisos para realizar esta acción');
   }
+  if (!category?.id) {
+    console.warn('CategorÃ­a invÃ¡lida para actualizar');
+    return;
+  }
   const { businessID } = user;
-  const counterRef = doc(
+  const counterRef = doc<CategoryDocument>(
     db,
     'businesses',
     String(businessID),

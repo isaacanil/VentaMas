@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { formatPrice } from './format/formatPrice';
 import { formatDate } from './formatDate';
 

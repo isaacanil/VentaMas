@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
 import { CLEAR_SENTINEL } from './constants';
 import type { TimestampLike } from './types';
 
-export function formatDate(d: TimestampLike) {
+export function formatDate(d: TimestampLike): string {
   if (!d) return '';
   try {
     let date: Date;
@@ -32,7 +31,7 @@ export function formatDate(d: TimestampLike) {
   }
 }
 
-export function formatInputDate(d: TimestampLike) {
+export function formatInputDate(d: TimestampLike): string {
   if (!d) return '';
   try {
     let date: Date;
@@ -72,13 +71,15 @@ export function formatInputDate(d: TimestampLike) {
 
 export function normalizeExpirationValue(
   value: TimestampLike | string | null | undefined,
-) {
+): string {
   if (!value || value === CLEAR_SENTINEL) return '';
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   return formatInputDate(value) || '';
 }
 
-export function toExpirationTimestamp(value: TimestampLike | null | undefined) {
+export function toExpirationTimestamp(
+  value: TimestampLike | null | undefined,
+): number | null {
   if (!value) return null;
   if (DateTime.isDateTime(value)) return value.toMillis();
   if (value instanceof Date) return value.getTime();
@@ -173,7 +174,7 @@ export const toMillis = (value: unknown): number | null => {
 export function formatDateTime(
   value: unknown,
   format = 'dd/MM/yyyy HH:mm',
-) {
+): string {
   const normalized = normalizeToDateTime(value);
   return normalized ? normalized.toFormat(format) : '';
 }

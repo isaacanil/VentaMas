@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function printPdfBase64(base64Data, options = {}) {
   // Detect mobile devices via simple UA check
   const isMobile =

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useMemo, useState } from 'react';
 
 import {
@@ -10,17 +9,80 @@ import {
   fbExportProblemProductsAll,
 } from '@/firebase/products/fbAuditPriceListMismatches';
 
+type UnknownStrategy = 'none' | 'mark' | 'copyPriceToList';
+type ExportFormat = 'csv' | 'xlsx' | 'both';
+
+interface ProgressPayload {
+  scanned?: number;
+  totalScanned?: number;
+  updated?: number;
+  totalUpdated?: number;
+  skipped?: number;
+  totalSkipped?: number;
+  unknown?: number;
+  totalUnknown?: number;
+  total?: number;
+  totalCount?: number;
+  scope?: 'list' | 'all';
+  phase?: string;
+  dryRun?: boolean;
+  businessID?: string;
+  businessName?: string;
+}
+
+interface ProgressState {
+  scanned: number;
+  total: number | null;
+  updated?: number;
+  skipped?: number;
+  unknown?: number;
+  scope?: 'list' | 'all';
+  phase?: string;
+  dryRun?: boolean;
+  businessID?: string;
+  businessName?: string;
+}
+
+interface BusinessFixRow {
+  businessID: string;
+  businessName?: string;
+  scanned?: number;
+  updated?: number;
+  skipped?: number;
+  unknown?: number;
+  dryRun?: boolean;
+}
+
+interface BusinessAuditSummary {
+  businessID: string;
+  total?: number;
+  equal?: number;
+  mismatch?: number;
+  unknown?: number;
+  pctEqual?: number;
+  pctMismatch?: number;
+  pctUnknown?: number;
+}
+
+interface BusinessTotals {
+  totalUpdated: number;
+  totalSkipped: number;
+  totalUnknown: number;
+  totalScanned: number;
+  dryRun?: boolean;
+}
+
 export default function BusinessPriceAudit() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(null); // progreso en vivo normalizado
-  const [rows, setRows] = useState([]); // resultados por negocio (lista)
-  const [allSummary, setAllSummary] = useState([]); // resumen por negocio (auditar TODOS)
-  const [allTotals, setAllTotals] = useState(null); // totales globales (simular/arreglar TODOS)
-  const [unknownStrategy, setUnknownStrategy] = useState('none'); // none | mark | copyPriceToList
-  const [exportFormat, setExportFormat] = useState('xlsx'); // 'csv' | 'xlsx' | 'both'
+  const [progress, setProgress] = useState<ProgressState | null>(null); // progreso en vivo normalizado
+  const [rows, setRows] = useState<BusinessFixRow[]>([]); // resultados por negocio (lista)
+  const [allSummary, setAllSummary] = useState<BusinessAuditSummary[]>([]); // resumen por negocio (auditar TODOS)
+  const [allTotals, setAllTotals] = useState<BusinessTotals | null>(null); // totales globales (simular/arreglar TODOS)
+  const [unknownStrategy, setUnknownStrategy] = useState<UnknownStrategy>('none'); // none | mark | copyPriceToList
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('xlsx'); // 'csv' | 'xlsx' | 'both'
 
-  const businessIDs = useMemo(() => {
+  const businessIDs = useMemo<string[]>(() => {
     return input
       .split(/[\s,;]+/)
       .map((s) => s.trim())
@@ -28,7 +90,7 @@ export default function BusinessPriceAudit() {
   }, [input]);
 
   // Normaliza distintos payloads de progreso
-  const handleProgress = (p) => {
+  const handleProgress = (p: ProgressPayload) => {
     setProgress((prev) => {
       const scanned = p.scanned ?? p.totalScanned ?? prev?.scanned ?? 0;
       const updated = p.updated ?? p.totalUpdated ?? prev?.updated ?? 0;
@@ -36,7 +98,7 @@ export default function BusinessPriceAudit() {
       const unknown = p.unknown ?? p.totalUnknown ?? prev?.unknown ?? 0;
       const total = p.total ?? p.totalCount ?? prev?.total ?? null;
       return {
-        ...(prev || {}),
+        ...(prev || { scanned: 0, total: null }),
         ...p,
         scanned,
         updated,
@@ -98,7 +160,7 @@ export default function BusinessPriceAudit() {
         dryRun: true,
         onProgress: handleProgress,
       });
-      setRows(res);
+      setRows(res as BusinessFixRow[]);
       await exportCsvForList('dryrun');
     } finally {
       setBusy(false);
@@ -129,7 +191,7 @@ export default function BusinessPriceAudit() {
         dryRun: false,
         onProgress: handleProgress,
       });
-      setRows(res);
+      setRows(res as BusinessFixRow[]);
       await exportCsvForList('post-fix');
     } finally {
       setBusy(false);
@@ -144,7 +206,7 @@ export default function BusinessPriceAudit() {
     setAllTotals(null);
     try {
       const res = await fbAuditAllBusinessesPriceVsList(1000);
-      setAllSummary(res);
+      setAllSummary(res as BusinessAuditSummary[]);
       await exportCsvForAll('summary');
     } finally {
       setBusy(false);
@@ -174,7 +236,7 @@ export default function BusinessPriceAudit() {
         unknownStrategy,
         onProgress: handleProgress,
       });
-      setAllTotals(res);
+      setAllTotals(res as BusinessTotals);
       await exportCsvForAll('dryrun');
     } finally {
       setBusy(false);
@@ -205,7 +267,7 @@ export default function BusinessPriceAudit() {
         unknownStrategy,
         onProgress: handleProgress,
       });
-      setAllTotals(res);
+      setAllTotals(res as BusinessTotals);
       await exportCsvForAll('post-fix');
     } finally {
       setBusy(false);

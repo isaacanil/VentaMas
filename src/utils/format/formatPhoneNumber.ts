@@ -1,5 +1,9 @@
-// @ts-nocheck
-export const formatPhoneNumber = (input = '') => {
+export type PhoneFormatHint = string | boolean;
+
+export const formatPhoneNumber = (
+  input: string = '',
+  _formatHint?: PhoneFormatHint,
+): string => {
   // Intentar dividir los posibles números con delimitadores comunes (comas, espacios, puntos, etc.)
   const phoneNumbers = input
     .split(/[,;.\s]+/)
@@ -17,7 +21,7 @@ export const formatPhoneNumber = (input = '') => {
   }
 
   // Si todos tienen la misma longitud, intentar formatearlos
-  const formatSinglePhoneNumber = (number) => {
+  const formatSinglePhoneNumber = (number: string): string => {
     const digits = number.replace(/\D/g, ''); // Eliminar no numéricos para el formato
 
     // Formato para números con prefijo de país (+xx)

@@ -1,8 +1,18 @@
-// @ts-nocheck
 // processMappedData.js
-export const processMappedData = ({ dataMapped, transformConfig = [] }) => {
+import type {
+  MappedData,
+  MappedRecord,
+  ProcessMappedDataParams,
+  TransformConfig,
+} from './types';
+
+export const processMappedData = ({
+  dataMapped,
+  transformConfig,
+}: ProcessMappedDataParams): MappedData => {
   // Crear un mapa de transformaciones estándar
-  const transformMap = transformConfig.reduce(
+  const normalizedTransformConfig: TransformConfig = transformConfig ?? [];
+  const transformMap = normalizedTransformConfig.reduce(
     (acc, { field, transform, source }) => {
       if (typeof transform === 'function') {
         acc[field] = { transforms: acc[field]?.transforms || [], source };
@@ -10,7 +20,10 @@ export const processMappedData = ({ dataMapped, transformConfig = [] }) => {
       }
       return acc;
     },
-    {},
+    {} as Record<
+      string,
+      { transforms: Array<(value: unknown, row: MappedRecord) => unknown>; source?: string }
+    >,
   );
 
   return dataMapped.map((item) => {
@@ -47,14 +60,14 @@ export const processMappedData = ({ dataMapped, transformConfig = [] }) => {
 };
 
 // Helper function to safely get nested values
-function getNestedValue(obj, path) {
+function getNestedValue(obj: MappedRecord, path: string) {
   return path
     .split('.')
     .reduce((acc, key) => (acc ? acc[key] : undefined), obj);
 }
 
 // Helper function to safely set nested values
-function setNestedValue(obj, path, value) {
+function setNestedValue(obj: MappedRecord, path: string, value: unknown) {
   const keys = path.split('.');
   let current = obj;
 

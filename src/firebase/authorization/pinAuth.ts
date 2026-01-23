@@ -11,26 +11,36 @@ type ActorPayload = {
   displayName: string;
 };
 
-type ModulePinDetail = {
+export type ModulePinDetail = {
   createdAt?: Date | null;
   updatedAt?: Date | null;
   expiresAt?: Date | null;
   deactivatedAt?: Date | null;
   lastGeneratedAt?: Date | null;
+  isActive?: boolean;
+  isExpired?: boolean;
   [key: string]: unknown;
 };
 
 type ModulePinDetailsMap = Record<string, ModulePinDetail>;
 
-type GeneratedPins = {
+export type GeneratedPins = {
   modules: string[];
-  pinsMap: Record<string, { pin?: string; createdAt?: Date | null; expiresAt?: Date | null }>;
-  pins: Array<{ module: string; pin: string; createdAt: Date | null; expiresAt: Date | null }>;
+  pinsMap: Record<
+    string,
+    { pin?: string; createdAt?: Date | null; expiresAt?: Date | null }
+  >;
+  pins: Array<{
+    module: string;
+    pin: string;
+    createdAt: Date | null;
+    expiresAt: Date | null;
+  }>;
   metadata: { generatedAt: Date | null; expiresAt: Date | null; schema: string };
   targetUser: unknown;
 };
 
-type PinStatus = {
+export type PinStatus = {
   hasPin: boolean;
   isActive: boolean;
   isExpired: boolean;

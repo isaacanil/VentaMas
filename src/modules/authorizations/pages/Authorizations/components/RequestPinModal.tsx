@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { KeyOutlined } from '@/constants/icons/antd';
 import { Modal, Form, Input, message } from 'antd';
 import { useState } from 'react';
@@ -9,7 +8,17 @@ const { TextArea } = Input;
  * Modal para que usuarios normales soliciten PIN a un admin
  * (Opcionalmente puede enviar una notificación o crear un ticket)
  */
-export const RequestPinModal = ({ visible, onClose, hasCurrentPin }) => {
+interface RequestPinModalProps {
+  visible: boolean;
+  onClose: () => void;
+  hasCurrentPin: boolean;
+}
+
+export const RequestPinModal = ({
+  visible,
+  onClose,
+  hasCurrentPin,
+}: RequestPinModalProps) => {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 

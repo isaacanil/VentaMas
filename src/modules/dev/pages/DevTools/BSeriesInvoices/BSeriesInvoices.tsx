@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Alert,
   Card,
@@ -16,13 +15,34 @@ import {
 } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useMemo, useState } from 'react';
+import type { ColumnsType } from 'antd/es/table';
 
 import { useFbGetInvoicesBySerie } from '@/firebase/invoices/useFbGetInvoicesBySerie';
+import type { InvoiceDocWithId } from '@/firebase/invoices/types';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
 const { Title, Paragraph, Text } = Typography;
 
-const parseNcfParts = (ncf) => {
+type NcfParts = {
+  serie: string | null;
+  type: string | null;
+  sequence: string | null;
+};
+
+interface InvoiceRow {
+  key: string;
+  raw: InvoiceDocWithId;
+  ncf: string;
+  serie: string | null;
+  type: string | null;
+  sequence: string | null;
+  client: string;
+  createdAt: DateTime | null;
+  total: number;
+  status: string;
+}
+
+const parseNcfParts = (ncf: unknown): NcfParts => {
   if (!ncf || typeof ncf !== 'string') {
     return { serie: null, type: null, sequence: null };
   }
@@ -35,11 +55,25 @@ const parseNcfParts = (ncf) => {
   return { serie, type, sequence };
 };
 
-const toDateTime = (value) => {
+type TimestampLike =
+  | { seconds?: number }
+  | { toDate?: () => Date }
+  | Date
+  | string
+  | number
+  | null
+  | undefined;
+
+const toDateTime = (value: TimestampLike): DateTime | null => {
   if (!value) return null;
   if (DateTime.isDateTime(value)) return value;
-  if (value.seconds) {
-    return DateTime.fromSeconds(value.seconds);
+  if (typeof value === 'object') {
+    if ('seconds' in value && typeof value.seconds === 'number') {
+      return DateTime.fromSeconds(value.seconds);
+    }
+    if ('toDate' in value && typeof value.toDate === 'function') {
+      return DateTime.fromJSDate(value.toDate());
+    }
   }
   if (value instanceof Date) {
     return DateTime.fromJSDate(value);
@@ -54,14 +88,14 @@ const toDateTime = (value) => {
   return null;
 };
 
-const formatCurrency = (amount) =>
+const formatCurrency = (amount: unknown) =>
   new Intl.NumberFormat('es-DO', {
     style: 'currency',
     currency: 'DOP',
     minimumFractionDigits: 2,
   }).format(amount || 0);
 
-const buildDataset = (invoices) =>
+const buildDataset = (invoices: InvoiceDocWithId[]): InvoiceRow[] =>
   invoices.map((invoice) => {
     const { data = {}, id } = invoice;
     const { serie, type, sequence } = parseNcfParts(
@@ -84,7 +118,7 @@ const buildDataset = (invoices) =>
     };
   });
 
-const columns = [
+const columns: ColumnsType<InvoiceRow> = [
   {
     title: 'NCF',
     dataIndex: 'ncf',
@@ -150,9 +184,13 @@ const columns = [
 const FILTER_ALL = 'all';
 
 export default function BSeriesInvoices() {
-  const { invoices, loading, error } = useFbGetInvoicesBySerie('B');
-  const [selectedType, setSelectedType] = useState(FILTER_ALL);
-  const [sequenceQuery, setSequenceQuery] = useState('');
+  const { invoices, loading, error } = useFbGetInvoicesBySerie('B') as {
+    invoices: InvoiceDocWithId[];
+    loading: boolean;
+    error: Error | null;
+  };
+  const [selectedType, setSelectedType] = useState<string>(FILTER_ALL);
+  const [sequenceQuery, setSequenceQuery] = useState<string>('');
 
   const dataset = useMemo(() => buildDataset(invoices), [invoices]);
 

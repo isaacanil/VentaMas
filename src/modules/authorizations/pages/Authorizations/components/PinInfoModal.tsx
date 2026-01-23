@@ -1,15 +1,36 @@
-// @ts-nocheck
 import {
   SafetyOutlined,
   LockOutlined,
   CheckCircleOutlined,
 } from '@/constants/icons/antd';
 import { Modal, Typography, Button } from 'antd';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
 const { Title, Text } = Typography;
 
-const sectionTokens = {
+type SectionVariant = 'usage' | 'security';
+
+interface SectionToken {
+  bg: string;
+  border: string;
+  iconBg: string;
+  iconColor: string;
+  bulletBg: string;
+  bulletColor: string;
+}
+
+interface SectionToneProps {
+  $variant: SectionVariant;
+}
+
+interface PinInfoModalProps {
+  visible: boolean;
+  onClose: () => void;
+  canSelfGenerate: boolean;
+}
+
+const sectionTokens: Record<SectionVariant, SectionToken> = {
   usage: {
     bg: 'linear-gradient(135deg, rgba(22, 119, 255, 0.10) 0%, rgba(22, 119, 255, 0.02) 100%)',
     border: 'rgba(22, 119, 255, 0.32)',
@@ -65,7 +86,7 @@ const Subtitle = styled(Text)`
   color: #8c8c8c !important;
 `;
 
-const SectionCard = styled.div`
+const SectionCard = styled.div<SectionToneProps>`
   display: grid;
   gap: 18px;
   padding: 22px 24px;
@@ -81,7 +102,7 @@ const SectionHeader = styled.div`
   align-items: center;
 `;
 
-const SectionIcon = styled.div`
+const SectionIcon = styled.div<SectionToneProps>`
   display: grid;
   place-items: center;
   width: 44px;
@@ -130,7 +151,7 @@ const TipItem = styled.li`
   color: #434343;
 `;
 
-const TipBullet = styled.span`
+const TipBullet = styled.span<SectionToneProps>`
   display: grid;
   flex-shrink: 0;
   place-items: center;
@@ -153,7 +174,11 @@ const Highlight = styled.span`
   color: #1f1f1f;
 `;
 
-export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
+export const PinInfoModal = ({
+  visible,
+  onClose,
+  canSelfGenerate,
+}: PinInfoModalProps) => {
   const usageTips = [
     <>
       Ingresa tu <Highlight>usuario</Highlight> y tu{' '}
@@ -174,7 +199,7 @@ export const PinInfoModal = ({ visible, onClose, canSelfGenerate }) => {
     'Solo funcionará en los módulos que tienes habilitados en la plataforma.',
   ];
 
-  const renderTips = (tips, variant) =>
+  const renderTips = (tips: ReactNode[], variant: SectionVariant) =>
     tips.map((tip, index) => (
       <TipItem key={`${variant}-${index}`}>
         <TipBullet $variant={variant}>

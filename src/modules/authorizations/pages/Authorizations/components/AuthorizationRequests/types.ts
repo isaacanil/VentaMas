@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 export type AuthorizationStatus =

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Select, Button } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
@@ -7,15 +6,24 @@ import { fbGetBusinesses } from '@/firebase/dev/businesses/fbGetBusinesses';
 
 const { Option } = Select;
 
+interface BusinessInfo {
+  id?: string;
+  name?: string;
+}
+
+interface BusinessDoc {
+  business: BusinessInfo;
+}
+
 const SwitchBusiness = () => {
-  const [businesses, setBusinesses] = useState([]);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [businesses, setBusinesses] = useState<BusinessDoc[]>([]);
+  const [selectedBusiness, setSelectedBusiness] = useState<string | null>(null);
 
   useEffect(() => {
     fbGetBusinesses(setBusinesses);
   }, []);
 
-  const handleChange = (value) => {
+  const handleChange = (value: string) => {
     setSelectedBusiness(value);
   };
   const handleSwitch = () => {

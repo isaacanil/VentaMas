@@ -1,21 +1,30 @@
-// @ts-nocheck
 import { normalizeHeaderKey } from './normalizeHeaderKey';
+import type {
+  HeaderAliases,
+  MappedData,
+  MappedRecord,
+  MapDataParams,
+} from './types';
 
 // mapData.js
-const HEADER_ALIASES = {
+const HEADER_ALIASES: HeaderAliases = {
   es: {
     codigo: 'codigo de barras',
     'codigo de barra': 'codigo de barras',
   },
 };
 
-const resolveNormalizedHeader = (value, language) => {
+const resolveNormalizedHeader = (value: unknown, language: string) => {
   const normalized = normalizeHeaderKey(value);
   if (!normalized) return '';
   return HEADER_ALIASES[language]?.[normalized] ?? normalized;
 };
 
-export const mapData = ({ data, headerMapping, language = 'es' }) => {
+export const mapData = ({
+  data,
+  headerMapping,
+  language = 'es',
+}: MapDataParams): MappedData => {
   if (!headerMapping?.[language]) return [];
 
   const languageMapping = headerMapping[language];
@@ -27,11 +36,11 @@ export const mapData = ({ data, headerMapping, language = 'es' }) => {
       }
       return acc;
     },
-    {},
+    {} as Record<string, string>,
   );
 
   return data.map((item) => {
-    const mappedItem = {};
+    const mappedItem: MappedRecord = {};
     Object.entries(item).forEach(([headerKey, rawValue]) => {
       const normalizedHeader = resolveNormalizedHeader(headerKey, language);
       const mappedKey = normalizedMapping[normalizedHeader];
@@ -52,7 +61,7 @@ export const mapData = ({ data, headerMapping, language = 'es' }) => {
 };
 
 // Helper function to safely set nested values
-function setNestedValue(obj, path, value) {
+function setNestedValue(obj: MappedRecord, path: string, value: unknown) {
   const keys = path.split('.');
   let current = obj;
 

@@ -1,5 +1,11 @@
-// @ts-nocheck
-export const sortPurchases = (purchases, isAscending) => {
+type SortableByCreatedAt = {
+  createdAt?: string | number | Date | null;
+};
+
+export const sortPurchases = <T extends SortableByCreatedAt>(
+  purchases: readonly T[] | null | undefined,
+  isAscending: boolean,
+): T[] | null | undefined => {
   if (!purchases?.length) return purchases;
 
   return [...purchases].sort((a, b) => {
@@ -12,7 +18,11 @@ export const sortPurchases = (purchases, isAscending) => {
     return isAscending ? dateA - dateB : dateB - dateA;
   });
 };
-export const sortOrders = (purchases, isAscending) => {
+
+export const sortOrders = <T extends SortableByCreatedAt>(
+  purchases: readonly T[] | null | undefined,
+  isAscending: boolean,
+): T[] | null | undefined => {
   if (!purchases?.length) return purchases;
 
   return [...purchases].sort((a, b) => {

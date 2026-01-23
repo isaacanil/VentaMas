@@ -1,21 +1,48 @@
-// @ts-nocheck
 import { Alert, Button, Card, Checkbox, Input, Typography } from 'antd';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { syncAllBusinessesProductsStock } from '@/firebase/warehouse/stockSyncService';
 
+interface SyncUpdate {
+  productId: string;
+  from?: number;
+  to: number;
+}
+
+type InvalidProductId =
+  | string
+  | {
+      productId?: string | null;
+      name?: string | null;
+    };
+
+interface SyncResult {
+  updates: SyncUpdate[];
+  totalProducts: number;
+  invalidProductIds: InvalidProductId[];
+}
+
+interface SyncBusinessResult extends Partial<SyncResult> {
+  businessId: string;
+  error?: unknown;
+}
+
+interface InventoryMigrationProps {
+  defaultBusinessIds?: string[];
+}
+
 // Panel para alinear product.stock con la suma de productsStock por negocio.
 // Props:
 // - db: Firestore instance (no se utiliza directamente, pero mantiene compatibilidad con el wrapper)
 // - defaultBusinessIds?: string[] (opcional)
-export default function InventoryMigration({ defaultBusinessIds = [] }) {
+export default function InventoryMigration({ defaultBusinessIds = [] }: InventoryMigrationProps) {
   const [dryRun, setDryRun] = useState(true);
   const [running, setRunning] = useState(false);
   const [businessIdsInput, setBusinessIdsInput] = useState(
     defaultBusinessIds.join(','),
   );
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
+  const [results, setResults] = useState<SyncBusinessResult[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const parsedBusinessIds = useMemo(() => {
     const raw = String(businessIdsInput || '').trim();
@@ -36,9 +63,9 @@ export default function InventoryMigration({ defaultBusinessIds = [] }) {
         dryRun,
         filterActive: true,
       });
-      setResults(res);
+      setResults(res as SyncBusinessResult[]);
     } catch (e) {
-      setError(e?.message || String(e));
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setRunning(false);
     }
@@ -219,7 +246,7 @@ export default function InventoryMigration({ defaultBusinessIds = [] }) {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div style={{ padding: 8, border: '1px solid #e5e7eb', borderRadius: 6 }}>
       <div

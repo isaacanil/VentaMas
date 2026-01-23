@@ -1,10 +1,19 @@
-// @ts-nocheck
 import { calculateGTIN13CheckDigit, calculateGTIN14CheckDigit } from './digits';
+import type {
+  CompanyStructure,
+  CompanyStructureMap,
+  CountryCode,
+  GenerationValidationResult,
+  GenerateGtinConfig,
+  GenerateInternalGtinConfig,
+  Gs1PrefixMap,
+  InternalModeStructureMap,
+} from './types';
 
 /**
  * Configuraciones de prefijos GS1 por país
  */
-export const GS1_PREFIXES = {
+export const GS1_PREFIXES: Gs1PrefixMap = {
   // América
   US: {
     prefix: '0',
@@ -64,7 +73,7 @@ export const GS1_PREFIXES = {
 /**
  * Configuraciones de estructura por tamaño de empresa
  */
-export const COMPANY_STRUCTURES = {
+export const COMPANY_STRUCTURES: CompanyStructureMap = {
   large: {
     name: 'Empresa Grande',
     companyPrefixLength: 6,
@@ -99,7 +108,7 @@ export const COMPANY_STRUCTURES = {
  * @param {string} [config.indicator='0'] - Indicador para GTIN14
  * @returns {string} Código GTIN completo con dígito verificador
  */
-export function generateGTIN(config) {
+export function generateGTIN(config: GenerateGtinConfig): string {
   const {
     country,
     companyPrefix,
@@ -176,7 +185,11 @@ export function generateGTIN(config) {
  * @param {string} itemReference - Referencia de artículo
  * @returns {string} Código GTIN13 completo
  */
-export function generateGTIN13(country, companyPrefix, itemReference) {
+export function generateGTIN13(
+  country: CountryCode,
+  companyPrefix: string,
+  itemReference: string,
+): string {
   return generateGTIN({
     country,
     companyPrefix,
@@ -194,11 +207,11 @@ export function generateGTIN13(country, companyPrefix, itemReference) {
  * @returns {string} Código GTIN14 completo
  */
 export function generateGTIN14(
-  country,
-  companyPrefix,
-  itemReference,
-  indicator = '0',
-) {
+  country: CountryCode,
+  companyPrefix: string,
+  itemReference: string,
+  indicator: string = '0',
+): string {
   return generateGTIN({
     country,
     companyPrefix,
@@ -212,7 +225,10 @@ export function generateGTIN14(
  * Función de retrocompatibilidad para República Dominicana
  * @deprecated Usa generateGTIN13('DO', companyPrefix, itemReference) en su lugar
  */
-export function generateGTIN13RD(companyPrefix, itemReference) {
+export function generateGTIN13RD(
+  companyPrefix: string,
+  itemReference: string,
+): string {
   console.warn(
     'generateGTIN13RD está deprecada. Usa generateGTIN13("DO", companyPrefix, itemReference)',
   );
@@ -224,7 +240,9 @@ export function generateGTIN13RD(companyPrefix, itemReference) {
  * @param {number} expectedProducts - Número esperado de productos
  * @returns {Object} Configuración recomendada
  */
-export function getRecommendedStructure(expectedProducts) {
+export function getRecommendedStructure(
+  expectedProducts: number,
+): CompanyStructure {
   if (expectedProducts <= 999) return COMPANY_STRUCTURES.large;
   if (expectedProducts <= 9999) return COMPANY_STRUCTURES.medium;
   return COMPANY_STRUCTURES.small;
@@ -235,7 +253,9 @@ export function getRecommendedStructure(expectedProducts) {
  * @param {Object} config - Configuración a validar
  * @returns {Object} Resultado de validación
  */
-export function validateGenerationConfig(config) {
+export function validateGenerationConfig(
+  config: GenerateGtinConfig,
+): GenerationValidationResult {
   const { country, companyPrefix, itemReference } = config;
   const errors = [];
 
@@ -275,7 +295,10 @@ export function validateGenerationConfig(config) {
  * @param {number} digits - Número de dígitos deseados
  * @returns {string} Nueva referencia con padding de ceros
  */
-export function generateNextItemReference(lastReference = 0, digits = 5) {
+export function generateNextItemReference(
+  lastReference: number = 0,
+  digits: number = 5,
+): string {
   const next = lastReference + 1;
   return next.toString().padStart(digits, '0');
 }
@@ -283,7 +306,7 @@ export function generateNextItemReference(lastReference = 0, digits = 5) {
 /**
  * Configuraciones para modo de uso interno
  */
-export const INTERNAL_MODE_STRUCTURES = {
+export const INTERNAL_MODE_STRUCTURES: InternalModeStructureMap = {
   standard: {
     name: 'Uso Interno',
     companyPrefixLength: 0, // Sin company prefix ni categorías
@@ -303,7 +326,9 @@ export const INTERNAL_MODE_STRUCTURES = {
  * @param {string} [config.indicator='0'] - Indicador para GTIN14
  * @returns {string} Código GTIN completo con dígito verificador
  */
-export function generateInternalGTIN(config) {
+export function generateInternalGTIN(
+  config: GenerateInternalGtinConfig,
+): string {
   const {
     country,
     categoryPrefix = '',
@@ -381,10 +406,10 @@ export function generateInternalGTIN(config) {
  * @returns {string} Código GTIN13 completo para uso interno
  */
 export function generateInternalGTIN13(
-  country,
-  categoryPrefix = '',
-  itemReference,
-) {
+  country: CountryCode,
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   return generateInternalGTIN({
     country,
     categoryPrefix,
@@ -399,7 +424,10 @@ export function generateInternalGTIN13(
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para uso interno en RD
  */
-export function generateInternalGTIN13RD(categoryPrefix = '', itemReference) {
+export function generateInternalGTIN13RD(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   // Para modo interno, si no hay categoryPrefix, el itemReference debe ser de 9 dígitos
   // Si es más corto, lo rellenamos con ceros a la izquierda
   if (!categoryPrefix && itemReference) {
@@ -416,7 +444,10 @@ export function generateInternalGTIN13RD(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para Estados Unidos/Canadá
  */
-export function generateGTIN13US(categoryPrefix = '', itemReference) {
+export function generateGTIN13US(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(11, '0');
     return generateInternalGTIN13('US', categoryPrefix, paddedItemReference);
@@ -430,7 +461,10 @@ export function generateGTIN13US(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para México
  */
-export function generateGTIN13MX(categoryPrefix = '', itemReference) {
+export function generateGTIN13MX(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('MX', categoryPrefix, paddedItemReference);
@@ -444,7 +478,10 @@ export function generateGTIN13MX(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para Colombia
  */
-export function generateGTIN13CO(categoryPrefix = '', itemReference) {
+export function generateGTIN13CO(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('CO', categoryPrefix, paddedItemReference);
@@ -458,7 +495,10 @@ export function generateGTIN13CO(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para Argentina
  */
-export function generateGTIN13AR(categoryPrefix = '', itemReference) {
+export function generateGTIN13AR(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('AR', categoryPrefix, paddedItemReference);
@@ -472,7 +512,10 @@ export function generateGTIN13AR(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para Chile
  */
-export function generateGTIN13CL(categoryPrefix = '', itemReference) {
+export function generateGTIN13CL(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('CL', categoryPrefix, paddedItemReference);
@@ -486,7 +529,10 @@ export function generateGTIN13CL(categoryPrefix = '', itemReference) {
  * @param {string} itemReference - Referencia del artículo
  * @returns {string} Código GTIN13 completo para Perú
  */
-export function generateGTIN13PE(categoryPrefix = '', itemReference) {
+export function generateGTIN13PE(
+  categoryPrefix: string = '',
+  itemReference: string,
+): string {
   if (!categoryPrefix && itemReference) {
     const paddedItemReference = itemReference.toString().padStart(9, '0');
     return generateInternalGTIN13('PE', categoryPrefix, paddedItemReference);

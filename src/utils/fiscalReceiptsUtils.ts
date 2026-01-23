@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Utilitarios para manejar los cálculos de comprobantes fiscales
  */

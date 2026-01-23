@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   KeyOutlined,
   ReloadOutlined,
@@ -8,7 +7,7 @@ import {
   EyeOutlined,
 } from '@/constants/icons/antd';
 import { Button, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -17,10 +16,13 @@ import {
   fbGetUserPinStatus,
   fbGenerateUserPin,
   fbDeactivateUserPin,
+  type GeneratedPins,
+  type PinStatus,
 } from '@/firebase/authorization/pinAuth';
 import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { GeneratePinModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
 import { PinDetailsModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';
+import type { UserIdentity } from '@/types/users';
 
 import { PinInfoModal } from './PinInfoModal';
 import { RequestPinModal } from './RequestPinModal';
@@ -28,15 +30,75 @@ import { ViewPinModal } from './ViewPinModal';
 
 const { Title, Text } = Typography;
 
-const AVAILABLE_MODULES = [
+type AuthorizationModuleKey =
+  | 'invoices'
+  | 'accountsReceivable'
+  | 'cashRegister'
+  | (string & {});
+
+interface AvailableModule {
+  value: AuthorizationModuleKey;
+  label: string;
+}
+
+type AuthUser = UserIdentity & { uid?: string; displayName?: string };
+
+interface AuthorizationModulesState {
+  authorizationFlowEnabled: boolean;
+  enabledModules: Record<string, boolean>;
+}
+
+type HeroTone = 'success' | 'warning' | 'info' | 'danger' | 'muted';
+
+interface HeroToken {
+  bg: string;
+  text: string;
+  iconBg: string;
+  statBg: string;
+}
+
+interface HeroToneProps {
+  $tone: HeroTone;
+}
+
+interface HeroBadgeItem {
+  key: string;
+  label: string;
+  tone: HeroTone;
+}
+
+interface StatusDisplay {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  tone: HeroTone;
+}
+
+interface ModuleListItem {
+  module: AuthorizationModuleKey;
+  label: string;
+  status: string;
+  tone: HeroTone;
+  expiresDisplay: string;
+}
+
+interface SelectedModule {
+  key: AuthorizationModuleKey;
+  label: string;
+}
+
+const AVAILABLE_MODULES: AvailableModule[] = [
   { value: 'invoices', label: 'Facturación' },
   { value: 'accountsReceivable', label: 'Cuadre de Caja' },
 ];
 
-const MODULE_LABELS = AVAILABLE_MODULES.reduce((acc, module) => {
-  acc[module.value] = module.label;
-  return acc;
-}, {});
+const MODULE_LABELS = AVAILABLE_MODULES.reduce<Record<string, string>>(
+  (acc, module) => {
+    acc[module.value] = module.label;
+    return acc;
+  },
+  {},
+);
 
 const PageContainer = styled.div`
   display: grid;
@@ -73,7 +135,7 @@ const HeaderIcon = styled.div`
 
 const SummaryCard = styled.div``;
 
-const heroTokens = {
+const heroTokens: Record<HeroTone, HeroToken> = {
   success: {
     bg: 'linear-gradient(135deg, #d1f5d3 0%, #63d471 100%)',
     text: '#0f5132',
@@ -106,7 +168,7 @@ const heroTokens = {
   },
 };
 
-const HeroPanel = styled.div`
+const HeroPanel = styled.div<HeroToneProps>`
   position: relative;
   display: grid;
   gap: 18px;
@@ -163,7 +225,7 @@ const HeroBadges = styled.div`
   gap: 8px;
 `;
 
-const HeroBadge = styled.span`
+const HeroBadge = styled.span<HeroToneProps>`
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
@@ -206,7 +268,7 @@ const HelperAlert = styled(Alert)`
   border-radius: 10px;
 `;
 
-const ModuleCard = styled.div`
+const ModuleCard = styled.div<{ $active: boolean }>`
   padding: 16px;
   background: #fff;
   border: 1px solid #f0f0f0;
@@ -244,45 +306,61 @@ const ModulesGrid = styled.div`
   gap: 16px;
 `;
 
+const DEFAULT_PIN_STATUS: PinStatus = {
+  hasPin: false,
+  isActive: false,
+  isExpired: false,
+  modules: [],
+  activeModules: [],
+  createdAt: null,
+  expiresAt: null,
+  updatedAt: null,
+  moduleDetails: {},
+  schema: 'v2',
+  createdBy: null,
+  targetUser: null,
+};
+
 /**
  * Vista personal de PIN
  * - Usuarios normales: Solo ven su PIN, solicitan a admin
  * - Dev/Owner: Pueden generar su propio PIN
  */
 export const PersonalPinManagement = () => {
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as AuthUser | null;
   const { enabledModules, authorizationFlowEnabled } =
-    useAuthorizationModules();
-  const [pinStatus, setPinStatus] = useState(null);
+    useAuthorizationModules() as AuthorizationModulesState;
+  const [pinStatus, setPinStatus] = useState<PinStatus>(DEFAULT_PIN_STATUS);
   const [loading, setLoading] = useState(false);
   const [requestModalVisible, setRequestModalVisible] = useState(false);
   const [generateModalVisible, setGenerateModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [generatedPin, setGeneratedPin] = useState(null);
+  const [generatedPin, setGeneratedPin] = useState<GeneratedPins | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [viewPinModalVisible, setViewPinModalVisible] = useState(false);
-  const [selectedModule, setSelectedModule] = useState(null);
+  const [selectedModule, setSelectedModule] = useState<SelectedModule | null>(
+    null,
+  );
 
   // Dev y Owner pueden generar su propio PIN
-  const canSelfGenerate = ['dev', 'owner', 'admin'].includes(user?.role);
+  const canSelfGenerate =
+    !!user?.role && ['dev', 'owner', 'admin'].includes(user.role);
 
   // Filtrar solo módulos activos según configuración
-  const activeAvailableModules = authorizationFlowEnabled
+  const activeAvailableModules: AvailableModule[] = authorizationFlowEnabled
     ? AVAILABLE_MODULES.filter(
         (module) => enabledModules[module.value] !== false,
       )
     : [];
 
   const loadPinStatus = useCallback(async () => {
+    if (!user || !user.uid) return;
     setLoading(true);
     try {
       const status = await fbGetUserPinStatus(user, user.uid);
       setPinStatus(status);
     } catch {
-      setPinStatus({
-        hasPin: false,
-        isActive: false,
-      });
+      setPinStatus(DEFAULT_PIN_STATUS);
     } finally {
       setLoading(false);
     }
@@ -292,7 +370,11 @@ export const PersonalPinManagement = () => {
     if (user?.uid) loadPinStatus();
   }, [user?.uid, loadPinStatus]);
 
-  const handleGeneratePin = async (modules) => {
+  const handleGeneratePin = async (modules: string[]) => {
+    if (!user || !user.uid) {
+      message.error('SesiÃ³n invÃ¡lida. Inicia sesiÃ³n nuevamente.');
+      return;
+    }
     setLoading(true);
     try {
       const result = await fbGenerateUserPin(user, user.uid, modules);
@@ -302,7 +384,9 @@ export const PersonalPinManagement = () => {
       setDetailsModalVisible(true);
       await loadPinStatus();
     } catch (error) {
-      message.error(error?.message || 'Error generando PIN');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error generando PIN';
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);
@@ -318,13 +402,19 @@ export const PersonalPinManagement = () => {
       okType: 'danger',
       cancelText: 'Cancelar',
       onOk: async () => {
+        if (!user || !user.uid) {
+          message.error('SesiÃ³n invÃ¡lida. Inicia sesiÃ³n nuevamente.');
+          return;
+        }
         setLoading(true);
         try {
           await fbDeactivateUserPin(user, user.uid);
           message.success('PIN desactivado exitosamente');
           await loadPinStatus();
         } catch (error) {
-          message.error(error?.message || 'Error desactivando PIN');
+          const errorMessage =
+            error instanceof Error ? error.message : 'Error desactivando PIN';
+          message.error(errorMessage);
           console.error(error);
         } finally {
           setLoading(false);
@@ -333,8 +423,8 @@ export const PersonalPinManagement = () => {
     });
   };
 
-  const getStatusDisplay = () => {
-    if (!pinStatus?.hasPin) {
+  const getStatusDisplay = (): StatusDisplay => {
+    if (!pinStatus.hasPin) {
       return {
         icon: <LockOutlined />,
         title: 'Sin PIN configurado',
@@ -373,7 +463,9 @@ export const PersonalPinManagement = () => {
     };
   };
 
-  const formatDateTime = (value) => {
+  const formatDateTime = (
+    value: Date | string | number | null | undefined,
+  ): string => {
     if (!value) return '-';
     try {
       return new Date(value).toLocaleString();
@@ -385,7 +477,7 @@ export const PersonalPinManagement = () => {
   const statusDisplay = getStatusDisplay();
 
   // Preparar badges para el header
-  const heroBadges = [];
+  const heroBadges: HeroBadgeItem[] = [];
 
   if (Array.isArray(pinStatus?.modules) && pinStatus.modules.length > 0) {
     const activeCount = Array.isArray(pinStatus.activeModules)
@@ -399,8 +491,8 @@ export const PersonalPinManagement = () => {
   }
 
   // Preparar lista de módulos - solo mostrar módulos que están activos en configuración Y tienen PIN activo
-  const modulesList =
-    authorizationFlowEnabled && pinStatus?.moduleDetails
+  const modulesList: ModuleListItem[] =
+    authorizationFlowEnabled && pinStatus.moduleDetails
       ? Object.entries(pinStatus.moduleDetails)
           .filter(([moduleKey, detail]) => {
             // Filtrar solo módulos activos en configuración Y con PIN activo
@@ -409,12 +501,13 @@ export const PersonalPinManagement = () => {
             );
           })
           .map(([moduleKey, detail]) => {
+            const normalizedKey = moduleKey as AuthorizationModuleKey;
             const expiresDisplay = detail?.expiresAt
               ? formatDateTime(detail.expiresAt)
               : 'Sin expiración';
             return {
-              module: moduleKey,
-              label: MODULE_LABELS[moduleKey] || moduleKey,
+              module: normalizedKey,
+              label: MODULE_LABELS[normalizedKey] || moduleKey,
               status: 'Activo',
               tone: 'success',
               expiresDisplay,
@@ -455,7 +548,7 @@ export const PersonalPinManagement = () => {
           </div>
         </PageHeader>
 
-        <SummaryCard bordered={false}>
+        <SummaryCard>
           <HeroPanel $tone={statusDisplay.tone}>
             <HeroHeader>
               <HeroHeaderLeft>

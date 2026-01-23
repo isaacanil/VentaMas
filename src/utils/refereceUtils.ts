@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { doc, getDoc, DocumentReference } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';

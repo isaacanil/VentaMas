@@ -1,5 +1,6 @@
-// @ts-nocheck
-export const productHeaderMappings = {
+import type { HeaderMapping } from '@/utils/import/types';
+
+export const productHeaderMappings: HeaderMapping<'en' | 'es'> = {
   en: {
     'QR Code': 'qrcode',
     Category: 'category',

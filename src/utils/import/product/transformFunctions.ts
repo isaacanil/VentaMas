@@ -1,7 +1,9 @@
-// @ts-nocheck
 import { warrantyOptions } from '@/components/modals/ProductForm/components/sections/warranty.helpers';
+import type { TransformConfig } from '@/utils/import/types';
 
-const ITEM_TYPE_MAP = {
+type ProductItemType = 'product' | 'service' | 'combo';
+
+const ITEM_TYPE_MAP: Record<string, ProductItemType> = {
   product: 'product',
   producto: 'product',
   products: 'product',
@@ -15,7 +17,7 @@ const ITEM_TYPE_MAP = {
   bundle: 'combo',
 };
 
-const normalizeItemType = (value) => {
+const normalizeItemType = (value: unknown): ProductItemType => {
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
     if (ITEM_TYPE_MAP[normalized]) {
@@ -25,7 +27,7 @@ const normalizeItemType = (value) => {
   return 'product';
 };
 
-export const transformConfig = [
+export const transformConfig: TransformConfig = [
   {
     field: 'name',
     transform: (value) => value || '',

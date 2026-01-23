@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Alert, Button, Card, List, Space, Typography, message } from 'antd';
 import {
   collection,
@@ -9,6 +8,7 @@ import {
   query,
 } from 'firebase/firestore';
 import { useState } from 'react';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
@@ -17,7 +17,18 @@ const { Paragraph, Text } = Typography;
 const TOKEN_COLLECTION = 'sessionTokens';
 const FETCH_LIMIT = 500;
 
-const hasOnlyUserId = (data) => {
+interface SessionTokenDoc {
+  userId?: string;
+  [key: string]: unknown;
+}
+
+interface TokenResultItem {
+  id: string;
+  userId: string;
+  keys: string[];
+}
+
+const hasOnlyUserId = (data: SessionTokenDoc | null | undefined) => {
   if (!data || typeof data !== 'object') return false;
   const presentKeys = Object.keys(data).filter(
     (key) => data[key] !== undefined,
@@ -26,8 +37,10 @@ const hasOnlyUserId = (data) => {
   return presentKeys.every((key) => key === 'userId');
 };
 
-const toResultItem = (docSnap) => {
-  const data = docSnap.data() || {};
+const toResultItem = (
+  docSnap: QueryDocumentSnapshot<DocumentData>,
+): TokenResultItem | null => {
+  const data = (docSnap.data() || {}) as SessionTokenDoc;
   if (!hasOnlyUserId(data)) return null;
   return {
     id: docSnap.id,
@@ -39,9 +52,9 @@ const toResultItem = (docSnap) => {
 export default function SessionTokensCleanup() {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState<TokenResultItem[]>([]);
   const [scanned, setScanned] = useState(0);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
 
   const fetchTokens = async () => {
@@ -62,7 +75,10 @@ export default function SessionTokensCleanup() {
         messageApi.info('No se encontraron tokens incompletos en este lote.');
       }
     } catch (err) {
-      const msg = err?.message || 'No se pudo consultar sessionTokens.';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo consultar sessionTokens.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -93,7 +109,10 @@ export default function SessionTokensCleanup() {
       }
       setTokens([]);
     } catch (err) {
-      const msg = err?.message || 'No se pudieron eliminar los tokens.';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'No se pudieron eliminar los tokens.';
       setError(msg);
     } finally {
       setDeleting(false);

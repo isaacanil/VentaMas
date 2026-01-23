@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { analyzeBarcodeStructure } from './analyzer';
 import {
   calculateGTIN13CheckDigit,
@@ -7,16 +6,22 @@ import {
   calculateGTIN14CheckDigit,
 } from './digits';
 import { expandUPCEToUPCA } from './expansion';
+import type {
+  CorrectionSuggestion,
+  CorrectionSuggestionReason,
+} from './types';
 
 /**
  * Genera sugerencias de corrección para un código de barras
  */
-export function generateCorrectionSuggestions(barcode) {
+export function generateCorrectionSuggestions(
+  barcode: string,
+): CorrectionSuggestion[] {
   if (!barcode || typeof barcode !== 'string') {
     return [];
   }
 
-  const suggestions = [];
+  const suggestions: CorrectionSuggestion[] = [];
   const cleanCode = barcode.replace(/[^0-9]/g, '');
   const length = cleanCode.length;
 
@@ -291,7 +296,14 @@ export function generateCorrectionSuggestions(barcode) {
   return suggestions;
 }
 
-function applyFix(code, calculator, pos, id, label, suggestions) {
+function applyFix(
+  code: string,
+  calculator: (value: string) => string | null,
+  pos: number,
+  id: string,
+  label: string,
+  suggestions: CorrectionSuggestion[],
+) {
   const correctCheckDigit = calculator(code.substring(0, pos));
   const currentCheckDigit = code.substring(pos, pos + 1);
 
@@ -307,15 +319,23 @@ function applyFix(code, calculator, pos, id, label, suggestions) {
   }
 }
 
-export function hasCorrectionSuggestions(barcode) {
+export function hasCorrectionSuggestions(barcode: string): boolean {
   return generateCorrectionSuggestions(barcode).length > 0;
 }
 
-export function getBestCorrectionSuggestion(barcode) {
+export function getBestCorrectionSuggestion(
+  barcode: string,
+): CorrectionSuggestion | null {
   const suggestions = generateCorrectionSuggestions(barcode);
   if (!suggestions.length) return null;
 
-  const priorityOrder = ['fix', 'complete', 'clean', 'expand', 'truncate'];
+  const priorityOrder: CorrectionSuggestionReason[] = [
+    'fix',
+    'complete',
+    'clean',
+    'expand',
+    'truncate',
+  ];
   for (const reason of priorityOrder) {
     const suggestion = suggestions.find((s) => s.reason === reason);
     if (suggestion) return suggestion;

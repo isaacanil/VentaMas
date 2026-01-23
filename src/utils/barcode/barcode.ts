@@ -1,10 +1,47 @@
-// @ts-nocheck
 /**
  * Sistema modular de códigos de barras - Estilo Firebase v9+
  * Archivo principal con funciones exportadas individualmente
  */
 
 // Re-exportar todas las funciones desde sus módulos específicos
+export type {
+  BarcodeAnalysis,
+  BarcodeAnalysisBase,
+  BarcodeAnalysisDetailed,
+  BarcodeAnalysisEmpty,
+  BarcodeAnalysisNonNumeric,
+  BarcodeCheckDigit,
+  BarcodeCheckDigitInfo,
+  BarcodeCountryInfo,
+  BarcodeCountryInfoWithPrefix,
+  BarcodeErrorCode,
+  BarcodeInfo,
+  BarcodeInfoInvalid,
+  BarcodeInfoValid,
+  BarcodeInput,
+  BarcodeStructure,
+  BarcodeType,
+  CompanyStructure,
+  CompanyStructureMap,
+  CountryCode,
+  CorrectionSuggestion,
+  CorrectionSuggestionColor,
+  CorrectionSuggestionReason,
+  GenerateGtinConfig,
+  GenerateInternalGtinConfig,
+  GenerationValidationResult,
+  Gs1Geometry,
+  Gs1PrefixConfig,
+  Gs1PrefixMap,
+  Gs1Standard,
+  Gs1StandardType,
+  GtinFormat,
+  InternalModeStructure,
+  InternalModeStructureMap,
+  KnownBarcodeType,
+  VariableWeightStructure,
+} from './lib/types';
+
 export {
   GS1_COUNTRY_PREFIXES,
   PREFIXES_SORTED,

@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { Tabs, Alert } from 'antd';
+import { Tabs, Alert, type TabsProps } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
@@ -8,6 +7,7 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import type { UserIdentity } from '@/types/users';
 
 import ApprovalLogs from './components/ApprovalLogs/ApprovalLogs';
 import { AuthorizationRequests } from './components/AuthorizationRequests/AuthorizationRequests';
@@ -30,6 +30,13 @@ const StyledTabs = styled(Tabs)`
   }
 `;
 
+type AuthUser = UserIdentity & { role?: string };
+
+interface AuthorizationModulesState {
+  authorizationFlowEnabled: boolean;
+  hasActiveModules: () => boolean;
+}
+
 /**
  * Pantalla unificada de gestión de autorizaciones
  * Combina:
@@ -37,20 +44,22 @@ const StyledTabs = styled(Tabs)`
  * - Mis PINs (cada usuario gestiona sus propios PINs)
  */
 export const AuthorizationsManager = () => {
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as AuthUser | null;
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const { authorizationFlowEnabled, hasActiveModules } =
-    useAuthorizationModules();
+    useAuthorizationModules() as AuthorizationModulesState;
 
   // Solo admin, owner, dev pueden ver solicitudes
-  const canViewRequests = ['admin', 'owner', 'dev'].includes(user?.role);
-  const canViewLogs = ['admin', 'owner', 'dev', 'manager'].includes(user?.role);
+  const canViewRequests =
+    !!user?.role && ['admin', 'owner', 'dev'].includes(user.role);
+  const canViewLogs =
+    !!user?.role && ['admin', 'owner', 'dev', 'manager'].includes(user.role);
 
   const modulesActive = hasActiveModules();
 
-  const tabs = useMemo(() => {
-    const items = [];
+  const tabs = useMemo<NonNullable<TabsProps['items']>>(() => {
+    const items: NonNullable<TabsProps['items']> = [];
 
     if (canViewRequests && modulesActive) {
       items.push({
@@ -79,7 +88,7 @@ export const AuthorizationsManager = () => {
     return items;
   }, [canViewRequests, canViewLogs, modulesActive, searchTerm]);
 
-  const tabKeys = useMemo(() => tabs.map(({ key }) => key), [tabs]);
+  const tabKeys = useMemo(() => tabs.map(({ key }) => String(key)), [tabs]);
   const defaultTabKey = tabKeys[0] ?? 'mypin';
   const tabParam = searchParams.get('tab');
   const resolvedActiveTab = useMemo(() => {
@@ -89,7 +98,7 @@ export const AuthorizationsManager = () => {
     return defaultTabKey;
   }, [defaultTabKey, tabKeys, tabParam]);
 
-  const [activeTab, setActiveTab] = useState(resolvedActiveTab);
+  const [activeTab, setActiveTab] = useState<string>(resolvedActiveTab);
 
   // Sincronizar activeTab cuando resolvedActiveTab cambia
   useEffect(() => {
@@ -105,7 +114,7 @@ export const AuthorizationsManager = () => {
     }
   }, [resolvedActiveTab, tabParam, searchParams, setSearchParams]);
 
-  const handleTabChange = (key) => {
+  const handleTabChange = (key: string) => {
     setActiveTab(key);
     const params = new URLSearchParams(searchParams);
     params.set('tab', key);

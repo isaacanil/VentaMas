@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Alert,
   Button,
@@ -11,6 +10,7 @@ import {
 } from 'antd';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import type { TabsProps } from 'antd';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { fbNormalizeAllBusinessesClients } from '@/firebase/client/fbNormalizeAllBusinessesClients';
@@ -26,28 +26,138 @@ import SessionTokensCleanup from './test/pages/sessionTokensCleanup/SessionToken
 
 const { Title, Paragraph, Text } = Typography;
 
+interface TaxNormalizationProgress {
+  processed: number;
+  total: number;
+  businessID: string;
+}
+
+interface TaxNormalizationSummary {
+  productsUpdated?: number;
+  saleUnitsUpdated?: number;
+  selectedUnitUpdated?: number;
+}
+
+interface TaxNormalizationItem {
+  businessID: string;
+  success: boolean;
+  summary?: TaxNormalizationSummary;
+  error?: string;
+}
+
+interface TaxNormalizationResult {
+  totalBusinesses: number;
+  processed: number;
+  summaries: TaxNormalizationItem[];
+}
+
+interface ClientNormalizationSummary {
+  normalized?: number;
+  total?: number;
+}
+
+interface ClientNormalizationItem {
+  businessID: string;
+  success: boolean;
+  summary?: ClientNormalizationSummary;
+  error?: string;
+}
+
+interface ClientNormalizationResult {
+  totalBusinesses: number;
+  summaries: ClientNormalizationItem[];
+}
+
+interface ClientNormalizationProgress {
+  processed: number;
+  total: number;
+  businessID: string;
+  normalized: number | null;
+}
+
+interface FixProductIdResult {
+  total: number;
+  updated: number;
+}
+
+interface ExpenseFixSample {
+  id: string;
+  fields: string[];
+}
+
+interface ExpenseFixSummary {
+  scanned: number;
+  affected: number;
+  updated: number;
+  fieldsConverted: number;
+  sample?: ExpenseFixSample[];
+}
+
+interface ExpenseFixAllTotals {
+  scanned: number;
+  affected: number;
+  updated: number;
+  fieldsConverted: number;
+}
+
+interface ExpenseFixAllSummaryItem {
+  businessID: string;
+  success: boolean;
+  summary?: { sample?: ExpenseFixSample[] };
+  error?: string;
+}
+
+interface ExpenseFixAllResult {
+  processed: number;
+  totalBusinesses: number;
+  totals?: ExpenseFixAllTotals;
+  summaries?: ExpenseFixAllSummaryItem[];
+}
+
+type ExpenseFixResult =
+  | {
+      success: false;
+      error: string;
+    }
+  | {
+      success: true;
+      dryRun: boolean;
+      mode: 'all' | 'single';
+      data: ExpenseFixAllResult | ExpenseFixSummary;
+    };
+
 /**
  * Contenedor simple para agrupar herramientas o experimentos temporales.
  * Mantiene la ruta `/prueba` disponible para ensayos manuales.
  */
 export default function TestPlayground() {
   const [normalizing, setNormalizing] = useState(false);
-  const [progress, setProgress] = useState(null);
-  const [result, setResult] = useState(null);
+  const [progress, setProgress] = useState<TaxNormalizationProgress | null>(null);
+  const [result, setResult] = useState<
+    | { success: true; data: TaxNormalizationResult }
+    | { success: false; error: string }
+    | null
+  >(null);
   const [clientNormalizationState, setClientNormalizationState] = useState({
     running: false,
-    progress: null,
-    result: null,
+    progress: null as ClientNormalizationProgress | null,
+    result: null as
+      | { success: true; data: ClientNormalizationResult }
+      | { success: false; error: string }
+      | null,
   });
   const [productIdFixState, setProductIdFixState] = useState({
     businessId: '',
     running: false,
-    result: null,
+    result: null as
+      | { success: true; data: FixProductIdResult }
+      | { success: false; error: string }
+      | null,
   });
   const [expenseTimestampFixState, setExpenseTimestampFixState] = useState({
     businessId: '',
     running: false,
-    result: null,
+    result: null as ExpenseFixResult | null,
   });
   const [applyToAllBusinesses, setApplyToAllBusinesses] = useState(false);
 
@@ -81,18 +191,19 @@ export default function TestPlayground() {
     setProgress(null);
     setResult(null);
     try {
-      const response = await normalizeAllBusinessesProductTaxes({
+      const response = (await normalizeAllBusinessesProductTaxes({
         onProgress: ({ processed, total, businessID }) => {
           setProgress({ processed, total, businessID });
         },
-      });
+      })) as TaxNormalizationResult;
       setResult({ success: true, data: response });
       message.success('Normalización completada.');
     } catch (error) {
       console.error('Error al normalizar impuestos:', error);
       setResult({
         success: false,
-        error: error?.message || 'Ocurrió un error inesperado.',
+        error:
+          error instanceof Error ? error.message : 'Ocurrió un error inesperado.',
       });
       message.error(
         'No se pudo normalizar el impuesto. Revisa la consola para detalles.',
@@ -159,7 +270,7 @@ export default function TestPlayground() {
     });
 
     try {
-      const response = await fbNormalizeAllBusinessesClients({
+      const response = (await fbNormalizeAllBusinessesClients({
         onProgress: ({ processed, total, businessID, summary }) => {
           setClientNormalizationState((prev) => ({
             ...prev,
@@ -171,7 +282,7 @@ export default function TestPlayground() {
             },
           }));
         },
-      });
+      })) as ClientNormalizationResult;
 
       setClientNormalizationState({
         running: false,
@@ -186,7 +297,10 @@ export default function TestPlayground() {
         progress: null,
         result: {
           success: false,
-          error: error?.message || 'Ocurrió un error inesperado.',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Ocurrió un error inesperado.',
         },
       });
       message.error(
@@ -256,7 +370,9 @@ export default function TestPlayground() {
     }));
 
     try {
-      const response = await fbFixMissingProductIds({ businessID: businessId });
+      const response = (await fbFixMissingProductIds({
+        businessID: businessId,
+      })) as FixProductIdResult;
       setProductIdFixState({
         businessId,
         running: false,
@@ -272,7 +388,10 @@ export default function TestPlayground() {
         running: false,
         result: {
           success: false,
-          error: error?.message || 'Ocurrió un error inesperado.',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Ocurrió un error inesperado.',
         },
       });
       message.error('No se pudo corregir los IDs de productos.');
@@ -305,7 +424,7 @@ export default function TestPlayground() {
     );
   };
 
-  const handleBusinessIdChange = (event) => {
+  const handleBusinessIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setProductIdFixState((prev) => ({
       ...prev,
@@ -313,7 +432,9 @@ export default function TestPlayground() {
     }));
   };
 
-  const handleExpenseTimestampBusinessChange = (event) => {
+  const handleExpenseTimestampBusinessChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const { value } = event.target;
     setExpenseTimestampFixState((prev) => ({
       ...prev,
@@ -321,7 +442,7 @@ export default function TestPlayground() {
     }));
   };
 
-  const handleExpenseTimestampFix = async (dryRun) => {
+  const handleExpenseTimestampFix = async (dryRun: boolean) => {
     const businessId = expenseTimestampFixState.businessId?.trim();
     if (!applyToAllBusinesses && !businessId) {
       message.warning('Ingresa un businessID válido.');
@@ -349,7 +470,7 @@ export default function TestPlayground() {
           success: true,
           dryRun,
           mode: isGlobal ? 'all' : 'single',
-          data: response,
+          data: response as ExpenseFixAllResult | ExpenseFixSummary,
         },
       });
 
@@ -369,7 +490,10 @@ export default function TestPlayground() {
         running: false,
         result: {
           success: false,
-          error: error?.message || 'Ocurrió un error inesperado.',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Ocurrió un error inesperado.',
         },
       }));
       message.error('No se pudo normalizar las fechas de los gastos.');
@@ -394,11 +518,17 @@ export default function TestPlayground() {
     const { data, dryRun, mode = 'single' } = result;
 
     if (mode === 'all') {
-      const totals = data.totals ?? {};
+      const allData = data as ExpenseFixAllResult;
+      const totals = allData.totals ?? {
+        scanned: 0,
+        affected: 0,
+        updated: 0,
+        fieldsConverted: 0,
+      };
       const successSummaries =
-        data.summaries?.filter((item) => item.success) ?? [];
+        allData.summaries?.filter((item) => item.success) ?? [];
       const errorSummaries =
-        data.summaries?.filter((item) => !item.success) ?? [];
+        allData.summaries?.filter((item) => !item.success) ?? [];
 
       const sampleEntries = successSummaries
         .flatMap((item) =>
@@ -409,7 +539,7 @@ export default function TestPlayground() {
         )
         .slice(0, 3);
 
-      const summaryText = `Negocios procesados: ${data.processed}/${data.totalBusinesses}. Documentos evaluados: ${totals.scanned}. Con incidencias: ${totals.affected}. ${
+      const summaryText = `Negocios procesados: ${allData.processed}/${allData.totalBusinesses}. Documentos evaluados: ${totals.scanned}. Con incidencias: ${totals.affected}. ${
         dryRun
           ? 'No se aplicaron cambios.'
           : `Documentos actualizados: ${totals.updated}.`
@@ -440,15 +570,16 @@ export default function TestPlayground() {
       );
     }
 
-    const summaryText = `Documentos evaluados: ${data.scanned}. Con incidencias: ${data.affected}. ${
+    const singleData = data as ExpenseFixSummary;
+    const summaryText = `Documentos evaluados: ${singleData.scanned}. Con incidencias: ${singleData.affected}. ${
       dryRun
         ? 'No se aplicaron cambios.'
-        : `Documentos actualizados: ${data.updated}.`
-    } Campos convertidos: ${data.fieldsConverted}.`;
+        : `Documentos actualizados: ${singleData.updated}.`
+    } Campos convertidos: ${singleData.fieldsConverted}.`;
 
     const sampleText =
-      data.sample?.length > 0
-        ? ` Ejemplos: ${data.sample
+      singleData.sample?.length > 0
+        ? ` Ejemplos: ${singleData.sample
             .map((item) => `${item.id} (${item.fields.join(', ')})`)
             .join(' · ')}`
         : '';
@@ -555,7 +686,7 @@ export default function TestPlayground() {
     </Space>
   );
 
-  const tabItems = [
+  const tabItems: TabsProps['items'] = [
     {
       key: 'maintenance-tools',
       label: 'Herramientas de normalización',
@@ -602,4 +733,7 @@ export default function TestPlayground() {
     </>
   );
 }
+
+
+
 

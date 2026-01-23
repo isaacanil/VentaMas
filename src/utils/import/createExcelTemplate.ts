@@ -1,5 +1,7 @@
-// @ts-nocheck
-export const createExcelTemplate = async (headers, fileName) => {
+export const createExcelTemplate = async (
+  headers: string[],
+  fileName: string,
+): Promise<void> => {
   try {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();

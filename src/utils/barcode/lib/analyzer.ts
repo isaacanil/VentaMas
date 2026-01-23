@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { identifyCountryByPrefix } from './country';
 import {
   calculateGTIN13CheckDigit,
@@ -8,11 +7,12 @@ import {
 } from './digits';
 import { expandUPCEToUPCA } from './expansion';
 import { isVariableWeightCode, analyzeVariableWeightCode } from './weight';
+import type { BarcodeAnalysis, BarcodeAnalysisDetailed } from './types';
 
 /**
  * Analiza la estructura de un código de barras
  */
-export function analyzeBarcodeStructure(barcode) {
+export function analyzeBarcodeStructure(barcode: string): BarcodeAnalysis {
   if (!barcode || typeof barcode !== 'string') {
     return {
       isValid: false,
@@ -38,7 +38,7 @@ export function analyzeBarcodeStructure(barcode) {
     };
   }
 
-  let analysis = {
+  const analysis: BarcodeAnalysisDetailed = {
     original: barcode,
     cleaned: cleanCode,
     length,

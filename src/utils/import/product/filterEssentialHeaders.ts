@@ -1,5 +1,10 @@
-// @ts-nocheck
 // Definición de campos esenciales
+import type {
+  AvailableHeaders,
+  HeaderGroupMap,
+  HeaderMapping,
+} from '@/utils/import/types';
+
 const essentialFieldsEs = [
   'Categoría',
   'Nombre',
@@ -65,17 +70,20 @@ const optionalGroupsEn = {
   Warranty: ['Warranty Status', 'Warranty Quantity', 'Warranty Unit'],
 };
 
-const languages = {
+const languages: Record<string, string[]> = {
   es: essentialFieldsEs,
   en: essentialFieldsEn,
 };
 
-const optionalGroups = {
+const optionalGroups: Record<string, HeaderGroupMap> = {
   es: optionalGroupsEs,
   en: optionalGroupsEn,
 };
 
-export const filterEssentialHeaders = (headerMappings, language = 'es') => {
+export const filterEssentialHeaders = (
+  headerMappings: HeaderMapping,
+  language = 'es',
+): string[] => {
   const headers = headerMappings[language];
 
   // Seleccionar los campos esenciales según el idioma
@@ -90,7 +98,10 @@ export const filterEssentialHeaders = (headerMappings, language = 'es') => {
 };
 
 // Obtiene todos los campos disponibles clasificados como esenciales y opcionales
-export const getAvailableHeaders = (headerMappings, language = 'es') => {
+export const getAvailableHeaders = (
+  headerMappings: HeaderMapping,
+  language = 'es',
+): AvailableHeaders => {
   const headers = headerMappings[language];
   const essentialFields = languages[language];
   const groups = optionalGroups[language];
@@ -103,7 +114,7 @@ export const getAvailableHeaders = (headerMappings, language = 'es') => {
   );
 
   // Inicializar grupos de campos opcionales
-  const optionalGrouped = {};
+  const optionalGrouped: HeaderGroupMap = {};
 
   // Asignar campos a sus grupos correspondientes
   Object.entries(groups).forEach(([groupName, fieldList]) => {
@@ -128,10 +139,10 @@ export const getAvailableHeaders = (headerMappings, language = 'es') => {
 
 // Función para crear encabezados según selección
 export const createSelectedHeaders = (
-  headerMappings,
+  headerMappings: HeaderMapping,
   language = 'es',
-  optionalSelected = [],
-) => {
+  optionalSelected: string[] = [],
+): string[] => {
   const { essential } = getAvailableHeaders(headerMappings, language);
   return [...essential, ...optionalSelected];
 };

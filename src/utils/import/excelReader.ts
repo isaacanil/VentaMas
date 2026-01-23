@@ -1,8 +1,13 @@
-// @ts-nocheck
 // excelReader.js
 import { normalizeHeaderKey } from './normalizeHeaderKey';
+import type {
+  ExcelCellValue,
+  ExcelInputFile,
+  RawData,
+  ReadExcelOptions,
+} from './types';
 
-const resolveCellValue = (cell) => {
+const resolveCellValue = (cell: ExcelCellValue): ExcelCellValue => {
   if (cell === null || cell === undefined) return cell;
   if (typeof cell !== 'object') return cell;
   if ('text' in cell) return cell.text;
@@ -13,18 +18,21 @@ const resolveCellValue = (cell) => {
   return cell;
 };
 
-const trimCellValue = (value) =>
+const trimCellValue = (value: ExcelCellValue): ExcelCellValue =>
   typeof value === 'string' ? value.trim() : value;
 
-const isEmptyCellValue = (value) =>
+const isEmptyCellValue = (value: ExcelCellValue): boolean =>
   value === null ||
   value === undefined ||
   (typeof value === 'string' && value.trim() === '');
 
-const getRowValues = (row) =>
+const getRowValues = (row: { values: ExcelCellValue[] }) =>
   row.values.slice(1).map(resolveCellValue).map(trimCellValue);
 
-export const readExcelFile = async (file, options = {}) => {
+export const readExcelFile = async (
+  file: ExcelInputFile,
+  options: ReadExcelOptions = {},
+): Promise<RawData> => {
   try {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
@@ -121,14 +129,14 @@ export const readExcelFile = async (file, options = {}) => {
       headerRowNumber = firstNonEmptyRowNumber;
     }
 
-    const rows = [];
+    const rows: RawData = [];
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
       if (!headers || headers.length === 0) return;
       if (headerRowNumber !== null && rowNumber <= headerRowNumber) return;
 
       const rowValues = getRowValues(row);
-      const rowObject = {};
+      const rowObject: Record<string, ExcelCellValue> = {};
       headers.forEach((key, index) => {
         if (key === undefined || key === null || key === '') return; // ignora encabezados vacíos
         rowObject[key] = rowValues[index];
@@ -151,7 +159,7 @@ export const readExcelFile = async (file, options = {}) => {
     }
 
     return rows;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error leyendo archivo Excel:', error);
 
     // Mejorar el mensaje de error según el tipo de error

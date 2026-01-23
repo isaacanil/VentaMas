@@ -1,5 +1,16 @@
-// @ts-nocheck
-export const updateObject = (object, e) => {
+type UpdateObjectEvent = {
+  target: {
+    name: string;
+    type?: string;
+    value?: string | number;
+    checked?: boolean;
+  };
+};
+
+export const updateObject = <T extends Record<string, unknown>>(
+  object: T,
+  e: UpdateObjectEvent,
+): T => {
   const { name, type } = e.target;
   let value;
 
@@ -16,7 +27,7 @@ export const updateObject = (object, e) => {
   }
 
   // Hacemos una copia profunda del objeto usando JSON.stringify y JSON.parse
-  let objectCopy = JSON.parse(JSON.stringify(object));
+  const objectCopy = JSON.parse(JSON.stringify(object)) as Record<string, unknown>;
 
   const keys = name.split('.');
   let currentObj = objectCopy;
@@ -27,10 +38,12 @@ export const updateObject = (object, e) => {
     if (i === keys.length - 1) {
       currentObj[key] = value;
     } else {
-      currentObj[key] = currentObj[key] || {};
-      currentObj = currentObj[key];
+      if (!currentObj[key]) {
+        currentObj[key] = {};
+      }
+      currentObj = currentObj[key] as Record<string, unknown>;
     }
   }
 
-  return objectCopy;
+  return objectCopy as T;
 };

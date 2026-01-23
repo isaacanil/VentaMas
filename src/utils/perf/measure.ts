@@ -1,4 +1,3 @@
-// @ts-nocheck
 export async function measure(label, fn) {
   const start =
     typeof performance !== 'undefined' && performance.now

@@ -1,5 +1,4 @@
-// @ts-nocheck
-export const normalizeHeaderKey = (value) => {
+export const normalizeHeaderKey = (value: unknown): string => {
   if (value === null || value === undefined) return '';
   return value
     .toString()

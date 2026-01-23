@@ -1,4 +1,3 @@
-// @ts-nocheck
 // src/utils/pricing.js
 export function limit(value) {
   const asInt = Math.round(value * 100);

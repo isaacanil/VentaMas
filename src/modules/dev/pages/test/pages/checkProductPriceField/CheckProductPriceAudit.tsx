@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -11,24 +10,50 @@ import {
 } from '@/firebase/products/fbEqualizeProductPrice';
 import { useGetProducts } from '@/firebase/products/fbGetProducts.js';
 
-function toNumber(n, fallback = 0) {
+interface ProductPricing {
+  listPrice?: unknown;
+  price?: unknown;
+}
+
+interface ProductLike {
+  id?: string;
+  _id?: string;
+  code?: string;
+  sku?: string;
+  name?: string;
+  title?: string;
+  pricing?: ProductPricing;
+}
+
+interface PriceRow {
+  id: string;
+  name: string;
+  listPrice: number;
+  price: number;
+  eqLPPrice: boolean;
+  diffLP: number;
+}
+
+type ViewFilter = 'equal' | 'mismatch' | 'all';
+
+function toNumber(n: unknown, fallback = 0) {
   const v = Number(n);
   return Number.isFinite(v) ? v : fallback;
 }
 
-function round2(n) {
+function round2(n: unknown) {
   return Math.round(Number(n) * 100) / 100;
 }
 
 export default function CheckProductPriceAudit() {
-  const { products } = useGetProducts();
+  const { products } = useGetProducts() as { products?: ProductLike[] };
   const user = useSelector(selectUser);
   // Filtro de vista: 'equal' | 'mismatch' | 'all'
-  const [viewFilter, setViewFilter] = useState('equal');
+  const [viewFilter, setViewFilter] = useState<ViewFilter>('equal');
   const [busy, setBusy] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
-  const rows = useMemo(() => {
+  const rows = useMemo<PriceRow[]>(() => {
     if (!Array.isArray(products)) return [];
 
     return products.map((p) => {
@@ -37,12 +62,13 @@ export default function CheckProductPriceAudit() {
       const listPrice = toNumber(p?.pricing?.listPrice);
       const price = toNumber(p?.pricing?.price);
 
-      const record = {
+      const record: PriceRow = {
         id,
         name,
         listPrice,
         price,
         eqLPPrice: price === listPrice,
+        diffLP: 0,
       };
       record.diffLP = round2(price - listPrice);
       return record;
@@ -62,7 +88,7 @@ export default function CheckProductPriceAudit() {
     visible = rows.filter((r) => !r.eqLPPrice);
   }
 
-  const handleFixOne = async (row) => {
+  const handleFixOne = async (row: PriceRow) => {
     if (!row?.id) return;
     await fbEqualizeProductPrice(user, row.id, row.listPrice);
   };

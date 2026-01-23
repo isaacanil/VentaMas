@@ -1,13 +1,16 @@
-// @ts-nocheck
 // Detecta si un código es variable (peso/precio)
-export function isVariableWeightCode(code) {
+import type { VariableWeightStructure } from './types';
+
+export function isVariableWeightCode(code: string): boolean {
   if (!code || code.length < 3) return false;
   const prefix = code.slice(0, 2);
   return prefix >= '20' && prefix <= '29';
 }
 
 // Analiza un código de peso variable
-export function analyzeVariableWeightCode(code) {
+export function analyzeVariableWeightCode(
+  code: string,
+): VariableWeightStructure | null {
   if (!isVariableWeightCode(code) || code.length !== 13) return null;
   return {
     type: 'Peso/Precio Variable',

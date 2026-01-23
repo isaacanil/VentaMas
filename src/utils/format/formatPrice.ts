@@ -1,8 +1,20 @@
-// @ts-nocheck
 import { monetarySymbols } from '@/constants/monetarySymbols';
-import { separator } from '@/utils/number/number';
+import { separator, type NumberInput } from '@/utils/number/number';
 
-export const formatPrice = (value, symbol = monetarySymbols.dollarSign) => {
+export type FormatPriceSymbol =
+  | 'rd'
+  | 'euro'
+  | 'pound'
+  | ''
+  | typeof monetarySymbols.dollarSign
+  | typeof monetarySymbols.euroSign
+  | typeof monetarySymbols.poundSign
+  | typeof monetarySymbols.rd;
+
+export const formatPrice = (
+  value: NumberInput,
+  symbol: FormatPriceSymbol = monetarySymbols.dollarSign,
+): string => {
   switch (symbol) {
     case 'rd':
       return `${monetarySymbols.rd}${separator(value)}`;

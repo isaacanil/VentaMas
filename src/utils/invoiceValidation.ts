@@ -1,4 +1,3 @@
-// @ts-nocheck
 // src/utils/invoiceValidation.js
 
 /**

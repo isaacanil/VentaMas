@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CheckOutlined, CloseOutlined } from '@/constants/icons/antd';
 import {
   faClock,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Card,
   Typography,
@@ -16,6 +15,7 @@ import {
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
+import type { ColumnsType } from 'antd/es/table';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
@@ -27,45 +27,112 @@ import { syncProductsStockFromProductsStock } from '@/firebase/warehouse/stockSy
 // - batches (batches.quantity & productId)
 // - productsStock (per product and per batch)
 
-const number = (v) => (typeof v === 'number' ? v : parseFloat(v) || 0);
-
-async function getAllProducts(businessID) {
-  const ref = collection(db, 'businesses', businessID, 'products');
-  const snap = await getDocs(ref);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+interface ProductDoc {
+  id: string;
+  name?: string;
+  stock?: number;
+  [key: string]: unknown;
 }
 
-async function getAllBatches(businessID) {
+interface BatchDoc {
+  id: string;
+  productId?: string;
+  quantity?: number;
+  [key: string]: unknown;
+}
+
+interface ProductStockDoc {
+  id: string;
+  productId?: string;
+  batchId?: string;
+  quantity?: number;
+  status?: string | null;
+  isDeleted?: boolean;
+  [key: string]: unknown;
+}
+
+interface DiagnosticsSummary {
+  products: number;
+  batches: number;
+  stocks: number;
+  productMismatches: number;
+  batchMismatches: number;
+  orphans: number;
+}
+
+interface StockMismatchRow {
+  productId: string;
+  name: string;
+  declaredStock: number;
+  stockFromProductsStock: number;
+  delta: number;
+}
+
+interface BatchMismatchRow {
+  batchId: string;
+  productId?: string;
+  name?: string;
+  batchQuantity: number;
+  stockFromProductsStock: number;
+  delta: number;
+}
+
+interface OrphanStockRow {
+  stockId: string;
+  productId?: string;
+  batchId?: string;
+  quantity: number;
+  reason: string;
+}
+
+interface SyncResult {
+  updates: Array<{ productId: string; from?: number; to: number }>;
+  totalProducts: number;
+}
+
+interface SyncResultState extends SyncResult {
+  mode: 'dry-run' | 'apply';
+}
+
+const number = (v: unknown) => (typeof v === 'number' ? v : parseFloat(String(v)) || 0);
+
+async function getAllProducts(businessID: string): Promise<ProductDoc[]> {
+  const ref = collection(db, 'businesses', businessID, 'products');
+  const snap = await getDocs(ref);
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as ProductDoc) }));
+}
+
+async function getAllBatches(businessID: string): Promise<BatchDoc[]> {
   const ref = collection(db, 'businesses', businessID, 'batches');
   const qref = query(ref, where('isDeleted', '==', false));
   const snap = await getDocs(qref);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as BatchDoc) }));
 }
 
-function includeActiveStock(s) {
+function includeActiveStock(s: ProductStockDoc) {
   const notDeleted = s?.isDeleted !== true; // missing counts as not deleted
   const isActive = s?.status === 'active' || s?.status == null; // missing counts as active
   return notDeleted && isActive;
 }
 
-async function getAllProductsStock(businessID) {
+async function getAllProductsStock(businessID: string): Promise<ProductStockDoc[]> {
   const ref = collection(db, 'businesses', businessID, 'productsStock');
   const snap = await getDocs(ref);
   return snap.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
+    .map((d) => ({ id: d.id, ...(d.data() as ProductStockDoc) }))
     .filter(includeActiveStock);
 }
 
 export default function SyncDiagnostics() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState(null);
-  const [productMismatches, setProductMismatches] = useState([]);
-  const [batchMismatches, setBatchMismatches] = useState([]);
-  const [orphanStocks, setOrphanStocks] = useState([]);
-  const [error, setError] = useState(null);
+  const [summary, setSummary] = useState<DiagnosticsSummary | null>(null);
+  const [productMismatches, setProductMismatches] = useState<StockMismatchRow[]>([]);
+  const [batchMismatches, setBatchMismatches] = useState<BatchMismatchRow[]>([]);
+  const [orphanStocks, setOrphanStocks] = useState<OrphanStockRow[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState(null);
+  const [syncResult, setSyncResult] = useState<SyncResultState | null>(null);
 
   const businessID = user?.businessID;
 
@@ -92,7 +159,7 @@ export default function SyncDiagnostics() {
         stockByProduct.set(pid, stockByProduct.get(pid) + number(s.quantity));
       }
 
-      const productDiffs = [];
+      const productDiffs: StockMismatchRow[] = [];
       for (const p of products) {
         const sum = stockByProduct.get(String(p.id)) || 0;
         const declared = number(p.stock);
@@ -116,7 +183,7 @@ export default function SyncDiagnostics() {
         stockByBatch.set(bid, stockByBatch.get(bid) + number(s.quantity));
       }
 
-      const batchDiffs = [];
+      const batchDiffs: BatchMismatchRow[] = [];
       for (const b of batches) {
         const sum = stockByBatch.get(String(b.id)) || 0;
         const declared = number(b.quantity);
@@ -138,7 +205,7 @@ export default function SyncDiagnostics() {
       }
 
       // 3) Orphan productsStock: missing product or batch
-      const orphans = [];
+      const orphans: OrphanStockRow[] = [];
       for (const s of stocks) {
         const pid = String(s.productId || '');
         const bid = s.batchId ? String(s.batchId) : null;
@@ -170,13 +237,13 @@ export default function SyncDiagnostics() {
       });
     } catch (e) {
       console.error(e);
-      setError(e?.message || 'Error al ejecutar diagnósticos');
+      setError(e instanceof Error ? e.message : 'Error al ejecutar diagnósticos');
     } finally {
       setLoading(false);
     }
   }, [businessID]);
 
-  const columnsProducts = [
+  const columnsProducts: ColumnsType<StockMismatchRow> = [
     { title: 'Producto', dataIndex: 'name', key: 'name' },
     { title: 'Producto ID', dataIndex: 'productId', key: 'productId' },
     {
@@ -219,7 +286,11 @@ export default function SyncDiagnostics() {
                 await runDiagnostics();
               } catch (e) {
                 console.error(e);
-                message.error(e?.message || 'Error al sincronizar el producto');
+                message.error(
+                  e instanceof Error
+                    ? e.message
+                    : 'Error al sincronizar el producto',
+                );
               } finally {
                 setSyncing(false);
               }
@@ -234,7 +305,7 @@ export default function SyncDiagnostics() {
     },
   ];
 
-  const columnsBatches = [
+  const columnsBatches: ColumnsType<BatchMismatchRow> = [
     { title: 'Batch ID', dataIndex: 'batchId', key: 'batchId' },
     { title: 'Producto ID', dataIndex: 'productId', key: 'productId' },
     { title: 'BatchNumber', dataIndex: 'numberId', key: 'numberId' },
@@ -265,7 +336,7 @@ export default function SyncDiagnostics() {
     },
   ];
 
-  const columnsOrphans = [
+  const columnsOrphans: ColumnsType<OrphanStockRow> = [
     { title: 'Stock ID', dataIndex: 'stockId', key: 'stockId' },
     { title: 'Producto ID', dataIndex: 'productId', key: 'productId' },
     { title: 'Batch ID', dataIndex: 'batchId', key: 'batchId' },
@@ -313,13 +384,15 @@ export default function SyncDiagnostics() {
                   businessID,
                   { dryRun: true },
                 );
-                setSyncResult({ mode: 'dry-run', ...res });
+                setSyncResult({ mode: 'dry-run', ...(res as SyncResult) });
                 message.info(
                   `Dry-run: ${res.updates.length} productos quedarían actualizados`,
                 );
               } catch (e) {
                 console.error(e);
-                setError(e?.message || 'Error en dry-run');
+                setError(
+                  e instanceof Error ? e.message : 'Error en dry-run',
+                );
               } finally {
                 setSyncing(false);
               }
@@ -344,14 +417,18 @@ export default function SyncDiagnostics() {
                   businessID,
                   { dryRun: false },
                 );
-                setSyncResult({ mode: 'apply', ...res });
+                setSyncResult({ mode: 'apply', ...(res as SyncResult) });
                 message.success(
                   `Sincronizados ${res.updates.length} productos`,
                 );
                 await runDiagnostics();
               } catch (e) {
                 console.error(e);
-                setError(e?.message || 'Error al aplicar sincronización');
+                setError(
+                  e instanceof Error
+                    ? e.message
+                    : 'Error al aplicar sincronización',
+                );
               } finally {
                 setSyncing(false);
               }
@@ -458,3 +535,6 @@ export default function SyncDiagnostics() {
     </Space>
   );
 }
+
+
+

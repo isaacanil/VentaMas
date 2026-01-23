@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -17,6 +16,20 @@ import React, {
 
 import { db } from '@/firebase/firebaseconfig';
 
+interface MissingBusiness {
+  id: string;
+  name: string;
+  createdAt: unknown;
+  raw: Record<string, unknown>;
+  hasCreatedAtNested: boolean;
+  hasCreatedAtRoot: boolean;
+}
+
+interface ScanProgress {
+  scanned: number;
+  total: number;
+}
+
 /**
  * Auditoría de negocios sin campo createdAt.
  * Permite:
@@ -26,13 +39,13 @@ import { db } from '@/firebase/firebaseconfig';
  */
 export default function BusinessMissingCreatedAt() {
   const [loading, setLoading] = useState(false);
-  const [missing, setMissing] = useState([]); // solo los que no tienen createdAt
-  const [progress, setProgress] = useState({ scanned: 0, total: 0 });
+  const [missing, setMissing] = useState<MissingBusiness[]>([]); // solo los que no tienen createdAt
+  const [progress, setProgress] = useState<ScanProgress>({ scanned: 0, total: 0 });
   const [fixing, setFixing] = useState(false);
   const [useFixedDate, setUseFixedDate] = useState(false);
   // Fecha fija solicitada: 1 de enero 2024 00:00:00 UTC
   const FIXED_ISO = '2024-01-01T00:00:00.000Z';
-  const abortRef = useRef({ aborted: false });
+  const abortRef = useRef<{ aborted: boolean }>({ aborted: false });
 
   const totalMissing = missing.length;
 
@@ -46,22 +59,26 @@ export default function BusinessMissingCreatedAt() {
       const snap = await getDocs(colRef);
       const total = snap.size;
       setProgress((p) => ({ ...p, total }));
-      const all = [];
-      const miss = [];
+      const all: MissingBusiness[] = [];
+      const miss: MissingBusiness[] = [];
       let scanned = 0;
       snap.forEach((d) => {
         if (abortRef.current.aborted) return;
-        const data = d.data() || {};
+        const data = (d.data() || {}) as Record<string, unknown>;
         console.log('Escaneando negocio:', d.id, data.business);
         // NUEVO: el esquema real usa objeto anidado 'business'
-        const businessObj = data.business || {};
+        const businessObj =
+          typeof data.business === 'object' && data.business !== null
+            ? (data.business as Record<string, unknown>)
+            : {};
         // createdAt puede estar (incorrectamente) en root por algún hotfix anterior; damos fallback pero criterio de ausencia es el anidado
-        const createdAtNested = businessObj.createdAt || null;
-        const createdAtRoot = data.createdAt || null;
+        const createdAtNested = businessObj.createdAt ?? null;
+        const createdAtRoot = data.createdAt ?? null;
         const effectiveCreatedAt = createdAtNested || createdAtRoot; // para mostrar
         const hasCreated = !!createdAtNested; // Solo consideramos válido si está en la ruta correcta business.createdAt
-        const name = businessObj.name || '(sin nombre)';
-        const item = {
+        const name =
+          typeof businessObj.name === 'string' ? businessObj.name : '(sin nombre)';
+        const item: MissingBusiness = {
           id: d.id,
           name,
           createdAt: effectiveCreatedAt,
@@ -80,7 +97,10 @@ export default function BusinessMissingCreatedAt() {
       setProgress({ scanned: total, total });
     } catch (err) {
       console.error('Error escaneando negocios:', err);
-      alert('Error escaneando negocios: ' + (err.message || err));
+      alert(
+        'Error escaneando negocios: ' +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
@@ -90,7 +110,7 @@ export default function BusinessMissingCreatedAt() {
     abortRef.current.aborted = true;
   };
 
-  const getCreatedAtValue = (biz) => {
+  const getCreatedAtValue = (biz: MissingBusiness): unknown => {
     // Si el documento tiene un createdAt legacy en la raíz, conservarlo.
     if (biz?.hasCreatedAtRoot && biz?.raw?.createdAt) {
       return biz.raw.createdAt; // Puede ser Timestamp Firestore o string ISO; se persiste tal cual.
@@ -103,7 +123,7 @@ export default function BusinessMissingCreatedAt() {
     return serverTimestamp();
   };
 
-  const fixOne = async (biz) => {
+  const fixOne = async (biz: MissingBusiness) => {
     if (fixing) return;
     try {
       setFixing(true);
@@ -113,7 +133,10 @@ export default function BusinessMissingCreatedAt() {
       setMissing((prev) => prev.filter((b) => b.id !== biz.id));
     } catch (err) {
       console.error('Error fijando createdAt:', err);
-      alert('Error fijando createdAt: ' + (err.message || err));
+      alert(
+        'Error fijando createdAt: ' +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setFixing(false);
     }
@@ -143,7 +166,10 @@ export default function BusinessMissingCreatedAt() {
       );
     } catch (err) {
       console.error('Error en fixAll:', err);
-      alert('Error en fixAll: ' + (err.message || err));
+      alert(
+        'Error en fixAll: ' +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setFixing(false);
     }
@@ -291,7 +317,7 @@ export default function BusinessMissingCreatedAt() {
   );
 }
 
-function ProgressBar({ progress }) {
+function ProgressBar({ progress }: { progress: ScanProgress }) {
   const pct = progress.total
     ? Math.min(100, Math.floor((progress.scanned / progress.total) * 100))
     : 0;
@@ -361,3 +387,4 @@ function escapeCsv(value) {
   }
   return str;
 }
+

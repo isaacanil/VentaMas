@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { resolveDocumentIdentity } from '@/utils/invoice/documentIdentity.js';
 
 // Función de formateo de precios (ajústala según necesites)

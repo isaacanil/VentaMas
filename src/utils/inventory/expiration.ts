@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CLEAR_SENTINEL } from './constants';
 import type {
   CountsMetaMap,
@@ -10,7 +9,7 @@ export function getEffectiveExpirationDate(
   item: InventoryStockItem,
   expirationEdits: ExpirationEditsMap,
   countsMeta: CountsMetaMap,
-) {
+): InventoryStockItem['expirationDate'] {
   if (!item) return item?.expirationDate;
   const edits = expirationEdits || {};
   const meta = countsMeta || {};

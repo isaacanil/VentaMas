@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createExcelTemplate } from '@/utils/import/createExcelTemplate';
 import { readExcelFile } from '@/utils/import/excelReader';
 import { mapData } from '@/utils/import/mapData';
@@ -7,8 +6,14 @@ import { processMappedData } from '@/utils/import/processMappedData';
 import { createSelectedHeaders } from './filterEssentialHeaders';
 import { productHeaderMappings } from './headerMappings';
 import { transformConfig } from './transformFunctions';
+import type { ExcelInputFile, MappedData } from '@/utils/import/types';
 
-export const importProductData = async (file, language = 'en') => {
+type ProductLanguage = keyof typeof productHeaderMappings;
+
+export const importProductData = async (
+  file: ExcelInputFile | null | undefined,
+  language: ProductLanguage = 'en',
+): Promise<MappedData | undefined> => {
   if (!file) {
     console.error('No file selected.');
     return;
@@ -41,9 +46,9 @@ export const importProductData = async (file, language = 'en') => {
 };
 // Función específica para generar una plantilla de productos en Excel
 export const createProductTemplate = async (
-  language = 'es',
-  optionalFields = [],
-) => {
+  language: ProductLanguage = 'es',
+  optionalFields: string[] = [],
+): Promise<void> => {
   try {
     const headers = createSelectedHeaders(
       productHeaderMappings,
