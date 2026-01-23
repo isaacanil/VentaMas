@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Form } from 'antd';
 import styled from 'styled-components';
 

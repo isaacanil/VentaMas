@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { message } from 'antd';
 import imageCompression from 'browser-image-compression';
+import type { RcFile, UploadProps } from 'antd/es/upload/interface';
 
-export const compressImage = async (file) => {
+export const compressImage = async (file: RcFile): Promise<File | null> => {
   const fileSize = file.size / (1024 * 1024);
   const options = {
     maxSizeMB: fileSize > 2 ? 1 : fileSize * 0.8,
@@ -29,7 +29,7 @@ export const compressImage = async (file) => {
   }
 };
 
-export const beforeUpload = async (file) => {
+export const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
   if (!isJpgOrPng) {
     message.error('Solo puedes subir archivos JPG/PNG!');

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   doc,
   increment,
@@ -6,6 +5,7 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
+import type { WriteBatch } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -16,10 +16,25 @@ import {
 import { getProductStockById } from '@/firebase/warehouse/productStockService';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { validateUser } from '@/utils/userValidation';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
+
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+type StockUpdateProduct = ProductRecord & {
+  id: string;
+  amountToBuy?: number | string;
+  trackInventory?: boolean;
+  productStockId?: string | null;
+  batchId?: string | null;
+  name?: string;
+};
+type SaleLike = { id: string };
+type ProductStockLike = { quantity?: number; location?: string };
+type BatchLike = { numberId?: string | number };
 
 // Función para dividir el array en subarrays de tamaño máximo size
-function chunkArray(array, size) {
-  const result = [];
+function chunkArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
     result.push(array.slice(i, i + size));
   }
@@ -27,9 +42,12 @@ function chunkArray(array, size) {
 }
 
 // Función para ejecutar batches con límite de concurrencia
-async function executeBatchesWithConcurrency(batches, concurrencyLimit) {
-  const executing = [];
-  const results = [];
+async function executeBatchesWithConcurrency(
+  batches: WriteBatch[],
+  concurrencyLimit: number,
+): Promise<void> {
+  const executing: Array<Promise<void>> = [];
+  const results: Array<Promise<void>> = [];
 
   for (const batch of batches) {
     const p = batch.commit();
@@ -47,7 +65,11 @@ async function executeBatchesWithConcurrency(batches, concurrencyLimit) {
   return Promise.all(results);
 }
 
-export async function fbUpdateProductsStock(products, user, sale) {
+export async function fbUpdateProductsStock(
+  products: StockUpdateProduct[],
+  user: UserWithBusinessAndUid,
+  sale: SaleLike,
+): Promise<void> {
   try {
     validateUser(user);
     const { businessID } = user;
@@ -56,28 +78,34 @@ export async function fbUpdateProductsStock(products, user, sale) {
     const BATCH_LIMIT = 500;
     const CONCURRENCY_LIMIT = 5;
     const productChunks = chunkArray(products, Math.floor(BATCH_LIMIT / 3));
-    const batches = [];
+    const batches: WriteBatch[] = [];
 
     for (const chunk of productChunks) {
       const batch = writeBatch(db);
       for (const product of chunk) {
         const movementId = nanoid();
-        const amountToBuy = Number(product?.amountToBuy);
-        let productStock = null;
-        let productBatch = null;
+        const amountToBuy = Number(product.amountToBuy ?? 0);
+        let productStock: ProductStockLike | null = null;
+        let productBatch: BatchLike | null = null;
         let backorderQuantity = amountToBuy;
 
         if (product?.trackInventory) {
-          const productStockId = product?.productStockId;
-          const batchId = product?.batchId;
+          const productStockId = product.productStockId;
+          const batchId = product.batchId;
           let currentStock = 0;
 
           if (productStockId && batchId) {
-            productStock = await getProductStockById(user, productStockId);
+            productStock = (await getProductStockById(
+              user,
+              productStockId,
+            )) as ProductStockLike | null;
             if (productStock) {
               currentStock = productStock.quantity || 0;
             }
-            productBatch = await getBatchById(user, batchId);
+            productBatch = (await getBatchById(
+              user,
+              batchId,
+            )) as BatchLike | null;
 
             let stockReduction = -amountToBuy;
             backorderQuantity = 0;
@@ -175,10 +203,10 @@ export async function fbUpdateProductsStock(products, user, sale) {
           createdBy: user.uid,
           updatedAt: serverTimestamp(),
           updatedBy: user.uid,
-          batchId: product?.batchId || null,
+          batchId: product.batchId ?? null,
           batchNumberId: productBatch ? productBatch.numberId : null,
           productId: product.id,
-          productName: product.name,
+          productName: product.name ?? '',
           sourceLocation: productStock ? productStock.location : null,
           destinationLocation: null,
           quantity: amountToBuy,

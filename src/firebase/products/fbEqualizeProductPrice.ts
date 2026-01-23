@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   doc,
   writeBatch,
@@ -8,6 +7,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
 /**
  * Igualar el precio de un producto: pricing.price = pricing.listPrice
@@ -15,7 +15,11 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} productID - ID del producto
  * @param {number} listPrice - Valor de listPrice a aplicar en price
  */
-export async function fbEqualizeProductPrice(user, productID, listPrice) {
+export async function fbEqualizeProductPrice(
+  user: UserWithBusiness | null | undefined,
+  productID: string | number,
+  listPrice: number | string,
+): Promise<void> {
   if (!user?.businessID || !productID) return;
   const businessID = String(user.businessID);
   const ref = doc(db, 'businesses', businessID, 'products', String(productID));
@@ -29,7 +33,10 @@ export async function fbEqualizeProductPrice(user, productID, listPrice) {
  * @param {Array<{id: string, listPrice: number}>} items - Productos a igualar
  * @returns {Promise<number>} - Cantidad actualizada
  */
-export async function fbEqualizeProductsPrice(user, items = []) {
+export async function fbEqualizeProductsPrice(
+  user: UserWithBusiness | null | undefined,
+  items: Array<{ id: string; listPrice: number | string }> = [],
+): Promise<number> {
   if (!user?.businessID || !Array.isArray(items) || items.length === 0)
     return 0;
   const businessID = String(user.businessID);
@@ -58,7 +65,10 @@ export async function fbEqualizeProductsPrice(user, items = []) {
  * @param {{ onlyMismatch?: boolean }} options
  * @returns {Promise<number>} - Cantidad actualizada
  */
-export async function fbEqualizeAllProductsPrice(user, options = {}) {
+export async function fbEqualizeAllProductsPrice(
+  user: UserWithBusiness | null | undefined,
+  options: { onlyMismatch?: boolean } = {},
+): Promise<number> {
   const { onlyMismatch = true } = options;
   if (!user?.businessID) return 0;
   const businessID = String(user.businessID);
@@ -68,7 +78,7 @@ export async function fbEqualizeAllProductsPrice(user, options = {}) {
   if (snapshot.empty) return 0;
 
   // Construir lista de items a actualizar
-  const items = [];
+  const items: Array<{ id: string; listPrice: number }> = [];
   snapshot.forEach((docSnap) => {
     const data = docSnap.data() || {};
     const lp = Number(data?.pricing?.listPrice) || 0;

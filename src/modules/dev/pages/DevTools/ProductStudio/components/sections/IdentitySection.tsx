@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CloudUploadOutlined,
   PlusOutlined,
@@ -16,9 +15,11 @@ import {
   Switch,
   Typography,
 } from 'antd';
+import type { SyntheticEvent } from 'react';
 import styled from 'styled-components';
 
 import { imgFailed } from '@/components/modals/ProductForm/ImageManager/ImageManager';
+import type { CategoryDocument } from '@/firebase/categories/types';
 import {
   DividerLabel,
   FieldGrid,
@@ -28,6 +29,7 @@ import {
   SectionTitle,
   SwitchField,
 } from '@/modules/dev/pages/DevTools/ProductStudio/components/SectionLayout';
+import type { ActiveIngredient, ProductRecord } from '@/types/products';
 
 const { Text } = Typography;
 
@@ -84,6 +86,43 @@ const FieldWithAction = styled.div`
   }
 `;
 
+interface BrandMeta {
+  label: string;
+  placeholder: string;
+  helper: string;
+}
+
+interface BrandOption {
+  value: string;
+  label: string;
+}
+
+interface IdentitySectionProps {
+  domId: string;
+  brandMeta: BrandMeta;
+  brandOptions: BrandOption[];
+  categories: CategoryDocument[];
+  activeIngredients: ActiveIngredient[];
+  product?: ProductRecord | null;
+  onOpenBrandModal: () => void;
+  onAddCategory: () => void;
+  onAddActiveIngredient: () => void;
+  onOpenImageManager: () => void;
+  onResetImage: () => void;
+}
+
+const getOptionText = (value: unknown): string => {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === 'string')
+      .join(' ');
+  }
+  return '';
+};
+
 export const IdentitySection = ({
   domId,
   brandMeta,
@@ -96,7 +135,7 @@ export const IdentitySection = ({
   onAddActiveIngredient,
   onOpenImageManager,
   onResetImage,
-}) => (
+}: IdentitySectionProps) => (
   <SectionCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>General</SectionTitle>
@@ -111,7 +150,9 @@ export const IdentitySection = ({
           <img
             src={product.image}
             alt={product?.name || 'Producto'}
-            onError={(event) => (event.currentTarget.src = imgFailed)}
+            onError={(event: SyntheticEvent<HTMLImageElement>) => {
+              event.currentTarget.src = imgFailed;
+            }}
           />
         ) : (
           <CloudUploadOutlined style={{ fontSize: 48, color: '#94a3b8' }} />
@@ -194,7 +235,7 @@ export const IdentitySection = ({
               options={brandOptions}
               optionFilterProp="label"
               filterOption={(inputValue, option) =>
-                (option?.label || '')
+                getOptionText(option?.label)
                   .toLowerCase()
                   .includes(inputValue.toLowerCase())
               }
@@ -217,7 +258,7 @@ export const IdentitySection = ({
               placeholder="Asigna una categoría"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                (option?.children || '')
+                getOptionText(option?.children)
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
@@ -226,14 +267,21 @@ export const IdentitySection = ({
               <Option key="none" value="none">
                 Ninguna
               </Option>
-              {categories.map(({ category }) => (
-                <Option
-                  key={category?.id || category?.name}
-                  value={category.name}
-                >
-                  {category.name}
-                </Option>
-              ))}
+              {categories.map(({ category }) => {
+                const categoryName =
+                  typeof category?.name === 'string' ? category.name : '';
+                if (!categoryName) {
+                  return null;
+                }
+                return (
+                  <Option
+                    key={category?.id || categoryName}
+                    value={categoryName}
+                  >
+                    {categoryName}
+                  </Option>
+                );
+              })}
             </Select>
             <Button
               icon={<PlusOutlined />}
@@ -264,7 +312,7 @@ export const IdentitySection = ({
             placeholder="Selecciona el principio activo"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              (option?.children || '')
+              getOptionText(option?.children)
                 .toLowerCase()
                 .includes(input.toLowerCase())
             }

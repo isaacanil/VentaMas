@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   FileAddOutlined,
   NumberOutlined,
@@ -24,19 +23,73 @@ import styled from 'styled-components';
 import DatePicker from '@/components/DatePicker';
 import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
+import type {
+  TaxReceiptData,
+  TaxReceiptDocument,
+  TaxReceiptUser,
+} from '@/types/taxReceipt';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+interface TaxReceiptAuthorizationEntry {
+  authorizationNumber: string;
+  requestNumber: string;
+  startSequence: string;
+  endSequence: string;
+  approvedQuantity: string;
+  expirationDate: string;
+  authorizationDate: string;
+}
+
+type TaxReceiptWithAuthorizations = TaxReceiptData & {
+  authorizations?: TaxReceiptAuthorizationEntry[];
+};
+
+type TaxReceiptDocumentWithAuthorizations = Omit<TaxReceiptDocument, 'data'> & {
+  data: TaxReceiptWithAuthorizations;
+};
+
+interface AuthorizationFormValues {
+  receiptId?: string;
+  authorizationNumber: string;
+  requestNumber: string;
+  startSequence: string;
+  approvedQuantity: string;
+  expirationDate: DateTime;
+}
+
+interface TaxReceiptAuthorizationModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  taxReceipts?: TaxReceiptDocumentWithAuthorizations[] | null;
+  onAuthorizationAdded: (updatedReceipt: TaxReceiptWithAuthorizations) => void;
+}
+
+const hasBusinessId = (
+  value: TaxReceiptUser | null,
+): value is TaxReceiptUser & { businessID: string } =>
+  typeof value?.businessID === 'string' && value.businessID.trim().length > 0;
+
+const resolveReceiptId = (
+  receipt: TaxReceiptDocumentWithAuthorizations,
+): string | null => {
+  const resolvedId = receipt.id ?? receipt.data.id;
+  if (typeof resolvedId !== 'string') return null;
+  const trimmed = resolvedId.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
 
 const TaxReceiptAuthorizationModal = ({
   visible,
   onCancel,
   taxReceipts,
   onAuthorizationAdded,
-}) => {
-  const [form] = Form.useForm();
+}: TaxReceiptAuthorizationModalProps) => {
+  const [form] = Form.useForm<AuthorizationFormValues>();
   const user = useSelector(selectUser);
-  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [selectedReceipt, setSelectedReceipt] =
+    useState<TaxReceiptDocumentWithAuthorizations | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Reset form when modal is opened/closed
@@ -62,21 +115,22 @@ const TaxReceiptAuthorizationModal = ({
   }, [selectedReceipt, form]);
 
   // Obtener solo los comprobantes activos
-  const activeReceipts =
-    taxReceipts?.filter((receipt) => !receipt.data.disabled) || [];
+  const activeReceipts = (taxReceipts ?? []).filter(
+    (receipt) => !receipt.data.disabled,
+  );
 
-  const handleReceiptSelect = (receiptId) => {
-    const receipt = taxReceipts.find(
+  const handleReceiptSelect = (receiptId: string) => {
+    const receipt = (taxReceipts ?? []).find(
       (item) => item.id === receiptId || item.data.id === receiptId,
     );
-    setSelectedReceipt(receipt);
+    setSelectedReceipt(receipt ?? null);
   };
 
-  const calculateNewEndSequence = (values) => {
+  const calculateNewEndSequence = (values: AuthorizationFormValues) => {
     if (!values.startSequence || !values.approvedQuantity) return null;
 
-    const startNum = parseInt(values.startSequence, 10);
-    const quantity = parseInt(values.approvedQuantity, 10);
+    const startNum = parseInt(String(values.startSequence), 10);
+    const quantity = parseInt(String(values.approvedQuantity), 10);
 
     if (isNaN(startNum) || isNaN(quantity)) return null;
 
@@ -94,6 +148,12 @@ const TaxReceiptAuthorizationModal = ({
         return;
       }
 
+      if (!DateTime.isDateTime(values.expirationDate)) {
+        message.error('Seleccione una fecha de vencimiento válida');
+        setLoading(false);
+        return;
+      }
+
       // Calcular la secuencia final
       const endSequence = calculateNewEndSequence(values);
       if (!endSequence) {
@@ -106,18 +166,18 @@ const TaxReceiptAuthorizationModal = ({
       const authorizationData = {
         authorizationNumber: values.authorizationNumber,
         requestNumber: values.requestNumber,
-        startSequence: values.startSequence,
+        startSequence: String(values.startSequence),
         endSequence: String(endSequence),
-        approvedQuantity: values.approvedQuantity,
+        approvedQuantity: String(values.approvedQuantity),
         expirationDate: values.expirationDate.toFormat('yyyy-MM-dd'),
         authorizationDate: DateTime.now().toFormat('yyyy-MM-dd'),
       }; // Actualizar el comprobante con la nueva autorización
       const receiptData = selectedReceipt.data;
-      const authorizations = receiptData.authorizations || [];
+      const authorizations = receiptData.authorizations ?? [];
 
       // PROTECCIÓN: Solo actualizar secuencia si el startSequence es mayor que la secuencia actual
-      const currentSequence = parseInt(receiptData.sequence || '0', 10);
-      const newStartSequence = parseInt(values.startSequence, 10);
+      const currentSequence = parseInt(String(receiptData.sequence ?? '0'), 10);
+      const newStartSequence = parseInt(String(values.startSequence), 10);
 
       // Validar que la nueva secuencia no sea menor que la actual
       if (newStartSequence < currentSequence) {
@@ -136,17 +196,25 @@ const TaxReceiptAuthorizationModal = ({
         return 10;
       };
 
-      const updatedReceipt = {
+      if (!hasBusinessId(user)) {
+        throw new Error('Invalid businessID provided.');
+      }
+
+      if (typeof receiptData.id !== 'string') {
+        throw new Error('Invalid or empty data provided for update.');
+      }
+
+      const updatedReceipt: TaxReceiptWithAuthorizations = {
         ...receiptData,
         id: receiptData.id,
         // Solo actualizar secuencia si es mayor que la actual para evitar retrocesos
         sequence:
           newStartSequence > currentSequence
-            ? values.startSequence
+            ? String(values.startSequence)
             : receiptData.sequence,
         quantity:
           newStartSequence > currentSequence
-            ? values.approvedQuantity
+            ? String(values.approvedQuantity)
             : receiptData.quantity,
         sequenceLength: resolveSequenceLength(),
         // Agregamos la nueva autorización al historial
@@ -217,24 +285,31 @@ const TaxReceiptAuthorizationModal = ({
                   onChange={handleReceiptSelect}
                   optionLabelProp="label"
                 >
-                  {activeReceipts.map((receipt) => (
-                    <Option
-                      key={receipt.id || receipt.data.id}
-                      value={receipt.id || receipt.data.id}
-                      label={receipt.data.name}
-                    >
-                      <ReceiptOptionContent>
-                        <div className="receipt-name">{receipt.data.name}</div>
-                        <div className="receipt-info">
-                          <span className="code-label">Código:</span>
-                          <span className="code-value">
-                            {receipt.data.type}
-                            {receipt.data.serie}
-                          </span>
-                        </div>
-                      </ReceiptOptionContent>
-                    </Option>
-                  ))}
+                  {activeReceipts.map((receipt) => {
+                    const receiptId = resolveReceiptId(receipt);
+                    if (!receiptId) return null;
+
+                    return (
+                      <Option
+                        key={receiptId}
+                        value={receiptId}
+                        label={receipt.data.name}
+                      >
+                        <ReceiptOptionContent>
+                          <div className="receipt-name">
+                            {receipt.data.name}
+                          </div>
+                          <div className="receipt-info">
+                            <span className="code-label">Código:</span>
+                            <span className="code-value">
+                              {receipt.data.type}
+                              {receipt.data.serie}
+                            </span>
+                          </div>
+                        </ReceiptOptionContent>
+                      </Option>
+                    );
+                  })}
                 </Select>
               </Form.Item>
             </Col>

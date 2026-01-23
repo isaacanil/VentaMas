@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -15,7 +14,10 @@ import { db } from '@/firebase/firebaseconfig';
 export const fbFixMissingProductIds = async ({
   businessID,
   batchSize = 400,
-} = {}) => {
+}: { businessID?: string; batchSize?: number } = {}): Promise<{
+  total: number;
+  updated: number;
+}> => {
   if (!businessID) {
     throw new Error('El businessID es requerido para corregir los productos.');
   }
@@ -44,7 +46,7 @@ export const fbFixMissingProductIds = async ({
 
   for (const docSnap of snapshot.docs) {
     total += 1;
-    const data = docSnap.data();
+    const data = docSnap.data() as Record<string, unknown>;
     const docId = docSnap.id;
 
     if (data?.id !== docId) {

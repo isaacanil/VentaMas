@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ExclamationCircleOutlined } from '@/constants/icons/antd';
 import {
   Drawer,
@@ -21,9 +20,27 @@ import {
   countryComprobantes,
   getAvailableCountries,
 } from '@/firebase/taxReceipt/taxReceiptTemplates';
+import type { TaxReceiptDocument, TaxReceiptTemplate } from '@/types/taxReceipt';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
+
+interface AddReceiptDrawerProps {
+  visible: boolean;
+  onCancel: () => void;
+  onAddReceipt?: (receipts: TaxReceiptTemplate[]) => void;
+  existingReceipts?: TaxReceiptDocument[];
+}
+
+interface TemplateCardStyleProps {
+  $selected: boolean;
+  $disabled: boolean;
+}
+
+interface CardHeaderStyleProps {
+  $selected: boolean;
+  $disabled: boolean;
+}
 
 /**
  * Drawer para agregar comprobantes predefinidos según el país
@@ -31,37 +48,43 @@ const { Title, Text } = Typography;
 const AddReceiptDrawer = ({
   visible,
   onCancel,
-  onAddReceipt,
   existingReceipts = [],
-}) => {
+}: AddReceiptDrawerProps) => {
   const [selectedCountry, setSelectedCountry] = useState('DO'); // República Dominicana por defecto
-  const [selectedTemplates, setSelectedTemplates] = useState([]);
+  const [selectedTemplates, setSelectedTemplates] = useState<
+    TaxReceiptTemplate[]
+  >([]);
   const countries = getAvailableCountries();
   const user = useSelector(selectUser); // Obtener el usuario del estado de Redux
+  const safeUser = {
+    businessID: user?.businessID ?? null,
+    uid: user?.id ?? null,
+    id: user?.id ?? null,
+  };
 
   // Crear conjuntos de nombres y series existentes para rápida verificación
-  const existingNames = new Set(
+  const existingNames = new Set<string>(
     existingReceipts.map((receipt) => receipt.data?.name || ''),
   );
-  const existingSeries = new Set(
+  const existingSeries = new Set<string>(
     existingReceipts.map((receipt) => receipt.data?.serie || ''),
   );
 
-  const handleAfterOpenChange = useCallback((open) => {
+  const handleAfterOpenChange = useCallback((open: boolean) => {
     if (!open) {
       setSelectedTemplates([]);
     }
   }, []);
 
   // Función para verificar si un comprobante ya existe
-  const isTemplateExisting = (template) => {
+  const isTemplateExisting = (template: TaxReceiptTemplate) => {
     return (
       existingNames.has(template.name) || existingSeries.has(template.serie)
     );
   };
 
   // Mensaje de por qué no se puede agregar un comprobante
-  const getExistingReason = (template) => {
+  const getExistingReason = (template: TaxReceiptTemplate) => {
     if (existingNames.has(template.name))
       return `Ya existe un comprobante con el nombre "${template.name}"`;
     if (existingSeries.has(template.serie))
@@ -70,7 +93,7 @@ const AddReceiptDrawer = ({
   };
 
   // Función para manejar la selección/deselección de una plantilla
-  const toggleTemplateSelection = (template) => {
+  const toggleTemplateSelection = (template: TaxReceiptTemplate) => {
     // No permitir seleccionar comprobantes que ya existen
     if (isTemplateExisting(template)) {
       message.error(getExistingReason(template));
@@ -93,7 +116,7 @@ const AddReceiptDrawer = ({
   };
 
   // Función para verificar si una plantilla está seleccionada
-  const isTemplateSelected = (template) => {
+  const isTemplateSelected = (template: TaxReceiptTemplate) => {
     return selectedTemplates.some(
       (t) => t.name === template.name && t.serie === template.serie,
     );
@@ -117,11 +140,11 @@ const AddReceiptDrawer = ({
       // Crear un array de promesas para agregar cada comprobante
       const addPromises = selectedTemplates.map((template) => {
         // Asegurarse de que 'disabled' sea false por defecto si no está definido
-        const dataToAdd = {
+        const dataToAdd: TaxReceiptTemplate = {
           ...template,
           disabled: template.disabled === undefined ? false : template.disabled,
         };
-        return addTaxReceipt(user, dataToAdd); // Llamar a la función de Firebase
+        return addTaxReceipt(safeUser, dataToAdd); // Llamar a la función de Firebase
       });
 
       // Esperar a que todas las promesas se resuelvan
@@ -185,13 +208,13 @@ const AddReceiptDrawer = ({
       <Content>
         <SelectContainer>
           <label>Selecciona un país:</label>
-          <Select
+          <Select<string>
             value={selectedCountry}
-            onChange={setSelectedCountry}
+            onChange={(value: string) => setSelectedCountry(value)}
             style={{ width: '100%' }}
             size="large"
             dropdownMatchSelectWidth={false}
-          >
+        >
             {countries.map((country) => (
               <Option key={country.code} value={country.code}>
                 {country.name}
@@ -213,8 +236,8 @@ const AddReceiptDrawer = ({
                 return (
                   <TemplateCard
                     key={`${template.name}-${idx}`}
-                    selected={selected}
-                    disabled={isExisting}
+                    $selected={selected}
+                    $disabled={isExisting}
                     onClick={() =>
                       !isExisting && toggleTemplateSelection(template)
                     }
@@ -315,24 +338,24 @@ const TemplatesGrid = styled.div`
   padding-right: 8px;
 `;
 
-const TemplateCard = styled(Card)`
+const TemplateCard = styled(Card)<TemplateCardStyleProps>`
   position: relative;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   background-color: ${(props) => {
-    if (props.disabled) return '#f5f5f5';
-    return props.selected ? '#f0f8ff' : '#fff';
+    if (props.$disabled) return '#f5f5f5';
+    return props.$selected ? '#f0f8ff' : '#fff';
   }};
   border: 2px solid
     ${(props) => {
-      if (props.disabled) return '#f0f0f0';
-      return props.selected ? '#1890ff' : '#f0f0f0';
+      if (props.$disabled) return '#f0f0f0';
+      return props.$selected ? '#1890ff' : '#f0f0f0';
     }};
-  opacity: ${(props) => (props.disabled ? 0.7 : 1)};
+  opacity: ${(props) => (props.$disabled ? 0.7 : 1)};
   transition: all 0.3s;
 
     &:hover {
     box-shadow: ${(props) =>
-      props.disabled ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)'};
+      props.$disabled ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)'};
   }
 
   .ant-card-body {
@@ -354,7 +377,7 @@ const ExistingOverlay = styled.div`
   border-radius: 4px;
 `;
 
-const CardHeader = styled.div`
+const CardHeader = styled.div<CardHeaderStyleProps>`
   padding-bottom: 12px;
   margin-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;

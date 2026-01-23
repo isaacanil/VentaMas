@@ -1,10 +1,13 @@
-// @ts-nocheck
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { getTax } from '@/utils/pricing';
+import type { ProductRecord } from '@/types/products';
 
-export async function fbUpdateProductToNewFormat(businessID, productID) {
+export async function fbUpdateProductToNewFormat(
+  businessID: string,
+  productID: string,
+): Promise<void> {
   try {
     // Starting product update
 
@@ -18,15 +21,26 @@ export async function fbUpdateProductToNewFormat(businessID, productID) {
       return;
     }
 
-    const product = docSnapshot.data().product;
+    const product = (docSnapshot.data() as { product?: ProductRecord }).product;
 
-    updateDoc(productRef, product);
+    if (product) {
+      updateDoc(productRef, product);
+    }
   } catch (error) {
     console.error('Error actualizando el producto:', error);
   }
 }
 
-function _transformProductToNewSchema(product) {
+function _transformProductToNewSchema(
+  product: ProductRecord & {
+    tax?: { unit?: number };
+    price?: { unit?: number };
+    cost?: { unit?: number };
+    listPrice?: number;
+    minimumPrice?: number;
+    averagePrice?: number;
+  },
+): ProductRecord {
   // Suponiendo que la estructura de "product" ya contiene los campos necesarios
   // y solo necesitamos ajustarlos o calcular nuevos valores como el precio sin impuestos.
   const taxPercentage = convertDecimalToPercentage(product.tax?.unit ?? 0);
@@ -53,7 +67,7 @@ function _transformProductToNewSchema(product) {
   };
 }
 
-function convertDecimalToPercentage(valorDecimal) {
+function convertDecimalToPercentage(valorDecimal: number): number {
   return typeof valorDecimal === 'number' &&
     valorDecimal >= 0 &&
     valorDecimal <= 1

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -16,7 +15,33 @@ const businessIDs = [
   'vvRKlKT9UOK4fX9FgJxN',
 ];
 
-export async function fbUpdateProductsToNewFormatForMultipleBusinesses() {
+type LegacyUnit = { unit: number };
+type LegacyTax = { unit: number; value: number };
+type LegacyProduct = {
+  id: string;
+  productName: string;
+  category?: string;
+  productImageURL?: string;
+  cost?: LegacyUnit;
+  price: LegacyUnit;
+  listPrice?: number;
+  minimumPrice?: number;
+  averagePrice?: number;
+  tax: LegacyTax;
+  stock?: number;
+  barCode?: string;
+  qrCode?: string;
+  isVisible?: boolean;
+  trackInventory?: boolean;
+  netContent?: string;
+  size?: string;
+  type?: string;
+  amountToBuy?: LegacyUnit;
+};
+
+type LegacyProductWrapper = { id?: string; product: LegacyProduct };
+
+export async function fbUpdateProductsToNewFormatForMultipleBusinesses(): Promise<void> {
   try {
     console.info('Starting bulk product update process');
 
@@ -35,7 +60,7 @@ export async function fbUpdateProductsToNewFormatForMultipleBusinesses() {
       // Products retrieved from database
 
       const products = querySnapshot.docs.map((doc) => ({
-        ...doc.data(),
+        ...(doc.data() as LegacyProductWrapper),
         id: doc.id,
       }));
       console.info(`Found ${products.length} products to update`);
@@ -63,7 +88,7 @@ export async function fbUpdateProductsToNewFormatForMultipleBusinesses() {
   }
 }
 
-function convertDecimalToPercentage(valorDecimal) {
+function convertDecimalToPercentage(valorDecimal: number): number {
   if (
     typeof valorDecimal === 'number' &&
     valorDecimal >= 0 &&
@@ -79,7 +104,9 @@ function convertDecimalToPercentage(valorDecimal) {
   }
 }
 
-export const newProductSchema = (products) => {
+export const newProductSchema = (
+  products?: LegacyProductWrapper[],
+): Array<{ id?: string } & Record<string, unknown>> => {
   if (!products) {
     console.error('No se encontraron productos. Abortando la actualización.');
     return [];
@@ -106,7 +133,7 @@ export const newProductSchema = (products) => {
       category: product.category,
       image: product.productImageURL,
       pricing: {
-        cost: product.cost.unit,
+        cost: product.cost?.unit ?? 0,
         price: price, // Usando el precio unitario como precio seleccionado
         listPrice: product?.listPrice ? product.listPrice : product.price.unit, // Usando el costo unitario si no hay precio de lista
         minPrice: product.minimumPrice
@@ -129,10 +156,10 @@ export const newProductSchema = (products) => {
       isVisible: product?.isVisible ? product.isVisible : false, // Asumiendo falso si no hay información sobre si el producto es visible
       trackInventory: product.trackInventory,
       netContent: product.netContent,
-      size: product.size.trim(),
-      type: product.type.trim(),
+      size: product.size?.trim() ?? '',
+      type: product.type?.trim() ?? '',
       status: 'disponible', // Asumiendo "disponible" como estado por defecto
-      amountToBuy: product.amountToBuy.unit, // Usando la cantidad unitaria como cantidad a comprar
+      amountToBuy: product.amountToBuy?.unit ?? 0, // Usando la cantidad unitaria como cantidad a comprar
       createdAt: new Date(), // Convirtiendo timestamp a fecha ISO
       createdBy: 'unknown', // No hay información sobre quién creó el producto, se asume desconocido
       updatedAt: new Date(), // Asumiendo la fecha actual para la actualización

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -32,8 +31,15 @@ import {
 } from '@/features/filterProduct/filterProductsSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { getTax } from '@/utils/pricing';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
-const normalizeTaxValue = (value) => {
+type NamedItem = { name?: string | null };
+type StockThresholds = { lowThreshold?: number; criticalThreshold?: number };
+type StockIndex = Record<string, Record<string, number>>;
+type ServerAppliedFilters = Partial<Record<string, boolean>>;
+
+const normalizeTaxValue = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null;
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return null;
@@ -42,21 +48,21 @@ const normalizeTaxValue = (value) => {
 };
 
 function filterProducts(
-  productsArray,
-  inventariable,
-  itbis,
-  priceStatus,
-  costStatus,
-  promotionStatus,
-  stockAvailability,
-  stockAlertLevel,
-  stockRequirement,
-  thresholds,
-  categories,
-  activeIngredients,
-  categoriesStatus,
-  serverApplied = {},
-) {
+  productsArray: ProductRecord[],
+  inventariable: string | null | undefined,
+  itbis: string | null | undefined,
+  priceStatus: string | null | undefined,
+  costStatus: string | null | undefined,
+  promotionStatus: string | null | undefined,
+  stockAvailability: string | null | undefined,
+  stockAlertLevel: string | null | undefined,
+  stockRequirement: string | null | undefined,
+  thresholds: StockThresholds | null | undefined,
+  categories: NamedItem[],
+  activeIngredients: NamedItem[],
+  categoriesStatus: boolean | null | undefined,
+  serverApplied: ServerAppliedFilters = {},
+): ProductRecord[] {
   // Filtro por Inventariable
   if (!serverApplied.inventariable) {
     if (inventariable === 'si') {
@@ -192,19 +198,30 @@ function filterProducts(
     const activeIngredientsNameArray = activeIngredients.map(
       (item) => item.name,
     );
-    productsArray = productsArray.filter((product) =>
-      activeIngredientsNameArray.includes(product.activeIngredients),
-    );
+    productsArray = productsArray.filter((product) => {
+      const productIngredient =
+        typeof product.activeIngredients === 'string'
+          ? product.activeIngredients
+          : '';
+      return activeIngredientsNameArray.includes(productIngredient);
+    });
   }
 
   return productsArray;
 }
-function orderingProducts(productsArray, criterio, orden) {
-  const handleOrdering = (field, order) => {
+function orderingProducts(
+  productsArray: ProductRecord[],
+  criterio: string | null | undefined,
+  orden: string | boolean | null | undefined,
+): ProductRecord[] {
+  const handleOrdering = (
+    field: string,
+    order: string | boolean | null | undefined,
+  ) => {
     if (field === 'tax') {
       productsArray.sort((a, b) => {
-        const taxA = getTax(a.pricing.price, a.pricing.tax);
-        const taxB = getTax(b.pricing.price, b.pricing.tax);
+        const taxA = getTax(a?.pricing?.price ?? 0, a?.pricing?.tax ?? 0);
+        const taxB = getTax(b?.pricing?.price ?? 0, b?.pricing?.tax ?? 0);
         if (order === 'ascNum') {
           if (taxA === 0) return 1;
           if (taxB === 0) return -1;
@@ -221,19 +238,29 @@ function orderingProducts(productsArray, criterio, orden) {
       const fields = field.split('.'); // Divide el campo usando el punto
 
       productsArray.sort((a, b) => {
-        let valueA = a;
-        let valueB = b;
+        let valueA: unknown = a as Record<string, unknown>;
+        let valueB: unknown = b as Record<string, unknown>;
 
         // Accede a las propiedades anidadas usando los fragmentos
         fields.forEach((f) => {
-          valueA = valueA[f];
-          valueB = valueB[f];
+          if (valueA && typeof valueA === 'object') {
+            valueA = (valueA as Record<string, unknown>)[f];
+          } else {
+            valueA = undefined;
+          }
+          if (valueB && typeof valueB === 'object') {
+            valueB = (valueB as Record<string, unknown>)[f];
+          } else {
+            valueB = undefined;
+          }
         });
 
         if (order === 'asc') return valueA > valueB ? 1 : -1;
         if (order === 'desc') return valueA < valueB ? 1 : -1;
-        if (order === 'ascNum') return valueA - valueB; // Para ascendente
-        if (order === 'descNum') return valueB - valueA; // Para descendente
+        if (order === 'ascNum')
+          return Number(valueA ?? 0) - Number(valueB ?? 0); // Para ascendente
+        if (order === 'descNum')
+          return Number(valueB ?? 0) - Number(valueA ?? 0); // Para descendente
         if (order === true) return valueA === true ? -1 : 1;
         if (order === false) return valueA === true ? 1 : -1;
       });
@@ -252,7 +279,9 @@ function orderingProducts(productsArray, criterio, orden) {
 }
 
 // Obtener todos los productos de la colección 'products'
-export const fbGetProducts = async (user) => {
+export const fbGetProducts = async (
+  user: UserWithBusiness | null | undefined,
+): Promise<ProductRecord[]> => {
   try {
     if (!user?.businessID || typeof user.businessID != 'string') return [];
     const productsRef = collection(
@@ -262,7 +291,9 @@ export const fbGetProducts = async (user) => {
       'products',
     );
     const snapshot = await getDocs(productsRef);
-    const allProducts = snapshot.docs.map((doc) => doc.data());
+    const allProducts = snapshot.docs.map(
+      (doc) => doc.data() as ProductRecord,
+    );
     return allProducts;
   } catch (error) {
     console.error('Error al obtener todos los productos:', error);
@@ -271,11 +302,11 @@ export const fbGetProducts = async (user) => {
 };
 
 export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
-  const [loading, setLoading] = useState(true);
-  const [rawProducts, setRawProducts] = useState([]); // Productos sin filtrar desde Firebase
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [rawProducts, setRawProducts] = useState<ProductRecord[]>([]); // Productos sin filtrar desde Firebase
+  const [error, setError] = useState<unknown | null>(null);
 
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
 
   const criterio = useSelector((state) => selectCriterio(state, contextKey));
   const orden = useSelector((state) => selectOrden(state, contextKey));
@@ -304,7 +335,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   );
   const stockLocations = useSelector((state) =>
     selectStockLocations(state, contextKey),
-  );
+  ) as Array<string | null | undefined>;
   const selectedWarehouses = useMemo(
     () =>
       Array.isArray(stockLocations)
@@ -314,16 +345,25 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   );
   const stockFilterActive = selectedWarehouses.length > 0;
 
-  const [warehouseStockIndex, setWarehouseStockIndex] = useState({});
-  const [stockIndexReady, setStockIndexReady] = useState(false);
+  const [warehouseStockIndex, setWarehouseStockIndex] =
+    useState<StockIndex>({});
+  const [stockIndexReady, setStockIndexReady] = useState<boolean>(false);
 
   // Thresholds desde billing settings
-  const settingsCart = useSelector(SelectSettingCart);
+  const settingsCart = useSelector(SelectSettingCart) as
+    | {
+        billing?: {
+          stockLowThreshold?: number;
+          stockCriticalThreshold?: number;
+        };
+      }
+    | null
+    | undefined;
   const billing = settingsCart?.billing || {}; // reutilizamos estructura existente
   const stockLowThreshold = billing?.stockLowThreshold;
   const stockCriticalThreshold = billing?.stockCriticalThreshold;
 
-  const thresholds = useMemo(() => ({
+  const thresholds = useMemo<StockThresholds>(() => ({
     lowThreshold: Number.isFinite(stockLowThreshold)
       ? stockLowThreshold
       : 20,
@@ -337,13 +377,16 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       ),
   }), [stockLowThreshold, stockCriticalThreshold]);
 
-  const activeIngredients = useSelector(SelectActiveIngredients);
-  const categories = useSelector(SelectCategories);
+  const activeIngredients = useSelector(SelectActiveIngredients) as NamedItem[];
+  const categories = useSelector(SelectCategories) as NamedItem[];
 
-  const categoriesStatus = useSelector(SelectCategoryStatus);
+  const categoriesStatus = useSelector(SelectCategoryStatus) as boolean;
 
-  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
-  const [prevStockFilterActive, setPrevStockFilterActive] = useState(stockFilterActive);
+  const [prevBusinessID, setPrevBusinessID] = useState<
+    string | null | undefined
+  >(user?.businessID);
+  const [prevStockFilterActive, setPrevStockFilterActive] =
+    useState<boolean>(stockFilterActive);
 
   // PATRÓN RECOMENDADO REACT: Resetear estado durante render al cambiar dependencias
 
@@ -375,8 +418,8 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       String(user.businessID),
       'productsStock',
     );
-    const warehouseDocsMap = {};
-    const warehouseLoaded = {};
+    const warehouseDocsMap: Record<string, Array<Record<string, unknown>>> = {};
+    const warehouseLoaded: Record<string, boolean> = {};
     const expectedWarehouses = selectedWarehouses.length;
     let isMounted = true;
 
@@ -395,15 +438,20 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
         locationQuery,
         (snapshot) => {
           if (!isMounted) return;
-          warehouseDocsMap[warehouseId] = snapshot.docs.map((doc) =>
-            doc.data(),
+          warehouseDocsMap[warehouseId] = snapshot.docs.map(
+            (doc) => doc.data() as Record<string, unknown>,
           );
           warehouseLoaded[warehouseId] = true;
-          const aggregatedMap = {};
+          const aggregatedMap: StockIndex = {};
           Object.entries(warehouseDocsMap).forEach(
             ([currentWarehouseId, docs]) => {
               docs.forEach((docData) => {
-                const productId = docData?.productId;
+                const productIdRaw = docData?.productId;
+                const productId =
+                  typeof productIdRaw === 'string' ||
+                  typeof productIdRaw === 'number'
+                    ? String(productIdRaw)
+                    : '';
                 if (!productId) return;
                 const quantity = Number(docData?.quantity) || 0;
                 if (quantity <= 0) return;
@@ -441,13 +489,13 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   }, [user?.businessID, stockFilterActive, selectedWarehouses]);
 
   const applyLocationFilter = useCallback(
-    (sourceProducts = []) => {
+    (sourceProducts: ProductRecord[] = []): ProductRecord[] | null => {
       const base = Array.isArray(sourceProducts) ? sourceProducts : [];
       const stockIndex = warehouseStockIndex || {};
       const sanitizedSelected = Array.isArray(selectedWarehouses)
         ? selectedWarehouses.filter(Boolean)
         : [];
-      const resolveBaseStock = (product) => {
+      const resolveBaseStock = (product: ProductRecord) => {
         const declaredStock = Number(product?.stock);
         if (Number.isFinite(declaredStock)) {
           return declaredStock;
@@ -455,11 +503,11 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
         const declaredOriginal = Number(product?.originalStock);
         return Number.isFinite(declaredOriginal) ? declaredOriginal : 0;
       };
-      const withStock = (product, stockValue) => ({
+      const withStock = (product: ProductRecord, stockValue: number) => ({
         ...product,
         stock: stockValue,
       });
-      const baseMapper = (product) =>
+      const baseMapper = (product: ProductRecord) =>
         withStock(product, resolveBaseStock(product));
 
       if (!stockFilterActive || sanitizedSelected.length === 0) {
@@ -470,9 +518,10 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       // Mejor devolver null para indicar que espere
       if (!stockIndexReady) return null;
 
-      const result = [];
+      const result: ProductRecord[] = [];
       for (const product of base) {
-        const stockByLocation = stockIndex?.[product.id] || {};
+        const productId = product.id ?? '';
+        const stockByLocation = productId ? stockIndex?.[productId] || {} : {};
         const scopedStock = sanitizedSelected.reduce(
           (sum, locationId) => sum + Number(stockByLocation?.[locationId] || 0),
           0,
@@ -509,13 +558,18 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
           setLoading(false);
           return;
         }
-        const productsArray = snapshot.docs.map((item) => {
-          const doc = item.data();
-          if (doc) {
-            const { updatedAt: _, createdAt: __, createdBy: ___, ...cleanDoc } = doc;
-            return cleanDoc;
+        const productsArray: ProductRecord[] = snapshot.docs.map((item) => {
+          const docData = item.data() as ProductRecord;
+          if (docData) {
+            const {
+              updatedAt: _,
+              createdAt: __,
+              createdBy: ___,
+              ...cleanDoc
+            } = docData as Record<string, unknown>;
+            return cleanDoc as ProductRecord;
           }
-          return doc;
+          return docData;
         });
 
         setRawProducts(productsArray);
@@ -532,7 +586,7 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
   }, [user?.businessID, user]);
 
   // 2. Derivar processedData usando useMemo en lugar de useEffect
-  const processedData = useMemo(() => {
+  const processedData = useMemo<{ products: ProductRecord[]; total: number }>(() => {
     // Si está cargando rawProducts (primera vez), devolver vacío
     if (loading && rawProducts.length === 0) {
       return { products: [], total: 0 };
@@ -613,7 +667,12 @@ export function useGetProducts(contextKey = DEFAULT_FILTER_CONTEXT) {
       stockIndexReady,
       visibleStockTotal: processedData.total,
     }),
-    [stockFilterActive, selectedWarehouses, stockIndexReady, processedData.total],
+    [
+      stockFilterActive,
+      selectedWarehouses,
+      stockIndexReady,
+      processedData.total,
+    ],
   );
 
   return { products: processedData.products, error, loading: derivedLoading, setLoading, stockMeta };

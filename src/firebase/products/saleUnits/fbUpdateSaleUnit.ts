@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Importamos Firestore
 import {
   doc,
@@ -10,15 +9,27 @@ import {
   onSnapshot,
   deleteDoc,
 } from 'firebase/firestore';
+import type { CollectionReference, FirestoreError, Unsubscribe } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { ProductSaleUnit } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
+
+type SaleUnitInput = Partial<ProductSaleUnit> &
+  Record<string, unknown> & { id?: string };
+
+type SaleUnitRecord = ProductSaleUnit & Record<string, unknown>;
 
 // Función para actualizar o crear una unidad de venta en la subcolección saleUnits
-export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
+export const fbUpsetSaleUnits = async (
+  user: UserWithBusiness | null | undefined,
+  productId: string,
+  newSaleUnit: SaleUnitInput,
+) => {
   try {
     if (!user || !productId || !newSaleUnit) {
       console.error(
@@ -43,8 +54,9 @@ export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
     }
 
     // Verificamos si el producto tiene unidades de venta
-    const saleUnitsCount = productSnap.data().saleUnitsCount || 0;
-    newSaleUnit.id = newSaleUnit.id ?? nanoid();
+    const saleUnitsCount = Number(productSnap.data()?.saleUnitsCount ?? 0);
+    const saleUnitId = newSaleUnit.id ?? nanoid();
+    newSaleUnit.id = saleUnitId;
 
     // Referencia a la subcolección saleUnits dentro del producto específico
     const saleUnitRef = doc(
@@ -54,7 +66,7 @@ export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
       'products',
       productId,
       'saleUnits',
-      newSaleUnit.id,
+      saleUnitId,
     );
 
     if (saleUnitsCount > 0) {
@@ -90,7 +102,11 @@ export const fbUpsetSaleUnits = async (user, productId, newSaleUnit) => {
 };
 
 // Función para eliminar una unidad de venta en la subcolección saleUnits
-export const fbDeleteSaleUnit = async (user, productId, saleUnitId) => {
+export const fbDeleteSaleUnit = async (
+  user: UserWithBusiness | null | undefined,
+  productId: string,
+  saleUnitId: string,
+) => {
   try {
     if (!user || !productId || !saleUnitId) {
       console.error(
@@ -127,7 +143,11 @@ export const fbDeleteSaleUnit = async (user, productId, saleUnitId) => {
 };
 
 // Función para escuchar cambios en las unidades de venta en tiempo real
-export const fbListenSaleUnits = (user, productId, callback) => {
+export const fbListenSaleUnits = (
+  user: UserWithBusiness | null | undefined,
+  productId: string,
+  callback: (saleUnits: SaleUnitRecord[]) => void,
+): Unsubscribe | undefined => {
   try {
     if (!user || !productId) {
       console.error(
@@ -144,7 +164,7 @@ export const fbListenSaleUnits = (user, productId, callback) => {
       'products',
       productId,
       'saleUnits',
-    );
+    ) as CollectionReference<SaleUnitRecord>;
     return onSnapshot(saleUnitsRef, (snapshot) => {
       const saleUnits = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -158,15 +178,16 @@ export const fbListenSaleUnits = (user, productId, callback) => {
 };
 
 // Hook para escuchar cambios en las unidades de venta en tiempo real
-export const useListenSaleUnits = (productId) => {
-  const [data, setData] = useState([]);
-  const user = useSelector(selectUser);
+export const useListenSaleUnits = (productId: string | null | undefined) => {
+  const [data, setData] = useState<SaleUnitRecord[]>([]);
+  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<unknown | null>(null);
 
   if ((!user || !productId) && (loading || error)) {
     if (loading) setLoading(false);
-    if (!error) setError('Parámetros insuficientes para escuchar las unidades de venta.');
+    if (!error)
+      setError('Parámetros insuficientes para escuchar las unidades de venta.');
   }
 
   useEffect(() => {
@@ -182,7 +203,7 @@ export const useListenSaleUnits = (productId) => {
       'products',
       productId,
       'saleUnits',
-    );
+    ) as CollectionReference<SaleUnitRecord>;
     const unsubscribe = onSnapshot(
       saleUnitsRef,
       (snapshot) => {
@@ -193,7 +214,7 @@ export const useListenSaleUnits = (productId) => {
         setData(saleUnitsData);
         setLoading(false);
       },
-      (err) => {
+      (err: FirestoreError) => {
         console.error('Error escuchando las unidades de venta: ', err);
         setError(err);
         setLoading(false);

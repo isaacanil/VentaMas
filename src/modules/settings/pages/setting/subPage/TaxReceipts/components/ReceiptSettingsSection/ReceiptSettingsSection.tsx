@@ -1,6 +1,6 @@
-// @ts-nocheck
 // File: src/components/TaxReceiptSetting/ReceiptSettingsSection.tsx
 import { Switch, Typography } from 'antd';
+import type { SwitchProps } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -8,7 +8,15 @@ import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceip
 
 const { Title, Text } = Typography;
 
-export function ReceiptSettingsSection({ enabled, onToggle }) {
+interface ReceiptSettingsSectionProps {
+  enabled: boolean;
+  onToggle: SwitchProps['onChange'];
+}
+
+export function ReceiptSettingsSection({
+  enabled,
+  onToggle,
+}: ReceiptSettingsSectionProps) {
   return (
     <Container>
       <SectionContainer>

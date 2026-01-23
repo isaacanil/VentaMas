@@ -1,10 +1,17 @@
-// @ts-nocheck
 import { doc, onSnapshot } from 'firebase/firestore';
+import type { Unsubscribe } from 'firebase/firestore';
+import type { Dispatch, SetStateAction } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbGetCustomProduct = async (user, setProduct) => {
-  if (!user && !user?.businessID) {
+export const fbGetCustomProduct = async <
+  TProduct extends Record<string, unknown>,
+>(
+  user: UserWithBusiness | null | undefined,
+  setProduct: Dispatch<SetStateAction<TProduct | null>>,
+): Promise<Unsubscribe | undefined> => {
+  if (!user?.businessID) {
     return;
   }
   const customProductRef = doc(
@@ -14,8 +21,8 @@ export const fbGetCustomProduct = async (user, setProduct) => {
     'products',
     '6dssod',
   );
-  onSnapshot(customProductRef, (snapshot) => {
-    const data = snapshot.data();
-    setProduct(data);
+  return onSnapshot(customProductRef, (snapshot) => {
+    const data = snapshot.data() as TProduct | undefined;
+    setProduct(data ?? null);
   });
 };

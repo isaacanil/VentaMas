@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Timestamp,
   collection,
@@ -9,6 +8,7 @@ import {
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { ProductRecord } from '@/types/products';
 
 /**
  * Transfiere productos de un negocio a otro.
@@ -18,10 +18,10 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {number} [limit=0] - Cantidad de productos a transferir (0 para todos los productos).
  */
 export const fbTransferProductsToAnotherBusiness = async (
-  businessIdA,
-  businessIdB,
+  businessIdA: string,
+  businessIdB: string,
   limit = 0,
-) => {
+): Promise<void> => {
   try {
     const productsBusinessA = collection(
       db,
@@ -59,7 +59,7 @@ export const fbTransferProductsToAnotherBusiness = async (
     for (let i = 0; i < totalProducts; i += batchSize) {
       const batch = writeBatch(db);
       querySnapshot.docs.slice(i, i + batchSize).forEach((item) => {
-        const product = item.data();
+        const product = item.data() as ProductRecord;
         const id = nanoid(12);
         const changeProduct = {
           ...product,

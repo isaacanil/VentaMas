@@ -1,6 +1,9 @@
-// @ts-nocheck
 // Datos estáticos para las cabeceras de la tabla
-export const settingDataTaxTable = [
+export interface TaxConfigTableColumn {
+  name: string;
+}
+
+export const settingDataTaxTable: ReadonlyArray<TaxConfigTableColumn> = [
   { name: 'NOMBRE' },
   { name: 'TIPO' },
   { name: 'SERIE' },

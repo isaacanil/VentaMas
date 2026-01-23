@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   EyeOutlined,
   EditOutlined,
@@ -24,8 +23,25 @@ import { formatPrice } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type {
+  CreditNoteFilters,
+  CreditNoteRecord,
+  CreditNoteStatus,
+} from '@/types/creditNote';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
 
 import { CreditNoteFilters } from './components/CreditNoteFilters';
+
+type TaxReceiptEnabledRootState = Parameters<typeof selectTaxReceiptEnabled>[0];
+
+type CreditNoteFiltersState = Omit<CreditNoteFilters, 'startDate' | 'endDate'> & {
+  startDate: DateTime;
+  endDate: DateTime;
+};
+
+type CellProps<T> = {
+  value: T;
+};
 
 
 export const CreditNoteList = () => {
@@ -34,7 +50,7 @@ export const CreditNoteList = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Estado para los filtros
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<CreditNoteFiltersState>({
     startDate: DateTime.local().startOf('day'),
     endDate: DateTime.local().endOf('day'),
     clientId: null,
@@ -42,13 +58,39 @@ export const CreditNoteList = () => {
   });
 
   const { creditNotes, loading: creditNotesLoading } =
-    useFbGetCreditNotes(filters);
-  const { taxReceipt, isLoading: taxReceiptLoading } = useFbGetTaxReceipt();
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+    useFbGetCreditNotes(filters as CreditNoteFilters);
+  const { taxReceipt, isLoading: taxReceiptLoading } = useFbGetTaxReceipt() as {
+    taxReceipt: TaxReceiptDocument[];
+    isLoading: boolean;
+  };
+  const taxReceiptEnabled = useSelector<
+    TaxReceiptEnabledRootState,
+    ReturnType<typeof selectTaxReceiptEnabled>
+  >(selectTaxReceiptEnabled);
 
   const isOverallLoading = creditNotesLoading || taxReceiptLoading;
 
   const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
+
+  const toDate = (value: CreditNoteRecord['createdAt']): Date => {
+    if (!value) return new Date(0);
+    if (value instanceof Date) return value;
+    if (typeof value === 'string' || typeof value === 'number') {
+      return new Date(value);
+    }
+    if (typeof value === 'object') {
+      if ('seconds' in value && typeof value.seconds === 'number') {
+        return new Date(value.seconds * 1000);
+      }
+      if ('toDate' in value && typeof value.toDate === 'function') {
+        return value.toDate();
+      }
+      if ('toMillis' in value && typeof value.toMillis === 'function') {
+        return new Date(value.toMillis());
+      }
+    }
+    return new Date(0);
+  };
 
   const creditNoteReceipt = useMemo(() => {
     if (taxReceiptLoading) return null; // aún no llega la data
@@ -86,10 +128,8 @@ export const CreditNoteList = () => {
     navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_TAX_RECEIPT);
   };
 
-  const canEditRecord = (record) => {
-    const created = record.createdAt?.seconds
-      ? new Date(record.createdAt.seconds * 1000)
-      : new Date(record.createdAt);
+  const canEditRecord = (record: CreditNoteRecord) => {
+    const created = toDate(record.createdAt);
     const isTimeAllowed = Date.now() - created.getTime() <= ALLOWED_EDIT_MS;
     // Verificar si tiene aplicaciones basándose en el estado o saldo disponible
     const hasApplications =
@@ -107,11 +147,9 @@ export const CreditNoteList = () => {
       minWidth: '120px',
       maxWidth: '150px',
       sortable: true,
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<CreditNoteRecord['createdAt']>) => {
         if (!value) return '-';
-        const date = value.seconds
-          ? new Date(value.seconds * 1000)
-          : new Date(value);
+        const date = toDate(value);
         return (
           <div>
             <div>{formatLocaleDate(date)}</div>
@@ -131,7 +169,7 @@ export const CreditNoteList = () => {
       minWidth: '120px',
       maxWidth: '150px',
       sortable: true,
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<string | undefined>) => {
         const record = creditNotes.find((cn) => cn.ncf === value);
         return (
           <div>
@@ -150,7 +188,7 @@ export const CreditNoteList = () => {
       accessor: 'client',
       minWidth: '200px',
       sortable: true,
-      cell: ({ value }) => (
+      cell: ({ value }: CellProps<CreditNoteRecord['client']>) => (
         <div>
           <div>{value?.name || '-'}</div>
           {value?.rnc && (
@@ -167,7 +205,7 @@ export const CreditNoteList = () => {
       minWidth: '150px',
       maxWidth: '180px',
       sortable: true,
-      cell: ({ value }) => (
+      cell: ({ value }: CellProps<string | number | undefined>) => (
         <div style={{ fontFamily: 'monospace', fontSize: '0.85em' }}>
           {value || 'N/A'}
         </div>
@@ -180,7 +218,9 @@ export const CreditNoteList = () => {
       minWidth: '80px',
       maxWidth: '100px',
       align: 'center',
-      cell: ({ value }) => <Tag color="blue">{value?.length || 0} items</Tag>,
+      cell: ({ value }: CellProps<CreditNoteRecord['items']>) => (
+        <Tag color="blue">{value?.length || 0} items</Tag>
+      ),
     },
     {
       Header: 'Estado de Uso',
@@ -188,7 +228,7 @@ export const CreditNoteList = () => {
       minWidth: '100px',
       maxWidth: '120px',
       align: 'center',
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<CreditNoteStatus | undefined>) => {
         const record = creditNotes.find((cn) => cn.status === value);
         const hasApplications =
           value === CREDIT_NOTE_STATUS.APPLIED ||
@@ -214,7 +254,7 @@ export const CreditNoteList = () => {
       maxWidth: '150px',
       align: 'right',
       sortable: true,
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<number | undefined>) => {
         const record = creditNotes.find((cn) => cn.totalAmount === value);
         const availableAmount = record?.availableAmount ?? value;
         return (
@@ -237,7 +277,7 @@ export const CreditNoteList = () => {
       align: 'right',
       keepWidth: true,
       clickable: false,
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<CreditNoteRecord>) => {
         // El value aquí será toda la fila (record completo)
         const record = creditNotes.find((cn) => cn.id === value?.id) || value;
         return (
@@ -287,7 +327,7 @@ export const CreditNoteList = () => {
     actions: record, // Pasamos el record completo para las acciones
   }));
 
-  const handleView = (record) => {
+  const handleView = (record: CreditNoteRecord) => {
     dispatch(
       openCreditNoteModal({
         mode: 'view',
@@ -296,7 +336,7 @@ export const CreditNoteList = () => {
     );
   };
 
-  const handleEdit = (record) => {
+  const handleEdit = (record: CreditNoteRecord) => {
     dispatch(
       openCreditNoteModal({
         mode: 'edit',
@@ -305,7 +345,7 @@ export const CreditNoteList = () => {
     );
   };
 
-  const handleRowClick = (record) => {
+  const handleRowClick = (record: CreditNoteRecord) => {
     handleView(record);
   };
 

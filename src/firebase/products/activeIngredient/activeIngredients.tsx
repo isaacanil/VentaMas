@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -13,16 +12,18 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { ActiveIngredient } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
 // Hook para escuchar los ingredientes activos
 export const useListenActiveIngredients = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const user = useSelector(selectUser);
+  const [data, setData] = useState<ActiveIngredient[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<unknown | null>(null);
+  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
 
   useEffect(() => {
-    let unsubscribe;
+    let unsubscribe: (() => void) | undefined;
     const fetchData = async () => {
       try {
         if (!user) return;
@@ -44,13 +45,16 @@ export const useListenActiveIngredients = () => {
   return { data, loading, error };
 };
 
-const listenActiveIngredients = (user, setData) => {
+const listenActiveIngredients = (
+  user: UserWithBusiness,
+  setData: (items: ActiveIngredient[]) => void,
+): (() => void) => {
   const query = collection(
     db,
     `businesses/${user.businessID}/activeIngredients`,
   );
   const unsubscribe = onSnapshot(query, (snapshot) => {
-    const data = snapshot.docs.map((doc) => doc.data());
+    const data = snapshot.docs.map((doc) => doc.data() as ActiveIngredient);
     setData(data);
   });
 
@@ -58,7 +62,10 @@ const listenActiveIngredients = (user, setData) => {
 };
 
 // Función para agregar un ingrediente activo
-export const fbAddActiveIngredient = async (user, data) => {
+export const fbAddActiveIngredient = async (
+  user: UserWithBusiness,
+  data: Omit<ActiveIngredient, 'id'>,
+): Promise<void> => {
   try {
     const newData = {
       ...data,
@@ -79,7 +86,10 @@ export const fbAddActiveIngredient = async (user, data) => {
 };
 
 // Función para actualizar un ingrediente activo
-export const fbUpdateActiveIngredient = async (user, data) => {
+export const fbUpdateActiveIngredient = async (
+  user: UserWithBusiness,
+  data: ActiveIngredient,
+): Promise<void> => {
   try {
     // Uso de 'doc' en lugar de 'collection'
     const activeIngredientRef = doc(

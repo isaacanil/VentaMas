@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -8,13 +7,17 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-const toNumber = (value) => {
+const toNumber = (value: unknown): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const hasValidAmount = (amount, { allowZero }) =>
+const hasValidAmount = (
+  amount: number,
+  { allowZero }: { allowZero: boolean },
+): boolean =>
   Number.isFinite(amount) && (allowZero ? amount >= 0 : amount > 0);
 
 /**
@@ -25,16 +28,20 @@ const hasValidAmount = (amount, { allowZero }) =>
  * @returns {Promise<{ scanned: number, candidates: number, updated: number, dryRun: boolean }>}
  */
 export async function fbBackfillListPriceFromPrice(
-  user,
-  { allowZeroPrice = false, batchSize = 450, dryRun = false } = {},
-) {
+  user: UserWithBusiness | null | undefined,
+  {
+    allowZeroPrice = false,
+    batchSize = 450,
+    dryRun = false,
+  }: { allowZeroPrice?: boolean; batchSize?: number; dryRun?: boolean } = {},
+): Promise<{ scanned: number; candidates: number; updated: number; dryRun: boolean }> {
   if (!user?.businessID) return { scanned: 0, candidates: 0, updated: 0, dryRun };
   const businessID = String(user.businessID);
   const productsRef = collection(db, 'businesses', businessID, 'products');
   const snapshot = await getDocs(productsRef);
   if (snapshot.empty) return { scanned: 0, candidates: 0, updated: 0, dryRun };
 
-  const candidates = [];
+  const candidates: Array<{ id: string; price: number }> = [];
   let scanned = 0;
 
   snapshot.forEach((docSnap) => {

@@ -15,6 +15,7 @@ import {
   getCountFromServer,
   doc,
 } from 'firebase/firestore';
+import type { QueryDocumentSnapshot } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
@@ -47,6 +48,57 @@ type FixAllPricesOptions = {
   batchSize?: number;
   unknownStrategy?: 'none' | 'mark' | 'copyPriceToList';
   onProgress?: (progress: AuditProgress) => void;
+};
+type FixPricesForBusinessesOptions = {
+  dryRun?: boolean;
+  concurrency?: number;
+  batchSize?: number;
+  onProgress?: ProgressCallback;
+};
+type FixPricesBusinessResult = {
+  businessID: string;
+  businessName: string | null;
+  scanned: number;
+  updated: number;
+  skipped: number;
+  unknown: number;
+  dryRun: boolean;
+  error?: string;
+};
+type CollectProblemOptions = {
+  pageSize?: number;
+  includeBusinessName?: boolean;
+  onProgress?: ProgressCallback;
+};
+type ExportProblemOptions = {
+  format?: 'csv' | 'xlsx' | 'both';
+  filenameBase?: string;
+  includeBusinessName?: boolean;
+  pageSize?: number;
+  onProgress?: ProgressCallback;
+};
+type CSVProblemOptions = {
+  pageSize?: number;
+  includeBusinessName?: boolean;
+  includeHeaders?: boolean;
+  filename?: string;
+  download?: boolean;
+  onProgress?: ProgressCallback;
+};
+type CSVProblemBusinessesOptions = {
+  includeBusinessName?: boolean;
+  includeHeaders?: boolean;
+  filename?: string;
+  download?: boolean;
+  onProgress?: ProgressCallback;
+};
+type AuditFixExportOptions = {
+  doFix?: boolean;
+  dryRun?: boolean;
+  includeBusinessName?: boolean;
+  exportFormat?: 'csv' | 'xlsx' | 'both' | 'none';
+  beforeFilename?: string;
+  afterFilename?: string;
 };
 
 /* ───────────────────────────── Números seguros ───────────────────────────── */
@@ -168,7 +220,7 @@ export async function fbAuditAllBusinessesPriceVsList(
     string,
     { businessID: string; total: number; equal: number; mismatch: number; unknown: number }
   >(); // businessID -> { businessID, total, equal, mismatch, unknown }
-  let cursor = null;
+  let cursor: QueryDocumentSnapshot<UnknownRecord> | null = null;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -225,8 +277,15 @@ export async function fbFixAllPricesToListPrice({
   batchSize = 450,
   unknownStrategy = 'none',
   onProgress,
-} = {}) {
-  let cursor = null;
+}: FixAllPricesOptions = {}): Promise<{
+  dryRun: boolean;
+  totalScanned: number;
+  totalUpdated: number;
+  totalSkipped: number;
+  totalUnknown: number;
+  total: number | null;
+}> {
+  let cursor: QueryDocumentSnapshot<UnknownRecord> | null = null;
   let totalScanned = 0,
     totalUpdated = 0,
     totalSkipped = 0,
@@ -252,7 +311,7 @@ export async function fbFixAllPricesToListPrice({
     const snap = await getDocs(qy);
     if (snap.empty) break;
 
-    let batch = dryRun ? null : writeBatch(db);
+    let batch = writeBatch(db);
     let inBatch = 0;
 
     for (const docSnap of snap.docs) {
@@ -368,9 +427,14 @@ export async function fbFixAllPricesToListPrice({
    ║  3) ARREGLAR (por lista de negocios) ║
    ╚══════════════════════════════════════╝ */
 export async function fbFixPricesForBusinesses(
-  businessIDs = [],
-  { dryRun = true, concurrency = 6, batchSize = 450, onProgress } = {},
-) {
+  businessIDs: Array<string | number> = [],
+  {
+    dryRun = true,
+    concurrency = 6,
+    batchSize = 450,
+    onProgress,
+  }: FixPricesForBusinessesOptions = {},
+): Promise<FixPricesBusinessResult[]> {
   if (!Array.isArray(businessIDs) || businessIDs.length === 0) return [];
 
   let totalEstimated = 0,
@@ -380,7 +444,9 @@ export async function fbFixPricesForBusinesses(
     unknownSoFar = 0;
   const progressStep = 100;
 
-  const runBusiness = async (businessID) => {
+  const runBusiness = async (
+    businessID: string | number,
+  ): Promise<FixPricesBusinessResult> => {
     try {
       const bizIdStr = String(businessID);
       const bizRef = doc(db, 'businesses', bizIdStr);
@@ -410,7 +476,7 @@ export async function fbFixPricesForBusinesses(
         updated = 0,
         skipped = 0,
         unknown = 0;
-      let batch = dryRun ? null : writeBatch(db);
+      let batch = writeBatch(db);
       let inBatch = 0;
 
       for (const docSnap of snap.docs) {
@@ -509,11 +575,12 @@ export async function fbFixPricesForBusinesses(
         dryRun,
       };
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       onProgress?.({
         scope: 'list',
         phase: 'error',
         businessID: String(businessID),
-        error: e?.message,
+        error: errorMessage,
       });
       return {
         businessID: String(businessID),
@@ -523,12 +590,12 @@ export async function fbFixPricesForBusinesses(
         skipped: 0,
         unknown: 0,
         dryRun,
-        error: String(e?.message || e),
+        error: errorMessage,
       };
     }
   };
 
-  const results = [];
+  const results: FixPricesBusinessResult[] = [];
   let i = 0;
   const workers = Array.from(
     { length: Math.min(concurrency, businessIDs.length) },
@@ -544,7 +611,10 @@ export async function fbFixPricesForBusinesses(
 /* ╔══════════════════════════════╗
    ║  4) Recolección de problemas ║
    ╚══════════════════════════════╝ */
-async function getBusinessNameCached(id, cache) {
+async function getBusinessNameCached(
+  id: string,
+  cache: Map<string, string>,
+): Promise<string> {
   if (cache.has(id)) return cache.get(id);
   try {
     const bSnap = await getDoc(doc(db, 'businesses', id));
@@ -563,11 +633,11 @@ async function collectProblemProductsAll({
   pageSize = 1000,
   includeBusinessName = true,
   onProgress,
-} = {}) {
-  const businessNameCache = new Map();
-  const rows = [];
-  let cursor = null,
-    scanned = 0;
+}: CollectProblemOptions = {}): Promise<{ rows: AuditRow[]; headers: string[] }> {
+  const businessNameCache = new Map<string, string>();
+  const rows: AuditRow[] = [];
+  let cursor: QueryDocumentSnapshot<UnknownRecord> | null = null;
+  let scanned = 0;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -658,13 +728,17 @@ export async function fbExportProblemProductsAll({
   includeBusinessName = true,
   pageSize = 1000,
   onProgress,
-} = {}) {
+}: ExportProblemOptions = {}): Promise<{
+  count: number;
+  csvBlob?: Blob;
+  xlsxBlob?: Blob;
+}> {
   const { rows, headers } = await collectProblemProductsAll({
     pageSize,
     includeBusinessName,
     onProgress,
   });
-  const exported = {};
+  const exported: { csvBlob?: Blob; xlsxBlob?: Blob } = {};
 
   if (format === 'csv' || format === 'both') {
     const csv = buildCSVFromObjects(rows, headers);
@@ -787,7 +861,7 @@ export async function fbCSVProblemProductsAll({
   filename = 'problem-products.csv',
   download = false,
   onProgress,
-} = {}) {
+}: CSVProblemOptions = {}): Promise<{ csv: string; count: number }> {
   const { rows, headers } = await collectProblemProductsAll({
     pageSize,
     includeBusinessName,
@@ -803,15 +877,15 @@ export async function fbCSVProblemProductsAll({
    ║  7) CSV por lista de negocios            ║
    ╚══════════════════════════════════════════╝ */
 export async function fbCSVProblemProductsForBusinesses(
-  businessIDs = [],
+  businessIDs: Array<string | number> = [],
   {
     includeBusinessName = true,
     includeHeaders = true,
     filename = 'problem-products-list.csv',
     download = false,
     onProgress,
-  } = {},
-) {
+  }: CSVProblemBusinessesOptions = {},
+): Promise<{ csv: string; count: number }> {
   if (!Array.isArray(businessIDs) || businessIDs.length === 0) {
     const headers = includeBusinessName
       ? [
@@ -837,7 +911,7 @@ export async function fbCSVProblemProductsForBusinesses(
     };
   }
 
-  const rows = [];
+  const rows: string[][] = [];
   let scanned = 0;
 
   for (const businessIDRaw of businessIDs) {
@@ -903,11 +977,12 @@ export async function fbCSVProblemProductsForBusinesses(
           });
       }
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
       onProgress?.({
         scope: 'list-csv',
         businessID,
         businessName,
-        error: String(e?.message || e),
+        error: errorMessage,
         scanned,
         collected: rows.length,
       });
@@ -960,7 +1035,13 @@ export async function fbAuditFixAndExport({
   exportFormat = 'xlsx', // 'csv' | 'xlsx' | 'both' | 'none'
   beforeFilename = 'problem-products-before',
   afterFilename = 'problem-products-after',
-} = {}) {
+}: AuditFixExportOptions = {}): Promise<{
+  before: BusinessAuditSummary[];
+  after: BusinessAuditSummary[];
+  fixTotals: Awaited<ReturnType<typeof fbFixAllPricesToListPrice>> | null;
+  exportsBefore: { csvBlob?: Blob; xlsxBlob?: Blob };
+  exportsAfter: { csvBlob?: Blob; xlsxBlob?: Blob };
+}> {
   // 1) Auditoría ANTES + export (opcional)
   const before = await fbAuditAllBusinessesPriceVsList(1000);
   let exportsBefore = {};

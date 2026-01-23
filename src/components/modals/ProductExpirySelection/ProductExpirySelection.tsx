@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Button, Spin } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -11,7 +10,10 @@ import {
 } from '@/features/warehouse/productExpirySelectionSlice';
 
 import InventoryCard from './components/InventoryCard';
-import { useGetAllInventoryData } from './fbFetchAllInventoryData';
+import {
+  useGetAllInventoryData,
+  type InventoryDisplayItem,
+} from './fbFetchAllInventoryData';
 
 const StyledPageContainer = styled.div`
   display: grid;
@@ -46,8 +48,12 @@ const ErrorBanner = styled.div`
   border-radius: 8px;
 `;
 
-const groupInventoryByWarehouse = (inventoryItems) => {
-  return inventoryItems.reduce((acc, item) => {
+type GroupedInventory = Record<string, InventoryDisplayItem[]>;
+
+const groupInventoryByWarehouse = (
+  inventoryItems: InventoryDisplayItem[],
+): GroupedInventory => {
+  return inventoryItems.reduce<GroupedInventory>((acc, item) => {
     const warehouse = item.warehouse;
     if (!acc[warehouse]) {
       acc[warehouse] = [];
@@ -57,10 +63,35 @@ const groupInventoryByWarehouse = (inventoryItems) => {
   }, {});
 };
 
+type InventoryWithLegacyId = InventoryDisplayItem & { productStockId?: unknown };
+
+const hasLegacyProductStockId = (
+  item: InventoryDisplayItem,
+): item is InventoryWithLegacyId => 'productStockId' in item;
+
+const getInventoryItemKey = (item: InventoryDisplayItem): string => {
+  if (hasLegacyProductStockId(item)) {
+    const legacyId = item.productStockId;
+    if (typeof legacyId === 'string' && legacyId.trim()) {
+      return legacyId;
+    }
+  }
+  return item.productStock.id;
+};
+
+const getErrorMessage = (err: unknown): string => {
+  if (!err) return '';
+  if (err instanceof Error) return err.toString();
+  return String(err);
+};
+
 const ProductExpirySelection = () => {
   const dispatch = useDispatch();
-  const productId = useSelector(selectProductId);
-  const isOpen = useSelector(selectModalOpen);
+  const productIdRaw = useSelector(selectProductId) as unknown;
+  const productId = typeof productIdRaw === 'string' ? productIdRaw : null;
+  const isOpenRaw = useSelector(selectModalOpen) as unknown;
+  const isOpen =
+    typeof isOpenRaw === 'boolean' ? isOpenRaw : Boolean(isOpenRaw);
   // const inventory = useSelector(selectFilteredInventory);
   // const [items, setItems] = useState([]);
   const { loading, data: items, error } = useGetAllInventoryData(productId);
@@ -70,7 +101,7 @@ const ProductExpirySelection = () => {
     dispatch(clearProductExpirySelector());
   };
 
-  const groupedItems = groupInventoryByWarehouse(items ?? []);
+  const groupedItems = groupInventoryByWarehouse(items);
 
   return (
     <Modal
@@ -90,7 +121,9 @@ const ProductExpirySelection = () => {
           <div style={{ height: '400px' }}></div>
         </Spin>
       ) : error ? (
-        <ErrorBanner>Error al cargar inventario: {error}</ErrorBanner>
+        <ErrorBanner>
+          Error al cargar inventario: {getErrorMessage(error)}
+        </ErrorBanner>
       ) : (
         <StyledPageContainer>
           {Object.entries(groupedItems).map(([warehouse, warehouseItems]) => (
@@ -98,7 +131,7 @@ const ProductExpirySelection = () => {
               <h3>{warehouse}</h3>
               <StyledCardGrid>
                 {warehouseItems.map((item) => (
-                  <InventoryCard key={item.productStockId} item={item} />
+                  <InventoryCard key={getInventoryItemKey(item)} item={item} />
                 ))}
               </StyledCardGrid>
             </StyledCardsGroup>

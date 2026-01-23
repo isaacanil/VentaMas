@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ClearOutlined, FilterOutlined } from '@/constants/icons/antd';
 import { Select, Button, Drawer } from 'antd';
 import { DateTime } from 'luxon';
@@ -11,26 +10,47 @@ import {
   CREDIT_NOTE_STATUS_LABEL,
 } from '@/constants/creditNoteStatus';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
+import type { CreditNoteFilters, CreditNoteStatus } from '@/types/creditNote';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
 
 const { Option } = Select;
 const DATE_LOCALE = 'es';
 
-const startOfWeekSunday = (date) =>
+const startOfWeekSunday = (date: DateTime) =>
   date.minus({ days: date.weekday % 7 }).startOf('day');
-const endOfWeekSunday = (date) =>
+const endOfWeekSunday = (date: DateTime) =>
   startOfWeekSunday(date).plus({ days: 6 }).endOf('day');
 
-export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
+type CreditNoteFiltersState = Omit<CreditNoteFilters, 'startDate' | 'endDate'> & {
+  startDate: DateTime;
+  endDate: DateTime;
+};
+
+type CreditNoteFiltersProps = {
+  filters: CreditNoteFiltersState;
+  onFiltersChange: (next: CreditNoteFiltersState) => void;
+};
+
+type ClientOption = {
+  id?: string;
+  name?: string;
+  rnc?: string;
+};
+
+export const CreditNoteFilters = ({
+  filters,
+  onFiltersChange,
+}: CreditNoteFiltersProps) => {
   const { clients: fetchedClients, loading: clientsLoading } =
     useFbGetClientsOnOpen({
       isOpen: true,
     });
-  const clients = fetchedClients.map((c) => c.client);
+  const clients = fetchedClients.map((c) => c.client) as ClientOption[];
 
   // Responsive
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [draftRange, setDraftRange] = useState(null);
+  const [draftRange, setDraftRange] = useState<DateTime | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +61,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleDateRangeChange = (dates) => {
+  const handleDateRangeChange = (dates: DatePickerRangeValue) => {
     // 1) El usuario limpió el selector -> volver a "Hoy"
     if (!dates || !dates[0]) {
       setDraftRange(null);
@@ -68,14 +88,14 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
     });
   };
 
-  const handleClientChange = (clientId) => {
+  const handleClientChange = (clientId?: string) => {
     onFiltersChange({
       ...filters,
       clientId: clientId || null,
     });
   };
 
-  const handleStatusChange = (status) => {
+  const handleStatusChange = (status?: CreditNoteStatus) => {
     onFiltersChange({
       ...filters,
       status: status || null,
@@ -92,7 +112,7 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
   };
 
   // Si draftRange existe significa que el usuario ha seleccionado solo la primera fecha
-  const dateRange = draftRange
+  const dateRange: DatePickerRangeValue | null = draftRange
     ? [draftRange, null]
     : filters.startDate
       ? [filters.startDate, filters.endDate]
@@ -192,7 +212,9 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
               style={{ width: '100%' }}
               size="middle"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                String(option?.children ?? '')
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
               }
             >
               <Option value="">Todos los clientes</Option>
@@ -327,7 +349,9 @@ export const CreditNoteFilters = ({ filters, onFiltersChange }) => {
               style={{ width: '100%', minWidth: 150, maxWidth: 250 }}
               size="middle"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                String(option?.children ?? '')
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
               }
             >
               <Option value="">Todos</Option>

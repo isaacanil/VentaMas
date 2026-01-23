@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
@@ -36,7 +35,14 @@ const CloseButton = styled(Button)`
   border: none;
 `;
 
-export const OrderDetails = ({ order, onClose }) => {
+interface OrderDetailsProps {
+  order: {
+    note?: string | null;
+  };
+  onClose: () => void;
+}
+
+export const OrderDetails = ({ order, onClose }: OrderDetailsProps) => {
   const { note } = order;
 
   return (

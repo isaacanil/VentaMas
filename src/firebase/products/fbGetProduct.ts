@@ -1,13 +1,17 @@
-// @ts-nocheck
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
 // Función para obtener un producto una sola vez
-export const fbGetProduct = async (user, productId) => {
+export const fbGetProduct = async (
+  user: UserWithBusiness,
+  productId: string,
+): Promise<(ProductRecord & { id: string }) | null> => {
   const productRef = doc(
     db,
     'businesses',
@@ -25,12 +29,12 @@ export const fbGetProduct = async (user, productId) => {
 
 // Función para escuchar cambios en tiempo real de un producto
 export const fbListenProduct = (
-  user,
-  productId,
-  setProduct,
-  setError,
-  setLoading,
-) => {
+  user: UserWithBusiness,
+  productId: string,
+  setProduct: (value: ProductRecord | null) => void,
+  setError: (value: string | null) => void,
+  setLoading: (value: boolean) => void,
+): (() => void) => {
   const productRef = doc(
     db,
     'businesses',
@@ -62,14 +66,18 @@ export const fbListenProduct = (
 };
 
 // Hook para escuchar el producto
-export const useListenProduct = (productId) => {
-  const user = useSelector(selectUser);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export const useListenProduct = (productId: string | null | undefined) => {
+  const user = useSelector(selectUser) as UserWithBusiness | null | undefined;
+  const [data, setData] = useState<ProductRecord | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [prevProductId, setPrevProductId] = useState(productId);
-  const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
+  const [prevProductId, setPrevProductId] = useState<string | null | undefined>(
+    productId,
+  );
+  const [prevBusinessID, setPrevBusinessID] = useState<string | null | undefined>(
+    user?.businessID,
+  );
 
   if (productId !== prevProductId || user?.businessID !== prevBusinessID) {
     setPrevProductId(productId);

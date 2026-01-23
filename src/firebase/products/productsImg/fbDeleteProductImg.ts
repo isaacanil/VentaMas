@@ -1,11 +1,15 @@
-// @ts-nocheck
 import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 
 import { storage } from '@/firebase/firebaseconfig';
+import type { ProductImageRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
 import { fbDeleteProductImgData } from './fbDeleteProductImgData';
 
-export const fbDeleteProductImg = (user, img) => {
+export const fbDeleteProductImg = (
+  user: UserWithBusiness | null | undefined,
+  img: ProductImageRecord,
+) => {
   const imgRef = ref(storage, img.url);
 
   getDownloadURL(imgRef)
@@ -16,11 +20,11 @@ export const fbDeleteProductImg = (user, img) => {
           console.log(`deleted ${img}`);
           fbDeleteProductImgData(user, img.id);
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           console.log(`Error deleting image: ${error}`);
         });
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       // El archivo no existe, procedemos a eliminar el documento
       console.log(`Image does not exist, deleting document: ${error}`);
       fbDeleteProductImgData(user, img.id);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Form, message, notification } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -50,16 +49,85 @@ import {
 import { useProductPreviewMetrics } from './hooks/useProductPreviewMetrics';
 import { useSectionNavigation } from './hooks/useSectionNavigation';
 import { brandFieldMetaByType, buildBrandOptions } from './utils/brandUtils';
-import { FORM_SECTIONS, getSectionDomId } from './utils/sections';
+import { FORM_SECTIONS, getSectionDomId, type SectionId } from './utils/sections';
+import type { CategoryDocument } from '@/firebase/categories/types';
+import type {
+  ActiveIngredient,
+  ProductPricing,
+  ProductRecord,
+  ProductWarranty,
+  ProductWeightDetail,
+} from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
+
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type ProductFormPricing = Omit<
+  ProductPricing,
+  'cost' | 'price' | 'listPrice' | 'avgPrice' | 'minPrice' | 'cardPrice' | 'offerPrice' | 'tax'
+> & {
+  cost?: number | string;
+  price?: number | string;
+  listPrice?: number | string;
+  avgPrice?: number | string;
+  minPrice?: number | string;
+  cardPrice?: number | string;
+  offerPrice?: number | string;
+  tax?: number | string | null;
+};
+
+type ProductFormValues = Omit<ProductRecord, 'pricing'> & {
+  pricing?: ProductFormPricing;
+  weightDetail?: ProductWeightDetail;
+  warranty?: ProductWarranty;
+};
+
+type UpdateProductStatus = false | 'create' | 'update';
+
+interface UpdateProductState {
+  status: UpdateProductStatus;
+  product: ProductRecord;
+}
+
+interface UpdateProductRootState {
+  updateProduct: UpdateProductState;
+}
+
+type FormErrorField = { errors?: string[] };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const hasBusinessId = (value: unknown): value is UserWithBusiness => {
+  if (!isRecord(value)) return false;
+  const businessId = value.businessID;
+  return typeof businessId === 'string' && businessId.trim().length > 0;
+};
+
+const hasUserUid = (value: unknown): value is { uid: string } => {
+  if (!isRecord(value)) return false;
+  const uid = value.uid;
+  return typeof uid === 'string' && uid.trim().length > 0;
+};
+
+const isFormValidationError = (
+  value: unknown,
+): value is { errorFields: FormErrorField[] } => {
+  if (!value || typeof value !== 'object') return false;
+  const errorFields = (value as { errorFields?: unknown }).errorFields;
+  return Array.isArray(errorFields);
+};
 
 export default function ProductStudio() {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-  const { product, status } = useSelector(selectUpdateProductData);
-  const [form] = Form.useForm();
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
+  const { product, status } = useSelector<UpdateProductRootState, UpdateProductState>(
+    selectUpdateProductData,
+  );
+  const [form] = Form.useForm<ProductFormValues>();
   const { scrollContainerRef, activeSection, handleSectionNavigation } =
     useSectionNavigation();
-  const normalizedProduct = useMemo(
+  const normalizedProduct = useMemo<Partial<ProductRecord>>(
     () => buildNormalizedProductSnapshot(product) || {},
     [product],
   );
@@ -79,7 +147,7 @@ export default function ProductStudio() {
   const [imageDrawerVisible, setImageDrawerVisible] = useState(false);
   const [navigationVisible, setNavigationVisible] = useState(true);
   const [summaryVisible, setSummaryVisible] = useState(true);
-  const lastLoadedProductIdRef = useRef(null);
+  const lastLoadedProductIdRef = useRef<string | null>(null);
   const isUpdateMode = Boolean(productIdFromParams);
 
   const brandMeta = useMemo(
@@ -93,15 +161,15 @@ export default function ProductStudio() {
   const previewMetrics = useProductPreviewMetrics(product);
   const sectionDomIds = useMemo(
     () =>
-      FORM_SECTIONS.reduce((acc, section) => {
+      FORM_SECTIONS.reduce<Record<SectionId, string>>((acc, section) => {
         acc[section.id] = getSectionDomId(section.id);
         return acc;
-      }, {}),
+      }, {} as Record<SectionId, string>),
     [],
   );
 
   const updateUrlProductId = useCallback(
-    (nextId) => {
+    (nextId: string) => {
       const params = new URLSearchParams(location.search);
       if (nextId) {
         params.set('productId', nextId);
@@ -121,7 +189,7 @@ export default function ProductStudio() {
   );
 
   const resetToCreateState = useCallback(
-    ({ skipUrlUpdate = false } = {}) => {
+    ({ skipUrlUpdate = false }: { skipUrlUpdate?: boolean } = {}) => {
       dispatch(clearUpdateProductData());
       dispatch(ChangeProductData({ status: 'create', product: {} }));
       form.resetFields();
@@ -134,7 +202,10 @@ export default function ProductStudio() {
   );
 
   const loadProductById = useCallback(
-    async (rawId, { skipUrlUpdate = false, quiet = false } = {}) => {
+    async (
+      rawId: string | null | undefined,
+      { skipUrlUpdate = false, quiet = false }: { skipUrlUpdate?: boolean; quiet?: boolean } = {},
+    ): Promise<boolean> => {
       const value = rawId?.trim();
       if (!value) {
         if (!quiet) {
@@ -142,7 +213,7 @@ export default function ProductStudio() {
         }
         return false;
       }
-      if (!user?.businessID) {
+      if (!hasBusinessId(user)) {
         message.error('No se pudo determinar el negocio activo.');
         return false;
       }
@@ -194,12 +265,17 @@ export default function ProductStudio() {
   }, [productIdFromParams, loadProductById, resetToCreateState]);
 
   const handleValuesChange = useCallback(
-    (changedValues) => {
-      const key = Object.keys(changedValues)[0];
+    (changedValues: Partial<ProductFormValues>) => {
+      const [key] = Object.keys(changedValues) as Array<keyof ProductFormValues>;
+      if (!key) {
+        return;
+      }
       const value = changedValues[key];
 
       if (key === 'pricing') {
-        const normalizedPricing = { ...value };
+        const normalizedPricing: ProductFormPricing = isRecord(value)
+          ? { ...(value as ProductFormPricing) }
+          : {};
         if (normalizedPricing?.tax !== undefined) {
           const t = normalizedPricing.tax;
           normalizedPricing.tax =
@@ -218,7 +294,12 @@ export default function ProductStudio() {
       if (key === 'weightDetail') {
         dispatch(
           ChangeProductData({
-            product: { weightDetail: { ...product?.weightDetail, ...value } },
+            product: {
+              weightDetail: {
+                ...(product?.weightDetail ?? {}),
+                ...(isRecord(value) ? (value as ProductWeightDetail) : {}),
+              },
+            },
           }),
         );
         return;
@@ -227,7 +308,12 @@ export default function ProductStudio() {
       if (key === 'warranty') {
         dispatch(
           ChangeProductData({
-            product: { warranty: { ...product?.warranty, ...value } },
+            product: {
+              warranty: {
+                ...(product?.warranty ?? {}),
+                ...(isRecord(value) ? (value as ProductWarranty) : {}),
+              },
+            },
           }),
         );
         return;
@@ -280,7 +366,7 @@ export default function ProductStudio() {
             const brandMatch = productBrands?.find(
               (brand) => brand?.id === normalizedId,
             );
-            if (brandMatch?.name) {
+            if (typeof brandMatch?.name === 'string') {
               resolvedBrand = brandMatch.name.trim();
             }
           }
@@ -309,6 +395,10 @@ export default function ProductStudio() {
   const handleSubmit = async () => {
     if (!user) {
       message.error('No se encontró la sesión del usuario.');
+      return;
+    }
+    if (!hasBusinessId(user)) {
+      message.error('No se pudo determinar el negocio activo.');
       return;
     }
 
@@ -341,22 +431,25 @@ export default function ProductStudio() {
         });
         resetToCreateState();
       }
-    } catch (err) {
-      if (err?.errorFields?.length) {
+    } catch (err: unknown) {
+      if (isFormValidationError(err) && err.errorFields.length > 0) {
         err.errorFields.forEach((error) => {
+          const fieldErrors = Array.isArray(error.errors) ? error.errors : [];
           notification.error({
             message: 'Revisa los campos del formulario',
             description:
-              error.errors?.[0] || 'Hay valores pendientes por completar.',
+              fieldErrors[0] || 'Hay valores pendientes por completar.',
             duration: 10,
           });
         });
         return;
       }
       console.error('Error guardando el producto:', err);
+      const fallbackMessage =
+        err instanceof Error ? err.message : 'Intenta nuevamente en unos segundos.';
       notification.error({
         message: 'No se pudo guardar',
-        description: err?.message || 'Intenta nuevamente en unos segundos.',
+        description: fallbackMessage,
       });
     } finally {
       setSubmitting(false);
@@ -454,4 +547,5 @@ export default function ProductStudio() {
     </PageContainer>
   );
 }
+
 

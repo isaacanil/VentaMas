@@ -1,10 +1,19 @@
-// @ts-nocheck
 import { SettingOutlined } from '@/constants/icons/antd';
 import { Drawer, Button } from 'antd';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import FiscalReceiptsAlertSettings from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
+import FiscalReceiptsAlertSettings, {
+  type FiscalReceiptsAlertConfigState,
+} from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/FiscalReceiptsAlertSettings/FiscalReceiptsAlertSettings';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
+
+interface FiscalReceiptsAlertWidgetProps {
+  taxReceipts?: TaxReceiptDocument[];
+  onConfigChange?: (config: FiscalReceiptsAlertConfigState) => void;
+  disabled?: boolean;
+  alertConfig?: Partial<FiscalReceiptsAlertConfigState> | null;
+}
 
 /**
  * Botón simple para abrir configuración de alertas de comprobantes fiscales
@@ -14,7 +23,7 @@ const FiscalReceiptsAlertWidget = ({
   onConfigChange,
   disabled = false,
   alertConfig = null,
-}) => {
+}: FiscalReceiptsAlertWidgetProps) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   const handleOpenDrawer = () => {

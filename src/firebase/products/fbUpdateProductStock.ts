@@ -1,19 +1,34 @@
-// @ts-nocheck
 import {
   doc,
   increment,
   writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
+import type { WriteBatch } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { validateUser } from '@/utils/userValidation';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
+
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+type StockUpdateProduct = ProductRecord & {
+  id: string;
+  amountToBuy?: number | string;
+  trackInventory?: boolean;
+  batchId?: string | null;
+  productStockId?: string | null;
+  hasExpirationDate?: boolean;
+  batch?: { numberId?: string | number };
+  stock?: number | { location?: string };
+  name?: string;
+};
 
 // Función para dividir el array en subarrays de tamaño máximo size
-function chunkArray(array, size) {
-  const result = [];
+function chunkArray<T>(array: T[], size: number): T[][] {
+  const result: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
     result.push(array.slice(i, i + size));
   }
@@ -21,9 +36,12 @@ function chunkArray(array, size) {
 }
 
 // Función para ejecutar batches con límite de concurrencia
-async function executeBatchesWithConcurrency(batches, concurrencyLimit) {
-  const executing = [];
-  const results = [];
+async function executeBatchesWithConcurrency(
+  batches: WriteBatch[],
+  concurrencyLimit: number,
+): Promise<void> {
+  const executing: Array<Promise<void>> = [];
+  const results: Array<Promise<void>> = [];
 
   for (const batch of batches) {
     const p = batch.commit();
@@ -41,7 +59,10 @@ async function executeBatchesWithConcurrency(batches, concurrencyLimit) {
   return Promise.all(results);
 }
 
-export async function fbUpdateProductsStock(products, user) {
+export async function fbUpdateProductsStock(
+  products: StockUpdateProduct[],
+  user: UserWithBusinessAndUid,
+): Promise<void> {
   try {
     validateUser(user);
     const { businessID } = user;
@@ -50,7 +71,7 @@ export async function fbUpdateProductsStock(products, user) {
     const BATCH_LIMIT = 500;
     const CONCURRENCY_LIMIT = 5; // Puedes ajustar este valor según tus necesidades
     const productChunks = chunkArray(products, Math.floor(BATCH_LIMIT / 3)); // Estimación conservadora
-    const batches = [];
+    const batches: WriteBatch[] = [];
 
     for (const chunk of productChunks) {
       const batch = writeBatch(db);
@@ -64,9 +85,9 @@ export async function fbUpdateProductsStock(products, user) {
           'products',
           product.id,
         );
-        const batchId = product?.batchId;
-        const productStockId = product?.productStockId;
-        const amountToBuy = Number(product?.amountToBuy);
+        const batchId = product.batchId;
+        const productStockId = product.productStockId;
+        const amountToBuy = Number(product.amountToBuy ?? 0);
 
         if (isNaN(amountToBuy) || amountToBuy <= 0) {
           console.warn(`Cantidad inválida para el producto ${product.id}`);
@@ -110,13 +131,16 @@ export async function fbUpdateProductsStock(products, user) {
           };
 
           const productBatch = product.batch || { numberId: 'N/A' };
-          const productStock = product.stock || { location: 'N/A' };
+          const productStock =
+            typeof product.stock === 'object' && product.stock
+              ? product.stock
+              : { location: 'N/A' };
 
           const movement = {
             ...baseFields,
             id: movementId,
             batchId: batchId,
-            productName: product.name,
+            productName: product.name ?? '',
             batchNumberId: productBatch.numberId,
             destinationLocation: null,
             sourceLocation: productStock.location,

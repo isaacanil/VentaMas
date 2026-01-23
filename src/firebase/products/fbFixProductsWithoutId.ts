@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -8,8 +7,11 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export async function fbFixProductsWithoutId(user) {
+export async function fbFixProductsWithoutId(
+  user: UserWithBusiness | null | undefined,
+): Promise<void> {
   if (!user?.businessID) return;
   try {
     const productsCollection = collection(
@@ -22,10 +24,11 @@ export async function fbFixProductsWithoutId(user) {
     const q = query(productsCollection);
     const querySnapshot = await getDocs(q);
     console.info(`Found ${querySnapshot.size} products without ID`);
-    const products = querySnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    }));
+    const products: Array<Record<string, unknown> & { id: string }> =
+      querySnapshot.docs.map((doc) => ({
+        ...(doc.data() as Record<string, unknown>),
+        id: doc.id,
+      }));
 
     const BATCH_LIMIT = 500;
     const numBatches = Math.ceil(products?.length / BATCH_LIMIT);

@@ -1,7 +1,8 @@
-// @ts-nocheck
 // Asegúrate de importar tu configuración de Firebase
 
-export async function migrateProductsForSpecificBusiness(_businessId) {
+export async function migrateProductsForSpecificBusiness(
+  _businessId: string,
+): Promise<void> {
   // const productsCol = collection(db, "businesses", businessId, "products");
   // const unsubscribe = onSnapshot(productsCol, (snapshot) => {
   //     for (const productDoc of snapshot.docs) {

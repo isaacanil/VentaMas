@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CheckCircleOutlined } from '@/constants/icons/antd';
 import { Modal, Button, message } from 'antd';
 import React from 'react';
@@ -7,6 +6,18 @@ import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
+import type { TaxReceiptData, TaxReceiptDocument } from '@/types/taxReceipt';
+
+type DisabledReceiptDocument = TaxReceiptDocument & {
+  data: TaxReceiptData & { id: string };
+};
+
+interface DisabledReceiptsModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  disabledReceipts: DisabledReceiptDocument[];
+  onRestore: (receiptId: string) => void;
+}
 
 /**
  * Modal para mostrar y restaurar comprobantes deshabilitados
@@ -16,11 +27,16 @@ const DisabledReceiptsModal = ({
   onCancel,
   disabledReceipts,
   onRestore,
-}) => {
+}: DisabledReceiptsModalProps) => {
   const user = useSelector(selectUser);
+  const safeUser = {
+    businessID: user?.businessID ?? null,
+    uid: user?.id ?? null,
+    id: user?.id ?? null,
+  };
 
   // Manejar la restauración de un comprobante
-  const handleRestore = async (receiptData) => {
+  const handleRestore = async (receiptData: TaxReceiptData & { id: string }) => {
     try {
       // Actualizar el documento en Firebase con disabled = false
       const dataToUpdate = {
@@ -29,7 +45,7 @@ const DisabledReceiptsModal = ({
         disabled: false,
       };
 
-      await updateTaxReceipt(user, dataToUpdate);
+      await updateTaxReceipt(safeUser, dataToUpdate);
       message.success('Comprobante restaurado correctamente');
 
       // Notificar al componente padre para actualizar la lista
@@ -61,33 +77,37 @@ const DisabledReceiptsModal = ({
       <Content>
         {disabledReceipts.length > 0 ? (
           <ReceiptsGrid>
-            {disabledReceipts.map((receipt) => (
-              <CustomReceiptCard key={receipt.id || receipt.data.id}>
-                <CardHeaderSection>
-                  <ReceiptName>{receipt.data.name}</ReceiptName>
-                  <ReceiptCode>
-                    {receipt.data.type}
-                    {receipt.data.serie}
-                  </ReceiptCode>
-                </CardHeaderSection>
-                <CardContent>
-                  {/* <DetailRow>
-                    <DetailLabel>Tipo</DetailLabel>
-                    <DetailValue>{receipt.data.type}</DetailValue>
-                  </DetailRow> */}
-                  <DetailRow>
-                    <DetailLabel>Secuencia:</DetailLabel>
-                    <DetailValue>{receipt.data.sequence}</DetailValue>
-                  </DetailRow>
-                </CardContent>{' '}
-                <RestoreButtonContainer>
-                  <RestoreButton onClick={() => handleRestore(receipt.data)}>
-                    <CheckCircleOutlined style={{ fontSize: '12px' }} />
-                    <span>Restaurar</span>
-                  </RestoreButton>
-                </RestoreButtonContainer>
-              </CustomReceiptCard>
-            ))}
+            {disabledReceipts.map((receipt) => {
+              const receiptData = receipt.data;
+              const receiptKey = receipt.id ?? receiptData.id ?? receiptData.name;
+              return (
+                <CustomReceiptCard key={receiptKey}>
+                  <CardHeaderSection>
+                    <ReceiptName>{receiptData.name}</ReceiptName>
+                    <ReceiptCode>
+                      {receiptData.type}
+                      {receiptData.serie}
+                    </ReceiptCode>
+                  </CardHeaderSection>
+                  <CardContent>
+                    {/* <DetailRow>
+                      <DetailLabel>Tipo</DetailLabel>
+                      <DetailValue>{receiptData.type}</DetailValue>
+                    </DetailRow> */}
+                    <DetailRow>
+                      <DetailLabel>Secuencia:</DetailLabel>
+                      <DetailValue>{receiptData.sequence}</DetailValue>
+                    </DetailRow>
+                  </CardContent>{' '}
+                  <RestoreButtonContainer>
+                    <RestoreButton onClick={() => handleRestore(receiptData)}>
+                      <CheckCircleOutlined style={{ fontSize: '12px' }} />
+                      <span>Restaurar</span>
+                    </RestoreButton>
+                  </RestoreButtonContainer>
+                </CustomReceiptCard>
+              );
+            })}
           </ReceiptsGrid>
         ) : (
           <EmptyStateContainer>

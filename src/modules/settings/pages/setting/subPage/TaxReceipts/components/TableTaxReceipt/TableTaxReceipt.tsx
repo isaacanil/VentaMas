@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   FileOutlined,
   ExclamationCircleOutlined,
@@ -14,13 +13,43 @@ import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 import TaxReceiptForm from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm';
 import { settingDataTaxTable } from '@/modules/settings/pages/setting/subPage/TaxReceipts/taxConfigTable';
+import type {
+  TaxReceiptData,
+  TaxReceiptDocument,
+  TaxReceiptUser,
+} from '@/types/taxReceipt';
 
-export const TableTaxReceipt = ({ array, setData }) => {
+type TaxReceiptTableItem = TaxReceiptDocument;
+
+type SetTaxReceiptData = (
+  next:
+    | TaxReceiptTableItem[]
+    | ((prev: TaxReceiptTableItem[]) => TaxReceiptTableItem[]),
+) => void;
+
+interface TableTaxReceiptProps {
+  array?: TaxReceiptTableItem[] | null;
+  setData: SetTaxReceiptData;
+}
+
+interface RowProps {
+  disabled?: boolean;
+}
+
+const hasBusinessId = (
+  value: TaxReceiptUser | null,
+): value is TaxReceiptUser & { businessID: string } =>
+  typeof value?.businessID === 'string' && value.businessID.trim().length > 0;
+
+export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [currentEditItem, setCurrentEditItem] = useState(null);
+  const [currentEditItem, setCurrentEditItem] = useState<TaxReceiptData | null>(
+    null,
+  );
   const user = useSelector(selectUser);
 
-  const activeReceipts = array?.filter((item) => !item.data?.disabled);
+  const safeArray = array ?? [];
+  const activeReceipts = safeArray.filter((item) => !item.data?.disabled);
 
   // Si no hay elementos activos, mostramos mensaje
   if (!activeReceipts || activeReceipts.length === 0) {
@@ -31,8 +60,10 @@ export const TableTaxReceipt = ({ array, setData }) => {
     );
   }
 
-  const handleToggleDisabled = async (index) => {
-    const item = array[index];
+  const handleToggleDisabled = async (index: number) => {
+    const item = safeArray[index];
+    if (!item?.data) return;
+
     const isCurrentlyDisabled = item.data?.disabled === true;
     const actionText = isCurrentlyDisabled ? 'habilitar' : 'deshabilitar';
     const statusText = isCurrentlyDisabled ? 'activo' : 'inactivo';
@@ -46,17 +77,25 @@ export const TableTaxReceipt = ({ array, setData }) => {
       cancelText: 'Cancelar',
       onOk: async () => {
         try {
+          if (!hasBusinessId(user)) {
+            throw new Error('Invalid businessID provided.');
+          }
+
+          if (typeof item.data.id !== 'string') {
+            throw new Error('Invalid or empty data provided for update.');
+          }
+
           const newDisabledState = !isCurrentlyDisabled;
-          const dataToUpdate = {
-            id: item.data.id,
+          const dataToUpdate: TaxReceiptData = {
             ...item.data,
+            id: item.data.id,
             disabled: newDisabledState,
           };
           await updateTaxReceipt(user, dataToUpdate);
           message.success(
             `Comprobante ${isCurrentlyDisabled ? 'habilitado' : 'deshabilitado'} correctamente`,
           );
-          const newArray = array.map((it, i) =>
+          const newArray = safeArray.map((it, i) =>
             i === index
               ? { ...it, data: { ...it.data, disabled: newDisabledState } }
               : it,
@@ -70,8 +109,8 @@ export const TableTaxReceipt = ({ array, setData }) => {
     });
   };
 
-  const handleEditTaxReceipt = (index) => {
-    const itemToEdit = array[index];
+  const handleEditTaxReceipt = (index: number) => {
+    const itemToEdit = safeArray[index];
     if (itemToEdit && itemToEdit.data) {
       setCurrentEditItem({ ...itemToEdit.data });
       setEditModalVisible(true);
@@ -85,12 +124,15 @@ export const TableTaxReceipt = ({ array, setData }) => {
     }
   };
 
-  const formatSequence = (seq, length) => {
+  const formatSequence = (
+    seq?: number | string,
+    length?: number,
+  ): string | number | undefined => {
     if (seq === undefined || length === undefined) return seq;
     return String(seq).padStart(length, '0');
   };
 
-  const calculateLimit = (data) => {
+  const calculateLimit = (data?: TaxReceiptData | null): string => {
     try {
       if (!data) return 'N/A';
       const { type, serie, sequence, quantity, sequenceLength } = data;
@@ -121,7 +163,7 @@ export const TableTaxReceipt = ({ array, setData }) => {
       {activeReceipts.map((item, idx) => (
         <Row
           key={idx}
-          onDoubleClick={() => handleEditTaxReceipt(array.indexOf(item))}
+          onDoubleClick={() => handleEditTaxReceipt(safeArray.indexOf(item))}
         >
           <Col>
             <span>{item.data?.name}</span>
@@ -154,14 +196,14 @@ export const TableTaxReceipt = ({ array, setData }) => {
           <Col>
             <ActionButtonsContainer>
               <ActionButton
-                onClick={() => handleEditTaxReceipt(array.indexOf(item))}
+                onClick={() => handleEditTaxReceipt(safeArray.indexOf(item))}
                 className="edit-button"
                 title="Editar"
               >
                 <EditOutlined />
               </ActionButton>
               <ActionButton
-                onClick={() => handleToggleDisabled(array.indexOf(item))}
+                onClick={() => handleToggleDisabled(safeArray.indexOf(item))}
                 className="delete-button"
                 title="Deshabilitar"
               >
@@ -193,7 +235,7 @@ const EmptyMessage = styled.div`
   text-align: center;
 `;
 
-const Row = styled.div`
+const Row = styled.div<RowProps>`
   align-items: center;
   background-color: ${(props) => (props.disabled ? '#f5f5f5' : 'transparent')};
   border-bottom: 1px solid var(--gray1);

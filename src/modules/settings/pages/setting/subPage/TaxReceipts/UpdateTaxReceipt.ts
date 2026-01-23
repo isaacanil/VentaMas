@@ -1,4 +1,3 @@
-// @ts-nocheck
 // export const UpdateObjectProperty = (
 //     mainObject, secondObject, setObject, propertyToChangeValue,
 //     newValue, dataType, maxCharacters

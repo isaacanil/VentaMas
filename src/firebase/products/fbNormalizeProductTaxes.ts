@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { collection, doc, getDocs, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-const parseTaxValue = (value, fallback = 0) => {
+const parseTaxValue = (value: unknown, fallback = 0): number => {
   if (value === null || value === undefined || value === '') return fallback;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'string') {
@@ -23,7 +23,10 @@ const parseTaxValue = (value, fallback = 0) => {
   return fallback;
 };
 
-const normalizeUnitPricing = (pricing, fallbackTax = 0) => {
+const normalizeUnitPricing = (
+  pricing: Record<string, unknown> | null | undefined,
+  fallbackTax = 0,
+): Record<string, unknown> | null | undefined => {
   if (!pricing || typeof pricing !== 'object') return pricing;
   const normalizedTax = parseTaxValue(pricing.tax, fallbackTax);
   if (typeof pricing.tax === 'number' && pricing.tax === normalizedTax) {
@@ -35,7 +38,18 @@ const normalizeUnitPricing = (pricing, fallbackTax = 0) => {
   };
 };
 
-export const normalizeProductTaxes = async (user, { dryRun = false } = {}) => {
+export const normalizeProductTaxes = async (
+  user: UserWithBusiness | null | undefined,
+  { dryRun = false }: { dryRun?: boolean } = {},
+): Promise<{
+  total: number;
+  mainUpdated: number;
+  productsUpdated: number;
+  saleUnitsUpdated: number;
+  selectedUnitUpdated: number;
+  skipped: number;
+  dryRun: boolean;
+}> => {
   if (!user?.businessID) {
     throw new Error('No se encontró un negocio válido para el usuario.');
   }
@@ -81,12 +95,12 @@ export const normalizeProductTaxes = async (user, { dryRun = false } = {}) => {
   };
 
   for (const docSnap of snapshot.docs) {
-    const data = docSnap.data() || {};
-    const pricing = data.pricing || {};
+    const data = docSnap.data() as Record<string, unknown>;
+    const pricing = (data.pricing as Record<string, unknown>) || {};
     const currentTax = pricing.tax;
     const normalizedTax = parseTaxValue(currentTax, 0);
 
-    const updates = {};
+    const updates: Record<string, unknown> = {};
     let hasChanges = false;
 
     if (typeof currentTax !== 'number' || currentTax !== normalizedTax) {
@@ -99,16 +113,19 @@ export const normalizeProductTaxes = async (user, { dryRun = false } = {}) => {
     if (Array.isArray(data.saleUnits) && data.saleUnits.length > 0) {
       const normalizedSaleUnits = data.saleUnits.map((unit) => {
         if (!unit || typeof unit !== 'object') return unit;
-        if (!unit.pricing || typeof unit.pricing !== 'object') return unit;
+        const unitRecord = unit as Record<string, unknown>;
+        if (!unitRecord.pricing || typeof unitRecord.pricing !== 'object') {
+          return unit;
+        }
         const normalizedPricing = normalizeUnitPricing(
-          unit.pricing,
+          unitRecord.pricing as Record<string, unknown>,
           normalizedTax,
         );
-        if (normalizedPricing !== unit.pricing) {
+        if (normalizedPricing !== unitRecord.pricing) {
           saleUnitsChanged = true;
           summary.saleUnitsUpdated += 1;
           return {
-            ...unit,
+            ...unitRecord,
             pricing: normalizedPricing,
           };
         }
@@ -120,18 +137,17 @@ export const normalizeProductTaxes = async (user, { dryRun = false } = {}) => {
       }
     }
 
-    if (
-      data.selectedSaleUnit &&
-      typeof data.selectedSaleUnit === 'object' &&
-      data.selectedSaleUnit.pricing
-    ) {
+    const selectedSaleUnit = data.selectedSaleUnit as
+      | { pricing?: Record<string, unknown> }
+      | undefined;
+    if (selectedSaleUnit && typeof selectedSaleUnit === 'object') {
       const normalizedSelectedPricing = normalizeUnitPricing(
-        data.selectedSaleUnit.pricing,
-        updates['pricing.tax'] ?? normalizedTax,
+        selectedSaleUnit.pricing,
+        (updates['pricing.tax'] as number | undefined) ?? normalizedTax,
       );
-      if (normalizedSelectedPricing !== data.selectedSaleUnit.pricing) {
+      if (normalizedSelectedPricing !== selectedSaleUnit.pricing) {
         updates.selectedSaleUnit = {
-          ...data.selectedSaleUnit,
+          ...selectedSaleUnit,
           pricing: normalizedSelectedPricing,
         };
         summary.selectedUnitUpdated += 1;

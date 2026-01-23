@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Card,
   InputNumber,
@@ -15,6 +14,29 @@ import {
   FISCAL_RECEIPTS_ALERT_CONFIG,
   getThresholdsForReceiptType,
 } from '@/config/fiscalReceiptsAlertConfig';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
+
+type ThresholdConfig = {
+  warning: number | null;
+  critical: number | null;
+};
+
+type CustomThresholdConfig = Partial<ThresholdConfig>;
+
+type CustomThresholds = Record<string, CustomThresholdConfig>;
+
+export interface FiscalReceiptsAlertConfigState {
+  alertsEnabled: boolean;
+  globalThresholds: ThresholdConfig;
+  customThresholds: CustomThresholds;
+}
+
+interface FiscalReceiptsAlertSettingsProps {
+  taxReceipts?: TaxReceiptDocument[];
+  onConfigChange?: (config: FiscalReceiptsAlertConfigState) => void;
+  disabled?: boolean;
+  initialConfig?: Partial<FiscalReceiptsAlertConfigState> | null;
+}
 
 const { Title, Text } = Typography;
 
@@ -26,26 +48,31 @@ const FiscalReceiptsAlertSettings = ({
   onConfigChange,
   disabled = false,
   initialConfig = null,
-}) => {
-  const [alertsEnabled, setAlertsEnabled] = useState(() => initialConfig?.alertsEnabled ?? true);
-  const [globalThresholds, setGlobalThresholds] = useState(() => initialConfig?.globalThresholds ?? {
-    warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
-    critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
-  });
+}: FiscalReceiptsAlertSettingsProps) => {
+  const [alertsEnabled, setAlertsEnabled] = useState<boolean>(
+    () => initialConfig?.alertsEnabled ?? true,
+  );
+  const [globalThresholds, setGlobalThresholds] = useState<ThresholdConfig>(
+    () =>
+      initialConfig?.globalThresholds ?? {
+        warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
+        critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
+      },
+  );
 
   const receiptTypesKey = useMemo(() => {
     const types = taxReceipts
-      .map((receipt) => receipt?.data?.name)
-      .filter(Boolean);
+      .map((receipt) => receipt.data?.name)
+      .filter((name): name is string => Boolean(name));
     types.sort();
     return types.join('|');
   }, [taxReceipts]);
 
-  const initialCustomThresholds = useMemo(() => {
-    const thresholds = {};
+  const initialCustomThresholds = useMemo<CustomThresholds>(() => {
+    const thresholds: CustomThresholds = {};
     taxReceipts.forEach((receipt) => {
-      if (receipt?.data?.name) {
-        const receiptName = receipt.data.name;
+      const receiptName = receipt.data?.name;
+      if (receiptName) {
         thresholds[receiptName] = getThresholdsForReceiptType(receiptName);
       }
     });
@@ -53,7 +80,7 @@ const FiscalReceiptsAlertSettings = ({
   }, [taxReceipts]);
 
   const [{ trigger: customTrigger, value: customValue }, setCustomThresholdState] =
-    useState(() => ({
+    useState<{ trigger: string; value: CustomThresholds }>(() => ({
       trigger: receiptTypesKey,
       value: initialConfig?.customThresholds ?? initialCustomThresholds,
     }));
@@ -62,12 +89,19 @@ const FiscalReceiptsAlertSettings = ({
     customTrigger === receiptTypesKey ? customValue : initialCustomThresholds;
 
   const setCustomThresholds = useCallback(
-    (value) => setCustomThresholdState({ trigger: receiptTypesKey, value }),
+    (value: CustomThresholds) =>
+      setCustomThresholdState({ trigger: receiptTypesKey, value }),
     [receiptTypesKey],
   );
 
-  const handleGlobalThresholdChange = (type, value) => {
-    const newThresholds = { ...globalThresholds, [type]: value };
+  const handleGlobalThresholdChange = (
+    type: keyof ThresholdConfig,
+    value: number | null,
+  ) => {
+    const newThresholds: ThresholdConfig = {
+      ...globalThresholds,
+      [type]: value,
+    };
     setGlobalThresholds(newThresholds);
 
     if (onConfigChange) {
@@ -79,11 +113,15 @@ const FiscalReceiptsAlertSettings = ({
     }
   };
 
-  const handleCustomThresholdChange = (receiptName, type, value) => {
+  const handleCustomThresholdChange = (
+    receiptName: string,
+    type: keyof ThresholdConfig,
+    value: number | null,
+  ) => {
     const newCustomThresholds = {
       ...customThresholds,
       [receiptName]: {
-        ...customThresholds[receiptName],
+        ...(customThresholds[receiptName] ?? {}),
         [type]: value,
       },
     };
@@ -98,7 +136,7 @@ const FiscalReceiptsAlertSettings = ({
     }
   };
 
-  const handleAlertsToggle = (enabled) => {
+  const handleAlertsToggle = (enabled: boolean) => {
     setAlertsEnabled(enabled);
 
     if (onConfigChange) {
@@ -111,10 +149,11 @@ const FiscalReceiptsAlertSettings = ({
   };
 
   const getUniqueReceiptTypes = () => {
-    const types = new Set();
+    const types = new Set<string>();
     taxReceipts.forEach((receipt) => {
-      if (receipt?.data?.name) {
-        types.add(receipt.data.name);
+      const receiptName = receipt.data?.name;
+      if (receiptName) {
+        types.add(receiptName);
       }
     });
     return Array.from(types);
@@ -174,7 +213,7 @@ const FiscalReceiptsAlertSettings = ({
                     handleGlobalThresholdChange('critical', value)
                   }
                   min={1}
-                  max={globalThresholds.warning - 1}
+                  max={Number(globalThresholds.warning) - 1}
                   disabled={disabled || !alertsEnabled}
                   addonAfter="comprobantes"
                 />
@@ -216,7 +255,11 @@ const FiscalReceiptsAlertSettings = ({
                           max={1000}
                           disabled={disabled || !alertsEnabled}
                           addonAfter="comprobantes"
-                          placeholder={globalThresholds.warning}
+                          placeholder={
+                            typeof globalThresholds.warning === 'number'
+                              ? String(globalThresholds.warning)
+                              : undefined
+                          }
                         />
                       </ThresholdItem>
 
@@ -233,12 +276,17 @@ const FiscalReceiptsAlertSettings = ({
                           }
                           min={1}
                           max={
-                            (customConfig.warning || globalThresholds.warning) -
-                            1
+                            Number(
+                              customConfig.warning || globalThresholds.warning,
+                            ) - 1
                           }
                           disabled={disabled || !alertsEnabled}
                           addonAfter="comprobantes"
-                          placeholder={globalThresholds.critical}
+                          placeholder={
+                            typeof globalThresholds.critical === 'number'
+                              ? String(globalThresholds.critical)
+                              : undefined
+                          }
                         />
                       </ThresholdItem>
                     </ThresholdRow>

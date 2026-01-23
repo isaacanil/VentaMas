@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Form, InputNumber, Select, Switch } from 'antd';
 import styled from 'styled-components';
 
@@ -19,7 +18,11 @@ const WarrantyCard = styled(SectionCard)`
   }
 `;
 
-export const WarrantySection = ({ domId }) => (
+interface WarrantySectionProps {
+  domId: string;
+}
+
+export const WarrantySection = ({ domId }: WarrantySectionProps) => (
   <WarrantyCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>Garantía y cobertura</SectionTitle>

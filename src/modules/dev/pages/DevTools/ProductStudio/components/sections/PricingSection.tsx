@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { InfoCircleOutlined } from '@/constants/icons/antd';
 import { Form, InputNumber, Space, Tooltip, Typography } from 'antd';
+import type { FormItemProps, InputNumberProps } from 'antd';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
@@ -11,8 +11,54 @@ import {
   SectionHeader,
   SectionTitle,
 } from '@/modules/dev/pages/DevTools/ProductStudio/components/SectionLayout';
+import type { PricingTax } from '@/types/products';
 
 const { Text } = Typography;
+
+type PriceValue = number | string | null | undefined;
+type PriceRowKey =
+  | 'listPrice'
+  | 'midPrice'
+  | 'minPrice'
+  | 'cardPrice'
+  | 'offerPrice';
+
+interface PricingValues {
+  cost?: PriceValue;
+  tax?: PricingTax;
+  listPrice?: PriceValue;
+  midPrice?: PriceValue;
+  minPrice?: PriceValue;
+  cardPrice?: PriceValue;
+  offerPrice?: PriceValue;
+}
+
+interface PricingSectionProps {
+  domId: string;
+  pricingValues?: PricingValues;
+}
+
+interface PriceRow {
+  key: PriceRowKey;
+  label: string;
+  note?: string;
+  required?: boolean;
+  tooltip?: string;
+  formItemProps?: FormItemProps;
+  inputProps?: InputNumberProps;
+}
+
+interface PriceRowWithMetrics extends PriceRow {
+  amount: number | null;
+  taxAmount: number | null;
+  total: number | null;
+  margin: number | null;
+  gainPercent: number | null;
+}
+
+interface PriceTableRowProps {
+  $header?: boolean;
+}
 
 const PriceTableWrapper = styled.div`
   margin-top: 12px;
@@ -21,7 +67,7 @@ const PriceTableWrapper = styled.div`
   border-radius: 14px;
 `;
 
-const PriceTableRow = styled.div`
+const PriceTableRow = styled.div<PriceTableRowProps>`
   display: grid;
   grid-template-columns: 2fr 1.3fr repeat(3, 1fr);
   gap: 12px;
@@ -102,7 +148,7 @@ const GainCell = styled.span`
   }
 `;
 
-const PRICE_ROWS = [
+const PRICE_ROWS: PriceRow[] = [
   {
     key: 'listPrice',
     label: 'Precio de lista',
@@ -123,31 +169,34 @@ const PRICE_ROWS = [
   { key: 'offerPrice', label: 'Precio de oferta' },
 ];
 
-const formatCurrency = (value) => {
+const formatCurrency = (value: number | null): string => {
   if (value === null || Number.isNaN(value) || value === 0) {
     return '—';
   }
   return `RD$ ${value.toFixed(2)}`;
 };
 
-const formatPercent = (value) => {
+const formatPercent = (value: number | null): string => {
   if (value === null || Number.isNaN(value) || value === 0) {
     return '—';
   }
   return `${value.toFixed(1)}%`;
 };
 
-const hasGainValue = (margin, percent) => {
+const hasGainValue = (margin: number | null, percent: number | null): boolean => {
   const hasMargin = margin !== null && !Number.isNaN(margin) && margin > 0;
   const hasPercent = percent !== null && !Number.isNaN(percent) && percent > 0;
   return hasMargin || hasPercent;
 };
 
-export const PricingSection = ({ domId, pricingValues = {} }) => {
+export const PricingSection = ({
+  domId,
+  pricingValues = {},
+}: PricingSectionProps) => {
   const cost = Number(pricingValues?.cost) || 0;
   const taxRate = Number(pricingValues?.tax) || 0;
 
-  const priceMatrix = useMemo(() => {
+  const priceMatrix = useMemo<PriceRowWithMetrics[]>(() => {
     return PRICE_ROWS.map((row) => {
       const rawValue = pricingValues?.[row.key];
       const hasAmount =

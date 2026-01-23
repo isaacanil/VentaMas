@@ -1,9 +1,12 @@
-// @ts-nocheck
 import { deleteDoc, doc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbDeleteProduct = async (user, id) => {
+export const fbDeleteProduct = async (
+  user: UserWithBusiness | null | undefined,
+  id: string,
+): Promise<void> => {
   // Deleting product
   if (!user?.businessID) {
     return;

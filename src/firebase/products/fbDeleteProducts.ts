@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   query,
@@ -8,12 +7,15 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 
 /**
  * Elimina hasta 500 documentos de la subcolección 'products' de un negocio específico.
  * @param {string} businessID El ID del negocio cuyos productos se van a eliminar.
  */
-export const fbDeleteProducts = async (user) => {
+export const fbDeleteProducts = async (
+  user: UserWithBusiness | null | undefined,
+): Promise<void> => {
   // Crear una referencia a la subcolección de productos
   const businessID = user?.businessID;
   if (!businessID) {

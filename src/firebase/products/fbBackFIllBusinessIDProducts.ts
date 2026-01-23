@@ -1,4 +1,3 @@
-// @ts-nocheck
 // fbBackfillBusinessIDProducts.js
 //
 // Actualiza todos los productos de un negocio que aún no tienen `businessID`.
@@ -12,7 +11,9 @@ import { db } from '@/firebase/firebaseconfig'; // ajusta la ruta a tu config
  * Parcha productos antiguos añadiendo businessID.
  * @param {string} bizID  businessID del negocio actual
  */
-export async function fbBackfillBusinessIDProducts(bizID) {
+export async function fbBackfillBusinessIDProducts(
+  bizID: string,
+): Promise<number> {
   if (!bizID) throw new Error('businessID requerido');
 
   const prodCol = collection(db, 'businesses', bizID, 'products');
@@ -23,7 +24,7 @@ export async function fbBackfillBusinessIDProducts(bizID) {
   let batchWrites = 0;
 
   for (const docSnap of snap.docs) {
-    const data = docSnap.data();
+    const data = docSnap.data() as Record<string, unknown>;
 
     // Docs SIN businessID → parchar
     if (!data.businessID) {

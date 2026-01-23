@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CloudUploadOutlined,
   HomeOutlined,
@@ -21,6 +20,7 @@ import {
 } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+import type { UploadProps } from 'antd/es/upload/interface';
 
 const { Option } = Select;
 const { Title, Paragraph, Text } = Typography;
@@ -121,7 +121,34 @@ const CardBody = styled.div`
   gap: 18px;
 `;
 
-const FormGrid = styled.div`
+interface FormGridProps {
+  $columns?: string;
+}
+
+interface GeneralInformationSectionProps {
+  beforeUpload: UploadProps['beforeUpload'];
+  handleChange: UploadProps['onChange'];
+  imageUrl: string | null;
+  onResetLogo: () => void;
+  uploading: boolean;
+}
+
+interface CountryOption {
+  id: string;
+  name: string;
+}
+
+interface LocationSectionProps {
+  countries?: CountryOption[];
+}
+
+interface FormActionsBarProps {
+  children?: React.ReactNode;
+}
+
+type SubmitButtonProps = React.ComponentProps<typeof Button>;
+
+const FormGrid = styled.div<FormGridProps>`
   display: grid;
   grid-template-columns: ${({ $columns }) =>
     $columns || 'repeat(auto-fit, minmax(260px, 1fr))'};
@@ -241,7 +268,7 @@ export const GeneralInformationSection = ({
   imageUrl,
   onResetLogo,
   uploading,
-}) => (
+}: GeneralInformationSectionProps) => (
   <FormSection>
     <SectionHeader>
       <IconBubble>
@@ -321,7 +348,9 @@ export const GeneralInformationSection = ({
                 showUploadList={false}
                 beforeUpload={beforeUpload}
                 onChange={handleChange}
-                customRequest={({ onSuccess }) => setTimeout(() => onSuccess('ok'), 0)}
+                customRequest={({ onSuccess }) =>
+                  setTimeout(() => onSuccess?.('ok'), 0)
+                }
                 accept="image/png,image/jpeg"
               >
                 <LogoActionButton
@@ -397,7 +426,7 @@ export const ContactChannelsSection = () => (
   </FormSection>
 );
 
-export const LocationSection = ({ countries = [] }) => (
+export const LocationSection = ({ countries = [] }: LocationSectionProps) => (
   <FormSection>
     <SectionHeader>
       <IconBubble>
@@ -447,13 +476,13 @@ export const LocationSection = ({ countries = [] }) => (
   </FormSection>
 );
 
-export const FormActionsBar = ({ children }) => (
+export const FormActionsBar = ({ children }: FormActionsBarProps) => (
   <FormActions>
     <FormActionsInner>{children}</FormActionsInner>
   </FormActions>
 );
 
-export const SubmitButton = (props) => (
+export const SubmitButton = (props: SubmitButtonProps) => (
   <Button type="primary" htmlType="submit" size="large" {...props}>
     Guardar Cambios
   </Button>

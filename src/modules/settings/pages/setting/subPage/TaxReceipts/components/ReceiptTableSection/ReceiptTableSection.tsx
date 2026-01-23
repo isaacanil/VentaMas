@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -11,6 +10,24 @@ import styled from 'styled-components';
 import DisabledReceiptsModal from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/DisabledReceiptsModal/DisabledReceiptsModal';
 import { TableTaxReceipt } from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TableTaxReceipt/TableTaxReceipt';
 import TaxReceiptAuthorizationModal from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptAuthorizationModal/TaxReceiptAuthorizationModal';
+import type { TaxReceiptData, TaxReceiptDocument } from '@/types/taxReceipt';
+
+type SetTaxReceiptItems = (
+  next:
+    | TaxReceiptDocument[]
+    | ((prev: TaxReceiptDocument[]) => TaxReceiptDocument[]),
+) => void;
+
+interface ReceiptTableSectionProps {
+  enabled: boolean;
+  itemsLocal: TaxReceiptDocument[];
+  setItemsLocal: SetTaxReceiptItems;
+  isUnchanged: boolean;
+  onAddBlank?: () => void;
+  onAddPredefined?: () => void;
+  onRebuildLedger?: () => void;
+  rebuildInProgress?: boolean;
+}
 
 export const ReceiptTableSection = ({
   enabled,
@@ -21,13 +38,13 @@ export const ReceiptTableSection = ({
   onAddPredefined,
   onRebuildLedger,
   rebuildInProgress = false,
-}) => {
+}: ReceiptTableSectionProps) => {
   const [disabledModalVisible, setDisabledModalVisible] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
 
-  const disabledReceipts = itemsLocal?.filter((item) => item.data?.disabled);
+  const disabledReceipts = itemsLocal.filter((item) => item.data?.disabled);
 
-  const handleRestoreReceipt = (receiptId) => {
+  const handleRestoreReceipt = (receiptId?: string) => {
     const newArray = itemsLocal.map((item) =>
       item.data.id === receiptId
         ? { ...item, data: { ...item.data, disabled: false } }
@@ -100,7 +117,7 @@ export const ReceiptTableSection = ({
         visible={authModalVisible}
         onCancel={() => setAuthModalVisible(false)}
         taxReceipts={itemsLocal}
-        onAuthorizationAdded={(updatedReceipt) => {
+        onAuthorizationAdded={(updatedReceipt: TaxReceiptData) => {
           // Actualizar el estado local con los datos de la nueva autorización
           const newArray = itemsLocal.map((item) =>
             item.data.id === updatedReceipt.id

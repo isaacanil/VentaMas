@@ -1,4 +1,3 @@
-// @ts-nocheck
 //esta funcion revisara en la coleccion de producto
 // todos esos productos que no tienen batch y productStock y les creara
 // un batch y un productStock con la cantidad de stock que tiene el producto
@@ -13,25 +12,51 @@ import { getDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import { BatchStatus } from '@/models/Warehouse/Batch';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
 import { validateUser } from '@/utils/userValidation';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
 import { fbGetProducts } from './fbGetProducts';
 
 const BATCH_SIZE = 166; // Tamaño seguro para procesamiento por lotes
 
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+type ProductWithStock = ProductRecord & {
+  id: string;
+  name?: string;
+  stock: number;
+  trackInventory?: boolean;
+};
+type WarehouseLike = { id?: string | null } & Record<string, unknown>;
+type InventoryRefs = {
+  batchRef: ReturnType<typeof collection>;
+  stockRef: ReturnType<typeof collection>;
+  movementRef: ReturnType<typeof collection>;
+};
+type ProgressCallback = (info: Record<string, unknown>) => void;
+type CreatedDocs = {
+  batchDoc: Record<string, unknown>;
+  stockDoc: Record<string, unknown>;
+  movementDoc?: Record<string, unknown>;
+};
+
 async function processBatchOfProducts(
-  products,
-  user,
-  defaultWarehouse,
-  baseRefs,
-  onProgress,
-  startIndex,
-) {
+  products: ProductWithStock[],
+  user: UserWithBusinessAndUid,
+  defaultWarehouse: WarehouseLike,
+  baseRefs: InventoryRefs,
+  onProgress: ProgressCallback | undefined,
+  startIndex: number,
+): Promise<void> {
   const batch = writeBatch(db);
-  const createdDocs = [];
+  const createdDocs: CreatedDocs[] = [];
   const { batchRef, stockRef, movementRef } = baseRefs;
 
   // Reservar bloque de IDs para todo el lote
-  const startBatchNumber = await getNextID(user, 'batches', products.length);
+  const startBatchNumber = (await getNextID(
+    user,
+    'batches',
+    products.length,
+  )) as number;
 
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
@@ -96,7 +121,7 @@ async function processBatchOfProducts(
         batchId: batchDoc.id,
         productName: product.name,
         batchNumberId: startBatchNumber + i,
-        location: defaultWarehouse.id,
+        location: defaultWarehouse?.id ?? null,
         status: BatchStatus.Inactive,
         expirationDate: null,
         productId: product.id,
@@ -141,7 +166,7 @@ async function processBatchOfProducts(
         batchId: batchDoc.id,
         productName: product.name,
         batchNumberId: startBatchNumber + i,
-        location: defaultWarehouse.id,
+        location: defaultWarehouse?.id ?? null,
         status: BatchStatus.Inactive,
         expirationDate: null,
         productId: product.id,
@@ -182,7 +207,7 @@ async function processBatchOfProducts(
       batchId: batchDoc.id,
       productName: product.name,
       batchNumberId: startBatchNumber + i,
-      location: defaultWarehouse.id,
+      location: defaultWarehouse?.id ?? null,
       status: BatchStatus.Active,
       expirationDate: null,
       productId: product.id,
@@ -196,7 +221,7 @@ async function processBatchOfProducts(
       batchId: batchDoc.id,
       productName: product.name,
       batchNumberId: startBatchNumber + i,
-      destinationLocation: defaultWarehouse.id,
+      destinationLocation: defaultWarehouse?.id ?? null,
       sourceLocation: null,
 
       productId: product.id,
@@ -220,12 +245,15 @@ async function processBatchOfProducts(
   await batch.commit();
 }
 
-export async function fbInitializedProductInventory(user, onProgress) {
+export async function fbInitializedProductInventory(
+  user: UserWithBusinessAndUid,
+  onProgress?: ProgressCallback,
+): Promise<void> {
   try {
     validateUser(user);
     const { businessID } = user;
 
-    const baseRefs = {
+    const baseRefs: InventoryRefs = {
       batchRef: collection(db, 'businesses', businessID, 'batches'),
       stockRef: collection(db, 'businesses', businessID, 'productsStock'),
       movementRef: collection(db, 'businesses', businessID, 'movements'),
@@ -239,13 +267,21 @@ export async function fbInitializedProductInventory(user, onProgress) {
     ]);
 
     const productsWithBatches = new Set(
-      batchesSnapshot.docs.map((doc) => doc.data().productId),
+      batchesSnapshot.docs
+        .map((doc) => (doc.data() as { productId?: string }).productId)
+        .filter((id): id is string => typeof id === 'string'),
     );
 
-    const productsToProcess = products.filter(
-      (product) =>
-        product.trackInventory && !productsWithBatches.has(product.id),
-    );
+    const productsToProcess: ProductWithStock[] = products
+      .filter(
+        (product): product is ProductWithStock =>
+          Boolean(product.trackInventory && product.id),
+      )
+      .map((product) => ({
+        ...product,
+        stock: Number(product.stock ?? 0),
+      }))
+      .filter((product) => !productsWithBatches.has(product.id));
 
     onProgress?.({
       status: `Se encontraron ${productsToProcess.length} productos para inicializar`,
@@ -272,8 +308,10 @@ export async function fbInitializedProductInventory(user, onProgress) {
       progress: 100,
     });
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
     onProgress?.({
-      status: 'Error: ' + error.message,
+      status: 'Error: ' + errorMessage,
       progress: 100,
       error: true,
     });

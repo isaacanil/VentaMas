@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { collection, getDocs } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -27,12 +26,33 @@ import { normalizeProductTaxes } from './fbNormalizeProductTaxes';
 export const normalizeAllBusinessesProductTaxes = async ({
   dryRun = false,
   onProgress,
-} = {}) => {
+}: {
+  dryRun?: boolean;
+  onProgress?: (progress: {
+    processed: number;
+    total: number;
+    businessID: string;
+  }) => void;
+} = {}): Promise<{
+  totalBusinesses: number;
+  processed: number;
+  summaries: Array<{
+    businessID: string;
+    success: boolean;
+    summary?: Awaited<ReturnType<typeof normalizeProductTaxes>>;
+    error?: string;
+  }>;
+}> => {
   const businessesRef = collection(db, 'businesses');
   const businessesSnapshot = await getDocs(businessesRef);
   const total = businessesSnapshot.size;
 
-  const summaries = [];
+  const summaries: Array<{
+    businessID: string;
+    success: boolean;
+    summary?: Awaited<ReturnType<typeof normalizeProductTaxes>>;
+    error?: string;
+  }> = [];
   let processed = 0;
 
   for (const docSnap of businessesSnapshot.docs) {
@@ -48,7 +68,7 @@ export const normalizeAllBusinessesProductTaxes = async ({
       summaries.push({
         businessID,
         success: false,
-        error: error?.message || String(error),
+        error: error instanceof Error ? error.message : String(error),
       });
     }
     processed += 1;

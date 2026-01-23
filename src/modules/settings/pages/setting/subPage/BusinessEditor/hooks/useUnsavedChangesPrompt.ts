@@ -1,11 +1,26 @@
-// @ts-nocheck
 import { Modal } from 'antd';
 import { useContext, useEffect, useRef } from 'react';
 import { UNSAFE_NavigationContext } from 'react-router-dom';
 
-const useUnsavedChangesPrompt = (shouldBlock) => {
+type Transition = {
+  retry: () => void;
+};
+
+type NavigatorWithBlock = {
+  block: (tx: Transition) => () => void;
+};
+
+const isNavigatorWithBlock = (
+  navigator: unknown,
+): navigator is NavigatorWithBlock =>
+  typeof navigator === 'object' &&
+  navigator !== null &&
+  'block' in navigator &&
+  typeof (navigator as { block?: unknown }).block === 'function';
+
+const useUnsavedChangesPrompt = (shouldBlock: boolean): void => {
   const navigationContext = useContext(UNSAFE_NavigationContext);
-  const confirmRef = useRef(null);
+  const confirmRef = useRef<ReturnType<typeof Modal.confirm> | null>(null);
 
   useEffect(() => {
     if (!shouldBlock) {
@@ -17,7 +32,7 @@ const useUnsavedChangesPrompt = (shouldBlock) => {
     }
 
     const navigator = navigationContext?.navigator;
-    if (!navigator?.block) {
+    if (!isNavigatorWithBlock(navigator)) {
       return undefined;
     }
 

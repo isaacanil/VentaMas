@@ -1,4 +1,3 @@
-// @ts-nocheck
 // import { collection, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
 // import { db } from '@/firebase/firebaseconfig';
 
@@ -32,20 +31,24 @@
 // }
 
 import { collection, getDocs, writeBatch } from 'firebase/firestore'; // Importa las funciones necesarias de Firestore
+import type { DocumentReference } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export async function fbCheckDuplicateProducts(businessID) {
+export async function fbCheckDuplicateProducts(
+  businessID: string,
+): Promise<void> {
   try {
     const productsRef = collection(db, 'businesses', businessID, 'products');
     const productSnapshot = await getDocs(productsRef);
 
-    const uniqueProducts = new Map();
+    const uniqueProducts = new Map<string, DocumentReference>();
     const batch = writeBatch(db);
 
     productSnapshot.forEach((doc) => {
-      const productData = doc.data();
-      const productName = productData.name;
+      const productData = doc.data() as { name?: string };
+      const productName = productData.name ?? '';
+      if (!productName) return;
 
       // Si el nombre del producto ya existe en el mapa, se planifica su eliminación
       if (uniqueProducts.has(productName)) {

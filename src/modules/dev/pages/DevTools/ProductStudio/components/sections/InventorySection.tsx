@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BarcodeOutlined } from '@/constants/icons/antd';
 import { Divider, InputNumber, Select, Switch } from 'antd';
 import { Form } from 'antd';
@@ -14,7 +13,11 @@ import {
   SwitchField,
 } from '@/modules/dev/pages/DevTools/ProductStudio/components/SectionLayout';
 
-export const InventorySection = ({ domId }) => (
+interface InventorySectionProps {
+  domId: string;
+}
+
+export const InventorySection = ({ domId }: InventorySectionProps) => (
   <SectionCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>Inventario</SectionTitle>
