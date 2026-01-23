@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   getDoc,
@@ -6,6 +5,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
+import type { DocumentData, DocumentReference } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -13,9 +13,21 @@ import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { convertFirestoreTimestamps } from '@/firebase/purchase/fbGetPurchases';
 
+type UserWithBusiness = {
+  businessID?: string;
+};
+
+type OrderDocument = Record<string, unknown> & {
+  data?: Record<string, unknown> & {
+    provider?: DocumentReference<DocumentData> | Record<string, unknown> | null;
+  };
+};
+
+type OrderItem = OrderDocument | Promise<OrderDocument>;
+
 export const useFbGetOrders = () => {
-  const [orders, setOrders] = useState([]);
-  const user = useSelector(selectUser);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const user = useSelector(selectUser) as UserWithBusiness | null;
   useEffect(() => {
     if (!user || !user.businessID) return;
     const orderRef = collection(db, 'businesses', user.businessID, 'orders');
@@ -25,11 +37,13 @@ export const useFbGetOrders = () => {
         setOrders([]);
         return;
       }
-      let orderArray = snapshot.docs.map(async (item) => {
-        let orderData = item.data();
-        let providerRef = orderData.data.provider;
-        let providerDoc = (await getDoc(providerRef)).data();
-        orderData.data.provider = providerDoc.provider;
+      const orderArray = snapshot.docs.map(async (item) => {
+        const orderData = item.data() as OrderDocument;
+        const providerRef = orderData.data?.provider as DocumentReference<DocumentData>;
+        const providerDoc = (await getDoc(providerRef)).data() as Record<string, unknown> | undefined;
+        if (orderData.data) {
+          orderData.data.provider = providerDoc?.provider ?? null;
+        }
         return orderData;
       });
       Promise.all(orderArray)
@@ -47,7 +61,7 @@ export const useFbGetOrders = () => {
   return { orders };
 };
 
-const _transformOrderData = (item) => {
+const _transformOrderData = (item: { data: () => OrderDocument }) => {
   const data = item.data();
   return {
     // data: {
@@ -58,11 +72,11 @@ const _transformOrderData = (item) => {
   };
 };
 
-export const useFbGetPendingOrdersByProvider = (providerId) => {
-  const [data, setData] = useState([]);
+export const useFbGetPendingOrdersByProvider = (providerId: string) => {
+  const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const user = useSelector(selectUser);
+  const [error, setError] = useState<unknown>(null);
+  const user = useSelector(selectUser) as UserWithBusiness | null;
 
   const businessID = user?.businessID;
   const [prevBusinessID, setPrevBusinessID] = useState(businessID);
@@ -95,8 +109,8 @@ export const useFbGetPendingOrdersByProvider = (providerId) => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        let orderArray = snapshot.docs.map((doc) => doc.data());
-        let orderUpdated = orderArray.map((order) => {
+        const orderArray = snapshot.docs.map((doc) => doc.data() as Record<string, unknown>);
+        const orderUpdated = orderArray.map((order) => {
           convertFirestoreTimestamps(order, [
             'createdAt',
             'completedAt',

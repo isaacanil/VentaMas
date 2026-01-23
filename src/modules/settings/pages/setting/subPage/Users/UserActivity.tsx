@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Alert, message, Tabs } from 'antd';
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -14,7 +13,11 @@ import { UserActivityHeader } from './UserActivity/components/UserActivityHeader
 import { UserActivityList } from './UserActivity/components/UserActivityList';
 import { UserActivitySummary } from './UserActivity/components/UserActivitySummary';
 import { UserInfoCard } from './UserActivity/components/UserInfoCard';
-import { useUserActivityData } from './UserActivity/hooks/useUserActivityData';
+import {
+  useUserActivityData,
+  type PresenceState,
+  type UserActivityUser,
+} from './UserActivity/hooks/useUserActivityData';
 import { useUserRealActivity } from './UserActivity/hooks/useUserRealActivity';
 import { formatDateTime } from './UserActivity/utils/activityUtils';
 
@@ -22,15 +25,23 @@ const {
   SETTING_TERM: { USERS, USERS_LIST },
 } = ROUTES_NAME;
 
+interface UserActivityLocationState {
+  user?: UserActivityUser | null;
+  presence?: PresenceState | null;
+}
+
 export const UserActivity = () => {
-  const { userId } = useParams();
+  const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
 
   const usersListRoute = `${USERS}/${USERS_LIST}`;
-  const initialUser = location.state?.user || null;
-  const initialPresence = location.state?.presence || null;
-  const [revokingSessionId, setRevokingSessionId] = useState(null);
+  const state = location.state as UserActivityLocationState | null | undefined;
+  const initialUser = state?.user || null;
+  const initialPresence = state?.presence || null;
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(
+    null,
+  );
 
   const {
     userInfo,
@@ -45,7 +56,11 @@ export const UserActivity = () => {
     loadActivity,
     showError,
     errorMessage,
-  } = useUserActivityData({ userId, initialUser, initialPresence });
+  } = useUserActivityData({
+    userId: userId ?? null,
+    initialUser,
+    initialPresence,
+  });
 
   const {
     activities,
@@ -54,7 +69,7 @@ export const UserActivity = () => {
     error: errorActivity,
     refetch: refetchActivity,
   } = useUserRealActivity({
-    userId,
+    userId: userId ?? null,
     businessId: userInfo?.businessID,
   });
 

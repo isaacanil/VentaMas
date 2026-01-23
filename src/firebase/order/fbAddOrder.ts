@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Timestamp,
   doc,
@@ -14,11 +13,58 @@ import { safeTimestamp } from '@/firebase/utils/firestoreDates';
 import { updateLocalAttachmentsWithRemoteURLs } from '@/utils/purchase/attachments';
 import { getNextID } from '@/firebase/Tools/getNextID';
 
-export const fbAddOrder = async (user, value, fileList = []) => {
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+};
+
+type Attachment = Record<string, unknown>;
+
+type UploadableFile = File | Blob;
+
+type OrderDatesInput = {
+  deliveryDate: number;
+  [key: string]: unknown;
+};
+
+type OrderValueInput = Record<string, unknown> & {
+  dates: OrderDatesInput;
+  providerId?: string;
+  fileList?: Attachment[];
+};
+
+type Replenishment = Record<string, unknown> & {
+  selectedBackOrders?: Array<{ id: string }>;
+};
+
+type OrderInput = Record<string, unknown> & {
+  attachmentUrls?: Attachment[];
+  replenishments?: Replenishment[];
+  deliveryAt?: unknown;
+  paymentAt?: unknown;
+  completedAt?: unknown;
+};
+
+type LocalFileItem = {
+  file: UploadableFile;
+} & Record<string, unknown>;
+
+export const fbAddOrder = async (
+  user: UserWithBusinessAndUid | null | undefined,
+  value: OrderValueInput,
+  fileList: UploadableFile[] = [],
+): Promise<void> => {
   try {
     if (!user || !user.businessID) return;
     const nextID = await getNextID(user, 'lastOrdersId');
-    let data = {
+    const data: OrderValueInput & {
+      id: string;
+      numberId: number;
+      dates: Record<string, unknown>;
+      provider: string | undefined;
+      state: string;
+      fileList?: Attachment[];
+    } = {
       ...value,
       id: nanoid(12),
       numberId: nextID,
@@ -32,7 +78,11 @@ export const fbAddOrder = async (user, value, fileList = []) => {
     };
     const OrderRef = doc(db, 'businesses', user.businessID, 'orders', data.id);
     if (fileList.length > 0) {
-      const files = await fbUploadFiles(user, 'orderReceipts', fileList);
+      const files = (await fbUploadFiles(
+        user,
+        'orderReceipts',
+        fileList,
+      )) as Attachment[];
       data.fileList = [...(data?.fileList || []), ...files];
     }
     await setDoc(OrderRef, { data });
@@ -46,18 +96,23 @@ export async function addOrder({
   order,
   localFiles = [],
   setLoading,
-}) {
+}: {
+  user: UserWithBusinessAndUid | null | undefined;
+  order: OrderInput;
+  localFiles?: LocalFileItem[];
+  setLoading?: (loading: boolean) => void;
+}): Promise<OrderInput | undefined> {
   if (!user || !user.businessID) return;
   try {
     const id = nanoid();
     const numberId = await getNextID(user, 'lastOrdersId');
     const ordersRef = doc(db, 'businesses', user.businessID, 'orders', id);
 
-    let uploadedFiles = [];
+    let uploadedFiles: Attachment[] = [];
     // Solo intentar subir archivos si hay archivos locales
     if (localFiles && localFiles.length > 0) {
       const files = localFiles.map(({ file }) => file);
-      uploadedFiles = await fbUploadFiles(
+      uploadedFiles = (await fbUploadFiles(
         user,
         'purchaseAndOrderFiles',
         files,
@@ -66,7 +121,7 @@ export async function addOrder({
             type: 'purchase_attachment',
           },
         },
-      );
+      )) as Attachment[];
     }
 
     const existingAttachments = order.attachmentUrls || [];

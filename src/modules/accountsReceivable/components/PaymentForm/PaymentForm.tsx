@@ -1,4 +1,4 @@
-import { Form, Checkbox, Select, Button, notification } from 'antd';
+﻿import { Form, Checkbox, Select, Button, notification } from 'antd';
 import type { FormInstance } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,6 +61,11 @@ type PaymentDetails = {
   creditNotePayment?: CreditNoteSelection[];
 };
 
+type AccountsReceivablePaymentState =
+  ReturnType<typeof selectAccountsReceivablePayment> & {
+    paymentDetails: PaymentDetails;
+  };
+
 type ClientSummary = {
   id?: string;
   name?: string;
@@ -92,7 +97,7 @@ export const PaymentForm = () => {
 
   const { isOpen, paymentDetails } = useSelector<
     AccountsReceivablePaymentRootState,
-    ReturnType<typeof selectAccountsReceivablePayment>
+    AccountsReceivablePaymentState
   >(selectAccountsReceivablePayment);
 
   const selectedCreditNotes: CreditNoteSelection[] =
@@ -103,7 +108,7 @@ export const PaymentForm = () => {
     onAfterPrint: () => {
       notification.success({
         message: 'Pago Procesada',
-        description: 'Pago registrado e impreso con éxito',
+        description: 'Pago registrado e impreso con Ã©xito',
         duration: 4,
       });
       handleClear();
@@ -111,7 +116,7 @@ export const PaymentForm = () => {
   });
 
   // Este efecto reemplaza al setTimeout.
-  // Solo se ejecuta cuando hay un recibo cargado Y se solicitó impresión.
+  // Solo se ejecuta cuando hay un recibo cargado Y se solicitÃ³ impresiÃ³n.
   useEffect(() => {
     if (printPending && receipt) {
       handlePrint();
@@ -139,7 +144,7 @@ export const PaymentForm = () => {
   const handlePaymentConceptChange = (value: string) =>
     dispatch(setPaymentOption({ paymentOption: value }));
 
-  // Calculamos el change automáticamente
+  // Calculamos el change automÃ¡ticamente
   const change = (paymentDetails.totalPaid || 0) - paymentDetails.totalAmount;
 
   const handleCreditNoteSelect = (
@@ -152,7 +157,7 @@ export const PaymentForm = () => {
     if (paymentDetails.totalAmount <= 0) {
       throw new Error('El monto total debe ser mayor a cero.');
     }
-    // Si es pago de cuota específica ('installment') se debe cubrir el monto completo
+    // Si es pago de cuota especÃ­fica ('installment') se debe cubrir el monto completo
     if (
       paymentDetails.paymentOption === 'installment' &&
       paymentDetails.totalPaid < paymentDetails.totalAmount
@@ -164,7 +169,7 @@ export const PaymentForm = () => {
       (method) => method.status,
     );
     if (activeMethods.length === 0) {
-      throw new Error('Debe seleccionar al menos un método de pago.');
+      throw new Error('Debe seleccionar al menos un mÃ©todo de pago.');
     }
 
     for (const method of activeMethods) {
@@ -174,12 +179,12 @@ export const PaymentForm = () => {
         !method.reference
       ) {
         throw new Error(
-          `El método de pago ${method.method} requiere una referencia.`,
+          `El mÃ©todo de pago ${method.method} requiere una referencia.`,
         );
       }
       if (method.value <= 0) {
         throw new Error(
-          `El valor del método de pago ${method.method} debe ser mayor a cero.`,
+          `El valor del mÃ©todo de pago ${method.method} debe ser mayor a cero.`,
         );
       }
     }
@@ -213,23 +218,33 @@ export const PaymentForm = () => {
         setPrintPending(true);
       } else {
         notification.success({
-          title: 'Pago Procesado',
-          description: 'Pago registrado con éxito',
+          message: 'Pago Procesado',
+          description: 'Pago registrado con Ã©xito',
         });
         handleClear();
       }
     } catch (error) {
       setSubmitted(false);
-      if (error.errorFields) {
-        console.error('Payment form validation failed:', error);
+      const typedError = error as FormValidationError | Error;
+      if (
+        typedError &&
+        typeof typedError === 'object' &&
+        'errorFields' in typedError &&
+        Array.isArray(typedError.errorFields)
+      ) {
+        console.error('Payment form validation failed:', typedError);
         notification.warning({
           message: 'Campos requeridos',
           description: 'Por favor complete los campos obligatorios marcados en rojo.',
         });
       } else {
+        const errorMessage =
+          typedError instanceof Error
+            ? typedError.message
+            : typedError?.message || 'Ocurrió un error desconocido';
         notification.error({
           message: 'Error al procesar el pago',
-          description: error.message || 'Ocurrió un error desconocido',
+          description: errorMessage,
         });
       }
     } finally {
@@ -243,7 +258,11 @@ export const PaymentForm = () => {
     <Modal
       open={isOpen}
       style={{ top: 10 }}
-      title={`${PAYMENT_SCOPE[paymentDetails.paymentScope]}`}
+      title={`${
+        PAYMENT_SCOPE[
+          paymentDetails.paymentScope as keyof typeof PAYMENT_SCOPE
+        ] ?? paymentDetails.paymentScope
+      }`}
       onCancel={() => dispatch(closePaymentModal())}
       styles={modalStyles}
       footer={[
@@ -317,7 +336,7 @@ export const PaymentForm = () => {
 
           <PaymentFields />
 
-          {/* Selector de notas de crédito */}
+          {/* Selector de notas de crÃ©dito */}
           {client?.id && client.id !== 'GC-0000' && (
             <CreditSelector
               clientId={client.id}
@@ -380,3 +399,6 @@ const FormWrapper = styled.div`
   display: grid;
   gap: 1em;
 `;
+
+
+

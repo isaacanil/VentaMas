@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
@@ -13,11 +12,25 @@ const theme = {
   paragraph: 'editor-paragraph',
 };
 
-function onError(error) {
+interface ChangelogEntry {
+  id?: string;
+  content?: string;
+  createdAt?: Date;
+}
+
+interface ChangelogItem {
+  changelog: ChangelogEntry;
+}
+
+interface LexicalViewerProps {
+  content?: string;
+}
+
+function onError(error: Error): void {
   console.error(error);
 }
 
-const LexicalViewer = ({ content }) => {
+const LexicalViewer: React.FC<LexicalViewerProps> = ({ content }) => {
   // Basic check to see if content is likely Lexical JSON (has "root")
   // If not, it might be old DraftJS data or invalid.
   // This is a naive check to prevent immediate crashes on old data.
@@ -69,12 +82,12 @@ export const ChangelogList = () => {
         <Wrapper>
           <h1>Ventamax — Notas del lanzamiento</h1>
           <br />
-          {changelogs
-            .sort(
-              (a, b) =>
-                new Date(b?.changelog?.createdAt) -
-                new Date(a?.changelog?.createdAt),
-            )
+          {(changelogs as ChangelogItem[])
+            .sort((a, b) => {
+              const aDate = a?.changelog?.createdAt ?? new Date(0);
+              const bDate = b?.changelog?.createdAt ?? new Date(0);
+              return bDate.getTime() - aDate.getTime();
+            })
             .map(({ changelog }, index) => (
               <EditorWrapper key={changelog?.id ?? index}>
                 <LexicalViewer content={changelog.content} />

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Alert, Button } from 'antd';
 import { DateTime } from 'luxon';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -6,8 +5,57 @@ import styled from 'styled-components';
 
 import { fbGetSessionLogs } from '@/firebase/Auth/fbAuthV2/fbGetSessionLogs';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
 
-const columns = [
+type SessionActor = {
+  displayName?: string;
+  name?: string;
+  username?: string;
+  [key: string]: unknown;
+};
+
+type SessionMetadata = {
+  deviceLabel?: string;
+  label?: string;
+  platform?: string;
+  timezone?: string;
+  ipAddress?: string;
+  [key: string]: unknown;
+};
+
+type SessionContext = {
+  metadata?: SessionMetadata;
+  actor?: SessionActor;
+  deviceLabel?: string;
+  platform?: string;
+  label?: string;
+  ipAddress?: string;
+  [key: string]: unknown;
+};
+
+type SessionLog = {
+  event?: string;
+  createdAt?: number | null;
+  context?: SessionContext | null;
+  [key: string]: unknown;
+};
+
+type NormalizedContext = SessionContext & {
+  metadata: SessionMetadata;
+  actor: SessionActor;
+};
+
+type SessionLogRow = {
+  index: number;
+  userName: string;
+  event: string;
+  createdAtDisplay: string;
+  deviceLabel: string;
+  platform: string;
+  ipAddress: string;
+};
+
+const columns: AdvancedTableProps<SessionLogRow>['columns'] = [
   {
     Header: '#',
     accessor: 'index',
@@ -53,9 +101,9 @@ const columns = [
   },
 ];
 
-const normalizarContexto = (context) => {
+const normalizarContexto = (context: SessionContext | null | undefined) => {
   if (!context || typeof context !== 'object') {
-    return {};
+    return { metadata: {}, actor: {} } as NormalizedContext;
   }
   const metadata =
     context.metadata && typeof context.metadata === 'object'
@@ -67,13 +115,13 @@ const normalizarContexto = (context) => {
     ...context,
     metadata,
     actor,
-  };
+  } as NormalizedContext;
 };
 
 export const UserSessionLogs = () => {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<SessionLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const initFetchRef = useRef(false);
 
   const cargarRegistros = useCallback(async () => {
@@ -83,7 +131,11 @@ export const UserSessionLogs = () => {
       const response = await fbGetSessionLogs({ limit: 100 });
       setLogs(response);
     } catch (err) {
-      setError(err?.message || 'No se pudo cargar el historial de sesiones.');
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo cargar el historial de sesiones.';
+      setError(message);
       setLogs([]);
     } finally {
       setLoading(false);
@@ -98,7 +150,7 @@ export const UserSessionLogs = () => {
     cargarRegistros();
   }, [cargarRegistros]);
 
-  const data = useMemo(() => {
+  const data = useMemo<SessionLogRow[]>(() => {
     return logs.map((log, index) => {
       const context = normalizarContexto(log.context);
       const createdAtMillis =

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { InfoCircleOutlined } from '@/constants/icons/antd';
 import { Card, Checkbox, InputNumber, Typography, Tooltip } from 'antd';
 import React from 'react';
@@ -6,9 +5,26 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
+import type { InvoiceProduct } from '@/types/invoice';
 
 
 const { Text } = Typography;
+
+type CreditNoteProduct = InvoiceProduct & {
+  maxAvailableQty?: number;
+};
+
+interface ProductCardProps {
+  product: CreditNoteProduct;
+  isSelected: boolean;
+  quantity: number;
+  maxQuantity: number;
+  originalQuantity: number;
+  isView: boolean;
+  onSelectionChange: (itemId: string | undefined, selected: boolean) => void;
+  onQuantityChange: (value: number | null) => void;
+  creditedByOthers?: number;
+}
 
 export const ProductCard = ({
   product,
@@ -20,7 +36,7 @@ export const ProductCard = ({
   onSelectionChange,
   onQuantityChange,
   creditedByOthers = 0,
-}) => {
+}: ProductCardProps) => {
   const unitPrice = getTotalPrice(product, true, false);
   const tempItem = { ...product, amountToBuy: quantity };
   const total = getTotalPrice(tempItem);

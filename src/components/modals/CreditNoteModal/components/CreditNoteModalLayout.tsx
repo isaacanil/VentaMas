@@ -1,11 +1,14 @@
-// @ts-nocheck
 import styled from 'styled-components';
 
-export const Container = styled.div`
+interface ContainerProps {
+  isMobile?: boolean;
+}
+
+export const Container = styled.div<ContainerProps>`
   display: flex;
   flex-direction: column;
-  gap: ${(props: any) => (props.isMobile ? '1rem' : '1.5rem')};
-  height: ${(props: any) => (props.isMobile ? '100%' : 'auto')};
+  gap: ${({ isMobile }) => (isMobile ? '1rem' : '1.5rem')};
+  height: ${({ isMobile }) => (isMobile ? '100%' : 'auto')};
 `;
 
 export const TitleRow = styled.span`

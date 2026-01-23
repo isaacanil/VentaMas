@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { isEmpty } from '@firebase/util';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { nanoid } from 'nanoid';
@@ -9,22 +7,44 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { addIngredientTypePizza } from '@/firebase/firebaseconfig';
+import { addIngredientTypePizza, type IngredientInput } from '@/firebase/firebaseconfig';
 import { fbGetCustomProduct } from '@/firebase/products/customProduct/fbGetCustomProductTypePizza';
 import { Button } from '@/components/ui/Button/Button';
 import { PlusIconButton } from '@/components/ui/Button/PlusIconButton';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import { IngredientCard } from '@/components/ui/Product/typePizza/IngredientCard';
 
-export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
+interface CustomProductIngredient extends IngredientInput {
+  name?: string;
+}
+
+interface CustomProductDocument {
+  ingredientList?: CustomProductIngredient[];
+}
+
+interface AddCustomProductModalProps {
+  isOpen: boolean;
+  handleOpen: () => void;
+}
+
+interface IngredientDraft {
+  name: string;
+  cost: number | string;
+  id: string;
+}
+
+export const AddCustomProductModal = ({
+  isOpen,
+  handleOpen,
+}: AddCustomProductModalProps) => {
   const user = useSelector(selectUser);
-  const [product, setProduct] = useState('');
+  const [product, setProduct] = useState<CustomProductDocument | null>(null);
 
   useEffect(() => {
     fbGetCustomProduct(user, setProduct);
   }, [user]);
 
-  const [ingredient, setIngredient] = useState({
+  const [ingredient, setIngredient] = useState<IngredientDraft>({
     name: '',
     cost: 0,
     id: '',
@@ -94,20 +114,18 @@ export const AddCustomProductModal = ({ isOpen, handleOpen }) => {
               />
             </Col>
           </Group>
-          <Col $justifySelf="right">
+          <Col $justifySelf>
             <PlusIconButton fn={handleOnChange}></PlusIconButton>
           </Col>
         </Flex>
         <Box>
           <List>
-            {!isEmpty(product)
-              ? product.ingredientList.length > 0
-                ? product.ingredientList
-                    .sort((a, b) => (a.name > b.name ? 1 : -1))
-                    .map((item, index) => (
-                      <IngredientCard key={index} item={item}></IngredientCard>
-                    ))
-                : null
+            {product?.ingredientList && product.ingredientList.length > 0
+              ? product.ingredientList
+                  .sort((a, b) => (String(a.name) > String(b.name) ? 1 : -1))
+                  .map((item, index) => (
+                    <IngredientCard key={index} item={item}></IngredientCard>
+                  ))
               : null}
           </List>
         </Box>
@@ -171,15 +189,28 @@ const Group = styled.div`
   gap: 1em;
   align-items: center;
 `;
-const Col = styled.div`
-  justify-self: ${(props: { $justifySelf?: any }) => props.$justifySelf ($justifySelf ? 'flex-end' : 'none')};
+interface ColProps {
+  $justifySelf?: boolean;
+}
+
+const Col = styled.div<ColProps>`
+  justify-self: ${(props) => (props.$justifySelf ? 'flex-end' : 'auto')};
 `;
-const Flex = styled.div`
+
+interface FlexProps {
+  $gap?: string;
+  $alignItems?: string;
+  $justifyContent?: string;
+  $padding?: string;
+  $backgroundColor?: string;
+}
+
+const Flex = styled.div<FlexProps>`
   display: flex;
-  gap: ${(props: { $gap?: any }) => props.$gap ($gap ? $gap : '1em')};
-  align-items: ${(props: { $alignItems?: any }) => props.$alignItems};
-  justify-content: ${(props: { $justifyContent?: any }) => props.$justifyContent ? $justifyContent : 'none'};
+  gap: ${(props) => props.$gap ?? '1em'};
+  align-items: ${(props) => props.$alignItems ?? 'stretch'};
+  justify-content: ${(props) => props.$justifyContent ?? 'flex-start'};
   width: 100%;
-  padding: ${(props: { $padding?: any }) => props.$padding ($padding ? $padding : ' 0 1em')};
-  background-color: ${(props: { $backgroundColor?: any }) => props.$backgroundColor};
+  padding: ${(props) => props.$padding ?? '0 1em'};
+  background-color: ${(props) => props.$backgroundColor ?? 'transparent'};
 `;

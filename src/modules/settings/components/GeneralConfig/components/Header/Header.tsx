@@ -1,8 +1,6 @@
-// @ts-nocheck
 import { faArrowLeft, faSave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -37,16 +35,19 @@ const StyledButton = styled(Button)`
   }
 `;
 
-export const Header = ({ title, onSave = null }) => {
+interface HeaderProps {
+  title: string;
+  onSave?: (() => void) | null;
+}
+
+export const Header = ({ title, onSave }: HeaderProps) => {
   const navigate = useNavigate();
   const handleBack = () => {
     navigate(-1); // Navega hacia atrás en el historial
   };
 
   const handleSave = () => {
-    if (onSave) {
-      onSave();
-    }
+    onSave?.();
   };
   return (
     <HeaderContainer>

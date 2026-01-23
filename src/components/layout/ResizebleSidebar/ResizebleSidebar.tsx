@@ -1,5 +1,5 @@
-// @ts-nocheck
 // src/components/ResizableSidebar.js
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import 'react-resizable/css/styles.css'; // Importar estilos básicos para el resizer
 
@@ -28,7 +28,15 @@ const ResizeContainer = styled.div`
   overflow-y: auto;
 `;
 
-export const ResizableSidebar = ({ Sidebar, children }) => {
+type ResizableSidebarProps = {
+  Sidebar: ReactNode;
+  children: ReactNode;
+};
+
+export const ResizableSidebar = ({
+  Sidebar,
+  children,
+}: ResizableSidebarProps) => {
   return (
     <Container>
       <ResizeContainer>{Sidebar}</ResizeContainer>

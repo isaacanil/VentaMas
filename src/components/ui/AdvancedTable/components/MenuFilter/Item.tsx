@@ -1,27 +1,36 @@
-// @ts-nocheck
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, type ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
+import type { FilterOption, FilterValue } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+
+interface FilterItemProps {
+  label: ReactNode;
+  filterOptions?: FilterOption[];
+  onChange: (event: { target: { value: FilterValue } }) => void;
+  onClear: () => void;
+  format?: (value: FilterOption['label']) => ReactNode;
+  selectedValue?: FilterValue;
+}
 
 export const Item = ({
   label,
-  filterOptions,
+  filterOptions = [],
   onChange,
   onClear,
   format,
   selectedValue,
-}) => {
+}: FilterItemProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleOpen = () => setIsOpen(!isOpen);
 
-  const handleSelect = (value) => {
+  const handleSelect = (value: FilterValue) => {
     const event = { target: { value } };
     onChange(event);
   };
 
-  const MenuRef = useRef(null);
+  const MenuRef = useRef<HTMLDivElement | null>(null);
   useClickOutSide(MenuRef, isOpen, () => setIsOpen(false));
   const handleClear = () => onClear();
 
@@ -60,7 +69,7 @@ const Container = styled.div`
   align-items: center;
   background-color: ${(props) => props.theme.bg.shave};
 `;
-const Header = styled.div`
+const Header = styled.div<{ selectedValue?: FilterValue }>`
   height: 2.2em;
   border-radius: 8px;
   justify-content: space-between;
@@ -99,7 +108,7 @@ const Body = styled.div`
   overflow-y: scroll;
   background-color: rgb(255 255 255);
 `;
-const OptionItem = styled.div`
+const OptionItem = styled.div<{ isSelected?: boolean }>`
   border-bottom: 1px solid #ccc;
   height: 2.4em;
   display: flex;

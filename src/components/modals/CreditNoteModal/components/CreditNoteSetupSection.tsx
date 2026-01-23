@@ -1,10 +1,33 @@
-// @ts-nocheck
 import { Alert } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import ClientSelector from './ClientSelector';
 import InvoiceSelector from './InvoiceSelector';
+
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { InvoiceClient, InvoiceData } from '@/types/invoice';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+
+interface CreditNoteSetupSectionProps {
+  canUseCreditNotes: boolean;
+  taxReceiptEnabled: boolean;
+  effectiveIsView: boolean;
+  effectiveIsEdit: boolean;
+  creditNoteData: CreditNoteRecord | null;
+  mode: 'create' | 'edit' | 'view';
+  clients: InvoiceClient[];
+  currentClient?: InvoiceClient | null;
+  onSelectClient: (client: InvoiceClient | null) => void;
+  clientsLoading: boolean;
+  invoices: InvoiceData[];
+  currentInvoice?: InvoiceData | null;
+  onSelectInvoice: (invoice: InvoiceData | null) => void;
+  invoicesLoading: boolean;
+  selectedClientId: string | number | null;
+  dateRange: DatePickerRangeValue;
+  onDateRangeChange: (range: DatePickerRangeValue) => void;
+}
 
 export const CreditNoteSetupSection = ({
   canUseCreditNotes,
@@ -24,7 +47,7 @@ export const CreditNoteSetupSection = ({
   selectedClientId,
   dateRange,
   onDateRangeChange,
-}) => (
+}: CreditNoteSetupSectionProps) => (
   <>
     {!canUseCreditNotes && (
       <Alert

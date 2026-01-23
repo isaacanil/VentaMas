@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -7,10 +6,22 @@ import {
   query,
   where,
 } from 'firebase/firestore';
+import type { CollectionReference, DocumentData, Query, Unsubscribe } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 import { useState, useEffect } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
+
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+};
+
+export type InsuranceBeneficiaryData = Record<string, unknown> & {
+  id?: string;
+  clientId?: string;
+  deleted?: boolean;
+};
 
 /**
  * Retorna la referencia a la colección "insuranceBeneficiaries" dentro del negocio.
@@ -19,7 +30,9 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {object} user - Objeto usuario que contiene businessID y uid.
  * @returns {CollectionReference} - Referencia a la colección.
  */
-const getInsuranceBeneficiariesCollection = (user) => {
+const getInsuranceBeneficiariesCollection = (
+  user: UserWithBusinessAndUid | null | undefined,
+): CollectionReference<DocumentData> | null => {
   if (!user || !user.businessID) {
     console.warn('Usuario o businessID no disponible aún');
     return null;
@@ -42,10 +55,10 @@ const getInsuranceBeneficiariesCollection = (user) => {
  * @returns {Promise<string>} - The generated ID of the newly added beneficiary.
  */
 export const addInsuranceBeneficiary = async (
-  user,
-  beneficiaryData,
-  clientId,
-) => {
+  user: UserWithBusinessAndUid | null | undefined,
+  beneficiaryData: InsuranceBeneficiaryData,
+  clientId: string,
+): Promise<string | null> => {
   try {
     const id = nanoid();
     const createdAt = new Date().toISOString();
@@ -85,10 +98,10 @@ export const addInsuranceBeneficiary = async (
  * @param {object} updatedData - The data fields to update.
  */
 export const updateInsuranceBeneficiary = async (
-  user,
-  beneficiaryId,
-  updatedData,
-) => {
+  user: UserWithBusinessAndUid | null | undefined,
+  beneficiaryId: string,
+  updatedData: InsuranceBeneficiaryData,
+): Promise<void> => {
   try {
     const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
     if (!beneficiariesCollection) {
@@ -122,7 +135,10 @@ export const updateInsuranceBeneficiary = async (
  * @param {object} user - The user object with businessID and uid.
  * @param {string} beneficiaryId - The ID of the beneficiary to soft delete.
  */
-export const softDeleteInsuranceBeneficiary = async (user, beneficiaryId) => {
+export const softDeleteInsuranceBeneficiary = async (
+  user: UserWithBusinessAndUid | null | undefined,
+  beneficiaryId: string,
+): Promise<void> => {
   try {
     const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
     if (!beneficiariesCollection) {
@@ -162,7 +178,12 @@ export const listenInsuranceBeneficiaries = ({
   clientId,
   callback,
   errorCallback,
-}) => {
+}: {
+  user: UserWithBusinessAndUid | null | undefined;
+  clientId?: string | null;
+  callback: (beneficiaries: InsuranceBeneficiaryData[]) => void;
+  errorCallback?: (error: unknown) => void;
+}): Unsubscribe | undefined => {
   const beneficiariesCollection = getInsuranceBeneficiariesCollection(user);
   if (!beneficiariesCollection) {
     console.warn(
@@ -170,7 +191,7 @@ export const listenInsuranceBeneficiaries = ({
     );
     return undefined;
   }
-  let queryRef = beneficiariesCollection;
+  let queryRef: CollectionReference<DocumentData> | Query<DocumentData> = beneficiariesCollection;
   if (clientId) {
     queryRef = query(
       beneficiariesCollection,
@@ -181,7 +202,7 @@ export const listenInsuranceBeneficiaries = ({
     queryRef,
     (querySnapshot) => {
       const beneficiaries = querySnapshot.docs
-        .map((doc) => doc.data())
+        .map((doc) => doc.data() as InsuranceBeneficiaryData)
         .filter((data) => !data.deleted); // Filtrar solo los beneficiarios no eliminados
       callback(beneficiaries);
     },
@@ -195,8 +216,11 @@ export const listenInsuranceBeneficiaries = ({
  * @param {object} user - The user object with businessID and uid.
  * @returns {Array} - The current list of active insurance beneficiaries.
  */
-export const useInsuranceBeneficiaries = (user, clientId) => {
-  const [beneficiaries, setBeneficiaries] = useState([]);
+export const useInsuranceBeneficiaries = (
+  user: UserWithBusinessAndUid | null | undefined,
+  clientId?: string | null,
+): InsuranceBeneficiaryData[] => {
+  const [beneficiaries, setBeneficiaries] = useState<InsuranceBeneficiaryData[]>([]);
 
   if (!user && beneficiaries.length > 0) {
     setBeneficiaries([]);
@@ -214,7 +238,11 @@ export const useInsuranceBeneficiaries = (user, clientId) => {
         console.error('Error listening to insurance beneficiaries:', error);
       },
     });
-    return () => unsubscribe();
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, [user, clientId]);
 
   return beneficiaries;

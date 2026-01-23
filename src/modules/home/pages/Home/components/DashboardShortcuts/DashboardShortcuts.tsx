@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -27,7 +26,7 @@ const normalizeCardData = (data: unknown): FeatureCardData[] => {
 };
 
 export const DashboardShortcuts = (): JSX.Element => {
-  const user: unknown = useSelector(selectUser);
+  const user = useSelector(selectUser);
   const cardData = normalizeCardData(useMenuCardData(user));
   const developer = normalizeCardData(useDeveloperFeaturesData());
   const { abilities, loading } = useUserAccess();

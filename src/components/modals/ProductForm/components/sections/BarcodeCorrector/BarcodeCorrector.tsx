@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
@@ -12,6 +11,10 @@ import styled from 'styled-components';
 import {
   getBarcodeInfo,
   generateCorrectionSuggestions,
+} from '@/utils/barcode/barcode';
+import type {
+  BarcodeInfo,
+  CorrectionSuggestion,
 } from '@/utils/barcode/barcode';
 
 // Styled Components
@@ -92,17 +95,21 @@ const SuggestionsContainer = styled.div`
   gap: 8px;
 `;
 
-const SuggestionCard = styled.div`
+type SuggestionCardProps = {
+  $selected?: boolean;
+};
+
+const SuggestionCard = styled.div<SuggestionCardProps>`
   padding: 16px;
   cursor: pointer;
-  background: ${(props: { $selected?: any }) => props.$selected ($selected ? '#e6f7ff' : '#fafafa')};
-  border: 1px solid ${(props: { $selected?: any }) => props.$selected ($selected ? '#1890ff' : '#f0f0f0')};
+  background: ${(props) => (props.$selected ? '#e6f7ff' : '#fafafa')};
+  border: 1px solid ${(props) => (props.$selected ? '#1890ff' : '#f0f0f0')};
   border-radius: 6px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${(props: { $selected?: any }) => props.$selected ($selected ? '#e6f7ff' : '#f5f5f5')};
-    border-color: ${(props: { $selected?: any }) => props.$selected ($selected ? '#1890ff' : '#d9d9d9')};
+    background: ${(props) => (props.$selected ? '#e6f7ff' : '#f5f5f5')};
+    border-color: ${(props) => (props.$selected ? '#1890ff' : '#d9d9d9')};
   }
 `;
 
@@ -134,22 +141,42 @@ const SuggestionDescription = styled.div`
   color: #8c8c8c;
 `;
 
+type BarcodeCorrectorProps = {
+  visible: boolean;
+  onClose: () => void;
+  currentBarcode?: string | null;
+  onApplyCorrection: (code: string) => void;
+};
+
+type SuggestionSelection = {
+  trigger: string;
+  value: CorrectionSuggestion | null;
+};
+
 export const BarcodeCorrector = ({
   visible,
   onClose,
   currentBarcode,
   onApplyCorrection,
-}) => {
+}: BarcodeCorrectorProps) => {
   const workingCode = currentBarcode || '';
   const selectionTrigger = `${visible}-${workingCode}`;
   const [{ trigger: selectedTrigger, value: selectedValue }, setSelection] =
-    useState(() => ({ trigger: selectionTrigger, value: null }));
+    useState<SuggestionSelection>(() => ({
+      trigger: selectionTrigger,
+      value: null,
+    }));
 
   const selectedSuggestion =
     selectedTrigger === selectionTrigger ? selectedValue : null;
 
   const setSelectedSuggestion = useCallback(
-    (updater) => {
+    (
+      updater:
+        | CorrectionSuggestion
+        | null
+        | ((current: CorrectionSuggestion | null) => CorrectionSuggestion | null),
+    ) => {
       setSelection((prev) => {
         const current = prev.trigger === selectionTrigger ? prev.value : null;
         const next =
@@ -160,27 +187,33 @@ export const BarcodeCorrector = ({
     [selectionTrigger],
   );
 
-  const suggestions = useMemo(() => {
-    if (!workingCode) return [];
+  const suggestions = useMemo(
+    (): Array<CorrectionSuggestion & { icon: React.ReactNode }> => {
+      if (!workingCode) return [];
 
-    const allSuggestions = generateCorrectionSuggestions(workingCode);
-    const checkDigitSuggestions = allSuggestions.filter(
-      (suggestion) => suggestion.reason === 'fix' || suggestion.reason === 'complete',
+      const allSuggestions = generateCorrectionSuggestions(workingCode);
+      const checkDigitSuggestions = allSuggestions.filter(
+        (suggestion) =>
+          suggestion.reason === 'fix' || suggestion.reason === 'complete',
+      );
+
+      return checkDigitSuggestions.map((suggestion) => ({
+        ...suggestion,
+        icon:
+          suggestion.reason === 'fix' ? (
+            <ExclamationCircleOutlined />
+          ) : (
+            <BulbOutlined />
+          ),
+      }));
+    },
+    [workingCode],
+  );
+
+  const handleSelectSuggestion = (suggestion: CorrectionSuggestion) => {
+    setSelectedSuggestion((prev) =>
+      prev?.id === suggestion.id ? null : suggestion,
     );
-
-    return checkDigitSuggestions.map((suggestion) => ({
-      ...suggestion,
-      icon:
-        suggestion.reason === 'fix' ? (
-          <ExclamationCircleOutlined />
-        ) : (
-          <BulbOutlined />
-        ),
-    }));
-  }, [workingCode]);
-
-  const handleSelectSuggestion = (suggestion) => {
-    setSelectedSuggestion((prev) => (prev?.id === suggestion.id ? null : suggestion));
   };
 
   const handleApplyCorrection = () => {
@@ -189,26 +222,28 @@ export const BarcodeCorrector = ({
       : workingCode;
     onApplyCorrection(codeToApply);
     notification.success({
-      message: 'Código Aplicado',
-      description: `Se aplicó el código: ${codeToApply}`,
+      message: 'CÃ³digo Aplicado',
+      description: `Se aplicÃ³ el cÃ³digo: ${codeToApply}`,
       duration: 3,
     });
     onClose();
   };
 
-  const handleCopyCode = (code) => {
+  const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    message.success('Código copiado al portapapeles');
+    message.success('CÃ³digo copiado al portapapeles');
   };
 
-  const barcodeInfo = workingCode ? getBarcodeInfo(workingCode) : null;
+  const barcodeInfo: BarcodeInfo | null = workingCode
+    ? getBarcodeInfo(workingCode)
+    : null;
 
   return (
     <Modal
       title={
         <Space>
           <BulbOutlined />
-          Corrector de Dígito Verificador
+          Corrector de DÃ­gito Verificador
         </Space>
       }
       open={visible}
@@ -229,16 +264,16 @@ export const BarcodeCorrector = ({
       ]}
     >
       <Space direction="vertical" style={{ width: '100%' }} size="large">
-        {/* Código de trabajo */}
+        {/* CÃ³digo de trabajo */}
         <WorkingCodeSection>
-          <WorkingCodeLabel>Código de trabajo</WorkingCodeLabel>
+          <WorkingCodeLabel>CÃ³digo de trabajo</WorkingCodeLabel>
           <WorkingCodeContainer>
             <WorkingCodeValue>{workingCode}</WorkingCodeValue>
             {workingCode && barcodeInfo && (
               <>
                 <StatusBadge>
                   <CheckCircleOutlined />
-                  {barcodeInfo.valid ? 'Válido' : 'Revisar'}
+                  {barcodeInfo.valid ? 'VÃ¡lido' : 'Revisar'}
                 </StatusBadge>
                 <FormatBadge>{barcodeInfo.type || 'Desconocido'}</FormatBadge>
               </>
@@ -251,10 +286,10 @@ export const BarcodeCorrector = ({
           </WorkingCodeContainer>
         </WorkingCodeSection>
 
-        {/* Sugerencias de corrección de dígito verificador */}
+        {/* Sugerencias de correcciÃ³n de dÃ­gito verificador */}
         {suggestions.length > 0 && (
           <SuggestionsSection>
-            <SectionTitle>Correcciones de dígito verificador</SectionTitle>
+            <SectionTitle>Correcciones de dÃ­gito verificador</SectionTitle>
             <SuggestionsContainer>
               {suggestions.map((suggestion) => (
                 <SuggestionCard
@@ -265,7 +300,7 @@ export const BarcodeCorrector = ({
                   <SuggestionHeader>
                     <SuggestionTitle>{suggestion.type}</SuggestionTitle>
                     <CopyIconButton
-                      onClick={(e: any) => {
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                         e.stopPropagation();
                         handleCopyCode(suggestion.code);
                       }}
@@ -285,11 +320,11 @@ export const BarcodeCorrector = ({
           </SuggestionsSection>
         )}
 
-        {/* Información educativa */}
+        {/* InformaciÃ³n educativa */}
         {suggestions.length === 0 && workingCode && (
           <Alert
-            message="Dígito verificador correcto"
-            description="El código tiene un dígito verificador válido o no requiere correcciones."
+            message="DÃ­gito verificador correcto"
+            description="El cÃ³digo tiene un dÃ­gito verificador vÃ¡lido o no requiere correcciones."
             type="success"
             showIcon
           />
@@ -297,8 +332,8 @@ export const BarcodeCorrector = ({
 
         {!workingCode && (
           <Alert
-            message="Corrector de Dígito Verificador"
-            description="Ingresa un código de barras para validar y corregir automáticamente el dígito verificador. Compatible con GTIN-13, EAN-13, UPC-A, EAN-8 y GTIN-14."
+            message="Corrector de DÃ­gito Verificador"
+            description="Ingresa un cÃ³digo de barras para validar y corregir automÃ¡ticamente el dÃ­gito verificador. Compatible con GTIN-13, EAN-13, UPC-A, EAN-8 y GTIN-14."
             type="info"
             showIcon
           />

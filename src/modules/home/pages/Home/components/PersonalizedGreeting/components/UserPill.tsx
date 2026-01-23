@@ -1,4 +1,3 @@
-// @ts-nocheck
 // UserPill component - displays user name in a pill style
 import styled from 'styled-components';
 

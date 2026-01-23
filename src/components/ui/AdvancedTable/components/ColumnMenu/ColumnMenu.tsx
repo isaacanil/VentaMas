@@ -1,13 +1,29 @@
-// @ts-nocheck
 import { Modal, Tabs, Button, Typography } from 'antd';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const { TabPane } = Tabs;
+
+type ColumnMenuProps = {
+  isOpen?: boolean;
+  toggleOpen: () => void;
+  columns: AdvancedTableColumn<TableRow>[];
+  columnOrder: AdvancedTableColumn<TableRow>[];
+  setColumnOrder: Dispatch<SetStateAction<AdvancedTableColumn<TableRow>[]>>;
+  resetColumnOrder: () => void;
+};
 
 export const ColumnMenu = ({
   isOpen = false,
@@ -16,9 +32,9 @@ export const ColumnMenu = ({
   columnOrder,
   setColumnOrder,
   resetColumnOrder,
-}) => {
-  const [highlightedItems, setHighlightedItems] = useState([]);
-  const MenuRef = useRef(null);
+}: ColumnMenuProps) => {
+  const [highlightedItems, setHighlightedItems] = useState<string[]>([]);
+  const MenuRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (highlightedItems.length > 0) {
       const timerId = setTimeout(() => {
@@ -32,7 +48,7 @@ export const ColumnMenu = ({
     localStorage.setItem('columnOrder', JSON.stringify(columnOrder));
   }, [columnOrder]);
 
-  const removeColumn = (accessor) => {
+  const removeColumn = (accessor: string) => {
     const updatedColumns = columnOrder.map((col) =>
       col.accessor === accessor ? { ...col, status: 'deleted' } : col,
     );
@@ -40,6 +56,7 @@ export const ColumnMenu = ({
     const columnToRemove = updatedColumns.find(
       (col) => col.accessor === accessor,
     );
+    if (!columnToRemove) return;
     const columnsWithoutRemoved = updatedColumns.filter(
       (col) => col.accessor !== accessor,
     );
@@ -48,12 +65,14 @@ export const ColumnMenu = ({
     setColumnOrder(newColumnOrder);
   };
 
-  const restoreColumn = (accessor) => {
+  const restoreColumn = (accessor: string) => {
     const columnToRestoreIndex = columnOrder.findIndex(
       (col) => col.accessor === accessor,
     );
+    if (columnToRestoreIndex === -1) return;
     const columnToRestore = columnOrder[columnToRestoreIndex];
-    const { originalPosition } = columnToRestore;
+    const originalPosition =
+      columnToRestore.originalPosition ?? columnToRestoreIndex;
 
     let updatedColumns = columnOrder.filter((col) => col.accessor !== accessor);
 
@@ -69,8 +88,9 @@ export const ColumnMenu = ({
     setColumnOrder(updatedColumns);
   };
 
-  const moveColumn = (fromIndex, direction) => {
-    if (columnOrder[fromIndex].reorderable === false) return; // No mover si no es reordenable = false
+  const moveColumn = (fromIndex: number, direction: 'up' | 'down') => {
+    const currentColumn = columnOrder[fromIndex];
+    if (!currentColumn || currentColumn.reorderable === false) return; // No mover si no es reordenable = false
 
     const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
     if (toIndex < 0 || toIndex >= columnOrder.length) return; // No mover si está en los límites
@@ -78,6 +98,7 @@ export const ColumnMenu = ({
     if (columnOrder[toIndex].reorderable === false) return; // Si la columna a la que se va a mover no es reordenable, no permitir el movimiento
     const newColumnOrder = [...columnOrder];
     const [movedColumn] = newColumnOrder.splice(fromIndex, 1);
+    if (!movedColumn) return;
     setHighlightedItems([movedColumn.accessor]);
 
     setTimeout(() => {
@@ -88,11 +109,11 @@ export const ColumnMenu = ({
   const getDeletedColumns = () => {
     return columnOrder.filter((column) => column.status === 'deleted');
   };
-  const disableMoveUp = (index) => {
+  const disableMoveUp = (index: number) => {
     return index === 0 || columnOrder[index - 1].reorderable === false;
   };
 
-  const disableMoveDown = (index) => {
+  const disableMoveDown = (index: number) => {
     return (
       index === columnOrder.length - 1 ||
       columnOrder[index + 1].reorderable === false
@@ -224,7 +245,7 @@ const MenuItems = styled(motion.ul)`
   list-style: none;
   background-color: #f5f5f5;
 `;
-const MenuItem = styled(motion.li)`
+const MenuItem = styled(motion.li)<{ reorderable?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;

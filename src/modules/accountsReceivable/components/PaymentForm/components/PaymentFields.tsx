@@ -1,5 +1,5 @@
-// @ts-nocheck
 import { Checkbox, Form, Input, InputNumber, message } from 'antd';
+import type { InputNumberRef } from '@rc-component/input-number';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -14,13 +14,35 @@ import {
 } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { formatNumber } from '@/utils/formatNumber';
 
+type AccountsReceivablePaymentRootState = Parameters<
+  typeof selectAccountsReceivablePayment
+>[0];
+
+type AccountsReceivablePaymentMethod = {
+  method: string;
+  value: number;
+  status: boolean;
+  reference?: string | null;
+};
+
+type PaymentInfo = {
+  label: string;
+  icon: React.ReactNode;
+};
+
+type PaymentFieldKey = 'status' | 'value' | 'reference';
+
+
 export const PaymentFields = () => {
-  const cashInputRef = useRef(null);
-  const { methodErrors: errors, paymentDetails } = useSelector(
-    selectAccountsReceivablePayment,
-  );
+  const cashInputRef = useRef<InputNumberRef | null>(null);
+  const { methodErrors: errors, paymentDetails } = useSelector<
+    AccountsReceivablePaymentRootState,
+    ReturnType<typeof selectAccountsReceivablePayment>
+  >(selectAccountsReceivablePayment);
   const paymentMethods = useMemo(
-    () => paymentDetails.paymentMethods ?? [],
+    () =>
+      (paymentDetails.paymentMethods ??
+        []) as AccountsReceivablePaymentMethod[],
     [paymentDetails.paymentMethods],
   );
   // Filtrar creditNote de la interfaz (se maneja por separado con CreditSelector)
@@ -30,7 +52,7 @@ export const PaymentFields = () => {
   );
   const dispatch = useDispatch();
 
-  const paymentInfo = {
+  const paymentInfo: Record<string, PaymentInfo> = {
     cash: {
       label: 'Efectivo',
       icon: icons.finances.money,
@@ -45,17 +67,18 @@ export const PaymentFields = () => {
     },
   }; // Auto-focus en efectivo y auto-rellenar al abrir modal
   useEffect(() => {
-    if (
-      cashInputRef.current &&
-      document.activeElement !== cashInputRef.current
-    ) {
-      const cashMethod = visiblePaymentMethods.find(
-        (method) => method.method === 'cash' && method.status,
-      );
-      if (cashMethod) {
-        cashInputRef.current.focus();
-        cashInputRef.current.select();
-      }
+    if (!cashInputRef.current) return;
+    const nativeInput = cashInputRef.current.nativeElement as
+      | HTMLInputElement
+      | undefined;
+    if (nativeInput && document.activeElement === nativeInput) return;
+
+    const cashMethod = visiblePaymentMethods.find(
+      (method) => method.method === 'cash' && method.status,
+    );
+    if (cashMethod) {
+      cashInputRef.current.focus();
+      nativeInput?.select?.();
     }
   }, [visiblePaymentMethods]);
 
@@ -101,26 +124,34 @@ export const PaymentFields = () => {
     }
   }, [dispatch, paymentDetails.totalAmount, visiblePaymentMethods]); // Usar visiblePaymentMethods
 
-  const setErrors = (method, key, error) => {
+  const setErrors = (
+    method: string,
+    key: PaymentFieldKey,
+    error: string | null,
+  ) => {
     dispatch(setMethodError({ method, key, error }));
   };
 
-  const clearErrors = (method) => {
+  const clearErrors = (method: string) => {
     dispatch(clearMethodErrors({ method }));
   };
 
-  const validateField = (method, key, value, status) => {
-    let error = null;
+  const validateField = (
+    method: string,
+    key: PaymentFieldKey,
+    value: number | string | null,
+    status: boolean,
+  ) => {
+    let error: string | null = null;
 
     if (status) {
-      if (key === 'value' && value <= 0) {
+      if (key === 'value' && Number(value) <= 0) {
         error = 'El valor debe ser mayor a cero';
-      } else if (
-        key === 'reference' &&
-        !(method === 'cash' || method === 'creditNote') &&
-        (!value || value.trim() === '')
-      ) {
-        error = 'La referencia es obligatoria';
+      } else if (key === 'reference' && !(method === 'cash' || method === 'creditNote')) {
+        const referenceValue = typeof value === 'string' ? value : '';
+        if (!referenceValue.trim()) {
+          error = 'La referencia es obligatoria';
+        }
       }
     }
 
@@ -128,7 +159,11 @@ export const PaymentFields = () => {
     return error;
   };
 
-  function handleStatusChange(method, status, autoValue = null) {
+  function handleStatusChange(
+    method: AccountsReceivablePaymentMethod,
+    status: boolean,
+    autoValue: number | null = null,
+  ) {
     let newValue = method.value;
 
     if (status && (!newValue || newValue === 0 || autoValue)) {
@@ -176,19 +211,22 @@ export const PaymentFields = () => {
           updatePaymentMethod({
             method: method.method,
             key: 'reference',
-            value: null,
+            value: '',
           }),
         );
       }
     }
   }
 
-  function handleValueChange(method, newValue) {
+  function handleValueChange(
+    method: AccountsReceivablePaymentMethod,
+    newValue: number | null,
+  ) {
     // Validar que el valor no sea negativo
     const validValue = Math.max(0, Number(newValue) || 0);
 
     // Si el usuario intentó ingresar un valor negativo, mostrar advertencia
-    if (newValue < 0) {
+    if (typeof newValue === 'number' && newValue < 0) {
       message.warning('No se permiten montos negativos en los métodos de pago');
     }
 
@@ -205,7 +243,10 @@ export const PaymentFields = () => {
     }
   }
 
-  const handleReferenceChange = (method, newReference) => {
+  const handleReferenceChange = (
+    method: AccountsReceivablePaymentMethod,
+    newReference: string,
+  ) => {
     dispatch(
       updatePaymentMethod({
         method: method.method,
@@ -219,22 +260,23 @@ export const PaymentFields = () => {
     }
   };
 
-  const handleInputChange = (method, key, value) => {
+  const handleInputChange = (
+    method: string,
+    key: PaymentFieldKey,
+    value: boolean | number | string | null,
+  ) => {
+    const targetMethod = visiblePaymentMethods.find((m) => m.method === method);
+    if (!targetMethod) return;
     if (key === 'status') {
-      handleStatusChange(
-        visiblePaymentMethods.find((m) => m.method === method),
-        value,
-      );
+      if (typeof value !== 'boolean') return;
+      handleStatusChange(targetMethod, value);
     } else if (key === 'value') {
       handleValueChange(
-        visiblePaymentMethods.find((m) => m.method === method),
-        value,
+        targetMethod,
+        typeof value === 'number' ? value : Number(value),
       );
     } else if (key === 'reference') {
-      handleReferenceChange(
-        visiblePaymentMethods.find((m) => m.method === method),
-        value,
-      );
+      handleReferenceChange(targetMethod, String(value ?? ''));
     }
   };
 
@@ -280,7 +322,7 @@ export const PaymentFields = () => {
                     precision={2}
                     step={0.01}
                     formatter={formatNumber}
-                    parser={(value) => value.replace(/,/g, '')}
+                    parser={(value) => (value ? value.replace(/,/g, '') : '')}
                     style={{ width: '100%' }}
                   />
                 ) : (
@@ -296,7 +338,7 @@ export const PaymentFields = () => {
                     precision={2}
                     step={0.01}
                     formatter={formatNumber}
-                    parser={(value) => value.replace(/,/g, '')}
+                    parser={(value) => (value ? value.replace(/,/g, '') : '')}
                     style={{ width: '100%' }}
                   />
                 )}
@@ -365,3 +407,4 @@ const FormItem = styled(Form.Item)`
     color: #414141;
   }
 `;
+

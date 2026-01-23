@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AnimatePresence } from 'framer-motion';
 import { Fragment, lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';

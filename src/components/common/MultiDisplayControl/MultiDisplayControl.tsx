@@ -1,5 +1,5 @@
-// @ts-nocheck
 // Candidate for deletion: no current modules import this multi display control view.
+import type { MouseEvent } from 'react';
 import { useState } from 'react';
 
 import { PlusIcon } from '@/assets/system/plus/plusIcon';
@@ -10,14 +10,14 @@ export const MultiDisplayControl = () => {
   const [isOpen] = useState(false);
   // numero de pantallas
 
-  const [list, setList] = useState([1]);
+  const [list, setList] = useState<number[]>([1]);
 
-  const upgradeList = (e: any) => {
+  const upgradeList = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     //Ultimo elemento
     const lastItem = list.at(-1);
     //condicion para dejar de añadir siempre y cuando este por debajo de 5
-    if (lastItem < 8) {
+    if (typeof lastItem === 'number' && lastItem < 8) {
       const newItem = lastItem + 1;
 
       setList([...list, newItem]);

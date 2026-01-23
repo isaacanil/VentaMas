@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo } from 'react';
 import { Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -18,10 +17,23 @@ const {
   BASIC_TERM: { HOME },
 } = ROUTES_NAME;
 
+type AbilityLike = {
+  can: (action: string, subject: string) => boolean;
+};
+
+interface ManagedRoute {
+  path: string;
+  allowed: boolean;
+  match: (path: string) => boolean;
+}
+
 export const UserAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { abilities, loading } = useUserAccess();
+  const { abilities, loading } = useUserAccess() as {
+    abilities: AbilityLike;
+    loading: boolean;
+  };
   const usersRoute = `${USERS}/${USERS_LIST}`;
   const sessionLogsRoute = `${USERS}/${USERS_SESSION_LOGS}`;
   const userActivityRoute = `${USERS}/${USERS_ACTIVITY}`;
@@ -31,7 +43,7 @@ export const UserAdmin = () => {
   const canAccessUserActivity = abilities.can('access', userActivityRoute);
   const canAccessUsers =
     canAccessUserList || canAccessSessionLogs || canAccessUserActivity;
-  const managedRoutes = useMemo(
+  const managedRoutes = useMemo<ManagedRoute[]>(
     () => [
       {
         path: usersRoute,
@@ -69,7 +81,7 @@ export const UserAdmin = () => {
       return;
     }
 
-    const normalizePath = (path) => {
+    const normalizePath = (path: string) => {
       if (!path) return path;
       return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
     };

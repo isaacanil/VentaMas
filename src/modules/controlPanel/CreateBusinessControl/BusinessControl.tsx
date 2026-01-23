@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faChevronLeft,
   faChevronRight,
@@ -18,16 +17,49 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { BusinessCard } from './components/BusinessCard/BusinessCard';
 import FiltersDrawer from './components/FiltersDrawer/FiltersDrawer';
 
-export const BusinessControl = () => {
-  const [businesses, setBusinesses] = useState([]);
+interface BusinessTimestamp {
+  seconds?: number;
+}
+
+interface BusinessInfo {
+  id?: string;
+  name?: string;
+  address?: string;
+  tel?: string;
+  email?: string;
+  rnc?: string;
+  province?: string;
+  country?: string;
+  businessType?: string;
+  createdAt?: BusinessTimestamp;
+}
+
+interface BusinessDoc {
+  business?: BusinessInfo;
+}
+
+type SortBy = 'newest' | 'oldest';
+
+interface BusinessFilters {
+  province: string;
+  country: string;
+  businessType: string;
+  hasRNC: boolean;
+  sortBy: SortBy;
+}
+
+export const BusinessControl: React.FC = () => {
+  const [businesses, setBusinesses] = useState<BusinessDoc[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessInfo | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<BusinessFilters>({
     province: '',
     country: '',
     businessType: '',
@@ -35,9 +67,11 @@ export const BusinessControl = () => {
     sortBy: 'newest', // Opciones: newest, oldest
   });
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [availableProvinces, setAvailableProvinces] = useState([]);
-  const [availableCountries, setAvailableCountries] = useState([]);
-  const [availableBusinessTypes, setAvailableBusinessTypes] = useState([]);
+  const [availableProvinces, setAvailableProvinces] = useState<string[]>([]);
+  const [availableCountries, setAvailableCountries] = useState<string[]>([]);
+  const [availableBusinessTypes, setAvailableBusinessTypes] = useState<string[]>(
+    [],
+  );
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -46,7 +80,7 @@ export const BusinessControl = () => {
       setError(null);
       try {
         await fbGetBusinesses(setBusinesses);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error al cargar los negocios:', err);
         setError(
           'No se pudieron cargar los negocios. Por favor, intente de nuevo más tarde.',
@@ -99,7 +133,10 @@ export const BusinessControl = () => {
     };
   }, [searchTerm]);
 
-  const handleFilterChange = (filterName, value) => {
+  const handleFilterChange = (
+    filterName: keyof BusinessFilters,
+    value: BusinessFilters[keyof BusinessFilters],
+  ) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
@@ -125,7 +162,7 @@ export const BusinessControl = () => {
   };
 
   const filteredBusinesses = businesses.filter((obj) => {
-    const business = obj.business;
+    const business: BusinessInfo = obj.business ?? {};
 
     // Filtro por término de búsqueda (nombre, dirección, teléfono, email, etc.)
     const searchMatches =
@@ -201,7 +238,7 @@ export const BusinessControl = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-  const handleEditBusiness = (business) => {
+  const handleEditBusiness = (business: BusinessInfo) => {
     setSelectedBusiness(business);
     setEditModalOpen(true);
   };
@@ -288,13 +325,19 @@ export const BusinessControl = () => {
             )}
           </EmptyMessage>
         ) : (
-          currentBusinesses.map(({ business }, idx) => (
-            <BusinessCard
-              key={idx}
-              business={business}
-              onEditBusiness={handleEditBusiness}
-            />
-          ))
+          currentBusinesses.map((item, idx) => {
+            if (!item.business) {
+              return null;
+            }
+
+            return (
+              <BusinessCard
+                key={idx}
+                business={item.business}
+                onEditBusiness={handleEditBusiness}
+              />
+            );
+          })
         )}
       </Body>
       <Pagination>

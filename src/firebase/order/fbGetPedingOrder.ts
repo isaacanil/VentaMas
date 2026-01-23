@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   onSnapshot,
@@ -6,6 +5,7 @@ import {
   where,
   orderBy,
 } from 'firebase/firestore';
+import type { DocumentData, QuerySnapshot, Unsubscribe } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -13,14 +13,33 @@ import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { createReference, getDocFromRef } from '@/utils/refereceUtils';
 
-const convertTimestamps = (dates, fields) => {
+type TimestampLike = {
+  seconds?: number;
+};
+
+type OrderData = Record<string, unknown> & {
+  dates: Record<string, TimestampLike | undefined>;
+  provider?: string;
+};
+
+type PendingOrder = {
+  data: OrderData;
+};
+
+const convertTimestamps = (
+  dates: Record<string, TimestampLike | undefined>,
+  fields: string[],
+): void => {
   fields.forEach((field) => {
     const timestamp = dates[field]?.seconds;
     if (timestamp) dates[field] = timestamp * 1000;
   });
 };
 
-export const subscribeToOrders = (businessID, callback) => {
+export const subscribeToOrders = (
+  businessID: string,
+  callback: (snapshot: QuerySnapshot<DocumentData>) => void,
+): Unsubscribe => {
   const ordersRef = collection(db, 'businesses', businessID, 'orders');
   const q = query(
     ordersRef,
@@ -30,24 +49,31 @@ export const subscribeToOrders = (businessID, callback) => {
   return onSnapshot(q, callback);
 };
 
-export const getProvider = async (businessID, providerId) => {
+export const getProvider = async (
+  businessID: string,
+  providerId: string,
+): Promise<Record<string, unknown>> => {
   if (!providerId) return {};
   const providerRef = createReference(
     ['businesses', businessID, 'providers'],
     providerId,
   );
   const providerDoc = await getDocFromRef(providerRef);
-  return providerDoc?.provider || {};
+  return (providerDoc?.provider || {}) as Record<string, unknown>;
 };
 
-export const processOrder = async (data, businessID) => {
-  const provider = await getProvider(businessID, data?.provider);
-  return { data: { ...data, provider } };
+export const processOrder = async (
+  data: OrderData | undefined,
+  businessID: string,
+): Promise<PendingOrder> => {
+  const providerId = typeof data?.provider === 'string' ? data.provider : '';
+  const provider = await getProvider(businessID, providerId);
+  return { data: { ...(data || { dates: {} }), provider } };
 };
 
 export const useFbGetPendingOrders = () => {
-  const [pendingOrders, setPendingOrders] = useState([]);
-  const user = useSelector(selectUser);
+  const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
+  const user = useSelector(selectUser) as { businessID?: string } | null;
 
   useEffect(() => {
     if (!user?.businessID) return;
@@ -56,7 +82,7 @@ export const useFbGetPendingOrders = () => {
       try {
         const orders = await Promise.all(
           snapshot.docs.map((doc) =>
-            processOrder(doc.data()?.data, user.businessID),
+            processOrder(doc.data()?.data as OrderData | undefined, user.businessID),
           ),
         );
 

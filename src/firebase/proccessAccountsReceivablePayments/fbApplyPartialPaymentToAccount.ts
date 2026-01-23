@@ -1,12 +1,13 @@
-// @ts-nocheck
 import { runTransaction, doc, arrayUnion } from 'firebase/firestore';
 
 import { fbAddAccountReceivablePaymentReceipt } from '@/firebase/accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
+import type { UserWithBusiness } from '@/types/users';
 
 import {
+  type PaymentDetails,
   getInstallmentsByArId,
   createPaymentRecord,
   processInstallmentPayment,
@@ -18,10 +19,15 @@ import {
 } from './arPaymentUtils';
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 
+type PartialPaymentDetails = PaymentDetails & { arId: string };
+
 export const fbApplyPartialPaymentToAccount = async ({
   user,
   paymentDetails,
-}) => {
+}: {
+  user: UserWithBusiness;
+  paymentDetails: PartialPaymentDetails;
+}): Promise<Awaited<ReturnType<typeof fbAddAccountReceivablePaymentReceipt>>> => {
   const {
     totalPaid,
     clientId,
@@ -38,13 +44,13 @@ export const fbApplyPartialPaymentToAccount = async ({
       arId,
     );
 
-    if (!accountValidation.isValid) {
+    if (!accountValidation.isValid || !accountValidation.account) {
       console.warn('⚠️ Account validation failed:', accountValidation.error);
       throw new Error(`Account validation failed: ${accountValidation.error}`);
     }
 
     const accountData = accountValidation.account;
-    const currentBalance = accountValidation.balance;
+    const currentBalance = accountValidation.balance ?? 0;
 
     console.log('✅ Account validation passed:', {
       arId,
@@ -87,7 +93,8 @@ export const fbApplyPartialPaymentToAccount = async ({
 
     // const accountData = accountSnapshot.data(); // Eliminamos esta línea
 
-    const invoice = await fbGetInvoice(user.businessID, accountData.invoiceId);
+    const invoiceId = accountData.invoiceId ?? '';
+    const invoice = await fbGetInvoice(user.businessID, invoiceId);
 
     let openCashCountId = null;
     try {
@@ -105,7 +112,10 @@ export const fbApplyPartialPaymentToAccount = async ({
         openCashCountId = cashCount.id;
       }
     } catch (error) {
-      if (error.message.startsWith('No se puede procesar el pago')) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('No se puede procesar el pago')
+      ) {
         throw error;
       }
       console.warn('Error checking open cash count:', error);
@@ -190,7 +200,7 @@ export const fbApplyPartialPaymentToAccount = async ({
       if (invoice) {
         updateInvoiceTotals(transaction, {
           businessId: user.businessID,
-          invoiceId: accountData.invoiceId,
+          invoiceId,
           amountPaid: totalPaid,
           invoice,
           paymentMethods,
@@ -208,6 +218,9 @@ export const fbApplyPartialPaymentToAccount = async ({
       const receiptInvoiceId =
         accountData.invoiceId || invoice?.data?.id || invoice?.id || null;
 
+      const totalInstallments = accountData.totalInstallments ?? 0;
+      const paidInstallmentsCount = accountData.paidInstallments?.length ?? 0;
+
       const paymentReceipt = {
         accounts: [
           {
@@ -217,10 +230,8 @@ export const fbApplyPartialPaymentToAccount = async ({
             arId: accountData.id,
             paidInstallments: paidInstallmentsData,
             remainingInstallments:
-              accountData.totalInstallments -
-              (accountData.paidInstallments?.length || 0) -
-              paidInstallments.size,
-            totalInstallments: accountData.totalInstallments,
+              totalInstallments - paidInstallmentsCount - paidInstallments.size,
+            totalInstallments,
             totalPaid: totalPaid,
             arBalance: newArBalance,
           },

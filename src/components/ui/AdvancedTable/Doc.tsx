@@ -1,11 +1,13 @@
-// @ts-nocheck
 import styled from 'styled-components';
 
 import palette from '@/theme/colors/light/Palette';
+import type { ContrastColorPair } from '@/theme/getContrastColorPairs';
 
 export function Doc() {
-  const colors = ['primary', 'error', 'warning', 'info', 'success'];
-  const getTypes = (color) => {
+  const colors = ['primary', 'error', 'warning', 'info', 'success'] as const;
+  type BaseColor = (typeof colors)[number];
+
+  const getTypes = (color: BaseColor): string[] => {
     return [
       `${color}`,
       `on-${color}`,
@@ -28,20 +30,19 @@ export function Doc() {
     </Container>
   );
 }
-const ArrayList = ({ color = 'primary' }) => {
+
+interface ArrayListProps {
+  color?: string;
+}
+
+const ArrayList = ({ color = 'primary' }: ArrayListProps) => {
   if (!color) {
     return null;
   }
   if (!palette.colors[color]) {
     return null;
   }
-  const scale = palette.colors[color] || [];
-  const _type = [
-    `${color}`,
-    `on ${color}`,
-    `container ${color}`,
-    `on container ${color}`,
-  ];
+  const scale = palette.colors[color] as ContrastColorPair;
   return (
     <ArrayListContainer>
       <Item color={scale['text']} bg={scale['bg']}>
@@ -54,7 +55,7 @@ const ArrayList = ({ color = 'primary' }) => {
 const ArrayListContainer = styled.div`
   display: grid;
 `;
-const Container = styled.div`
+const Container = styled.div<{ color?: string }>`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   ${(props) => {
@@ -64,7 +65,7 @@ const Container = styled.div`
     `;
   }}
 `;
-const Item = styled.div`
+const Item = styled.div<{ color?: string; bg?: string }>`
   height: 8em;
   padding: 1em;
   ${(props) => {

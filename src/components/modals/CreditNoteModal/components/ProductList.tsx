@@ -1,9 +1,28 @@
-// @ts-nocheck
 import { Table, Pagination } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { ProductCard } from './ProductCard';
+import type { ColumnsType } from 'antd/es/table';
+import type { InvoiceProduct } from '@/types/invoice';
+
+type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
+
+interface ProductListProps {
+  products: CreditNoteProduct[];
+  columns: ColumnsType<CreditNoteProduct>;
+  selectedItems: Array<string | undefined>;
+  itemQuantities: Record<string, number>;
+  existingItemQuantities: Record<string, number>;
+  creditedQuantities: Record<string, number>;
+  isMobile: boolean;
+  effectiveIsView: boolean;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onItemChange: (itemId: string | undefined, checked: boolean) => void;
+  onQuantityChange: (itemId: string | undefined, value: number | null) => void;
+}
 
 export const ProductList = ({
   products,
@@ -19,7 +38,7 @@ export const ProductList = ({
   onPageChange,
   onItemChange,
   onQuantityChange,
-}) => {
+}: ProductListProps) => {
   if (isMobile) {
     // Render as cards in mobile
     const startIndex = (currentPage - 1) * pageSize;
@@ -29,21 +48,23 @@ export const ProductList = ({
     return (
       <MobileContainer>
         <CardsContainer>
-          {paginatedProducts.map((product) => {
+          {paginatedProducts.map((product, index) => {
             // Usar maxAvailableQty que ya incluye la lógica correcta para edición
             const maxQty = product.maxAvailableQty || 1;
-            const originalQty = product.amountToBuy || 1;
+            const originalQty =
+              typeof product.amountToBuy === 'number' ? product.amountToBuy : 1;
             const quantity =
-              itemQuantities[product.id] ||
-              existingItemQuantities[product.id] ||
+              itemQuantities[String(product.id)] ||
+              existingItemQuantities[String(product.id)] ||
               1;
             const isSelected = selectedItems.includes(product.id);
-            const creditedByOthers = creditedQuantities[product.id] || 0;
-            const existingQuantity = existingItemQuantities[product.id] || 0;
+            const creditedByOthers = creditedQuantities[String(product.id)] || 0;
+            const existingQuantity =
+              existingItemQuantities[String(product.id)] || 0;
 
             return (
               <ProductCard
-                key={product.id}
+                key={product.id ?? index}
                 product={product}
                 isSelected={isSelected}
                 quantity={quantity}

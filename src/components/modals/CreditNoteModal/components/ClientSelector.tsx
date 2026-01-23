@@ -1,10 +1,12 @@
-// @ts-nocheck
 import { PlusOutlined, CloseOutlined } from '@/constants/icons/antd';
 import { Input, Drawer } from 'antd';
+import type { InputRef } from 'antd';
 import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
 import styled from 'styled-components';
 
 import { normalizeText } from '@/utils/text';
+import type { InvoiceClient } from '@/types/invoice';
 
 /*
   Selector de Clientes
@@ -41,12 +43,20 @@ const ClientsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const ClientCard = styled.div`
+interface ClientCardProps {
+  $isSelected?: boolean;
+}
+
+interface ClientInfoProps {
+  $disabled?: boolean;
+}
+
+const ClientCard = styled.div<ClientCardProps>`
   padding: 12px 14px;
   cursor: pointer;
-  background-color: ${(props: { $isSelected?: any }) => props.$isSelected ($isSelected ? '#F0F5FF' : '#fff')};
+  background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
   border: 1px solid
-    ${(props: { $isSelected?: any }) => props.$isSelected ($isSelected ? '#1890ff' : '#d9d9d9')};
+    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   border-radius: 8px;
   transition: all 0.2s ease;
 
@@ -75,20 +85,20 @@ const ClientCard = styled.div`
   }
 `;
 
-const ClientInfo = styled.div`
+const ClientInfo = styled.div<ClientInfoProps>`
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  cursor: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   background: #fff;
   border: 1px solid #d9d9d9;
   border-radius: 8px;
-  opacity: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? 0.6 : 1)};
+  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
   transition: border-color 0.2s;
 
   &:hover {
-    border-color: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? '#d9d9d9' : '#1890ff')};
+    border-color: ${({ $disabled }) => ($disabled ? '#d9d9d9' : '#1890ff')};
   }
 
   &.empty {
@@ -135,6 +145,15 @@ const Label = styled.span`
   color: #8c8c8c;
 `;
 
+interface ClientSelectorProps {
+  clients?: InvoiceClient[];
+  selectedClient?: InvoiceClient | null;
+  onSelectClient?: (client: InvoiceClient | null) => void;
+  loading?: boolean;
+  disabled?: boolean;
+  label?: string;
+}
+
 const ClientSelector = ({
   clients = [],
   selectedClient,
@@ -142,15 +161,17 @@ const ClientSelector = ({
   loading = false,
   disabled = false,
   label = 'Cliente',
-}) => {
+}: ClientSelectorProps) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
-  const searchRef = useRef(null);
+  const searchRef = useRef<InputRef | null>(null);
 
   useEffect(() => {
-    if (visible && searchRef.current) {
-      setTimeout(() => searchRef.current.focus(), 120);
-    }
+    if (!visible) return undefined;
+    const timeoutId = window.setTimeout(() => {
+      searchRef.current?.focus();
+    }, 120);
+    return () => window.clearTimeout(timeoutId);
   }, [visible]);
 
   const filteredClients = search
@@ -158,7 +179,7 @@ const ClientSelector = ({
         [c.name, c.rnc, c.personalID, c.tel]
           .filter(Boolean)
           .some((field) =>
-            normalizeText(field).includes(normalizeText(search)),
+            normalizeText(String(field)).includes(normalizeText(search)),
           ),
       )
     : clients;
@@ -169,13 +190,13 @@ const ClientSelector = ({
 
   const closeDrawer = () => setVisible(false);
 
-  const handleSelect = (client) => {
+  const handleSelect = (client: InvoiceClient) => {
     onSelectClient?.(client);
     closeDrawer();
     setSearch('');
   };
 
-  const clearSelection = (e: any) => {
+  const clearSelection = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     onSelectClient?.(null);
   };
@@ -238,9 +259,9 @@ const ClientSelector = ({
           </Header>
 
           <ClientsContainer>
-            {filteredClients.map((client) => (
+            {filteredClients.map((client, index) => (
               <ClientCard
-                key={client.id}
+                key={client.id ?? index}
                 onClick={() => handleSelect(client)}
                 $isSelected={selectedClient?.id === client.id}
               >

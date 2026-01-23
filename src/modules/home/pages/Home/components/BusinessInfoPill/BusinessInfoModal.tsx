@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal } from 'antd';
 import styled from 'styled-components';
 
@@ -66,7 +65,9 @@ export const BusinessInfoModal = ({
       label: 'Dirección',
       value: typeof business?.address === 'string' ? business.address : null,
     },
-  ].filter((item) => Boolean(item.value));
+  ].filter(
+    (item): item is { label: string; value: string } => Boolean(item.value),
+  );
 
   return (
     <Modal

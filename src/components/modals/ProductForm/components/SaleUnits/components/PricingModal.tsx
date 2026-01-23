@@ -1,8 +1,15 @@
-// @ts-nocheck
 import { Modal, Descriptions, Button } from 'antd';
 import React from 'react';
 
-const PricingModal = ({ visible, unit, onClose }) => {
+import type { SaleUnitRecord } from './SaleUnit';
+
+type PricingModalProps = {
+  visible: boolean;
+  unit: SaleUnitRecord | null;
+  onClose: () => void;
+};
+
+const PricingModal = ({ visible, unit, onClose }: PricingModalProps) => {
   return (
     <Modal
       title={

@@ -1,8 +1,16 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
+
+interface PaginationProps {
+  firstPage: () => void;
+  prevPage: () => void;
+  nextPage: () => void;
+  lastPage: () => void;
+  pageCount: number;
+  currentPage: number;
+}
 
 export const Pagination = ({
   firstPage,
@@ -11,7 +19,7 @@ export const Pagination = ({
   lastPage,
   pageCount,
   currentPage,
-}) => {
+}: PaginationProps) => {
   // Validar que pageCount sea un número positivo
   const validPageCount = Math.max(1, pageCount);
 
@@ -74,7 +82,7 @@ const PageCount = styled.div`
   display: flex;
   justify-content: center;
 `;
-const PageSwitch = styled.button`
+const PageSwitch = styled.button<{ $responsive?: boolean }>`
   cursor: pointer;
   height: 2em;
   width: 2em;

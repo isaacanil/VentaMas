@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faHome,
   faCashRegister,
@@ -10,14 +9,20 @@ import {
   faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
 import styled from 'styled-components';
 
 import { HomeScreenContent } from './components/HomeScreenContent/HomeScreenContent';
 import { Sidebar } from './components/Menu/Nav';
 
+import type { ReactNode } from 'react';
+
+type SidebarItem = {
+  icon: ReactNode;
+  label: string;
+};
+
 export const HomeScreen = () => {
-  const items = [
+  const items: SidebarItem[] = [
     {
       icon: <FontAwesomeIcon icon={faHome} />,
       label: 'Inicio',

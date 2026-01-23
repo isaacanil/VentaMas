@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faEdit,
   faMapMarkerAlt,
@@ -12,15 +11,40 @@ import { DateTime } from 'luxon';
 import { useMemo } from 'react';
 import styled from 'styled-components';
 
-export const BusinessCard = ({ business, onEditBusiness }) => {
+import type { FC, KeyboardEvent, SyntheticEvent } from 'react';
+
+type BusinessCreatedAt = { seconds?: number } | string | Date;
+
+interface BusinessInfo {
+  id?: string;
+  name?: string;
+  address?: string;
+  tel?: string;
+  createdAt?: BusinessCreatedAt;
+}
+
+interface BusinessCardProps {
+  business: BusinessInfo;
+  onEditBusiness: (business: BusinessInfo) => void;
+}
+
+export const BusinessCard: FC<BusinessCardProps> = ({
+  business,
+  onEditBusiness,
+}) => {
   // Función para formatear el tiempo transcurrido desde la creación
-  const formatTimeAgo = (createdAt) => {
+  const formatTimeAgo = (createdAt?: BusinessCreatedAt) => {
     if (!createdAt) return 'Fecha no disponible';
 
     const now = DateTime.now();
-    const created = createdAt.seconds
-      ? DateTime.fromSeconds(createdAt.seconds)
-      : DateTime.fromISO(createdAt);
+    const created =
+      typeof createdAt === 'string'
+        ? DateTime.fromISO(createdAt)
+        : createdAt instanceof Date
+          ? DateTime.fromJSDate(createdAt)
+          : createdAt.seconds
+            ? DateTime.fromSeconds(createdAt.seconds)
+            : DateTime.invalid('invalid date');
 
     if (!created.isValid) return 'Fecha no válida';
 
@@ -75,11 +99,11 @@ export const BusinessCard = ({ business, onEditBusiness }) => {
     [business],
   );
 
-  const openModal = (e) => {
+  const openModal = (e: SyntheticEvent<HTMLElement>) => {
     e.stopPropagation();
     onEditBusiness(business);
   };
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       openModal(e);

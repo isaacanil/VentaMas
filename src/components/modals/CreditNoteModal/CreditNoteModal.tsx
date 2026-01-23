@@ -133,8 +133,12 @@ export const CreditNoteModal = () => {
     DateTime.now().startOf('month'),
     DateTime.now().endOf('month'),
   ]);
+  const normalizedClientId =
+    selectedClientId !== null && selectedClientId !== undefined
+      ? String(selectedClientId)
+      : null;
   const { invoices, loading: invoicesLoading } = useFbGetInvoicesByClient(
-    selectedClientId,
+    normalizedClientId,
     dateRange,
   );
 
@@ -170,34 +174,37 @@ export const CreditNoteModal = () => {
   );
 
   const creditedQuantities = useMemo(() => {
-    const map = {};
+    const map: QuantityByItem = {};
     otherCreditNotes.forEach((cn) => {
       (cn.items || []).forEach((it) => {
-        const qty = it.amountToBuy || 1;
-        map[it.id] = (map[it.id] || 0) + qty;
+        const itemId = String(it.id);
+        const qty = resolveQuantity(it.amountToBuy);
+        map[itemId] = (map[itemId] || 0) + qty;
       });
     });
     return map;
   }, [otherCreditNotes]);
 
   const existingItemQuantities = useMemo(() => {
-    const map = {};
+    const map: QuantityByItem = {};
     (creditNoteData?.items || []).forEach((it) => {
-      map[it.id] = it.amountToBuy || 1;
+      const itemId = String(it.id);
+      map[itemId] = resolveQuantity(it.amountToBuy);
     });
     return map;
   }, [creditNoteData]);
 
   const currentInvoice = invoices.find((inv) => inv.id === selectedInvoiceId);
 
-  const availableInvoiceItems = useMemo(() => {
+  const availableInvoiceItems = useMemo<InvoiceItemWithAvailability[]>(() => {
     if (!currentInvoice || !Array.isArray(currentInvoice.products)) return [];
 
     return (
       currentInvoice.products
         .map((item) => {
-          const totalQty = item.amountToBuy || 1; // Cantidad original en la factura
-          const creditedByOthers = creditedQuantities[item.id] || 0; // Ya acreditado por otras NC (excluye esta)
+          const itemId = String(item.id);
+          const totalQty = resolveQuantity(item.amountToBuy); // Cantidad original en la factura
+          const creditedByOthers = creditedQuantities[itemId] || 0; // Ya acreditado por otras NC (excluye esta)
 
           // La máxima cantidad que se puede acreditar para este item.
           // Es simplemente lo que queda en la factura después de restar otras NC.
@@ -210,7 +217,8 @@ export const CreditNoteModal = () => {
         .filter(
           (item) =>
             item.maxAvailableQty > 0 ||
-            (mode === 'edit' && (existingItemQuantities[item.id] || 0) > 0),
+            (mode === 'edit' &&
+              (existingItemQuantities[String(item.id)] || 0) > 0),
         )
     );
   }, [currentInvoice, creditedQuantities, existingItemQuantities, mode]);
@@ -225,12 +233,9 @@ export const CreditNoteModal = () => {
   const pageSize = 5;
 
   const ALLOWED_EDIT_MS = 2 * 24 * 60 * 60 * 1000; // 2 días
-  const createdAtDate = useMemo(() => {
-    if (!creditNoteData?.createdAt) return null;
-    return creditNoteData.createdAt.seconds
-      ? new Date(creditNoteData.createdAt.seconds * 1000)
-      : new Date(creditNoteData.createdAt);
-  }, [creditNoteData?.createdAt]);
+  const createdAtDate = useMemo(() => resolveDate(creditNoteData?.createdAt), [
+    creditNoteData?.createdAt,
+  ]);
   const hasApplications = creditNoteApplications?.length > 0; // Usar las aplicaciones de la nueva colección
   const [now, setNow] = useState(() => Date.now());
 
@@ -297,18 +302,18 @@ export const CreditNoteModal = () => {
     setSelectedInvoiceId(null);
   };
 
-  const handleClientChange = (client) => {
+  const handleClientChange = (client: InvoiceClient | null) => {
     setSelectedClientId(client?.id || null);
     resetSelection();
     setSelectedInvoiceId(null);
   };
 
-  const handleInvoiceChange = (invoice) => {
+  const handleInvoiceChange = (invoice: InvoiceData | null) => {
     setSelectedInvoiceId(invoice?.id || null);
     resetSelection();
   };
 
-  const handleDateRangeChange = (range) => {
+  const handleDateRangeChange = (range: DatePickerRangeValue) => {
     setDateRange(range);
   };
 
@@ -319,7 +324,7 @@ export const CreditNoteModal = () => {
         .filter((item) => selectedItems.includes(item.id))
         .map((item) => ({
           ...item,
-          amountToBuy: itemQuantities[item.id] || 1,
+          amountToBuy: itemQuantities[String(item.id)] || 1,
         }));
 
       // Validación final: verificar que ninguna cantidad exceda lo disponible
@@ -345,13 +350,13 @@ export const CreditNoteModal = () => {
         invoiceNcf: currentInvoice?.ncf || currentInvoice?.NCF,
         items: selectedProducts,
         totalAmount,
-      };
+      } satisfies Partial<CreditNoteRecord>;
 
-      let savedCreditNote;
+      let savedCreditNote: CreditNoteRecord | null = null;
       if (effectiveIsEdit) {
-        await fbUpdateCreditNote(user, creditNoteData.id, payload);
+        await fbUpdateCreditNote(user, creditNoteData?.id ?? '', payload);
         message.success('Nota de crédito actualizada exitosamente');
-        savedCreditNote = { ...creditNoteData, ...payload };
+        savedCreditNote = { ...(creditNoteData ?? {}), ...payload };
       } else {
         savedCreditNote = await fbAddCreditNote(user, payload);
         message.success('Nota de crédito creada exitosamente');
@@ -374,7 +379,7 @@ export const CreditNoteModal = () => {
   const totalAmount = selectedItems.reduce((sum, id) => {
     const item = availableInvoiceItems.find((it) => it.id === id);
     if (!item) return sum;
-    const qty = itemQuantities[id] || 1;
+    const qty = itemQuantities[String(id)] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
     return sum + getTotalPrice(itemCopy, taxReceiptEnabled);
   }, 0);
@@ -383,7 +388,7 @@ export const CreditNoteModal = () => {
   const totalItbis = selectedItems.reduce((sum, id) => {
     const item = availableInvoiceItems.find((it) => it.id === id);
     if (!item) return sum;
-    const qty = itemQuantities[id] || 1;
+    const qty = itemQuantities[String(id)] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
     return sum + getTax(itemCopy, taxReceiptEnabled);
   }, 0);
@@ -392,20 +397,26 @@ export const CreditNoteModal = () => {
   const subtotal = totalAmount - totalItbis;
 
 
-  const handleNavigateNote = (note, e) => {
+  const handleNavigateNote = (
+    note: CreditNoteRecord | null | undefined,
+    e?: React.MouseEvent<HTMLElement>,
+  ) => {
     if (e) e.stopPropagation();
     if (!note) return;
     dispatch(openCreditNoteModal({ mode: 'view', creditNoteData: note }));
   };
 
-  const handleQuantityChange = (itemId, value) => {
+  const handleQuantityChange = (
+    itemId: string | undefined,
+    value: number | null,
+  ) => {
     if (!value || value < 1) return;
 
     // Verificar que no exceda la cantidad máxima disponible
     const item = availableInvoiceItems.find((it) => it.id === itemId);
     if (item && value > item.maxAvailableQty) {
-      const originalQty = item.amountToBuy || 1;
-      const creditedByOthers = creditedQuantities[itemId] || 0;
+      const originalQty = resolveQuantity(item.amountToBuy);
+      const creditedByOthers = creditedQuantities[String(itemId)] || 0;
 
       message.warning({
         content: (
@@ -426,7 +437,7 @@ export const CreditNoteModal = () => {
       return;
     }
 
-    setItemQuantities((prev) => ({ ...prev, [itemId]: value }));
+    setItemQuantities((prev) => ({ ...prev, [String(itemId)]: value }));
   };
 
   const columns = useCreditNoteColumns({

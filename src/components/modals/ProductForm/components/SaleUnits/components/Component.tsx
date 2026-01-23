@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faPlus,
   faPencilAlt,
@@ -14,6 +13,27 @@ import {
 import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import styled from 'styled-components';
+
+type SaleUnitPricing = {
+  cost: number;
+  price: number;
+  listPrice: number;
+  avgPrice: number;
+  minPrice: number;
+  tax: string;
+};
+
+type SaleUnitRecord = {
+  id: string;
+  unitName: string;
+  quantity: number;
+  pricing: SaleUnitPricing;
+  active: boolean;
+};
+
+type CardProps = {
+  $active: boolean;
+};
 
 // Styled Components Definitions
 const Container = styled.div`
@@ -46,12 +66,12 @@ const Grid = styled.div`
   }
 `;
 
-const Card = styled.div`
+const Card = styled.div<CardProps>`
   overflow: hidden;
-  background-color: ${(props: any) => (props.$active ? '#f0f0f0' : '#d0d0d0')};
+  background-color: ${(props) => (props.$active ? '#f0f0f0' : '#d0d0d0')};
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  opacity: ${(props: any) => (props.$active ? '1' : '0.5')};
+  opacity: ${(props) => (props.$active ? '1' : '0.5')};
 `;
 
 const CardContentWrapper = styled.div`
@@ -80,7 +100,7 @@ const FullWidthButton = styled(AntButton)`
 `;
 
 export default function Component() {
-  const [saleUnits, setSaleUnits] = useState([
+  const [saleUnits, setSaleUnits] = useState<SaleUnitRecord[]>([
     {
       id: nanoid(),
       unitName: 'Caja',
@@ -111,13 +131,13 @@ export default function Component() {
     },
   ]);
 
-  const [editingUnit, setEditingUnit] = useState(null);
+  const [editingUnit, setEditingUnit] = useState<SaleUnitRecord | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const addSaleUnit = (newUnit) => {
+  const addSaleUnit = (newUnit: Omit<SaleUnitRecord, 'id' | 'active'>) => {
     setSaleUnits([...saleUnits, { ...newUnit, id: nanoid(), active: true }]);
   };
 
-  const updateSaleUnit = (updatedUnit) => {
+  const updateSaleUnit = (updatedUnit: SaleUnitRecord) => {
     setSaleUnits(
       saleUnits.map((unit) =>
         unit.id === updatedUnit.id ? updatedUnit : unit,
@@ -125,11 +145,11 @@ export default function Component() {
     );
   };
 
-  const deleteSaleUnit = (id) => {
+  const deleteSaleUnit = (id: string) => {
     setSaleUnits(saleUnits.filter((unit) => unit.id !== id));
   };
 
-  const toggleUnitActive = (id) => {
+  const toggleUnitActive = (id: string) => {
     setSaleUnits(
       saleUnits.map((unit) =>
         unit.id === id ? { ...unit, active: !unit.active } : unit,
@@ -137,19 +157,21 @@ export default function Component() {
     );
   };
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newUnit = {
-      unitName: formData.get('unitName'),
-      quantity: Number(formData.get('quantity')),
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const unitNameValue = formData.get('unitName');
+    const taxValue = formData.get('tax');
+    const newUnit: Omit<SaleUnitRecord, 'id' | 'active'> = {
+      unitName: typeof unitNameValue === 'string' ? unitNameValue : '',
+      quantity: Number(formData.get('quantity') ?? 0),
       pricing: {
-        cost: Number(formData.get('cost')),
-        price: Number(formData.get('price')),
-        listPrice: Number(formData.get('listPrice')),
-        avgPrice: Number(formData.get('avgPrice')),
-        minPrice: Number(formData.get('minPrice')),
-        tax: formData.get('tax'),
+        cost: Number(formData.get('cost') ?? 0),
+        price: Number(formData.get('price') ?? 0),
+        listPrice: Number(formData.get('listPrice') ?? 0),
+        avgPrice: Number(formData.get('avgPrice') ?? 0),
+        minPrice: Number(formData.get('minPrice') ?? 0),
+        tax: typeof taxValue === 'string' ? taxValue : '',
       },
     };
 
@@ -165,7 +187,7 @@ export default function Component() {
 
     setIsDialogOpen(false);
     setEditingUnit(null);
-    e.currentTarget.reset();
+    event.currentTarget.reset();
   };
 
   return (

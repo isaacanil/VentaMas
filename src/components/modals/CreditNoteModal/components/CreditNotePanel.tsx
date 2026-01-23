@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   EyeOutlined,
   DownOutlined,
@@ -13,9 +12,31 @@ import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
 
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { TimestampLike } from '@/utils/date/types';
+
+type CreditNoteViewRecord = CreditNoteRecord & {
+  date?: TimestampLike;
+  currency?: string;
+};
+
+interface CreditNotePanelProps {
+  creditNote: CreditNoteViewRecord;
+  onNavigateNote?: (
+    note: CreditNoteViewRecord,
+    e?: React.MouseEvent<HTMLElement>,
+  ) => void;
+  isExpanded?: boolean;
+  isMobile?: boolean;
+}
 
 const CreditNotePanel = memo(
-  ({ creditNote, onNavigateNote, isExpanded = false, isMobile = false }) => {
+  ({
+    creditNote,
+    onNavigateNote,
+    isExpanded = false,
+    isMobile = false,
+  }: CreditNotePanelProps) => {
     const [expanded, setExpanded] = useState(isExpanded);
 
     const creditNoteTotal = (creditNote.items || []).reduce(
@@ -29,12 +50,14 @@ const CreditNotePanel = memo(
       setExpanded(!expanded);
     };
 
-    const handleViewClick = (e: any) => {
+    const handleViewClick = (e: React.MouseEvent<HTMLElement>) => {
       e.stopPropagation();
       onNavigateNote?.(creditNote, e);
     };
 
-    const formattedTotal = `${creditNote.currency && !['DOP', '$'].includes(creditNote.currency) ? `${creditNote.currency} ` : ''}${formatPrice(creditNoteTotal)}`;
+    const currency =
+      typeof creditNote.currency === 'string' ? creditNote.currency : undefined;
+    const formattedTotal = `${currency && !['DOP', '$'].includes(currency) ? `${currency} ` : ''}${formatPrice(creditNoteTotal)}`;
 
     return (
       <PanelContainer isMobile={isMobile} isExpanded={expanded}>
@@ -79,8 +102,8 @@ const CreditNotePanel = memo(
               </ItemsListHeader>
             )}
             <ItemsList>
-              {(creditNote.items || []).map((item) => (
-                <ItemRow key={item.id} isMobile={isMobile}>
+              {(creditNote.items || []).map((item, index) => (
+                <ItemRow key={item.id ?? index} isMobile={isMobile}>
                   <ItemColumn flex={isMobile ? 1 : 3}>
                     {isMobile && <ColumnLabel>Descripción:</ColumnLabel>}
                     <span>{item.name}</span>
@@ -113,7 +136,31 @@ const CreditNotePanel = memo(
 
 CreditNotePanel.displayName = 'CreditNotePanel';
 
-const PanelContainer = styled.div`
+interface PanelContainerProps {
+  isExpanded?: boolean;
+}
+
+interface PanelHeaderProps {
+  isMobile?: boolean;
+  isExpanded?: boolean;
+}
+
+interface HeaderColumnProps {
+  flex?: number;
+  align?: 'left' | 'right' | 'center';
+}
+
+interface ItemRowProps {
+  isMobile?: boolean;
+}
+
+interface ItemColumnProps {
+  flex?: number;
+  align?: 'left' | 'right' | 'center';
+  isMobile?: boolean;
+}
+
+const PanelContainer = styled.div<PanelContainerProps>`
   border: 1px solid ${(props) => props.theme?.border?.color || '#e8e8e8'};
   border-radius: 8px;
   background-color: ${(props) => props.theme?.background?.primary || '#fff'};
@@ -121,10 +168,10 @@ const PanelContainer = styled.div`
   transition: all 0.2s ease;
   box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 
-  ${(props) =>
-    props.isExpanded &&
+  ${({ isExpanded, theme }) =>
+    isExpanded &&
     css`
-      border-color: ${props.theme?.primary?.color || '#1890ff'};
+      border-color: ${theme?.primary?.color || '#1890ff'};
       box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
     `}
 
@@ -133,11 +180,11 @@ const PanelContainer = styled.div`
   }
 `;
 
-const PanelHeader = styled.div`
+const PanelHeader = styled.div<PanelHeaderProps>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${(props: any) => (props.isMobile ? '8px 12px' : '12px 16px')};
+  padding: ${({ isMobile }) => (isMobile ? '8px 12px' : '12px 16px')};
   cursor: pointer;
   transition: background-color 0.2s ease;
 
@@ -218,9 +265,9 @@ const ItemsListHeader = styled.div`
   border-top: 1px solid ${(props) => props.theme?.border?.color || '#f0f0f0'};
 `;
 
-const HeaderColumn = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'left'};
+const HeaderColumn = styled.div<HeaderColumnProps>`
+  flex: ${({ flex }) => flex || 1};
+  text-align: ${({ align }) => align || 'left'};
 `;
 
 const ItemsList = styled.div`
@@ -229,7 +276,7 @@ const ItemsList = styled.div`
   padding: 0 20px;
 `;
 
-const ItemRow = styled.div`
+const ItemRow = styled.div<ItemRowProps>`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -240,8 +287,8 @@ const ItemRow = styled.div`
     border-bottom: none;
   }
 
-  ${(props) =>
-    props.isMobile &&
+  ${({ isMobile }) =>
+    isMobile &&
     css`
       flex-direction: column;
       gap: 8px;
@@ -250,14 +297,14 @@ const ItemRow = styled.div`
     `}
 `;
 
-const ItemColumn = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'left'};
+const ItemColumn = styled.div<ItemColumnProps>`
+  flex: ${({ flex }) => flex || 1};
+  text-align: ${({ align }) => align || 'left'};
   font-size: 0.85rem;
   color: #434343;
 
-  ${(props) =>
-    props.isMobile &&
+  ${({ isMobile }) =>
+    isMobile &&
     css`
       display: flex;
       justify-content: space-between;

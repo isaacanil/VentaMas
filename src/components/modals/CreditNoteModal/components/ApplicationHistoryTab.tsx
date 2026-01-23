@@ -1,14 +1,42 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { CreditNoteApplicationRecord, CreditNoteRecord } from '@/types/creditNote';
+import type { NumberInput } from '@/utils/number/number';
+import type { TimestampLike } from '@/utils/date/types';
+
+type FormatPrice = (value: NumberInput) => string;
+
+interface ApplicationHistoryTabProps {
+  creditNoteApplications: CreditNoteApplicationRecord[];
+  applicationsLoading: boolean;
+  formatPrice: FormatPrice;
+  creditNoteData: CreditNoteRecord | null;
+}
+
+const formatAppliedAt = (value: TimestampLike | null | undefined): string => {
+  if (!value) return '';
+  if (typeof value === 'object' && 'seconds' in value && typeof value.seconds === 'number') {
+    return DateTime.fromSeconds(value.seconds).toFormat('dd/MM/yyyy HH:mm');
+  }
+  if (typeof value === 'object' && typeof value.toMillis === 'function') {
+    return DateTime.fromMillis(value.toMillis()).toFormat('dd/MM/yyyy HH:mm');
+  }
+  if (typeof value === 'object' && typeof value.toDate === 'function') {
+    return DateTime.fromJSDate(value.toDate()).toFormat('dd/MM/yyyy HH:mm');
+  }
+  return DateTime.fromJSDate(new Date(value as string | number | Date)).toFormat(
+    'dd/MM/yyyy HH:mm',
+  );
+};
 
 export const ApplicationHistoryTab = ({
   creditNoteApplications,
   applicationsLoading,
   formatPrice,
   creditNoteData,
-}) => (
+}: ApplicationHistoryTabProps) => (
   <ApplicationHistorySection>
     <ApplicationHistoryTitle>Historial de Aplicaciones</ApplicationHistoryTitle>
     {applicationsLoading ? (
@@ -17,19 +45,13 @@ export const ApplicationHistoryTab = ({
       <>
         <ApplicationHistoryList>
           {creditNoteApplications.map((app, index) => (
-            <ApplicationHistoryItem key={app.id || index}>
+            <ApplicationHistoryItem key={app.id ?? index}>
               <ApplicationHistoryHeader>
                 <ApplicationHistoryDate>
-                  {app.appliedAt?.seconds
-                    ? DateTime.fromSeconds(app.appliedAt.seconds).toFormat(
-                        'dd/MM/yyyy HH:mm',
-                      )
-                    : DateTime.fromJSDate(new Date(app.appliedAt)).toFormat(
-                        'dd/MM/yyyy HH:mm',
-                      )}
+                  {formatAppliedAt(app.appliedAt)}
                 </ApplicationHistoryDate>
                 <ApplicationHistoryAmount>
-                  {formatPrice(app.amountApplied)}
+                  {formatPrice(app.amountApplied ?? 0)}
                 </ApplicationHistoryAmount>
               </ApplicationHistoryHeader>
               <ApplicationHistoryDetails>

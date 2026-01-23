@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CalculatorOutlined, DisconnectOutlined } from '@/constants/icons/antd';
 import { Modal, Form, Button, Space, Typography, notification } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -6,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
+import type { BarcodeSettings } from '@/firebase/barcode/types';
 import { generateNextItemReference } from '@/firebase/barcode/barcodeGeneration';
 import { fbUpdateProduct } from '@/firebase/products/fbUpdateProduct';
 import useBarcodeSettings from '@/hooks/barcode/useBarcodeSettings';
@@ -26,11 +26,51 @@ import {
   extractCompanyPrefix,
   extractItemReference,
 } from '@/utils/barcode/barcode';
+import type { BarcodeAnalysis } from '@/utils/barcode/barcode';
+import type { ProductRecord } from '@/types/products';
+import type { UserIdentity } from '@/types/users';
 
 import ConfigurationTab from './components/ConfigurationTab';
 import GenerateTab from './components/GenerateTab';
 
 const { Text } = Typography;
+
+type Gs1StandardKey =
+  | 'gs1rd'
+  | 'gs1us'
+  | 'gs1mx'
+  | 'gs1co'
+  | 'gs1ar'
+  | 'gs1cl'
+  | 'gs1pe';
+
+type ManualValues = {
+  companyPrefix: string;
+  itemReference: string;
+};
+
+type InternalManualValues = {
+  itemReference: string;
+};
+
+type ProductListenerError = {
+  type: 'not_found' | 'listener_error';
+  message: string;
+  details?: string;
+};
+
+type BarcodeGeneratorProps = {
+  visible: boolean;
+  onClose: () => void;
+  onGenerate?: (code: string | null) => void;
+  currentBarcode?: string | null;
+};
+
+type GeneratorFn = (companyPrefix: string, itemReference: string) => string;
+type InternalGeneratorFn = (
+  categoryPrefix: string,
+  itemReference: string,
+) => string;
 
 /**
  * Genera un código de barras GTIN-13 siguiendo el estándar GS1 de República Dominicana
@@ -40,41 +80,50 @@ export const BarcodeGenerator = ({
   onClose,
   onGenerate,
   currentBarcode,
-}) => {
-  const user = useSelector(selectUser);
-  const { product, status } = useSelector(selectUpdateProductData);
+}: BarcodeGeneratorProps) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const { product, status } = useSelector(selectUpdateProductData) as {
+    product: ProductRecord | null;
+    status: string | boolean;
+  };
   const [form] = Form.useForm();
   const [generatedCode, setGeneratedCode] = useState('');
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [autoMode, setAutoMode] = useState(true);
   const [loadingGenerate, setLoadingGenerate] = useState(false);
-  const [selectedStandard, setSelectedStandard] = useState('gs1rd');
+  const [selectedStandard, setSelectedStandard] =
+    useState<Gs1StandardKey>('gs1rd');
   // Unificar en un solo flujo: usar o no Company Prefix
   const [useCompanyPrefix, setUseCompanyPrefix] = useState(false);
 
   // Estados para el modo interno
-  const [internalManualValues, setInternalManualValues] = useState({
-    itemReference: '',
-  });
+  const [internalManualValues, setInternalManualValues] =
+    useState<InternalManualValues>({
+      itemReference: '',
+    });
 
   // Estados para validación en tiempo real
-  const [companyPrefixValid, setCompanyPrefixValid] = useState(null);
-  const [itemReferenceValid, setItemReferenceValid] = useState(null);
+  const [companyPrefixValid, setCompanyPrefixValid] =
+    useState<boolean | null>(null);
+  const [itemReferenceValid, setItemReferenceValid] =
+    useState<boolean | null>(null);
   const [livePreview, setLivePreview] = useState('');
-  const [manualValues, setManualValues] = useState({
+  const [manualValues, setManualValues] = useState<ManualValues>({
     companyPrefix: '',
     itemReference: '',
   });
 
   // Estados para manejar cambios manuales vs automáticos
   const [hasManualChanges, setHasManualChanges] = useState(false);
-  const [lastDatabaseBarcode, setLastDatabaseBarcode] =
-    useState(currentBarcode);
+  const [lastDatabaseBarcode, setLastDatabaseBarcode] = useState<string | null>(
+    currentBarcode ?? null,
+  );
   const [currentDisplayBarcode, setCurrentDisplayBarcode] =
-    useState(currentBarcode);
+    useState<string | null>(currentBarcode ?? null);
 
   // Análisis del código actual
-  const [barcodeAnalysis, setBarcodeAnalysis] = useState(null);
+  const [barcodeAnalysis, setBarcodeAnalysis] =
+    useState<BarcodeAnalysis | null>(null);
 
   // Hook para listener en tiempo real del producto
   const {

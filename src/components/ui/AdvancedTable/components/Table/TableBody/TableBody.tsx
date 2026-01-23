@@ -1,17 +1,28 @@
-// @ts-nocheck
-import { Fragment, useState } from 'react';
+import {
+  Fragment,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import styled from 'styled-components';
 
 import Loader from '@/components/common/Loader/Loader';
 import { Row } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { CellRenderer } from '@/components/ui/AdvancedTable/components/CellRenderer/CellRenderer';
 import { CenteredText } from '@/components/ui/CentredText';
+import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const Body = styled.div`
   position: relative;
 `;
 
-const renderCell = (col, value, row) => {
+const renderCell = <RowData extends TableRow>(
+  col: AdvancedTableColumn<RowData>,
+  value: unknown,
+  row: RowData,
+): ReactNode => {
   if (col.cell) {
     return col.cell({ value, row });
   }
@@ -25,7 +36,24 @@ const renderCell = (col, value, row) => {
   );
 };
 
-export const TableBody = ({
+interface TableBodyProps<RowData extends TableRow> {
+  loading?: boolean;
+  shouldGroup?: boolean;
+  groupedData: Record<string, RowData[]> | RowData[];
+  currentData: RowData[];
+  columnOrder: AdvancedTableColumn<RowData>[];
+  onRowClick?: (row: RowData) => void;
+  emptyText?: ReactNode;
+  isWideScreen?: boolean;
+  isWideLayout?: boolean;
+  expandedRowRender?: (row: RowData) => ReactNode;
+  rowExpandable?: (row: RowData) => boolean;
+  getRowId?: (row: RowData, index?: number) => string | number;
+  rowSize?: 'small' | 'medium' | 'large';
+  rowBorder?: boolean | string;
+}
+
+export const TableBody = <RowData extends TableRow>({
   loading = false,
   shouldGroup,
   groupedData,
@@ -40,72 +68,82 @@ export const TableBody = ({
   getRowId,
   rowSize = 'medium',
   rowBorder,
-}) => {
+}: TableBodyProps<RowData>) => {
   const activeColumns = columnOrder.filter((col) => col.status === 'active');
 
-  const handleCellClick = (e, col, row) => {
+  const handleCellClick = (
+    _event: MouseEvent<HTMLDivElement>,
+    col: AdvancedTableColumn<RowData>,
+    row: RowData,
+  ) => {
     if (onRowClick && col?.clickable !== false) onRowClick(row);
   };
 
   // Estado local de filas expandidas
-  const [expanded, setExpanded] = useState({});
-  const toggleRow = (row) => {
-    const id = getRowId ? getRowId(row) : (row?.id ?? row?.key);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const toggleRow = (row: RowData) => {
+    const rowRecord = row as Record<string, unknown>;
+    const id = getRowId ? getRowId(row) : (rowRecord?.id ?? rowRecord?.key);
     if (id == null) return;
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+    const key = String(id);
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const containerStyle =
     typeof rowBorder === 'string'
-      ? { ['--row-border-color']: rowBorder }
+      ? ({ ['--row-border-color']: rowBorder } as CSSProperties)
       : undefined;
   const tableContent = (
     <Container data-border={rowBorder ? 'on' : 'off'} style={containerStyle}>
       {shouldGroup
-        ? Object.entries(groupedData).map(([groupKey, groupItems]) => (
-          <Fragment key={groupKey}>
-            <GroupHeader>{groupKey}</GroupHeader>
-            {groupItems.map((row, rowIndex) => (
-              <Row
-                key={rowIndex}
-                $columns={activeColumns}
-                data-border={rowBorder ? 'on' : undefined}
-              >
-                {activeColumns.map((col, colIndex) => (
-                  <BodyCell
-                    key={colIndex}
-                    $align={col.align}
-                    $fixed={col.fixed}
-                    $clickable={col?.clickable !== false}
-                    data-size={rowSize}
-                    data-row-border={rowBorder ? 'on' : 'off'}
-                    onClick={(e) => handleCellClick(e, col, row)}
+        ? Object.entries(groupedData as Record<string, RowData[]>).map(
+            ([groupKey, groupItems]) => (
+              <Fragment key={groupKey}>
+                <GroupHeader>{groupKey}</GroupHeader>
+                {groupItems.map((row, rowIndex) => (
+                  <Row
+                    key={String(rowIndex)}
+                    $columns={activeColumns}
+                    data-border={rowBorder ? 'on' : undefined}
                   >
-                    {renderCell(col, row[col.accessor], row)}
-                  </BodyCell>
+                    {activeColumns.map((col, colIndex) => (
+                      <BodyCell
+                        key={colIndex}
+                        $align={col.align}
+                        $fixed={col.fixed}
+                        $clickable={col?.clickable !== false}
+                        data-size={rowSize}
+                        data-row-border={rowBorder ? 'on' : 'off'}
+                        onClick={(e) => handleCellClick(e, col, row)}
+                      >
+                        {renderCell(col, row[col.accessor], row)}
+                      </BodyCell>
+                    ))}
+                  </Row>
                 ))}
-              </Row>
-            ))}
-          </Fragment>
-        ))
+              </Fragment>
+            ),
+          )
         : currentData.map((row, rowIndex) => {
+          const rowRecord = row as Record<string, unknown>;
           const rowId = getRowId
             ? getRowId(row, rowIndex)
-            : (row?.id ?? row?.key ?? rowIndex);
+            : (rowRecord?.id ?? rowRecord?.key ?? rowIndex);
+          const rowKey = String(rowId);
           const canExpand =
             !!expandedRowRender &&
             (rowExpandable ? rowExpandable(row) : true);
           const rowWithExpanderData = canExpand
-            ? {
+            ? ({
               ...row,
               _expander: {
-                expanded: !!expanded[rowId],
+                expanded: !!expanded[rowKey],
                 toggle: () => toggleRow(row),
               },
-            }
+            } as RowData)
             : row;
           return (
-            <Fragment key={rowId}>
+            <Fragment key={rowKey}>
               <Row
                 $columns={activeColumns}
                 data-border={rowBorder ? 'on' : undefined}
@@ -128,7 +166,7 @@ export const TableBody = ({
                   </BodyCell>
                 ))}
               </Row>
-              {canExpand && expanded[rowId] && (
+              {canExpand && expanded[rowKey] && (
                 <ExpandedRow>{expandedRowRender(row)}</ExpandedRow>
               )}
             </Fragment>

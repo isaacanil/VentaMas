@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Modal,
   Form,
@@ -24,16 +23,51 @@ import { fbSignUp } from '@/firebase/Auth/fbAuthV2/fbSignUp';
 import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
+import type { UserRoleLike, UserRoleOption } from '@/types/users';
 
 import DynamicPermissionsManager from './DynamicPermissionsManager/DynamicPermissionsManager';
 import RoleDowngradeConfirmationModal from './RoleDowngradeConfirmationModal/RoleDowngradeConfirmationModal';
 import { ChangeUserPasswordModal } from './UsersList/ChangeUserPasswordModal';
 
+type CurrentUser = ReturnType<typeof selectUser>;
+type ModalRootState = Parameters<typeof SelectSignUpUserModal>[0];
+
+type UserFormValues = {
+  id?: string;
+  uid?: string;
+  name?: string;
+  username?: string;
+  realName?: string;
+  role?: UserRoleLike;
+  active?: boolean;
+  email?: string;
+  password?: string;
+  businessID?: string | null;
+  businessId?: string | null;
+  [key: string]: unknown;
+};
+
+type SignUpModalState = {
+  isOpen: boolean;
+  data: UserFormValues | null;
+  businessID: string | null;
+};
+
+type DialogKey = 'password' | 'permissions' | 'downgrade';
+
+type AbilityLike = {
+  can: (action: string, subject: string) => boolean;
+};
+
 export const SignUpModal = () => {
-  const user = useSelector(selectUser);
-  const signUpModal = useSelector(SelectSignUpUserModal);
+  const user = useSelector<Parameters<typeof selectUser>[0], CurrentUser>(
+    selectUser,
+  );
+  const signUpModal = useSelector<ModalRootState, SignUpModalState>(
+    SelectSignUpUserModal,
+  );
   const dispatch = useDispatch();
-  const { abilities } = useUserAccess();
+  const { abilities } = useUserAccess() as { abilities: AbilityLike };
 
   if (!abilities) {
     return null;
@@ -63,6 +97,16 @@ export const SignUpModal = () => {
   );
 };
 
+interface SignUpModalInnerProps {
+  user: CurrentUser;
+  signUpModal: SignUpModalState;
+  dispatch: ReturnType<typeof useDispatch>;
+  assignableRoles: UserRoleOption[];
+  canCreateUsers: boolean;
+  canUpdateUsers: boolean;
+  canManagePermissions: boolean;
+}
+
 const SignUpModalInner = ({
   user,
   signUpModal,
@@ -71,14 +115,16 @@ const SignUpModalInner = ({
   canCreateUsers,
   canUpdateUsers,
   canManagePermissions,
-}) => {
-  const [form] = Form.useForm();
+}: SignUpModalInnerProps) => {
+  const [form] = Form.useForm<UserFormValues>();
   const { isOpen, data, businessID } = signUpModal;
   const isEditMode = Boolean(data);
 
   const [loading, setLoading] = useState(false);
-  const [fbError, setFbError] = useState(null);
-  const [pendingValues, setPendingValues] = useState(null);
+  const [fbError, setFbError] = useState<string | null>(null);
+  const [pendingValues, setPendingValues] = useState<UserFormValues | null>(
+    null,
+  );
   const [dialogs, setDialogs] = useState({
     password: false,
     permissions: false,
@@ -142,7 +188,7 @@ const SignUpModalInner = ({
     dispatch(toggleSignUpUser({ isOpen: false }));
   }, [dispatch]);
 
-  const setDialogState = useCallback((key, value) => {
+  const setDialogState = useCallback((key: DialogKey, value: boolean) => {
     setDialogs((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -172,7 +218,7 @@ const SignUpModalInner = ({
   );
 
   const mutateUser = useCallback(
-    async (values) => {
+    async (values: UserFormValues) => {
       setLoading(true);
       setFbError(null);
 
@@ -181,7 +227,7 @@ const SignUpModalInner = ({
           ? values.name.trim().toLowerCase()
           : values?.name;
 
-      const payload = {
+      const payload: UserFormValues = {
         ...(isEditMode ? data : {}),
         ...values,
         name: normalizedName,
@@ -200,8 +246,10 @@ const SignUpModalInner = ({
         handleClose();
       } catch (error) {
         console.error(error);
-        setFbError(error?.message ?? 'Error procesando la operación');
-        message.error(error?.message ?? 'Error procesando la operación');
+        const errorMessage =
+          error instanceof Error ? error.message : 'Error procesando la operación';
+        setFbError(errorMessage);
+        message.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -210,7 +258,7 @@ const SignUpModalInner = ({
   );
 
   const handleSubmit = useCallback(
-    (values) => {
+    (values: UserFormValues) => {
       if (abilityError) {
         message.error(abilityError);
         return;
@@ -305,7 +353,7 @@ const SignUpModalInner = ({
             <Form.Item
               label="Nombre de Usuario"
               name="name"
-              normalize={(value) =>
+              normalize={(value: unknown) =>
                 typeof value === 'string' ? value.trim().toLowerCase() : value
               }
               rules={[

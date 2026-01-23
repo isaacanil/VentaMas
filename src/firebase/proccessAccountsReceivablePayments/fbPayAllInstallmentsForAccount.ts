@@ -1,11 +1,12 @@
-// @ts-nocheck
 import { doc, runTransaction, arrayUnion } from 'firebase/firestore';
 
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
+import type { UserWithBusiness } from '@/types/users';
 
 import {
+  type PaymentDetails,
   getInstallmentsByArId,
   createPaymentRecord,
   processInstallmentPayment,
@@ -21,10 +22,15 @@ import {
 } from './arPaymentUtils';
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 
+type AllInstallmentsPaymentDetails = PaymentDetails & { arId: string };
+
 export const fbPayAllInstallmentsForAccount = async ({
   user,
   paymentDetails,
-}) => {
+}: {
+  user: UserWithBusiness;
+  paymentDetails: AllInstallmentsPaymentDetails;
+}): Promise<ReturnType<typeof createFullPaymentReceipt>> => {
   const {
     totalPaid,
     arId,
@@ -41,13 +47,13 @@ export const fbPayAllInstallmentsForAccount = async ({
       arId,
     );
 
-    if (!accountValidation.isValid) {
+    if (!accountValidation.isValid || !accountValidation.account) {
       console.warn('⚠️ Account validation failed:', accountValidation.error);
       throw new Error(`Account validation failed: ${accountValidation.error}`);
     }
 
     const accountData = accountValidation.account;
-    const currentBalance = accountValidation.balance;
+    const currentBalance = accountValidation.balance ?? 0;
 
     console.log('✅ Account validation passed:', {
       arId,
@@ -118,7 +124,10 @@ export const fbPayAllInstallmentsForAccount = async ({
         openCashCountId = cashCount.id;
       }
     } catch (error) {
-      if (error.message.startsWith('No se puede procesar el pago')) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('No se puede procesar el pago')
+      ) {
         throw error;
       }
       console.warn('Error checking open cash count:', error);
@@ -153,10 +162,10 @@ export const fbPayAllInstallmentsForAccount = async ({
         });
       }
 
-      const paidInstallments = [];
+      const paidInstallments: string[] = [];
       let initialArBalance = 0;
 
-      for (let installment of accountInstallments) {
+      for (const installment of accountInstallments) {
         initialArBalance += installment.installmentBalance;
 
         if (remainingAmount <= THRESHOLD) break;
@@ -200,14 +209,12 @@ export const fbPayAllInstallmentsForAccount = async ({
       });
 
       // Obtener la factura y actualizarla
-      const invoice = await fbGetInvoice(
-        user.businessID,
-        accountData.invoiceId,
-      );
+      const invoiceId = accountData.invoiceId ?? '';
+      const invoice = await fbGetInvoice(user.businessID, invoiceId);
       if (invoice && invoice.data) {
         updateInvoiceTotals(transaction, {
           businessId: user.businessID,
-          invoiceId: accountData.invoiceId,
+          invoiceId,
           amountPaid: totalPaid,
           invoice,
           paymentMethods,

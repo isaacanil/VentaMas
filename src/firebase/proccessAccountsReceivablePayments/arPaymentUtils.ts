@@ -21,11 +21,12 @@ import type { UserWithBusiness } from '@/types/users';
 
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 
-type FirestoreWriter = WriteBatch | Transaction;
+export type FirestoreWriter = WriteBatch | Transaction;
 type FirestoreData = Record<string, unknown>;
-type FirestoreDoc<T extends FirestoreData = FirestoreData> = T & { id: string };
+export type FirestoreDoc<T extends FirestoreData = FirestoreData> = T & { id: string };
+export type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
 
-interface AccountsReceivableInstallment extends FirestoreData {
+export interface AccountsReceivableInstallment extends FirestoreData {
   id: string;
   installmentBalance: number;
   installmentNumber?: number | string;
@@ -33,7 +34,7 @@ interface AccountsReceivableInstallment extends FirestoreData {
   isActive?: boolean;
 }
 
-interface AccountsReceivableAccount extends FirestoreData {
+export interface AccountsReceivableAccount extends FirestoreData {
   id?: string;
   numberId?: string | number;
   invoiceId?: string | null;
@@ -45,9 +46,9 @@ interface AccountsReceivableAccount extends FirestoreData {
   isClosed?: boolean;
 }
 
-type CreditNotePayment = InvoiceCreditNote & { amountToUse?: number };
+export type CreditNotePayment = InvoiceCreditNote & { amountToUse?: number };
 
-interface PaymentDetails {
+export interface PaymentDetails {
   totalPaid: number;
   paymentMethods: InvoicePaymentMethod[];
   comments?: string;
@@ -62,7 +63,7 @@ interface PaymentDetails {
   creditNotePayment?: CreditNotePayment[];
 }
 
-type InvoiceDataWithTotals = InvoiceData & {
+export type InvoiceDataWithTotals = InvoiceData & {
   totalAmount?: number;
   totalPaid?: number;
   accumulatedPaid?: number;
@@ -70,7 +71,7 @@ type InvoiceDataWithTotals = InvoiceData & {
   paymentHistory?: Array<Record<string, unknown>>;
 };
 
-type InvoiceLike = (InvoiceFirestoreDoc & { data?: InvoiceData }) | InvoiceData;
+export type InvoiceLike = (InvoiceFirestoreDoc & { data?: InvoiceData }) | InvoiceData;
 
 /**
  * Obtiene una cuenta por cobrar por su ID.
@@ -235,7 +236,7 @@ export const applyPaymentToInstallment = (
     clientId,
     arId,
   }: {
-    user: UserWithBusiness;
+    user: UserWithBusinessAndUid;
     installment: AccountsReceivableInstallment;
     amountToApply: number;
     paymentId: string;
@@ -519,7 +520,7 @@ export const createPaymentReceiptBase = ({
   paymentId: string;
   clientId: string;
   arId: string;
-  user: UserWithBusiness;
+  user: UserWithBusinessAndUid;
   totalAmount: number;
   paymentMethods: InvoicePaymentMethod[];
   change?: number;
@@ -554,7 +555,7 @@ export const createPaymentReceiptBase = ({
  * @param {Object} params - Parámetros de la cuenta
  * @returns {Object} Datos de la cuenta para el recibo
  */
-type PaidInstallmentInfo = {
+export type PaidInstallmentInfo = {
   number?: number | string;
   id: string;
   amount: number;
@@ -584,7 +585,7 @@ export const createAccountReceiptData = ({
     status: string;
   }>;
   remainingInstallments: number;
-  totalInstallments: number | undefined;
+  totalInstallments: number;
   totalPaid: number;
   arBalance: number;
 } => {
@@ -594,6 +595,11 @@ export const createAccountReceiptData = ({
   const invoiceNumber =
     (invoice as InvoiceData | undefined)?.numberID ||
     (invoice as InvoiceFirestoreDoc | undefined)?.data?.numberID;
+
+  const totalInstallments = safeNumber(account.totalInstallments);
+  const paidInstallmentsCount = Array.isArray(account.paidInstallments)
+    ? account.paidInstallments.length
+    : 0;
 
   return {
     arNumber: account.numberId,
@@ -610,10 +616,10 @@ export const createAccountReceiptData = ({
       status: 'paid',
     })),
     remainingInstallments:
-      account.totalInstallments -
-      (account.paidInstallments?.length || 0) -
+      totalInstallments -
+      paidInstallmentsCount -
       paidInstallments.length,
-    totalInstallments: account.totalInstallments,
+    totalInstallments,
     totalPaid: roundToTwoDecimals(totalPaid),
     arBalance: roundToTwoDecimals(newBalance),
   };
@@ -679,7 +685,7 @@ export const processInstallmentPayment = (
     clientId,
     arId,
   }: {
-    user: UserWithBusiness;
+    user: UserWithBusinessAndUid;
     installment: AccountsReceivableInstallment;
     remainingAmount: number;
     paymentId: string;
@@ -1129,7 +1135,7 @@ export const validatePaymentMethods = (
 export const updateAccountAfterPayment = (
   writer: FirestoreWriter,
   { user, account, totalPaid }: {
-    user: UserWithBusiness;
+  user: UserWithBusinessAndUid;
     account: AccountsReceivableAccount;
     totalPaid: number;
   },
@@ -1191,7 +1197,13 @@ export const createPaymentWithSetDoc = async (
  * @param {Object} paymentDetails - Detalles del pago
  * @returns {Object} Información procesada de notas de crédito
  */
-export const extractCreditNoteInfo = (paymentDetails) => {
+export const extractCreditNoteInfo = (
+  paymentDetails: Pick<PaymentDetails, 'creditNotePayment'>,
+): {
+  hasCreditNotes: boolean;
+  creditNotes: CreditNotePayment[];
+  totalCreditAmount: number;
+} => {
   const { creditNotePayment = [] } = paymentDetails;
 
   if (!Array.isArray(creditNotePayment) || creditNotePayment.length === 0) {
@@ -1223,12 +1235,22 @@ export const extractCreditNoteInfo = (paymentDetails) => {
  * @param {Object} paymentDetails - Detalles del pago
  * @returns {Object} Montos ajustados para el procesamiento
  */
-export const adjustPaymentAmountsForCreditNotes = (paymentDetails) => {
+export const adjustPaymentAmountsForCreditNotes = (
+  paymentDetails: Pick<PaymentDetails, 'totalPaid' | 'totalAmount' | 'creditNotePayment'>,
+): {
+  originalTotalPaid: number;
+  originalInvoiceAmount: number;
+  totalCreditAmount: number;
+  effectiveAmountToPay: number;
+  hasValidCreditNotes: boolean;
+} => {
   const { totalPaid, totalAmount } = paymentDetails;
   const { totalCreditAmount } = extractCreditNoteInfo(paymentDetails);
 
-  const baseTotalPaid = roundToTwoDecimals(parseFloat(totalPaid || 0));
-  const baseInvoiceAmount = roundToTwoDecimals(parseFloat(totalAmount || 0));
+  const baseTotalPaid = roundToTwoDecimals(parseFloat(String(totalPaid ?? 0)));
+  const baseInvoiceAmount = roundToTwoDecimals(
+    parseFloat(String(totalAmount ?? 0)),
+  );
 
   // El monto efectivo a pagar es el total menos las notas de crédito
   const effectiveAmountToPay = roundToTwoDecimals(
@@ -1249,7 +1271,7 @@ export const adjustPaymentAmountsForCreditNotes = (paymentDetails) => {
  * @param {Object} obj - Objeto a limpiar
  * @returns {Object} Objeto limpio sin campos undefined/null
  */
-export const cleanFirestoreData = (obj) => {
+export const cleanFirestoreData = (obj: unknown): unknown => {
   if (obj === null || obj === undefined) {
     return null;
   }
@@ -1261,7 +1283,7 @@ export const cleanFirestoreData = (obj) => {
   }
 
   if (typeof obj === 'object' && obj.constructor === Object) {
-    const cleaned = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (value !== undefined && value !== null) {
         const cleanedValue = cleanFirestoreData(value);
@@ -1282,11 +1304,14 @@ export const cleanFirestoreData = (obj) => {
  * @param {string} context - Contexto para el mensaje de error
  * @returns {Object} Datos validados y limpios
  */
-export const validateFirestoreData = (data, context = 'data') => {
+export const validateFirestoreData = <T>(
+  data: T,
+  context = 'data',
+): T => {
   const cleanedData = cleanFirestoreData(data);
 
   // Verificar recursivamente que no haya undefined
-  const hasUndefined = (obj, path = '') => {
+  const hasUndefined = (obj: unknown, path = ''): string | null => {
     if (obj === undefined) {
       return path || 'root';
     }
@@ -1318,7 +1343,7 @@ export const validateFirestoreData = (data, context = 'data') => {
     );
   }
 
-  return cleanedData;
+  return cleanedData as T;
 };
 
 /**
@@ -1327,7 +1352,15 @@ export const validateFirestoreData = (data, context = 'data') => {
  * @param {string} arId - ID de la cuenta por cobrar
  * @returns {Object} Resultado de validación con información de la cuenta
  */
-export const validateAccountHasPendingBalance = async (user, arId) => {
+export const validateAccountHasPendingBalance = async (
+  user: UserWithBusiness | null | undefined,
+  arId: string,
+): Promise<{
+  isValid: boolean;
+  error: string | null;
+  account: AccountsReceivableAccount | null;
+  balance?: number;
+}> => {
   try {
     if (!user?.businessID) {
       return {
@@ -1363,7 +1396,7 @@ export const validateAccountHasPendingBalance = async (user, arId) => {
       };
     }
 
-    const accountData = accountDoc.data();
+    const accountData = accountDoc.data() as AccountsReceivableAccount;
     const currentBalance = safeNumber(accountData.arBalance);
 
     // Validar que la cuenta esté activa
@@ -1406,7 +1439,9 @@ export const validateAccountHasPendingBalance = async (user, arId) => {
     console.error('Error validating account balance:', error);
     return {
       isValid: false,
-      error: `Error validating account: ${error.message}`,
+      error: `Error validating account: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
       account: null,
     };
   }
@@ -1418,7 +1453,15 @@ export const validateAccountHasPendingBalance = async (user, arId) => {
  * @param {number} accountBalance - Balance actual de la cuenta
  * @returns {Object} Resultado de validación
  */
-export const validatePaymentAmount = (paymentAmount, accountBalance) => {
+export const validatePaymentAmount = (
+  paymentAmount: unknown,
+  accountBalance: unknown,
+): {
+  isValid: boolean;
+  error: string | null;
+  adjustedAmount: number;
+  exceedsBalance: boolean;
+} => {
   const payment = safeNumber(paymentAmount);
   const balance = safeNumber(accountBalance);
 
@@ -1427,6 +1470,7 @@ export const validatePaymentAmount = (paymentAmount, accountBalance) => {
       isValid: false,
       error: 'Payment amount must be greater than 0',
       adjustedAmount: 0,
+      exceedsBalance: false,
     };
   }
 

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import React from 'react';
+import type { JSX } from 'react';
 
-export const Body = () => {
+export const Body = (): JSX.Element => {
   return <div>Body</div>;
 };

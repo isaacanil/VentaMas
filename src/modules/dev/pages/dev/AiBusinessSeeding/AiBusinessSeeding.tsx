@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faRobot, faBolt, faCheckCircle, faShop, faUser, faPaperPlane, faHome, faEllipsisV, faTimes, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Input, message, Switch, Typography, Dropdown } from 'antd';
@@ -10,8 +9,57 @@ import { getLazyGenerativeModel } from '@/firebase/firebaseconfig';
 
 import { ACTIONS, getSystemPrompt } from './aiActions';
 
+import type { MenuProps } from 'antd';
+
 const { TextArea } = Input;
 const { Title, Text } = Typography;
+
+type LogType = 'info' | 'success' | 'warning' | 'error';
+
+interface LogEntry {
+  msg: string;
+  type: LogType;
+}
+
+interface ActionExecutionContext {
+  addLog: (msg: string, type?: LogType) => void;
+  isTestMode: boolean;
+}
+
+interface ActionPreviewProps<TData = unknown> {
+  data: TData;
+  onExecute?: () => void;
+  loading?: boolean;
+  isTestMode?: boolean;
+}
+
+interface ActionResultProps<TData = unknown> {
+  data: TData;
+  onReset: () => void;
+}
+
+interface ActionDefinition<TData = unknown, TResult = unknown> {
+  id: string;
+  name: string;
+  description?: string;
+  promptInstruction?: string;
+  execute?: (data: TData, context: ActionExecutionContext) => Promise<TResult> | TResult;
+  PreviewComponent?: React.ComponentType<ActionPreviewProps<TData>>;
+  ResultComponent?: React.ComponentType<ActionResultProps<TResult>>;
+}
+
+interface BusinessSeedData {
+  business?: {
+    name?: string;
+    address?: string;
+  };
+  users?: Array<{
+    name?: string;
+    email?: string;
+    role?: string;
+  }>;
+  createdBusinessId?: string;
+}
 
 // --- STYLED COMPONENTS ---
 const AppContainer = styled.div`
@@ -116,7 +164,11 @@ const InputContainer = styled.div`
   max-width: 800px;
 `;
 
-const InputWrapper = styled.div`
+interface InputWrapperProps {
+  $isTestMode: boolean;
+}
+
+const InputWrapper = styled.div<InputWrapperProps>`
   width: 100%;
   position: relative;
   background: white;
@@ -174,7 +226,11 @@ const ResultConsole = styled.div`
   &::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 `;
 
-const LogItem = styled.div`
+interface LogItemProps {
+  $type?: LogType;
+}
+
+const LogItem = styled.div<LogItemProps>`
   padding: 4px 0;
   border-bottom: 1px solid #2c2e33;
   display: flex;
@@ -215,7 +271,15 @@ const CanvasHeader = styled.div`
 `;
 
 // --- NEW COMPONENT: BusinessInfoCard (Extracted) ---
-const BusinessInfoCard = ({ data, success }) => {
+interface BusinessInfoCardProps {
+  data?: BusinessSeedData | null;
+  success?: boolean;
+}
+
+const BusinessInfoCard: React.FC<BusinessInfoCardProps> = ({
+  data,
+  success,
+}) => {
   if (!data?.business) return null;
 
   return (
@@ -261,31 +325,53 @@ const BusinessInfoCard = ({ data, success }) => {
   );
 };
 
-const AiBusinessSeeding = () => {
+const AiBusinessSeeding: React.FC = () => {
+  const actions = ACTIONS as Record<string, ActionDefinition>;
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
-  const [activeAction, setActiveAction] = useState(null); 
-  const [actionData, setActionData] = useState(null);
-  const [logs, setLogs] = useState([]);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [actionData, setActionData] = useState<unknown | null>(null);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [isTestMode, setIsTestMode] = useState(false);
   const [isCanvasEnabled, setIsCanvasEnabled] = useState(true); // New State
-  const [enabledActions, setEnabledActions] = useState(Object.keys(ACTIONS));
+  const [enabledActions, setEnabledActions] = useState<string[]>(
+    Object.keys(ACTIONS),
+  );
   const [executionSuccess, setExecutionSuccess] = useState(false);
 
   // Canvas se muestra automáticamente solo cuando hay datos estructurados (no chat) Y está habilitado
-  const showCanvas = isCanvasEnabled && activeAction && activeAction !== 'chat' && actionData;
+  const showCanvas =
+    isCanvasEnabled &&
+    Boolean(activeAction) &&
+    activeAction !== 'chat' &&
+    Boolean(actionData);
 
-  const logEndRef = useRef(null);
-  const contentEndRef = useRef(null);
+  const logEndRef = useRef<HTMLDivElement | null>(null);
+  const contentEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
-  const addLog = (msg, type = 'info') => {
-    setLogs((prev) => [...prev, { 
-      msg: `[${new Date().toLocaleTimeString()}] ${msg}`, 
-      type 
-    }]);
+  const addLog = (msg: string, type: LogType = 'info') => {
+    setLogs((prev) => [
+      ...prev,
+      {
+        msg: `[${new Date().toLocaleTimeString()}] ${msg}`,
+        type,
+      },
+    ]);
+  };
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    return 'Error inesperado';
   };
 
   useEffect(() => {
@@ -298,18 +384,18 @@ const AiBusinessSeeding = () => {
     }
   }, [activeAction, executionSuccess]);
 
-  const handleModeSwitch = (checked) => {
+  const handleModeSwitch = (checked: boolean) => {
     setIsAdvanced(checked);
     if (!checked) setIsTestMode(false);
     else setIsTestMode(true);
   };
 
-  const handleToggleAction = (actionId) => {
-      setEnabledActions(prev => 
-          prev.includes(actionId) 
-            ? prev.filter(id => id !== actionId) 
-            : [...prev, actionId]
-      );
+  const handleToggleAction = (actionId: string) => {
+    setEnabledActions((prev) =>
+      prev.includes(actionId)
+        ? prev.filter((id) => id !== actionId)
+        : [...prev, actionId],
+    );
   };
 
   const handleClear = () => {
@@ -351,27 +437,32 @@ const AiBusinessSeeding = () => {
       }
 
       try {
-         const parsed = JSON.parse(jsonMatch[0]);
-         const actionId = parsed.action;
-         const data = parsed.data;
+        const parsed = JSON.parse(jsonMatch[0]) as {
+          action?: unknown;
+          data?: unknown;
+        };
+        const actionId =
+          typeof parsed.action === 'string' ? parsed.action : null;
+        const data = parsed.data ?? null;
 
-         if (ACTIONS[actionId]) {
-             setActiveAction(actionId);
-             setActionData(data);
-             setPrompt('');
-             addLog(`✅ Acción detectada: ${ACTIONS[actionId].name}`, 'success');
-         } else {
-             addLog(`⚠️ Acción desconocida: ${actionId}`, 'warning');
-         }
-
+        if (actionId && actions[actionId]) {
+          setActiveAction(actionId);
+          setActionData(data);
+          setPrompt('');
+          addLog(`✅ Acción detectada: ${actions[actionId].name}`, 'success');
+        } else {
+          addLog(
+            `⚠️ Acción desconocida: ${actionId ?? 'sin acción'}`,
+            'warning',
+          );
+        }
       } catch (e) {
-         console.error(e);
-         addLog(`❌ Error parseando respuesta`, 'error');
+        console.error(e);
+        addLog('❌ Error parseando respuesta', 'error');
       }
-
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      addLog(`❌ Error: ${error.message}`, 'error');
+      addLog(`❌ Error: ${getErrorMessage(error)}`, 'error');
       message.error('Error al analizar');
     } finally {
       setLoading(false);
@@ -380,8 +471,12 @@ const AiBusinessSeeding = () => {
 
   const handleExecute = async () => {
     if (!activeAction || !actionData) return;
-    
-    const action = ACTIONS[activeAction];
+
+    const action = actions[activeAction];
+    if (!action?.execute) {
+      addLog('⚠️ Acción no ejecutable', 'warning');
+      return;
+    }
     setLoading(true);
     addLog(`▶️ Ejecutando: ${action.name}`, 'info');
 
@@ -391,9 +486,9 @@ const AiBusinessSeeding = () => {
         setExecutionSuccess(true);
         addLog('✨ Finalizado', 'success');
         if (isAdvanced) message.success('Listo!');
-    } catch (error) {
+    } catch (error: unknown) {
         console.error(error);
-        addLog(`🔥 Error: ${error.message}`, 'error');
+        addLog(`🔥 Error: ${getErrorMessage(error)}`, 'error');
         message.error('Falló la ejecución');
     } finally {
         setLoading(false);
@@ -402,7 +497,8 @@ const AiBusinessSeeding = () => {
 
   const renderActiveContent = () => {
       if (!activeAction) return null;
-      const action = ACTIONS[activeAction];
+      const action = actions[activeAction];
+      if (!action) return null;
       const Preview = action.PreviewComponent;
       const Result = action.ResultComponent;
 
@@ -422,7 +518,7 @@ const AiBusinessSeeding = () => {
       return null;
   };
 
-  const menuItems = [
+  const menuItems: MenuProps['items'] = [
     {
       key: '1',
       label: (
@@ -458,7 +554,7 @@ const AiBusinessSeeding = () => {
         label: <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold' }}>HABILIDADES</Text>,
         disabled: true,
     },
-    ...Object.values(ACTIONS).map((action, _index) => ({
+    ...Object.values(actions).map((action) => ({
         key: `action-${action.id}`,
         label: (
             <div 
@@ -575,7 +671,7 @@ const AiBusinessSeeding = () => {
                   <CanvasHeader>
                        <Title level={5} style={{ margin: 0 }}>
                          <FontAwesomeIcon icon={faLayerGroup} style={{ marginRight: 8 }} />
-                         {ACTIONS[activeAction]?.name || 'Datos'}
+                         {actions[activeAction]?.name || 'Datos'}
                        </Title>
                        {isTestMode && <Tag style={{ background: '#fff7e6', color: '#fa8c16' }}>TEST MODE</Tag>}
                        {executionSuccess && <Tag style={{ background: '#f6ffed', color: '#52c41a' }}>CREADO</Tag>}

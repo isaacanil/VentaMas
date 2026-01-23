@@ -1,15 +1,41 @@
-// @ts-nocheck
 import { EditOutlined, DeleteOutlined } from '@/constants/icons/antd';
 import { Button, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
+import type { ProductPricing, ProductSaleUnit } from '@/types/products';
 import { formatPrice } from '@/utils/format';
 
-export const SaleUnit = ({ unit, onEdit, onDelete, onInfo }) => {
+export type SaleUnitPricing = ProductPricing & {
+  cost: number;
+  price: number;
+  listPrice: number;
+  avgPrice: number;
+  minPrice: number;
+  tax?: ProductPricing['tax'];
+  listPriceEnabled?: boolean;
+  avgPriceEnabled?: boolean;
+  minPriceEnabled?: boolean;
+};
+
+export type SaleUnitRecord = Omit<ProductSaleUnit, 'pricing'> & {
+  pricing: SaleUnitPricing;
+  packSize?: number;
+  active?: boolean;
+};
+
+type SaleUnitProps = {
+  unit?: SaleUnitRecord | null;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onInfo?: () => void;
+};
+
+export const SaleUnit = ({ unit, onEdit, onDelete, onInfo }: SaleUnitProps) => {
   const handleEdit = () => onEdit?.();
   const handleDelete = () => onDelete?.();
   const handleInfo = () => onInfo?.();
+  const listPrice = Number(unit?.pricing?.listPrice ?? 0);
 
   return (
     <CustomCardContainer>
@@ -49,7 +75,7 @@ export const SaleUnit = ({ unit, onEdit, onDelete, onInfo }) => {
       </CardHeader>
       <CardFooter>
         {unit?.quantity != null && <p>Cantidad: {unit.quantity}</p>}
-        <p>Precio: {formatPrice(Number(unit?.pricing?.listPrice) || 0)}</p>
+        <p>Precio: {formatPrice(listPrice)}</p>
       </CardFooter>
     </CustomCardContainer>
   );

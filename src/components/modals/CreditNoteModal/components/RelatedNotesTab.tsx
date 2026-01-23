@@ -1,15 +1,25 @@
-// @ts-nocheck
 import { Alert } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { CreditNotePanel } from './CreditNotePanel';
 
+import type { CreditNoteRecord } from '@/types/creditNote';
+
+interface RelatedNotesTabProps {
+  relatedCreditNotes: CreditNoteRecord[];
+  onNavigateNote: (
+    note: CreditNoteRecord,
+    e?: React.MouseEvent<HTMLElement>,
+  ) => void;
+  isMobile: boolean;
+}
+
 export const RelatedNotesTab = ({
   relatedCreditNotes,
   onNavigateNote,
   isMobile,
-}) => {
+}: RelatedNotesTabProps) => {
   if (relatedCreditNotes.length === 0) {
     return (
       <Alert
@@ -23,9 +33,9 @@ export const RelatedNotesTab = ({
 
   return (
     <RelatedNCSection>
-      {relatedCreditNotes.map((cn) => (
+      {relatedCreditNotes.map((cn, index) => (
         <CreditNotePanel
-          key={cn.id}
+          key={cn.id ?? index}
           creditNote={cn}
           onNavigateNote={onNavigateNote}
           isExpanded={false}

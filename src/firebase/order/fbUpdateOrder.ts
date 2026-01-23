@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   doc,
   getDoc,
@@ -12,16 +11,49 @@ import { fbUploadFiles } from '@/firebase/img/fbUploadFileAndGetURL';
 import { safeTimestamp } from '@/firebase/utils/firestoreDates';
 import { updateLocalAttachmentsWithRemoteURLs } from '@/utils/purchase/attachments';
 
-export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+};
+
+type Attachment = Record<string, unknown>;
+
+type Replenishment = Record<string, unknown> & {
+  selectedBackOrders?: Array<{ id: string }>;
+};
+
+type OrderInput = Record<string, unknown> & {
+  id: string;
+  attachmentUrls?: Attachment[];
+  replenishments?: Replenishment[];
+  createdAt?: unknown;
+  deliveryAt?: unknown;
+  paymentAt?: unknown;
+  completedAt?: unknown;
+};
+
+type LocalFileItem = {
+  file: File | Blob;
+} & Record<string, unknown>;
+
+export const fbUpdateOrder = async ({
+  user,
+  order,
+  localFiles = [],
+}: {
+  user: UserWithBusinessAndUid | null | undefined;
+  order: OrderInput;
+  localFiles?: LocalFileItem[];
+}): Promise<{ success: true; data: OrderInput } | undefined> => {
   if (!user || !user?.businessID) return;
 
   const { id: orderId, createdAt, deliveryAt, paymentAt, completedAt } = order;
 
   try {
-    let uploadedFiles = [];
+    let uploadedFiles: Attachment[] = [];
     if (localFiles && localFiles.length > 0) {
       const files = localFiles.map(({ file }) => file);
-      uploadedFiles = await fbUploadFiles(
+      uploadedFiles = (await fbUploadFiles(
         user,
         'purchaseAndOrderFiles',
         files,
@@ -30,7 +62,7 @@ export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
             type: 'purchase_attachment',
           },
         },
-      );
+      )) as Attachment[];
     }
 
     const existingAttachments = order.attachmentUrls || [];
@@ -40,7 +72,7 @@ export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
       uploadedFiles,
     );
 
-    let data = {
+    const data: OrderInput = {
       ...order,
       attachmentUrls,
       createdAt: safeTimestamp(createdAt, 'now'),
@@ -51,9 +83,9 @@ export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
     const orderRef = doc(db, 'businesses', user.businessID, 'orders', orderId);
 
     const orderSnap = await getDoc(orderRef);
-    const previousData = orderSnap.exists() ? orderSnap.data() : null;
+    const previousData = orderSnap.exists() ? (orderSnap.data() as OrderInput) : null;
 
-    const previousBackOrders = [];
+    const previousBackOrders: string[] = [];
     if (previousData && previousData.replenishments) {
       previousData.replenishments.forEach((item) => {
         if (item.selectedBackOrders && item.selectedBackOrders.length > 0) {
@@ -65,7 +97,7 @@ export const fbUpdateOrder = async ({ user, order, localFiles = [] }) => {
     }
 
     // Extraer ID de backorders en la nueva versión de la orden
-    const newBackOrders = [];
+    const newBackOrders: string[] = [];
     if (order.replenishments) {
       order.replenishments.forEach((item) => {
         if (item.selectedBackOrders && item.selectedBackOrders.length > 0) {

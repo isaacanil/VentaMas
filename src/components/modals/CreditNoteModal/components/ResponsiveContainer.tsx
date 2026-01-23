@@ -1,7 +1,20 @@
-// @ts-nocheck
 import { Modal, Drawer } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { DrawerProps, ModalProps } from 'antd';
+
+type DestroyOnHiddenProp = {
+  destroyOnHidden?: boolean;
+};
+
+interface ResponsiveContainerProps {
+  isMobile: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  title: React.ReactNode;
+  children: React.ReactNode;
+}
 
 export const ResponsiveContainer = ({
   isMobile,
@@ -9,41 +22,45 @@ export const ResponsiveContainer = ({
   onClose,
   title,
   children,
-}) => {
+}: ResponsiveContainerProps) => {
   if (isMobile) {
+    const drawerProps: DrawerProps & DestroyOnHiddenProp = {
+      title,
+      placement: 'bottom',
+      open: isOpen,
+      onClose,
+      size: 'large',
+      closable: true,
+      destroyOnHidden: true,
+      styles: {
+        body: { padding: '16px' },
+        header: {
+          borderBottom: '1px solid #f0f0f0',
+          padding: '16px 24px',
+        },
+        content: { height: '100%' },
+      },
+    };
+
     return (
-      <StyledDrawer
-        title={title}
-        placement="bottom"
-        open={isOpen}
-        onClose={onClose}
-        size="large"
-        closable={true}
-        destroyOnHidden={true}
-        styles={{
-          body: { padding: '16px' },
-          header: {
-            borderBottom: '1px solid #f0f0f0',
-            padding: '16px 24px',
-          },
-          content: { height: '100%' },
-        }}
-      >
+      <StyledDrawer {...drawerProps}>
         <DrawerContent>{children}</DrawerContent>
       </StyledDrawer>
     );
   }
 
+  const modalProps: ModalProps & DestroyOnHiddenProp = {
+    title,
+    open: isOpen,
+    onCancel: onClose,
+    width: 1100,
+    style: { top: '20px' },
+    footer: null,
+    destroyOnHidden: true,
+  };
+
   return (
-    <Modal
-      title={title}
-      open={isOpen}
-      onCancel={onClose}
-      width={1100}
-      style={{ top: '20px' }}
-      footer={null}
-      destroyOnHidden={true}
-    >
+    <Modal {...modalProps}>
       {children}
     </Modal>
   );

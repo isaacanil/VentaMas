@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -11,7 +10,19 @@ import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export async function createClientInsurance(user, insuranceData) {
+type UserWithBusiness = {
+  businessID: string;
+};
+
+export type ClientInsuranceData = Record<string, unknown> & {
+  id?: string;
+  clientId?: string;
+};
+
+export async function createClientInsurance(
+  user: UserWithBusiness,
+  insuranceData: ClientInsuranceData,
+): Promise<boolean> {
   try {
     const id = nanoid();
     const insuranceRef = doc(
@@ -31,7 +42,10 @@ export async function createClientInsurance(user, insuranceData) {
   }
 }
 
-export async function updateClientInsurance(user, insuranceData) {
+export async function updateClientInsurance(
+  user: UserWithBusiness,
+  insuranceData: ClientInsuranceData & { id: string },
+): Promise<boolean> {
   try {
     const insuranceRef = doc(
       db,
@@ -50,7 +64,10 @@ export async function updateClientInsurance(user, insuranceData) {
   }
 }
 
-export async function getClientInsuranceByClientId(user, clientId) {
+export async function getClientInsuranceByClientId(
+  user: UserWithBusiness | null | undefined,
+  clientId: string,
+): Promise<ClientInsuranceData | null> {
   try {
     if (!user?.businessID || !clientId) {
       return null;
@@ -70,7 +87,7 @@ export async function getClientInsuranceByClientId(user, clientId) {
     }
 
     // Devolver el primer registro que coincide (asumiendo que un cliente tiene un seguro)
-    return querySnapshot.docs[0].data();
+    return querySnapshot.docs[0].data() as ClientInsuranceData;
   } catch (error) {
     console.error('Error fetching client insurance:', error);
     return null;

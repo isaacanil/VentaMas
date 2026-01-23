@@ -1,6 +1,5 @@
-// @ts-nocheck
 import React from 'react';
 
-const Modal = () => <div />;
+const Modal: React.FC = () => <div />;
 
 export default Modal;

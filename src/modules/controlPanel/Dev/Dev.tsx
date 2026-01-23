@@ -1,7 +1,6 @@
-// @ts-nocheck
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 
-export const Dev = () => {
+export const Dev: React.FC = () => {
   return <Outlet />;
 };

@@ -1,10 +1,42 @@
-// @ts-nocheck
 import { SearchOutlined } from '@/constants/icons/antd';
 import { Alert, Checkbox, Input } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
 import { ProductList } from './ProductList';
+import type { ColumnsType } from 'antd/es/table';
+import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
+import type { NumberInput } from '@/utils/number/number';
+
+type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
+type FormatPrice = (value: NumberInput) => string;
+
+interface ProductsTabProps {
+  currentInvoice?: InvoiceData | null;
+  hasAvailableProducts: boolean;
+  selectAll: boolean;
+  effectiveIsView: boolean;
+  onSelectAll: (checked: boolean) => void;
+  searchText: string;
+  onSearchTextChange: (value: string) => void;
+  isMobile: boolean;
+  filteredProducts: CreditNoteProduct[];
+  columns: ColumnsType<CreditNoteProduct>;
+  selectedInvoiceId: string | null | undefined;
+  selectedItems: Array<string | undefined>;
+  itemQuantities: Record<string, number>;
+  existingItemQuantities: Record<string, number>;
+  creditedQuantities: Record<string, number>;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onItemChange: (itemId: string | undefined, checked: boolean) => void;
+  onQuantityChange: (itemId: string | undefined, value: number | null) => void;
+  subtotal: number;
+  totalItbis: number;
+  totalAmount: number;
+  formatPrice: FormatPrice;
+}
 
 export const ProductsTab = ({
   currentInvoice,
@@ -31,7 +63,7 @@ export const ProductsTab = ({
   totalItbis,
   totalAmount,
   formatPrice,
-}) => {
+}: ProductsTabProps) => {
   if (!currentInvoice) return null;
 
   const effectivePageSize = isMobile ? 3 : pageSize;

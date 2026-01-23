@@ -1,9 +1,9 @@
-// @ts-nocheck
 import {
   faFilterCircleXmark,
   faArrowUpAZ,
   faArrowDownAZ,
 } from '@fortawesome/free-solid-svg-icons';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip, Input, Drawer } from 'antd'; // Added DatePicker
 import { DateTime } from 'luxon';
@@ -16,13 +16,80 @@ import { Selector } from '@/components/common/Selector/Selector';
 
 import { StatusSelector } from './components/StatusSelector';
 import { useFilterBar } from './hooks/useFilterBar';
+import type { FilterBarSort, FilterBarState } from './hooks/useFilterBar';
 
 // Import DateTime
 
 const { RangePicker } = DatePicker; // Destructure RangePicker
 
-const StyledRangePicker = styled(RangePicker)`
-  width: ${(props: any) => (props.$fullWidth ? '100%' : 'auto')};
+type DateRangeFilterValue = {
+  startDate: number;
+  endDate: number;
+};
+
+type FilterValue = string | number | boolean | DateRangeFilterValue | null;
+
+type FilterState = Record<string, FilterValue>;
+
+type SelectorOption = {
+  value: string | number;
+  label: string | number;
+  icon?: IconProp;
+  color?: string;
+  bgColor?: string;
+  borderColor?: string;
+  hoverBgColor?: string;
+  selectedBgColor?: string;
+  selectedColor?: string;
+};
+
+type FilterConfigBase = {
+  key: string;
+  placeholder?: string;
+  clearText?: string;
+};
+
+type FilterConfig =
+  | (FilterConfigBase & {
+      type: 'status';
+      visibleStatus?: string[];
+    })
+  | (FilterConfigBase & {
+      type: 'select';
+      options?: SelectorOption[];
+      icon?: IconProp;
+      showSearch?: boolean;
+    })
+  | (FilterConfigBase & {
+      type: 'dateRange';
+    })
+  | (FilterConfigBase & {
+      type: 'search';
+    });
+
+type FilterDataConfig = Record<
+  string,
+  { data?: unknown[]; accessor: (item: unknown) => SelectorOption }
+>;
+
+type FilterBarConfig = {
+  defaultValues?: FilterState;
+  defaultSort?: FilterBarSort;
+  filters?: FilterConfig[];
+  showSortButton?: boolean;
+  showResetButton?: boolean;
+};
+
+type FilterBarProps = {
+  config?: FilterBarConfig;
+  onChange?: (state: FilterBarState<FilterState>) => void;
+  searchTerm?: string;
+  onSearchTermChange?: (value: string) => void;
+  dataConfig?: FilterDataConfig;
+};
+
+const StyledRangePicker = styled(RangePicker)<{ $fullWidth?: boolean }>`
+  width: ${(props) => (props.$fullWidth ? '100%' : 'auto')};
 `;
 
 export const FilterBar = memo(
@@ -32,10 +99,10 @@ export const FilterBar = memo(
     searchTerm,
     onSearchTermChange,
     dataConfig = {},
-  }) => {
+  }: FilterBarProps) => {
     const { state, setFilters, setSorting, resetAll } = useFilterBar(
-      config.defaultValues,
-      config.defaultSort,
+      (config.defaultValues ?? {}) as FilterState,
+      config.defaultSort ?? { isAscending: false },
     );
 
     const [isDrawerVisible, setIsDrawerVisible] = useState(false);
@@ -51,7 +118,7 @@ export const FilterBar = memo(
     }, [onChange, state]);
 
     const handleFiltersChange = useCallback(
-      (newFilters) => {
+      (newFilters: FilterState) => {
         setFilters(newFilters);
         onChange?.({ ...state, filters: newFilters });
       },
@@ -59,7 +126,7 @@ export const FilterBar = memo(
     );
 
     const handleSortingChange = useCallback(
-      (ascending) => {
+      (ascending: boolean) => {
         setSorting(ascending);
         onChange?.({
           filters: state.filters,
@@ -78,7 +145,7 @@ export const FilterBar = memo(
     }, [config.defaultValues, config.defaultSort, onChange, resetAll]);
 
     const updateFilter = useCallback(
-      (key, value) => {
+      (key: string, value: FilterValue) => {
         const newFilters = { ...state.filters, [key]: value };
         handleFiltersChange(newFilters);
       },
@@ -86,11 +153,12 @@ export const FilterBar = memo(
     );
 
     const renderFilter = useCallback(
-      (filterConfig, isInDrawer) => {
+      (filterConfig: FilterConfig, isInDrawer: boolean) => {
         if (filterConfig.type === 'search') return null;
 
-        let finalOptions = filterConfig.options || [];
-        if (dataConfig[filterConfig.key]) {
+        let finalOptions: SelectorOption[] =
+          filterConfig.type === 'select' ? filterConfig.options ?? [] : [];
+        if (filterConfig.type === 'select' && dataConfig[filterConfig.key]) {
           const { data, accessor } = dataConfig[filterConfig.key];
           finalOptions = data ? data.map(accessor) : [];
         }
@@ -126,27 +194,31 @@ export const FilterBar = memo(
                 />
               </FilterGroup>
             );
-          case 'dateRange': // Added case for dateRange
+          case 'dateRange': {
+            // Added case for dateRange
+            const rangeValue = state.filters[filterConfig.key];
+            const rangeDates: [DateTime, DateTime] | null =
+              typeof rangeValue === 'object' &&
+              rangeValue !== null &&
+              'startDate' in rangeValue &&
+              'endDate' in rangeValue
+                ? [
+                    DateTime.fromMillis(
+                      (rangeValue as DateRangeFilterValue).startDate,
+                    ),
+                    DateTime.fromMillis(
+                      (rangeValue as DateRangeFilterValue).endDate,
+                    ),
+                  ]
+                : null;
             return (
               <FilterGroup key={filterConfig.key}>
                 <StyledRangePicker
                   $fullWidth={isInDrawer}
                   format="DD/MM/YYYY" // Adjust format as needed
-                  value={
-                    state.filters[filterConfig.key]?.startDate &&
-                    state.filters[filterConfig.key]?.endDate
-                      ? [
-                          DateTime.fromMillis(
-                            state.filters[filterConfig.key].startDate,
-                          ),
-                          DateTime.fromMillis(
-                            state.filters[filterConfig.key].endDate,
-                          ),
-                        ]
-                      : null
-                  }
+                  value={rangeDates}
                   onChange={(dates) => {
-                    if (dates && dates.length === 2) {
+                    if (dates?.[0] && dates?.[1]) {
                       updateFilter(filterConfig.key, {
                         startDate: dates[0].startOf('day').toMillis(),
                         endDate: dates[1].endOf('day').toMillis(),
@@ -164,6 +236,7 @@ export const FilterBar = memo(
                 />
               </FilterGroup>
             );
+          }
           default:
             return null;
         }
@@ -171,17 +244,17 @@ export const FilterBar = memo(
       [state.filters, updateFilter, dataConfig],
     );
 
-    const searchInput = (
+    const searchInput = onSearchTermChange ? (
       <FilterGroup key="search">
         <Input
           placeholder="Buscar..."
-          value={searchTerm}
+          value={searchTerm ?? ''}
           onChange={(e) => onSearchTermChange(e.target.value)}
           allowClear
           style={{ width: '200px' }}
         />
       </FilterGroup>
-    );
+    ) : null;
 
     const filters = useMemo(
       () =>
@@ -193,7 +266,7 @@ export const FilterBar = memo(
 
     const filterContent = (
       <>
-        {onSearchTermChange && searchInput}
+        {searchInput}
         {filters}
         {config.showSortButton && (
           <ButtonGroup>
@@ -239,8 +312,8 @@ export const FilterBar = memo(
           <MobileHeader>
             <Input
               placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => onSearchTermChange(e.target.value)}
+              value={searchTerm ?? ''}
+              onChange={(e) => onSearchTermChange?.(e.target.value)}
               allowClear
               style={{ flex: 1 }}
             />

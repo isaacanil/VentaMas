@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faFilter,
   faMapMarkerAlt,
@@ -21,7 +20,32 @@ const FilterLabel = styled.div`
   color: #595959;
 `;
 
-const FiltersDrawer = ({
+type SortBy = 'newest' | 'oldest';
+
+interface BusinessFilters {
+  province: string;
+  country: string;
+  businessType: string;
+  hasRNC: boolean;
+  sortBy: SortBy;
+}
+
+interface FiltersDrawerProps {
+  visible: boolean;
+  onClose: () => void;
+  filters: BusinessFilters;
+  handleFilterChange: (
+    filterName: keyof BusinessFilters,
+    value: BusinessFilters[keyof BusinessFilters],
+  ) => void;
+  resetFilters: () => void;
+  availableProvinces: string[];
+  availableCountries: string[];
+  availableBusinessTypes: string[];
+  resultsCount: number;
+}
+
+const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
   visible,
   onClose,
   filters,
@@ -73,7 +97,9 @@ const FiltersDrawer = ({
             style={{ width: '100%' }}
             placeholder="Seleccionar provincia"
             value={filters.province}
-            onChange={(value) => handleFilterChange('province', value)}
+            onChange={(value: string | undefined) =>
+              handleFilterChange('province', value ?? '')
+            }
             allowClear
           >
             {availableProvinces.map((province) => (
@@ -93,7 +119,9 @@ const FiltersDrawer = ({
             style={{ width: '100%' }}
             placeholder="Seleccionar país"
             value={filters.country}
-            onChange={(value) => handleFilterChange('country', value)}
+            onChange={(value: string | undefined) =>
+              handleFilterChange('country', value ?? '')
+            }
             allowClear
           >
             {availableCountries.map((country) => (
@@ -119,7 +147,9 @@ const FiltersDrawer = ({
             style={{ width: '100%' }}
             placeholder="Seleccionar tipo"
             value={filters.businessType}
-            onChange={(value) => handleFilterChange('businessType', value)}
+            onChange={(value: string | undefined) =>
+              handleFilterChange('businessType', value ?? '')
+            }
             allowClear
           >
             {availableBusinessTypes.map((type) => (
@@ -147,7 +177,7 @@ const FiltersDrawer = ({
           <Select
             style={{ width: '100%' }}
             value={filters.sortBy}
-            onChange={(value) => handleFilterChange('sortBy', value)}
+            onChange={(value: SortBy) => handleFilterChange('sortBy', value)}
           >
             <Select.Option value="newest">
               <div

@@ -1,12 +1,22 @@
-// @ts-nocheck
-import { Fragment, memo, useCallback, useMemo, useState } from 'react';
+import {
+  Fragment,
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { GroupedVirtuoso, Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import Loader from '@/components/common/Loader/Loader';
 import { Row } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
 import { CellRenderer } from '@/components/ui/AdvancedTable/components/CellRenderer/CellRenderer';
 import { CenteredText } from '@/components/ui/CentredText';
+import type { TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 const Body = styled.div`
   position: relative;
@@ -14,7 +24,12 @@ const Body = styled.div`
   width: 100%;
 `;
 
-const renderCell = (col, value, row, rowIndex) => {
+const renderCell = <RowData extends TableRow>(
+  col: AdvancedTableColumn<RowData>,
+  value: unknown,
+  row: RowData,
+  rowIndex: number,
+): ReactNode => {
   if (col.cell) {
     return col.cell({ value, row, rowIndex });
   }
@@ -28,9 +43,33 @@ const renderCell = (col, value, row, rowIndex) => {
   );
 };
 
+type RowSize = 'small' | 'medium' | 'large';
+
+interface RowItemProps<RowData extends TableRow> {
+  row: RowData;
+  rowIndex: number;
+  rowId: string;
+  activeColumns: AdvancedTableColumn<RowData>[];
+  rowBorder?: boolean | string;
+  rowSize: RowSize;
+  handleCellClick: (
+    event: MouseEvent<HTMLDivElement>,
+    col: AdvancedTableColumn<RowData>,
+    row: RowData,
+  ) => void;
+  isExpanded: boolean;
+  toggleRow: (id: string) => void;
+  expandedRowRender?: (row: RowData) => ReactNode;
+  rowExpandable?: (row: RowData) => boolean;
+}
+
+type RowItemComponent = <RowData extends TableRow>(
+  props: RowItemProps<RowData>,
+) => JSX.Element;
+
 // Componente de fila memoizado para evitar re-renders innecesarios
 const RowItem = memo(
-  ({
+  <RowData extends TableRow>({
     row,
     rowIndex,
     rowId,
@@ -42,18 +81,18 @@ const RowItem = memo(
     toggleRow,
     expandedRowRender,
     rowExpandable,
-  }) => {
+  }: RowItemProps<RowData>) => {
     const canExpand =
       !!expandedRowRender && (rowExpandable ? rowExpandable(row) : true);
 
     const rowWithExpanderData = canExpand
-      ? {
-        ...row,
-        _expander: {
-          expanded: isExpanded,
-          toggle: () => toggleRow(rowId),
-        },
-      }
+      ? ({
+          ...row,
+          _expander: {
+            expanded: isExpanded,
+            toggle: () => toggleRow(rowId),
+          },
+        } as RowData)
       : row;
 
     return (
@@ -87,11 +126,30 @@ const RowItem = memo(
       </Fragment>
     );
   },
-);
+) as RowItemComponent;
 
 RowItem.displayName = 'RowItem';
 
-export const VirtualTableBody = ({
+interface VirtualTableBodyProps<RowData extends TableRow> {
+  loading?: boolean;
+  currentData: RowData[];
+  columnOrder: AdvancedTableColumn<RowData>[];
+  onRowClick?: (row: RowData) => void;
+  emptyText?: ReactNode;
+  expandedRowRender?: (row: RowData) => ReactNode;
+  rowExpandable?: (row: RowData) => boolean;
+  getRowId?: (row: RowData, index?: number) => string | number;
+  rowSize?: RowSize;
+  rowBorder?: boolean | string;
+  isWideScreen?: boolean;
+  isWideLayout?: boolean;
+  shouldGroup?: boolean;
+  groupCounts?: number[];
+  groupHeaders?: string[];
+  flatGroupedData?: RowData[];
+}
+
+export const VirtualTableBody = <RowData extends TableRow>({
   loading = false,
   currentData, // En modo virtual puede ser la lista completa o una página.
   columnOrder,
@@ -109,35 +167,44 @@ export const VirtualTableBody = ({
   groupCounts = [],
   groupHeaders = [],
   flatGroupedData = [],
-}) => {
+}: VirtualTableBodyProps<RowData>) => {
   const activeColumns = useMemo(
     () => columnOrder.filter((col) => col.status === 'active'),
     [columnOrder],
   );
 
   const handleCellClick = useCallback(
-    (e, col, row) => {
+    (
+      _event: MouseEvent<HTMLDivElement>,
+      col: AdvancedTableColumn<RowData>,
+      row: RowData,
+    ) => {
       if (onRowClick && col?.clickable !== false) onRowClick(row);
     },
     [onRowClick],
   );
 
   // Estado local de filas expandidas
-  const [expanded, setExpanded] = useState({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const toggleRow = useCallback((id) => {
+  const toggleRow = useCallback((id: string) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  const resolveRowId = useCallback(
-    (row, rowIndex) =>
-      getRowId ? getRowId(row, rowIndex) : row?.id ?? row?.key ?? rowIndex,
+  const resolveRowKey = useCallback(
+    (row: RowData, rowIndex: number) => {
+      const rowRecord = row as Record<string, unknown>;
+      const id = getRowId
+        ? getRowId(row, rowIndex)
+        : (rowRecord?.id ?? rowRecord?.key ?? rowIndex);
+      return String(id);
+    },
     [getRowId],
   );
 
   const containerStyle =
     typeof rowBorder === 'string'
-      ? { ['--row-border-color']: rowBorder }
+      ? ({ ['--row-border-color']: rowBorder } as CSSProperties)
       : undefined;
 
   // Determinar si hay datos para mostrar
@@ -169,7 +236,7 @@ export const VirtualTableBody = ({
               )}
               itemContent={(index) => {
                 const row = flatGroupedData[index];
-                const rowId = resolveRowId(row, index);
+                const rowId = resolveRowKey(row, index);
                 const isExpanded = !!expanded[rowId];
                 return (
                   <RowItem
@@ -194,7 +261,7 @@ export const VirtualTableBody = ({
               totalCount={currentData.length}
               style={{ height: '100%' }}
               itemContent={(index, row) => {
-                const rowId = resolveRowId(row, index);
+                const rowId = resolveRowKey(row, index);
                 const isExpanded = !!expanded[rowId];
                 return (
                   <RowItem

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import styled from 'styled-components';
 
 import type { KeyboardEvent, JSX } from 'react';

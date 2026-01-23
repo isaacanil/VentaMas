@@ -1,9 +1,24 @@
-// @ts-nocheck
 import { doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const fbDeleteOrder = async (user, orderId) => {
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+};
+
+type Replenishment = Record<string, unknown> & {
+  selectedBackOrders?: Array<{ id: string }>;
+};
+
+type OrderData = Record<string, unknown> & {
+  replenishments?: Replenishment[];
+};
+
+export const fbDeleteOrder = async (
+  user: UserWithBusinessAndUid | null | undefined,
+  orderId: string,
+): Promise<void> => {
   if (!user || !user.businessID) return;
 
   const OrderRef = doc(db, 'businesses', user.businessID, 'orders', orderId);
@@ -17,9 +32,9 @@ export const fbDeleteOrder = async (user, orderId) => {
       return;
     }
 
-    const orderData = orderSnap.data();
+    const orderData = orderSnap.data() as OrderData;
 
-    const backOrdersToRelease = [];
+    const backOrdersToRelease: string[] = [];
     if (orderData.replenishments) {
       orderData.replenishments.forEach((item) => {
         if (item.selectedBackOrders && item.selectedBackOrders.length > 0) {

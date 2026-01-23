@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { doc, writeBatch, getDoc, arrayUnion } from 'firebase/firestore';
 
 import { fbAddAccountReceivablePaymentReceipt } from '@/firebase/accountsReceivable/fbAddAccountReceivablePaymentReceipt';
@@ -6,8 +5,10 @@ import { fbAddPayment } from '@/firebase/accountsReceivable/payment/fbAddPayment
 import { checkOpenCashReconciliation } from '@/firebase/cashCount/useIsOpenCashReconciliation';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
+import type { UserWithBusiness } from '@/types/users';
 
 import {
+  type PaymentDetails,
   getSortedClientAccountsAR,
   getActiveInstallmentsByArId,
   processInstallmentPayment,
@@ -18,7 +19,15 @@ import {
 } from './arPaymentUtils';
 import { roundToTwoDecimals } from './financeUtils';
 
-export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
+type BalancePaymentDetails = PaymentDetails & { clientId: string };
+
+export const fbPayBalanceForAccounts = async ({
+  user,
+  paymentDetails,
+}: {
+  user: UserWithBusiness;
+  paymentDetails: BalancePaymentDetails;
+}): Promise<Awaited<ReturnType<typeof fbAddAccountReceivablePaymentReceipt>>> => {
   const { clientId, paymentMethods } = paymentDetails;
 
   // Validar parámetros básicos usando la utilidad
@@ -30,10 +39,10 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
   });
 
   if (!validation.isValid) {
-    throw new Error(validation.error);
+    throw new Error(validation.error ?? 'Invalid payment parameters');
   }
 
-  const { totalPaidFloat } = validation;
+  const totalPaidFloat = validation.totalPaidFloat ?? 0;
   let remainingAmount = totalPaidFloat;
 
   try {
@@ -58,7 +67,10 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
         openCashCountId = cashCount.id;
       }
     } catch (error) {
-      if (error.message.startsWith('No se puede procesar el pago')) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('No se puede procesar el pago')
+      ) {
         throw error;
       }
       console.warn('Error checking open cash count:', error);
@@ -102,7 +114,7 @@ export const fbPayBalanceForAccounts = async ({ user, paymentDetails }) => {
         account.id,
       );
 
-      if (!accountValidation.isValid) {
+      if (!accountValidation.isValid || !accountValidation.account) {
         console.warn(
           `⚠️ Skipping account ${account.id}: ${accountValidation.error}`,
         );

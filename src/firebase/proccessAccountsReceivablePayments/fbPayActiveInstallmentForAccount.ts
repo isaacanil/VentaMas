@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -18,6 +17,8 @@ import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
 import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
 
 import {
+  type PaymentDetails,
+  type UserWithBusinessAndUid,
   getOldestActiveInstallmentByArId,
   validatePaymentAmounts,
   createAccountReceiptData,
@@ -27,11 +28,19 @@ import {
 } from './arPaymentUtils';
 import { THRESHOLD, roundToTwoDecimals } from './financeUtils';
 
+type ActiveInstallmentPaymentDetails = PaymentDetails & {
+  arId: string;
+  totalAmount: number | string;
+};
+
 // Function to process the payment for the oldest active installment
 export const fbPayActiveInstallmentForAccount = async ({
   user,
   paymentDetails,
-}) => {
+}: {
+  user: UserWithBusinessAndUid;
+  paymentDetails: ActiveInstallmentPaymentDetails;
+}): Promise<Awaited<ReturnType<typeof fbAddAccountReceivablePaymentReceipt>>> => {
   try {
     const {
       clientId,
@@ -49,13 +58,13 @@ export const fbPayActiveInstallmentForAccount = async ({
       arId,
     );
 
-    if (!accountValidation.isValid) {
+    if (!accountValidation.isValid || !accountValidation.account) {
       console.warn('⚠️ Account validation failed:', accountValidation.error);
       throw new Error(`Account validation failed: ${accountValidation.error}`);
     }
 
     const account = accountValidation.account;
-    const currentBalance = accountValidation.balance;
+    const currentBalance = accountValidation.balance ?? 0;
 
     console.log('✅ Account validation passed:', {
       arId,
@@ -71,7 +80,7 @@ export const fbPayActiveInstallmentForAccount = async ({
       creditNotePayment: paymentDetails.creditNotePayment,
     });
     if (!validation.isValid) {
-      throw new Error(validation.error);
+      throw new Error(validation.error ?? 'Invalid payment amount');
     }
 
     const { paymentAmountFloat } = validation.amounts;
@@ -100,9 +109,10 @@ export const fbPayActiveInstallmentForAccount = async ({
     //     throw new Error('Account not found');
     // }
 
+    const accountId = account.id ?? arId;
     const installment = await getOldestActiveInstallmentByArId(
       user,
-      account.id,
+      accountId,
     );
     if (!installment) {
       throw new Error('No active installment found for the account');
@@ -127,7 +137,10 @@ export const fbPayActiveInstallmentForAccount = async ({
       }
     } catch (error) {
       // If the error is one of our custom validation errors, re-throw it
-      if (error.message.startsWith('No se puede procesar el pago')) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith('No se puede procesar el pago')
+      ) {
         throw error;
       }
       console.warn('Error checking open cash count:', error);
@@ -162,14 +175,14 @@ export const fbPayActiveInstallmentForAccount = async ({
     let amountToApply = roundToTwoDecimals(
       Math.min(
         paymentAmountFloat,
-        parseFloat(installment.installmentBalance ?? 0),
+        Number(installment.installmentBalance ?? 0),
       ),
     );
     let newInstallmentBalance = roundToTwoDecimals(
-      parseFloat(installment.installmentBalance ?? 0) - amountToApply,
+      Number(installment.installmentBalance ?? 0) - amountToApply,
     );
     let newAccountBalance = roundToTwoDecimals(
-      parseFloat(account.arBalance ?? 0) - amountToApply,
+      Number(account.arBalance ?? 0) - amountToApply,
     );
 
     // Adjust for any small rounding difference
@@ -185,7 +198,7 @@ export const fbPayActiveInstallmentForAccount = async ({
       'businesses',
       user.businessID,
       'accountsReceivable',
-      account.id,
+      accountId,
     );
     const installmentRef = doc(
       db,
@@ -236,7 +249,7 @@ export const fbPayActiveInstallmentForAccount = async ({
       updatedBy: user.uid,
       isActive: true,
       clientId: clientId,
-      arId: account.id,
+      arId: accountId,
     });
 
     await batch.commit();
@@ -261,14 +274,15 @@ export const fbPayActiveInstallmentForAccount = async ({
     }
 
     // Obtener la factura relacionada una vez confirmado el batch
-    const invoice = await fbGetInvoice(user.businessID, account.invoiceId);
+    const invoiceId = account.invoiceId ?? '';
+    const invoice = await fbGetInvoice(user.businessID, invoiceId);
 
     // Update related invoice totals after batch
     if (invoice) {
       const invoiceBatch = writeBatch(db);
       updateInvoiceTotals(invoiceBatch, {
         businessId: user.businessID,
-        invoiceId: account.invoiceId,
+        invoiceId,
         amountPaid: amountToApply,
         invoice,
         paymentMethods,

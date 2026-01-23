@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
@@ -6,14 +5,18 @@ import noImg from '@/assets/producto/noimg.png';
 import useImageFallback from '@/hooks/image/useImageFallback';
 import { useCheckForInternetConnection } from '@/hooks/useCheckForInternetConnection';
 
-export const ImgCell = ({ img }) => {
+interface ImgCellProps {
+  img?: string | null;
+}
+
+export const ImgCell = ({ img }: ImgCellProps) => {
   const isConnected = useCheckForInternetConnection();
-  const [imageFallback] = useImageFallback(img, noImg);
+  const [imageFallback] = useImageFallback(img ?? '', noImg);
   return (
     <ImgContainer>
       <Img
         src={(isConnected && imageFallback) || noImg}
-        noFound={img ? false : true}
+        noFound={!img}
         alt=""
         style={
           img === imageFallback
@@ -37,7 +40,7 @@ const ImgContainer = styled.div`
   background-color: white;
   border-radius: var(--border-radius-light);
 `;
-const Img = styled.img`
+const Img = styled.img<{ noFound?: boolean }>`
   height: 100%;
   object-fit: cover;
   object-position: center;

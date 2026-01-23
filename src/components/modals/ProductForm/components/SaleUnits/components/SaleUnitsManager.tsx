@@ -1,4 +1,3 @@
-// @ts-nocheck
 // SaleUnitsManager.tsx
 'use client';
 
@@ -14,8 +13,11 @@ import {
   fbDeleteSaleUnit,
   useListenSaleUnits,
 } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
+import type { ProductRecord } from '@/types/products';
+import type { InventoryUser } from '@/utils/inventory/types';
 
 import { SaleUnit } from './SaleUnit';
+import type { SaleUnitRecord } from './SaleUnit';
 import SaleUnitForm from './SaleUnitForm';
 
 const ManagerContainer = styled.div`
@@ -26,36 +28,42 @@ const CardsContainer = styled.div`
   flex-wrap: wrap;
   gap: 16px;
 `;
-const SaleUnitsManager = ({ onShowPricingModal }) => {
+type SaleUnitsManagerProps = {
+  onShowPricingModal: (unit: SaleUnitRecord) => void;
+};
+
+const SaleUnitsManager = ({ onShowPricingModal }: SaleUnitsManagerProps) => {
   const {
     product: { id: productId },
-  } = useSelector(selectUpdateProductData);
-  const user = useSelector(selectUser);
+  } = useSelector(selectUpdateProductData) as { product: ProductRecord };
+  const user = useSelector(selectUser) as InventoryUser | null;
 
-  const { data: saleUnits } = useListenSaleUnits(productId);
+  const { data: saleUnits } = useListenSaleUnits(productId) as {
+    data: SaleUnitRecord[];
+  };
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentUnit, setCurrentUnit] = useState(null);
+  const [currentUnit, setCurrentUnit] = useState<SaleUnitRecord | null>(null);
 
   const showAddModal = () => {
     setCurrentUnit(null);
     setIsModalVisible(true);
   };
 
-  const showEditModal = (unit) => {
+  const showEditModal = (unit: SaleUnitRecord) => {
     setCurrentUnit(unit);
     setIsModalVisible(true);
   };
 
-  const handleInfo = (unit) => {
+  const handleInfo = (unit: SaleUnitRecord) => {
     onShowPricingModal(unit);
   };
 
-  const handleSubmit = (_values) => {
+  const handleSubmit = (_values: unknown) => {
     setIsModalVisible(false);
     setCurrentUnit(null);
   };
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     fbDeleteSaleUnit(user, productId, id);
   };
   const handleCancel = () => {

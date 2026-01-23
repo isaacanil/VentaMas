@@ -1,10 +1,25 @@
-// @ts-nocheck
 import styled from 'styled-components';
+import type { Dispatch, SetStateAction } from 'react';
 
 import { icons } from '@/constants/icons/icons';
 import { Button } from '@/components/ui/Button/Button';
+import type {
+  FilterConfig,
+  FilterState,
+  FilterValue,
+} from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
 import { Item } from './Item';
+
+type FilterChangeEvent = { target: { value: FilterValue } };
+
+interface FilterUIProps {
+  filterConfig?: FilterConfig[];
+  setFilter: Dispatch<SetStateAction<FilterState>>;
+  filter: FilterState;
+  defaultFilter: FilterState;
+  setDefaultFilter: () => void;
+}
 
 export const FilterUI = ({
   filterConfig = [],
@@ -12,8 +27,8 @@ export const FilterUI = ({
   filter,
   defaultFilter,
   setDefaultFilter,
-}) => {
-  const clearFilter = (accessor) => {
+}: FilterUIProps) => {
+  const clearFilter = (accessor: string) => {
     const newFilter = { ...filter };
     if (newFilter[accessor] && defaultFilter[accessor]) {
       delete newFilter[accessor];
@@ -45,8 +60,11 @@ export const FilterUI = ({
               label={filterItem.label}
               filterOptions={filterItem.options}
               format={filterItem.format}
-              onChange={(e) =>
-                setFilter({ ...filter, [filterItem.accessor]: e.target.value })
+              onChange={(event: FilterChangeEvent) =>
+                setFilter({
+                  ...filter,
+                  [filterItem.accessor]: event.target.value,
+                })
               }
               onClear={() => clearFilter(filterItem.accessor)}
               selectedValue={filter[filterItem.accessor]}

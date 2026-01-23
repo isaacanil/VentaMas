@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faCreditCard,
   faBuilding,
@@ -20,6 +19,7 @@ import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import ROUTES_NAME from '@/router/routes/routesName';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import { Nav } from '@/components/ui/Nav/Nav';
+import type { MenuItem } from '@/components/ui/Nav/types';
 
 import { GeneralConfigSearch } from './components/Search/GeneralConfigSearch';
 // Import the factory instead of the direct selector
@@ -37,7 +37,29 @@ const TAB_ROUTES = {
   appInfo: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_APP_INFO,
 };
 
-const GENERAL_CONFIG_SEARCH_INDEX = [
+type ConfigTabKey = keyof typeof TAB_ROUTES;
+
+interface GeneralConfigSearchEntry {
+  key: string;
+  label: string;
+  description: string;
+  tab: ConfigTabKey;
+  route: string;
+  category: string;
+  sectionId?: string;
+  extraTokens?: string[];
+}
+
+interface GeneralConfigSearchRecord {
+  key: string;
+  label: string;
+  description: string;
+  category: string;
+  entry: GeneralConfigSearchEntry;
+  tokens: string[];
+}
+
+const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
   {
     key: 'business',
     label: 'Datos de la Empresa',
@@ -146,7 +168,7 @@ const GENERAL_CONFIG_SEARCH_INDEX = [
   },
 ];
 
-const normalizeText = (value = '') =>
+const normalizeText = (value: string = '') =>
   value
     .toString()
     .toLowerCase()
@@ -187,9 +209,9 @@ export default function GeneralConfig() {
     activeTab = 'appInfo';
   }
 
-  const highlightTimersRef = useRef({});
-  const pendingTargetRef = useRef(null);
-  const scrollRetryRef = useRef(null);
+  const highlightTimersRef = useRef<Record<string, number>>({});
+  const pendingTargetRef = useRef<GeneralConfigSearchEntry | null>(null);
+  const scrollRetryRef = useRef<number | null>(null);
   const previousRelevantRoute = useSelector(selectPreviousRouteIgnoringConfig);
   const user = useSelector(selectUser);
   const { abilities } = useUserAccess();
@@ -214,7 +236,7 @@ export default function GeneralConfig() {
     }
   }, []);
 
-  const scrollToSection = useCallback((sectionId) => {
+  const scrollToSection = useCallback((sectionId?: string) => {
     if (!sectionId) return true;
 
     const element =
@@ -258,7 +280,7 @@ export default function GeneralConfig() {
   }, []);
 
   const startScrollRetry = useCallback(
-    (sectionId) => {
+    (sectionId?: string) => {
       if (!sectionId) {
         pendingTargetRef.current = null;
         return;
@@ -322,15 +344,16 @@ export default function GeneralConfig() {
   };
 
   const handleTabChange = useCallback(
-    (key) => {
-      const targetRoute = TAB_ROUTES[key] || TAB_ROUTES.billing;
+    (key: string) => {
+      const targetRoute =
+        TAB_ROUTES[key as ConfigTabKey] || TAB_ROUTES.billing;
       navigate(targetRoute);
     },
     [navigate],
   );
 
   // Update menuItems: change group for appInfo and keep labelled grouping
-  const menuItems = useMemo(
+  const menuItems = useMemo<MenuItem[]>(
     () => [
       {
         key: 'business',
@@ -383,14 +406,14 @@ export default function GeneralConfig() {
     [],
   );
 
-  const searchEntries = useMemo(() => {
+  const searchEntries = useMemo<GeneralConfigSearchEntry[]>(() => {
     const availableTabs = new Set(menuItems.map((item) => item.key));
     return GENERAL_CONFIG_SEARCH_INDEX.filter((entry) =>
       availableTabs.has(entry.tab),
     );
   }, [menuItems]);
 
-  const searchRecords = useMemo(() => {
+  const searchRecords = useMemo<GeneralConfigSearchRecord[]>(() => {
     return searchEntries.map((entry) => {
       const tokens = [
         normalizeText(entry.label),
@@ -411,7 +434,7 @@ export default function GeneralConfig() {
   }, [searchEntries]);
 
   const handleSearchEntrySelect = useCallback(
-    (entry) => {
+    (entry?: GeneralConfigSearchEntry | null) => {
       if (!entry) return;
 
       pendingTargetRef.current = entry;

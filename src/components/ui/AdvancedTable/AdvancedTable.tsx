@@ -1,12 +1,9 @@
-// @ts-nocheck
 import {
   memo,
   useEffect,
   useRef,
   useState,
-  type Dispatch,
   type ReactNode,
-  type SetStateAction,
   type UIEvent,
 } from 'react';
 import { useSelector } from 'react-redux';
@@ -30,10 +27,14 @@ import useTableFiltering, {
 } from './hooks/useTableFilter';
 import useTableSorting from './hooks/useTableSorting';
 
-import type { ColumnConfig } from './types/ColumnTypes';
+import type {
+  ColumnConfig,
+  FilterConfig as AdvancedTableFilterConfig,
+  FilterOption as AdvancedTableFilterOption,
+  SortConfig,
+  TableRow,
+} from './types/ColumnTypes';
 import type { DefaultTheme } from 'styled-components';
-
-type TableRow = Record<string, unknown>;
 
 interface UserSliceState {
   uid?: string | null;
@@ -45,29 +46,6 @@ interface UserStoreState {
   };
 }
 
-type SortDirection = 'asc' | 'desc' | 'none';
-
-interface SortConfig {
-  key: string | null;
-  direction: SortDirection;
-}
-
-type FilterState = Record<string, unknown>;
-
-interface AdvancedTableFilterOption {
-  label: ReactNode;
-  value: unknown;
-  [key: string]: unknown;
-}
-
-interface AdvancedTableFilterConfig {
-  accessor: string;
-  defaultValue?: unknown;
-  options?: AdvancedTableFilterOption[];
-  format?: (value: unknown) => ReactNode;
-  [key: string]: unknown;
-}
-
 interface ScrollMetrics {
   scrollTop: number;
   scrollHeight: number;
@@ -76,14 +54,7 @@ interface ScrollMetrics {
   isAtBottom: boolean;
 }
 
-type InternalColumn<Row> = Omit<ColumnConfig, 'cell'> & {
-  accessor: string;
-  status?: ColumnConfig['status'];
-  reorderable?: boolean;
-  originalPosition?: number;
-  sortableValue?: (value: unknown) => unknown;
-  cell?: (props: { value: unknown; row?: Row; rowIndex?: number }) => ReactNode;
-};
+type InternalColumn<Row> = ColumnConfig<Row>;
 
 export interface AdvancedTableProps<Row = TableRow> {
   columns?: InternalColumn<Row>[];
@@ -276,42 +247,26 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
   })();
 
   const [isReorderMenuOpen, setIsReorderMenuOpen] = useState(false);
-  const [columnOrder, setColumnOrder, resetColumnOrder] = useColumnOrder(
-    columnsWithExpander,
-    tableName,
-    userUid,
-  ) as [
-      InternalColumn<Row>[],
-      Dispatch<SetStateAction<InternalColumn<Row>[]>>,
-      () => void,
-    ];
+  const [columnOrder, setColumnOrder, resetColumnOrder] =
+    useColumnOrder<InternalColumn<Row>>(columnsWithExpander, tableName, userUid);
 
   const toggleReorderMenu = () => {
     setIsReorderMenuOpen((prev) => !prev);
   };
 
   const [filter, setFilter, setDefaultFilter, defaultFilter, filteredData] =
-    useTableFiltering(filterConfig, data) as [
-      FilterState,
-      Dispatch<SetStateAction<FilterState>>,
-      () => void,
-      FilterState,
-      Row[],
-    ];
+    useTableFiltering(filterConfig, data);
 
-  const dynamicFilterConfig = useDynamicFilterConfig(
-    filterConfig,
-    data,
-  ) as AdvancedTableFilterConfig[];
+  const dynamicFilterConfig = useDynamicFilterConfig(filterConfig, data);
 
   const searchTermFilteredData = searchTerm
-    ? (filterData(filteredData, searchTerm) as Row[])
+    ? filterData(filteredData, searchTerm) ?? filteredData
     : filteredData;
 
   const { handleSort, sortedData, sortConfig } = useTableSorting(
     searchTermFilteredData,
     columnsWithExpander,
-  ) as SortUtilities<Row>;
+  );
 
   const {
     currentData,
@@ -327,7 +282,7 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     searchTermFilteredData,
     numberOfElementsPerPage,
     wrapperRef,
-  ) as PaginationUtilities<Row>;
+  );
 
   const shouldUseVirtualization = enableVirtualization && !loading;
   const shouldPaginateVirtualized =
@@ -343,15 +298,19 @@ const AdvancedTableInner = <Row extends TableRow = TableRow>({
     ? (shouldPaginateVirtualized ? currentData : sortedData)
     : currentData;
 
-  const groupedData =
+  const groupedData: Record<string, Row[]> | Row[] =
     shouldGroup && groupBy
       ? groupDataByField(dataToGroup, groupBy)
       : dataToGroup;
 
   // Preparar datos planos para GroupedVirtuoso
-  const { groupCounts, groupHeaders, flatGroupedData } = (() => {
+  const { groupCounts, groupHeaders, flatGroupedData } = ((): {
+    groupCounts: number[];
+    groupHeaders: string[];
+    flatGroupedData: Row[];
+  } => {
     if (!shouldGroup || !groupBy || !shouldUseVirtualization) {
-      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };        
+      return { groupCounts: [], groupHeaders: [], flatGroupedData: [] };
     }
 
     // En este punto groupedData es un objeto Record<string, Row[]>

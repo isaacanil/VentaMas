@@ -1,9 +1,28 @@
-// @ts-nocheck
 import { PrinterOutlined } from '@/constants/icons/antd';
 import { Button } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
+
+import type { CreditNoteRecord } from '@/types/creditNote';
+
+interface CreditNoteActionsProps {
+  onClose: () => void;
+  effectiveIsView: boolean;
+  effectiveIsEdit: boolean;
+  canUseCreditNotes: boolean;
+  onPrint: (creditNoteData: CreditNoteRecord | null | undefined) => void;
+  pdfLoading: boolean;
+  creditNoteData: CreditNoteRecord | null;
+  onSubmit: () => void | Promise<void>;
+  selectedInvoiceId: string | null | undefined;
+  selectedItems: Array<string | undefined>;
+  loading: boolean;
+  isTimeAllowed: boolean;
+  hasApplications: boolean;
+  createdAtDate: Date | null;
+  allowedEditMs: number;
+}
 
 export const CreditNoteActions = ({
   onClose,
@@ -21,8 +40,8 @@ export const CreditNoteActions = ({
   hasApplications,
   createdAtDate,
   allowedEditMs,
-}) => {
-  const [now, setNow] = useState(() => Date.now());
+}: CreditNoteActionsProps) => {
+  const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60000); // Actualizar cada minuto

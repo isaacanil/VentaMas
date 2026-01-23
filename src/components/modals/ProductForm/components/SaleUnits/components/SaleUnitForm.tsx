@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   DollarCircleOutlined,
   RiseOutlined,
@@ -17,18 +16,56 @@ import React, { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-
 import { selectUser } from '@/features/auth/userSlice';
 import { selectUpdateProductData } from '@/features/updateProduct/updateProductSlice';
 import { fbUpsetSaleUnits } from '@/firebase/products/saleUnits/fbUpdateSaleUnit';
+import type { ProductRecord } from '@/types/products';
 import { formatPrice } from '@/utils/format';
+import type { InventoryUser } from '@/utils/inventory/types';
+
+import type { SaleUnitPricing, SaleUnitRecord } from './SaleUnit';
 
 const FormContainer = styled.div``;
 
-const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
-  const [form] = Form.useForm();
-  const user = useSelector(selectUser);
-  const initialData = {
+type SaleUnitPricingInput = SaleUnitPricing & {
+  stock?: number;
+  listPriceEnabled?: boolean;
+  avgPriceEnabled?: boolean;
+  minPriceEnabled?: boolean;
+};
+
+type SaleUnitFormValues = {
+  unitName: string;
+  packSize: number;
+  pricing: SaleUnitPricingInput;
+};
+
+type SaleUnitFormProps = {
+  isOpen: boolean;
+  initialValues: SaleUnitRecord | null;
+  onSubmit: () => void;
+  onCancel: () => void;
+};
+
+type PriceCardRow = {
+  key: string;
+  tipoPrecio: string;
+  precioSinItbis: string;
+  itbis: string;
+  total: string;
+  margen: string;
+  porcentajeGanancia: string;
+};
+
+const SaleUnitForm = ({
+  isOpen,
+  initialValues,
+  onSubmit,
+  onCancel,
+}: SaleUnitFormProps) => {
+  const [form] = Form.useForm<SaleUnitFormValues>();
+  const user = useSelector(selectUser) as InventoryUser | null;
+  const initialData: SaleUnitFormValues = {
     unitName: '',
     packSize: 1,
     pricing: {
@@ -47,9 +84,9 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
 
   const {
     product: { id: productId },
-  } = useSelector(selectUpdateProductData);
+  } = useSelector(selectUpdateProductData) as { product: ProductRecord };
 
-  const handleFinish = (values) => {
+  const handleFinish = (values: SaleUnitFormValues) => {
     try {
       const data = {
         ...values,
@@ -69,7 +106,7 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
     }
   };
 
-  const updateCardData = (values) => {
+  const updateCardData = (values: { pricing?: Partial<SaleUnitPricingInput> }) => {
     const { pricing = {} } = values;
     const {
       tax = 0,
@@ -82,7 +119,7 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
       minPriceEnabled = false,
     } = pricing;
 
-    const calculateRow = (price) => {
+    const calculateRow = (price: number) => {
       const taxRate = tax / 100;
       const itbis = price * taxRate;
       const total = price + itbis;
@@ -98,7 +135,7 @@ const SaleUnitForm = ({ isOpen, initialValues, onSubmit, onCancel }) => {
       };
     };
 
-    const newCardData = [];
+    const newCardData: PriceCardRow[] = [];
     if (listPriceEnabled) {
       newCardData.push({
         key: '1',
@@ -446,7 +483,12 @@ const OptionContainer = styled.div`
   align-items: center;
   justify-content: space-between;
 `;
-const Option = ({ title, value }) => {
+type OptionProps = {
+  title: string;
+  value: React.ReactNode;
+};
+
+const Option = ({ title, value }: OptionProps) => {
   return (
     <OptionContainer>
       <OptionTitle>{title}</OptionTitle>

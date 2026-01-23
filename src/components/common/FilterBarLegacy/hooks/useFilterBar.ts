@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 
-type FilterBarState<TFilters extends Record<string, unknown>> = {
+export type FilterBarState<TFilters extends Record<string, unknown>> = {
   filters: TFilters;
   isAscending: boolean;
 };
 
-type FilterBarSort = {
+export type FilterBarSort = {
   isAscending?: boolean;
 };
 
@@ -51,7 +51,7 @@ export const useFilterBar = <TFilters extends Record<string, unknown>>(
   const resetAll = useCallback(() => {
     setState({
       filters: defaultFilters,
-      isAscending: defaultSort.isAscending,
+      isAscending: defaultSort.isAscending ?? false,
     });
   }, [defaultFilters, defaultSort.isAscending]);
 

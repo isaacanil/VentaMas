@@ -1,8 +1,9 @@
-// @ts-nocheck
 import { FileTextOutlined, CloseOutlined } from '@/constants/icons/antd';
 import { Input, Drawer, Tag, Pagination } from 'antd';
+import type { InputRef } from 'antd';
 import { DateTime } from 'luxon';
 import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
 import styled from 'styled-components';
 
 
@@ -10,6 +11,8 @@ import { DatePicker } from '@/components/common/DatePicker/DatePicker';
 import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { normalizeText } from '@/utils/text';
+import type { InvoiceData } from '@/types/invoice';
+import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
 
 
 /*
@@ -49,12 +52,20 @@ const InvoicesContainer = styled.div`
   overflow-y: auto;
 `;
 
-const InvoiceCard = styled.div`
+interface InvoiceCardProps {
+  $isSelected?: boolean;
+}
+
+interface InvoiceInfoProps {
+  $disabled?: boolean;
+}
+
+const InvoiceCard = styled.div<InvoiceCardProps>`
   padding: 12px 14px;
   cursor: pointer;
-  background-color: ${(props: { $isSelected?: any }) => props.$isSelected ($isSelected ? '#F0F5FF' : '#fff')};
+  background-color: ${({ $isSelected }) => ($isSelected ? '#F0F5FF' : '#fff')};
   border: 1px solid
-    ${(props: { $isSelected?: any }) => props.$isSelected ($isSelected ? '#1890ff' : '#d9d9d9')};
+    ${({ $isSelected }) => ($isSelected ? '#1890ff' : '#d9d9d9')};
   border-radius: 8px;
   transition: all 0.2s ease;
 
@@ -107,20 +118,20 @@ const InvoiceCard = styled.div`
   }
 `;
 
-const InvoiceInfo = styled.div`
+const InvoiceInfo = styled.div<InvoiceInfoProps>`
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  cursor: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   background: #fff;
   border: 1px solid #d9d9d9;
   border-radius: 8px;
-  opacity: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? 0.6 : 1)};
+  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
   transition: border-color 0.2s;
 
   &:hover {
-    border-color: ${(props: { $disabled?: any }) => props.$disabled ($disabled ? '#d9d9d9' : '#1890ff')};
+    border-color: ${({ $disabled }) => ($disabled ? '#d9d9d9' : '#1890ff')};
   }
 
   &.empty {
@@ -181,6 +192,17 @@ const PaginationFooter = styled.div`
   border-top: 1px solid #f0f0f0;
 `;
 
+interface InvoiceSelectorProps {
+  invoices?: InvoiceData[];
+  selectedInvoice?: InvoiceData | null;
+  onSelectInvoice?: (invoice: InvoiceData | null) => void;
+  loading?: boolean;
+  disabled?: boolean;
+  label?: string;
+  dateRange: DatePickerRangeValue;
+  onDateRangeChange?: (range: DatePickerRangeValue) => void;
+}
+
 const InvoiceSelector = ({
   invoices = [],
   selectedInvoice,
@@ -190,7 +212,7 @@ const InvoiceSelector = ({
   label = 'Factura',
   dateRange,
   onDateRangeChange,
-}) => {
+}: InvoiceSelectorProps) => {
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
   const paginationSeed = `${visible ? 'open' : 'closed'}:${search}`;
@@ -202,7 +224,7 @@ const InvoiceSelector = ({
   const currentPage =
     paginationState.seed === paginationSeed ? paginationState.currentPage : 1;
   const pageSize = 10;
-  const searchRef = useRef(null);
+  const searchRef = useRef<InputRef | null>(null);
 
   useEffect(() => {
     if (!visible) return undefined;
@@ -218,7 +240,7 @@ const InvoiceSelector = ({
         [inv.numberID?.toString(), inv.ncf, inv.NCF]
           .filter(Boolean)
           .some((field) =>
-            normalizeText(field).includes(normalizeText(search)),
+            normalizeText(String(field)).includes(normalizeText(search)),
           ),
       )
     : invoices;
@@ -232,23 +254,23 @@ const InvoiceSelector = ({
     if (!disabled) setVisible(true);
   };
 
-  const handleDateRangeChange = (range) => {
+  const handleDateRangeChange = (range: DatePickerRangeValue | null) => {
     const finalRange =
       !range || !range[0]
         ? [DateTime.now().startOf('month'), DateTime.now().endOf('month')]
         : range;
-    onDateRangeChange?.(finalRange);
+    onDateRangeChange?.(finalRange as DatePickerRangeValue);
   };
 
   const closeDrawer = () => setVisible(false);
 
-  const handleSelect = (invoice) => {
+  const handleSelect = (invoice: InvoiceData) => {
     onSelectInvoice?.(invoice);
     closeDrawer();
     setSearch('');
   };
 
-  const clearSelection = (e: any) => {
+  const clearSelection = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     onSelectInvoice?.(null);
   };
@@ -331,9 +353,9 @@ const InvoiceSelector = ({
           </Header>
 
           <InvoicesContainer>
-            {paginatedInvoices.map((inv) => (
+            {paginatedInvoices.map((inv, index) => (
               <InvoiceCard
-                key={inv.id}
+                key={inv.id ?? index}
                 onClick={() => handleSelect(inv)}
                 $isSelected={selectedInvoice?.id === inv.id}
               >

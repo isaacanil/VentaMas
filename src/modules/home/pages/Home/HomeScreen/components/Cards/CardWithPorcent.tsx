@@ -1,8 +1,18 @@
-// @ts-nocheck
-import React from 'react';
 import styled from 'styled-components';
 
-export const CardWithPercent = ({ title, icon, number }) => {
+import type { ReactNode } from 'react';
+
+interface CardWithPercentProps {
+  title: string;
+  icon: ReactNode;
+  number: number | string;
+}
+
+export const CardWithPercent = ({
+  title,
+  icon,
+  number,
+}: CardWithPercentProps) => {
   return (
     <Container>
       <Head>

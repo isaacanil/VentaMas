@@ -1,11 +1,19 @@
-// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import { fbGetBusinesses } from '@/firebase/dev/businesses/fbGetBusinesses';
 
-export const CreateBusiness = () => {
-  const [businesses, setBusinesses] = useState([]);
+interface BusinessInfo {
+  id?: string;
+  name?: string;
+}
+
+interface BusinessDoc {
+  business?: BusinessInfo;
+}
+
+export const CreateBusiness: React.FC = () => {
+  const [businesses, setBusinesses] = useState<BusinessDoc[]>([]);
   useEffect(() => {
     fbGetBusinesses(setBusinesses);
   }, []);
@@ -15,11 +23,17 @@ export const CreateBusiness = () => {
         <h1>Create Business</h1>
       </Head>
       <Body>
-        {businesses.map(({ business }, index) => (
-          <div key={business?.id ?? business?.name ?? index}>
-            {business.name}
-          </div>
-        ))}
+        {businesses.map(({ business }, index) => {
+          if (!business) {
+            return null;
+          }
+
+          return (
+            <div key={business.id ?? business.name ?? index}>
+              {business.name}
+            </div>
+          );
+        })}
       </Body>
     </Container>
   );

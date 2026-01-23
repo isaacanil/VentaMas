@@ -1,26 +1,37 @@
-// @ts-nocheck
 import { httpsCallable } from 'firebase/functions';
 
 import { functions } from '@/firebase/firebaseconfig';
 import { printPdfBase64 } from '@/utils/printPdf';
 // import { generateInvoiceLetterPdf, generateInvoiceLetterPdfNoLogo } from "@/pdf/invoices/templates/template2-pdf-lib/InvoiceLetterPdf";
 
-export function sanitizeNumbers(obj) {
+type BusinessData = Record<string, unknown>;
+type QuotationData = Record<string, unknown>;
+type DialogCloseHandler = (() => void) | undefined;
+
+export function sanitizeNumbers<T>(obj: T): T {
   return JSON.parse(
-    JSON.stringify(obj, (k, v) =>
-      typeof v === 'number' && !Number.isFinite(v) ? null : v,
+    JSON.stringify(obj, (_key, value: unknown) =>
+      typeof value === 'number' && !Number.isFinite(value) ? null : value,
     ),
-  );
+  ) as T;
 }
 
-export async function downloadQuotationPdf(business, data, onDialogClose) {
+export async function downloadQuotationPdf(
+  business: BusinessData,
+  data: QuotationData,
+  onDialogClose?: DialogCloseHandler,
+): Promise<void> {
   try {
-    const fn = httpsCallable(functions, 'quotationPdf');
+    const fn = httpsCallable<{ business: BusinessData; data: QuotationData }, string>(
+      functions,
+      'quotationPdf',
+    );
     const { data: base64 } = await fn({ business, data });
     printPdfBase64(base64, { onPrintDialogClose: onDialogClose });
   } catch (e) {
-    console.error('PDF generation failed', e.message);
-    console.error(e.stack);
+    const error = e instanceof Error ? e : new Error('Unknown error');
+    console.error('PDF generation failed', error.message);
+    console.error(error.stack);
   }
 }
 
