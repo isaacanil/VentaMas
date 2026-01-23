@@ -1,9 +1,10 @@
-// @ts-nocheck
 import { Form, Typography, Space, Tag } from 'antd';
 import React from 'react';
 import Barcode from 'react-barcode';
 import styled from 'styled-components';
 
+import type { BarcodeAnalysis } from '@/utils/barcode/barcode';
+import type { BarcodeSettings } from '@/firebase/barcode/types';
 import { isGS1RDCode } from '@/utils/barcode/barcode';
 
 const { Text } = Typography;
@@ -16,7 +17,7 @@ const PreviewContainer = styled.div`
   border-radius: 8px;
   transition: all 0.3s ease;
 
-    &:hover {
+  &:hover {
     background: #f6f8fa;
     border-color: #1890ff;
   }
@@ -57,14 +58,18 @@ const InfoValue = styled.div`
   text-align: right;
 `;
 
-const StatusBadge = styled.span`
+type StatusBadgeProps = {
+  $valid?: boolean;
+};
+
+const StatusBadge = styled.span<StatusBadgeProps>`
   display: inline-flex;
   align-items: center;
   padding: 2px 6px;
   font-size: 11px;
   font-weight: 500;
-  color: ${(props: any) => (props.valid ? '#52c41a' : '#fa8c16')};
-  background: ${(props: any) => (props.valid ? '#f6ffed' : '#fff2e8')};
+  color: ${(props) => (props.$valid ? '#52c41a' : '#fa8c16')};
+  background: ${(props) => (props.$valid ? '#f6ffed' : '#fff2e8')};
   border-radius: 4px;
 `;
 
@@ -89,6 +94,22 @@ const PreviewText = styled.div`
 // Exportar los styled-components para usar en otros componentes
 export { PreviewContainer, PreviewText };
 
+type RealtimeStatus = {
+  isUpdating?: boolean;
+  hasRealtimeData?: boolean;
+  hasManualChanges?: boolean;
+};
+
+type BarcodePreviewProps = {
+  autoMode: boolean;
+  selectedConfig?: BarcodeSettings | null;
+  livePreview?: string;
+  currentBarcode?: string | null;
+  realtimeStatus?: RealtimeStatus;
+  barcodeAnalysis?: BarcodeAnalysis | null;
+  isInternalMode?: boolean;
+};
+
 export const BarcodePreview = ({
   autoMode,
   selectedConfig,
@@ -97,7 +118,7 @@ export const BarcodePreview = ({
   realtimeStatus = {},
   barcodeAnalysis = null,
   isInternalMode = false,
-}) => {
+}: BarcodePreviewProps) => {
   const showPreview =
     livePreview ||
     (autoMode && (selectedConfig?.companyPrefix || isInternalMode));
@@ -185,7 +206,7 @@ export const BarcodePreview = ({
               <InfoGrid>
                 <InfoLabel>Estado:</InfoLabel>
                 <InfoValue>
-                  <StatusBadge valid={barcodeAnalysis.checkDigit?.isValid}>
+                  <StatusBadge $valid={barcodeAnalysis.checkDigit?.isValid}>
                     {barcodeAnalysis.checkDigit?.isValid
                       ? 'Válido'
                       : 'Requiere revisión'}

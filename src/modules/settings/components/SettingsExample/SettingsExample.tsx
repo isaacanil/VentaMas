@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faUser,
   faShieldAlt,
@@ -12,15 +11,16 @@ import {
   faServer,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { Nav } from '@/components/ui/Nav/Nav';
+import type { MenuItem } from '@/components/ui/Nav/types';
 
 export default function SettingsExample() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState<string>('profile');
 
   // Ejemplo de menú con algunos elementos agrupados y otros no
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     // Elementos no agrupados
     {
       key: 'profile',
@@ -98,7 +98,7 @@ export default function SettingsExample() {
     },
   ];
 
-  const handleTabChange = (key) => {
+  const handleTabChange = (key: string) => {
     setActiveTab(key);
   };
 

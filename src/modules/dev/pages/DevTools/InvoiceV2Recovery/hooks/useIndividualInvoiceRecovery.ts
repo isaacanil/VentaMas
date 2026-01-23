@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Form, message } from 'antd';
 import {
   collection,
@@ -32,7 +31,159 @@ import {
 
 import { formatDateTime, parseTimestamp } from '../utils/time';
 
-const parseCounterNumber = (value) => {
+interface InvoiceQueryForm {
+  businessId?: string;
+  invoiceId?: string;
+}
+
+interface BusinessRecord {
+  id: string;
+  name?: string;
+  rnc?: string;
+  business?: {
+    name?: string;
+    fantasyName?: string;
+    RNC?: string;
+    rnc?: string;
+  };
+}
+
+interface OptionItem {
+  value: string;
+  label: string;
+}
+
+interface InvoiceOptionMeta {
+  hasV2: boolean;
+  v2Status: string;
+  source: string;
+  registeredInInvoices: boolean;
+  hasDateMismatch: boolean;
+  canonicalDate?: unknown;
+  v2CreatedAt?: unknown;
+}
+
+interface InvoiceOptionEntry extends OptionItem {
+  meta: InvoiceOptionMeta;
+}
+
+interface InvoiceSummary {
+  pending?: number;
+  done?: number;
+  failed?: number;
+}
+
+interface OutboxTask {
+  id: string;
+  type?: string;
+  status?: string;
+  attempts?: number;
+  updatedAt?: unknown;
+  lastError?: string;
+}
+
+interface CashCountMeta {
+  resolvedCashCountId?: string;
+  relinkedAt?: unknown;
+  resolvedState?: string;
+  intendedCashCountId?: string;
+}
+
+interface SnapshotData {
+  createdAt?: unknown;
+  cashCountIdHint?: string;
+  cart?: {
+    numberID?: string | number;
+    number?: string | number;
+    NCF?: string;
+    ncf?: string;
+    client?: {
+      name?: string;
+    };
+  };
+  ncf?: {
+    code?: string;
+    type?: string;
+    status?: string;
+  };
+  client?: {
+    name?: string;
+  };
+  dueDate?: unknown;
+  invoiceComment?: string;
+  meta?: {
+    cashCount?: CashCountMeta;
+  };
+  numberID?: string | number;
+}
+
+interface LinkedCashCount {
+  id: string;
+  state?: string;
+  number?: string | number;
+  opening?: {
+    employee?: {
+      name?: string;
+    };
+  };
+}
+
+interface StatusTimelineEntry {
+  status: string;
+  at?: unknown;
+}
+
+interface CanonicalInvoiceData {
+  data?: Record<string, unknown> | null;
+  id?: string;
+  date?: unknown;
+  createdAt?: unknown;
+  numberID?: string | number;
+  number?: string | number;
+  invoiceNumber?: string | number;
+  cashCountId?: string;
+  cashCountID?: string;
+}
+
+interface CanonicalInvoiceWrapper {
+  data?: CanonicalInvoiceData | null;
+}
+
+interface InvoiceData {
+  summary?: InvoiceSummary;
+  canonical?: CanonicalInvoiceWrapper;
+  failedTasks?: OutboxTask[];
+  invoiceId?: string;
+  snapshot?: SnapshotData;
+  createdAt?: unknown;
+  canonicalDate?: unknown;
+  cashCounts?: LinkedCashCount[];
+  statusTimeline?: StatusTimelineEntry[];
+  numberID?: string | number;
+  number?: string | number;
+  availableTasks?: string[];
+}
+
+interface RepairResult {
+  results?: Array<{
+    type: string;
+    status: string;
+    taskId?: string;
+    reason?: string;
+  }>;
+}
+
+interface InvoiceCounterState {
+  value: number | null;
+  updatedAt: unknown;
+}
+
+interface UseIndividualInvoiceRecoveryProps {
+  initialBusinessId?: string | null;
+  initialInvoiceId?: string | null;
+}
+
+const parseCounterNumber = (value: unknown): number | null => {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
   }
@@ -48,28 +199,45 @@ const parseCounterNumber = (value) => {
 export const useIndividualInvoiceRecovery = ({
   initialBusinessId,
   initialInvoiceId,
-} = {}) => {
-  const [form] = Form.useForm();
-  const watchedBusinessId = Form.useWatch('businessId', form);
+}: UseIndividualInvoiceRecoveryProps = {}) => {
+  const [form] = Form.useForm<InvoiceQueryForm>();
+  const watchedBusinessId = Form.useWatch('businessId', form) as
+    | string
+    | undefined;
 
   const [loading, setLoading] = useState(false);
   const [repairing, setRepairing] = useState(false);
-  const [invoiceData, setInvoiceData] = useState(null);
-  const [activeQuery, setActiveQuery] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [selectedTasks, setSelectedTasks] = useState(DEFAULT_TASKS);
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
+  const [activeQuery, setActiveQuery] = useState<InvoiceQueryForm | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>(DEFAULT_TASKS);
   const [reason, setReason] = useState('');
-  const [repairResult, setRepairResult] = useState(null);
-  const [businessOptions, setBusinessOptions] = useState([]);
+  const [repairResult, setRepairResult] = useState<RepairResult | null>(null);
+  const [businessOptions, setBusinessOptions] = useState<OptionItem[]>([]);
   const [loadingBusinesses, setLoadingBusinesses] = useState(false);
-  const [invoiceOptions, setInvoiceOptions] = useState([]);
-  const [invoiceLookup, setInvoiceLookup] = useState({});
+  const [invoiceOptions, setInvoiceOptions] = useState<OptionItem[]>([]);
+  const [invoiceLookup, setInvoiceLookup] = useState<
+    Record<string, InvoiceOptionMeta>
+  >({});
   const [loadingInvoices, setLoadingInvoices] = useState(false);
-  const [invoiceCounterValue, setInvoiceCounterValue] = useState(null);
-  const [invoiceCounterUpdatedAt, setInvoiceCounterUpdatedAt] = useState(null);
+  const [invoiceCounterValue, setInvoiceCounterValue] = useState<number | null>(
+    null,
+  );
+  const [invoiceCounterUpdatedAt, setInvoiceCounterUpdatedAt] =
+    useState<unknown>(null);
   const [loadingInvoiceCounter, setLoadingInvoiceCounter] = useState(false);
   const [updatingInvoiceCounter, setUpdatingInvoiceCounter] = useState(false);
   const [updatingInvoiceNumber, setUpdatingInvoiceNumber] = useState(false);
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'Ocurrió un error inesperado.';
+  };
 
   useEffect(() => {
     if (initialBusinessId) {
@@ -81,7 +249,7 @@ export const useIndividualInvoiceRecovery = ({
     if (initialInvoiceId) {
       form.setFieldsValue({ invoiceId: initialInvoiceId });
       setActiveQuery((prev) => ({
-        ...prev,
+        ...(prev ?? {}),
         invoiceId: initialInvoiceId,
         businessId: prev?.businessId || initialBusinessId || null,
       }));
@@ -93,7 +261,7 @@ export const useIndividualInvoiceRecovery = ({
     const load = async () => {
       setLoadingBusinesses(true);
       try {
-        const list = await fbGetBusinessesList();
+        const list = (await fbGetBusinessesList()) as BusinessRecord[];
         if (!isMounted) return;
         const options = list.map((item) => {
           const name =
@@ -106,9 +274,9 @@ export const useIndividualInvoiceRecovery = ({
           return { label, value: item.id };
         });
         setBusinessOptions(options);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('[useIndividualInvoiceRecovery] load businesses', err);
-        message.error('No se pudo cargar la lista de negocios');
+        message.error(getErrorMessage(err));
       } finally {
         if (isMounted) {
           setLoadingBusinesses(false);
@@ -130,7 +298,7 @@ export const useIndividualInvoiceRecovery = ({
         if (initialInvoiceId) {
           form.setFieldsValue({ invoiceId: initialInvoiceId });
           setActiveQuery((prev) => ({
-            ...prev,
+            ...(prev ?? {}),
             invoiceId: initialInvoiceId,
           }));
         } else {
@@ -140,8 +308,8 @@ export const useIndividualInvoiceRecovery = ({
       }
       setLoadingInvoices(true);
       try {
-        const canonicalIds = new Set();
-        const canonicalDocs = {};
+        const canonicalIds = new Set<string>();
+        const canonicalDocs: Record<string, { date?: unknown } | null> = {};
         const canonicalRef = collection(
           db,
           'businesses',
@@ -153,7 +321,7 @@ export const useIndividualInvoiceRecovery = ({
         );
         canonicalSnap.docs.forEach((docSnap) => {
           canonicalIds.add(docSnap.id);
-          const data = docSnap.data();
+          const data = docSnap.data() as { data?: { date?: unknown } } | undefined;
           canonicalDocs[docSnap.id] = data?.data || null;
         });
 
@@ -166,18 +334,19 @@ export const useIndividualInvoiceRecovery = ({
         const v2Snap = await getDocs(
           buildQuery(v2Ref, orderBy('createdAt', 'desc'), limit(MAX_INVOICE_SUGGESTIONS)),
         );
-        const entries = v2Snap.docs.map((docSnap) => {
-          const raw = docSnap.data() || {};
-          const snapshotData = raw?.snapshot || {};
-          const cart = snapshotData?.cart || raw?.cart || {};
+        const entries: InvoiceOptionEntry[] = v2Snap.docs.map((docSnap) => {
+          const raw = (docSnap.data() || {}) as Record<string, unknown>;
+          const snapshotData = (raw.snapshot as SnapshotData) || {};
+          const cart = snapshotData?.cart || (raw.cart as SnapshotData['cart']) || {};
           const invoiceNumber =
-            cart?.numberID ?? cart?.number ?? raw?.numberID ?? null;
+            cart?.numberID ?? cart?.number ?? (raw.numberID as string | number | null) ?? null;
           const ncf =
             snapshotData?.ncf?.code || cart?.NCF || cart?.ncf || null;
           const clientName =
             snapshotData?.client?.name || cart?.client?.name || null;
-          const invoiceStatus = raw?.status || 'pending';
-          const createdAtSource = raw?.createdAt || snapshotData?.createdAt || null;
+          const invoiceStatus = (raw.status as string | undefined) || 'pending';
+          const createdAtSource =
+            (raw.createdAt as unknown) || snapshotData?.createdAt || null;
           const canonicalDoc = canonicalDocs[docSnap.id] || null;
           const canonicalDateSource = canonicalDoc?.date || null;
           const v2CreatedAtTs = parseTimestamp(createdAtSource);
@@ -229,7 +398,7 @@ export const useIndividualInvoiceRecovery = ({
 
         if (aborted) return;
         setInvoiceOptions(entries.map(({ value, label }) => ({ value, label })));
-        const lookup = {};
+        const lookup: Record<string, InvoiceOptionMeta> = {};
         entries.forEach((entry) => {
           lookup[entry.value] = entry.meta || {};
         });
@@ -240,7 +409,7 @@ export const useIndividualInvoiceRecovery = ({
           if (exists) {
             form.setFieldsValue({ invoiceId: initialInvoiceId });
             setActiveQuery((prev) => ({
-              ...prev,
+              ...(prev ?? {}),
               businessId: watchedBusinessId,
               invoiceId: initialInvoiceId,
             }));
@@ -248,10 +417,10 @@ export const useIndividualInvoiceRecovery = ({
             form.setFieldsValue({ invoiceId: undefined });
           }
         }
-      } catch (err) {
+      } catch (err: unknown) {
         if (!aborted) {
           console.error('[useIndividualInvoiceRecovery] load invoices', err);
-          message.error('No se pudo obtener el historial de facturas.');
+          message.error(getErrorMessage(err));
           setInvoiceOptions([]);
           setInvoiceLookup({});
         }
@@ -268,7 +437,9 @@ export const useIndividualInvoiceRecovery = ({
   }, [form, initialInvoiceId, watchedBusinessId]);
 
   const fetchInvoiceCounter = useCallback(
-    async (targetBusinessId = watchedBusinessId) => {
+    async (
+      targetBusinessId: string | undefined = watchedBusinessId,
+    ): Promise<InvoiceCounterState | null> => {
       if (!targetBusinessId) {
         setInvoiceCounterValue(null);
         setInvoiceCounterUpdatedAt(null);
@@ -289,14 +460,14 @@ export const useIndividualInvoiceRecovery = ({
           setInvoiceCounterUpdatedAt(null);
           return null;
         }
-        const data = counterSnap.data() || {};
+        const data = (counterSnap.data() || {}) as Record<string, unknown>;
         const normalizedValue = parseCounterNumber(data.value);
         setInvoiceCounterValue(normalizedValue);
         setInvoiceCounterUpdatedAt(data.updatedAt || data.updated_at || null);
         return { value: normalizedValue, updatedAt: data.updatedAt || null };
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('[useIndividualInvoiceRecovery] fetch counter', err);
-        message.error('No se pudo obtener el contador de facturas.');
+        message.error(getErrorMessage(err));
         setInvoiceCounterValue(null);
         setInvoiceCounterUpdatedAt(null);
         return null;
@@ -311,7 +482,7 @@ export const useIndividualInvoiceRecovery = ({
     fetchInvoiceCounter(watchedBusinessId);
   }, [fetchInvoiceCounter, watchedBusinessId]);
 
-  const handleFetch = useCallback(async (values) => {
+  const handleFetch = useCallback(async (values: InvoiceQueryForm) => {
     setLoading(true);
     setErrorMessage(null);
     setRepairResult(null);
@@ -321,24 +492,24 @@ export const useIndividualInvoiceRecovery = ({
         invoiceId: String(values.invoiceId ?? '').trim(),
       };
       const response = await fetchInvoiceV2Summary(normalized);
-      setInvoiceData(response);
+      setInvoiceData(response as InvoiceData);
       setActiveQuery(normalized);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('[useIndividualInvoiceRecovery] fetch error', err);
       setInvoiceData(null);
-      setErrorMessage(err?.message || 'No se pudo obtener la factura.');
+      setErrorMessage(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   }, []);
 
   const handleSubmit = useCallback(
-    (values) => {
+    (values: InvoiceQueryForm) => {
       if (!values.businessId || !values.invoiceId) {
         message.warning('Completa los campos requeridos.');
         return;
       }
-      const meta = invoiceLookup?.[values.invoiceId];
+      const meta = values.invoiceId ? invoiceLookup?.[values.invoiceId] : undefined;
       if (meta && meta.hasV2 === false) {
         message.warning(
           'Esta factura pertenece al flujo anterior y no tiene Invoice V2.',
@@ -359,7 +530,7 @@ export const useIndividualInvoiceRecovery = ({
   }, [fetchInvoiceCounter, watchedBusinessId]);
 
   const updateInvoiceCounter = useCallback(
-    async (nextValue) => {
+    async (nextValue: unknown) => {
       if (!watchedBusinessId) {
         message.warning('Selecciona un negocio para actualizar el contador.');
         return;
@@ -389,9 +560,9 @@ export const useIndividualInvoiceRecovery = ({
         message.success('Contador actualizado.');
         await fetchInvoiceCounter(watchedBusinessId);
         return true;
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('[useIndividualInvoiceRecovery] update counter', err);
-        message.error('No se pudo actualizar el contador.');
+        message.error(getErrorMessage(err));
         return false;
       } finally {
         setUpdatingInvoiceCounter(false);
@@ -401,7 +572,13 @@ export const useIndividualInvoiceRecovery = ({
   );
 
   const runRepairTasks = useCallback(
-    async ({ tasks, customReason }) => {
+    async ({
+      tasks,
+      customReason,
+    }: {
+      tasks: string[];
+      customReason?: string;
+    }) => {
       if (!activeQuery) {
         message.warning('Busca una factura antes de reintentar.');
         return;
@@ -422,14 +599,14 @@ export const useIndividualInvoiceRecovery = ({
           tasks,
           reason: trimmedReason,
         });
-        setRepairResult(response);
+        setRepairResult(response as RepairResult);
         message.success(
           'Tareas reprogramadas. El worker procesará los cambios.',
         );
         await handleFetch(activeQuery);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('[useIndividualInvoiceRecovery] repair error', err);
-        message.error(err?.message || 'No se pudo reprogramar la factura.');
+        message.error(getErrorMessage(err));
       } finally {
         setRepairing(false);
       }
@@ -444,14 +621,14 @@ export const useIndividualInvoiceRecovery = ({
     });
   }, [reason, runRepairTasks, selectedTasks]);
 
-  const invoiceSummary = invoiceData?.summary || {};
+  const invoiceSummary: InvoiceSummary = invoiceData?.summary ?? {};
   const canonicalData = invoiceData?.canonical?.data || null;
   const failedOutboxTasks = Array.isArray(invoiceData?.failedTasks)
     ? invoiceData.failedTasks
     : [];
   const resolvedInvoiceId =
     invoiceData?.invoiceId || activeQuery?.invoiceId || canonicalData?.id || null;
-  const snapshot = invoiceData?.snapshot || {};
+  const snapshot: SnapshotData = invoiceData?.snapshot || {};
   const v2CreatedAtSource =
     invoiceData?.createdAt || snapshot?.createdAt || null;
   const canonicalDateSource =
@@ -465,9 +642,9 @@ export const useIndividualInvoiceRecovery = ({
     Boolean(v2CreatedAtTs && canonicalDateTs && canonicalDateTs.toMillis() !== v2CreatedAtTs.toMillis());
   const v2CreatedAtLabel = formatDateTime(v2CreatedAtSource);
   const canonicalDateLabel = formatDateTime(canonicalDateSource);
-  const cashCountMeta = snapshot?.meta?.cashCount || {};
+  const cashCountMeta: CashCountMeta = snapshot?.meta?.cashCount || {};
   const linkedCashCounts = Array.isArray(invoiceData?.cashCounts)
-    ? invoiceData.cashCounts
+    ? (invoiceData.cashCounts as LinkedCashCount[])
     : [];
   const isCashCountLinked =
     linkedCashCounts.length > 0 ||
@@ -521,7 +698,7 @@ export const useIndividualInvoiceRecovery = ({
   }, [resolvedInvoiceNumber, updateInvoiceCounter]);
 
   const updateInvoiceNumberEverywhere = useCallback(
-    async (nextNumber) => {
+    async (nextNumber: unknown) => {
       if (!activeQuery?.businessId || !activeQuery?.invoiceId) {
         message.warning('Busca primero una factura para actualizar su número.');
         return false;
@@ -585,9 +762,9 @@ export const useIndividualInvoiceRecovery = ({
         await updateInvoiceCounter(parsedNumber);
         await handleFetch(activeQuery);
         return true;
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('[useIndividualInvoiceRecovery] update number', err);
-        message.error('No se pudo actualizar el número de la factura.');
+        message.error(getErrorMessage(err));
         return false;
       } finally {
         setUpdatingInvoiceNumber(false);
@@ -703,7 +880,7 @@ export const useIndividualInvoiceRecovery = ({
     intendedCashCountId,
     effectiveResolvedCashCountId,
     isCashCountLinked,
-    statusTimeline: invoiceData?.statusTimeline || [],
+    statusTimeline: (invoiceData?.statusTimeline as StatusTimelineEntry[]) || [],
     activeQuery,
     resolvedInvoiceNumber,
     canonicalInvoiceNumber,

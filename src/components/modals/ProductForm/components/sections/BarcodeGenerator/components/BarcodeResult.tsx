@@ -1,11 +1,18 @@
-// @ts-nocheck
 import { Card, Space, Typography } from 'antd';
 import React from 'react';
 import Barcode from 'react-barcode';
 
 const { Title, Text } = Typography;
 
-export const BarcodeResult = ({ generatedCode, isCurrentCode = false }) => {
+type BarcodeResultProps = {
+  generatedCode?: string | null;
+  isCurrentCode?: boolean;
+};
+
+export const BarcodeResult = ({
+  generatedCode,
+  isCurrentCode = false,
+}: BarcodeResultProps) => {
   if (!generatedCode) return null;
 
   return (

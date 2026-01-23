@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { faFilter, faPlus, faCopy, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Tooltip, Dropdown, Badge, Typography } from 'antd';
+import { Button, Tooltip, Dropdown, Badge, Typography, type MenuProps } from 'antd';
 import { memo } from 'react';
 import styled from 'styled-components';
 
@@ -27,14 +26,22 @@ const ButtonGroup = styled.div`
   gap: 0.5em;
 `;
 
+type ClientSelectionToolbarProps = {
+  filter: string;
+  filteredClientsToShow: Array<unknown>;
+  handleMenuClick: MenuProps['onClick'];
+  openAddClientModal: () => void;
+  onClose: () => void;
+};
+
 const ClientSelectionToolbarComponent = ({
   filter,
   filteredClientsToShow,
   handleMenuClick,
   openAddClientModal,
   onClose,
-}) => {
-  const filterItems = [
+}: ClientSelectionToolbarProps) => {
+  const filterItems: MenuProps['items'] = [
     { key: 'all', label: 'Todos los clientes' },
     {
       key: 'duplicates',

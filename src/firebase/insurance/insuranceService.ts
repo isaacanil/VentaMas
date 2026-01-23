@@ -175,8 +175,9 @@ export const useListenInsuranceConfig = () => {
       return undefined;
     }
 
+    const safeUser = user as UserWithBusinessAndUid;
     const unsubscribe = listenInsuranceConfig(
-      user,
+      safeUser,
       (data) => {
         setData(data);
         setLoading(false);

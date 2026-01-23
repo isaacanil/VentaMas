@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   InfoCircleOutlined,
   ThunderboltOutlined,
@@ -17,6 +16,8 @@ import {
 } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { FormInstance } from 'antd';
 
 import { PreviewContainer, PreviewText } from './BarcodePreview';
 
@@ -54,6 +55,20 @@ const FormSectionHeader = styled.h3`
   font-size: 1.1rem;
 `;
 
+type InternalModeTabProps = {
+  form: FormInstance;
+  autoMode: boolean;
+  setAutoMode: (checked: boolean) => void;
+  manualValues: { itemReference: string };
+  itemReferenceValid?: boolean | null;
+  handleManualItemReferenceChange: (value: string) => void;
+  nextItemReference?: string;
+  livePreview?: string;
+  handleGenerateCode: () => void;
+  loadingGenerate: boolean;
+  currentBarcode?: string | null;
+};
+
 export const InternalModeTab = ({
   form,
   autoMode,
@@ -66,7 +81,7 @@ export const InternalModeTab = ({
   handleGenerateCode,
   loadingGenerate,
   currentBarcode,
-}) => {
+}: InternalModeTabProps) => {
   return (
     <Container>
       <MainContent>

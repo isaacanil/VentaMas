@@ -1,18 +1,69 @@
-// @ts-nocheck
 import { onValue, ref } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fbGetSessionLogs } from '@/firebase/Auth/fbAuthV2/fbGetSessionLogs';
 import { fbGetUser } from '@/firebase/Auth/fbGetUser';
 import { realtimeDB } from '@/firebase/firebaseconfig';
+import type { UserIdentity, UserRoleLike } from '@/types/users';
 
 import {
   buildSessionsFromLogs,
   normalizeContext,
   toMillis,
+  type NormalizedSessionLog,
+  type PresenceState,
+  type SessionLog,
+  type SessionSummary,
+  type TimestampLike,
 } from '../utils/activityUtils';
 
-const mapUserInfo = (userId, user) => ({
+export type UserActivityUser = UserIdentity & {
+  realName?: string;
+  displayName?: string;
+  username?: string;
+  email?: string;
+  active?: boolean;
+  createAt?: TimestampLike;
+  businessID?: string | null;
+  businessId?: string | null;
+  [key: string]: unknown;
+};
+
+export interface UserActivityProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRoleLike | string;
+  active: boolean;
+  createdAt?: TimestampLike;
+  businessID: string;
+}
+
+interface UseUserActivityDataParams {
+  userId: string | null;
+  initialUser?: UserActivityUser | null;
+  initialPresence?: PresenceState | null;
+}
+
+interface UseUserActivityDataResult {
+  activityError: string | null;
+  errorMessage: string | null;
+  lastLogin: NormalizedSessionLog | undefined;
+  lastLogout: NormalizedSessionLog | undefined;
+  loadActivity: () => Promise<void>;
+  loadUserProfile: () => Promise<void>;
+  loadingLogs: boolean;
+  loadingUser: boolean;
+  presenceStatus: string;
+  resolvedLastSeen: number | null;
+  sessions: SessionSummary[];
+  showError: boolean;
+  statusLabel: string;
+  statusTag: string;
+  userInfo: UserActivityProfile | null;
+}
+
+const mapUserInfo = (userId: string, user?: UserActivityUser | null): UserActivityProfile => ({
   id: userId,
   name:
     user?.realName ||
@@ -31,16 +82,18 @@ export const useUserActivityData = ({
   userId,
   initialUser = null,
   initialPresence = null,
-}) => {
-  const [userInfo, setUserInfo] = useState(() =>
-    initialUser ? mapUserInfo(userId, initialUser) : null,
+}: UseUserActivityDataParams): UseUserActivityDataResult => {
+  const [userInfo, setUserInfo] = useState<UserActivityProfile | null>(() =>
+    initialUser && userId ? mapUserInfo(userId, initialUser) : null,
   );
-  const [presence, setPresence] = useState(initialPresence);
-  const [logs, setLogs] = useState([]);
+  const [presence, setPresence] = useState<PresenceState | null>(
+    initialPresence,
+  );
+  const [logs, setLogs] = useState<SessionLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [loadingUser, setLoadingUser] = useState(!userInfo);
-  const [profileError, setProfileError] = useState(null);
-  const [activityError, setActivityError] = useState(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   const loadUserProfile = useCallback(async () => {
     if (!userId) {
@@ -53,13 +106,17 @@ export const useUserActivityData = ({
     try {
       const data = await fbGetUser(userId);
       if (data) {
-        const baseUser = data.user || data;
-        setUserInfo(mapUserInfo(userId, baseUser));
+        const baseUser = (data as { user?: UserActivityUser }).user || data;
+        setUserInfo(mapUserInfo(userId, baseUser as UserActivityUser));
       } else {
         setProfileError('No se encontro informacion del usuario.');
       }
     } catch (error) {
-      setProfileError(error?.message || 'No se pudo cargar el usuario.');
+      setProfileError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo cargar el usuario.',
+      );
     } finally {
       setLoadingUser(false);
     }
@@ -78,7 +135,9 @@ export const useUserActivityData = ({
       setLogs(response || []);
     } catch (error) {
       setActivityError(
-        error?.message || 'No se pudo cargar el historial de actividad.',
+        error instanceof Error
+          ? error.message
+          : 'No se pudo cargar el historial de actividad.',
       );
       setLogs([]);
     } finally {
@@ -91,19 +150,21 @@ export const useUserActivityData = ({
 
     const presenceRef = ref(realtimeDB, `presence/${userId}`);
     const unsubscribe = onValue(presenceRef, (snapshot) => {
-      const value = snapshot?.val();
+      const value = snapshot?.val() as Record<string, unknown> | null;
       let state = 'offline';
       let lastUpdated = null;
 
       if (value && typeof value === 'object') {
-        const connections = Object.values(value);
+        const connections = Object.values(value) as Array<
+          { state?: string; updatedAt?: TimestampLike }
+        >;
         const onlineConnection = connections.find(
           (connection) => connection?.state === 'online',
         );
         state = onlineConnection ? 'online' : 'offline';
         const timestamps = connections
           .map((connection) => toMillis(connection?.updatedAt))
-          .filter((ts) => typeof ts === 'number');
+          .filter((ts): ts is number => typeof ts === 'number');
         if (timestamps.length) {
           lastUpdated = Math.max(...timestamps);
         }
@@ -134,7 +195,7 @@ export const useUserActivityData = ({
     loadActivity();
   }, [loadActivity]);
 
-  const normalizedLogs = useMemo(
+  const normalizedLogs = useMemo<NormalizedSessionLog[]>(
     () =>
       (logs || []).map((log) => ({
         ...log,
@@ -144,7 +205,7 @@ export const useUserActivityData = ({
     [logs],
   );
 
-  const sessions = useMemo(
+  const sessions = useMemo<SessionSummary[]>(
     () => buildSessionsFromLogs(normalizedLogs),
     [normalizedLogs],
   );
@@ -177,7 +238,7 @@ export const useUserActivityData = ({
     presenceStatus === 'online' ? 'En linea' : 'Fuera de linea';
 
   const errorMessage = profileError || activityError;
-  const showError = errorMessage && !(loadingLogs || loadingUser);
+  const showError = Boolean(errorMessage) && !(loadingLogs || loadingUser);
 
   return {
     activityError,

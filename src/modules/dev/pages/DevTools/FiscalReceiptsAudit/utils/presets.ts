@@ -1,7 +1,31 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
-export const PRESETS = [
+export type PresetValue =
+  | 'today'
+  | 'yesterday'
+  | 'this_month'
+  | 'last_month'
+  | 'last_3_months'
+  | 'last_90_days'
+  | 'q1'
+  | 'q2'
+  | 'q3'
+  | 'q4'
+  | 'this_year'
+  | 'last_year'
+  | 'all';
+
+export interface PresetOption {
+  label: string;
+  value: PresetValue;
+}
+
+export interface PresetRange {
+  start: DateTime | null;
+  end: DateTime | null;
+}
+
+export const PRESETS: PresetOption[] = [
   { label: 'Hoy', value: 'today' },
   { label: 'Ayer', value: 'yesterday' },
   { label: 'Este mes', value: 'this_month' },
@@ -17,7 +41,9 @@ export const PRESETS = [
   { label: 'Todas (sin filtro de fechas)', value: 'all' },
 ];
 
-export const getRangeFromPreset = (preset) => {
+export const getRangeFromPreset = (
+  preset: PresetValue | string,
+): PresetRange => {
   const now = DateTime.local();
   switch (preset) {
     case 'today':

@@ -14,7 +14,7 @@ import { db } from '@/firebase/firebaseconfig';
 import { convertFirestoreTimestamps } from '@/firebase/purchase/fbGetPurchases';
 
 type UserWithBusiness = {
-  businessID?: string;
+  businessID: string;
 };
 
 type OrderDocument = Record<string, unknown> & {
@@ -72,7 +72,7 @@ const _transformOrderData = (item: { data: () => OrderDocument }) => {
   };
 };
 
-export const useFbGetPendingOrdersByProvider = (providerId: string) => {
+export const useFbGetPendingOrdersByProvider = (providerId?: string | null) => {
   const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);

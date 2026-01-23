@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
     collection,
     getDocs,
@@ -11,9 +10,68 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { db } from '@/firebase/firebaseconfig';
 
-export const useUserRealActivity = ({ userId, businessId }) => {
-    const [activities, setActivities] = useState([]);
-    const [stats, setStats] = useState({
+export type UserActivityType = 'product' | 'sale' | 'purchase' | 'expense' | 'ar';
+
+export interface UserActivityItem {
+    id: string;
+    type: UserActivityType;
+    action: string;
+    details: string;
+    timestamp: Date;
+    raw: Record<string, unknown>;
+}
+
+export interface UserActivityStats {
+    radar: {
+        sales: number;
+        products: number;
+        purchases: number;
+        expenses: number;
+        ar: number;
+    };
+    heatmap: Record<string, number>;
+}
+
+interface UseUserRealActivityParams {
+    userId: string | null;
+    businessId?: string | null;
+}
+
+interface UseUserRealActivityResult {
+    activities: UserActivityItem[];
+    stats: UserActivityStats;
+    loading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+}
+
+const toDateSafe = (value: unknown): Date => {
+    if (
+        value &&
+        typeof value === 'object' &&
+        'toDate' in value &&
+        typeof (value as { toDate?: () => Date }).toDate === 'function'
+    ) {
+        return (value as { toDate: () => Date }).toDate();
+    }
+    if (typeof value === 'number' || typeof value === 'string') {
+        return new Date(value);
+    }
+    return new Date();
+};
+
+const toNumberSafe = (value: unknown): number => {
+    if (typeof value === 'number') return value;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const useUserRealActivity = ({
+    userId,
+    businessId,
+}: UseUserRealActivityParams): UseUserRealActivityResult => {
+    const [activities, setActivities] = useState<UserActivityItem[]>([]);
+    const [stats, setStats] = useState<UserActivityStats>({
         radar: {
             sales: 0,
             products: 0,
@@ -24,7 +82,7 @@ export const useUserRealActivity = ({ userId, businessId }) => {
         heatmap: {}, // { "day-hour": count }
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchActivity = useCallback(async () => {
         if (!userId || !businessId) return;
@@ -87,15 +145,13 @@ export const useUserRealActivity = ({ userId, businessId }) => {
                 getDocs(arQuery),
             ]);
 
-            let newActivities = [];
+            const newActivities: UserActivityItem[] = [];
 
             // Process Products
             if (productsResult.status === 'fulfilled') {
                 productsResult.value.forEach((doc) => {
-                    const data = doc.data();
-                    const timestamp = data.createdAt?.toDate
-                        ? data.createdAt.toDate()
-                        : new Date(data.createdAt);
+                    const data = doc.data() as Record<string, unknown>;
+                    const timestamp = toDateSafe(data.createdAt);
 
                     newActivities.push({
                         id: doc.id,
@@ -111,17 +167,16 @@ export const useUserRealActivity = ({ userId, businessId }) => {
             // Process Sales
             if (salesResult.status === 'fulfilled') {
                 salesResult.value.forEach((doc) => {
-                    const data = doc.data();
-                    const timestamp = data.createdAt?.toDate
-                        ? data.createdAt.toDate()
-                        : new Date(data.createdAt);
+                    const data = doc.data() as Record<string, unknown>;
+                    const timestamp = toDateSafe(data.createdAt);
+                    const totalAmount = toNumberSafe(data.totalAmount);
+                    const currency = typeof data.currency === 'string' ? data.currency : 'USD';
 
                     newActivities.push({
                         id: doc.id,
                         type: 'sale',
                         action: 'created',
-                        details: `Venta registrada: ${data.totalAmount} ${data.currency || 'USD'
-                            }`,
+                        details: `Venta registrada: ${totalAmount} ${currency}`,
                         timestamp,
                         raw: data,
                     });
@@ -131,16 +186,15 @@ export const useUserRealActivity = ({ userId, businessId }) => {
             // Process Purchases
             if (purchasesResult.status === 'fulfilled') {
                 purchasesResult.value.forEach((doc) => {
-                    const data = doc.data();
-                    const timestamp = data.createdAt?.toDate
-                        ? data.createdAt.toDate()
-                        : new Date(data.createdAt);
+                    const data = doc.data() as Record<string, unknown>;
+                    const timestamp = toDateSafe(data.createdAt);
+                    const total = toNumberSafe(data.total);
 
                     newActivities.push({
                         id: doc.id,
                         type: 'purchase',
                         action: 'created',
-                        details: `Compra registrada: ${data.total || 0}`,
+                        details: `Compra registrada: ${total}`,
                         timestamp,
                         raw: data,
                     });
@@ -150,18 +204,22 @@ export const useUserRealActivity = ({ userId, businessId }) => {
             // Process Expenses
             if (expensesResult.status === 'fulfilled') {
                 expensesResult.value.forEach((doc) => {
-                    const rootData = doc.data();
-                    const data = rootData.expense || rootData;
-                    const timestamp = data.dates?.createdAt?.toDate
-                        ? data.dates.createdAt.toDate()
+                    const rootData = doc.data() as Record<string, unknown>;
+                    const data =
+                        (rootData.expense as Record<string, unknown> | undefined) ?? rootData;
+                    const dates = data.dates as Record<string, unknown> | undefined;
+                    const timestamp = dates?.createdAt
+                        ? toDateSafe(dates.createdAt)
                         : new Date();
+                    const amount = toNumberSafe(data.amount);
+                    const category =
+                        typeof data.category === 'string' ? data.category : 'Sin categoría';
 
                     newActivities.push({
                         id: doc.id,
                         type: 'expense',
                         action: 'created',
-                        details: `Gasto registrado: ${data.amount || 0} (${data.category || 'Sin categoría'
-                            })`,
+                        details: `Gasto registrado: ${amount} (${category})`,
                         timestamp,
                         raw: data,
                     });
@@ -171,16 +229,15 @@ export const useUserRealActivity = ({ userId, businessId }) => {
             // Process Accounts Receivable
             if (arResult.status === 'fulfilled') {
                 arResult.value.forEach((doc) => {
-                    const data = doc.data();
-                    const timestamp = data.createdAt?.toDate
-                        ? data.createdAt.toDate()
-                        : new Date(data.createdAt);
+                    const data = doc.data() as Record<string, unknown>;
+                    const timestamp = toDateSafe(data.createdAt);
+                    const totalReceivable = toNumberSafe(data.totalReceivable);
 
                     newActivities.push({
                         id: doc.id,
                         type: 'ar',
                         action: 'created',
-                        details: `Cuenta por cobrar: ${data.totalReceivable || 0}`,
+                        details: `Cuenta por cobrar: ${totalReceivable}`,
                         timestamp,
                         raw: data,
                     });
@@ -188,17 +245,17 @@ export const useUserRealActivity = ({ userId, businessId }) => {
             }
 
             // Sort combined results
-            newActivities.sort((a, b) => b.timestamp - a.timestamp);
+            newActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
             // Calculate Stats
-            const radar = {
+            const radar: UserActivityStats['radar'] = {
                 sales: 0,
                 products: 0,
                 purchases: 0,
                 expenses: 0,
                 ar: 0,
             };
-            const heatmap = {};
+            const heatmap: UserActivityStats['heatmap'] = {};
 
             newActivities.forEach((item) => {
                 // Radar Stats

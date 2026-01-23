@@ -19,7 +19,7 @@ import {
   type UserActivityUser,
 } from './UserActivity/hooks/useUserActivityData';
 import { useUserRealActivity } from './UserActivity/hooks/useUserRealActivity';
-import { formatDateTime } from './UserActivity/utils/activityUtils';
+import { formatDateTime, type SessionSummary } from './UserActivity/utils/activityUtils';
 
 const {
   SETTING_TERM: { USERS, USERS_LIST },
@@ -79,7 +79,7 @@ export const UserActivity = () => {
   }, [loadActivity, refetchActivity]);
 
   const handleCloseSession = useCallback(
-    async (session) => {
+    async (session: SessionSummary) => {
       if (!session?.sessionId) {
         message.error('No se pudo identificar la sesion.');
         return;
@@ -94,7 +94,9 @@ export const UserActivity = () => {
         await loadActivity();
       } catch (error) {
         hide();
-        message.error(error?.message || 'No se pudo cerrar la sesion.');
+        const errorMessage =
+          error instanceof Error ? error.message : 'No se pudo cerrar la sesion.';
+        message.error(errorMessage);
       } finally {
         setRevokingSessionId(null);
       }

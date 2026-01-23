@@ -1,9 +1,11 @@
-// @ts-nocheck
 import { Modal, InputNumber, Select, Checkbox, message } from 'antd';
 import { useMemo, useRef, useState } from 'react';
 import Barcode from 'react-barcode';
 import { useReactToPrint } from 'react-to-print';
 import styled, { createGlobalStyle } from 'styled-components';
+
+import type { BarcodeInfo } from '@/utils/barcode/barcode';
+import type { ProductRecord } from '@/types/products';
 
 const STD_CONFIG = {
   HEIGHT_FACTOR: 0.4,
@@ -31,13 +33,18 @@ const VAR_CONFIG = {
 
 const DPI = 203;
 
-const mmToPx = (mm) => Math.max(1, Math.round((mm / 25.4) * DPI));
-const mmToIn = (mm) => mm / 25.4;
+const mmToPx = (mm: number) => Math.max(1, Math.round((mm / 25.4) * DPI));
+const mmToIn = (mm: number) => mm / 25.4;
 
-const GlobalPrintStyle = createGlobalStyle`
-`;
+const GlobalPrintStyle = createGlobalStyle``;
 
-const Label = styled.div`
+type LabelProps = {
+  width: number;
+  height: number;
+  margin: number;
+};
+
+const Label = styled.div<LabelProps>`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -57,7 +64,11 @@ const Label = styled.div`
   }
 `;
 
-const ProdName = styled.div`
+type ProdNameProps = {
+  fontSize: number;
+};
+
+const ProdName = styled.div<ProdNameProps>`
   width: 100%;
   max-height: 6mm;
   margin-bottom: 0.5mm;
@@ -70,7 +81,11 @@ const ProdName = styled.div`
   white-space: nowrap;
 `;
 
-const Quiet = styled.div`
+type QuietProps = {
+  qmm: number;
+};
+
+const Quiet = styled.div<QuietProps>`
   display: flex;
   flex-grow: 1;
   align-items: center;
@@ -92,19 +107,43 @@ const PreviewContainer = styled.div`
   }
 `;
 
+type LabelProfile = 'standard' | 'variable';
+
+type LabelConfig = {
+  isVariable: boolean;
+  HEIGHT_FACTOR: number;
+  X_MM: number;
+  H_MM: number;
+  QUIET_MULT: number;
+  LABEL_WIDTH_MM: number;
+  LABEL_HEIGHT_MM: number;
+  MARGIN_MM: number;
+  FONT_SIZE_PT: number;
+  BARCODE_FONT_SIZE: number;
+  NAME_MAX_LEN: number;
+};
+
+type BarcodePrintModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  barcodeValue?: string | null;
+  barcodeInfo?: BarcodeInfo | null;
+  product?: ProductRecord | null;
+};
+
 export const BarcodePrintModal = ({
   visible,
   onClose,
   barcodeValue,
   barcodeInfo,
   product,
-}) => {
+}: BarcodePrintModalProps) => {
   const [qty, setQty] = useState(1);
-  const [labelProfile, setLabelProfile] = useState('standard');
+  const [labelProfile, setLabelProfile] = useState<LabelProfile>('standard');
   const [isNameVisible, setIsNameVisible] = useState(true);
-  const printRef = useRef(null);
+  const printRef = useRef<HTMLDivElement | null>(null);
 
-  const config = useMemo(() => {
+  const config = useMemo<LabelConfig>(() => {
     if (labelProfile === 'variable') {
       const digits = barcodeValue?.length || 12;
       const totalModules = digits * 7 + 11;
@@ -151,7 +190,7 @@ export const BarcodePrintModal = ({
     const code = String(barcodeValue ?? '').trim();
     if (!code) return 'Ingresa un código de barras';
 
-    const expectedLengthByType = {
+    const expectedLengthByType: Record<string, number> = {
       'EAN-13': 13,
       'GTIN-13': 13,
       'UPC-A': 12,
@@ -159,7 +198,9 @@ export const BarcodePrintModal = ({
       'GTIN-14': 14,
     };
 
-    const need = expectedLengthByType[barcodeInfo?.type] ?? null;
+    const need = barcodeInfo?.type
+      ? expectedLengthByType[barcodeInfo.type] ?? null
+      : null;
     if (need && code.length !== need) return `Debe tener ${need} dígitos`;
     return null;
   };
@@ -171,7 +212,10 @@ export const BarcodePrintModal = ({
       setQty(1);
       onClose();
     },
-    onPrintError: (e) => message.error('Error al imprimir: ' + e.message),
+    onPrintError: (err) => {
+      const messageText = err instanceof Error ? err.message : String(err);
+      message.error('Error al imprimir: ' + messageText);
+    },
   });
 
   const handleOk = () => {
@@ -190,6 +234,7 @@ export const BarcodePrintModal = ({
 
   const heightPx = Math.round(mmToPx(config.H_MM) * config.HEIGHT_FACTOR);
   const quietMm = config.X_MM * config.QUIET_MULT;
+  const safeBarcodeValue = String(barcodeValue ?? '');
 
   const renderLabels = () =>
     Array.from({ length: qty }).map((_, i) => (
@@ -204,7 +249,7 @@ export const BarcodePrintModal = ({
         )}
         <Quiet qmm={quietMm}>
           <Barcode
-            value={barcodeValue}
+            value={safeBarcodeValue}
             width={xPx}
             height={heightPx}
             margin={0}
@@ -250,7 +295,7 @@ export const BarcodePrintModal = ({
             min={1}
             max={100}
             value={qty}
-            onChange={setQty}
+            onChange={(value) => setQty(Number(value ?? 1))}
             style={{ width: '100%', marginBottom: 8 }}
           />
           {labelProfile === 'variable' && (

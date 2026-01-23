@@ -27,11 +27,76 @@ import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
 
 const THRESHOLD = 1e-10;
 // Función mejorada para redondear a dos decimales y evitar problemas de precisión
-const roundToTwoDecimals = (num) => {
+const roundToTwoDecimals = (num: number | string | null | undefined): number => {
   // Asegurarse de que el número no sea NaN o indefinido
-  if (num === undefined || isNaN(num)) return 0;
+  if (num === undefined || num === null || Number.isNaN(Number(num))) return 0;
   // Redondear a 2 decimales y convertir a número
-  return parseFloat(parseFloat(num).toFixed(2));
+  return parseFloat(Number(num).toFixed(2));
+};
+
+type InsuranceAccountData = AccountsReceivableAccount & {
+  client?: { id?: string | null } & Record<string, unknown>;
+  insurance?: { name?: string; insuranceId?: string } & Record<string, unknown>;
+};
+
+type InsurancePaymentAccount = {
+  id: string;
+  accountData?: InsuranceAccountData;
+};
+
+type InstallmentData = AccountsReceivableInstallment & {
+  installmentBalance?: number | string;
+  installmentDate?: { toMillis?: () => number } | number | null;
+  installmentNumber?: number | string;
+};
+
+type MultiplePaymentsData = {
+  accounts: InsurancePaymentAccount[];
+  paymentDetails: PaymentDetails & { paymentMethods: InvoicePaymentMethod[] };
+  insuranceId?: string | null;
+  clientId?: string | null;
+};
+
+type AccountsDataEntry = {
+  accountData: InsuranceAccountData;
+  accountRef: ReturnType<typeof doc>;
+  installments: InstallmentData[];
+  invoiceData: InvoiceLike | null;
+  invoiceRef: ReturnType<typeof doc> | null;
+};
+
+type InsurancePaymentReceiptAccount = {
+  arNumber?: string | number;
+  arId?: string;
+  invoiceNumber: string;
+  invoiceId?: string | null;
+  paidInstallments: Array<{
+    number?: number | string;
+    id: string;
+    amount: number;
+    status: string;
+    remainingBalance: number;
+  }>;
+  remainingInstallments: number;
+  totalInstallments: number;
+  totalPaid: number;
+  arBalance: number;
+  insuranceName?: string;
+  insuranceId?: string;
+};
+
+type InsurancePaymentReceipt = {
+  receiptId: string;
+  paymentId: string;
+  clientId?: string | null;
+  insuranceId?: string | null;
+  businessId: string;
+  createdAt: ReturnType<typeof Timestamp.now>;
+  createdBy: string;
+  accounts: InsurancePaymentReceiptAccount[];
+  totalAmount: number;
+  paymentMethod: InvoicePaymentMethod[];
+  change: number;
 };
 
 /**
@@ -41,10 +106,17 @@ const roundToTwoDecimals = (num) => {
  * @param {Function} callback - Función de callback para manejar el recibo generado
  * @returns {Promise<Object>} - Promesa que resuelve con el recibo de pago
  */
-export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
+export const fbProcessMultiplePaymentsAR = async (
+  user: UserWithBusinessAndUid,
+  data: MultiplePaymentsData,
+  callback?: (
+    receipt: Awaited<ReturnType<typeof fbAddAccountReceivablePaymentReceipt>>,
+  ) => void,
+): Promise<Awaited<ReturnType<typeof fbAddAccountReceivablePaymentReceipt>>> => {
   try {
     const { accounts, paymentDetails, insuranceId, clientId } = data;
     const { totalPaid, paymentMethods, comments } = paymentDetails;
+    const totalPaidNumber = Number(totalPaid);
 
     if (!user?.businessID) {
       throw new Error('ID de negocio del usuario no disponible');
@@ -54,11 +126,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
       throw new Error('No hay cuentas seleccionadas para el pago');
     }
 
-    if (
-      !totalPaid ||
-      isNaN(parseFloat(totalPaid)) ||
-      parseFloat(totalPaid) <= 0
-    ) {
+    if (!totalPaidNumber || Number.isNaN(totalPaidNumber) || totalPaidNumber <= 0) {
       throw new Error('El monto total pagado debe ser mayor a cero');
     }
 
@@ -76,11 +144,12 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
       'accountsReceivablePayments',
       paymentId,
     );
+    const activePaymentMethods = paymentMethods.filter((pm) => pm.status);
     const paymentData = {
       ...defaultPaymentsAR,
       id: paymentId,
-      paymentMethods: paymentMethods.filter((pm) => pm.status),
-      totalPaid: parseFloat(totalPaid),
+      paymentMethods: activePaymentMethods,
+      totalPaid: totalPaidNumber,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
       comments,
@@ -95,7 +164,6 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
 
     // Inicializar el clientId con el valor por defecto
     let extractedClientId = clientId;
-    let _clientData = null;
 
     // Solo buscar en la ubicación específica: account.accountData.client.id
     if (accounts && accounts.length > 0) {
@@ -110,14 +178,13 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
 
           // Usar el cliente de cada cuenta individual
           extractedClientId = accountClientId;
-          const _clientData = account.accountData.client;
           // No hacemos break porque queremos usar el clientId de la última cuenta procesada
         }
       }
     }
 
     // 2. Preparar información para el recibo con el ID de cliente correcto
-    const paymentReceipt = {
+    const paymentReceipt: InsurancePaymentReceipt = {
       receiptId: nanoid(),
       paymentId,
       clientId: extractedClientId, // Usar el ID extraído en lugar del original
@@ -126,14 +193,14 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
       createdAt: Timestamp.now(),
       createdBy: user.uid,
       accounts: [],
-      totalAmount: parseFloat(totalPaid),
-      paymentMethod: paymentMethods.filter((pm) => pm.status),
+      totalAmount: totalPaidNumber,
+      paymentMethod: activePaymentMethods,
       change: 0, // Inicialmente no hay cambio
     };
 
     // 3. Primero, recopilar todos los datos necesarios (accounts, installments, invoices)
-    const accountsData = [];
-    let remainingAmount = parseFloat(totalPaid);
+    const accountsData: AccountsDataEntry[] = [];
+    let remainingAmount = totalPaidNumber;
 
     // Recopilación de datos - SOLO LECTURAS
     for (const account of accounts) {
@@ -154,7 +221,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         continue;
       }
 
-      const accountData = accountSnapshot.data();
+      const accountData = accountSnapshot.data() as InsuranceAccountData;
 
       // Obtener las cuotas activas para esta cuenta
       const installmentsRef = collection(
@@ -177,28 +244,37 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         continue;
       }
 
-      const installments = installmentsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const installments = installmentsSnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...(doc.data() as InstallmentData),
+          }) as InstallmentData,
+      );
 
       // Ordenar las cuotas por fecha
-      installments.sort((a, b) => {
-        // Manejar valores nulos
-        if (!a.installmentDate) return 1;
-        if (!b.installmentDate) return -1;
-        return a.installmentDate.toMillis
-          ? a.installmentDate.toMillis() - b.installmentDate.toMillis()
-          : a.installmentDate - b.installmentDate;
-      });
+      const toInstallmentMillis = (
+        value: InstallmentData['installmentDate'],
+      ): number => {
+        if (!value) return Number.POSITIVE_INFINITY;
+        if (typeof value === 'number') return value;
+        if (typeof value === 'object' && typeof value.toMillis === 'function') {
+          return value.toMillis();
+        }
+        return Number(value);
+      };
+
+      installments.sort(
+        (a, b) =>
+          toInstallmentMillis(a.installmentDate) -
+          toInstallmentMillis(b.installmentDate),
+      );
 
       // Obtener la factura si existe
-      let invoiceData = null;
-      if (accountData.invoiceId) {
-        const invoice = await fbGetInvoice(
-          user.businessID,
-          accountData.invoiceId,
-        );
+      let invoiceData: InvoiceLike | null = null;
+      const invoiceId = accountData.invoiceId ?? '';
+      if (invoiceId) {
+        const invoice = await fbGetInvoice(user.businessID, invoiceId);
         if (invoice) {
           invoiceData = invoice; // Los datos de la factura se devuelven directamente
         }
@@ -211,19 +287,13 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         installments,
         invoiceData,
         invoiceRef: invoiceData
-          ? doc(
-              db,
-              'businesses',
-              user.businessID,
-              'invoices',
-              accountData.invoiceId,
-            )
+          ? doc(db, 'businesses', user.businessID, 'invoices', invoiceId)
           : null,
       });
     }
 
     // 4. Procesar pagos y preparar actualizaciones - AHORA REALIZAMOS LAS ESCRITURAS
-    remainingAmount = parseFloat(totalPaid); // Reiniciar el monto restante
+    remainingAmount = totalPaidNumber; // Reiniciar el monto restante
 
     for (const {
       accountData,
@@ -234,11 +304,17 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
     } of accountsData) {
       if (remainingAmount <= THRESHOLD) break;
 
+      const accountId = accountData.id ?? accountRef.id;
+
       // Procesar cada cuota
       let accountTotalPaid = 0;
-      const paidInstallments = [];
-      const _installmentUpdates = [];
-      const _installmentPayments = [];
+      const paidInstallments: Array<{
+        number?: number | string;
+        id: string;
+        amount: number;
+        status: string;
+        remainingBalance: number;
+      }> = [];
 
       for (const installment of installments) {
         if (remainingAmount <= THRESHOLD) break;
@@ -246,10 +322,10 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
         // Aplicar el pago a esta cuota
         const amountToApply = Math.min(
           remainingAmount,
-          parseFloat(installment.installmentBalance || 0),
+          Number(installment.installmentBalance || 0),
         );
         const newInstallmentBalance = roundToTwoDecimals(
-          parseFloat(installment.installmentBalance || 0) - amountToApply,
+          Number(installment.installmentBalance || 0) - amountToApply,
         );
 
         // Preparar actualización de cuota
@@ -286,7 +362,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
           updatedBy: user.uid,
           isActive: true,
           clientId,
-          arId: accountData.id,
+          arId: accountId,
           insuranceId,
         });
 
@@ -307,7 +383,7 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
       if (accountTotalPaid > 0) {
         // Actualizar el balance de la cuenta
         const newArBalance = roundToTwoDecimals(
-          parseFloat(accountData.arBalance || 0) - accountTotalPaid,
+          Number(accountData.arBalance || 0) - accountTotalPaid,
         );
         const updatedPaidInstallments = [
           ...(accountData.paidInstallments || []),
@@ -341,17 +417,18 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
           invoiceData?.numberID ||
           accountData?.invoiceNumber ||
           null;
+        const totalInstallments = Number(accountData.totalInstallments ?? 0);
 
         // Agregar al recibo
         paymentReceipt.accounts.push({
           arNumber: accountData.numberId,
-          arId: accountData.id,
+          arId: accountId,
           invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
           invoiceId: accountData.invoiceId,
           paidInstallments,
           remainingInstallments:
-            accountData.totalInstallments - updatedPaidInstallments.length,
-          totalInstallments: accountData.totalInstallments,
+            totalInstallments - updatedPaidInstallments.length,
+          totalInstallments,
           totalPaid: accountTotalPaid,
           arBalance: newArBalance,
           insuranceName: accountData?.insurance?.name,
@@ -376,7 +453,11 @@ export const fbProcessMultiplePaymentsAR = async (user, data, callback) => {
     await batch.commit();
     // Verificar que el clientId extraído sea válido antes de usarlo
     // Si no es válido, simplemente no pasamos el clientId para evitar errores
-    let receiptParams = {
+    const receiptParams: {
+      user: UserWithBusinessAndUid;
+      paymentReceipt: InsurancePaymentReceipt;
+      clientId?: string;
+    } = {
       user,
       paymentReceipt,
     };

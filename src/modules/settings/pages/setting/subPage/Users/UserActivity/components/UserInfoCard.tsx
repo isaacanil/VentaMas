@@ -1,6 +1,14 @@
-// @ts-nocheck
 import { Tag } from 'antd';
 import styled from 'styled-components';
+
+interface UserInfoCardProps {
+  name: string;
+  roleLabel?: string | null;
+  active?: boolean;
+  statusTag?: string;
+  statusLabel?: string;
+  lastSeenLabel: string;
+}
 
 export const UserInfoCard = ({
   name,
@@ -9,7 +17,7 @@ export const UserInfoCard = ({
   statusTag,
   statusLabel,
   lastSeenLabel,
-}) => (
+}: UserInfoCardProps) => (
   <UserCard>
     <UserInfo>
       <h3>{name}</h3>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -7,14 +6,86 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 
-const getPathIds = (path) => {
-  if (typeof path !== 'string' || !path.trim()) return {};
+interface UserIdentity {
+  businessID?: string;
+}
+
+interface PathIds {
+  warehouseId: string | null;
+  shelfId: string | null;
+  rowShelfId: string | null;
+  segmentId: string | null;
+}
+
+interface ProductStockItem {
+  batchId?: string;
+  path?: string;
+  id?: string;
+  stock?: number;
+  expirationDate?: unknown;
+  productId?: string;
+}
+
+interface LocationDataItem {
+  id?: string;
+  warehouseId?: string;
+  shelfId?: string;
+  rowShelfId?: string;
+  segmentId?: string;
+  name?: string;
+  shortName?: string;
+}
+
+interface WarehouseData {
+  warehouses: LocationDataItem[];
+  shelves: LocationDataItem[];
+  rows: LocationDataItem[];
+  segments: LocationDataItem[];
+}
+
+interface BatchDoc {
+  id?: string;
+  shortName?: string;
+  expirationDate?: unknown;
+  quantity?: number;
+}
+
+export interface InventoryDisplayItem {
+  warehouse: string;
+  shortName: string;
+  shelf: string;
+  row: string;
+  segment: string;
+  path?: string;
+  stock?: number;
+  productStock: {
+    id: string;
+    stock: number;
+  };
+  batch: {
+    id: string;
+    shortName?: string;
+    expirationDate?: unknown;
+    stock?: number;
+  };
+  expirationDate: unknown;
+}
+
+const emptyPathIds: PathIds = {
+  warehouseId: null,
+  shelfId: null,
+  rowShelfId: null,
+  segmentId: null,
+};
+
+const getPathIds = (path: string | undefined | null): PathIds => {
+  if (typeof path !== 'string' || !path.trim()) return emptyPathIds;
   const ids = path.split('/').filter((id) => id !== '');
   return {
     warehouseId: ids[0] || null,
@@ -23,14 +94,19 @@ const getPathIds = (path) => {
     segmentId: ids[3] || null,
   };
 };
-function getBatchIds(products) {
+function getBatchIds(products: ProductStockItem[]): string[] {
   if (!Array.isArray(products) || products.length === 0) {
     return []; // Devuelve un array vacío si el inventario es inválido o vacío
   }
-  const batchIds = products.map((item) => item.batchId);
+  const batchIds = products
+    .map((item) => item.batchId)
+    .filter((id): id is string => Boolean(id));
   return [...new Set(batchIds)]; // Remove duplicate batch IDs
 }
-function transformInventoryItems(inventoryItems, data) {
+function transformInventoryItems(
+  inventoryItems: ProductStockItem[],
+  data: WarehouseData,
+): InventoryDisplayItem[] {
   return inventoryItems.map((item) => {
     const { warehouseId, shelfId, rowShelfId, segmentId } = getPathIds(
       item.path,
@@ -110,7 +186,10 @@ function transformInventoryItems(inventoryItems, data) {
     };
   });
 }
-function saveBatchDataOnInventory(inventory, batches) {
+function saveBatchDataOnInventory(
+  inventory: InventoryDisplayItem[],
+  batches: BatchDoc[],
+): InventoryDisplayItem[] {
   return inventory.map((item) => {
     const batch = batches.find((b) => b.id === item.batch.id);
 
@@ -128,7 +207,9 @@ function saveBatchDataOnInventory(inventory, batches) {
     return item;
   });
 }
-function sortInventoryByLocation(inventoryItems) {
+function sortInventoryByLocation(
+  inventoryItems: InventoryDisplayItem[],
+): InventoryDisplayItem[] {
   return inventoryItems.sort((a, b) => {
     const locationA = buildLocationString(a).toLowerCase();
     const locationB = buildLocationString(b).toLowerCase();
@@ -137,7 +218,7 @@ function sortInventoryByLocation(inventoryItems) {
     return 0;
   });
 }
-function buildLocationString(item) {
+function buildLocationString(item: InventoryDisplayItem) {
   let locationString = '';
   if (item.shortName) locationString += item.shortName;
   if (item.shelf) locationString += `-${item.shelf}`;
@@ -146,9 +227,13 @@ function buildLocationString(item) {
   return locationString;
 }
 
-export const fetchAllInventoryData = async (user, productId, setInventory) => {
+export const fetchAllInventoryData = async (
+  user: UserIdentity | null | undefined,
+  productId: string | null | undefined,
+  setInventory: Dispatch<SetStateAction<InventoryDisplayItem[]>>,
+): Promise<InventoryDisplayItem[] | undefined> => {
   try {
-    if (!user.businessID) return;
+    if (!user?.businessID || !productId) return;
     const productsStock = await fbGetProductsStock(user, productId);
     const paths = productsStock.map((product) => product?.path) || [];
     const pathIds = paths.map((path) => getPathIds(path));
@@ -164,11 +249,12 @@ export const fetchAllInventoryData = async (user, productId, setInventory) => {
   }
 };
 
-export const useGetAllInventoryData = (productId) => {
-  const user = useSelector(selectUser);
-  const [data, setData] = useState([]);
+export const useGetAllInventoryData = (productId: string | null | undefined) => {
+  type InventoryRootState = Parameters<typeof selectUser>[0];
+  const user = useSelector((state: InventoryRootState) => selectUser(state));
+  const [data, setData] = useState<InventoryDisplayItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
     if (user && productId) {
@@ -181,7 +267,10 @@ export const useGetAllInventoryData = (productId) => {
   return { data, loading, error };
 };
 
-const fbGetProductsStock = async (user, productId) => {
+const fbGetProductsStock = async (
+  user: UserIdentity,
+  productId: string,
+): Promise<ProductStockItem[]> => {
   const productStockRef = collection(
     db,
     'businesses',
@@ -190,13 +279,16 @@ const fbGetProductsStock = async (user, productId) => {
   );
   const q = query(productStockRef, where('productId', '==', productId));
   const querySnapshot = await getDocs(q);
-  let data = [];
-  querySnapshot.forEach((doc) => {
-    data.push(doc.data());
+  const data: ProductStockItem[] = [];
+  querySnapshot.forEach((docSnap) => {
+    data.push(docSnap.data() as ProductStockItem);
   });
   return data;
 };
-const fbGetWarehouseData = async (user, items) => {
+const fbGetWarehouseData = async (
+  user: UserIdentity,
+  items: PathIds[],
+): Promise<{ data: WarehouseData; loading: boolean; error: unknown }> => {
   if (!user.businessID || items.length === 0) {
     return {
       data: {
@@ -210,11 +302,11 @@ const fbGetWarehouseData = async (user, items) => {
     };
   }
 
-  let warehouses = [];
-  let shelves = [];
-  let rows = [];
-  let segments = [];
-  let error = null;
+  const warehouses: LocationDataItem[] = [];
+  const shelves: LocationDataItem[] = [];
+  const rows: LocationDataItem[] = [];
+  const segments: LocationDataItem[] = [];
+  let error: unknown = null;
 
   for (const item of items) {
     try {
@@ -234,7 +326,7 @@ const fbGetWarehouseData = async (user, items) => {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const docData = docSnap.data();
+        const docData = docSnap.data() as LocationDataItem;
         if (item.segmentId) segments.push(docData);
         else if (item.rowShelfId) rows.push(docData);
         else if (item.shelfId) shelves.push(docData);
@@ -257,14 +349,17 @@ const fbGetWarehouseData = async (user, items) => {
     error,
   };
 };
-const fbGetBatchesByIds = async (user, batchIDs) => {
+const fbGetBatchesByIds = async (
+  user: UserIdentity,
+  batchIDs: string[],
+): Promise<BatchDoc[]> => {
   const batchRefs = batchIDs.map((batchID) =>
     doc(db, 'businesses', user.businessID, 'batches', batchID),
   );
   const batchDocs = await Promise.all(
     batchRefs.map(async (batchRef) => {
       const docSnap = await getDoc(batchRef);
-      return docSnap.data();
+      return docSnap.data() as BatchDoc;
     }),
   );
   return batchDocs;

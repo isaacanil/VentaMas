@@ -128,9 +128,9 @@ function normalizeDelivery(delivery: ClientDeliveryInput | undefined): Normalize
  * @returns {object}
  */
 export function extractNormalizedClient(docData: ClientDocumentData = {}): NormalizedClient {
-  const base =
+  const base: ClientInput =
     docData && typeof docData.client === 'object' && docData.client !== null
-      ? { ...docData.client }
+      ? { ...(docData.client as ClientInput) }
       : {};
 
   for (const field of FIELDS_TO_EXTRACT) {

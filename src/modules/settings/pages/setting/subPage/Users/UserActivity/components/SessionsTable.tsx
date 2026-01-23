@@ -1,11 +1,20 @@
-// @ts-nocheck
 import { MoreOutlined, StopOutlined } from '@/constants/icons/antd';
-import { Button, Dropdown, Tag } from 'antd';
-import { useMemo } from 'react';
+import { Button, Dropdown, Tag, type MenuProps } from 'antd';
+import { useMemo, type ReactNode } from 'react';
 
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { DateCell } from './DateCell';
+import type { SessionSummary } from '../utils/activityUtils';
+
+interface SessionsTableProps {
+  sessions: SessionSummary[];
+  loading: boolean;
+  emptyText: ReactNode;
+  onCloseSession?: (session: SessionSummary) => void;
+  revokingSessionId?: string | null;
+}
 
 export const SessionsTable = ({
   sessions,
@@ -13,8 +22,8 @@ export const SessionsTable = ({
   emptyText,
   onCloseSession,
   revokingSessionId,
-}) => {
-  const columns = useMemo(
+}: SessionsTableProps) => {
+  const columns = useMemo<AdvancedTableProps<SessionSummary>['columns']>(
     () => [
       {
         Header: '#',
@@ -28,18 +37,20 @@ export const SessionsTable = ({
         accessor: 'startAt',
         align: 'left',
         minWidth: '130px',
-        cell: ({ row }) => <DateCell millis={row.startAt} />,
+        cell: ({ row }: { row?: SessionSummary }) => (
+          <DateCell millis={row?.startAt ?? null} />
+        ),
       },
       {
         Header: 'Cierre',
         accessor: 'endAt',
         align: 'left',
         minWidth: '130px',
-        cell: ({ row }) => {
-          if (row.status === 'open') {
+        cell: ({ row }: { row?: SessionSummary }) => {
+          if (row?.status === 'open') {
             return <Tag color="processing">En curso</Tag>;
           }
-          return <DateCell millis={row.endAt} />;
+          return <DateCell millis={row?.endAt ?? null} />;
         },
       },
       {
@@ -66,7 +77,7 @@ export const SessionsTable = ({
         accessor: 'status',
         align: 'left',
         minWidth: '120px',
-        cell: ({ row }) => {
+        cell: ({ row }: { row?: SessionSummary }) => {
           const value = row?.status;
           const label = row?.statusLabel;
           let color = 'default';
@@ -80,9 +91,9 @@ export const SessionsTable = ({
         align: 'center',
         width: '80px',
         minWidth: '80px',
-        cell: ({ row }) => {
+        cell: ({ row }: { row?: SessionSummary }) => {
           if (row?.status === 'open') {
-            const menu = {
+            const menu: MenuProps = {
               items: [
                 {
                   key: 'close',
@@ -91,7 +102,7 @@ export const SessionsTable = ({
                 },
               ],
               onClick: ({ key }) => {
-                if (key === 'close') onCloseSession?.(row);
+                if (key === 'close' && row) onCloseSession?.(row);
               },
             };
             const isRevoking = revokingSessionId === row.sessionId;

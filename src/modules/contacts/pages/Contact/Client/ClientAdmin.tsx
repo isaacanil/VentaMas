@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { Fragment, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -9,9 +8,26 @@ import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
 import { ClientsListTable } from './components/OrderListTable/ClientsListTable';
 
+type ClientsHookResult = ReturnType<typeof useFbGetClients>;
+type ClientListItem = ClientsHookResult['clients'][number];
+
+type ClientStatusFilter = 'active' | 'deleted' | 'all';
+
+type ClientAdminFilters = {
+  clientId: string;
+  rnc: string;
+  phone: string;
+  status?: ClientStatusFilter;
+};
+
+type ClientOption = {
+  value: string;
+  label: string;
+};
+
 export const ClientAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<ClientAdminFilters>({
     clientId: '',
     rnc: '',
     phone: '',
@@ -25,18 +41,19 @@ export const ClientAdmin = () => {
       ...safeClients
         .map(({ client }) =>
           client?.id && client?.name
-            ? { value: client.id, label: client.name }
+            ? { value: String(client.id), label: client.name }
             : null,
         )
-        .filter(Boolean),
+        .filter((option): option is ClientOption => Boolean(option)),
     ];
   }, [clients]);
 
   const filteredClients = useMemo(() => {
-    const bySearch = filterData(clients, searchTerm);
-    return bySearch.filter(({ client, isDeleted }) => {
+    const bySearch = filterData(clients, searchTerm) ?? [];
+    return (bySearch as ClientListItem[]).filter(({ client, isDeleted }) => {
       const matchesClient =
-        !filters.clientId || client?.id === filters.clientId;
+        !filters.clientId ||
+        String(client?.id ?? '') === filters.clientId;
       const matchesRnc =
         !filters.rnc ||
         `${client?.personalID || ''}`
@@ -73,6 +90,7 @@ export const ClientAdmin = () => {
       clientId: '',
       rnc: '',
       phone: '',
+      status: undefined,
     });
 
   const filterItems = useMemo(
@@ -83,7 +101,7 @@ export const ClientAdmin = () => {
         label: 'Cliente',
         type: 'select',
         value: filters.clientId,
-        onChange: (val) =>
+        onChange: (val?: string) =>
           setFilters((prev) => ({ ...prev, clientId: val || '' })),
         options: clientOptions,
         width: 200,
@@ -94,7 +112,7 @@ export const ClientAdmin = () => {
         label: 'RNC/Cédula',
         type: 'input',
         value: filters.rnc,
-        onChange: (val) =>
+        onChange: (val?: string) =>
           setFilters((prev) => ({ ...prev, rnc: val || '' })),
         placeholder: 'Buscar documento',
         allowClear: true,
@@ -107,7 +125,7 @@ export const ClientAdmin = () => {
         label: 'Teléfono',
         type: 'input',
         value: filters.phone,
-        onChange: (val) =>
+        onChange: (val?: string) =>
           setFilters((prev) => ({ ...prev, phone: val || '' })),
         placeholder: 'Buscar teléfono',
         allowClear: true,
@@ -120,7 +138,7 @@ export const ClientAdmin = () => {
         label: 'Estado',
         type: 'select',
         value: filters.status,
-        onChange: (val) =>
+        onChange: (val?: ClientStatusFilter | null) =>
           setFilters((prev) => ({ ...prev, status: val || 'active' })),
         options: [
           { label: 'Activos', value: 'active' },

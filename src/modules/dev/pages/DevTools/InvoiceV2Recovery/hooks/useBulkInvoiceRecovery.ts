@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { message } from 'antd';
 import { useCallback, useState } from 'react';
 
@@ -7,14 +6,66 @@ import { autoRepairInvoiceV2 } from '@/services/invoice/invoiceV2Admin.service';
 const AUTO_INVOICE_LIMIT = 50;
 const AUTO_BUSINESS_LIMIT = 50;
 
-const DEFAULT_OPTIONS = {
+interface BulkOptions {
+  runForAllBusinesses: boolean;
+  dryRun: boolean;
+  startAfterBusinessId: string;
+  startAfterInvoiceId: string;
+}
+
+interface BulkRepair {
+  invoiceId?: string;
+  needsCanonical?: boolean;
+  needsReceivable?: boolean;
+  tasks?: string[];
+  status?: string;
+}
+
+interface BulkBusinessResult {
+  businessId: string;
+  invoicesScanned?: number;
+  repairs?: BulkRepair[];
+  nextInvoiceCursor?: string;
+}
+
+interface BulkMetrics {
+  businessesProcessed?: number;
+  invoicesScanned?: number;
+  invoicesWithIssues?: number;
+  tasksScheduled?: number;
+}
+
+interface BulkResult {
+  dryRun?: boolean;
+  metrics?: BulkMetrics;
+  businesses?: BulkBusinessResult[];
+  nextPage?: {
+    startAfterBusinessId?: string;
+  };
+}
+
+interface AutoRepairPayload {
+  runForAllBusinesses: boolean;
+  dryRun: boolean;
+  invoicesLimit: number;
+  businessLimit?: number;
+  startAfterBusinessId?: string;
+  businessId?: string;
+  startAfterInvoiceId?: string;
+}
+
+const DEFAULT_OPTIONS: BulkOptions = {
   runForAllBusinesses: true,
   dryRun: false,
   startAfterBusinessId: '',
   startAfterInvoiceId: '',
 };
 
-const mergeBatchResults = (current, incoming, runForAllBusinesses) => {
+const mergeBatchResults = (
+  current: BulkResult | null,
+  incoming: BulkResult,
+  runForAllBusinesses: boolean,
+): BulkResult => {
   if (!current) {
     return incoming;
   }
@@ -33,7 +84,7 @@ const mergeBatchResults = (current, incoming, runForAllBusinesses) => {
       (prevMetrics.tasksScheduled ?? 0) + (nextMetrics.tasksScheduled ?? 0),
   };
 
-  const mergedResult = {
+  const mergedResult: BulkResult = {
     dryRun: incoming.dryRun,
     metrics: mergedMetrics,
     businesses: [],
@@ -55,7 +106,7 @@ const mergeBatchResults = (current, incoming, runForAllBusinesses) => {
     return mergedResult;
   }
 
-  const mergedBusiness = {
+  const mergedBusiness: BulkBusinessResult = {
     businessId:
       incomingBusiness?.businessId || previousBusiness?.businessId || '',
     invoicesScanned:
@@ -75,17 +126,36 @@ const mergeBatchResults = (current, incoming, runForAllBusinesses) => {
   return mergedResult;
 };
 
-export const useBulkInvoiceRecovery = ({ getSelectedBusinessId }) => {
-  const [bulkOptions, setBulkOptions] = useState(DEFAULT_OPTIONS);
-  const [bulkResult, setBulkResult] = useState(null);
+interface UseBulkInvoiceRecoveryProps {
+  getSelectedBusinessId?: () => string | null | undefined;
+}
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return 'No se pudo ejecutar la recuperación automática.';
+};
+
+export const useBulkInvoiceRecovery = ({
+  getSelectedBusinessId,
+}: UseBulkInvoiceRecoveryProps) => {
+  const [bulkOptions, setBulkOptions] = useState<BulkOptions>(DEFAULT_OPTIONS);
+  const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  const updateBulkOption = useCallback((key, value) => {
+  const updateBulkOption = useCallback(
+    <K extends keyof BulkOptions>(key: K, value: BulkOptions[K]) => {
     setBulkOptions((prev) => ({
       ...prev,
       [key]: value,
     }));
-  }, []);
+    },
+    [],
+  );
 
   const handleBulkAutoRecovery = useCallback(async () => {
     const selectedBusinessId = getSelectedBusinessId?.();
@@ -96,13 +166,13 @@ export const useBulkInvoiceRecovery = ({ getSelectedBusinessId }) => {
     setBulkLoading(true);
     setBulkResult(null);
     try {
-      let aggregatedResult = null;
+      let aggregatedResult: BulkResult | null = null;
       let continueRunning = true;
       let currentBusinessCursor = bulkOptions.startAfterBusinessId?.trim() || null;
       let currentInvoiceCursor = bulkOptions.startAfterInvoiceId?.trim() || null;
 
       while (continueRunning) {
-        const payload = {
+        const payload: AutoRepairPayload = {
           runForAllBusinesses: bulkOptions.runForAllBusinesses,
           dryRun: bulkOptions.dryRun,
           invoicesLimit: AUTO_INVOICE_LIMIT,
@@ -119,7 +189,7 @@ export const useBulkInvoiceRecovery = ({ getSelectedBusinessId }) => {
           }
         }
 
-        const response = await autoRepairInvoiceV2(payload);
+        const response = (await autoRepairInvoiceV2(payload)) as BulkResult;
         aggregatedResult = mergeBatchResults(
           aggregatedResult,
           response,
@@ -152,11 +222,9 @@ export const useBulkInvoiceRecovery = ({ getSelectedBusinessId }) => {
           ? 'Análisis automático completado.'
           : 'Recuperación automática ejecutada.',
       );
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('[useBulkInvoiceRecovery] bulk auto-repair error', err);
-      message.error(
-        err?.message || 'No se pudo ejecutar la recuperación automática.',
-      );
+      message.error(getErrorMessage(err));
     } finally {
       setBulkLoading(false);
     }

@@ -1,7 +1,8 @@
-// @ts-nocheck
 import { Typography } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { BarcodeSettings } from '@/firebase/barcode/types';
 
 const { Text } = Typography;
 
@@ -17,7 +18,12 @@ const CodeStructureContainer = styled.div`
   border-radius: 6px;
 `;
 
-const CodePart = styled.div`
+type CodePartProps = {
+  color: string;
+  border: string;
+};
+
+const CodePart = styled.div<CodePartProps>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -79,13 +85,18 @@ const StructureTitle = styled.div`
   text-align: center;
 `;
 
-export const CodeStructure = ({ selectedConfig }) => {
+type CodeStructureProps = {
+  selectedConfig?: BarcodeSettings | null;
+};
+
+export const CodeStructure = ({ selectedConfig }: CodeStructureProps) => {
   if (!selectedConfig || !selectedConfig.companyPrefix) return null;
 
   // Generar el código completo de ejemplo
   const gs1Prefix = '746';
   const companyPrefix = selectedConfig.companyPrefix;
-  const itemReference = '0'.repeat(selectedConfig.itemReferenceLength);
+  const itemReferenceLength = selectedConfig.itemReferenceLength ?? 0;
+  const itemReference = '0'.repeat(itemReferenceLength);
   const checkDigit = 'X';
   const fullCode = `${gs1Prefix}${companyPrefix}${itemReference}${checkDigit}`;
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faFileInvoiceDollar,
   faReceipt,
@@ -20,8 +19,22 @@ import { ClientBalanceInfo } from './components/ClientBalanceInfo';
 import { CreditLimits } from './components/CreditLimits';
 import { FilterBar } from './components/FilterBar';
 
-const ClientFinancialInfo = ({ client }) => {
-  const user = useSelector(selectUser);
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type ClientSummary = {
+  id?: string;
+  name?: string;
+  numberId?: string | number;
+} & Record<string, unknown>;
+
+type DisplayedAccount = ReturnType<typeof convertAccountsData>[number];
+
+type ClientFinancialInfoProps = {
+  client: ClientSummary | null | undefined;
+};
+
+const ClientFinancialInfo = ({ client }: ClientFinancialInfoProps) => {
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
 
   const [currentPageOpen, setCurrentPageOpen] = useState(1);
   const [currentPageClosed, setCurrentPageClosed] = useState(1);
@@ -50,20 +63,24 @@ const ClientFinancialInfo = ({ client }) => {
     user,
     clientId: client?.id,
   });
+  const pendingBalanceValue = pendingBalance ?? 0;
 
   const pageSize = 4;
 
-  const getPaginatedAccounts = (accountsList, currentPage) => {
+  const getPaginatedAccounts = (
+    accountsList: DisplayedAccount[],
+    currentPage: number,
+  ) => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     return accountsList.slice(startIndex, endIndex);
   };
 
-  const handleOpenPageChange = (page) => {
+  const handleOpenPageChange = (page: number) => {
     setCurrentPageOpen(page);
   };
 
-  const handleClosedPageChange = (page) => {
+  const handleClosedPageChange = (page: number) => {
     setCurrentPageClosed(page);
   };
 
@@ -80,10 +97,10 @@ const ClientFinancialInfo = ({ client }) => {
 
   return (
     <Container>
-      <ClientBalanceInfo client={client} pendingBalance={pendingBalance} />
+      <ClientBalanceInfo client={client} pendingBalance={pendingBalanceValue} />
       <CreditLimits
         client={client}
-        arBalance={pendingBalance || 0}
+        arBalance={pendingBalanceValue}
       />
       <AccountsReceivable>
         <SectionTitle>
@@ -98,20 +115,30 @@ const ClientFinancialInfo = ({ client }) => {
         />
         <Accounts>
           {paginatedDisplayedAccounts.length > 0 ? (
-            paginatedDisplayedAccounts.map((account) => (
-              <AccountCard
-                key={account.arId || account.accountNumber}
-                account={account}
-                accountNumber={account.numberId || account.accountNumber}
-                date={account.date}
-                frequency={account.frequency}
-                balance={account.balance}
-                installments={account.installments}
-                installmentAmount={account.installmentAmount}
-                lastPayment={account.lastPayment}
-                isActive={account.isActive}
-              />
-            ))
+            paginatedDisplayedAccounts.map((account) => {
+              const accountNumber =
+                account.numberId ??
+                (account as { accountNumber?: string | number }).accountNumber;
+              const accountKey =
+                (account as { arId?: string }).arId ??
+                (account as { accountNumber?: string | number }).accountNumber ??
+                (account as { id?: string }).id ??
+                accountNumber;
+              return (
+                <AccountCard
+                  key={accountKey ?? accountNumber}
+                  account={account}
+                  accountNumber={accountNumber}
+                  date={account.date}
+                  frequency={account.frequency}
+                  balance={account.balance}
+                  installments={account.installments}
+                  installmentAmount={account.installmentAmount}
+                  lastPayment={account.lastPayment}
+                  isActive={account.isActive}
+                />
+              );
+            })
           ) : (
             <NoAccountsMessage>
               <FontAwesomeIcon icon={faReceipt} />

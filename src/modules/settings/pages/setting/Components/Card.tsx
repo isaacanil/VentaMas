@@ -1,9 +1,18 @@
-// @ts-nocheck
-import React from 'react';
+import { forwardRef } from 'react';
+import type { ComponentPropsWithoutRef, ForwardedRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-const CardComponent = ({ data, ...rest }, ref) => {
+import type { SettingItem } from '../SettingData';
+
+type CardProps = {
+  data: SettingItem;
+} & ComponentPropsWithoutRef<typeof Link>;
+
+const CardComponent = (
+  { data, ...rest }: CardProps,
+  ref: ForwardedRef<HTMLAnchorElement>,
+) => {
   const { title, route, description, icon } = data;
   const path = route || '#';
   return (
@@ -19,7 +28,7 @@ const CardComponent = ({ data, ...rest }, ref) => {
   );
 };
 
-export const Card = React.forwardRef(CardComponent);
+export const Card = forwardRef<HTMLAnchorElement, CardProps>(CardComponent);
 Card.displayName = 'SettingCard';
 
 const Head = styled.div`

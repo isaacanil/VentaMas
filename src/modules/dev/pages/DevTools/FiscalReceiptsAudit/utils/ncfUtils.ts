@@ -1,5 +1,4 @@
-// @ts-nocheck
-export const sanitizeNcf = (value) => {
+export const sanitizeNcf = (value: unknown): string => {
   if (value === null || value === undefined) {
     return '';
   }
@@ -10,7 +9,7 @@ export const sanitizeNcf = (value) => {
 };
 
 // Build a canonical key using the alphanumeric prefix and numeric suffix without leading zeros.
-export const canonicalizeNcf = (raw) => {
+export const canonicalizeNcf = (raw: unknown): string => {
   const ncf = sanitizeNcf(raw);
   if (!ncf) return '';
   const match = ncf.match(/^([A-Z]+)?(\d+)$/);
@@ -31,7 +30,7 @@ export const canonicalizeNcf = (raw) => {
   return ncf;
 };
 
-export const looseCanonicalizeNcf = (raw) => {
+export const looseCanonicalizeNcf = (raw: unknown): string => {
   const ncf = sanitizeNcf(raw);
   if (!ncf) return '';
   const alphanumeric = ncf.replace(/[^A-Z0-9]/g, '');
@@ -39,22 +38,34 @@ export const looseCanonicalizeNcf = (raw) => {
   return alphanumeric.replace(/0{2,}/g, '0');
 };
 
-export const parseInvoiceDate = (rawDate) => {
+interface FirestoreTimestampLike {
+  toDate?: () => Date;
+  seconds?: number;
+  nanoseconds?: number;
+}
+
+export const parseInvoiceDate = (rawDate: unknown): Date | null => {
   if (!rawDate) {
     return null;
   }
-  if (typeof rawDate.toDate === 'function') {
+  const timestamp = rawDate as FirestoreTimestampLike;
+  if (typeof timestamp.toDate === 'function') {
     try {
-      const parsed = rawDate.toDate();
+      const parsed = timestamp.toDate();
       return Number.isNaN(parsed.getTime()) ? null : parsed;
     } catch (err) {
       console.error('parseInvoiceDate: error usando toDate()', err);
       return null;
     }
   }
-  if (typeof rawDate === 'object' && rawDate.seconds !== undefined) {
+  if (
+    typeof rawDate === 'object' &&
+    rawDate !== null &&
+    typeof timestamp.seconds === 'number'
+  ) {
     const milliseconds =
-      rawDate.seconds * 1000 + Math.floor((rawDate.nanoseconds || 0) / 1e6);
+      timestamp.seconds * 1000 +
+      Math.floor((timestamp.nanoseconds || 0) / 1e6);
     const parsed = new Date(milliseconds);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }

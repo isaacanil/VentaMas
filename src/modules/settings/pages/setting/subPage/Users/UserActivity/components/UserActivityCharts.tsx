@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Chart as ChartJS,
   Filler,
@@ -11,6 +10,8 @@ import {
 import { Radar } from 'react-chartjs-2';
 import styled from 'styled-components';
 
+import type { UserActivityStats } from '../hooks/useUserRealActivity';
+
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -20,7 +21,11 @@ ChartJS.register(
   Legend,
 );
 
-export const UserActivityCharts = ({ stats }) => {
+interface UserActivityChartsProps {
+  stats: UserActivityStats | null;
+}
+
+export const UserActivityCharts = ({ stats }: UserActivityChartsProps) => {
   if (!stats) return null;
 
   // Radar Data
@@ -59,7 +64,7 @@ export const UserActivityCharts = ({ stats }) => {
   const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const getIntensity = (day, hour) => {
+  const getIntensity = (day: number, hour: number) => {
     const count = stats.heatmap[`${day}-${hour}`] || 0;
     if (count === 0) return 0;
     if (count < 2) return 0.3;

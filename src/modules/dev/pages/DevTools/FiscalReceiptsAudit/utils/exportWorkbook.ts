@@ -1,10 +1,91 @@
-// @ts-nocheck
 import { saveAs } from 'file-saver';
 import { DateTime } from 'luxon';
 
 import { canonicalizeNcf, looseCanonicalizeNcf } from './ncfUtils';
 
-const formatDate = (value, format) => {
+type DateInput = Date | number | string | null | undefined;
+
+interface DuplicateOccurrence {
+  invoiceId?: string;
+  invoiceNumber?: string;
+  ncf?: string;
+  date?: Date | string | number | null;
+  status?: string;
+  canonical?: string;
+  looseCanonical?: string;
+  length?: number;
+}
+
+interface DuplicateGroup {
+  canonical?: string;
+  occurrences: DuplicateOccurrence[];
+  distinctNcfs?: number;
+  count?: number;
+}
+
+interface NcfLengthStat {
+  length: number;
+  count: number;
+  firstDate?: Date | string | number | null;
+  lastDate?: Date | string | number | null;
+  missingDateCount?: number;
+}
+
+interface BusinessAuditResult {
+  businessId: string;
+  businessName?: string;
+  totalInvoices: number;
+  invoicesWithNcf: number;
+  uniqueNcfCount: number;
+  missingNcf: number;
+  skippedWithoutDate?: number;
+  duplicates?: DuplicateGroup[];
+  duplicatesNormalized?: DuplicateGroup[];
+  zeroCollapsedDuplicates?: DuplicateGroup[];
+  currentLength?: number | null;
+  observedLengths?: number[];
+  ncfLengthStats?: NcfLengthStat[];
+  non11Count?: number;
+}
+
+interface DuplicateDetailRow {
+  key: string;
+  invoiceId: string | null;
+  invoiceNumber: string;
+  ncf: string;
+  date: Date | null;
+  status: string;
+  canonical: string;
+  looseCanonical: string;
+  length: number | null;
+  detection: Set<string>;
+  originalSources: Set<string>;
+  duplicateSources: Set<string>;
+  hasExactDuplicate: boolean;
+  hasCanonicalVariation: boolean;
+  hasLooseVariation: boolean;
+  canonicalGroupSize?: number;
+  looseGroupSize?: number;
+}
+
+interface DuplicateDetailOutputRow {
+  key: string;
+  invoice: string | null;
+  ncf: string | null;
+  date: string | null;
+  duplicateType: string;
+  length: number | null;
+  lengthFlag: string;
+  canonical: string | null;
+  looseCanonical: string | null;
+  looseVariation: string;
+  detection: string;
+  invoiceId: string | null;
+  dateSortValue?: number | null;
+  originalRank?: number;
+}
+
+const formatDate = (value: DateInput, format: string): string | null => {
   if (!value) return null;
   if (value instanceof Date) {
     return DateTime.fromJSDate(value).toFormat(format);
@@ -21,7 +102,7 @@ const formatDate = (value, format) => {
   return null;
 };
 
-export const sanitizeFileName = (name) => {
+export const sanitizeFileName = (name?: string): string => {
   const base = (name || 'negocio').toString().trim();
   return base
     .normalize('NFD')
@@ -31,16 +112,20 @@ export const sanitizeFileName = (name) => {
     .substring(0, 80);
 };
 
-export const exportBusinessWorkbook = async (result, start, end) => {
+export const exportBusinessWorkbook = async (
+  result: BusinessAuditResult,
+  start: Date | null,
+  end: Date | null,
+): Promise<void> => {
   const ExcelJS = (await import('exceljs')).default;
   const wb = new ExcelJS.Workbook();
   wb.creator = 'VentaMax';
   wb.created = new Date();
 
   const buildDuplicateDetailRows = () => {
-    const detailMap = new Map();
+    const detailMap = new Map<string, DuplicateDetailRow>();
 
-    const getRowKey = (occ) => {
+    const getRowKey = (occ: DuplicateOccurrence): string => {
       if (occ.invoiceId) {
         return `id:${occ.invoiceId}`;
       }
@@ -55,7 +140,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       return `${ncfPart}|${invoicePart}|${datePart}`;
     };
 
-    const ensureRow = (occ) => {
+    const ensureRow = (occ: DuplicateOccurrence): DuplicateDetailRow => {
       const key = getRowKey(occ);
       let row = detailMap.get(key);
       if (!row) {
@@ -75,8 +160,9 @@ export const exportBusinessWorkbook = async (result, start, end) => {
               ? occ.date
               : null,
           status: occ.status || 'Sin estado',
-          canonical: occ.canonical || canonicalizeNcf(occ.ncf),
-          looseCanonical: occ.looseCanonical || looseCanonicalizeNcf(occ.ncf),
+          canonical: occ.canonical || canonicalizeNcf(occ.ncf ?? ''),
+          looseCanonical:
+            occ.looseCanonical || looseCanonicalizeNcf(occ.ncf ?? ''),
           length: lengthValue,
           detection: new Set(),
           originalSources: new Set(),
@@ -91,7 +177,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
     };
 
     const markOccurrence = (
-      row,
+      row: DuplicateDetailRow,
       {
         detection,
         isOriginal,
@@ -99,8 +185,15 @@ export const exportBusinessWorkbook = async (result, start, end) => {
         hasCanonicalVariation,
         hasLooseVariation,
         groupSize,
+      }: {
+        detection?: string;
+        isOriginal: boolean;
+        hasExactDuplicate: boolean;
+        hasCanonicalVariation: boolean;
+        hasLooseVariation: boolean;
+        groupSize?: number;
       },
-    ) => {
+    ): void => {
       if (detection) {
         row.detection.add(detection);
       }
@@ -137,7 +230,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
         const ncfKey = occ.ncf || '';
         acc.set(ncfKey, (acc.get(ncfKey) || 0) + 1);
         return acc;
-      }, new Map());
+      }, new Map<string, number>());
 
       occurrences.forEach((occ, index) => {
         const row = ensureRow(occ);
@@ -173,7 +266,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
 
     const rows = Array.from(detailMap.values())
       .filter((row) => row.detection.size > 0)
-      .map((row) => {
+      .map((row): DuplicateDetailOutputRow => {
         const lengthValue =
           typeof row.length === 'number'
             ? row.length
@@ -231,7 +324,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
         };
       });
 
-    const groupedByLooseCanonical = new Map();
+    const groupedByLooseCanonical = new Map<string, DuplicateDetailOutputRow[]>();
     rows.forEach((row) => {
       const groupKey =
         row.looseCanonical || row.canonical || row.ncf || row.key;
@@ -244,7 +337,7 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       ([keyA], [keyB]) => keyA.localeCompare(keyB),
     );
 
-    const orderedRows = [];
+    const orderedRows: DuplicateDetailOutputRow[] = [];
     sortedGroups.forEach(([, groupRows]) => {
       groupRows.sort((a, b) => {
         if (a.originalRank !== b.originalRank) {
@@ -379,9 +472,10 @@ export const exportBusinessWorkbook = async (result, start, end) => {
       const lengthValue = occ.length || (occ.ncf ? occ.ncf.length : null);
       norm.addRow({
         canonical: group.canonical,
-        looseCanonical: occ.looseCanonical || looseCanonicalizeNcf(occ.ncf),
+        looseCanonical:
+          occ.looseCanonical || looseCanonicalizeNcf(occ.ncf ?? ''),
         invoice: occ.invoiceNumber || null,
-        ncf: occ.ncf,
+        ncf: occ.ncf ?? null,
         date: occ.date ? formatDate(occ.date, 'yyyy-LL-dd HH:mm') : null,
         status: occ.status || 'Sin estado',
         length: typeof lengthValue === 'number' ? lengthValue : null,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Alert,
   Button,
@@ -33,18 +32,66 @@ import { exportBusinessWorkbook } from './utils/exportWorkbook';
 import { analyzeInvoices } from './utils/invoiceAnalysis';
 import { PRESETS, getRangeFromPreset } from './utils/presets';
 
-export const FiscalReceiptsAudit = () => {
+import type { Dayjs } from 'dayjs';
+
+interface BusinessRecord {
+  id: string;
+  name?: string;
+  business?: {
+    name?: string;
+    fantasyName?: string;
+  };
+}
+
+interface InvoiceAnalysisResult {
+  totalInvoices: number;
+  invoicesWithNcf: number;
+  missingNcf: number;
+  skippedWithoutDate: number;
+  ncfLengthStats: unknown[];
+  lengthChangeEvents: unknown[];
+  duplicates: unknown[];
+  duplicatesNormalized: unknown[];
+  zeroCollapsedDuplicates: unknown[];
+  uniqueNcfCount: number;
+  observedLengths: number[];
+  currentLength: number | null;
+}
+
+interface BusinessAuditResult extends InvoiceAnalysisResult {
+  businessId: string;
+  businessName?: string;
+}
+
+interface AuditIssue {
+  businessId: string;
+  businessName?: string;
+  message: string;
+}
+
+interface ExportingBusiness {
+  id: string;
+  name: string;
+}
+
+interface DateRange {
+  start: Dayjs | null;
+  end: Dayjs | null;
+}
+
+export const FiscalReceiptsAudit: React.FC = () => {
   const navigate = useNavigate();
   const { abilities, loading } = useUserAccess();
   const [processing, setProcessing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [progressTotal, setProgressTotal] = useState(0);
   const [progressDone, setProgressDone] = useState(0);
-  const [currentBusiness, setCurrentBusiness] = useState(null);
-  const [exportingBusiness, setExportingBusiness] = useState(null);
+  const [currentBusiness, setCurrentBusiness] = useState<string | null>(null);
+  const [exportingBusiness, setExportingBusiness] =
+    useState<ExportingBusiness | null>(null);
   const [selectedPreset, setSelectedPreset] = useState('last_90_days');
-  const [results, setResults] = useState([]);
-  const [errors, setErrors] = useState([]);
+  const [results, setResults] = useState<BusinessAuditResult[]>([]);
+  const [errors, setErrors] = useState<AuditIssue[]>([]);
   const businessesWithDuplicates = results.filter(
     (item) => item.duplicates && item.duplicates.length > 0,
   );
@@ -60,7 +107,7 @@ export const FiscalReceiptsAudit = () => {
   }, [abilities, loading, navigate]);
 
   const handleAnalyze = useCallback(async () => {
-    const { start, end } = getRangeFromPreset(selectedPreset);
+    const { start, end } = getRangeFromPreset(selectedPreset) as DateRange;
     if (start && end && end.isBefore(start)) {
       message.warning('El rango de fechas no es válido.');
       return;
@@ -76,7 +123,7 @@ export const FiscalReceiptsAudit = () => {
     try {
       const startDate = start ? start.toDate() : null;
       const endDate = end ? end.toDate() : null;
-      const businesses = await fbGetBusinessesList();
+      const businesses = (await fbGetBusinessesList()) as BusinessRecord[];
 
       if (!businesses.length) {
         message.info('No se encontraron negocios para analizar.');
@@ -86,8 +133,8 @@ export const FiscalReceiptsAudit = () => {
 
       setProgressTotal(businesses.length);
 
-      const aggregated = [];
-      const issues = [];
+      const aggregated: BusinessAuditResult[] = [];
+      const issues: AuditIssue[] = [];
 
       for (const business of businesses) {
         const businessName =
@@ -175,15 +222,21 @@ export const FiscalReceiptsAudit = () => {
               id: docSnap.id,
               ...docSnap.data(),
             }))
-            .filter((invoice) => invoice?.data?.status !== 'cancelled');
+            .filter(
+              (invoice) =>
+                (invoice as { data?: { status?: string } })?.data?.status !==
+                'cancelled',
+            );
 
-          const analysis = analyzeInvoices(invoices);
+          const analysis = analyzeInvoices(
+            invoices as Array<Record<string, unknown>>,
+          ) as InvoiceAnalysisResult;
           aggregated.push({
             businessId: business.id,
             businessName,
             ...analysis,
           });
-        } catch (businessError) {
+        } catch (businessError: unknown) {
           console.error(
             `Error analizando negocio ${business?.id}`,
             businessError,
@@ -222,7 +275,7 @@ export const FiscalReceiptsAudit = () => {
           `Algunos negocios no se pudieron analizar (${issues.length}). Revisa los avisos.`,
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error general al analizar comprobantes', error);
       message.error('Ocurrió un error al generar el análisis.');
       setErrors([
@@ -239,7 +292,9 @@ export const FiscalReceiptsAudit = () => {
     }
   }, [selectedPreset]);
 
-  const handleExportBusiness = async (businessResult) => {
+  const handleExportBusiness = async (
+    businessResult: BusinessAuditResult,
+  ) => {
     if (!businessResult?.duplicates?.length) {
       message.info(
         'Este negocio no tiene comprobantes duplicados para exportar.',
@@ -247,7 +302,7 @@ export const FiscalReceiptsAudit = () => {
       return;
     }
 
-    const { start, end } = getRangeFromPreset(selectedPreset);
+    const { start, end } = getRangeFromPreset(selectedPreset) as DateRange;
     const startDate = start ? start.toDate() : null;
     const endDate = end ? end.toDate() : null;
 
@@ -260,7 +315,7 @@ export const FiscalReceiptsAudit = () => {
     try {
       await exportBusinessWorkbook(businessResult, startDate, endDate);
       message.success(`Reporte exportado para ${businessResult.businessName}.`);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error exportando Excel', err);
       message.error('Ocurrió un error durante la exportación.');
     } finally {

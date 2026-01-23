@@ -1,13 +1,23 @@
-// @ts-nocheck
 import { ClockCircleOutlined, ShopOutlined, ShoppingCartOutlined } from '@/constants/icons/antd';
 import { Empty, Spin, Timeline, Typography } from 'antd';
 import styled from 'styled-components';
 
 import { formatDateTime } from '../utils/activityUtils';
+import type { UserActivityItem, UserActivityType } from '../hooks/useUserRealActivity';
 
 const { Text } = Typography;
 
-export const UserActivityList = ({ activities, error, loading }) => {
+interface UserActivityListProps {
+  activities?: UserActivityItem[] | null;
+  error?: string | null;
+  loading?: boolean;
+}
+
+export const UserActivityList = ({
+  activities,
+  error,
+  loading,
+}: UserActivityListProps) => {
     if (loading) {
         return (
             <LoadingWrapper>
@@ -58,7 +68,7 @@ export const UserActivityList = ({ activities, error, loading }) => {
     );
 };
 
-const getIconForType = (type) => {
+const getIconForType = (type: UserActivityType) => {
     switch (type) {
         case 'product':
             return <ShopOutlined />;
@@ -75,7 +85,7 @@ const getIconForType = (type) => {
     }
 };
 
-const getColorForType = (type) => {
+const getColorForType = (type: UserActivityType) => {
     switch (type) {
         case 'product':
             return 'blue';
@@ -92,7 +102,7 @@ const getColorForType = (type) => {
     }
 };
 
-const getActionLabel = (item) => {
+const getActionLabel = (item: UserActivityItem) => {
     if (item.type === 'product') return 'Producto';
     if (item.type === 'sale') return 'Venta';
     if (item.type === 'purchase') return 'Compra';

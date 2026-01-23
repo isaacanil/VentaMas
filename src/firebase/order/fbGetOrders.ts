@@ -21,8 +21,14 @@ export const convertFirestoreTimestamps = (
   fields: string[],
 ): void => {
   fields.forEach((field) => {
-    const timestamp = dates[field]?.seconds;
-    if (timestamp) dates[field] = timestamp * 1000;
+    const value = dates[field];
+    const timestamp =
+      typeof value === 'object' && value !== null && 'seconds' in value
+        ? (value as { seconds?: number }).seconds
+        : undefined;
+    if (typeof timestamp === 'number') {
+      dates[field] = timestamp * 1000;
+    }
   });
 };
 

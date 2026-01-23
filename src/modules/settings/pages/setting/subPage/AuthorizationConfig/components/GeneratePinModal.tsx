@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { KeyOutlined } from '@/constants/icons/antd';
 import { Modal, Typography, Button } from 'antd';
 import { useMemo } from 'react';
@@ -108,13 +107,32 @@ const ActionBar = styled.div`
   margin-top: 4px;
 `;
 
+interface AvailableModule {
+  value: string;
+  label: string;
+}
+
+interface PinUserSummary {
+  displayName?: string;
+  pinModules?: string[];
+  hasPin?: boolean;
+}
+
+interface GeneratePinModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  onConfirm: (modules: string[]) => void;
+  user?: PinUserSummary | null;
+  availableModules?: AvailableModule[];
+}
+
 export const GeneratePinModal = ({
   visible,
   onCancel,
   onConfirm,
   user,
   availableModules,
-}) => {
+}: GeneratePinModalProps) => {
   const defaultModules = useMemo(() => {
     if (!Array.isArray(availableModules) || !availableModules.length) return [];
     if (Array.isArray(user?.pinModules) && user.pinModules.length) {
@@ -125,7 +143,7 @@ export const GeneratePinModal = ({
 
   const modulesMap = useMemo(() => {
     if (!Array.isArray(availableModules)) return [];
-    const descriptions = {
+    const descriptions: Record<string, string> = {
       invoices:
         'Aprueba operaciones vinculadas a la facturación y emisión de comprobantes.',
       accountsReceivable:
@@ -157,7 +175,7 @@ export const GeneratePinModal = ({
       footer={null}
       width={580}
       centered
-      destroyOnHidden
+      destroyOnClose
     >
       <ModalContent>
         <Header>

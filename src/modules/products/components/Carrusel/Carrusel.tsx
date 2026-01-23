@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faChevronLeft,
   faChevronRight,
@@ -13,17 +12,30 @@ import { icons } from '@/constants/icons/icons';
 import { useCategoryState } from '@/Context/CategoryContext/useCategoryState';
 import { SelectCategoryList } from '@/features/category/categorySlicer';
 import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import type { CategoryDocument } from '@/firebase/categories/types';
 import { useElementSize } from '@/hooks/useElementSize';
 
 import { Category } from './Category';
 
-export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
-  const categoriesRef = useRef(null);
-  const { width } = useElementSize(categoriesRef);
-  const { categories } = useFbGetCategories();
-  const categorySelected = useSelector(SelectCategoryList);
+interface CarruselProps {
+  themeColor?: string | null;
+  addCategoryBtn?: boolean;
+}
 
-  const MoveScroll = (direction) => {
+type ScrollDirection = 'start' | 'end' | 'left' | 'right';
+
+export const Carrusel = ({
+  themeColor,
+  addCategoryBtn = false,
+}: CarruselProps) => {
+  const categoriesRef = useRef<HTMLUListElement | null>(null);
+  const { width } = useElementSize(categoriesRef);
+  const { categories } = useFbGetCategories() as {
+    categories: CategoryDocument[];
+  };
+  const categorySelected = useSelector(SelectCategoryList) as unknown[];
+
+  const MoveScroll = (direction: ScrollDirection) => {
     const cacheScrollMeasurements = () => {
       const element = categoriesRef.current;
       if (!element) return null;
@@ -62,6 +74,7 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
     };
 
     const toRight = () => {
+      if (!categoriesRef.current) return;
       const distance = width / 3;
       categoriesRef.current.scrollBy({
         top: 0,
@@ -71,6 +84,7 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
     };
 
     const toLeft = () => {
+      if (!categoriesRef.current) return;
       const distance = width / 3;
       categoriesRef.current.scrollBy({
         top: 0,
@@ -93,7 +107,7 @@ export const Carrusel = ({ themeColor, addCategoryBtn = false }) => {
   };
 
   const { configureAddProductCategoryModal } = useCategoryState();
-  const findElementInArray = (array, element) =>
+  const findElementInArray = (array: unknown[], element: unknown) =>
     array.some((category) => category === element);
   return (
     <>

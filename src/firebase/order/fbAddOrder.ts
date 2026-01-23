@@ -33,6 +33,15 @@ type OrderValueInput = Record<string, unknown> & {
   fileList?: Attachment[];
 };
 
+type OrderPayload = Record<string, unknown> & {
+  id: string;
+  numberId: number;
+  dates: Record<string, unknown>;
+  provider: string | undefined;
+  state: string;
+  fileList?: Attachment[];
+};
+
 type Replenishment = Record<string, unknown> & {
   selectedBackOrders?: Array<{ id: string }>;
 };
@@ -57,14 +66,7 @@ export const fbAddOrder = async (
   try {
     if (!user || !user.businessID) return;
     const nextID = await getNextID(user, 'lastOrdersId');
-    const data: OrderValueInput & {
-      id: string;
-      numberId: number;
-      dates: Record<string, unknown>;
-      provider: string | undefined;
-      state: string;
-      fileList?: Attachment[];
-    } = {
+    const data: OrderPayload = {
       ...value,
       id: nanoid(12),
       numberId: nextID,

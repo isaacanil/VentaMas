@@ -1,11 +1,35 @@
-// @ts-nocheck
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { addItem, deleteItem } from '@/features/category/categorySlicer';
+import type { CategoryRecord } from '@/firebase/categories/types';
 import getIconFromText from '@/utils/text/getIconFromText';
+
+import type { ReactNode, RefObject } from 'react';
+
+interface CategoryProps {
+  category: CategoryRecord;
+  ref?: RefObject<HTMLElement>;
+  onClick?: () => void;
+  type?: string;
+  icon?: ReactNode;
+  themeColor?: string | null;
+  selected?: boolean;
+  index?: number;
+}
+
+type CategoryItemPayload = {
+  id: string;
+  name: string;
+  type: 'category' | 'activeIngredient';
+};
+
+type CategoryDeletePayload = {
+  id: string;
+  type: string;
+};
 
 export const Category = ({
   category,
@@ -16,20 +40,20 @@ export const Category = ({
   themeColor,
   selected,
   index,
-}) => {
+}: CategoryProps) => {
   const [isSelected, setIsSelected] = useState(false);
   const dispatch = useDispatch();
-  const start = (category, ref) => {
+  const start = (category: CategoryRecord, ref?: RefObject<HTMLElement>) => {
     if (isSelected === false) {
       setIsSelected(!isSelected);
-      dispatch(addItem(category));
+      dispatch(addItem(category as CategoryItemPayload));
     }
     if (isSelected) {
       setIsSelected(!isSelected);
-      dispatch(deleteItem(category));
+      dispatch(deleteItem(category as CategoryDeletePayload));
     }
     requestAnimationFrame(() => {
-      if (ref.current) {
+      if (ref?.current) {
         ref.current.scrollTo(0, 0);
       }
     });
@@ -44,7 +68,7 @@ export const Category = ({
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       exit={{ scale: 0 }}
-      transition={{ delay: index * 0.4 }}
+      transition={{ delay: (index ?? 0) * 0.4 }}
     >
       {icon && icon}
       {getIconFromText(category.name)}
@@ -53,7 +77,11 @@ export const Category = ({
   );
 };
 
-const Container = styled(motion.li)`
+const Container = styled(motion.li)<{
+  type?: string;
+  selected?: boolean;
+  themeColor?: string | null;
+}>`
   align-items: center;
   background-color: ${({ theme }) => theme.bg.color2};
   border-radius: var(--border-radius);

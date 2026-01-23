@@ -1,11 +1,16 @@
-// @ts-nocheck
 import styled from 'styled-components';
+
+interface UserActivitySummaryProps {
+  lastLoginLabel: string;
+  lastLogoutLabel: string;
+  sessionsCount: number;
+}
 
 export const UserActivitySummary = ({
   lastLoginLabel,
   lastLogoutLabel,
   sessionsCount,
-}) => (
+}: UserActivitySummaryProps) => (
   <SummaryGrid>
     <SummaryCard>
       <Label>Ultimo inicio</Label>

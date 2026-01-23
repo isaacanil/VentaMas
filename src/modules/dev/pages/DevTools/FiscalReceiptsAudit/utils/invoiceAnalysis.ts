@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   canonicalizeNcf,
   looseCanonicalizeNcf,
@@ -6,15 +5,94 @@ import {
   sanitizeNcf,
 } from './ncfUtils';
 
-export const analyzeInvoices = (invoices) => {
+interface RawInvoice {
+  id?: string;
+  NCF?: unknown;
+  numberID?: unknown;
+  date?: unknown;
+  status?: unknown;
+  data?: {
+    NCF?: unknown;
+    numberID?: unknown;
+    date?: unknown;
+    status?: unknown;
+  };
+}
+
+interface InvoiceEntry {
+  invoiceId: string;
+  invoiceNumber: string;
+  ncf: string;
+  canonical: string;
+  looseCanonical: string;
+  date: Date | null;
+  status: string;
+  length: number;
+}
+
+interface LengthStat {
+  length: number;
+  count: number;
+  firstDate: Date | null;
+  lastDate: Date | null;
+  missingDateCount: number;
+}
+
+interface LengthChangeEvent {
+  fromLength: number;
+  toLength: number;
+  date: Date;
+  invoiceNumber: string;
+  ncf: string;
+  previousInvoiceNumber: string;
+  previousDate: Date;
+}
+
+interface DuplicateGroup {
+  ncf: string;
+  count: number;
+  occurrences: InvoiceEntry[];
+}
+
+interface NormalizedGroup {
+  canonical: string;
+  count: number;
+  distinctNcfs: number;
+  occurrences: InvoiceEntry[];
+}
+
+interface LooseGroup {
+  looseCanonical: string;
+  count: number;
+  distinctNcfs: number;
+  occurrences: InvoiceEntry[];
+}
+
+export interface InvoiceAnalysisResult {
+  totalInvoices: number;
+  invoicesWithNcf: number;
+  missingNcf: number;
+  skippedWithoutDate: number;
+  ncfLengthStats: LengthStat[];
+  lengthChangeEvents: LengthChangeEvent[];
+  duplicates: DuplicateGroup[];
+  duplicatesNormalized: NormalizedGroup[];
+  zeroCollapsedDuplicates: LooseGroup[];
+  uniqueNcfCount: number;
+  observedLengths: number[];
+  currentLength: number | null;
+  non11Count: number;
+}
+
+export const analyzeInvoices = (invoices: RawInvoice[]): InvoiceAnalysisResult => {
   let invoicesWithNcf = 0;
   let missingNcf = 0;
   let skippedWithoutDate = 0;
-  const lengthStatsMap = new Map();
-  const duplicatesMap = new Map();
-  const normalizedMap = new Map();
-  const looseMap = new Map();
-  const timelineEntries = [];
+  const lengthStatsMap = new Map<number, LengthStat>();
+  const duplicatesMap = new Map<string, DuplicateGroup>();
+  const normalizedMap = new Map<string, NormalizedGroup>();
+  const looseMap = new Map<string, LooseGroup>();
+  const timelineEntries: InvoiceEntry[] = [];
   let non11Count = 0;
 
   invoices.forEach((invoice) => {
@@ -35,7 +113,7 @@ export const analyzeInvoices = (invoices) => {
     );
     const status = invoiceData?.status ?? invoice?.status ?? '';
 
-    const entry = {
+    const entry: InvoiceEntry = {
       invoiceId: invoice?.id || invoiceNumber || ncf,
       invoiceNumber,
       ncf,
@@ -50,7 +128,7 @@ export const analyzeInvoices = (invoices) => {
       invoicesWithNcf += 1;
 
       const lengthKey = ncf.length;
-      const stats = lengthStatsMap.get(lengthKey) || {
+      const stats: LengthStat = lengthStatsMap.get(lengthKey) || {
         length: lengthKey,
         count: 0,
         firstDate: null,
@@ -74,23 +152,37 @@ export const analyzeInvoices = (invoices) => {
         non11Count += 1;
       }
 
-      const duplicateEntry = duplicatesMap.get(ncf) || { ncf, occurrences: [] };
+      const duplicateEntry =
+        duplicatesMap.get(ncf) || { ncf, count: 0, occurrences: [] };
       duplicateEntry.occurrences.push(entry);
+      duplicateEntry.count = duplicateEntry.occurrences.length;
       duplicatesMap.set(ncf, duplicateEntry);
 
       const normEntry = normalizedMap.get(canonical) || {
         canonical,
+        count: 0,
+        distinctNcfs: 0,
         occurrences: [],
       };
       normEntry.occurrences.push({ ...entry, canonical, looseCanonical });
+      normEntry.count = normEntry.occurrences.length;
+      normEntry.distinctNcfs = new Set(
+        normEntry.occurrences.map((item) => item.ncf),
+      ).size;
       normalizedMap.set(canonical, normEntry);
 
       if (looseCanonical) {
         const looseEntry = looseMap.get(looseCanonical) || {
           looseCanonical,
+          count: 0,
+          distinctNcfs: 0,
           occurrences: [],
         };
         looseEntry.occurrences.push({ ...entry, canonical, looseCanonical });
+        looseEntry.count = looseEntry.occurrences.length;
+        looseEntry.distinctNcfs = new Set(
+          looseEntry.occurrences.map((item) => item.ncf),
+        ).size;
         looseMap.set(looseCanonical, looseEntry);
       }
     } else {
@@ -104,21 +196,24 @@ export const analyzeInvoices = (invoices) => {
     }
   });
 
-  timelineEntries.sort((a, b) => a.date - b.date);
+  timelineEntries.sort((a, b) => {
+    if (!a.date || !b.date) return 0;
+    return a.date.getTime() - b.date.getTime();
+  });
 
-  const lengthChangeEvents = [];
-  let previousEntry = null;
+  const lengthChangeEvents: LengthChangeEvent[] = [];
+  let previousEntry: InvoiceEntry | null = null;
 
   timelineEntries.forEach((entry) => {
     if (previousEntry && entry.ncf.length !== previousEntry.ncf.length) {
       lengthChangeEvents.push({
         fromLength: previousEntry.ncf.length,
         toLength: entry.ncf.length,
-        date: entry.date,
+        date: entry.date ?? new Date(0),
         invoiceNumber: entry.invoiceNumber,
         ncf: entry.ncf,
         previousInvoiceNumber: previousEntry.invoiceNumber,
-        previousDate: previousEntry.date,
+        previousDate: previousEntry.date ?? new Date(0),
       });
     }
     previousEntry = entry;
@@ -135,7 +230,7 @@ export const analyzeInvoices = (invoices) => {
       count: item.occurrences.length,
       occurrences: item.occurrences.sort((a, b) => {
         if (a.date && b.date) {
-          return a.date - b.date;
+          return a.date.getTime() - b.date.getTime();
         }
         if (a.date) return -1;
         if (b.date) return 1;
@@ -152,7 +247,7 @@ export const analyzeInvoices = (invoices) => {
       distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf)))
         .length,
       occurrences: item.occurrences.sort((a, b) => {
-        if (a.date && b.date) return a.date - b.date;
+        if (a.date && b.date) return a.date.getTime() - b.date.getTime();
         if (a.date) return -1;
         if (b.date) return 1;
         return (a.invoiceNumber || '').localeCompare(b.invoiceNumber || '');
@@ -173,7 +268,7 @@ export const analyzeInvoices = (invoices) => {
       distinctNcfs: Array.from(new Set(item.occurrences.map((o) => o.ncf)))
         .length,
       occurrences: item.occurrences.sort((a, b) => {
-        if (a.date && b.date) return a.date - b.date;
+        if (a.date && b.date) return a.date.getTime() - b.date.getTime();
         if (a.date) return -1;
         if (b.date) return 1;
         return (a.invoiceNumber || '').localeCompare(b.invoiceNumber || '');

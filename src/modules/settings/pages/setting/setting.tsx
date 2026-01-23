@@ -1,12 +1,13 @@
-// @ts-nocheck
 import { AutoComplete, Input } from 'antd';
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import type { ReactNode } from 'react';
+import type { BaseOptionType } from 'antd/es/select';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
@@ -16,8 +17,15 @@ import Typography from '@/components/ui/Typografy/Typografy';
 
 import { Card } from './Components/Card';
 import { getSettingData } from './SettingData';
+import type { SettingItem } from './SettingData';
 
-const normalizeText = (value = '') =>
+interface SettingSearchOption extends BaseOptionType {
+  value: string;
+  label: ReactNode;
+  searchTokens: string[];
+}
+
+const normalizeText = (value: string = '') =>
   value
     .toString()
     .toLowerCase()
@@ -26,13 +34,13 @@ const normalizeText = (value = '') =>
 
 export const Setting = () => {
   const [searchValue, setSearchValue] = useState('');
-  const cardRefs = useRef({});
-  const highlightTimersRef = useRef({});
+  const cardRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const highlightTimersRef = useRef<Record<string, number>>({});
 
-  const settingData = useMemo(() => getSettingData(), []);
+  const settingData = useMemo<SettingItem[]>(() => getSettingData(), []);
 
   const groupedSettings = useMemo(() => {
-    return settingData.reduce((acc, item) => {
+    return settingData.reduce<Record<string, SettingItem[]>>((acc, item) => {
       if (acc[item.category]) {
         acc[item.category].push(item);
       } else {
@@ -42,7 +50,7 @@ export const Setting = () => {
     }, {});
   }, [settingData]);
 
-  const searchOptions = useMemo(() => {
+  const searchOptions = useMemo<SettingSearchOption[]>(() => {
     return settingData.map((item) => {
       const value = item.route || item.title;
       const normalizedTokens = [
@@ -67,7 +75,8 @@ export const Setting = () => {
     });
   }, [settingData]);
 
-  const filterOption = useCallback((inputValue, option) => {
+  const filterOption = useCallback(
+    (inputValue: string, option?: SettingSearchOption) => {
     if (!inputValue) return true;
     const normalizedValue = normalizeText(inputValue);
     if (!normalizedValue) return true;
@@ -76,7 +85,7 @@ export const Setting = () => {
     );
   }, []);
 
-  const scrollToCard = useCallback((route) => {
+  const scrollToCard = useCallback((route: string) => {
     const target = cardRefs.current[route];
     if (!target) return;
 
@@ -102,7 +111,7 @@ export const Setting = () => {
   }, []);
 
   const handleSelect = useCallback(
-    (value) => {
+    (value: string) => {
       if (!value) return;
       scrollToCard(value);
       setSearchValue('');
@@ -110,7 +119,7 @@ export const Setting = () => {
     [scrollToCard],
   );
 
-  const handleChange = useCallback((value) => {
+  const handleChange = useCallback((value: string) => {
     setSearchValue(value);
   }, []);
 

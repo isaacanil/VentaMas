@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   InfoCircleOutlined,
   ThunderboltOutlined,
@@ -16,6 +15,9 @@ import {
 } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { BarcodeSettings } from '@/firebase/barcode/types';
+import type { FormInstance } from 'antd';
 
 const { Text } = Typography;
 
@@ -49,6 +51,40 @@ const LabelWithAction = styled.div`
   width: 100%;
 `;
 
+type Gs1StandardKey =
+  | 'gs1rd'
+  | 'gs1us'
+  | 'gs1mx'
+  | 'gs1co'
+  | 'gs1ar'
+  | 'gs1cl'
+  | 'gs1pe';
+
+type GenerateTabProps = {
+  form: FormInstance;
+  isConfigured?: boolean;
+  autoMode: boolean;
+  setAutoMode: (checked: boolean) => void;
+  manualValues: { companyPrefix: string; itemReference: string };
+  internalManualValues: { itemReference: string };
+  selectedConfig?: BarcodeSettings | null;
+  companyPrefixValid?: boolean | null;
+  itemReferenceValid?: boolean | null;
+  handleManualItemReferenceChange: (value: string) => void;
+  handleInternalItemReferenceChange: (value: string) => void;
+  nextItemReference?: string;
+  livePreview?: string;
+  handleGenerateCode: () => void;
+  loadingGenerate: boolean;
+  generatedCode?: string;
+  onOpenConfig: () => void;
+  selectedStandard: Gs1StandardKey;
+  onStandardChange: (value: Gs1StandardKey) => void;
+  useCompanyPrefix: boolean;
+  setUseCompanyPrefix: (checked: boolean) => void;
+  hideGenerateButton?: boolean;
+};
+
 export const GenerateTab = ({
   form,
   autoMode,
@@ -69,7 +105,7 @@ export const GenerateTab = ({
   useCompanyPrefix,
   setUseCompanyPrefix,
   hideGenerateButton = false,
-}) => {
+}: GenerateTabProps) => {
   const hasCompanyPrefix = !!selectedConfig?.companyPrefix;
   return (
     <Container>

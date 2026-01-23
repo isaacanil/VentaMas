@@ -1,7 +1,8 @@
-// @ts-nocheck
 import { Input, Tooltip } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+
+import type { BarcodeSettings } from '@/firebase/barcode/types';
 
 const Label = styled.label`
   display: block;
@@ -17,11 +18,17 @@ const ErrorMessage = styled.div`
   color: #ff4d4f;
 `;
 
+type ConfigurationTabProps = {
+  selectedConfig?: BarcodeSettings | null;
+  handleCompanyPrefixChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  companyPrefixConfigValid: boolean;
+};
+
 export const ConfigurationTab = ({
   selectedConfig,
   handleCompanyPrefixChange,
   companyPrefixConfigValid,
-}) => {
+}: ConfigurationTabProps) => {
   const getValidationStatus = () => {
     const value = selectedConfig?.companyPrefix || '';
 

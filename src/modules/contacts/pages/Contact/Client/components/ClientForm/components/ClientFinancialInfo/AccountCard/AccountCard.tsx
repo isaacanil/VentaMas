@@ -1,25 +1,37 @@
-// @ts-nocheck
 import { faCalendarAlt, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
+import type { AccountsReceivableDoc, TimestampLike } from '@/utils/accountsReceivable/types';
 
 import { Payment } from './components/Payment';
 
+type PaymentStatus = 'completed' | 'progress' | 'started' | 'pending';
 
+type AccountCardProps = {
+  account: AccountsReceivableDoc;
+  accountNumber?: string | number;
+  frequency?: string;
+  balance?: number;
+  installments?: number;
+  installmentAmount?: number;
+  lastPayment?: number;
+  lastPaymentDate?: TimestampLike;
+  isActive?: boolean;
+};
 
 export const AccountCard = ({
   account,
   frequency,
   balance,
-  installments,
+  installments = 0,
   installmentAmount,
   lastPayment,
   lastPaymentDate,
   isActive,
-}) => {
+}: AccountCardProps) => {
   // const formatDate = (dateValue) => {
   //   console.log(dateValue)
   //   if (!dateValue) return 'N/A';
@@ -33,10 +45,10 @@ export const AccountCard = ({
     return account?.paidInstallments?.length || 0;
   };
 
-  const getStatusTag = () => {
+  const getStatusTag = (): PaymentStatus => {
     const paid = getPaidInstallments();
-    const total = installments;
-    const percentage = (paid / total) * 100;
+    const total = installments || 0;
+    const percentage = total > 0 ? (paid / total) * 100 : 0;
 
     if (percentage === 100) return 'completed';
     if (percentage >= 50) return 'progress';
@@ -58,7 +70,7 @@ export const AccountCard = ({
           </AccountDate>
         </AccountInfo>
         <HeaderMeta>
-          <FrequencyTag frequency={frequency}>{frequency}</FrequencyTag>
+          <FrequencyTag>{frequency}</FrequencyTag>
         </HeaderMeta>
       </CardHeader>
 
@@ -70,12 +82,12 @@ export const AccountCard = ({
                 <GroupLabel>Cuota:</GroupLabel>
                 <GroupValue>{formatPrice(installmentAmount)}</GroupValue>
               </GroupItem>
-              <GroupItem>
-                <GroupLabel>Pagadas:</GroupLabel>
-                <GroupValue $status={getStatusTag()}>
-                  {getPaidInstallments()}/{installments}
-                </GroupValue>
-              </GroupItem>
+                <GroupItem>
+                  <GroupLabel>Pagadas:</GroupLabel>
+                  <GroupValue>
+                    {getPaidInstallments()}/{installments}
+                  </GroupValue>
+                </GroupItem>
             </GroupContent>
           </DetailGroup>
 
@@ -85,7 +97,7 @@ export const AccountCard = ({
                 <GroupLabel>Último Pago:</GroupLabel>
                 <GroupValue>
                   {account?.lastPaymentDate
-                    ? `${formatPrice(account.lastPayment)} - ${formatDate(account.lastPaymentDate)}`
+                    ? `${formatPrice(account.lastPayment)} - ${formatLocaleDate(account.lastPaymentDate)}`
                     : 'N/A'}
                 </GroupValue>
               </GroupItem>
@@ -227,7 +239,12 @@ const GroupLabel = styled.span`
   letter-spacing: 0.3px;
 `;
 
-const GroupValue = styled.span`
+type GroupValueProps = {
+  $isBalance?: boolean;
+  $isPaid?: boolean;
+};
+
+const GroupValue = styled.span<GroupValueProps>`
   font-size: 14px;
   color: #333;
   font-weight: 600;

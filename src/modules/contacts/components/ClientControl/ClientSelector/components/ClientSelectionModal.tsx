@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
@@ -9,7 +8,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const Overlay = styled.div`
+const Overlay = styled(motion.div)`
   position: fixed;
   top: 2.75em;
   left: 0;
@@ -55,20 +54,28 @@ const containerVariants = {
   },
 };
 
-export const ClientSelectionModal = ({ isOpen, onClose, children }) => {
-  const containerRef = useRef(null);
+type ClientSelectionModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  children?: ReactNode;
+};
+
+export const ClientSelectionModal = ({
+  isOpen,
+  onClose,
+  children,
+}: ClientSelectionModalProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (containerRef.current && target && !containerRef.current.contains(target)) {
         const isClickOnClientControlInput =
-          event.target.closest('.ant-input') ||
-          event.target.closest('.ant-input-affix-wrapper') ||
-          event.target.closest('[data-client-control-input]') ||
-          event.target.closest('.ant-btn') ||
-          event.target.hasAttribute('data-client-control-input');
+          target.closest('.ant-input') ||
+          target.closest('.ant-input-affix-wrapper') ||
+          target.closest('[data-client-control-input]') ||
+          target.closest('.ant-btn') ||
+          target.hasAttribute('data-client-control-input');
 
         if (!isClickOnClientControlInput) {
           onClose();

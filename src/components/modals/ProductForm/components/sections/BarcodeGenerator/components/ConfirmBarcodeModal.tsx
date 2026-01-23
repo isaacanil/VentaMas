@@ -1,10 +1,19 @@
-// @ts-nocheck
 import { Modal, Space, Button, Typography, Tag } from 'antd';
 import React from 'react';
 
 import { analyzeBarcodeStructure } from '@/utils/barcode/barcode';
+import type { ProductRecord } from '@/types/products';
 
 const { Text } = Typography;
+
+type ConfirmBarcodeModalProps = {
+  open: boolean;
+  onCancel: () => void;
+  pendingCode?: string | null;
+  product?: ProductRecord | null;
+  handleConfirmGenerate: () => void;
+  loading?: boolean;
+};
 
 const ConfirmBarcodeModal = ({
   open,
@@ -13,7 +22,7 @@ const ConfirmBarcodeModal = ({
   product,
   handleConfirmGenerate,
   loading = false,
-}) => {
+}: ConfirmBarcodeModalProps) => {
   return (
     <Modal
       title={product?.name || 'Producto'}

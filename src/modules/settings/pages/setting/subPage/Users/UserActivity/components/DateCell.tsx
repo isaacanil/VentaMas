@@ -1,8 +1,11 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
 
-export const DateCell = ({ millis }) => {
+interface DateCellProps {
+  millis?: number | null;
+}
+
+export const DateCell = ({ millis }: DateCellProps) => {
   if (!millis) return <span>-</span>;
   const dt = DateTime.fromMillis(millis);
   return (

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -13,34 +12,63 @@ import {
 import { useGetFavoriteProductCategories } from '@/firebase/categories/fbGetFavoriteProductCategories';
 import { fbToggleFavoriteProductCategory } from '@/firebase/categories/fbToggleFavoriteProductCategory';
 import { useFbGetCategories } from '@/firebase/categories/useFbGetCategories';
+import type { CategoryDocument, CategoryRecord } from '@/firebase/categories/types';
 import { useListenActiveIngredients } from '@/firebase/products/activeIngredient/activeIngredients';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { filterFavoriteProductCategories } from '@/utils/data/products/category';
+import type { UserIdentity } from '@/types/users';
 
 import { CategoryBar } from './components/CategoryBar/CategoryBar';
 import { DropdownMenu } from './components/DropdownMenu/DropdownMenu';
 
+type CategorySelectionItem = {
+  id: string;
+  name: string;
+  type: 'category' | 'activeIngredient';
+};
+
+type UserWithBusinessAndUid = UserIdentity & {
+  businessID: string;
+  uid: string;
+};
+
+interface CategoryListItem {
+  id?: string;
+  name?: string;
+  isFavorite: boolean;
+  selected: boolean;
+  [key: string]: unknown;
+}
+
 export const CategorySelector = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-  const { categories } = useFbGetCategories();
-  const favoriteProductCategoryArray = useGetFavoriteProductCategories(user);
-  const categoriesSelected = useSelector(SelectCategoryList);
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const { categories } = useFbGetCategories() as {
+    categories: CategoryDocument[];
+  };
+  const favoriteProductCategoryArray = useGetFavoriteProductCategories();
+  const categoriesSelected = useSelector(SelectCategoryList) as CategorySelectionItem[];
   const favoriteCategories = filterFavoriteProductCategories(
     categories,
     favoriteProductCategoryArray.favoriteCategories,
   );
-  const { data: activeIngredients = [] } = useListenActiveIngredients();
-  const { items } = useSelector(SelectCategoryState);
-  const handleToggleCategoryFavorite = async (category) => {
-    await fbToggleFavoriteProductCategory(user, category);
+  const { data: activeIngredients = [] } = useListenActiveIngredients() as {
+    data?: CategoryRecord[];
+  };
+  const { items } = useSelector(SelectCategoryState) as {
+    items: CategorySelectionItem[];
+  };
+  const handleToggleCategoryFavorite = async (category: CategoryRecord) => {
+    await fbToggleFavoriteProductCategory(user as UserWithBusinessAndUid, category);
   };
   const [open, setOpen] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   useClickOutSide(containerRef, open === true, () => setOpen(false));
 
-  function transformCategoriesToItems(categories) {
-    return categories.map((item) => {
+  function transformCategoriesToItems(
+    categoriesToTransform: CategoryDocument[],
+  ): CategoryListItem[] {
+    return categoriesToTransform.map((item) => {
       const { name, id } = item.category;
       return {
         id: id, // Usamos el id principal (puede ser el id de la categoría si prefieres)
@@ -50,9 +78,12 @@ export const CategorySelector = () => {
       };
     });
   }
-  function markFavorites(categories, favoriteCategories) {
-    return categories.map((category) => {
-      const isFavorite = favoriteCategories.some(
+  function markFavorites(
+    categoriesToMark: CategoryListItem[],
+    favoriteCategoryItems: CategoryListItem[],
+  ): CategoryListItem[] {
+    return categoriesToMark.map((category) => {
+      const isFavorite = favoriteCategoryItems.some(
         (fav) => fav.id === category.id,
       ); // Verifica si es favorita
       return {
@@ -61,11 +92,14 @@ export const CategorySelector = () => {
       };
     });
   }
-  function separateCategories(categories, favoriteCategories) {
+  function separateCategories(
+    allCategories: CategoryDocument[],
+    favoriteCategoryDocs: CategoryDocument[],
+  ): { favorites: CategoryListItem[]; normals: CategoryListItem[] } {
     // Primero transformamos las categorías
-    const transformedCategories = transformCategoriesToItems(categories);
+    const transformedCategories = transformCategoriesToItems(allCategories);
     const transformedFavoriteCategories =
-      transformCategoriesToItems(favoriteCategories);
+      transformCategoriesToItems(favoriteCategoryDocs);
 
     // Luego marcamos las favoritas
     const markedCategories = markFavorites(
@@ -87,8 +121,11 @@ export const CategorySelector = () => {
 
     return { favorites, normals }; // Retornamos ambas listas
   }
-  function markSelectedItems(items, selectedItems) {
-    return items.map((item) => {
+  function markSelectedItems<T extends { id?: string }>(
+    itemsToMark: T[],
+    selectedItems: CategorySelectionItem[],
+  ): Array<T & { selected: boolean }> {
+    return itemsToMark.map((item) => {
       const isSelected = selectedItems.some(
         (selected) => selected.id === item.id,
       ); // Verifica si ya está seleccionada
@@ -114,9 +151,9 @@ export const CategorySelector = () => {
   );
 
   const handleDeleteAllItems = () => dispatch(deleteAllItems());
-  const handleAddCategory = (category) =>
+  const handleAddCategory = (category: CategoryListItem) =>
     dispatch(addItem({ ...category, type: 'category' }));
-  const handleAddActiveIngredient = (activeIngredient) =>
+  const handleAddActiveIngredient = (activeIngredient: CategoryListItem) =>
     dispatch(addItem({ ...activeIngredient, type: 'activeIngredient' }));
 
   const sectionsConfig = {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
 
 export const END_EVENTS = new Set([
@@ -11,8 +10,91 @@ export const END_EVENTS = new Set([
   'idle',
 ]);
 
-export const normalizeContext = (context) => {
-  if (!context || typeof context !== 'object') return {};
+export type TimestampLike =
+  | number
+  | { seconds: number; nanoseconds: number }
+  | { _seconds: number; _nanoseconds: number }
+  | { toMillis: () => number }
+  | null
+  | undefined;
+
+export interface SessionLogContextMetadata {
+  deviceLabel?: string;
+  label?: string;
+  platform?: string;
+  timezone?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  [key: string]: unknown;
+}
+
+export interface SessionLogActor {
+  displayName?: string;
+  name?: string;
+  username?: string;
+  [key: string]: unknown;
+}
+
+export interface SessionLogContext {
+  metadata?: SessionLogContextMetadata;
+  actor?: SessionLogActor;
+  deviceLabel?: string;
+  platform?: string;
+  label?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  [key: string]: unknown;
+}
+
+export interface SessionLog {
+  id?: string;
+  sessionId?: string;
+  event?: string;
+  createdAt?: TimestampLike;
+  context?: SessionLogContext;
+  [key: string]: unknown;
+}
+
+export interface NormalizedSessionContext extends SessionLogContext {
+  metadata: SessionLogContextMetadata;
+  actor: SessionLogActor;
+}
+
+export interface NormalizedSessionLog extends SessionLog {
+  createdAt: number | null;
+  context: NormalizedSessionContext;
+}
+
+export interface SessionSummary {
+  sessionId: string;
+  startAt: number | null;
+  endAt: number | null;
+  durationMs: number | null;
+  durationDisplay: string;
+  startDisplay: string;
+  endDisplay: string;
+  deviceLabel: string;
+  ipAddress: string;
+  status: 'open' | 'closed';
+  statusLabel: string;
+  endEvent: string | null;
+  index: number;
+}
+
+export interface PresenceState {
+  state: string;
+  status?: string;
+  lastUpdated?: number | null;
+  updatedAt?: number | null;
+  lastSeen?: number | null;
+}
+
+export const normalizeContext = (
+  context: SessionLogContext | null | undefined,
+): NormalizedSessionContext => {
+  if (!context || typeof context !== 'object') {
+    return { metadata: {}, actor: {} };
+  }
 
   const metadata =
     context.metadata && typeof context.metadata === 'object'
@@ -28,7 +110,7 @@ export const normalizeContext = (context) => {
   };
 };
 
-export const toMillis = (value) => {
+export const toMillis = (value: TimestampLike): number | null => {
   if (!value) return null;
   if (typeof value === 'number') return value;
   if (typeof value?.toMillis === 'function') return value.toMillis();
@@ -52,7 +134,7 @@ export const toMillis = (value) => {
   return null;
 };
 
-export const formatDateTime = (value) => {
+export const formatDateTime = (value: TimestampLike): string => {
   const millis = toMillis(value);
   if (!millis) return 'Sin registro';
 
@@ -61,7 +143,7 @@ export const formatDateTime = (value) => {
   );
 };
 
-export const formatDuration = (millis) => {
+export const formatDuration = (millis: number | null): string => {
   if (!millis || millis <= 0) return 'En curso';
 
   const totalSeconds = Math.floor(millis / 1000);
@@ -84,7 +166,7 @@ export const formatDuration = (millis) => {
 
 const LANGUAGE_CODE_REGEX = /^[a-z]{2}(?:-[A-Z]{2,3}|-[0-9]{3})?$/i;
 
-const detectBrowser = (userAgent = '', parts = []) => {
+const detectBrowser = (userAgent = '', parts: string[] = []) => {
   const haystack = `${userAgent} ${parts.join(' ')}`.toLowerCase();
   if (haystack.includes('edg')) return 'Edge';
   if (haystack.includes('opr') || haystack.includes('opera')) return 'Opera';
@@ -109,7 +191,17 @@ const detectOsLabel = (input = '') => {
   return null;
 };
 
-const formatDeviceLabel = ({ deviceLabel, platform, userAgent }) => {
+interface DeviceLabelInput {
+  deviceLabel?: string;
+  platform?: string;
+  userAgent?: string;
+}
+
+const formatDeviceLabel = ({
+  deviceLabel,
+  platform,
+  userAgent,
+}: DeviceLabelInput): string => {
   const normalizedLabel = typeof deviceLabel === 'string' ? deviceLabel : '';
   const pieces = normalizedLabel
     .split('•')
@@ -129,14 +221,26 @@ const formatDeviceLabel = ({ deviceLabel, platform, userAgent }) => {
   return browser ? `${osLabel} (${browser})` : osLabel;
 };
 
-const getSessionKey = (log, index, fallbackCount) => {
+const getSessionKey = (
+  log: NormalizedSessionLog,
+  index: number,
+  fallbackCount: number,
+) => {
   if (log.sessionId) return log.sessionId;
   if (log.id) return log.id;
   return `session-${log.createdAt || Date.now()}-${fallbackCount + index}`;
 };
 
-export const buildSessionsFromLogs = (normalizedLogs = []) => {
-  const sessionMap = new Map();
+export const buildSessionsFromLogs = (
+  normalizedLogs: NormalizedSessionLog[] = [],
+): SessionSummary[] => {
+  const sessionMap = new Map<string, {
+    sessionId: string;
+    login: NormalizedSessionLog | null;
+    logout: NormalizedSessionLog | null;
+    firstSeen: number | null;
+    lastSeen: number | null;
+  }>();
 
   normalizedLogs.forEach((log, index) => {
     const key = getSessionKey(log, index, sessionMap.size);
@@ -177,7 +281,7 @@ export const buildSessionsFromLogs = (normalizedLogs = []) => {
     sessionMap.set(key, current);
   });
 
-  const sessions = Array.from(sessionMap.values()).map((session) => {
+  const sessions: SessionSummary[] = Array.from(sessionMap.values()).map((session) => {
     const startAt = session.login?.createdAt || session.firstSeen || null;
     const endAt = session.logout?.createdAt || null;
     const durationMs =
@@ -222,6 +326,7 @@ export const buildSessionsFromLogs = (normalizedLogs = []) => {
       status,
       statusLabel,
       endEvent,
+      index: 0,
     };
   });
 

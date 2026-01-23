@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { Modal, Form, Button, Tabs, notification, message } from 'antd';
+import { Modal, Form, Button, Tabs, notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -13,9 +12,20 @@ import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 import { fbAddClient } from '@/firebase/client/fbAddClient';
 import { fbUpdateClient } from '@/firebase/client/fbUpdateClient';
+import type { ClientInput, NormalizedClient } from '@/firebase/client/clientNormalizer';
+import type { UserIdentity } from '@/types/users';
 
 import ClientFinancialInfo from './components/ClientFinancialInfo/ClientFinancialInfo';
 import { ClientGeneralInfo } from './components/ClientGeneralInfo';
+
+type ClientFormAntProps = {
+  isOpen: boolean;
+  mode: string;
+  data?: ClientInput | null;
+  addClientToCart?: boolean;
+};
+
+type UserRootState = Parameters<typeof selectUser>[0];
 
 const ClientFormAnt = ({
   isOpen,
@@ -23,18 +33,18 @@ const ClientFormAnt = ({
   data,
   addClientToCart = false,
   //isUpdating = false
-}) => {
+}: ClientFormAntProps) => {
   const update = OPERATION_MODES.UPDATE.id;
   const create = OPERATION_MODES.CREATE.id;
   const isUpdating = mode === update;
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ClientInput>();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const clientData = form.getFieldsValue();
+  const clientData = form.getFieldsValue() as Partial<ClientInput>;
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
 
-  const customerData = {
+  const customerData: ClientInput = {
     name: '',
     address: '',
     tel: '',
@@ -47,11 +57,11 @@ const ClientFormAnt = ({
       status: false,
       value: '',
     },
-    ...data,
+    ...(data ?? {}),
   };
   const client = {
     ...customerData,
-    ...data,
+    ...(data ?? {}),
     ...clientData,
   };
   useEffect(() => {
@@ -83,19 +93,20 @@ const ClientFormAnt = ({
     try {
       setLoading(true);
       setSubmitted(true); // Marcar como enviado
-      let clientCreated = null;
+      let clientCreated: NormalizedClient | null = null;
       const values = await form.validateFields();
       // const creditLimitData = await creditLimitForm.validateFields(); // Ya no necesario aquí
 
-      delete values.clear;
+      const sanitizedValues = values as ClientInput & { clear?: unknown };
+      delete sanitizedValues.clear;
 
       const client = {
         ...customerData,
-        ...values,
+        ...sanitizedValues,
       };
 
       if (isUpdating) {
-        await fbUpdateClient(user, client);
+        await fbUpdateClient(user, client as ClientInput & { id: string });
         // fbUpsertCreditLimit se maneja ahora en CreditLimitModal
         notification.success({
           message: 'Cliente Actualizado',
@@ -103,8 +114,8 @@ const ClientFormAnt = ({
             'La información del cliente ha sido actualizada con éxito.',
         });
       } else {
-        clientCreated = await fbAddClient(user, client);
-        message.success({
+        clientCreated = (await fbAddClient(user, client)) ?? null;
+        notification.success({
           message: 'Cliente Creado',
           description: 'Se ha añadido un nuevo cliente con éxito.',
         });

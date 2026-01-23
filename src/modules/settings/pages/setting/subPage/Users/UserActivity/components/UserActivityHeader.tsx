@@ -1,8 +1,17 @@
-// @ts-nocheck
 import { Button } from 'antd';
 import styled from 'styled-components';
 
-export const UserActivityHeader = ({ onBack, onRefresh, loading }) => (
+interface UserActivityHeaderProps {
+  onBack: () => void;
+  onRefresh: () => void;
+  loading?: boolean;
+}
+
+export const UserActivityHeader = ({
+  onBack,
+  onRefresh,
+  loading,
+}: UserActivityHeaderProps) => (
   <Header>
     <TitleBlock>
       <Title>Actividad del usuario</Title>

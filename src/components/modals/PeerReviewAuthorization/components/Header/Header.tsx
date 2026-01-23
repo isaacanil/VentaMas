@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export const Header = ({
   description = 'Permite a un segundo usuario autorizar la apertura de la caja después de una revisión.',
-}) => {
+}: HeaderProps) => {
   return (
     <div style={{ display: 'grid', gap: '1em', rowGap: '1.4em' }}>
       <div

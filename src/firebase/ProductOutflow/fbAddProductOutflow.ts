@@ -1,10 +1,30 @@
-// @ts-nocheck
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
 import { fbUpdateStock } from './fbUpdateStock';
+
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+
+type ProductOutflowItem = {
+  id?: string;
+  product: ProductRecord;
+  quantityRemoved: number;
+};
+
+type ProductOutflow = {
+  id?: string;
+  productList: ProductOutflowItem[];
+  [key: string]: unknown;
+};
+
+type StockUpdate = {
+  product: ProductRecord;
+  quantityRemoved: number;
+};
 
 export const fbAddProductOutFlow = async (user, productOutflow) => {
   if (!user?.businessID || !user?.uid) {

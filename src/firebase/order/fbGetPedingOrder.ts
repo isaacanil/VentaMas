@@ -21,11 +21,15 @@ type TimestampLike =
 
 type OrderData = Record<string, unknown> & {
   dates: Record<string, TimestampLike | undefined>;
-  provider?: string;
+  provider?: string | Record<string, unknown>;
 };
 
 type PendingOrder = {
   data: OrderData;
+};
+
+type UserWithBusiness = {
+  businessID: string;
 };
 
 const convertTimestamps = (
@@ -33,8 +37,14 @@ const convertTimestamps = (
   fields: string[],
 ): void => {
   fields.forEach((field) => {
-    const timestamp = dates[field]?.seconds;
-    if (timestamp) dates[field] = timestamp * 1000;
+    const value = dates[field];
+    const timestamp =
+      typeof value === 'object' && value !== null && 'seconds' in value
+        ? (value as { seconds?: number }).seconds
+        : undefined;
+    if (typeof timestamp === 'number') {
+      dates[field] = timestamp * 1000;
+    }
   });
 };
 
@@ -75,16 +85,17 @@ export const processOrder = async (
 
 export const useFbGetPendingOrders = () => {
   const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
-  const user = useSelector(selectUser) as { businessID?: string } | null;
+  const user = useSelector(selectUser) as UserWithBusiness | null;
 
   useEffect(() => {
     if (!user?.businessID) return;
 
-    const unsubscribe = subscribeToOrders(user.businessID, async (snapshot) => {
+    const businessID = user.businessID;
+    const unsubscribe = subscribeToOrders(businessID, async (snapshot) => {
       try {
         const orders = await Promise.all(
           snapshot.docs.map((doc) =>
-            processOrder(doc.data()?.data as OrderData | undefined, user.businessID),
+            processOrder(doc.data()?.data as OrderData | undefined, businessID),
           ),
         );
 

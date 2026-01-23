@@ -1,14 +1,24 @@
-// @ts-nocheck
 import { Form, Checkbox, InputNumber, Input, message } from 'antd';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { setBillingSettings } from '@/firebase/billing/billingSetting';
+import type { CartSettings } from '@/features/cart/types';
 
-const ConfigItem = styled.div`
+interface StockAlertFormValues {
+  stockAlertsEnabled?: boolean;
+  stockLowThreshold?: number;
+  stockCriticalThreshold?: number;
+  stockAlertEmail?: string;
+}
+
+type StockThresholdField = 'stockLowThreshold' | 'stockCriticalThreshold';
+
+const ConfigItem = styled.div<{ $level?: number }>`
   padding-left: ${({ $level }) => ($level || 0) * 16}px;
   margin-bottom: 8px;
 `;
@@ -37,7 +47,7 @@ const EmailInput = styled(Input)`
 `;
 
 const StockAlertSettingsSection = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<StockAlertFormValues>();
 
   const user = useSelector(selectUser);
   const settingsCart = useSelector(SelectSettingCart) || {};
@@ -68,7 +78,7 @@ const StockAlertSettingsSection = () => {
     stockAlertEmail,
   ]);
 
-  const saveSetting = async (data) => {
+  const saveSetting = async (data: Partial<CartSettings['billing']>) => {
     try {
       await setBillingSettings(user, data);
       message.success('Configuración guardada');
@@ -77,11 +87,14 @@ const StockAlertSettingsSection = () => {
     }
   };
 
-  const onToggleAlerts = async (checked) => {
+  const onToggleAlerts = async (checked: boolean) => {
     await saveSetting({ stockAlertsEnabled: checked });
   };
 
-  const onBlurThreshold = async (field, rawValue) => {
+  const onBlurThreshold = async (
+    field: StockThresholdField,
+    rawValue: string | number | null,
+  ) => {
     const value = Number(rawValue);
     if (!Number.isFinite(value) || value < 0) {
       message.error('Ingrese un número válido');
@@ -109,7 +122,7 @@ const StockAlertSettingsSection = () => {
     await saveSetting({ [field]: value });
   };
 
-  const onBlurEmail = async (e) => {
+  const onBlurEmail = async (e: FocusEvent<HTMLInputElement>) => {
     const raw = e?.target?.value || '';
     const parts = raw
       .split(',')
@@ -159,7 +172,7 @@ const StockAlertSettingsSection = () => {
     await saveSetting({ stockAlertEmail: normalized });
   };
 
-  const alertsEnabled = Form.useWatch('stockAlertsEnabled', form);
+  const alertsEnabled = Form.useWatch('stockAlertsEnabled', form) ?? false;
 
   return (
     <Form layout="vertical" form={form}>

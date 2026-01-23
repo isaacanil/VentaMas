@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { ExclamationCircleOutlined } from '@/constants/icons/antd';
 import { faTrash, faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Modal, Tag, Tooltip } from 'antd';
+import type { MouseEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -10,13 +10,38 @@ import { selectUser } from '@/features/auth/userSlice';
 import { addClient } from '@/features/clientCart/clientCartSlice';
 import { clearAuthData } from '@/features/insurance/insuranceAuthSlice';
 import { highlightSearch } from '@/components/ui/highlight/Highlight';
+import type { UserIdentity } from '@/types/users';
 
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type ClientData = {
+  id?: string;
+  name?: string;
+  personalID?: string;
+  tel?: string;
+  numberId?: string | number;
+};
+
+type ClientProps = {
+  client: ClientData;
+  Close: () => void;
+  updateClientMode: (client: ClientData) => void;
+  onDelete: (id?: string) => void;
+  searchTerm: string;
+  selectedClient: ClientData | null;
+};
 
 export const clientGridTemplate =
   'minmax(80px, 0.8fr) minmax(170px, 1.8fr) minmax(130px, 1fr) minmax(130px, 1fr)';
 export const clientGridTemplateWithActions = `${clientGridTemplate} minmax(110px, min-content)`;
 
-const Container = styled.li`
+type ContainerProps = {
+  hasMissingName: boolean;
+  hasMissingID: boolean;
+  isSelected: boolean;
+};
+
+const Container = styled.li<ContainerProps>`
 
   /* box-shadow: ${(props) =>
     props.isSelected ? '0 0 0 1px #1677ff' : '0 1px 3px rgba(0,0,0,0.05)'}; */
@@ -32,14 +57,14 @@ const Container = styled.li`
   color: #2c3e50;
   cursor: pointer;
   list-style: none;
-  background-color: ${(props) =>
+  background-color: ${(props: ContainerProps) =>
     props.hasMissingName
       ? '#fff5f5'
       : props.hasMissingID
         ? '#fffbeb'
         : '#ffffff'};
   border: 2px solid
-    ${(props) =>
+    ${(props: ContainerProps) =>
       props.hasMissingName
         ? '#ffd1d1'
         : props.hasMissingID
@@ -57,7 +82,7 @@ const Container = styled.li`
   }
 
   &:hover {
-    background-color: ${(props) =>
+    background-color: ${(props: ContainerProps) =>
       props.isSelected
         ? '#e6f4ff'
         : props.hasMissingName
@@ -232,14 +257,14 @@ export const Client = ({
   onDelete,
   searchTerm,
   selectedClient,
-}) => {
+}: ClientProps) => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
   const hasMissingName = !client.name;
   const hasMissingID = !client.personalID;
 
-  const handleSubmit = (client) => {
-    dispatch(addClient(client));
+  const handleSubmit = (client: ClientData) => {
+    dispatch(addClient(client as Parameters<typeof addClient>[0]));
 
     if (client.id && user) {
       // dispatch(fetchInsuranceAuthByClientId({
@@ -253,13 +278,13 @@ export const Client = ({
     Close();
   };
 
-  const handleEdit = (e) => {
+  const handleEdit = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     updateClientMode(client);
     Close();
   };
 
-  const handleDelete = (e) => {
+  const handleDelete = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
     Modal.confirm({

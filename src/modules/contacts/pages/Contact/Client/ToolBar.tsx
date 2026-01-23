@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -9,7 +9,12 @@ import { toggleClientModal } from '@/features/modals/modalSlice';
 import { Button } from '@/components/ui/Button/Button';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-export const ToolBar = ({ searchTerm, setSearchTerm }) => {
+type ToolBarProps = {
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+};
+
+export const ToolBar = ({ searchTerm, setSearchTerm }: ToolBarProps) => {
   const createMode = OPERATION_MODES.CREATE.id;
   const dispatch = useDispatch();
 
@@ -22,10 +27,11 @@ export const ToolBar = ({ searchTerm, setSearchTerm }) => {
         {' '}
         <InputV4
           placeholder={'Buscar Cliente ...'}
-          deleteBtn
           icon={<FontAwesomeIcon icon={faSearch} />}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setSearchTerm(e.target.value)
+          }
         />
         <Button
           borderRadius="normal"

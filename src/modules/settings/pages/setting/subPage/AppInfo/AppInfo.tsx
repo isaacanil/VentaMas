@@ -1,5 +1,3 @@
-// @ts-nocheck
-import React from 'react';
 import styled from 'styled-components';
 
 import BackButton from '@/modules/settings/pages/setting/GoBackToSetting';
@@ -45,7 +43,12 @@ const InfoLabel = styled.span`
   text-align: left !important;
 `;
 
-const infoItems = [
+interface AppInfoItem {
+  label: string;
+  value: string;
+}
+
+const infoItems: AppInfoItem[] = [
   { label: 'Versión:', value: 'v3.3.0' },
   { label: 'Email:', value: 'pos.ventamax@gmail.com' },
   { label: 'Teléfono:', value: '555-1234' },

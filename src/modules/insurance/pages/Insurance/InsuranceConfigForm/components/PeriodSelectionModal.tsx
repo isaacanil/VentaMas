@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Button,
   Card,
@@ -10,7 +9,38 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
-import { PAYMENT_TERMS, TIME_UNITS } from '@/modules/insurance/pages/Insurance/InsuranceConfigForm/constants';
+import {
+  PAYMENT_TERMS,
+  TIME_UNITS,
+  type PaymentTerm,
+  type TimeUnitOption,
+} from '@/modules/insurance/pages/Insurance/InsuranceConfigForm/constants';
+
+type TimeUnit = TimeUnitOption['unit'];
+
+interface PeriodSelectionValue {
+  value: number;
+  timeUnit: TimeUnit;
+  displayText: string;
+  isPredefined: boolean;
+  days?: number;
+}
+
+interface PeriodSelectionCurrentValue {
+  value?: number;
+  timeUnit?: TimeUnit;
+  displayText?: string;
+  isPredefined?: boolean;
+  days?: number;
+}
+
+interface PeriodSelectionModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (value: PeriodSelectionValue) => void;
+  title: string;
+  currentValue?: PeriodSelectionCurrentValue | null;
+}
 
 export const PeriodSelectionModal = ({
   visible,
@@ -18,9 +48,14 @@ export const PeriodSelectionModal = ({
   onSelect,
   title,
   currentValue,
-}) => {
+}: PeriodSelectionModalProps) => {
   // Derivar estado inicial desde currentValue
-  const getInitialState = () => {
+  const getInitialState = (): {
+    isCustom: boolean;
+    customValue: number;
+    customUnit: number;
+    selectedPeriod: number | null;
+  } => {
     if (!visible || !currentValue) {
       return {
         isCustom: false,
@@ -53,7 +88,7 @@ export const PeriodSelectionModal = ({
   const [isCustom, setIsCustom] = useState(initialState.isCustom);
   const [customValue, setCustomValue] = useState(initialState.customValue);
   const [customUnit, setCustomUnit] = useState(initialState.customUnit);
-  const [selectedPeriod, setSelectedPeriod] = useState(
+  const [selectedPeriod, setSelectedPeriod] = useState<number | null>(
     initialState.selectedPeriod,
   );
 
@@ -68,7 +103,9 @@ export const PeriodSelectionModal = ({
 
   const handleConfirm = () => {
     if (isCustom) {
-      const selectedTimeUnit = TIME_UNITS.find((u) => u.value === customUnit);
+      const selectedTimeUnit =
+        TIME_UNITS.find((u) => u.value === customUnit) ?? TIME_UNITS[0];
+      if (!selectedTimeUnit) return;
       const label =
         customValue === 1
           ? selectedTimeUnit.label
@@ -80,9 +117,11 @@ export const PeriodSelectionModal = ({
         isPredefined: false,
       });
     } else {
-      const predefinedPeriod = PAYMENT_TERMS.find(
+      if (selectedPeriod === null) return;
+      const predefinedPeriod: PaymentTerm | undefined = PAYMENT_TERMS.find(
         (t) => t.days === selectedPeriod,
       );
+      if (!predefinedPeriod) return;
       onSelect({
         value: predefinedPeriod.value,
         timeUnit: predefinedPeriod.timeUnit,
@@ -147,7 +186,7 @@ export const PeriodSelectionModal = ({
                 min={1}
                 max={999}
                 value={customValue}
-                onChange={(value) => setCustomValue(value)}
+                onChange={(value) => setCustomValue(value ?? 1)}
                 style={{ width: 120 }}
               />
               <Select

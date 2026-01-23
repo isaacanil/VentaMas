@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { KeyOutlined, LockOutlined, UserOutlined } from '@/constants/icons/antd';
 import {
   Modal,
@@ -9,9 +8,10 @@ import {
   Alert,
   Spin,
   Divider,
+  type InputRef,
 } from 'antd';
 import { doc, getDoc } from 'firebase/firestore';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ChangeEvent, type KeyboardEvent } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -55,15 +55,20 @@ const PinInputContainer = styled.div`
   margin: 24px 0;
 `;
 
-const PinDot = styled.div`
+interface PinDotProps {
+  $filled?: boolean;
+  $active?: boolean;
+}
+
+const PinDot = styled.div<PinDotProps>`
   width: 48px;
   height: 56px;
-  border: 2px solid ${(props: any) => (props.$filled ? '#52c41a' : '#d9d9d9')};
+  border: 2px solid ${(props) => (props.$filled ? '#52c41a' : '#d9d9d9')};
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${(props: any) => (props.$filled ? '#f6ffed' : '#fafafa')};
+  background-color: ${(props) => (props.$filled ? '#f6ffed' : '#fafafa')};
   transition: all 0.2s ease;
   position: relative;
 
@@ -78,7 +83,8 @@ const PinDot = styled.div`
     width: 12px;
     height: 12px;
     content: '';
-    background-color: ${(props: any) => (props.$filled ? '#52c41a' : 'transparent')};
+    background-color: ${(props) =>
+      props.$filled ? '#52c41a' : 'transparent'};
     border-radius: 50%;
     transition: all 0.15s ease;
   }
@@ -96,6 +102,15 @@ const PinInputWrapper = styled.div`
   cursor: text;
 `;
 
+interface CustomPinInputProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  onEnter?: () => void;
+  disabled?: boolean;
+  maxLength?: number;
+  autoFocus?: boolean;
+}
+
 /**
  * Componente de input de PIN personalizado con puntos visuales
  */
@@ -106,8 +121,8 @@ const CustomPinInput = ({
   disabled,
   maxLength = 6,
   autoFocus = false,
-}) => {
-  const inputRef = useRef(null);
+}: CustomPinInputProps) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(value.length);
 
   useEffect(() => {
@@ -126,17 +141,17 @@ const CustomPinInput = ({
   }, [autoFocus, disabled]);
 
   const handleContainerClick = () => {
-    if (!disabled && inputRef.current) {
-      inputRef.current.focus();
+    if (!disabled) {
+      inputRef.current?.focus();
     }
   };
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.replace(/\D/g, '').slice(0, maxLength);
     onChange?.(newValue);
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && value.length > 0) {
       onChange?.(value.slice(0, -1));
       e.preventDefault();
@@ -176,6 +191,31 @@ const CustomPinInput = ({
   );
 };
 
+interface PasswordFormValues {
+  username: string;
+  password: string;
+}
+
+interface AuthorizedUser {
+  uid?: string | null;
+  role?: string;
+  [key: string]: unknown;
+}
+
+type PinValidationResult = Awaited<ReturnType<typeof fbValidateUserPin>>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const getAuthorizedUser = (user: unknown): AuthorizedUser | null =>
+  isRecord(user) ? (user as AuthorizedUser) : null;
+
+const getUserRole = (user: unknown): string | undefined => {
+  if (!isRecord(user)) return undefined;
+  const role = user.role;
+  return typeof role === 'string' ? role : undefined;
+};
+
 /**
  * Modal de autorización con PIN o contraseña
  *
@@ -192,7 +232,7 @@ const CustomPinInput = ({
 interface PinAuthorizationModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onAuthorized: (authorizer: any) => void;
+  onAuthorized: (authorizer: AuthorizedUser) => void;
   description?: string;
   allowedRoles?: string[];
   reasonList?: string[];
@@ -210,15 +250,18 @@ export const PinAuthorizationModal = ({
   module = 'invoices',
   allowPasswordFallback = true,
 }: PinAuthorizationModalProps) => {
-  const currentUser = useSelector(selectUser);
-  const [form] = Form.useForm();
+  type PinAuthRootState = Parameters<typeof selectUser>[0];
+  const currentUser = useSelector((state: PinAuthRootState) =>
+    selectUser(state),
+  );
+  const [form] = Form.useForm<PasswordFormValues>();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [usePassword, setUsePassword] = useState(false);
   const [pinValue, setPinValue] = useState('');
 
-  const usernameInputRef = useRef(null);
-  const passwordInputRef = useRef(null);
+  const usernameInputRef = useRef<InputRef | null>(null);
+  const passwordInputRef = useRef<InputRef | null>(null);
 
   const resetAndClose = () => {
     form.resetFields();
@@ -241,15 +284,16 @@ export const PinAuthorizationModal = ({
     return () => clearTimeout(timer);
   }, [isOpen, usePassword, loading]);
 
-  const fetchUserById = async (uid) => {
+  const fetchUserById = async (uid: string): Promise<AuthorizedUser> => {
     const userRef = doc(db, 'users', uid);
     const snap = await getDoc(userRef);
     if (!snap.exists()) throw new Error('No se encontró el usuario.');
-    const data = snap.data()?.user || {};
-    return { uid, ...data };
+    const data = snap.data() as Record<string, unknown> | undefined;
+    const rawUser = isRecord(data?.user) ? data.user : {};
+    return { uid, ...rawUser };
   };
 
-  const handleSubmitPin = async (pin) => {
+  const handleSubmitPin = async (pin: string) => {
     setLoading(true);
     setError('');
 
@@ -259,7 +303,7 @@ export const PinAuthorizationModal = ({
         return;
       }
 
-      const result = await fbValidateUserPin(currentUser, {
+      const result: PinValidationResult = await fbValidateUserPin(currentUser, {
         pin,
         module,
       });
@@ -269,22 +313,28 @@ export const PinAuthorizationModal = ({
         return;
       }
 
-      const role = result.user?.role;
-      if (!allowedRoles.includes(role)) {
+      const authorizedUser = getAuthorizedUser(result.user);
+      const role = getUserRole(authorizedUser);
+      if (!authorizedUser || !role || !allowedRoles.includes(role)) {
         setError('Usuario no autorizado para aprobar esta acción.');
         return;
       }
 
-      onAuthorized(result.user);
+      onAuthorized(authorizedUser);
       resetAndClose();
     } catch (e) {
-      setError(e?.message || 'Error validando PIN');
+      const message =
+        e instanceof Error ? e.message : 'Error validando PIN';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitPassword = async ({ username, password }) => {
+  const handleSubmitPassword = async ({
+    username,
+    password,
+  }: PasswordFormValues) => {
     setLoading(true);
     setError('');
 
@@ -299,9 +349,15 @@ export const PinAuthorizationModal = ({
         return;
       }
 
-      const approver = await fetchUserById(userData.uid);
-      const role = approver?.role;
-      if (!allowedRoles.includes(role)) {
+      const uid = typeof userData?.uid === 'string' ? userData.uid : null;
+      if (!uid) {
+        setError('No se encontrÃ³ el usuario.');
+        return;
+      }
+
+      const approver = await fetchUserById(uid);
+      const role = getUserRole(approver);
+      if (!role || !allowedRoles.includes(role)) {
         setError('Usuario no autorizado para aprobar esta acción.');
         return;
       }
@@ -309,7 +365,11 @@ export const PinAuthorizationModal = ({
       onAuthorized(approver);
       resetAndClose();
     } catch (e) {
-      setError(e?.message || 'Error obteniendo datos del usuario.');
+      const message =
+        e instanceof Error
+          ? e.message
+          : 'Error obteniendo datos del usuario.';
+      setError(message);
     } finally {
       setLoading(false);
     }

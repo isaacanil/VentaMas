@@ -492,7 +492,7 @@ const CashCountAudit: React.FC = () => {
     }
   };
 
-  const handleSelectAutoItem = (cashCountId) => {
+  const handleSelectAutoItem = (cashCountId: string) => {
     setSelectedAutoCashCount(cashCountId);
     const run = autoRuns.find((r) => r.id === selectedRun);
     const item = run?.items?.find((i) => i.cashCountId === cashCountId);
@@ -659,7 +659,7 @@ const CashCountAudit: React.FC = () => {
               <InputNumber
                 min={0}
                 value={threshold}
-                onChange={setThreshold}
+                onChange={(value) => setThreshold(value ?? 0)}
                 style={{ width: 140 }}
               />
             </Field>
@@ -892,8 +892,8 @@ const CashCountAudit: React.FC = () => {
   );
 };
 
-const fmt = (n) => {
-  const num = Number(n);
+const fmt = (value: unknown): string => {
+  const num = Number(value);
   if (!Number.isFinite(num)) return '—';
   return new Intl.NumberFormat('es-DO', {
     style: 'currency',
@@ -938,7 +938,11 @@ const FiltersCard = styled(Card)`
   }
 `;
 
-const Inline = styled.div`
+interface InlineProps {
+  $gap?: number | string;
+}
+
+const Inline = styled.div<InlineProps>`
   display: flex;
   align-items: center;
   gap: ${({ $gap = 8 }) => (typeof $gap === 'number' ? `${$gap}px` : $gap)};

@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { GlobalOutlined } from '@/constants/icons/antd';
 import { Form, Input, Button, Modal, notification } from 'antd';
-import { useEffect } from 'react';
+import type { FormInstance } from 'antd';
+import { useEffect, type KeyboardEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -12,12 +12,25 @@ import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { useRncSearch } from '@/hooks/useRncSearch';
 import { DgiiSyncAlert } from '@/modules/contacts/components/Rnc/DgiiSyncAlert/DgiiSyncAlert';
 import { RncPanel } from '@/modules/contacts/components/Rnc/RncPanel/RncPanel';
+import type { ClientInput } from '@/firebase/client/clientNormalizer';
+import type { UserIdentity } from '@/types/users';
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ $hasRnc?: boolean }>`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 1em;
 `;
+
+type ClientGeneralInfoProps = {
+  form: FormInstance;
+  customerData: ClientInput;
+  isUpdating: boolean;
+  handleSubmit: () => void;
+  loading: boolean;
+  submitted: boolean;
+};
+
+type UserRootState = Parameters<typeof selectUser>[0];
 
 export const ClientGeneralInfo = ({
   form,
@@ -26,8 +39,8 @@ export const ClientGeneralInfo = ({
   handleSubmit,
   loading: submitLoading,
   submitted,
-}) => {
-  const user = useSelector(selectUser);
+}: ClientGeneralInfoProps) => {
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
   const dispatch = useDispatch();
   const create = OPERATION_MODES.CREATE.id;
   const {
@@ -41,7 +54,7 @@ export const ClientGeneralInfo = ({
   } = useRncSearch(form, 'personalID');
 
   // Add formValues watch for comparison
-  const formValues = Form.useWatch([], form);
+  const formValues = Form.useWatch([], form) as Record<string, string | number>;
 
   // Add effects for RNC handling
   useEffect(() => {
@@ -69,6 +82,13 @@ export const ClientGeneralInfo = ({
       cancelText: 'Cancelar',
       onOk: async () => {
         try {
+          if (!user?.businessID || !customerData?.id) {
+            notification.error({
+              message: 'Datos incompletos',
+              description: 'No se pudo eliminar el cliente. Falta información.',
+            });
+            return;
+          }
           await fbDeleteClient(user.businessID, customerData.id);
 
           form.resetFields();
@@ -89,14 +109,14 @@ export const ClientGeneralInfo = ({
     });
   };
 
-  const handleRNCSearch = (value) => {
+  const handleRNCSearch = (value: string) => {
     const rnc = (value || form.getFieldValue('personalID'))?.trim();
     if (rnc && rnc.length >= 9 && rnc.length <= 11) {
       consultarRNC(rnc);
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation(); // Previene que el evento llegue al document
     }

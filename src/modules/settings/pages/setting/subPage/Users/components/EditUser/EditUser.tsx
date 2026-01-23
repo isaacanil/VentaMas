@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -37,6 +37,7 @@ interface ManagedUser {
   name: string;
   password?: string;
   role?: UserRoleLike;
+  rol?: UserRoleLike;
   active?: boolean;
   businessID?: string | null;
   createAt?: unknown;
@@ -196,7 +197,9 @@ const EditUser = () => {
             placeholder="Nombre de Usuario"
             errorMessage={errors.name}
             validate={errors.name}
-            onChange={(e) => handleInputChange({ ['name']: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleInputChange({ ['name']: e.target.value })
+            }
           />
           <Select
             title="Rol"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Alert,
   Button,
@@ -14,7 +13,54 @@ import React from 'react';
 
 const { Paragraph, Text } = Typography;
 
-export const BulkRecoveryTab = ({
+interface BulkOptions {
+  runForAllBusinesses: boolean;
+  dryRun: boolean;
+  startAfterBusinessId: string;
+  startAfterInvoiceId: string;
+}
+
+interface BulkRepair {
+  invoiceId?: string;
+  needsCanonical?: boolean;
+  needsReceivable?: boolean;
+  tasks?: string[];
+  status?: string;
+}
+
+interface BulkBusinessResult {
+  businessId: string;
+  nextInvoiceCursor?: string;
+  repairs?: BulkRepair[];
+}
+
+interface BulkMetrics {
+  businessesProcessed?: number;
+  invoicesScanned?: number;
+  invoicesWithIssues?: number;
+}
+
+interface BulkResult {
+  businesses?: BulkBusinessResult[];
+  metrics?: BulkMetrics;
+  nextPage?: {
+    startAfterBusinessId?: string;
+  };
+}
+
+interface BulkRecoveryTabProps {
+  bulkOptions: BulkOptions;
+  bulkResult: BulkResult | null;
+  bulkLoading: boolean;
+  updateBulkOption: <K extends keyof BulkOptions>(
+    key: K,
+    value: BulkOptions[K],
+  ) => void;
+  setBulkResult: (value: BulkResult | null) => void;
+  handleBulkAutoRecovery: () => void;
+}
+
+export const BulkRecoveryTab: React.FC<BulkRecoveryTabProps> = ({
   bulkOptions,
   bulkResult,
   bulkLoading,
@@ -34,7 +80,7 @@ export const BulkRecoveryTab = ({
       return;
     }
 
-    const formatValue = (value) => {
+    const formatValue = (value: unknown) => {
       if (value === null || value === undefined) return '';
       const stringValue = String(value);
       if (/[",\n]/.test(stringValue)) {
@@ -70,7 +116,9 @@ export const BulkRecoveryTab = ({
       });
     });
 
-    const csvContent = rows.map((row) => row.map(formatValue).join(',')).join('\n');
+    const csvContent = rows
+      .map((row) => row.map(formatValue).join(','))
+      .join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

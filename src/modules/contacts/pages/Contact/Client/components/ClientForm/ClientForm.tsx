@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { nanoid } from 'nanoid';
-import React, { useState } from 'react';
+import React, { useState, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -17,15 +16,24 @@ import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button/Button';
 import { Message } from '@/components/ui/message/Message';
 import Typography from '@/components/ui/Typografy/Typografy';
+import type { ClientInput } from '@/firebase/client/clientNormalizer';
+import type { UserIdentity } from '@/types/users';
 
+type ClientFormProps = {
+  isOpen: boolean;
+  mode: string;
+  data?: ClientInput | null;
+};
 
-export const ClientForm = ({ isOpen, mode, data }) => {
+type UserRootState = Parameters<typeof selectUser>[0];
+
+export const ClientForm = ({ isOpen, mode, data }: ClientFormProps) => {
   const dispatch = useDispatch();
   const create = OPERATION_MODES.CREATE.id;
   const update = OPERATION_MODES.UPDATE.id;
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
 
-  const getInitialClient = () => {
+  const getInitialClient = (): ClientInput => {
     if (mode === update && data) {
       return data;
     }
@@ -49,15 +57,25 @@ export const ClientForm = ({ isOpen, mode, data }) => {
     };
   };
 
-  const [client, setClient] = useState(getInitialClient);
+  const [client, setClient] = useState<ClientInput>(getInitialClient);
 
-  function validateClient(client) {
-    if (client.name === '' || client.personalID === '') {
+  function validateClient(candidate: ClientInput) {
+    if (!candidate.name || !candidate.personalID) {
       alert('El nombre y el ID personal son obligatorios');
       return false;
     }
     return true;
   }
+
+  const handleFieldChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setClient((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleCreateClient = async () => {
     if (validateClient(client)) {
@@ -129,13 +147,8 @@ export const ClientForm = ({ isOpen, mode, data }) => {
             <input
               name="name"
               type="text"
-              value={client.name}
-              onChange={(e) =>
-                setClient({
-                  ...client,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              value={client.name ?? ''}
+              onChange={handleFieldChange}
               placeholder="Juan Pérez."
             />
           </Group>
@@ -146,20 +159,15 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={formatPhoneNumber(client.tel, true)}
+                title={formatPhoneNumber(client.tel ?? '', true)}
               ></Message>
             </label>
             <input
               type="text"
               name="tel"
               placeholder="8097204816"
-              value={client.tel}
-              onChange={(e) =>
-                setClient({
-                  ...client,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              value={client.tel ?? ''}
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
@@ -169,38 +177,28 @@ export const ClientForm = ({ isOpen, mode, data }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={formatRNC(client.personalID)}
+                title={formatRNC(client.personalID ?? '')}
               ></Message>
             </label>
             <input
               type="text"
               placeholder="110056007"
               name="personalID"
-              value={client.personalID}
-              onChange={(e) =>
-                setClient({
-                  ...client,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              value={client.personalID ?? ''}
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
             <label htmlFor="">Dirección</label>
 
             <textarea
-              value={client.address}
+              value={client.address ?? ''}
               name="address"
               id=""
               cols="20"
               rows="5"
               placeholder="27 de Febrero #12, Ensanche Ozama, Santo Domingo"
-              onChange={(e) =>
-                setClient({
-                  ...client,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             ></textarea>
           </Group>
         </Body>
@@ -236,7 +234,7 @@ const Backdrop = styled.div`
   pointer-events: none;
   backdrop-filter: blur(4px);
 `;
-const Container = styled.div`
+const Container = styled.div<{ $isOpen: boolean }>`
   max-width: 30em;
   border-radius: 4px;
   border: 1px solid #e0e0e0;

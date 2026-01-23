@@ -648,14 +648,16 @@ export const UserList = () => {
             <Input
               allowClear
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchTerm(event.target.value)
+              }
               placeholder="Buscar usuarios..."
             />
           </SearchBar>
         }
         onRowClick={
           abilities.can('manage', 'User')
-            ? (row) => handleEditUser(row.user)
+            ? (row: UserListRow) => row.user && handleEditUser(row.user)
             : undefined
         }
         loading={loading || permissionsLoading}
@@ -718,7 +720,7 @@ const ActionMenu = ({
   );
 
   const items = useMemo<MenuProps['items']>(() => {
-    const menuItems: MenuProps['items'] = [];
+    const menuItems: NonNullable<MenuProps['items']> = [];
 
     menuItems.push({
       key: 'activity',

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Tooltip, Typography } from 'antd';
@@ -28,7 +27,15 @@ const ButtonText = styled.div`
   }
 `;
 
-export const ClientSelectorHeader = ({ openAddClientModal, onClose }) => {
+type ClientSelectorHeaderProps = {
+  openAddClientModal: () => void;
+  onClose: () => void;
+};
+
+export const ClientSelectorHeader = ({
+  openAddClientModal,
+  onClose,
+}: ClientSelectorHeaderProps) => {
   return (
     <Header>
       <Title level={5} style={{ margin: 0 }}>

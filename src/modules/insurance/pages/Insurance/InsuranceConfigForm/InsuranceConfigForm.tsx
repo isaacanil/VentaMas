@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -22,6 +21,70 @@ import { saveInsuranceConfig } from '@/firebase/insurance/insuranceService';
 
 import { PeriodSelectionModal } from './components/PeriodSelectionModal';
 import { PAYMENT_TERMS, TIME_UNITS } from './constants';
+
+type TimeUnit = 'day' | 'week' | 'month' | 'year';
+
+interface PeriodValue {
+  value: number;
+  timeUnit: TimeUnit;
+  isPredefined: boolean;
+  days?: number;
+}
+
+interface InsuranceTypeForm {
+  id: string;
+  type: string;
+  paymentTerm: PeriodValue | null;
+  paymentTermDisplay: string;
+  prescriptionValidity: PeriodValue | null;
+  prescriptionValidityDisplay: string;
+}
+
+interface InsuranceFormValues {
+  insuranceName?: string;
+  insuranceCompanyName?: string;
+  insuranceCompanyRNC?: string;
+}
+
+interface RawInsuranceType {
+  id?: string;
+  type?: string;
+  paymentTerm?: unknown;
+  prescriptionValidity?: unknown;
+  paymentTermDisplay?: string;
+  prescriptionValidityDisplay?: string;
+  [key: string]: unknown;
+}
+
+interface RawInsuranceConfig {
+  id?: string;
+  insuranceName?: string;
+  insuranceCompanyName?: string;
+  insuranceCompanyRNC?: string;
+  insuranceTypes?: RawInsuranceType[];
+  [key: string]: unknown;
+}
+
+interface EditingFieldState {
+  index: number | null;
+  field: 'paymentTerm' | 'prescriptionValidity' | null;
+  currentValue?: {
+    value?: number;
+    timeUnit?: TimeUnit;
+    displayText?: string;
+    isPredefined?: boolean;
+    days?: number;
+  };
+}
+
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+  [key: string]: unknown;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 // Styled Components
 const StyledFormSection = styled.div`
@@ -133,35 +196,52 @@ const StyledAddButton = styled.button`
 
 const InsuranceConfigForm = () => {
   const dispatch = useDispatch();
-  const { isOpen, initialValues } = useSelector(selectInsuranceConfigModal);
-  const user = useSelector(selectUser);
-  const [form] = Form.useForm();
+  const modalState = useSelector(selectInsuranceConfigModal) as {
+    isOpen: boolean;
+    initialValues: RawInsuranceConfig | null;
+  };
+  const { isOpen, initialValues } = modalState;
+  const user = useSelector(selectUser) as UserWithBusinessAndUid | null;
+  const [form] = Form.useForm<InsuranceFormValues>();
   const [loading, setLoading] = useState(false);
-  const [insuranceTypes, setInsuranceTypes] = useState([]);
+  const [insuranceTypes, setInsuranceTypes] = useState<InsuranceTypeForm[]>(
+    [],
+  );
   const [initialized, setInitialized] = useState(false);
   const [periodModalVisible, setPeriodModalVisible] = useState(false);
-  const [currentEditingField, setCurrentEditingField] = useState({
-    index: null,
-    field: null,
-  });
+  const [currentEditingField, setCurrentEditingField] =
+    useState<EditingFieldState>({
+      index: null,
+      field: null,
+    });
 
   useEffect(() => {
     if (isOpen && !initialized) {
-      if (initialValues?.insuranceTypes) {
+      if (Array.isArray(initialValues?.insuranceTypes)) {
         const updatedTypes = initialValues.insuranceTypes.map((type) => {
           // Asegurarse de que cada tipo tenga un id
           const typeWithId = {
             ...type,
-            id: type.id || nanoid(),
+            id: typeof type.id === 'string' ? type.id : nanoid(),
           };
 
           // Convertir los valores antiguos al nuevo formato si es necesario
-          const convertPeriod = (period) => {
+          const convertPeriod = (period: unknown): PeriodValue | null => {
             if (!period) return null;
 
             // Si ya tiene el formato nuevo con isPredefined, lo devolvemos tal cual
-            if (period.isPredefined !== undefined) {
-              return period;
+            if (isRecord(period) && typeof period.isPredefined === 'boolean') {
+              if (
+                typeof period.value === 'number' &&
+                typeof period.timeUnit === 'string'
+              ) {
+                return {
+                  value: period.value,
+                  timeUnit: period.timeUnit as TimeUnit,
+                  isPredefined: period.isPredefined,
+                  days: typeof period.days === 'number' ? period.days : undefined,
+                };
+              }
             }
 
             // Si es un número, buscamos si coincide con algún período predefinido
@@ -180,7 +260,11 @@ const InsuranceConfigForm = () => {
             }
 
             // Si tiene el formato value y timeUnit pero no isPredefined
-            if (period.value && period.timeUnit) {
+            if (
+              isRecord(period) &&
+              typeof period.value === 'number' &&
+              typeof period.timeUnit === 'string'
+            ) {
               const totalDays =
                 period.value *
                 (TIME_UNITS.find((u) => u.unit === period.timeUnit)?.value ||
@@ -198,13 +282,14 @@ const InsuranceConfigForm = () => {
                 };
               } else {
                 return {
-                  ...period,
+                  value: period.value,
+                  timeUnit: period.timeUnit as TimeUnit,
                   isPredefined: false,
                 };
               }
             }
 
-            return period;
+            return null;
           };
 
           const paymentTerm = convertPeriod(type.paymentTerm);
@@ -219,20 +304,20 @@ const InsuranceConfigForm = () => {
             prescriptionValidityDisplay:
               type.prescriptionValidityDisplay ||
               getDisplayText(prescriptionValidity),
-          };
+          } as InsuranceTypeForm;
         });
         setInsuranceTypes(updatedTypes);
       }
       form.setFieldsValue({
-        insuranceName: initialValues?.insuranceName,
-        insuranceCompanyName: initialValues?.insuranceCompanyName,
-        insuranceCompanyRNC: initialValues?.insuranceCompanyRNC,
+        insuranceName: initialValues?.insuranceName ?? '',
+        insuranceCompanyName: initialValues?.insuranceCompanyName ?? '',
+        insuranceCompanyRNC: initialValues?.insuranceCompanyRNC ?? '',
       });
       setInitialized(true);
     }
   }, [isOpen, initialized, initialValues, form]);
 
-  const getDisplayText = (period) => {
+  const getDisplayText = (period: PeriodValue | null): string => {
     if (!period) return '';
 
     if (period.isPredefined) {
@@ -272,7 +357,7 @@ const InsuranceConfigForm = () => {
       },
     ]);
   };
-  const removeInsuranceType = (indexToRemove) => {
+  const removeInsuranceType = (indexToRemove: number) => {
     setInsuranceTypes((prevTypes) => {
       const updatedTypes = prevTypes.filter(
         (_, index) => index !== indexToRemove,
@@ -286,7 +371,7 @@ const InsuranceConfigForm = () => {
     dispatch(closeInsuranceConfigModal());
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: InsuranceFormValues) => {
     // Validar que todos los campos del formulario principal estén llenos
     if (
       !values.insuranceName ||
@@ -327,17 +412,17 @@ const InsuranceConfigForm = () => {
           id: type.id,
           type: type.type,
           paymentTerm: {
-            value: type.paymentTerm.value,
-            timeUnit: type.paymentTerm.timeUnit,
+            value: type.paymentTerm!.value,
+            timeUnit: type.paymentTerm!.timeUnit,
           },
           prescriptionValidity: {
-            value: type.prescriptionValidity.value,
-            timeUnit: type.prescriptionValidity.timeUnit,
+            value: type.prescriptionValidity!.value,
+            timeUnit: type.prescriptionValidity!.timeUnit,
           },
         })),
       };
 
-      await saveInsuranceConfig(user, dataToSave);
+      await saveInsuranceConfig(user as UserWithBusinessAndUid, dataToSave);
       message.success('Configuración guardada exitosamente');
       resetForm();
       dispatch(closeInsuranceConfigModal());
@@ -349,7 +434,10 @@ const InsuranceConfigForm = () => {
     }
   };
 
-  const openPeriodModal = (index, field) => {
+  const openPeriodModal = (
+    index: number,
+    field: 'paymentTerm' | 'prescriptionValidity',
+  ) => {
     const currentType = insuranceTypes[index];
     const currentValue = currentType[field];
 
@@ -367,8 +455,9 @@ const InsuranceConfigForm = () => {
     setPeriodModalVisible(true);
   };
 
-  const handlePeriodSelect = (periodInfo) => {
+  const handlePeriodSelect = (periodInfo: PeriodValue & { displayText: string }) => {
     const { index, field } = currentEditingField;
+    if (index === null || field === null) return;
     setInsuranceTypes((prev) => {
       const updated = [...prev];
       updated[index] = {
@@ -499,11 +588,7 @@ const InsuranceConfigForm = () => {
                       size="middle"
                       value={
                         insuranceType.paymentTermDisplay ||
-                        (insuranceType.paymentTerm
-                          ? PAYMENT_TERMS.find(
-                              (t) => t.days === insuranceType.paymentTerm,
-                            )?.label || `${insuranceType.paymentTerm} días`
-                          : '')
+                        getDisplayText(insuranceType.paymentTerm)
                       }
                       placeholder="Seleccionar período"
                       readOnly
@@ -517,13 +602,7 @@ const InsuranceConfigForm = () => {
                       size="middle"
                       value={
                         insuranceType.prescriptionValidityDisplay ||
-                        (insuranceType.prescriptionValidity
-                          ? PAYMENT_TERMS.find(
-                              (t) =>
-                                t.days === insuranceType.prescriptionValidity,
-                            )?.label ||
-                            `${insuranceType.prescriptionValidity} días`
-                          : '')
+                        getDisplayText(insuranceType.prescriptionValidity)
                       }
                       placeholder="Seleccionar vigencia"
                       readOnly

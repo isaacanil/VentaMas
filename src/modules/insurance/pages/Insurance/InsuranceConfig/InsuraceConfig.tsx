@@ -1,10 +1,12 @@
-// @ts-nocheck
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { openInsuranceConfigModal } from '@/features/insurance/insuranceConfigModalSlice';
-import { useListenInsuranceConfig } from '@/firebase/insurance/insuranceService';
+import {
+  useListenInsuranceConfig,
+  type InsuranceConfigData,
+} from '@/firebase/insurance/insuranceService';
 import { formatDateTime } from '@/utils/date/dateUtils';
 import InsuranceConfigForm from '@/modules/insurance/pages/Insurance/InsuranceConfigForm/InsuranceConfigForm';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
@@ -12,13 +14,24 @@ import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
+import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+
+interface InsuranceTableRow {
+  insuranceName?: string;
+  insuranceCompanyName?: string;
+  insuranceCompanyRNC?: string;
+  insuranceTypes?: unknown[];
+  createdAt?: string;
+  data: InsuranceConfigData;
+}
+
 const InsuranceConfig = () => {
   const dispatch = useDispatch();
   const searchTerm = '';
   const { data: insuranceConfig } = useListenInsuranceConfig();
 
   // Definición de columnas para la tabla
-  const columns = [
+  const columns: ColumnConfig<InsuranceTableRow>[] = [
     {
       accessor: 'insuranceName',
       Header: 'Nombre del Seguro',
@@ -46,7 +59,11 @@ const InsuranceConfig = () => {
       align: 'left',
       maxWidth: '1.4fr',
       minWidth: '250px',
-      cell: ({ value }) => <InsuranceTypesDisplay types={value || []} />,
+      cell: ({ value }) => (
+        <InsuranceTypesDisplay
+          types={Array.isArray(value) ? value : []}
+        />
+      ),
     },
     {
       accessor: 'createdAt',
@@ -57,18 +74,30 @@ const InsuranceConfig = () => {
     },
   ];
 
-  const data = (insuranceConfig || []).map((insurance) => ({
-    insuranceName: insurance.insuranceName,
-    insuranceCompanyName: insurance.insuranceCompanyName,
-    insuranceCompanyRNC: insurance.insuranceCompanyRNC,
-    insuranceTypes: Array.isArray(insurance.insuranceTypes)
-      ? insurance.insuranceTypes
-      : [],
-    createdAt: formatDateTime(insurance.createdAt),
-    data: insurance,
-  }));
+  const data: InsuranceTableRow[] = (insuranceConfig || []).map((insurance) => {
+    const record = insurance as Record<string, unknown>;
+    return {
+      insuranceName:
+        typeof record.insuranceName === 'string'
+          ? record.insuranceName
+          : undefined,
+      insuranceCompanyName:
+        typeof record.insuranceCompanyName === 'string'
+          ? record.insuranceCompanyName
+          : undefined,
+      insuranceCompanyRNC:
+        typeof record.insuranceCompanyRNC === 'string'
+          ? record.insuranceCompanyRNC
+          : undefined,
+      insuranceTypes: Array.isArray(record.insuranceTypes)
+        ? (record.insuranceTypes as unknown[])
+        : [],
+      createdAt: formatDateTime(record.createdAt),
+      data: insurance,
+    };
+  });
 
-  const handleRowClick = (record) => {
+  const handleRowClick = (record: InsuranceTableRow) => {
     dispatch(openInsuranceConfigModal(record.data));
   };
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Space, Spin, Tabs, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -21,12 +20,17 @@ import {
 import { useBulkInvoiceRecovery } from './hooks/useBulkInvoiceRecovery';
 import { useIndividualInvoiceRecovery } from './hooks/useIndividualInvoiceRecovery';
 
+import type { TabsProps } from 'antd';
+
 const { Title, Paragraph } = Typography;
 
-export const InvoiceV2Recovery = () => {
+type BusinessState = { id?: string } | null;
+type UserState = { role?: string } | null | false;
+
+export const InvoiceV2Recovery: React.FC = () => {
   const navigate = useNavigate();
-  const business = useSelector(selectBusinessData);
-  const user = useSelector(selectUser);
+  const business = useSelector(selectBusinessData) as BusinessState;
+  const user = useSelector(selectUser) as UserState;
   const { abilities, loading: loadingAbilities } = useUserAccess();
 
   const individual = useIndividualInvoiceRecovery({
@@ -59,7 +63,7 @@ export const InvoiceV2Recovery = () => {
     }
   }, [abilities, isInitializing, navigate]);
 
-  const tabItems = [
+  const tabItems: TabsProps['items'] = [
     {
       key: 'individual',
       label: 'Recuperación individual',

@@ -1,8 +1,18 @@
-// @ts-nocheck
-import React from 'react';
 import styled from 'styled-components';
 
-export const InsuranceTypesDisplay = ({ types = [] }) => {
+interface InsuranceTypeEntry {
+  id?: string | number;
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface InsuranceTypesDisplayProps {
+  types?: InsuranceTypeEntry[];
+}
+
+export const InsuranceTypesDisplay = ({
+  types = [],
+}: InsuranceTypesDisplayProps) => {
   // Si no hay tipos, no renderizamos nada
   if (!types || types.length === 0) return null;
 

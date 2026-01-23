@@ -1,4 +1,3 @@
-// @ts-nocheck
 // FilterInput.js
 import { Button } from 'antd';
 import React from 'react';
@@ -20,13 +19,23 @@ const StyledInput = styled.input`
   border-radius: 4px;
 `;
 
+type OrdenKey = 'almacen' | 'fechaExpiracion' | 'stock';
+
+interface FilterInputProps {
+  filtro: string;
+  setFiltro: (value: string) => void;
+  toggleOrden: (orden: OrdenKey) => void;
+  ordenPor: OrdenKey;
+  ordenAscendente: boolean;
+}
+
 const FilterInput = ({
   filtro,
   setFiltro,
   toggleOrden,
   ordenPor,
   ordenAscendente,
-}) => {
+}: FilterInputProps) => {
   return (
     <StyledInputContainer>
       <StyledInput

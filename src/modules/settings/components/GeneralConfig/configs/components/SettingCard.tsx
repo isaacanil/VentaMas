@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Card, Button, Typography, Tooltip } from 'antd';
 import styled from 'styled-components';
-import { SettingOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 

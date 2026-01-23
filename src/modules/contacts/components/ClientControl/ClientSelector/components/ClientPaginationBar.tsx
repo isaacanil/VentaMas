@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { memo } from 'react';
 import styled from 'styled-components';
 
@@ -10,10 +9,15 @@ const Footer = styled.div`
   border-top: 1px solid #ddd;
 `;
 
+type ClientPaginationBarProps = {
+  filteredClients: Array<unknown>;
+  clients: Array<unknown>;
+};
+
 const ClientPaginationBarComponent = ({
   filteredClients,
   clients,
-}) => {
+}: ClientPaginationBarProps) => {
   return (
     <Footer>
       <div style={{ whiteSpace: 'nowrap' }}>

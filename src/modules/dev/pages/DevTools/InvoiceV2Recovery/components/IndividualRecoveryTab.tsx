@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Alert,
   AutoComplete,
@@ -32,9 +31,125 @@ import { formatDateTime } from '../utils/time';
 
 import { Centered, CodeBlock } from './StyledComponents';
 
+import type { FormInstance } from 'antd';
+
 const { Text, Paragraph } = Typography;
 
-export const IndividualRecoveryTab = ({
+interface OptionItem {
+  value: string;
+  label: string;
+}
+
+interface InvoiceSummary {
+  pending?: number;
+  done?: number;
+  failed?: number;
+}
+
+interface InvoiceData {
+  status?: string;
+}
+
+interface OutboxTask {
+  id: string;
+  type?: string;
+  status?: string;
+  attempts?: number;
+  updatedAt?: unknown;
+  lastError?: string;
+}
+
+interface SnapshotData {
+  ncf?: {
+    code?: string;
+    type?: string;
+    status?: string;
+  };
+  client?: {
+    name?: string;
+  };
+  dueDate?: unknown;
+  invoiceComment?: string;
+}
+
+interface LinkedCashCount {
+  id: string;
+  state?: string;
+  number?: string | number;
+  opening?: {
+    employee?: {
+      name?: string;
+    };
+  };
+}
+
+interface StatusTimelineEntry {
+  status: string;
+  at?: unknown;
+}
+
+interface RepairResult {
+  results?: Array<{
+    type: string;
+    status: string;
+    taskId?: string;
+    reason?: string;
+  }>;
+}
+
+interface IndividualRecoveryTabProps {
+  form: FormInstance;
+  watchedBusinessId?: string;
+  businessOptions: OptionItem[];
+  loadingBusinesses: boolean;
+  invoiceOptions: OptionItem[];
+  loadingInvoices: boolean;
+  handleSubmit: () => void;
+  loading: boolean;
+  errorMessage?: string | null;
+  showEmptyState: boolean;
+  handleFetch: (query: Record<string, unknown> | null) => void;
+  activeQuery: Record<string, unknown> | null;
+  invoiceData: InvoiceData | null;
+  summary: InvoiceSummary;
+  canonicalData: Record<string, unknown> | null;
+  failedOutboxTasks: OutboxTask[];
+  resolvedInvoiceId?: string | null;
+  snapshot: SnapshotData;
+  v2CreatedAtLabel: string;
+  canonicalDateLabel: string;
+  shouldWarnDateMismatch: boolean;
+  shouldWarnCashCount: boolean;
+  selectedTasks: string[];
+  setSelectedTasks: (value: string[]) => void;
+  reason: string;
+  setReason: (value: string) => void;
+  handleRepair: () => void;
+  repairing: boolean;
+  availableTaskKeys: string[];
+  availableAutoRecoveryTasks: string[];
+  handleSingleAutoRecovery: () => void;
+  repairResult: RepairResult | null;
+  linkedCashCounts: LinkedCashCount[];
+  intendedCashCountId?: string | null;
+  effectiveResolvedCashCountId?: string | null;
+  isCashCountLinked: boolean;
+  statusTimeline: StatusTimelineEntry[];
+  resolvedInvoiceNumber?: string | number | null;
+  canonicalInvoiceNumber?: string | number | null;
+  invoiceCounterValue?: number | null;
+  invoiceCounterUpdatedAt?: unknown;
+  loadingInvoiceCounter: boolean;
+  updatingInvoiceCounter: boolean;
+  refreshInvoiceCounter: () => void;
+  syncCounterWithInvoiceNumber: () => void;
+  updateInvoiceCounter: (value: number) => Promise<boolean>;
+  shouldWarnInvoiceNumber: boolean;
+  updateInvoiceNumberEverywhere: (value: number) => Promise<boolean>;
+  updatingInvoiceNumber: boolean;
+}
+
+export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
   form,
   watchedBusinessId,
   businessOptions,
@@ -85,8 +200,12 @@ export const IndividualRecoveryTab = ({
   updateInvoiceNumberEverywhere,
   updatingInvoiceNumber,
 }) => {
-  const [customCounterValue, setCustomCounterValue] = useState(null);
-  const [customInvoiceNumber, setCustomInvoiceNumber] = useState(null);
+  const [customCounterValue, setCustomCounterValue] = useState<number | null>(
+    null,
+  );
+  const [customInvoiceNumber, setCustomInvoiceNumber] = useState<number | null>(
+    null,
+  );
 
   const statusTag = invoiceData ? (
     <Tag color={STATUS_COLORS[invoiceData.status] || 'default'}>
@@ -478,7 +597,7 @@ export const IndividualRecoveryTab = ({
 
               <Checkbox.Group
                 value={selectedTasks}
-                onChange={(value) => setSelectedTasks(value)}
+                onChange={(value) => setSelectedTasks(value as string[])}
               >
                 <Space direction="vertical">
                   {availableTaskKeys.map((key) => {

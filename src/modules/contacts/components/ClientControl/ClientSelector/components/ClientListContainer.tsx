@@ -1,11 +1,35 @@
-// @ts-nocheck
 import { Spin } from 'antd';
-import { forwardRef, memo } from 'react';
+import { forwardRef, memo, type ComponentPropsWithoutRef } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import styled from 'styled-components';
 
 import { Client } from '@/components/ui/client/Client';
 import { clientHeaderStyles } from '@/components/ui/client/Client.styles';
+
+type ClientData = {
+  id?: string;
+  name?: string;
+  personalID?: string;
+  tel?: string;
+  numberId?: string | number;
+};
+
+type ClientDataWithId = Omit<ClientData, 'id'> & { id: string };
+
+type ClientListItem = {
+  id?: string;
+  client: ClientData;
+} & Record<string, unknown>;
+
+type ClientListContainerProps = {
+  clients: ClientListItem[];
+  loading: boolean;
+  selectedClient: ClientData | null;
+  openUpdateClientModal: (client: ClientData) => void;
+  handleDeleteClient: (id: string | undefined) => void;
+  onClose: () => void;
+  searchTerm: string;
+};
 
 const Body = styled.div`
   z-index: 1;
@@ -81,18 +105,22 @@ const ClientsHeader = styled.div`
   }
 `;
 
-const VirtuosoList = forwardRef(({ style, children, ...props }, ref) => (
+const VirtuosoList = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
+  ({ style, children, ...props }, ref) => (
   <ListWrapper ref={ref} style={style} {...props}>
     {children}
   </ListWrapper>
-));
+  ),
+);
 VirtuosoList.displayName = 'VirtuosoList';
 
-const VirtuosoItem = forwardRef(({ style, children, ...props }, ref) => (
+const VirtuosoItem = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<'div'>>(
+  ({ style, children, ...props }, ref) => (
   <ItemContainer ref={ref} style={style} {...props}>
     {children}
   </ItemContainer>
-));
+  ),
+);
 VirtuosoItem.displayName = 'VirtuosoItem';
 
 const ClientListContainerComponent = ({
@@ -103,8 +131,12 @@ const ClientListContainerComponent = ({
   handleDeleteClient,
   onClose,
   searchTerm,
-}) => {
+}: ClientListContainerProps) => {
   const hasClients = clients.length > 0;
+  const resolvedSelectedClient =
+    selectedClient?.id != null
+      ? ({ ...selectedClient, id: String(selectedClient.id) } as ClientDataWithId)
+      : null;
 
   return (
     <Body>
@@ -127,16 +159,22 @@ const ClientListContainerComponent = ({
           </HeaderWrapper>
           <VirtuosoContainer
             data={clients}
-            itemContent={(index, { client }) => (
-              <Client
-                client={client}
-                selectedClient={selectedClient}
-                updateClientMode={openUpdateClientModal}
-                onDelete={handleDeleteClient}
-                Close={onClose}
-                searchTerm={searchTerm}
-              />
-            )}
+            itemContent={(index, item) => {
+              const resolvedClient: ClientDataWithId = {
+                ...item.client,
+                id: String(item.client.id ?? item.id ?? ''),
+              };
+              return (
+                <Client
+                  client={resolvedClient}
+                  selectedClient={resolvedSelectedClient}
+                  updateClientMode={openUpdateClientModal}
+                  onDelete={handleDeleteClient}
+                  Close={onClose}
+                  searchTerm={searchTerm}
+                />
+              );
+            }}
             itemKey={(index, item) =>
               item?.id ?? item?.client?.id ?? item?.client?.numberId ?? index
             }

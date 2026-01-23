@@ -1,5 +1,4 @@
-// @ts-nocheck
-import {
+﻿import {
   KeyOutlined,
   ReloadOutlined,
   StopOutlined,
@@ -20,6 +19,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import type { ColumnsType } from 'antd/es/table';
 
 import { selectUser } from '@/features/auth/userSlice';
 import {
@@ -28,6 +28,7 @@ import {
   fbDeactivateUserPin,
 } from '@/firebase/authorization/pinAuth';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
+import type { GeneratedPins, ModulePinDetail } from '@/firebase/authorization/pinAuth';
 
 import { GeneratePinModal } from './components/GeneratePinModal';
 import { PinDetailsModal } from './components/PinDetailsModal';
@@ -52,25 +53,50 @@ const StatsContainer = styled.div`
   margin-bottom: 24px;
 `;
 
+type AuthorizationModuleValue = 'invoices' | 'accountsReceivable';
+
+interface AvailableModule {
+  value: AuthorizationModuleValue;
+  label: string;
+}
+
+interface PinUserRecord {
+  id: string;
+  name: string;
+  displayName: string;
+  role: string;
+  hasPin: boolean;
+  pinIsActive: boolean;
+  pinIsExpired: boolean;
+  pinExpiresAt?: Date | null;
+  pinModules?: AuthorizationModuleValue[];
+  moduleDetails?: Record<string, ModulePinDetail>;
+  [key: string]: unknown;
+}
+
+
 const AVAILABLE_MODULES = [
-  { value: 'invoices', label: 'Facturación' },
+  { value: 'invoices', label: 'FacturaciÃ³n' },
   { value: 'accountsReceivable', label: 'Cuentas por Cobrar' },
 ];
 
-const MODULE_LABELS = AVAILABLE_MODULES.reduce((acc, item) => {
-  acc[item.value] = item.label;
-  return acc;
-}, {});
+const MODULE_LABELS = AVAILABLE_MODULES.reduce<Record<string, string>>(
+  (acc, item) => {
+    acc[item.value] = item.label;
+    return acc;
+  },
+  {},
+);
 
 export const AuthorizationConfig = () => {
   const user = useSelector(selectUser);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<PinUserRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [generateModalVisible, setGenerateModalVisible] = useState(false);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [generatedPin, setGeneratedPin] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<PinUserRecord | null>(null);
+  const [generatedPin, setGeneratedPin] = useState<GeneratedPins | null>(null);
 
   const allowed = ['admin', 'owner', 'dev'].includes(user?.role);
 
@@ -78,10 +104,12 @@ export const AuthorizationConfig = () => {
     if (!allowed) return;
     setLoading(true);
     try {
-      const data = await fbGetUsersWithPinStatus(user);
+      const data = (await fbGetUsersWithPinStatus(user)) as PinUserRecord[];
       setUsers(data);
-    } catch (error) {
-      message.error(error?.message || 'Error cargando usuarios');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error cargando usuarios';
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);
@@ -92,12 +120,12 @@ export const AuthorizationConfig = () => {
     if (allowed) loadUsers();
   }, [allowed, loadUsers]);
 
-  const handleGeneratePin = (userRecord) => {
+  const handleGeneratePin = (userRecord: PinUserRecord) => {
     setSelectedUser(userRecord);
     setGenerateModalVisible(true);
   };
 
-  const handleConfirmGenerate = async (modules) => {
+  const handleConfirmGenerate = async (modules: AuthorizationModuleValue[]) => {
     if (!selectedUser) return;
 
     setLoading(true);
@@ -108,18 +136,20 @@ export const AuthorizationConfig = () => {
       setGenerateModalVisible(false);
       setDetailsModalVisible(true);
       await loadUsers();
-    } catch (error) {
-      message.error(error?.message || 'Error generando PIN');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error generando PIN';
+      message.error(errorMessage);
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeactivatePin = async (userId, userName) => {
+  const handleDeactivatePin = async (userId: string, userName: string) => {
     Modal.confirm({
-      title: '¿Desactivar PIN?',
-      content: `¿Está seguro de desactivar el PIN del usuario ${userName}? Esta acción no se puede deshacer.`,
+      title: 'Â¿Desactivar PIN?',
+      content: `Â¿EstÃ¡ seguro de desactivar el PIN del usuario ${userName}? Esta acciÃ³n no se puede deshacer.`,
       okText: 'Desactivar',
       okType: 'danger',
       cancelText: 'Cancelar',
@@ -129,8 +159,10 @@ export const AuthorizationConfig = () => {
           await fbDeactivateUserPin(user, userId);
           message.success('PIN desactivado exitosamente');
           await loadUsers();
-        } catch (error) {
-          message.error(error?.message || 'Error desactivando PIN');
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Error desactivando PIN';
+          message.error(errorMessage);
           console.error(error);
         } finally {
           setLoading(false);
@@ -139,7 +171,7 @@ export const AuthorizationConfig = () => {
     });
   };
 
-  const getStatusTag = (userRecord) => {
+  const getStatusTag = (userRecord: PinUserRecord) => {
     if (!userRecord.hasPin) {
       return <Tag color="default">Sin PIN</Tag>;
     }
@@ -160,9 +192,11 @@ export const AuthorizationConfig = () => {
     return <Tag color="red">Inactivo</Tag>;
   };
 
-  const renderModuleDetails = (record) => {
+  const renderModuleDetails = (record: PinUserRecord) => {
     const entries = record?.moduleDetails
-      ? Object.entries(record.moduleDetails)
+      ? (Object.entries(record.moduleDetails) as Array<
+          [string, ModulePinDetail]
+        >)
       : [];
     if (!entries.length) {
       return <Text type="secondary">-</Text>;
@@ -207,15 +241,17 @@ export const AuthorizationConfig = () => {
     );
   };
 
-  const columns = [
+  const columns: ColumnsType<PinUserRecord> = [
     {
       title: 'Usuario',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
+      render: (text: string, record) => (
         <div>
           <div style={{ fontWeight: 500 }}>{record.displayName}</div>
-          <div style={{ fontSize: '0.85em', color: '#888' }}>{text}</div>
+          <div style={{ fontSize: '0.85em', color: '#888' }}>
+            {text || '-'}
+          </div>
         </div>
       ),
     },
@@ -223,7 +259,7 @@ export const AuthorizationConfig = () => {
       title: 'Rol',
       dataIndex: 'role',
       key: 'role',
-      render: (role) => {
+      render: (role: string) => {
         const roleColors = {
           admin: 'blue',
           owner: 'purple',
@@ -239,7 +275,7 @@ export const AuthorizationConfig = () => {
       render: (_, record) => getStatusTag(record),
     },
     {
-      title: 'Módulos',
+      title: 'MÃ³dulos',
       dataIndex: 'pinModules',
       key: 'modules',
       render: (_, record) => renderModuleDetails(record),
@@ -248,7 +284,7 @@ export const AuthorizationConfig = () => {
       title: 'Expira',
       dataIndex: 'pinExpiresAt',
       key: 'expiresAt',
-      render: (date, record) => {
+      render: (date: Date | null, record) => {
         if (!date) return '-';
         if (record.pinIsExpired) {
           return <Text type="danger">Expirado</Text>;
@@ -311,13 +347,13 @@ export const AuthorizationConfig = () => {
     return (
       <Container>
         <MenuApp
-          displayName="Configuración de Autorización"
+          displayName="ConfiguraciÃ³n de AutorizaciÃ³n"
           showNotificationButton={false}
         />
         <Content>
           <Card>
             <Title level={4}>Acceso Denegado</Title>
-            <Text>No tienes permisos para acceder a esta sección.</Text>
+            <Text>No tienes permisos para acceder a esta secciÃ³n.</Text>
           </Card>
         </Content>
       </Container>
@@ -327,7 +363,7 @@ export const AuthorizationConfig = () => {
   return (
     <Container>
       <MenuApp
-        displayName="Configuración de Autorización"
+        displayName="ConfiguraciÃ³n de AutorizaciÃ³n"
         data={users}
         searchData={searchTerm}
         setSearchData={setSearchTerm}
@@ -335,10 +371,10 @@ export const AuthorizationConfig = () => {
       />
       <Content>
         <div style={{ marginBottom: 24 }}>
-          <Title level={4}>Gestión de PINs de Autorización</Title>
+          <Title level={4}>GestiÃ³n de PINs de AutorizaciÃ³n</Title>
           <Paragraph type="secondary">
-            Los PINs permiten a los usuarios autorizarse rápidamente sin
-            ingresar su contraseña completa. Los PINs expiran automáticamente
+            Los PINs permiten a los usuarios autorizarse rÃ¡pidamente sin
+            ingresar su contraseÃ±a completa. Los PINs expiran automÃ¡ticamente
             cada 24 horas por seguridad.
           </Paragraph>
         </div>
@@ -430,4 +466,7 @@ export const AuthorizationConfig = () => {
 };
 
 export default AuthorizationConfig;
+
+
+
 

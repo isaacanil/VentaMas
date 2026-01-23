@@ -113,7 +113,7 @@ export const ProductList = ({
 
   // Render as table in desktop
   return (
-    <Table
+    <Table<CreditNoteProduct>
       dataSource={products}
       columns={columns}
       rowKey="id"

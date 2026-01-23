@@ -1,5 +1,4 @@
-// @ts-nocheck
-import {
+﻿import {
   SafetyOutlined,
   CopyOutlined,
   PrinterOutlined,
@@ -9,6 +8,7 @@ import {
 import { Modal, Typography, Button } from 'antd';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
+import type { GeneratedPins } from '@/firebase/authorization/pinAuth';
 
 const { Title, Text } = Typography;
 
@@ -167,13 +167,29 @@ const ActionBar = styled.div`
   margin-top: 4px;
 `;
 
+interface PinDetailsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  pinData: GeneratedPins | null;
+  user?: { displayName?: string } | null;
+}
+
+interface PinEntryView {
+  module: string;
+  moduleName: string;
+  pin: string;
+  createdAt: Date | null;
+  expiresAt: Date | null;
+}
+
+
 export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
   const [visiblePins, setVisiblePins] = useState({});
   const [copiedModules, setCopiedModules] = useState({});
 
   const moduleNames = useMemo(
     () => ({
-      invoices: 'Facturación',
+      invoices: 'FacturaciÃ³n',
       accountsReceivable: 'Cuadre de Caja',
     }),
     [],
@@ -224,7 +240,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
             <tr>
               <td class="module-name">
                 <div class="module-title">${entry.moduleName}</div>
-                <div class="module-meta">${entry.expiresAt ? `Expira: ${entry.expiresAt.toLocaleString()}` : 'Sin expiración definida'}</div>
+                <div class="module-meta">${entry.expiresAt ? `Expira: ${entry.expiresAt.toLocaleString()}` : 'Sin expiraciÃ³n definida'}</div>
               </td>
               <td class="pin-code">${entry.pin || '------'}</td>
             </tr>
@@ -234,8 +250,8 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
       : `
             <tr>
               <td class="module-name">
-                <div class="module-title">Sin módulos asignados</div>
-                <div class="module-meta">Actualiza la configuración para generar un PIN.</div>
+                <div class="module-title">Sin mÃ³dulos asignados</div>
+                <div class="module-meta">Actualiza la configuraciÃ³n para generar un PIN.</div>
               </td>
               <td class="pin-code">------</td>
             </tr>
@@ -253,7 +269,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     const printContent = `
       <html>
         <head>
-          <title>PIN de Autorización</title>
+          <title>PIN de AutorizaciÃ³n</title>
           <style>
             :root {
               color-scheme: light;
@@ -383,7 +399,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
             <header class="header">
               <div class="brand">VentaMas</div>
               <div class="headline">
-                <h1>PIN de Autorización</h1>
+                <h1>PIN de AutorizaciÃ³n</h1>
                 <p>Documento confidencial para uso interno</p>
               </div>
             </header>
@@ -395,7 +411,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
               <table>
                 <thead>
                   <tr>
-                    <th>Módulo</th>
+                    <th>MÃ³dulo</th>
                     <th>PIN</th>
                   </tr>
                 </thead>
@@ -405,7 +421,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
               </table>
             </section>
             <div class="notice">
-              <strong>⚠️ IMPORTANTE:</strong> Este PIN es confidencial. No lo compartas con nadie. Se invalida automáticamente a las 24 horas o cuando sea revocado.
+              <strong>âš ï¸ IMPORTANTE:</strong> Este PIN es confidencial. No lo compartas con nadie. Se invalida automÃ¡ticamente a las 24 horas o cuando sea revocado.
             </div>
             <div class="footer">
               Generado ${generatedAt}
@@ -440,7 +456,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
             <SafetyOutlined />
           </IconBadge>
           <Title level={3}>PINs generados exitosamente</Title>
-          <Subtitle>Guárdalos en un lugar seguro.</Subtitle>
+          <Subtitle>GuÃ¡rdalos en un lugar seguro.</Subtitle>
         </Header>
 
         <PinCard>
@@ -476,13 +492,13 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
                 {visiblePins[entry.module] ? (
                   <PinNumber>{entry.pin || '------'}</PinNumber>
                 ) : (
-                  <PinPlaceholder>••••••</PinPlaceholder>
+                  <PinPlaceholder>â€¢â€¢â€¢â€¢â€¢â€¢</PinPlaceholder>
                 )}
                 <ModuleMeta>
                   Expira:{' '}
                   {entry.expiresAt
                     ? entry.expiresAt.toLocaleString()
-                    : 'Sin expiración'}
+                    : 'Sin expiraciÃ³n'}
                 </ModuleMeta>
               </ModulePinRow>
             ))}
@@ -504,3 +520,5 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
 };
 
 export default PinDetailsModal;
+
+
