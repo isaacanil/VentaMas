@@ -1,8 +1,18 @@
-// @ts-nocheck
 import { Table } from 'antd';
 import React from 'react';
+import type { ColumnsType } from 'antd/es/table';
 
-const columns = [
+interface PaymentDetailRow {
+  key: string;
+  description: string;
+  amount: string;
+  itbis: string;
+  finalPrice: string;
+  margin: string;
+  percentBenefits: string;
+}
+
+const columns: ColumnsType<PaymentDetailRow> = [
   {
     title: 'Descripción Precio',
     dataIndex: 'description',
@@ -35,7 +45,7 @@ const columns = [
   },
 ];
 
-const data = [
+const data: PaymentDetailRow[] = [
   {
     key: '1',
     description: 'Precio Lista',

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   writeBatch,
@@ -7,6 +6,13 @@ import {
   getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
+import type {
+  CollectionReference,
+  DocumentReference,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  WriteBatch,
+} from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -14,8 +20,61 @@ import { getNextID } from '@/firebase/Tools/getNextID';
 import { getDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import { BatchStatus } from '@/models/Warehouse/Batch';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import type { ProductPricing, ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
+
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+
+type ProductImport = ProductRecord & {
+  id?: string;
+  name?: string;
+  stock?: number;
+  pricing?: ProductPricing;
+  category?: string;
+  activeIngredients?: string[];
+  barcode?: string | number;
+};
+
+type NamedData = { name?: string } & Record<string, unknown>;
+
+type NameEntry<T extends NamedData> = {
+  docSnapshot: QueryDocumentSnapshot<T> | DocumentReference<T>;
+  data: T;
+};
+
+type NameMap<T extends NamedData> = Map<string, NameEntry<T>>;
+
+type PreloadedDocMap = Map<string, DocumentSnapshot<ProductImport>>;
+
+type ImportStats = {
+  totalProducts: number;
+  processedProducts: number;
+  updatedProducts: number;
+  newProducts: number;
+  newCategories: number;
+  newIngredients: number;
+  updatedIngredients: number;
+  batchOperations: number;
+};
+
+type WarehouseLike = { id?: string | null } & Record<string, unknown>;
+
+type ImportContext = {
+  productsCollection: CollectionReference<ProductImport>;
+  categoriesCollection: CollectionReference<NamedData>;
+  activeIngredientsCollection: CollectionReference<NamedData>;
+  defaultWarehouse?: WarehouseLike | null;
+  user: UserWithBusinessAndUid;
+  existingProductsByName: NameMap<ProductImport>;
+  existingCategoriesByName: NameMap<NamedData>;
+  existingActiveIngredientsByName: NameMap<NamedData>;
+  preloadedDocs: PreloadedDocMap;
+  progress: ImportProgress;
+};
 
 class ImportProgress {
+  stats: ImportStats;
+
   constructor() {
     this.stats = {
       totalProducts: 0,
@@ -29,7 +88,7 @@ class ImportProgress {
     };
   }
 
-  updateProgress(field, value = 1) {
+  updateProgress(field: keyof ImportStats, value = 1) {
     this.stats[field] += value;
     this.logProgress();
   }
@@ -71,8 +130,8 @@ Total operaciones en batch: ${batchOperations}
 /**
  * Valida y ajusta el precio del producto.
  */
-export function validateProductPricing(product) {
-  const toNumber = (value) => {
+export function validateProductPricing(product: ProductImport): ProductImport {
+  const toNumber = (value: unknown): number => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   };
@@ -105,9 +164,11 @@ export function validateProductPricing(product) {
 /**
  * Obtiene un Map de documentos existentes en una colección, indexado por el nombre en minúsculas.
  */
-async function fetchExistingDocsByName(collectionRef) {
+async function fetchExistingDocsByName<T extends NamedData>(
+  collectionRef: CollectionReference<T>,
+): Promise<NameMap<T>> {
   const snapshot = await getDocs(collectionRef);
-  const map = new Map();
+  const map: NameMap<T> = new Map();
   snapshot.docs.forEach((docSnapshot) => {
     const data = docSnapshot.data();
     const lowerName = data.name?.toLowerCase();
@@ -122,11 +183,11 @@ async function fetchExistingDocsByName(collectionRef) {
  * Pre-carga documentos de productos que tienen un id y que no se encontraron por nombre.
  */
 async function preloadProductDocs(
-  limitedProducts,
-  productsCollection,
-  existingProductsByName,
-) {
-  const preloadedDocs = new Map();
+  limitedProducts: ProductImport[],
+  productsCollection: CollectionReference<ProductImport>,
+  existingProductsByName: NameMap<ProductImport>,
+): Promise<PreloadedDocMap> {
+  const preloadedDocs: PreloadedDocMap = new Map();
   const productsToPreload = limitedProducts.filter(
     (prod) =>
       prod.id &&
@@ -151,7 +212,10 @@ async function preloadProductDocs(
  *   a partir de los datos locales (donde sabes que para ese `name`
  *   hay varios barcodes distintos).
  */
-async function fixDuplicatedNameBarcode(user, localProducts) {
+async function fixDuplicatedNameBarcode(
+  user: UserWithBusiness,
+  localProducts: ProductImport[],
+): Promise<void> {
   console.info('Starting duplicate barcode fix process');
 
   try {
@@ -161,10 +225,10 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
       'businesses',
       user.businessID,
       'products',
-    );
+    ) as CollectionReference<ProductImport>;
 
     // 1. Construir un mapa local: para cada `name.toLowerCase()`, guardar Set de barcodes
-    const localByName = new Map();
+    const localByName = new Map<string, Set<string>>();
     for (const lp of localProducts) {
       const nameKey =
         typeof lp.name === 'string'
@@ -190,9 +254,12 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
     }
 
     // 2.1 Agrupar en memoria por (nameKey, barcodeKey)
-    const byNameBarcode = new Map();
+    const byNameBarcode = new Map<
+      string,
+      Map<string, Array<{ docId: string; data: ProductImport }>>
+    >();
     snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
+      const data = docSnap.data() as ProductImport;
       const docId = docSnap.id;
 
       const nameKey =
@@ -208,6 +275,7 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
 
       if (!byNameBarcode.has(nameKey)) byNameBarcode.set(nameKey, new Map());
       const inner = byNameBarcode.get(nameKey);
+      if (!inner) return;
       if (!inner.has(barcodeKey)) inner.set(barcodeKey, []);
 
       inner.get(barcodeKey).push({ docId, data });
@@ -289,9 +357,12 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
       `== Fin de fixDuplicatedNameBarcode. Conflictos detectados: ${conflicts} ==`,
     );
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
     console.error('ERROR EN fixDuplicatedNameBarcode:', error);
-    console.error('Stack trace:', error.stack);
-    throw new Error(`Error al corregir duplicados: ${error.message}`);
+    console.error('Stack trace:', stack);
+    throw new Error(`Error al corregir duplicados: ${message}`);
   }
 }
 
@@ -299,7 +370,12 @@ async function fixDuplicatedNameBarcode(user, localProducts) {
  * Procesa un solo producto de tu lista local: actualiza o crea el producto
  * y agrega operaciones para batch, stock, movimiento, categorías e ingredientes.
  */
-function processProduct(batch, product, batchNumber, context) {
+function processProduct(
+  batch: WriteBatch,
+  product: ProductImport,
+  batchNumber: number,
+  context: ImportContext,
+): number {
   let opCount = 0;
 
   validateProductPricing(product);
@@ -308,9 +384,13 @@ function processProduct(batch, product, batchNumber, context) {
   if (productNameLowerCase) {
     // Revisa si existe (por nombre) para actualizarlo
     if (context.existingProductsByName.has(productNameLowerCase)) {
-      const { docSnapshot, data: existingData } =
+      const existingEntry =
         context.existingProductsByName.get(productNameLowerCase);
-      const docRef = docSnapshot.ref;
+      if (!existingEntry) {
+        return opCount;
+      }
+      const { docSnapshot, data: existingData } = existingEntry;
+      const docRef = 'ref' in docSnapshot ? docSnapshot.ref : docSnapshot;
       const updatedProduct = { ...product, image: existingData.image };
       batch.update(docRef, updatedProduct);
       opCount++;
@@ -426,8 +506,8 @@ function processProduct(batch, product, batchNumber, context) {
     opCount++;
 
     // Categorías
-    if (product.category) {
-      const categoryNameLowerCase = product.category.toLowerCase();
+    if (typeof product.category === 'string' && product.category.trim()) {
+      const categoryNameLowerCase = product.category.trim().toLowerCase();
       if (!context.existingCategoriesByName.has(categoryNameLowerCase)) {
         const categoryDocRef = doc(context.categoriesCollection);
         const category = {
@@ -447,8 +527,9 @@ function processProduct(batch, product, batchNumber, context) {
     }
 
     // Ingredientes activos
-    if (product.activeIngredients && Array.isArray(product.activeIngredients)) {
+    if (Array.isArray(product.activeIngredients)) {
       for (const ingredient of product.activeIngredients) {
+        if (typeof ingredient !== 'string') continue;
         const ingredientNameLowerCase = ingredient.toLowerCase();
         if (
           !context.existingActiveIngredientsByName.has(ingredientNameLowerCase)
@@ -469,10 +550,15 @@ function processProduct(batch, product, batchNumber, context) {
           console.log(`Ingrediente activo agregado: ${ingredient}`);
           context.progress.updateProgress('newIngredients');
         } else {
-          const { docSnapshot } = context.existingActiveIngredientsByName.get(
-            ingredientNameLowerCase,
-          );
-          batch.update(docSnapshot.ref, { updatedAt: serverTimestamp() });
+          const existingEntry =
+            context.existingActiveIngredientsByName.get(
+              ingredientNameLowerCase,
+            );
+          if (!existingEntry) continue;
+          const { docSnapshot } = existingEntry;
+          const ingredientRef =
+            'ref' in docSnapshot ? docSnapshot.ref : docSnapshot;
+          batch.update(ingredientRef, { updatedAt: serverTimestamp() });
           opCount++;
           console.log(`Ingrediente activo actualizado: ${ingredient}`);
           context.progress.updateProgress('updatedIngredients');
@@ -494,11 +580,11 @@ function processProduct(batch, product, batchNumber, context) {
  * (name+barcode) que pudieran existir en la base.
  */
 export const fbAddProducts = async (
-  user,
-  products,
+  user: UserWithBusinessAndUid,
+  products: ProductImport[],
   maxProducts = 10000,
-  onProgress,
-) => {
+  onProgress?: (progress: ImportProgress) => void,
+): Promise<void> => {
   const progress = new ImportProgress();
   const maxBatchSize = 500;
   const maxAllowedProducts = 10000;
@@ -529,19 +615,19 @@ export const fbAddProducts = async (
     'businesses',
     user.businessID,
     'products',
-  );
+  ) as CollectionReference<ProductImport>;
   const categoriesCollection = collection(
     db,
     'businesses',
     user.businessID,
     'categories',
-  );
+  ) as CollectionReference<NamedData>;
   const activeIngredientsCollection = collection(
     db,
     'businesses',
     user.businessID,
     'activeIngredients',
-  );
+  ) as CollectionReference<NamedData>;
 
   // 4. Obtener el almacén por defecto
   const defaultWarehouse = await getDefaultWarehouse(user);
@@ -578,18 +664,18 @@ export const fbAddProducts = async (
     );
 
     // 7. Reservar un bloque de números de lote (IDs) en una sola transacción
-    const startBatchNumber = await getNextID(
+    const startBatchNumber = (await getNextID(
       user,
       'batches',
       limitedProducts.length,
-    );
+    )) as number;
     const batchNumbers = Array.from(
       { length: limitedProducts.length },
       (_, i) => startBatchNumber + i,
     );
 
     // 8. Configuración para la escritura en batch
-    const batchCommits = [];
+    const batchCommits: Array<Promise<void>> = [];
     let batch = writeBatch(db);
     let operationCount = 0;
 
@@ -610,7 +696,7 @@ export const fbAddProducts = async (
     // 9.1 Callback de progreso
     if (onProgress) {
       const originalUpdateProgress = progress.updateProgress.bind(progress);
-      progress.updateProgress = (field, value = 1) => {
+      progress.updateProgress = (field: keyof ImportStats, value = 1) => {
         originalUpdateProgress(field, value);
         onProgress(progress);
       };

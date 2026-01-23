@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ClearOutlined, SaveOutlined } from '@/constants/icons/antd';
 import { Button, Space } from 'antd';
 import styled from 'styled-components';
@@ -10,7 +9,19 @@ const Bar = styled.div`
   width: 100%;
 `;
 
-export const ActionBar = ({ isUpdateMode, submitting, onReset, onSubmit }) => (
+interface ActionBarProps {
+  isUpdateMode: boolean;
+  submitting: boolean;
+  onReset: () => void;
+  onSubmit: () => void;
+}
+
+export const ActionBar: React.FC<ActionBarProps> = ({
+  isUpdateMode,
+  submitting,
+  onReset,
+  onSubmit,
+}) => (
   <Bar>
     <Space size="middle" wrap>
       <Button icon={<ClearOutlined />} onClick={onReset}>

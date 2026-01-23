@@ -1,19 +1,17 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Button } from '@/components/ui/Button/Button';
 import Typography from '@/components/ui/Typografy/Typografy';
+import type { SettingsModalConfig } from '../ConfigModal';
 
-/**
- *
- *
- * @param {*} {title = "Settings"}
- * @return {*}
- */
-export const Header = ({ config }) => {
-  const { title = 'Settings' } = config;
+interface HeaderProps {
+  config?: SettingsModalConfig | null;
+}
+
+export const Header = ({ config }: HeaderProps) => {
+  const { title = 'Settings' } = config ?? {};
   return (
     <Container>
       <Typography variant={'h2'} disableMargins>

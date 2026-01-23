@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Form, Checkbox, InputNumber, notification, Alert } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -6,6 +5,19 @@ import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { fbUpsertCreditLimit } from '@/firebase/accountsReceivable/fbUpsertCreditLimit';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
+import type { UserIdentity } from '@/types/users';
+
+type CreditLimitModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (values: CreditLimitConfig) => void;
+  initialValues?: CreditLimitConfig | null;
+  client?: { id?: string | null } | null;
+  arBalance?: number;
+};
+
+type UserRootState = Parameters<typeof selectUser>[0];
 
 const CreditLimitModal = ({
   visible,
@@ -14,10 +26,10 @@ const CreditLimitModal = ({
   initialValues,
   client,
   arBalance = 0, // Balance de cuentas por cobrar actual
-}) => {
-  const [form] = Form.useForm();
+}: CreditLimitModalProps) => {
+  const [form] = Form.useForm<CreditLimitConfig>();
   const [loading, setLoading] = useState(false);
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
 
   useEffect(() => {
     if (visible && initialValues) {
@@ -28,7 +40,7 @@ const CreditLimitModal = ({
   const handleSave = async () => {
     try {
       setLoading(true);
-      const values = await form.validateFields();
+      const values = (await form.validateFields()) as CreditLimitConfig;
 
       // Validaciones de negocio adicionales
       if (values.creditLimit?.status && values.creditLimit?.value) {
@@ -47,7 +59,7 @@ const CreditLimitModal = ({
         const availableCredit = creditLimit - arBalance;
         if (availableCredit > 0 && availableCredit < creditLimit * 0.1) {
           // Menos del 10% disponible
-          const result = await new Promise((resolve) => {
+          const result = await new Promise<boolean>((resolve) => {
             Modal.confirm({
               title: 'Límite de Crédito Bajo',
               content: `El crédito disponible será muy bajo ($${availableCredit.toLocaleString()}). ¿Estás seguro de que quieres continuar?`,
@@ -80,7 +92,8 @@ const CreditLimitModal = ({
       onClose();
     } catch (error) {
       console.error('Error saving credit limits:', error);
-      if (error?.name !== 'ValidationError') {
+      const typedError = error as { name?: string } | null | undefined;
+      if (typedError?.name !== 'ValidationError') {
         notification.error({
           message: 'Error al Guardar',
           description:
@@ -201,7 +214,9 @@ const CreditLimitModal = ({
               formatter={(value) =>
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+              parser={(value) =>
+                value ? value.replace(/\$\s?|(,*)/g, '') : ''
+              }
             />
           </Form.Item>
         </FormSection>

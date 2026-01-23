@@ -271,6 +271,7 @@ const fbGetProductsStock = async (
   user: UserIdentity,
   productId: string,
 ): Promise<ProductStockItem[]> => {
+  if (!user.businessID) return [];
   const productStockRef = collection(
     db,
     'businesses',
@@ -353,6 +354,7 @@ const fbGetBatchesByIds = async (
   user: UserIdentity,
   batchIDs: string[],
 ): Promise<BatchDoc[]> => {
+  if (!user.businessID || batchIDs.length === 0) return [];
   const batchRefs = batchIDs.map((batchID) =>
     doc(db, 'businesses', user.businessID, 'batches', batchID),
   );

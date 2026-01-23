@@ -26,7 +26,10 @@ type StockUpdate = {
   quantityRemoved: number;
 };
 
-export const fbAddProductOutFlow = async (user, productOutflow) => {
+export const fbAddProductOutFlow = async (
+  user: UserWithBusinessAndUid | null | undefined,
+  productOutflow: ProductOutflow,
+): Promise<void> => {
   if (!user?.businessID || !user?.uid) {
     console.error(
       'Información requerida para la operación faltante o inválida',
@@ -36,7 +39,7 @@ export const fbAddProductOutFlow = async (user, productOutflow) => {
 
   // Processing product outflow
 
-  const updates = productOutflow.productList.map((product) => ({
+  const updates: StockUpdate[] = productOutflow.productList.map((product) => ({
     product: product.product,
     quantityRemoved: -product.quantityRemoved, // Asume que quieres decrementar el stock
   }));

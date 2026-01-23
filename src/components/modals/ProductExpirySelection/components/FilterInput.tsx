@@ -25,7 +25,7 @@ interface FilterInputProps {
   filtro: string;
   setFiltro: (value: string) => void;
   toggleOrden: (orden: OrdenKey) => void;
-  ordenPor: OrdenKey;
+  ordenPor: OrdenKey | null;
   ordenAscendente: boolean;
 }
 

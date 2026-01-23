@@ -1,2 +1,3 @@
-// @ts-nocheck
-export const ModeBanner = () => null;
+import type { FC } from 'react';
+
+export const ModeBanner: FC = () => null;

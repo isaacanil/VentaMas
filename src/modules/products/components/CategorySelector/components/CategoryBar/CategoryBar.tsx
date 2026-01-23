@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from 'antd';
 import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
@@ -9,8 +8,24 @@ import { deleteItem } from '@/features/category/categorySlicer';
 import { useMoveScroll } from '@/utils/scroll/moveScroll';
 import { categoryColors } from '../../categoryColors';
 
-export const CategoryBar = ({ open, setOpen, items = [] }) => {
-  const categoriesRef = useRef(null);
+interface CategorySelectionItem {
+  id: string;
+  name: string;
+  type: string;
+}
+
+interface CategoryBarProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  items?: CategorySelectionItem[];
+}
+
+export const CategoryBar = ({
+  open,
+  setOpen,
+  items = [],
+}: CategoryBarProps) => {
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
   const { toEnd, toLeft, toRight, toStart } = useMoveScroll(categoriesRef);
 
   if (items?.length === 0) {
@@ -62,10 +77,10 @@ const Container = styled.div`
   padding: 0.2em 0.4em;
   background-color: #fff;
 `;
-const Category = ({ item }) => {
+const Category = ({ item }: { item: CategorySelectionItem }) => {
   const dispatch = useDispatch();
   const handleDeleteCategory = () => {
-    dispatch(deleteItem(item));
+    dispatch(deleteItem(item as { id: string; type: string }));
   };
   return (
     <CategoryItem type={item.type}>
@@ -93,7 +108,7 @@ const CategoryList = styled.div`
   }
 `;
 
-const CategoryItem = styled.div`
+const CategoryItem = styled.div<{ type: string }>`
   display: flex;
   gap: 1em;
   align-items: center;

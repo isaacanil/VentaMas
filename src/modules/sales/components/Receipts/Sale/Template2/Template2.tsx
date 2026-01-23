@@ -1,10 +1,22 @@
-// @ts-nocheck
 import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Table, Button } from 'antd';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import styled from 'styled-components';
+
+import type { ColumnsType } from 'antd/es/table';
+
+interface ReceiptLineItem {
+  key: string;
+  quantity: string;
+  code: string;
+  description: string;
+  price: string;
+  discount: string;
+  itbis: string;
+  total: string;
+}
 
 const Container = styled.div`
   max-width: 50rem;
@@ -78,7 +90,7 @@ const TotalRow = styled.div`
   }
 `;
 
-const columns = [
+const columns: ColumnsType<ReceiptLineItem> = [
   {
     title: 'CANT.',
     dataIndex: 'quantity',
@@ -120,7 +132,7 @@ const columns = [
   },
 ];
 
-const dataSource = [
+const dataSource: ReceiptLineItem[] = [
   {
     key: '1',
     quantity: '10.00',
@@ -144,7 +156,7 @@ const dataSource = [
 ];
 
 function Template2() {
-  const componentRef = useRef(null);
+  const componentRef = useRef<HTMLDivElement | null>(null);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -246,7 +258,7 @@ const Group = styled.div`
   gap: 2em;
 `;
 
-const TextWithUpLine = ({ label }) => {
+const TextWithUpLine = ({ label }: { label: string }) => {
   return (
     <p
       style={{

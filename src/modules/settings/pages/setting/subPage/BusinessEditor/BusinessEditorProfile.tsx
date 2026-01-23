@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { Form, message } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
 
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
@@ -30,12 +30,24 @@ import {
 } from './utils/formValues';
 import { beforeUpload } from './utils/imageUpload';
 
+type BusinessFormValues = ReturnType<typeof normalizeFormValues>;
+
+interface LogoOverrideState {
+  trigger: string;
+  value: string | null | undefined;
+}
+
+interface DirtyState {
+  trigger: string;
+  value: boolean;
+}
+
 const BusinessProfileEditor = () => {
   const business = useSelector(selectBusinessData);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<BusinessFormValues>();
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(false);
-  const initialValuesRef = useRef(normalizeFormValues());
+  const initialValuesRef = useRef<BusinessFormValues>(normalizeFormValues());
 
   const businessFormValues = useMemo(() => {
     if (!business) return normalizeFormValues();
@@ -48,22 +60,26 @@ const BusinessProfileEditor = () => {
   );
 
   const [{ trigger: logoTrigger, value: logoOverride }, setLogoOverrideState] =
-    useState(() => ({ trigger: businessTrigger, value: undefined }));
+    useState<LogoOverrideState>(() => ({
+      trigger: businessTrigger,
+      value: undefined,
+    }));
 
   const logoOverrideValue =
     logoTrigger === businessTrigger ? logoOverride : undefined;
 
   const imageUrl =
-    logoOverrideValue === undefined ? business?.logoUrl || null : logoOverrideValue;
+    logoOverrideValue === undefined
+      ? business?.logoUrl || null
+      : logoOverrideValue;
 
   const setImageUrl = useCallback(
     (value) => setLogoOverrideState({ trigger: businessTrigger, value }),
     [businessTrigger],
   );
 
-  const [{ trigger: dirtyTrigger, value: dirtyValue }, setDirtyState] = useState(
-    () => ({ trigger: businessTrigger, value: false }),
-  );
+  const [{ trigger: dirtyTrigger, value: dirtyValue }, setDirtyState] =
+    useState<DirtyState>(() => ({ trigger: businessTrigger, value: false }));
 
   const hasUnsavedChanges =
     dirtyTrigger === businessTrigger ? dirtyValue : false;
@@ -101,12 +117,12 @@ const BusinessProfileEditor = () => {
     };
   }, [hasUnsavedChanges]);
 
-  const handleValuesChange = (_, allValues) => {
+  const handleValuesChange = (_: unknown, allValues: BusinessFormValues) => {
     const normalizedValues = normalizeFormValues(allValues);
     setHasUnsavedChanges(!isEqual(normalizedValues, initialValuesRef.current));
   };
 
-  const handleChange = async (info) => {
+  const handleChange = async (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === 'uploading') {
       setLoading(true);
       return;

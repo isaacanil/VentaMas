@@ -1,14 +1,21 @@
-// @ts-nocheck
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useRef } from 'react';
+import React, { useRef, type ChangeEventHandler } from 'react';
 import styled from 'styled-components';
 
-export const Input = ({ data, onChange, fn }) => {
-  const ref = useRef();
+type OrderFilterInputProps = {
+  data: { name: string };
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+  fn: () => void;
+};
+
+export const Input = ({ data, onChange, fn }: OrderFilterInputProps) => {
+  const ref = useRef<HTMLInputElement | null>(null);
   const handleDeleteText = () => {
     fn();
-    ref.current.value = '';
+    if (ref.current) {
+      ref.current.value = '';
+    }
   };
   return (
     <Container>

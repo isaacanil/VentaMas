@@ -1,11 +1,24 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { Item } from './Item';
 
-export const OrderMenuFilter = ({ MenuIsOpen }) => {
-  const [orderMenuData, setOrderMenuData] = useState([]);
+type OrderMenuOption = {
+  name: string;
+  selected?: boolean;
+};
+
+type OrderMenuSection = {
+  name: string;
+  Items: OrderMenuOption[];
+};
+
+type OrderMenuFilterProps = {
+  MenuIsOpen: boolean;
+};
+
+export const OrderMenuFilter = ({ MenuIsOpen }: OrderMenuFilterProps) => {
+  const [orderMenuData, setOrderMenuData] = useState<OrderMenuSection[]>([]);
   return (
     <Container $isOpen={MenuIsOpen ? true : false}>
       <Head>
@@ -26,7 +39,7 @@ export const OrderMenuFilter = ({ MenuIsOpen }) => {
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ $isOpen: boolean }>`
   overflow: hidden;
   max-height: 350px;
   height: 100%;

@@ -1,11 +1,25 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
 import { Body } from './components/Body/Body';
 import { Header } from './components/Header';
 
-export const ConfigModal = ({ config }) => {
+export interface SettingsTabItem {
+  title: string;
+  content: React.ReactNode;
+}
+
+export interface SettingsModalConfig {
+  title?: string;
+  tabs?: SettingsTabItem[];
+  [key: string]: unknown;
+}
+
+interface ConfigModalProps {
+  config?: SettingsModalConfig | null;
+}
+
+export const ConfigModal = ({ config }: ConfigModalProps) => {
   return (
     <Backdrop>
       <Container>

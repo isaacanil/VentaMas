@@ -1,13 +1,17 @@
-// @ts-nocheck
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import type { UserWithBusiness } from '@/types/users';
 /* */
 export const fbGetProductOutflow = ({
   user,
   setOutflowList,
   setOutflowListLoader,
-}) => {
+}: {
+  user: UserWithBusiness | null | undefined;
+  setOutflowList: (items: Array<Record<string, unknown>>) => void;
+  setOutflowListLoader: (isLoading: boolean) => void;
+}): void => {
   if (!user?.businessID) return;
 
   const productOutflowRef = collection(

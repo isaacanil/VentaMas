@@ -1,9 +1,37 @@
-// @ts-nocheck
 import { useMemo } from 'react';
 
-const formatNumber = (value) => Number(value || 0);
+export interface ProductPricingSnapshot {
+  cost?: number | string;
+  price?: number | string;
+  listPrice?: number | string;
+  tax?: number | string;
+}
 
-export const useProductPreviewMetrics = (product) => {
+export interface ProductSnapshot {
+  pricing?: ProductPricingSnapshot;
+  stock?: number | string;
+  trackInventory?: boolean;
+  image?: string;
+  name?: string;
+  brand?: string;
+  category?: string;
+  isVisible?: boolean;
+}
+
+export interface ProductPreviewMetrics {
+  cost: number;
+  price: number;
+  tax: number;
+  margin: number;
+  stock: number;
+  trackInventory: boolean;
+}
+
+const formatNumber = (value: unknown): number => Number(value || 0);
+
+export const useProductPreviewMetrics = (
+  product: ProductSnapshot | null | undefined,
+): ProductPreviewMetrics => {
   return useMemo(() => {
     const pricing = product?.pricing || {};
     const cost = formatNumber(pricing.cost);

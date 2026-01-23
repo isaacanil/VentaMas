@@ -1,14 +1,18 @@
-// @ts-nocheck
 import { Modal, Button, Form, Typography, Alert } from 'antd';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
 import { requestInvoiceEditAuthorization } from '@/firebase/authorizations/invoiceEditAuthorizations';
+import type { InvoiceData } from '@/types/invoice';
 
 const { Paragraph } = Typography;
 
-const ReasonsList = ({ reasons }) =>
+interface ReasonsListProps {
+  reasons: string[];
+}
+
+const ReasonsList = ({ reasons }: ReasonsListProps) =>
   reasons?.length ? (
     <ul
       style={{
@@ -26,15 +30,28 @@ const ReasonsList = ({ reasons }) =>
     </ul>
   ) : null;
 
+interface RequestFormValues {
+  note?: string;
+}
+
+interface RequestInvoiceEditAuthorizationProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  invoice: InvoiceData | null | undefined;
+  reasons?: string[];
+  onRequested?: (result: unknown) => void;
+}
+
 export const RequestInvoiceEditAuthorization = ({
   isOpen,
   setIsOpen,
   invoice,
   reasons = [],
   onRequested,
-}) => {
-  const [form] = Form.useForm();
-  const user = useSelector(selectUser);
+}: RequestInvoiceEditAuthorizationProps) => {
+  const [form] = Form.useForm<RequestFormValues>();
+  type RequestAuthRootState = Parameters<typeof selectUser>[0];
+  const user = useSelector((state: RequestAuthRootState) => selectUser(state));
   const [submitting, setSubmitting] = useState(false);
   const [resultMsg, setResultMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -72,9 +89,11 @@ export const RequestInvoiceEditAuthorization = ({
         handleCancel();
       }, 5000);
     } catch (e) {
-      if (e?.errorFields) return; // validation
+      if (e && typeof e === 'object' && 'errorFields' in e) return; // validation
       setSubmitting(false);
-      setErrorMsg(e?.message || 'Error enviando solicitud');
+      const message =
+        e instanceof Error ? e.message : 'Error enviando solicitud';
+      setErrorMsg(message);
       console.log(e);
     }
   };

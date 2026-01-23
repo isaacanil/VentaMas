@@ -1,4 +1,3 @@
-// @ts-nocheck
 // InventoryCard.js
 import {
   faWarehouse,
@@ -17,6 +16,8 @@ import {
   clearProductExpirySelector,
   selectProduct,
 } from '@/features/warehouse/productExpirySelectionSlice';
+
+import type { InventoryDisplayItem } from '../fbFetchAllInventoryData';
 
 const StyledCard = styled.div`
   overflow: hidden;
@@ -85,13 +86,38 @@ const StyledProgress = styled.div<{ width?: number }>`
   border-radius: 8px;
 `;
 
-const InventoryCard = ({ item }) => {
+interface InventoryCardProps {
+  item: InventoryDisplayItem;
+}
+
+type ProductBase = Record<string, unknown> | null;
+
+const InventoryCard = ({ item }: InventoryCardProps) => {
   const dispatch = useDispatch();
-  const product = useSelector(selectProduct);
-  const getDateIsoFromTimestamp = (timestamp) => {
-    const milliseconds = timestamp?.seconds * 1000;
-    const dateObject = new Date(milliseconds);
-    return dateObject.toISOString().split('T')[0];
+  const product: ProductBase = useSelector(selectProduct);
+  const getDateIsoFromTimestamp = (timestamp: unknown): string => {
+    if (!timestamp) return '';
+    if (timestamp instanceof Date) {
+      if (Number.isNaN(timestamp.getTime())) return '';
+      return timestamp.toISOString().split('T')[0];
+    }
+    if (
+      typeof timestamp === 'object' &&
+      timestamp !== null &&
+      'seconds' in timestamp &&
+      typeof (timestamp as { seconds?: number }).seconds === 'number'
+    ) {
+      const seconds = (timestamp as { seconds: number }).seconds;
+      const dateObject = new Date(seconds * 1000);
+      if (Number.isNaN(dateObject.getTime())) return '';
+      return dateObject.toISOString().split('T')[0];
+    }
+    if (typeof timestamp === 'number') {
+      const dateObject = new Date(timestamp);
+      if (Number.isNaN(dateObject.getTime())) return '';
+      return dateObject.toISOString().split('T')[0];
+    }
+    return '';
   };
   const { productStock, batch } = item;
   const handleSelect = () => {
@@ -103,7 +129,7 @@ const InventoryCard = ({ item }) => {
         cancelText: 'No',
         onOk: () => {
           const newItem = {
-            ...product,
+            ...(product ?? {}),
             productStock,
             batch,
           };
@@ -132,7 +158,9 @@ const InventoryCard = ({ item }) => {
               {item.warehouse}
             </span>
           </StyledCardInfo>
-          <StyledBadge variant={item.stock > 50 ? 'default' : 'secondary'}>
+          <StyledBadge
+            variant={(item.stock ?? 0) > 50 ? 'default' : 'secondary'}
+          >
             {item?.productStock?.stock}
           </StyledBadge>
         </StyledCardHeader>

@@ -1,11 +1,23 @@
-// @ts-nocheck
 import { faCircleDot, faCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useDispatch } from 'react-redux';
 
 import { Button } from '@/components/ui/Button/Button';
 
-export const InventariableButton = ({ product, setProduct }) => {
+interface InventoryProductData {
+  trackInventory?: boolean;
+  [key: string]: unknown;
+}
+
+interface InventariableButtonProps {
+  product: InventoryProductData;
+  setProduct: (payload: InventoryProductData) => { type: string; payload: InventoryProductData };
+}
+
+export const InventariableButton = ({
+  product,
+  setProduct,
+}: InventariableButtonProps) => {
   const dispatch = useDispatch();
 
   const handleToggle = () => {

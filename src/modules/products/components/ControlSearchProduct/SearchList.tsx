@@ -1,12 +1,24 @@
-// @ts-nocheck
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Grid } from '@/components/ui/Grid/Grid';
 import { Product } from '@/components/ui/Product/Product/Product';
+import type { ProductRecord } from '@/types/products';
 
 import style from './ControlSearchProductStyle.module.scss';
 
-export const SearchList = ({ dataSearch = '', products = [] }) => {
+interface SearchListItem {
+  product: ProductRecord;
+}
+
+interface SearchListProps {
+  dataSearch?: string | number | null;
+  products?: SearchListItem[];
+}
+
+export const SearchList = ({
+  dataSearch = '',
+  products = [],
+}: SearchListProps) => {
   const searchTerm = dataSearch?.toString().trim().toLowerCase();
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return [];
@@ -23,10 +35,6 @@ export const SearchList = ({ dataSearch = '', products = [] }) => {
             filteredProducts.map(({ product }, index) => (
               <Product
                 key={index}
-                image={product.productImageURL}
-                title={product.productName}
-                price={product.totalPrice}
-                view="row"
                 product={product}
               />
             ))

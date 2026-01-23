@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import QRCode from 'react-qr-code';
 import { useDispatch } from 'react-redux';
@@ -8,7 +7,17 @@ import { icons } from '@/constants/icons/icons';
 import { setProduct } from '@/features/updateProduct/updateProductSlice';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-export const QRCodeControl = ({ product, value }) => {
+interface UpdateProductData {
+  qrCode?: string;
+  [key: string]: unknown;
+}
+
+interface QRCodeControlProps {
+  product: UpdateProductData;
+  value?: string;
+}
+
+export const QRCodeControl = ({ product, value }: QRCodeControlProps) => {
   const dispatch = useDispatch();
   return (
     <Container>

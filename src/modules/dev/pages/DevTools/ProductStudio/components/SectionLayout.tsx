@@ -1,7 +1,9 @@
-// @ts-nocheck
 import { InfoCircleOutlined } from '@/constants/icons/antd';
 import { Badge, Card, Form, Tooltip, Typography } from 'antd';
 import styled from 'styled-components';
+
+import type { FormItemProps } from 'antd';
+import type { ReactNode } from 'react';
 
 const { Text, Title } = Typography;
 
@@ -72,7 +74,18 @@ const SwitchLabel = styled.span`
   color: #0f172a;
 `;
 
-export const SwitchField = ({ label, tooltip, children, ...formItemProps }) => (
+interface SwitchFieldProps extends FormItemProps {
+  label: ReactNode;
+  tooltip?: ReactNode;
+  children: ReactNode;
+}
+
+export const SwitchField: React.FC<SwitchFieldProps> = ({
+  label,
+  tooltip,
+  children,
+  ...formItemProps
+}) => (
   <Form.Item
     colon={false}
     label={null}

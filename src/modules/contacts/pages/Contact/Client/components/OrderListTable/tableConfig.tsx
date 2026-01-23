@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -14,18 +13,29 @@ import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { ButtonGroup } from '@/components/ui/Button/Button';
 import { Message } from '@/components/ui/message/Message';
 
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type ClientAction = {
+  id?: string;
+} & Record<string, unknown>;
+
+type CellProps<T> = {
+  value: T;
+};
 
 export const useTableConfig = () => {
   const dispatch = useDispatch();
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
 
   const updateMode = OPERATION_MODES.UPDATE.id;
   const noData = <Message title="(vacio)" fontSize="small" bgColor="error" />;
 
-  const handleDeleteClient = async (id) =>
-    await fbDeleteClient(user?.businessID, id);
+  const handleDeleteClient = async (id: string) => {
+    if (!user?.businessID) return;
+    await fbDeleteClient(user.businessID, id);
+  };
 
-  const openModalUpdateMode = (client) => {
+  const openModalUpdateMode = (client: ClientAction) => {
     dispatch(toggleClientModal({ mode: updateMode, data: client }));
   };
 
@@ -39,20 +49,22 @@ export const useTableConfig = () => {
     {
       Header: 'Telefono',
       accessor: 'phone',
-      cell: ({ value }) => (value ? formatPhoneNumber(value) : noData),
+      cell: ({ value }: CellProps<string | undefined>) =>
+        value ? formatPhoneNumber(value) : noData,
       minWidth: '140px',
     },
     {
       Header: 'RNC/Cedula',
       accessor: 'rnc',
-      cell: ({ value }) => (value ? value : noData),
+      cell: ({ value }: CellProps<string | undefined>) =>
+        value ? value : noData,
       minWidth: '150px',
     },
     {
       Header: 'Dirección',
       accessor: 'address',
 
-      cell: ({ value }) =>
+      cell: ({ value }: CellProps<string | undefined>) =>
         value ? <CellText title={value}>{value}</CellText> : noData,
       minWidth: '220px',
       maxWidth: '3fr',
@@ -62,7 +74,8 @@ export const useTableConfig = () => {
       Header: 'Balance',
       accessor: 'balance',
       align: 'right',
-      cell: ({ value }) => formatPrice(value || 0),
+      cell: ({ value }: CellProps<number | null | undefined>) =>
+        formatPrice(value || 0),
       minWidth: '150px',
     },
     {
@@ -70,7 +83,7 @@ export const useTableConfig = () => {
       accessor: 'actions',
       minWidth: '100px',
       align: 'right',
-      cell: ({ value }) => {
+      cell: ({ value }: CellProps<ClientAction>) => {
         return (
           <ButtonGroup>
             <Button

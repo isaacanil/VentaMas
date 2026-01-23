@@ -1,10 +1,13 @@
-// @ts-nocheck
 import { StopOutlined } from '@/constants/icons/antd';
 import { Divider, Space, Typography } from 'antd';
 import styled from 'styled-components';
 
 import { PRODUCT_BRAND_DEFAULT } from '@/features/updateProduct/updateProductSlice';
 import { imgFailed } from '@/components/modals/ProductForm/ImageManager/ImageManager';
+import type {
+  ProductPreviewMetrics,
+  ProductSnapshot,
+} from '@/modules/dev/pages/DevTools/ProductStudio/hooks/useProductPreviewMetrics';
 
 const { Title, Text } = Typography;
 
@@ -85,7 +88,11 @@ const PreviewDetails = styled.div`
   gap: 8px;
 `;
 
-const ModesTag = styled.span`
+interface ModesTagProps {
+  $color?: 'danger' | 'info' | 'warning';
+}
+
+const ModesTag = styled.span<ModesTagProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +132,15 @@ const MetricRow = styled.div`
   }
 `;
 
-export const ProductSummary = ({ product, previewMetrics }) => (
+interface ProductSummaryProps {
+  product?: ProductSnapshot | null;
+  previewMetrics: ProductPreviewMetrics;
+}
+
+export const ProductSummary: React.FC<ProductSummaryProps> = ({
+  product,
+  previewMetrics,
+}) => (
   <SummaryCard>
     <PreviewImage>
       {product?.image ? (

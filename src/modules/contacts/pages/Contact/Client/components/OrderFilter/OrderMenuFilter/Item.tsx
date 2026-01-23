@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type ChangeEvent } from 'react';
 import styled from 'styled-components';
 
 import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
@@ -9,9 +8,29 @@ import { useSearchFilterOrderMenuOption } from '@/hooks/useSearchFilter';
 import { Input } from './Input';
 import { modifyOrderMenuData } from './modifyOrderMenuData';
 
-export const Item = ({ data, array, setArray, index }) => {
+type OrderMenuOption = {
+  name: string;
+  selected?: boolean;
+};
+
+type OrderMenuSection = {
+  name: string;
+  Items: OrderMenuOption[];
+};
+
+type ItemProps = {
+  data: OrderMenuSection;
+  array: OrderMenuSection[];
+  setArray: React.Dispatch<React.SetStateAction<OrderMenuSection[]>>;
+  index: number;
+};
+
+export const Item = ({ data, array, setArray, index }: ItemProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const optionsFiltered = useSearchFilterOrderMenuOption(data, searchTerm);
+  const optionsFiltered = useSearchFilterOrderMenuOption(
+    data.Items ?? [],
+    searchTerm,
+  );
 
   const [isItemOpen, setIsItemOpen] = useState(false);
   const handleOpenItem = () => setIsItemOpen(!isItemOpen);
@@ -25,7 +44,9 @@ export const Item = ({ data, array, setArray, index }) => {
           <Fragment>
             <Input
               data={data}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setSearchTerm(e.target.value)
+              }
               fn={() => setSearchTerm('')}
             />
             <Items>
@@ -38,7 +59,7 @@ export const Item = ({ data, array, setArray, index }) => {
                     <input
                       type="checkbox"
                       name="selected"
-                      id={subIndex}
+                      id={String(subIndex)}
                       onChange={(e) => {
                         modifyOrderMenuData(
                           array,
@@ -51,7 +72,7 @@ export const Item = ({ data, array, setArray, index }) => {
                         );
                       }}
                     />
-                    <label htmlFor={subIndex}>{item.name}</label>
+                    <label htmlFor={String(subIndex)}>{item.name}</label>
                   </FilterOption>
                 ) : null,
               )}
@@ -64,7 +85,7 @@ export const Item = ({ data, array, setArray, index }) => {
   );
 };
 const Container = styled.div``;
-const Body = styled.div`
+const Body = styled.div<{ $isOpen: boolean; $index: number }>`
   height: auto;
   background-color: rgb(242 242 242);
   padding: 0.4em 1em;
@@ -123,7 +144,7 @@ const Items = styled.ul`
   padding: 0;
   list-style: none;
 `;
-const FilterOption = styled.li`
+const FilterOption = styled.li<{ $isSelected: boolean }>`
   grid-template-columns: min-content 1fr;
   gap: 1em;
   padding: 0.2em 0.6em;

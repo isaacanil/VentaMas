@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { nanoid } from 'nanoid';
-import React, { useState } from 'react';
+import React, { useState, type ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -9,11 +8,15 @@ import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button/Button';
 import { Message } from '@/components/ui/message/Message';
+import type { ClientInput } from '@/firebase/client/clientNormalizer';
 
+type CreateContactProps = {
+  isOpen: boolean;
+};
 
-export const CreateContact = ({ isOpen }) => {
+export const CreateContact = ({ isOpen }: CreateContactProps) => {
   const dispatch = useDispatch();
-  const [newClient, setNewClient] = useState({
+  const [newClient, setNewClient] = useState<ClientInput>({
     name: '',
     address: '',
     tel: '',
@@ -41,6 +44,16 @@ export const CreateContact = ({ isOpen }) => {
   const handleOpenModal = () => {
     dispatch(handleModalCreateClient());
   };
+
+  const handleFieldChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setNewClient((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   return (
     <Container>
       <SideBar $isOpen={isOpen ? true : false}>
@@ -62,12 +75,7 @@ export const CreateContact = ({ isOpen }) => {
             <input
               name="name"
               type="text"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
               placeholder="Juan Pérez."
             />
           </Group>
@@ -78,20 +86,15 @@ export const CreateContact = ({ isOpen }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={formatPhoneNumber(newClient.tel)}
+                title={formatPhoneNumber(newClient.tel ?? '')}
               ></Message>
             </label>
             <input
               type="text"
               name="tel"
               placeholder="8496503586"
-              value={newClient.tel}
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              value={newClient.tel ?? ''}
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
@@ -101,19 +104,14 @@ export const CreateContact = ({ isOpen }) => {
                 bgColor="primary"
                 fontSize="small"
                 width="auto"
-                title={formatRNC(newClient.personalID)}
+                title={formatRNC(newClient.personalID ?? '')}
               ></Message>
             </label>
             <input
               type="text"
               placeholder="110056007"
               name="personalID"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             />
           </Group>
           <Group>
@@ -125,12 +123,7 @@ export const CreateContact = ({ isOpen }) => {
               cols="20"
               rows="5"
               placeholder="27 de Febrero #12, Ensanche Ozama, Santo Domingo"
-              onChange={(e) =>
-                setNewClient({
-                  ...newClient,
-                  [e.target.name]: e.target.value,
-                })
-              }
+              onChange={handleFieldChange}
             ></textarea>
           </Group>
         </Body>
@@ -152,7 +145,7 @@ const Container = styled.div`
   height: 100%;
   overflow: hidden;
 `;
-const SideBar = styled.div`
+const SideBar = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   max-width: 26em;
   width: 100%;

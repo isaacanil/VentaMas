@@ -1,4 +1,3 @@
-// @ts-nocheck
 // src/lib/price-audit-export.js
 import { saveAs } from 'file-saver';
 import {
@@ -19,9 +18,40 @@ import {
 
 import { db } from '@/firebase/firebaseconfig';
 
+type UnknownRecord = Record<string, unknown>;
+type PricingData = {
+  pricing?: { listPrice?: unknown; price?: unknown; [key: string]: unknown };
+} & UnknownRecord;
+type AuditRow = Record<string, unknown>;
+type AuditProgress = {
+  totalScanned: number;
+  totalUpdated: number;
+  totalSkipped: number;
+  totalUnknown: number;
+  total?: number | null;
+};
+type BusinessAuditSummary = {
+  businessID: string;
+  total: number;
+  equal: number;
+  mismatch: number;
+  unknown: number;
+  pctEqual: number;
+  pctMismatch: number;
+  pctUnknown: number;
+};
+type ProgressCallback = (data: Record<string, unknown>) => void;
+type FixAllPricesOptions = {
+  pageSize?: number;
+  dryRun?: boolean;
+  batchSize?: number;
+  unknownStrategy?: 'none' | 'mark' | 'copyPriceToList';
+  onProgress?: (progress: AuditProgress) => void;
+};
+
 /* ───────────────────────────── Números seguros ───────────────────────────── */
 /** Parser estricto de dinero: null si el texto es ambiguo o malformado. */
-const parseMoneyStrict = (v) => {
+const parseMoneyStrict = (v: unknown): number | null => {
   if (v == null) return null;
   if (typeof v === 'number') return Number.isFinite(v) ? v : null;
   if (typeof v !== 'string') return null;
@@ -61,22 +91,29 @@ const parseMoneyStrict = (v) => {
 };
 
 const MAX_PRICE = 1e9; // ajusta si necesitas otro tope
-const isRealPrice = (n) =>
+const isRealPrice = (n: unknown): n is number =>
   typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= MAX_PRICE;
 
-const toNumber = (v) => parseMoneyStrict(v);
-const almostEqual = (a, b, eps = 0.005) => Math.abs(a - b) <= eps;
+const toNumber = (v: unknown): number | null => parseMoneyStrict(v);
+const almostEqual = (a: number, b: number, eps = 0.005): boolean =>
+  Math.abs(a - b) <= eps;
 
 /** Sólo fija cuando listPrice es real y price falta/no es real o difiere más que eps. */
-const shouldFix = (lp, p) =>
+const shouldFix = (lp: unknown, p: unknown): boolean =>
   isRealPrice(lp) && (!isRealPrice(p) || !almostEqual(lp, p));
 
 /* ───────────────────────────── Helpers comunes ───────────────────────────── */
-const resolveProductName = (data) =>
-  data?.name ?? data?.title ?? data?.product?.name ?? data?.description ?? '';
+const resolveProductName = (
+  data: UnknownRecord | null | undefined,
+): string =>
+  data?.name ??
+  data?.title ??
+  (data as { product?: { name?: string } } | undefined)?.product?.name ??
+  data?.description ??
+  '';
 
 /* ───────────────────────────── CSV ───────────────────────────── */
-const csvEscape = (value) => {
+const csvEscape = (value: unknown): string => {
   if (value == null) return '';
   const s = String(value);
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -84,11 +121,11 @@ const csvEscape = (value) => {
 
 /** Construye CSV con BOM UTF-8 (Excel-friendly) y CRLF. */
 const buildCSVFromObjects = (
-  rows,
-  headers,
+  rows: Array<Record<string, unknown>>,
+  headers: string[],
   delimiter = ',',
   withBOM = true,
-) => {
+): string => {
   const head = headers.map(csvEscape).join(delimiter);
   const body = rows
     .map((r) => headers.map((h) => csvEscape(r[h])).join(delimiter))
@@ -97,7 +134,11 @@ const buildCSVFromObjects = (
   return (withBOM ? '\ufeff' : '') + csv;
 };
 
-const downloadBytes = (bytes, mime, filename) => {
+const downloadBytes = (
+  bytes: BlobPart | BlobPart[] | string,
+  mime: string,
+  filename: string,
+): Blob => {
   const blob =
     typeof bytes === 'string'
       ? new Blob([bytes], { type: mime })
@@ -120,8 +161,13 @@ const downloadBytes = (bytes, mime, filename) => {
 /* ╔══════════════════════════╗
    ║  1) AUDITAR (resumen)    ║
    ╚══════════════════════════╝ */
-export async function fbAuditAllBusinessesPriceVsList(pageSize = 1000) {
-  const resultsMap = new Map(); // businessID -> { businessID, total, equal, mismatch, unknown }
+export async function fbAuditAllBusinessesPriceVsList(
+  pageSize = 1000,
+): Promise<BusinessAuditSummary[]> {
+  const resultsMap = new Map<
+    string,
+    { businessID: string; total: number; equal: number; mismatch: number; unknown: number }
+  >(); // businessID -> { businessID, total, equal, mismatch, unknown }
   let cursor = null;
 
   // eslint-disable-next-line no-constant-condition

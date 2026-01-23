@@ -1,20 +1,38 @@
-// @ts-nocheck
 import { Table, Input, Button } from 'antd';
-import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { formatPrice } from '@/utils/format';
 
+import type { ColumnsType } from 'antd/es/table';
+
+interface ProductListRow {
+  id?: string;
+  key?: string;
+  productID?: string;
+  productName?: string;
+  newStock?: number;
+  initialCost?: number;
+  [key: string]: unknown;
+}
+
+interface ProductListSelectedProps {
+  productsSelected?: ProductListRow[];
+  handleDeleteProduct?: (item: ProductListRow) => void;
+  handleUpdateProduct?: (payload: {
+    value: Partial<ProductListRow>;
+    productID?: string;
+  }) => void;
+}
 
 export const ProductListSelected = ({
   productsSelected = [],
   handleDeleteProduct,
   handleUpdateProduct,
-}) => {
+}: ProductListSelectedProps) => {
   const rows = Array.isArray(productsSelected) ? productsSelected : [];
 
-  const columns = [
+  const columns: ColumnsType<ProductListRow> = [
     {
       title: 'Producto',
       dataIndex: 'productName',
@@ -26,7 +44,7 @@ export const ProductListSelected = ({
       dataIndex: 'newStock',
       key: 'newStock',
       width: 150,
-      render: (text, record) => (
+      render: (text: ProductListRow['newStock'], record) => (
         <Input
           type="number"
           value={text}
@@ -44,7 +62,7 @@ export const ProductListSelected = ({
       dataIndex: 'initialCost',
       key: 'initialCost',
       width: 150,
-      render: (text, record) => (
+      render: (text: ProductListRow['initialCost'], record) => (
         <Input
           type="number"
           value={text}
@@ -60,7 +78,7 @@ export const ProductListSelected = ({
     {
       title: 'Total',
       key: 'total',
-      render: (_, record) =>
+      render: (_: unknown, record) =>
         formatPrice(
           (Number(record?.initialCost) || 0) * (Number(record?.newStock) || 0),
         ),
@@ -70,7 +88,7 @@ export const ProductListSelected = ({
       key: 'actions',
       width: 120,
       align: 'right',
-      render: (_, record) => (
+      render: (_: unknown, record) => (
         <Button
           icon={icons.operationModes.delete}
           onClick={() => handleDeleteProduct?.(record)}

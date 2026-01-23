@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
@@ -6,7 +5,24 @@ import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
 
 import { useTableConfig } from './tableConfig';
 
-export const ClientsListTable = ({ clients = [] }) => {
+type ClientRecord = {
+  id?: string;
+  name?: string;
+  tel?: string;
+  personalID?: string;
+  address?: string;
+  pendingBalance?: number;
+};
+
+type ClientListItem = {
+  client: ClientRecord;
+};
+
+type ClientsListTableProps = {
+  clients?: ClientListItem[];
+};
+
+export const ClientsListTable = ({ clients = [] }: ClientsListTableProps) => {
   const { columns } = useTableConfig();
   const data = clients.map(({ client }) => {
     return {

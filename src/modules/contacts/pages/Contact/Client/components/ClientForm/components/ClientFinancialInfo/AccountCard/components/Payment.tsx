@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
@@ -9,7 +8,21 @@ import styled from 'styled-components';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { selectClient } from '@/features/clientCart/clientCartSlice';
 import { formatPrice } from '@/utils/format';
+import type { AccountsReceivableDoc } from '@/utils/accountsReceivable/types';
 
+type ClientSummary = {
+  id?: string;
+} & Record<string, unknown>;
+
+type PaymentProps = {
+  installments: number;
+  balance: number;
+  isActive?: boolean;
+  account: AccountsReceivableDoc;
+  client?: ClientSummary | null;
+};
+
+type ClientRootState = Parameters<typeof selectClient>[0];
 
 export function Payment({
   installments,
@@ -17,12 +30,15 @@ export function Payment({
   isActive,
   account,
   client: propClient,
-}) {
+}: PaymentProps) {
   const dispatch = useDispatch();
-  const storeClient = useSelector(selectClient);
+  const storeClient = useSelector<ClientRootState, ReturnType<typeof selectClient>>(
+    selectClient,
+  );
   const client = propClient || storeClient;
 
   const handleOpenPayment = () => {
+    if (!client?.id || !account?.id) return;
     dispatch(
       setAccountPayment({
         isOpen: true,
@@ -41,7 +57,7 @@ export function Payment({
 
   const getProgress = () => {
     const paid = account?.paidInstallments?.length || 0;
-    return (paid / installments) * 100;
+    return installments > 0 ? (paid / installments) * 100 : 0;
   };
 
   return (
@@ -97,7 +113,7 @@ const ProgressBar = styled.div`
   border-radius: 3px;
 `;
 
-const ProgressFill = styled.div`
+const ProgressFill = styled.div<{ $percentage: number }>`
   width: ${({ $percentage }) => $percentage}%;
   height: 100%;
   background: #2e7d32;
@@ -118,7 +134,7 @@ const PaymentActions = styled.div`
   }
 `;
 
-const BalanceAmount = styled.div`
+const BalanceAmount = styled.div<{ $isPaid: boolean }>`
   font-size: 16px;
   font-weight: 700;
   color: ${({ $isPaid }) => ($isPaid ? '#2e7d32' : '#cf1322')};

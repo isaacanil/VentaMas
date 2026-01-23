@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faUser, faHashtag } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
@@ -8,11 +7,24 @@ import styled from 'styled-components';
 import { setAccountPayment } from '@/features/accountsReceivable/accountsReceivablePaymentSlice';
 import { formatPrice } from '@/utils/format';
 
+type ClientSummary = {
+  id?: string;
+  name?: string;
+  numberId?: string | number;
+} & Record<string, unknown>;
 
+type ClientBalanceInfoProps = {
+  client: ClientSummary | null | undefined;
+  pendingBalance: number;
+};
 
-export const ClientBalanceInfo = ({ client, pendingBalance }) => {
+export const ClientBalanceInfo = ({
+  client,
+  pendingBalance,
+}: ClientBalanceInfoProps) => {
   const dispatch = useDispatch();
   const handlePayment = () => {
+    if (!client?.id) return;
     dispatch(
       setAccountPayment({
         isOpen: true,

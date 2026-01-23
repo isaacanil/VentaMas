@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ShopOutlined, MailOutlined, HomeOutlined } from '@/constants/icons/antd';
 import { Form, Input, Button, Select, message, Card, Typography } from 'antd';
 import { useState } from 'react';
@@ -14,15 +13,35 @@ import { countries } from './countries.json';
 const { Option } = Select;
 const { Title } = Typography;
 
+interface BusinessFormValues {
+  businessType?: string;
+  name?: string;
+  rnc?: string;
+  email?: string;
+  tel?: string;
+  country?: string;
+  province?: string;
+  address?: string;
+  invoice?: {
+    invoiceMessage?: string;
+  };
+}
+
+interface CountryOption {
+  id: string;
+  name: string;
+}
+
 const BusinessCreator = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<BusinessFormValues>();
   const navigate = useNavigate();
-  const [imageUrl] = useState(null);
+  const [imageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { BUSINESSES } = ROUTES_PATH.DEV_VIEW_TERM;
+  const countryOptions = countries as CountryOption[];
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: BusinessFormValues) => {
     try {
       setLoading(true);
 
@@ -46,8 +65,10 @@ const BusinessCreator = () => {
       await createBusiness(businessData);
       message.success('Negocio creado exitosamente');
       navigate(BUSINESSES);
-    } catch (error) {
-      message.error(error.message || 'Error al crear el negocio');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error al crear el negocio';
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -132,7 +153,7 @@ const BusinessCreator = () => {
               <TwoColumns>
                 <Form.Item name="country" label="País">
                   <Select placeholder="Selecciona un país">
-                    {countries.map((country) => (
+                    {countryOptions.map((country) => (
                       <Option key={country.id} value={country.id}>
                         {country.name}
                       </Option>

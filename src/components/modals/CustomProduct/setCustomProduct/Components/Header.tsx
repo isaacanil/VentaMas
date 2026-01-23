@@ -110,7 +110,8 @@ export const Header = ({
 
   const dispatch = useDispatch();
 
-  type HeaderRootState = Parameters<typeof selectUser>[0];
+  type HeaderRootState = Parameters<typeof selectUser>[0] &
+    Parameters<typeof selectTotalIngredientPrice>[0];
   const user = useSelector((state: HeaderRootState) => selectUser(state));
 
   const [products, setProducts] = useState<CustomProductItem[]>([]);

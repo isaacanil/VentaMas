@@ -183,11 +183,18 @@ interface PinEntryView {
 }
 
 
-export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
-  const [visiblePins, setVisiblePins] = useState({});
-  const [copiedModules, setCopiedModules] = useState({});
+export const PinDetailsModal = ({
+  visible,
+  onClose,
+  pinData,
+  user,
+}: PinDetailsModalProps) => {
+  const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({});
+  const [copiedModules, setCopiedModules] = useState<Record<string, boolean>>(
+    {},
+  );
 
-  const moduleNames = useMemo(
+  const moduleNames = useMemo<Record<string, string>>(
     () => ({
       invoices: 'FacturaciÃ³n',
       accountsReceivable: 'Cuadre de Caja',
@@ -195,7 +202,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     [],
   );
 
-  const pinEntries = useMemo(() => {
+  const pinEntries = useMemo<PinEntryView[]>(() => {
     if (!pinData?.pins || !Array.isArray(pinData.pins)) return [];
     return pinData.pins.map((entry) => ({
       module: entry.module,
@@ -216,14 +223,14 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     }));
   }, [pinData, moduleNames]);
 
-  const togglePinVisibility = (moduleKey) => {
+  const togglePinVisibility = (moduleKey: string) => {
     setVisiblePins((prev) => ({
       ...prev,
       [moduleKey]: !prev[moduleKey],
     }));
   };
 
-  const handleCopyModule = (moduleKey, pin) => {
+  const handleCopyModule = (moduleKey: string, pin: string) => {
     if (!pin) return;
     navigator.clipboard.writeText(pin);
     setCopiedModules((prev) => ({ ...prev, [moduleKey]: true }));
@@ -432,6 +439,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
     `;
 
     const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
     printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.focus();
@@ -448,7 +456,7 @@ export const PinDetailsModal = ({ visible, onClose, pinData, user }) => {
       footer={null}
       width={560}
       centered
-      destroyOnHidden
+      destroyOnClose
     >
       <ModalBody>
         <Header>

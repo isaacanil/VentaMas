@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SaveOutlined, ArrowLeftOutlined } from '@/constants/icons/antd';
 import {
   Card,
@@ -20,19 +19,34 @@ import ROUTES_NAME from '@/router/routes/routesName';
 const { Option } = Select;
 const { CREDIT_NOTE_LIST } = ROUTES_NAME.CREDIT_NOTE_TERM;
 
+type CreditNoteFormValues = {
+  clientId?: string | number;
+  date?: unknown;
+  type?: string;
+  referenceInvoice?: string;
+  amount?: number;
+  description?: string;
+};
+
+type MockClient = {
+  id: number;
+  name: string;
+  rncCedula: string;
+};
+
 export const CreditNoteCreate = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<CreditNoteFormValues>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   // Datos de ejemplo para clientes - esto se reemplazará con datos reales más tarde
-  const mockClients = [
+  const mockClients: MockClient[] = [
     { id: 1, name: 'Cliente Ejemplo', rncCedula: '123456789' },
     { id: 2, name: 'Otro Cliente', rncCedula: '987654321' },
     { id: 3, name: 'Empresa ABC', rncCedula: '111222333' },
   ];
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (_values: CreditNoteFormValues) => {
     setLoading(true);
     try {
       // Aquí iría la lógica para guardar la nota de crédito
@@ -157,7 +171,9 @@ export const CreditNoteCreate = () => {
                   formatter={(value) =>
                     `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                   }
-                  parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                  parser={(value) =>
+                    value ? value.replace(/\$\s?|(,*)/g, '') : ''
+                  }
                 />
               </Form.Item>
             </Col>

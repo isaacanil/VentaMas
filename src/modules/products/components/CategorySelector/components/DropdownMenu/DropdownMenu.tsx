@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Input, Typography, Button } from 'antd';
 import { forwardRef, useState } from 'react';
 import styled from 'styled-components';
@@ -8,11 +7,34 @@ import { filterData } from '@/hooks/search/useSearch';
 
 import { Category } from './Category';
 
-const DropdownMenuComponent = forwardRef(
+interface DropdownItem {
+  id?: string;
+  name?: string;
+  selected?: boolean;
+  isFavorite?: boolean;
+  [key: string]: unknown;
+}
+
+interface SectionConfig {
+  title: string;
+  items: DropdownItem[];
+  color?: string;
+  onSelect: (item: DropdownItem) => void;
+  onToggleFavorite?: (item: DropdownItem) => void;
+}
+
+interface DropdownMenuProps {
+  setOpen: (open: boolean) => void;
+  sectionsConfig?: Record<string, SectionConfig>;
+  deleteAllItems: () => void;
+}
+
+const DropdownMenuComponent = forwardRef<HTMLDivElement, DropdownMenuProps>(
   ({ setOpen, sectionsConfig = {}, deleteAllItems }, ref) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filterItems = (items) => filterData(items, searchTerm);
+    const filterItems = (items: DropdownItem[]) =>
+      filterData(items, searchTerm) ?? [];
 
     return (
       <Container ref={ref}>
@@ -43,10 +65,9 @@ const DropdownMenuComponent = forwardRef(
             >
               <Button onClick={deleteAllItems}>Deselecionar todo</Button>
               <Typography.Text type="secondary">
-                {Object.values(sectionsConfig).reduce(
-                  (total, section) => total + section.items.length,
-                  0,
-                )}{' '}
+                {Object.values(sectionsConfig).reduce((total, section) => {
+                  return total + (section.items?.length ?? 0);
+                }, 0)}{' '}
                 categorías
               </Typography.Text>
             </div>
@@ -76,12 +97,8 @@ const DropdownMenuComponent = forwardRef(
                               isFavorite={item.isFavorite}
                               searchTerm={searchTerm}
                               color={color}
-                              toggleFavorite={
-                                onToggleFavorite
-                                  ? () => onToggleFavorite(item)
-                                  : undefined
-                              }
-                              onClick={() => onSelect(item)}
+                              toggleFavorite={onToggleFavorite}
+                              onClick={onSelect}
                             />
                           ))}
                       </CategoryList>

@@ -1,9 +1,24 @@
-// @ts-nocheck
 import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import styled from 'styled-components';
+
+interface DropdownCategoryItem {
+  id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface DropdownCategoryProps {
+  item?: DropdownCategoryItem;
+  isFavorite?: boolean;
+  searchTerm?: string;
+  color?: string;
+  selected?: boolean;
+  onClick?: (item: DropdownCategoryItem) => void;
+  toggleFavorite?: (item: DropdownCategoryItem) => void;
+}
 
 export const Category = ({
   item = {},
@@ -13,10 +28,10 @@ export const Category = ({
   selected = false,
   onClick,
   toggleFavorite,
-}) => {
+}: DropdownCategoryProps) => {
   const [isHoverFavorite, setIsHoverFavorite] = useState(false);
 
-  const highlightMatch = (text) => {
+  const highlightMatch = (text: string) => {
     if (!searchTerm) return text;
     const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
     return parts.map((part, index) =>
@@ -28,9 +43,15 @@ export const Category = ({
     );
   };
 
+  const name = typeof item?.name === 'string' ? item.name : '';
+
   return (
-    <Container selected={selected} color={color} onClick={() => onClick(item)}>
-      <CategoryItem>{highlightMatch(item?.name)}</CategoryItem>
+    <Container
+      selected={selected}
+      color={color}
+      onClick={() => onClick?.(item)}
+    >
+      <CategoryItem>{highlightMatch(name)}</CategoryItem>
       {toggleFavorite && (
         <FavoriteStar
           onMouseEnter={() => setIsHoverFavorite(true)}
@@ -48,7 +69,7 @@ export const Category = ({
     </Container>
   );
 };
-const Container = styled.div`
+const Container = styled.div<{ selected?: boolean; color: string }>`
   display: grid;
   grid-template-columns: 1fr min-content min-content;
   justify-content: space-between;

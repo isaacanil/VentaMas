@@ -1,5 +1,6 @@
-// @ts-nocheck
 import styled from 'styled-components';
+
+import type { FC } from 'react';
 
 import { FORM_SECTIONS } from '../utils/sections';
 
@@ -36,7 +37,11 @@ const NavList = styled.div`
   }
 `;
 
-const NavButton = styled.button`
+interface NavButtonProps {
+  $active?: boolean;
+}
+
+const NavButton = styled.button<NavButtonProps>`
   display: flex;
   gap: 10px;
   align-items: center;
@@ -63,7 +68,15 @@ const NavButton = styled.button`
   }
 `;
 
-export const SectionNavigator = ({ activeSection, onNavigate }) => (
+interface SectionNavigatorProps {
+  activeSection: string;
+  onNavigate: (sectionId: string) => void;
+}
+
+export const SectionNavigator: FC<SectionNavigatorProps> = ({
+  activeSection,
+  onNavigate,
+}) => (
   <SectionNavigatorWrapper>
     <NavList>
       {FORM_SECTIONS.map((section) => {

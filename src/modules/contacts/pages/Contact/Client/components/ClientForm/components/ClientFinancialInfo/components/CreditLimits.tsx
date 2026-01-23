@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   faFileInvoice,
   faCreditCard,
@@ -18,21 +17,33 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { fbGetCreditLimit } from '@/firebase/accountsReceivable/fbGetCreditLimit';
 import { formatPrice } from '@/utils/format';
+import type { CreditLimitConfig } from '@/utils/accountsReceivable/types';
+import type { UserIdentity } from '@/types/users';
 
 import CreditLimitModal from './CreditLimitModal';
 
+type CreditLimitsProps = {
+  arBalance?: number;
+  client: { id?: string | null; name?: string | null } | null | undefined;
+};
 
-export const CreditLimits = ({ arBalance = 800, client }) => {
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type CreditValueProps = {
+  creditValue?: number;
+};
+
+export const CreditLimits = ({ arBalance = 800, client }: CreditLimitsProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const user = useSelector(selectUser);
-  const clientId = client.id;
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
+  const clientId = client?.id ?? null;
   const queryClient = useQueryClient();
 
   const {
     data: creditLimitState,
     error,
     isLoading,
-  } = useQuery({
+  } = useQuery<CreditLimitConfig | null, Error>({
     queryKey: ['creditLimit', user, clientId],
     queryFn: () => fbGetCreditLimit({ user, clientId }),
     enabled: !!user && !!clientId,
@@ -46,10 +57,12 @@ export const CreditLimits = ({ arBalance = 800, client }) => {
     setModalVisible(true);
   };
 
-  const handleModalSave = async () => {
+  const handleModalSave = async (_values?: CreditLimitConfig) => {
     try {
       // Invalidar la query para refrescar los datos
-      queryClient.invalidateQueries(['creditLimit', user, clientId]);
+      queryClient.invalidateQueries({
+        queryKey: ['creditLimit', user, clientId],
+      });
     } catch (err) {
       console.error('Error updating form:', err);
     }
@@ -68,7 +81,7 @@ export const CreditLimits = ({ arBalance = 800, client }) => {
   }
 
   // Función para obtener el ícono del crédito disponible
-  const getCreditIcon = (availableCredit) => {
+  const getCreditIcon = (availableCredit: number) => {
     if (availableCredit < 0) return faTimesCircle;
     if (availableCredit === 0) return faExclamationTriangle;
     return faCheckCircle;
@@ -178,7 +191,7 @@ export const CreditLimits = ({ arBalance = 800, client }) => {
       {!creditLimitStatus && (
         <Alert
           message="Advertencia"
-          description={`El límite de crédito no está activado para el cliente ${client.name}. No podrás usar las funcionalidades de cuentas por cobrar hasta que actives el límite de crédito.`}
+          description={`El límite de crédito no está activado para el cliente ${client?.name ?? ''}. No podrás usar las funcionalidades de cuentas por cobrar hasta que actives el límite de crédito.`}
           type="warning"
           showIcon
           style={{ marginTop: 16 }}
@@ -225,7 +238,7 @@ const SummaryCard = styled.div`
   box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
 `;
 
-const SummaryIcon = styled.div`
+const SummaryIcon = styled.div<CreditValueProps>`
   margin-right: 10px;
   font-size: 1rem;
   line-height: 1;
@@ -251,7 +264,7 @@ const SummaryLabel = styled.div`
   color: ${({ theme }) => theme.text?.secondary || 'rgba(0, 0, 0, 0.54)'};
 `;
 
-const SummaryValue = styled.div`
+const SummaryValue = styled.div<CreditValueProps>`
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.4;

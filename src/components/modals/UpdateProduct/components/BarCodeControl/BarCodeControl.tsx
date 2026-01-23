@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import Barcode from 'react-barcode';
 import { useDispatch } from 'react-redux';
@@ -8,7 +7,17 @@ import { icons } from '@/constants/icons/icons';
 import { setProduct } from '@/features/updateProduct/updateProductSlice';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-export const BarCodeControl = ({ product, value }) => {
+interface UpdateProductData {
+  barCode?: string;
+  [key: string]: unknown;
+}
+
+interface BarCodeControlProps {
+  product: UpdateProductData;
+  value?: string;
+}
+
+export const BarCodeControl = ({ product, value }: BarCodeControlProps) => {
   const dispatch = useDispatch();
   return (
     <Container>

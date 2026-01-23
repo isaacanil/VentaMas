@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
@@ -28,8 +27,32 @@ const PaymentDetailValue = styled.span`
   text-align: end;
 `;
 
-const ProductPaymentDetails = ({ product }) => {
-  const paymentDetails = [
+interface ProductTaxDetail {
+  ref?: string;
+  value?: number;
+}
+
+interface ProductMoneyUnit {
+  unit: number;
+}
+
+interface ProductPricingDetails {
+  tax?: ProductTaxDetail;
+  cost: ProductMoneyUnit;
+  price: ProductMoneyUnit;
+}
+
+interface ProductPaymentDetailsProps {
+  product: ProductPricingDetails;
+}
+
+type PaymentDetail = {
+  label: string;
+  value: (product: ProductPricingDetails) => string;
+};
+
+const ProductPaymentDetails = ({ product }: ProductPaymentDetailsProps) => {
+  const paymentDetails: PaymentDetail[] = [
     {
       label: `Impuesto ${product?.tax?.ref}`,
       value: (product) =>

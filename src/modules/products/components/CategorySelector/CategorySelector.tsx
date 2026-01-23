@@ -152,9 +152,11 @@ export const CategorySelector = () => {
 
   const handleDeleteAllItems = () => dispatch(deleteAllItems());
   const handleAddCategory = (category: CategoryListItem) =>
-    dispatch(addItem({ ...category, type: 'category' }));
+    dispatch(addItem({ ...category, type: 'category' } as CategorySelectionItem));
   const handleAddActiveIngredient = (activeIngredient: CategoryListItem) =>
-    dispatch(addItem({ ...activeIngredient, type: 'activeIngredient' }));
+    dispatch(
+      addItem({ ...activeIngredient, type: 'activeIngredient' } as CategorySelectionItem),
+    );
 
   const sectionsConfig = {
     favoriteCategories: {

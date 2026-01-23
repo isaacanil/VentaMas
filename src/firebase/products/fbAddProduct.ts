@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { doc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -7,8 +6,16 @@ import { getNextID } from '@/firebase/Tools/getNextID';
 import { getDefaultWarehouse } from '@/firebase/warehouse/warehouseService';
 import { BatchStatus } from '@/models/Warehouse/Batch';
 import { MovementReason, MovementType } from '@/models/Warehouse/Movement';
+import type { ProductRecord } from '@/types/products';
+import type { UserWithBusiness } from '@/types/users';
 
-export const fbAddProduct = (data, user) => {
+type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
+type ProductWithStock = ProductRecord & { stock: number };
+
+export const fbAddProduct = (
+  data: ProductWithStock,
+  user: UserWithBusinessAndUid | null | undefined,
+): Promise<void> | undefined => {
   if (!user?.businessID) return;
 
   const baseFields = {
@@ -21,7 +28,7 @@ export const fbAddProduct = (data, user) => {
     isDeleted: false,
   };
 
-  const product = {
+  const product: ProductWithStock = {
     ...data,
     id: nanoid(10),
   };

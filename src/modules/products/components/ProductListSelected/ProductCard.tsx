@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo, useState } from 'react';
@@ -7,11 +6,30 @@ import styled from 'styled-components';
 import { formatPrice } from '@/utils/format';
 import { Button } from '@/components/ui/Button/Button';
 
+import type { ChangeEventHandler } from 'react';
+
+interface SelectedProductItem {
+  id: string;
+  productName?: string;
+  newStock: number;
+  initialCost: number;
+  [key: string]: unknown;
+}
+
+interface ProductCardProps {
+  item: SelectedProductItem;
+  handleDeleteProduct: (item: SelectedProductItem) => void;
+  handleUpdateProduct: (payload: {
+    value: Partial<SelectedProductItem>;
+    productID: string;
+  }) => void;
+}
+
 export const ProductCard = ({
   item,
   handleDeleteProduct,
   handleUpdateProduct,
-}) => {
+}: ProductCardProps) => {
   return (
     <Container>
       <Col>
@@ -110,7 +128,19 @@ const Col = styled.div`
     }
   }
 `;
-const Input = ({ value, onChange, handleBlur, handleFocus }) => {
+interface InputProps {
+  value: string | number;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  handleBlur?: (value: string | number) => string | number;
+  handleFocus?: (value: string | number) => string | number;
+}
+
+const Input = ({
+  value,
+  onChange,
+  handleBlur,
+  handleFocus,
+}: InputProps) => {
   const [isFocus, setIsFocus] = useState(false);
 
   const displayedValue = useMemo(() => {
