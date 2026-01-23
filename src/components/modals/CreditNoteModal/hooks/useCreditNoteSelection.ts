@@ -1,5 +1,20 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react';
+
+import type { CreditNoteRecord } from '@/types/creditNote';
+import type { InvoiceProduct } from '@/types/invoice';
+
+type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
+
+interface UseCreditNoteSelectionArgs {
+  isOpen: boolean;
+  mode: 'create' | 'edit' | 'view';
+  creditNoteData: CreditNoteRecord | null;
+  selectedInvoiceId: string | null | undefined;
+  availableInvoiceItems: CreditNoteProduct[];
+  existingItemQuantities: Record<string, number>;
+  clientsLoading: boolean;
+  invoicesLoading: boolean;
+}
 
 export const useCreditNoteSelection = ({
   isOpen,
@@ -10,12 +25,18 @@ export const useCreditNoteSelection = ({
   existingItemQuantities,
   clientsLoading,
   invoicesLoading,
-}) => {
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [itemQuantities, setItemQuantities] = useState({});
+}: UseCreditNoteSelectionArgs) => {
+  const [selectedItems, setSelectedItems] = useState<Array<string | undefined>>(
+    [],
+  );
+  const [itemQuantities, setItemQuantities] = useState<Record<string, number>>(
+    {},
+  );
   const [selectAll, setSelectAll] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState<CreditNoteProduct[]>(
+    [],
+  );
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -23,9 +44,10 @@ export const useCreditNoteSelection = ({
     if (mode !== 'create' && creditNoteData) {
       const ids = creditNoteData.items?.map((i) => i.id) || [];
       setSelectedItems(ids);
-      const qtyMap = {};
+      const qtyMap: Record<string, number> = {};
       (creditNoteData.items || []).forEach((it) => {
-        qtyMap[it.id] = it.amountToBuy || 1;
+        qtyMap[String(it.id)] =
+          typeof it.amountToBuy === 'number' ? it.amountToBuy : 1;
       });
       setItemQuantities(qtyMap);
       setSelectAll(false);
@@ -58,9 +80,10 @@ export const useCreditNoteSelection = ({
 
     const initialSelection = availableInvoiceItems.map((item) => item.id);
     setSelectedItems(initialSelection);
-    const qtyMap = {};
+    const qtyMap: Record<string, number> = {};
     availableInvoiceItems.forEach((it) => {
-      qtyMap[it.id] = existingItemQuantities[it.id] || it.maxAvailableQty;
+      qtyMap[String(it.id)] =
+        existingItemQuantities[String(it.id)] || it.maxAvailableQty || 1;
     });
     setItemQuantities(qtyMap);
     setSelectAll(
@@ -95,20 +118,20 @@ export const useCreditNoteSelection = ({
     setCurrentPage(1);
   }, [searchText, availableInvoiceItems]);
 
-  const handleSearchTextChange = (value) => {
+  const handleSearchTextChange = (value: string) => {
     setSearchText(value);
     setCurrentPage(1);
   };
 
-  const handleSelectAll = (checked) => {
+  const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     if (checked) {
       const ids = filteredProducts.map((item) => item.id);
       setSelectedItems(ids);
-      const qtyMap = {};
+      const qtyMap: Record<string, number> = {};
       filteredProducts.forEach((item) => {
-        qtyMap[item.id] =
-          existingItemQuantities[item.id] || item.maxAvailableQty;
+        qtyMap[String(item.id)] =
+          existingItemQuantities[String(item.id)] || item.maxAvailableQty || 1;
       });
       setItemQuantities(qtyMap);
     } else {
@@ -117,17 +140,17 @@ export const useCreditNoteSelection = ({
     }
   };
 
-  const handleItemChange = (itemId, checked) => {
+  const handleItemChange = (itemId: string | undefined, checked: boolean) => {
     if (checked) {
       setSelectedItems((prev) => [...prev, itemId]);
       const item = availableInvoiceItems.find((it) => it.id === itemId);
       const defaultQty =
-        existingItemQuantities[itemId] || item?.maxAvailableQty || 1;
-      setItemQuantities((prev) => ({ ...prev, [itemId]: defaultQty }));
+        existingItemQuantities[String(itemId)] || item?.maxAvailableQty || 1;
+      setItemQuantities((prev) => ({ ...prev, [String(itemId)]: defaultQty }));
     } else {
       setSelectedItems((prev) => prev.filter((id) => id !== itemId));
       setItemQuantities((prev) => {
-        const { [itemId]: _, ...rest } = prev;
+        const { [String(itemId)]: _, ...rest } = prev;
         return rest;
       });
       setSelectAll(false);

@@ -1,11 +1,23 @@
-// @ts-nocheck
 import { DateTime } from 'luxon';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { getBills } from '@/firebase/firebaseconfig';
+import * as firebaseConfig from '@/firebase/firebaseconfig';
 import { getSalesForCurrentDay } from '@/utils/sales';
 
+import type { Dispatch, SetStateAction } from 'react';
+
+interface BillsDateRange {
+  startDate: number;
+  endDate: number;
+}
+
+type GetBills = (
+  setBills: Dispatch<SetStateAction<unknown[]>>,
+  dateRange: BillsDateRange,
+) => void;
+
+const getBills = (firebaseConfig as { getBills?: GetBills }).getBills;
 
 // Obtener la fecha y hora actual
 const today = DateTime.local();
@@ -15,11 +27,14 @@ const startDate = today.minus({ days: 1 }).startOf('day').toMillis();
 
 // Obtener la fecha de hoy a la última hora
 const endDate = today.endOf('day').toMillis();
+
 export const Header = () => {
-  const [bills, setBills] = useState([]);
-  const [date] = useState({ startDate, endDate });
+  const [bills, setBills] = useState<unknown[]>([]);
+  const [date] = useState<BillsDateRange>({ startDate, endDate });
   useEffect(() => {
-    getBills(setBills, date);
+    if (getBills) {
+      getBills(setBills, date);
+    }
   }, [date]);
   const { salesForCurrentDay, growthPercentage } = getSalesForCurrentDay(bills);
   const saleQuantity = bills.length;

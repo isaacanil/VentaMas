@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, {
   useCallback,
   useEffect,
@@ -12,19 +11,44 @@ import { icons } from '@/constants/icons/icons';
 
 const EMPTY_RESULTS_TEXT = 'Sin resultados';
 
+interface GeneralConfigSearchEntry {
+  key: string;
+  label: string;
+  description: string;
+  category: string;
+  sectionId?: string;
+  route?: string;
+}
+
+interface GeneralConfigSearchRecord {
+  key: string;
+  label: string;
+  description: string;
+  category: string;
+  tokens: string[];
+  entry: GeneralConfigSearchEntry;
+}
+
+interface GeneralConfigSearchProps {
+  records?: GeneralConfigSearchRecord[];
+  onSelect?: (entry: GeneralConfigSearchEntry) => void;
+  dependencyKey?: string | number;
+  placeholder?: string;
+}
+
 export const GeneralConfigSearch = ({
   records = [],
   onSelect,
   dependencyKey,
   placeholder = 'Buscar en configuración...',
-}) => {
+}: GeneralConfigSearchProps) => {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const containerRef = useRef(null);
-  const inputRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const filteredOptions = useMemo(() => {
+  const filteredOptions = useMemo<GeneralConfigSearchRecord[]>(() => {
     if (!inputValue) {
       return records.slice(0, 8);
     }
@@ -43,7 +67,7 @@ export const GeneralConfigSearch = ({
 
 
   const handleSelect = useCallback(
-    (entry) => {
+    (entry?: GeneralConfigSearchEntry | null) => {
       if (!entry) return;
       setInputValue('');
       setIsOpen(false);
@@ -54,10 +78,13 @@ export const GeneralConfigSearch = ({
     [onSelect],
   );
 
-  const handleInputChange = useCallback((event) => {
-    setInputValue(event.target.value);
-    setIsOpen(true);
-  }, []);
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(event.target.value);
+      setIsOpen(true);
+    },
+    [],
+  );
 
   const handleFocus = useCallback(() => {
     setIsOpen(true);
@@ -71,7 +98,7 @@ export const GeneralConfigSearch = ({
   }, []);
 
   const handleKeyDown = useCallback(
-    (event) => {
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (!filteredOptions.length) {
         if (event.key === 'Escape') {
           setIsOpen(false);
@@ -126,7 +153,9 @@ export const GeneralConfigSearch = ({
   );
 
   // Estado para trackear cambio de dependencia
-  const [prevDependencyKey, setPrevDependencyKey] = useState(dependencyKey);
+  const [prevDependencyKey, setPrevDependencyKey] = useState<
+    string | number | undefined
+  >(dependencyKey);
 
   // PATRÓN RECOMENDADO REACT: Resetear estado al cambiar dependencyKey
   if (dependencyKey !== prevDependencyKey) {
@@ -153,8 +182,8 @@ export const GeneralConfigSearch = ({
       : undefined;
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!containerRef.current?.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
         setActiveIndex(-1);
       }
@@ -348,7 +377,7 @@ const SearchDropdown = styled.div`
   }
 `;
 
-const SearchOptionButton = styled.button`
+const SearchOptionButton = styled.button<{ $active: boolean }>`
   width: 100%;
   border: none;
   background: transparent;

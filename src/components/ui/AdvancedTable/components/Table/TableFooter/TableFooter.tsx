@@ -1,10 +1,25 @@
-// @ts-nocheck
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Pagination } from '@/components/ui/AdvancedTable/components/Pagination/Pagination';
 import { Button } from '@/components/ui/Button/Button';
+
+interface TableFooterProps {
+  elementsShown: number;
+  totalElements: number;
+  elementName?: ReactNode;
+  footerLeftSide?: ReactNode;
+  currentPage: number;
+  pageCount: number;
+  nextPage: () => void;
+  prevPage: () => void;
+  firstPage: () => void;
+  lastPage: () => void;
+  footerRightSide?: ReactNode;
+  toggleReorderMenu: () => void;
+  showPaginationControls?: boolean;
+}
 
 const TableFooter = ({
   elementsShown,
@@ -20,7 +35,7 @@ const TableFooter = ({
   footerRightSide,
   toggleReorderMenu,
   showPaginationControls = true,
-}) => {
+}: TableFooterProps) => {
   return (
     <Footer>
       <FooterLeftSide>

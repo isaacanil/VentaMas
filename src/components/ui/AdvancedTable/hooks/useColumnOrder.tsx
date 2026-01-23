@@ -1,11 +1,17 @@
-// @ts-nocheck
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { ColumnConfig, ColumnStatus } from '../types/ColumnTypes';
 
-const buildLocalStorageName = (userId, tableName) =>
+type ColumnStatusFlag = ColumnStatus | boolean | undefined;
+type ColumnLike = { accessor: string; status?: ColumnStatusFlag };
+
+const buildLocalStorageName = (userId?: string | null, tableName?: string | null) =>
   `tableColumnsOrder_${userId}_${tableName}`;
 
 // Nueva función para verificar si la configuración ha cambiado
-const hasConfigurationChanged = (defaultColumns, savedColumns) => {
+const hasConfigurationChanged = <Col extends ColumnLike>(
+  defaultColumns: Col[],
+  savedColumns: ColumnLike[],
+): boolean => {
   const defaultAccessors = new Set(defaultColumns.map((col) => col.accessor));
   const savedAccessors = new Set(savedColumns.map((col) => col.accessor));
 
@@ -17,27 +23,35 @@ const hasConfigurationChanged = (defaultColumns, savedColumns) => {
   );
 };
 
-const getInitialColumnOrder = (columns, tableName, localStorageName) => {
+const getInitialColumnOrder = <Col extends ColumnLike>(
+  columns: Col[],
+  tableName?: string | null,
+  localStorageName?: string,
+): Col[] => {
   const defaultColumns = columns.map((col) => ({
     ...col,
     status: col.status || 'active',
-  }));
+  })) as Col[];
   if (!tableName) return defaultColumns;
 
   try {
     const savedColumns = localStorage.getItem(localStorageName);
     if (!savedColumns) return defaultColumns;
 
-    const parsedColumns = JSON.parse(savedColumns);
+    const parsedColumns = JSON.parse(savedColumns) as unknown;
+    if (!Array.isArray(parsedColumns)) {
+      return defaultColumns;
+    }
+    const typedColumns = parsedColumns.filter(isColumnLike);
 
     // Verifica si hay cambios en la configuración
-    if (hasConfigurationChanged(columns, parsedColumns)) {
+    if (hasConfigurationChanged(columns, typedColumns)) {
       // Si hay cambios, elimina la configuración antigua y retorna la nueva
       localStorage.removeItem(localStorageName);
       return defaultColumns;
     }
 
-    const validColumns = filterInvalidColumns(parsedColumns);
+    const validColumns = filterInvalidColumns(typedColumns);
     const updatedColumns = mergeColumns(defaultColumns, validColumns);
     return updatedColumns;
   } catch (error) {
@@ -47,13 +61,21 @@ const getInitialColumnOrder = (columns, tableName, localStorageName) => {
 };
 
 // Función para filtrar columnas inválidas
-const filterInvalidColumns = (columns) =>
+const isColumnLike = (value: unknown): value is ColumnLike => {
+  if (!value || typeof value !== 'object') return false;
+  return typeof (value as Record<string, unknown>).accessor === 'string';
+};
+
+const filterInvalidColumns = <Col extends ColumnLike>(columns: Col[]): Col[] =>
   columns.filter(
     (savedCol) =>
       !(Object.keys(savedCol).length === 1 && savedCol.status === true),
   );
 
-const mergeColumns = (defaultColumns, savedColumns) => {
+const mergeColumns = <Col extends ColumnLike>(
+  defaultColumns: Col[],
+  savedColumns: ColumnLike[],
+): Col[] => {
   // Paso 1: Mantener columnas y orden del localStorage, asegurando que el estado se preserva
   const updatedColumns = savedColumns
     .map((savedCol) => {
@@ -63,7 +85,7 @@ const mergeColumns = (defaultColumns, savedColumns) => {
       // Si la columna original existe, se preserva el estado del localStorage
       return originalCol ? { ...originalCol, status: savedCol.status } : null;
     })
-    .filter((col) => col !== null);
+    .filter((col): col is Col => col !== null);
 
   // Paso 2: Agregar nuevas columnas que no estén en el localStorage al final
   defaultColumns.forEach((col) => {
@@ -78,20 +100,26 @@ const mergeColumns = (defaultColumns, savedColumns) => {
   return updatedColumns;
 };
 
-export const useColumnOrder = (columns = [], tableName, userId) => {
+export const useColumnOrder = <Col extends ColumnConfig>(
+  columns: Col[] = [],
+  tableName?: string | null,
+  userId?: string | null,
+) => {
   const localStorageName = buildLocalStorageName(userId, tableName);
   const getColumnOrderFromStorage = useCallback(
     () => getInitialColumnOrder(columns, tableName, localStorageName),
     [tableName, columns, localStorageName],
   );
 
-  const [columnOrder, setColumnOrder] = useState(getColumnOrderFromStorage);
+  const [columnOrder, setColumnOrder] = useState<Col[]>(
+    getColumnOrderFromStorage,
+  );
 
   const resolvedColumnOrder = useMemo(() => {
     const defaultColumns = columns.map((col) => ({
       ...col,
       status: col.status || 'active',
-    }));
+    })) as Col[];
 
     if (!Array.isArray(columnOrder) || columnOrder.length === 0) {
       return defaultColumns;
@@ -114,9 +142,9 @@ export const useColumnOrder = (columns = [], tableName, userId) => {
   const resetColumnOrder = useCallback(() => {
     if (tableName) {
       localStorage.removeItem(localStorageName);
-      setColumnOrder(columns.map((col) => ({ ...col, status: 'active' })));
+      setColumnOrder(columns.map((col) => ({ ...col, status: 'active' })) as Col[]);
     }
   }, [tableName, columns, localStorageName]);
 
-  return [resolvedColumnOrder, setColumnOrder, resetColumnOrder];
+  return [resolvedColumnOrder, setColumnOrder, resetColumnOrder] as const;
 };

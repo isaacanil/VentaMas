@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion, type Variants } from 'framer-motion';
+import { useState, type FormEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -11,7 +10,7 @@ import { fbAddCategory } from '@/firebase/categories/fbAddCategory';
 import { fbUpdateCategory } from '@/firebase/categories/fbUpdateCategory';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 
-const OverlayVariants = {
+const OverlayVariants: Variants = {
   open: {
     opacity: 1,
     pointerEvents: 'all',
@@ -22,19 +21,37 @@ const OverlayVariants = {
   },
 };
 
-const ContainerVariants = {
+const ContainerVariants: Variants = {
   open: { scale: 1 },
   closed: { scale: 0 },
 };
 
-const EmptyCategory = { id: '', name: '' };
-const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
-  const [category, setCategory] = useState(() => categoryToUpdate || EmptyCategory);
+interface Category {
+  id: string;
+  name: string;
+}
+
+const EmptyCategory: Category = { id: '', name: '' };
+
+interface AddCategoryModalProps {
+  isOpen: boolean;
+  categoryToUpdate?: Category | null;
+}
+
+const AddCategoryModal = ({
+  isOpen,
+  categoryToUpdate,
+}: AddCategoryModalProps) => {
+  const [category, setCategory] = useState<Category>(
+    () => categoryToUpdate || EmptyCategory,
+  );
   const dispatch = useDispatch();
 
   const user = useSelector(selectUser);
 
-  const [prevCategoryToUpdate, setPrevCategoryToUpdate] = useState(categoryToUpdate);
+  const [prevCategoryToUpdate, setPrevCategoryToUpdate] = useState<
+    Category | null | undefined
+  >(categoryToUpdate);
 
   // PATRÓN RECOMENDADO REACT: Ajustar estado durante render al cambiar props
   if (categoryToUpdate !== prevCategoryToUpdate) {
@@ -47,7 +64,7 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
     setCategory(EmptyCategory);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (category.name === '') {
       dispatch(
@@ -131,7 +148,7 @@ const AddCategoryModal = ({ isOpen, categoryToUpdate }) => {
 
 export default AddCategoryModal;
 
-const ModalOverlay = styled(motion.div)`
+const ModalOverlay = styled(motion.div)<{ isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;

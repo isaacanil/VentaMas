@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { Typography } from 'antd';
-import React from 'react';
 import styled from 'styled-components';
 
 import AuthorizationFlowSettingsSection from './components/AuthorizationFlowSettingsSection';

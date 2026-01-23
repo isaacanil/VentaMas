@@ -24,6 +24,7 @@ interface ProductCardProps {
   onSelectionChange: (itemId: string | undefined, selected: boolean) => void;
   onQuantityChange: (value: number | null) => void;
   creditedByOthers?: number;
+  existingQuantity?: number;
 }
 
 export const ProductCard = ({

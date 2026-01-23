@@ -1,10 +1,22 @@
-// @ts-nocheck
 import { motion } from 'framer-motion';
 import React from 'react';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
 import { Row } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableColumn } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { SortConfig, TableRow } from '@/components/ui/AdvancedTable/types/ColumnTypes';
+
+type RowSize = 'small' | 'medium' | 'large';
+
+interface TableHeaderProps {
+  handleSort: (key: string, sortable?: boolean) => void;
+  columnOrder: AdvancedTableColumn<TableRow>[];
+  sortConfig: SortConfig;
+  isWideScreen?: boolean;
+  isWideLayout?: boolean;
+  rowSize?: RowSize;
+}
 
 export const TableHeader = ({
   handleSort,
@@ -13,7 +25,7 @@ export const TableHeader = ({
   isWideScreen: _isWideScreen,
   isWideLayout: _isWideLayout,
   rowSize = 'medium',
-}) => {
+}: TableHeaderProps) => {
   const activeColumns = columnOrder.filter((col) => col.status === 'active');
 
   return (
@@ -69,13 +81,18 @@ const Container = styled.div`
   border-top: var(--border-primary);
   border-bottom: var(--border-primary);
 `;
-const sizeHeights = {
+const sizeHeights: Record<RowSize, string> = {
   small: '2.1em',
   medium: '2.75em', // existing
   large: '3.4em', // slightly larger than previous 3.25em
 };
 
-const HeaderCell = styled.div`
+const HeaderCell = styled.div<{
+  $align?: string;
+  $fixed?: 'left' | 'right';
+  $minWidth?: string;
+  $maxWidth?: string;
+}>`
   align-items: center;
   display: flex;
   font-weight: bold;

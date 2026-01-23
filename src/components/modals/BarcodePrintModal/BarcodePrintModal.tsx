@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Input, Button, Form, Spin } from 'antd';
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,14 +7,23 @@ import {
   toggleBarcodeModal,
 } from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
 
-import { BarCode } from './Barcode';
+import { BarCode, type BarcodeProduct } from './Barcode';
+
+interface BarcodePrintFormValues {
+  product?: BarcodeProduct | null;
+  barcodeWidth?: number | string;
+  quantity?: number | string;
+}
 
 export const BarcodePrintModal = () => {
-  const { isOpen, product } = useSelector(SelectBarcodePrintModal);
+  type BarcodePrintModalRootState = Parameters<typeof SelectBarcodePrintModal>[0];
+  const { isOpen, product } = useSelector(
+    (state: BarcodePrintModalRootState) => SelectBarcodePrintModal(state),
+  );
   const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<BarcodePrintFormValues>();
   const dispatch = useDispatch();
-  const barcodeRef = useRef();
+  const barcodeRef = useRef<HTMLDivElement | null>(null);
 
   const handlePrint = async () => {
     try {

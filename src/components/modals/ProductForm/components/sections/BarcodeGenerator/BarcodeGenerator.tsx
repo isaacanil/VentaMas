@@ -126,6 +126,7 @@ export const BarcodeGenerator = ({
     useState<BarcodeAnalysis | null>(null);
 
   // Hook para listener en tiempo real del producto
+  const shouldListen = Boolean(visible && status === 'update' && product?.id);
   const {
     productData: realtimeProduct,
     loading: realtimeLoading,
@@ -136,11 +137,20 @@ export const BarcodeGenerator = ({
   } = useProductRealtimeListener(
     user?.businessID,
     product?.id,
-    visible && status === 'update' && product?.id, // Solo activar si estamos en modo actualización
-  );
+    shouldListen, // Solo activar si estamos en modo actualización
+  ) as {
+    productData: ProductRecord | null;
+    loading: boolean;
+    error: ProductListenerError | null;
+    isConnected: boolean;
+    currentBarcode: string | null;
+    isUpdating: boolean;
+  };
 
   // Estado para mostrar notificaciones de cambios en tiempo real
-  const [lastKnownBarcode, setLastKnownBarcode] = useState(currentBarcode);
+  const [lastKnownBarcode, setLastKnownBarcode] = useState<string | null>(
+    currentBarcode ?? null,
+  );
 
   // Hook para manejar configuración de códigos de barras
   const {
@@ -153,7 +163,8 @@ export const BarcodeGenerator = ({
   } = useBarcodeSettings();
 
   // Estado local para configuración temporal
-  const [selectedConfig, setSelectedConfig] = useState(null);
+  const [selectedConfig, setSelectedConfig] =
+    useState<BarcodeSettings | null>(null);
   const [companyPrefixConfigValid, setCompanyPrefixConfigValid] =
     useState(false); // Declaración única
 
@@ -993,3 +1004,4 @@ export const BarcodeGenerator = ({
 };
 
 export default BarcodeGenerator;
+

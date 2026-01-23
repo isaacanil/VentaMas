@@ -105,7 +105,7 @@ export const fbPayBalanceForAccounts = async ({
       change: 0,
     };
 
-    for (let account of accounts) {
+    for (const account of accounts) {
       if (remainingAmount <= 0) break;
 
       // 🔍 VALIDACIÓN: Verificar que cada cuenta tenga balance pendiente
@@ -121,8 +121,9 @@ export const fbPayBalanceForAccounts = async ({
         continue; // Continuar con la siguiente cuenta en lugar de fallar
       }
 
+      const accountBalance = accountValidation.balance ?? 0;
       console.log(
-        `✅ Account ${account.id} has pending balance: ${accountValidation.balance}`,
+        `✅ Account ${account.id} has pending balance: ${accountBalance}`,
       );
 
       const accountInstallments = await getActiveInstallmentsByArId(
@@ -130,10 +131,16 @@ export const fbPayBalanceForAccounts = async ({
         account.id,
       );
       let accountTotalPaid = 0;
-      const paidInstallments = [];
-      const paidInstallmentIds = []; // Para rastrear IDs de cuotas pagadas completamente
+      const paidInstallments: Array<{
+        number?: number | string;
+        id: string;
+        amount: number;
+        status: string;
+        remainingBalance: number;
+      }> = [];
+      const paidInstallmentIds: string[] = []; // Para rastrear IDs de cuotas pagadas completamente
 
-      for (let installment of accountInstallments) {
+      for (const installment of accountInstallments) {
         if (remainingAmount <= 0) break;
 
         // Verificar que la cuota existe
@@ -196,12 +203,13 @@ export const fbPayBalanceForAccounts = async ({
         existingPaidInstallments: account.paidInstallments || [],
       });
 
-      const invoice = await fbGetInvoice(user.businessID, account.invoiceId);
+      const invoiceId = account.invoiceId ?? '';
+      const invoice = await fbGetInvoice(user.businessID, invoiceId);
       // Actualizar la factura con los pagos realizados
       if (invoice) {
         updateInvoiceTotals(batch, {
           businessId: user.businessID,
-          invoiceId: account.invoiceId,
+          invoiceId,
           amountPaid: accountTotalPaid,
           invoice,
           paymentMethods,

@@ -1,14 +1,10 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Typography, Modal, Button } from 'antd';
 import {
-  ShoppingOutlined,
   FileTextOutlined,
   FileDoneOutlined,
-  SettingOutlined,
-  LayoutOutlined
 } from '@ant-design/icons';
 
 import { SelectSettingCart } from '@/features/cart/cartSlice';
@@ -65,10 +61,12 @@ const CustomModal = styled(Modal)`
   }
 `;
 
+type BillingModalKey = 'invoice' | 'quote' | null;
+
 const BillingConfig = () => {
   const { billing } = useSelector(SelectSettingCart);
   const business = useSelector(selectBusinessData);
-  const [activeModal, setActiveModal] = useState(null);
+  const [activeModal, setActiveModal] = useState<BillingModalKey>(null);
 
   const closeModal = () => setActiveModal(null);
 

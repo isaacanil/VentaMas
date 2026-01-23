@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Fragment, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -22,12 +21,51 @@ import ElemLabel from '@/components/ui/ElemLabel/ElemLabel';
 import { ErrorComponent } from '@/components/ui/ErrorComponent/ErrorComponent';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import { Select } from '@/components/ui/Select/Select';
+import type { UserRoleLike } from '@/types/users';
 
 import { ChangePassword } from './ChangePassword/ChangePassword';
 
 const formIcon = icons.forms;
 
-const getRol = (id) => {
+type AbilityLike = {
+  can: (action: string, subject: string) => boolean;
+};
+
+interface ManagedUser {
+  id?: string;
+  uid?: string;
+  name: string;
+  password?: string;
+  role?: UserRoleLike;
+  active?: boolean;
+  businessID?: string | null;
+  createAt?: unknown;
+  email?: string;
+}
+
+interface UserManagerErrors {
+  name?: string;
+  role?: string;
+  password?: string[];
+  firebase?: string;
+  [key: string]: string | string[] | undefined;
+}
+
+interface UsersManagementState {
+  user: ManagedUser;
+  errors: UserManagerErrors;
+}
+
+type SelectOption = {
+  id?: string;
+  label?: string;
+};
+
+type SelectChangeEvent<T> = {
+  target: { value: T };
+};
+
+const getRol = (id?: UserRoleLike | null) => {
   switch (id) {
     case 'admin':
       return 'Administrador';
@@ -48,8 +86,11 @@ const EditUser = () => {
   const navigate = useNavigate();
   const [isOpenChangePassword, setIsOpenChangePassword] = useState(false);
   const [isOpenPermissions, setIsOpenPermissions] = useState(false);
-  const { user, errors } = useSelector(selectUserManager);
-  const { abilities } = useUserAccess();
+  const { user, errors } = useSelector<
+    Parameters<typeof selectUserManager>[0],
+    UsersManagementState
+  >(selectUserManager);
+  const { abilities } = useUserAccess() as { abilities: AbilityLike };
 
   const handleIsOpenChangePassWord = () => {
     setIsOpenChangePassword(!isOpenChangePassword);
@@ -72,9 +113,9 @@ const EditUser = () => {
     { id: 'buyer', label: 'Comprador' },
   ];
 
-  const validateUser = (user) => {
-    let errors = {};
-    let passwordErrors = [];
+  const validateUser = (user: ManagedUser) => {
+    const errors: UserManagerErrors = {};
+    const passwordErrors: string[] = [];
     if (!user.name) {
       errors.name = 'Nombre de usuario es requerido';
     }
@@ -108,7 +149,7 @@ const EditUser = () => {
     return errors;
   };
 
-  const handleInputChange = (value) => {
+  const handleInputChange = (value: Partial<ManagedUser>) => {
     dispatch(updateUser(value));
   };
 
@@ -121,12 +162,14 @@ const EditUser = () => {
     const errors = validateUser(user);
     if (Object.keys(errors).length === 0) {
       try {
-        await fbUpdateUser(user.id, user);
+        await fbUpdateUser({ ...user, id: user.id ?? '' });
         handleClear();
         navigate('/users/list');
       } catch (error) {
         console.error(error);
-        setErrors({ firebase: error.message });
+        setErrors({
+          firebase: error instanceof Error ? error.message : 'Error inesperado',
+        });
         return;
       }
     } else {
@@ -162,7 +205,7 @@ const EditUser = () => {
             displayKey={'label'}
             value={role}
             maxWidth="full"
-            onChange={(e) =>
+            onChange={(e: SelectChangeEvent<SelectOption | null>) =>
               handleInputChange({ ['role']: e.target.value?.id })
             }
           />

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Typography } from 'antd';
 import { forwardRef } from 'react';
 import Barcode from 'react-barcode';
@@ -6,7 +5,28 @@ import styled from 'styled-components';
 
 import { formatPrice } from '@/utils/format';
 
-export const BarCode = forwardRef(({ product }, ref) => {
+interface BarcodeProductPricing {
+  price?: number;
+}
+
+interface BarcodeProductWeightDetail {
+  weightUnit?: string;
+  isSoldByWeight?: boolean;
+}
+
+export interface BarcodeProduct {
+  name?: string;
+  barcode?: string;
+  pricing?: BarcodeProductPricing;
+  weightDetail?: BarcodeProductWeightDetail;
+}
+
+interface BarCodeProps {
+  product?: BarcodeProduct | null;
+}
+
+export const BarCode = forwardRef<HTMLDivElement, BarCodeProps>(
+  ({ product }, ref) => {
   const priceWithUnit = `${formatPrice(product?.pricing?.price)} / ${product?.weightDetail?.weightUnit}`;
   const priceWithoutUnit = formatPrice(product?.pricing?.price);
   const price = product?.weightDetail?.isSoldByWeight
@@ -30,7 +50,8 @@ export const BarCode = forwardRef(({ product }, ref) => {
       </Wrapper>
     </Container>
   );
-});
+  },
+);
 
 BarCode.displayName = 'BarCode';
 

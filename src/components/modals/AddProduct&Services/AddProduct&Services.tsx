@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import styled from 'styled-components';
 
 const ModalWrapper = styled.div`
@@ -60,7 +59,11 @@ const ModalButton = styled.button`
   }
 `;
 
-const ModalToggleButton = styled.button`
+interface ModalToggleButtonProps {
+  $active?: boolean;
+}
+
+const ModalToggleButton = styled.button<ModalToggleButtonProps>`
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -76,18 +79,26 @@ const ModalToggleButton = styled.button`
     outline: none;
   }
 
-  ${(props) => props.active &&
+  ${(props) =>
+    props.$active &&
     `
       color: #0077ff;
     `}
 `;
+
+interface AddProductAndServicesModalProps {
+  title: ReactNode;
+  children?: ReactNode;
+  onClose: () => void;
+  onSave: () => void;
+}
 
 export const AddProductAndServicesModal = ({
   title,
   children,
   onClose,
   onSave,
-}) => {
+}: AddProductAndServicesModalProps) => {
   const [isProductSelected, setIsProductSelected] = useState(true);
 
   const handleProductToggle = () => {
@@ -107,13 +118,13 @@ export const AddProductAndServicesModal = ({
         </ModalHeader>
         <div>
           <ModalToggleButton
-            active={isProductSelected}
+            $active={isProductSelected}
             onClick={handleProductToggle}
           >
             Producto
           </ModalToggleButton>
           <ModalToggleButton
-            active={!isProductSelected}
+            $active={!isProductSelected}
             onClick={handleServiceToggle}
           >
             Servicio

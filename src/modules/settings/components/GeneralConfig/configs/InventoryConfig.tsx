@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { Button, Empty, message, Select, Spin, Typography } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -15,6 +14,8 @@ import StockAlertSettingsSection from './components/StockAlertSettingsSection';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
+
+type WarehouseRecord = ReturnType<typeof useListenWarehouses>['data'][number];
 
 const Page = styled.div`
   display: grid;

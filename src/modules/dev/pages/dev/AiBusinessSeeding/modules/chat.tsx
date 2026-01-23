@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Typography } from 'antd';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -7,7 +6,21 @@ import VentamaxLogo from '@/assets/logo/ventamax.svg';
 
 const { Text } = Typography;
 
-export const chatAction = {
+interface ChatActionData {
+  message?: string;
+}
+
+interface ChatAction {
+  id: string;
+  name: string;
+  description: string;
+  promptInstruction: string;
+  execute: (data: ChatActionData) => Promise<ChatActionData>;
+  PreviewComponent: React.FC<{ data: ChatActionData }>;
+  ResultComponent: null;
+}
+
+export const chatAction: ChatAction = {
   id: 'chat',
   name: 'Chat General',
   description: 'Responde preguntas generales y guía al usuario.',
@@ -24,12 +37,12 @@ export const chatAction = {
     IMPORTANTE: No ofrezcas funcionalidades que no estén en las ACCIONES DISPONIBLES.
   `,
 
-  execute: async (data) => {
+  execute: async (data: ChatActionData) => {
     // Chat no requiere ejecución en backend, solo retorna el mensaje
     return data;
   },
 
-  PreviewComponent: ({ data }) => (
+  PreviewComponent: ({ data }: { data: ChatActionData }) => (
     <div style={{ 
         background: 'white', 
         padding: '2rem', 
@@ -45,7 +58,7 @@ export const chatAction = {
         </div>
         <div style={{ flex: 1 }}>
             <Text style={{ whiteSpace: 'pre-wrap', fontSize: '15px', lineHeight: '1.6' }}>
-                <ReactMarkdown>{data.message}</ReactMarkdown>
+                <ReactMarkdown>{data.message ?? ''}</ReactMarkdown>
             </Text>
         </div>
     </div>

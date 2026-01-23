@@ -35,7 +35,11 @@ export async function downloadQuotationPdf(
   }
 }
 
-export async function downloadInvoiceLetterPdf(business, data, onDialogClose) {
+export async function downloadInvoiceLetterPdf(
+  business: BusinessData,
+  data: QuotationData,
+  onDialogClose?: DialogCloseHandler,
+): Promise<void> {
   try {
     // Generating PDF for quotation
     const { generateInvoiceLetterPdf } = await import(

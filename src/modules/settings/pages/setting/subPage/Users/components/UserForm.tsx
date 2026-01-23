@@ -491,7 +491,7 @@ const SignUpModalInner = ({
 };
 
 // Jerarquía de roles (mayor a menor privilegio)
-const ROLE_HIERARCHY = {
+const ROLE_HIERARCHY: Record<string, number> = {
   dev: 6,
   owner: 5,
   admin: 4,
@@ -501,7 +501,7 @@ const ROLE_HIERARCHY = {
 };
 
 // Función para detectar si hay un downgrade de rol
-const isRoleDowngrade = (currentRole, newRole) => {
+const isRoleDowngrade = (currentRole?: UserRoleLike, newRole?: UserRoleLike) => {
   const currentLevel = ROLE_HIERARCHY[currentRole] || 0;
   const newLevel = ROLE_HIERARCHY[newRole] || 0;
   return currentLevel > newLevel;

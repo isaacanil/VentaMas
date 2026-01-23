@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faShop, faUser, faBolt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,7 +11,60 @@ import { db } from '@/firebase/firebaseconfig';
 
 const { Title, Text } = Typography;
 
-export const createBusinessAction = {
+type UserRole = 'admin' | 'owner' | 'manager' | 'cashier' | 'buyer';
+
+interface BusinessPayload {
+  name?: string;
+  rnc?: string;
+  address?: string;
+  tel?: string;
+  email?: string;
+  businessType?: string;
+}
+
+interface UserPayload {
+  realName?: string;
+  name?: string;
+  role?: UserRole;
+  password?: string;
+  email?: string;
+}
+
+interface CreateBusinessData {
+  business?: BusinessPayload;
+  users?: UserPayload[];
+  createdBusinessId?: string;
+}
+
+type LogType = 'info' | 'success' | 'warning' | 'error';
+
+interface ActionContext {
+  addLog: (msg: string, type?: LogType) => void;
+  isTestMode: boolean;
+}
+
+interface CreateBusinessAction {
+  id: string;
+  name: string;
+  description: string;
+  promptInstruction: string;
+  execute: (
+    data: CreateBusinessData,
+    context: ActionContext,
+  ) => Promise<CreateBusinessData>;
+  PreviewComponent: React.FC<{
+    data: CreateBusinessData;
+    onExecute: () => void;
+    loading?: boolean;
+    isTestMode?: boolean;
+  }>;
+  ResultComponent: React.FC<{
+    data: CreateBusinessData;
+    onReset: () => void;
+  }>;
+}
+
+export const createBusinessAction: CreateBusinessAction = {
   id: 'create_business',
   name: 'Registro de Negocio y Usuarios',
   description: 'Genera la estructura para un nuevo negocio y sus usuarios.',
@@ -33,16 +85,20 @@ export const createBusinessAction = {
 
   // Lógica de Ejecución
   execute: async (data, { addLog, isTestMode }) => {
-    const { business, users } = data;
-    const usersWithRole = (users || []).map((user) => ({
+    const business = data.business ?? {};
+    const users = data.users ?? [];
+    const usersWithRole = users.map((user) => ({
       ...user,
       role: user.role || 'admin',
     }));
     
-    addLog(`🔍 Validando Negocio: "${business.name}"...`, 'info');
+    addLog(`🔍 Validando Negocio: "${business.name ?? ''}"...`, 'info');
     
     if (!isTestMode) {
-         const busQuery = query(collection(db, 'businesses'), where('business.name', '==', business.name));
+         const busQuery = query(
+           collection(db, 'businesses'),
+           where('business.name', '==', business.name ?? ''),
+         );
          const busSnap = await getDocs(busQuery);
          if (!busSnap.empty) {
             addLog(`❌ Negocio duplicado`, 'error');
@@ -53,13 +109,13 @@ export const createBusinessAction = {
     // Password Validation
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     for (const user of usersWithRole) {
-        if (!passwordRegex.test(user.password)) {
-            addLog(`❌ Pass débil: ${user.name}`, 'error');
-            throw new Error(`Contraseña débil para ${user.name}`);
+        if (!user.password || !passwordRegex.test(user.password)) {
+            addLog(`❌ Pass débil: ${user.name ?? 'usuario'}`, 'error');
+            throw new Error(`Contraseña débil para ${user.name ?? 'usuario'}`);
         }
     }
 
-    let businessId;
+    let businessId: string;
     if (isTestMode) {
         await new Promise(r => setTimeout(r, 800));
         businessId = 'simulated_id_' + Math.random().toString(36).substr(2, 4);
@@ -69,16 +125,19 @@ export const createBusinessAction = {
         addLog(`✅ Negocio creado ID: ${businessId}`, 'success');
     }
 
-    const updatedUsers = [];
+    const updatedUsers: UserPayload[] = [];
     
     // Helper function for username resolution
-    const checkUsernameAvailability = async (username) => {
-        const q = query(collection(db, 'users'), where('user.name', '==', username));
+    const checkUsernameAvailability = async (username: string) => {
+        const q = query(
+          collection(db, 'users'),
+          where('user.name', '==', username),
+        );
         const snapshot = await getDocs(q);
         return snapshot.empty; 
     };
 
-    const resolveUniqueUsername = async (baseUsername) => {
+    const resolveUniqueUsername = async (baseUsername: string) => {
         let candidate = baseUsername;
         let counter = 1;
         while (!(await checkUsernameAvailability(candidate))) {
@@ -96,7 +155,7 @@ export const createBusinessAction = {
     };
 
     for (const user of usersWithRole) {
-        let finalUsername = user.name;
+        let finalUsername = user.name ?? '';
         if (!isTestMode) {
            finalUsername = await resolveUniqueUsername(finalUsername);
         }
@@ -108,7 +167,11 @@ export const createBusinessAction = {
           await new Promise(r => setTimeout(r, 400));
           addLog(`✅ Usuario simulado: ${userToCreate.name}`, 'success');
         } else {
-          await fbSignUp({ ...userToCreate, businessID: businessId, active: true });
+          await fbSignUp({
+            ...userToCreate,
+            businessID: businessId,
+            active: true,
+          });
           addLog(`✅ Usuario creado: ${userToCreate.name}`, 'success');
         }
     }
@@ -117,7 +180,11 @@ export const createBusinessAction = {
   },
 
   // Componente de Previsualización (Antes de ejecutar)
-  PreviewComponent: ({ data, onExecute, loading, isTestMode }) => (
+  PreviewComponent: ({ data, onExecute, loading, isTestMode }) => {
+    const businessName = data.business?.name ?? 'Sin nombre';
+    const usersCount = data.users?.length ?? 0;
+
+    return (
     <div style={{ background: 'white', padding: '2rem', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'center' }}>
         <Title level={4} style={{ margin: 0 }}>Confirmar Datos</Title>
         <div style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #f0f0f0', margin: '1rem 0', width: '100%' }}>
@@ -125,14 +192,14 @@ export const createBusinessAction = {
                 <FontAwesomeIcon icon={faShop} style={{ color: '#1890ff', fontSize: 18 }} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <Text type="secondary" style={{ fontSize: 11 }}>NEGOCIO</Text>
-                    <Text strong>{data.business.name}</Text>
+                    <Text strong>{businessName}</Text>
                 </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem 0' }}>
                 <FontAwesomeIcon icon={faUser} style={{ color: '#1890ff', fontSize: 18 }} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <Text type="secondary" style={{ fontSize: 11 }}>USUARIOS</Text>
-                    <Text strong>{data.users.length} detectados</Text>
+                    <Text strong>{usersCount} detectados</Text>
                 </div>
             </div>
         </div>
@@ -148,15 +215,16 @@ export const createBusinessAction = {
             {isTestMode ? 'SIMULAR CREACIÓN' : 'CREAR NEGOCIO AHORA'}
         </Button>
     </div>
-  ),
+    );
+  },
 
   // Componente de Resultado (Después de ejecutar)
   ResultComponent: ({ data, onReset }) => {
 
       const handleShareWhatsApp = () => {
         try {
-          const business = data.business || {};
-          const getRoleLabel = (role) => ({
+          const business = data.business ?? {};
+          const getRoleLabel = (role?: UserRole | string) => ({
             admin: 'Administrador',
             owner: 'Dueno',
             manager: 'Gerente',
@@ -164,8 +232,9 @@ export const createBusinessAction = {
             buyer: 'Compras'
           }[role] || role || 'Usuario');
 
-          const formatLine = (label, value) => {
-            const normalized = typeof value === 'string' ? value.trim() : value;
+          const formatLine = (label: string, value: unknown) => {
+            const normalized =
+              typeof value === 'string' ? value.trim() : value;
             return normalized ? `${label}: ${normalized}` : null;
           };
 
@@ -179,13 +248,16 @@ export const createBusinessAction = {
             'URL: https://ventamax.web.app'
           ].filter(Boolean).join('\n');
 
-          const groupedUsers = (data.users || []).reduce((acc, user) => {
-            const role = user.role || 'admin';
-            const section = getRoleLabel(role);
-            if (!acc[section]) acc[section] = [];
-            acc[section].push({ ...user, role });
-            return acc;
-          }, {});
+          const groupedUsers = (data.users || []).reduce(
+            (acc: Record<string, UserPayload[]>, user) => {
+              const role = user.role || 'admin';
+              const section = getRoleLabel(role);
+              if (!acc[section]) acc[section] = [];
+              acc[section].push({ ...user, role });
+              return acc;
+            },
+            {},
+          );
 
           let msg = 'ALBUSINESS SEEDING - Registro listo\n\n';
           msg += '*Datos del negocio*\n';
@@ -203,7 +275,9 @@ export const createBusinessAction = {
           });
 
           window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-        } catch (e) { console.error(e); }
+        } catch (e) {
+          console.error(e);
+        }
       };
 
       return (
