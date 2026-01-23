@@ -4,9 +4,23 @@ import styled from 'styled-components';
 
 import { ProductCard } from './ProductCard';
 import type { ColumnsType } from 'antd/es/table';
-import type { InvoiceProduct } from '@/types/invoice';
+import type { InvoiceProduct, InvoiceProductAmount } from '@/types/invoice';
 
 type CreditNoteProduct = InvoiceProduct & { maxAvailableQty?: number };
+
+const resolveQuantity = (amount: InvoiceProduct['amountToBuy']): number => {
+  if (typeof amount === 'number' && Number.isFinite(amount)) return amount;
+  if (typeof amount === 'object' && amount !== null) {
+    const amountObj = amount as InvoiceProductAmount;
+    if (typeof amountObj.unit === 'number' && Number.isFinite(amountObj.unit)) {
+      return amountObj.unit;
+    }
+    if (typeof amountObj.total === 'number' && Number.isFinite(amountObj.total)) {
+      return amountObj.total;
+    }
+  }
+  return 1;
+};
 
 interface ProductListProps {
   products: CreditNoteProduct[];
@@ -51,8 +65,7 @@ export const ProductList = ({
           {paginatedProducts.map((product, index) => {
             // Usar maxAvailableQty que ya incluye la lógica correcta para edición
             const maxQty = product.maxAvailableQty || 1;
-            const originalQty =
-              typeof product.amountToBuy === 'number' ? product.amountToBuy : 1;
+            const originalQty = resolveQuantity(product.amountToBuy);
             const quantity =
               itemQuantities[String(product.id)] ||
               existingItemQuantities[String(product.id)] ||

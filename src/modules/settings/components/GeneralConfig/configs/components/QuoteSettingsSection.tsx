@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { Form, Input, InputNumber, Checkbox, message, Typography, Space } from 'antd';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import type { FocusEvent } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { FileDoneOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons';
@@ -92,9 +92,15 @@ const SettingsGrid = styled.div`
   }
 `;
 
+interface QuoteSettingsFormValues {
+  quoteEnabled?: boolean;
+  quoteDefaultNote?: string;
+  quoteValidity?: number;
+}
+
 const QuoteSettingsSection = () => {
   const user = useSelector(selectUser);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<QuoteSettingsFormValues>();
   const {
     billing: { quoteEnabled, quoteDefaultNote, quoteValidity },
   } = useSelector(SelectSettingCart);
@@ -107,7 +113,7 @@ const QuoteSettingsSection = () => {
     });
   }, [quoteEnabled, quoteDefaultNote, quoteValidity, form]);
 
-  const handleQuoteEnabled = async (checked) => {
+  const handleQuoteEnabled = async (checked: boolean) => {
     try {
       await setBillingSettings(user, { quoteEnabled: checked });
       message.success(checked ? 'Módulo de cotizaciones activado' : 'Módulo desactivado');
@@ -116,7 +122,7 @@ const QuoteSettingsSection = () => {
     }
   };
 
-  const handleValidityBlur = async (value) => {
+  const handleValidityBlur = async (value: string) => {
     if (!value) return;
     try {
       const numValue = Number(value);
@@ -131,7 +137,7 @@ const QuoteSettingsSection = () => {
     }
   };
 
-  const handleNoteBlur = async (e) => {
+  const handleNoteBlur = async (e: FocusEvent<HTMLTextAreaElement>) => {
     try {
       await setBillingSettings(user, { quoteDefaultNote: e.target.value });
     } catch {
@@ -139,7 +145,7 @@ const QuoteSettingsSection = () => {
     }
   };
 
-  const quoteEnabledValue = Form.useWatch('quoteEnabled', form);
+  const quoteEnabledValue = Form.useWatch('quoteEnabled', form) ?? false;
 
   return (
     <Container>
@@ -176,7 +182,7 @@ const QuoteSettingsSection = () => {
                 min={1}
                 max={90}
                 style={{ width: '120px' }}
-                onBlur={(e) => handleValidityBlur(e.target.value)}
+                onBlur={(e) => handleValidityBlur(e.currentTarget.value)}
               />
             </Form.Item>
 

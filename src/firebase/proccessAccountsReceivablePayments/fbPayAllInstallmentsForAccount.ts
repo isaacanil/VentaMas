@@ -38,6 +38,7 @@ export const fbPayAllInstallmentsForAccount = async ({
     paymentMethods,
     comments: _comments,
   } = paymentDetails;
+  const totalPaidNumber = Number(totalPaid);
 
   try {
     // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente
@@ -63,7 +64,10 @@ export const fbPayAllInstallmentsForAccount = async ({
     });
 
     // 🔍 VALIDACIÓN 2: Validar que el monto del pago sea válido
-    const paymentValidation = validatePaymentAmount(totalPaid, currentBalance);
+    const paymentValidation = validatePaymentAmount(
+      totalPaidNumber,
+      currentBalance,
+    );
 
     if (!paymentValidation.isValid) {
       console.warn(
@@ -134,7 +138,7 @@ export const fbPayAllInstallmentsForAccount = async ({
     }
 
     return await runTransaction(db, async (transaction) => {
-      let remainingAmount = totalPaid;
+      let remainingAmount = totalPaidNumber;
 
       // Crear el registro de pago usando la utilidad
       const paymentId = createPaymentRecord(transaction, {
@@ -189,7 +193,7 @@ export const fbPayAllInstallmentsForAccount = async ({
         );
       }
 
-      let newArBalance = roundToTwoDecimals(initialArBalance - totalPaid);
+      let newArBalance = roundToTwoDecimals(initialArBalance - totalPaidNumber);
 
       if (newArBalance < 0) {
         remainingAmount = -newArBalance;
@@ -202,7 +206,7 @@ export const fbPayAllInstallmentsForAccount = async ({
       updateAccountReceivableState(transaction, {
         businessId: user.businessID,
         arId,
-        totalPaid,
+        totalPaid: totalPaidNumber,
         newArBalance,
         paidInstallmentIds: paidInstallments,
         existingPaidInstallments: accountData.paidInstallments || [],
@@ -215,7 +219,7 @@ export const fbPayAllInstallmentsForAccount = async ({
         updateInvoiceTotals(transaction, {
           businessId: user.businessID,
           invoiceId,
-          amountPaid: totalPaid,
+          amountPaid: totalPaidNumber,
           invoice,
           paymentMethods,
         });
@@ -238,7 +242,7 @@ export const fbPayAllInstallmentsForAccount = async ({
           safeNumber(accountData.paidInstallments?.length) -
           safeNumber(paidInstallments.length),
         totalInstallments: safeNumber(accountData.totalInstallments),
-        totalPaid: safeNumber(totalPaid),
+        totalPaid: safeNumber(totalPaidNumber),
         arBalance: safeNumber(newArBalance),
       };
 
@@ -260,7 +264,7 @@ export const fbPayAllInstallmentsForAccount = async ({
         clientId: safeString(clientId),
         arId: safeString(arId),
         user,
-        totalAmount: safeNumber(totalPaid),
+        totalAmount: safeNumber(totalPaidNumber),
         paymentMethods: paymentMethods || [],
         accounts: [accountReceiptData],
         change: safeNumber(remainingAmount),

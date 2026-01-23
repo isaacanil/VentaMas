@@ -1,8 +1,23 @@
-// @ts-nocheck
-import React from 'react';
 import styled from 'styled-components';
 
-export const SidebarItem = ({ item, isActive, onClick }) => {
+import type { ReactNode } from 'react';
+
+interface SidebarItemData {
+  icon: ReactNode;
+  label: string;
+}
+
+interface SidebarItemProps {
+  item: SidebarItemData;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+export const SidebarItem = ({
+  item,
+  isActive,
+  onClick,
+}: SidebarItemProps) => {
   return (
     <Container onClick={onClick} isActive={isActive}>
       <Icon>{item.icon}</Icon>
@@ -10,7 +25,7 @@ export const SidebarItem = ({ item, isActive, onClick }) => {
     </Container>
   );
 };
-const Container = styled.li`
+const Container = styled.li<{ isActive: boolean }>`
   display: grid;
   gap: 0.2em;
   align-items: center;

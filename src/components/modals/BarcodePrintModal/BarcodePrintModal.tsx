@@ -31,8 +31,8 @@ export const BarcodePrintModal = () => {
       if (barcodeRef.current) {
         // Obtén los valores del formulario, incluido el ancho deseado y la cantidad.
         const values = form.getFieldsValue();
-        const desiredWidthMM = values.barcodeWidth; // Ancho deseado en milímetros.
-        const quantity = parseInt(values.quantity, 10); // Cantidad de veces que se debe duplicar el código de barras.
+        const desiredWidthMM = Number(values.barcodeWidth); // Ancho deseado en milímetros.
+        const quantity = Number.parseInt(String(values.quantity), 10); // Cantidad de veces que se debe duplicar el código de barras.
 
         const html2canvas = (await import('html2canvas')).default;
         const { jsPDF } = await import('jspdf');
@@ -71,15 +71,17 @@ export const BarcodePrintModal = () => {
         const pdfBlob = pdf.output('blob');
         const url = URL.createObjectURL(pdfBlob);
         const printWindow = window.open(url, '_blank');
-        printWindow.addEventListener(
-          'load',
-          function () {
-            printWindow.focus();
-            printWindow.print();
-            URL.revokeObjectURL(url);
-          },
-          { once: true },
-        );
+        if (printWindow) {
+          printWindow.addEventListener(
+            'load',
+            function () {
+              printWindow.focus();
+              printWindow.print();
+              URL.revokeObjectURL(url);
+            },
+            { once: true },
+          );
+        }
       }
     } catch (error) {
       console.error('Error al generar la vista previa de impresión: ', error);

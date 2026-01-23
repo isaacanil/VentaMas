@@ -1,6 +1,24 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
+
+interface InfoCardCondition {
+  id?: string | number;
+  name?: string;
+}
+
+interface InfoCardState {
+  id?: string | number;
+  name?: string;
+}
+
+interface InfoCardProps {
+  title: string;
+  provider?: string;
+  condition: InfoCardCondition;
+  state: InfoCardState;
+  updatedAt?: string | number | Date;
+  color?: string;
+}
 
 export const InfoCard = ({
   title,
@@ -9,7 +27,7 @@ export const InfoCard = ({
   state,
   updatedAt,
   color,
-}) => {
+}: InfoCardProps) => {
   return (
     <CardWrapper color={color}>
       <Title>{title}</Title>

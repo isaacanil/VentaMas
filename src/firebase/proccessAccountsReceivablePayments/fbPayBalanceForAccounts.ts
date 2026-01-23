@@ -98,7 +98,30 @@ export const fbPayBalanceForAccounts = async ({
       });
     }
 
-    const paymentReceipt = {
+    type BalanceReceiptAccount = {
+      arNumber?: string | number;
+      arId?: string;
+      invoiceNumber: string;
+      invoiceId?: string;
+      paidInstallments: Array<{
+        number?: number | string;
+        id: string;
+        amount: number;
+        status: string;
+        remainingBalance: number;
+      }>;
+      remainingInstallments: number;
+      totalInstallments: number;
+      totalPaid: number;
+      arBalance?: number;
+    };
+
+    const paymentReceipt: {
+      accounts: BalanceReceiptAccount[];
+      totalAmount: number;
+      paymentMethod: PaymentDetails['paymentMethods'];
+      change: number;
+    } = {
       accounts: [],
       totalAmount: totalPaidFloat,
       paymentMethod: paymentMethods,
@@ -222,15 +245,16 @@ export const fbPayBalanceForAccounts = async ({
         account?.invoiceNumber ||
         null;
 
+      const totalInstallments = account.totalInstallments ?? 0;
+
       paymentReceipt.accounts.push({
         arNumber: account.numberId,
         arId: account.id,
         invoiceNumber: invoiceNumber ? String(invoiceNumber) : 'N/A',
         invoiceId: account.invoiceId || invoice?.data?.id || invoice?.id,
         paidInstallments,
-        remainingInstallments:
-          account?.totalInstallments - paidInstallments.length,
-        totalInstallments: account?.totalInstallments,
+        remainingInstallments: totalInstallments - paidInstallments.length,
+        totalInstallments,
         totalPaid: accountTotalPaid,
         arBalance: account?.arBalance,
       });

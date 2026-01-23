@@ -12,7 +12,7 @@ import { formatDate } from '@/utils/date/dateUtils';
 import { formatPrice } from '@/utils/format';
 import { normalizeText } from '@/utils/text';
 import type { InvoiceData } from '@/types/invoice';
-import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
+import type { DatePickerRangeValue, DatePickerValue } from '@/components/common/DatePicker/types';
 
 
 /*
@@ -192,10 +192,12 @@ const PaginationFooter = styled.div`
   border-top: 1px solid #f0f0f0;
 `;
 
+type InvoiceWithNcf = InvoiceData & { ncf?: string };
+
 interface InvoiceSelectorProps {
-  invoices?: InvoiceData[];
-  selectedInvoice?: InvoiceData | null;
-  onSelectInvoice?: (invoice: InvoiceData | null) => void;
+  invoices?: InvoiceWithNcf[];
+  selectedInvoice?: InvoiceWithNcf | null;
+  onSelectInvoice?: (invoice: InvoiceWithNcf | null) => void;
   loading?: boolean;
   disabled?: boolean;
   label?: string;
@@ -254,17 +256,18 @@ const InvoiceSelector = ({
     if (!disabled) setVisible(true);
   };
 
-  const handleDateRangeChange = (range: DatePickerRangeValue | null) => {
+  const handleDateRangeChange = (range: DatePickerValue) => {
+    const rangeValue = Array.isArray(range) ? range : null;
     const finalRange =
-      !range || !range[0]
+      !rangeValue || !rangeValue[0]
         ? [DateTime.now().startOf('month'), DateTime.now().endOf('month')]
-        : range;
+        : rangeValue;
     onDateRangeChange?.(finalRange as DatePickerRangeValue);
   };
 
   const closeDrawer = () => setVisible(false);
 
-  const handleSelect = (invoice: InvoiceData) => {
+  const handleSelect = (invoice: InvoiceWithNcf) => {
     onSelectInvoice?.(invoice);
     closeDrawer();
     setSearch('');
@@ -338,7 +341,6 @@ const InvoiceSelector = ({
                 onChange={(e) => setSearch(e.target.value)}
                 allowClear
                 ref={searchRef}
-                loading={loading}
               />
             </div>
             <div style={{ width: '220px' }}>

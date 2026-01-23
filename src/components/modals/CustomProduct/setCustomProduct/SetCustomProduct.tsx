@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -16,8 +15,21 @@ import { Modal } from '@/components/modals/Modal';
 import { Header } from './Components/Header';
 import { IngredientList } from './Components/IngredientList';
 
+interface CustomProductPricing {
+  price: number;
+  cost: number;
+  tax: number;
+}
 
-const EmptyNewProduct = {
+interface CustomProductDraft {
+  name: string;
+  id: string;
+  pricing: CustomProductPricing;
+  amountToBuy: number;
+  size: string;
+}
+
+const EmptyNewProduct: CustomProductDraft = {
   name: '',
   id: '',
   pricing: {
@@ -29,12 +41,18 @@ const EmptyNewProduct = {
   size: '',
 };
 
-export const SetCustomProduct = ({ isOpen }) => {
+interface SetCustomProductProps {
+  isOpen: boolean;
+}
+
+export const SetCustomProduct = ({ isOpen }: SetCustomProductProps) => {
   const dispatch = useDispatch();
   const [IngredientModalOpen, setIngredientModalOpen] = useState(false);
   const handleIngredientOpen = () =>
     setIngredientModalOpen(!IngredientModalOpen);
-  const [newProduct, setNewProduct] = useState(EmptyNewProduct);
+  const [newProduct, setNewProduct] = useState<CustomProductDraft>(
+    EmptyNewProduct,
+  );
   const [initialState, setInitialState] = useState(false);
 
   const closeModal = () => {

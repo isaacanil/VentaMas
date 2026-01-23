@@ -4,9 +4,11 @@ import type { DocumentData, QueryConstraint, QuerySnapshot, Unsubscribe } from '
 import { db } from '@/firebase/firebaseconfig';
 import { createReference, getDocFromRef } from '@/utils/refereceUtils';
 
-type TimestampLike = {
-  seconds?: number;
-};
+type TimestampLike =
+  | {
+      seconds?: number;
+    }
+  | number;
 
 type OrderFilters = {
   status?: string;

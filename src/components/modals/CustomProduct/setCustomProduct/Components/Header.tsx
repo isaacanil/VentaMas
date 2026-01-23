@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { nanoid } from 'nanoid';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,10 +16,52 @@ import { removeMatchesString } from '@/utils/text';
 import { getPizzaType } from '@/components/modals/CustomProduct/getPizzaType';
 import customPizzaData from '@/components/modals/CustomProduct/setCustomProduct/customPizza.json';
 
-import { getPrice } from './getPrice';
+import {
+  getPrice,
+  type PizzaProductSelected,
+  type PizzaProductState,
+  type PizzaSliceMode,
+} from './getPrice';
 
 
-const EmptyProduct = {
+interface CustomProductDraft {
+  name: string;
+  id: string;
+  amountToBuy: number;
+  pricing: {
+    price: number;
+    cost: number;
+    tax: number;
+  };
+  size: string;
+}
+
+interface CustomProductItem {
+  name?: string;
+  pricing?: {
+    price?: number;
+    cost?: number;
+    tax?: number;
+  };
+  [key: string]: unknown;
+}
+
+interface PizzaSliceOption {
+  value: PizzaSliceMode;
+  label: string;
+}
+
+interface PizzaSizeOption {
+  value: string;
+  label: string;
+}
+
+interface CustomPizzaConfig {
+  pizzaSlices: PizzaSliceOption[];
+  sizeList: PizzaSizeOption[];
+}
+
+const EmptyProduct: PizzaProductState = {
   id: '',
   type: '',
   name: '',
@@ -33,7 +74,7 @@ const EmptyProduct = {
   },
   mitad: { first: '', second: '' },
 };
-const EmptyNewProduct = {
+const EmptyNewProduct: CustomProductDraft = {
   name: '',
   id: '',
   amountToBuy: 1,
@@ -44,7 +85,18 @@ const EmptyNewProduct = {
   },
   size: '',
 };
-const EmptyProductSelected = { a: '', b: '' };
+const EmptyProductSelected: PizzaProductSelected = { a: '', b: '' };
+
+type LayoutComponent = React.ComponentType<{ children?: React.ReactNode }>;
+
+interface HeaderProps {
+  Row: LayoutComponent;
+  Group: LayoutComponent;
+  newProduct: CustomProductDraft;
+  setNewProduct: React.Dispatch<React.SetStateAction<CustomProductDraft>>;
+  initialState: boolean;
+  setInitialState: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
 export const Header = ({
   Row,
@@ -53,26 +105,32 @@ export const Header = ({
   setNewProduct,
   initialState,
   setInitialState,
-}) => {
-  let type = 'pizza';
+}: HeaderProps) => {
+  const productType = 'pizza';
 
   const dispatch = useDispatch();
 
-  const user = useSelector(selectUser);
+  type HeaderRootState = Parameters<typeof selectUser>[0];
+  const user = useSelector((state: HeaderRootState) => selectUser(state));
 
-  const [products, setProducts] = useState([]);
-  const { pizzaSlices, sizeList } = customPizzaData;
-  const [isComplete, setIsComplete] = useState('complete');
-  const [product, setProduct] = useState(EmptyProduct);
-  const [productSelected, setProductSelected] = useState(EmptyProductSelected);
+  const [products, setProducts] = useState<CustomProductItem[]>([]);
+  const { pizzaSlices, sizeList } = customPizzaData as CustomPizzaConfig;
+  const [isComplete, setIsComplete] = useState<PizzaSliceMode>('complete');
+  const [product, setProduct] = useState<PizzaProductState>(EmptyProduct);
+  const [productSelected, setProductSelected] =
+    useState<PizzaProductSelected>(EmptyProductSelected);
 
   const matchList = useMemo(
     () => /Completa|Pepperoni|Vegetales|Jamón y queso|Maíz |Pollo/g,
     [],
   );
 
-  const totalIngredientPrice = useSelector(selectTotalIngredientPrice);
-  const IngredientListNameSelected = useSelector(SelectIngredientsListName);
+  const totalIngredientPrice = useSelector((state: HeaderRootState) =>
+    selectTotalIngredientPrice(state),
+  );
+  const IngredientListNameSelected = useSelector((state: HeaderRootState) =>
+    SelectIngredientsListName(state),
+  );
   const [size, setSize] = useState('');
 
   useEffect(() => {
@@ -100,9 +158,9 @@ export const Header = ({
 
   useEffect(() => {
     if (size !== '') {
-      fbGetProductsQueryByType(setProducts, type, size, user);
+      fbGetProductsQueryByType(setProducts, productType, size, user);
     }
-  }, [size, user, type]);
+  }, [size, user, productType]);
 
   useEffect(() => {
     if (isComplete === 'complete' && productSelected.a !== '') {

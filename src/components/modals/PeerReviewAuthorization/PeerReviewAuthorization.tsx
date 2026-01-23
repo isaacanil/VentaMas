@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Modal, Spin, Button, Input, Form } from 'antd';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -27,13 +26,30 @@ const ErrorMessage = styled.div`
   box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 `;
 
+interface PeerReviewFormValues {
+  name: string;
+  password: string;
+}
+
+interface PeerReviewUserData {
+  uid: string | null;
+  [key: string]: unknown;
+}
+
+interface PeerReviewAuthorizationProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  onSubmit: (user: PeerReviewUserData) => void;
+  description?: string;
+}
+
 export const PeerReviewAuthorization = ({
   isOpen,
   setIsOpen,
   onSubmit,
   description,
-}) => {
-  const [form] = Form.useForm();
+}: PeerReviewAuthorizationProps) => {
+  const [form] = Form.useForm<PeerReviewFormValues>();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

@@ -1,7 +1,11 @@
-// @ts-nocheck
 import { Button } from 'antd';
 
-export const Footer = ({ onSubmit, onCancel }) => {
+interface FooterProps {
+  onSubmit: () => void;
+  onCancel: () => void;
+}
+
+export const Footer = ({ onSubmit, onCancel }: FooterProps) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'end', gap: '0.4em' }}>
       <Button onClick={onCancel}>Cancelar</Button>

@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { AnimatePresence, motion } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -17,17 +16,26 @@ import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
 import { formatPrice as formatPrice } from '@/utils/format';
 import { updateObject } from '@/utils/object/updateObject';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
+import type { UserIdentity } from '@/types/users';
 
+type ClientDetailsProps = {
+  mode: boolean;
+};
 
-export const ClientDetails = ({ mode }) => {
+type ClientRootState = Parameters<typeof selectClient>[0];
+type UserRootState = Parameters<typeof selectUser>[0];
+
+export const ClientDetails = ({ mode }: ClientDetailsProps) => {
   const dispatch = useDispatch();
-  const client = useSelector(selectClient);
+  const client = useSelector<ClientRootState, ReturnType<typeof selectClient>>(
+    selectClient,
+  );
   const isMenuVisible =
     (client?.name && client?.name !== 'Generic Client') || mode;
   // const [pendingBalance, setPendingBalance] = useState(0)
-  const user = useSelector(selectUser);
+  const user = useSelector<UserRootState, UserIdentity | null>(selectUser);
   const [isExpanded, setIsExpanded] = useState(false);
-  const expandablePanelRef = useRef(null);
+  const expandablePanelRef = useRef<HTMLDivElement | null>(null);
   const insuranceEnabled = useInsuranceEnabled();
 
   useClickOutSide(
@@ -39,8 +47,9 @@ export const ClientDetails = ({ mode }) => {
 
   const { balance: pendingBalance } = useClientPendingBalance({
     user,
-    clientId: client.id,
+    clientId: client?.id ?? null,
   });
+  const pendingBalanceValue = pendingBalance ?? 0;
 
   const handlePayment = () => {
     dispatch(
@@ -49,14 +58,14 @@ export const ClientDetails = ({ mode }) => {
         paymentDetails: {
           paymentScope: 'balance',
           paymentOption: 'installment',
-          totalAmount: pendingBalance,
+          totalAmount: pendingBalanceValue,
           clientId: client.id,
         },
       }),
     );
   };
 
-  const updateClient = (e) => {
+  const updateClient = (e: ChangeEvent<HTMLInputElement>) => {
     dispatch(setClient(updateObject(client, e)));
   };
 
@@ -135,14 +144,14 @@ export const ClientDetails = ({ mode }) => {
                 label="Bal general"
                 size="small"
                 labelVariant="primary"
-                value={`${formatPrice(pendingBalance)}`}
+                value={`${formatPrice(pendingBalanceValue)}`}
                 autoComplete="off"
                 readOnly
                 buttons={[
                   {
                     name: 'Pagar',
                     onClick: handlePayment,
-                    disabled: pendingBalance === 0,
+                    disabled: pendingBalanceValue === 0,
                     color: 'primary',
                   },
                 ]}
@@ -217,7 +226,7 @@ const BalanceGroup = styled.div`
   align-items: center;
 `;
 
-const ExpandButton = styled.button`
+const ExpandButton = styled.button<{ isExpanded?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,7 +250,7 @@ const ExpandButton = styled.button`
   }
 `;
 
-const ExpandIcon = styled.span`
+const ExpandIcon = styled.span<{ isExpanded: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;

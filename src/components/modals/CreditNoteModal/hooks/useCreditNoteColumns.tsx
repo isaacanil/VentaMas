@@ -107,7 +107,12 @@ export const useCreditNoteColumns = ({
                 min={1}
                 max={maxQty}
                 value={value}
-                onChange={(val) => handleQuantityChange(record.id, val)}
+                onChange={(val) =>
+                  handleQuantityChange(
+                    record.id,
+                    typeof val === 'number' ? val : null,
+                  )
+                }
                 size="small"
                 style={{ width: '60px' }}
               />

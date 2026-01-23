@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -11,27 +10,41 @@ import { separator } from '@/utils/number/number';
 import { Button } from '@/components/ui/Button/Button';
 import { IngredientCard } from '@/components/ui/customProduct/typePizza/IngredientCard';
 
+interface CustomProductIngredient {
+  name?: string;
+  [key: string]: unknown;
+}
 
-export const IngredientList = ({ handleIngredientOpen }) => {
-  const user = useSelector(selectUser);
-  const [customProduct, setCustomProduct] = useState('');
+interface CustomProductDocument {
+  ingredientList?: CustomProductIngredient[];
+}
+
+interface IngredientListProps {
+  handleIngredientOpen: () => void;
+}
+
+export const IngredientList = ({ handleIngredientOpen }: IngredientListProps) => {
+  type UserRootState = Parameters<typeof selectUser>[0];
+  const user = useSelector((state: UserRootState) => selectUser(state));
+  const [customProduct, setCustomProduct] = useState<CustomProductDocument | null>(
+    null,
+  );
   useEffect(() => {
     fbGetCustomProduct(user, setCustomProduct);
   }, [user]);
-  const totalIngredientPrice = useSelector(selectTotalIngredientPrice);
+  type CustomProductRootState = Parameters<typeof selectTotalIngredientPrice>[0];
+  const totalIngredientPrice = useSelector((state: CustomProductRootState) =>
+    selectTotalIngredientPrice(state),
+  );
   return (
     <Container>
       <IngredientsWrapper>
-        {customProduct
-          ? customProduct.ingredientList.length > 0
-            ? customProduct.ingredientList
-                .sort((a, b) => {
-                  return a.name > b.name ? 1 : -1;
-                })
-                .map((item, index) => (
-                  <IngredientCard key={index} item={item} index={index} />
-                ))
-            : null
+        {customProduct?.ingredientList && customProduct.ingredientList.length > 0
+          ? customProduct.ingredientList
+              .sort((a, b) => (String(a.name) > String(b.name) ? 1 : -1))
+              .map((item, index) => (
+                <IngredientCard key={index} item={item} index={index} />
+              ))
           : null}
       </IngredientsWrapper>
       <IngredientPriceBar>

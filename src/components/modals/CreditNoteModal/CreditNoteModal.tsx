@@ -56,7 +56,7 @@ type CreditNoteModalTypedState = Omit<
   CreditNoteModalState,
   'selectedInvoice' | 'selectedClient' | 'creditNoteData'
 > & {
-  selectedInvoice: InvoiceData | null;
+  selectedInvoice: InvoiceWithNcf | null;
   selectedClient: InvoiceClient | null;
   creditNoteData: CreditNoteRecord | null;
 };
@@ -64,6 +64,10 @@ type CreditNoteModalTypedState = Omit<
 type ClientWrapper = {
   client: InvoiceClient & { id?: string | number };
 } & Record<string, unknown>;
+
+type InvoiceWithNcf = InvoiceData & {
+  ncf?: string;
+};
 
 type InvoiceItemWithAvailability = InvoiceProduct & {
   maxAvailableQty: number;
@@ -140,7 +144,7 @@ export const CreditNoteModal = () => {
   const { invoices, loading: invoicesLoading } = useFbGetInvoicesByClient(
     normalizedClientId,
     dateRange,
-  );
+  ) as { invoices: InvoiceWithNcf[]; loading: boolean };
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(
     selectedInvoice?.id || null,
@@ -308,7 +312,7 @@ export const CreditNoteModal = () => {
     setSelectedInvoiceId(null);
   };
 
-  const handleInvoiceChange = (invoice: InvoiceData | null) => {
+  const handleInvoiceChange = (invoice: InvoiceWithNcf | null) => {
     setSelectedInvoiceId(invoice?.id || null);
     resetSelection();
   };

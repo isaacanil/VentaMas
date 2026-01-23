@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   getDocs,
@@ -14,6 +13,7 @@ import {
   CLIENT_ROOT_FIELDS,
   extractNormalizedClient,
 } from '@/firebase/client/clientNormalizer';
+import type { ClientDocumentData, NormalizedClient } from '@/firebase/client/clientNormalizer';
 import { db } from '@/firebase/firebaseconfig';
 
 /**
@@ -23,7 +23,11 @@ import { db } from '@/firebase/firebaseconfig';
  * @param {string} businessB - ID del negocio de destino.
  * @param {number} limit - Cantidad de clientes a transferir (0 para todos los clientes).
  */
-export const transferClients = async (businessA, businessB, limit = 0) => {
+export const transferClients = async (
+  businessA: string,
+  businessB: string,
+  limit: number = 0,
+): Promise<void> => {
   try {
     const clientBusinessARef = collection(
       db,
@@ -56,13 +60,13 @@ export const transferClients = async (businessA, businessB, limit = 0) => {
     for (let i = 0; i < totalClients; i += batchSize) {
       const batch = writeBatch(db);
       querySnapshot.docs.slice(i, i + batchSize).forEach((item) => {
-        const docData = item.data() || {};
-        const normalizedClient = extractNormalizedClient(docData);
+        const docData = (item.data() || {}) as ClientDocumentData;
+        const normalizedClient = extractNormalizedClient(docData) as NormalizedClient;
         const id = nanoid(12);
         normalizedClient.id = id;
 
         const { payload } = buildClientWritePayload(normalizedClient);
-        const extras = {};
+        const extras: Record<string, unknown> = {};
 
         for (const [key, value] of Object.entries(docData)) {
           if (key === 'client') continue;

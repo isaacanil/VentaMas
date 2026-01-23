@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -6,8 +5,26 @@ import styled from 'styled-components';
 
 import { updateUser } from '@/features/usersManagement/usersManagementSlice';
 import { Row } from '@/components/ui/Table/Row';
+import type { UserRoleLike } from '@/types/users';
 
-export const Item = ({ data, num, colWidth }) => {
+interface ItemUser {
+  id?: string;
+  name?: string;
+  role?: UserRoleLike;
+  active?: boolean;
+}
+
+interface ItemRow {
+  user: ItemUser;
+}
+
+interface ItemProps {
+  data: ItemRow;
+  num: number;
+  colWidth?: string[] | number[] | string;
+}
+
+export const Item = ({ data, num, colWidth }: ItemProps) => {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -15,7 +32,7 @@ export const Item = ({ data, num, colWidth }) => {
     navigate('/users/update-user/' + data.user.id);
     dispatch(updateUser(data.user));
   };
-  const renamedAbilities = (role) => {
+  const renamedAbilities = (role?: UserRoleLike) => {
     switch (role) {
       case 'owner':
         return 'Dueño';
@@ -57,7 +74,7 @@ export const Item = ({ data, num, colWidth }) => {
   );
 };
 
-const Role = styled.div`
+const Role = styled.div<{ role?: UserRoleLike }>`
   display: flex;
   align-items: center;
   width: 100%;

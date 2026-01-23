@@ -1,18 +1,18 @@
-// @ts-nocheck
-import { useState } from 'react';
+import { useState, type RefObject } from 'react';
+import type { TableRow } from '../types/ColumnTypes';
 
-const scrollToTopOfWrapper = (wrapperRef) => {
+const scrollToTopOfWrapper = (wrapperRef?: RefObject<HTMLElement>) => {
   if (wrapperRef?.current) {
     wrapperRef.current.scrollTop = 0;
   }
 };
 
-export const useTablePagination = (
-  data,
-  sortedData,
-  filteredData,
+export const useTablePagination = <RowData extends TableRow>(
+  data: RowData[],
+  sortedData: RowData[],
+  filteredData: RowData[],
   itemsPerPage = 15,
-  wrapperRef,
+  wrapperRef?: RefObject<HTMLElement>,
 ) => {
   const [currentPage, setCurrentPage] = useState(0);
 

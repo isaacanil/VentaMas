@@ -13,9 +13,11 @@ import { selectUser } from '@/features/auth/userSlice';
 import { db } from '@/firebase/firebaseconfig';
 import { createReference, getDocFromRef } from '@/utils/refereceUtils';
 
-type TimestampLike = {
-  seconds?: number;
-};
+type TimestampLike =
+  | {
+      seconds?: number;
+    }
+  | number;
 
 type OrderData = Record<string, unknown> & {
   dates: Record<string, TimestampLike | undefined>;

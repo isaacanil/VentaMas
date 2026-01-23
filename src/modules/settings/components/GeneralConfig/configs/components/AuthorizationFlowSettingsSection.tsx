@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { message, Checkbox } from 'antd';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -10,7 +9,26 @@ import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { setBillingSettings } from '@/firebase/billing/billingSetting';
 import { ROUTES } from '@/router/routes/routesName';
 
-const AVAILABLE_MODULES = [
+type AuthorizationModuleKey = 'invoices' | 'accountsReceivable';
+
+interface AuthorizationModuleDefinition {
+  key: AuthorizationModuleKey;
+  label: string;
+  description: string;
+}
+
+interface EnabledModules {
+  invoices: boolean;
+  accountsReceivable: boolean;
+}
+
+interface AuthorizationFlowSettingsSectionProps {
+  sectionId?: string;
+}
+
+type StatusType = 'info' | 'warning';
+
+const AVAILABLE_MODULES: AuthorizationModuleDefinition[] = [
   {
     key: 'invoices',
     label: 'Facturación',
@@ -26,26 +44,25 @@ const AVAILABLE_MODULES = [
 
 const AuthorizationFlowSettingsSection = ({
   sectionId = 'authorization-flow-overview',
-}) => {
+}: AuthorizationFlowSettingsSectionProps) => {
   const user = useSelector(selectUser);
-  const settings = useSelector(SelectSettingCart) || {};
+  const settings = useSelector(SelectSettingCart);
   const authorizationFlowEnabled =
     !!settings?.billing?.authorizationFlowEnabled;
 
-  const rawEnabledModules =
-    settings?.billing?.enabledAuthorizationModules || {};
-  const enabledModules = {
-    invoices: rawEnabledModules.invoices ?? true,
+  const rawEnabledModules = settings?.billing?.enabledAuthorizationModules;
+  const enabledModules: EnabledModules = {
+    invoices: rawEnabledModules?.invoices ?? true,
     accountsReceivable:
-      rawEnabledModules.accountsReceivable ??
-      rawEnabledModules.cashRegister ??
+      rawEnabledModules?.accountsReceivable ??
+      rawEnabledModules?.cashRegister ??
       true,
   };
   const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const handleToggle = async (nextValue) => {
+  const handleToggle = async (nextValue: boolean) => {
     if (!user?.businessID) {
       messageApi.error(
         'No se pudo actualizar la configuración de autorizaciones.',
@@ -81,7 +98,10 @@ const AuthorizationFlowSettingsSection = ({
     }
   };
 
-  const handleModuleToggle = async (moduleKey, checked) => {
+  const handleModuleToggle = async (
+    moduleKey: AuthorizationModuleKey,
+    checked: boolean,
+  ) => {
     if (!user?.businessID) {
       messageApi.error('No se pudo actualizar la configuración.');
       return;
@@ -248,7 +268,7 @@ const InfoDescription = styled.p`
   color: rgb(31 41 51 / 60%);
 `;
 
-const ToggleButton = styled.button`
+const ToggleButton = styled.button<{ $checked: boolean }>`
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -269,7 +289,7 @@ const ToggleButton = styled.button`
   }
 `;
 
-const ToggleThumb = styled.span`
+const ToggleThumb = styled.span<{ $checked: boolean }>`
   position: absolute;
   top: 2px;
   left: ${({ $checked }) => ($checked ? '22px' : '2px')};
@@ -283,7 +303,7 @@ const ToggleThumb = styled.span`
 
 const StatusContainer = styled.div``;
 
-const StatusCard = styled.div`
+const StatusCard = styled.div<{ $type: StatusType }>`
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -304,7 +324,7 @@ const StatusHeader = styled.div`
   align-items: center;
 `;
 
-const StatusIndicator = styled.span`
+const StatusIndicator = styled.span<{ $type: StatusType }>`
   width: 10px;
   height: 10px;
   background-color: ${({ $type }) =>
@@ -312,7 +332,7 @@ const StatusIndicator = styled.span`
   border-radius: 50%;
 `;
 
-const StatusTitle = styled.span`
+const StatusTitle = styled.span<{ $type: StatusType }>`
   font-size: 15px;
   font-weight: 600;
   color: ${({ $type }) => ($type === 'info' ? '#0f5132' : '#8a3b00')};

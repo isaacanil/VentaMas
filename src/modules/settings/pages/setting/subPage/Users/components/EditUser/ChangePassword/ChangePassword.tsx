@@ -1,20 +1,43 @@
-// @ts-nocheck
 import { Modal, Form, Input, notification, Button } from 'antd';
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { fbUpdateUserPassword } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 
+interface ChangePasswordFormValues {
+  oldPassword: string;
+  newPassword: string;
+}
+
+interface ChangePasswordUser {
+  id?: string;
+  name?: string;
+}
+
+interface ChangePasswordProps {
+  user?: ChangePasswordUser | null;
+  isOpen?: boolean;
+  setIsOpen: (open: boolean) => void;
+  onClose: () => void;
+}
+
 export const ChangePassword = ({
   user = null,
   isOpen = false,
   setIsOpen,
   onClose,
-}) => {
-  const [form] = Form.useForm();
+}: ChangePasswordProps) => {
+  const [form] = Form.useForm<ChangePasswordFormValues>();
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: ChangePasswordFormValues) => {
     try {
+      if (!user?.id) {
+        notification.error({
+          message: 'Error',
+          description: 'Usuario no disponible.',
+        });
+        return;
+      }
       await fbUpdateUserPassword(
         user.id,
         values.oldPassword,

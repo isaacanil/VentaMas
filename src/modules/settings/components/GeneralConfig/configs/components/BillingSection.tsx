@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Typography } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
 const { Title, Paragraph } = Typography;
@@ -40,15 +40,23 @@ const MotionContent = styled(motion.div)`
   padding: 16px 0;
 `;
 
+interface BillingSectionProps {
+  title: string;
+  description: string;
+  children: ReactNode;
+  hidden?: boolean;
+  sectionId?: string;
+}
+
 const BillingSection = ({
   title,
   description,
   children,
   hidden = false,
   sectionId,
-}) => {
+}: BillingSectionProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
 
   // useClickOutSide(sectionRef, isExpanded, () => setIsExpanded(false));
 
@@ -70,7 +78,6 @@ const BillingSection = ({
         data-role="config-section-header"
         data-expanded={isExpanded}
         aria-expanded={isExpanded}
-        isExpanded={isExpanded}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <motion.div

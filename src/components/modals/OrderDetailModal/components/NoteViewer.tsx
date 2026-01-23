@@ -1,8 +1,12 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
-export function NoteViewer({ title, content }) {
+interface NoteViewerProps {
+  title?: string;
+  content: string;
+}
+
+export function NoteViewer({ title, content }: NoteViewerProps) {
   return (
     <NotaWrapper>
       {title && <TituloNota>{title}</TituloNota>}

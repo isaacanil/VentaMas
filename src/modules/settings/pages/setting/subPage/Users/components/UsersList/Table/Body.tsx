@@ -1,8 +1,23 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
-export const Body = ({ data, Item, colWidth, reverse }) => {
+interface BodyProps<Row> {
+  data?: Row[];
+  Item: React.ComponentType<{
+    data: Row;
+    num: number;
+    colWidth?: string[] | number[] | string;
+  }>;
+  colWidth?: string[] | number[] | string;
+  reverse?: boolean;
+}
+
+export const Body = <Row,>({
+  data,
+  Item,
+  colWidth,
+  reverse,
+}: BodyProps<Row>) => {
   if (!Array.isArray(data)) {
     console.error('Data is not an array.');
     return null;

@@ -1,8 +1,16 @@
-// @ts-nocheck
 import React from 'react';
 import styled from 'styled-components';
 
-export const Header = ({ data }) => {
+interface HeaderItem {
+  align?: 'left' | 'right' | 'center';
+  name: string;
+}
+
+interface HeaderProps {
+  data: HeaderItem[];
+}
+
+export const Header = ({ data }: HeaderProps) => {
   return data.map(({ align, name }, index) => (
     <ITEMS text={align} key={index}>
       {name}
@@ -10,7 +18,7 @@ export const Header = ({ data }) => {
   ));
 };
 
-const ITEMS = styled.div`
+const ITEMS = styled.div<{ text?: 'left' | 'right' | 'center' }>`
   h3 {
     font-size: 0.8em;
     font-weight: 500;

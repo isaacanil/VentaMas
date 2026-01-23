@@ -49,7 +49,7 @@ export interface AccountsReceivableAccount extends FirestoreData {
 export type CreditNotePayment = InvoiceCreditNote & { amountToUse?: number };
 
 export interface PaymentDetails {
-  totalPaid: number;
+  totalPaid: number | string;
   paymentMethods: InvoicePaymentMethod[];
   comments?: string;
   clientId?: string | null;

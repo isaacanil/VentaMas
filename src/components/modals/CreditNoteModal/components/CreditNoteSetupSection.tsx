@@ -9,6 +9,8 @@ import type { CreditNoteRecord } from '@/types/creditNote';
 import type { InvoiceClient, InvoiceData } from '@/types/invoice';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
 
+type InvoiceWithNcf = InvoiceData & { ncf?: string };
+
 interface CreditNoteSetupSectionProps {
   canUseCreditNotes: boolean;
   taxReceiptEnabled: boolean;
@@ -20,9 +22,9 @@ interface CreditNoteSetupSectionProps {
   currentClient?: InvoiceClient | null;
   onSelectClient: (client: InvoiceClient | null) => void;
   clientsLoading: boolean;
-  invoices: InvoiceData[];
-  currentInvoice?: InvoiceData | null;
-  onSelectInvoice: (invoice: InvoiceData | null) => void;
+  invoices: InvoiceWithNcf[];
+  currentInvoice?: InvoiceWithNcf | null;
+  onSelectInvoice: (invoice: InvoiceWithNcf | null) => void;
   invoicesLoading: boolean;
   selectedClientId: string | number | null;
   dateRange: DatePickerRangeValue;

@@ -1,6 +1,5 @@
-// @ts-nocheck
-import { Form, Select, Checkbox, InputNumber, Button, message, Space, Typography, Divider } from 'antd';
-import React, { useState, useEffect } from 'react';
+import { Select, Checkbox, InputNumber, Button, message, Typography, Divider } from 'antd';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { CalendarOutlined, ClockCircleOutlined, SettingOutlined } from '@ant-design/icons';
@@ -85,6 +84,31 @@ const CustomGrid = styled.div`
   margin-top: 16px;
 `;
 
+type DueDateOptionValue =
+  | 'immediate'
+  | '3_days'
+  | '1_week'
+  | '2_weeks'
+  | '15_days'
+  | '1_month'
+  | '45_days'
+  | '2_months'
+  | '3_months'
+  | '6_months'
+  | '1_year'
+  | 'custom';
+
+type StandardDueDateOptionValue = Exclude<
+  DueDateOptionValue,
+  'custom' | 'immediate'
+>;
+
+interface DueDateOption {
+  value: StandardDueDateOptionValue;
+  label: string;
+  sub: string;
+}
+
 const DueDateConfig = () => {
   const {
     billing: { hasDueDate, duePeriod, useCustomConfig },
@@ -94,7 +118,8 @@ const DueDateConfig = () => {
   const [months, setMonths] = useState(duePeriod?.months || 0);
   const [weeks, setWeeks] = useState(duePeriod?.weeks || 0);
   const [days, setDays] = useState(duePeriod?.days || 0);
-  const [selectedOption, setSelectedOption] = useState('1_week');
+  const [selectedOption, setSelectedOption] =
+    useState<DueDateOptionValue | null>('1_week');
 
   const [loadingSaveCustomDuePeriod, setLoadingSaveCustomDuePeriod] =
     useState(false);
@@ -107,7 +132,7 @@ const DueDateConfig = () => {
     }
   }, [duePeriod]);
 
-  const handleDueDateToggle = async (checked) => {
+  const handleDueDateToggle = async (checked: boolean) => {
     try {
       await setBillingSettings(user, { hasDueDate: checked });
       message.success(checked ? 'Vencimiento habilitado' : 'Vencimiento deshabilitado');
@@ -116,7 +141,7 @@ const DueDateConfig = () => {
     }
   };
 
-  const handlePredefinedChange = async (value) => {
+  const handlePredefinedChange = async (value: DueDateOptionValue) => {
     try {
       setSelectedOption(value);
       await setBillingSettings(user, {
@@ -124,7 +149,10 @@ const DueDateConfig = () => {
         useCustomConfig: false,
       });
       if (value !== 'custom') {
-        const periods = {
+        const periods: Record<
+          Exclude<DueDateOptionValue, 'custom'>,
+          { weeks: number; days: number; months: number }
+        > = {
           immediate: { weeks: 0, days: 0, months: 0 },
           '3_days': { weeks: 0, days: 3, months: 0 },
           '1_week': { weeks: 1, days: 0, months: 0 },
@@ -147,7 +175,7 @@ const DueDateConfig = () => {
     }
   };
 
-  const handleUseCustomConfigChange = async (checked) => {
+  const handleUseCustomConfigChange = async (checked: boolean) => {
     try {
       await setBillingSettings(user, { useCustomConfig: checked });
       if (checked) {
@@ -180,7 +208,7 @@ const DueDateConfig = () => {
     }
   };
 
-  const options = [
+  const options: DueDateOption[] = [
     { value: '3_days', label: '3 días', sub: '72 horas' },
     { value: '1_week', label: '1 semana', sub: '7 días' },
     { value: '2_weeks', label: '2 semanas', sub: '14 días' },
@@ -243,15 +271,30 @@ const DueDateConfig = () => {
               <CustomGrid>
                 <div>
                   <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: '4px' }}>Meses</Text>
-                  <InputNumber min={0} value={months} onChange={setMonths} style={{ width: '100%' }} />
+                  <InputNumber
+                    min={0}
+                    value={months}
+                    onChange={(value) => setMonths(value ?? 0)}
+                    style={{ width: '100%' }}
+                  />
                 </div>
                 <div>
                   <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: '4px' }}>Semanas</Text>
-                  <InputNumber min={0} value={weeks} onChange={setWeeks} style={{ width: '100%' }} />
+                  <InputNumber
+                    min={0}
+                    value={weeks}
+                    onChange={(value) => setWeeks(value ?? 0)}
+                    style={{ width: '100%' }}
+                  />
                 </div>
                 <div>
                   <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: '4px' }}>Días</Text>
-                  <InputNumber min={0} value={days} onChange={setDays} style={{ width: '100%' }} />
+                  <InputNumber
+                    min={0}
+                    value={days}
+                    onChange={(value) => setDays(value ?? 0)}
+                    style={{ width: '100%' }}
+                  />
                 </div>
               </CustomGrid>
               <Button

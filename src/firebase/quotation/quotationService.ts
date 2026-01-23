@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -14,11 +13,29 @@ import { db } from '@/firebase/firebaseconfig';
 import { getNextID } from '@/firebase/Tools/getNextID';
 import { sanitizeFirestoreDocument } from '@/utils/firebase/sanitizeFirestoreDocument';
 
-function calculateExpirationDate(days) {
+type UserWithBusinessAndUid = {
+  businessID: string;
+  uid: string;
+};
+
+type QuotationData = Record<string, unknown> & {
+  id?: string;
+  expirationDate?: Date;
+  expired?: boolean;
+};
+
+type QuotationSettings = {
+  quoteValidity?: number | null;
+  quoteDefaultNote?: string | null;
+};
+
+function calculateExpirationDate(days: number): Date {
   return DateTime.now().plus({ days }).toJSDate();
 }
 
-export async function getQuotations(user) {
+export async function getQuotations(
+  user: UserWithBusinessAndUid,
+): Promise<QuotationData[]> {
   try {
     const quotationsRef = collection(
       db,
@@ -27,9 +44,9 @@ export async function getQuotations(user) {
       'quotations',
     );
     const quotationsSnapshot = await getDocs(quotationsRef);
-    const quotations = quotationsSnapshot.docs.map((doc) => ({
+    const quotations: QuotationData[] = quotationsSnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...(doc.data() as QuotationData),
     }));
     return quotations;
   } catch (error) {
@@ -38,7 +55,10 @@ export async function getQuotations(user) {
   }
 }
 
-export async function getQuotation(user, quotationId) {
+export async function getQuotation(
+  user: UserWithBusinessAndUid,
+  quotationId: string,
+): Promise<QuotationData> {
   try {
     const quotationRef = doc(
       db,
@@ -50,8 +70,9 @@ export async function getQuotation(user, quotationId) {
 
     const quotationSnapshot = await getDoc(quotationRef);
     if (quotationSnapshot.exists()) {
-      const quotationData = quotationSnapshot.data();
-      quotationData.expired = quotationData.expirationDate < new Date();
+      const quotationData = quotationSnapshot.data() as QuotationData;
+      const expirationDate = quotationData.expirationDate;
+      quotationData.expired = expirationDate instanceof Date ? expirationDate < new Date() : false;
       return quotationData;
     } else {
       throw new Error('Quotation not found');
@@ -62,7 +83,11 @@ export async function getQuotation(user, quotationId) {
   }
 }
 
-export async function addQuotation(user, quotationData, quotationSettings) {
+export async function addQuotation(
+  user: UserWithBusinessAndUid,
+  quotationData: QuotationData,
+  quotationSettings?: QuotationSettings | null,
+): Promise<QuotationData> {
   try {
     const id = nanoid();
     const quotationRef = doc(

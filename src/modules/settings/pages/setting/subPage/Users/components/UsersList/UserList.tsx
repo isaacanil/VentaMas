@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   CheckCircleOutlined,
   EditOutlined,
@@ -10,7 +9,7 @@ import {
 } from '@/constants/icons/antd';
 import { faCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, Dropdown, Input } from 'antd';
+import { Button, Dropdown, Input, type MenuProps } from 'antd';
 import { onValue, ref } from 'firebase/database';
 import { DateTime } from 'luxon';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -32,9 +31,69 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { getAvailablePermissionsForRole } from '@/services/dynamicPermissions';
 import DynamicPermissionsManager from '@/modules/settings/pages/setting/subPage/Users/components/DynamicPermissionsManager/DynamicPermissionsManager';
 import { AdvancedTable } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { AdvancedTableProps } from '@/components/ui/AdvancedTable/AdvancedTable';
+import type { UserIdentity, UserRoleLike } from '@/types/users';
 
 import { ChangeUserPasswordModal } from './ChangeUserPasswordModal';
 import { ToggleUserStatusModal } from './ToggleUserStatusModal';
+
+type AbilityLike = {
+  can: (action: string, subject: string) => boolean;
+};
+
+type TimestampLike =
+  | number
+  | { seconds: number; nanoseconds: number }
+  | { _seconds: number; _nanoseconds: number }
+  | { toMillis: () => number }
+  | null
+  | undefined;
+
+interface UserProfile extends UserIdentity {
+  email?: string;
+  username?: string;
+  active?: boolean;
+  createAt?: TimestampLike;
+  businessID?: string | null;
+  businessId?: string | null;
+  number?: number;
+}
+
+interface BusinessUserRecord {
+  number?: number;
+  user?: UserProfile;
+  [key: string]: unknown;
+}
+
+interface PresenceConnection {
+  state?: string;
+  updatedAt?: TimestampLike;
+  [key: string]: unknown;
+}
+
+interface PresenceStatus {
+  state: string;
+  lastUpdated: number | null;
+}
+
+type PresenceMap = Record<string, PresenceStatus>;
+
+interface UserListRow {
+  number?: number;
+  name: {
+    displayName: string;
+    email: string;
+  };
+  createAt?: TimestampLike;
+  role?: UserRoleLike;
+  status: {
+    active: boolean;
+    label: string;
+  };
+  presence: PresenceStatus;
+  user?: UserProfile;
+  searchText: string;
+}
 
 const Role = styled.div`
   display: inline-flex;
@@ -139,7 +198,7 @@ const PresenceBadge = styled.span`
   }
 `;
 
-const toMillis = (value) => {
+const toMillis = (value: TimestampLike) => {
   if (typeof value === 'number') return value;
   if (
     typeof value === 'object' &&
@@ -165,18 +224,21 @@ const {
 } = ROUTES_NAME;
 
 export const UserList = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<BusinessUserRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
-  const [presenceMap, setPresenceMap] = useState({});
-  const currentUser = useSelector(selectUser);
+  const [presenceMap, setPresenceMap] = useState<PresenceMap>({});
+  const currentUser = useSelector(selectUser) as UserProfile | null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { abilities, loading: permissionsLoading } = useUserAccess();
+  const { abilities, loading: permissionsLoading } = useUserAccess() as {
+    abilities: AbilityLike;
+    loading: boolean;
+  };
   const canManageDynamicPermissions = abilities.can('manage', 'users');
 
   const userIds = useMemo(
@@ -192,7 +254,7 @@ export const UserList = () => {
     [users],
   );
 
-  const presenceMapForUsers = useMemo(() => {
+  const presenceMapForUsers = useMemo<Record<string, PresenceStatus>>(() => {
     if (userIds.length === 0) return {};
     const allowed = new Set(userIds);
     return Object.fromEntries(
@@ -228,18 +290,18 @@ export const UserList = () => {
     const unsubscribes = userIds.map((uid) => {
       const presenceRef = ref(realtimeDB, `presence/${uid}`);
       return onValue(presenceRef, (snapshot) => {
-        const value = snapshot?.val();
+        const value = snapshot?.val() as Record<string, PresenceConnection> | null;
         let state = 'offline';
         let lastUpdated = null;
         if (value && typeof value === 'object') {
-          const connections = Object.values(value);
+          const connections = Object.values(value) as PresenceConnection[];
           const onlineConnection = connections.find(
             (connection) => connection?.state === 'online',
           );
           state = onlineConnection ? 'online' : 'offline';
           const timestamps = connections
             .map((connection) => toMillis(connection?.updatedAt))
-            .filter((ts) => typeof ts === 'number');
+            .filter((ts): ts is number => typeof ts === 'number');
           if (timestamps.length) {
             lastUpdated = Math.max(...timestamps);
           }
@@ -263,7 +325,7 @@ export const UserList = () => {
     };
   }, [userIds]);
 
-  const data = useMemo(
+  const data = useMemo<UserListRow[]>(
     () =>
       users.map(({ user }) => {
         const name = user?.name || 'Usuario sin nombre';
@@ -271,7 +333,9 @@ export const UserList = () => {
         const isActive = Boolean(user?.active);
         const statusLabel = isActive ? 'Activo' : 'Inactivo';
         const userId = user?.uid || user?.id;
-        const presence = presenceMapForUsers[userId] || { state: 'offline' };
+        const presence = userId
+          ? presenceMapForUsers[userId] || { state: 'offline', lastUpdated: null }
+          : { state: 'offline', lastUpdated: null };
 
         return {
           number: user?.number,
@@ -296,16 +360,17 @@ export const UserList = () => {
     [users, presenceMapForUsers],
   );
 
-  const sortedData = useMemo(() => {
-    const getBucket = (presence) => {
+  const sortedData = useMemo<UserListRow[]>(() => {
+    const getBucket = (presence: PresenceStatus) => {
       const isOnline = presence?.state === 'online';
-      const lastSeen = typeof presence?.lastUpdated === 'number' ? presence.lastUpdated : null;
+      const lastSeen =
+        typeof presence?.lastUpdated === 'number' ? presence.lastUpdated : null;
       if (isOnline) return { bucket: 0, lastSeen };
       if (lastSeen) return { bucket: 1, lastSeen };
       return { bucket: 2, lastSeen: null };
     };
 
-    const getCreatedAt = (value) => toMillis(value) ?? 0;
+    const getCreatedAt = (value: TimestampLike) => toMillis(value) ?? 0;
 
     return [...data].sort((a, b) => {
       const aBucket = getBucket(a.presence);
@@ -323,7 +388,7 @@ export const UserList = () => {
   }, [data]);
 
   const handleViewActivity = useCallback(
-    (user) => {
+    (user: UserProfile) => {
       const userId = user?.uid || user?.id;
       if (!userId) return;
       const path = `${USERS}/${USERS_ACTIVITY_DETAIL.replace(
@@ -341,7 +406,7 @@ export const UserList = () => {
   );
 
   const handleEditUser = useCallback(
-    (user) => {
+    (user: UserProfile) => {
       // Solo permitir editar si tiene permisos
       if (abilities.can('manage', 'User')) {
         dispatch(updateUser(user));
@@ -357,18 +422,18 @@ export const UserList = () => {
     [abilities, dispatch],
   );
 
-  const openPasswordModal = useCallback((user) => {
+  const openPasswordModal = useCallback((user: UserProfile) => {
     setSelectedUser(user);
     setIsPasswordModalOpen(true);
   }, []);
 
-  const openStatusModal = useCallback((user) => {
+  const openStatusModal = useCallback((user: UserProfile) => {
     setSelectedUser(user);
     setIsStatusModalOpen(true);
   }, []);
 
   const openPermissionsModal = useCallback(
-    (user) => {
+    (user: UserProfile) => {
       if (!canManageDynamicPermissions) return;
       setSelectedUser(user);
       setIsPermissionsModalOpen(true);
@@ -391,15 +456,20 @@ export const UserList = () => {
     setSelectedUser(null);
   }, []);
 
-  const columns = useMemo(() => {
-    const baseColumns = [
+  const columns = useMemo<AdvancedTableProps<UserListRow>['columns']>(() => {
+    const baseColumns: NonNullable<
+      AdvancedTableProps<UserListRow>['columns']
+    > = [
       {
         Header: '#',
         accessor: 'number',
         align: 'left',
         maxWidth: '0.2fr',
         minWidth: '60px',
-        cell: ({ value }) => <IndexBadge>{value ?? '--'}</IndexBadge>,
+        cell: ({ value }: { value: unknown }) => {
+          const indexValue = typeof value === 'number' ? value : undefined;
+          return <IndexBadge>{indexValue ?? '--'}</IndexBadge>;
+        },
       },
       {
         Header: 'Nombre',
@@ -407,28 +477,42 @@ export const UserList = () => {
         align: 'left',
         maxWidth: '1fr',
         minWidth: '150px',
-        cell: ({ value }) => (
-          <NameCell>
-            <NameContent>
-              <span className="name">
-                {value?.displayName ?? 'Usuario sin nombre'}
-              </span>
-              {value?.email && <span className="meta">{value.email}</span>}
-            </NameContent>
-          </NameCell>
-        ),
+        cell: ({ value }: { value: unknown }) => {
+          const nameValue = value as UserListRow['name'] | undefined;
+          return (
+            <NameCell>
+              <NameContent>
+                <span className="name">
+                  {nameValue?.displayName ?? 'Usuario sin nombre'}
+                </span>
+                {nameValue?.email && (
+                  <span className="meta">{nameValue.email}</span>
+                )}
+              </NameContent>
+            </NameCell>
+          );
+        },
       },
       {
         Header: 'Fecha de Creación',
         accessor: 'createAt',
         align: 'left',
         maxWidth: '0.8fr',
-        cell: ({ value }) => {
-          if (!value?.seconds) {
+        cell: ({ value }: { value: unknown }) => {
+          const timestamp = value as TimestampLike;
+          if (
+            !timestamp ||
+            typeof timestamp !== 'object' ||
+            !('seconds' in timestamp)
+          ) {
             return <span>Sin registro</span>;
           }
 
-          const dateObject = DateTime.fromSeconds(value.seconds);
+          const dateObject = DateTime.fromSeconds(
+            typeof (timestamp as { seconds?: number }).seconds === 'number'
+              ? (timestamp as { seconds: number }).seconds
+              : 0,
+          );
 
           return (
             <DateCell>
@@ -443,15 +527,16 @@ export const UserList = () => {
         Header: 'Rol',
         accessor: 'role',
         align: 'left',
-        cell: ({ value }) => {
-          const role = userRoles.find((r) => r.id === value) || {};
+        cell: ({ value }: { value: unknown }) => {
+          const roleValue = value as UserRoleLike | undefined;
+          const role = userRoles.find((r) => r.id === roleValue) || {};
 
           return (
             <Role
               $primaryColor={role.primaryColor}
               $secondaryColor={role.secondaryColor}
             >
-              {getRoleLabelById(value)}
+              {getRoleLabelById(roleValue)}
             </Role>
           );
         },
@@ -463,11 +548,12 @@ export const UserList = () => {
         description: '¿Esta Activo?',
         maxWidth: '0.4fr',
         minWidth: '100px',
-        cell: ({ value }) => {
-          const isActive = value?.active;
+        cell: ({ value }: { value: unknown }) => {
+          const statusValue = value as UserListRow['status'] | undefined;
+          const isActive = statusValue?.active;
           return (
             <StatusPill $active={isActive}>
-              {value?.label ?? (isActive ? 'Activo' : 'Inactivo')}
+              {statusValue?.label ?? (isActive ? 'Activo' : 'Inactivo')}
             </StatusPill>
           );
         },
@@ -478,9 +564,13 @@ export const UserList = () => {
         align: 'left',
         maxWidth: '0.3fr',
         minWidth: '110px',
-        cell: ({ value }) => {
-          const isOnline = value?.state === 'online';
-          const lastUpdated = value?.lastUpdated;
+        cell: ({ value }: { value: unknown }) => {
+          const presenceValue = (value as PresenceStatus) ?? {
+            state: 'offline',
+            lastUpdated: null,
+          };
+          const isOnline = presenceValue?.state === 'online';
+          const lastUpdated = presenceValue?.lastUpdated;
           let label = isOnline ? 'En linea' : 'Sin datos';
           if (!isOnline && lastUpdated) {
             const date = DateTime.fromMillis(lastUpdated);
@@ -511,9 +601,9 @@ export const UserList = () => {
         maxWidth: '0.2fr',
         minWidth: '50px',
         fixed: 'right',
-        cell: ({ value }) => (
+        cell: ({ value }: { value: unknown }) => (
           <ActionMenu
-            user={value}
+            user={value as UserProfile | undefined}
             onEdit={handleEditUser}
             onChangePassword={openPasswordModal}
             onToggleStatus={openStatusModal}
@@ -601,6 +691,16 @@ export const UserList = () => {
   );
 };
 
+interface ActionMenuProps {
+  user?: UserProfile;
+  onEdit?: (user: UserProfile) => void;
+  onChangePassword?: (user: UserProfile) => void;
+  onToggleStatus?: (user: UserProfile) => void;
+  onManagePermissions?: (user: UserProfile) => void;
+  onViewActivity?: (user: UserProfile) => void;
+  canManageDynamicPermissions: boolean;
+}
+
 const ActionMenu = ({
   user,
   onEdit,
@@ -609,7 +709,7 @@ const ActionMenu = ({
   onManagePermissions,
   onViewActivity,
   canManageDynamicPermissions,
-}) => {
+}: ActionMenuProps) => {
   const isActive = Boolean(user?.active);
 
   const hasDynamicPermissions = useMemo(
@@ -617,8 +717,8 @@ const ActionMenu = ({
     [user?.role],
   );
 
-  const items = useMemo(() => {
-    const menuItems = [];
+  const items = useMemo<MenuProps['items']>(() => {
+    const menuItems: MenuProps['items'] = [];
 
     menuItems.push({
       key: 'activity',
@@ -626,7 +726,9 @@ const ActionMenu = ({
       label: 'Ver actividad',
       onClick: ({ domEvent }) => {
         domEvent?.stopPropagation();
-        onViewActivity?.(user);
+        if (user) {
+          onViewActivity?.(user);
+        }
       },
     });
 
@@ -636,7 +738,9 @@ const ActionMenu = ({
       label: 'Editar usuario',
       onClick: ({ domEvent }) => {
         domEvent?.stopPropagation();
-        onEdit?.(user);
+        if (user) {
+          onEdit?.(user);
+        }
       },
     });
 
@@ -647,7 +751,9 @@ const ActionMenu = ({
         label: 'Permisos dinámicos',
         onClick: ({ domEvent }) => {
           domEvent?.stopPropagation();
-          onManagePermissions?.(user);
+          if (user) {
+            onManagePermissions?.(user);
+          }
         },
       });
     }
@@ -658,7 +764,9 @@ const ActionMenu = ({
       label: 'Cambiar contraseña',
       onClick: ({ domEvent }) => {
         domEvent?.stopPropagation();
-        onChangePassword?.(user);
+        if (user) {
+          onChangePassword?.(user);
+        }
       },
     });
 
@@ -668,7 +776,9 @@ const ActionMenu = ({
       label: isActive ? 'Desactivar usuario' : 'Activar usuario',
       onClick: ({ domEvent }) => {
         domEvent?.stopPropagation();
-        onToggleStatus?.(user);
+        if (user) {
+          onToggleStatus?.(user);
+        }
       },
     });
 

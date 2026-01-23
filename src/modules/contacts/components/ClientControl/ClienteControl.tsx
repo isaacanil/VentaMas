@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   Input,
   Button as AntButton,
@@ -7,7 +6,8 @@ import {
   Button,
   Tooltip,
 } from 'antd';
-import { useEffect, useMemo, useRef } from 'react';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { useEffect, useMemo, useRef, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -42,20 +42,45 @@ import { useFbGetTaxReceipt } from '@/firebase/taxReceipt/fbGetTaxReceipt.js';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
 import { useWindowWidth } from '@/hooks/useWindowWidth';
 import { updateObject } from '@/utils/object/updateObject';
+import type { TaxReceiptDocument } from '@/types/taxReceipt';
 
 import { ClientDetails } from './ClientDetails/ClientDetails';
 
+type BusinessRootState = Parameters<typeof selectBusinessData>[0];
+type ClientRootState = Parameters<typeof selectClient>[0];
+type ClientModeRootState = Parameters<typeof selectClientMode>[0];
+type ClientSearchRootState = Parameters<typeof selectClientSearchTerm>[0];
+type TaxReceiptRootState = Parameters<typeof selectTaxReceipt>[0];
+type NcfTypeRootState = Parameters<typeof selectNcfType>[0];
+type NcfTypeLockedRootState = Parameters<typeof selectNcfTypeLocked>[0];
+
 export const ClientControl = () => {
   const dispatch = useDispatch();
-  const business = useSelector(selectBusinessData);
-  const client = useSelector(selectClient);
-  const mode = useSelector(selectClientMode);
-  const taxReceipt = useSelector(selectTaxReceipt);
+  const business = useSelector<BusinessRootState, ReturnType<typeof selectBusinessData>>(
+    selectBusinessData,
+  );
+  const client = useSelector<ClientRootState, ReturnType<typeof selectClient>>(selectClient);
+  const mode = useSelector<ClientModeRootState, ReturnType<typeof selectClientMode>>(
+    selectClientMode,
+  );
+  const taxReceipt = useSelector<TaxReceiptRootState, ReturnType<typeof selectTaxReceipt>>(
+    selectTaxReceipt,
+  );
   const taxReceiptSettingEnabled = taxReceipt?.settings?.taxReceiptEnabled;
-  const searchTerm = useSelector(selectClientSearchTerm);
-  const taxReceiptData = useFbGetTaxReceipt();
-  const nfcType = useSelector(selectNcfType);
-  const ncfTypeLocked = useSelector(selectNcfTypeLocked);
+  const searchTerm = useSelector<ClientSearchRootState, ReturnType<typeof selectClientSearchTerm>>(
+    selectClientSearchTerm,
+  );
+  const taxReceiptData = useFbGetTaxReceipt() as {
+    taxReceipt: TaxReceiptDocument[];
+    isLoading: boolean;
+  };
+  const nfcType = useSelector<NcfTypeRootState, ReturnType<typeof selectNcfType>>(
+    selectNcfType,
+  );
+  const ncfTypeLocked = useSelector<
+    NcfTypeLockedRootState,
+    ReturnType<typeof selectNcfTypeLocked>
+  >(selectNcfTypeLocked);
   const insuranceEnabled = useInsuranceEnabled();
 
   const inputIcon = useMemo(() => {
@@ -94,7 +119,7 @@ export const ClientControl = () => {
     dispatch(updateInsuranceStatus(false));
   };
 
-  const handleChangeClient = (e) => {
+  const handleChangeClient = (e: ChangeEvent<HTMLInputElement>) => {
     if (mode === CLIENT_MODE_BAR.SEARCH.id) {
       dispatch(setClientSearchTerm(e.target.value));
     }
@@ -106,7 +131,7 @@ export const ClientControl = () => {
     }
   };
 
-  const handleInsuranceChange = (e) => {
+  const handleInsuranceChange = (e: CheckboxChangeEvent) => {
     const isChecked = e.target.checked;
     dispatch(updateInsuranceStatus(isChecked));
   };
@@ -132,7 +157,7 @@ export const ClientControl = () => {
     }
   }, [client, dispatch]);
 
-  const searchClientRef = useRef(null);
+  const searchClientRef = useRef<HTMLDivElement | null>(null);
 
   const OpenClientList = () => {
     switch (mode) {
@@ -225,11 +250,15 @@ export const ClientControl = () => {
               placeholder="Selecciona comprobante"
               showSearch
               optionFilterProp="children"
-              filterOption={(input, option) =>
-                (option?.children ?? '')
+              filterOption={(input, option) => {
+                const optionLabel =
+                  typeof option?.children === 'string'
+                    ? option.children
+                    : String(option?.children ?? '');
+                return optionLabel
                   .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
+                  .includes(input.toLowerCase());
+              }}
               title={comprobanteTooltipTitle}
             >
               <Select.OptGroup label="Comprobantes Fiscal">

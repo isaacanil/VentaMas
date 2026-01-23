@@ -1,23 +1,40 @@
-// @ts-nocheck
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import type {
+  FilterConfig,
+  FilterOption,
+  FilterState,
+  TableRow,
+} from '../types/ColumnTypes';
 
-export const applyFilters = (data, filters) => {
+export const applyFilters = <RowData extends TableRow>(
+  data: RowData[],
+  filters?: FilterState | null,
+): RowData[] => {
   if (!Array.isArray(data)) return [];
   if (!filters) return data;
 
   return data.filter((item) =>
-    Object.keys(filters).every((filterKey) => item?.[filterKey] === filters[filterKey]),
+    Object.keys(filters).every(
+      (filterKey) => item?.[filterKey] === filters[filterKey],
+    ),
   );
 };
 
-const generateFilterOptions = (data, accessor) => {
-  const uniqueValues = [...new Set(data.map((item) => item?.[accessor]))]
-    .filter((v) => v !== undefined && v !== null);
+const generateFilterOptions = <RowData extends TableRow>(
+  data: RowData[],
+  accessor: string,
+): FilterOption[] => {
+  const uniqueValues = [...new Set(data.map((item) => item?.[accessor]))].filter(
+    (v) => v !== undefined && v !== null,
+  );
 
   return uniqueValues.map((value) => ({ label: String(value), value }));
 };
 
-export const useDynamicFilterConfig = (initialFilterConfig = [], data = []) => {
+export const useDynamicFilterConfig = <RowData extends TableRow>(
+  initialFilterConfig: FilterConfig[] = [],
+  data: RowData[] = [],
+): FilterConfig[] => {
   if (!Array.isArray(initialFilterConfig)) {
     throw new Error('initialFilterConfig debe ser un array');
   }
@@ -34,9 +51,18 @@ export const useDynamicFilterConfig = (initialFilterConfig = [], data = []) => {
   }, [initialFilterConfig, data]);
 };
 
-const useTableFiltering = (filterConfig, data) => {
-  const defaultFilter = useMemo(() => {
-    return filterConfig.reduce((acc, curr) => {
+const useTableFiltering = <RowData extends TableRow>(
+  filterConfig: FilterConfig[],
+  data: RowData[],
+): [
+  FilterState,
+  Dispatch<SetStateAction<FilterState>>,
+  () => void,
+  FilterState,
+  RowData[],
+] => {
+  const defaultFilter = useMemo<FilterState>(() => {
+    return filterConfig.reduce<FilterState>((acc, curr) => {
       if (curr.defaultValue !== undefined) {
         acc[curr.accessor] = curr.defaultValue;
       }
@@ -44,7 +70,7 @@ const useTableFiltering = (filterConfig, data) => {
     }, {});
   }, [filterConfig]);
 
-  const [filter, setFilter] = useState(defaultFilter);
+  const [filter, setFilter] = useState<FilterState>(defaultFilter);
 
   const setDefaultFilter = () => {
     setFilter(defaultFilter);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { transferClients } from './fbTransferClients';
 import { transferProductCategories } from './fbTransferProductCategories';
 import { transferProducts } from './fbTransferProducts';
@@ -11,10 +10,10 @@ import { transferProducts } from './fbTransferProducts';
  * @param {number} [limit=0] - Cantidad de productos a transferir (0 para todos los productos).
  */
 export const fbTransferDataToAnotherBusiness = async (
-  businessIdA,
-  businessIdB,
-  limit = 0,
-) => {
+  businessIdA: string,
+  businessIdB: string,
+  limit: number = 0,
+): Promise<void> => {
   try {
     await transferProducts(businessIdA, businessIdB, limit);
     // Products transferred

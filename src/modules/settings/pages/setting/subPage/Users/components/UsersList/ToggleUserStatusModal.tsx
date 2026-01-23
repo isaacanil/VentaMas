@@ -1,10 +1,26 @@
-// @ts-nocheck
 import { Alert, Modal, Typography, message } from 'antd';
 import { useCallback, useMemo, useState } from 'react';
 
 import { fbUpdateUser } from '@/firebase/Auth/fbAuthV2/fbUpdateUser';
 
-export const ToggleUserStatusModal = ({ isOpen, user, onClose }) => {
+interface ToggleUserStatusModalUser {
+  id?: string;
+  name?: string;
+  active?: boolean;
+  [key: string]: unknown;
+}
+
+interface ToggleUserStatusModalProps {
+  isOpen: boolean;
+  user?: ToggleUserStatusModalUser | null;
+  onClose?: () => void;
+}
+
+export const ToggleUserStatusModal = ({
+  isOpen,
+  user,
+  onClose,
+}: ToggleUserStatusModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isActive = Boolean(user?.active);

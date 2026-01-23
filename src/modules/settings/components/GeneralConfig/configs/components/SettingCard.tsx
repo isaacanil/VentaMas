@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Card, Button, Typography, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { SettingOutlined, ArrowRightOutlined } from '@ant-design/icons';
@@ -99,6 +98,21 @@ const ActionButton = styled(Button)`
   }
 `;
 
+interface SettingCardSummaryItem {
+  label: string;
+  value: ReactNode;
+}
+
+interface SettingCardProps {
+  icon: ReactNode;
+  title: string;
+  description: ReactNode;
+  extra?: ReactNode;
+  summary?: SettingCardSummaryItem[];
+  onConfigClick?: () => void;
+  disabledSettings?: boolean;
+}
+
 const SettingCard = ({
   icon,
   title,
@@ -106,8 +120,8 @@ const SettingCard = ({
   extra,
   summary,
   onConfigClick,
-  disabledSettings = false
-}) => {
+  disabledSettings = false,
+}: SettingCardProps) => {
   return (
     <StyledCard>
       <CardHeader>

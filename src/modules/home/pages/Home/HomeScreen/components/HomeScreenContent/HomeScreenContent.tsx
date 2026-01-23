@@ -1,11 +1,11 @@
-// @ts-nocheck
-import React from 'react';
 import styled from 'styled-components';
 
 import { Body } from './Body';
 import { Header } from './Header';
 
-export const HomeScreenContent = () => {
+import type { JSX } from 'react';
+
+export const HomeScreenContent = (): JSX.Element => {
   return (
     <Container>
       <Header />

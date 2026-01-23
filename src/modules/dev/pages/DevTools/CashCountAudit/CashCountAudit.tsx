@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   AlignLeftOutlined,
   ApiOutlined,
@@ -41,38 +40,152 @@ import { db } from '@/firebase/firebaseconfig';
 import { functions } from '@/firebase/firebaseconfig';
 import { CashCountMetaData } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/components/Body/RightSide/CashCountMetaData';
 
+import type { Dayjs } from 'dayjs';
+
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-const CashCountAudit = () => {
-  const currentUser = useSelector(selectUser);
+type FirestoreDateLike = Timestamp | Date | { toMillis?: () => number };
+
+interface CashCountEmployeeRef {
+  id?: string;
+  uid?: string;
+  _key?: {
+    path?: {
+      segments?: string[];
+    };
+  };
+}
+
+interface CashCountData {
+  opening?: {
+    date?: FirestoreDateLike;
+    employee?: CashCountEmployeeRef;
+  };
+  closing?: {
+    date?: FirestoreDateLike;
+  };
+  totalCard?: number;
+  totalTransfer?: number;
+  totalCharged?: number;
+  totalReceivables?: number;
+  totalSystem?: number;
+  totalRegister?: number;
+  totalDiscrepancy?: number;
+  totalCash?: number;
+}
+
+interface CashCountListItem {
+  id: string;
+  number?: number;
+  state?: string;
+}
+
+interface BusinessOption {
+  id: string;
+  name: string;
+}
+
+interface BusinessUser {
+  id?: string;
+  businessID?: string;
+  businessId?: string;
+  user?: {
+    id?: string;
+    uid?: string;
+    name?: string;
+    username?: string;
+    businessID?: string;
+    businessId?: string;
+  };
+}
+
+interface AuditLogEntry {
+  key: string;
+  business: string;
+  cashCountId: string;
+  cashier: string | null;
+  stored: CashCountData;
+  recalculated: CashCountData;
+  at: number;
+}
+
+interface AutoRunItem {
+  cashCountId?: string;
+  businessId?: string;
+  discrepancy?: number;
+  delta?: number;
+  discrepancyStored?: number;
+  discrepancyRecalc?: number;
+}
+
+interface AutoRun {
+  id: string;
+  businessId?: string;
+  businessIds?: string[];
+  status?: string;
+  createdAt: number | string;
+  items?: AutoRunItem[];
+}
+
+type AuditMode = 'manual' | 'auto';
+
+interface CurrentUser {
+  businessID?: string;
+  uid?: string;
+  id?: string;
+}
+
+const CashCountAudit: React.FC = () => {
+  const currentUser = useSelector(selectUser) as CurrentUser | null;
   const [business, setBusiness] = useState('');
   const [user, setUser] = useState('');
   const [cashCountId, setCashCountId] = useState('');
-  const [cashCounts, setCashCounts] = useState([]);
-  const [businesses, setBusinesses] = useState([]);
-  const [businessUsers, setBusinessUsers] = useState([]);
+  const [cashCounts, setCashCounts] = useState<CashCountListItem[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessOption[]>([]);
+  const [businessUsers, setBusinessUsers] = useState<BusinessUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-  const [cashCountDoc, setCashCountDoc] = useState(null);
-  const [recalc, setRecalc] = useState(null);
-  const [dataError, setDataError] = useState(null);
-  const [auditLog, setAuditLog] = useState([]);
-  const [mode, setMode] = useState('manual'); // manual | auto
-  const [autoRuns, setAutoRuns] = useState([]);
+  const [cashCountDoc, setCashCountDoc] = useState<CashCountData | null>(null);
+  const [recalc, setRecalc] = useState<CashCountData | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const [mode, setMode] = useState<AuditMode>('manual');
+  const [autoRuns, setAutoRuns] = useState<AutoRun[]>([]);
   const [loadingRuns, setLoadingRuns] = useState(false);
-  const [selectedRun, setSelectedRun] = useState(null);
+  const [selectedRun, setSelectedRun] = useState<string | null>(null);
   const [selectedAutoCashCount, setSelectedAutoCashCount] = useState('');
-  const [autoRange, setAutoRange] = useState(null);
+  const [autoRange, setAutoRange] = useState<[Dayjs | null, Dayjs | null] | null>(
+    null,
+  );
   const [threshold, setThreshold] = useState(0);
+
+  const toRecord = (value: unknown): Record<string, unknown> => {
+    return value && typeof value === 'object'
+      ? (value as Record<string, unknown>)
+      : {};
+  };
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'Ocurrió un error inesperado.';
+  };
 
   useEffect(() => {
     if (currentUser?.businessID) {
       setBusiness((prev) => prev || currentUser.businessID);
-      setUser((prev) => prev || currentUser.uid);
+      const preferredUserId = currentUser.uid ?? currentUser.id ?? '';
+      if (preferredUserId) {
+        setUser((prev) => prev || preferredUserId);
+      }
     }
-  }, [currentUser?.businessID, currentUser?.uid]);
+  }, [currentUser?.businessID, currentUser?.uid, currentUser?.id]);
 
   useEffect(() => {
     if (!business) return undefined;
@@ -85,7 +198,11 @@ const CashCountAudit = () => {
     const q = query(ref, orderBy('cashCount.createdAt', 'desc'), limit(25));
     const unsubscribe = onSnapshot(q, (snap) => {
       const items = snap.docs.map((doc) => {
-        const data = doc.data()?.cashCount || {};
+        const raw = toRecord(doc.data());
+        const data = (raw.cashCount ?? {}) as CashCountData & {
+          incrementNumber?: number;
+          state?: string;
+        };
         return {
           id: doc.id,
           number: data.incrementNumber,
@@ -105,9 +222,13 @@ const CashCountAudit = () => {
     const q = query(ref, limit(100));
     const unsubscribe = onSnapshot(q, (snap) => {
       const items = snap.docs.map((doc) => {
-        const data = doc.data() || {};
+        const data = toRecord(doc.data());
+        const businessData = toRecord(data.business);
         const name =
-          data.business?.name || data.name || data.businessName || doc.id;
+          (businessData.name as string | undefined) ||
+          (data.name as string | undefined) ||
+          (data.businessName as string | undefined) ||
+          doc.id;
         return { id: doc.id, name };
       });
       setBusinesses(items);
@@ -122,7 +243,9 @@ const CashCountAudit = () => {
       try {
         const usersRef = collection(db, 'users');
         const snap = await getDocs(query(usersRef, limit(500)));
-        const list = snap.docs.map((d) => d.data());
+        const list = snap.docs.map(
+          (d) => toRecord(d.data()) as BusinessUser,
+        );
         const filtered = list.filter((u) => {
           const dataBiz =
             u?.user?.businessID ||
@@ -136,7 +259,7 @@ const CashCountAudit = () => {
           const first = filtered[0]?.user?.id || filtered[0]?.user?.uid;
           if (first) setUser(first);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error loading users for business', err);
         setBusinessUsers([]);
       } finally {
@@ -156,7 +279,7 @@ const CashCountAudit = () => {
         if (!ccSnap.exists()) {
           throw new Error('No se encontró el cuadre seleccionado');
         }
-        const ccData = ccSnap.data()?.cashCount || {};
+        const ccData = (toRecord(ccSnap.data()).cashCount ?? {}) as CashCountData;
         setCashCountDoc(ccData);
 
         const invoicesSnap = await getDocs(
@@ -165,7 +288,7 @@ const CashCountAudit = () => {
             where('data.cashCountId', '==', cashCountId),
           ),
         );
-        const invoices = invoicesSnap.docs.map((d) => d.data());
+        const invoices = invoicesSnap.docs.map((d) => toRecord(d.data()));
 
         const expensesSnap = await getDocs(
           query(
@@ -173,7 +296,9 @@ const CashCountAudit = () => {
             where('expense.payment.cashRegister', '==', cashCountId),
           ),
         );
-        const expenses = expensesSnap.docs.map((d) => d.data()?.expense);
+        const expenses = expensesSnap.docs.map(
+          (d) => toRecord(d.data()).expense,
+        );
 
         const openingTs = ccData?.opening?.date;
         const closingTs = ccData?.closing?.date;
@@ -210,8 +335,8 @@ const CashCountAudit = () => {
                 where('createdAt', '<=', Timestamp.fromMillis(end)),
               ),
             );
-            arPayments = paymentsSnap.docs.map((d) => d.data());
-          } catch (err) {
+            arPayments = paymentsSnap.docs.map((d) => toRecord(d.data()));
+          } catch (err: unknown) {
             console.warn('No se pudieron cargar pagos CxC:', err);
           }
         }
@@ -221,7 +346,7 @@ const CashCountAudit = () => {
           invoices || [],
           expenses || [],
           arPayments || [],
-        );
+        ) as CashCountData;
         setRecalc(meta);
 
         setAuditLog((prev) => {
@@ -243,9 +368,9 @@ const CashCountAudit = () => {
           }
           return [nextEntry, ...prev].slice(0, 20);
         });
-      } catch (err) {
+      } catch (err: unknown) {
         console.error(err);
-        setDataError(err.message);
+        setDataError(getErrorMessage(err));
         setCashCountDoc(null);
         setRecalc(null);
       } finally {
@@ -340,13 +465,16 @@ const CashCountAudit = () => {
         threshold: Number(threshold) || 0,
       };
       const { data } = await callable(payload);
+      const response = toRecord(data);
       const run = {
-        id: data?.runId || `run-${Date.now()}`,
-        businessId: data?.businessId || business,
-        businessIds: data?.businessIds || (biz === 'ALL' ? ['ALL'] : [biz]),
-        status: data?.status || 'done',
-        createdAt: data?.createdAt || Date.now(),
-        items: data?.discrepancies || [],
+        id: (response.runId as string | undefined) || `run-${Date.now()}`,
+        businessId: (response.businessId as string | undefined) || business,
+        businessIds:
+          (response.businessIds as string[] | undefined) ||
+          (biz === 'ALL' ? ['ALL'] : [biz]),
+        status: (response.status as string | undefined) || 'done',
+        createdAt: (response.createdAt as number | string | undefined) || Date.now(),
+        items: (response.discrepancies as AutoRunItem[] | undefined) || [],
       };
       setAutoRuns((prev) => [run, ...prev]);
       setSelectedRun(run.id);
@@ -356,9 +484,9 @@ const CashCountAudit = () => {
       } else {
         message.success(`Se encontraron ${run.items.length} cuadres con discrepancia.`);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      message.error(err?.message || 'Error al lanzar auditoría automática');
+      message.error(getErrorMessage(err));
     } finally {
       setLoadingRuns(false);
     }

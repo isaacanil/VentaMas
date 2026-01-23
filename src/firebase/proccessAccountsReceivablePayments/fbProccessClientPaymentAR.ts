@@ -1,16 +1,28 @@
-// @ts-nocheck
 import { fbConsumeCreditNotes } from '@/firebase/creditNotes/fbConsumeCreditNotes';
+import type { UserWithBusiness } from '@/types/users';
 
 import { fbApplyPartialPaymentToAccount } from './fbApplyPartialPaymentToAccount';
 import { fbPayActiveInstallmentForAccount } from './fbPayActiveInstallmentForAccount';
 import { fbPayAllInstallmentsForAccount } from './fbPayAllInstallmentsForAccount';
 import { fbPayBalanceForAccounts } from './fbPayBalanceForAccounts';
+import type { PaymentDetails } from './arPaymentUtils';
+
+type PaymentReceipt =
+  | Awaited<ReturnType<typeof fbPayBalanceForAccounts>>
+  | Awaited<ReturnType<typeof fbPayActiveInstallmentForAccount>>
+  | Awaited<ReturnType<typeof fbPayAllInstallmentsForAccount>>
+  | Awaited<ReturnType<typeof fbApplyPartialPaymentToAccount>>;
 
 export const fbProcessClientPaymentAR = async (
-  user,
-  paymentDetails,
-  callback,
-) => {
+  user: UserWithBusiness,
+  paymentDetails: PaymentDetails & {
+    paymentScope: 'balance' | 'account';
+    paymentOption?: 'installment' | 'balance' | 'partial';
+    clientId: string;
+    totalAmount?: number | string;
+  },
+  callback: (receipt: PaymentReceipt) => void,
+): Promise<PaymentReceipt> => {
   const { paymentScope, paymentOption, clientId, totalAmount, paymentMethods } =
     paymentDetails;
 
@@ -27,27 +39,27 @@ export const fbProcessClientPaymentAR = async (
   });
 
   const paymentPayload = { user, paymentDetails };
-  const paymentHandlers = {
-    balance: async () => await fbPayBalanceForAccounts(paymentPayload),
-    account: {
-      installment: async () =>
-        await fbPayActiveInstallmentForAccount(paymentPayload),
-      balance: async () => await fbPayAllInstallmentsForAccount(paymentPayload),
-      partial: async () => await fbApplyPartialPaymentToAccount(paymentPayload),
-    },
-  };
 
   try {
-    let receipt;
+    let receipt: PaymentReceipt;
     if (paymentScope === 'balance') {
-      receipt = await paymentHandlers.balance();
-    } else if (
-      paymentScope === 'account' &&
-      paymentHandlers.account[paymentOption]
-    ) {
-      receipt = await paymentHandlers.account[paymentOption]();
+      receipt = await fbPayBalanceForAccounts(paymentPayload);
+    } else if (paymentScope === 'account') {
+      switch (paymentOption) {
+        case 'installment':
+          receipt = await fbPayActiveInstallmentForAccount(paymentPayload);
+          break;
+        case 'balance':
+          receipt = await fbPayAllInstallmentsForAccount(paymentPayload);
+          break;
+        case 'partial':
+          receipt = await fbApplyPartialPaymentToAccount(paymentPayload);
+          break;
+        default:
+          throw new Error('Invalid payment option.');
+      }
     } else {
-      throw new Error('Invalid payment option.');
+      throw new Error('Invalid payment scope.');
     }
     // Consumir notas de crédito si se aplicaron
     if (paymentDetails?.creditNotePayment?.length > 0) {
@@ -70,16 +82,25 @@ export const fbProcessClientPaymentAR = async (
     callback(receipt);
     return receipt;
   } catch (error) {
+    const errorInfo =
+      error && typeof error === 'object'
+        ? (error as {
+            message?: string;
+            stack?: string;
+            code?: string;
+            details?: unknown;
+          })
+        : {};
     console.error('❌ Error processing AR payment:', {
-      error: error.message,
-      stack: error.stack,
+      error: errorInfo.message ?? String(error),
+      stack: errorInfo.stack,
       paymentScope,
       paymentOption,
       clientId,
       arId: paymentDetails.arId,
       totalPaid: paymentDetails.totalPaid,
-      errorCode: error.code,
-      errorDetails: error.details,
+      errorCode: errorInfo.code,
+      errorDetails: errorInfo.details,
     });
     throw error; // Re-throw the error after logging it
   }

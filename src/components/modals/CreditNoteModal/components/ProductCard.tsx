@@ -80,7 +80,9 @@ export const ProductCard = ({
                   min={1}
                   max={maxQuantity}
                   value={quantity}
-                  onChange={onQuantityChange}
+                  onChange={(value) =>
+                    onQuantityChange(typeof value === 'number' ? value : null)
+                  }
                   size="small"
                   style={{ width: '60px' }}
                 />

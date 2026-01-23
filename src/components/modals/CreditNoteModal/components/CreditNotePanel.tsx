@@ -110,7 +110,11 @@ const CreditNotePanel = memo(
                   </ItemColumn>
                   <ItemColumn align={isMobile ? 'right' : 'center'}>
                     {isMobile && <ColumnLabel>Cantidad:</ColumnLabel>}
-                    <span>{item.amountToBuy || 1}</span>
+                    <span>
+                      {typeof item.amountToBuy === 'number'
+                        ? item.amountToBuy
+                        : 1}
+                    </span>
                   </ItemColumn>
                   <ItemColumn align="right">
                     {isMobile && <ColumnLabel>Precio Unit.:</ColumnLabel>}

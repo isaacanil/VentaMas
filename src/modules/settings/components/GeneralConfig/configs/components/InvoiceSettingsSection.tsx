@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { Form, Input, message, Typography, Divider } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -100,8 +99,12 @@ const SectionWrapper = styled.div`
   transition: all 0.3s ease;
 `;
 
+interface InvoiceFormValues {
+  invoiceMessage?: string;
+}
+
 const InvoiceSettingsSection = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<InvoiceFormValues>();
   const business = useSelector(selectBusinessData);
   const user = useSelector(selectUser);
   const [isSaving, setIsSaving] = useState(false);

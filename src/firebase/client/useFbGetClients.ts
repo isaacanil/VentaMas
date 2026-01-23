@@ -47,31 +47,31 @@ export const useFbGetClients = ({ includeDeleted = false } = {}) => {
       const clientArray = snapshot.docs.reduce<ClientListItem[]>(
         (acc, docSnap) => {
           const data = (docSnap.data() || {}) as ClientDocumentData;
-        const isDeleted = Boolean(data.isDeleted);
-        if (!includeDeleted && isDeleted) return acc;
+          const isDeleted = Boolean(data.isDeleted);
+          if (!includeDeleted && isDeleted) return acc;
 
-        const client = extractNormalizedClient(data);
-        const extras: Record<string, unknown> = {};
+          const client = extractNormalizedClient(data);
+          const extras: Record<string, unknown> = {};
 
-        for (const [key, value] of Object.entries(data)) {
-          if (key === 'client') continue;
-          if (!CLIENT_ROOT_FIELDS.has(key)) {
-            extras[key] = value;
+          for (const [key, value] of Object.entries(data)) {
+            if (key === 'client') continue;
+            if (!CLIENT_ROOT_FIELDS.has(key)) {
+              extras[key] = value;
+            }
           }
-        }
 
-        const item: ClientListItem = {
-          id: docSnap.id,
-          isDeleted,
-          ...extras,
-          client,
-        };
+          const item: ClientListItem = {
+            id: docSnap.id,
+            isDeleted,
+            ...extras,
+            client,
+          };
 
-        acc.push(item);
-        return acc;
-      },
-      [],
-    );
+          acc.push(item);
+          return acc;
+        },
+        [],
+      );
 
       setClients(clientArray);
       setLoading(false);

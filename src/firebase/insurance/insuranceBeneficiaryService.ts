@@ -69,14 +69,15 @@ export const addInsuranceBeneficiary = async (
       );
       return null;
     }
+    const safeUser = user as UserWithBusinessAndUid;
     const newDocRef = doc(beneficiariesCollection, id);
 
     await setDoc(newDocRef, {
       id, // Se guarda el ID generado en el documento
-      userId: user.uid, // Asocia el beneficiario al usuario (titular)
+      userId: safeUser.uid, // Asocia el beneficiario al usuario (titular)
       clientId, // Asocia el beneficiario con el cliente actual
       ...beneficiaryData,
-      createdBy: user.uid, // Usamos user.uid directamente
+      createdBy: safeUser.uid, // Usamos user.uid directamente
       createdAt,
       updatedAt: createdAt,
       deleted: false,
@@ -110,6 +111,7 @@ export const updateInsuranceBeneficiary = async (
       );
       return;
     }
+    const safeUser = user as UserWithBusinessAndUid;
     const beneficiaryDoc = doc(beneficiariesCollection, beneficiaryId);
     const updateTime = new Date().toISOString();
 
@@ -118,7 +120,7 @@ export const updateInsuranceBeneficiary = async (
       {
         ...updatedData,
         updatedAt: updateTime,
-        updatedBy: user.uid, // Usamos user.uid directamente
+        updatedBy: safeUser.uid, // Usamos user.uid directamente
       },
       { merge: true },
     );
@@ -147,6 +149,7 @@ export const softDeleteInsuranceBeneficiary = async (
       );
       return;
     }
+    const safeUser = user as UserWithBusinessAndUid;
     const beneficiaryDoc = doc(beneficiariesCollection, beneficiaryId);
     const deletedAt = new Date().toISOString();
 
@@ -155,7 +158,7 @@ export const softDeleteInsuranceBeneficiary = async (
       {
         deleted: true,
         deletedAt,
-        deletedBy: user.uid, // Usamos user.uid para marcar quien realiza la eliminación
+        deletedBy: safeUser.uid, // Usamos user.uid para marcar quien realiza la eliminación
       },
       { merge: true },
     );
@@ -247,3 +250,4 @@ export const useInsuranceBeneficiaries = (
 
   return beneficiaries;
 };
+

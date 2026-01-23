@@ -1,13 +1,23 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 
 import { SidebarItem } from './SidebarItem';
 
-export const Sidebar = ({ items }) => {
-  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
+import type { ReactNode } from 'react';
 
-  const handleMenuItemClick = (index) => {
+interface SidebarMenuItem {
+  icon: ReactNode;
+  label: string;
+}
+
+interface SidebarProps {
+  items: SidebarMenuItem[];
+}
+
+export const Sidebar = ({ items }: SidebarProps) => {
+  const [activeMenuIndex, setActiveMenuIndex] = useState<number | null>(null);
+
+  const handleMenuItemClick = (index: number) => {
     if (activeMenuIndex === index) {
       setActiveMenuIndex(null);
     } else {

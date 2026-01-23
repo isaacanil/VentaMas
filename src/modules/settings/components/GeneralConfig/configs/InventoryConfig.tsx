@@ -1,4 +1,4 @@
-import { Button, Empty, message, Select, Spin, Typography } from 'antd';
+﻿import { Button, Empty, message, Select, Spin, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -143,12 +143,14 @@ const ActionHelper = styled(Text)`
 const InventoryConfig = () => {
   const user = useSelector(selectUser);
   const { data: warehouses = [], loading } = useListenWarehouses();
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(
+    null,
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [isReconciling, setIsReconciling] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
-  const sortedWarehouses = useMemo(() => {
+  const sortedWarehouses = useMemo<WarehouseRecord[]>(() => {
     return [...warehouses].sort((a, b) => {
       const nameA = (a?.name || '').toLowerCase();
       const nameB = (b?.name || '').toLowerCase();
@@ -173,11 +175,11 @@ const InventoryConfig = () => {
     setSelectedWarehouseId(sortedWarehouses[0].id);
   }, [sortedWarehouses]);
 
-  const handleChange = async (value) => {
+  const handleChange = async (value: string) => {
     if (!value || value === selectedWarehouseId) return;
 
     if (!user?.businessID) {
-      messageApi.error('No se pudo actualizar el almacén predeterminado.');
+      messageApi.error('No se pudo actualizar el almacÃ©n predeterminado.');
       return;
     }
 
@@ -185,10 +187,12 @@ const InventoryConfig = () => {
     try {
       await setDefaultWarehouse(user, value);
       setSelectedWarehouseId(value);
-      messageApi.success('Almacén predeterminado actualizado.');
-    } catch (error) {
+      messageApi.success('AlmacÃ©n predeterminado actualizado.');
+    } catch (error: unknown) {
       const errorMessage =
-        error?.message || 'Error al actualizar el almacén predeterminado.';
+        error instanceof Error
+          ? error.message
+          : 'Error al actualizar el almacén predeterminado.';
       messageApi.error(errorMessage);
     } finally {
       setIsUpdating(false);
@@ -197,7 +201,7 @@ const InventoryConfig = () => {
 
   const handleRecalculateStock = async () => {
     if (!user?.businessID) {
-      messageApi.error('No se encontró el negocio del usuario.');
+      messageApi.error('No se encontrÃ³ el negocio del usuario.');
       return;
     }
 
@@ -212,9 +216,11 @@ const InventoryConfig = () => {
       } else {
         messageApi.info('No se encontraron productos para actualizar.');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       const errMsg =
-        error?.message || 'No se pudo recalcular el stock agregado.';
+        error instanceof Error
+          ? error.message
+          : 'No se pudo recalcular el stock agregado.';
       messageApi.error(errMsg);
     } finally {
       setIsReconciling(false);
@@ -227,7 +233,7 @@ const InventoryConfig = () => {
       <Head>
         <Heading>Inventario</Heading>
         <Description>
-          Define los parámetros principales que afectan al flujo de inventario
+          Define los parÃ¡metros principales que afectan al flujo de inventario
           en todo el negocio.
         </Description>
       </Head>
@@ -238,9 +244,9 @@ const InventoryConfig = () => {
         data-config-section="inventory-default-warehouse"
       >
         <SectionHeader>
-          <SectionTitle>Almacén predeterminado</SectionTitle>
+          <SectionTitle>AlmacÃ©n predeterminado</SectionTitle>
           <SectionDescription>
-            Selecciona el almacén al que se asignarán por defecto los nuevos
+            Selecciona el almacÃ©n al que se asignarÃ¡n por defecto los nuevos
             productos, compras y movimientos.
           </SectionDescription>
         </SectionHeader>
@@ -250,7 +256,7 @@ const InventoryConfig = () => {
             <Spin />
           </LoadingContainer>
         ) : sortedWarehouses.length === 0 ? (
-          <Empty description="Aún no hay almacenes disponibles." />
+          <Empty description="AÃºn no hay almacenes disponibles." />
         ) : (
           <SelectorContainer>
             <StyledSelect
@@ -262,20 +268,28 @@ const InventoryConfig = () => {
               optionLabelProp="data-display"
               dropdownMatchSelectWidth={false}
               filterOption={(input, option) => {
-                const label = option?.props?.['data-label'] || '';
+                const label =
+                  (
+                    option as
+                      | { props?: { 'data-label'?: string } }
+                      | undefined
+                  )?.props?.['data-label'] || '';
                 return label.toLowerCase().includes(input.toLowerCase());
               }}
-              placeholder="Selecciona un almacén"
+              placeholder="Selecciona un almacÃ©n"
             >
               {sortedWarehouses.map((warehouse) => {
+                if (!warehouse?.id) {
+                  return null;
+                }
                 const name = warehouse?.name || 'Sin nombre';
                 const metaParts = [
                   warehouse?.shortName ? `Alias: ${warehouse.shortName}` : null,
                   warehouse?.location
-                    ? `Ubicación: ${warehouse.location}`
+                    ? `UbicaciÃ³n: ${warehouse.location}`
                     : null,
                 ].filter(Boolean);
-                const metaLabel = metaParts.join(' · ');
+                const metaLabel = metaParts.join(' Â· ');
                 const searchLabel = [
                   name,
                   warehouse?.shortName,
@@ -313,9 +327,9 @@ const InventoryConfig = () => {
           <SectionTitle>Sincronizar stock agregado</SectionTitle>
           <SectionDescription>
             Actualiza el stock mostrado en cada producto sumando las
-            existencias activas registradas en el inventario. Úsalo cuando el
-            stock que ves en catálogos o reportes no coincide con lo que tienes
-            físicamente.
+            existencias activas registradas en el inventario. Ãšsalo cuando el
+            stock que ves en catÃ¡logos o reportes no coincide con lo que tienes
+            fÃ­sicamente.
           </SectionDescription>
         </SectionHeader>
 
@@ -342,8 +356,8 @@ const InventoryConfig = () => {
         <SectionHeader>
           <SectionTitle>Reportes de inventario</SectionTitle>
           <SectionDescription>
-            Configura reportes por correo: stock (umbrales bajo/crítico) y
-            vencimientos (días de antelación), frecuencia y hora de envío.
+            Configura reportes por correo: stock (umbrales bajo/crÃ­tico) y
+            vencimientos (dÃ­as de antelaciÃ³n), frecuencia y hora de envÃ­o.
           </SectionDescription>
         </SectionHeader>
 
@@ -354,3 +368,5 @@ const InventoryConfig = () => {
 };
 
 export default InventoryConfig;
+
+

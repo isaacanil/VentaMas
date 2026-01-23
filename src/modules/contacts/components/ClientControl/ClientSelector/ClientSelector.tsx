@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo, Suspense, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -17,6 +16,17 @@ import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
 import { useFbGetClientsOnOpen } from '@/firebase/client/useFbGetClientsOnOpen';
 import { filtrarDatos } from '@/hooks/useSearchFilter';
 import { lazyWithRetry } from '@/utils/lazyWithRetry';
+
+type UserRootState = Parameters<typeof selectUser>[0];
+type ClientRootState = Parameters<typeof selectClient>[0];
+type ClientSearchRootState = Parameters<typeof selectClientSearchTerm>[0];
+type ClientOpenRootState = Parameters<typeof selectIsOpen>[0];
+
+type ClientsHookResult = ReturnType<typeof useFbGetClientsOnOpen>;
+type ClientListItem = ClientsHookResult['clients'][number];
+
+type ClientSelectorFilter = 'all' | 'duplicates' | 'noName';
+type MenuClickEvent = { key: ClientSelectorFilter | string };
 
 const ClientSelectionModal = lazyWithRetry(
   () =>
@@ -49,16 +59,23 @@ const ClientPaginationBar = lazyWithRetry(
 
 export const ClientSelector = () => {
   const dispatch = useDispatch();
-  const isOpen = useSelector(selectIsOpen);
-  const user = useSelector(selectUser);
-  const selectedClient = useSelector(selectClient);
-  const searchTerm = useSelector(selectClientSearchTerm);
+  const isOpen = useSelector<ClientOpenRootState, ReturnType<typeof selectIsOpen>>(
+    selectIsOpen,
+  );
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
+  const selectedClient = useSelector<ClientRootState, ReturnType<typeof selectClient>>(
+    selectClient,
+  );
+  const searchTerm = useSelector<
+    ClientSearchRootState,
+    ReturnType<typeof selectClientSearchTerm>
+  >(selectClientSearchTerm);
   const { clients, loading } = useFbGetClientsOnOpen({ isOpen });
 
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<ClientSelectorFilter>('all');
 
-  const getDuplicateClients = (clients) => {
-    const namesCount = clients.reduce((acc, { client }) => {
+  const getDuplicateClients = (clients: ClientListItem[]) => {
+    const namesCount = clients.reduce<Record<string, number>>((acc, { client }) => {
       const name = client.name?.toLowerCase();
       if (name) acc[name] = (acc[name] || 0) + 1;
       return acc;
@@ -69,7 +86,7 @@ export const ClientSelector = () => {
     );
   };
 
-  const getClientsWithoutNames = (clients) =>
+  const getClientsWithoutNames = (clients: ClientListItem[]) =>
     clients.filter(({ client }) => !client.name);
 
   const filteredClients = useMemo(
@@ -93,7 +110,8 @@ export const ClientSelector = () => {
         : filteredClients;
   }, [filter, duplicateClients, clientsWithoutNames, filteredClients]);
 
-  const handleMenuClick = (e) => setFilter(e.key);
+  const handleMenuClick = (e: MenuClickEvent) =>
+    setFilter((e.key as ClientSelectorFilter) || 'all');
 
   const openAddClientModal = () => {
     dispatch(setIsOpen(false));
@@ -106,7 +124,7 @@ export const ClientSelector = () => {
     );
   };
 
-  const openUpdateClientModal = (client) => {
+  const openUpdateClientModal = (client: ClientListItem['client']) => {
     dispatch(setIsOpen(false));
     dispatch(setClientMode(CLIENT_MODE_BAR.UPDATE.id));
     dispatch(
@@ -118,8 +136,9 @@ export const ClientSelector = () => {
     );
   };
 
-  const handleDeleteClient = async (id) => {
-    await fbDeleteClient(user?.businessID, id);
+  const handleDeleteClient = async (id: string) => {
+    if (!user?.businessID) return;
+    await fbDeleteClient(user.businessID, id);
   };
 
   const handleClose = () => {

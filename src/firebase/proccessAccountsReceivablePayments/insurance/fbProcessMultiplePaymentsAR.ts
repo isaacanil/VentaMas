@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   collection,
   doc,
@@ -14,7 +13,15 @@ import { nanoid } from 'nanoid';
 import { fbAddAccountReceivablePaymentReceipt } from '@/firebase/accountsReceivable/fbAddAccountReceivablePaymentReceipt';
 import { db } from '@/firebase/firebaseconfig';
 import { fbGetInvoice } from '@/firebase/invoices/fbGetInvoice';
-import { updateInvoiceTotals } from '@/firebase/proccessAccountsReceivablePayments/arPaymentUtils';
+import type { InvoicePaymentMethod } from '@/types/invoice';
+import {
+  updateInvoiceTotals,
+  type AccountsReceivableAccount,
+  type AccountsReceivableInstallment,
+  type InvoiceLike,
+  type PaymentDetails,
+  type UserWithBusinessAndUid,
+} from '@/firebase/proccessAccountsReceivablePayments/arPaymentUtils';
 import { defaultInstallmentPaymentsAR } from '@/schema/accountsReceivable/installmentPaymentsAR';
 import { defaultPaymentsAR } from '@/schema/accountsReceivable/paymentAR';
 

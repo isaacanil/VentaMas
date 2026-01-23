@@ -35,6 +35,7 @@ export const fbApplyPartialPaymentToAccount = async ({
     paymentMethods,
     comments: _comments,
   } = paymentDetails;
+  const totalPaidNumber = Number(totalPaid);
 
   try {
     // 🔍 VALIDACIÓN 1: Validar que la cuenta tenga balance pendiente
@@ -60,7 +61,10 @@ export const fbApplyPartialPaymentToAccount = async ({
     });
 
     // 🔍 VALIDACIÓN 2: Validar que el monto del pago sea válido
-    const paymentValidation = validatePaymentAmount(totalPaid, currentBalance);
+    const paymentValidation = validatePaymentAmount(
+      totalPaidNumber,
+      currentBalance,
+    );
 
     if (!paymentValidation.isValid) {
       console.warn(
@@ -122,7 +126,7 @@ export const fbApplyPartialPaymentToAccount = async ({
     }
 
     const transactionResult = await runTransaction(db, async (transaction) => {
-      let remainingAmount = totalPaid;
+      let remainingAmount = totalPaidNumber;
 
       // Crear el registro de pago usando la utilidad
       const paymentId = createPaymentRecord(transaction, {
@@ -177,7 +181,9 @@ export const fbApplyPartialPaymentToAccount = async ({
         );
       }
 
-      let newArBalance = roundToTwoDecimals(accountData.arBalance - totalPaid);
+      let newArBalance = roundToTwoDecimals(
+        accountData.arBalance - totalPaidNumber,
+      );
 
       if (newArBalance < 0) {
         remainingAmount = -newArBalance;
@@ -190,7 +196,7 @@ export const fbApplyPartialPaymentToAccount = async ({
       updateAccountReceivableState(transaction, {
         businessId: user.businessID,
         arId,
-        totalPaid,
+        totalPaid: totalPaidNumber,
         newArBalance,
         paidInstallmentIds: Array.from(paidInstallments),
         existingPaidInstallments: accountData.paidInstallments || [],
@@ -201,7 +207,7 @@ export const fbApplyPartialPaymentToAccount = async ({
         updateInvoiceTotals(transaction, {
           businessId: user.businessID,
           invoiceId,
-          amountPaid: totalPaid,
+          amountPaid: totalPaidNumber,
           invoice,
           paymentMethods,
         });
@@ -232,11 +238,11 @@ export const fbApplyPartialPaymentToAccount = async ({
             remainingInstallments:
               totalInstallments - paidInstallmentsCount - paidInstallments.size,
             totalInstallments,
-            totalPaid: totalPaid,
+            totalPaid: totalPaidNumber,
             arBalance: newArBalance,
           },
         ],
-        totalAmount: totalPaid,
+        totalAmount: totalPaidNumber,
         paymentMethod: paymentMethods,
         change: remainingAmount,
       };

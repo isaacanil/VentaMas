@@ -42,14 +42,21 @@ export async function downloadInvoiceLetterPdf(
 ): Promise<void> {
   try {
     // Generating PDF for quotation
-    const { generateInvoiceLetterPdf } = await import(
-      '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf',
-    );
+    const { generateInvoiceLetterPdf } = (await import(
+      '../../pdf/invoicesAndQuotation/invoices/templates/template2/InvoiceLetterPdf'
+    )) as {
+      generateInvoiceLetterPdf: (
+        business: BusinessData,
+        data: QuotationData,
+      ) => Promise<string>;
+    };
     const base64 = await generateInvoiceLetterPdf(business, data);
 
     printPdfBase64(base64, { onPrintDialogClose: onDialogClose });
   } catch (e) {
-    console.error('❌ PDF generation with logo failed:', e.message);
-    console.error(e.stack);
+    const error = e instanceof Error ? e : new Error('Unknown error');
+    console.error('❌ PDF generation with logo failed:', error.message);
+    console.error(error.stack);
   }
 }
+

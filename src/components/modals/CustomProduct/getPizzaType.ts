@@ -1,5 +1,8 @@
-// @ts-nocheck
-export const getPizzaType = (term1, term2, isComplete) => {
+export const getPizzaType = (
+  term1: string,
+  term2?: string,
+  isComplete?: boolean,
+): string => {
   if (isComplete) {
     return `pizza ${term1}`;
   }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Form, Input, Modal, Typography, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -21,12 +20,34 @@ const PASSWORD_RULES = [
   },
 ];
 
-export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
-  const [form] = Form.useForm();
+interface ChangePasswordUser {
+  id?: string;
+  name?: string;
+  username?: string;
+  realName?: string;
+}
+
+interface ChangePasswordFormValues {
+  password: string;
+  confirmPassword: string;
+}
+
+interface ChangeUserPasswordModalProps {
+  isOpen: boolean;
+  user?: ChangePasswordUser | null;
+  onClose?: () => void;
+}
+
+export const ChangeUserPasswordModal = ({
+  isOpen,
+  user,
+  onClose,
+}: ChangeUserPasswordModalProps) => {
+  const [form] = Form.useForm<ChangePasswordFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const formValues = Form.useWatch([], form);
+  const formValues = Form.useWatch<ChangePasswordFormValues>([], form);
 
   const username = useMemo(
     () => user?.name ?? user?.username ?? '',
@@ -52,7 +73,7 @@ export const ChangeUserPasswordModal = ({ isOpen, user, onClose }) => {
   }, [form, onClose]);
 
   const handleSubmit = useCallback(
-    async ({ password }) => {
+    async ({ password }: ChangePasswordFormValues) => {
       if (!user?.id) {
         message.error('No se pudo identificar al usuario seleccionado.');
         return;

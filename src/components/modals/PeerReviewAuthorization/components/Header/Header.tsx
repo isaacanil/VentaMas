@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { Typography } from 'antd';
 import React from 'react';
 
 import { Logo } from '@/assets/logo/Logo';
 
 const { Title, Text } = Typography;
+
+interface HeaderProps {
+  description?: string;
+}
+
 export const Header = ({
   description = 'Permite a un segundo usuario autorizar la apertura de la caja después de una revisión.',
 }) => {

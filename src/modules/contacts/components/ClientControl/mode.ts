@@ -1,5 +1,6 @@
-// @ts-nocheck
-export const Mode = (value, setLabel) => {
+type ClientModeValue = 'updateClient' | 'createClient' | 'searchClient' | string;
+
+export const Mode = (value: ClientModeValue, setLabel: (label: string) => void): void => {
   if (value === 'updateClient') {
     setLabel('Actualizar Cliente');
   }

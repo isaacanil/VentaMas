@@ -1,5 +1,29 @@
-// @ts-nocheck
 import type { ReactNode } from 'react';
+
+export type TableRow = Record<string, unknown>;
+
+export type FilterValue = unknown;
+
+export interface FilterOption {
+  label: ReactNode;
+  value: FilterValue;
+  [key: string]: unknown;
+}
+
+export interface FilterConfig {
+  accessor: string;
+  defaultValue?: FilterValue;
+  options?: FilterOption[];
+  format?: (value: FilterValue) => ReactNode;
+  [key: string]: unknown;
+}
+
+export type SortDirection = 'asc' | 'desc' | 'none';
+
+export interface SortConfig {
+  key: string | null;
+  direction: SortDirection;
+}
 
 export type CellType =
   | 'text'
@@ -14,18 +38,33 @@ export type CellType =
   | 'price'
   | 'file';
 
-export interface ColumnConfig {
-  Header: string;
+export type ColumnStatus = 'active' | 'deleted' | string;
+
+export type ColumnAlign =
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'flex-start'
+  | 'flex-end'
+  | 'start'
+  | 'end'
+  | string;
+
+export interface ColumnConfig<Row = TableRow> {
+  Header: ReactNode;
   accessor: string;
-  status?: string;
+  status?: ColumnStatus;
   sortable?: boolean;
-  align?: string;
+  align?: ColumnAlign;
   fixed?: 'left' | 'right';
   minWidth?: string;
   maxWidth?: string;
   keepWidth?: boolean;
   clickable?: boolean;
-  cell?: (props: { value: unknown }) => ReactNode;
+  reorderable?: boolean;
+  originalPosition?: number;
+  sortableValue?: (value: unknown) => unknown;
+  cell?: (props: { value: unknown; row?: Row; rowIndex?: number }) => ReactNode;
   type?: CellType;
   cellProps?: Record<string, unknown>;
   format?: 'price' | 'percentage' | 'currency';

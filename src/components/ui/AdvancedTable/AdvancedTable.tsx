@@ -84,7 +84,7 @@ export interface AdvancedTableProps<Row = TableRow> {
   onScrollMetrics?: (metrics: ScrollMetrics) => void;
   expandedRowRender?: (row: Row) => ReactNode;
   rowExpandable?: (row: Row) => boolean;
-  getRowId?: (row: Row, index: number) => string | number;
+  getRowId?: (row: Row, index?: number) => string | number;
   enableVirtualization?: boolean;
   paginateVirtualizedData?: boolean;
   showPagination?: boolean;

@@ -1,10 +1,14 @@
-// @ts-nocheck
 import { Tag } from 'antd';
-import React from 'react';
 
-export const InsuranceStateIndicator = ({ state }) => {
+interface InsuranceStateIndicatorProps {
+  state?: string | null;
+}
+
+export const InsuranceStateIndicator = ({
+  state,
+}: InsuranceStateIndicatorProps) => {
   let color = 'default';
-  let text = state;
+  let text = state ?? '';
 
   switch (state) {
     case 'approved':

@@ -253,7 +253,6 @@ const ClientSelector = ({
                 onChange={(e) => setSearch(e.target.value)}
                 ref={searchRef}
                 allowClear
-                loading={loading}
               />
             </div>
           </Header>
