@@ -135,6 +135,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "babel-plugin-styled-components": "^2.1.4",
     "baseline-browser-mapping": "^2.9.2",
+    "blowback-context": "^1.1.0",
     "consola": "^3.2.3",
     "cross-env": "^7.0.3",
     "eslint": "^9.39.1",

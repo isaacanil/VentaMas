@@ -100,7 +100,14 @@ const darkPalette = {
   },
 };
 
-export const { grey, common, colors, text, divider, background, action } =
-  darkPalette;
+export const {
+  grey,
+  common,
+  colors,
+  text,
+  divider,
+  action,
+  background: paletteBackground,
+} = darkPalette;
 
 export default darkPalette;

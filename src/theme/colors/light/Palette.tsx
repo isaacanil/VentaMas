@@ -68,6 +68,6 @@ export const palette = {
   },
 };
 
-export const { action, background, colors, common } = palette;
+export const { action, colors, common: paletteCommon, background: paletteBackground } = palette;
 
 export default palette;
