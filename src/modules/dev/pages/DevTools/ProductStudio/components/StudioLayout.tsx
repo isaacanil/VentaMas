@@ -1,5 +1,12 @@
-// @ts-nocheck
 import styled from 'styled-components';
+
+interface WorkspaceProps {
+  $showNavigator: boolean;
+}
+
+interface StudioGridProps {
+  $showSummary: boolean;
+}
 
 export const PageContainer = styled.div`
   display: grid;
@@ -10,7 +17,7 @@ export const PageContainer = styled.div`
   background: #ffff;
 `;
 
-export const Workspace = styled.div`
+export const Workspace = styled.div<WorkspaceProps>`
   display: grid;
   grid-template-columns: ${({ $showNavigator }) =>
     $showNavigator ? '200px 1fr' : '1fr'};
@@ -39,7 +46,7 @@ export const StudioWrapper = styled.div`
   padding-bottom: 120px;
 `;
 
-export const StudioGrid = styled.div`
+export const StudioGrid = styled.div<StudioGridProps>`
   display: grid;
   grid-template-columns: ${({ $showSummary }) =>
     $showSummary ? 'minmax(0, 1fr) minmax(320px, min-content)' : '1fr'};

@@ -1,15 +1,24 @@
-// @ts-nocheck
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { getNcfLedgerInsights } from '@/firebase/taxReceipt/getNcfLedgerInsights';
 
 import {
+  type Conflict,
+  type LedgerEntry,
+  type LedgerInsightsPayload,
+  type LedgerInsightsResponse,
+  type LedgerResponse,
   MAX_IN_QUERY_VALUES,
+  type SequenceConflictResult,
+  type SequenceInsights,
+  type SequenceLengthResolver,
+  type SequenceMeta,
   buildCandidateCodes,
   buildPrefix,
   chunkArray,
   collapseWhitespace,
+  isRecord,
   normalizeDigits,
   resolveIncrement,
   toDigits,
@@ -20,10 +29,48 @@ const MAX_SEQUENCE_WARNING_LOOKAHEAD = 40;
 const MAX_SEQUENCE_LOOKBEHIND = 12;
 const MAX_SEQUENCE_REPORT_ITEMS = 12;
 
-const DEFAULT_RESOLVER = (normalizedDigitsLength) =>
+type SequenceFormValues = {
+  type?: unknown;
+  serie?: unknown;
+  sequence?: unknown;
+  increase?: unknown;
+  sequenceLength?: number | string | null;
+  quantity?: number | string | null;
+};
+
+type SequenceConflictCheckerOptions = {
+  businessID?: string;
+  userID?: string;
+  resolveSequenceLength?: SequenceLengthResolver;
+};
+
+const DEFAULT_RESOLVER: SequenceLengthResolver = (normalizedDigitsLength) =>
   normalizedDigitsLength ?? 0;
 
-const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
+const normalizeInsights = (value: unknown): SequenceInsights => {
+  const raw = isRecord(value) ? value : {};
+  const readArray = (key: keyof SequenceInsights): LedgerEntry[] =>
+    Array.isArray(raw[key]) ? (raw[key] as LedgerEntry[]) : [];
+  const readEntry = (key: keyof SequenceInsights): LedgerEntry | null =>
+    isRecord(raw[key]) ? (raw[key] as LedgerEntry) : null;
+
+  return {
+    currentConflict: readEntry('currentConflict'),
+    availableBefore: readArray('availableBefore'),
+    availableAfter: readArray('availableAfter'),
+    usedBefore: readArray('usedBefore'),
+    usedAfter: readArray('usedAfter'),
+    lastUsed: readEntry('lastUsed'),
+  };
+};
+
+const adaptLedgerResponse = ({
+  ledgerResult,
+  sequenceLengthEstimate,
+}: {
+  ledgerResult: LedgerInsightsResponse;
+  sequenceLengthEstimate: number | null | undefined;
+}): SequenceConflictResult | null => {
   if (!ledgerResult || ledgerResult.source !== 'ledger') {
     return null;
   }
@@ -32,7 +79,7 @@ const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
     ledgerResult.nextDigits ??
     normalizeDigits((ledgerResult.nextNumber ?? '').toString());
   const sequenceLength = Math.max(
-    sequenceLengthEstimate,
+    Number(sequenceLengthEstimate),
     nextDigitsRaw?.length ?? 0,
     ledgerResult.normalizedDigits?.length ?? 0,
   );
@@ -50,35 +97,45 @@ const adaptLedgerResponse = ({ ledgerResult, sequenceLengthEstimate }) => {
     hasCurrentConflict: !!ledgerResult.hasCurrentConflict,
     hasImmediateNextConflict: !!ledgerResult.hasImmediateNextConflict,
     conflicts: Array.isArray(ledgerResult.conflicts)
-      ? ledgerResult.conflicts
+      ? (ledgerResult.conflicts as Conflict[])
       : [],
-    insights: ledgerResult.insights ?? {},
+    insights: normalizeInsights(ledgerResult.insights),
     metadata: ledgerResult.metadata ?? null,
     source: 'ledger',
   };
 };
 
-const fetchLedgerInsightsSafe = async (payload) => {
+const fetchLedgerInsightsSafe = async (
+  payload: LedgerInsightsPayload,
+): Promise<LedgerResponse> => {
   try {
-    const result = await getNcfLedgerInsights(payload);
-    return result;
+    const result: unknown = await getNcfLedgerInsights(payload);
+    if (isRecord(result) && result.source === 'ledger') {
+      return result as LedgerInsightsResponse;
+    }
+    return result as LedgerResponse;
   } catch (error) {
     console.error('Error al consultar el ledger de NCF:', error);
-    return { source: 'ledger-error', error: error?.message };
+    return {
+      source: 'ledger-error',
+      error: error instanceof Error ? error.message : undefined,
+    };
   }
 };
 
-export const createSequenceConflictChecker = ({
-  businessID,
-  userID,
-  resolveSequenceLength,
-} = {}) => {
+export const createSequenceConflictChecker = (
+  {
+    businessID,
+    userID,
+    resolveSequenceLength,
+  }: SequenceConflictCheckerOptions = {},
+): ((formValues: SequenceFormValues) => Promise<SequenceConflictResult>) => {
   const resolver =
     typeof resolveSequenceLength === 'function'
       ? resolveSequenceLength
       : DEFAULT_RESOLVER;
 
-  return async (formValues) => {
+  return async (formValues: SequenceFormValues): Promise<SequenceConflictResult> => {
     if (!businessID) return { ok: true };
 
     const prefix = buildPrefix(formValues.type, formValues.serie);
@@ -146,10 +203,10 @@ export const createSequenceConflictChecker = ({
       }
     }
 
-    const codeMap = new Map();
-    const queryCodes = new Set();
+    const codeMap = new Map<string, SequenceMeta>();
+    const queryCodes = new Set<string>();
 
-    const registerCodes = (meta, codes) => {
+    const registerCodes = (meta: SequenceMeta, codes: string[]) => {
       codes.forEach((candidate) => {
         if (!candidate) return;
         const trimmed = candidate.trim();
@@ -163,8 +220,8 @@ export const createSequenceConflictChecker = ({
     };
 
     const registerMetaCodes = (
-      meta,
-      { rawDigits: rawDigitsCandidate } = {},
+      meta: SequenceMeta,
+      { rawDigits: rawDigitsCandidate }: { rawDigits?: string } = {},
     ) => {
       const normalizedDigitsForMeta = meta.normalizedDigits ?? '';
       const rawDigitsForMeta =
@@ -177,7 +234,7 @@ export const createSequenceConflictChecker = ({
         sequenceLengthEstimate,
       });
 
-      const candidateSet = new Set(baseCandidates);
+      const candidateSet = new Set<string>(baseCandidates);
       candidateSet.add(meta.ncf);
       candidateSet.add(`${prefix}${normalizedDigitsForMeta}`);
 
@@ -185,7 +242,7 @@ export const createSequenceConflictChecker = ({
         candidateSet.add(`${prefix}${rawDigitsForMeta}`);
       }
 
-      const digitsWithPrefix = new Set();
+      const digitsWithPrefix = new Set<string>();
       candidateSet.forEach((code) => {
         const trimmed = (code ?? '').trim();
         if (!trimmed) return;
@@ -205,13 +262,25 @@ export const createSequenceConflictChecker = ({
       registerCodes(meta, Array.from(candidateSet));
     };
 
-    const buildMeta = ({ number, step, position, rawDigitsOverride }) => {
+    const buildMeta = ({
+      number,
+      step,
+      position,
+      rawDigitsOverride,
+    }: {
+      number: number;
+      step: number;
+      position: SequenceMeta['position'];
+      rawDigitsOverride?: string;
+    }): SequenceMeta => {
       const digitsSource = rawDigitsOverride ?? number.toString();
       const normalized = normalizeDigits(digitsSource);
-      const paddedDigits = normalized.padStart(sequenceLengthEstimate, '0');
+      const paddedDigits = Number.isFinite(sequenceLengthEstimate)
+        ? normalized.padStart(sequenceLengthEstimate ?? 0, '0')
+        : normalized;
       const baseCode = `${prefix}${paddedDigits}`;
 
-      const meta = {
+      const meta: SequenceMeta = {
         number,
         step,
         position,
@@ -233,7 +302,7 @@ export const createSequenceConflictChecker = ({
       rawDigitsOverride: rawDigits,
     });
 
-    const beforeMetas = [];
+    const beforeMetas: SequenceMeta[] = [];
     for (let step = 1; step <= backwardSteps; step += 1) {
       const candidateNumber = baseNumber - increment * step;
       if (candidateNumber < 0) break;
@@ -242,7 +311,7 @@ export const createSequenceConflictChecker = ({
       );
     }
 
-    const afterMetas = [];
+    const afterMetas: SequenceMeta[] = [];
     for (let step = 1; step <= forwardSteps; step += 1) {
       const candidateNumber = baseNumber + increment * step;
       afterMetas.push(
@@ -296,7 +365,7 @@ export const createSequenceConflictChecker = ({
     const hasImmediateNextConflict =
       (immediateNextMeta?.invoices?.length ?? 0) > 0;
 
-    const contiguousAvailableBefore = [];
+    const contiguousAvailableBefore: SequenceMeta[] = [];
     for (const meta of sortedBefore) {
       if (meta.invoices.length === 0) {
         contiguousAvailableBefore.push(meta);
@@ -308,7 +377,7 @@ export const createSequenceConflictChecker = ({
     const usedAfter = sortedAfter.filter((meta) => meta.invoices.length > 0);
     const usedBefore = sortedBefore.filter((meta) => meta.invoices.length > 0);
 
-    const contiguousAvailableAfter = [];
+    const contiguousAvailableAfter: SequenceMeta[] = [];
     for (const meta of sortedAfter) {
       if (meta.invoices.length === 0) {
         contiguousAvailableAfter.push(meta);
@@ -323,7 +392,7 @@ export const createSequenceConflictChecker = ({
       ...usedAfter,
     ];
 
-    const lastUsedMeta = allUsedMetas.reduce((best, meta) => {
+    const lastUsedMeta = allUsedMetas.reduce<SequenceMeta | null>((best, meta) => {
       if (!meta) return best;
       if (!best || meta.number > best.number) {
         return meta;
@@ -331,7 +400,7 @@ export const createSequenceConflictChecker = ({
       return best;
     }, null);
 
-    const formatMeta = (meta) => ({
+    const formatMeta = (meta: SequenceMeta): LedgerEntry => ({
       number: meta.number,
       ncf: meta.ncf,
       step: meta.step,
@@ -339,7 +408,7 @@ export const createSequenceConflictChecker = ({
       normalizedDigits: meta.normalizedDigits,
     });
 
-    const insights = {
+    const insights: SequenceInsights = {
       currentConflict: hasCurrentConflict ? formatMeta(baseNumberMeta) : null,
       availableBefore: contiguousAvailableBefore
         .slice(0, MAX_SEQUENCE_REPORT_ITEMS)
@@ -364,7 +433,7 @@ export const createSequenceConflictChecker = ({
       lastUsed: lastUsedMeta ? formatMeta(lastUsedMeta) : null,
     };
 
-    const conflictInvoices = hasCurrentConflict
+    const conflictInvoices: Conflict[] | undefined = hasCurrentConflict
       ? baseNumberMeta.invoices
       : hasImmediateNextConflict
         ? (immediateNextMeta?.invoices ?? [])

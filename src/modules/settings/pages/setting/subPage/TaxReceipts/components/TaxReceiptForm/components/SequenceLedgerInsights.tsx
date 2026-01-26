@@ -1,12 +1,41 @@
-// @ts-nocheck
 import { Alert, Space, Typography } from 'antd';
 import React from 'react';
 
-import { normalizeDigits } from '../utils/ncfUtils';
+import {
+  type LedgerEntry,
+  type Range,
+  type SequenceAnalysisStateLoose,
+  type SequenceConflictResult,
+  isRecord,
+  isSequenceConflictResult,
+  normalizeDigits,
+} from '../utils/ncfUtils';
 
 const { Text } = Typography;
 
-const InfoRow = ({ label, value, hint }) => {
+type InfoRowProps = {
+  label: string;
+  value?: string | null;
+  hint?: string | null;
+};
+
+type InsightListProps = {
+  label: string;
+  items?: LedgerEntry[] | null;
+  withCount?: boolean;
+  formatNcf?: (item: LedgerEntry) => string;
+};
+
+type SequenceLedgerInsightsProps = {
+  analysisState?: SequenceAnalysisStateLoose;
+  prefix?: string | null;
+  displayLength?: number | string | null;
+};
+
+const toLedgerEntries = (value: unknown): LedgerEntry[] =>
+  Array.isArray(value) ? (value as LedgerEntry[]) : [];
+
+const InfoRow = ({ label, value, hint }: InfoRowProps) => {
   if (!value) return null;
   return (
     <div>
@@ -23,7 +52,12 @@ const InfoRow = ({ label, value, hint }) => {
   );
 };
 
-const InsightList = ({ label, items, withCount = false, formatNcf }) => {
+const InsightList = ({
+  label,
+  items,
+  withCount = false,
+  formatNcf,
+}: InsightListProps) => {
   if (!items?.length) return null;
   const limited = items.slice(0, 5);
   return (
@@ -57,9 +91,20 @@ const SequenceLedgerInsights = ({
   analysisState,
   prefix: prefixProp,
   displayLength,
-}) => {
+}: SequenceLedgerInsightsProps) => {
   const state = analysisState ?? { status: 'idle', result: null, error: null };
-  const { status, result, error } = state;
+  const status = typeof state.status === 'string' ? state.status : 'idle';
+  const result: SequenceConflictResult | null = isSequenceConflictResult(
+    state.result,
+  )
+    ? state.result
+    : null;
+  const errorMessage =
+    state.error instanceof Error
+      ? state.error.message
+      : isRecord(state.error) && typeof state.error.message === 'string'
+        ? state.error.message
+        : null;
 
   if ((status === 'idle' || status === 'error') && !result) {
     if (status === 'error') {
@@ -68,7 +113,7 @@ const SequenceLedgerInsights = ({
           type="error"
           showIcon
           message="No se pudo analizar la secuencia"
-          description={error?.message || 'Intenta nuevamente más tarde.'}
+          description={errorMessage || 'Intenta nuevamente más tarde.'}
         />
       );
     }
@@ -76,17 +121,11 @@ const SequenceLedgerInsights = ({
   }
 
   const loading = status === 'loading';
-  const insights = result?.insights ?? {};
-  const availableBefore = Array.isArray(insights.availableBefore)
-    ? insights.availableBefore
-    : [];
-  const availableAfter = Array.isArray(insights.availableAfter)
-    ? insights.availableAfter
-    : [];
-  const usedBefore = Array.isArray(insights.usedBefore)
-    ? insights.usedBefore
-    : [];
-  const usedAfter = Array.isArray(insights.usedAfter) ? insights.usedAfter : [];
+  const insights = result?.insights;
+  const availableBefore = toLedgerEntries(insights?.availableBefore);
+  const availableAfter = toLedgerEntries(insights?.availableAfter);
+  const usedBefore = toLedgerEntries(insights?.usedBefore);
+  const usedAfter = toLedgerEntries(insights?.usedAfter);
   const nextConflict = Boolean(result?.hasImmediateNextConflict);
   const futureGapMeta = usedAfter.find((meta) => meta.step > 1) || null;
   const showAvailableAfter = usedAfter.length > 0 && availableAfter.length > 0;
@@ -113,7 +152,7 @@ const SequenceLedgerInsights = ({
 
   const sequenceLength = resolveLength();
 
-  const buildFromDigits = (rawDigits) => {
+  const buildFromDigits = (rawDigits: string | number | null | undefined) => {
     if (rawDigits === undefined || rawDigits === null) return null;
     const digits = normalizeDigits(String(rawDigits));
     if (!digits) return null;
@@ -125,7 +164,7 @@ const SequenceLedgerInsights = ({
     return prefixCandidate ? `${prefixCandidate}${padded}` : padded;
   };
 
-  const extractDigitsFromItem = (item) => {
+  const extractDigitsFromItem = (item: LedgerEntry | null | undefined) => {
     if (!item) return null;
     if (
       typeof item.normalizedDigits === 'string' &&
@@ -134,7 +173,7 @@ const SequenceLedgerInsights = ({
       return item.normalizedDigits;
     }
     if (Number.isFinite(item.number)) {
-      return item.number.toString();
+      return Number(item.number).toString();
     }
     if (typeof item.ncf === 'string') {
       const trimmed = item.ncf.trim();
@@ -152,7 +191,7 @@ const SequenceLedgerInsights = ({
     return null;
   };
 
-  const formatItemNcf = (item) => {
+  const formatItemNcf = (item: LedgerEntry | null | undefined): string => {
     const digits = extractDigitsFromItem(item);
     const formatted = buildFromDigits(digits);
     if (formatted) return formatted;
@@ -163,17 +202,17 @@ const SequenceLedgerInsights = ({
   const formattedFutureGap = futureGapMeta
     ? formatItemNcf(futureGapMeta)
     : null;
-  const lastUsedValue = insights.lastUsed
+  const lastUsedValue = insights?.lastUsed
     ? formatItemNcf(insights.lastUsed)
     : null;
-  const availableAfterRange = showAvailableAfter
+  const availableAfterRange: Range<string> | null = showAvailableAfter
     ? {
-      start: formatItemNcf(availableAfter[0]),
-      end: formatItemNcf(availableAfter[availableAfter.length - 1]),
-    }
+        start: formatItemNcf(availableAfter[0]),
+        end: formatItemNcf(availableAfter[availableAfter.length - 1]),
+      }
     : null;
 
-  const formatRangeLabel = (range) => {
+  const formatRangeLabel = (range: Range<string> | null): string | null => {
     if (!range) return null;
     if (!range.start) return null;
     if (!range.end || range.start === range.end) return range.start;
@@ -242,3 +281,4 @@ const SequenceLedgerInsights = ({
 };
 
 export default SequenceLedgerInsights;
+

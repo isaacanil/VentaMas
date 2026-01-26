@@ -1,31 +1,38 @@
-// @ts-nocheck
 import { Modal, Typography } from 'antd';
 
-import { normalizeDigits } from './ncfUtils';
+import {
+  type Conflict,
+  type LedgerEntry,
+  type Range,
+  type SequenceConflictResult,
+  type Warning,
+  isSequenceConflictResult,
+  normalizeDigits,
+} from './ncfUtils';
 
 const { Text } = Typography;
 
-const pluralize = (value, singular, plural) => {
+const pluralize = (value: unknown, singular: string, plural: string): string => {
   const amount = Number(value) || 0;
   return amount === 1 ? singular : plural;
 };
 
-export const confirmSequenceWarnings = async (validationResult) => {
-  const result = validationResult || {};
-  const insights = result.insights || {};
-  const availableBefore = Array.isArray(insights.availableBefore)
-    ? insights.availableBefore
-    : [];
-  const availableAfter = Array.isArray(insights.availableAfter)
-    ? insights.availableAfter
-    : [];
-  const usedBefore = Array.isArray(insights.usedBefore)
-    ? insights.usedBefore
-    : [];
-  const usedAfterRaw = Array.isArray(insights.usedAfter)
-    ? insights.usedAfter
-    : [];
-  const lastUsed = insights.lastUsed || null;
+const toLedgerEntries = (value: unknown): LedgerEntry[] =>
+  Array.isArray(value) ? (value as LedgerEntry[]) : [];
+
+export const confirmSequenceWarnings = async (
+  validationResult: SequenceConflictResult | null | undefined,
+): Promise<Warning> => {
+  const fallback: SequenceConflictResult = { ok: true };
+  const result = isSequenceConflictResult(validationResult)
+    ? validationResult
+    : fallback;
+  const insights = result.insights;
+  const availableBefore = toLedgerEntries(insights?.availableBefore);
+  const availableAfter = toLedgerEntries(insights?.availableAfter);
+  const usedBefore = toLedgerEntries(insights?.usedBefore);
+  const usedAfterRaw = toLedgerEntries(insights?.usedAfter);
+  const lastUsed = insights?.lastUsed || null;
   const hasImmediateNextConflict = Boolean(result.hasImmediateNextConflict);
 
   const sortedUsedAfter = usedAfterRaw
@@ -33,7 +40,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     .sort((a, b) => (a?.step ?? 0) - (b?.step ?? 0));
 
   const showCurrentConflict = Boolean(
-    hasImmediateNextConflict && insights.currentConflict,
+    hasImmediateNextConflict && insights?.currentConflict,
   );
   const showFutureUsage = sortedUsedAfter.length > 0;
   const showAvailableAfter = showFutureUsage && availableAfter.length > 0;
@@ -42,11 +49,11 @@ export const confirmSequenceWarnings = async (validationResult) => {
 
   const prefixCandidate =
     typeof result.prefix === 'string' ? result.prefix : '';
-  const resolveSequenceLength = () => {
+  const resolveSequenceLength = (): number | null => {
     const candidates = [
       Number(result.sequenceLength),
       Number(result.nextDigitsLength),
-      Number(insights.currentConflict?.normalizedDigits?.length),
+      Number(insights?.currentConflict?.normalizedDigits?.length),
       Number(sortedUsedAfter[0]?.normalizedDigits?.length),
     ].filter((value) => Number.isFinite(value) && value > 0);
     return candidates.length > 0 ? candidates[0] : null;
@@ -54,7 +61,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
 
   const sequenceLength = resolveSequenceLength();
 
-  const buildFromDigits = (rawDigits) => {
+  const buildFromDigits = (rawDigits: string | number | null | undefined) => {
     if (rawDigits === undefined || rawDigits === null) return null;
     const digits = normalizeDigits(String(rawDigits));
     if (!digits) return null;
@@ -66,7 +73,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     return prefixCandidate ? `${prefixCandidate}${padded}` : padded;
   };
 
-  const extractDigitsFromItem = (item) => {
+  const extractDigitsFromItem = (item: LedgerEntry | null | undefined) => {
     if (!item) return null;
     if (
       typeof item.normalizedDigits === 'string' &&
@@ -75,7 +82,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
       return item.normalizedDigits;
     }
     if (Number.isFinite(item.number)) {
-      return item.number.toString();
+      return Number(item.number).toString();
     }
     if (typeof item.ncf === 'string') {
       const trimmed = item.ncf.trim();
@@ -93,14 +100,17 @@ export const confirmSequenceWarnings = async (validationResult) => {
     return null;
   };
 
-  const formatItemNcf = (item) => {
+  const formatItemNcf = (item: LedgerEntry | null | undefined): string => {
     const digits = extractDigitsFromItem(item);
     const formatted = buildFromDigits(digits);
     if (formatted) return formatted;
     return item?.ncf || '';
   };
 
-  const formatRangeLabel = (startItem, endItem) => {
+  const formatRangeLabel = (
+    startItem: LedgerEntry | null | undefined,
+    endItem: LedgerEntry | null | undefined,
+  ): string | null => {
     const start = formatItemNcf(startItem);
     const end = formatItemNcf(endItem);
     if (!start) return null;
@@ -114,7 +124,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     return { accepted: true, warned: false };
   }
 
-  const renderInvoiceList = (items) => (
+  const renderInvoiceList = (items: Conflict[]) => (
     <ul>
       {items.map((invoice) => {
         const display =
@@ -124,12 +134,15 @@ export const confirmSequenceWarnings = async (validationResult) => {
     </ul>
   );
 
-  const availableAfterRange = showAvailableAfter
-    ? {
-        start: availableAfter[0],
-        end: availableAfter[availableAfter.length - 1],
-      }
-    : null;
+  const availableAfterStart = availableAfter[0];
+  const availableAfterEnd = availableAfter[availableAfter.length - 1];
+  const availableAfterRange: Range<LedgerEntry> | null =
+    showAvailableAfter && availableAfterStart && availableAfterEnd
+      ? {
+          start: availableAfterStart,
+          end: availableAfterEnd,
+        }
+      : null;
 
   const futureUsageBlock = showFutureUsage ? (
     <div style={{ marginTop: showCurrentConflict ? 16 : 0 }}>
@@ -172,7 +185,7 @@ export const confirmSequenceWarnings = async (validationResult) => {
     </div>
   ) : null;
 
-  const currentConflictBlock = showCurrentConflict ? (
+  const currentConflictBlock = showCurrentConflict && insights?.currentConflict ? (
     <div>
       <p>
         El NCF almacenado coincide con uno ya emitido:
@@ -248,9 +261,9 @@ export const confirmSequenceWarnings = async (validationResult) => {
     </div>
   );
 
-  return new Promise((resolve) => {
+  return new Promise<Warning>((resolve) => {
     let settled = false;
-    const safeResolve = (value) => {
+    const safeResolve = (value: Warning) => {
       if (!settled) {
         settled = true;
         resolve(value);

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import styled from 'styled-components';
 
 const SummaryContainer = styled.div`
@@ -112,9 +111,31 @@ const SummaryBadge = styled.span`
   border-radius: 999px;
 `;
 
-const resolveDisplayValue = (value, fallback) => {
+type SummaryDensity = 'compact' | 'regular';
+
+type SummaryItem = {
+  key: 'current' | 'next' | 'last';
+  label: string;
+  value: string;
+  hint: string;
+  footer?: string[];
+};
+
+type NcfSequenceSummaryProps = {
+  current?: string | null;
+  next?: string | null;
+  last?: string | null;
+  quantity?: number | string | null;
+  increment?: number | string | null;
+  density?: SummaryDensity;
+};
+
+const resolveDisplayValue = (
+  value: string | number | null | undefined,
+  fallback: string,
+): string => {
   if (value === null || value === undefined || value === '') return fallback;
-  return value;
+  return String(value);
 };
 
 export default function NcfSequenceSummary({
@@ -124,7 +145,7 @@ export default function NcfSequenceSummary({
   quantity,
   increment,
   density = 'compact', // "compact" | "regular"
-}) {
+}: NcfSequenceSummaryProps) {
   const safeQuantity = Number(quantity);
   const safeIncrement = Number(increment);
 
@@ -138,7 +159,7 @@ export default function NcfSequenceSummary({
       ? `Incremento ${safeIncrement}`
       : null;
 
-  const items = [
+  const items: SummaryItem[] = [
     {
       key: 'current',
       label: 'NCF actual (almacenado)',

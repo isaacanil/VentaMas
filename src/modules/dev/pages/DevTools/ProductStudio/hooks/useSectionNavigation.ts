@@ -1,17 +1,23 @@
-// @ts-nocheck
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { FORM_SECTIONS, getSectionDomId } from '../utils/sections';
+import { FORM_SECTIONS, getSectionDomId, type SectionId } from '../utils/sections';
 
 const SCROLL_OFFSET = 12;
 const SECTION_ACTIVATION_THRESHOLD = 140;
 
-export const useSectionNavigation = () => {
-  const scrollContainerRef = useRef(null);
-  const [activeSection, setActiveSection] = useState(FORM_SECTIONS[0].id);
+const isSectionId = (value: string): value is SectionId =>
+  FORM_SECTIONS.some((section) => section.id === value);
 
-  const handleSectionNavigation = useCallback((sectionId) => {
+export const useSectionNavigation = () => {
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const initialSection = FORM_SECTIONS[0]?.id ?? 'identity';
+  const [activeSection, setActiveSection] = useState<SectionId>(initialSection);
+
+  const handleSectionNavigation = useCallback((sectionId: string) => {
     if (typeof document === 'undefined') {
+      return;
+    }
+    if (!isSectionId(sectionId)) {
       return;
     }
     const container = scrollContainerRef.current;
@@ -41,7 +47,7 @@ export const useSectionNavigation = () => {
     }
 
     const handleScroll = () => {
-      let currentSection = FORM_SECTIONS[0].id;
+      let currentSection: SectionId = FORM_SECTIONS[0]?.id ?? 'identity';
       const containerRect = container.getBoundingClientRect();
 
       FORM_SECTIONS.forEach((section) => {

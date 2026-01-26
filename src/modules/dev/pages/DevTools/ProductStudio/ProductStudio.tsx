@@ -46,13 +46,11 @@ import {
   StickySummary,
   Workspace,
 } from './components/StudioLayout';
-import { useProductPreviewMetrics } from './hooks/useProductPreviewMetrics';
+import { useProductPreviewMetrics, type ProductSnapshot } from './hooks/useProductPreviewMetrics';
 import { useSectionNavigation } from './hooks/useSectionNavigation';
 import { brandFieldMetaByType, buildBrandOptions } from './utils/brandUtils';
 import { FORM_SECTIONS, getSectionDomId, type SectionId } from './utils/sections';
-import type { CategoryDocument } from '@/firebase/categories/types';
 import type {
-  ActiveIngredient,
   ProductPricing,
   ProductRecord,
   ProductWarranty,
@@ -118,6 +116,29 @@ const isFormValidationError = (
   return Array.isArray(errorFields);
 };
 
+const toProductPreviewSnapshot = (
+  source: ProductRecord | null | undefined,
+): ProductSnapshot | null | undefined => {
+  if (!source) return source;
+  const pricing = source.pricing;
+  const rawTax = pricing?.tax;
+  const computedTax = Number(rawTax || 0);
+  const normalizedTax: number | string = Number.isNaN(computedTax)
+    ? 'NaN'
+    : computedTax;
+
+  return {
+    pricing: pricing ? { ...pricing, tax: normalizedTax } : undefined,
+    stock: source.stock,
+    trackInventory: source.trackInventory,
+    image: source.image,
+    name: source.name,
+    brand: source.brand,
+    category: source.category,
+    isVisible: source.isVisible,
+  };
+};
+
 export default function ProductStudio() {
   const dispatch = useDispatch();
   const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(selectUser);
@@ -127,7 +148,7 @@ export default function ProductStudio() {
   const [form] = Form.useForm<ProductFormValues>();
   const { scrollContainerRef, activeSection, handleSectionNavigation } =
     useSectionNavigation();
-  const normalizedProduct = useMemo<Partial<ProductRecord>>(
+  const normalizedProduct = useMemo<Partial<ProductFormValues>>(
     () => buildNormalizedProductSnapshot(product) || {},
     [product],
   );
@@ -154,11 +175,23 @@ export default function ProductStudio() {
     () => brandFieldMetaByType(product?.type),
     [product?.type],
   );
-  const brandOptions = useMemo(
-    () => buildBrandOptions(productBrands, product),
-    [productBrands, product],
+  const normalizedProductBrands = useMemo(
+    () =>
+      productBrands.map((brand) => ({
+        id: brand.id,
+        name: typeof brand.name === 'string' ? brand.name : '',
+      })),
+    [productBrands],
   );
-  const previewMetrics = useProductPreviewMetrics(product);
+  const brandOptions = useMemo(
+    () => buildBrandOptions(normalizedProductBrands, product),
+    [normalizedProductBrands, product],
+  );
+  const previewSnapshot = useMemo(
+    () => toProductPreviewSnapshot(product),
+    [product],
+  );
+  const previewMetrics = useProductPreviewMetrics(previewSnapshot);
   const sectionDomIds = useMemo(
     () =>
       FORM_SECTIONS.reduce<Record<SectionId, string>>((acc, section) => {
@@ -411,19 +444,37 @@ export default function ProductStudio() {
       }
 
       if (isUpdateMode || status === 'update') {
-        if (!product?.id) {
+        const productId =
+          typeof sanitizedProduct.id === 'string' && sanitizedProduct.id.trim()
+            ? sanitizedProduct.id
+            : product?.id;
+        if (!productId) {
           throw new Error(
             'El producto no tiene un identificador válido para actualizar.',
           );
         }
-        await fbUpdateProduct(sanitizedProduct, user);
+        const productForUpdate: ProductRecord & { id: string } = {
+          ...sanitizedProduct,
+          id: productId,
+        };
+        await fbUpdateProduct(productForUpdate, user);
         notification.success({
           message: 'Producto actualizado',
           description:
             'Los cambios están disponibles para el equipo en segundos.',
         });
       } else {
-        await fbAddProduct(sanitizedProduct, user);
+        if (!hasUserUid(user)) {
+          throw new Error('No se pudo determinar el usuario activo.');
+        }
+        const productForCreate: ProductRecord & { stock: number } = {
+          ...sanitizedProduct,
+          stock:
+            typeof sanitizedProduct.stock === 'number'
+              ? sanitizedProduct.stock
+              : Number(sanitizedProduct.stock ?? 0),
+        };
+        await fbAddProduct(productForCreate, user);
         notification.success({
           message: 'Producto creado',
           description:
@@ -547,5 +598,6 @@ export default function ProductStudio() {
     </PageContainer>
   );
 }
+
 
 

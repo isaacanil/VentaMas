@@ -1,6 +1,7 @@
-// @ts-nocheck
 import { Form, Input } from 'antd';
 import styled from 'styled-components';
+
+import type { FC } from 'react';
 
 import {
   FieldGrid,
@@ -24,7 +25,11 @@ const CodesSpacer = styled.div`
   min-height: 150px;
 `;
 
-export const CodesSection = ({ domId }) => (
+interface CodesSectionProps {
+  domId: string;
+}
+
+export const CodesSection: FC<CodesSectionProps> = ({ domId }) => (
   <CodesCard id={domId}>
     <SectionHeader>
       <SectionTitle level={4}>Identificadores y códigos</SectionTitle>
