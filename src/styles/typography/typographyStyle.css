@@ -1,0 +1,119 @@
+:root {
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: serif;
+
+  --text-base-size: 1em;
+  --text-scale-ratio: 1.2;
+
+  --heading-line-height: calc(1em * var(--text-scale-ratio));
+  --body-line-height: calc(
+    1em * var(--text-scale-ratio) * var(--text-scale-ratio)
+  );
+
+  --space-xxs: calc(
+    1em /
+      (
+        var(--text-scale-ratio) * var(--text-scale-ratio) *
+          var(--text-scale-ratio)
+      )
+  );
+  --space-xs: calc(1em / (var(--text-scale-ratio) * var(--text-scale-ratio)));
+  --space-sm: calc(1em / var(--text-scale-ratio));
+  --space-md: calc(1em * var(--text-scale-ratio));
+  --space-lg: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio));
+
+  --text-xs: calc(1em / (var(--text-scale-ratio) * var(--text-scale-ratio)));
+  --text-sm: calc(1em / var(--text-scale-ratio));
+  --text-md: calc(1em * var(--text-scale-ratio));
+  --text-lg: calc(1em * var(--text-scale-ratio) * var(--text-scale-ratio));
+  --text-xl: calc(
+    1em * var(--text-scale-ratio) * var(--text-scale-ratio) *
+      var(--text-scale-ratio)
+  );
+  --text-xxl: calc(
+    1em * var(--text-scale-ratio) * var(--text-scale-ratio) *
+      var(--text-scale-ratio) * var(--text-scale-ratio)
+  );
+  --text-xxxl: calc(
+    1em * var(--text-scale-ratio) * var(--text-scale-ratio) *
+      var(--text-scale-ratio) * var(--text-scale-ratio) *
+      var(--text-scale-ratio)
+  );
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base-size);
+  color: var(--color-text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+form legend {
+  margin-right: 0;
+  margin-bottom: var(--space-xxs);
+  margin-left: 0;
+  line-height: var(--heading-line-height);
+  color: var(--color-text-heading);
+}
+
+.text--xxxl {
+  font-size: var(--text-xxxl);
+}
+
+h1,
+.text--xxl {
+  margin: 0 0 4px;
+  font-size: var(--text-xxl);
+}
+
+h2,
+.text--xl {
+  margin: 0 0 12px;
+  font-size: var(--text-xl);
+  color: #1a1a1a;
+}
+
+h3,
+.text--lg {
+  margin: 0 0 10px;
+  font-size: var(--text-lg);
+}
+
+.text--sm,
+small {
+  font-size: var(--text-sm);
+}
+
+.text--xs {
+  font-size: var(--text-xs);
+}
+
+p {
+  line-height: var(--body-line-height);
+}
+
+@media (width >= 768px) {
+  :root {
+    --text-base-size: 1em;
+    --text-scale-ratio: 1.2;
+  }
+}
+
+@media (width >= 1024px) {
+  :root {
+    --text-base-size: 1em;
+    --text-scale-ratio: 1.2;
+  }
+}
+
+@media (width >= 1280px) {
+  :root {
+    --text-base-size: 1em;
+    --text-scale-ratio: 1.2;
+  }
+}

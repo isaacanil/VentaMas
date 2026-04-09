@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Procesando retorno de pago</title>
+  </head>
+  <body>
+    <script>
+      (function redirectToSubscriptionSuccess() {
+        var currentUrl = new URL(window.location.href);
+        var searchParams = currentUrl.searchParams;
+        var normalizedOrderNumber =
+          searchParams.get('orderNumber') || searchParams.get('OrderNumber');
+
+        if (normalizedOrderNumber && !searchParams.get('orderNumber')) {
+          searchParams.set('orderNumber', normalizedOrderNumber);
+        }
+
+        var targetUrl = new URL(
+          '/account/subscription/success',
+          window.location.origin,
+        );
+
+        searchParams.forEach(function copyParam(value, key) {
+          targetUrl.searchParams.set(key, value);
+        });
+
+        window.location.replace(targetUrl.toString());
+      })();
+    </script>
+    <noscript>
+      <p>
+        JavaScript es requerido para completar el retorno del pago.
+        <a href="/account/subscription/success">Continuar</a>
+      </p>
+    </noscript>
+  </body>
+</html>

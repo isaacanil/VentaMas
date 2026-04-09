@@ -1,0 +1,66 @@
+import { Modal, Descriptions, Button } from 'antd';
+import React from 'react';
+
+import type { SaleUnitRecord } from './SaleUnit';
+
+type PricingModalProps = {
+  visible: boolean;
+  unit: SaleUnitRecord | null;
+  onClose: () => void;
+};
+
+const PricingModal = ({ visible, unit, onClose }: PricingModalProps) => {
+  const formatTax = (tax: SaleUnitRecord['pricing']['tax']) => {
+    if (tax === null || tax === undefined) return 'N/A';
+    if (typeof tax === 'number' || typeof tax === 'string') return tax;
+    if (typeof tax === 'object' && 'tax' in tax) {
+      const value = (tax as { tax?: number | string }).tax;
+      return value ?? 'N/A';
+    }
+    return 'N/A';
+  };
+
+  return (
+    <Modal
+      title={
+        unit
+          ? `Detalles de Precios para ${unit.unitName}`
+          : 'Detalles de Precios'
+      }
+      open={visible}
+      onCancel={onClose}
+      footer={[
+        <Button key="close" type="primary" onClick={onClose}>
+          Cerrar
+        </Button>,
+      ]}
+    >
+      {unit ? (
+        <Descriptions bordered column={1}>
+          <Descriptions.Item label="Costo">
+            ${unit.pricing.cost.toFixed(2)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Precio">
+            ${unit.pricing.price.toFixed(2)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Precio de Lista">
+            ${unit.pricing.listPrice.toFixed(2)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Precio Promedio">
+            ${unit.pricing.avgPrice.toFixed(2)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Precio Mínimo">
+            ${unit.pricing.minPrice.toFixed(2)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Impuesto">
+            {formatTax(unit.pricing.tax)}
+          </Descriptions.Item>
+        </Descriptions>
+      ) : (
+        <p>No hay información disponible.</p>
+      )}
+    </Modal>
+  );
+};
+
+export default PricingModal;

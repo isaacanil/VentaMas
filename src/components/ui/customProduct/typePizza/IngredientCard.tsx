@@ -1,0 +1,90 @@
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import {
+  addIngredient,
+  gettingIngredientList,
+  totalPurchase,
+  deleteIngredient,
+  selectIngredientList,
+} from '@/features/customProducts/customProductSlice';
+import { formatPrice } from '@/utils/format';
+
+interface Ingredient {
+  id: string | number;
+  name: string;
+  cost: number | string;
+}
+
+interface IngredientCardProps {
+  item: Ingredient;
+  index: string | number;
+}
+
+const isIngredientSelected = (
+  array: Ingredient[],
+  id: string | number,
+) => array.some((element: Ingredient) => element.id === id);
+
+export const IngredientCard = ({ item, index }: IngredientCardProps) => {
+  const dispatch = useDispatch();
+  const IngredientsList = useSelector(selectIngredientList);
+  const handleIngredient = (status: boolean, item: Ingredient) => {
+    status
+      ? (dispatch(addIngredient(item)),
+        dispatch(totalPurchase()),
+        dispatch(gettingIngredientList()))
+      : (dispatch(deleteIngredient(item)),
+        dispatch(totalPurchase()),
+        dispatch(gettingIngredientList()));
+  };
+  return (
+    <Container htmlFor={String(index)}>
+      <input
+        type="checkbox"
+        name=""
+        checked={isIngredientSelected(IngredientsList, item.id)}
+        id={String(index)}
+        onChange={(e) => handleIngredient(e.target.checked, item)}
+      />
+      <span>{item.name}</span>
+      <Col align="end">{formatPrice(item.cost)}</Col>
+    </Container>
+  );
+};
+
+const Container = styled.label`
+  display: grid;
+  grid-template-columns: min-content 1fr 0.8fr;
+  gap: 1em;
+  align-items: center;
+  height: 2.2em;
+  padding: 0 1em;
+  list-style: none;
+  background-color: #f1efef;
+  border-radius: 8px;
+`;
+const Col = styled.div<{ align?: 'center' | 'end' | 'start' }>`
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  ${(props) => {
+    switch (props.align) {
+      case 'center':
+        return `
+                    justify-content: center;
+                `;
+      case 'end':
+        return `
+                    justify-content: flex-end;
+                    text-align: right;
+                `;
+      default:
+        return `
+                    justify-content: flex-start;
+                    
+                `;
+    }
+  }}
+`;

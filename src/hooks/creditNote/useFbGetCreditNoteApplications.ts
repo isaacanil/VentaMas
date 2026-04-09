@@ -1,0 +1,112 @@
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+  type QueryConstraint,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { selectUser } from '@/features/auth/userSlice';
+import { db } from '@/firebase/firebaseconfig';
+import type {
+  CreditNoteApplicationFilters,
+  CreditNoteApplicationRecord,
+} from '@/types/creditNote';
+import type { UserIdentity } from '@/types/users';
+
+/**
+ * Hook para obtener aplicaciones de notas de crédito
+ * Estructura simplificada de aplicación:
+ * {
+ *   creditNoteId, creditNoteNcf,
+ *   invoiceId, invoiceNcf, invoiceNumber,
+ *   clientId, amountApplied,
+ *   previousBalance, newBalance,
+ *   appliedAt, appliedBy
+ * }
+ * @param {Object} filters - Filtros para la consulta
+ * @param {string} filters.creditNoteId - ID de la nota de crédito
+ * @param {string} filters.invoiceId - ID de la factura
+ * @param {string} filters.clientId - ID del cliente
+ * @returns {Object} - { applications, loading }
+ */
+export const useFbGetCreditNoteApplications = (
+  filters: CreditNoteApplicationFilters = {},
+) => {
+  const user = useSelector(selectUser) as UserIdentity | null;
+  const [applications, setApplications] = useState<
+    CreditNoteApplicationRecord[]
+  >([]);
+  const [loading, setLoading] = useState(() =>
+    Boolean(
+      user?.businessID &&
+      (filters.creditNoteId || filters.invoiceId || filters.clientId),
+    ),
+  );
+
+  useEffect(() => {
+    if (!user?.businessID) {
+      return;
+    }
+
+    // Si no hay filtros, no hacer consulta
+    if (!filters.creditNoteId && !filters.invoiceId && !filters.clientId) {
+      return;
+    }
+
+    const applicationsRef = collection(
+      db,
+      'businesses',
+      user.businessID,
+      'creditNoteApplications',
+    );
+
+    // Construir la consulta con filtros dinámicos
+    const queryConstraints: QueryConstraint[] = [orderBy('appliedAt', 'desc')];
+
+    // Filtro por nota de crédito
+    if (filters.creditNoteId) {
+      queryConstraints.push(where('creditNoteId', '==', filters.creditNoteId));
+    }
+
+    // Filtro por factura
+    if (filters.invoiceId) {
+      queryConstraints.push(where('invoiceId', '==', filters.invoiceId));
+    }
+
+    // Filtro por cliente
+    if (filters.clientId) {
+      queryConstraints.push(where('clientId', '==', filters.clientId));
+    }
+
+    const q = query(applicationsRef, ...queryConstraints);
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((docSnap) => ({
+          ...(docSnap.data() as CreditNoteApplicationRecord),
+          id: docSnap.id,
+        }));
+        setApplications(list);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching credit note applications:', error);
+        setLoading(false);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [
+    user?.businessID,
+    filters.creditNoteId,
+    filters.invoiceId,
+    filters.clientId,
+  ]);
+
+  return { applications, loading };
+};

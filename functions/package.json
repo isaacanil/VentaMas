@@ -1,0 +1,64 @@
+{
+  "name": "functions",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prebuild": "rimraf lib",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf lib",
+    "build:watch": "tsc --watch",
+    "seed:billing-plan-catalog": "node scripts/seedBillingPlanCatalog.js --projectId ventamaxpos --write",
+    "preserve": "npm run build",
+    "serve": "firebase emulators:start --only functions",
+    "preshell": "npm run build",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@foliojs-fork/pdfkit": "^0.15.3",
+    "@genkit-ai/google-genai": "^1.18.0",
+    "@google-cloud/firestore": "^7.11.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "argon2": "^0.43.0",
+    "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
+    "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^7.2.3",
+    "genkit": "^1.18.0",
+    "nanoid": "^5.1.5",
+    "nodemailer": "^7.0.6",
+    "pdfmake": "^0.2.19",
+    "typeface-roboto": "^1.1.13",
+    "ventamax": "file:..",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.15.0",
+    "@types/istanbul-lib-coverage": "^2.0.6",
+    "@types/mime": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "eslint": "^9.15.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.31.0",
+    "firebase-functions-test": "^3.1.0",
+    "rimraf": "^6.0.1",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.9.2"
+  },
+  "private": true,
+  "volta": {
+    "node": "24.13.0"
+  }
+}

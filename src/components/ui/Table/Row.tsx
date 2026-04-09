@@ -1,0 +1,39 @@
+import styled from 'styled-components';
+import type { ReactNode } from 'react';
+
+interface ColumnSize {
+  min: string | number;
+  max: string | number;
+}
+
+interface RowProps {
+  children: ReactNode;
+  col?: ColumnSize[];
+  element?: keyof JSX.IntrinsicElements;
+}
+
+export const Row = ({ children, col, element }: RowProps) => {
+  return (
+    <Container $col={col} as={element}>
+      {children}
+    </Container>
+  );
+};
+
+type RowStyleProps = {
+  $col?: ColumnSize[];
+};
+
+const Container = styled.div<{ $col?: ColumnSize[] }>`
+  display: grid;
+  grid-template-columns: ${(props: RowStyleProps) => {
+    if (props.$col) {
+      return props.$col.map(
+        ({ min, max }: ColumnSize) => `minmax(${min},${max})`,
+      );
+    }
+    return 'none';
+  }};
+  gap: 1em;
+  width: 100%;
+`;

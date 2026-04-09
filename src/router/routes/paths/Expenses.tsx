@@ -1,0 +1,27 @@
+import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
+
+import ROUTES_PATH from '@/router/routes/routesName';
+import type { AppRoute } from '@/router/routes/routes';
+
+const ExpensesForm = lazy(
+  () => import('@/modules/expenses/pages/Expenses/ExpensesForm/ExpensesForm'),
+);
+const ExpensesList = lazy(() =>
+  import('@/modules/expenses/pages/Expenses/ExpensesList/ExpensesList').then(
+    (module) => ({ default: module.ExpensesList }),
+  ),
+);
+
+const { EXPENSES_LIST, EXPENSES_CREATE } = ROUTES_PATH.EXPENSES_TERM;
+const route: AppRoute[] = [
+  {
+    path: EXPENSES_LIST,
+    element: <ExpensesList />,
+  },
+  {
+    path: EXPENSES_CREATE,
+    element: <ExpensesForm />,
+  },
+];
+
+export default route;

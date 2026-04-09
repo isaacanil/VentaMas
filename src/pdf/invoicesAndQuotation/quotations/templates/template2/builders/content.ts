@@ -1,0 +1,100 @@
+import { money, getProductIndividualDiscount } from '../utils/formatters.js';
+
+import type { PdfContent, PdfTableBody, PdfTableRow } from '@/pdf/types';
+import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
+
+export function buildContent(d: QuotationData): PdfContent[] {
+  const headerRow: PdfTableRow = [
+    'CANT',
+    'CODIGO',
+    'DESCRIPCION',
+    'PRECIO',
+    'ITBIS',
+    'TOTAL',
+  ].map((t) => ({
+    text: t,
+    style: 'tableHeader',
+    fillColor: '#4a4a4a',
+    alignment: 'center',
+  }));
+
+  const products = Array.isArray(d.products) ? d.products : [];
+  const body: PdfTableBody = [
+    headerRow,
+    ...products.flatMap((p) => {
+      const price = Number(p.pricing?.price ?? 0);
+      const taxRate = Number(
+        typeof p.pricing?.tax === 'object' && p.pricing?.tax
+          ? (p.pricing.tax as { tax?: number | string }).tax
+          : p.pricing?.tax ?? 0,
+      );
+      const tax = price * (taxRate / 100);
+      const quantity = Number(p.amountToBuy ?? 0);
+      const tot = (price + tax) * quantity;
+
+      const productRow = [
+        { text: quantity, alignment: 'center' },
+        p.barcode,
+        p.name,
+        { text: money(price), alignment: 'right' },
+        { text: money(tax), alignment: 'right' },
+        { text: money(tot), alignment: 'right' },
+      ];
+
+      const extraRows = [];
+
+      /* línea extra para descuento individual */
+      if (p.discount && p.discount.value > 0) {
+        const discountAmount = getProductIndividualDiscount(p);
+        const discountType =
+          p.discount.type === 'percentage'
+            ? `${p.discount.value}%`
+            : 'Monto fijo';
+        extraRows.push([
+          {
+            text: `Descuento: -${money(discountAmount)} (${discountType})`,
+            colSpan: 6,
+            color: '#52c41a',
+            bold: true,
+            margin: [0, 1, 0, 1],
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+        ]);
+      }
+
+      /* línea extra para comentarios del producto */
+      if (p.comment) {
+        extraRows.push([
+          { text: p.comment, colSpan: 6, margin: [0, 2, 0, 4] },
+          {},
+          {},
+          {},
+          {},
+          {},
+        ]);
+      }
+
+      return [productRow, ...extraRows];
+    }),
+  ];
+
+  return [
+    {
+      table: {
+        headerRows: 1,
+        widths: [30, 60, '*', 60, 60, 60],
+        body,
+      },
+      layout: {
+        hLineColor: () => '#e0e0e0',
+        vLineColor: () => '#e0e0e0',
+        hLineWidth: () => 0.5,
+        vLineWidth: () => 0.5,
+      },
+    },
+  ];
+}

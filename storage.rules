@@ -1,0 +1,99 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function currentUid() {
+      return request.auth.uid;
+    }
+
+    function currentUserDoc() {
+      return firestore.get(
+        /databases/(default)/documents/users/$(currentUid())
+      );
+    }
+
+    function currentUserExists() {
+      return isSignedIn()
+        && firestore.exists(
+          /databases/(default)/documents/users/$(currentUid())
+        );
+    }
+
+    function currentUserRole() {
+      return currentUserDoc().data.role != null
+        ? currentUserDoc().data.role
+        : (
+          currentUserDoc().data.activeRole != null
+            ? currentUserDoc().data.activeRole
+            : (
+              currentUserDoc().data.user.role != null
+                ? currentUserDoc().data.user.role
+                : currentUserDoc().data.user.activeRole
+            )
+        );
+    }
+
+    function isPlatformDev() {
+      return currentUserExists()
+        && (
+          currentUserDoc().data.platformRoles.dev == true
+          || currentUserDoc().data.user.platformRoles.dev == true
+        );
+    }
+
+    function hasGlobalRole() {
+      return currentUserExists() && (
+        isPlatformDev()
+        || currentUserRole() in ['dev']
+      );
+    }
+
+    function memberDoc(businessId) {
+      return firestore.get(
+        /databases/(default)/documents/businesses/$(businessId)/members/$(currentUid())
+      );
+    }
+
+    function hasBusinessAccess(businessId) {
+      return isSignedIn()
+        && (
+          hasGlobalRole()
+          || (
+            firestore.exists(
+              /databases/(default)/documents/businesses/$(businessId)/members/$(currentUid())
+            )
+            && !(memberDoc(businessId).data.status in ['inactive', 'suspended', 'revoked'])
+          )
+        );
+    }
+
+    // Imagen de login visible antes de autenticación.
+    match /app-config/login-image/{fileName} {
+      allow read: if true;
+      allow write: if hasGlobalRole();
+    }
+
+    // Reportes generados por funciones.
+    match /reports/stock-digest/{businessId}/{allPaths=**} {
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if hasGlobalRole();
+    }
+
+    // Namespace principal multi-tenant.
+    match /businesses/{businessId}/{allPaths=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    // Ruta legacy detectada en código; solo soporte dev/admin global.
+    match /purchase/{allPaths=**} {
+      allow read, write: if hasGlobalRole();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

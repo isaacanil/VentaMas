@@ -1,0 +1,77 @@
+import {
+  FilePdfOutlined,
+  FileImageOutlined,
+  FileOutlined,
+} from '@/constants/icons/antd';
+import { Image, Card } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+
+type FileRecord = {
+  name: string;
+  type: string;
+  size?: number;
+  url: string;
+};
+
+type FileListProps = {
+  files?: FileRecord[];
+};
+
+const EMPTY_FILES: FileRecord[] = [];
+
+const FileList = ({ files = EMPTY_FILES }: FileListProps) => {
+  const getFileTypeIcon = (type: string) => {
+    if (type.includes('image')) {
+      return <FileImageOutlined />;
+    } else if (type.includes('pdf')) {
+      return <FilePdfOutlined />;
+    }
+    return <FileOutlined />; // Icono genérico para otros tipos de archivos
+  };
+
+  const renderFileItem = (file: FileRecord) => {
+    const { name, type, size, url } = file;
+
+    const isImage = type.includes('image');
+    const coverContent = isImage ? (
+      <Image alt={name} src={url} style={{ height: 110, objectFit: 'cover' }} />
+    ) : (
+      <div
+        style={{
+          height: 110,
+          display: 'flex',
+          fontSize: '3em',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {getFileTypeIcon(type)}
+      </div>
+    );
+
+    return (
+      <Col key={url}>
+        <Card
+          hoverable
+          size="small"
+          style={{ width: '100%', marginBottom: '10px' }}
+          cover={coverContent}
+          onClick={() => (isImage ? null : window.open(url, '_blank'))}
+        >
+          <Card.Meta title={name} description={`Size: ${size} bytes`} />
+        </Card>
+      </Col>
+    );
+  };
+
+  return <Row>{files.map(renderFileItem)}</Row>;
+};
+
+export default FileList;
+const Row = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+`;
+const Col = styled.div``;

@@ -1,0 +1,94 @@
+import { useNavigate } from 'react-router-dom';
+
+import { buildAccountReceivableListUrl } from '@/modules/accountsReceivable/utils/accountReceivableNavigation';
+import { replacePathParams } from '@/router/routes/replacePathParams';
+import ROUTES_NAME from '@/router/routes/routesName';
+
+export function useAppNavigation() {
+  const navigate = useNavigate();
+
+  const navigateTo = {
+    // Rutas básicas
+    home: () => navigate(ROUTES_NAME.BASIC_TERM.HOME),
+    welcome: () => navigate(ROUTES_NAME.BASIC_TERM.WELCOME),
+
+    // Autenticación
+    login: () => navigate(ROUTES_NAME.AUTH_TERM.LOGIN),
+    signup: () => navigate(ROUTES_NAME.AUTH_TERM.SIGNUP),
+
+    // Ventas
+    sales: () => navigate(ROUTES_NAME.SALES_TERM.SALES),
+    bills: () => navigate(ROUTES_NAME.SALES_TERM.BILLS),
+    billsAnalytics: () => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS),
+    preorders: () => navigate(ROUTES_NAME.SALES_TERM.PREORDERS),
+
+    // Configuración
+    settings: () => navigate(ROUTES_NAME.SETTING_TERM.SETTINGS),
+    setting: () => navigate(ROUTES_NAME.SETTING_TERM.SETTING),
+    users: () => navigate(ROUTES_NAME.SETTING_TERM.USERS),
+    appInfo: () => navigate(ROUTES_NAME.SETTING_TERM.APP_INFO),
+    businessInfo: () => navigate(ROUTES_NAME.SETTING_TERM.BUSINESS_INFO),
+    taxReceipt: () => navigate(ROUTES_NAME.SETTING_TERM.TAX_RECEIPT),
+
+    // Inventario
+    createProduct: () => navigate(ROUTES_NAME.INVENTORY_TERM.CREATE_PRODUCT),
+    product: (productId: string) =>
+      navigate(
+        replacePathParams(ROUTES_NAME.INVENTORY_TERM.PRODUCT, productId),
+      ),
+    inventoryItems: () => navigate(ROUTES_NAME.INVENTORY_TERM.INVENTORY_ITEMS),
+    warehouses: () => navigate(ROUTES_NAME.INVENTORY_TERM.WAREHOUSES),
+    warehouse: (warehouseId: string) =>
+      navigate(
+        replacePathParams(ROUTES_NAME.INVENTORY_TERM.WAREHOUSE, warehouseId),
+      ),
+
+    // Cuentas por cobrar
+    accountsPayableList: () =>
+      navigate(ROUTES_NAME.ACCOUNT_PAYABLE.ACCOUNT_PAYABLE_LIST),
+    accountReceivableList: () =>
+      navigate(ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST),
+    accountReceivableInfo: (id: string) =>
+      navigate(buildAccountReceivableListUrl(id)),
+    receivablePaymentReceipts: () =>
+      navigate(ROUTES_NAME.ACCOUNT_RECEIVABLE.RECEIVABLE_PAYMENT_RECEIPTS),
+
+    // Compras
+    purchases: () => navigate(ROUTES_NAME.PURCHASE_TERM.PURCHASES),
+    purchasesAnalytics: () =>
+      navigate(ROUTES_NAME.PURCHASE_TERM.PURCHASES_ANALYTICS),
+    purchasesCreate: () => navigate(ROUTES_NAME.PURCHASE_TERM.PURCHASES_CREATE),
+    purchasesUpdate: (id: string | number) =>
+      navigate(
+        replacePathParams(
+          ROUTES_NAME.PURCHASE_TERM.PURCHASES_UPDATE,
+          String(id),
+        ),
+      ),
+    purchasesComplete: (id: string | number) =>
+      navigate(
+        replacePathParams(
+          ROUTES_NAME.PURCHASE_TERM.PURCHASES_COMPLETE,
+          String(id),
+        ),
+      ),
+    backorders: () => navigate(ROUTES_NAME.PURCHASE_TERM.BACKORDERS),
+
+    // Aseguradoras
+    insuranceConfig: () =>
+      navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_CONFIG),
+    insuranceList: () => navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_LIST),
+    insuranceCreate: () =>
+      navigate(ROUTES_NAME.INSURANCE_TERM.INSURANCE_CREATE),
+    insuranceEdit: (id: string) =>
+      navigate(
+        replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_EDIT, id),
+      ),
+    insuranceDetails: (id: string) =>
+      navigate(
+        replacePathParams(ROUTES_NAME.INSURANCE_TERM.INSURANCE_DETAILS, id),
+      ),
+  };
+
+  return navigateTo;
+}

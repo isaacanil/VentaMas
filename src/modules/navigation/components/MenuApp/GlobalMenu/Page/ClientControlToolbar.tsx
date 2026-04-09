@@ -1,0 +1,39 @@
+import { Button } from 'antd';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useMatch } from 'react-router-dom';
+import styled from 'styled-components';
+
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import routesName from '@/router/routes/routesName';
+import type { ToolbarComponentProps } from '@/modules/navigation/components/MenuApp/GlobalMenu/types';
+
+export const ClientControlToolbar = ({
+  side = 'left',
+}: ToolbarComponentProps) => {
+  const { CLIENTS } = routesName.CONTACT_TERM;
+  const matchWithCashReconciliation = useMatch(CLIENTS);
+
+  const dispatch = useDispatch();
+
+  const createMode = OPERATION_MODES.CREATE.id;
+  const openModal = () =>
+    dispatch(toggleClientModal({ mode: createMode, data: null }));
+  return matchWithCashReconciliation ? (
+    <Container>
+      {side === 'right' && (
+        <Button
+          type="primary"
+          icon={icons.mathOperations.add}
+          onClick={openModal}
+        >
+          Cliente
+        </Button>
+      )}
+    </Container>
+  ) : null;
+};
+
+const Container = styled.div``;

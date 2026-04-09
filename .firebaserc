@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "default": "ventamaxpos"
+  },
+  "targets": {
+    "ventamaxpos": {
+      "hosting": {
+        "ventamax": [
+          "ventamax.web.app"
+        ],
+        "prod": [
+          "ventamax"
+        ],
+        "staging": [
+          "ventamaxpos-staging"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

@@ -1,0 +1,112 @@
+import { Button } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '@/constants/icons/icons';
+import { OPERATION_MODES } from '@/constants/modes';
+import { selectUser } from '@/features/auth/userSlice';
+import { toggleClientModal } from '@/features/modals/modalSlice';
+import { fbDeleteClient } from '@/firebase/client/fbDeleteClient';
+import { formatPrice } from '@/utils/format';
+import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
+import { ButtonGroup } from '@/components/ui/Button/Button';
+import { Message } from '@/components/ui/message/Message';
+
+type UserRootState = Parameters<typeof selectUser>[0];
+
+type ClientAction = {
+  id?: string;
+} & Record<string, unknown>;
+
+type CellProps<T> = {
+  value: T;
+};
+
+export const useTableConfig = () => {
+  const dispatch = useDispatch();
+  const user = useSelector<UserRootState, ReturnType<typeof selectUser>>(
+    selectUser,
+  );
+
+  const updateMode = OPERATION_MODES.UPDATE.id;
+  const noData = <Message title="(vacio)" fontSize="small" bgColor="error" />;
+
+  const handleDeleteClient = async (id: string) => {
+    if (!user?.businessID) return;
+    await fbDeleteClient(user.businessID, id);
+  };
+
+  const openModalUpdateMode = (client: ClientAction) => {
+    dispatch(toggleClientModal({ mode: updateMode, data: client }));
+  };
+
+  const columns = [
+    {
+      Header: 'Nombre',
+      accessor: 'name',
+      minWidth: '220px',
+      maxWidth: '1fr',
+    },
+    {
+      Header: 'Telefono',
+      accessor: 'phone',
+      cell: ({ value }: CellProps<string | undefined>) =>
+        value ? formatPhoneNumber(value) : noData,
+      minWidth: '140px',
+    },
+    {
+      Header: 'RNC/Cedula',
+      accessor: 'rnc',
+      cell: ({ value }: CellProps<string | undefined>) =>
+        value ? value : noData,
+      minWidth: '150px',
+    },
+    {
+      Header: 'Dirección',
+      accessor: 'address',
+
+      cell: ({ value }: CellProps<string | undefined>) =>
+        value ? <CellText title={value}>{value}</CellText> : noData,
+      minWidth: '220px',
+      maxWidth: '3fr',
+    },
+    {
+      Header: 'Balance',
+      accessor: 'balance',
+      align: 'right',
+      cell: ({ value }: CellProps<number | null | undefined>) =>
+        formatPrice(value || 0),
+      minWidth: '150px',
+    },
+    {
+      Header: 'Acciones',
+      accessor: 'actions',
+      minWidth: '100px',
+      align: 'right',
+      cell: ({ value }: CellProps<ClientAction>) => {
+        return (
+          <ButtonGroup>
+            <Button
+              icon={icons.operationModes.edit}
+              onClick={() => openModalUpdateMode(value)}
+            ></Button>
+            <Button
+              danger
+              icon={icons.operationModes.delete}
+              onClick={() => handleDeleteClient(value.id)}
+            ></Button>
+          </ButtonGroup>
+        );
+      },
+    },
+  ];
+  return { columns };
+};
+
+const CellText = styled.span`
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;

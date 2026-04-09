@@ -1,0 +1,46 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/ventamax.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VENTAMAX</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import {
+        getReactScanDevToolsConflictMessage,
+        isReactDevToolsDetected,
+        shouldAutoLoadReactScan,
+      } from '/src/utils/reactScan.ts';
+
+      const startApp = () => import('/src/main.tsx');
+      const reactScanRequested =
+        import.meta.env.DEV &&
+        import.meta.env.VITE_ENABLE_REACT_SCAN === 'true';
+
+      if (shouldAutoLoadReactScan(import.meta.env, window)) {
+        const script = document.createElement('script');
+        script.crossOrigin = 'anonymous';
+        script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
+        script.onload = startApp;
+        script.onerror = startApp;
+        document.head.appendChild(script);
+      } else {
+        if (reactScanRequested && isReactDevToolsDetected(window)) {
+          console.warn(getReactScanDevToolsConflictMessage());
+        }
+        startApp();
+      }
+    </script>
+  </body>
+</html>

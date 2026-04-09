@@ -1,0 +1,243 @@
+import {
+  SafetyOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from '@/constants/icons/antd';
+import { Modal, Button, message, Typography, Space } from 'antd';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import styled from 'styled-components';
+
+import { fbViewUserPins } from '@/firebase/authorization/pinAuth';
+import type { UserIdentity } from '@/types/users';
+
+const { Text, Title } = Typography;
+
+type AuthUser = UserIdentity & { uid?: string };
+
+interface PinSecretEntry {
+  module?: string;
+  pin?: string;
+  createdAt?: Date | null;
+  expiresAt?: Date | null;
+  [key: string]: unknown;
+}
+
+interface ViewPinsResponse {
+  schema: string;
+  pins: PinSecretEntry[];
+  targetUser: unknown;
+}
+
+interface ViewPinModalProps {
+  visible: boolean;
+  onClose: () => void;
+  user: AuthUser | null;
+  moduleKey: string;
+  moduleLabel?: string;
+}
+
+const MODULE_LABELS: Record<string, string> = {
+  invoices: 'Facturación',
+  accountsReceivable: 'Cuadre de Caja',
+};
+
+const getPinsFromResponse = (response: ViewPinsResponse): PinSecretEntry[] => {
+  return Array.isArray(response.pins)
+    ? (response.pins as PinSecretEntry[])
+    : [];
+};
+
+const getPinFetchErrorMessage = (error: unknown): string => {
+  return error instanceof Error ? error.message : 'No se pudo obtener el PIN.';
+};
+
+const getModulePinValue = (
+  pins: PinSecretEntry[],
+  moduleKey: string,
+): string | null => {
+  const modulePinData = pins.find((pinEntry) => pinEntry.module === moduleKey);
+  return typeof modulePinData?.pin === 'string' ? modulePinData.pin : null;
+};
+
+const PinDisplay = styled.div`
+  padding: 12px;
+  margin: 12px 0;
+  font-family: Poppins, monospace;
+  font-size: 20px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 3px;
+  background: #001529;
+  border-radius: 8px;
+`;
+
+export const ViewPinModal = ({
+  visible,
+  onClose,
+  user,
+  moduleKey,
+  moduleLabel,
+}: ViewPinModalProps) => {
+  const [loading, setLoading] = useState(false);
+  const [pinValue, setPinValue] = useState<string | null>(null);
+  const [isPinVisible, setIsPinVisible] = useState(false);
+  const pinVisibilityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resolvedModuleLabel =
+    moduleLabel || MODULE_LABELS[moduleKey] || moduleKey;
+
+  const resetModalState = useCallback(() => {
+    setPinValue(null);
+    setIsPinVisible(false);
+    if (pinVisibilityTimer.current) {
+      clearTimeout(pinVisibilityTimer.current);
+      pinVisibilityTimer.current = null;
+    }
+  }, []);
+
+  const loadPin = useCallback(async () => {
+    if (!visible || !user || !user.uid || !moduleKey) {
+      return;
+    }
+
+    setLoading(true);
+    let pinSecrets: ViewPinsResponse | null = null;
+
+    try {
+      pinSecrets = (await fbViewUserPins(
+        user,
+        user.uid,
+      )) as ViewPinsResponse;
+    } catch (error) {
+      console.error('Error obteniendo el PIN:', error);
+      setLoading(false);
+      message.error(getPinFetchErrorMessage(error));
+      return;
+    }
+
+    const pins = getPinsFromResponse(pinSecrets);
+    if (pins.length === 0) {
+      setLoading(false);
+      message.error('No tienes PINs configurados');
+      return;
+    }
+
+    const nextPinValue = getModulePinValue(pins, moduleKey);
+    if (!nextPinValue) {
+      setLoading(false);
+      message.error(`No se encontró el PIN para ${resolvedModuleLabel}`);
+      return;
+    }
+
+    setPinValue(nextPinValue);
+    setLoading(false);
+  }, [moduleKey, resolvedModuleLabel, user, visible]);
+
+  const handleAfterOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        void loadPin();
+        return;
+      }
+
+      resetModalState();
+    },
+    [loadPin, resetModalState],
+  );
+
+  const handleTogglePinVisibility = () => {
+    if (isPinVisible) {
+      // Ocultar PIN
+      setIsPinVisible(false);
+      if (pinVisibilityTimer.current) {
+        clearTimeout(pinVisibilityTimer.current);
+        pinVisibilityTimer.current = null;
+      }
+    } else {
+      // Mostrar PIN
+      setIsPinVisible(true);
+      message.success(
+        `Mostrando el PIN de ${resolvedModuleLabel} por 30 segundos`,
+      );
+
+      // Auto-ocultar después de 30 segundos
+      pinVisibilityTimer.current = setTimeout(() => {
+        setIsPinVisible(false);
+        message.info(
+          `El PIN de ${resolvedModuleLabel} se ocultó por seguridad`,
+        );
+        pinVisibilityTimer.current = null;
+      }, 30000);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (pinVisibilityTimer.current) {
+        clearTimeout(pinVisibilityTimer.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Modal
+      open={visible}
+      onCancel={onClose}
+      footer={[
+        <Button key="close" type="primary" onClick={onClose}>
+          Cerrar
+        </Button>,
+      ]}
+      width={500}
+      centered
+      destroyOnHidden
+      title={null}
+      afterOpenChange={handleAfterOpenChange}
+    >
+      <div style={{ padding: '8px 0' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
+          <div style={{ textAlign: 'center' }}>
+            <SafetyOutlined style={{ fontSize: 48, color: '#52c41a' }} />
+            <Title level={4} style={{ marginTop: 16 }}>
+              PIN de {resolvedModuleLabel}
+            </Title>
+            <Text type="secondary">Módulo: {resolvedModuleLabel}</Text>
+          </div>
+
+          <div>
+            <Text
+              strong
+              style={{ fontSize: 16, display: 'block', marginBottom: 12 }}
+            >
+              PIN del Módulo
+            </Text>
+            <Text
+              type="secondary"
+              style={{ display: 'block', marginBottom: 12 }}
+            >
+              Haz clic en el botón para revelar tu PIN. Se ocultará
+              automáticamente después de 30 segundos.
+            </Text>
+
+            {isPinVisible && pinValue ? (
+              <PinDisplay>{pinValue}</PinDisplay>
+            ) : null}
+
+            <Button
+              block
+              type={isPinVisible ? 'default' : 'primary'}
+              icon={isPinVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              loading={loading}
+              disabled={!pinValue}
+              onClick={handleTogglePinVisibility}
+              size="large"
+            >
+              {isPinVisible ? 'Ocultar PIN' : 'Mostrar PIN'}
+            </Button>
+          </div>
+        </Space>
+      </div>
+    </Modal>
+  );
+};
+
+export default ViewPinModal;

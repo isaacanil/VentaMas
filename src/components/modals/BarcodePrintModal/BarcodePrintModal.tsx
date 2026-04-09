@@ -1,0 +1,186 @@
+import { Modal, Input, Button, Form, Spin } from 'antd';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import React, { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  SelectBarcodePrintModal,
+  toggleBarcodeModal,
+} from '@/features/barcodePrintModalSlice/barcodePrintModalSlice';
+
+import { BarCode, type BarcodeProduct } from './Barcode';
+
+interface BarcodePrintFormValues {
+  product?: BarcodeProduct | null;
+  barcodeWidth?: number | string;
+  quantity?: number | string;
+}
+
+const getPdfOrientation = (widthInMM: number, heightInMM: number) =>
+  widthInMM > heightInMM ? 'l' : 'p';
+
+const appendBarcodePages = (
+  pdf: jsPDF,
+  quantity: number,
+  widthInMM: number,
+  heightInMM: number,
+  orientation: 'l' | 'p',
+  imgData: string,
+) => {
+  for (let i = 0; i < quantity; i++) {
+    if (i > 0) {
+      pdf.addPage([widthInMM, heightInMM], orientation);
+    }
+    pdf.addImage(imgData, 'PNG', 0, 0, widthInMM, heightInMM);
+  }
+};
+
+export const BarcodePrintModal = () => {
+  type BarcodePrintModalRootState = Parameters<
+    typeof SelectBarcodePrintModal
+  >[0];
+  const { isOpen, product } = useSelector((state: BarcodePrintModalRootState) =>
+    SelectBarcodePrintModal(state),
+  );
+  const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm<BarcodePrintFormValues>();
+  const dispatch = useDispatch();
+  const barcodeRef = useRef<HTMLDivElement | null>(null);
+
+  const handlePrint = async () => {
+    setLoading(true);
+    try {
+      if (barcodeRef.current) {
+        // Obtén los valores del formulario, incluido el ancho deseado y la cantidad.
+        const values = form.getFieldsValue();
+        const desiredWidthMM = Number(values.barcodeWidth); // Ancho deseado en milímetros.
+        const quantity = Number.parseInt(String(values.quantity), 10); // Cantidad de veces que se debe duplicar el código de barras.
+
+        const canvas = await html2canvas(barcodeRef.current);
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = canvas.width; // Ancho actual en píxeles.
+        const imgHeight = canvas.height; // Alto actual en píxeles.
+
+        const desiredWidthPx = (desiredWidthMM / 25.4) * 96;
+
+        const scale = desiredWidthPx / imgWidth;
+        const scaledHeightPx = imgHeight * scale;
+
+        const widthInMM = desiredWidthMM;
+        const heightInMM = (scaledHeightPx / 96) * 25.4;
+        const orientation = getPdfOrientation(widthInMM, heightInMM);
+
+        // Instancia de jsPDF modificada para manejar múltiples páginas según la cantidad.
+        const pdf = new jsPDF({
+          orientation,
+          unit: 'mm',
+          format: [widthInMM, heightInMM],
+        });
+
+        appendBarcodePages(
+          pdf,
+          quantity,
+          widthInMM,
+          heightInMM,
+          orientation,
+          imgData,
+        );
+
+        const pdfBlob = pdf.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        const printWindow = window.open(url, '_blank');
+        if (printWindow) {
+          printWindow.addEventListener(
+            'load',
+            function () {
+              printWindow.focus();
+              printWindow.print();
+              URL.revokeObjectURL(url);
+            },
+            { once: true },
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error al generar la vista previa de impresión: ', error);
+    }
+    setLoading(false);
+    form.setFieldValue('quantity', 1);
+    form.setFieldValue('barcodeWidth', 100);
+
+    // Cierra el modal después de intentar mostrar la vista previa de impresión.
+    dispatch(toggleBarcodeModal(null));
+  };
+
+  const handleCancel = () => {
+    dispatch(toggleBarcodeModal(null));
+  };
+
+  return (
+    <>
+      <Modal
+        style={{ top: 20 }}
+        title="Generar e Imprimir Código de Barras"
+        open={isOpen}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancelar
+          </Button>,
+          <Button key="submit" type="primary" onClick={handlePrint}>
+            Imprimir Código de Barras
+          </Button>,
+        ]}
+      >
+        <Spin spinning={loading} size="large">
+          <Form
+            layout="vertical"
+            initialValues={{
+              product: product,
+              barcodeWidth: 100,
+              quantity: 1,
+            }}
+            form={form}
+          >
+            <Form.Item
+              label="Producto"
+              name="product"
+              rules={[
+                { required: true, message: 'Por favor seleccione un producto' },
+              ]}
+            >
+              <BarCode ref={barcodeRef} product={product} />
+            </Form.Item>
+
+            <Form.Item
+              label="Ancho del código de barras"
+              name="barcodeWidth"
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingrese el ancho del código de barras',
+                },
+              ]}
+            >
+              <Input addonAfter="milímetros" />
+            </Form.Item>
+
+            <Form.Item
+              label="Cantidad"
+              name="quantity"
+              rules={[
+                {
+                  required: true,
+                  message: 'Por favor ingrese el ancho del código de barras',
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </Form>
+        </Spin>
+      </Modal>
+    </>
+  );
+};

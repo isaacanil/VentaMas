@@ -1,0 +1,46 @@
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
+import { toggleAddProductOutflow } from '@/features/modals/modalSlice';
+import { Button } from '@/components/ui/Button/Button';
+import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
+
+export const Header = () => {
+  const dispatch = useDispatch();
+  const handleClick = () => {
+    dispatch(toggleAddProductOutflow());
+  };
+  return (
+    <Container>
+      <HeaderWrapper>
+        {/* <Title>Registro de salida de productos</Title> */}
+        <FormattedValue
+          type={'subtitle'}
+          value={'Registro de salida de productos'}
+        />
+        <Button
+          aria-label="Nueva Salida"
+          bgcolor={'primary'}
+          title={'Nueva Salida'}
+          borderRadius={'normal'}
+          onClick={handleClick}
+        />
+      </HeaderWrapper>
+    </Container>
+  );
+};
+const Container = styled.div`
+  width: 100%;
+  padding: 16px;
+  background-color: var(--white);
+`;
+
+const HeaderWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+`;

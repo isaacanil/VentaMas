@@ -1,0 +1,823 @@
+import {
+  MessageOutlined,
+  PercentageOutlined,
+  MoreOutlined,
+  InfoCircleOutlined,
+  EnvironmentOutlined,
+} from '@/constants/icons/antd';
+import {
+  faCircleCheck,
+  faCircleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tooltip, Badge, Button, Dropdown } from 'antd';
+import { useState, type KeyboardEvent } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+
+import { icons } from '@/constants/icons/icons';
+import {
+  changeProductPrice,
+  selectCartDocumentCurrency,
+} from '@/features/cart/cartSlice';
+import { openProductStockSimple } from '@/features/productStock/productStockSimpleSlice';
+import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
+import {
+  getFunctionalProductTotal,
+  resolveProductLineCurrency,
+} from '@/utils/accounting/lineMonetary';
+import { formatPriceByCurrency } from '@/utils/format';
+import { formatLocaleDate } from '@/utils/date/dateUtils';
+import { getTotalPrice } from '@/utils/pricing';
+import PriceAndSaleUnitsModal from '@/modules/sales/pages/Sale/components/Cart/components/PriceAndSaleUnitsModal';
+import { Counter } from '@/components/ui/Counter/Counter';
+
+import { InsuranceCoverage } from './components/InsuranceCoverage/InsuranceCoverage';
+import { PriceEditor } from './components/PriceEditor/PriceEditor';
+import { WeightInput } from './components/WeightInput/WeightInput';
+import { extraerPreciosConImpuesto } from './utils/priceUtils';
+
+import type { MenuProps } from 'antd';
+import type {
+  PricingTax,
+  ProductBatchInfo,
+  ProductRecord,
+  ProductPricing,
+  ProductSaleUnit,
+  SupportedDocumentCurrency,
+} from '@/types/products';
+import type { InvoiceProduct } from '@/types/invoice';
+import type { PriceOption } from './utils/priceUtils';
+import type { Product as CartProduct } from '@/features/cart/types';
+
+interface DiscountInfo {
+  value?: number;
+  type?: string;
+  [key: string]: unknown;
+}
+
+type PricingCarrier = {
+  pricing?: ProductPricing | null;
+};
+
+type PriceEditorItem = Parameters<typeof PriceEditor>[0]['item'];
+type CounterItem = Parameters<typeof Counter>[0]['item'];
+type InsuranceItem = Parameters<typeof InsuranceCoverage>[0]['item'];
+type SaleUnitItem = Parameters<typeof PriceAndSaleUnitsModal>[0]['item'];
+
+type TimestampLike = {
+  seconds?: number;
+  toDate?: () => Date;
+};
+
+type BatchInfo = Omit<ProductBatchInfo, 'expirationDate'> & {
+  expirationDate?: number | string | TimestampLike | null;
+  batchNumberId?: string | number | null;
+};
+
+export type CartItem = CartProduct & {
+  batchNumber?: string | number | null;
+  batchInfo?: BatchInfo | null;
+  pricing?: ProductPricing & { price?: number | string };
+  discount?: DiscountInfo | null;
+};
+
+type SaleUnitRecord = Partial<ProductSaleUnit> & { id: string };
+
+type ExpiredStyleProps = { $expired: boolean };
+type HasBatchStyleProps = { $hasBatch: boolean };
+type DiscountStyleProps = { $hasDiscount: boolean };
+
+interface ProductCardForCartProps {
+  item: CartItem;
+  onOpenCommentModal: (item: CartItem) => void;
+  onOpenDeleteModal: (item: CartItem) => void;
+  onOpenDiscountModal: (item: CartItem) => void;
+  onOpenBatchInfoModal: (item: CartItem) => void;
+}
+
+const ensureNumber = (
+  value: PricingTax | number | string | undefined | null,
+): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (value && typeof value === 'object' && 'tax' in value) {
+    const taxValue = value.tax;
+    if (typeof taxValue === 'number') return taxValue;
+    if (typeof taxValue === 'string') {
+      const parsed = Number.parseFloat(taxValue);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    }
+  }
+  return 0;
+};
+
+const resolvePriceValue = (
+  price: CartItem['price'],
+): number | string => {
+  if (typeof price === 'number' || typeof price === 'string') {
+    return price;
+  }
+  if (price && typeof price === 'object') {
+    return price.unit ?? price.total ?? 0;
+  }
+  return 0;
+};
+
+const normalizeExpirationDate = (value: unknown): number | null => {
+  if (!value) return null;
+  if (typeof value === 'number') return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  if (typeof value === 'object') {
+    const maybeTimestamp = value as { seconds?: number; toDate?: () => Date };
+    if (typeof maybeTimestamp.seconds === 'number') {
+      return maybeTimestamp.seconds * 1000;
+    }
+    if (typeof maybeTimestamp.toDate === 'function') {
+      const dateValue = maybeTimestamp.toDate();
+      return dateValue instanceof Date ? dateValue.getTime() : null;
+    }
+  }
+  return null;
+};
+
+const getBatchIdentifier = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof value === 'number') {
+    return value.toString();
+  }
+
+  return null;
+};
+
+export const ProductCardForCart = ({
+  item,
+  onOpenCommentModal,
+  onOpenDeleteModal,
+  onOpenDiscountModal,
+  onOpenBatchInfoModal,
+}: ProductCardForCartProps) => {
+  const dispatch = useDispatch();
+  const insuranceEnabled = Boolean(useInsuranceEnabled());
+  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled) as boolean;
+  const documentCurrency = useSelector(
+    selectCartDocumentCurrency,
+  ) as SupportedDocumentCurrency;
+  const [selectedUnit, setSelectedUnit] = useState<SaleUnitRecord | null>(null);
+  const [precios, setPrecios] = useState<PriceOption[]>([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const hasBatchInfo = Boolean(
+    item?.batchInfo || item?.batchId || item?.productStockId,
+  );
+  const batchInfo = item.batchInfo ?? null;
+  const expirationTimestamp = normalizeExpirationDate(
+    batchInfo?.expirationDate,
+  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTimestamp = today.getTime();
+  const isExpired =
+    expirationTimestamp !== null && expirationTimestamp < todayTimestamp;
+  const formattedExpirationDate = expirationTimestamp
+    ? formatLocaleDate(expirationTimestamp)
+    : null;
+  const showExpirationIndicator = Boolean(
+    hasBatchInfo && expirationTimestamp !== null,
+  );
+  const lineId = item.cid || item.id;
+  const requiresPhysicalSelection = Boolean(
+    item?.restrictSaleWithoutStock &&
+      (!item?.productStockId || !item?.batchId),
+  );
+  const expirationTooltip = !showExpirationIndicator
+    ? ''
+    : `${isExpired ? 'Lote vencido' : 'Lote vigente'}${formattedExpirationDate ? ` · ${formattedExpirationDate}` : ''}`;
+
+  const updatePricing = (pricing?: ProductPricing | null) => {
+    const pricesWithTax = extraerPreciosConImpuesto(pricing, taxReceiptEnabled);
+    setPrecios(pricesWithTax);
+  };
+
+  const handleSelectUnit = (unit: SaleUnitRecord | null) => {
+    if (!unit) {
+      setSelectedUnit(null);
+      updatePricing(undefined);
+      return;
+    }
+
+    setSelectedUnit(unit);
+    updatePricing(unit.pricing);
+  };
+
+  const handleSelectDefaultUnit = (unit: PricingCarrier) => {
+    setSelectedUnit(null);
+    updatePricing(unit?.pricing);
+  };
+
+  const handleSelectPrice = (price: PriceOption) => {
+    const nextPricing = price.pricing ?? item.pricing ?? null;
+    updatePricing(nextPricing);
+
+    let rawPrice: number | string | undefined;
+
+    switch (price.type) {
+      case 'listPrice':
+        rawPrice = nextPricing?.listPrice;
+        break;
+      case 'avgPrice':
+        rawPrice = nextPricing?.avgPrice;
+        break;
+      case 'minPrice':
+        rawPrice = nextPricing?.minPrice;
+        break;
+      case 'cardPrice':
+        rawPrice = nextPricing?.cardPrice;
+        break;
+      case 'offerPrice':
+        rawPrice = nextPricing?.offerPrice;
+        break;
+      default:
+        rawPrice = nextPricing?.listPrice;
+    }
+
+    let numericPrice: number | null = null;
+
+    if (typeof rawPrice === 'number') {
+      numericPrice = rawPrice;
+    } else if (typeof rawPrice === 'string' && rawPrice !== 'N/A') {
+      const parsed = Number.parseFloat(rawPrice);
+      numericPrice = Number.isNaN(parsed) ? null : parsed;
+    }
+
+    if (numericPrice !== null) {
+      dispatch(
+        changeProductPrice({
+          id: lineId,
+          price: numericPrice,
+        }),
+      );
+    }
+
+    setModalVisible(false);
+  };
+
+  const actionMenuItems: MenuProps['items'] = [
+    ...(requiresPhysicalSelection
+      ? [
+          {
+            key: 'select-physical-stock',
+            label: (
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <EnvironmentOutlined style={{ color: '#d97706' }} />
+                Seleccionar ubicación
+              </span>
+            ),
+            onClick: () => dispatch(openProductStockSimple(item as ProductRecord)),
+          },
+        ]
+      : []),
+    {
+      key: 'discount',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <PercentageOutlined
+            style={{ color: item.discount ? '#52c41a' : '#8c8c8c' }}
+          />
+          {item.discount ? 'Editar descuento' : 'Aplicar descuento'}
+        </span>
+      ),
+      onClick: () => onOpenDiscountModal(item),
+    },
+    {
+      key: 'comment',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MessageOutlined
+            style={{ color: item.comment ? '#1890ff' : '#8c8c8c' }}
+          />
+          {item.comment ? 'Editar comentario' : 'Agregar comentario'}
+        </span>
+      ),
+      onClick: () => onOpenCommentModal(item),
+    },
+    ...(hasBatchInfo
+      ? [
+          {
+            key: 'batch-info',
+            label: (
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <InfoCircleOutlined style={{ color: '#4096ff' }} />
+                Ver información del lote
+              </span>
+            ),
+            onClick: () => onOpenBatchInfoModal(item),
+          },
+        ]
+      : []),
+  ];
+
+  const hasActions = Boolean(
+    requiresPhysicalSelection || item.comment || item.discount || hasBatchInfo,
+  );
+  const finalPrice = getTotalPrice(item as InvoiceProduct, taxReceiptEnabled);
+  const originalPriceValue = item.pricing?.price ?? resolvePriceValue(item.price);
+  const originalPrice = ensureNumber(originalPriceValue);
+  const taxPercentage = ensureNumber(item.pricing?.tax);
+  const quantity = item.amountToBuy ?? 1;
+  const badgeColor = item.comment
+    ? '#1890ff'
+    : item.discount
+      ? '#52c41a'
+      : requiresPhysicalSelection
+        ? '#d97706'
+      : hasBatchInfo
+        ? '#4096ff'
+        : '#8c8c8c';
+  const rawBatchNumber =
+    getBatchIdentifier(batchInfo?.batchNumber) ??
+    getBatchIdentifier(batchInfo?.batchNumberId) ??
+    getBatchIdentifier(batchInfo?.batchId) ??
+    getBatchIdentifier(item?.batchNumber) ??
+    getBatchIdentifier(item?.batchId);
+  const batchNumberLabel =
+    rawBatchNumber != null && rawBatchNumber !== ''
+      ? `Lote ${rawBatchNumber}`
+      : null;
+  const batchSummaryParts: string[] = [];
+  if (batchNumberLabel) {
+    batchSummaryParts.push(batchNumberLabel);
+  }
+  if (formattedExpirationDate) {
+    batchSummaryParts.push(formattedExpirationDate);
+  }
+  const batchSummaryText = batchSummaryParts.join(' · ');
+  const showBatchSummary = Boolean(
+    hasBatchInfo && batchSummaryParts.length > 0,
+  );
+
+  const handleBatchInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onOpenBatchInfoModal(item);
+    }
+  };
+
+  const unitPriceWithTax = taxReceiptEnabled
+    ? originalPrice * (1 + taxPercentage / 100)
+    : originalPrice;
+  const basePriceWithTax = unitPriceWithTax * quantity;
+
+  const hasDiscount = (item.discount?.value ?? 0) > 0;
+  const sourceCurrency = resolveProductLineCurrency(item, documentCurrency);
+  const usesConvertedDocumentPrice = sourceCurrency !== documentCurrency;
+  const exchangeRate = Number(item?.monetary?.exchangeRate ?? 1) || 1;
+  const displayedFinalPrice = usesConvertedDocumentPrice
+    ? getFunctionalProductTotal(item as InvoiceProduct, taxReceiptEnabled)
+    : finalPrice;
+  const displayedOriginalPrice = usesConvertedDocumentPrice
+    ? Number((basePriceWithTax * exchangeRate).toFixed(2))
+    : basePriceWithTax;
+
+  const priceEditableItem: PriceEditorItem = {
+    id: lineId,
+    pricing: item.pricing,
+    price: originalPriceValue,
+    weightDetail: item.weightDetail,
+  };
+
+  const counterItem: CounterItem = {
+    restrictSaleWithoutStock: item.restrictSaleWithoutStock,
+  };
+
+  const insuranceItem: InsuranceItem = {
+    id: lineId,
+    cid: item.cid,
+    insurance: item.insurance,
+    pricing: item.pricing,
+    price: originalPriceValue,
+  };
+
+  const saleUnitItem: SaleUnitItem = {
+    ...item,
+    pricing: item.pricing,
+  };
+
+  return (
+    <Container $expired={isExpired}>
+      <Row>
+        <TopBar>
+          <LeftSlot $hasBatch={hasBatchInfo}>
+            {hasBatchInfo ? (
+              showBatchSummary ? (
+                <BatchSummaryInteractive
+                  $expired={isExpired}
+                  role="button"
+                  tabIndex={0}
+                  title={batchSummaryText}
+                  onClick={() => onOpenBatchInfoModal(item)}
+                  onKeyDown={handleBatchInfoKeyDown}
+                >
+                  <span className="summary-text">
+                    {batchNumberLabel && (
+                      <span className="batch-token">{batchNumberLabel}</span>
+                    )}
+                    {batchNumberLabel && formattedExpirationDate && (
+                      <span className="separator"> · </span>
+                    )}
+                    {formattedExpirationDate && (
+                      <span className="expiration-text">
+                        {formattedExpirationDate}
+                      </span>
+                    )}
+                  </span>
+                  {showExpirationIndicator && (
+                    <Tooltip title={expirationTooltip}>
+                      <StatusIcon
+                        icon={isExpired ? faCircleExclamation : faCircleCheck}
+                        $expired={isExpired}
+                        aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                      />
+                    </Tooltip>
+                  )}
+                </BatchSummaryInteractive>
+              ) : (
+                <NameStack>
+                  <TitleRow>
+                    <TitleLabel>{item.name}</TitleLabel>
+                    {showExpirationIndicator && (
+                      <Tooltip title={expirationTooltip}>
+                        <StatusIcon
+                          icon={isExpired ? faCircleExclamation : faCircleCheck}
+                          $expired={isExpired}
+                          aria-label={
+                            isExpired ? 'Lote vencido' : 'Lote vigente'
+                          }
+                        />
+                      </Tooltip>
+                    )}
+                  </TitleRow>
+                  {item.comment && (
+                    <CommentPreview title={item.comment}>
+                      {item.comment}
+                    </CommentPreview>
+                  )}
+                  {requiresPhysicalSelection && (
+                    <SelectionWarning>
+                      Selecciona ubicación o lote antes de facturar
+                    </SelectionWarning>
+                  )}
+                </NameStack>
+              )
+            ) : (
+              <NameStack>
+                <TitleRow>
+                  <TitleLabel>{item.name}</TitleLabel>
+                  {showExpirationIndicator && (
+                    <Tooltip title={expirationTooltip}>
+                      <StatusIcon
+                        icon={isExpired ? faCircleExclamation : faCircleCheck}
+                        $expired={isExpired}
+                        aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                      />
+                    </Tooltip>
+                  )}
+                </TitleRow>
+                {item.comment && (
+                  <CommentPreview title={item.comment}>
+                    {item.comment}
+                  </CommentPreview>
+                )}
+                {requiresPhysicalSelection && (
+                  <SelectionWarning>
+                    Selecciona ubicación o lote antes de facturar
+                  </SelectionWarning>
+                )}
+              </NameStack>
+            )}
+          </LeftSlot>
+          <RightCluster>
+            <PriceContainer>
+              <PriceMetaRow>
+                {usesConvertedDocumentPrice && (
+                  <SourcePriceNote>
+                    Orig. {formatPriceByCurrency(finalPrice, sourceCurrency)}
+                  </SourcePriceNote>
+                )}
+              </PriceMetaRow>
+              {hasDiscount && (
+                <OriginalPrice>
+                  {formatPriceByCurrency(displayedOriginalPrice, documentCurrency)}
+                </OriginalPrice>
+              )}
+              <Price $hasDiscount={hasDiscount}>
+                {formatPriceByCurrency(displayedFinalPrice, documentCurrency)}
+              </Price>
+            </PriceContainer>
+            <TopActions>
+              <Tooltip title="Opciones del producto">
+                <Badge dot={hasActions} color={badgeColor} offset={[-2, 2]}>
+                  <Dropdown
+                    menu={{ items: actionMenuItems }}
+                    trigger={['click']}
+                    placement="bottomRight"
+                  >
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={
+                        <MoreOutlined
+                          style={{
+                            fontSize: '16px',
+                            color: hasActions ? badgeColor : '#8c8c8c',
+                          }}
+                        />
+                      }
+                    />
+                  </Dropdown>
+                </Badge>
+              </Tooltip>
+              <Button
+                type="text"
+                size="small"
+                icon={icons.operationModes.discard}
+                onClick={() => onOpenDeleteModal(item)}
+                danger
+              />
+            </TopActions>
+          </RightCluster>
+        </TopBar>
+      </Row>
+      {hasBatchInfo && (
+        <Row>
+          <TitleContainer>
+            <TitleRow>
+              <TitleLabel>{item.name}</TitleLabel>
+              {!showBatchSummary && showExpirationIndicator && (
+                <Tooltip title={expirationTooltip}>
+                  <StatusIcon
+                    icon={isExpired ? faCircleExclamation : faCircleCheck}
+                    $expired={isExpired}
+                    aria-label={isExpired ? 'Lote vencido' : 'Lote vigente'}
+                  />
+                </Tooltip>
+              )}
+            </TitleRow>
+            {item.comment && (
+              <CommentPreview title={item.comment}>
+                {item.comment}
+              </CommentPreview>
+            )}
+            {requiresPhysicalSelection && (
+              <SelectionWarning>
+                Selecciona ubicación o lote antes de facturar
+              </SelectionWarning>
+            )}
+          </TitleContainer>
+        </Row>
+      )}
+      <Row>
+        <Group>
+          <PriceEditor
+            item={priceEditableItem}
+            onModalOpen={() => setModalVisible(true)}
+          />
+          {item?.weightDetail?.isSoldByWeight ? (
+            <WeightInput item={item} />
+          ) : (
+            <Counter
+              item={counterItem}
+              amountToBuy={item.amountToBuy}
+              stock={item?.stock}
+              id={lineId}
+            />
+          )}
+        </Group>
+      </Row>
+
+      {insuranceEnabled && <InsuranceCoverage item={insuranceItem} />}
+
+      <PriceAndSaleUnitsModal
+        isVisible={isModalVisible}
+        onClose={() => setModalVisible(false)}
+        prices={precios}
+        selectedUnit={selectedUnit}
+        onSelectDefaultUnit={handleSelectDefaultUnit}
+        item={saleUnitItem}
+        onSelectPrice={handleSelectPrice}
+        onSelectUnit={handleSelectUnit}
+      />
+    </Container>
+  );
+};
+
+const Container = styled.div<{ $expired: boolean }>`
+  position: relative;
+  display: grid;
+  gap: 0.2em;
+  width: 100%;
+  height: min-content;
+  padding: 0.4em;
+  background-color: #fff;
+  border: 1px solid
+    ${(props: ExpiredStyleProps) =>
+      props.$expired ? '#dc2626' : 'rgba(0, 0, 0, 0.1)'};
+  border-radius: 8px;
+`;
+
+const Row = styled.div`
+  display: grid;
+  align-items: center;
+`;
+
+const Group = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4em;
+  align-items: center;
+`;
+
+const TitleContainer = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const PriceContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: fit-content;
+`;
+
+const PriceMetaRow = styled.div`
+  min-height: 16px;
+`;
+
+const OriginalPrice = styled.span`
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  color: #8c8c8c;
+  text-decoration: line-through;
+`;
+
+const SourcePriceNote = styled.span`
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  line-height: 1.2;
+  color: #52606d;
+`;
+
+const CommentPreview = styled.div`
+  max-width: calc(100% - 8px);
+  padding-left: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  line-height: 1;
+  color: #8c8c8c;
+  white-space: nowrap;
+`;
+
+const SelectionWarning = styled.div`
+  max-width: calc(100% - 8px);
+  padding-left: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #d97706;
+  white-space: nowrap;
+`;
+
+const TopBar = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+`;
+
+const LeftSlot = styled.div<{ $hasBatch: boolean }>`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: ${(props: HasBatchStyleProps) => (props.$hasBatch ? '0' : '2px')};
+  align-items: flex-start;
+  min-width: 0;
+`;
+
+const RightCluster = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+`;
+
+const BatchSummaryInteractive = styled.span<{ $expired: boolean }>`
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13.2px;
+  color: #1677ff;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    outline: none;
+  }
+
+  .summary-text {
+    display: inline-block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .batch-token {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .separator {
+    color: #64748b;
+  }
+
+  .expiration-text {
+    font-weight: 600;
+    color: ${(props: ExpiredStyleProps) =>
+      props.$expired ? '#dc2626' : '#16a34a'};
+  }
+`;
+
+const NameStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+`;
+
+const TopActions = styled.div`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+`;
+
+const TitleLabel = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  color: rgb(71 71 71);
+  text-transform: capitalize;
+  overflow-wrap: break-word;
+`;
+
+const Price = styled.span<{ $hasDiscount: boolean }>`
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(props: DiscountStyleProps) =>
+    props.$hasDiscount ? '#52c41a' : 'var(--gray-6)'};
+  white-space: nowrap;
+  background-color: var(--white-1);
+`;
+
+const StatusIcon = styled(FontAwesomeIcon)<{ $expired: boolean }>`
+  flex-shrink: 0;
+  font-size: 12px;
+  color: ${(props: ExpiredStyleProps) =>
+    props.$expired ? '#dc2626' : '#16a34a'};
+`;

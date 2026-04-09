@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Primer recorte P0-E:
+    // estas colecciones ya deben mutarse desde backend/callables y no
+    // deben seguir abiertas a escrituras arbitrarias desde cliente.
+    match /businesses/{businessId}/journalEntries/{journalEntryId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+      match /{document=**} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/accountingEvents/{eventId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+      match /{document=**} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/accountingPeriodClosures/{periodKey} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+      match /{document=**} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/settings/accounting {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+
+      match /history/{entryId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+
+      match /audit/{entryId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+
+      match /exchangeRateReference/{documentId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+
+        match /{nestedDocument=**} {
+          allow read: if isSignedIn();
+          allow write: if false;
+        }
+      }
+    }
+
+    match /businesses/{businessId}/exchangeRates/{exchangeRateId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if false;
+      match /{document=**} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/bankAccounts/{bankAccountId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+
+      match /history/{entryId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/chartOfAccounts/{chartOfAccountId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+
+      match /history/{entryId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/accountingPostingProfiles/{postingProfileId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if false;
+
+      match /history/{entryId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+      }
+    }
+
+    // TEMP: fallback relajado mientras se migra el resto del app.
+    match /{document=**} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}
