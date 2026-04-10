@@ -1,6 +1,6 @@
 import type { UserIdentity } from '@/types/users';
 
-export type BusinessFeatureKey = 'accounting';
+export type BusinessFeatureKey = 'accounting' | 'treasury';
 
 const toCleanString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;

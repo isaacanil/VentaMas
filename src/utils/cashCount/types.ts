@@ -37,6 +37,7 @@ export interface CashCountBoxStatus {
 export interface CashCountRecord {
   id?: string;
   incrementNumber?: number | string;
+  cashAccountId?: string | null;
   state?: CashCountState;
   opening?: CashCountBoxStatus;
   closing?: CashCountBoxStatus;

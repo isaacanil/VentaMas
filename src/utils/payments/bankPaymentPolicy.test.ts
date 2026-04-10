@@ -70,6 +70,18 @@ describe('bank payment policy helpers', () => {
     });
   });
 
+  it('does not infer a global fallback from method-specific accounts', () => {
+    const policy = normalizeBankPaymentPolicy({
+      card: {
+        selectionMode: 'default',
+        defaultBankAccountId: 'bank-9',
+      },
+    });
+
+    expect(policy.defaultBankAccountId).toBeNull();
+    expect(policy.card.defaultBankAccountId).toBe('bank-9');
+  });
+
   it('falls back to the only active account when the configured default is unavailable', () => {
     const policy = normalizeBankPaymentPolicy({
       transfer: {
@@ -112,6 +124,15 @@ describe('bank payment policy helpers', () => {
     expect(nextPolicy.defaultBankAccountId).toBe('bank-3');
   });
 
+  it('does not auto-assign the only active account as global fallback', () => {
+    const nextPolicy = syncBankPaymentPolicyDefaultAccount({
+      policy: defaultBankPaymentPolicy(),
+      availableBankAccountIds: ['bank-3'],
+    });
+
+    expect(nextPolicy.defaultBankAccountId).toBeNull();
+  });
+
   it('preserves the current default account when it remains active', () => {
     const nextPolicy = syncBankPaymentPolicyDefaultAccount({
       policy: normalizeBankPaymentPolicy({
@@ -134,7 +155,7 @@ describe('bank payment policy helpers', () => {
     expect(nextPolicy.defaultBankAccountId).toBeNull();
   });
 
-  it('prefers module-specific overrides over the global default', () => {
+  it('ignores module-specific overrides for runtime resolution and uses the global default', () => {
     const policy = normalizeBankPaymentPolicy({
       defaultBankAccountId: 'bank-1',
       moduleBankAccountIds: {
@@ -155,7 +176,32 @@ describe('bank payment policy helpers', () => {
         moduleKey: 'purchases',
         availableBankAccountIds: ['bank-1', 'bank-4'],
       }),
-    ).toBe('bank-4');
+    ).toBe('bank-1');
+  });
+
+  it('prefers a method-specific default over the global default when the method is provided', () => {
+    const policy = normalizeBankPaymentPolicy({
+      defaultBankAccountId: 'bank-1',
+      card: {
+        selectionMode: 'default',
+        defaultBankAccountId: 'bank-8',
+      },
+    });
+
+    expect(
+      resolveConfiguredBankAccountId({
+        policy,
+        method: 'card',
+        availableBankAccountIds: ['bank-1', 'bank-8'],
+      }),
+    ).toBe('bank-8');
+    expect(
+      resolveConfiguredBankAccountId({
+        policy,
+        method: 'transfer',
+        availableBankAccountIds: ['bank-1', 'bank-8'],
+      }),
+    ).toBe('bank-1');
   });
 
   it('treats legacy module ids as enabled overrides', () => {
@@ -213,7 +259,7 @@ describe('bank payment policy helpers', () => {
     expect(disabledPolicy.moduleBankAccountIds.purchases).toBeNull();
   });
 
-  it('requires manual selection only when no effective configured account exists', () => {
+  it('requires manual selection only when ambiguity remains unresolved', () => {
     expect(
       requiresManualBankAccountSelection({
         method: 'card',
@@ -223,9 +269,17 @@ describe('bank payment policy helpers', () => {
     expect(
       requiresManualBankAccountSelection({
         method: 'card',
+        policy: defaultBankPaymentPolicy(),
+        availableBankAccountIds: ['bank-1'],
+      }),
+    ).toBe(false);
+    expect(
+      requiresManualBankAccountSelection({
+        method: 'card',
         policy: normalizeBankPaymentPolicy({
           defaultBankAccountId: 'bank-1',
         }),
+        availableBankAccountIds: ['bank-1', 'bank-2'],
       }),
     ).toBe(false);
   });
@@ -241,5 +295,22 @@ describe('bank payment policy helpers', () => {
         availableBankAccountIds: new Set(['bank-3', 'bank-7']),
       }),
     ).toBe('bank-7');
+  });
+
+  it('uses the method-specific configured account over the global default', () => {
+    expect(
+      resolveEffectiveBankAccountId({
+        method: 'card',
+        bankAccountId: 'bank-3',
+        policy: normalizeBankPaymentPolicy({
+          defaultBankAccountId: 'bank-7',
+          card: {
+            selectionMode: 'default',
+            defaultBankAccountId: 'bank-9',
+          },
+        }),
+        availableBankAccountIds: new Set(['bank-3', 'bank-7', 'bank-9']),
+      }),
+    ).toBe('bank-9');
   });
 });

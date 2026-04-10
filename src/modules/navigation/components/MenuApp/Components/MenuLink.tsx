@@ -1,5 +1,5 @@
 import { Tag } from 'antd';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink, useLocation, useMatch } from 'react-router-dom';
 import styled, { css } from 'styled-components';
@@ -13,12 +13,14 @@ interface MenuLinkProps {
   isSidebarOpen?: boolean;
   item: MenuItem;
   onActionDone?: () => void;
+  parentTitle?: string;
 }
 
 export const MenuLink = ({
   item,
   onActionDone,
   isSidebarOpen = false,
+  parentTitle,
 }: MenuLinkProps) => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -33,28 +35,43 @@ export const MenuLink = ({
     return currentPath === route || currentPath.startsWith(route + '/');
   };
 
-  const isCurrentRoute = item?.submenu?.some((subItem) =>
-    subItem.route ? isRouteActive(subItem.route) : false,
-  );
+  const hasActiveDescendantRoute = (items?: MenuItem[]) =>
+    items?.some((subItem) => {
+      if (subItem.route && isRouteActive(subItem.route)) {
+        return true;
+      }
 
-  // Inicializar abierto si la ruta coincide
-  const [isOpenSubMenu, setIsOpenSubMenu] = useState(
+      if (Array.isArray(subItem.submenu) && subItem.submenu.length) {
+        return hasActiveDescendantRoute(subItem.submenu);
+      }
+
+      return false;
+    }) ?? false;
+
+  const isCurrentRoute = hasActiveDescendantRoute(item?.submenu);
+
+  const [isUserExpanded, setIsUserExpanded] = useState(
     () => !!isCurrentRoute && isSidebarOpen,
   );
-
-  useEffect(() => {
-    if (isCurrentRoute && isSidebarOpen) {
-      setIsOpenSubMenu(true);
-    }
-  }, [isCurrentRoute, isSidebarOpen]);
+  const [isUserCollapsed, setIsUserCollapsed] = useState(false);
+  const isOpenSubMenu =
+    isUserExpanded || (isCurrentRoute && isSidebarOpen && !isUserCollapsed);
 
   const toggleSubMenu = (e: React.MouseEvent) => {
     e?.preventDefault?.();
-    setIsOpenSubMenu((prev) => !prev);
+    if (isOpenSubMenu) {
+      setIsUserExpanded(false);
+      setIsUserCollapsed(true);
+      return;
+    }
+
+    setIsUserExpanded(true);
+    setIsUserCollapsed(false);
   };
 
   const closeSubMenu = () => {
-    setIsOpenSubMenu(false);
+    setIsUserExpanded(false);
+    setIsUserCollapsed(true);
   };
 
   const handleAction = (e: React.MouseEvent) => {
@@ -116,6 +133,7 @@ export const MenuLink = ({
           onActionDone={onActionDone}
           isOpen={isOpenSubMenu}
           item={item}
+          parentTitle={parentTitle}
         />
       )}
     </Fragment>

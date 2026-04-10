@@ -1,7 +1,9 @@
+import BusinessFeatureRouteGate from '@/components/availability/BusinessFeatureRouteGate';
 import { lazyRoute as lazy } from '@/router/utils/lazyRoute';
 
 import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
+import type { JSX } from 'react';
 
 const CashReconciliation = lazy(() =>
   import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation').then(
@@ -30,23 +32,33 @@ const {
   CASH_RECONCILIATION_OPENING,
   CASH_RECONCILIATION_INVOICE_OVERVIEW,
 } = ROUTES_NAME.CASH_RECONCILIATION_TERM;
+const { GENERAL_CONFIG_MODULES } = ROUTES_NAME.SETTING_TERM;
+
+const withTreasuryGate = (element: JSX.Element) => (
+  <BusinessFeatureRouteGate
+    feature="treasury"
+    fallbackTo={GENERAL_CONFIG_MODULES}
+  >
+    {element}
+  </BusinessFeatureRouteGate>
+);
 
 const Routes: AppRoute[] = [
   {
     path: CASH_RECONCILIATION_LIST,
-    element: <CashReconciliation />,
+    element: withTreasuryGate(<CashReconciliation />),
   },
   {
     path: CASH_RECONCILIATION_CLOSURE,
-    element: <CashRegisterClosure />,
+    element: withTreasuryGate(<CashRegisterClosure />),
   },
   {
     path: CASH_RECONCILIATION_OPENING,
-    element: <CashRegisterOpening />,
+    element: withTreasuryGate(<CashRegisterOpening />),
   },
   {
     path: CASH_RECONCILIATION_INVOICE_OVERVIEW,
-    element: <CashupInvoicesOverview />,
+    element: withTreasuryGate(<CashupInvoicesOverview />),
   },
 ];
 

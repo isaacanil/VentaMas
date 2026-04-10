@@ -1,13 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Drawer,
-  Switch,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Alert, Button, Card, Drawer } from 'antd';
 import styled from 'styled-components';
 import { ACCOUNTING_CURRENCY_CODES } from '@/utils/accounting/currencies';
 
@@ -39,8 +31,6 @@ import type {
   AccountingPanelItem,
   AccountingPanelKey,
 } from '../utils/accountingPanels';
-
-const { Text } = Typography;
 
 const getAvailableCurrencies = (
   functionalCurrency: SupportedDocumentCurrency,
@@ -81,17 +71,12 @@ interface AccountingSettingsFormProps {
   enabledForeignCurrencies: SupportedDocumentCurrency[];
   error: string | null;
   exchangeRateReference: ExchangeRateReferenceSnapshot | null;
-  hasUnsavedBankingChanges: boolean;
   hasUnsavedExchangeChanges: boolean;
   history: AccountingAuditEntry[];
   historyLoading: boolean;
   loading: boolean;
-  onGeneralAccountingEnabledChange: (enabled: boolean) => void | Promise<void>;
-  rolloutEnabled: boolean;
-  savingBanking: boolean;
   savingChartOfAccounts: boolean;
   savingExchange: boolean;
-  savingGeneralAccounting: boolean;
   savingPostingProfiles: boolean;
   onAddBankAccount: (draft: Partial<BankAccountDraft>) => Promise<void>;
   onUpdateBankAccount: (
@@ -104,7 +89,6 @@ interface AccountingSettingsFormProps {
   onAddPostingProfile: (
     draft: Partial<AccountingPostingProfileDraft>,
   ) => Promise<boolean>;
-  onBankAccountsEnabledChange: (enabled: boolean) => void;
   onCurrencyConfigurationChange: (params: {
     functionalCurrency: SupportedDocumentCurrency;
     documentCurrencies: SupportedDocumentCurrency[];
@@ -163,23 +147,17 @@ export const AccountingSettingsForm = ({
   enabledForeignCurrencies,
   error,
   exchangeRateReference,
-  hasUnsavedBankingChanges,
   hasUnsavedExchangeChanges,
   history,
   historyLoading,
   loading,
-  onGeneralAccountingEnabledChange,
-  rolloutEnabled,
-  savingBanking,
   savingChartOfAccounts,
   savingExchange,
-  savingGeneralAccounting,
   savingPostingProfiles,
   onAddBankAccount,
   onUpdateBankAccount,
   onAddChartOfAccount,
   onAddPostingProfile,
-  onBankAccountsEnabledChange,
   onBankPaymentPolicyChange,
   onCurrencyConfigurationChange,
   onFunctionalCurrencyChange,
@@ -342,73 +320,53 @@ export const AccountingSettingsForm = ({
 
   const bankAccountsPanelContent = (
     <PanelStack>
-      {!config.bankAccountsEnabled ? (
-        <Alert
-          type="info"
-          showIcon
-          message="El módulo de cuentas bancarias está desactivado"
-          description="Las cuentas se conservan, pero dejan de resolverse en los módulos."
+      <BankingWorkspace>
+        <BankAccountsList
+          bankAccounts={bankAccounts}
+          defaultBankAccountId={config.bankPaymentPolicy.defaultBankAccountId}
+          loading={bankAccountsLoading}
+          onAddBankAccountClick={handleOpenAddBankAccountModal}
+          onEditBankAccountClick={handleOpenEditBankAccountModal}
+          onSetDefaultBankAccountClick={handleSetDefaultBankAccount}
+          onToggleBankAccountStatus={onUpdateBankAccountStatus}
         />
-      ) : null}
 
-      {config.bankAccountsEnabled ? (
-        <BankingWorkspace>
-          <BankAccountsList
-            bankAccounts={bankAccounts}
-            defaultBankAccountId={config.bankPaymentPolicy.defaultBankAccountId}
-            loading={bankAccountsLoading}
-            onAddBankAccountClick={handleOpenAddBankAccountModal}
-            onEditBankAccountClick={handleOpenEditBankAccountModal}
-            onSetDefaultBankAccountClick={handleSetDefaultBankAccount}
-            onToggleBankAccountStatus={onUpdateBankAccountStatus}
-          />
-
-          <BankPaymentPolicySection
-            bankAccounts={bankAccounts}
-            policy={config.bankPaymentPolicy}
-            onChange={onBankPaymentPolicyChange}
-          />
-        </BankingWorkspace>
-      ) : null}
+        <BankPaymentPolicySection
+          bankAccounts={bankAccounts}
+          policy={config.bankPaymentPolicy}
+          onChange={onBankPaymentPolicyChange}
+        />
+      </BankingWorkspace>
     </PanelStack>
   );
 
   const chartOfAccountsPanelContent = (
     <FlushPanelStack>
-      {config.generalAccountingEnabled ? (
-        <StretchSection>
-          {chartOfAccountsError ? (
-            <Alert showIcon type="error" message={chartOfAccountsError} />
-          ) : null}
+      <StretchSection>
+        {chartOfAccountsError ? (
+          <Alert showIcon type="error" message={chartOfAccountsError} />
+        ) : null}
 
-          <ChartOfAccountsList
-            accounts={chartOfAccounts}
-            loading={chartOfAccountsLoading || savingChartOfAccounts}
-            seeding={seedingChartOfAccounts}
-            onAddChartOfAccountClick={handleOpenAddChartOfAccountModal}
-            onEditChartOfAccountClick={handleOpenEditChartOfAccountModal}
-            onSeedDefaultChartOfAccounts={() => {
-              void onSeedDefaultChartOfAccounts();
-            }}
-            onToggleChartOfAccountStatus={(chartOfAccountId, status) => {
-              void onUpdateChartOfAccountStatus(chartOfAccountId, status);
-            }}
-          />
-        </StretchSection>
-      ) : null}
+        <ChartOfAccountsList
+          accounts={chartOfAccounts}
+          loading={chartOfAccountsLoading || savingChartOfAccounts}
+          seeding={seedingChartOfAccounts}
+          onAddChartOfAccountClick={handleOpenAddChartOfAccountModal}
+          onEditChartOfAccountClick={handleOpenEditChartOfAccountModal}
+          onSeedDefaultChartOfAccounts={() => {
+            void onSeedDefaultChartOfAccounts();
+          }}
+          onToggleChartOfAccountStatus={(chartOfAccountId, status) => {
+            void onUpdateChartOfAccountStatus(chartOfAccountId, status);
+          }}
+        />
+      </StretchSection>
     </FlushPanelStack>
   );
 
   const postingProfilesPanelContent = (
     <FlushPanelStack>
-      {!config.generalAccountingEnabled ? (
-        <Alert
-          showIcon
-          type="warning"
-          message="Activa primero la contabilidad general"
-          description="La configuración de perfiles contables solo aparece cuando el negocio habilita la capa contable general."
-        />
-      ) : !chartOfAccounts.length ? (
+      {!chartOfAccounts.length ? (
         <Alert
           showIcon
           type="warning"
@@ -462,16 +420,6 @@ export const AccountingSettingsForm = ({
           },
         }}
       >
-        {!rolloutEnabled ? (
-          <Alert
-            type="info"
-            showIcon
-            message="Contabilidad visible para este negocio"
-            description="Puedes configurar contabilidad aquí, aunque la aplicación automática siga controlada por rollout."
-            style={{ marginBottom: 16 }}
-          />
-        ) : null}
-
         <AccountingStack>
           <PanelSurface>
             {(accountingPanel === 'bank-accounts' ||
@@ -481,44 +429,6 @@ export const AccountingSettingsForm = ({
                   <PanelTitle>{activePanelItem.label}</PanelTitle>
                   <PanelDescription>{activePanelItem.description}</PanelDescription>
                 </PanelHeaderLeft>
-                {accountingPanel === 'bank-accounts' && (
-                  <PanelHeaderAction>
-                    <Tooltip title="Activa o desactiva el uso de cuentas bancarias en ventas, gastos, cuentas por cobrar y compras.">
-                      <Switch
-                        checked={config.bankAccountsEnabled}
-                        loading={savingBanking}
-                        onChange={onBankAccountsEnabledChange}
-                      />
-                    </Tooltip>
-                    <PanelActionHint>
-                      {savingBanking
-                        ? 'Guardando...'
-                        : hasUnsavedBankingChanges
-                          ? 'Cambios pendientes.'
-                          : 'Se guarda al cambiar.'}
-                    </PanelActionHint>
-                  </PanelHeaderAction>
-                )}
-                {accountingPanel === 'chart-of-accounts' && (
-                  <PanelHeaderAction>
-                    <Tooltip title="Activa o desactiva la contabilidad general de todo el sistema (catálogo y perfiles).">
-                      <Switch
-                        checked={config.generalAccountingEnabled}
-                        loading={savingGeneralAccounting}
-                        onChange={(checked) => {
-                          void onGeneralAccountingEnabledChange(checked);
-                        }}
-                      />
-                    </Tooltip>
-                    <PanelActionHint>
-                      {savingGeneralAccounting
-                        ? 'Guardando...'
-                        : config.generalAccountingEnabled
-                          ? 'Contabilidad general activa'
-                          : 'Contabilidad general desactivada'}
-                    </PanelActionHint>
-                  </PanelHeaderAction>
-                )}
               </PanelHeader>
             )}
 
@@ -566,17 +476,15 @@ export const AccountingSettingsForm = ({
         onSubmit={handleSubmitBankAccount}
       />
 
-      {config.generalAccountingEnabled ? (
-        <AddChartOfAccountModal
-          accounts={chartOfAccounts}
-          createDefaults={chartOfAccountCreateDefaults}
-          editingAccount={editingChartOfAccount}
-          loading={savingChartOfAccounts}
-          open={isAddChartOfAccountModalOpen}
-          onCancel={handleCloseAddChartOfAccountModal}
-          onSubmit={handleSubmitChartOfAccount}
-        />
-      ) : null}
+      <AddChartOfAccountModal
+        accounts={chartOfAccounts}
+        createDefaults={chartOfAccountCreateDefaults}
+        editingAccount={editingChartOfAccount}
+        loading={savingChartOfAccounts}
+        open={isAddChartOfAccountModalOpen}
+        onCancel={handleCloseAddChartOfAccountModal}
+        onSubmit={handleSubmitChartOfAccount}
+      />
 
       <Drawer
         title="Bitacora contable"
@@ -655,21 +563,6 @@ const PanelHeaderLeft = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
-`;
-
-const PanelHeaderAction = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--ds-space-1);
-  flex-shrink: 0;
-`;
-
-const PanelActionHint = styled(Text).attrs({ type: 'secondary' })`
-  && {
-    font-size: var(--ds-font-size-xs);
-    color: var(--ds-color-text-secondary);
-  }
 `;
 
 const PanelTitle = styled.h2`

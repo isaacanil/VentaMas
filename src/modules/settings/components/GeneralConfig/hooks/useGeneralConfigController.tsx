@@ -9,6 +9,7 @@ import {
   faInfoCircle,
   faKey,
   faMoneyBillTrendUp,
+  faToggleOn,
   faWarehouse,
   faWallet,
   faBookOpen,
@@ -30,6 +31,7 @@ const selectPreviousRouteIgnoringConfig = makeSelectPreviousRelevantRoute(
 );
 
 const TAB_ROUTES = {
+  modules: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_MODULES,
   billing: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BILLING,
   subscription: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_SUBSCRIPTION,
   business: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_BUSINESS,
@@ -79,6 +81,10 @@ const isExchangeRatesPath = (pathname: string): boolean =>
 const resolveActiveItemKey = (pathname: string): string => {
   if (isExchangeRatesPath(pathname)) {
     return 'exchangeRates';
+  }
+
+  if (pathname.includes('/modules')) {
+    return 'modules';
   }
 
   if (
@@ -138,6 +144,35 @@ export interface GeneralConfigSearchRecord {
 }
 
 const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
+  {
+    key: 'modules',
+    label: 'Módulos',
+    description: 'Activa o desactiva Contabilidad y Tesorería del negocio.',
+    tab: 'modules',
+    route: TAB_ROUTES.modules,
+    category: 'Pantalla',
+    extraTokens: ['modulos', 'activar', 'deshabilitar', 'features'],
+  },
+  {
+    key: 'modules-accounting',
+    label: 'Módulos · Contabilidad',
+    description: 'Gestiona el encendido operativo del módulo de contabilidad.',
+    tab: 'modules',
+    route: TAB_ROUTES.modules,
+    sectionId: 'modules-accounting',
+    category: 'Sección',
+    extraTokens: ['contabilidad', 'modulo', 'habilitar'],
+  },
+  {
+    key: 'modules-treasury',
+    label: 'Módulos · Tesorería',
+    description: 'Gestiona el encendido operativo del módulo de tesorería.',
+    tab: 'modules',
+    route: TAB_ROUTES.modules,
+    sectionId: 'modules-treasury',
+    category: 'Sección',
+    extraTokens: ['tesoreria', 'modulo', 'habilitar', 'bancos', 'caja'],
+  },
   {
     key: 'business',
     label: 'Datos de la Empresa',
@@ -371,6 +406,7 @@ export const useGeneralConfigController = () => {
   const accountingEnabled = useBusinessFeatureEnabled('accounting');
   const activeTab = useMemo(() => {
     if (isExchangeRatesPath(currentPath)) return 'exchangeRates';
+    if (currentPath.includes('/modules')) return 'modules';
     if (currentPath.includes('business')) return 'business';
     if (
       currentPath.includes('contabilidad') ||
@@ -487,6 +523,14 @@ export const useGeneralConfigController = () => {
   const menuItems = useMemo<MenuItem[]>(
     () =>
       [
+        {
+          key: 'modules',
+          icon: <FontAwesomeIcon icon={faToggleOn} />,
+          label: 'Módulos',
+          group: 'business-management',
+          groupLabel: 'Mi Negocio',
+          groupType: 'labelled',
+        },
         {
           key: 'business',
           icon: <FontAwesomeIcon icon={faBuilding} />,

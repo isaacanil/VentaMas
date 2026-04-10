@@ -16,6 +16,10 @@ const BillingConfig = lazy(
   () =>
     import('@/modules/settings/components/GeneralConfig/configs/BillingConfig'),
 );
+const ModulesConfig = lazy(
+  () =>
+    import('@/modules/settings/components/GeneralConfig/configs/ModulesConfig/ModulesConfig'),
+);
 const AccountingConfig = lazy(
   () =>
     import('@/modules/settings/components/GeneralConfig/configs/AccountingConfig/AccountingConfig'),
@@ -108,6 +112,7 @@ const {
   SETTING,
   GENERAL_CONFIG_APP_INFO,
   GENERAL_CONFIG_BILLING,
+  GENERAL_CONFIG_MODULES,
   GENERAL_CONFIG_BUSINESS,
   GENERAL_CONFIG_ACCOUNTING,
   GENERAL_CONFIG_EXCHANGE_RATES,
@@ -184,6 +189,10 @@ const Routes: AppRoute[] = [
         element: <Navigate to={generalConfigBillingRelativePath} replace />,
       },
       {
+        path: getRelativePath(GENERAL_CONFIG_MODULES, SETTING),
+        element: <ModulesConfig />,
+      },
+      {
         path: generalConfigBillingRelativePath,
         element: <BillingConfig />,
       },
@@ -258,8 +267,16 @@ const Routes: AppRoute[] = [
     element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
   },
   {
+    path: '/settings/general-config/modules',
+    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
+  },
+  {
     path: '/settings/general-config/billing',
     element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
+  },
+  {
+    path: '/settings/modules',
+    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
   },
   {
     path: '/settings/general-config/accounting',
@@ -434,6 +451,10 @@ const Routes: AppRoute[] = [
     element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
   },
   {
+    path: '/general-config/modules',
+    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
+  },
+  {
     path: '/general-config/billing',
     element: <Navigate to={GENERAL_CONFIG_BILLING} replace />,
   },
@@ -492,6 +513,10 @@ const Routes: AppRoute[] = [
   {
     path: '/general-config/subscription/blocked-preview',
     element: <Navigate to={GENERAL_CONFIG_SUBSCRIPTION} replace />,
+  },
+  {
+    path: '/general-config-modules',
+    element: <Navigate to={GENERAL_CONFIG_MODULES} replace />,
   },
   {
     path: '/general-config-billing',

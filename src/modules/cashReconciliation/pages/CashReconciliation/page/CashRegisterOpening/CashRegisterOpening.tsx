@@ -1,11 +1,12 @@
-import { message } from 'antd';
+import { Card, Select, Typography, message } from 'antd';
 import { DateTime } from 'luxon';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import {
+  addPropertiesToCashCount,
   clearCashCount,
   selectCashCount,
   setCashCountOpeningBanknotes,
@@ -15,6 +16,7 @@ import { fbRecordAuthorizationApproval } from '@/firebase/authorization/approval
 import { fbCashCountOpening } from '@/firebase/cashCount/opening/fbCashCountOpening';
 import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { useAuthorizationPin } from '@/hooks/useAuthorizationPin';
+import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
 import { PeerReviewAuthorization } from '@/components/modals/PeerReviewAuthorization/PeerReviewAuthorization';
 import { PinAuthorizationModal } from '@/components/modals/PinAuthorizationModal/PinAuthorizationModal';
 import { Comments } from '@/modules/cashReconciliation/pages/CashReconciliation/page/CashRegisterClosure/Comments/Comments';
@@ -31,6 +33,8 @@ import { resolveUserIdentityBusinessId } from '@/utils/users/userIdentityAccess'
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Headers/Header';
 
+const { Text } = Typography;
+
 export const CashRegisterOpening: React.FC = () => {
   const cashCount = useSelector(selectCashCount) as CashCountRecord;
   const banknotes = cashCount.opening?.banknotes || [];
@@ -45,6 +49,26 @@ export const CashRegisterOpening: React.FC = () => {
   const actualUser = useSelector(selectUser) as UserIdentity | null;
   const { shouldUsePinForModule } = useAuthorizationModules();
   const usePinAuth = shouldUsePinForModule('accountsReceivable');
+  const businessId = resolveUserIdentityBusinessId(actualUser);
+  const { cashAccounts, loading: cashAccountsLoading } = useCashAccounts({
+    businessId,
+    userId: actualUser?.uid ?? null,
+  });
+  const activeCashAccounts = useMemo(
+    () => cashAccounts.filter((account) => account.status === 'active'),
+    [cashAccounts],
+  );
+  const resolvedCashAccountId = useMemo(() => {
+    if (cashCount.cashAccountId) {
+      return cashCount.cashAccountId;
+    }
+
+    if (activeCashAccounts.length === 1) {
+      return activeCashAccounts[0]?.id ?? null;
+    }
+
+    return null;
+  }, [activeCashAccounts, cashCount.cashAccountId]);
 
   const handleChangesBanknotes = (nextBanknotes: CashCountBanknote[]) => {
     dispatch(setCashCountOpeningBanknotes(nextBanknotes));
@@ -61,14 +85,24 @@ export const CashRegisterOpening: React.FC = () => {
       if (!actualUser?.uid) {
         throw new Error('No se pudo identificar al usuario actual.');
       }
-      const businessId = resolveUserIdentityBusinessId(actualUser);
       if (!businessId) {
         throw new Error('No se pudo identificar el negocio actual.');
       }
+      if (activeCashAccounts.length > 0 && !resolvedCashAccountId) {
+        throw new Error('Selecciona la cuenta de caja para esta apertura.');
+      }
+
+      const cashCountForOpening =
+        resolvedCashAccountId && cashCount.cashAccountId !== resolvedCashAccountId
+          ? {
+              ...cashCount,
+              cashAccountId: resolvedCashAccountId,
+            }
+          : cashCount;
 
       const response = await fbCashCountOpening(
         actualUser,
-        cashCount,
+        cashCountForOpening,
         actualUser.uid,
         approvalEmployee.uid,
         openingDate.toMillis(),
@@ -91,9 +125,13 @@ export const CashRegisterOpening: React.FC = () => {
         target: {
           type: 'cashCount',
           id: cashCount?.id || '',
-          details: { stage: 'opening' },
+          details: {
+            cashAccountId: resolvedCashAccountId ?? null,
+            stage: 'opening',
+          },
         },
         metadata: {
+          cashAccountId: resolvedCashAccountId ?? null,
           openingDate:
             openingDate?.toISO?.() || openingDate?.toString?.() || null,
         },
@@ -103,7 +141,16 @@ export const CashRegisterOpening: React.FC = () => {
       dispatch(clearCashCount());
       navigate(-1);
     },
-    [actualUser, cashCount, dispatch, navigate, openingDate],
+    [
+      activeCashAccounts.length,
+      actualUser,
+      businessId,
+      cashCount,
+      dispatch,
+      navigate,
+      openingDate,
+      resolvedCashAccountId,
+    ],
   );
 
   const { showModal: showPinModal, modalProps: pinModalProps } =
@@ -148,6 +195,39 @@ export const CashRegisterOpening: React.FC = () => {
           isExpanded={calculatorIsOpen}
           setIsExpanded={setCalculatorIsOpen}
         />
+        {activeCashAccounts.length ? (
+          <CashAccountCard>
+            <CashAccountHeader>
+              <div>
+                <CashAccountTitle>Cuenta de caja</CashAccountTitle>
+                <Text type="secondary">
+                  Esta apertura operará sobre la caja seleccionada.
+                </Text>
+              </div>
+            </CashAccountHeader>
+
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Selecciona la cuenta de caja"
+              loading={cashAccountsLoading}
+              value={resolvedCashAccountId ?? undefined}
+              options={activeCashAccounts.map((account) => ({
+                label: `${account.name}${account.location ? ` · ${account.location}` : ''}`,
+                value: account.id,
+              }))}
+              onChange={(value) =>
+                dispatch(addPropertiesToCashCount({ cashAccountId: value }))
+              }
+            />
+
+            {activeCashAccounts.length > 1 && !resolvedCashAccountId ? (
+              <CashAccountWarning>
+                Debes elegir una cuenta de caja antes de autorizar la apertura.
+              </CashAccountWarning>
+            ) : null}
+          </CashAccountCard>
+        ) : null}
         <Comments
           label="Comentario de Apertura"
           onChange={(e) => handleChangesComments(e.target.value)}
@@ -182,4 +262,28 @@ const Container = styled.div`
   height: 100%;
   padding: 1em;
   margin: 0 auto;
+`;
+
+const CashAccountCard = styled(Card)`
+  display: grid;
+  gap: 0.75rem;
+`;
+
+const CashAccountHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+`;
+
+const CashAccountTitle = styled.h3`
+  margin: 0 0 0.15rem;
+  font-size: 1rem;
+  font-weight: 600;
+`;
+
+const CashAccountWarning = styled.p`
+  margin: 0;
+  color: var(--ds-color-state-warningText);
+  font-size: 0.875rem;
 `;

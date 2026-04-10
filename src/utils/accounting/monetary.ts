@@ -254,15 +254,38 @@ const isAccountingRolloutExplicitlyEnabled = (value: unknown): boolean => {
   return record.rolloutEnabled === true || rolloutRecord.enabled === true;
 };
 
+const getExplicitAccountingRolloutState = (
+  value: unknown,
+): boolean | null => {
+  const record = asRecord(value);
+  const rolloutRecord = asRecord(record.rollout);
+
+  if (typeof record.rolloutEnabled === 'boolean') {
+    return record.rolloutEnabled;
+  }
+
+  if (typeof rolloutRecord.enabled === 'boolean') {
+    return rolloutRecord.enabled;
+  }
+
+  return null;
+};
+
 const isAccountingPilotBusiness = (businessId: unknown): boolean =>
   ACCOUNTING_PILOT_BUSINESS_IDS.has(toCleanString(businessId) ?? '');
 
 export const isAccountingRolloutEnabledForBusiness = (
   businessId: unknown,
   settings?: unknown,
-): boolean =>
-  isAccountingPilotBusiness(businessId) ||
-  isAccountingRolloutExplicitlyEnabled(settings);
+): boolean => {
+  const explicitState = getExplicitAccountingRolloutState(settings);
+
+  if (explicitState != null) {
+    return explicitState;
+  }
+
+  return isAccountingPilotBusiness(businessId);
+};
 
 const normalizeDocumentCurrencies = (
   value: unknown,

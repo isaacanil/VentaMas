@@ -27,6 +27,7 @@ const BANK_ACCOUNT_TYPE_LABELS: Partial<Record<string, string>> = {
 };
 
 interface BankAccountsListProps {
+  actionLabel?: string;
   bankAccounts: BankAccount[];
   defaultBankAccountId?: string | null;
   loading: boolean;
@@ -37,6 +38,8 @@ interface BankAccountsListProps {
   ) => void;
   onEditBankAccountClick: (bankAccount: BankAccount) => void;
   onSetDefaultBankAccountClick: (bankAccountId: string) => void;
+  showPrimaryAction?: boolean;
+  title?: string;
 }
 
 const formatCurrency = (value: number, currency: string) =>
@@ -47,9 +50,10 @@ const formatCurrency = (value: number, currency: string) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-type FilterTone = 'active' | 'inactive';
+type FilterTone = 'active' | 'all' | 'inactive';
 
 export const BankAccountsList = ({
+  actionLabel = 'Nueva cuenta bancaria',
   bankAccounts,
   defaultBankAccountId,
   loading,
@@ -57,6 +61,8 @@ export const BankAccountsList = ({
   onToggleBankAccountStatus,
   onEditBankAccountClick,
   onSetDefaultBankAccountClick,
+  showPrimaryAction = true,
+  title = 'Cuentas bancarias',
 }: BankAccountsListProps) => {
   const [filter, setFilter] = useState<FilterTone>('active');
 
@@ -65,16 +71,20 @@ export const BankAccountsList = ({
   ).length;
   const inactiveAccountsCount = bankAccounts.length - activeAccountsCount;
 
-  const visibleAccounts = bankAccounts.filter(
-    (account) => account.status === (filter === 'active' ? 'active' : 'inactive'),
-  );
+  const visibleAccounts = bankAccounts.filter((account) => {
+    if (filter === 'all') {
+      return true;
+    }
+
+    return account.status === (filter === 'active' ? 'active' : 'inactive');
+  });
 
   return (
     <Section>
       <Header>
         <HeaderCopy>
           <TitleRow>
-            <Title>Cuentas bancarias</Title>
+            <Title>{title}</Title>
           </TitleRow>
           {!defaultBankAccountId && activeAccountsCount > 1 ? (
             <HeaderNotice>
@@ -84,9 +94,15 @@ export const BankAccountsList = ({
           ) : null}
         </HeaderCopy>
 
-        <Button type="primary" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onAddBankAccountClick}>
-          cuenta bancaria
-        </Button>
+        {showPrimaryAction ? (
+          <Button
+            type="primary"
+            icon={<FontAwesomeIcon icon={faPlus} />}
+            onClick={onAddBankAccountClick}
+          >
+            {actionLabel}
+          </Button>
+        ) : null}
       </Header>
 
       {!!bankAccounts.length && (
@@ -97,6 +113,13 @@ export const BankAccountsList = ({
             onClick={() => setFilter('active')}
           >
             {activeAccountsCount} activas
+          </FilterChip>
+          <FilterChip
+            $tone="all"
+            $selected={filter === 'all'}
+            onClick={() => setFilter('all')}
+          >
+            {bankAccounts.length} todas
           </FilterChip>
           <FilterChip
             $tone="inactive"
@@ -123,7 +146,13 @@ export const BankAccountsList = ({
         <EmptyState>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={`No hay cuentas ${filter === 'active' ? 'activas' : 'inactivas'}.`}
+            description={`No hay cuentas ${
+              filter === 'active'
+                ? 'activas'
+                : filter === 'inactive'
+                  ? 'inactivas'
+                  : 'disponibles'
+            }.`}
           />
         </EmptyState>
       ) : (
@@ -190,6 +219,9 @@ export const BankAccountsList = ({
                   <ItemActions>
                     {isDefault ? (
                       <StatusBadge $tone="default">Predeterminada</StatusBadge>
+                    ) : null}
+                    {!isActive ? (
+                      <StatusBadge $tone="inactive">Inactiva</StatusBadge>
                     ) : null}
 
                     <DropdownWrapper>
@@ -323,7 +355,10 @@ const FilterBar = styled.div`
   background: var(--ds-color-bg-surface);
 `;
 
-const FilterChip = styled.button<{ $tone: 'active' | 'inactive'; $selected: boolean }>`
+const FilterChip = styled.button<{
+  $tone: 'active' | 'all' | 'inactive';
+  $selected: boolean;
+}>`
   display: inline-flex;
   align-items: center;
   min-height: 24px;
@@ -337,6 +372,10 @@ const FilterChip = styled.button<{ $tone: 'active' | 'inactive'; $selected: bool
         ? $selected
           ? 'var(--ds-color-state-success)'
           : 'var(--ds-color-border-default)'
+        : $tone === 'all'
+          ? $selected
+            ? 'var(--ds-color-interactive-selected-border)'
+            : 'var(--ds-color-border-default)'
         : $selected
           ? 'var(--ds-color-border-default)'
           : 'var(--ds-color-border-default)'};
@@ -345,6 +384,10 @@ const FilterChip = styled.button<{ $tone: 'active' | 'inactive'; $selected: bool
       ? $selected
         ? 'var(--ds-color-state-successSubtle)'
         : 'var(--ds-color-bg-subtle)'
+      : $tone === 'all'
+        ? $selected
+          ? 'var(--ds-color-interactive-selected-bg)'
+          : 'var(--ds-color-bg-subtle)'
       : $selected
         ? 'var(--ds-color-bg-subtle)'
         : 'transparent'};
@@ -355,6 +398,10 @@ const FilterChip = styled.button<{ $tone: 'active' | 'inactive'; $selected: bool
       ? $selected
         ? 'var(--ds-color-state-successText)'
         : 'var(--ds-color-text-secondary)'
+      : $tone === 'all'
+        ? $selected
+          ? 'var(--ds-color-interactive-selected-text)'
+          : 'var(--ds-color-text-secondary)'
       : $selected
         ? 'var(--ds-color-text-secondary)'
         : 'var(--ds-color-text-secondary)'};

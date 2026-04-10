@@ -12,6 +12,11 @@ const CASH_RECONCILIATION_TERM = {
   CASH_RECONCILIATION_INVOICE_OVERVIEW: '/cash-register-invoices-overview',
 } as const;
 
+const TREASURY_TERM = {
+  TREASURY_HOME: '/treasury',
+  TREASURY_BANK_ACCOUNTS: '/treasury/bank-accounts',
+} as const;
+
 const CHANGELOG_TERM = {
   CHANGELOG_CREATE: '/changelog/create',
   CHANGELOG_MANAGE: '/changelog/manage',
@@ -125,6 +130,7 @@ const SETTING_TERM = {
   TAX_RECEIPT: '/tax-receipt',
   AUTHORIZATION_CONFIG: '/authorization-config',
   GENERAL_CONFIG_BILLING: '/settings/billing',
+  GENERAL_CONFIG_MODULES: '/settings/modules',
   GENERAL_CONFIG_SUBSCRIPTION: '/settings/subscription',
   GENERAL_CONFIG_SUBSCRIPTION_PLANS: '/settings/subscription/plans',
   GENERAL_CONFIG_SUBSCRIPTION_BILLING: '/settings/subscription/billing',
@@ -219,6 +225,7 @@ export const ROUTES_PATH = {
   BASIC_TERM,
   AUTH_TERM,
   CASH_RECONCILIATION_TERM,
+  TREASURY_TERM,
   EXPENSES_TERM,
   ACCOUNT_PAYABLE: ACCOUNT_PAYABLE_TERM,
   ACCOUNT_RECEIVABLE: ACCOUNT_RECEIVABLE_TERM,

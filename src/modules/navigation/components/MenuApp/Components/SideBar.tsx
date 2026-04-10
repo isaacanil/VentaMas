@@ -275,7 +275,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
                     <MenuLink
                       isSidebarOpen={isOpen}
                       item={item}
-                      key={getMenuItemRenderKey(item, group, index)}
+                      key={`${getMenuItemRenderKey(item, group, index)}-${isOpen ? 'open' : 'closed'}`}
                       onActionDone={handleCloseSidebar}
                     />
                   ))}

@@ -12,6 +12,7 @@ const {
   ORDER_TERM,
   EXPENSES_TERM,
   CASH_RECONCILIATION_TERM,
+  TREASURY_TERM,
   ACCOUNT_RECEIVABLE,
   CREDIT_NOTE_TERM,
   AUTHORIZATIONS_TERM,
@@ -74,6 +75,8 @@ export const routePreloaders: Record<string, RoutePreloader> = {
 
   [CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST]: () =>
     import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation'),
+  [TREASURY_TERM.TREASURY_BANK_ACCOUNTS]: () =>
+    import('@/modules/treasury/pages/TreasuryBankAccountsPage'),
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),

@@ -13,13 +13,11 @@ import ROUTES_NAME from '@/router/routes/routesName';
 
 import accountsPayable from './accountsPayable';
 import accountsReceivable from './accountsReceivable';
-import creditNote from './creditNote';
 
 const { PURCHASES } = ROUTES_NAME.PURCHASE_TERM;
 const { ORDERS } = ROUTES_NAME.ORDER_TERM;
 
 const { EXPENSES_LIST } = ROUTES_NAME.EXPENSES_TERM;
-const { CASH_RECONCILIATION_LIST } = ROUTES_NAME.CASH_RECONCILIATION_TERM;
 const {
   ACCOUNTING_JOURNAL_BOOK,
   ACCOUNTING_GENERAL_LEDGER,
@@ -33,7 +31,7 @@ const ChevronLeft = icons.arrows.chevronLeft;
 
 const financialManagement: MenuItem[] = [
   {
-    title: 'Compras y Pedidos',
+    title: 'Compras y gastos',
     icon: icons.menu.unSelected.purchase,
     submenuIconOpen: ChevronLeft,
     submenuIconClose: ChevronRight,
@@ -51,24 +49,13 @@ const financialManagement: MenuItem[] = [
         icon: <FontAwesomeIcon icon={faClipboardCheck} />,
         group: 'purchases',
       },
+      {
+        title: 'Gastos del Negocio',
+        icon: icons.menu.unSelected.expenses.expenses,
+        route: EXPENSES_LIST,
+        group: 'purchases',
+      },
     ],
-  },
-  ...creditNote,
-  ...accountsPayable,
-  ...accountsReceivable,
-  {
-    title: 'Gastos del Negocio',
-    icon: icons.menu.unSelected.expenses.expenses,
-    submenuIconOpen: ChevronLeft,
-    submenuIconClose: ChevronRight,
-    group: 'financialManagement',
-    route: EXPENSES_LIST,
-  },
-  {
-    title: 'Cuadre de caja',
-    icon: icons.menu.unSelected.cashReconciliation,
-    route: CASH_RECONCILIATION_LIST,
-    group: 'financialManagement',
   },
   {
     title: 'Contabilidad',
@@ -77,35 +64,37 @@ const financialManagement: MenuItem[] = [
     submenuIconClose: ChevronRight,
     group: 'financialManagement',
     submenu: [
+      ...accountsReceivable,
+      ...accountsPayable,
       {
         title: 'Libro diario',
         route: ACCOUNTING_JOURNAL_BOOK,
         icon: icons.menu.unSelected.list,
-        group: 'accountingJournalBook',
+        group: 'accounting',
       },
       {
         title: 'Libro mayor',
         route: ACCOUNTING_GENERAL_LEDGER,
         icon: icons.menu.unSelected.list,
-        group: 'accountingGeneralLedger',
+        group: 'accounting',
       },
       {
         title: 'Asientos manuales',
         route: ACCOUNTING_MANUAL_ENTRIES,
         icon: icons.menu.unSelected.register,
-        group: 'accountingManualEntries',
+        group: 'accounting',
       },
       {
         title: 'Reportes',
         route: ACCOUNTING_REPORTS,
         icon: <FontAwesomeIcon icon={faChartColumn} />,
-        group: 'accountingReports',
+        group: 'accounting',
       },
       {
         title: 'Cierre de periodo',
         route: ACCOUNTING_PERIOD_CLOSE,
         icon: <FontAwesomeIcon icon={faLock} />,
-        group: 'accountingPeriodClose',
+        group: 'accounting',
       },
     ],
   },

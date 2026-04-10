@@ -40,6 +40,7 @@ export default function AccountingConfig() {
   const businessId =
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const userId = user?.uid ?? user?.id ?? null;
+  const settingsWorkspaceEnabled = Boolean(businessId);
   const {
     addBankAccount,
     bankAccounts,
@@ -48,22 +49,16 @@ export default function AccountingConfig() {
     enabledForeignCurrencies,
     error,
     exchangeRateReference,
-    hasUnsavedBankingChanges,
     hasUnsavedExchangeChanges,
     history,
-    isAccountingRolloutBusiness,
     loading,
     saveExchangeSettings,
-    savingBanking,
-    savingGeneralAccounting,
     savingExchange,
     updateBankAccount,
     updateBankAccountStatus,
-    updateBankAccountsEnabled,
     updateBankPaymentPolicy,
     updateCurrencyConfiguration,
     updateFunctionalCurrency,
-    updateGeneralAccountingEnabled,
     updateBuyRate,
     updateSellRate,
   } = useAccountingConfig({
@@ -82,7 +77,7 @@ export default function AccountingConfig() {
     updateChartOfAccountStatus,
   } = useChartOfAccounts({
     businessId,
-    enabled: config.generalAccountingEnabled,
+    enabled: settingsWorkspaceEnabled,
     functionalCurrency: config.functionalCurrency,
     userId,
   });
@@ -99,7 +94,7 @@ export default function AccountingConfig() {
   } = useAccountingPostingProfiles({
     businessId,
     chartOfAccounts,
-    enabled: config.generalAccountingEnabled,
+    enabled: settingsWorkspaceEnabled,
     userId,
   });
   const { entries: auditEntries, loading: auditLoading } =
@@ -144,17 +139,13 @@ export default function AccountingConfig() {
           error={error}
           enabledForeignCurrencies={enabledForeignCurrencies}
           exchangeRateReference={exchangeRateReference}
-          hasUnsavedBankingChanges={hasUnsavedBankingChanges}
           hasUnsavedExchangeChanges={hasUnsavedExchangeChanges}
           history={auditEntries}
           historyLoading={auditLoading}
           loading={loading}
-          rolloutEnabled={isAccountingRolloutBusiness}
-          onGeneralAccountingEnabledChange={updateGeneralAccountingEnabled}
           onAddBankAccount={addBankAccount}
           onUpdateBankAccount={updateBankAccount}
           onAddChartOfAccount={addChartOfAccount}
-          onBankAccountsEnabledChange={updateBankAccountsEnabled}
           onBuyRateChange={updateBuyRate}
           onBankPaymentPolicyChange={updateBankPaymentPolicy}
           onCurrencyConfigurationChange={updateCurrencyConfiguration}
@@ -172,10 +163,8 @@ export default function AccountingConfig() {
           postingProfiles={postingProfiles}
           postingProfilesError={postingProfilesError}
           postingProfilesLoading={postingProfilesLoading}
-          savingBanking={savingBanking}
           savingChartOfAccounts={savingChartOfAccounts}
           savingExchange={savingExchange}
-          savingGeneralAccounting={savingGeneralAccounting}
           savingPostingProfiles={savingPostingProfiles}
           seedingChartOfAccounts={seedingChartOfAccounts}
           seedingPostingProfiles={seedingPostingProfiles}

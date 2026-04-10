@@ -5,6 +5,18 @@ export type AccountingRateType = 'buy' | 'sell';
 export type AccountingRateTypeAlias = 'purchase' | 'sale';
 export type BankAccountStatus = 'active' | 'inactive';
 export type BankAccountType = 'checking' | 'savings' | 'credit_card' | 'other';
+export type CashAccountStatus = 'active' | 'inactive';
+export type CashAccountType = 'register' | 'petty_cash' | 'vault' | 'other';
+export type LiquidityAccountType = 'bank' | 'cash';
+export type LiquidityEntryDirection = 'in' | 'out';
+export type LiquidityEntryStatus = 'posted' | 'void';
+export type LiquidityEntrySourceType =
+  | 'opening_balance'
+  | 'internal_transfer'
+  | 'manual_adjustment'
+  | 'bank_reconciliation';
+export type InternalTransferStatus = 'posted' | 'void';
+export type BankReconciliationStatus = 'balanced' | 'variance';
 export type ChartOfAccountStatus = 'active' | 'inactive';
 export type ChartOfAccountType =
   | 'asset'
@@ -145,6 +157,82 @@ export interface BankAccount {
   lastChangeId?: string | null;
   lastChangedAt?: TimestampLike | null;
   notes?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CashAccount {
+  id: string;
+  businessId: string;
+  name: string;
+  currency: SupportedDocumentCurrency;
+  status: CashAccountStatus;
+  type?: CashAccountType | null;
+  location?: string | null;
+  openingBalance?: number | null;
+  openingBalanceDate?: TimestampLike | null;
+  createdAt?: TimestampLike | null;
+  updatedAt?: TimestampLike | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  lastChangeId?: string | null;
+  lastChangedAt?: TimestampLike | null;
+  notes?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface LiquidityLedgerEntry {
+  id: string;
+  businessId: string;
+  accountId: string;
+  accountType: LiquidityAccountType;
+  currency: SupportedDocumentCurrency;
+  direction: LiquidityEntryDirection;
+  amount: number;
+  occurredAt: TimestampLike;
+  createdAt?: TimestampLike | null;
+  createdBy?: string | null;
+  status?: LiquidityEntryStatus;
+  sourceType: LiquidityEntrySourceType;
+  sourceId?: string | null;
+  reference?: string | null;
+  description?: string | null;
+  counterpartyAccountId?: string | null;
+  counterpartyAccountType?: LiquidityAccountType | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface InternalTransfer {
+  id: string;
+  businessId: string;
+  fromAccountId: string;
+  fromAccountType: LiquidityAccountType;
+  toAccountId: string;
+  toAccountType: LiquidityAccountType;
+  currency: SupportedDocumentCurrency;
+  amount: number;
+  occurredAt: TimestampLike;
+  status: InternalTransferStatus;
+  reference?: string | null;
+  notes?: string | null;
+  createdAt?: TimestampLike | null;
+  createdBy?: string | null;
+  ledgerEntryIds?: string[] | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface BankReconciliationRecord {
+  id: string;
+  businessId: string;
+  bankAccountId: string;
+  statementDate: TimestampLike;
+  statementBalance: number;
+  ledgerBalance: number;
+  variance: number;
+  status: BankReconciliationStatus;
+  notes?: string | null;
+  reference?: string | null;
+  createdAt?: TimestampLike | null;
+  createdBy?: string | null;
   metadata?: Record<string, unknown>;
 }
 

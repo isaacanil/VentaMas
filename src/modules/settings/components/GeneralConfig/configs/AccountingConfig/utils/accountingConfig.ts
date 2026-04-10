@@ -11,7 +11,6 @@ import {
 } from '@/utils/accounting/contracts';
 import {
   BANK_PAYMENT_MODULE_KEYS,
-  BANK_PAYMENT_METHOD_CODES,
   defaultBankPaymentPolicy,
   normalizeBankPaymentPolicy,
   type BankPaymentModuleAssignments,
@@ -350,6 +349,22 @@ export const serializeAccountingConfigForComparison = (
         config.bankPaymentPolicy.defaultBankAccountId ?? null,
       ],
       [
+        'card',
+        {
+          selectionMode: config.bankPaymentPolicy.card.selectionMode,
+          defaultBankAccountId:
+            config.bankPaymentPolicy.card.defaultBankAccountId ?? null,
+        },
+      ],
+      [
+        'transfer',
+        {
+          selectionMode: config.bankPaymentPolicy.transfer.selectionMode,
+          defaultBankAccountId:
+            config.bankPaymentPolicy.transfer.defaultBankAccountId ?? null,
+        },
+      ],
+      [
         'moduleOverrides',
         Object.fromEntries(
           BANK_PAYMENT_MODULE_KEYS.map((moduleKey) => [
@@ -364,14 +379,6 @@ export const serializeAccountingConfigForComparison = (
           ]),
         ),
       ],
-      ...BANK_PAYMENT_METHOD_CODES.map((method) => [
-        method,
-        {
-          selectionMode: 'default',
-          defaultBankAccountId:
-            config.bankPaymentPolicy.defaultBankAccountId ?? null,
-        },
-      ]),
     ] satisfies Array<[string, unknown]>),
     overridePolicy: config.overridePolicy,
   });

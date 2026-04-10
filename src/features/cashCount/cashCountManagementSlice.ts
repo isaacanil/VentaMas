@@ -15,6 +15,7 @@ interface CashBoxStatus {
 }
 
 interface CashCountState {
+  cashAccountId?: string | null;
   state: string | null;
   opening: CashBoxStatus;
   closing: CashBoxStatus;
@@ -49,6 +50,7 @@ const initialCashBoxStatus: CashBoxStatus = {
 };
 
 const initialCashCount: CashCountState = {
+  cashAccountId: null,
   state: null,
   opening: initialCashBoxStatus,
   closing: initialCashBoxStatus,
@@ -179,6 +181,7 @@ const cashCountManagementSlice = createSlice({
       state.createdAt = null;
       state.sales = [];
       state.receivablePayments = [];
+      state.cashAccountId = null;
       state.state = null;
       state.id = null;
       state.incrementNumber = null;

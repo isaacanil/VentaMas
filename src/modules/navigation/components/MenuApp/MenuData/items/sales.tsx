@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { icons } from '@/constants/icons/icons';
 import ROUTES_NAME from '@/router/routes/routesName';
 
+import creditNote from './creditNote';
+
 const { SALES, BILLS, PREORDERS } = ROUTES_NAME.SALES_TERM;
 
 const sales: MenuItem[] = [
@@ -32,6 +34,7 @@ const sales: MenuItem[] = [
     //     text: 'Mantenimiento'G
     // }
   },
+  ...creditNote.map((item) => ({ ...item, group: 'sales' })),
 ];
 
 export default sales;

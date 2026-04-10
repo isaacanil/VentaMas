@@ -1,39 +1,29 @@
-import { Select, Switch, Typography } from 'antd';
+import { Select, Typography } from 'antd';
 import styled from 'styled-components';
 
 import type { BankAccount } from '@/types/accounting';
 import { buildBankAccountLabel } from '@/utils/accounting/bankAccounts';
 import {
-  BANK_PAYMENT_MODULE_KEYS,
-  getBankPaymentModuleOverride,
   normalizeBankPaymentPolicy,
-  updateBankPaymentModuleOverride,
-  type BankPaymentModuleKey,
+  type BankPaymentMethodCode,
   type BankPaymentPolicy,
 } from '@/utils/payments/bankPaymentPolicy';
 
 const { Text } = Typography;
 
-const MODULE_COPY: Record<
-  BankPaymentModuleKey,
+const METHOD_COPY: Record<
+  BankPaymentMethodCode,
   { title: string; description: string }
 > = {
-  sales: {
-    title: 'Ventas',
+  card: {
+    title: 'Tarjeta',
     description:
-      'Cobros de facturas y ventas nuevas que entren por tarjeta o transferencia.',
+      'Asigna una cuenta fija solo si quieres que tarjeta opere siempre contra la misma cuenta.',
   },
-  expenses: {
-    title: 'Gastos',
-    description: 'Pagos de gastos registrados con origen bancario.',
-  },
-  accountsReceivable: {
-    title: 'Cuentas por cobrar',
-    description: 'Cobros y abonos de clientes registrados fuera de la venta.',
-  },
-  purchases: {
-    title: 'Compras',
-    description: 'Pagos a suplidores registrados desde el módulo de compras.',
+  transfer: {
+    title: 'Transferencia',
+    description:
+      'Asigna una cuenta fija solo si quieres que las transferencias usen siempre la misma cuenta.',
   },
 };
 
@@ -56,165 +46,126 @@ export const BankPaymentPolicySection = ({
       label: buildBankAccountLabel(bankAccount),
     }))
     .sort((left, right) => left.label.localeCompare(right.label));
+  const activeBankAccountsCount = activeBankAccountOptions.length;
   const activeBankAccountLabels = new Map(
     activeBankAccountOptions.map((option) => [option.value, option.label]),
   );
-  const activeBankAccountIds = new Set(
-    activeBankAccountOptions.map((option) => option.value),
-  );
-  const canSelectDifferentAccounts = activeBankAccountOptions.length > 1;
-  const implicitDefaultLabel =
-    activeBankAccountOptions.length === 1
-      ? (activeBankAccountOptions[0]?.label ?? null)
-      : null;
-  const effectiveDefaultLabel =
-    normalizedPolicy.defaultBankAccountId &&
-    activeBankAccountLabels.has(normalizedPolicy.defaultBankAccountId)
-      ? (activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId) ??
-        null)
-      : implicitDefaultLabel;
-  const effectiveDefaultId =
-    normalizedPolicy.defaultBankAccountId &&
-    activeBankAccountIds.has(normalizedPolicy.defaultBankAccountId)
-      ? normalizedPolicy.defaultBankAccountId
-      : activeBankAccountOptions.length === 1
-        ? (activeBankAccountOptions[0]?.value ?? null)
-        : null;
 
-  const handleModuleChange = (
-    moduleKey: BankPaymentModuleKey,
-    bankAccountId: string | null,
+  const handleMethodAccountChange = (
+    method: BankPaymentMethodCode,
+    value: string | undefined,
   ) => {
-    onChange(
-      updateBankPaymentModuleOverride({
-        policy,
-        moduleKey,
-        patch: {
-          enabled: true,
-          bankAccountId,
-        },
-      }),
-    );
+    onChange({
+      ...normalizedPolicy,
+      [method]: {
+        selectionMode: typeof value === 'string' ? 'default' : 'manual',
+        defaultBankAccountId: typeof value === 'string' ? value : null,
+      },
+    });
   };
 
-  const handleModuleEnabledChange = (
-    moduleKey: BankPaymentModuleKey,
-    enabled: boolean,
-  ) => {
-    onChange(
-      updateBankPaymentModuleOverride({
-        policy,
-        moduleKey,
-        patch: { enabled },
-      }),
-    );
+  const handleFallbackAccountChange = (value: string | undefined) => {
+    onChange({
+      ...normalizedPolicy,
+      defaultBankAccountId: typeof value === 'string' ? value : null,
+    });
   };
 
   return (
     <Section>
       <Header>
-        <HeaderTitle>Uso por módulo</HeaderTitle>
+        <HeaderTitle>Métodos bancarios</HeaderTitle>
+        <HeaderDescription>
+          La prioridad vive en cada método. La cuenta de respaldo es opcional y
+          solo se usa cuando un método no tenga cuenta fija.
+        </HeaderDescription>
       </Header>
 
-      <ModuleList>
-        {BANK_PAYMENT_MODULE_KEYS.map((moduleKey) => {
-          const moduleOverride = getBankPaymentModuleOverride(
-            policy,
-            moduleKey,
-          );
-          const configuredModuleBankAccountId = moduleOverride.bankAccountId;
-          const isModuleOverrideEnabled = moduleOverride.enabled;
-          const hasAvailableModuleAssignment = Boolean(
-            configuredModuleBankAccountId &&
-            activeBankAccountIds.has(configuredModuleBankAccountId),
-          );
-          const explicitModuleLabel =
-            configuredModuleBankAccountId &&
-            activeBankAccountLabels.has(configuredModuleBankAccountId)
-              ? (activeBankAccountLabels.get(configuredModuleBankAccountId) ??
-                null)
-              : null;
+      <Content>
+        <MethodGrid>
+          {(['card', 'transfer'] as const).map((method) => {
+            const methodConfig = normalizedPolicy[method];
+            const selectedAccountLabel =
+              methodConfig.defaultBankAccountId &&
+              activeBankAccountLabels.has(methodConfig.defaultBankAccountId)
+                ? activeBankAccountLabels.get(methodConfig.defaultBankAccountId)
+                : null;
 
-          return (
-            <ModuleRow key={moduleKey}>
-              <ModuleHeader>
-                <ModuleCopy>
-                  <ModuleTitleRow>
-                    <ModuleTitle>{MODULE_COPY[moduleKey].title}</ModuleTitle>
-                  </ModuleTitleRow>
-                  <ModuleDescription>
-                    {MODULE_COPY[moduleKey].description}
-                  </ModuleDescription>
-                </ModuleCopy>
+            return (
+              <MethodCard key={method}>
+                <CardHeader>
+                  <CardTitle>{METHOD_COPY[method].title}</CardTitle>
+                </CardHeader>
+                <CardDescription>{METHOD_COPY[method].description}</CardDescription>
 
-                <Switch
-                  checked={isModuleOverrideEnabled}
-                  disabled={!activeBankAccountOptions.length}
-                  onChange={(checked) =>
-                    handleModuleEnabledChange(moduleKey, checked)
-                  }
-                />
-              </ModuleHeader>
-
-              {isModuleOverrideEnabled ? (
-                <ModuleAssignment>
-                  <FieldLabel>Cuenta bancaria</FieldLabel>
+                <FieldBlock>
+                  <FieldLabel>Cuenta fija del método</FieldLabel>
                   <Select
-                    allowClear={hasAvailableModuleAssignment}
+                    allowClear
                     showSearch
                     optionFilterProp="label"
                     placeholder={
                       activeBankAccountOptions.length
-                        ? 'Selecciona una cuenta'
+                        ? 'Sin cuenta fija'
                         : 'No hay cuentas activas'
                     }
                     options={activeBankAccountOptions}
-                    value={
-                      hasAvailableModuleAssignment
-                        ? (configuredModuleBankAccountId ?? undefined)
-                        : (effectiveDefaultId ?? undefined)
-                    }
-                    onChange={(value) =>
-                      handleModuleChange(
-                        moduleKey,
-                        typeof value === 'string' ? value : null,
-                      )
-                    }
-                    disabled={
-                      !activeBankAccountOptions.length ||
-                      !canSelectDifferentAccounts
-                    }
+                    value={methodConfig.defaultBankAccountId ?? undefined}
+                    onChange={(value) => handleMethodAccountChange(method, value)}
+                    disabled={!activeBankAccountOptions.length}
                   />
+                  <FieldHint>
+                    {selectedAccountLabel
+                      ? `Esta cuenta tendrá prioridad para ${METHOD_COPY[method].title.toLowerCase()}.`
+                      : normalizedPolicy.defaultBankAccountId &&
+                          activeBankAccountLabels.has(
+                            normalizedPolicy.defaultBankAccountId,
+                          )
+                        ? `Sin cuenta fija, este método caerá en la cuenta de respaldo: ${activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId)}.`
+                        : activeBankAccountsCount === 1
+                          ? 'Sin cuenta fija, se resolverá automáticamente con la única cuenta bancaria activa.'
+                        : 'Sin cuenta fija, el flujo pedirá selección manual cuando aplique.'}
+                  </FieldHint>
+                </FieldBlock>
+              </MethodCard>
+            );
+          })}
+        </MethodGrid>
 
-                  {hasAvailableModuleAssignment && explicitModuleLabel ? (
-                    <FieldHint>
-                      Usa {explicitModuleLabel}. Borra la selección para volver
-                      a la predeterminada.
-                    </FieldHint>
-                  ) : null}
-                </ModuleAssignment>
-              ) : null}
-
-              {configuredModuleBankAccountId &&
-              !hasAvailableModuleAssignment ? (
-                <InlineNote $tone="warning">
-                  La cuenta guardada para este módulo ya no está activa.
-                </InlineNote>
-              ) : null}
-
-              {isModuleOverrideEnabled &&
-              !hasAvailableModuleAssignment &&
-              !effectiveDefaultLabel &&
-              activeBankAccountOptions.length > 1 ? (
-                <InlineNote $tone="warning">
-                  Este módulo está activo, pero todavía no tiene una cuenta
-                  efectiva.
-                </InlineNote>
-              ) : null}
-            </ModuleRow>
-          );
-        })}
-      </ModuleList>
+        <FallbackSection>
+          <CardHeader>
+            <CardTitle>Cuenta de respaldo</CardTitle>
+          </CardHeader>
+          <CardDescription>
+            Opcional. Solo entra cuando un método no tenga cuenta fija.
+          </CardDescription>
+          <FieldBlock>
+            <FieldLabel>Cuenta bancaria</FieldLabel>
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder={
+                activeBankAccountOptions.length
+                  ? 'Sin cuenta de respaldo'
+                  : 'No hay cuentas activas'
+              }
+              options={activeBankAccountOptions}
+              value={normalizedPolicy.defaultBankAccountId ?? undefined}
+              onChange={handleFallbackAccountChange}
+              disabled={!activeBankAccountOptions.length}
+            />
+            <FieldHint>
+              {normalizedPolicy.defaultBankAccountId &&
+              activeBankAccountLabels.has(normalizedPolicy.defaultBankAccountId)
+                ? `Respaldo actual: ${activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId)}.`
+                : activeBankAccountsCount === 1
+                  ? 'Con una sola cuenta activa, el sistema puede resolverla automáticamente sin guardar un respaldo.'
+                : 'Puedes dejarla vacía si prefieres que el usuario elija la cuenta en cada flujo.'}
+            </FieldHint>
+          </FieldBlock>
+        </FallbackSection>
+      </Content>
     </Section>
   );
 };
@@ -232,10 +183,8 @@ const Section = styled.section`
 const Header = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  flex-shrink: 0;
-  height: 52px;
-  padding: 0 var(--ds-space-5);
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-bottom: 1px solid var(--ds-color-border-default);
 `;
 
@@ -253,18 +202,14 @@ const HeaderDescription = styled.p`
   color: var(--ds-color-text-secondary);
 `;
 
-const ModuleList = styled.div`
+const Content = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
-  gap: var(--ds-space-3);
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  gap: var(--ds-space-4);
   padding: var(--ds-space-4) var(--ds-space-5);
 `;
 
-const ModuleRow = styled.div`
+const FallbackSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
@@ -274,43 +219,47 @@ const ModuleRow = styled.div`
   background: var(--ds-color-bg-surface);
 `;
 
-const ModuleHeader = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
+const MethodGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const ModuleCopy = styled.div`
+const MethodCard = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
-  min-width: 0;
-  flex: 1;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-bg-surface);
 `;
 
-const ModuleTitleRow = styled.div`
+const CardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ds-space-2);
-  flex-wrap: wrap;
 `;
 
-const ModuleTitle = styled(Text)`
+const CardTitle = styled(Text)`
   && {
     font-weight: var(--ds-font-weight-semibold);
     color: var(--ds-color-text-primary);
   }
 `;
 
-const ModuleDescription = styled.span`
+const CardDescription = styled.span`
   font-size: var(--ds-font-size-xs);
   line-height: var(--ds-line-height-normal);
   color: var(--ds-color-text-secondary);
 `;
 
-const ModuleAssignment = styled.div`
+const FieldBlock = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-2);
@@ -326,27 +275,4 @@ const FieldHint = styled.span`
   font-size: var(--ds-font-size-xs);
   line-height: var(--ds-line-height-normal);
   color: var(--ds-color-text-secondary);
-`;
-
-const InlineNote = styled.div<{ $tone?: 'warning' }>`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-3);
-  border: 1px solid
-    ${({ $tone }) =>
-      $tone === 'warning'
-        ? 'var(--ds-color-state-warning)'
-        : 'var(--ds-color-border-default)'};
-  border-radius: var(--ds-radius-lg);
-  background: ${({ $tone }) =>
-    $tone === 'warning'
-      ? 'var(--ds-color-state-warningSubtle)'
-      : 'var(--ds-color-bg-surface)'};
-  font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
-  color: ${({ $tone }) =>
-    $tone === 'warning'
-      ? 'var(--ds-color-state-warningText)'
-      : 'var(--ds-color-text-secondary)'};
 `;

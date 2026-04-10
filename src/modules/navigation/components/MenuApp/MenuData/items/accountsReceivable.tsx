@@ -17,7 +17,7 @@ const paths: MenuItem[] = [
     icon: icons.finances.fileInvoiceDollar,
     submenuIconOpen: ChevronLeft,
     submenuIconClose: ChevronRight,
-    group: 'financialManagement',
+    group: 'accounting',
     submenu: [
       {
         title: 'Listado',

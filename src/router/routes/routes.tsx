@@ -17,6 +17,7 @@ import orders from '@/router/routes/paths/Orders';
 import purchases from '@/router/routes/paths/Purchases';
 import sales from '@/router/routes/paths/Sales';
 import settings from '@/router/routes/paths/Setting';
+import treasury from '@/router/routes/paths/Treasury';
 import utility from '@/router/routes/paths/Utility';
 import { processRoute } from '@/router/routes/requiereAuthProvider';
 import type { AppRouteHandle } from '@/router/routes/routeHandle';
@@ -220,6 +221,7 @@ const baseRawRoutes = [
   ...(purchases as AppRoute[]),
   ...(lab as AppRoute[]),
   ...(cashReconciliation as AppRoute[]),
+  ...(treasury as AppRoute[]),
   ...(expenses as AppRoute[]),
   ...accounting,
   ...(dev as AppRoute[]), // devOnly marcadas dentro del archivo

@@ -12,6 +12,7 @@ interface SubMenuProps {
   item: MenuItem;
   onClose: () => void;
   onActionDone?: () => void;
+  parentTitle?: string;
 }
 
 export const SubMenu = ({
@@ -19,6 +20,7 @@ export const SubMenu = ({
   item,
   onClose,
   onActionDone,
+  parentTitle,
 }: SubMenuProps) => {
   const submenuItems = item.submenu || [];
   const handleSubmenuItemActionDone = () => {
@@ -36,11 +38,11 @@ export const SubMenu = ({
   );
 
   return (
-    <Container $isOpen={isOpen}>
+    <Container $isOpen={isOpen} $isNested={!!parentTitle}>
       <Header>
         <Button
           startIcon={<FontAwesomeIcon icon={faArrowLeft} />}
-          title="atrás"
+          title={parentTitle ?? 'Atrás'}
           variant="contained"
           onClick={onClose}
         />
@@ -56,6 +58,7 @@ export const SubMenu = ({
                       item={submenu}
                       key={index}
                       onActionDone={handleSubmenuItemActionDone}
+                      parentTitle={item.title}
                     />
                   ))}
                 </MenuLinkList>
@@ -85,17 +88,17 @@ const Body = styled.div`
   background-color: var(--color2);
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ $isOpen: boolean; $isNested?: boolean }>`
   background-color: rgb(255 255 255);
   width: 100%;
   display: grid;
   grid-template-rows: min-content 1fr;
   position: absolute;
   z-index: 1;
-  top: 2.75em;
+  top: ${({ $isNested }) => ($isNested ? '0' : '2.75em')};
   left: 0;
   max-width: 500px;
-  height: calc(100% - 2.75em);
+  height: ${({ $isNested }) => ($isNested ? '100%' : 'calc(100% - 2.75em)')};
   transform: translateX(-100%);
   transition: 200ms transform ease-in-out;
   color: rgb(80 80 80);

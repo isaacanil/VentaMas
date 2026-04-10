@@ -61,63 +61,52 @@ export const useFilterMenuItemsByAccess = (
     return meta ? { ...item, routeMeta: meta } : item;
   };
 
+  const canAccessRoute = (route?: string): boolean => {
+    if (!route) return false;
+    if (!hasRouteMetaAccess(route)) return false;
+    return abilities.can('access', route) || hasRouteCapabilityGrant(route);
+  };
+
+  const filterMenuItemRecursive = (item: MenuItem): MenuItem | null => {
+    if (item?.requiresDevAccess && !developerAccess) {
+      return null;
+    }
+
+    const filteredSubmenu = Array.isArray(item.submenu)
+      ? item.submenu
+          .map(filterMenuItemRecursive)
+          .filter((submenuItem): submenuItem is MenuItem => submenuItem !== null)
+      : [];
+
+    if (filteredSubmenu.length > 0) {
+      return {
+        ...attachRouteMeta(item),
+        submenu: filteredSubmenu,
+      };
+    }
+
+    if (item.action && !item.route) return item;
+    if (!item.route) return null;
+    if (!canAccessRoute(item.route)) return null;
+    if (isHiddenInMenu(item.route, item)) return null;
+    return attachRouteMeta(item);
+  };
+
   if (!hasSubmenu) {
     // Elementos de menú planos (como en CardData.tsx)
     return menuItems
       .filter((item) => {
         if (item.action && !item.route) return true;
         if (!item.route) return false;
-        if (!hasRouteMetaAccess(item.route)) return false;
-        return abilities.can('access', item.route) || hasRouteCapabilityGrant(item.route);
+        return canAccessRoute(item.route);
       })
       .filter((item) => (item.route ? !isHiddenInMenu(item.route, item) : true))
       .map(attachRouteMeta);
   }
 
   // Elementos de menú complejos con submenús (como en MenuData.tsx)
-  const filterSubmenu = (submenu: MenuItem[]) =>
-    submenu
-      .filter((subItem) => !(subItem?.requiresDevAccess && !developerAccess))
-      .filter((subItem) => {
-        if (subItem.action && !subItem.route) return true;
-        if (!subItem.route) return false;
-        if (!hasRouteMetaAccess(subItem.route)) return false;
-        return (
-          abilities.can('access', subItem.route) ||
-          hasRouteCapabilityGrant(subItem.route)
-        );
-      })
-      .filter((subItem) =>
-        subItem.route ? !isHiddenInMenu(subItem.route, subItem) : true,
-      )
-      .map(attachRouteMeta);
-
   return menuItems
-    .map((item) => {
-      if (item?.requiresDevAccess && !developerAccess) {
-        return null;
-      }
-      if (item.submenu && item.submenu.length > 0) {
-        const filteredSubmenu = filterSubmenu(item.submenu);
-        if (filteredSubmenu.length > 0) {
-          const nextItem = attachRouteMeta(item);
-          return { ...nextItem, submenu: filteredSubmenu };
-        }
-        return null;
-      } else {
-        if (item.action && !item.route) return item;
-        if (!item.route) return null;
-        if (!hasRouteMetaAccess(item.route)) return null;
-        if (
-          !abilities.can('access', item.route) &&
-          !hasRouteCapabilityGrant(item.route)
-        ) {
-          return null;
-        }
-        if (isHiddenInMenu(item.route, item)) return null;
-        return attachRouteMeta(item);
-      }
-    })
+    .map(filterMenuItemRecursive)
     .filter((item): item is MenuItem => item !== null);
 };
 

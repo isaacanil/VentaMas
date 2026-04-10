@@ -164,6 +164,15 @@ const serializeBankingSettingsForComparison = (
   return JSON.stringify({
     bankAccountsEnabled: config?.bankAccountsEnabled !== false,
     defaultBankAccountId: normalizedPolicy.defaultBankAccountId ?? null,
+    card: {
+      selectionMode: normalizedPolicy.card.selectionMode,
+      defaultBankAccountId: normalizedPolicy.card.defaultBankAccountId ?? null,
+    },
+    transfer: {
+      selectionMode: normalizedPolicy.transfer.selectionMode,
+      defaultBankAccountId:
+        normalizedPolicy.transfer.defaultBankAccountId ?? null,
+    },
     moduleOverrides: Object.fromEntries(
       Object.entries(normalizedPolicy.moduleOverrides).map(
         ([moduleKey, moduleOverride]) => [
@@ -233,7 +242,6 @@ export const useAccountingConfig = ({
   const syncDefaultBankAccountWithActiveAccountsRef = useRef<
     (args: {
       activeBankAccountIds: readonly string[];
-      preferredDefaultBankAccountId?: string | null;
     }) => Promise<void>
   >(async () => {});
   const latestBankingSaveRequestIdRef = useRef(0);
@@ -561,8 +569,6 @@ export const useAccountingConfig = ({
       ];
       await syncDefaultBankAccountWithActiveAccountsRef.current({
         activeBankAccountIds: nextActiveBankAccountIds,
-        preferredDefaultBankAccountId:
-          nextActiveBankAccountIds.length === 1 ? bankAccountRef.id : null,
       });
 
       void message.success('Cuenta bancaria guardada.');
@@ -649,10 +655,6 @@ export const useAccountingConfig = ({
 
       await syncDefaultBankAccountWithActiveAccountsRef.current({
         activeBankAccountIds: nextActiveBankAccountIds,
-        preferredDefaultBankAccountId:
-          status === 'active' && nextActiveBankAccountIds.length === 1
-            ? bankAccountId
-            : null,
       });
 
       void message.success(
@@ -979,10 +981,8 @@ export const useAccountingConfig = ({
 
   syncDefaultBankAccountWithActiveAccountsRef.current = async ({
     activeBankAccountIds,
-    preferredDefaultBankAccountId = null,
   }: {
     activeBankAccountIds: readonly string[];
-    preferredDefaultBankAccountId?: string | null;
   }) => {
     const currentBankPaymentPolicy = normalizeBankPaymentPolicy(
       config.bankPaymentPolicy,
@@ -990,7 +990,6 @@ export const useAccountingConfig = ({
     const nextBankPaymentPolicy = syncBankPaymentPolicyDefaultAccount({
       policy: currentBankPaymentPolicy,
       availableBankAccountIds: activeBankAccountIds,
-      preferredDefaultBankAccountId,
     });
 
     if (

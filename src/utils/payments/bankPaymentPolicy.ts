@@ -162,10 +162,7 @@ export const normalizeBankPaymentPolicy = (
     buildModuleBankAccountIdsFromOverrides(moduleOverrides);
 
   return {
-    defaultBankAccountId:
-      toCleanString(record.defaultBankAccountId) ??
-      card.defaultBankAccountId ??
-      transfer.defaultBankAccountId,
+    defaultBankAccountId: toCleanString(record.defaultBankAccountId),
     moduleOverrides,
     moduleBankAccountIds,
     card,
@@ -303,8 +300,7 @@ export const syncBankPaymentPolicyDefaultAccount = ({
     : null;
   const nextDefaultBankAccountId =
     preferredAvailableBankAccountId ??
-    currentDefaultBankAccountId ??
-    getSoleAvailableBankAccountId(normalizedAvailableBankAccountIds);
+    currentDefaultBankAccountId;
 
   return {
     ...normalizedPolicy,
@@ -314,27 +310,25 @@ export const syncBankPaymentPolicyDefaultAccount = ({
 
 export const resolveConfiguredBankAccountId = ({
   policy,
-  moduleKey,
+  method,
   availableBankAccountIds,
 }: {
   policy: BankPaymentPolicy | null | undefined;
   moduleKey?: BankPaymentModuleKey | null;
+  method?: BankPaymentMethodCode | null | unknown;
   availableBankAccountIds?: ReadonlySet<string> | readonly string[];
 }): string | null => {
-  const moduleOverride =
-    moduleKey != null ? getBankPaymentModuleOverride(policy, moduleKey) : null;
-  const moduleBankAccountId =
-    moduleOverride?.enabled === true ? moduleOverride.bankAccountId : null;
+  const methodConfig = getBankPaymentMethodConfig(policy, method);
+  const methodBankAccountId =
+    methodConfig?.selectionMode === 'default'
+      ? methodConfig.defaultBankAccountId
+      : null;
 
-  if (hasAvailableBankAccountId(moduleBankAccountId, availableBankAccountIds)) {
-    return moduleBankAccountId;
+  if (hasAvailableBankAccountId(methodBankAccountId, availableBankAccountIds)) {
+    return methodBankAccountId;
   }
 
-  const configuredBankAccountId =
-    toCleanString(policy?.defaultBankAccountId) ??
-    policy?.card?.defaultBankAccountId ??
-    policy?.transfer?.defaultBankAccountId ??
-    null;
+  const configuredBankAccountId = toCleanString(policy?.defaultBankAccountId);
 
   if (
     hasAvailableBankAccountId(configuredBankAccountId, availableBankAccountIds)
@@ -349,16 +343,23 @@ export const requiresManualBankAccountSelection = ({
   method,
   policy,
   moduleKey,
+  availableBankAccountIds,
 }: {
   method: unknown;
   policy: BankPaymentPolicy | null | undefined;
   moduleKey?: BankPaymentModuleKey | null;
+  availableBankAccountIds?: ReadonlySet<string> | readonly string[];
 }): boolean => {
   const config = getBankPaymentMethodConfig(policy, method);
   return Boolean(
     config &&
     config.selectionMode === 'manual' &&
-    !resolveConfiguredBankAccountId({ policy, moduleKey }),
+    !resolveConfiguredBankAccountId({
+      policy,
+      moduleKey,
+      method,
+      availableBankAccountIds,
+    }),
   );
 };
 
@@ -384,6 +385,7 @@ export const resolveEffectiveBankAccountId = ({
   const configuredBankAccountId = resolveConfiguredBankAccountId({
     policy,
     moduleKey,
+    method,
     availableBankAccountIds,
   });
 

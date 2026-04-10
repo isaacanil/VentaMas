@@ -20,6 +20,7 @@ const {
   GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
   GENERAL_CONFIG_EXCHANGE_RATES,
 } = ROUTES_NAME.SETTING_TERM;
+const { TREASURY_BANK_ACCOUNTS } = ROUTES_NAME.TREASURY_TERM;
 
 export const DEFAULT_ACCOUNTING_PANEL_KEY: AccountingPanelKey =
   'chart-of-accounts';
@@ -60,6 +61,10 @@ export const getAccountingPanelItem = (
 export const resolveAccountingPanelKey = (
   pathname: string,
 ): AccountingPanelKey => {
+  if (pathname.startsWith(TREASURY_BANK_ACCOUNTS)) {
+    return 'bank-accounts';
+  }
+
   if (pathname.startsWith(GENERAL_CONFIG_EXCHANGE_RATES)) {
     return 'exchange-rates';
   }
