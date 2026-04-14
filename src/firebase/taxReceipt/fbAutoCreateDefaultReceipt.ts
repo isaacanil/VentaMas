@@ -14,6 +14,7 @@ import { getTaxReceiptData } from '@/features/taxReceipt/taxReceiptSlice';
 import { db } from '@/firebase/firebaseconfig';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
+import { buildTaxReceiptDocument } from '@/utils/taxReceipt';
 import { validateUser } from '@/utils/userValidation';
 
 import { removeDuplicateTaxReceipts } from './removeDuplicateTaxReceipts';
@@ -73,12 +74,13 @@ export const useAutoCreateDefaultTaxReceipt = () => {
             validateUser(user);
             docRefs.forEach((docRef, index) => {
               if (!docSnapshots[index].exists()) {
+                const taxReceiptDocument = buildTaxReceiptDocument({
+                  ...docRef.item,
+                  id: docRef.item.serie,
+                  createdAt: serverTimestamp(),
+                });
                 transaction.set(docRef.ref, {
-                  data: {
-                    ...docRef.item,
-                    id: docRef.item.serie,
-                    createdAt: serverTimestamp(),
-                  },
+                  data: taxReceiptDocument.data,
                 });
               }
             });

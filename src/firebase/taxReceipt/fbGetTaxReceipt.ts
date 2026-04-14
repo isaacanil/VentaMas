@@ -10,6 +10,7 @@ import {
 import { db } from '@/firebase/firebaseconfig';
 import type { TaxReceiptDocument } from '@/types/taxReceipt';
 import { serializeFirestoreDocuments } from '@/utils/serialization/serializeFirestoreData';
+import { buildTaxReceiptDocument } from '@/utils/taxReceipt';
 
 // NOTE: This function uses React hooks; keep the `use*` prefix so tools like
 // React Compiler and hook linting can reliably treat it as a hook.
@@ -56,7 +57,9 @@ export const useFbGetTaxReceipt = () => {
         const serializedTaxReceipts = serializeFirestoreDocuments(
           taxReceiptsArray,
         ) as TaxReceiptDocument[];
-        setTaxReceipt(serializedTaxReceipts);
+        setTaxReceipt(
+          serializedTaxReceipts.map((item) => buildTaxReceiptDocument(item.data)),
+        );
         setLoading(false);
       },
       (error) => {

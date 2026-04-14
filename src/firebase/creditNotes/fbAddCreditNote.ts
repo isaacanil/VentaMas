@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { CREDIT_NOTE_STATUS } from '@/constants/creditNoteStatus';
 import { db } from '@/firebase/firebaseconfig';
-import { fbGetAndUpdateTaxReceipt } from '@/firebase/taxReceipt/fbGetAndUpdateTaxReceipt';
+import { reserveCreditNoteNcf } from '@/firebase/taxReceipt/reserveCreditNoteNcf';
 import { getNextID } from '@/firebase/Tools/getNextID';
 import type {
   CreditNoteActor,
@@ -28,8 +28,9 @@ export const fbAddCreditNote = async (
 ): Promise<CreditNoteRecord> => {
   if (!user?.businessID) throw new Error('El usuario no tiene businessID');
 
-  // Generar NCF para la nota de crédito
-  const ncf = await fbGetAndUpdateTaxReceipt(user, 'NOTAS DE CRÉDITO');
+  const ncf = (await reserveCreditNoteNcf({ businessId: user.businessID }))
+    .ncfCode;
+
   if (!ncf) {
     throw new Error(
       'No se pudo generar el Comprobante Fiscal para la Nota de Crédito.',

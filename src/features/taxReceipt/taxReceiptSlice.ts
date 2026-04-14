@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import { serializeFirestoreData } from '@/utils/serialization/serializeFirestoreData';
+import { hydrateTaxReceiptData } from '@/utils/taxReceipt';
 
 import { increaseSequence } from './increaseSequence';
 
@@ -9,6 +10,11 @@ interface TaxReceiptItem {
   type: string;
   serie?: string;
   series?: string;
+  documentFormat?: 'traditional' | 'electronic';
+  fiscalSeries?: string;
+  fiscalType?: string;
+  authorityStatus?: string | null;
+  trackId?: string | null;
   sequence: string;
   increase: number;
   quantity: string;
@@ -36,6 +42,7 @@ interface TaxReceiptRootState {
 }
 
 export const updateComprobante = (state: TaxReceiptState, name: string) => {
+  // LEGACY UI state only. This must not be treated as authoritative numbering.
   const comprobante = state.data.find((item) => item.data.name === name);
   if (comprobante) {
     const { type, serie, sequence, increase, quantity } = comprobante.data;
@@ -48,6 +55,7 @@ export const updateComprobante = (state: TaxReceiptState, name: string) => {
 
 export const generateNCFCode = (receipt: TaxReceiptData | null) => {
   if (receipt) {
+    // LEGACY/PREVIEW ONLY. Backend must own real sequence reservation.
     const { type, series, sequence, increase, quantity } = receipt.data;
     // Decrease the quantity
     receipt.data.quantity = String(Number(quantity) - 1);
@@ -64,6 +72,7 @@ export function getUpdatedSequenceForInvoice(
   comprobanteName: string,
   comprobantes: TaxReceiptData[],
 ) {
+  // Preview helper only. Do not use this to persist fiscal numbering.
   // Encuentra el comprobante por nombre
   const comprobanteIndex = comprobantes.findIndex(
     (c: TaxReceiptData) => c.data.name === comprobanteName,
@@ -109,9 +118,12 @@ export const taxReceiptSlice = createSlice({
     getTaxReceiptData: (state: TaxReceiptState, action: PayloadAction<any>) => {
       // Serialize the payload to ensure no Firestore timestamps remain
       const serializedPayload = serializeFirestoreData(action.payload);
-      state.data = serializedPayload;
+      state.data = serializedPayload.map((item: TaxReceiptData) => ({
+        ...item,
+        data: hydrateTaxReceiptData(item.data),
+      }));
       // Actualizar la lista de tipos de comprobantes disponibles
-      state.availableTypes = serializedPayload.map(
+      state.availableTypes = state.data.map(
         (item: TaxReceiptData) => item.data.name,
       );
     },

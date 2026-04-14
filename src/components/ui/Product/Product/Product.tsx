@@ -3,8 +3,10 @@ import { Fragment, memo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '@/features/cart/cartSlice';
-import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import {
+  SelectSettingCart,
+  selectCartTaxationEnabled,
+} from '@/features/cart/cartSlice';
 
 import ProductImage from './components/ImagenBlock';
 import { ProductFooter } from './components/ProductFooter';
@@ -54,7 +56,7 @@ type ProductProps = {
 };
 
 const ProductComponent = memo(({ product }: ProductProps) => {
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
   const settingsCart = (useSelector(SelectSettingCart) || {}) as any;
   const alertsEnabled = !!settingsCart.billing?.stockAlertsEnabled;
 
@@ -70,7 +72,7 @@ const ProductComponent = memo(({ product }: ProductProps) => {
     handleGetThisProduct,
     deleteProductFromCart,
     isFirebaseLoading, // Agregar esta línea
-  } = useProductHandling(product, taxReceiptEnabled);
+  } = useProductHandling(product, taxationEnabled);
 
   const isDisabled = isOutOfStock || isCriticalStock || isLowStock;
 

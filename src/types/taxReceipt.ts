@@ -5,12 +5,25 @@ export interface TaxReceiptUser {
   email?: string | null;
 }
 
+export const TAX_RECEIPT_DOCUMENT_FORMATS = [
+  'traditional',
+  'electronic',
+] as const;
+
+export type TaxReceiptDocumentFormat =
+  (typeof TAX_RECEIPT_DOCUMENT_FORMATS)[number];
+
 export interface TaxReceiptData {
   id?: string;
   name: string;
   type: string;
   serie?: string;
   series?: string;
+  documentFormat?: TaxReceiptDocumentFormat;
+  fiscalSeries?: string;
+  fiscalType?: string;
+  authorityStatus?: string | null;
+  trackId?: string | null;
   sequence?: number | string;
   sequenceLength?: number;
   increase?: number;

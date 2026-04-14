@@ -2,6 +2,7 @@ import { collection, doc, writeBatch } from 'firebase/firestore';
 
 import type { TaxReceiptDocument, TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig';
+import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
 
 export const fbUpdateTaxReceipt = async (
   user: TaxReceiptUser,
@@ -29,13 +30,14 @@ export const fbUpdateTaxReceipt = async (
       if (receipt && receipt.data) {
         const { serie } = receipt.data;
         const taxReceiptRef = doc(taxReceiptsRef, serie);
+        const normalizedData = normalizeTaxReceiptData({
+          ...receipt.data,
+          id: serie,
+        });
 
         // Establecer los datos del comprobante
         batch.set(taxReceiptRef, {
-          data: {
-            ...receipt.data,
-            id: serie, // Asegurar que el ID siempre sea la serie
-          },
+          data: normalizedData,
         });
 
         // Marcar esta serie como procesada

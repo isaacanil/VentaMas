@@ -3,16 +3,17 @@ import { nanoid } from 'nanoid';
 
 import type { TaxReceiptData, TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig';
+import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
 import { validateUser } from '@/utils/userValidation';
 
 export const fbCreateTaxReceipt = async (
   taxReceipt: TaxReceiptData,
   user: TaxReceiptUser,
 ) => {
-  const taxReceiptWithId: TaxReceiptData = {
+  const taxReceiptWithId: TaxReceiptData = normalizeTaxReceiptData({
     ...taxReceipt,
     id: nanoid(),
-  };
+  }) as TaxReceiptData;
 
   try {
     validateUser(user);

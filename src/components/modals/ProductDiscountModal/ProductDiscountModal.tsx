@@ -11,9 +11,11 @@ import React, { useEffect, useMemo, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { updateProductDiscount } from '@/features/cart/cartSlice';
+import {
+  selectCartTaxationEnabled,
+  updateProductDiscount,
+} from '@/features/cart/cartSlice';
 import type { Product } from '@/features/cart/types';
-import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
 import type { DiscountType } from '@/types/invoice';
 import { formatPrice } from '@/utils/format';
 import { getTotalPrice } from '@/utils/pricing';
@@ -102,7 +104,7 @@ const ProductDiscountModal = ({
   product,
 }: ProductDiscountModalProps) => {
   const dispatch = useDispatch();
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
   const [state, dispatchState] = useReducer(
     discountModalReducer,
     initialDiscountModalState,
@@ -132,7 +134,7 @@ const ProductDiscountModal = ({
     const productWithoutDiscount = { ...product, discount: null };
     const unitPriceWithTax = getTotalPrice(
       productWithoutDiscount,
-      taxReceiptEnabled,
+      taxationEnabled,
       false,
     );
     const quantity = product.amountToBuy || 1;
@@ -141,7 +143,7 @@ const ProductDiscountModal = ({
       unitPrice: unitPriceWithTax,
       totalPrice: unitPriceWithTax * quantity,
     };
-  }, [product, taxReceiptEnabled]);
+  }, [product, taxationEnabled]);
 
   const discountedPrice = useMemo(() => {
     if (!product) {

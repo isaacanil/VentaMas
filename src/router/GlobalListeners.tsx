@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { useBusinessDataConfig } from '@/features/auth/useBusinessDataConfig';
+import { useBusinessFiscalSync } from '@/features/fiscal/useBusinessFiscalSync';
 import { ReloadImageHiddenSetting } from '@/features/setting/settingSlice';
 import { useHydrateTaxReceiptSettings } from '@/features/taxReceipt/useHydrateTaxReceiptSettings';
 import { useUserDocListener } from '@/firebase/Auth/fbAuthV2/fbSignIn/updateUserData';
@@ -89,6 +90,7 @@ export const GlobalListeners = ({ user }: { user: UserState }) => {
   useHydrateTaxReceiptSettings();
   useFbTaxReceiptToggleStatus();
   useBusinessDataConfig();
+  useBusinessFiscalSync();
   useCheckForInternetConnection();
 
   return <NavigationTracker />;

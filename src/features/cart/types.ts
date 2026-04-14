@@ -162,6 +162,10 @@ export interface CartData {
 
 export interface CartSettings {
   taxReceipt: { enabled: boolean };
+  fiscal: {
+    taxationEnabled: boolean;
+    taxationSource?: 'legacy-tax-receipt' | 'business-fiscal';
+  };
   printInvoice: boolean;
   isInvoicePanelOpen: boolean;
   billing: {

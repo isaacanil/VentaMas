@@ -55,6 +55,11 @@ interface ChangeProductWeightPayload {
   weight: number;
 }
 
+export interface FiscalTaxationPayload {
+  enabled: boolean;
+  source?: 'legacy-tax-receipt' | 'business-fiscal';
+}
+
 const normalizeDocumentCurrency = (
   value: unknown,
 ): SupportedDocumentCurrency =>
@@ -328,6 +333,14 @@ export const cartSlice = createSlice({
     ) => {
       const taxReceiptEnabled = actions.payload;
       state.settings.taxReceipt.enabled = taxReceiptEnabled;
+    },
+    setFiscalTaxationSettings: (
+      state: CartState,
+      action: PayloadAction<FiscalTaxationPayload>,
+    ) => {
+      state.settings.fiscal.taxationEnabled = Boolean(action.payload.enabled);
+      state.settings.fiscal.taxationSource =
+        action.payload.source || 'legacy-tax-receipt';
     },
     toggleInvoicePanelOpen: (state: CartState) => {
       state.settings.isInvoicePanelOpen = !state.settings.isInvoicePanelOpen;
@@ -856,6 +869,7 @@ export const {
   toggleInvoicePanelOpen,
   totalPurchaseWithoutTaxes,
   setTaxReceiptEnabled,
+  setFiscalTaxationSettings,
   updateProductFields,
   toggleCart,
   togglePrintInvoice,
@@ -937,6 +951,10 @@ export const selectCartProductByProductId = (
 export const SelectInvoiceComment = (state: CartRootState) =>
   state.cart.data.invoiceComment;
 export const SelectSettingCart = (state: CartRootState) => state.cart.settings;
+export const selectCartTaxationEnabled = (state: CartRootState) =>
+  state.cart.settings.fiscal.taxationEnabled;
+export const selectCartTaxationSource = (state: CartRootState) =>
+  state.cart.settings.fiscal.taxationSource;
 export const SelectCxcAutoRemovalNotification = (state: CartRootState) =>
   state.cart.showCxcAutoRemovalNotification;
 export const selectCart = (state: CartRootState) => state.cart;
@@ -956,9 +974,12 @@ export const selectProductsWithIndividualDiscounts = createSelector(
 export const selectTotalIndividualDiscounts = createSelector(
   [
     selectProductsWithIndividualDiscounts,
-    (state: CartRootState) => state.taxReceipt?.enabled ?? true,
+    (state: CartRootState) =>
+      state.cart.settings.fiscal?.taxationEnabled ??
+      state.taxReceipt?.enabled ??
+      true,
   ],
-  (discountedProducts, taxReceiptEnabled) =>
+  (discountedProducts, taxationEnabled) =>
     discountedProducts.reduce((total, product) => {
       const rawPrice = product.pricing?.price || product.price || 0;
       const productPrice =
@@ -969,7 +990,7 @@ export const selectTotalIndividualDiscounts = createSelector(
         : 0;
       const quantity = product.amountToBuy || 1;
 
-      const unitPriceWithTax = taxReceiptEnabled
+      const unitPriceWithTax = taxationEnabled
         ? productPrice * (1 + taxPercentage / 100)
         : productPrice;
       const totalPriceWithTax = unitPriceWithTax * quantity;

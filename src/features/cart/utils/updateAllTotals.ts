@@ -32,7 +32,7 @@ export const updateAllTotals = (state: CartState, paymentValue?: number) => {
 
     const {
       settings: {
-        taxReceipt: { enabled: taxReceiptEnabled },
+        fiscal: { taxationEnabled },
       },
       data: {
         products = [],
@@ -74,11 +74,11 @@ export const updateAllTotals = (state: CartState, paymentValue?: number) => {
       0,
     );
     const taxes = products.reduce(
-      (total, product) => total + getFunctionalProductTax(product, taxReceiptEnabled),
+      (total, product) => total + getFunctionalProductTax(product, taxationEnabled),
       0,
     );
     const productsTotal = products.reduce(
-      (total, product) => total + getFunctionalProductTotal(product, taxReceiptEnabled),
+      (total, product) => total + getFunctionalProductTotal(product, taxationEnabled),
       0,
     );
     const totalBeforeGeneralDiscount = subtotal - promotionDiscount;

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { SelectSettingCart } from '@/features/cart/cartSlice';
+import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
 import { formatPrice } from '@/utils/format';
 import { separator } from '@/utils/number/number';
 import {
@@ -20,15 +20,9 @@ type ProductListProps = {
   data?: InvoiceData | null;
 };
 
-type CartSettings = {
-  taxReceipt?: { enabled?: boolean };
-};
-
 export const ProductList = ({ data }: ProductListProps) => {
   const products = Array.isArray(data?.products) ? data?.products : [];
-  const NCF = data?.NCF;
-  const { taxReceipt } = useSelector(SelectSettingCart) as CartSettings;
-  const taxReceiptEnabled = Boolean(NCF) || Boolean(taxReceipt?.enabled);
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
 
   const getFullProductName = ({ name, measurement, footer }: InvoiceProduct) =>
     `${name ?? ''}${measurement ? ` Medida: [${measurement}]` : ''}${footer ? ` Pie: [[${footer}]` : ''}`;
@@ -61,7 +55,7 @@ export const ProductList = ({ data }: ProductListProps) => {
                         {formatPrice(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
-                            taxReceipt?.enabled,
+                            taxationEnabled,
                           ),
                         )}
                       </div>
@@ -71,17 +65,17 @@ export const ProductList = ({ data }: ProductListProps) => {
                         {separator(
                           getTotalPrice(
                             resetAmountToBuyForProduct(product),
-                            taxReceipt?.enabled,
+                            taxationEnabled,
                           ),
                         )}
                       </div>
                     )}
                   </Col>
                   <Col textAlign="right">
-                    {separator(getTax(product, taxReceiptEnabled))}
+                    {separator(getTax(product, taxationEnabled))}
                   </Col>
                   <Col textAlign="right">
-                    {separator(getTotalPrice(product, taxReceiptEnabled))}
+                    {separator(getTotalPrice(product, taxationEnabled))}
                   </Col>
                 </Row>
                 <Row>

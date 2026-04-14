@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
+import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
 import {
   closeCreditNoteModal,
   selectCreditNoteModal,
@@ -49,6 +50,7 @@ type CreditNoteModalState = ReturnType<typeof selectCreditNoteModal>;
 type CreditNoteModalRootState = Parameters<typeof selectCreditNoteModal>[0];
 type UserRootState = Parameters<typeof selectUser>[0];
 type TaxReceiptRootState = Parameters<typeof selectTaxReceiptEnabled>[0];
+type CartTaxationRootState = Parameters<typeof selectCartTaxationEnabled>[0];
 
 type CreditNoteModalTypedState = Omit<
   CreditNoteModalState,
@@ -161,6 +163,9 @@ export const CreditNoteModal = () => {
   };
   const taxReceiptEnabled = useSelector<TaxReceiptRootState, boolean>(
     selectTaxReceiptEnabled,
+  );
+  const taxationEnabled = useSelector<CartTaxationRootState, boolean>(
+    selectCartTaxationEnabled,
   );
 
   const clients = fetchedClients.map((c) => c.client);
@@ -444,7 +449,7 @@ export const CreditNoteModal = () => {
     if (!item) return sum;
     const qty = itemQuantities[String(id)] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
-    return sum + getTotalPrice(itemCopy, taxReceiptEnabled);
+    return sum + getTotalPrice(itemCopy, taxationEnabled);
   }, 0);
 
   // Calcular ITBIS total correctamente
@@ -453,7 +458,7 @@ export const CreditNoteModal = () => {
     if (!item) return sum;
     const qty = itemQuantities[String(id)] || 1;
     const itemCopy = { ...item, amountToBuy: qty };
-    return sum + getTax(itemCopy, taxReceiptEnabled);
+    return sum + getTax(itemCopy, taxationEnabled);
   }, 0);
 
   // Calcular subtotal (total sin impuestos)

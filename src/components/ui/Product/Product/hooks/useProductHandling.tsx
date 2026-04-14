@@ -46,7 +46,7 @@ const EMPTY_CART_PRODUCTS: CartProduct[] = [];
 
 export const useProductHandling = (
   product: ProductRecord,
-  taxReceiptEnabled: boolean,
+  taxationEnabled: boolean,
 ) => {
   const dispatch = useDispatch();
   const store = useStore() as { getState: () => RootState };
@@ -68,7 +68,7 @@ export const useProductHandling = (
     product,
   );
 
-  const price = getTotalPrice(product, taxReceiptEnabled);
+  const price = getTotalPrice(product, taxationEnabled);
   const getLatestCartData = (): CartDataSnapshot =>
     (store.getState().cart?.data ?? null) as CartDataSnapshot;
 

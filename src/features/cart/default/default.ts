@@ -42,6 +42,10 @@ const initialState: CartState = {
   },
   settings: {
     taxReceipt: { enabled: false },
+    fiscal: {
+      taxationEnabled: false,
+      taxationSource: 'legacy-tax-receipt',
+    },
     printInvoice: true,
     isInvoicePanelOpen: false,
     billing: {

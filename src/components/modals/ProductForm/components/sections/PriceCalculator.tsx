@@ -2,7 +2,7 @@ import { InputNumber, Table, Form } from 'antd';
 import { useCallback, useMemo } from 'react';
 import { useSelector, shallowEqual } from 'react-redux';
 
-import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
 import type { TableProps } from 'antd';
 import type { ProductRecord } from '@/types/products';
 
@@ -76,7 +76,7 @@ export const PriceCalculator = () => {
       state.updateProduct?.product?.pricing,
     shallowEqual,
   );
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
 
   const calculateTableData = useCallback(
     (pricingData: ProductRecord['pricing']) => {
@@ -139,7 +139,7 @@ export const PriceCalculator = () => {
 
         // Realiza los cálculos
         const tax = taxValue / 100;
-        const itbis = taxReceiptEnabled ? amount * tax : 0;
+        const itbis = taxationEnabled ? amount * tax : 0;
         const finalPrice = amount + itbis;
         // El margen es la ganancia = precio sin itbis - costo
         const rawMargin = amount - costUnit;
@@ -164,7 +164,7 @@ export const PriceCalculator = () => {
         };
       });
     },
-    [taxReceiptEnabled],
+    [taxationEnabled],
   );
 
   const tableData = useMemo(

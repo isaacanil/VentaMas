@@ -2,6 +2,7 @@ import { collection, addDoc } from 'firebase/firestore';
 
 import type { TaxReceiptData, TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig'; // Asegúrate que la ruta sea correcta
+import { normalizeTaxReceiptData } from '@/utils/taxReceipt';
 
 /**
  * Creates a new tax receipt document in Firestore within a 'data' field.
@@ -32,9 +33,10 @@ export const addTaxReceipt = async (
       user.businessID,
       'taxReceipts',
     );
+    const normalizedData = normalizeTaxReceiptData(data);
 
     // Add the new document with the data nested under a 'data' field
-    const docRef = await addDoc(receiptsCollectionRef, { data: data });
+    const docRef = await addDoc(receiptsCollectionRef, { data: normalizedData });
 
     console.info(`Tax receipt created successfully`);
     return docRef; // Return the reference to the new document

@@ -1,3 +1,5 @@
+// LEGACY UI/PREVIEW ONLY.
+// No usar este helper para reservar o confirmar secuencias fiscales reales.
 export const increaseSequence = (sequence, increase, maxCharacters = 10) => {
   const numericResult = Number(sequence) + Number(increase);
   let result = numericResult.toString();

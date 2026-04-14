@@ -10,6 +10,13 @@ import type { TaxReceiptUser } from '@/types/taxReceipt';
 import { db } from '@/firebase/firebaseconfig';
 import { formatNcfCode } from '@/utils/taxReceipt';
 
+/**
+ * LEGACY COMPATIBILITY ONLY
+ *
+ * Este helper avanza la secuencia desde el cliente y escribe directo en
+ * Firestore. No debe recibir nuevos callers. La autoridad canónica de
+ * reservación/emisión debe vivir en backend (`reserveNcf` y wrappers futuros).
+ */
 /** 8 dígitos para B, 10 para E */
 const defaultLength = (serie?: string) => (serie === 'B' ? 8 : 10);
 

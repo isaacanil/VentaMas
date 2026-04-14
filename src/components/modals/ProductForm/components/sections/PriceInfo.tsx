@@ -1,14 +1,14 @@
 import { Card, InputNumber, Row, Col, Select, Checkbox, Form } from 'antd';
 import { useSelector } from 'react-redux';
 
-import { selectTaxReceiptEnabled } from '@/features/taxReceipt/taxReceiptSlice';
+import { selectCartTaxationEnabled } from '@/features/cart/cartSlice';
 import {
   initTaxes,
   taxLabel,
 } from '@/components/modals/UpdateProduct/InitializeData';
 
 export const PriceInfo = () => {
-  const taxReceiptEnabled = useSelector(selectTaxReceiptEnabled);
+  const taxationEnabled = useSelector(selectCartTaxationEnabled);
   const taxOptions = initTaxes.map((tax) => ({
     value: tax,
     label: taxLabel(tax),
@@ -63,9 +63,9 @@ export const PriceInfo = () => {
             name={['pricing', 'tax']}
             label="Impuesto"
             help={
-              taxReceiptEnabled
+              taxationEnabled
                 ? ''
-                : 'El impuesto no se aplicará a la venta del producto. La facturación de impuestos está desactivada.'
+                : 'El impuesto no se aplicará según la política fiscal activa del negocio.'
             }
             rules={[{ required: true }]}
           >
