@@ -4,6 +4,7 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "scip:index": "cross-env NODE_OPTIONS=--max-old-space-size=8192 scip-typescript index",
     "prebuild": "rimraf lib",
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf lib",
@@ -43,6 +44,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@sourcegraph/scip-typescript": "^0.4.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.15.0",
     "@types/istanbul-lib-coverage": "^2.0.6",

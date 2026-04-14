@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:compiler": "cross-env REACT_COMPILER=true vite build",
+    "scip:index": "cross-env NODE_OPTIONS=--max-old-space-size=8192 scip-typescript index",
     "dev:emulators": "node tools/run-dev-emulators.js",
     "dev:trace": "node tools/run-dev-trace-mcp.js",
     "emulators": "firebase emulators:start --only functions,firestore",
@@ -93,6 +94,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@sourcegraph/scip-typescript": "^0.4.0",
     "@chromatic-com/storybook": "^5.0.1",
     "@eslint/js": "^9.39.1",
     "@google-cloud/storage": "^7.18.0",
@@ -157,5 +159,8 @@
     "vite-bundle-analyzer": "^1.3.6",
     "vite-plugin-compression2": "^2.5.2",
     "vitest": "^4.1.0"
+  },
+  "volta": {
+    "node": "20.19.5"
   }
 }

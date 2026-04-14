@@ -61,3 +61,5 @@ tmp/pdfs/
 
 *storybook.log
 storybook-static
+*.scip
+AGENTS.md
