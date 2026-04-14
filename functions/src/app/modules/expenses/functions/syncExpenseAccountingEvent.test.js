@@ -149,6 +149,7 @@ describe('syncExpenseAccountingEvent', () => {
           functionalAmount: 6200,
         },
         treasury: {
+          cashAccountId: null,
           cashCountId: null,
           bankAccountId: 'bank-1',
           paymentChannel: 'bank',
@@ -159,6 +160,9 @@ describe('syncExpenseAccountingEvent', () => {
           category: 'Servicios',
           description: 'Internet oficina',
           paymentMethod: 'bank_transfer',
+          paymentSourceType: 'bank',
+          documentNature: 'expense',
+          settlementTiming: 'immediate',
           reference: 'TRX-1',
           invoiceNcf: 'B0100000001',
           attachmentCount: 1,

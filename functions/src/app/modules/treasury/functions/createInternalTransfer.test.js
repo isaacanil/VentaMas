@@ -176,8 +176,8 @@ describe('createInternalTransfer accounting period validation', () => {
   });
 
   it('rejects an internal transfer when the accounting period is closed', async () => {
-    transactionSnapshots.set('businesses/business-1/cashCounts/cash-1', {
-      cashCount: { state: 'open' },
+    transactionSnapshots.set('businesses/business-1/cashAccounts/cash-1', {
+      status: 'active',
     });
     transactionSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
       status: 'active',
@@ -191,10 +191,11 @@ describe('createInternalTransfer accounting period validation', () => {
       createInternalTransfer({
         data: {
           businessId: 'business-1',
+          idempotencyKey: 'itf-1',
           amount: 75,
           from: {
             type: 'cash',
-            cashCountId: 'cash-1',
+            cashAccountId: 'cash-1',
           },
           to: {
             type: 'bank',
@@ -218,8 +219,8 @@ describe('createInternalTransfer accounting period validation', () => {
   });
 
   it('records the internal transfer when the accounting period is open', async () => {
-    transactionSnapshots.set('businesses/business-1/cashCounts/cash-1', {
-      cashCount: { state: 'open' },
+    transactionSnapshots.set('businesses/business-1/cashAccounts/cash-1', {
+      status: 'active',
     });
     transactionSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
       status: 'active',
@@ -230,15 +231,16 @@ describe('createInternalTransfer accounting period validation', () => {
     );
 
     const result = await createInternalTransfer({
-      data: {
-        businessId: 'business-1',
-        amount: 75,
+        data: {
+          businessId: 'business-1',
+          idempotencyKey: 'itf-1',
+          amount: 75,
         reference: 'TRF-1',
         note: 'Prueba',
-        from: {
-          type: 'cash',
-          cashCountId: 'cash-1',
-        },
+          from: {
+            type: 'cash',
+            cashAccountId: 'cash-1',
+          },
         to: {
           type: 'bank',
           bankAccountId: 'bank-1',
@@ -257,7 +259,7 @@ describe('createInternalTransfer accounting period validation', () => {
         }),
       }),
     );
-    expect(transactionSetMock).toHaveBeenCalledTimes(4);
+    expect(transactionSetMock).toHaveBeenCalledTimes(7);
     expect(buildInternalTransferCashMovementsMock).toHaveBeenCalledWith({
       businessId: 'business-1',
       transfer: expect.objectContaining({

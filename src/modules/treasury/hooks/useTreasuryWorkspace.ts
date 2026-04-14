@@ -3,14 +3,14 @@ import { message } from 'antd';
 import {
   Timestamp,
   collection,
-  doc,
   onSnapshot,
   orderBy,
   query,
-  writeBatch,
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import { fbCreateBankReconciliation } from '@/firebase/treasury/fbCreateBankReconciliation';
+import { fbCreateInternalTransfer } from '@/firebase/treasury/fbCreateInternalTransfer';
 import { useAccountingConfig } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig';
 import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
 import type {
@@ -25,6 +25,7 @@ import {
   groupLedgerEntriesByAccount,
   sortByOccurredAtDesc,
 } from '../utils/liquidity';
+import { buildTreasuryIdempotencyKey } from '../utils/idempotency';
 import {
   normalizeBankReconciliationRecord,
   normalizeInternalTransferRecord,
@@ -336,80 +337,48 @@ export const useTreasuryWorkspace = ({
       }
 
       const occurredAt = toNormalizedOccurredAt(draft.occurredAt) ?? Timestamp.now();
-      const transferRef = doc(
-        collection(db, 'businesses', businessId, 'internalTransfers'),
-      );
-      const outboundLedgerRef = doc(
-        collection(db, 'businesses', businessId, 'liquidityLedger'),
-      );
-      const inboundLedgerRef = doc(
-        collection(db, 'businesses', businessId, 'liquidityLedger'),
-      );
-      const now = Timestamp.now();
-      const batch = writeBatch(db);
-
-      batch.set(transferRef, {
-        id: transferRef.id,
+      await fbCreateInternalTransfer({
         businessId,
-        fromAccountId: draft.fromAccountId,
-        fromAccountType: draft.fromAccountType,
-        toAccountId: draft.toAccountId,
-        toAccountType: draft.toAccountType,
-        currency: draft.currency,
         amount,
-        occurredAt,
-        status: 'posted',
+        currency: draft.currency,
+        occurredAt: occurredAt.toMillis(),
         reference: draft.reference?.trim() || null,
-        notes: draft.notes?.trim() || null,
-        createdAt: now,
-        createdBy: userId ?? null,
-        ledgerEntryIds: [outboundLedgerRef.id, inboundLedgerRef.id],
+        note: draft.notes?.trim() || null,
+        idempotencyKey: buildTreasuryIdempotencyKey('internal-transfer', [
+          businessId,
+          draft.fromAccountType,
+          draft.fromAccountId,
+          draft.toAccountType,
+          draft.toAccountId,
+          amount,
+          occurredAt.toMillis(),
+          draft.reference?.trim() || '',
+        ]),
+        from:
+          draft.fromAccountType === 'cash'
+            ? {
+                type: 'cash',
+                cashAccountId: draft.fromAccountId,
+              }
+            : {
+                type: 'bank',
+                bankAccountId: draft.fromAccountId,
+              },
+        to:
+          draft.toAccountType === 'cash'
+            ? {
+                type: 'cash',
+                cashAccountId: draft.toAccountId,
+              }
+            : {
+                type: 'bank',
+                bankAccountId: draft.toAccountId,
+              },
       });
 
-      batch.set(outboundLedgerRef, {
-        id: outboundLedgerRef.id,
-        businessId,
-        accountId: draft.fromAccountId,
-        accountType: draft.fromAccountType,
-        currency: draft.currency,
-        direction: 'out',
-        amount,
-        occurredAt,
-        createdAt: now,
-        createdBy: userId ?? null,
-        status: 'posted',
-        sourceType: 'internal_transfer',
-        sourceId: transferRef.id,
-        reference: draft.reference?.trim() || null,
-        description: draft.notes?.trim() || 'Transferencia interna',
-        counterpartyAccountId: draft.toAccountId,
-        counterpartyAccountType: draft.toAccountType,
-      });
-
-      batch.set(inboundLedgerRef, {
-        id: inboundLedgerRef.id,
-        businessId,
-        accountId: draft.toAccountId,
-        accountType: draft.toAccountType,
-        currency: draft.currency,
-        direction: 'in',
-        amount,
-        occurredAt,
-        createdAt: now,
-        createdBy: userId ?? null,
-        status: 'posted',
-        sourceType: 'internal_transfer',
-        sourceId: transferRef.id,
-        reference: draft.reference?.trim() || null,
-        description: draft.notes?.trim() || 'Transferencia interna',
-        counterpartyAccountId: draft.fromAccountId,
-        counterpartyAccountType: draft.fromAccountType,
-      });
-
-      await batch.commit();
       void message.success('Transferencia interna registrada.');
     },
-    [businessId, liquidityAccounts, userId],
+    [businessId, liquidityAccounts],
   );
 
   const recordBankReconciliation = useCallback(
@@ -430,9 +399,6 @@ export const useTreasuryWorkspace = ({
         return;
       }
 
-      const reconciliationRef = doc(
-        collection(db, 'businesses', businessId, 'bankReconciliations'),
-      );
       const statementDate =
         toNormalizedOccurredAt(draft.statementDate) ?? Timestamp.now();
       const ledgerBalance =
@@ -440,26 +406,26 @@ export const useTreasuryWorkspace = ({
         Number(bankAccount.openingBalance ?? 0);
       const variance = Number((statementBalance - ledgerBalance).toFixed(2));
 
-      await writeBatch(db)
-        .set(reconciliationRef, {
-          id: reconciliationRef.id,
+      await fbCreateBankReconciliation({
+        businessId,
+        bankAccountId: draft.bankAccountId,
+        statementBalance,
+        statementDate: statementDate.toMillis(),
+        reference: draft.reference?.trim() || null,
+        note: draft.notes?.trim() || null,
+        idempotencyKey: buildTreasuryIdempotencyKey('bank-reconciliation', [
           businessId,
-          bankAccountId: draft.bankAccountId,
-          statementDate,
+          draft.bankAccountId,
           statementBalance,
-          ledgerBalance,
+          statementDate.toMillis(),
           variance,
-          status: variance === 0 ? 'balanced' : 'variance',
-          reference: draft.reference?.trim() || null,
-          notes: draft.notes?.trim() || null,
-          createdAt: Timestamp.now(),
-          createdBy: userId ?? null,
-        })
-        .commit();
+          draft.reference?.trim() || '',
+        ]),
+      });
 
       void message.success('Conciliación bancaria registrada.');
     },
-    [bankAccounts, businessId, currentBalancesByAccountKey, userId],
+    [bankAccounts, businessId, currentBalancesByAccountKey],
   );
 
   const overallLoading =

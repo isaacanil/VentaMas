@@ -22,6 +22,7 @@ export interface VoidAccountsPayablePaymentResult {
   alreadyVoided?: boolean;
   paymentId: string;
   purchaseId: string | null;
+  vendorBillId?: string | null;
   paymentState: PaymentState | null;
   restoredCreditNotes?: Array<{
     id: string;

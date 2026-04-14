@@ -18,6 +18,7 @@ const toCleanString = (value: unknown): string | null => {
 
 export interface AddAccountsPayablePaymentInput {
   purchase: Purchase;
+  vendorBillId?: string | null;
   occurredAt: number;
   paymentMethods?: PaymentMethodEntry[] | null;
   nextPaymentAt?: number | null;
@@ -30,6 +31,7 @@ export interface AddAccountsPayablePaymentResult {
   reused?: boolean;
   paymentId: string;
   purchaseId: string | null;
+  vendorBillId?: string | null;
   receiptNumber: string | null;
   paymentState: PaymentState | null;
   appliedCreditNotes?: Array<{
@@ -65,6 +67,7 @@ export const fbAddAccountsPayablePayment = async (
     {
       businessId: string;
       purchaseId: string;
+      vendorBillId?: string | null;
       occurredAt: number;
       nextPaymentAt?: number | null;
       idempotencyKey: string;
@@ -78,6 +81,7 @@ export const fbAddAccountsPayablePayment = async (
   const response = await callable({
     businessId,
     purchaseId,
+    vendorBillId: toCleanString(input.vendorBillId),
     occurredAt: input.occurredAt,
     nextPaymentAt: input.nextPaymentAt ?? null,
     idempotencyKey: input.idempotencyKey,

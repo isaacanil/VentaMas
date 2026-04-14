@@ -29,6 +29,11 @@ import {
   toCleanString,
   toMillis,
 } from './payablePayments.shared.js';
+import {
+  buildCanonicalVendorBillIdFromPurchaseId,
+  buildVendorBillProjection,
+  resolvePurchaseIdFromVendorBillRecord,
+} from './vendorBill.shared.js';
 
 const aggregatePaymentCreditNotes = (paymentRecord) =>
   normalizePaymentMethodsForAggregation(paymentRecord).reduce(
@@ -60,6 +65,7 @@ const buildVoidResponse = ({
   alreadyVoided,
   paymentId: paymentRecord.id,
   purchaseId: paymentRecord.purchaseId ?? null,
+  vendorBillId: paymentRecord.vendorBillId ?? null,
   paymentState: sanitizeForResponse(paymentState),
   restoredCreditNotes: sanitizeForResponse(restoredCreditNotes),
   payment: sanitizeForResponse(paymentRecord),
@@ -125,7 +131,15 @@ export const voidSupplierPayment = onCall(async (request) => {
       ...asRecord(paymentSnap.data()),
     };
     const paymentStatus = toCleanString(paymentRecord.status)?.toLowerCase();
-    const purchaseId = toCleanString(paymentRecord.purchaseId);
+    const vendorBillId =
+      toCleanString(paymentRecord.vendorBillId) ??
+      buildCanonicalVendorBillIdFromPurchaseId(paymentRecord.purchaseId);
+    const purchaseId =
+      toCleanString(paymentRecord.purchaseId) ??
+      resolvePurchaseIdFromVendorBillRecord(
+        { sourceDocumentType: 'purchase', sourceDocumentId: paymentRecord.purchaseId },
+        vendorBillId,
+      );
     if (!purchaseId) {
       throw new HttpsError(
         'failed-precondition',
@@ -281,6 +295,7 @@ export const voidSupplierPayment = onCall(async (request) => {
     transaction.set(
       paymentRef,
       {
+        vendorBillId,
         status: 'void',
         updatedAt: Timestamp.now(),
         updatedBy: authUid,
@@ -310,10 +325,33 @@ export const voidSupplierPayment = onCall(async (request) => {
       },
       { merge: true },
     );
+    const vendorBillProjection = buildVendorBillProjection({
+      purchaseId,
+      purchaseRecord,
+      paymentState,
+      paymentTerms: {
+        ...asRecord(purchaseRecord.paymentTerms),
+        nextPaymentAt:
+          balanceAfterVoid > THRESHOLD
+            ? (latestPayment?.nextPaymentAt ??
+              purchaseRecord.paymentTerms?.expectedPaymentAt ??
+              null)
+            : null,
+      },
+      vendorBillId,
+    });
+    if (vendorBillProjection && vendorBillId) {
+      transaction.set(
+        db.doc(`businesses/${businessId}/vendorBills/${vendorBillId}`),
+        vendorBillProjection,
+        { merge: true },
+      );
+    }
 
     result = buildVoidResponse({
       paymentRecord: {
         ...paymentRecord,
+        vendorBillId,
         status: 'void',
         updatedAt: Timestamp.now(),
         updatedBy: authUid,

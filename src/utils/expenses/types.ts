@@ -31,6 +31,7 @@ export type ExpensePaymentMethod =
 export interface ExpensePayment {
   method?: ExpensePaymentMethod;
   sourceType?: 'cash_drawer' | 'cash' | 'bank' | null;
+  cashAccountId?: string | null;
   cashRegister?: string | null;
   bankAccountId?: string | null;
   bank?: string | null;

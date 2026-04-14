@@ -3,11 +3,13 @@ import type {
   AccountingModuleKey,
   AccountingPostingAmountSource,
   AccountingPostingCondition,
+  AccountingPostingDocumentNature,
   AccountingPostingLineTemplate,
   AccountingPostingPaymentTerm,
   AccountingPostingProfile,
   AccountingPostingProfileStatus,
   AccountingPostingSettlementKind,
+  AccountingPostingSettlementTiming,
   AccountingPostingTaxTreatment,
   ChartOfAccount,
   ChartOfAccountNormalSide,
@@ -113,6 +115,26 @@ export const ACCOUNTING_POSTING_TAX_TREATMENT_LABELS: Record<
   untaxed: 'Sin impuesto',
 };
 
+export const ACCOUNTING_POSTING_DOCUMENT_NATURE_LABELS: Record<
+  AccountingPostingDocumentNature,
+  string
+> = {
+  any: 'Cualquiera',
+  inventory: 'Inventario',
+  expense: 'Gasto',
+  asset: 'Activo fijo',
+  service: 'Servicio',
+};
+
+export const ACCOUNTING_POSTING_SETTLEMENT_TIMING_LABELS: Record<
+  AccountingPostingSettlementTiming,
+  string
+> = {
+  any: 'Cualquiera',
+  immediate: 'Pago inmediato',
+  deferred: 'Pago diferido',
+};
+
 export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   AccountingPostingAmountSource,
   string
@@ -177,6 +199,32 @@ export const normalizeAccountingPostingTaxTreatment = (
   }
 };
 
+export const normalizeAccountingPostingDocumentNature = (
+  value: unknown,
+): AccountingPostingDocumentNature => {
+  switch (value) {
+    case 'inventory':
+    case 'expense':
+    case 'asset':
+    case 'service':
+      return value;
+    default:
+      return 'any';
+  }
+};
+
+export const normalizeAccountingPostingSettlementTiming = (
+  value: unknown,
+): AccountingPostingSettlementTiming => {
+  switch (value) {
+    case 'immediate':
+    case 'deferred':
+      return value;
+    default:
+      return 'any';
+  }
+};
+
 export const normalizeAccountingPostingAmountSource = (
   value: unknown,
   fallback: AccountingPostingAmountSource = 'document_total',
@@ -215,6 +263,12 @@ export const normalizeAccountingPostingCondition = (
       record.settlementKind,
     ),
     taxTreatment: normalizeAccountingPostingTaxTreatment(record.taxTreatment),
+    documentNature: normalizeAccountingPostingDocumentNature(
+      record.documentNature,
+    ),
+    settlementTiming: normalizeAccountingPostingSettlementTiming(
+      record.settlementTiming,
+    ),
   };
 };
 
@@ -507,16 +561,92 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     ],
   },
   {
-    seedKey: 'purchase_committed',
-    name: 'Compra registrada',
-    description: 'Compra confirmada que incrementa inventario o costo.',
+    seedKey: 'purchase_committed_inventory',
+    name: 'Compra inventariable a crédito',
+    description: 'Compra confirmada de inventario con obligación al suplidor.',
     eventType: 'purchase.committed',
     moduleKey: 'purchases',
     priority: 40,
+    conditions: {
+      documentNature: 'inventory',
+      settlementTiming: 'deferred',
+    },
     linesTemplate: [
       {
         side: 'debit',
         accountSystemKey: 'inventory',
+        amountSource: 'purchase_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'purchase_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'purchase_committed_expense',
+    name: 'Compra de gasto a crédito',
+    description: 'Compra confirmada que se reconoce como gasto contra cuentas por pagar.',
+    eventType: 'purchase.committed',
+    moduleKey: 'purchases',
+    priority: 45,
+    conditions: {
+      documentNature: 'expense',
+      settlementTiming: 'deferred',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'operating_expenses',
+        amountSource: 'purchase_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'purchase_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'purchase_committed_asset',
+    name: 'Compra de activo a crédito',
+    description: 'Compra confirmada de activo fijo contra cuentas por pagar.',
+    eventType: 'purchase.committed',
+    moduleKey: 'purchases',
+    priority: 50,
+    conditions: {
+      documentNature: 'asset',
+      settlementTiming: 'deferred',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'fixed_assets',
+        amountSource: 'purchase_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'purchase_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'purchase_committed_service',
+    name: 'Compra de servicio a crédito',
+    description: 'Compra confirmada de servicios contra cuentas por pagar.',
+    eventType: 'purchase.committed',
+    moduleKey: 'purchases',
+    priority: 55,
+    conditions: {
+      documentNature: 'service',
+      settlementTiming: 'deferred',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'operating_expenses',
         amountSource: 'purchase_total',
       },
       {
@@ -614,6 +744,29 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'bank',
+        amountSource: 'expense_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'expense_payable',
+    name: 'Gasto a pagar',
+    description: 'Gasto reconocido sin salida inmediata de tesorería.',
+    eventType: 'expense.recorded',
+    moduleKey: 'expenses',
+    priority: 70,
+    conditions: {
+      settlementTiming: 'deferred',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'operating_expenses',
+        amountSource: 'expense_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
         amountSource: 'expense_total',
       },
     ],

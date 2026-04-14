@@ -47,6 +47,18 @@ const normalizeLiquidityEntrySourceType = (
   }
 };
 
+const resolveLedgerAccountId = (value: unknown): string => {
+  const record = asRecord(value);
+  return String(
+    record.bankAccountId ?? record.cashAccountId ?? record.cashCountId ?? '',
+  );
+};
+
+const resolveLedgerAccountType = (value: unknown): LiquidityAccountType => {
+  const record = asRecord(value);
+  return normalizeLiquidityAccountType(record.type);
+};
+
 export const normalizeLiquidityLedgerEntryRecord = (
   id: string,
   businessId: string,
@@ -99,20 +111,30 @@ export const normalizeInternalTransferRecord = (
   value: unknown,
 ): InternalTransfer => {
   const record = asRecord(value);
+  const fromLedger = asRecord(record.from);
+  const toLedger = asRecord(record.to);
 
   return {
     id,
     businessId,
-    fromAccountId: String(record.fromAccountId ?? ''),
-    fromAccountType: normalizeLiquidityAccountType(record.fromAccountType),
-    toAccountId: String(record.toAccountId ?? ''),
-    toAccountType: normalizeLiquidityAccountType(record.toAccountType),
+    fromAccountId:
+      String(record.fromAccountId ?? '') || resolveLedgerAccountId(fromLedger),
+    fromAccountType:
+      record.fromAccountType != null
+        ? normalizeLiquidityAccountType(record.fromAccountType)
+        : resolveLedgerAccountType(fromLedger),
+    toAccountId:
+      String(record.toAccountId ?? '') || resolveLedgerAccountId(toLedger),
+    toAccountType:
+      record.toAccountType != null
+        ? normalizeLiquidityAccountType(record.toAccountType)
+        : resolveLedgerAccountType(toLedger),
     currency: normalizeSupportedDocumentCurrency(record.currency, 'DOP'),
     amount: safeNumber(record.amount),
     occurredAt: record.occurredAt ?? record.createdAt ?? null,
     status: record.status === 'void' ? 'void' : 'posted',
     reference: toCleanString(record.reference),
-    notes: toCleanString(record.notes),
+    notes: toCleanString(record.notes ?? record.note),
     createdAt: record.createdAt ?? null,
     createdBy: toCleanString(record.createdBy),
     ledgerEntryIds: Array.isArray(record.ledgerEntryIds)
@@ -154,7 +176,7 @@ export const normalizeBankReconciliationRecord = (
     ledgerBalance,
     variance,
     status: record.status === 'balanced' ? 'balanced' : variance === 0 ? 'balanced' : 'variance',
-    notes: toCleanString(record.notes),
+    notes: toCleanString(record.notes ?? record.note),
     reference: toCleanString(record.reference),
     createdAt: record.createdAt ?? null,
     createdBy: toCleanString(record.createdBy),

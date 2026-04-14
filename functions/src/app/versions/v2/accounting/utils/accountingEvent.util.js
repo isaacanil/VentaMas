@@ -125,6 +125,7 @@ const normalizeTreasurySnapshot = (value) => {
   const paymentChannel = toCleanString(record.paymentChannel);
 
   return {
+    cashAccountId: toCleanString(record.cashAccountId),
     cashCountId: toCleanString(record.cashCountId),
     bankAccountId: toCleanString(record.bankAccountId),
     paymentChannel:

@@ -38,6 +38,7 @@ export interface PaymentMethodEntry {
   amount?: number;
   reference?: string | null;
   bankAccountId?: string | null;
+  cashAccountId?: string | null;
   cashCountId?: string | null;
   supplierCreditNoteId?: string | null;
 }
@@ -81,6 +82,7 @@ export interface PaymentEvent {
   totalAmount: number;
   appliedAmount?: number | null;
   unappliedAmount?: number | null;
+  cashAccountId?: string | null;
   cashCountId?: string | null;
   bankAccountId?: string | null;
   reference?: string | null;
@@ -100,9 +102,10 @@ export interface PaymentEvent {
 
 export interface AccountsPayablePayment extends PaymentEvent {
   operationType: 'payable-payment';
-  sourceDocumentType?: 'purchase' | string | null;
+  sourceDocumentType?: 'vendorBill' | 'purchase' | string | null;
   counterpartyType: 'supplier';
   purchaseId?: string | null;
+  vendorBillId?: string | null;
   supplierId?: string | null;
   receiptNumber?: string | null;
   nextPaymentAt?: TimestampLike | null;
@@ -143,6 +146,8 @@ export interface CashMovement {
   sourceId: string;
   sourceDocumentId?: string | null;
   sourceDocumentType?: 'invoice' | 'purchase' | string | null;
+  currency?: string | null;
+  cashAccountId?: string | null;
   cashCountId?: string | null;
   bankAccountId?: string | null;
   method: PaymentMethodCode;

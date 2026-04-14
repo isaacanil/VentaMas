@@ -16,6 +16,7 @@ import {
 import { buildAccountingEvent } from '../../../versions/v2/accounting/utils/accountingEvent.util.js';
 import { assertAccountingPeriodOpenInTransaction } from '../../../versions/v2/accounting/utils/periodClosure.util.js';
 import { buildInternalTransferCashMovements } from '../../../versions/v2/accounting/utils/cashMovement.util.js';
+import { buildTreasuryIdempotencyRequestHash } from './treasuryIdempotency.shared.js';
 
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -26,6 +27,31 @@ const safeNumber = (value) => {
 };
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
+
+const toMillis = (value) => {
+  if (value == null) return null;
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value?.toMillis === 'function') {
+    const parsed = value.toMillis();
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const timestampFromMillis = (value) => {
+  if (typeof Timestamp.fromMillis === 'function') {
+    return Timestamp.fromMillis(value);
+  }
+  return new Timestamp(value);
+};
+
+const resolveLedgerAccountId = (ledger) =>
+  ledger?.type === 'cash'
+    ? toCleanString(ledger.cashAccountId ?? ledger.cashCountId)
+    : toCleanString(ledger?.bankAccountId);
 
 const sanitizeForResponse = (value) => {
   if (value instanceof Timestamp) {
@@ -55,6 +81,7 @@ const normalizeLedger = (value) => {
 
   return {
     type,
+    cashAccountId: toCleanString(record.cashAccountId),
     cashCountId: toCleanString(record.cashCountId),
     bankAccountId: toCleanString(record.bankAccountId),
   };
@@ -76,10 +103,10 @@ const assertValidLedger = (ledger, role) => {
     );
   }
 
-  if (ledger.type === 'cash' && !ledger.cashCountId) {
+  if (ledger.type === 'cash' && !resolveLedgerAccountId(ledger)) {
     throw new HttpsError(
       'invalid-argument',
-      `El ledger ${role} de tipo cash requiere cashCountId.`,
+      `El ledger ${role} de tipo cash requiere cashAccountId.`,
     );
   }
   if (ledger.type === 'bank' && !ledger.bankAccountId) {
@@ -101,14 +128,21 @@ export const createInternalTransfer = onCall(async (request) => {
     toCleanString(payload.businessId) ||
     toCleanString(payload.businessID) ||
     null;
+  const idempotencyKey = toCleanString(payload.idempotencyKey);
   const amount = roundToTwoDecimals(payload.amount);
+  const currency = toCleanString(payload.currency);
   const reference = toCleanString(payload.reference);
   const note = toCleanString(payload.note);
+  const occurredAtMillis = toMillis(payload.occurredAt) ?? Date.now();
+  const occurredAt = timestampFromMillis(occurredAtMillis);
   const fromLedger = normalizeLedger(payload.from);
   const toLedger = normalizeLedger(payload.to);
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido.');
+  }
+  if (!idempotencyKey) {
+    throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
   }
   if (!isAccountingRolloutEnabledForBusiness(businessId)) {
     throw new HttpsError(
@@ -123,10 +157,8 @@ export const createInternalTransfer = onCall(async (request) => {
   assertValidLedger(fromLedger, 'from');
   assertValidLedger(toLedger, 'to');
 
-  const fromIdentity =
-    fromLedger.type === 'cash' ? fromLedger.cashCountId : fromLedger.bankAccountId;
-  const toIdentity =
-    toLedger.type === 'cash' ? toLedger.cashCountId : toLedger.bankAccountId;
+  const fromIdentity = resolveLedgerAccountId(fromLedger);
+  const toIdentity = resolveLedgerAccountId(toLedger);
   if (fromLedger.type === toLedger.type && fromIdentity === toIdentity) {
     throw new HttpsError(
       'invalid-argument',
@@ -146,61 +178,145 @@ export const createInternalTransfer = onCall(async (request) => {
   });
   const accountingSettings =
     await getPilotAccountingSettingsForBusiness(businessId);
+  const requestHash = buildTreasuryIdempotencyRequestHash({
+    businessId,
+    amount,
+    currency,
+    occurredAt: occurredAtMillis,
+    reference,
+    note,
+    from: {
+      type: fromLedger.type,
+      cashAccountId: fromLedger.cashAccountId ?? null,
+      cashCountId: fromLedger.cashCountId ?? null,
+      bankAccountId: fromLedger.bankAccountId ?? null,
+    },
+    to: {
+      type: toLedger.type,
+      cashAccountId: toLedger.cashAccountId ?? null,
+      cashCountId: toLedger.cashCountId ?? null,
+      bankAccountId: toLedger.bankAccountId ?? null,
+    },
+  });
 
   const transferId = nanoid();
   const now = Timestamp.now();
   const transferRef = db.doc(
     `businesses/${businessId}/internalTransfers/${transferId}`,
   );
+  const idempotencyRef = db.doc(
+    `businesses/${businessId}/treasuryIdempotency/${idempotencyKey}`,
+  );
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const cashRefs = [fromLedger, toLedger]
-      .filter((ledger) => ledger.type === 'cash')
-      .map((ledger) =>
-        db.doc(`businesses/${businessId}/cashCounts/${ledger.cashCountId}`),
-      );
-    const bankRefs = [fromLedger, toLedger]
-      .filter((ledger) => ledger.type === 'bank')
-      .map((ledger) =>
-        db.doc(`businesses/${businessId}/bankAccounts/${ledger.bankAccountId}`),
-      );
+    const idempotencySnap = await transaction.get(idempotencyRef);
+    if (idempotencySnap.exists) {
+      const idempotencyRecord = asRecord(idempotencySnap.data());
+      const storedHash = toCleanString(idempotencyRecord.requestHash);
+      if (storedHash && storedHash !== requestHash) {
+        throw new HttpsError(
+          'already-exists',
+          'La llave de idempotencia ya fue utilizada con otro payload.',
+        );
+      }
 
-    const [cashSnaps, bankSnaps] = await Promise.all([
-      Promise.all(cashRefs.map((ref) => transaction.get(ref))),
-      Promise.all(bankRefs.map((ref) => transaction.get(ref))),
+      const existingTransferId = toCleanString(idempotencyRecord.transferId);
+      if (!existingTransferId) {
+        throw new HttpsError(
+          'failed-precondition',
+          'El registro de idempotencia no apunta a una transferencia válida.',
+        );
+      }
+
+      const existingTransferRef = db.doc(
+        `businesses/${businessId}/internalTransfers/${existingTransferId}`,
+      );
+      const existingTransferSnap = await transaction.get(existingTransferRef);
+      if (!existingTransferSnap.exists) {
+        throw new HttpsError(
+          'failed-precondition',
+          'La transferencia reutilizada por idempotencia ya no existe.',
+        );
+      }
+
+      result = {
+        ok: true,
+        reused: true,
+        businessId,
+        transfer: sanitizeForResponse({
+          id: existingTransferSnap.id,
+          ...existingTransferSnap.data(),
+        }),
+      };
+      return;
+    }
+
+    const fromLedgerRef =
+      fromLedger.type === 'cash'
+        ? db.doc(
+            `businesses/${businessId}/cashAccounts/${resolveLedgerAccountId(fromLedger)}`,
+          )
+        : db.doc(
+            `businesses/${businessId}/bankAccounts/${fromLedger.bankAccountId}`,
+          );
+    const toLedgerRef =
+      toLedger.type === 'cash'
+        ? db.doc(
+            `businesses/${businessId}/cashAccounts/${resolveLedgerAccountId(toLedger)}`,
+          )
+        : db.doc(`businesses/${businessId}/bankAccounts/${toLedger.bankAccountId}`);
+
+    const [fromLedgerSnap, toLedgerSnap] = await Promise.all([
+      transaction.get(fromLedgerRef),
+      transaction.get(toLedgerRef),
     ]);
 
-    cashSnaps.forEach((snap) => {
+    [
+      { role: 'origen', snap: fromLedgerSnap },
+      { role: 'destino', snap: toLedgerSnap },
+    ].forEach(({ role, snap }) => {
       if (!snap.exists) {
         throw new HttpsError(
           'failed-precondition',
-          'Una de las cajas seleccionadas ya no existe.',
+          `La cuenta de ${role} seleccionada ya no existe.`,
         );
       }
-      const state =
-        toCleanString(snap.get('cashCount.state'))?.toLowerCase() || 'closed';
-      if (state !== 'open') {
+      const status = toCleanString(snap.get('status'))?.toLowerCase() || 'inactive';
+      if (status !== 'active') {
         throw new HttpsError(
           'failed-precondition',
-          'Las cajas involucradas en la transferencia deben estar abiertas.',
+          `La cuenta de ${role} debe estar activa para registrar la transferencia.`,
         );
       }
     });
 
-    bankSnaps.forEach((snap) => {
-      if (!snap.exists) {
-        throw new HttpsError(
-          'failed-precondition',
-          'Una de las cuentas bancarias seleccionadas ya no existe.',
-        );
-      }
-    });
+    const fromCurrency = toCleanString(fromLedgerSnap.get('currency'));
+    const toCurrency = toCleanString(toLedgerSnap.get('currency'));
+    if (fromCurrency && toCurrency && fromCurrency !== toCurrency) {
+      throw new HttpsError(
+        'failed-precondition',
+        'La transferencia interna requiere cuentas de la misma moneda.',
+      );
+    }
+    if (currency && fromCurrency && currency !== fromCurrency) {
+      throw new HttpsError(
+        'failed-precondition',
+        'La moneda indicada no coincide con la cuenta de origen.',
+      );
+    }
+    if (currency && toCurrency && currency !== toCurrency) {
+      throw new HttpsError(
+        'failed-precondition',
+        'La moneda indicada no coincide con la cuenta de destino.',
+      );
+    }
+    const transferCurrency = currency ?? fromCurrency ?? toCurrency ?? null;
 
     await assertAccountingPeriodOpenInTransaction({
       transaction,
       businessId,
-      effectiveDate: now,
+      effectiveDate: occurredAt,
       settings: accountingSettings,
       rolloutEnabled: true,
       operationLabel: 'registrar esta transferencia interna',
@@ -213,15 +329,23 @@ export const createInternalTransfer = onCall(async (request) => {
       businessId,
       status: 'posted',
       amount,
+      currency: transferCurrency,
+      fromAccountId: fromIdentity,
+      fromAccountType: fromLedger.type,
+      toAccountId: toIdentity,
+      toAccountType: toLedger.type,
       reference,
       note,
       from: fromLedger,
       to: toLedger,
-      occurredAt: now,
+      occurredAt,
       createdAt: now,
       updatedAt: now,
       createdBy: authUid,
       updatedBy: authUid,
+      metadata: {
+        idempotencyKey,
+      },
     };
     const movements = buildInternalTransferCashMovements({
       businessId,
@@ -241,6 +365,40 @@ export const createInternalTransfer = onCall(async (request) => {
       transaction.set(
         db.doc(`businesses/${businessId}/cashMovements/${movement.id}`),
         movement,
+      );
+      const accountId =
+        movement.bankAccountId ??
+        toCleanString(movement.cashAccountId) ??
+        movement.cashCountId ??
+        null;
+      const counterpartyAccountId = accountId === fromIdentity ? toIdentity : fromIdentity;
+      const counterpartyAccountType =
+        accountId === fromIdentity ? toLedger.type : fromLedger.type;
+      transaction.set(
+        db.doc(`businesses/${businessId}/liquidityLedger/${movement.id}`),
+        {
+          id: movement.id,
+          businessId,
+          accountId,
+          accountType: movement.bankAccountId ? 'bank' : 'cash',
+          currency: transferCurrency,
+          direction: movement.direction,
+          amount: movement.amount,
+          occurredAt: movement.occurredAt,
+          createdAt: movement.createdAt,
+          createdBy: movement.createdBy ?? authUid,
+          status: movement.status === 'void' ? 'void' : 'posted',
+          sourceType: 'internal_transfer',
+          sourceId: transferId,
+          reference: movement.reference ?? reference,
+          description: note ?? 'Transferencia interna',
+          counterpartyAccountId,
+          counterpartyAccountType,
+          metadata: {
+            transferId,
+            idempotencyKey,
+          },
+        },
       );
     });
 
@@ -262,6 +420,12 @@ export const createInternalTransfer = onCall(async (request) => {
             : toLedger.type === 'cash'
               ? toLedger.cashCountId
               : null,
+        cashAccountId:
+          fromLedger.type === 'cash'
+            ? fromLedger.cashAccountId ?? fromIdentity
+            : toLedger.type === 'cash'
+              ? toLedger.cashAccountId ?? toIdentity
+              : null,
         bankAccountId:
           fromLedger.type === 'bank'
             ? fromLedger.bankAccountId
@@ -276,19 +440,39 @@ export const createInternalTransfer = onCall(async (request) => {
         from: fromLedger,
         to: toLedger,
       },
-      occurredAt: now,
+      occurredAt,
       recordedAt: now,
       createdAt: now,
       createdBy: authUid,
+      idempotencyKey,
     });
 
     transaction.set(
       db.doc(`businesses/${businessId}/accountingEvents/${accountingEvent.id}`),
       accountingEvent,
     );
+    transaction.set(idempotencyRef, {
+      id: idempotencyKey,
+      command: 'createInternalTransfer',
+      requestHash,
+      transferId,
+      sourceDocumentType: 'internal_transfer',
+      sourceDocumentId: transferId,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: authUid,
+      responseSnapshot: {
+        ok: true,
+        reused: false,
+        businessId,
+        transfer: sanitizeForResponse(transferRecord),
+        movements: sanitizeForResponse(movements),
+      },
+    });
 
     result = {
       ok: true,
+      reused: false,
       businessId,
       transfer: sanitizeForResponse(transferRecord),
       movements: sanitizeForResponse(movements),

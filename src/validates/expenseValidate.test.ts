@@ -34,4 +34,20 @@ describe('validateExpense', () => {
       },
     });
   });
+
+  it('requires a cash account for direct cash expenses', () => {
+    expect(
+      validateExpense({
+        description: 'Caja fuerte',
+        amount: 50,
+        categoryId: 'cat_1',
+        dates: { expenseDate: Date.now() },
+        payment: { method: 'cash' },
+      }),
+    ).toEqual({
+      payment: {
+        cashAccountId: 'Cuenta de caja es requerida',
+      },
+    });
+  });
 });

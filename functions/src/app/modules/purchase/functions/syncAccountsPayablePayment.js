@@ -22,9 +22,16 @@ import {
 import {
   normalizePaymentMethodsForAggregation,
   resolvePaymentAmount,
+  resolvePaymentRecordCashAccountId,
   resolvePaymentRecordCashCountId,
   resolvePurchaseSupplierId,
 } from './payablePayments.shared.js';
+import {
+  buildCanonicalVendorBillIdFromPurchaseId,
+  buildVendorBillProjection,
+} from './vendorBill.shared.js';
+
+export { buildVendorBillProjection } from './vendorBill.shared.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -101,83 +108,6 @@ const resolvePurchaseDocumentTotal = (purchaseRecord) => {
   );
 };
 
-const resolvePurchaseWorkflowStatus = (purchaseRecord) => {
-  const explicitWorkflowStatus = toCleanString(
-    purchaseRecord.workflowStatus,
-  )?.toLowerCase();
-  if (explicitWorkflowStatus) {
-    return explicitWorkflowStatus;
-  }
-
-  return toCleanString(purchaseRecord.status)?.toLowerCase() ?? null;
-};
-
-const resolveVendorBillStatus = ({ purchaseRecord, paymentState }) => {
-  const workflowStatus = resolvePurchaseWorkflowStatus(purchaseRecord);
-  if (workflowStatus === 'canceled' || workflowStatus === 'cancelled') {
-    return 'canceled';
-  }
-  if (workflowStatus !== 'completed') {
-    return 'draft';
-  }
-
-  const balance = roundToTwoDecimals(paymentState?.balance);
-  const paid = roundToTwoDecimals(paymentState?.paid);
-
-  if (balance <= THRESHOLD) {
-    return 'paid';
-  }
-  if (paid > THRESHOLD) {
-    return 'partial';
-  }
-  return 'posted';
-};
-
-const resolveVendorBillSupplierName = (purchaseRecord) => {
-  const providerRecord = asRecord(purchaseRecord.provider);
-  return toCleanString(providerRecord.name);
-};
-
-const resolveVendorBillDueAt = ({ purchaseRecord, paymentTerms, paymentState }) =>
-  paymentState?.nextPaymentAt ??
-  paymentTerms?.nextPaymentAt ??
-  paymentTerms?.expectedPaymentAt ??
-  purchaseRecord.paymentAt ??
-  asRecord(purchaseRecord.dates).paymentDate ??
-  null;
-
-export const buildVendorBillProjection = ({
-  purchaseId,
-  purchaseRecord,
-  paymentState,
-  paymentTerms,
-}) => ({
-  reference: String(purchaseRecord.numberId ?? purchaseId),
-  status: resolveVendorBillStatus({ purchaseRecord, paymentState }),
-  sourceDocumentType: 'purchase',
-  sourceDocumentId: purchaseId,
-  supplierId: resolvePurchaseSupplierId(purchaseRecord),
-  supplierName: resolveVendorBillSupplierName(purchaseRecord),
-  issueAt: purchaseRecord.completedAt ?? purchaseRecord.createdAt ?? null,
-  dueAt: resolveVendorBillDueAt({
-    purchaseRecord,
-    paymentTerms,
-    paymentState,
-  }),
-  postedAt: purchaseRecord.completedAt ?? null,
-  attachmentUrls: Array.isArray(purchaseRecord.attachmentUrls)
-    ? purchaseRecord.attachmentUrls
-    : [],
-  monetary: purchaseRecord.monetary ?? null,
-  paymentTerms,
-  paymentState,
-  purchase: {
-    ...purchaseRecord,
-    paymentTerms,
-    paymentState,
-  },
-});
-
 const syncVendorBillPaymentState = async ({
   businessId,
   purchaseId,
@@ -185,19 +115,26 @@ const syncVendorBillPaymentState = async ({
   paymentState,
   paymentTerms,
 }) => {
+  const vendorBillId = buildCanonicalVendorBillIdFromPurchaseId(purchaseId);
+  if (!vendorBillId) {
+    return;
+  }
   const vendorBillRef = db.doc(
-    `businesses/${businessId}/vendorBills/purchase:${purchaseId}`,
+    `businesses/${businessId}/vendorBills/${vendorBillId}`,
   );
 
-  await vendorBillRef.set(
-    buildVendorBillProjection({
-      purchaseId,
-      purchaseRecord,
-      paymentState,
-      paymentTerms,
-    }),
-    { merge: true },
-  );
+  const vendorBillProjection = buildVendorBillProjection({
+    purchaseId,
+    purchaseRecord,
+    paymentState,
+    paymentTerms,
+    vendorBillId,
+  });
+  if (!vendorBillProjection) {
+    return;
+  }
+
+  await vendorBillRef.set(vendorBillProjection, { merge: true });
 };
 
 const buildLegacyAwarePaymentState = ({
@@ -281,6 +218,7 @@ const serializePaymentMethods = (paymentMethods) =>
     supplierCreditNoteId: toCleanString(method.supplierCreditNoteId),
     reference: toCleanString(method.reference),
     bankAccountId: toCleanString(method.bankAccountId),
+    cashAccountId: toCleanString(method.cashAccountId),
     cashCountId: toCleanString(method.cashCountId),
   }));
 
@@ -306,10 +244,10 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
     resolvePurchaseSupplierId(nextPayment);
   const paymentMonetarySnapshot = resolvePaymentMonetarySnapshot(nextPayment);
   const commonPayload = {
-    purchaseId:
-      toCleanString(nextPayment.purchaseId) ??
-      toCleanString(nextPayment.sourceDocumentId) ??
-      null,
+    purchaseId: toCleanString(nextPayment.purchaseId) ?? null,
+    vendorBillId:
+      toCleanString(nextPayment.vendorBillId) ??
+      buildCanonicalVendorBillIdFromPurchaseId(nextPayment.purchaseId),
     purchaseNumber:
       toCleanString(nextPayment.metadata?.purchaseNumber) ??
       toCleanString(nextPayment.purchaseNumber) ??
@@ -339,6 +277,9 @@ export const buildAccountsPayablePaymentAccountingEvents = ({
     functionalCurrency: paymentMonetarySnapshot.functionalCurrency,
     monetary: paymentMonetarySnapshot.monetary,
     treasury: {
+      cashAccountId:
+        toCleanString(nextPayment.cashAccountId) ??
+        resolvePaymentRecordCashAccountId(normalizedPaymentMethods),
       cashCountId:
         toCleanString(nextPayment.cashCountId) ??
         resolvePaymentRecordCashCountId(normalizedPaymentMethods),
@@ -584,9 +525,7 @@ export const syncAccountsPayablePayment = onDocumentWritten(
 
     const purchaseId = toCleanString(
       afterPayment?.purchaseId ??
-        beforePayment?.purchaseId ??
-        afterPayment?.sourceDocumentId ??
-        beforePayment?.sourceDocumentId,
+        beforePayment?.purchaseId,
     );
 
     await syncPurchasePaymentState({

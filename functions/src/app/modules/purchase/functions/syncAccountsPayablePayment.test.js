@@ -194,14 +194,16 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
           amount: 100,
           functionalAmount: 6200,
         },
-        treasury: {
+        treasury: expect.objectContaining({
           cashCountId: null,
           bankAccountId: 'bank-1',
           paymentChannel: 'mixed',
-        },
+          cashAccountId: null,
+        }),
         idempotencyKey: 'idem-1',
         payload: expect.objectContaining({
           purchaseId: 'purchase-1',
+          vendorBillId: 'purchase:purchase-1',
           purchaseNumber: 'PC-001',
           receiptNumber: 'CPP-0001',
           appliedCreditNotes: [{ id: 'scn-1', appliedAmount: 40 }],
@@ -261,14 +263,16 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
       expect.objectContaining({
         eventType: 'accounts_payable.payment.voided',
         reversalOfEventId: 'accounts_payable.payment.recorded__payment-1',
-        treasury: {
+        treasury: expect.objectContaining({
           cashCountId: 'cash-1',
           bankAccountId: null,
           paymentChannel: 'cash',
-        },
+          cashAccountId: null,
+        }),
         payload: expect.objectContaining({
           reason: 'duplicate',
           restoredCreditNotes: [{ id: 'scn-1', restoredAmount: 20 }],
+          vendorBillId: 'purchase:purchase-1',
         }),
         createdBy: 'auditor-1',
       }),
@@ -332,6 +336,7 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
     expect(vendorBill).toMatchObject({
       reference: '124',
       status: 'paid',
+      approvalStatus: 'approved',
       sourceDocumentType: 'purchase',
       sourceDocumentId: 'purchase-1',
       supplierId: 'supplier-1',
@@ -390,6 +395,7 @@ describe('buildAccountsPayablePaymentAccountingEvents', () => {
     expect(vendorBill).toMatchObject({
       reference: '126',
       status: 'draft',
+      approvalStatus: 'draft',
       sourceDocumentId: 'purchase-2',
       supplierId: 'supplier-2',
       supplierName: 'Supplier Two',
@@ -521,11 +527,12 @@ describe('syncAccountsPayablePayment', () => {
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         sourceDocumentId: 'purchase-1',
-        status: 'partial',
+        status: 'partially_paid',
         paymentState: expect.objectContaining({
           paid: 40,
           balance: 60,
         }),
+        approvalStatus: 'approved',
       }),
       { merge: true },
     );

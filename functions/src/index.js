@@ -9,6 +9,7 @@ import { syncProductNameOnUpdate } from './app/modules/Inventory/functions/syncP
 import { createProduct } from './app/modules/products/functions/createProduct.js';
 import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
+import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
 import { closeAccountingPeriod } from './app/modules/accounting/functions/closeAccountingPeriod.js';
 import { createManualJournalEntry } from './app/modules/accounting/functions/createManualJournalEntry.js';
 import { getAccountingReports } from './app/modules/accounting/functions/getAccountingReports.js';
@@ -22,6 +23,7 @@ import { addSupplierPayment } from './app/modules/purchase/functions/addSupplier
 import { syncAccountsPayablePayment } from './app/modules/purchase/functions/syncAccountsPayablePayment.js';
 import { syncPurchaseCommittedAccountingEvent } from './app/modules/purchase/functions/syncPurchaseCommittedAccountingEvent.js';
 import { syncPurchaseSupplierCreditNote } from './app/modules/purchase/functions/syncPurchaseSupplierCreditNote.js';
+import { syncVendorBillFromPurchase } from './app/modules/purchase/functions/syncVendorBillFromPurchase.js';
 import { voidSupplierPayment } from './app/modules/purchase/functions/voidSupplierPayment.js';
 import { createWarehouse } from './app/modules/warehouse/functions/createWarehouse.js';
 import { syncExpenseAccountingEvent } from './app/modules/expenses/functions/syncExpenseAccountingEvent.js';
@@ -33,6 +35,7 @@ import { createAccountsReceivable } from './app/modules/accountReceivable/functi
 import { processAccountsReceivablePayment } from './app/modules/accountReceivable/functions/processAccountsReceivablePayment.js';
 import { voidAccountsReceivablePayment } from './app/modules/accountReceivable/functions/voidAccountsReceivablePayment.js';
 import { createInternalTransfer } from './app/modules/treasury/functions/createInternalTransfer.js';
+import { createBankReconciliation } from './app/modules/treasury/functions/createBankReconciliation.js';
 
 import { quotationPdf } from './app/modules/quotation/quotationGenerate/quotationGenerate.js';
 import { keepSupabaseAlive } from './app/modules/supabase/controllers/keepSupabaseAlive.controller.js';
@@ -144,6 +147,7 @@ export {
   createProduct,
   createClient,
   createProvider,
+  reserveCreditNoteNcf,
   closeAccountingPeriod,
   createManualJournalEntry,
   getAccountingReports,
@@ -157,6 +161,7 @@ export {
   syncAccountsPayablePayment,
   syncPurchaseCommittedAccountingEvent,
   syncPurchaseSupplierCreditNote,
+  syncVendorBillFromPurchase,
   voidSupplierPayment,
   createWarehouse,
   syncExpenseAccountingEvent,
@@ -168,6 +173,7 @@ export {
   processAccountsReceivablePayment,
   voidAccountsReceivablePayment,
   createInternalTransfer,
+  createBankReconciliation,
   quotationPdf,
   createBusiness,
   ensureDefaultWarehouseForBusiness,

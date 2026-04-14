@@ -54,6 +54,16 @@ const DEFAULT_TAX_RECEIPTS = [
   },
 ];
 
+const DEFAULT_FISCAL_FEATURES = Object.freeze({
+  domainV2Enabled: false,
+  sequenceEngineV2Enabled: false,
+  reportingEnabled: false,
+  monthlyComplianceEnabled: false,
+  electronicModelEnabled: false,
+  electronicTransportEnabled: false,
+  taxationEnabled: true,
+});
+
 const STRICT_LIMIT_PLANS = new Set(['demo', 'plus']);
 
 const readMaxBusinessesLimit = (subscription) => {
@@ -164,6 +174,14 @@ export const provisionBusinessCoreInTransaction = async ({
   }
 
   if (!businessSnap.exists) {
+    const businessFeatures =
+      business?.features && typeof business.features === 'object'
+        ? business.features
+        : {};
+    const fiscalFeatures =
+      businessFeatures?.fiscal && typeof businessFeatures.fiscal === 'object'
+        ? businessFeatures.fiscal
+        : {};
     const ownerFields = createdBy
       ? {
           ownerUid: createdBy,
@@ -176,6 +194,13 @@ export const provisionBusinessCoreInTransaction = async ({
       ...ownerFields,
       business: {
         ...business,
+        features: {
+          ...businessFeatures,
+          fiscal: {
+            ...DEFAULT_FISCAL_FEATURES,
+            ...fiscalFeatures,
+          },
+        },
         id: businessId,
         ...ownerFields,
         createdAt: FieldValue.serverTimestamp(),

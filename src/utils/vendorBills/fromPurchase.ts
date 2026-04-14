@@ -14,8 +14,8 @@ import type { VendorBill, VendorBillStatus } from './types';
 
 const OPEN_BALANCE_THRESHOLD = 0.01;
 const ACCOUNTS_PAYABLE_VISIBLE_STATUSES = new Set<VendorBillStatus>([
-  'posted',
-  'partial',
+  'approved',
+  'partially_paid',
 ]);
 
 const toCleanString = (value: unknown): string | null => {
@@ -58,11 +58,11 @@ const resolveVendorBillStatus = (
   paid: number,
 ): VendorBillStatus => {
   const workflowStatus = resolvePurchaseWorkflowStatus(purchase);
-  if (workflowStatus === 'canceled') return 'canceled';
+  if (workflowStatus === 'canceled') return 'voided';
   if (workflowStatus !== 'completed') return 'draft';
   if (balance <= OPEN_BALANCE_THRESHOLD) return 'paid';
-  if (paid > OPEN_BALANCE_THRESHOLD) return 'partial';
-  return 'posted';
+  if (paid > OPEN_BALANCE_THRESHOLD) return 'partially_paid';
+  return 'approved';
 };
 
 const hasFinancialAccountsPayableActivity = (purchase: Purchase): boolean => {
@@ -141,18 +141,40 @@ export const buildVendorBillFromPurchase = (
   return {
     id: `purchase:${purchaseId}`,
     reference: String(purchase.numberId ?? purchaseId),
+    vendorReference:
+      toCleanString(
+        purchase.vendorReference ?? purchase.invoiceNumber ?? purchase.reference,
+      ) ?? null,
     status: resolveVendorBillStatus(purchase, balance, paid),
+    approvalStatus:
+      resolvePurchaseWorkflowStatus(purchase) === 'completed'
+        ? 'approved'
+        : resolvePurchaseWorkflowStatus(purchase) === 'canceled'
+          ? 'voided'
+          : 'draft',
     sourceDocumentType: 'purchase',
     sourceDocumentId: purchaseId,
     supplierId,
     supplierName,
     issueAt: purchase.completedAt ?? purchase.createdAt ?? null,
+    billDate: purchase.completedAt ?? purchase.createdAt ?? null,
+    accountingDate: purchase.completedAt ?? purchase.createdAt ?? null,
     dueAt,
     postedAt: purchase.completedAt ?? null,
     attachmentUrls: purchase.attachmentUrls,
     monetary: purchase.monetary ?? null,
     paymentTerms,
     paymentState,
+    totals: {
+      total: Number(paymentState?.total ?? totals.total ?? 0),
+      paid: Number(paymentState?.paid ?? 0),
+      balance: Number(paymentState?.balance ?? totals.total ?? 0),
+    },
+    documentNature: Array.isArray(purchase.replenishments) &&
+      purchase.replenishments.length
+      ? 'inventory'
+      : 'expense',
+    settlementTiming: paymentTerms?.isImmediate === true ? 'immediate' : 'deferred',
     purchase: {
       ...purchase,
       paymentTerms,

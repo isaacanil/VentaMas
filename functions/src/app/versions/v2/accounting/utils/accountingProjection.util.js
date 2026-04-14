@@ -40,6 +40,18 @@ const normalizePostingCondition = (value) => {
       record.taxTreatment === 'taxed' || record.taxTreatment === 'untaxed'
         ? record.taxTreatment
         : 'any',
+    documentNature:
+      record.documentNature === 'inventory' ||
+      record.documentNature === 'expense' ||
+      record.documentNature === 'asset' ||
+      record.documentNature === 'service'
+        ? record.documentNature
+        : 'any',
+    settlementTiming:
+      record.settlementTiming === 'immediate' ||
+      record.settlementTiming === 'deferred'
+        ? record.settlementTiming
+        : 'any',
   };
 };
 
@@ -107,6 +119,13 @@ const resolveEventContext = (event) => {
     toCleanString(treasury.paymentChannel) ||
     toCleanString(payload.settlementKind) ||
     toCleanString(payload.paymentChannel);
+  const documentNatureCandidate =
+    toCleanString(payload.documentNature) ||
+    toCleanString(payload.financialType) ||
+    toCleanString(payload.purchaseNature);
+  const settlementTimingCandidate =
+    toCleanString(payload.settlementTiming) ||
+    toCleanString(payload.settlementMode);
 
   return {
     paymentTerm:
@@ -120,6 +139,18 @@ const resolveEventContext = (event) => {
         ? settlementKindCandidate
         : 'any',
     taxTreatment: taxAmount > 0 ? 'taxed' : 'untaxed',
+    documentNature:
+      documentNatureCandidate === 'inventory' ||
+      documentNatureCandidate === 'expense' ||
+      documentNatureCandidate === 'asset' ||
+      documentNatureCandidate === 'service'
+        ? documentNatureCandidate
+        : 'any',
+    settlementTiming:
+      settlementTimingCandidate === 'immediate' ||
+      settlementTimingCandidate === 'deferred'
+        ? settlementTimingCandidate
+        : 'any',
   };
 };
 
@@ -207,6 +238,20 @@ export const matchesPostingProfileConditions = (profile, event) => {
   if (
     conditions.taxTreatment !== 'any' &&
     conditions.taxTreatment !== eventContext.taxTreatment
+  ) {
+    return false;
+  }
+
+  if (
+    conditions.documentNature !== 'any' &&
+    conditions.documentNature !== eventContext.documentNature
+  ) {
+    return false;
+  }
+
+  if (
+    conditions.settlementTiming !== 'any' &&
+    conditions.settlementTiming !== eventContext.settlementTiming
   ) {
     return false;
   }

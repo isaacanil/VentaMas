@@ -14,6 +14,10 @@ import {
   safeNumber,
   toCleanString,
 } from './payablePayments.shared.js';
+import {
+  resolvePurchaseDocumentNature,
+  resolvePurchaseSettlementTiming,
+} from './vendorBill.shared.js';
 
 const REGION = 'us-central1';
 const MEMORY = '256MiB';
@@ -186,6 +190,8 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
           toCleanString(afterPurchase.paymentTerms?.condition) ??
           toCleanString(afterPurchase.condition) ??
           null,
+        documentNature: resolvePurchaseDocumentNature(afterPurchase),
+        settlementTiming: resolvePurchaseSettlementTiming(afterPurchase),
       },
       occurredAt,
       recordedAt,

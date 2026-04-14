@@ -111,6 +111,8 @@ const createMovement = ({
   sourceId,
   sourceDocumentId = null,
   sourceDocumentType = null,
+  currency = null,
+  cashAccountId = null,
   cashCountId = null,
   bankAccountId = null,
   method,
@@ -141,6 +143,8 @@ const createMovement = ({
     sourceId,
     sourceDocumentId,
     sourceDocumentType,
+    currency: toCleanString(currency),
+    cashAccountId: toCleanString(cashAccountId),
     cashCountId: toCleanString(cashCountId),
     ...(toCleanString(bankAccountId)
       ? { bankAccountId: toCleanString(bankAccountId) }
@@ -180,6 +184,7 @@ const normalizeSupportedPaymentMethods = (paymentMethods) =>
         amount,
         reference: toCleanString(method.reference ?? method.ref),
         bankAccountId: toCleanString(method.bankAccountId),
+        cashAccountId: toCleanString(method.cashAccountId),
         cashCountId: toCleanString(method.cashCountId),
       };
     })
@@ -487,6 +492,7 @@ const resolveInternalTransferLedger = (value) => {
 
   return {
     type: ledgerType,
+    cashAccountId: toCleanString(record.cashAccountId),
     cashCountId: toCleanString(record.cashCountId),
     bankAccountId: toCleanString(record.bankAccountId),
   };
@@ -542,6 +548,8 @@ export const buildInternalTransferCashMovements = ({
       sourceId: transferId,
       sourceDocumentId: transferId,
       sourceDocumentType: 'internal_transfer',
+      currency: toCleanString(transferRecord.currency),
+      cashAccountId: fromLedger.cashAccountId,
       cashCountId: fromLedger.cashCountId,
       bankAccountId: fromLedger.bankAccountId,
       method: resolveInternalTransferMethod(fromLedger),
@@ -566,6 +574,8 @@ export const buildInternalTransferCashMovements = ({
       sourceId: transferId,
       sourceDocumentId: transferId,
       sourceDocumentType: 'internal_transfer',
+      currency: toCleanString(transferRecord.currency),
+      cashAccountId: toLedger.cashAccountId,
       cashCountId: toLedger.cashCountId,
       bankAccountId: toLedger.bankAccountId,
       method: resolveInternalTransferMethod(toLedger),
@@ -699,6 +709,7 @@ export const buildExpenseCashMovement = ({
     sourceId: normalizedExpenseId,
     sourceDocumentId: normalizedExpenseId,
     sourceDocumentType: 'expense',
+    cashAccountId: payment.cashAccountId,
     cashCountId: payment.cashRegister,
     bankAccountId: payment.bankAccountId,
     method: methodCode,
@@ -751,10 +762,9 @@ export const buildAccountsPayablePaymentCashMovements = ({
 
   const occurredAt =
     paymentRecord.occurredAt ?? paymentRecord.date ?? paymentRecord.createdAt ?? createdAt;
+  const vendorBillId = toCleanString(paymentRecord.vendorBillId);
   const purchaseId = toCleanString(
-    paymentRecord.purchaseId ??
-      paymentRecord.sourceDocumentId ??
-      paymentRecord.sourceId,
+    paymentRecord.purchaseId,
   );
   const supplierId = toCleanString(
     paymentRecord.supplierId ?? paymentRecord.counterpartyId,
@@ -772,8 +782,10 @@ export const buildAccountsPayablePaymentCashMovements = ({
         direction: 'out',
         sourceType: 'supplier_payment',
         sourceId: paymentId,
-        sourceDocumentId: purchaseId,
-        sourceDocumentType: purchaseId ? 'purchase' : null,
+        sourceDocumentId: vendorBillId ?? purchaseId,
+        sourceDocumentType: vendorBillId ? 'vendorBill' : purchaseId ? 'purchase' : null,
+        cashAccountId:
+          methodEntry.cashAccountId ?? paymentRecord.cashAccountId ?? null,
         cashCountId:
           methodEntry.cashCountId ?? paymentRecord.cashCountId ?? null,
         bankAccountId:
@@ -791,6 +803,7 @@ export const buildAccountsPayablePaymentCashMovements = ({
         createdBy: paymentRecord.createdBy ?? null,
         status: 'posted',
         metadata: {
+          vendorBillId,
           purchaseId,
           supplierId,
           receiptNumber: toCleanString(paymentRecord.receiptNumber),

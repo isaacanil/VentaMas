@@ -132,6 +132,7 @@ export const AccountingEventMonetarySnapshotSchema = z
 
 export const AccountingEventTreasurySnapshotSchema = z
   .object({
+    cashAccountId: nullableTrimmedStringSchema.optional().default(null),
     cashCountId: nullableTrimmedStringSchema.optional().default(null),
     bankAccountId: nullableTrimmedStringSchema.optional().default(null),
     paymentChannel: z

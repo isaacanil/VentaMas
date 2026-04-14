@@ -6,6 +6,7 @@ import { SelectSettingCart } from '@/features/cart/cartSlice';
 import { InvoiceTemplate1 } from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate1/InvoiceTemplate1';
 import { InvoiceTemplate2 } from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate2/InvoiceTemplate2';
 import { InvoiceTemplate2V3 } from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate2V3/InvoiceTemplate2V3';
+import { InvoiceTemplate2V31 } from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate2V31';
 import { InvoiceTemplate3 } from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate3/InvoiceTemplate3';
 import InvoiceTemplate4 from '@/modules/invoice/components/Invoice/templates/Invoicing/InvoiceTemplate4/InvoiceTemplate4';
 import type { InvoiceData, InvoiceSignatureAssets } from '@/types/invoice';
@@ -17,7 +18,8 @@ const InvoiceWrapper = styled.div<{ $template: string }>`
   ${({ $template }) =>
     ($template === 'template2' ||
       $template === 'template2_v2' ||
-      $template === 'template2_v3') &&
+      $template === 'template2_v3' ||
+      $template === 'template2_v3_1') &&
     `
     font-size: 12px;
     
@@ -67,6 +69,16 @@ export const Invoice = React.forwardRef(
       case 'template2_v3':
         templateContent = (
           <InvoiceTemplate2V3
+            ref={ref}
+            data={data}
+            ignoreHidden={ignoreHidden}
+            previewSignatureAssets={previewSignatureAssets}
+          />
+        );
+        break;
+      case 'template2_v3_1':
+        templateContent = (
+          <InvoiceTemplate2V31
             ref={ref}
             data={data}
             ignoreHidden={ignoreHidden}

@@ -2,7 +2,7 @@
 
 Estado del paquete: `ACTIVE`
 
-Actualizado: `2026-04-05`
+Actualizado: `2026-04-13`
 
 Este paquete concentra el frente de contabilidad operativa y general del sistema:
 
@@ -36,10 +36,14 @@ No conviene leer este paquete como si todo estuviera en fase "solo diseño", ni 
 
 1. `2026-04-04-sync-plan-contabilidad-vs-pdf.md`
 2. `2026-04-04-plan-ejecucion-prioridades-contabilidad.md`
-3. `contabilidad-backlog.md`
-4. `contabilidad-checklist.md`
-5. `2026-03-23-estado-actual-modulos-contables.md`
-6. `audit/2026-03-24-auditoria-semaforo-contabilidad.md`
+3. `2026-04-13-sprint-1-modelo-final-definitivo.md`
+4. `2026-04-13-sprint-2-tesoreria-canonica.md`
+5. `2026-04-13-sprint-3-caja-y-banco.md`
+6. `2026-04-13-smoke-uat-post-deploy.md`
+7. `contabilidad-backlog.md`
+8. `contabilidad-checklist.md`
+9. `2026-03-23-estado-actual-modulos-contables.md`
+10. `audit/2026-03-24-auditoria-semaforo-contabilidad.md`
 
 ### Documentos activos por frente
 
@@ -48,6 +52,10 @@ No conviene leer este paquete como si todo estuviera en fase "solo diseño", ni 
 - `2026-03-17-compras-cuentas-por-pagar-design.md`
 - `2026-03-17-dominio-pagos-ventas-compras-design.md`
 - `2026-03-17-migracion-pagos-caja-design.md`
+- `2026-04-13-sprint-1-modelo-final-definitivo.md`
+- `2026-04-13-sprint-2-tesoreria-canonica.md`
+- `2026-04-13-sprint-3-caja-y-banco.md`
+- `2026-04-13-smoke-uat-post-deploy.md`
 - `2026-04-05-diseno-conciliacion-bancaria.md`
 - `politica-2026-03-12-exchange-rate-policy.md`
 - `../../2026-04-02-accounting-design-system-v1.md`

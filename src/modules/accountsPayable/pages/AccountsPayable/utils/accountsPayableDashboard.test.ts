@@ -30,7 +30,8 @@ const buildVendorBill = ({
   return {
     id: `purchase:${purchase?.id ?? 'purchase-1'}`,
     reference: String(purchase?.numberId ?? 'PO-1'),
-    status: 'partial',
+    status: 'partially_paid',
+    approvalStatus: 'approved',
     sourceDocumentType: 'purchase',
     sourceDocumentId: purchase?.id ?? 'purchase-1',
     supplierId: 'provider-1',
@@ -117,14 +118,15 @@ describe('accountsPayableDashboard', () => {
           },
         },
         attachmentUrls: [{ id: 'file-1' }, { id: 'file-2' }],
-        paymentState: {
-          status: 'partial',
+      paymentState: {
+        status: 'partial',
           total: 1000,
           paid: 250,
           balance: 750,
           paymentCount: 2,
         },
       }),
+      undefined,
       new Date('2026-04-05T12:00:00.000Z').getTime(),
     );
 
@@ -148,6 +150,7 @@ describe('accountsPayableDashboard', () => {
             nextPaymentAt: new Date('2026-04-10T10:00:00.000Z'),
           },
         }),
+        undefined,
         new Date('2026-04-05T12:00:00.000Z').getTime(),
       ),
       buildAccountsPayableRow(
@@ -164,6 +167,7 @@ describe('accountsPayableDashboard', () => {
           },
           attachmentUrls: [{ id: 'file-1' }],
         }),
+        undefined,
         new Date('2026-04-25T12:00:00.000Z').getTime(),
       ),
     ];
@@ -197,6 +201,7 @@ describe('accountsPayableDashboard', () => {
           nextPaymentAt: new Date('2026-03-01T10:00:00.000Z'),
         },
       }),
+      undefined,
       new Date('2026-04-05T12:00:00.000Z').getTime(),
     );
 

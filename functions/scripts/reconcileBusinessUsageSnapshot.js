@@ -5,8 +5,7 @@
     Reconciliar usage/current de un negocio usando conteos reales de Firestore.
 
   Auth:
-    Usa la sesión del Firebase CLI almacenada en:
-      %USERPROFILE%\.config\configstore\firebase-tools.json
+    Usa Application Default Credentials o una service account local.
 
   Qué actualiza:
     businesses/{businessId}/usage/current
@@ -30,22 +29,14 @@
     node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId ventamaxpos --write
     node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId ventamaxpos --userName dev#3407 --businessIdPrefix X --write
     node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId ventamaxpos --businessId X... --write
+    node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId ventamaxpos --service-account C:\path\key.json --write
 */
 
-import fs from 'node:fs/promises';
-import os from 'node:os';
+import fs from 'node:fs';
 import path from 'node:path';
 
-const FIREBASE_CONFIGSTORE_PATH = path.join(
-  os.homedir(),
-  '.config',
-  'configstore',
-  'firebase-tools.json',
-);
-const FIRESTORE_API_BASE = 'https://firestore.googleapis.com/v1';
-const FIREBASE_TOOLS_CLIENT_ID =
-  '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com';
-const FIREBASE_TOOLS_CLIENT_SECRET = 'j9iVZfS8kkCEFUPaAeJV0sAi';
+import admin from 'firebase-admin';
+
 const SCRIPT_NAME = 'reconcileBusinessUsageSnapshot';
 
 const toCleanString = (value) => {
@@ -72,10 +63,13 @@ const explicitBusinessId = toCleanString(getFlagValue(args, '--businessId'));
 const userName = toCleanString(getFlagValue(args, '--userName')) || 'dev#3407';
 const businessIdPrefix =
   toCleanString(getFlagValue(args, '--businessIdPrefix')) || 'X';
+const serviceAccountPath =
+  toCleanString(getFlagValue(args, '--service-account')) ||
+  toCleanString(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 if (!projectId) {
   console.error(
-    'Usage: node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId <firebase-project-id> [--businessId <id>] [--userName <name>] [--businessIdPrefix <prefix>] [--dry-run|--write]',
+    'Usage: node functions/scripts/reconcileBusinessUsageSnapshot.js --projectId <firebase-project-id> [--businessId <id>] [--userName <name>] [--businessIdPrefix <prefix>] [--service-account <path>] [--dry-run|--write]',
   );
   process.exit(1);
 }
@@ -86,327 +80,85 @@ if (!shouldWrite) {
   );
 }
 
-const readFirebaseCliTokens = async () => {
-  const raw = await fs.readFile(FIREBASE_CONFIGSTORE_PATH, 'utf8');
-  const config = JSON.parse(raw);
-  const refreshToken = toCleanString(config?.tokens?.refresh_token);
-  if (!refreshToken) {
-    throw new Error(`No Firebase CLI refresh token found in ${FIREBASE_CONFIGSTORE_PATH}`);
-  }
+const loadServiceAccountCredential = (filePath) => {
+  const absolutePath = path.resolve(filePath);
+  const raw = fs.readFileSync(absolutePath, 'utf8');
+  return admin.credential.cert(JSON.parse(raw));
+};
+
+const initializeAdminApp = () => {
+  if (admin.apps.length) return admin.app();
+
+  const options = {
+    projectId,
+    credential: serviceAccountPath
+      ? loadServiceAccountCredential(serviceAccountPath)
+      : admin.credential.applicationDefault(),
+  };
+
+  return admin.initializeApp(options);
+};
+
+const summarizeUser = (uid, data) => {
+  const root = asRecord(data);
+  const legacy = asRecord(root.user);
   return {
-    refreshToken,
-    scopes:
-      toCleanString(config?.tokens?.scope)?.split(/\s+/).filter(Boolean) || [
-        'https://www.googleapis.com/auth/cloud-platform',
-      ],
+    uid,
+    name: toCleanString(root.name) || toCleanString(legacy.name),
+    displayName:
+      toCleanString(root.displayName) || toCleanString(legacy.displayName),
+    businessId:
+      toCleanString(root.businessId) ||
+      toCleanString(root.businessID) ||
+      toCleanString(legacy.businessId) ||
+      toCleanString(legacy.businessID),
+    activeBusinessId:
+      toCleanString(root.activeBusinessId) ||
+      toCleanString(legacy.activeBusinessId),
+    role: toCleanString(root.role) || toCleanString(legacy.role),
   };
 };
 
-const exchangeRefreshTokenForAccessToken = async ({
-  refreshToken,
-  scopes = [],
-}) => {
-  const body = new URLSearchParams({
-    refresh_token: refreshToken,
-    client_id: FIREBASE_TOOLS_CLIENT_ID,
-    client_secret: FIREBASE_TOOLS_CLIENT_SECRET,
-    grant_type: 'refresh_token',
-    scope: scopes.join(' '),
-  });
+const matchesOwnership = (businessData, ownerUid) => {
+  const root = asRecord(businessData);
+  const businessNode = asRecord(root.business);
 
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: body.toString(),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `OAuth refresh token exchange failed: ${response.status} ${errorBody}`,
-    );
-  }
-
-  const payload = await response.json();
-  const accessToken = toCleanString(payload?.access_token);
-  if (!accessToken) {
-    throw new Error('OAuth refresh token exchange succeeded without access_token');
-  }
-  return accessToken;
+  return [
+    root.ownerUid,
+    root.billingContactUid,
+    businessNode.ownerUid,
+    businessNode.billingContactUid,
+  ].some((value) => toCleanString(value) === ownerUid);
 };
 
-const buildDocumentName = (relativePath) =>
-  `projects/${projectId}/databases/(default)/documents/${relativePath}`;
+const app = initializeAdminApp();
+const db = admin.firestore();
+const resolvedProjectId =
+  toCleanString(app.options.projectId) ||
+  toCleanString(process.env.GOOGLE_CLOUD_PROJECT) ||
+  toCleanString(process.env.GCLOUD_PROJECT) ||
+  projectId;
 
-const readDocument = async (relativePath, accessToken) => {
-  const response = await fetch(
-    `${FIRESTORE_API_BASE}/${buildDocumentName(relativePath)}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
-
-  if (response.status === 404) {
-    return null;
-  }
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `Firestore GET failed for ${relativePath}: ${response.status} ${errorBody}`,
-    );
-  }
-
-  return response.json();
+const getCount = async (query) => {
+  const snapshot = await query.count().get();
+  return Number(snapshot.data().count || 0);
 };
 
-const toFirestoreValue = (value) => {
-  if (value === null || value === undefined) {
-    return { nullValue: null };
-  }
-  if (Array.isArray(value)) {
-    return {
-      arrayValue: {
-        values: value.map((item) => toFirestoreValue(item)),
-      },
-    };
-  }
-  switch (typeof value) {
-    case 'string':
-      return { stringValue: value };
-    case 'boolean':
-      return { booleanValue: value };
-    case 'number':
-      return Number.isInteger(value)
-        ? { integerValue: String(value) }
-        : { doubleValue: value };
-    case 'object':
-      return {
-        mapValue: {
-          fields: Object.fromEntries(
-            Object.entries(value).map(([key, nestedValue]) => [
-              key,
-              toFirestoreValue(nestedValue),
-            ]),
-          ),
-        },
-      };
-    default:
-      throw new Error(`Unsupported Firestore value type: ${typeof value}`);
-  }
-};
-
-const fromFirestoreValue = (value) => {
-  if (!value || typeof value !== 'object') return null;
-  if ('stringValue' in value) return value.stringValue;
-  if ('integerValue' in value) return Number(value.integerValue);
-  if ('doubleValue' in value) return Number(value.doubleValue);
-  if ('booleanValue' in value) return Boolean(value.booleanValue);
-  if ('nullValue' in value) return null;
-  if ('timestampValue' in value) return value.timestampValue;
-  if ('mapValue' in value) {
-    const fields = asRecord(value.mapValue?.fields);
-    return Object.fromEntries(
-      Object.entries(fields).map(([key, nestedValue]) => [
-        key,
-        fromFirestoreValue(nestedValue),
-      ]),
-    );
-  }
-  if ('arrayValue' in value) {
-    const values = Array.isArray(value.arrayValue?.values)
-      ? value.arrayValue.values
-      : [];
-    return values.map((item) => fromFirestoreValue(item));
-  }
-  return null;
-};
-
-const fromFirestoreDocument = (document) => {
-  if (!document) return null;
-  const fields = asRecord(document.fields);
-  return Object.fromEntries(
-    Object.entries(fields).map(([key, value]) => [key, fromFirestoreValue(value)]),
-  );
-};
-
-const patchDocument = async ({ relativePath, fields, accessToken }) => {
-  const response = await fetch(
-    `${FIRESTORE_API_BASE}/${buildDocumentName(relativePath)}`,
-    {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fields: Object.fromEntries(
-          Object.entries(fields).map(([key, value]) => [key, toFirestoreValue(value)]),
-        ),
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `Firestore PATCH failed for ${relativePath}: ${response.status} ${errorBody}`,
-    );
-  }
-};
-
-const runStructuredQuery = async ({ parentPath = '', structuredQuery, accessToken }) => {
-  const parent = parentPath
-    ? `projects/${projectId}/databases/(default)/documents/${parentPath}`
-    : `projects/${projectId}/databases/(default)/documents`;
-  const response = await fetch(
-    `${FIRESTORE_API_BASE}/${parent}:runQuery`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ structuredQuery }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `Firestore runQuery failed: ${response.status} ${errorBody}`,
-    );
-  }
-
-  const rows = await response.json();
-  return Array.isArray(rows)
-    ? rows.filter((row) => row.document).map((row) => row.document)
-    : [];
-};
-
-const runAggregationCount = async ({ collectionId, parentPath, accessToken }) => {
-  const parent = parentPath
-    ? `projects/${projectId}/databases/(default)/documents/${parentPath}`
-    : `projects/${projectId}/databases/(default)/documents`;
-  const response = await fetch(
-    `${FIRESTORE_API_BASE}/${parent}:runAggregationQuery`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        structuredAggregationQuery: {
-          structuredQuery: {
-            from: [{ collectionId }],
-          },
-          aggregations: [{ alias: 'count', count: {} }],
-        },
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `Firestore runAggregationQuery failed for ${collectionId}: ${response.status} ${errorBody}`,
-    );
-  }
-
-  const rows = await response.json();
-  const first = Array.isArray(rows) ? rows.find((row) => row.result) : null;
-  return Number(first?.result?.aggregateFields?.count?.integerValue || 0);
-};
-
-const runAggregationCountWithWhere = async ({
-  collectionId,
-  parentPath,
-  fieldPath,
-  op,
-  value,
-  accessToken,
-}) => {
-  const parent = parentPath
-    ? `projects/${projectId}/databases/(default)/documents/${parentPath}`
-    : `projects/${projectId}/databases/(default)/documents`;
-  const response = await fetch(
-    `${FIRESTORE_API_BASE}/${parent}:runAggregationQuery`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        structuredAggregationQuery: {
-          structuredQuery: {
-            from: [{ collectionId }],
-            where: {
-              fieldFilter: {
-                field: { fieldPath },
-                op,
-                value: toFirestoreValue(value),
-              },
-            },
-          },
-          aggregations: [{ alias: 'count', count: {} }],
-        },
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `Firestore runAggregationQuery failed for ${collectionId}/${fieldPath}: ${response.status} ${errorBody}`,
-    );
-  }
-
-  const rows = await response.json();
-  const first = Array.isArray(rows) ? rows.find((row) => row.result) : null;
-  return Number(first?.result?.aggregateFields?.count?.integerValue || 0);
-};
-
-const findUserByName = async (normalizedName, accessToken) => {
+const findUserByName = async (normalizedName) => {
   const queries = [
-    {
-      from: [{ collectionId: 'users' }],
-      where: {
-        fieldFilter: {
-          field: { fieldPath: 'name' },
-          op: 'EQUAL',
-          value: { stringValue: normalizedName },
-        },
-      },
-      limit: 10,
-    },
-    {
-      from: [{ collectionId: 'users' }],
-      where: {
-        fieldFilter: {
-          field: { fieldPath: 'displayName' },
-          op: 'EQUAL',
-          value: { stringValue: normalizedName },
-        },
-      },
-      limit: 10,
-    },
+    db.collection('users').where('name', '==', normalizedName).limit(10),
+    db.collection('users').where('displayName', '==', normalizedName).limit(10),
   ];
 
   const seen = new Map();
-  for (const structuredQuery of queries) {
-    const docs = await runStructuredQuery({ structuredQuery, accessToken });
-    docs.forEach((document) => {
-      const fullName = toCleanString(document.name);
-      const uid = fullName ? fullName.split('/').slice(-1)[0] : null;
-      if (!uid || seen.has(uid)) return;
-      seen.set(uid, {
-        uid,
-        ...fromFirestoreDocument(document),
+  for (const query of queries) {
+    // eslint-disable-next-line no-await-in-loop
+    const snapshot = await query.get();
+    snapshot.docs.forEach((docSnap) => {
+      if (seen.has(docSnap.id)) return;
+      seen.set(docSnap.id, {
+        uid: docSnap.id,
+        summary: summarizeUser(docSnap.id, docSnap.data() || {}),
       });
     });
   }
@@ -423,50 +175,31 @@ const findUserByName = async (normalizedName, accessToken) => {
   return matches[0];
 };
 
-const listBusinessIdsFromBillingLinks = async (ownerUid, accessToken) => {
-  const docs = await runStructuredQuery({
-    parentPath: `billingAccounts/acct_${ownerUid}`,
-    structuredQuery: {
-      from: [{ collectionId: 'businessLinks' }],
-    },
-    accessToken,
-  });
+const listBusinessIdsFromBillingLinks = async (ownerUid) => {
+  const snapshot = await db
+    .collection('billingAccounts')
+    .doc(`acct_${ownerUid}`)
+    .collection('businessLinks')
+    .get();
 
-  return docs
-    .map((document) => toCleanString(document.name)?.split('/').slice(-1)[0] || null)
+  return snapshot.docs
+    .map((docSnap) => toCleanString(docSnap.id))
     .filter(Boolean);
 };
 
-const matchesOwnership = (businessData, ownerUid) => {
-  const root = asRecord(businessData);
-  const businessNode = asRecord(root.business);
+const scanBusinessesForOwner = async (ownerUid) => {
+  const snapshot = await db.collection('businesses').get();
 
-  return [
-    root.ownerUid,
-    root.billingContactUid,
-    businessNode.ownerUid,
-    businessNode.billingContactUid,
-  ].some((value) => toCleanString(value) === ownerUid);
-};
-
-const scanBusinessesForOwner = async (ownerUid, accessToken) => {
-  const docs = await runStructuredQuery({
-    structuredQuery: {
-      from: [{ collectionId: 'businesses' }],
-    },
-    accessToken,
-  });
-
-  return docs
-    .map((document) => ({
-      id: toCleanString(document.name)?.split('/').slice(-1)[0] || null,
-      data: fromFirestoreDocument(document),
+  return snapshot.docs
+    .map((docSnap) => ({
+      id: toCleanString(docSnap.id),
+      data: docSnap.data() || {},
     }))
     .filter((entry) => entry.id && matchesOwnership(entry.data, ownerUid))
     .map((entry) => entry.id);
 };
 
-const resolveBusinessId = async (accessToken) => {
+const resolveBusinessId = async () => {
   if (explicitBusinessId) {
     return {
       businessId: explicitBusinessId,
@@ -477,12 +210,12 @@ const resolveBusinessId = async (accessToken) => {
     };
   }
 
-  const user = await findUserByName(userName, accessToken);
+  const user = await findUserByName(userName);
   const ownerUid = user.uid;
 
-  let candidates = await listBusinessIdsFromBillingLinks(ownerUid, accessToken);
+  let candidates = await listBusinessIdsFromBillingLinks(ownerUid);
   if (!candidates.length) {
-    candidates = await scanBusinessesForOwner(ownerUid, accessToken);
+    candidates = await scanBusinessesForOwner(ownerUid);
   }
 
   const filtered = candidates.filter((businessId) =>
@@ -505,60 +238,34 @@ const resolveBusinessId = async (accessToken) => {
     businessId: filtered[0],
     resolution: 'userName+businessIdPrefix',
     ownerUid,
-    user,
+    user: user.summary,
     candidates: filtered,
   };
 };
 
-const buildUsageSnapshot = async ({ businessId, ownerUid, accessToken }) => {
-  const parentPath = `businesses/${businessId}`;
-  const productsTotal = await runAggregationCount({
-    parentPath,
-    collectionId: 'products',
-    accessToken,
-  });
-  const warehousesTotal = await runAggregationCount({
-    parentPath,
-    collectionId: 'warehouses',
-    accessToken,
-  });
-  const clientsTotal = await runAggregationCount({
-    parentPath,
-    collectionId: 'clients',
-    accessToken,
-  });
-  const suppliersTotal = await runAggregationCount({
-    parentPath,
-    collectionId: 'providers',
-    accessToken,
-  });
-  const usersTotal = await runAggregationCount({
-    parentPath,
-    collectionId: 'members',
-    accessToken,
-  });
-  const openCashRegistersOpen = await runAggregationCountWithWhere({
-    parentPath,
-    collectionId: 'cashCounts',
-    fieldPath: 'cashCount.state',
-    op: 'EQUAL',
-    value: 'open',
-    accessToken,
-  });
-  const openCashRegistersClosing = await runAggregationCountWithWhere({
-    parentPath,
-    collectionId: 'cashCounts',
-    fieldPath: 'cashCount.state',
-    op: 'EQUAL',
-    value: 'closing',
-    accessToken,
-  });
+const buildUsageSnapshot = async ({ businessId, ownerUid }) => {
+  const businessRef = db.collection('businesses').doc(businessId);
+
+  const productsTotal = await getCount(businessRef.collection('products'));
+  const warehousesTotal = await getCount(businessRef.collection('warehouses'));
+  const clientsTotal = await getCount(businessRef.collection('clients'));
+  const suppliersTotal = await getCount(businessRef.collection('providers'));
+  const usersTotal = await getCount(businessRef.collection('members'));
+  const openCashRegistersOpen = await getCount(
+    businessRef.collection('cashCounts').where('cashCount.state', '==', 'open'),
+  );
+  const openCashRegistersClosing = await getCount(
+    businessRef
+      .collection('cashCounts')
+      .where('cashCount.state', '==', 'closing'),
+  );
   const businessesTotal = ownerUid
-    ? await runAggregationCount({
-        parentPath: `billingAccounts/acct_${ownerUid}`,
-        collectionId: 'businessLinks',
-        accessToken,
-      })
+    ? await getCount(
+        db
+          .collection('billingAccounts')
+          .doc(`acct_${ownerUid}`)
+          .collection('businessLinks'),
+      )
     : 0;
 
   return {
@@ -574,21 +281,18 @@ const buildUsageSnapshot = async ({ businessId, ownerUid, accessToken }) => {
 };
 
 const run = async () => {
-  const tokens = await readFirebaseCliTokens();
-  const accessToken = await exchangeRefreshTokenForAccessToken(tokens);
-  const resolution = await resolveBusinessId(accessToken);
-  const usageRelativePath = `businesses/${resolution.businessId}/usage/current`;
+  const resolution = await resolveBusinessId();
+  const usageRef = db.doc(`businesses/${resolution.businessId}/usage/current`);
 
-  const [usageDoc, nextUsage] = await Promise.all([
-    readDocument(usageRelativePath, accessToken),
+  const [usageSnap, nextUsage] = await Promise.all([
+    usageRef.get(),
     buildUsageSnapshot({
       businessId: resolution.businessId,
       ownerUid: resolution.ownerUid,
-      accessToken,
     }),
   ]);
 
-  const currentUsage = usageDoc ? fromFirestoreDocument(usageDoc) : {};
+  const currentUsage = usageSnap.exists ? usageSnap.data() || {} : {};
   const payload = {
     ...currentUsage,
     ...nextUsage,
@@ -598,11 +302,7 @@ const run = async () => {
   };
 
   if (shouldWrite) {
-    await patchDocument({
-      relativePath: usageRelativePath,
-      fields: payload,
-      accessToken,
-    });
+    await usageRef.set(payload, { merge: true });
   }
 
   console.log(
@@ -610,7 +310,7 @@ const run = async () => {
       {
         ok: true,
         mode: shouldWrite ? 'write' : 'dry-run',
-        projectId,
+        projectId: resolvedProjectId,
         resolution,
         currentUsage,
         nextUsage,

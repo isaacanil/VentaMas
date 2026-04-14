@@ -13,6 +13,7 @@ export interface ExpenseValidationErrors {
   };
   payment?: {
     bankAccountId?: string;
+    cashAccountId?: string;
     cashRegister?: string;
   };
 }
@@ -45,6 +46,13 @@ export const validateExpense = (
     errors.payment = {
       ...(errors.payment ?? {}),
       bankAccountId: 'Cuenta bancaria es requerida',
+    };
+  }
+
+  if (paymentMethod === 'cash' && !expense.payment?.cashAccountId) {
+    errors.payment = {
+      ...(errors.payment ?? {}),
+      cashAccountId: 'Cuenta de caja es requerida',
     };
   }
 

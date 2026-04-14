@@ -150,6 +150,28 @@ const addCleanup = (fn) => {
   cleanupTasks.push(fn);
 };
 
+const redactSensitive = (value, depth = 0) => {
+  if (depth > 4) return '<redacted>';
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSensitive(item, depth + 1));
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  const out = {};
+  for (const [key, nestedValue] of Object.entries(value)) {
+    if (/(token|password|secret|authorization|cookie)/i.test(key)) {
+      out[key] = '<redacted>';
+      continue;
+    }
+    out[key] = redactSensitive(nestedValue, depth + 1);
+  }
+  return out;
+};
+
+const safeJson = (value) => JSON.stringify(redactSensitive(value));
+
 const runCleanup = async () => {
   for (const task of cleanupTasks.reverse()) {
     try {
@@ -177,7 +199,7 @@ const exchangeCustomTokenForIdToken = async (customToken) => {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload.idToken) {
     throw new Error(
-      `Token exchange failed (${response.status}): ${JSON.stringify(payload)}`,
+      `Token exchange failed (${response.status}): ${safeJson(payload)}`,
     );
   }
   return payload.idToken;
@@ -608,7 +630,7 @@ const run = async () => {
       deliveryChannel: 'copy',
     });
     if (!result?.ok || !result?.code || !result?.inviteId) {
-      throw new Error(`Invalid invite create response: ${JSON.stringify(result)}`);
+      throw new Error(`Invalid invite create response: ${safeJson(result)}`);
     }
     createdInviteId = result.inviteId;
     createdInviteCode = result.code;
@@ -627,7 +649,7 @@ const run = async () => {
       sessionToken: inviteeSessionToken,
     });
     if (!result?.ok) {
-      throw new Error(`Invalid invite redeem response: ${JSON.stringify(result)}`);
+      throw new Error(`Invalid invite redeem response: ${safeJson(result)}`);
     }
     return {
       businessId: result.businessId,
@@ -714,7 +736,7 @@ const run = async () => {
       password: loginPassword,
     });
     if (!result?.ok || !result?.sessionToken || !result?.firebaseCustomToken) {
-      throw new Error(`Invalid login response: ${JSON.stringify(result)}`);
+      throw new Error(`Invalid login response: ${safeJson(result)}`);
     }
     smokeSessionToken = result.sessionToken;
     smokeFirebaseCustomToken = result.firebaseCustomToken;
@@ -738,7 +760,7 @@ const run = async () => {
       extend: true,
     });
     if (!result?.ok || !result?.firebaseCustomToken) {
-      throw new Error(`Invalid refresh response: ${JSON.stringify(result)}`);
+      throw new Error(`Invalid refresh response: ${safeJson(result)}`);
     }
     return {
       sessionId: result.session?.id || null,
@@ -781,4 +803,3 @@ run().catch(async (error) => {
   console.error('[liveSecuritySmokeValidation] failed:', error);
   process.exit(1);
 });
-

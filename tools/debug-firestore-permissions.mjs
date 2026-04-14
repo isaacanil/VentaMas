@@ -41,15 +41,14 @@ const firebaseConfig = {
   storageBucket: requireEnv('VITE_FIREBASE_STORAGE_BUCKET'),
   messagingSenderId: requireEnv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
   appId: requireEnv('VITE_FIREBASE_APP_ID'),
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const username = process.argv[2] || '';
-const password = process.argv[3] || '';
+const password = process.env.DEBUG_FIRESTORE_PASSWORD || '';
 
 if (!username || !password) {
   console.error(
-    'Usage: node tools/debug-firestore-permissions.mjs <username> <password>',
+    'Usage: set DEBUG_FIRESTORE_PASSWORD and run node tools/debug-firestore-permissions.mjs <username>',
   );
   process.exit(2);
 }
@@ -66,6 +65,33 @@ const callClientLogin = httpsCallable(functions, 'clientLogin');
 
 const pretty = (value) => JSON.stringify(value, null, 2);
 
+const redactSensitive = (value, depth = 0) => {
+  if (depth > 4) return '<redacted>';
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSensitive(item, depth + 1));
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  const out = {};
+  for (const [key, nestedValue] of Object.entries(value)) {
+    if (/(token|password|secret|authorization|cookie)/i.test(key)) {
+      out[key] = '<redacted>';
+      continue;
+    }
+    out[key] = redactSensitive(nestedValue, depth + 1);
+  }
+  return out;
+};
+
+const summarizeLoginPayload = (payload) => ({
+  ok: Boolean(payload?.ok),
+  code: payload?.code || null,
+  message: payload?.message || payload?.error || null,
+  keys: payload && typeof payload === 'object' ? Object.keys(payload) : [],
+});
+
 const section = (title) => {
   console.log(`\n=== ${title} ===`);
 };
@@ -79,7 +105,9 @@ const safeOp = async (label, fn) => {
     const message = error?.message || String(error);
     console.log(`${label}: FAIL -> ${message}`);
     if (error?.code) console.log(`  code: ${error.code}`);
-    if (error?.customData) console.log(`  customData: ${pretty(error.customData)}`);
+    if (error?.customData) {
+      console.log(`  customData: ${pretty(redactSensitive(error.customData))}`);
+    }
     return { ok: false, error };
   }
 };
@@ -112,7 +140,7 @@ const loginRes = await safeOp('clientLogin', async () => {
 if (!loginRes.ok) process.exit(1);
 const payload = loginRes.result || {};
 if (!payload.ok) {
-  console.log(`clientLogin payload not ok: ${pretty(payload)}`);
+  console.log(`clientLogin payload not ok: ${pretty(summarizeLoginPayload(payload))}`);
   process.exit(1);
 }
 
@@ -214,7 +242,16 @@ await safeOp('query users where user.name == approver', async () => {
   const usersRef = collection(db, 'users');
   const q = query(usersRef, where('user.name', '==', 'dev#3407'));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, data: d.data() }));
+  return snap.docs.map((d) => {
+    const data = d.data() || {};
+    return {
+      id: d.id,
+      activeBusinessId: data?.activeBusinessId,
+      role: data?.role,
+      activeRole: data?.activeRole,
+      nested: pick(data?.user, ['name', 'displayName', 'businessId', 'role']),
+    };
+  });
 });
 
 section('Write: transaction increment counter by +1');

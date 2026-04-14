@@ -27,6 +27,7 @@ import {
   paymentMethodRequiresBankAccount,
   paymentMethodRequiresCashCount,
   resolvePaymentRecordBankAccountId,
+  resolvePaymentRecordCashAccountId,
   resolvePaymentRecordCashCountId,
   resolvePaymentRecordReference,
   resolvePurchaseDocumentTotal,
@@ -37,6 +38,11 @@ import {
   toCleanString,
   toMillis,
 } from './payablePayments.shared.js';
+import {
+  buildCanonicalVendorBillIdFromPurchaseId,
+  buildVendorBillProjection,
+  resolvePurchaseIdFromVendorBillRecord,
+} from './vendorBill.shared.js';
 
 const SUPPORTED_PAYMENT_METHODS = new Set([
   'cash',
@@ -78,6 +84,9 @@ const normalizeRequestedPaymentMethods = (paymentMethods) => {
         reference: toCleanString(methodRecord.reference),
         bankAccountId: paymentMethodRequiresBankAccount(method)
           ? toCleanString(methodRecord.bankAccountId)
+          : null,
+        cashAccountId: paymentMethodRequiresCashCount(method)
+          ? toCleanString(methodRecord.cashAccountId)
           : null,
         cashCountId: paymentMethodRequiresCashCount(method)
           ? toCleanString(methodRecord.cashCountId)
@@ -247,6 +256,16 @@ const loadAndValidateSupportingDocuments = async ({
       );
     }
   });
+
+  return {
+    cashAccountIdsByCashCountId: cashCountSnaps.reduce((accumulator, snapshot) => {
+      accumulator[snapshot.id] =
+        toCleanString(snapshot.data()?.cashAccountId) ??
+        toCleanString(snapshot.data()?.cashCount?.cashAccountId) ??
+        null;
+      return accumulator;
+    }, {}),
+  };
 };
 
 const buildPaymentResponse = ({
@@ -259,6 +278,7 @@ const buildPaymentResponse = ({
   reused,
   paymentId: paymentRecord.id,
   purchaseId: paymentRecord.purchaseId ?? null,
+  vendorBillId: paymentRecord.vendorBillId ?? null,
   receiptNumber: paymentRecord.receiptNumber ?? null,
   paymentState: sanitizeForResponse(paymentState),
   appliedCreditNotes: sanitizeForResponse(appliedCreditNotes),
@@ -276,7 +296,8 @@ export const addSupplierPayment = onCall(async (request) => {
     toCleanString(payload.businessId) ||
     toCleanString(payload.businessID) ||
     null;
-  const purchaseId = toCleanString(payload.purchaseId);
+  const requestedPurchaseId = toCleanString(payload.purchaseId);
+  const requestedVendorBillId = toCleanString(payload.vendorBillId);
   const idempotencyKey = toCleanString(payload.idempotencyKey);
   const note = toCleanString(payload.note);
   const requestedOccurredAtMillis = toMillis(payload.occurredAt);
@@ -297,8 +318,11 @@ export const addSupplierPayment = onCall(async (request) => {
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido.');
   }
-  if (!purchaseId) {
-    throw new HttpsError('invalid-argument', 'purchaseId es requerido.');
+  if (!requestedPurchaseId && !requestedVendorBillId) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Debe indicar purchaseId o vendorBillId.',
+    );
   }
   if (!idempotencyKey) {
     throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
@@ -345,27 +369,32 @@ export const addSupplierPayment = onCall(async (request) => {
     action: 'write',
     operation: LIMIT_OPERATION_KEYS.ACCOUNTS_PAYABLE_PAYMENT,
   });
-  await loadAndValidateSupportingDocuments({
+  const supportingDocuments = await loadAndValidateSupportingDocuments({
     businessId,
     paymentMethods,
     accountingSettings,
   });
+  const normalizedPaymentMethods = paymentMethods.map((method) => ({
+    ...method,
+    cashAccountId:
+      method.cashAccountId ??
+      supportingDocuments.cashAccountIdsByCashCountId?.[method.cashCountId] ??
+      null,
+  }));
 
   const requestHash = buildIdempotencyRequestHash({
     businessId,
-    purchaseId,
+    purchaseId: requestedPurchaseId,
+    vendorBillId: requestedVendorBillId,
     occurredAt: occurredAtMillis,
     nextPaymentAt: nextPaymentAtMillis,
     note,
-    paymentMethods: paymentMethods.map((method) => ({
+    paymentMethods: normalizedPaymentMethods.map((method) => ({
       ...method,
       supplierCreditNoteId: toCleanString(method.supplierCreditNoteId),
     })),
   });
 
-  const purchaseRef = db.doc(
-    `businesses/${businessId}/purchases/${purchaseId}`,
-  );
   const idempotencyRef = db.doc(
     `businesses/${businessId}/accountsPayablePaymentIdempotency/${idempotencyKey}`,
   );
@@ -373,14 +402,13 @@ export const addSupplierPayment = onCall(async (request) => {
   let result = null;
 
   await db.runTransaction(async (transaction) => {
-    const [purchaseSnap, idempotencySnap] = await Promise.all([
-      transaction.get(purchaseRef),
+    const vendorBillRef = requestedVendorBillId
+      ? db.doc(`businesses/${businessId}/vendorBills/${requestedVendorBillId}`)
+      : null;
+    const [vendorBillSnap, idempotencySnap] = await Promise.all([
+      vendorBillRef ? transaction.get(vendorBillRef) : Promise.resolve(null),
       transaction.get(idempotencyRef),
     ]);
-
-    if (!purchaseSnap.exists) {
-      throw new HttpsError('not-found', 'La compra no existe.');
-    }
 
     if (idempotencySnap.exists) {
       const idempotencyRecord = asRecord(idempotencySnap.data());
@@ -416,12 +444,47 @@ export const addSupplierPayment = onCall(async (request) => {
           id: existingPaymentSnap.id,
           ...existingPaymentSnap.data(),
         },
-        paymentState: purchaseSnap.data()?.paymentState ?? null,
+        paymentState: existingPaymentSnap.data()?.paymentStateSnapshot ?? null,
         appliedCreditNotes:
           existingPaymentSnap.data()?.metadata?.appliedCreditNotes ?? [],
         reused: true,
       });
       return;
+    }
+
+    const resolvedVendorBillId =
+      requestedVendorBillId ??
+      buildCanonicalVendorBillIdFromPurchaseId(requestedPurchaseId);
+    if (!resolvedVendorBillId) {
+      throw new HttpsError(
+        'failed-precondition',
+        'No fue posible resolver la cuenta por pagar a pagar.',
+      );
+    }
+
+    if (vendorBillRef && requestedVendorBillId && !vendorBillSnap?.exists) {
+      throw new HttpsError('not-found', 'La cuenta por pagar no existe.');
+    }
+
+    const vendorBillRecord = vendorBillSnap?.exists
+      ? asRecord(vendorBillSnap.data())
+      : {};
+    const purchaseId =
+      requestedPurchaseId ??
+      resolvePurchaseIdFromVendorBillRecord(vendorBillRecord, resolvedVendorBillId);
+    if (!purchaseId) {
+      throw new HttpsError(
+        'failed-precondition',
+        'La cuenta por pagar no está vinculada a una compra válida.',
+      );
+    }
+
+    const purchaseRef = db.doc(
+      `businesses/${businessId}/purchases/${purchaseId}`,
+    );
+    const purchaseSnap = await transaction.get(purchaseRef);
+    if (!purchaseSnap.exists) {
+      throw new HttpsError('not-found', 'La compra no existe.');
     }
 
     const purchaseRecord = asRecord(purchaseSnap.data());
@@ -498,7 +561,7 @@ export const addSupplierPayment = onCall(async (request) => {
       balanceAfter > THRESHOLD && nextPaymentAtMillis
         ? Timestamp.fromMillis(nextPaymentAtMillis)
         : null;
-    const creditNoteRequests = aggregateCreditNoteRequests(paymentMethods);
+    const creditNoteRequests = aggregateCreditNoteRequests(normalizedPaymentMethods);
     const appliedCreditNotes = [];
     const creditNoteWrites = [];
     for (const [
@@ -609,18 +672,20 @@ export const addSupplierPayment = onCall(async (request) => {
       id: paymentId,
       businessId,
       operationType: 'payable-payment',
-      sourceId: purchaseId,
-      sourceDocumentId: purchaseId,
-      sourceDocumentType: 'purchase',
+      sourceId: resolvedVendorBillId,
+      sourceDocumentId: resolvedVendorBillId,
+      sourceDocumentType: 'vendorBill',
       counterpartyType: 'supplier',
       counterpartyId: supplierId,
       purchaseId,
+      vendorBillId: resolvedVendorBillId,
       supplierId,
-      paymentMethods,
+      paymentMethods: normalizedPaymentMethods,
       totalAmount,
-      cashCountId: resolvePaymentRecordCashCountId(paymentMethods),
-      bankAccountId: resolvePaymentRecordBankAccountId(paymentMethods),
-      reference: resolvePaymentRecordReference(paymentMethods),
+      cashCountId: resolvePaymentRecordCashCountId(normalizedPaymentMethods),
+      cashAccountId: resolvePaymentRecordCashAccountId(normalizedPaymentMethods),
+      bankAccountId: resolvePaymentRecordBankAccountId(normalizedPaymentMethods),
+      reference: resolvePaymentRecordReference(normalizedPaymentMethods),
       occurredAt,
       createdAt: now,
       updatedAt: now,
@@ -629,6 +694,7 @@ export const addSupplierPayment = onCall(async (request) => {
       monetary: paymentMonetarySnapshot ?? null,
       exchangeRateSnapshot:
         paymentMonetarySnapshot?.exchangeRateSnapshot ?? null,
+      paymentStateSnapshot: null,
       status: 'posted',
       receiptNumber: `CPP-${paymentId.slice(0, 8).toUpperCase()}`,
       nextPaymentAt,
@@ -638,6 +704,7 @@ export const addSupplierPayment = onCall(async (request) => {
           toCleanString(
             purchaseRecord.workflowStatus ?? purchaseRecord.status,
           ) ?? null,
+        vendorBillId: resolvedVendorBillId,
         note,
         idempotencyKey,
         appliedCreditNotes,
@@ -680,6 +747,7 @@ export const addSupplierPayment = onCall(async (request) => {
       lastPaymentId,
       nextPaymentAt: resolvedNextPaymentAt,
     });
+    paymentRecord.paymentStateSnapshot = paymentState;
 
     const paymentRef = db.doc(
       `businesses/${businessId}/accountsPayablePayments/${paymentId}`,
@@ -696,10 +764,28 @@ export const addSupplierPayment = onCall(async (request) => {
       },
       { merge: true },
     );
+    const vendorBillProjection = buildVendorBillProjection({
+      purchaseId,
+      purchaseRecord,
+      paymentState,
+      paymentTerms: {
+        ...asRecord(purchaseRecord.paymentTerms),
+        nextPaymentAt: resolvedNextPaymentAt,
+      },
+      vendorBillId: resolvedVendorBillId,
+    });
+    if (vendorBillProjection) {
+      transaction.set(
+        db.doc(`businesses/${businessId}/vendorBills/${resolvedVendorBillId}`),
+        vendorBillProjection,
+        { merge: true },
+      );
+    }
     transaction.set(idempotencyRef, {
       id: idempotencyKey,
       paymentId,
       purchaseId,
+      vendorBillId: resolvedVendorBillId,
       requestHash,
       createdAt: now,
       createdBy: authUid,

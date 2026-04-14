@@ -187,6 +187,7 @@ export const normalizePaymentMethodsForAggregation = (paymentRecord) => {
         supplierCreditNoteId: toCleanString(methodRecord.supplierCreditNoteId),
         reference: toCleanString(methodRecord.reference),
         bankAccountId: toCleanString(methodRecord.bankAccountId),
+        cashAccountId: toCleanString(methodRecord.cashAccountId),
         cashCountId: toCleanString(methodRecord.cashCountId),
       };
     })
@@ -260,6 +261,26 @@ export const resolvePaymentRecordCashCountId = (paymentMethods) => {
     new Set(
       paymentMethods
         .map((paymentMethod) => toCleanString(paymentMethod.cashCountId))
+        .filter(Boolean),
+    ),
+  );
+  return uniqueIds.length === 1 ? uniqueIds[0] : null;
+};
+
+export const resolvePaymentRecordCashAccountId = (paymentMethods) => {
+  if (
+    !paymentMethods.length ||
+    paymentMethods.some(
+      (paymentMethod) => !paymentMethodRequiresCashCount(paymentMethod.method),
+    )
+  ) {
+    return null;
+  }
+
+  const uniqueIds = Array.from(
+    new Set(
+      paymentMethods
+        .map((paymentMethod) => toCleanString(paymentMethod.cashAccountId))
         .filter(Boolean),
     ),
   );

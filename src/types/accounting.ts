@@ -83,6 +83,13 @@ export type AccountingPostingAmountSource =
 export type AccountingPostingPaymentTerm = 'any' | 'cash' | 'credit';
 export type AccountingPostingSettlementKind = 'any' | 'cash' | 'bank' | 'other';
 export type AccountingPostingTaxTreatment = 'any' | 'taxed' | 'untaxed';
+export type AccountingPostingDocumentNature =
+  | 'any'
+  | 'inventory'
+  | 'expense'
+  | 'asset'
+  | 'service';
+export type AccountingPostingSettlementTiming = 'any' | 'immediate' | 'deferred';
 export type JournalEntryStatus = 'posted' | 'reversed';
 
 export type AccountingOperationType =
@@ -236,6 +243,13 @@ export interface BankReconciliationRecord {
   metadata?: Record<string, unknown>;
 }
 
+export interface AccountingEventTreasurySnapshot {
+  cashAccountId?: string | null;
+  cashCountId?: string | null;
+  bankAccountId?: string | null;
+  paymentChannel?: 'cash' | 'bank' | 'mixed' | 'other' | null;
+}
+
 export interface ChartOfAccount {
   id: string;
   businessId: string;
@@ -263,12 +277,6 @@ export interface AccountingEventMonetarySnapshot {
   taxAmount?: number | null;
   functionalAmount?: number | null;
   functionalTaxAmount?: number | null;
-}
-
-export interface AccountingEventTreasurySnapshot {
-  cashCountId?: string | null;
-  bankAccountId?: string | null;
-  paymentChannel?: 'cash' | 'bank' | 'mixed' | 'other' | null;
 }
 
 export interface AccountingEventError {
@@ -319,6 +327,8 @@ export interface AccountingPostingCondition {
   paymentTerm?: AccountingPostingPaymentTerm;
   settlementKind?: AccountingPostingSettlementKind;
   taxTreatment?: AccountingPostingTaxTreatment;
+  documentNature?: AccountingPostingDocumentNature;
+  settlementTiming?: AccountingPostingSettlementTiming;
 }
 
 export interface AccountingPostingLineTemplate {

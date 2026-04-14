@@ -65,6 +65,7 @@ describe('vendorBills/fromPurchase', () => {
     expect(shouldMaterializeVendorBillFromPurchase(purchase)).toBe(true);
     expect(buildVendorBillFromPurchase(purchase)).toMatchObject({
       status: 'draft',
+      approvalStatus: 'draft',
       paymentState: {
         status: 'partial',
         paid: 25,
@@ -83,7 +84,8 @@ describe('vendorBills/fromPurchase', () => {
     expect(shouldMaterializeVendorBillFromPurchase(purchase)).toBe(true);
 
     expect(buildVendorBillFromPurchase(purchase)).toMatchObject({
-      status: 'canceled',
+      status: 'voided',
+      approvalStatus: 'voided',
       sourceDocumentId: 'purchase-1',
     });
   });
@@ -98,8 +100,8 @@ describe('vendorBills/fromPurchase', () => {
     expect(buildVendorBillFromPurchase(purchase)).toBeNull();
   });
 
-  it('shows only posted or partial vendor bills in the main AP view', () => {
-    const openPostedBill = buildVendorBillFromPurchase(
+  it('shows only approved or partially paid vendor bills in the main AP view', () => {
+    const openApprovedBill = buildVendorBillFromPurchase(
       buildPurchase({
         status: 'completed',
         workflowStatus: 'completed',
@@ -120,7 +122,7 @@ describe('vendorBills/fromPurchase', () => {
         },
       }),
     );
-    const canceledBill = buildVendorBillFromPurchase(
+    const voidedBill = buildVendorBillFromPurchase(
       buildPurchase({
         status: 'canceled',
         workflowStatus: 'canceled',
@@ -128,11 +130,11 @@ describe('vendorBills/fromPurchase', () => {
       }),
     );
 
-    expect(openPostedBill).not.toBeNull();
+    expect(openApprovedBill).not.toBeNull();
     expect(draftBill).not.toBeNull();
-    expect(canceledBill).not.toBeNull();
-    expect(isOpenVendorBill(openPostedBill!)).toBe(true);
+    expect(voidedBill).not.toBeNull();
+    expect(isOpenVendorBill(openApprovedBill!)).toBe(true);
     expect(isOpenVendorBill(draftBill!)).toBe(false);
-    expect(isOpenVendorBill(canceledBill!)).toBe(false);
+    expect(isOpenVendorBill(voidedBill!)).toBe(false);
   });
 });

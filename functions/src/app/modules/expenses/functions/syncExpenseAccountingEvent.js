@@ -71,6 +71,54 @@ const resolveExpenseMonetarySnapshot = (expenseRecord) => {
   };
 };
 
+const resolveExpenseSettlementTiming = (expenseRecord) => {
+  const payment = asRecord(expenseRecord.payment);
+  const settlementMode = toCleanString(
+    payment.settlementMode ??
+      payment.mode ??
+      expenseRecord.settlementMode ??
+      expenseRecord.paymentMode,
+  )?.toLowerCase();
+
+  if (settlementMode === 'payable' || settlementMode === 'deferred') {
+    return 'deferred';
+  }
+
+  if (
+    payment.deferToAccountsPayable === true ||
+    toCleanString(payment.accountsPayableId) ||
+    toCleanString(expenseRecord.accountsPayableId)
+  ) {
+    return 'deferred';
+  }
+
+  return 'immediate';
+};
+
+const resolveExpenseDocumentNature = (expenseRecord) => {
+  const normalized = toCleanString(
+    expenseRecord.financialType ??
+      expenseRecord.expenseNature ??
+      expenseRecord.accountingCategory ??
+      expenseRecord.categoryType,
+  )?.toLowerCase();
+
+  switch (normalized) {
+    case 'asset':
+    case 'fixed_asset':
+    case 'fixed-asset':
+    case 'capex':
+      return 'asset';
+    case 'service':
+      return 'service';
+    case 'inventory':
+    case 'stock':
+      return 'inventory';
+    default:
+      return 'expense';
+  }
+};
+
 export const buildExpenseRecordedAccountingEvent = ({
   businessId,
   expenseId,
@@ -111,6 +159,7 @@ export const buildExpenseRecordedAccountingEvent = ({
     functionalCurrency: monetarySnapshot.functionalCurrency,
     monetary: monetarySnapshot.monetary,
     treasury: {
+      cashAccountId: toCleanString(payment.cashAccountId),
       cashCountId: toCleanString(payment.cashRegister),
       bankAccountId: toCleanString(payment.bankAccountId),
       paymentChannel: resolveAccountingPaymentChannel([
@@ -134,6 +183,8 @@ export const buildExpenseRecordedAccountingEvent = ({
         toCleanString(payment.settlementMode) ??
         toCleanString(nextExpense.settlementMode) ??
         null,
+      documentNature: resolveExpenseDocumentNature(nextExpense),
+      settlementTiming: resolveExpenseSettlementTiming(nextExpense),
       reference:
         toCleanString(payment.reference) ??
         toCleanString(payment.bank) ??
