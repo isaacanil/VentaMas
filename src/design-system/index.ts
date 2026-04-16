@@ -5,5 +5,7 @@ export { scrollbarStyles } from './css/scrollbar';
 export { componentRegistry } from './registry';
 export { screenRecipes } from './recipes';
 export { designSystemContextPack } from './context';
+export { wonderDesignSystemBundle, getWonderDesignSystemPrompt } from './wonder';
+export type { WonderDesignSystemBundle } from './wonder';
 export * from './contracts';
 export type * from './types';

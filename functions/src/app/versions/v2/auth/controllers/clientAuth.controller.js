@@ -917,7 +917,9 @@ async function ensureUniqueUsername(name, excludeId = null) {
   }
 }
 
-export const clientPublicSignUp = onCall(async (request) => {
+export const clientPublicSignUp = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   if (!canUsePublicSignup(request)) {
     throw new HttpsError(
       'permission-denied',
@@ -1042,7 +1044,11 @@ export const clientPublicSignUp = onCall(async (request) => {
   };
 });
 
-export const clientLogin = onCall(async (request) => {
+export const clientLogin = onCall(
+  {
+    cors: CLIENT_AUTH_CORS_ORIGINS,
+  },
+  async (request) => {
   const { data = {} } = request || {};
   const { username, name, password } = data;
   const sessionInfo = extractRequestInfo(request);
@@ -1394,7 +1400,9 @@ export const clientLoginWithProvider = onCall(
   },
 );
 
-export const clientClaimOwnership = onCall(async (request) => {
+export const clientClaimOwnership = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
 
@@ -1494,7 +1502,9 @@ export const clientClaimOwnership = onCall(async (request) => {
   return { ok: true, message: 'Ahora eres el propietario registrado.' };
 });
 
-export const clientValidateSession = onCall(async (request) => {
+export const clientValidateSession = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
   const snap = await ensureActiveSession(sessionToken, {
@@ -1628,7 +1638,9 @@ export const clientListSessionLogs = onCall(
   },
 );
 
-export const clientListSessions = onCall(async (request) => {
+export const clientListSessions = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
   const snap = await ensureActiveSession(sessionToken, {
@@ -1643,7 +1655,9 @@ export const clientListSessions = onCall(async (request) => {
   };
 });
 
-export const clientRevokeSession = onCall(async (request) => {
+export const clientRevokeSession = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const { sessionToken, targetToken, targetUserId } = data;
 
@@ -1698,7 +1712,9 @@ export const clientRevokeSession = onCall(async (request) => {
   };
 });
 
-export const clientLogout = onCall(async (request) => {
+export const clientLogout = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const { sessionToken } = data;
   if (!sessionToken) {
@@ -1725,7 +1741,9 @@ export const clientLogout = onCall(async (request) => {
   return { ok: true };
 });
 
-export const clientValidateUser = onCall(async ({ data }) => {
+export const clientValidateUser = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async ({ data }) => {
   const { username, name, password, uid } = data || {};
   const identifier = normalizeName(username || name);
   assertPassword(password, { requireComplexity: false });
@@ -1769,7 +1787,9 @@ export const clientValidateUser = onCall(async ({ data }) => {
   };
 });
 
-export const clientSeedBusinessWithUsers = onCall(async (request) => {
+export const clientSeedBusinessWithUsers = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
     request,
     'client-seed-business-with-users',
@@ -2030,7 +2050,9 @@ export const clientSeedBusinessWithUsers = onCall(async (request) => {
   };
 });
 
-export const clientSignUp = onCall(async (request) => {
+export const clientSignUp = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { userId: actorUserId, role: actorRole } = await assertAdminAccess(
     request,
     'client-signup',
@@ -2237,7 +2259,9 @@ export const clientSignUp = onCall(async (request) => {
   };
 });
 
-export const clientUpdateUser = onCall(async (request) => {
+export const clientUpdateUser = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const {
     userId: actorUserId,
     adminSnap,
@@ -2397,7 +2421,9 @@ export const clientUpdateUser = onCall(async (request) => {
   };
 });
 
-export const clientChangePassword = onCall(async ({ data }) => {
+export const clientChangePassword = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async ({ data }) => {
   const { userId, oldPassword, newPassword } = data || {};
   if (!userId) {
     throw new HttpsError('invalid-argument', 'ID de usuario requerido');
@@ -2428,7 +2454,9 @@ export const clientChangePassword = onCall(async ({ data }) => {
   return { ok: true, sessionsRevoked: revoked };
 });
 
-export const clientSetUserPassword = onCall(async (request) => {
+export const clientSetUserPassword = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   await assertAdminAccess(request, 'client-set-user-password');
   const { data } = request || {};
   const { userId, newPassword } = data || {};
@@ -2449,7 +2477,9 @@ export const clientSetUserPassword = onCall(async (request) => {
   return { ok: true, sessionsRevoked: revoked };
 });
 
-export const clientSwitchUserRole = onCall(async (request) => {
+export const clientSwitchUserRole = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   const { data = {} } = request || {};
   const targetRole = normalizeRole(data?.targetRole || data?.role || '');
 
@@ -2735,7 +2765,9 @@ export const clientSendEmailVerification = onCall(
  * Verifica el código enviado por email. Si es correcto, marca el email como verificado
  * y lo guarda en el documento del usuario.
  */
-export const clientVerifyEmailCode = onCall(async (request) => {
+export const clientVerifyEmailCode = onCall(
+  { cors: CLIENT_AUTH_CORS_ORIGINS },
+  async (request) => {
   await assertAdminAccess(request, 'verify-email-code');
   const { data } = request || {};
   const userId = data?.userId;

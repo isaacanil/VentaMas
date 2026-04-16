@@ -1,4 +1,8 @@
 import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import {
+  getFunctionsEmulatorBaseUrl,
+  shouldUseFirebaseEmulators,
+} from '@/firebase/emulatorConfig';
 import { auth } from '@/firebase/firebaseconfig';
 
 const DEFAULT_REGION =
@@ -19,19 +23,30 @@ const CUSTOM_BASE_URL =
     ? import.meta.env.VITE_FIREBASE_FUNCTIONS_BASE_URL
     : null;
 
-const FUNCTIONS_BASE_URL = CUSTOM_BASE_URL
-  ? CUSTOM_BASE_URL.replace(/\/$/, '')
-  : PROJECT_ID
-    ? `https://${DEFAULT_REGION}-${PROJECT_ID}.cloudfunctions.net`
-    : null;
+const resolveFunctionsBaseUrl = (): string | null => {
+  if (CUSTOM_BASE_URL) {
+    return CUSTOM_BASE_URL.replace(/\/$/, '');
+  }
+
+  if (shouldUseFirebaseEmulators()) {
+    return getFunctionsEmulatorBaseUrl();
+  }
+
+  if (!PROJECT_ID) {
+    return null;
+  }
+
+  return `https://${DEFAULT_REGION}-${PROJECT_ID}.cloudfunctions.net`;
+};
 
 const ensureBaseUrl = (): string => {
-  if (!FUNCTIONS_BASE_URL) {
+  const functionsBaseUrl = resolveFunctionsBaseUrl();
+  if (!functionsBaseUrl) {
     throw new Error(
       'No se pudo determinar la URL de Cloud Functions. Verifica la configuración.',
     );
   }
-  return FUNCTIONS_BASE_URL;
+  return functionsBaseUrl;
 };
 
 type StoredSession = ReturnType<typeof getStoredSession>;

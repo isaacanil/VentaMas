@@ -4,8 +4,6 @@ import type { SwitchProps } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
-import FiscalReceiptsAlertWidget from '../FiscalReceiptsAlertWidget/FiscalReceiptsAlertWidget';
-
 const { Title, Text } = Typography;
 
 interface ReceiptSettingsSectionProps {
@@ -18,42 +16,28 @@ export function ReceiptSettingsSection({
   onToggle,
 }: ReceiptSettingsSectionProps) {
   return (
-    <Container>
-      <SectionContainer>
-        <Info>
-          <Title level={4}>Opción para Deshabilitar Comprobantes</Title>
-          <Text>Activa o desactiva los comprobantes en el punto de venta</Text>
-        </Info>
-        <Switch checked={enabled} onChange={onToggle} />
-      </SectionContainer>
-
-      <AlertsContainer>
-        <FiscalReceiptsAlertWidget />
-      </AlertsContainer>
-    </Container>
+    <SectionContainer>
+      <Info>
+        <Title level={4}>Habilitar emisión fiscal</Title>
+        <Text>
+          Controla si el negocio puede emitir NCF. Al desactivar, las ventas
+          siguen operando pero sin comprobantes fiscales.
+        </Text>
+      </Info>
+      <Switch checked={enabled} onChange={onToggle} />
+    </SectionContainer>
   );
 }
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
 
 const SectionContainer = styled.div`
   display: flex;
   gap: 1em;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-`;
-
-const AlertsContainer = styled.div`
-  padding: 16px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  padding: var(--ds-space-4);
+  background-color: var(--ds-color-bg-subtle);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-color-border-subtle);
 `;
 
 const Info = styled.div`
@@ -62,13 +46,13 @@ const Info = styled.div`
 
   > h4 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 500;
+    font-size: var(--ds-font-size-md);
+    font-weight: var(--ds-font-weight-semibold);
   }
 
   > p {
     margin: 0;
-    font-size: 14px;
-    color: rgb(0 0 0 / 45%);
+    font-size: var(--ds-font-size-sm);
+    color: var(--ds-color-text-secondary);
   }
 `;

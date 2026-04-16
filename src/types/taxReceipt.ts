@@ -5,6 +5,16 @@ export interface TaxReceiptUser {
   email?: string | null;
 }
 
+export interface TaxReceiptAuthorizationEntry {
+  authorizationNumber: string;
+  requestNumber: string;
+  startSequence: string;
+  endSequence: string;
+  approvedQuantity: string;
+  expirationDate: string;
+  authorizationDate: string;
+}
+
 export const TAX_RECEIPT_DOCUMENT_FORMATS = [
   'traditional',
   'electronic',
@@ -30,6 +40,7 @@ export interface TaxReceiptData {
   quantity?: number | string;
   disabled?: boolean;
   description?: string;
+  authorizations?: TaxReceiptAuthorizationEntry[];
   createdAt?: unknown;
 }
 

@@ -124,6 +124,24 @@ export const getInvoiceErrorNotification = (
     };
   }
 
+  const detailsReason =
+    typeof error?.details === 'object' && error.details
+      ? error.details.reason
+      : null;
+
+  if (
+    normalizedCode === 'failed-precondition' &&
+    detailsReason === 'tax-receipt-required'
+  ) {
+    return {
+      message: 'Comprobante requerido',
+      description:
+        error?.message ||
+        'Debes seleccionar un comprobante fiscal válido antes de completar la venta.',
+      duration: 6,
+    };
+  }
+
   const details = collectDetails(error);
 
   if (normalizedCode) {

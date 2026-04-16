@@ -3,18 +3,9 @@ import type { DateTime } from 'luxon';
 import type {
   TaxReceiptData,
   TaxReceiptDocument,
+  TaxReceiptAuthorizationEntry,
   TaxReceiptUser,
 } from '@/types/taxReceipt';
-
-export interface TaxReceiptAuthorizationEntry {
-  authorizationNumber: string;
-  requestNumber: string;
-  startSequence: string;
-  endSequence: string;
-  approvedQuantity: string;
-  expirationDate: string;
-  authorizationDate: string;
-}
 
 export type TaxReceiptWithAuthorizations = TaxReceiptData & {
   authorizations?: TaxReceiptAuthorizationEntry[];

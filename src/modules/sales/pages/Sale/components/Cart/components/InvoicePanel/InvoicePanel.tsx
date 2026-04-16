@@ -44,7 +44,6 @@ export const InvoicePanel = () => {
     taxReceiptModalOpen,
     taxReceiptState,
     closeTaxReceiptModal,
-    continueWithoutTaxReceipt,
     handleSelectTaxReceiptFromModal,
   } = useInvoicePanelController();
 
@@ -128,7 +127,6 @@ export const InvoicePanel = () => {
         loading={loading.status}
         onSelectReceipt={handleSelectTaxReceiptFromModal}
         onRetry={retryWithTaxReceipt}
-        onContinueWithout={continueWithoutTaxReceipt}
         onCancel={closeTaxReceiptModal}
       />
     </>

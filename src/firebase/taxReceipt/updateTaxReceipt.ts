@@ -132,34 +132,43 @@ export async function validateSequenceUpdate(
   ncfType: string,
   proposedSequence: number,
   currentSequence: number,
+  increment = 1,
 ): Promise<{
   isValid: boolean;
   reason?: string;
   lastUsedSequence?: number;
+  expectedNextSequence?: number;
 }> {
   try {
+    const safeIncrement =
+      Number.isFinite(increment) && increment > 0 ? increment : 1;
+
     // Validar que no retroceda respecto al documento actual
-    if (proposedSequence < currentSequence) {
+    if (proposedSequence <= currentSequence) {
       return {
         isValid: false,
-        reason: `No se puede retroceder la secuencia de ${currentSequence} a ${proposedSequence}`,
+        reason: `La secuencia inicial ${proposedSequence} debe ser mayor que la última emitida (${currentSequence}).`,
       };
     }
 
     // Validar contra el último uso real
     const lastUsedSequence = await getLastUsedSequence(businessId, ncfType);
+    const expectedNextSequence =
+      Math.max(currentSequence, lastUsedSequence) + safeIncrement;
 
-    if (lastUsedSequence > 0 && proposedSequence <= lastUsedSequence) {
+    if (lastUsedSequence > 0 && proposedSequence < expectedNextSequence) {
       return {
         isValid: false,
-        reason: `La secuencia ${proposedSequence} ya fue usada. Último NCF usado tiene secuencia ${lastUsedSequence}`,
+        reason: `La secuencia inicial ${proposedSequence} solapa uso real. Próxima secuencia segura: ${expectedNextSequence}.`,
         lastUsedSequence,
+        expectedNextSequence,
       };
     }
 
     return {
       isValid: true,
       lastUsedSequence,
+      expectedNextSequence,
     };
   } catch (error) {
     const errorMessage =

@@ -13,14 +13,14 @@ export const fbUpdateFiscalAlertsConfig = async (
   alertConfig: FiscalAlertsConfig,
 ): Promise<{ success: true }> => {
   try {
-    if (!user?.id) {
-      throw new Error('Usuario no valido');
+    if (!user?.businessID) {
+      throw new Error('Negocio no válido');
     }
 
     const configRef = doc(
       db,
-      'users',
-      user.id,
+      'businesses',
+      user.businessID,
       'settings',
       'fiscalAlertsConfig',
     );
@@ -28,13 +28,32 @@ export const fbUpdateFiscalAlertsConfig = async (
     // Estructura de datos para guardar
     const configData: FiscalAlertsConfig = {
       alertsEnabled: alertConfig.alertsEnabled,
+      monitoring: {
+        quantityEnabled: alertConfig.monitoring.quantityEnabled,
+        expirationEnabled: alertConfig.monitoring.expirationEnabled,
+      },
       globalThresholds: {
         warning: alertConfig.globalThresholds.warning,
         critical: alertConfig.globalThresholds.critical,
       },
       customThresholds: alertConfig.customThresholds || {},
+      expirationThresholds: {
+        warning: alertConfig.expirationThresholds.warning,
+        critical: alertConfig.expirationThresholds.critical,
+      },
+      customExpirationThresholds: alertConfig.customExpirationThresholds || {},
+      channels: {
+        notificationCenter: alertConfig.channels.notificationCenter,
+        popupOnCritical: alertConfig.channels.popupOnCritical,
+        email: alertConfig.channels.email,
+      },
+      execution: {
+        checkFrequencyMinutes: alertConfig.execution.checkFrequencyMinutes,
+        suppressRepeatedNotifications:
+          alertConfig.execution.suppressRepeatedNotifications,
+      },
       lastUpdated: new Date(),
-      version: '1.0',
+      version: '2.0',
     };
 
     // Verificar si el documento existe

@@ -1,12 +1,4 @@
-/**
- * Configuración para alertas de comprobantes fiscales
- * Este archivo permite configurar cuándo mostrar alertas basadas en la cantidad restante
- */
-
-interface ThresholdConfig {
-  warning: number;
-  critical: number;
-}
+import type { FiscalAlertsConfig, FiscalAlertThresholds } from '@/firebase/Settings/fiscalAlertsConfig/types';
 
 interface MessageConfig {
   template: string;
@@ -16,24 +8,20 @@ interface MessageConfig {
 interface FiscalReceiptsAlertConfig {
   DEFAULT_WARNING_THRESHOLD: number;
   DEFAULT_CRITICAL_THRESHOLD: number;
-  CUSTOM_THRESHOLDS: Record<string, ThresholdConfig>;
+  DEFAULT_EXPIRATION_WARNING_DAYS: number;
+  DEFAULT_EXPIRATION_CRITICAL_DAYS: number;
+  DEFAULT_CHECK_FREQUENCY_MINUTES: number;
+  CUSTOM_THRESHOLDS: Record<string, FiscalAlertThresholds>;
   MESSAGES: Record<string, MessageConfig>;
-  NOTIFICATIONS: {
-    SHOW_POPUP_ON_CRITICAL: boolean;
-    SHOW_BADGE_ON_ALERTS: boolean;
-    CHECK_FREQUENCY_MINUTES: number;
-    EMAIL_REMINDERS: boolean;
-  };
 }
 
 export const FISCAL_RECEIPTS_ALERT_CONFIG: FiscalReceiptsAlertConfig = {
-  // Umbrales por defecto
-  DEFAULT_WARNING_THRESHOLD: 100, // Mostrar alerta de advertencia cuando queden menos de 100
-  DEFAULT_CRITICAL_THRESHOLD: 50, // Mostrar alerta crítica cuando queden menos de 50
-
-  // Configuraciones personalizables por tipo de comprobante
+  DEFAULT_WARNING_THRESHOLD: 100,
+  DEFAULT_CRITICAL_THRESHOLD: 50,
+  DEFAULT_EXPIRATION_WARNING_DAYS: 30,
+  DEFAULT_EXPIRATION_CRITICAL_DAYS: 7,
+  DEFAULT_CHECK_FREQUENCY_MINUTES: 1440,
   CUSTOM_THRESHOLDS: {
-    // Ejemplo: configuraciones específicas por tipo
     'CREDITO FISCAL': {
       warning: 150,
       critical: 75,
@@ -46,57 +34,48 @@ export const FISCAL_RECEIPTS_ALERT_CONFIG: FiscalReceiptsAlertConfig = {
       warning: 80,
       critical: 40,
     },
-    // Se pueden agregar más configuraciones específicas aquí
   },
-
-  // Configuración de mensajes
   MESSAGES: {
-    CRITICAL: {
+    CRITICAL_QUANTITY: {
       template:
-        '{name} - Serie {series}: ¡CRÍTICO! Solo quedan {remaining} de {total} comprobantes. Solicita más inmediatamente.',
-      action: 'Solicitar urgente',
+        '{name} - Serie {series}: solo quedan {remaining} comprobantes disponibles.',
+      action: 'Revisar series',
     },
-    WARNING: {
+    WARNING_QUANTITY: {
       template:
-        '{name} - Serie {series}: Quedan {remaining} de {total} comprobantes. Considera solicitar más pronto.',
-      action: 'Solicitar más',
+        '{name} - Serie {series}: quedan {remaining} comprobantes. Conviene gestionar una nueva autorización.',
+      action: 'Revisar series',
+    },
+    CRITICAL_EXPIRATION: {
+      template:
+        '{name} - Serie {series}: la autorización vence en {daysUntilExpiration} día(s).',
+      action: 'Registrar secuencia DGII',
+    },
+    WARNING_EXPIRATION: {
+      template:
+        '{name} - Serie {series}: la autorización vencerá en {daysUntilExpiration} día(s).',
+      action: 'Registrar secuencia DGII',
     },
     INFO: {
       template:
         'Los comprobantes fiscales están deshabilitados o no configurados.',
       action: 'Configurar',
     },
+    DISABLED: {
+      template: 'Las alertas de comprobantes están desactivadas.',
+      action: 'Configurar alertas',
+    },
     SUCCESS: {
       template:
-        'Todos los comprobantes están en buen estado. El de menor cantidad es {name} con {remaining} restantes.',
+        'Todas las series están dentro de los umbrales configurados. La más ajustada es {name}.',
       action: 'Ver detalles',
     },
   },
-
-  // Configuración de notificaciones automáticas
-  NOTIFICATIONS: {
-    // Mostrar notificación emergente cuando hay comprobantes críticos
-    SHOW_POPUP_ON_CRITICAL: true,
-
-    // Mostrar badge en el menú cuando hay alertas
-    SHOW_BADGE_ON_ALERTS: true,
-
-    // Frecuencia de verificación (en minutos)
-    CHECK_FREQUENCY_MINUTES: 30,
-
-    // Enviar recordatorios por email
-    EMAIL_REMINDERS: false,
-  },
 };
 
-/**
- * Obtiene los umbrales configurados para un tipo específico de comprobante
- * @param {string} receiptType - Tipo de comprobante
- * @returns {Object} Umbrales de advertencia y crítico
- */
 export const getThresholdsForReceiptType = (
   receiptType: string,
-): ThresholdConfig => {
+): FiscalAlertThresholds => {
   const customConfig =
     FISCAL_RECEIPTS_ALERT_CONFIG.CUSTOM_THRESHOLDS[receiptType];
 
@@ -113,30 +92,48 @@ export const getThresholdsForReceiptType = (
   };
 };
 
-/**
- * Formatea un mensaje usando una plantilla
- * @param {string} template - Plantilla del mensaje
- * @param {Record<string, any>} data - Datos para reemplazar en la plantilla
- * @returns {string} Mensaje formateado
- */
+export const createDefaultFiscalAlertsConfig = (): FiscalAlertsConfig => ({
+  alertsEnabled: true,
+  monitoring: {
+    quantityEnabled: true,
+    expirationEnabled: true,
+  },
+  globalThresholds: {
+    warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_WARNING_THRESHOLD,
+    critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CRITICAL_THRESHOLD,
+  },
+  customThresholds: {},
+  expirationThresholds: {
+    warning: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_EXPIRATION_WARNING_DAYS,
+    critical: FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_EXPIRATION_CRITICAL_DAYS,
+  },
+  customExpirationThresholds: {},
+  channels: {
+    notificationCenter: true,
+    popupOnCritical: true,
+    email: false,
+  },
+  execution: {
+    checkFrequencyMinutes:
+      FISCAL_RECEIPTS_ALERT_CONFIG.DEFAULT_CHECK_FREQUENCY_MINUTES,
+    suppressRepeatedNotifications: true,
+  },
+  lastUpdated: null,
+  version: '2.0',
+});
+
 export const formatMessage = (
   template: string,
-  data: Record<string, any>,
+  data: Record<string, unknown>,
 ): string => {
   return template.replace(/\{(\w+)\}/g, (match: string, key: string) => {
-    return data[key] !== undefined ? data[key] : match;
+    return data[key] !== undefined ? String(data[key]) : match;
   });
 };
 
-/**
- * Obtiene el mensaje configurado para un tipo de alerta
- * @param {string} alertType - Tipo de alerta (critical, warning, info, success)
- * @param {Record<string, any>} receiptData - Datos del comprobante
- * @returns {Object} Mensaje y acción configurados
- */
 export const getAlertMessage = (
   alertType: string,
-  receiptData: Record<string, any> = {},
+  receiptData: Record<string, unknown> = {},
 ) => {
   const messageConfig =
     FISCAL_RECEIPTS_ALERT_CONFIG.MESSAGES[alertType.toUpperCase()];

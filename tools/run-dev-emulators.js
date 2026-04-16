@@ -1,6 +1,7 @@
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
+import path from 'node:path';
+import process from 'node:process';
 
-const EMULATOR_DATA = process.env.EMULATOR_DATA_DIR || 'emulator-data';
 const TRACE_ENDPOINT =
   process.env.VITE_FLOW_TRACE_ENDPOINT || 'http://localhost:8787/trace';
 
@@ -19,42 +20,13 @@ const env = {
   ...(autoTrace ? { VITE_FLOW_TRACE_AUTO: '1' } : {}),
 };
 
-const spawnProcess = (command, name) => {
-  const child = spawn(command, {
-    stdio: 'inherit',
-    shell: true,
-    env,
-  });
-  child.on('exit', (code) => {
-    if (code && code !== 0) {
-      console.error(`[${name}] exited with code ${code}`);
-    }
-  });
-  return child;
-};
-
-const processes = [
-  spawnProcess(
-    `firebase emulators:start --only firestore,functions --import ${EMULATOR_DATA} --export-on-exit`,
-    'firebase-emulators',
-  ),
-  spawnProcess('npm run dev', 'vite-dev'),
-];
-
-const shutdown = () => {
-  processes.forEach((proc) => {
-    if (!proc.killed) {
-      proc.kill('SIGINT');
-    }
-  });
-};
-
-process.on('SIGINT', () => {
-  shutdown();
-  process.exit(0);
+const cliPath = path.resolve(process.cwd(), 'tools', 'local-dev-cli.mjs');
+const child = spawn(process.execPath, [cliPath, 'start', ...args], {
+  cwd: process.cwd(),
+  env,
+  stdio: 'inherit',
 });
 
-process.on('SIGTERM', () => {
-  shutdown();
-  process.exit(0);
+child.on('exit', (code) => {
+  process.exit(code ?? 0);
 });

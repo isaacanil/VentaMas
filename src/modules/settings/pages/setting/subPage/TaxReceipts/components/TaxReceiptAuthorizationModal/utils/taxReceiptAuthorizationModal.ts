@@ -31,15 +31,41 @@ export const buildDefaultExpirationDate = () => {
   return DateTime.now().plus({ years: 1 });
 };
 
+const parseIntegerValue = (value: number | string | null | undefined) => {
+  const parsed = parseInt(String(value ?? ''), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+export const resolveReceiptIncrease = (
+  value?: number | string | null,
+): number => {
+  const parsed = parseIntegerValue(value);
+  return parsed && parsed > 0 ? parsed : 1;
+};
+
 export const calculateNewEndSequence = (
   values: AuthorizationFormValues,
+  increase = 1,
 ) => {
   if (!values.startSequence || !values.approvedQuantity) return null;
 
-  const startNum = parseInt(String(values.startSequence), 10);
-  const quantity = parseInt(String(values.approvedQuantity), 10);
+  const startNum = parseIntegerValue(values.startSequence);
+  const quantity = parseIntegerValue(values.approvedQuantity);
+  const safeIncrease = resolveReceiptIncrease(increase);
 
-  if (Number.isNaN(startNum) || Number.isNaN(quantity)) return null;
+  if (startNum === null || quantity === null || quantity <= 0) return null;
 
-  return startNum + quantity - 1;
+  return startNum + safeIncrease * (quantity - 1);
+};
+
+export const calculateStoredSequenceFromAuthorization = (
+  startSequence: number | string,
+  increase = 1,
+) => {
+  const startNum = parseIntegerValue(startSequence);
+  const safeIncrease = resolveReceiptIncrease(increase);
+
+  if (startNum === null || startNum < safeIncrease) return null;
+
+  return startNum - safeIncrease;
 };

@@ -7,10 +7,10 @@ export const ModalHeader = () => {
   return (
     <HeaderContainer>
       <div>
-        <Title level={4}>Registro de Autorizacion de Comprobantes</Title>
+        <Title level={4}>Registrar secuencia autorizada</Title>
         <Text type="secondary">
-          Registra una nueva autorizacion de comprobantes fiscales emitida por
-          la DGI
+          Carga el rango aprobado por DGII para la serie seleccionada y deja
+          trazabilidad del cambio.
         </Text>
       </div>
     </HeaderContainer>

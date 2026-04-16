@@ -343,15 +343,10 @@ export const useInvoicePanelController = () => {
       setPendingPrint: setPanelPendingPrint,
     });
 
-  const handleSubmit = async ({
-    bypassTaxReceiptOverride = false,
-  }: {
-    bypassTaxReceiptOverride?: boolean;
-  } = {}) => {
+  const handleSubmit = async () => {
     await submitInvoicePanel({
       accountsReceivable,
       business,
-      bypassTaxReceiptOverride,
       cart,
       client,
       monetaryContext: monetaryContextRef.current,
@@ -407,11 +402,6 @@ export const useInvoicePanelController = () => {
     void handleSubmit();
   };
 
-  const continueWithoutTaxReceipt = () => {
-    dispatchUi({ type: 'setTaxReceiptModalOpen', payload: false });
-    void handleSubmit({ bypassTaxReceiptOverride: true });
-  };
-
   return {
     componentToPrintRef,
     form,
@@ -432,7 +422,6 @@ export const useInvoicePanelController = () => {
     taxReceiptModalOpen,
     taxReceiptState,
     closeTaxReceiptModal,
-    continueWithoutTaxReceipt,
     handleSelectTaxReceiptFromModal,
   };
 };

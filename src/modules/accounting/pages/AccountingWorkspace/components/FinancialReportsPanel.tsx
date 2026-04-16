@@ -9,6 +9,7 @@ import {
   formatAccountingPeriod,
 } from '../utils/accountingWorkspace';
 import { useAccountingBackendReports } from '../hooks/useAccountingBackendReports';
+import { MonthlyComplianceSection } from './MonthlyComplianceSection';
 import { exportFinancialReportsWorkbook } from './utils/financialReportsExport';
 
 import type { TrialBalanceRow } from '../utils/accountingWorkspace';
@@ -60,167 +61,170 @@ export const FinancialReportsPanel = ({
     }
   };
 
-  if (!selectedPeriodKey || !reports) {
-    return (
-      <Panel>
-        {error ? (
-          <Alert
-            type="error"
-            showIcon
-            message="No se pudieron cargar los reportes financieros."
-            description={error}
-          />
-        ) : (
-          <EmptyText>
-            {loading
-              ? 'Cargando reportes financieros...'
-              : 'No hay periodos disponibles para generar reportes.'}
-          </EmptyText>
-        )}
-      </Panel>
-    );
-  }
-
   return (
     <Panel>
-      <Toolbar>
-          <Select
-            style={{ minWidth: 220 }}
-            value={selectedPeriodKey}
-            options={periods.map((period) => ({
-              label: formatAccountingPeriod(period),
-              value: period,
-            }))}
-            onChange={setPeriodKey}
-          />
-          <Button
-            icon={<FileExcelOutlined />}
-            loading={exporting}
-            onClick={() => {
-              void handleExport();
-            }}
-          >
-            Exportar Excel
-          </Button>
-      </Toolbar>
-
-      <SummaryStrip>
-        <SummaryItem>
-          <SummaryLabelRow>
-            <span>Debitos acumulados</span>
-            <Tooltip
-              title="Suma de debitos registrada hasta el cierre del periodo seleccionado."
-              placement="top"
+      {selectedPeriodKey && reports ? (
+        <>
+          <Toolbar>
+            <Select
+              style={{ minWidth: 220 }}
+              value={selectedPeriodKey}
+              options={periods.map((period) => ({
+                label: formatAccountingPeriod(period),
+                value: period,
+              }))}
+              onChange={setPeriodKey}
+            />
+            <Button
+              icon={<FileExcelOutlined />}
+              loading={exporting}
+              onClick={() => {
+                void handleExport();
+              }}
             >
-              <InfoIcon />
-            </Tooltip>
-          </SummaryLabelRow>
-          <strong>{formatAccountingMoney(reports.trialBalanceTotals.debit)}</strong>
-        </SummaryItem>
-        <SummaryItem>
-          <SummaryLabelRow>
-            <span>Creditos acumulados</span>
-            <Tooltip
-              title="Suma de creditos registrada hasta el cierre del periodo seleccionado."
-              placement="top"
-            >
-              <InfoIcon />
-            </Tooltip>
-          </SummaryLabelRow>
-          <strong>{formatAccountingMoney(reports.trialBalanceTotals.credit)}</strong>
-        </SummaryItem>
-        <SummaryItem $negative={reports.incomeTotals.netIncome < 0}>
-          <SummaryLabelRow>
-            <span>Resultado neto del periodo</span>
-            <Tooltip
-              title="Ingresos menos gastos del periodo seleccionado; no representa el acumulado historico."
-              placement="top"
-            >
-              <InfoIcon />
-            </Tooltip>
-          </SummaryLabelRow>
-          <strong>{formatAccountingMoney(reports.incomeTotals.netIncome)}</strong>
-        </SummaryItem>
-      </SummaryStrip>
+              Exportar Excel
+            </Button>
+          </Toolbar>
 
-      <ReportSection>
-        <ReportTitle>Balanza de comprobacion</ReportTitle>
-        <ReportTableShell>
-          <ReportTable>
-            <thead>
-              <tr>
-                <th>Cuenta</th>
-                <th>Debito</th>
-                <th>Credito</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.trialBalance.map((row) => (
-                <tr key={row.accountId}>
-                  <td>
-                    <strong>{row.code}</strong>
-                    <span>{row.name}</span>
-                  </td>
-                  <td>{formatAccountingMoney(row.debit)}</td>
-                  <td>{formatAccountingMoney(row.credit)}</td>
-                  <td>{formatAccountingMoney(row.balance)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </ReportTable>
-        </ReportTableShell>
-      </ReportSection>
-
-      <DualReportGrid>
-        <ReportSection>
-          <ReportTitle>Estado de resultados</ReportTitle>
-          <CompactList>
-            {reports.incomeRows.map((row) => (
-              <CompactRow key={row.accountId}>
-                <span>
-                  {row.code} · {row.name}
-                </span>
-                <strong>{formatAccountingMoney(row.amount)}</strong>
-              </CompactRow>
-            ))}
-            <CompactTotal $negative={reports.incomeTotals.netIncome < 0}>
-              <span>Utilidad neta</span>
+          <SummaryStrip>
+            <SummaryItem>
+              <SummaryLabelRow>
+                <span>Debitos acumulados</span>
+                <Tooltip
+                  title="Suma de debitos registrada hasta el cierre del periodo seleccionado."
+                  placement="top"
+                >
+                  <InfoIcon />
+                </Tooltip>
+              </SummaryLabelRow>
+              <strong>{formatAccountingMoney(reports.trialBalanceTotals.debit)}</strong>
+            </SummaryItem>
+            <SummaryItem>
+              <SummaryLabelRow>
+                <span>Creditos acumulados</span>
+                <Tooltip
+                  title="Suma de creditos registrada hasta el cierre del periodo seleccionado."
+                  placement="top"
+                >
+                  <InfoIcon />
+                </Tooltip>
+              </SummaryLabelRow>
+              <strong>{formatAccountingMoney(reports.trialBalanceTotals.credit)}</strong>
+            </SummaryItem>
+            <SummaryItem $negative={reports.incomeTotals.netIncome < 0}>
+              <SummaryLabelRow>
+                <span>Resultado neto del periodo</span>
+                <Tooltip
+                  title="Ingresos menos gastos del periodo seleccionado; no representa el acumulado historico."
+                  placement="top"
+                >
+                  <InfoIcon />
+                </Tooltip>
+              </SummaryLabelRow>
               <strong>{formatAccountingMoney(reports.incomeTotals.netIncome)}</strong>
-            </CompactTotal>
-          </CompactList>
-        </ReportSection>
+            </SummaryItem>
+          </SummaryStrip>
 
-        <ReportSection>
-          <ReportTitle>Balance general</ReportTitle>
-          <BalanceColumns>
-            <BalanceGroup>
-              <BalanceGroupTitle>Activos</BalanceGroupTitle>
-              {reports.balanceSheet.assets.map((row) => (
-                <BalanceRow key={row.accountId} row={row} />
-              ))}
-            </BalanceGroup>
-            <BalanceGroup>
-              <BalanceGroupTitle>Pasivos</BalanceGroupTitle>
-              {reports.balanceSheet.liabilities.map((row) => (
-                <BalanceRow key={row.accountId} row={row} />
-              ))}
-            </BalanceGroup>
-            <BalanceGroup>
-              <BalanceGroupTitle>Patrimonio</BalanceGroupTitle>
-              {reports.balanceSheet.equity.map((row) => (
-                <BalanceRow key={row.accountId} row={row} />
-              ))}
-              <CompactTotal>
-                <span>Resultado acumulado del periodo</span>
-                <strong>
-                  {formatAccountingMoney(reports.balanceSheet.currentEarnings)}
-                </strong>
-              </CompactTotal>
-            </BalanceGroup>
-          </BalanceColumns>
-        </ReportSection>
-      </DualReportGrid>
+          <ReportSection>
+            <ReportTitle>Balanza de comprobacion</ReportTitle>
+            <ReportTableShell>
+              <ReportTable>
+                <thead>
+                  <tr>
+                    <th>Cuenta</th>
+                    <th>Debito</th>
+                    <th>Credito</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.trialBalance.map((row) => (
+                    <tr key={row.accountId}>
+                      <td>
+                        <strong>{row.code}</strong>
+                        <span>{row.name}</span>
+                      </td>
+                      <td>{formatAccountingMoney(row.debit)}</td>
+                      <td>{formatAccountingMoney(row.credit)}</td>
+                      <td>{formatAccountingMoney(row.balance)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </ReportTable>
+            </ReportTableShell>
+          </ReportSection>
+
+          <DualReportGrid>
+            <ReportSection>
+              <ReportTitle>Estado de resultados</ReportTitle>
+              <CompactList>
+                {reports.incomeRows.map((row) => (
+                  <CompactRow key={row.accountId}>
+                    <span>
+                      {row.code} · {row.name}
+                    </span>
+                    <strong>{formatAccountingMoney(row.amount)}</strong>
+                  </CompactRow>
+                ))}
+                <CompactTotal $negative={reports.incomeTotals.netIncome < 0}>
+                  <span>Utilidad neta</span>
+                  <strong>{formatAccountingMoney(reports.incomeTotals.netIncome)}</strong>
+                </CompactTotal>
+              </CompactList>
+            </ReportSection>
+
+            <ReportSection>
+              <ReportTitle>Balance general</ReportTitle>
+              <BalanceColumns>
+                <BalanceGroup>
+                  <BalanceGroupTitle>Activos</BalanceGroupTitle>
+                  {reports.balanceSheet.assets.map((row) => (
+                    <BalanceRow key={row.accountId} row={row} />
+                  ))}
+                </BalanceGroup>
+                <BalanceGroup>
+                  <BalanceGroupTitle>Pasivos</BalanceGroupTitle>
+                  {reports.balanceSheet.liabilities.map((row) => (
+                    <BalanceRow key={row.accountId} row={row} />
+                  ))}
+                </BalanceGroup>
+                <BalanceGroup>
+                  <BalanceGroupTitle>Patrimonio</BalanceGroupTitle>
+                  {reports.balanceSheet.equity.map((row) => (
+                    <BalanceRow key={row.accountId} row={row} />
+                  ))}
+                  <CompactTotal>
+                    <span>Resultado acumulado del periodo</span>
+                    <strong>
+                      {formatAccountingMoney(reports.balanceSheet.currentEarnings)}
+                    </strong>
+                  </CompactTotal>
+                </BalanceGroup>
+              </BalanceColumns>
+            </ReportSection>
+          </DualReportGrid>
+        </>
+      ) : error ? (
+        <Alert
+          type="error"
+          showIcon
+          message="No se pudieron cargar los reportes financieros."
+          description={error}
+        />
+      ) : (
+        <EmptyText>
+          {loading
+            ? 'Cargando reportes financieros...'
+            : 'No hay periodos disponibles para generar reportes.'}
+        </EmptyText>
+      )}
+
+      <MonthlyComplianceSection
+        businessId={businessId}
+        enabled={enabled}
+        periods={periods}
+        defaultPeriodKey={selectedPeriodKey ?? null}
+      />
     </Panel>
   );
 };

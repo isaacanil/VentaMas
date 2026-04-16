@@ -73,17 +73,27 @@ export async function createPendingInvoice({
     const accountingSettingsRef = db.doc(
       `businesses/${businessId}/settings/accounting`,
     );
+    const taxReceiptSettingsRef = db.doc(
+      `businesses/${businessId}/settings/taxReceipt`,
+    );
     const usageCurrentRef = db.doc(`businesses/${businessId}/usage/current`);
     const usageMonthlyRef = db.doc(
       `businesses/${businessId}/usage/monthly/entries/${monthKey}`,
     );
     const rolloutEnabled = isAccountingRolloutEnabledForBusiness(businessId);
-    const [businessSnap, usageCurrentSnap, usageMonthlySnap, accountingSettingsSnap] =
+    const [
+      businessSnap,
+      usageCurrentSnap,
+      usageMonthlySnap,
+      accountingSettingsSnap,
+      taxReceiptSettingsSnap,
+    ] =
       await Promise.all([
         tx.get(businessRef),
         tx.get(usageCurrentRef),
         tx.get(usageMonthlyRef),
         rolloutEnabled ? tx.get(accountingSettingsRef) : Promise.resolve(null),
+        tx.get(taxReceiptSettingsRef),
       ]);
 
     const businessData = businessSnap.exists ? businessSnap.data() || {} : {};
@@ -92,6 +102,11 @@ export async function createPendingInvoice({
         ? accountingSettingsSnap.data() || {}
         : {};
     const accountingEnabled = accountingSettingsData.generalAccountingEnabled === true;
+    const taxReceiptSettingsData = taxReceiptSettingsSnap?.exists
+      ? taxReceiptSettingsSnap.data() || {}
+      : {};
+    const businessRequiresFiscalReceipt =
+      taxReceiptSettingsData.taxReceiptEnabled === true;
 
     await assertAccountingPeriodOpenInTransaction({
       transaction: tx,
@@ -240,6 +255,17 @@ export async function createPendingInvoice({
     // Opcional: reserva NCF en esta fase si está habilitado
     const ncfEnabled = !!(payload?.ncf?.enabled || payload?.taxReceiptEnabled);
     const ncfType = payload?.ncf?.type || payload?.ncfType;
+
+    if (businessRequiresFiscalReceipt && !ncfEnabled) {
+      throw new https.HttpsError(
+        'failed-precondition',
+        'Debes seleccionar un comprobante fiscal para completar la venta.',
+        {
+          reason: 'tax-receipt-required',
+        },
+      );
+    }
+
     let ncfReservation = null;
     if (ncfEnabled) {
       if (!ncfType) {

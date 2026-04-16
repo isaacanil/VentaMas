@@ -1,10 +1,12 @@
 import {
-  FileOutlined,
-  ExclamationCircleOutlined,
+  CheckOutlined,
   EditOutlined,
+  ExclamationCircleOutlined,
+  MoreOutlined,
   StopOutlined,
 } from '@/constants/icons/antd';
-import { Tooltip, Modal, message } from 'antd';
+import { Button, Dropdown, Modal, Tooltip, message } from 'antd';
+import type { MenuProps } from 'antd';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -12,7 +14,6 @@ import styled from 'styled-components';
 import { selectUser } from '@/features/auth/userSlice';
 import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
 import TaxReceiptForm from '@/modules/settings/pages/setting/subPage/TaxReceipts/components/TaxReceiptForm/TaxReceiptForm';
-import { settingDataTaxTable } from '@/modules/settings/pages/setting/subPage/TaxReceipts/taxConfigTable';
 import type {
   TaxReceiptData,
   TaxReceiptDocument,
@@ -30,10 +31,18 @@ type SetTaxReceiptData = (
 interface TableTaxReceiptProps {
   array?: TaxReceiptTableItem[] | null;
   setData: SetTaxReceiptData;
+  filter?: 'active' | 'archived';
 }
 
 interface RowProps {
   disabled?: boolean;
+}
+
+interface HealthState {
+  label: string;
+  tone: 'neutral' | 'warning' | 'danger';
+  pillTone: 'positive' | 'neutral' | 'warning' | 'danger';
+  detail: string;
 }
 
 const hasBusinessId = (
@@ -41,7 +50,152 @@ const hasBusinessId = (
 ): value is TaxReceiptUser & { businessID: string } =>
   typeof value?.businessID === 'string' && value.businessID.trim().length > 0;
 
-export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
+const formatSequence = (
+  seq?: number | string,
+  length?: number,
+): string | number | undefined => {
+  if (seq === undefined || length === undefined) return seq;
+  return String(seq).padStart(length, '0');
+};
+
+const buildReceiptCode = (data?: TaxReceiptData | null): string => {
+  if (!data) return 'Sin codigo';
+  const type = data.type?.trim() || '--';
+  const serie = data.serie?.trim() || '--';
+  return `${type}${serie}`;
+};
+
+const buildSequenceLabel = (data?: TaxReceiptData | null): string => {
+  if (!data) return 'N/D';
+  const code = buildReceiptCode(data);
+  const sequence = formatSequence(data.sequence, data.sequenceLength);
+  if (sequence === undefined || sequence === null || sequence === '') {
+    return code;
+  }
+  return `${code}${sequence}`;
+};
+
+const buildSequenceMeta = (data?: TaxReceiptData | null): string | null => {
+  if (!data) return null;
+
+  const increase = data.increase ?? 1;
+  const sequenceLength = data.sequenceLength ?? 8;
+  const parts: string[] = [];
+
+  if (increase !== 1) {
+    parts.push(`Inc. ${increase}`);
+  }
+
+  if (sequenceLength !== 8) {
+    parts.push(`${sequenceLength} dig.`);
+  }
+
+  if (!parts.length) return null;
+  return parts.join(' · ');
+};
+
+const calculateLimit = (data?: TaxReceiptData | null): string => {
+  if (!data) return 'N/D';
+  const { type, serie, sequence, quantity, sequenceLength, increase } = data;
+  if (!type || !serie || sequence === undefined || !quantity) return 'N/D';
+
+  const parsedSequence = Number.parseInt(String(sequence), 10);
+  const parsedQuantity = Number.parseInt(String(quantity), 10);
+  const parsedIncrease = Number.parseInt(String(increase ?? 1), 10);
+
+  if (
+    Number.isNaN(parsedSequence) ||
+    Number.isNaN(parsedQuantity) ||
+    Number.isNaN(parsedIncrease)
+  ) {
+    return 'N/D';
+  }
+
+  const limitSequence = parsedSequence + parsedQuantity * parsedIncrease;
+  return `${type}${serie}${String(limitSequence).padStart(sequenceLength || 8, '0')}`;
+};
+
+const parseQuantity = (value?: number | string): number | null => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const normalizeAuthorityStatus = (value?: string | null): string | null => {
+  if (!value) return null;
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized || normalized === 'not_applicable') return null;
+
+  if (normalized === 'approved' || normalized === 'authorized') {
+    return 'Autorizada';
+  }
+
+  if (normalized === 'pending') {
+    return 'Pendiente';
+  }
+
+  if (normalized === 'rejected') {
+    return 'Rechazada';
+  }
+
+  return value;
+};
+
+const resolveHealthState = (data?: TaxReceiptData | null): HealthState => {
+  if (data?.disabled) {
+    return {
+      label: 'Archivada',
+      tone: 'neutral',
+      pillTone: 'neutral',
+      detail: 'Serie fuera de uso',
+    };
+  }
+
+  const quantity = parseQuantity(data?.quantity);
+  const limit = calculateLimit(data);
+  const authorityStatus = normalizeAuthorityStatus(data?.authorityStatus);
+
+  if (quantity === 0) {
+    return {
+      label: 'Agotada',
+      tone: 'danger',
+      pillTone: 'danger',
+      detail: 'No disponible',
+    };
+  }
+
+  if (limit === 'N/D') {
+    return {
+      label: 'Incompleta',
+      tone: 'warning',
+      pillTone: 'warning',
+      detail: 'Falta completar el rango fiscal',
+    };
+  }
+
+  if (authorityStatus) {
+    return {
+      label: 'Activa',
+      tone: 'neutral',
+      pillTone: 'positive',
+      detail: authorityStatus,
+    };
+  }
+
+  return {
+    label: 'Activa',
+    tone: 'neutral',
+    pillTone: 'positive',
+    detail: 'Lista para emitir',
+  };
+};
+
+export const TableTaxReceipt = ({
+  array,
+  setData,
+  filter = 'active',
+}: TableTaxReceiptProps) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEditItem, setCurrentEditItem] = useState<TaxReceiptData | null>(
     null,
@@ -49,13 +203,19 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
   const user = useSelector(selectUser);
 
   const safeArray = array ?? [];
-  const activeReceipts = safeArray.filter((item) => !item.data?.disabled);
+  const visibleReceipts =
+    filter === 'archived'
+      ? safeArray.filter((item) => item.data?.disabled)
+      : safeArray.filter((item) => !item.data?.disabled);
 
-  // Si no hay elementos activos, mostramos mensaje
-  if (!activeReceipts || activeReceipts.length === 0) {
+  if (!visibleReceipts.length) {
     return (
       <Container>
-        <EmptyMessage>No hay comprobantes disponibles.</EmptyMessage>
+        <EmptyMessage>
+          {filter === 'archived'
+            ? 'No hay comprobantes archivados.'
+            : 'No hay comprobantes activos.'}
+        </EmptyMessage>
       </Container>
     );
   }
@@ -65,28 +225,24 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
     if (!item?.data) return;
 
     const isCurrentlyDisabled = item.data?.disabled === true;
-    const actionText = isCurrentlyDisabled ? 'habilitar' : 'deshabilitar';
-    const statusText = isCurrentlyDisabled ? 'activo' : 'inactivo';
+    const actionText = isCurrentlyDisabled ? 'habilitar' : 'archivar';
+    const statusText = isCurrentlyDisabled ? 'activa' : 'archivada';
 
     Modal.confirm({
-      title: `¿Estás seguro de ${actionText} este comprobante?`,
+      title: `¿Quieres ${actionText} esta serie?`,
       icon: <ExclamationCircleOutlined />,
-      content: `El comprobante se marcará como ${statusText}.`,
-      okText: isCurrentlyDisabled ? 'Habilitar' : 'Deshabilitar',
-      okType: isCurrentlyDisabled ? 'primary' : 'danger',
+      content: `La serie quedará ${statusText} para futuras emisiones.`,
+      okText: isCurrentlyDisabled ? 'Habilitar' : 'Archivar',
+      okType: isCurrentlyDisabled ? 'primary' : 'default',
       cancelText: 'Cancelar',
       onOk: () => {
         if (!hasBusinessId(user)) {
-          const error = new Error('Invalid businessID provided.');
-          console.error(`Error al ${actionText} comprobante:`, error);
-          message.error(`Error al ${actionText} el comprobante`);
+          message.error(`Error al ${actionText} la serie`);
           return;
         }
 
         if (typeof item.data.id !== 'string') {
-          const error = new Error('Invalid or empty data provided for update.');
-          console.error(`Error al ${actionText} comprobante:`, error);
-          message.error(`Error al ${actionText} el comprobante`);
+          message.error(`Error al ${actionText} la serie`);
           return;
         }
 
@@ -100,7 +256,7 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
         return updateTaxReceipt(user, dataToUpdate).then(
           () => {
             message.success(
-              `Comprobante ${isCurrentlyDisabled ? 'habilitado' : 'deshabilitado'} correctamente`,
+              `Serie ${isCurrentlyDisabled ? 'habilitada' : 'archivada'} correctamente`,
             );
             const newArray = safeArray.map((it, i) =>
               i === index
@@ -110,8 +266,8 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
             setData(newArray);
           },
           (error) => {
-            console.error(`Error al ${actionText} comprobante:`, error);
-            message.error(`Error al ${actionText} el comprobante`);
+            console.error(`Error al ${actionText} la serie:`, error);
+            message.error(`Error al ${actionText} la serie`);
           },
         );
       },
@@ -120,110 +276,100 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
 
   const handleEditTaxReceipt = (index: number) => {
     const itemToEdit = safeArray[index];
-    if (itemToEdit && itemToEdit.data) {
-      setCurrentEditItem({ ...itemToEdit.data });
-      setEditModalVisible(true);
-    } else {
-      console.error(
-        'Intento de editar un elemento inválido en el índice:',
-        index,
-        itemToEdit,
-      );
+    if (!itemToEdit?.data) {
       message.error('No se pudieron cargar los datos para editar.');
-    }
-  };
-
-  const formatSequence = (
-    seq?: number | string,
-    length?: number,
-  ): string | number | undefined => {
-    if (seq === undefined || length === undefined) return seq;
-    return String(seq).padStart(length, '0');
-  };
-
-  const calculateLimit = (data?: TaxReceiptData | null): string => {
-    if (!data) return 'N/A';
-    const { type, serie, sequence, quantity, sequenceLength } = data;
-    if (!type || !serie || sequence === undefined || !quantity) return 'N/A';
-
-    const parsedSequence = Number.parseInt(String(sequence), 10);
-    const parsedQuantity = Number.parseInt(String(quantity), 10);
-    if (Number.isNaN(parsedSequence) || Number.isNaN(parsedQuantity)) {
-      return 'Error';
+      return;
     }
 
-    const limitSequence = parsedSequence + parsedQuantity;
-    return `${type}${serie}${String(limitSequence).padStart(sequenceLength || 8, '0')}`;
+    setCurrentEditItem({ ...itemToEdit.data });
+    setEditModalVisible(true);
   };
-
-  const headers = [
-    ...settingDataTaxTable,
-    { name: 'LÍMITE (NCF)' },
-    { name: 'ACCIÓN' },
-  ];
 
   return (
     <Container>
-      <Row>
-        {headers.map((item, idx) => (
-          <Col key={idx}>
-            <h4>{item.name}</h4>
-          </Col>
-        ))}
-      </Row>
-      {activeReceipts.map((item, idx) => (
-        <Row
-          key={idx}
-          onDoubleClick={() => handleEditTaxReceipt(safeArray.indexOf(item))}
-        >
-          <Col>
-            <span>{item.data?.name}</span>
-          </Col>
-          <Col>
-            <span>{item.data?.type}</span>
-          </Col>
-          <Col>
-            <span>{item.data?.serie}</span>
-          </Col>
-          <Col>
-            <span>
-              {formatSequence(item.data.sequence, item.data.sequenceLength)}
-            </span>
-          </Col>
-          <Col>
-            <span>{item.data?.increase}</span>
-          </Col>
-          <Col>
-            <span>{item.data?.quantity}</span>
-          </Col>
-          <Col>
-            <Tooltip title="Número del último comprobante que se generará">
-              <LimitDisplay>
-                <FileOutlined style={{ marginRight: 5 }} />
-                {calculateLimit(item.data)}
-              </LimitDisplay>
-            </Tooltip>
-          </Col>
-          <Col>
-            <ActionButtonsContainer>
-              <ActionButton
-                onClick={() => handleEditTaxReceipt(safeArray.indexOf(item))}
-                className="edit-button"
-                title="Editar"
-              >
-                <EditOutlined />
-              </ActionButton>
-              <ActionButton
-                onClick={() => handleToggleDisabled(safeArray.indexOf(item))}
-                className="delete-button"
-                title="Deshabilitar"
-              >
-                <StopOutlined />
-              </ActionButton>
-            </ActionButtonsContainer>
-          </Col>
-        </Row>
-      ))}{' '}
+      <HeaderRow>
+        <HeaderCell>Comprobante</HeaderCell>
+        <HeaderCell>Secuencia</HeaderCell>
+        <HeaderCell>Disponibilidad</HeaderCell>
+        <HeaderCell>Estado</HeaderCell>
+        <HeaderActionCell />
+      </HeaderRow>
+
+      {visibleReceipts.map((item, idx) => {
+        const sourceIndex = safeArray.indexOf(item);
+        const quantity = parseQuantity(item.data?.quantity);
+        const limit = calculateLimit(item.data);
+        const healthState = resolveHealthState(item.data);
+        const sequenceMeta = buildSequenceMeta(item.data);
+        const menuItems: MenuProps['items'] = [
+          {
+            key: 'edit',
+            icon: <EditOutlined />,
+            label: 'Editar serie',
+            onClick: () => handleEditTaxReceipt(sourceIndex),
+          },
+          {
+            key: 'toggle',
+            icon: item.data?.disabled ? <CheckOutlined /> : <StopOutlined />,
+            label: item.data?.disabled ? 'Habilitar serie' : 'Archivar serie',
+            onClick: () => {
+              void handleToggleDisabled(sourceIndex);
+            },
+          },
+        ];
+
+        return (
+          <DataRow
+            key={item.data?.id || idx}
+            onDoubleClick={() => handleEditTaxReceipt(sourceIndex)}
+            disabled={item.data?.disabled}
+          >
+            <CompositeCell>
+              <PrimaryText>{item.data?.name || 'Sin nombre'}</PrimaryText>
+              <SecondaryText>{buildReceiptCode(item.data)}</SecondaryText>
+            </CompositeCell>
+
+            <CompositeCell>
+              <PrimaryText>{buildSequenceLabel(item.data)}</PrimaryText>
+              {sequenceMeta ? (
+                <SecondaryText>{sequenceMeta}</SecondaryText>
+              ) : null}
+            </CompositeCell>
+
+            <CompositeCell>
+              <PrimaryText tone={healthState.tone}>
+                {quantity === null ? 'Disponibilidad N/D' : `${quantity} disponibles`}
+              </PrimaryText>
+              <SecondaryText tone={healthState.tone}>
+                <Tooltip title="Ultimo NCF disponible dentro del rango configurado">
+                  <span>{limit === 'N/D' ? 'Límite no disponible' : `Límite ${limit}`}</span>
+                </Tooltip>
+              </SecondaryText>
+            </CompositeCell>
+
+            <CompositeCell>
+              <StatusPill tone={healthState.pillTone}>
+                {healthState.label}
+              </StatusPill>
+              <SecondaryText tone={healthState.tone}>
+                {healthState.detail}
+              </SecondaryText>
+            </CompositeCell>
+
+            <ActionCell>
+              <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+                <MenuButton
+                  type="text"
+                  size="small"
+                  icon={<MoreOutlined />}
+                  onClick={(event) => event.stopPropagation()}
+                />
+              </Dropdown>
+            </ActionCell>
+          </DataRow>
+        );
+      })}
+
       <TaxReceiptForm
         editModalVisible={editModalVisible}
         setEditModalVisible={setEditModalVisible}
@@ -235,157 +381,169 @@ export const TableTaxReceipt = ({ array, setData }: TableTaxReceiptProps) => {
 
 const Container = styled.div`
   overflow: hidden;
-  border: 1px solid var(--gray1);
-  border-radius: 10px;
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-bg-surface);
 `;
 
 const EmptyMessage = styled.div`
-  padding: 2em;
-  font-size: 14px;
-  color: #666;
+  padding: var(--ds-space-6);
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-secondary);
   text-align: center;
 `;
 
-const Row = styled.div<RowProps>`
-  align-items: center;
-  background-color: ${(props) => (props.disabled ? '#f5f5f5' : 'transparent')};
-  border-bottom: 1px solid var(--gray1);
+const HeaderRow = styled.div`
   display: grid;
   grid-template-columns:
-    minmax(150px, 0.7fr) minmax(40px, 0.2fr) minmax(40px, 0.2fr) minmax(
-      90px,
-      0.5fr
+    minmax(220px, 1.2fr) minmax(200px, 1fr) minmax(180px, 0.9fr) minmax(
+      150px,
+      0.8fr
     )
-    minmax(80px, 0.3fr) minmax(80px, 0.3fr) minmax(100px, 0.6fr) 80px;
-  height: 2.75em;
-  position: relative;
+    56px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-color-border-default);
+  background: var(--ds-color-bg-subtle);
+`;
+
+const HeaderCell = styled.div`
+  padding: 0 var(--ds-space-2);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-tertiary);
+`;
+
+const HeaderActionCell = styled.div`
+  width: 100%;
+`;
+
+const DataRow = styled.div<RowProps>`
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.2fr) minmax(200px, 1fr) minmax(180px, 0.9fr) minmax(
+      150px,
+      0.8fr
+    )
+    56px;
+  align-items: center;
+  min-height: 72px;
+  padding: 0 var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-color-border-default);
+  background: ${(props) =>
+    props.disabled ? 'var(--ds-color-bg-subtle)' : 'var(--ds-color-bg-surface)'};
+  transition: background-color 0.18s ease;
 
   &:last-child {
     border-bottom: 0;
   }
 
-  ${(props) =>
-    props.disabled &&
-    `
-    & span { text-decoration: line-through; color: #999; }
-    & div[class^="LimitDisplay"] { opacity: 0.7; }
-    & div[class^="LimitDisplay"] span { text-decoration: none; color: #1890ff; }
-    & button.enable-button { opacity: 1; position: relative; z-index: 1; box-shadow: 0 0 8px rgba(82,196,26,0.2); }
-    & button.enable-button span { color: inherit; text-decoration: none; }
-  `}
+  &:hover {
+    background: var(--ds-color-bg-subtle);
+  }
 `;
 
-const Col = styled.div`
-  display: flex;
+const CompositeCell = styled.div`
+  display: grid;
+  gap: 2px;
+  padding: var(--ds-space-3) var(--ds-space-2);
+  min-width: 0;
+`;
+
+const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
+  display: inline-flex;
   align-items: center;
-  height: 100%;
-  padding: 0 0.6em;
-  border-right: 1px solid var(--gray1);
+  justify-content: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  border: 1px solid;
+  white-space: nowrap;
 
-  &:last-child {
-    border-right: 0;
-  }
-
-  &:first-child {
-    border-left: 0;
-  }
-
-  input[type='text'],
-  input[type='number'] {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    font-size: 12px;
-    border: 0;
-
-    &:focus {
-      outline: none;
+  ${(props) => {
+    if (props.tone === 'positive') {
+      return `
+        color: #166534;
+        background: #dcfce7;
+        border-color: #86efac;
+      `;
     }
-  }
 
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
-    margin: 0;
-    appearance: none;
-  }
+    if (props.tone === 'warning') {
+      return `
+        color: #92400e;
+        background: #fef3c7;
+        border-color: #fcd34d;
+      `;
+    }
 
-  h4 {
-    width: 100%;
-    padding: 0 !important;
-    margin: 0;
-    font-size: 12px;
-    text-align: left;
-  }
+    if (props.tone === 'danger') {
+      return `
+        color: #991b1b;
+        background: #fee2e2;
+        border-color: #fca5a5;
+      `;
+    }
+
+    return `
+      color: var(--ds-color-text-secondary);
+      background: var(--ds-color-bg-subtle);
+      border-color: var(--ds-color-border-default);
+    `;
+  }}
 `;
 
-const LimitDisplay = styled.div`
+const PrimaryText = styled.span<{ tone?: HealthState['tone'] }>`
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  color: ${(props) => {
+    if (props.tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
+    if (props.tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    return 'var(--ds-color-text-primary)';
+  }};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const SecondaryText = styled.span<{ tone?: HealthState['tone'] }>`
+  font-size: var(--ds-font-size-xs);
+  color: ${(props) => {
+    if (props.tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
+    if (props.tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    return 'var(--ds-color-text-secondary)';
+  }};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ActionCell = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1890ff;
-  letter-spacing: 0.5px;
-  background-color: #f0f8ff;
-  border: 1px dashed #1890ff;
-  border-radius: 4px;
-`;
-
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  width: 100%;
   height: 100%;
 `;
 
-const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  font-size: 18px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  transition: all 0.2s;
-
-  &.edit-button {
-    color: #474747;
-
-    &:hover {
-      color: #414141;
-    }
+const MenuButton = styled(Button)`
+  && {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-color-text-secondary);
   }
 
-  &.delete-button {
-    color: #ff4d4f;
-
-    &:hover {
-      color: #ff7875;
-      background-color: rgb(255 77 79 / 10%);
-    }
-  }
-
-  &.enable-button {
-    position: relative;
-    z-index: 300;
-    font-weight: 500;
-    color: #52c41a;
-    background-color: transparent;
-    box-shadow: none;
-    opacity: 1 !important;
-
-    &:hover {
-      color: #73d13d;
-      background-color: #fff;
-    }
-  }
-
-  &:focus {
-    outline: none;
+  &&:hover {
+    color: var(--ds-color-text-primary);
+    background: var(--ds-color-bg-subtle);
   }
 `;

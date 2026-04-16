@@ -124,6 +124,9 @@ describe('orchestrator.service', () => {
         if (ref.path === 'businesses/business-1/settings/accounting') {
           return { exists: false, data: () => ({}) };
         }
+        if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+          return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
+        }
         if (ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')) {
           return { exists: false, data: () => ({}) };
         }
@@ -264,6 +267,69 @@ describe('orchestrator.service', () => {
     ).rejects.toThrow('ncfType requerido cuando ncf.enabled=true');
   });
 
+  it('blocks invoices without NCF when fiscal receipts are enabled for the business', async () => {
+    tx.get.mockImplementation(async (ref) => {
+      if (ref.path === 'idempotency:business-1:idem-1') {
+        return { exists: false };
+      }
+      if (ref.path === 'businesses/business-1') {
+        return {
+          exists: true,
+          data: () => ({
+            subscription: {
+              status: 'active',
+              planId: 'plus',
+              limits: { monthlyInvoices: 10 },
+            },
+          }),
+        };
+      }
+      if (ref.path === 'businesses/business-1/usage/current') {
+        return { exists: true, data: () => ({ monthlyInvoices: 2 }) };
+      }
+      if (ref.path.startsWith('businesses/business-1/usage/monthly/entries/')) {
+        return { exists: true, data: () => ({ monthlyInvoices: 3 }) };
+      }
+      if (ref.path === 'businesses/business-1/settings/accounting') {
+        return { exists: false, data: () => ({}) };
+      }
+      if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+        return {
+          exists: true,
+          data: () => ({
+            taxReceiptEnabled: true,
+          }),
+        };
+      }
+      if (ref.path.startsWith('businesses/business-1/accountingPeriodClosures/')) {
+        return { exists: false, data: () => ({}) };
+      }
+      throw new Error(`Unexpected tx.get path: ${ref.path}`);
+    });
+
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        idempotencyKey: 'idem-1',
+        payload: {
+          cart: {
+            id: 'cart-no-ncf',
+          },
+          taxReceiptEnabled: false,
+          ncf: {
+            enabled: false,
+            type: null,
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'Debes seleccionar un comprobante fiscal para completar la venta.',
+    );
+
+    expect(tx.set).not.toHaveBeenCalled();
+  });
+
   it('blocks the invoice when the effective accounting period is closed', async () => {
     isAccountingRolloutEnabledForBusinessMock.mockReturnValue(true);
 
@@ -296,6 +362,9 @@ describe('orchestrator.service', () => {
             generalAccountingEnabled: true,
           }),
         };
+      }
+      if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+        return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
       }
       if (ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03') {
         return {
@@ -364,6 +433,9 @@ describe('orchestrator.service', () => {
             generalAccountingEnabled: true,
           }),
         };
+      }
+      if (ref.path === 'businesses/business-1/settings/taxReceipt') {
+        return { exists: true, data: () => ({ taxReceiptEnabled: false }) };
       }
       if (ref.path === 'businesses/business-1/accountingPeriodClosures/2026-03') {
         return { exists: false, data: () => ({}) };

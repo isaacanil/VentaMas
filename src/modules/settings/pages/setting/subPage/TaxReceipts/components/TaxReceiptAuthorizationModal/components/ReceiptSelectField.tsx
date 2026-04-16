@@ -24,16 +24,16 @@ export const ReceiptSelectField = ({
       <Col span={24}>
         <Form.Item<AuthorizationFormValues>
           name="receiptId"
-          label="Seleccione el comprobante a actualizar"
+          label="Seleccione la serie a actualizar"
           rules={[
             {
               required: true,
-              message: 'Por favor seleccione un comprobante',
+              message: 'Seleccione una serie',
             },
           ]}
         >
           <Select
-            placeholder="Seleccionar comprobante"
+            placeholder="Seleccionar serie"
             onChange={onReceiptSelect}
             optionLabelProp="label"
           >

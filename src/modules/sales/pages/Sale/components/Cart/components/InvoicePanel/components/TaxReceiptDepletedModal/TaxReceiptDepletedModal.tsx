@@ -16,7 +16,6 @@ type TaxReceiptDepletedModalProps = {
   loading?: boolean;
   onSelectReceipt?: (value: string) => void;
   onRetry?: () => void;
-  onContinueWithout?: () => void;
   onCancel?: () => void;
 };
 
@@ -53,6 +52,15 @@ const buildOptions = (receipts: TaxReceiptItem[]): ReceiptOption[] => {
       const isCreditNoteBySerie = serie === '04';
       const isCreditNoteByName = containsNota && containsCredito;
       return !(isCreditNoteBySerie || isCreditNoteByName);
+    })
+    .filter((receipt) => {
+      const data = resolveReceiptData(receipt);
+      const quantity = Number(data?.quantity);
+      const increase = Number(data?.increase);
+      const normalizedIncrease =
+        Number.isFinite(increase) && increase > 0 ? increase : 1;
+      const normalizedQuantity = Number.isFinite(quantity) ? quantity : 0;
+      return normalizedQuantity >= normalizedIncrease;
     })
     .map((receipt) => ({
       value: resolveReceiptData(receipt)?.name,
@@ -94,7 +102,6 @@ export const TaxReceiptDepletedModal = ({
   loading = false,
   onSelectReceipt = () => undefined,
   onRetry = () => undefined,
-  onContinueWithout = () => undefined,
   onCancel = () => undefined,
 }: TaxReceiptDepletedModalProps) => {
   const options = buildOptions(receipts);
@@ -113,8 +120,8 @@ export const TaxReceiptDepletedModal = ({
       <ContentWrapper>
         <Typography.Paragraph>
           No hay comprobantes del tipo{' '}
-          <Highlight>{currentReceipt || 'actual'}</Highlight>. Elige otro o
-          continúa sin comprobante.
+          <Highlight>{currentReceipt || 'actual'}</Highlight>. Debes elegir otro
+          comprobante disponible para continuar.
         </Typography.Paragraph>
 
         {options.length > 0 ? (
@@ -150,11 +157,16 @@ export const TaxReceiptDepletedModal = ({
           </div>
         ) : (
           <Typography.Text type="secondary">
-            No hay otros comprobantes. Puedes continuar sin comprobante.
+            No hay otros comprobantes con numeración disponible. No puedes
+            completar la venta sin comprobante mientras la facturación fiscal
+            esté activa.
           </Typography.Text>
         )}
 
         <FooterContainer>
+          <Button onClick={onCancel} disabled={loading}>
+            Volver
+          </Button>
           <Button
             type="primary"
             onClick={onRetry}
@@ -162,16 +174,6 @@ export const TaxReceiptDepletedModal = ({
             loading={loading}
           >
             Continuar con comprobante
-          </Button>
-          <Button
-            danger
-            type="primary"
-            ghost
-            onClick={onContinueWithout}
-            disabled={loading}
-            loading={loading}
-          >
-            Continuar sin comprobante
           </Button>
         </FooterContainer>
       </ContentWrapper>
@@ -195,6 +197,5 @@ TaxReceiptDepletedModal.propTypes = {
   loading: PropTypes.bool,
   onSelectReceipt: PropTypes.func,
   onRetry: PropTypes.func,
-  onContinueWithout: PropTypes.func,
   onCancel: PropTypes.func,
 };

@@ -6,7 +6,7 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Form, notification } from 'antd';
+import { App as AntApp, Form } from 'antd';
 import {
   forwardRef,
   useCallback,
@@ -363,6 +363,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { notification } = AntApp.useApp();
   const [form] = Form.useForm<LoginFormValues>();
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -406,7 +407,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         onError: (errorMessage) => {
           setFormError(errorMessage);
           notification.error({
-            title: 'Error',
+            message: 'Error',
             description: errorMessage,
           });
         },
@@ -419,7 +420,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
           navigate(resolveDefaultHomeRoute(userData), { replace: true });
 
           notification.success({
-            title: 'Inicio de sesión exitoso',
+            message: 'Inicio de sesión exitoso',
             description: '¡Bienvenido!',
           });
         },

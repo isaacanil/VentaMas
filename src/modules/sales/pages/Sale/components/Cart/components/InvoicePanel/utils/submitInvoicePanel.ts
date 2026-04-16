@@ -67,13 +67,11 @@ interface SubmitInvoicePanelArgs {
   taxReceiptData: TaxReceiptItem[] | null | undefined;
   taxReceiptEnabled: boolean;
   user: UserIdentity | null;
-  bypassTaxReceiptOverride?: boolean;
 }
 
 export const submitInvoicePanel = async ({
   accountsReceivable,
   business,
-  bypassTaxReceiptOverride = false,
   cart,
   client,
   dispatch,
@@ -102,8 +100,7 @@ export const submitInvoicePanel = async ({
   user,
 }: SubmitInvoicePanelArgs) => {
   try {
-    const effectiveTaxReceiptEnabled =
-      !bypassTaxReceiptOverride && taxReceiptEnabled;
+    const effectiveTaxReceiptEnabled = taxReceiptEnabled;
 
     if (effectiveTaxReceiptEnabled) {
       const { depleted } = getTaxReceiptAvailability(taxReceiptData, ncfType);

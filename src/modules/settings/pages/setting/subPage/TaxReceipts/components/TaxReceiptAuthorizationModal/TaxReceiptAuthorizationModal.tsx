@@ -13,7 +13,10 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { updateTaxReceipt } from '@/firebase/taxReceipt/updateTaxReceipt';
+import {
+  updateTaxReceipt,
+  validateSequenceUpdate,
+} from '@/firebase/taxReceipt/updateTaxReceipt';
 import { AuthorizationFields } from './components/AuthorizationFields';
 import { ModalHeader } from './components/ModalHeader';
 import { ReceiptSelectField } from './components/ReceiptSelectField';
@@ -25,9 +28,11 @@ import type {
 } from './types';
 import {
   buildDefaultExpirationDate,
+  calculateStoredSequenceFromAuthorization,
   buildReceiptOptions,
   calculateNewEndSequence,
   hasBusinessId,
+  resolveReceiptIncrease,
 } from './utils/taxReceiptAuthorizationModal';
 
 const TaxReceiptAuthorizationModal = ({
@@ -68,22 +73,22 @@ const TaxReceiptAuthorizationModal = ({
     const values = await form.validateFields();
 
     if (!selectedReceipt) {
-      message.error('Por favor seleccione un comprobante');
-      setLoading(false);
+      message.error('Seleccione una serie antes de registrar el rango.');
       return;
     }
 
     if (!DateTime.isDateTime(values.expirationDate)) {
       message.error('Seleccione una fecha de vencimiento válida');
-      setLoading(false);
       return;
     }
 
+    const receiptData = selectedReceipt.data;
+    const sequenceIncrease = resolveReceiptIncrease(receiptData.increase);
+
     // Calcular la secuencia final
-    const endSequence = calculateNewEndSequence(values);
+    const endSequence = calculateNewEndSequence(values, sequenceIncrease);
     if (!endSequence) {
-      message.error('Error al calcular la secuencia final');
-      setLoading(false);
+      message.error('No se pudo calcular el final del rango.');
       return;
     }
 
@@ -97,17 +102,17 @@ const TaxReceiptAuthorizationModal = ({
       expirationDate: values.expirationDate.toFormat('yyyy-MM-dd'),
       authorizationDate: DateTime.now().toFormat('yyyy-MM-dd'),
     };
-    const receiptData = selectedReceipt.data;
     const authorizations = receiptData.authorizations ?? [];
 
     const currentSequence = parseInt(String(receiptData.sequence ?? '0'), 10);
     const newStartSequence = parseInt(String(values.startSequence), 10);
+    const storedSequence = calculateStoredSequenceFromAuthorization(
+      values.startSequence,
+      sequenceIncrease,
+    );
 
-    if (newStartSequence < currentSequence) {
-      message.error(
-        `Error: La secuencia inicial (${newStartSequence}) no puede ser menor que la secuencia actual (${currentSequence}). Esto podría causar duplicación de NCF.`,
-      );
-      setLoading(false);
+    if (storedSequence === null) {
+      message.error('La secuencia inicial no es válida para el incremento configurado.');
       return;
     }
 
@@ -119,7 +124,7 @@ const TaxReceiptAuthorizationModal = ({
     };
 
     if (!hasBusinessId(user)) {
-      message.error('No se encontró un negocio válido para registrar la autorización.');
+      message.error('No se encontró un negocio válido para registrar la secuencia.');
       return;
     }
 
@@ -128,17 +133,27 @@ const TaxReceiptAuthorizationModal = ({
       return;
     }
 
+    const sequenceValidation = await validateSequenceUpdate(
+      user.businessID,
+      receiptData.name,
+      newStartSequence,
+      currentSequence,
+      sequenceIncrease,
+    );
+
+    if (!sequenceValidation.isValid) {
+      message.error(
+        sequenceValidation.reason ??
+          'La secuencia inicial no es segura para continuar.',
+      );
+      return;
+    }
+
     const updatedReceipt: TaxReceiptWithAuthorizations = {
       ...receiptData,
       id: receiptData.id,
-      sequence:
-        newStartSequence > currentSequence
-          ? String(values.startSequence)
-          : receiptData.sequence,
-      quantity:
-        newStartSequence > currentSequence
-          ? String(values.approvedQuantity)
-          : receiptData.quantity,
+      sequence: String(storedSequence),
+      quantity: String(values.approvedQuantity),
       sequenceLength: resolveSequenceLength(),
       authorizations: [...authorizations, authorizationData],
     };
@@ -147,13 +162,13 @@ const TaxReceiptAuthorizationModal = ({
       setLoading(true);
       await updateTaxReceipt(user, updatedReceipt);
       setLoading(false);
-      message.success('Autorización registrada correctamente');
+      message.success('Secuencia registrada correctamente.');
       onAuthorizationAdded(updatedReceipt);
       onCancel();
     } catch (error) {
       setLoading(false);
-      console.error('Error al guardar la autorización:', error);
-      message.error('Error al registrar la autorización del comprobante');
+      console.error('Error al guardar la secuencia autorizada:', error);
+      message.error('No se pudo registrar la secuencia autorizada.');
     }
   };
 
@@ -182,7 +197,7 @@ const TaxReceiptAuthorizationModal = ({
           icon={<CheckCircleOutlined />}
           disabled={!selectedReceipt}
         >
-          Registrar Autorización
+          Registrar secuencia
         </Button>,
       ]}
       destroyOnHidden
@@ -197,7 +212,7 @@ const TaxReceiptAuthorizationModal = ({
           {selectedReceipt && (
             <>
               <SelectedReceiptDetails receipt={selectedReceipt} />
-              <AuthorizationFields />
+              <AuthorizationFields increase={selectedReceipt.data.increase} />
             </>
           )}
         </Form>

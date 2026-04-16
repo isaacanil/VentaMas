@@ -1,26 +1,37 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 //TODO ***AUTH**************************************
-import { getAuth } from 'firebase/auth';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
 //TODO ***FIRESTORE***********************************
 import { getDatabase, type Database } from 'firebase/database';
 import {
   arrayRemove,
   arrayUnion,
   collection,
+  connectFirestoreEmulator,
   doc,
   getDocs,
   initializeFirestore,
+  memoryLocalCache,
   persistentLocalCache,
   persistentMultipleTabManager,
   query,
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { getFunctions } from 'firebase/functions';
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 //TODO ***STORAGE***********************************
 import { getStorage } from 'firebase/storage';
 import type { GenerativeModel } from 'firebase/vertexai';
+
+import {
+  getAuthEmulatorPort,
+  getFirebaseEmulatorHost,
+  getFirebaseEmulatorSummary,
+  getFirestoreEmulatorPort,
+  getFunctionsEmulatorPort,
+  shouldUseFirebaseEmulators,
+} from './emulatorConfig';
 
 const databaseURL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 const hasRealtimeDatabase = Boolean(databaseURL);
@@ -36,18 +47,44 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+const useFirebaseEmulators = shouldUseFirebaseEmulators();
 
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager(),
-  }),
+  // Firebase recomienda evitar persistencia local al usar emuladores
+  // para no mezclar cache offline con datos efimeros del emulador.
+  localCache: useFirebaseEmulators
+    ? memoryLocalCache()
+    : persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
 });
 // export const db = getFirestore(app);
 
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
+
+if (useFirebaseEmulators) {
+  const emulatorHost = getFirebaseEmulatorHost();
+
+  connectAuthEmulator(
+    auth,
+    `http://${emulatorHost}:${getAuthEmulatorPort()}`,
+    {
+      disableWarnings: true,
+    },
+  );
+  connectFirestoreEmulator(db, emulatorHost, getFirestoreEmulatorPort());
+  connectFunctionsEmulator(functions, emulatorHost, getFunctionsEmulatorPort());
+
+  if (import.meta.env.DEV) {
+    console.info(
+      `[Firebase] emuladores activos: ${getFirebaseEmulatorSummary()}`,
+    );
+  }
+}
 
 export const realtimeDB: Database | null = hasRealtimeDatabase
   ? getDatabase(app, databaseURL)

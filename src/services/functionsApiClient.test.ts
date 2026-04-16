@@ -55,6 +55,20 @@ describe('functionsApiClient', () => {
     );
   });
 
+  it('usa el emulador de functions cuando VITE_USE_EMULATORS esta activo', async () => {
+    vi.stubEnv('VITE_USE_EMULATORS', '1');
+    vi.stubEnv('VITE_FIREBASE_PROJECT_ID', 'ventamas-test');
+    vi.stubEnv('VITE_FIREBASE_REGION', 'us-central1');
+    vi.stubEnv('VITE_FIREBASE_EMULATOR_HOST', '127.0.0.1');
+    vi.stubEnv('VITE_FUNCTIONS_EMULATOR_PORT', '5001');
+
+    const { getFunctionsBaseUrl } = await loadFunctionsApiClient();
+
+    expect(getFunctionsBaseUrl()).toBe(
+      'http://127.0.0.1:5001/ventamas-test/us-central1',
+    );
+  });
+
   it('lanza un error cuando no puede resolver la URL base', async () => {
     vi.stubEnv('VITE_FIREBASE_FUNCTIONS_BASE_URL', '');
     vi.stubEnv('VITE_FIREBASE_PROJECT_ID', '');

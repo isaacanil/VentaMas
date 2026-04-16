@@ -37,6 +37,57 @@ Todos los scripts deben ejecutarse con Node.js desde la raíz del proyecto o des
 - **`configure-firebase-cors.js`** - Configuración de CORS para buckets de Google Cloud Storage.
 - **`check-env.js`** - Valida la existencia y contenido del archivo `.env`.
 
+### Seeds parciales Firebase
+
+- **`export-business-slice.mjs`** - Exporta un slice parcial de Firestore por dominios (`identity`, `sales`, `inventory`, `receivables`, `fiscal`) para un negocio específico sin escribir en producción.
+  - Requiere credenciales ADC (`GOOGLE_APPLICATION_CREDENTIALS`) o sesión válida de Application Default Credentials.
+  - Ejemplo:
+    ```powershell
+    node .\tools\export-business-slice.mjs `
+      --business-id=X63aIFwHzk3r0gmT8w6P `
+      --username=dev#3407 `
+      --invoice-numbers=953,954,955,956,957,961,962,963,964,965,966,967,968,969 `
+      --domains=identity,sales,inventory,receivables,fiscal
+    ```
+
+- **`import-business-slice-to-emulator.mjs`** - Importa el JSON exportado hacia Firestore Emulator. Falla si `FIRESTORE_EMULATOR_HOST` no está definido.
+  - Resuelve `projectId` en este orden: `--project-id`, `manifest.projectId`, `GCLOUD_PROJECT` / `GOOGLE_CLOUD_PROJECT`, `.firebaserc`.
+  - Ejemplo:
+    ```powershell
+    $env:FIRESTORE_EMULATOR_HOST="127.0.0.1:8081"
+    node .\tools\import-business-slice-to-emulator.mjs `
+      --in=.\tmp\emulator-seeds\X63aIFwHzk3r0gmT8w6P\business-slice.json
+    ```
+
+### CLI local unificado
+
+- **`local-dev-cli.mjs`** - Orquesta entorno local: cierra procesos viejos en puertos gestionados, fuerza Java 21 si existe en `C:\Tools`, arranca `auth+firestore+functions`, importa el `business-slice.json` mas reciente y levanta Vite con `VITE_USE_EMULATORS=1`.
+  - Alias existente:
+    ```powershell
+    npm run dev:emulators
+    ```
+  - Estado:
+    ```powershell
+    npm run dev:local:status
+    ```
+  - Arranque completo:
+    ```powershell
+    npm run dev:local
+    ```
+  - Arranque sin seed o sin Vite:
+    ```powershell
+    node .\tools\local-dev-cli.mjs start --skip-seed --no-vite
+    ```
+  - Seed explicito:
+    ```powershell
+    node .\tools\local-dev-cli.mjs start `
+      --seed=.\tmp\emulator-seeds\X63aIFwHzk3r0gmT8w6P\business-slice.json
+    ```
+  - Stop:
+    ```powershell
+    npm run dev:local:stop
+    ```
+
 ## Uso General
 
 Para ejecutar cualquiera de estos scripts:

@@ -149,6 +149,13 @@ const ReceiptRow = ({ receipt }: { receipt: any }) => {
     typeof receipt?.percentageRemaining === 'number'
       ? `${receipt.percentageRemaining}%`
       : null;
+  const hasExpirationAlert =
+    receipt?.primaryAlertReason === 'expiration' &&
+    typeof receipt?.daysUntilExpiration === 'number';
+  const expirationLabel =
+    typeof receipt?.daysUntilExpiration === 'number'
+      ? `${receipt.daysUntilExpiration} día(s)`
+      : receipt?.expirationDate || '-';
 
   return (
     <PanelRow>
@@ -174,14 +181,16 @@ const ReceiptRow = ({ receipt }: { receipt: any }) => {
       </RowMeta>
 
       <RowMeta>
-        <MetaLabel>Usados</MetaLabel>
-        <MetaValue>{used !== null ? formatNumber(used) : '-'}</MetaValue>
+        <MetaLabel>{hasExpirationAlert ? 'Vence' : 'Usados'}</MetaLabel>
+        <MetaValue>
+          {hasExpirationAlert ? expirationLabel : used !== null ? formatNumber(used) : '-'}
+        </MetaValue>
       </RowMeta>
 
       <RowStatus>
         <StatusPill $color={status.color}>{status.label}</StatusPill>
         <MetaValue style={{ color: '#64748b', fontWeight: 400 }}>
-          {percentage || status.description}
+          {hasExpirationAlert ? expirationLabel : percentage || status.description}
         </MetaValue>
       </RowStatus>
     </PanelRow>

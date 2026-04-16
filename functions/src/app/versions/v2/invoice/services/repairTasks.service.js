@@ -91,9 +91,24 @@ const resolveLegacyScopedBusinessId = (userData) => {
   );
 };
 
-const resolveRootRole = (userData) => {
+const hasPlatformDevPrivileges = (userData) => {
   const root = asRecord(userData);
-  return normalizeRole(root.role || '') || '';
+  const platformRoles = asRecord(root.platformRoles);
+  const platformNode = asRecord(root.platform);
+  return (
+    normalizeRole(root.activeRole || root.role || '') === ROLE.DEV ||
+    root.isDev === true ||
+    platformRoles.dev === true ||
+    platformNode.dev === true
+  );
+};
+
+const resolveRootRole = (userData) => {
+  if (hasPlatformDevPrivileges(userData)) {
+    return ROLE.DEV;
+  }
+  const root = asRecord(userData);
+  return normalizeRole(root.activeRole || root.role || '') || '';
 };
 
 export async function getUserAccessProfile(authUid) {
@@ -160,6 +175,17 @@ export async function assertUserAccess({
     throw new https.HttpsError('permission-denied', 'Usuario no encontrado');
   }
 
+  if (profile.hasGlobalUnscopedAccess) {
+    const globalRole = profile.rootRole || ROLE.DEV;
+    assertAllowedRole(globalRole, allowedRoles);
+    return {
+      businessId: normalizedBusinessId,
+      role: globalRole,
+      status: 'active',
+      source: 'global-role',
+    };
+  }
+
   const canonicalMembership = await getCanonicalMembershipForBusiness({
     authUid,
     businessId: normalizedBusinessId,
@@ -216,17 +242,6 @@ export async function assertUserAccess({
       role: fallbackRole,
       status: 'active',
       source: 'legacy-scope',
-    };
-  }
-
-  if (profile.hasGlobalUnscopedAccess) {
-    const globalRole = profile.rootRole || ROLE.DEV;
-    assertAllowedRole(globalRole, allowedRoles);
-    return {
-      businessId: normalizedBusinessId,
-      role: globalRole,
-      status: 'active',
-      source: 'global-role',
     };
   }
 
