@@ -44,6 +44,7 @@ emulator-data/
 .react-doctor*/
 tmp/
 tmp/pdfs/
+vivaldi_*.png
 
 # Vercel
 .vercel
