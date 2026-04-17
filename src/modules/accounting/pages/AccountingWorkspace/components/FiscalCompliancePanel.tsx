@@ -12,6 +12,12 @@ import {
 import { useMonthlyComplianceRuns } from '../hooks/useMonthlyComplianceRuns';
 import { formatAccountingPeriod } from '../utils/accountingWorkspace';
 import {
+  translateFieldPath,
+  translateIssueCode,
+  translateSeverity,
+  translateSourceId,
+} from '../utils/fiscalIssueLabels';
+import {
   MONTHLY_COMPLIANCE_REPORT_OPTIONS,
   buildMonthlyComplianceDefaultPeriodKey,
   formatMonthlyComplianceRunDate,
@@ -619,7 +625,7 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
       <SourceList>
         {run.validationSummary.sourceSummaries.map((summary) => (
           <SourceRow key={summary.sourceId}>
-            <span>{summary.sourceId}</span>
+            <span>{translateSourceId(summary.sourceId)}</span>
             <strong>{summary.recordsScanned}</strong>
           </SourceRow>
         ))}
@@ -653,15 +659,16 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
               <IssueItem key={`${run.id}-issue-${index}`}>
                 <IssueTop>
                   <Tag color={issue.severity === 'error' ? 'error' : 'warning'}>
-                    {normalizeIssueLabel(issue.severity)}
+                    {translateSeverity(normalizeIssueLabel(issue.severity))}
                   </Tag>
-                  <strong>{normalizeIssueLabel(issue.code)}</strong>
+                  <strong>{translateIssueCode(normalizeIssueLabel(issue.code))}</strong>
                 </IssueTop>
-                <span>
-                  {normalizeIssueLabel(issue.sourceId)} ·{' '}
-                  {normalizeIssueLabel(issue.fieldPath)}
-                </span>
-                <span>{normalizeIssueLabel(issue.documentNumber)}</span>
+                <IssueDetail>
+                  <IssueDetailChip>{translateSourceId(normalizeIssueLabel(issue.sourceId))}</IssueDetailChip>
+                  <span>·</span>
+                  <span>{translateFieldPath(normalizeIssueLabel(issue.fieldPath))}</span>
+                </IssueDetail>
+                <IssueDocNumber>Comprobante #{normalizeIssueLabel(issue.documentNumber)}</IssueDocNumber>
               </IssueItem>
             ))}
           </IssueList>
@@ -1070,4 +1077,33 @@ const IssueTop = styled.div`
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
+`;
+
+const IssueDetail = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  flex-wrap: wrap;
+
+  span {
+    color: var(--ds-color-text-secondary);
+    font-size: var(--ds-font-size-sm);
+  }
+`;
+
+const IssueDetailChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-subtle);
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-text-secondary);
+  white-space: nowrap;
+`;
+
+const IssueDocNumber = styled.span`
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-text-disabled);
 `;
