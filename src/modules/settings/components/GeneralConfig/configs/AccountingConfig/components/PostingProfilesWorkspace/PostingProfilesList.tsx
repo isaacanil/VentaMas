@@ -1,4 +1,4 @@
-import { Button, Drawer, Empty, Input, Select } from 'antd';
+import { Button, Drawer, Empty, Input, Select, Spin } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useDeferredValue, useMemo, useState } from 'react';
 import styled from 'styled-components';
@@ -265,7 +265,11 @@ export const PostingProfilesList = ({
           />
 
           <CoverageFooter>
-            <Button loading={seeding} onClick={onSeedDefaultPostingProfiles}>
+            <Button
+              disabled={loading}
+              loading={seeding}
+              onClick={onSeedDefaultPostingProfiles}
+            >
               Completar plantilla base
             </Button>
           </CoverageFooter>
@@ -296,7 +300,7 @@ export const PostingProfilesList = ({
 
           <ProfilesHeaderActions>
             <Button
-              disabled={availablePostingAccountsCount === 0}
+              disabled={loading || availablePostingAccountsCount === 0}
               type="primary"
               icon={<PlusOutlined />}
               onClick={handleCreateProfile}
@@ -336,7 +340,11 @@ export const PostingProfilesList = ({
         </Controls>
 
         <ProfilesList aria-busy={loading}>
-          {filteredProfiles.length ? (
+          {loading && postingProfiles.length === 0 ? (
+            <LoadingState>
+              <Spin tip="Cargando perfiles contables..." />
+            </LoadingState>
+          ) : filteredProfiles.length ? (
             filteredProfiles.map((profile) => {
               const isSelected = selectedProfile?.id === profile.id;
 
@@ -440,7 +448,11 @@ export const PostingProfilesList = ({
             />
 
             <CoverageFooter>
-              <Button loading={seeding} onClick={onSeedDefaultPostingProfiles}>
+              <Button
+                disabled={loading}
+                loading={seeding}
+                onClick={onSeedDefaultPostingProfiles}
+              >
                 Completar plantilla base
               </Button>
             </CoverageFooter>
@@ -637,6 +649,14 @@ const ProfilesList = styled.div`
   flex-direction: column;
   min-height: 0;
   overflow: auto;
+`;
+
+const LoadingState = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: var(--ds-space-6);
 `;
 
 const ProfileRow = styled.button<{ $selected: boolean }>`

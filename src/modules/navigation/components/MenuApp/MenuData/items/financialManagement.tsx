@@ -23,6 +23,7 @@ const {
   ACCOUNTING_GENERAL_LEDGER,
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_PERIOD_CLOSE,
+  ACCOUNTING_FISCAL_COMPLIANCE,
   ACCOUNTING_REPORTS,
 } = ROUTES_NAME.ACCOUNTING_TERM;
 
@@ -88,6 +89,12 @@ const financialManagement: MenuItem[] = [
         title: 'Reportes',
         route: ACCOUNTING_REPORTS,
         icon: <FontAwesomeIcon icon={faChartColumn} />,
+        group: 'accounting',
+      },
+      {
+        title: 'Compliance fiscal',
+        route: ACCOUNTING_FISCAL_COMPLIANCE,
+        icon: <FontAwesomeIcon icon={faClipboardCheck} />,
         group: 'accounting',
       },
       {

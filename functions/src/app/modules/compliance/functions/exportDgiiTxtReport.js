@@ -14,6 +14,7 @@ import {
   resolveMonthlyPeriodRange,
 } from '../services/dgii607MonthlyReport.service.js';
 import {
+  assertValidDgii607Header,
   buildDgii607TxtContent,
   buildDgii607TxtFileName,
   buildDgii607TxtRow,
@@ -74,7 +75,7 @@ export const exportDgiiTxtReport = onCall(
       );
     }
 
-    const businessRnc = toCleanString(businessData.rnc) || '000000000';
+    const businessRnc = toCleanString(businessData.rnc) || null;
 
     const {
       start,
@@ -148,6 +149,11 @@ export const exportDgiiTxtReport = onCall(
           originalNcf,
         }),
       );
+      assertValidDgii607Header({
+        businessRnc,
+        periodKey: normalizedPeriodKey,
+        rowCount: rows.length,
+      });
     } catch (error) {
       throw new HttpsError(
         'failed-precondition',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -41,6 +41,7 @@ export default function AccountingConfig() {
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const userId = user?.uid ?? user?.id ?? null;
   const settingsWorkspaceEnabled = Boolean(businessId);
+  const referencedChartAccountIdsRef = useRef<Set<string>>(new Set());
   const {
     bankAccounts,
     config,
@@ -74,6 +75,7 @@ export default function AccountingConfig() {
     businessId,
     enabled: settingsWorkspaceEnabled,
     functionalCurrency: config.functionalCurrency,
+    referencedAccountIdsRef,
     userId,
   });
   const {
@@ -92,6 +94,16 @@ export default function AccountingConfig() {
     enabled: settingsWorkspaceEnabled,
     userId,
   });
+
+  useEffect(() => {
+    referencedChartAccountIdsRef.current = new Set(
+      postingProfiles.flatMap((profile) =>
+        profile.linesTemplate
+          .map((line) => line.accountId)
+          .filter((accountId): accountId is string => Boolean(accountId)),
+      ),
+    );
+  }, [postingProfiles]);
   const { entries: auditEntries, loading: auditLoading } =
     useAccountingAuditTrail({
       bankAccounts,

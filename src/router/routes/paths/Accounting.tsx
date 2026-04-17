@@ -6,8 +6,9 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 import type { JSX } from 'react';
 
-const AccountingWorkspace = lazy(() =>
-  import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace'),
+const AccountingWorkspace = lazy(
+  () =>
+    import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace'),
 );
 
 const {
@@ -16,6 +17,7 @@ const {
   ACCOUNTING_GENERAL_LEDGER,
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_REPORTS,
+  ACCOUNTING_FISCAL_COMPLIANCE,
   ACCOUNTING_PERIOD_CLOSE,
 } = ROUTES_NAME.ACCOUNTING_TERM;
 const { HOME } = ROUTES_NAME.BASIC_TERM;
@@ -48,6 +50,10 @@ const Routes: AppRoute[] = [
     element: withAccountingGate(<AccountingWorkspace />),
   },
   {
+    path: ACCOUNTING_FISCAL_COMPLIANCE,
+    element: withAccountingGate(<AccountingWorkspace />),
+  },
+  {
     path: ACCOUNTING_PERIOD_CLOSE,
     element: withAccountingGate(<AccountingWorkspace />),
   },
@@ -70,6 +76,10 @@ const Routes: AppRoute[] = [
   {
     path: '/contabilidad/reportes',
     element: <Navigate to={ACCOUNTING_REPORTS} replace />,
+  },
+  {
+    path: '/contabilidad/compliance-fiscal',
+    element: <Navigate to={ACCOUNTING_FISCAL_COMPLIANCE} replace />,
   },
   {
     path: '/contabilidad/cierre-periodo',

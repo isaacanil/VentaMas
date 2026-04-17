@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MutableRefObject,
+} from 'react';
 import { message } from 'antd';
 import {
   Timestamp,
@@ -24,6 +30,7 @@ interface UseChartOfAccountsArgs {
   businessId: string | null;
   enabled: boolean;
   functionalCurrency: string;
+  referencedAccountIdsRef?: MutableRefObject<Set<string>>;
   userId: string | null;
 }
 
@@ -41,6 +48,46 @@ const serializeDraftForComparison = (
   normalSide: draft.normalSide,
   currencyMode: draft.currencyMode,
 });
+
+const serializeStructuralDraftForComparison = (
+  draft: ChartOfAccountDraft,
+): Record<string, unknown> => ({
+  code: draft.code,
+  type: draft.type,
+  parentId: draft.parentId ?? null,
+  postingAllowed: draft.postingAllowed !== false,
+  normalSide: draft.normalSide,
+  currencyMode: draft.currencyMode,
+});
+
+const hasProtectedStructuralChanges = (
+  currentAccount: ChartOfAccount,
+  nextDraft: ChartOfAccountDraft,
+) =>
+  JSON.stringify(
+    serializeStructuralDraftForComparison(
+      normalizeChartOfAccountDraft(currentAccount),
+    ),
+  ) !==
+  JSON.stringify(serializeStructuralDraftForComparison(nextDraft));
+
+const getProtectedAccountReason = ({
+  account,
+  referencedAccountIds,
+}: {
+  account: ChartOfAccount;
+  referencedAccountIds: Set<string>;
+}) => {
+  if (account.systemKey) {
+    return 'La cuenta es canónica del sistema.';
+  }
+
+  if (referencedAccountIds.has(account.id)) {
+    return 'La cuenta ya está referenciada por perfiles contables.';
+  }
+
+  return null;
+};
 
 const buildChartOfAccountSnapshot = ({
   businessId,
@@ -74,6 +121,7 @@ export const useChartOfAccounts = ({
   businessId,
   enabled,
   functionalCurrency,
+  referencedAccountIdsRef,
   userId,
 }: UseChartOfAccountsArgs) => {
   const [chartOfAccounts, setChartOfAccounts] = useState<ChartOfAccount[]>([]);
@@ -226,6 +274,11 @@ export const useChartOfAccounts = ({
         ...existingAccount,
         ...draftInput,
       });
+      const referencedAccountIds = referencedAccountIdsRef?.current ?? new Set();
+      const protectedAccountReason = getProtectedAccountReason({
+        account: existingAccount,
+        referencedAccountIds,
+      });
 
       if (!draft.code || !draft.name) {
         message.error('La cuenta contable requiere código y nombre.');
@@ -300,6 +353,16 @@ export const useChartOfAccounts = ({
         return true;
       }
 
+      if (
+        protectedAccountReason &&
+        hasProtectedStructuralChanges(existingAccount, draft)
+      ) {
+        message.error(
+          `${protectedAccountReason} Crea otra cuenta y remapea la configuración en vez de editar su estructura.`,
+        );
+        return false;
+      }
+
       setSaving(true);
       try {
         const accountRef = doc(
@@ -344,7 +407,7 @@ export const useChartOfAccounts = ({
         setSaving(false);
       }
     },
-    [businessId, chartOfAccounts, userId],
+    [businessId, chartOfAccounts, referencedAccountIdsRef, userId],
   );
 
   const updateChartOfAccountStatus = useCallback(
@@ -363,6 +426,18 @@ export const useChartOfAccounts = ({
 
       if (targetAccount.status === status) {
         return true;
+      }
+
+      const referencedAccountIds = referencedAccountIdsRef?.current ?? new Set();
+      const protectedAccountReason = getProtectedAccountReason({
+        account: targetAccount,
+        referencedAccountIds,
+      });
+      if (status === 'inactive' && protectedAccountReason) {
+        message.error(
+          `${protectedAccountReason} No se puede desactivar desde esta pantalla.`,
+        );
+        return false;
       }
 
       if (
@@ -415,7 +490,7 @@ export const useChartOfAccounts = ({
         setSaving(false);
       }
     },
-    [businessId, chartOfAccounts, userId],
+    [businessId, chartOfAccounts, referencedAccountIdsRef, userId],
   );
 
   const seedDefaultChartOfAccounts = useCallback(async () => {
@@ -427,8 +502,37 @@ export const useChartOfAccounts = ({
     const existingByCode = new Map(
       chartOfAccounts.map((account) => [account.code, account]),
     );
+    const existingBySystemKey = new Map(
+      chartOfAccounts
+        .filter((account) => account.systemKey)
+        .map((account) => [account.systemKey as string, account]),
+    );
+    const conflictingCanonicalTemplates = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.filter(
+      (template) => {
+        if (!template.systemKey) {
+          return false;
+        }
+
+        const existingCanonicalAccount =
+          existingBySystemKey.get(template.systemKey) ?? null;
+        return Boolean(
+          existingCanonicalAccount &&
+            existingCanonicalAccount.code !== template.code,
+        );
+      },
+    );
+
+    if (conflictingCanonicalTemplates.length) {
+      message.error(
+        'Hay cuentas canónicas renombradas o movidas. Revisa esas cuentas antes de completar la plantilla base.',
+      );
+      return;
+    }
+
     const templatesToCreate = DEFAULT_CHART_OF_ACCOUNTS_TEMPLATE.filter(
-      (template) => !existingByCode.has(template.code),
+      (template) =>
+        !existingByCode.has(template.code) &&
+        (!template.systemKey || !existingBySystemKey.has(template.systemKey)),
     );
 
     if (!templatesToCreate.length) {

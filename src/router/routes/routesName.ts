@@ -147,7 +147,8 @@ const SETTING_TERM = {
   GENERAL_CONFIG_BUSINESS: '/settings/business',
   GENERAL_CONFIG_ACCOUNTING: '/settings/accounting',
   GENERAL_CONFIG_EXCHANGE_RATES: '/settings/exchange-rates',
-  GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES: '/settings/accounting/exchange-rates',
+  GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES:
+    '/settings/accounting/exchange-rates',
   GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS:
     '/settings/accounting/chart-of-accounts',
   GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES:
@@ -188,6 +189,7 @@ const ACCOUNTING_TERM = {
   ACCOUNTING_GENERAL_LEDGER: '/accounting/general-ledger',
   ACCOUNTING_MANUAL_ENTRIES: '/accounting/manual-entries',
   ACCOUNTING_REPORTS: '/accounting/reports',
+  ACCOUNTING_FISCAL_COMPLIANCE: '/accounting/fiscal-compliance',
   ACCOUNTING_PERIOD_CLOSE: '/accounting/period-close',
 } as const;
 

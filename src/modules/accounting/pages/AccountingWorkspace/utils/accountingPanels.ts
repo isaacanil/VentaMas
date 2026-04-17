@@ -14,6 +14,7 @@ const {
   ACCOUNTING_GENERAL_LEDGER,
   ACCOUNTING_MANUAL_ENTRIES,
   ACCOUNTING_PERIOD_CLOSE,
+  ACCOUNTING_FISCAL_COMPLIANCE,
   ACCOUNTING_REPORTS,
 } = ROUTES_NAME.ACCOUNTING_TERM;
 
@@ -41,6 +42,12 @@ export const ACCOUNTING_WORKSPACE_PANELS: AccountingWorkspacePanelItem[] = [
     label: 'Reportes',
     description: 'Balanza, resultado y balance general.',
     route: ACCOUNTING_REPORTS,
+  },
+  {
+    key: 'fiscal-compliance',
+    label: 'Compliance fiscal',
+    description: 'Corridas, validacion y exportacion 606, 607 y 608.',
+    route: ACCOUNTING_FISCAL_COMPLIANCE,
   },
   {
     key: 'period-close',
@@ -78,6 +85,13 @@ export const resolveAccountingWorkspacePanelKey = (
 
   if (pathname.includes('/reports') || pathname.includes('/reportes')) {
     return 'financial-reports';
+  }
+
+  if (
+    pathname.includes('/fiscal-compliance') ||
+    pathname.includes('/compliance-fiscal')
+  ) {
+    return 'fiscal-compliance';
   }
 
   if (

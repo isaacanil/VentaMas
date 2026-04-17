@@ -9,7 +9,6 @@ import {
   formatAccountingPeriod,
 } from '../utils/accountingWorkspace';
 import { useAccountingBackendReports } from '../hooks/useAccountingBackendReports';
-import { MonthlyComplianceSection } from './MonthlyComplianceSection';
 import { exportFinancialReportsWorkbook } from './utils/financialReportsExport';
 
 import type { TrialBalanceRow } from '../utils/accountingWorkspace';
@@ -97,7 +96,9 @@ export const FinancialReportsPanel = ({
                   <InfoIcon />
                 </Tooltip>
               </SummaryLabelRow>
-              <strong>{formatAccountingMoney(reports.trialBalanceTotals.debit)}</strong>
+              <strong>
+                {formatAccountingMoney(reports.trialBalanceTotals.debit)}
+              </strong>
             </SummaryItem>
             <SummaryItem>
               <SummaryLabelRow>
@@ -109,7 +110,9 @@ export const FinancialReportsPanel = ({
                   <InfoIcon />
                 </Tooltip>
               </SummaryLabelRow>
-              <strong>{formatAccountingMoney(reports.trialBalanceTotals.credit)}</strong>
+              <strong>
+                {formatAccountingMoney(reports.trialBalanceTotals.credit)}
+              </strong>
             </SummaryItem>
             <SummaryItem $negative={reports.incomeTotals.netIncome < 0}>
               <SummaryLabelRow>
@@ -121,7 +124,9 @@ export const FinancialReportsPanel = ({
                   <InfoIcon />
                 </Tooltip>
               </SummaryLabelRow>
-              <strong>{formatAccountingMoney(reports.incomeTotals.netIncome)}</strong>
+              <strong>
+                {formatAccountingMoney(reports.incomeTotals.netIncome)}
+              </strong>
             </SummaryItem>
           </SummaryStrip>
 
@@ -168,7 +173,9 @@ export const FinancialReportsPanel = ({
                 ))}
                 <CompactTotal $negative={reports.incomeTotals.netIncome < 0}>
                   <span>Utilidad neta</span>
-                  <strong>{formatAccountingMoney(reports.incomeTotals.netIncome)}</strong>
+                  <strong>
+                    {formatAccountingMoney(reports.incomeTotals.netIncome)}
+                  </strong>
                 </CompactTotal>
               </CompactList>
             </ReportSection>
@@ -196,7 +203,9 @@ export const FinancialReportsPanel = ({
                   <CompactTotal>
                     <span>Resultado acumulado del periodo</span>
                     <strong>
-                      {formatAccountingMoney(reports.balanceSheet.currentEarnings)}
+                      {formatAccountingMoney(
+                        reports.balanceSheet.currentEarnings,
+                      )}
                     </strong>
                   </CompactTotal>
                 </BalanceGroup>
@@ -218,13 +227,6 @@ export const FinancialReportsPanel = ({
             : 'No hay periodos disponibles para generar reportes.'}
         </EmptyText>
       )}
-
-      <MonthlyComplianceSection
-        businessId={businessId}
-        enabled={enabled}
-        periods={periods}
-        defaultPeriodKey={selectedPeriodKey ?? null}
-      />
     </Panel>
   );
 };

@@ -284,9 +284,62 @@ describe('exportDgiiTxtReport', () => {
           reportCode: 'DGII_607',
         },
       }),
-    ).rejects.toMatchObject({
-      code: 'failed-precondition',
-      message: 'Falta identificación del cliente para exportar el NCF B01000000015.',
+    ).rejects.toHaveProperty('code', 'failed-precondition');
+    await expect(
+      exportDgiiTxtReport({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+          reportCode: 'DGII_607',
+        },
+      }),
+    ).rejects.toThrow('Falta identificación del cliente para exportar el NCF B01000000015.');
+  });
+
+  it('rechaza exportación cuando el negocio no tiene RNC para el encabezado', async () => {
+    collectionDocsByPath.set('businesses/business-1/invoices', []);
+    collectionDocsByPath.set('businesses/business-1/creditNotes', []);
+    businessDocGetMock.mockImplementation(async (path) => {
+      if (path === 'businesses/business-1') {
+        return {
+          exists: true,
+          data: () => ({
+            rnc: '',
+            business: {
+              features: {
+                fiscal: {
+                  reportingEnabled: true,
+                  monthlyComplianceEnabled: true,
+                },
+              },
+            },
+          }),
+        };
+      }
+
+      return {
+        exists: false,
+        data: () => ({}),
+      };
     });
+
+    await expect(
+      exportDgiiTxtReport({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+          reportCode: 'DGII_607',
+        },
+      }),
+    ).rejects.toHaveProperty('code', 'failed-precondition');
+    await expect(
+      exportDgiiTxtReport({
+        data: {
+          businessId: 'business-1',
+          periodKey: '2026-04',
+          reportCode: 'DGII_607',
+        },
+      }),
+    ).rejects.toThrow('RNC o cédula del emisor requerido.');
   });
 });

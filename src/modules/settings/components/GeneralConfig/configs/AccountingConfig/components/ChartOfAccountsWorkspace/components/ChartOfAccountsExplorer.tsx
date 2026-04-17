@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Button, Dropdown, Empty, Input, Select } from 'antd';
+import { Button, Dropdown, Empty, Input, Select, Spin } from 'antd';
 import type { MenuProps } from 'antd';
 import styled from 'styled-components';
 
@@ -123,7 +123,7 @@ export const ChartOfAccountsExplorer = ({
                 {
                   key: 'seed',
                   label: seeding ? 'Completando...' : 'Completar plantilla base',
-                  disabled: seeding,
+                  disabled: seeding || loading,
                   onClick: onSeedDefaultChartOfAccounts,
                 },
               ] satisfies MenuProps['items'],
@@ -132,6 +132,7 @@ export const ChartOfAccountsExplorer = ({
             placement="bottomRight"
           >
             <Button
+              disabled={loading || seeding}
               icon={<AppIcon name="ellipsisVertical" />}
               aria-label="Más opciones"
             />
@@ -183,7 +184,11 @@ export const ChartOfAccountsExplorer = ({
       </Controls>
 
       <List aria-busy={loading}>
-        {visibleAccounts.length > 0 ? (
+        {loading && totalAccountsCount === 0 ? (
+          <LoadingState>
+            <Spin tip="Cargando catálogo de cuentas..." />
+          </LoadingState>
+        ) : visibleAccounts.length > 0 ? (
           visibleAccounts.map((account) => {
             const depth = depthById.get(account.id) ?? 0;
             const hierarchyLabel = getHierarchyLabel(account);
@@ -292,12 +297,13 @@ export const ChartOfAccountsExplorer = ({
               <EmptyActions>
                 <Button
                   type="primary"
+                  disabled={loading}
                   loading={seeding}
                   onClick={onSeedDefaultChartOfAccounts}
                 >
                   Completar plantilla base
                 </Button>
-                <Button onClick={() => onAddChartOfAccountClick()}>
+                <Button disabled={loading} onClick={() => onAddChartOfAccountClick()}>
                   Agregar cuenta manual
                 </Button>
               </EmptyActions>
@@ -424,6 +430,14 @@ const List = styled.div`
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+`;
+
+const LoadingState = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: var(--ds-space-6);
 `;
 
 const RowButton = styled.button<{ $selected: boolean }>`

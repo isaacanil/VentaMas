@@ -10,6 +10,7 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { AccountingWorkspaceNav } from './components/AccountingWorkspaceNav';
 import { AccountingWorkspaceShell } from './components/AccountingWorkspaceShell';
 import { FinancialReportsPanel } from './components/FinancialReportsPanel';
+import { FiscalCompliancePanel } from './components/FiscalCompliancePanel';
 import { GeneralLedgerPanel } from './components/GeneralLedgerPanel';
 import { JournalBookPanel } from './components/JournalBookPanel';
 import { ManualEntriesPanel } from './components/ManualEntriesPanel';
@@ -75,7 +76,8 @@ export default function AccountingWorkspace() {
   } = useAccountingWorkspace({
     includeLedgerRecords: shouldLoadLedgerRecords,
   });
-  const { openingOriginRecordId, openRecordOrigin } = useAccountingOriginNavigation();
+  const { openingOriginRecordId, openRecordOrigin } =
+    useAccountingOriginNavigation();
   const requestedJournalRecord = useMemo(
     () =>
       activePanel === 'journal-book'
@@ -89,9 +91,12 @@ export default function AccountingWorkspace() {
       location.pathname === ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING ||
       location.pathname === `${ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING}/`
     ) {
-      navigate(getAccountingWorkspacePanel(DEFAULT_ACCOUNTING_WORKSPACE_PANEL).route, {
-        replace: true,
-      });
+      navigate(
+        getAccountingWorkspacePanel(DEFAULT_ACCOUNTING_WORKSPACE_PANEL).route,
+        {
+          replace: true,
+        },
+      );
     }
   }, [location.pathname, navigate]);
 
@@ -174,6 +179,15 @@ export default function AccountingWorkspace() {
           <FinancialReportsPanel
             businessId={businessId}
             enabled={accountingEnabled}
+          />
+        );
+      case 'fiscal-compliance':
+        return (
+          <FiscalCompliancePanel
+            businessId={businessId}
+            enabled={accountingEnabled}
+            periods={periodOptions.map((option) => option.periodKey)}
+            defaultPeriodKey={periodOptions[0]?.periodKey ?? null}
           />
         );
       case 'period-close':

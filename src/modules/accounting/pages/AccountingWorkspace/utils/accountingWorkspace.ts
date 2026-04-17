@@ -28,6 +28,7 @@ export type AccountingWorkspacePanelKey =
   | 'general-ledger'
   | 'manual-entries'
   | 'financial-reports'
+  | 'fiscal-compliance'
   | 'period-close';
 
 export interface AccountingPeriodClosure {
@@ -278,7 +279,8 @@ const resolveEventAmountSource = (
 ): number => {
   const monetary = asRecord(event.monetary);
   const total =
-    toFiniteAmount(monetary.functionalAmount) || toFiniteAmount(monetary.amount);
+    toFiniteAmount(monetary.functionalAmount) ||
+    toFiniteAmount(monetary.amount);
   const tax =
     toFiniteAmount(monetary.functionalTaxAmount) ||
     toFiniteAmount(monetary.taxAmount);
@@ -321,7 +323,7 @@ const buildProjectedLines = ({
     }
 
     const account = line.accountId
-      ? accountsById.get(line.accountId) ?? null
+      ? (accountsById.get(line.accountId) ?? null)
       : null;
 
     return [
@@ -413,12 +415,14 @@ export const buildWorkspaceSummary = (
   records: AccountingLedgerRecord[],
   closedPeriods: AccountingPeriodClosure[],
 ): AccountingWorkspaceSummary => ({
-  automaticRecords: records.filter((record) => record.sourceKind === 'automatic')
-    .length,
+  automaticRecords: records.filter(
+    (record) => record.sourceKind === 'automatic',
+  ).length,
   manualRecords: records.filter((record) => record.sourceKind === 'manual')
     .length,
-  projectedRecords: records.filter((record) => record.detailMode === 'projected')
-    .length,
+  projectedRecords: records.filter(
+    (record) => record.detailMode === 'projected',
+  ).length,
   closedPeriods: closedPeriods.length,
 });
 
@@ -433,7 +437,9 @@ export const buildLedgerRecords = ({
   journalEntries: JournalEntry[];
   postingProfiles: AccountingPostingProfile[];
 }): AccountingLedgerRecord[] => {
-  const accountsById = new Map(accounts.map((account) => [account.id, account]));
+  const accountsById = new Map(
+    accounts.map((account) => [account.id, account]),
+  );
   const entriesById = new Map(
     journalEntries.map((entry) => [entry.id, entry] as const),
   );
@@ -444,7 +450,7 @@ export const buildLedgerRecords = ({
       toCleanString(event.projection?.journalEntryId) ??
       toCleanString(event.metadata?.journalEntryId);
     const journalEntry = journalEntryId
-      ? entriesById.get(journalEntryId) ?? null
+      ? (entriesById.get(journalEntryId) ?? null)
       : null;
     if (journalEntry) {
       usedEntryIds.add(journalEntry.id);
@@ -552,7 +558,8 @@ export const buildLedgerRecords = ({
         moduleLabel: ACCOUNTING_MODULE_LABELS[moduleKey],
         title,
         description:
-          entry.description ?? 'Asiento posteado directamente en el libro diario.',
+          entry.description ??
+          'Asiento posteado directamente en el libro diario.',
         reference: manualReference?.reference ?? entry.sourceId ?? entry.id,
         internalReference: manualReference?.internalReference ?? null,
         amount: entry.totals.debit,
@@ -669,9 +676,7 @@ export const buildGeneralLedgerAccountOptions = ({
   });
 
   return accounts
-    .filter(
-      (account) => account.status === 'active' && account.postingAllowed,
-    )
+    .filter((account) => account.status === 'active' && account.postingAllowed)
     .map((account) => ({
       id: account.id,
       code: account.code,
@@ -704,7 +709,8 @@ export const buildGeneralLedgerSnapshot = ({
   const openingBalance = periodKey
     ? accountLines
         .filter(
-          ({ record }) => record.periodKey !== null && record.periodKey < periodKey,
+          ({ record }) =>
+            record.periodKey !== null && record.periodKey < periodKey,
         )
         .reduce(
           (total, { line }) => total + resolveLineBalanceDelta(account, line),
@@ -759,7 +765,10 @@ export const buildGeneralLedgerSnapshot = ({
   });
 
   const periodDebit = entries.reduce((total, entry) => total + entry.debit, 0);
-  const periodCredit = entries.reduce((total, entry) => total + entry.credit, 0);
+  const periodCredit = entries.reduce(
+    (total, entry) => total + entry.credit,
+    0,
+  );
 
   return {
     account,
@@ -808,8 +817,7 @@ export const buildFinancialReports = ({
     type: account.type,
     debit,
     credit,
-    balance:
-      account.normalSide === 'debit' ? debit - credit : credit - debit,
+    balance: account.normalSide === 'debit' ? debit - credit : credit - debit,
   });
 
   const trialBalance = cumulativeBalances
@@ -836,8 +844,7 @@ export const buildFinancialReports = ({
       code: account.code,
       name: account.name,
       kind: account.type,
-      amount:
-        account.type === 'income' ? credit - debit : debit - credit,
+      amount: account.type === 'income' ? credit - debit : debit - credit,
     }))
     .sort((left, right) => left.code.localeCompare(right.code));
 
@@ -846,8 +853,7 @@ export const buildFinancialReports = ({
       income:
         totals.income + (row.kind === 'income' ? Math.max(row.amount, 0) : 0),
       expense:
-        totals.expense +
-        (row.kind === 'expense' ? Math.max(row.amount, 0) : 0),
+        totals.expense + (row.kind === 'expense' ? Math.max(row.amount, 0) : 0),
       netIncome: 0,
     }),
     { income: 0, expense: 0, netIncome: 0 },
@@ -903,7 +909,9 @@ export const buildAvailablePeriods = (
 
   periodKeys.add(buildAccountingPeriodKey(new Date()));
 
-  return Array.from(periodKeys).sort((left, right) => right.localeCompare(left));
+  return Array.from(periodKeys).sort((left, right) =>
+    right.localeCompare(left),
+  );
 };
 
 export const buildPeriodOptions = (

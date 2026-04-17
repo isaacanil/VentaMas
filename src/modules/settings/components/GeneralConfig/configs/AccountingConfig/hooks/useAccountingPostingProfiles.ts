@@ -108,6 +108,49 @@ const buildPostingProfileSnapshot = ({
   metadata: metadata ?? draft.metadata ?? {},
 });
 
+const normalizeConditionsForComparison = (
+  conditions: AccountingPostingProfileDraft['conditions'],
+) => ({
+  paymentTerm: conditions?.paymentTerm ?? 'any',
+  settlementKind: conditions?.settlementKind ?? 'any',
+  taxTreatment: conditions?.taxTreatment ?? 'any',
+  documentNature: conditions?.documentNature ?? 'any',
+  settlementTiming: conditions?.settlementTiming ?? 'any',
+});
+
+const serializeLinesTemplateForComparison = (
+  linesTemplate: AccountingPostingProfileDraft['linesTemplate'],
+) =>
+  linesTemplate.map((line) => ({
+    side: line.side,
+    accountId: line.accountId ?? null,
+    accountSystemKey:
+      'accountSystemKey' in line ? line.accountSystemKey ?? null : null,
+    amountSource: line.amountSource,
+    description: line.description ?? null,
+    omitIfZero: line.omitIfZero !== false,
+  }));
+
+const hasStructuralPostingProfileChanges = ({
+  draft,
+  existingProfile,
+}: {
+  draft: AccountingPostingProfileDraft;
+  existingProfile: AccountingPostingProfile;
+}) =>
+  JSON.stringify({
+    priority: draft.priority,
+    conditions: normalizeConditionsForComparison(draft.conditions),
+    linesTemplate: serializeLinesTemplateForComparison(draft.linesTemplate),
+  }) !==
+  JSON.stringify({
+    priority: existingProfile.priority,
+    conditions: normalizeConditionsForComparison(existingProfile.conditions),
+    linesTemplate: serializeLinesTemplateForComparison(
+      existingProfile.linesTemplate,
+    ),
+  });
+
 export const useAccountingPostingProfiles = ({
   businessId,
   chartOfAccounts,
@@ -270,40 +313,97 @@ export const useAccountingPostingProfiles = ({
         return false;
       }
 
+      const structuralChanges = hasStructuralPostingProfileChanges({
+        draft,
+        existingProfile,
+      });
+
       setSaving(true);
       try {
-        const profileRef = doc(
-          db,
-          'businesses',
-          businessId,
-          'accountingPostingProfiles',
-          postingProfileId,
-        );
         const now = Timestamp.now();
         const nextMetadata = {
           ...(existingProfile.metadata ?? {}),
           ...(draft.metadata ?? {}),
         };
-        const nextSnapshot = buildPostingProfileSnapshot({
+        const collectionRef = collection(
+          db,
+          'businesses',
           businessId,
-          profileId: postingProfileId,
-          draft,
-          metadata: nextMetadata,
-        });
+          'accountingPostingProfiles',
+        );
+        const profileRef = doc(collectionRef, postingProfileId);
         const batch = writeBatch(db);
 
-        batch.set(
-          profileRef,
-          {
+        if (structuralChanges) {
+          const rootProfileId =
+            typeof existingProfile.metadata?.rootProfileId === 'string'
+              ? existingProfile.metadata.rootProfileId
+              : postingProfileId;
+          const currentVersion =
+            typeof existingProfile.metadata?.profileVersion === 'number' &&
+            Number.isFinite(existingProfile.metadata.profileVersion)
+              ? existingProfile.metadata.profileVersion
+              : 1;
+          const nextProfileRef = doc(collectionRef);
+          const nextSnapshot = buildPostingProfileSnapshot({
+            businessId,
+            profileId: nextProfileRef.id,
+            draft,
+            metadata: {
+              ...nextMetadata,
+              rootProfileId,
+              profileVersion: currentVersion + 1,
+              previousProfileId: postingProfileId,
+            },
+          });
+
+          batch.set(nextProfileRef, {
             ...nextSnapshot,
+            createdAt: now,
             updatedAt: now,
+            createdBy: userId ?? null,
             updatedBy: userId ?? null,
-          },
-          { merge: true },
-        );
+          });
+          batch.set(
+            profileRef,
+            {
+              status: 'inactive',
+              updatedAt: now,
+              updatedBy: userId ?? null,
+              metadata: {
+                ...(existingProfile.metadata ?? {}),
+                rootProfileId,
+                profileVersion: currentVersion,
+                replacedByProfileId: nextProfileRef.id,
+              },
+            },
+            { merge: true },
+          );
+        } else {
+          const nextSnapshot = buildPostingProfileSnapshot({
+            businessId,
+            profileId: postingProfileId,
+            draft,
+            metadata: nextMetadata,
+          });
+
+          batch.set(
+            profileRef,
+            {
+              ...nextSnapshot,
+              updatedAt: now,
+              updatedBy: userId ?? null,
+            },
+            { merge: true },
+          );
+        }
         await batch.commit();
 
-        message.success('Perfil contable actualizado.');
+        message.success(
+          structuralChanges
+            ? 'Se creó una nueva versión del perfil contable.'
+            : 'Perfil contable actualizado.',
+        );
         return true;
       } catch (cause) {
         console.error('Error actualizando perfil contable:', cause);
@@ -328,14 +428,19 @@ export const useAccountingPostingProfiles = ({
         return false;
       }
 
+      const existingProfile =
+        postingProfiles.find((profile) => profile.id === postingProfileId) ?? null;
+      if (!existingProfile) {
+        message.error('El perfil contable ya no existe.');
+        return false;
+      }
+
+      if (existingProfile.status === status) {
+        return true;
+      }
+
       setSaving(true);
       try {
-        const existingProfile =
-          postingProfiles.find((profile) => profile.id === postingProfileId) ?? null;
-        if (!existingProfile) {
-          message.error('El perfil contable ya no existe.');
-          return false;
-        }
 
         const profileRef = doc(
           db,
