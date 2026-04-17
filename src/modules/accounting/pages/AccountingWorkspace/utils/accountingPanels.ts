@@ -45,7 +45,7 @@ export const ACCOUNTING_WORKSPACE_PANELS: AccountingWorkspacePanelItem[] = [
   },
   {
     key: 'fiscal-compliance',
-    label: 'Compliance fiscal',
+    label: 'Cumplimiento fiscal',
     description: 'Corridas, validacion y exportacion 606, 607 y 608.',
     route: ACCOUNTING_FISCAL_COMPLIANCE,
   },

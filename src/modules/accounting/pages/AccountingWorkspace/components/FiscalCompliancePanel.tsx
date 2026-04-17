@@ -145,7 +145,7 @@ export const FiscalCompliancePanel = ({
 
   const handleRun = async (reportCode: MonthlyComplianceReportCode) => {
     if (!businessId) {
-      message.error('No hay negocio activo para correr compliance fiscal.');
+      message.error('No hay negocio activo para correr cumplimiento fiscal.');
       return;
     }
 
@@ -504,10 +504,9 @@ export const FiscalCompliancePanel = ({
     <Panel>
       <SectionHeader>
         <div>
-          <SectionTitle>Compliance fiscal</SectionTitle>
+          <SectionTitle>Cumplimiento fiscal</SectionTitle>
           <SectionDescription>
-            Corre, valida y exporta 606, 607 y 608 desde un espacio fiscal
-            propio.
+            Corre, valida y exporta 606, 607 y 608.
           </SectionDescription>
         </div>
 
@@ -545,7 +544,7 @@ export const FiscalCompliancePanel = ({
         <Alert
           type="error"
           showIcon
-          message="No se pudieron cargar las corridas de compliance fiscal."
+          message="No se pudieron cargar las corridas de cumplimiento fiscal."
           description={error}
         />
       ) : null}

@@ -92,7 +92,7 @@ const financialManagement: MenuItem[] = [
         group: 'accounting',
       },
       {
-        title: 'Compliance fiscal',
+        title: 'Cumplimiento fiscal',
         route: ACCOUNTING_FISCAL_COMPLIANCE,
         icon: <FontAwesomeIcon icon={faClipboardCheck} />,
         group: 'accounting',

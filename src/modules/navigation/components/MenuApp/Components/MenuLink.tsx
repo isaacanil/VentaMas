@@ -177,9 +177,16 @@ const MenuItemLink = styled(NavLink).attrs({ end: true })`
 
   &,
   &:link,
-  &:visited {
+  &:visited,
+  &:hover,
+  &:focus {
     color: var(--gray-6);
     text-decoration: none;
+  }
+
+  /* Neutraliza el selector "a :hover" del CSS global que colorea descendientes de morado */
+  & *:hover {
+    color: inherit;
   }
 
   &:not(.active):hover,
