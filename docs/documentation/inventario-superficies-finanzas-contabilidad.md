@@ -34,7 +34,6 @@ No se encontro una pantalla dedicada independiente para cuentas por pagar. Hoy e
 | Settings de contabilidad | `/settings/accounting` |
 | Catalogo de cuentas | `/settings/accounting/catalogo` |
 | Perfiles contables | `/settings/accounting/perfiles-contables` |
-| Cuentas bancarias | `/settings/accounting/cuentas-bancarias` |
 | Tipos de cambio | `/settings/accounting/tasa-cambio` |
 
 ### Workspace contable
@@ -81,7 +80,6 @@ No se encontro una pantalla dedicada independiente para cuentas por pagar. Hoy e
 La aplicacion mantiene varios aliases historicos que redirigen a las rutas canonicas actuales:
 - `/settings/contabilidad` -> `/settings/accounting`
 - `/settings/contabilidad/tasa-cambio` -> `/settings/tasa-cambio`
-- `/settings/contabilidad/cuentas-bancarias` -> `/settings/accounting/cuentas-bancarias`
 - `/settings/contabilidad/catalogo` -> `/settings/accounting/catalogo`
 - `/settings/contabilidad/perfiles-contables` -> `/settings/accounting/perfiles-contables`
 - `/settings/general-config/accounting` -> `/settings/accounting`
@@ -194,20 +192,20 @@ Observacion:
 ### 4. Cuentas bancarias
 
 **URL**
-- `/settings/accounting/cuentas-bancarias`
+- `/treasury/bank-accounts`
 
 **Proposito**
 - administrar cuentas bancarias activas e inactivas
-- definir cuenta predeterminada y politica de resolucion bancaria
+- revisar balance, movimientos y control operativo de tesoreria
 
 **Lo que se puede hacer**
-- activar o desactivar el modulo de cuentas bancarias
 - ver cuentas activas o inactivas
 - agregar cuenta bancaria
 - editar cuenta bancaria
 - activar o inactivar una cuenta
-- marcar cuenta predeterminada
-- ajustar politica de pago bancario
+- revisar detalle por cuenta
+- iniciar transferencia interna
+- iniciar conciliacion bancaria
 
 **Superficies secundarias**
 - `AddBankAccountModal`

@@ -40,6 +40,34 @@ interface UseTreasuryWorkspaceArgs {
   userId: string | null;
 }
 
+const resolveTreasuryOperationErrorMessage = (
+  error: unknown,
+  fallbackMessage: string,
+) => {
+  if (!error || typeof error !== 'object') {
+    return fallbackMessage;
+  }
+
+  const typedError = error as {
+    code?: string;
+    message?: string;
+  };
+  const code = String(typedError.code || '').toLowerCase();
+  const messageText = String(typedError.message || '').trim();
+
+  if (code.includes('permission-denied')) {
+    return 'No tienes permisos para ejecutar esta acción.';
+  }
+  if (code.includes('unauthenticated')) {
+    return 'Tu sesión expiró. Inicia sesión nuevamente.';
+  }
+  if (messageText) {
+    return messageText;
+  }
+
+  return fallbackMessage;
+};
+
 export const useTreasuryWorkspace = ({
   businessId,
   userId,
@@ -51,6 +79,9 @@ export const useTreasuryWorkspace = ({
   const {
     addBankAccount,
     bankAccounts,
+    bankInstitutionCatalog,
+    bankInstitutionCatalogError,
+    bankInstitutionCatalogLoading,
     bankAccountsLoading,
     config,
     error: accountingError,
@@ -337,44 +368,54 @@ export const useTreasuryWorkspace = ({
       }
 
       const occurredAt = toNormalizedOccurredAt(draft.occurredAt) ?? Timestamp.now();
-      await fbCreateInternalTransfer({
-        businessId,
-        amount,
-        currency: draft.currency,
-        occurredAt: occurredAt.toMillis(),
-        reference: draft.reference?.trim() || null,
-        note: draft.notes?.trim() || null,
-        idempotencyKey: buildTreasuryIdempotencyKey('internal-transfer', [
+      try {
+        await fbCreateInternalTransfer({
           businessId,
-          draft.fromAccountType,
-          draft.fromAccountId,
-          draft.toAccountType,
-          draft.toAccountId,
           amount,
-          occurredAt.toMillis(),
-          draft.reference?.trim() || '',
-        ]),
-        from:
-          draft.fromAccountType === 'cash'
-            ? {
-                type: 'cash',
-                cashAccountId: draft.fromAccountId,
-              }
-            : {
-                type: 'bank',
-                bankAccountId: draft.fromAccountId,
-              },
-        to:
-          draft.toAccountType === 'cash'
-            ? {
-                type: 'cash',
-                cashAccountId: draft.toAccountId,
-              }
-            : {
-                type: 'bank',
-                bankAccountId: draft.toAccountId,
-              },
-      });
+          currency: draft.currency,
+          occurredAt: occurredAt.toMillis(),
+          reference: draft.reference?.trim() || null,
+          note: draft.notes?.trim() || null,
+          idempotencyKey: buildTreasuryIdempotencyKey('internal-transfer', [
+            businessId,
+            draft.fromAccountType,
+            draft.fromAccountId,
+            draft.toAccountType,
+            draft.toAccountId,
+            amount,
+            occurredAt.toMillis(),
+            draft.reference?.trim() || '',
+          ]),
+          from:
+            draft.fromAccountType === 'cash'
+              ? {
+                  type: 'cash',
+                  cashAccountId: draft.fromAccountId,
+                }
+              : {
+                  type: 'bank',
+                  bankAccountId: draft.fromAccountId,
+                },
+          to:
+            draft.toAccountType === 'cash'
+              ? {
+                  type: 'cash',
+                  cashAccountId: draft.toAccountId,
+                }
+              : {
+                  type: 'bank',
+                  bankAccountId: draft.toAccountId,
+                },
+        });
+      } catch (error) {
+        void message.error(
+          resolveTreasuryOperationErrorMessage(
+            error,
+            'No se pudo registrar la transferencia interna.',
+          ),
+        );
+        throw error;
+      }
 
       void message.success('Transferencia interna registrada.');
     },
@@ -406,22 +447,32 @@ export const useTreasuryWorkspace = ({
         Number(bankAccount.openingBalance ?? 0);
       const variance = Number((statementBalance - ledgerBalance).toFixed(2));
 
-      await fbCreateBankReconciliation({
-        businessId,
-        bankAccountId: draft.bankAccountId,
-        statementBalance,
-        statementDate: statementDate.toMillis(),
-        reference: draft.reference?.trim() || null,
-        note: draft.notes?.trim() || null,
-        idempotencyKey: buildTreasuryIdempotencyKey('bank-reconciliation', [
+      try {
+        await fbCreateBankReconciliation({
           businessId,
-          draft.bankAccountId,
+          bankAccountId: draft.bankAccountId,
           statementBalance,
-          statementDate.toMillis(),
-          variance,
-          draft.reference?.trim() || '',
-        ]),
-      });
+          statementDate: statementDate.toMillis(),
+          reference: draft.reference?.trim() || null,
+          note: draft.notes?.trim() || null,
+          idempotencyKey: buildTreasuryIdempotencyKey('bank-reconciliation', [
+            businessId,
+            draft.bankAccountId,
+            statementBalance,
+            statementDate.toMillis(),
+            variance,
+            draft.reference?.trim() || '',
+          ]),
+        });
+      } catch (error) {
+        void message.error(
+          resolveTreasuryOperationErrorMessage(
+            error,
+            'No se pudo registrar la conciliación bancaria.',
+          ),
+        );
+        throw error;
+      }
 
       void message.success('Conciliación bancaria registrada.');
     },
@@ -458,6 +509,9 @@ export const useTreasuryWorkspace = ({
     addBankAccount,
     addCashAccount,
     bankAccounts,
+    bankInstitutionCatalog,
+    bankInstitutionCatalogError,
+    bankInstitutionCatalogLoading,
     bankAccountsLoading,
     cashAccounts: resolvedCashAccounts,
     cashAccountsLoading,

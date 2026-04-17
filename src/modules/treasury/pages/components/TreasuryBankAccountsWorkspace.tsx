@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Alert, Button, Modal, Skeleton } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { generatePath, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
+import ROUTES_NAME from '@/router/routes/routesName';
 import { AddBankAccountModal } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/AddBankAccountModal';
 import { BankPaymentPolicySection } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/BankPaymentPolicySection';
 import { AddCashAccountModal } from '@/modules/treasury/components/AddCashAccountModal';
@@ -15,6 +18,7 @@ import { TreasuryAccountGrid } from '@/modules/treasury/components/TreasuryAccou
 import { TreasuryLedgerPanel } from '@/modules/treasury/components/TreasuryLedgerPanel';
 import { useTreasuryWorkspace } from '@/modules/treasury/hooks/useTreasuryWorkspace';
 import {
+  buildLiquidityAccountKey,
   getTransfersForLiquidityAccount,
   type TreasuryLiquidityAccount,
 } from '@/modules/treasury/utils/liquidity';
@@ -24,6 +28,8 @@ import type { CashAccountDraft } from '@/utils/accounting/cashAccounts';
 
 export const TreasuryBankAccountsWorkspace = () => {
   const user = useSelector(selectUser);
+  const navigate = useNavigate();
+  const routeParams = useParams<{ accountId?: string; kind?: string }>();
   const businessId =
     user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
   const userId = user?.uid ?? user?.id ?? null;
@@ -31,6 +37,9 @@ export const TreasuryBankAccountsWorkspace = () => {
     addBankAccount,
     addCashAccount,
     bankAccounts,
+    bankInstitutionCatalog,
+    bankInstitutionCatalogError,
+    bankInstitutionCatalogLoading,
     config,
     currentBalancesByAccountKey,
     error,
@@ -52,34 +61,38 @@ export const TreasuryBankAccountsWorkspace = () => {
     businessId,
     userId,
   });
-  const [selectedAccountKey, setSelectedAccountKey] = useState<string | null>(
-    null,
-  );
   const [editingBankAccount, setEditingBankAccount] =
     useState<BankAccount | null>(null);
+  const [isBankAccountSubmitting, setIsBankAccountSubmitting] = useState(false);
   const [editingCashAccount, setEditingCashAccount] =
     useState<CashAccount | null>(null);
   const [isBankAccountModalOpen, setIsBankAccountModalOpen] = useState(false);
   const [isCashAccountModalOpen, setIsCashAccountModalOpen] = useState(false);
   const [isBankingConfigModalOpen, setIsBankingConfigModalOpen] =
     useState(false);
-  const [isAccountDetailModalOpen, setIsAccountDetailModalOpen] =
-    useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isTransferSubmitting, setIsTransferSubmitting] = useState(false);
   const [transferSourceAccountKey, setTransferSourceAccountKey] = useState<
     string | null
   >(null);
   const [isReconciliationModalOpen, setIsReconciliationModalOpen] =
     useState(false);
+  const [isReconciliationSubmitting, setIsReconciliationSubmitting] =
+    useState(false);
   const [reconciliationBankAccountId, setReconciliationBankAccountId] =
     useState<string | null>(null);
 
+  const routeAccountKey =
+    routeParams.kind === 'bank' || routeParams.kind === 'cash'
+      ? buildLiquidityAccountKey(routeParams.kind, routeParams.accountId ?? '')
+      : null;
+
   const selectedAccount = useMemo(() => {
-    const explicitlySelected =
-      liquidityAccounts.find((account) => account.key === selectedAccountKey) ??
-      null;
-    if (explicitlySelected) {
-      return explicitlySelected;
+    if (routeAccountKey) {
+      return (
+        liquidityAccounts.find((account) => account.key === routeAccountKey) ??
+        null
+      );
     }
 
     return (
@@ -87,7 +100,8 @@ export const TreasuryBankAccountsWorkspace = () => {
       liquidityAccounts[0] ??
       null
     );
-  }, [liquidityAccounts, selectedAccountKey]);
+  }, [liquidityAccounts, routeAccountKey]);
+  const isDetailRoute = Boolean(routeAccountKey);
 
   const selectedLedgerEntries = selectedAccount
     ? ledgerEntriesByAccountKey[selectedAccount.key] ?? []
@@ -126,8 +140,12 @@ export const TreasuryBankAccountsWorkspace = () => {
   };
 
   const handleOpenAccountDetail = (account: TreasuryLiquidityAccount) => {
-    setSelectedAccountKey(account.key);
-    setIsAccountDetailModalOpen(true);
+    navigate(
+      generatePath(ROUTES_NAME.TREASURY_TERM.TREASURY_ACCOUNT_DETAIL, {
+        accountId: account.id,
+        kind: account.kind,
+      }),
+    );
   };
 
   const handleConfigureAccount = (account: TreasuryLiquidityAccount) => {
@@ -145,14 +163,19 @@ export const TreasuryBankAccountsWorkspace = () => {
     draft: Partial<BankAccountDraft>,
     bankAccountId?: string,
   ) => {
-    if (bankAccountId) {
-      await updateBankAccount(bankAccountId, draft);
-    } else {
-      await addBankAccount(draft);
-    }
+    setIsBankAccountSubmitting(true);
+    try {
+      if (bankAccountId) {
+        await updateBankAccount(bankAccountId, draft);
+      } else {
+        await addBankAccount(draft);
+      }
 
-    setEditingBankAccount(null);
-    setIsBankAccountModalOpen(false);
+      setEditingBankAccount(null);
+      setIsBankAccountModalOpen(false);
+    } finally {
+      setIsBankAccountSubmitting(false);
+    }
   };
 
   const handleSubmitCashAccount = async (
@@ -206,88 +229,145 @@ export const TreasuryBankAccountsWorkspace = () => {
     <WorkspaceShell>
       {error ? <Alert type="error" showIcon message={error} /> : null}
 
-      <Toolbar>
-        <MetricsStrip>
-          <MetricCard>
-            <MetricLabel>Bancos activos</MetricLabel>
-            <MetricValue>{activeBankAccountsCount}</MetricValue>
-          </MetricCard>
-          <MetricCard>
-            <MetricLabel>Cajas activas</MetricLabel>
-            <MetricValue>{activeCashAccountsCount}</MetricValue>
-          </MetricCard>
-          <MetricCard>
-            <MetricLabel>Conciliaciones con variación</MetricLabel>
-            <MetricValue>{outstandingBankReconciliationsCount}</MetricValue>
-          </MetricCard>
-        </MetricsStrip>
+      {!isDetailRoute ? (
+        <Toolbar>
+          <MetricsStrip>
+            <MetricCard>
+              <MetricLabel>Bancos activos</MetricLabel>
+              <MetricValue>{activeBankAccountsCount}</MetricValue>
+            </MetricCard>
+            <MetricCard>
+              <MetricLabel>Cajas activas</MetricLabel>
+              <MetricValue>{activeCashAccountsCount}</MetricValue>
+            </MetricCard>
+            <MetricCard>
+              <MetricLabel>Conciliaciones con variación</MetricLabel>
+              <MetricValue>{outstandingBankReconciliationsCount}</MetricValue>
+            </MetricCard>
+          </MetricsStrip>
 
-        <ToolbarActions>
-          <Button onClick={() => setIsBankingConfigModalOpen(true)}>
-            Métodos bancarios
-          </Button>
-          <Button
-            type="primary"
-            icon={<FontAwesomeIcon icon={faPlus} />}
-            onClick={handleOpenAddCashAccount}
-          >
-            Cuenta de caja
-          </Button>
-          <Button
-            type="primary"
-            icon={<FontAwesomeIcon icon={faPlus} />}
-            onClick={handleOpenAddBankAccount}
-          >
-            Cuenta bancaria
-          </Button>
-        </ToolbarActions>
-      </Toolbar>
+          <ToolbarActions>
+            <Button onClick={() => setIsBankingConfigModalOpen(true)}>
+              Métodos bancarios
+            </Button>
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={handleOpenAddCashAccount}
+            >
+              Cuenta de caja
+            </Button>
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={handleOpenAddBankAccount}
+            >
+              Cuenta bancaria
+            </Button>
+          </ToolbarActions>
+        </Toolbar>
+      ) : null}
 
       <ContentGrid>
         <ColumnSection>
-          <SectionTitle>Liquidez operativa</SectionTitle>
-          <TreasuryAccountGrid
-            accounts={liquidityAccounts}
-            currentBalancesByAccountKey={currentBalancesByAccountKey}
-            latestReconciliationsByBankAccountId={
-              latestReconciliationsByBankAccountId
-            }
-            selectedAccountKey={
-              isAccountDetailModalOpen ? selectedAccount?.key ?? null : null
-            }
-            onConfigureAccount={handleConfigureAccount}
-            onOpenReconciliation={handleOpenReconciliation}
-            onOpenTransfer={handleOpenTransfer}
-            onToggleAccountStatus={(account) => {
-              if (account.kind === 'bank') {
-                void updateBankAccountStatus(
-                  account.id,
-                  account.status === 'active' ? 'inactive' : 'active',
-                );
-                return;
-              }
+          {isDetailRoute ? (
+            <>
+              <DetailHeader>
+                <DetailHeaderTop>
+                  <Button
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() =>
+                      navigate(ROUTES_NAME.TREASURY_TERM.TREASURY_BANK_ACCOUNTS)
+                    }
+                  >
+                    Volver a cuentas
+                  </Button>
+                </DetailHeaderTop>
 
-              void updateCashAccountStatus(
-                account.id,
-                account.status === 'active' ? 'inactive' : 'active',
-              );
-            }}
-            onSelectAccount={handleOpenAccountDetail}
-          />
+                <div>
+                  <SectionTitle>Detalle de cuenta</SectionTitle>
+                  <SectionDescription>
+                    Vista operativa dedicada para revisar balance, movimientos y
+                    control de conciliación.
+                  </SectionDescription>
+                </div>
+              </DetailHeader>
+
+              {selectedAccount ? (
+                <TreasuryLedgerPanel
+                  account={selectedAccount}
+                  currentBalance={
+                    currentBalancesByAccountKey[selectedAccount.key] ??
+                    Number(selectedAccount.openingBalance ?? 0)
+                  }
+                  ledgerEntries={selectedLedgerEntries}
+                  onOpenReconciliation={
+                    selectedAccount.kind === 'bank'
+                      ? () => handleOpenReconciliation(selectedAccount)
+                      : undefined
+                  }
+                  onOpenTransfer={() => handleOpenTransfer(selectedAccount)}
+                  reconciliations={selectedReconciliations}
+                  transfers={selectedTransfers}
+                />
+              ) : (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="La cuenta solicitada no existe o ya no está disponible."
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <SectionTitle>Liquidez operativa</SectionTitle>
+              <TreasuryAccountGrid
+                accounts={liquidityAccounts}
+                currentBalancesByAccountKey={currentBalancesByAccountKey}
+                latestReconciliationsByBankAccountId={
+                  latestReconciliationsByBankAccountId
+                }
+                selectedAccountKey={null}
+                onConfigureAccount={handleConfigureAccount}
+                onOpenReconciliation={handleOpenReconciliation}
+                onOpenTransfer={handleOpenTransfer}
+                onToggleAccountStatus={(account) => {
+                  if (account.kind === 'bank') {
+                    void updateBankAccountStatus(
+                      account.id,
+                      account.status === 'active' ? 'inactive' : 'active',
+                    );
+                    return;
+                  }
+
+                  void updateCashAccountStatus(
+                    account.id,
+                    account.status === 'active' ? 'inactive' : 'active',
+                  );
+                }}
+                onSelectAccount={handleOpenAccountDetail}
+              />
+            </>
+          )}
         </ColumnSection>
       </ContentGrid>
 
       <AddBankAccountModal
+        bankInstitutionCatalog={bankInstitutionCatalog}
+        bankInstitutionCatalogError={bankInstitutionCatalogError}
+        bankInstitutionCatalogLoading={bankInstitutionCatalogLoading}
         currencies={Array.from(
           new Set([config.functionalCurrency, ...config.documentCurrencies]),
         )}
         editingAccount={editingBankAccount}
         open={isBankAccountModalOpen}
         onCancel={() => {
+          if (isBankAccountSubmitting) return;
           setEditingBankAccount(null);
           setIsBankAccountModalOpen(false);
         }}
         onSubmit={handleSubmitBankAccount}
+        submitting={isBankAccountSubmitting}
       />
 
       <AddCashAccountModal
@@ -307,14 +387,21 @@ export const TreasuryBankAccountsWorkspace = () => {
         accounts={liquidityAccounts}
         defaultSourceAccountKey={transferSourceAccountKey}
         open={isTransferModalOpen}
+        submitting={isTransferSubmitting}
         onCancel={() => {
+          if (isTransferSubmitting) return;
           setTransferSourceAccountKey(null);
           setIsTransferModalOpen(false);
         }}
         onSubmit={async (draft) => {
-          await recordInternalTransfer(draft);
-          setTransferSourceAccountKey(null);
-          setIsTransferModalOpen(false);
+          setIsTransferSubmitting(true);
+          try {
+            await recordInternalTransfer(draft);
+            setTransferSourceAccountKey(null);
+            setIsTransferModalOpen(false);
+          } finally {
+            setIsTransferSubmitting(false);
+          }
         }}
       />
 
@@ -323,14 +410,21 @@ export const TreasuryBankAccountsWorkspace = () => {
         currentBalancesByAccountId={currentBalancesByBankAccountId}
         defaultBankAccountId={reconciliationBankAccountId}
         open={isReconciliationModalOpen}
+        submitting={isReconciliationSubmitting}
         onCancel={() => {
+          if (isReconciliationSubmitting) return;
           setReconciliationBankAccountId(null);
           setIsReconciliationModalOpen(false);
         }}
         onSubmit={async (draft) => {
-          await recordBankReconciliation(draft);
-          setReconciliationBankAccountId(null);
-          setIsReconciliationModalOpen(false);
+          setIsReconciliationSubmitting(true);
+          try {
+            await recordBankReconciliation(draft);
+            setReconciliationBankAccountId(null);
+            setIsReconciliationModalOpen(false);
+          } finally {
+            setIsReconciliationSubmitting(false);
+          }
         }}
       />
 
@@ -338,7 +432,7 @@ export const TreasuryBankAccountsWorkspace = () => {
         destroyOnHidden
         footer={null}
         open={isBankingConfigModalOpen}
-        title="Métodos bancarios"
+        title="Métodos de pago y liquidación"
         width={760}
         onCancel={() => setIsBankingConfigModalOpen(false)}
       >
@@ -349,30 +443,6 @@ export const TreasuryBankAccountsWorkspace = () => {
             onChange={updateBankPaymentPolicy}
           />
         </ModalBody>
-      </Modal>
-
-      <Modal
-        destroyOnHidden
-        footer={null}
-        open={isAccountDetailModalOpen}
-        title={selectedAccount?.label ?? 'Detalle de cuenta'}
-        width={1100}
-        onCancel={() => setIsAccountDetailModalOpen(false)}
-      >
-        <DetailModalBody>
-          <TreasuryLedgerPanel
-            account={selectedAccount}
-            currentBalance={
-              selectedAccount
-                ? currentBalancesByAccountKey[selectedAccount.key] ??
-                  Number(selectedAccount.openingBalance ?? 0)
-                : 0
-            }
-            ledgerEntries={selectedLedgerEntries}
-            reconciliations={selectedReconciliations}
-            transfers={selectedTransfers}
-          />
-        </DetailModalBody>
       </Modal>
     </WorkspaceShell>
   );
@@ -478,13 +548,25 @@ const SectionTitle = styled.h2`
   color: var(--ds-color-text-primary);
 `;
 
-const ModalBody = styled.div`
-  padding-top: var(--ds-space-2);
+const SectionDescription = styled.p`
+  margin: 6px 0 0;
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-secondary);
 `;
 
-const DetailModalBody = styled.div`
-  max-height: min(78vh, 920px);
-  overflow-y: auto;
+const DetailHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+`;
+
+const DetailHeaderTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+`;
+
+const ModalBody = styled.div`
   padding-top: var(--ds-space-2);
 `;
 

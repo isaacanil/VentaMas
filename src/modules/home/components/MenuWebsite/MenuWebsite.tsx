@@ -87,7 +87,7 @@ const Container = styled.header`
   padding: 0.3rem 0.5rem;
   margin: 0.1rem auto 0;
   color: #fff;
-  background: rgb(66 164 245 / 100%);
+  background: ${(props) => props.theme.bg.color};
   border: 1px solid rgb(255 255 255 / 25%);
   border-radius: 100px;
   box-shadow: 0 20px 40px rgb(0 0 0 / 12%);

@@ -1,0 +1,42 @@
+[
+  {
+    "code": "banreservas",
+    "countryCode": "DO",
+    "name": "Banreservas"
+  },
+  {
+    "code": "popular",
+    "countryCode": "DO",
+    "name": "Banco Popular Dominicano"
+  },
+  {
+    "code": "bhd",
+    "countryCode": "DO",
+    "name": "Banco BHD"
+  },
+  {
+    "code": "apap",
+    "countryCode": "DO",
+    "name": "Asociacion Popular de Ahorros y Prestamos (APAP)"
+  },
+  {
+    "code": "santa-cruz",
+    "countryCode": "DO",
+    "name": "Banco Santa Cruz"
+  },
+  {
+    "code": "scotiabank",
+    "countryCode": "DO",
+    "name": "Scotiabank Republica Dominicana"
+  },
+  {
+    "code": "caribe",
+    "countryCode": "DO",
+    "name": "Banco Caribe"
+  },
+  {
+    "code": "lafise",
+    "countryCode": "DO",
+    "name": "Banco Lafise"
+  }
+]

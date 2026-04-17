@@ -11,6 +11,7 @@ import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
 import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
 import { runMonthlyComplianceReport } from './app/modules/compliance/functions/runMonthlyComplianceReport.js';
+import { exportDgiiTxtReport } from './app/modules/compliance/functions/exportDgiiTxtReport.js';
 import { closeAccountingPeriod } from './app/modules/accounting/functions/closeAccountingPeriod.js';
 import { createManualJournalEntry } from './app/modules/accounting/functions/createManualJournalEntry.js';
 import { getAccountingReports } from './app/modules/accounting/functions/getAccountingReports.js';
@@ -150,6 +151,7 @@ export {
   createProvider,
   reserveCreditNoteNcf,
   runMonthlyComplianceReport,
+  exportDgiiTxtReport,
   closeAccountingPeriod,
   createManualJournalEntry,
   getAccountingReports,

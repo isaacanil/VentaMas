@@ -6,21 +6,15 @@ import { ACCOUNTING_CURRENCY_CODES } from '@/utils/accounting/currencies';
 import { AccountingHistoryList } from './AccountingHistoryList';
 import { AddChartOfAccountModal } from './AddChartOfAccountModal';
 import { AddExchangeRateModal } from './AddExchangeRateModal';
-import { AddBankAccountModal } from './AddBankAccountModal';
-import { BankPaymentPolicySection } from './BankPaymentPolicySection';
-import { BankAccountsList } from './BankAccountsList';
 import { ChartOfAccountsList } from './ChartOfAccountsList';
 import { ExchangeRatesWorkspace } from './ExchangeRatesWorkspace';
 import { PostingProfilesList } from './PostingProfilesList';
 import type {
   AccountingPostingProfile,
-  BankAccount,
   ChartOfAccount,
 } from '@/types/accounting';
-import type { BankAccountDraft } from '@/utils/accounting/bankAccounts';
 import type { ChartOfAccountDraft } from '@/utils/accounting/chartOfAccounts';
 import type { AccountingPostingProfileDraft } from '@/utils/accounting/postingProfiles';
-import type { BankPaymentPolicy } from '@/utils/payments/bankPaymentPolicy';
 import type {
   AccountingSettingsConfig,
   SupportedDocumentCurrency,
@@ -65,8 +59,6 @@ interface AccountingSettingsFormProps {
   chartOfAccounts: ChartOfAccount[];
   chartOfAccountsError: string | null;
   chartOfAccountsLoading: boolean;
-  bankAccounts: BankAccount[];
-  bankAccountsLoading: boolean;
   config: AccountingSettingsConfig;
   enabledForeignCurrencies: SupportedDocumentCurrency[];
   error: string | null;
@@ -78,11 +70,6 @@ interface AccountingSettingsFormProps {
   savingChartOfAccounts: boolean;
   savingExchange: boolean;
   savingPostingProfiles: boolean;
-  onAddBankAccount: (draft: Partial<BankAccountDraft>) => Promise<void>;
-  onUpdateBankAccount: (
-    bankAccountId: string,
-    draft: Partial<BankAccountDraft>,
-  ) => Promise<void>;
   onAddChartOfAccount: (
     draft: Partial<ChartOfAccountDraft>,
   ) => Promise<boolean>;
@@ -100,17 +87,12 @@ interface AccountingSettingsFormProps {
     currency: SupportedDocumentCurrency,
     value: number | null,
   ) => void;
-  onBankPaymentPolicyChange: (policy: BankPaymentPolicy) => void;
   onSaveExchange: () => void;
   onSellRateChange: (
     currency: SupportedDocumentCurrency,
     value: number | null,
   ) => void;
   onSeedDefaultChartOfAccounts: () => Promise<void>;
-  onUpdateBankAccountStatus: (
-    bankAccountId: string,
-    status: BankAccount['status'],
-  ) => void;
   onUpdateChartOfAccountStatus: (
     chartOfAccountId: string,
     status: ChartOfAccount['status'],
@@ -141,8 +123,6 @@ export const AccountingSettingsForm = ({
   chartOfAccounts,
   chartOfAccountsError,
   chartOfAccountsLoading,
-  bankAccounts,
-  bankAccountsLoading,
   config,
   enabledForeignCurrencies,
   error,
@@ -154,18 +134,14 @@ export const AccountingSettingsForm = ({
   savingChartOfAccounts,
   savingExchange,
   savingPostingProfiles,
-  onAddBankAccount,
-  onUpdateBankAccount,
   onAddChartOfAccount,
   onAddPostingProfile,
-  onBankPaymentPolicyChange,
   onCurrencyConfigurationChange,
   onFunctionalCurrencyChange,
   onBuyRateChange,
   onSaveExchange,
   onSellRateChange,
   onSeedDefaultChartOfAccounts,
-  onUpdateBankAccountStatus,
   onUpdateChartOfAccount,
   onUpdateChartOfAccountStatus,
   onUpdatePostingProfile,
@@ -179,12 +155,8 @@ export const AccountingSettingsForm = ({
 }: AccountingSettingsFormProps) => {
   const [isAddRateModalOpen, setIsAddRateModalOpen] = useState(false);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
-  const [isAddBankAccountModalOpen, setIsAddBankAccountModalOpen] =
-    useState(false);
   const [isAddChartOfAccountModalOpen, setIsAddChartOfAccountModalOpen] =
     useState(false);
-  const [editingBankAccount, setEditingBankAccount] =
-    useState<BankAccount | null>(null);
   const [editingChartOfAccount, setEditingChartOfAccount] =
     useState<ChartOfAccount | null>(null);
   const [chartOfAccountCreateDefaults, setChartOfAccountCreateDefaults] =
@@ -205,28 +177,6 @@ export const AccountingSettingsForm = ({
   const handleCloseAddRateModal = () => {
     setSelectedCurrenciesToAdd([]);
     setIsAddRateModalOpen(false);
-  };
-
-  const handleCloseAddBankAccountModal = () => {
-    setEditingBankAccount(null);
-    setIsAddBankAccountModalOpen(false);
-  };
-
-  const handleOpenAddBankAccountModal = () => {
-    setEditingBankAccount(null);
-    setIsAddBankAccountModalOpen(true);
-  };
-
-  const handleOpenEditBankAccountModal = (account: BankAccount) => {
-    setEditingBankAccount(account);
-    setIsAddBankAccountModalOpen(true);
-  };
-
-  const handleSetDefaultBankAccount = (bankAccountId: string) => {
-    onBankPaymentPolicyChange({
-      ...config.bankPaymentPolicy,
-      defaultBankAccountId: bankAccountId,
-    });
   };
 
   const handleCloseAddChartOfAccountModal = () => {
@@ -274,18 +224,6 @@ export const AccountingSettingsForm = ({
     });
   };
 
-  const handleSubmitBankAccount = async (
-    draft: Partial<BankAccountDraft>,
-    bankAccountId?: string,
-  ) => {
-    if (bankAccountId) {
-      await onUpdateBankAccount(bankAccountId, draft);
-    } else {
-      await onAddBankAccount(draft);
-    }
-    handleCloseAddBankAccountModal();
-  };
-
   const handleSubmitChartOfAccount = async (
     draft: Partial<ChartOfAccountDraft>,
     chartOfAccountId?: string,
@@ -315,28 +253,6 @@ export const AccountingSettingsForm = ({
           saving={savingExchange}
         />
       </Section>
-    </PanelStack>
-  );
-
-  const bankAccountsPanelContent = (
-    <PanelStack>
-      <BankingWorkspace>
-        <BankAccountsList
-          bankAccounts={bankAccounts}
-          defaultBankAccountId={config.bankPaymentPolicy.defaultBankAccountId}
-          loading={bankAccountsLoading}
-          onAddBankAccountClick={handleOpenAddBankAccountModal}
-          onEditBankAccountClick={handleOpenEditBankAccountModal}
-          onSetDefaultBankAccountClick={handleSetDefaultBankAccount}
-          onToggleBankAccountStatus={onUpdateBankAccountStatus}
-        />
-
-        <BankPaymentPolicySection
-          bankAccounts={bankAccounts}
-          policy={config.bankPaymentPolicy}
-          onChange={onBankPaymentPolicyChange}
-        />
-      </BankingWorkspace>
     </PanelStack>
   );
 
@@ -398,7 +314,6 @@ export const AccountingSettingsForm = ({
 
   const activePanelContent: Record<AccountingPanelKey, ReactNode> = {
     'exchange-rates': exchangeRatePanelContent,
-    'bank-accounts': bankAccountsPanelContent,
     'chart-of-accounts': chartOfAccountsPanelContent,
     'posting-profiles': postingProfilesPanelContent,
   };
@@ -422,8 +337,7 @@ export const AccountingSettingsForm = ({
       >
         <AccountingStack>
           <PanelSurface>
-            {(accountingPanel === 'bank-accounts' ||
-              accountingPanel === 'chart-of-accounts') && (
+            {accountingPanel === 'chart-of-accounts' && (
               <PanelHeader>
                 <PanelHeaderLeft>
                   <PanelTitle>{activePanelItem.label}</PanelTitle>
@@ -464,16 +378,6 @@ export const AccountingSettingsForm = ({
         onRemoveCurrency={handleRemoveCurrency}
         onSelectionChange={setSelectedCurrenciesToAdd}
         onSellRateChange={onSellRateChange}
-      />
-
-      <AddBankAccountModal
-        currencies={Array.from(
-          new Set([config.functionalCurrency, ...config.documentCurrencies]),
-        )}
-        editingAccount={editingBankAccount}
-        open={isAddBankAccountModalOpen}
-        onCancel={handleCloseAddBankAccountModal}
-        onSubmit={handleSubmitBankAccount}
       />
 
       <AddChartOfAccountModal
@@ -517,19 +421,6 @@ const Section = styled.div`
 const StretchSection = styled(Section)`
   flex: 1;
   min-height: 0;
-`;
-
-const BankingWorkspace = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  align-items: stretch;
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-
-  @media (max-width: 1120px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const AccountingStack = styled.div`

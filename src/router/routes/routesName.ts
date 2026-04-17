@@ -15,6 +15,7 @@ const CASH_RECONCILIATION_TERM = {
 const TREASURY_TERM = {
   TREASURY_HOME: '/treasury',
   TREASURY_BANK_ACCOUNTS: '/treasury/bank-accounts',
+  TREASURY_ACCOUNT_DETAIL: '/treasury/accounts/:kind/:accountId',
 } as const;
 
 const CHANGELOG_TERM = {
@@ -147,8 +148,6 @@ const SETTING_TERM = {
   GENERAL_CONFIG_ACCOUNTING: '/settings/accounting',
   GENERAL_CONFIG_EXCHANGE_RATES: '/settings/exchange-rates',
   GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES: '/settings/accounting/exchange-rates',
-  GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS:
-    '/settings/accounting/bank-accounts',
   GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS:
     '/settings/accounting/chart-of-accounts',
   GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES:

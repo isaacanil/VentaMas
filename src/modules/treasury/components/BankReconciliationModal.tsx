@@ -13,6 +13,7 @@ interface BankReconciliationModalProps {
   open: boolean;
   onCancel: () => void;
   onSubmit: (draft: BankReconciliationDraft) => Promise<void>;
+  submitting?: boolean;
 }
 
 interface BankReconciliationFormValues {
@@ -30,6 +31,7 @@ export const BankReconciliationModal = ({
   open,
   onCancel,
   onSubmit,
+  submitting = false,
 }: BankReconciliationModalProps) => {
   const [form] = Form.useForm<BankReconciliationFormValues>();
 
@@ -37,9 +39,10 @@ export const BankReconciliationModal = ({
     if (!open) return;
 
     form.resetFields();
-    if (defaultBankAccountId) {
-      form.setFieldValue('bankAccountId', defaultBankAccountId);
-    }
+    form.setFieldsValue({
+      bankAccountId: defaultBankAccountId ?? undefined,
+      statementDate: DateTime.now(),
+    });
   }, [defaultBankAccountId, form, open]);
 
   const bankOptions = useMemo(
@@ -56,9 +59,17 @@ export const BankReconciliationModal = ({
   const selectedBankAccountId = Form.useWatch('bankAccountId', form);
   const selectedBankAccount =
     bankAccounts.find((account) => account.id === selectedBankAccountId) ?? null;
+  const statementBalanceInput = Form.useWatch('statementBalance', form);
   const expectedLedgerBalance = selectedBankAccountId
     ? currentBalancesByAccountId[selectedBankAccountId] ?? 0
     : 0;
+  const statementBalance = Number(statementBalanceInput);
+  const hasStatementBalance = Number.isFinite(statementBalance);
+  const variance = hasStatementBalance
+    ? Number((statementBalance - expectedLedgerBalance).toFixed(2))
+    : null;
+  const reconciliationStatus =
+    variance == null ? null : variance === 0 ? 'balanced' : 'variance';
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -79,7 +90,15 @@ export const BankReconciliationModal = ({
       open={open}
       okText="Guardar"
       cancelText="Cancelar"
-      onCancel={onCancel}
+      closable={!submitting}
+      confirmLoading={submitting}
+      keyboard={!submitting}
+      maskClosable={false}
+      cancelButtonProps={{ disabled: submitting }}
+      onCancel={() => {
+        if (submitting) return;
+        onCancel();
+      }}
       onOk={handleSubmit}
     >
       <Form form={form} layout="vertical">
@@ -88,7 +107,12 @@ export const BankReconciliationModal = ({
           name="bankAccountId"
           rules={[{ required: true, message: 'Seleccione la cuenta bancaria.' }]}
         >
-          <Select options={bankOptions} showSearch optionFilterProp="label" />
+          <Select
+            disabled={submitting}
+            options={bankOptions}
+            showSearch
+            optionFilterProp="label"
+          />
         </Form.Item>
 
         <Alert
@@ -109,6 +133,7 @@ export const BankReconciliationModal = ({
           rules={[{ required: true, message: 'Ingrese el balance del banco.' }]}
         >
           <InputNumber
+            disabled={submitting}
             style={{ width: '100%' }}
             step={0.01}
             precision={2}
@@ -117,16 +142,54 @@ export const BankReconciliationModal = ({
           />
         </Form.Item>
 
-        <Form.Item label="Fecha estado de cuenta" name="statementDate">
-          <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+        {reconciliationStatus ? (
+          <Alert
+            style={{ marginBottom: 16 }}
+            type={reconciliationStatus === 'balanced' ? 'success' : 'warning'}
+            showIcon
+            message={
+              reconciliationStatus === 'balanced'
+                ? 'Balance conciliado'
+                : 'Diferencia detectada'
+            }
+            description={
+              variance === 0
+                ? 'El balance del estado de cuenta coincide con el ledger.'
+                : `Diferencia actual: ${new Intl.NumberFormat('es-DO', {
+                    style: 'currency',
+                    currency: selectedBankAccount?.currency ?? 'DOP',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(variance ?? 0)}`
+            }
+          />
+        ) : null}
+
+        <Form.Item
+          label="Fecha estado de cuenta"
+          name="statementDate"
+          rules={[{ required: true, message: 'Seleccione la fecha del estado.' }]}
+        >
+          <DatePicker
+            disabled={submitting}
+            style={{ width: '100%' }}
+            format="DD/MM/YYYY"
+          />
         </Form.Item>
 
         <Form.Item label="Referencia" name="reference">
-          <Input placeholder="Estado abril, corte semanal..." maxLength={80} />
+          <Input
+            disabled={submitting}
+            placeholder="Estado abril, corte semanal..."
+            maxLength={80}
+          />
         </Form.Item>
 
         <Form.Item label="Notas" name="notes">
-          <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
+          <Input.TextArea
+            disabled={submitting}
+            autoSize={{ minRows: 2, maxRows: 4 }}
+          />
         </Form.Item>
       </Form>
     </Modal>

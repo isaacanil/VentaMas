@@ -93,6 +93,14 @@ const splitDgii607Records = (records = []) =>
         return acc;
       }
 
+      // Records without an NCF are non-fiscal transactions (e.g. walk-in sales
+      // where no comprobante was issued). DGII 607 only covers NCF-bearing sales,
+      // so exclude them rather than raising validation errors.
+      if (!toCleanString(record?.data?.NCF)) {
+        acc.excluded.push(record);
+        return acc;
+      }
+
       acc.included.push(record);
       return acc;
     },

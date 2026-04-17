@@ -10,20 +10,17 @@ import {
 } from '@/utils/payments/bankPaymentPolicy';
 
 const { Text } = Typography;
+const FOLLOW_FALLBACK_VALUE = '__fallback__';
 
 const METHOD_COPY: Record<
   BankPaymentMethodCode,
-  { title: string; description: string }
+  { title: string }
 > = {
   card: {
     title: 'Tarjeta',
-    description:
-      'Asigna una cuenta fija solo si quieres que tarjeta opere siempre contra la misma cuenta.',
   },
   transfer: {
     title: 'Transferencia',
-    description:
-      'Asigna una cuenta fija solo si quieres que las transferencias usen siempre la misma cuenta.',
   },
 };
 
@@ -50,6 +47,25 @@ export const BankPaymentPolicySection = ({
   const activeBankAccountLabels = new Map(
     activeBankAccountOptions.map((option) => [option.value, option.label]),
   );
+  const fallbackAccountLabel =
+    normalizedPolicy.defaultBankAccountId &&
+    activeBankAccountLabels.has(normalizedPolicy.defaultBankAccountId)
+      ? activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId)
+      : null;
+  const fallbackOptionLabel = fallbackAccountLabel
+    ? `Sigue cuenta por defecto (${fallbackAccountLabel})`
+    : activeBankAccountsCount === 1
+      ? 'Sigue cuenta por defecto (única cuenta activa)'
+      : 'Sigue cuenta por defecto';
+  const methodAccountOptions = activeBankAccountOptions.length
+    ? [
+        {
+          value: FOLLOW_FALLBACK_VALUE,
+          label: fallbackOptionLabel,
+        },
+        ...activeBankAccountOptions,
+      ]
+    : [];
 
   const handleMethodAccountChange = (
     method: BankPaymentMethodCode,
@@ -58,8 +74,14 @@ export const BankPaymentPolicySection = ({
     onChange({
       ...normalizedPolicy,
       [method]: {
-        selectionMode: typeof value === 'string' ? 'default' : 'manual',
-        defaultBankAccountId: typeof value === 'string' ? value : null,
+        selectionMode:
+          typeof value === 'string' && value !== FOLLOW_FALLBACK_VALUE
+            ? 'default'
+            : 'manual',
+        defaultBankAccountId:
+          typeof value === 'string' && value !== FOLLOW_FALLBACK_VALUE
+            ? value
+            : null,
       },
     });
   };
@@ -74,71 +96,23 @@ export const BankPaymentPolicySection = ({
   return (
     <Section>
       <Header>
-        <HeaderTitle>Métodos bancarios</HeaderTitle>
+        <HeaderTitle>Métodos de pago y liquidación</HeaderTitle>
         <HeaderDescription>
-          La prioridad vive en cada método. La cuenta de respaldo es opcional y
-          solo se usa cuando un método no tenga cuenta fija.
+          Configura dónde se recibirá el dinero de cada canal de venta.
         </HeaderDescription>
       </Header>
 
       <Content>
-        <MethodGrid>
-          {(['card', 'transfer'] as const).map((method) => {
-            const methodConfig = normalizedPolicy[method];
-            const selectedAccountLabel =
-              methodConfig.defaultBankAccountId &&
-              activeBankAccountLabels.has(methodConfig.defaultBankAccountId)
-                ? activeBankAccountLabels.get(methodConfig.defaultBankAccountId)
-                : null;
-
-            return (
-              <MethodCard key={method}>
-                <CardHeader>
-                  <CardTitle>{METHOD_COPY[method].title}</CardTitle>
-                </CardHeader>
-                <CardDescription>{METHOD_COPY[method].description}</CardDescription>
-
-                <FieldBlock>
-                  <FieldLabel>Cuenta fija del método</FieldLabel>
-                  <Select
-                    allowClear
-                    showSearch
-                    optionFilterProp="label"
-                    placeholder={
-                      activeBankAccountOptions.length
-                        ? 'Sin cuenta fija'
-                        : 'No hay cuentas activas'
-                    }
-                    options={activeBankAccountOptions}
-                    value={methodConfig.defaultBankAccountId ?? undefined}
-                    onChange={(value) => handleMethodAccountChange(method, value)}
-                    disabled={!activeBankAccountOptions.length}
-                  />
-                  <FieldHint>
-                    {selectedAccountLabel
-                      ? `Esta cuenta tendrá prioridad para ${METHOD_COPY[method].title.toLowerCase()}.`
-                      : normalizedPolicy.defaultBankAccountId &&
-                          activeBankAccountLabels.has(
-                            normalizedPolicy.defaultBankAccountId,
-                          )
-                        ? `Sin cuenta fija, este método caerá en la cuenta de respaldo: ${activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId)}.`
-                        : activeBankAccountsCount === 1
-                          ? 'Sin cuenta fija, se resolverá automáticamente con la única cuenta bancaria activa.'
-                        : 'Sin cuenta fija, el flujo pedirá selección manual cuando aplique.'}
-                  </FieldHint>
-                </FieldBlock>
-              </MethodCard>
-            );
-          })}
-        </MethodGrid>
-
         <FallbackSection>
-          <CardHeader>
-            <CardTitle>Cuenta de respaldo</CardTitle>
-          </CardHeader>
-          <CardDescription>
-            Opcional. Solo entra cuando un método no tenga cuenta fija.
-          </CardDescription>
+          <SectionEyebrow>Configuración global</SectionEyebrow>
+          <SectionHeader>
+            <CardTitle>Cuenta por defecto</CardTitle>
+            <FallbackBadge>Respaldo</FallbackBadge>
+          </SectionHeader>
+          <SectionDescription>
+            Se usará para todos los métodos que no tengan una cuenta específica
+            asignada.
+          </SectionDescription>
           <FieldBlock>
             <FieldLabel>Cuenta bancaria</FieldLabel>
             <Select
@@ -147,7 +121,7 @@ export const BankPaymentPolicySection = ({
               optionFilterProp="label"
               placeholder={
                 activeBankAccountOptions.length
-                  ? 'Sin cuenta de respaldo'
+                  ? 'Selecciona una cuenta por defecto'
                   : 'No hay cuentas activas'
               }
               options={activeBankAccountOptions}
@@ -155,16 +129,57 @@ export const BankPaymentPolicySection = ({
               onChange={handleFallbackAccountChange}
               disabled={!activeBankAccountOptions.length}
             />
-            <FieldHint>
-              {normalizedPolicy.defaultBankAccountId &&
-              activeBankAccountLabels.has(normalizedPolicy.defaultBankAccountId)
-                ? `Respaldo actual: ${activeBankAccountLabels.get(normalizedPolicy.defaultBankAccountId)}.`
-                : activeBankAccountsCount === 1
-                  ? 'Con una sola cuenta activa, el sistema puede resolverla automáticamente sin guardar un respaldo.'
-                : 'Puedes dejarla vacía si prefieres que el usuario elija la cuenta en cada flujo.'}
-            </FieldHint>
           </FieldBlock>
         </FallbackSection>
+
+        <MethodSection>
+          <SectionEyebrow>Excepciones por método</SectionEyebrow>
+          <SectionDescription>
+            Asigna una cuenta distinta solo cuando ese canal liquide diferente.
+          </SectionDescription>
+        </MethodSection>
+
+        <MethodGrid>
+          {(['card', 'transfer'] as const).map((method) => {
+            const methodConfig = normalizedPolicy[method];
+            const usesSpecificAccount =
+              Boolean(methodConfig.defaultBankAccountId) &&
+              activeBankAccountLabels.has(methodConfig.defaultBankAccountId);
+
+            return (
+              <MethodCard key={method}>
+                <SectionHeader>
+                  <CardTitle>{METHOD_COPY[method].title}</CardTitle>
+                  <MethodState $isSpecific={usesSpecificAccount}>
+                    {usesSpecificAccount ? 'Cuenta específica' : 'Usa respaldo'}
+                  </MethodState>
+                </SectionHeader>
+
+                <FieldBlock>
+                  <FieldLabel>Destino</FieldLabel>
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder={
+                      activeBankAccountOptions.length
+                        ? 'Selecciona una configuración'
+                        : 'No hay cuentas activas'
+                    }
+                    options={methodAccountOptions}
+                    value={
+                      activeBankAccountOptions.length
+                        ? (methodConfig.defaultBankAccountId ??
+                          FOLLOW_FALLBACK_VALUE)
+                        : undefined
+                    }
+                    onChange={(value) => handleMethodAccountChange(method, value)}
+                    disabled={!activeBankAccountOptions.length}
+                  />
+                </FieldBlock>
+              </MethodCard>
+            );
+          })}
+        </MethodGrid>
       </Content>
     </Section>
   );
@@ -214,9 +229,15 @@ const FallbackSection = styled.div`
   flex-direction: column;
   gap: var(--ds-space-3);
   padding: var(--ds-space-4);
-  border: 1px solid var(--ds-color-border-default);
+  border: 1px solid var(--ds-color-border-strong);
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
+  background: var(--ds-color-bg-subtle);
+`;
+
+const MethodSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
 `;
 
 const MethodGrid = styled.div`
@@ -232,14 +253,14 @@ const MethodGrid = styled.div`
 const MethodCard = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
   padding: var(--ds-space-4);
-  border: 1px solid var(--ds-color-border-default);
+  border: 1px solid var(--ds-color-border-subtle);
   border-radius: var(--ds-radius-lg);
   background: var(--ds-color-bg-surface);
 `;
 
-const CardHeader = styled.div`
+const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -253,7 +274,15 @@ const CardTitle = styled(Text)`
   }
 `;
 
-const CardDescription = styled.span`
+const SectionEyebrow = styled.span`
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-secondary);
+`;
+
+const SectionDescription = styled.span`
   font-size: var(--ds-font-size-xs);
   line-height: var(--ds-line-height-normal);
   color: var(--ds-color-text-secondary);
@@ -271,8 +300,34 @@ const FieldLabel = styled.span`
   color: var(--ds-color-text-primary);
 `;
 
-const FieldHint = styled.span`
+const FallbackBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-state-info-subtle);
   font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
-  color: var(--ds-color-text-secondary);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-state-info-text);
+`;
+
+const MethodState = styled.span<{ $isSpecific: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  color: ${(props) =>
+    props.$isSpecific
+      ? 'var(--ds-color-state-info-text)'
+      : 'var(--ds-color-text-secondary)'};
+  background: ${(props) =>
+    props.$isSpecific
+      ? 'var(--ds-color-state-info-subtle)'
+      : 'var(--ds-color-bg-subtle)'};
 `;

@@ -116,7 +116,6 @@ const {
   GENERAL_CONFIG_BUSINESS,
   GENERAL_CONFIG_ACCOUNTING,
   GENERAL_CONFIG_EXCHANGE_RATES,
-  GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS,
   GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
   GENERAL_CONFIG_ACCOUNTING_EXCHANGE_RATES,
   GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
@@ -313,14 +312,6 @@ const Routes: AppRoute[] = [
   {
     path: '/settings/general-config-exchange-rates',
     element: <Navigate to={GENERAL_CONFIG_EXCHANGE_RATES} replace />,
-  },
-  {
-    path: '/settings/contabilidad/cuentas-bancarias',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS} replace />,
-  },
-  {
-    path: '/settings/accounting/cuentas-bancarias',
-    element: <Navigate to={GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS} replace />,
   },
   {
     path: '/settings/contabilidad/catalogo',

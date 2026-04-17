@@ -1,7 +1,9 @@
+import { DownloadOutlined } from '@ant-design/icons';
 import { Alert, Button, Select, Tag, message } from 'antd';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
+import { fbExportDgiiTxtReport } from '@/firebase/accounting/fbExportDgiiTxtReport';
 import { fbRunMonthlyComplianceReport } from '@/firebase/accounting/fbRunMonthlyComplianceReport';
 
 import { useMonthlyComplianceRuns } from '../hooks/useMonthlyComplianceRuns';
@@ -45,6 +47,7 @@ export const MonthlyComplianceSection = ({
   const [requestedPeriodKey, setRequestedPeriodKey] = useState('');
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const { error, loading, runs } = useMonthlyComplianceRuns({
     businessId,
     enabled,
@@ -108,6 +111,39 @@ export const MonthlyComplianceSection = ({
     }
   };
 
+  const handleExportTxt = async () => {
+    if (!businessId) {
+      void message.error('No hay negocio activo para exportar.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const result = await fbExportDgiiTxtReport({
+        businessId,
+        periodKey: effectivePeriodKey,
+        reportCode,
+      });
+
+      const blob = new Blob([result.content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = result.fileName;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+
+      void message.success(`${result.fileName} generado (${result.rowCount} filas).`);
+    } catch (error) {
+      console.error('Error exportando TXT DGII:', error);
+      void message.error(
+        error instanceof Error ? error.message : 'No se pudo generar el archivo TXT.',
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <ReportSection>
       <SectionHeader>
@@ -133,6 +169,15 @@ export const MonthlyComplianceSection = ({
           />
           <Button type="primary" loading={running} onClick={() => void handleRun()}>
             Ejecutar preview
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            loading={exporting}
+            disabled={reportCode !== 'DGII_607'}
+            title={reportCode !== 'DGII_607' ? 'Exportación TXT disponible solo para 607' : undefined}
+            onClick={() => void handleExportTxt()}
+          >
+            Exportar TXT
           </Button>
         </Toolbar>
       </SectionHeader>

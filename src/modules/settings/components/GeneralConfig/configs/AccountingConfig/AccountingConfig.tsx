@@ -42,9 +42,7 @@ export default function AccountingConfig() {
   const userId = user?.uid ?? user?.id ?? null;
   const settingsWorkspaceEnabled = Boolean(businessId);
   const {
-    addBankAccount,
     bankAccounts,
-    bankAccountsLoading,
     config,
     enabledForeignCurrencies,
     error,
@@ -54,9 +52,6 @@ export default function AccountingConfig() {
     loading,
     saveExchangeSettings,
     savingExchange,
-    updateBankAccount,
-    updateBankAccountStatus,
-    updateBankPaymentPolicy,
     updateCurrencyConfiguration,
     updateFunctionalCurrency,
     updateBuyRate,
@@ -133,8 +128,6 @@ export default function AccountingConfig() {
           chartOfAccounts={chartOfAccounts}
           chartOfAccountsError={chartOfAccountsError}
           chartOfAccountsLoading={chartOfAccountsLoading}
-          bankAccounts={bankAccounts}
-          bankAccountsLoading={bankAccountsLoading}
           config={config}
           error={error}
           enabledForeignCurrencies={enabledForeignCurrencies}
@@ -143,17 +136,13 @@ export default function AccountingConfig() {
           history={auditEntries}
           historyLoading={auditLoading}
           loading={loading}
-          onAddBankAccount={addBankAccount}
-          onUpdateBankAccount={updateBankAccount}
           onAddChartOfAccount={addChartOfAccount}
           onBuyRateChange={updateBuyRate}
-          onBankPaymentPolicyChange={updateBankPaymentPolicy}
           onCurrencyConfigurationChange={updateCurrencyConfiguration}
           onFunctionalCurrencyChange={updateFunctionalCurrency}
           onSaveExchange={saveExchangeSettings}
           onSellRateChange={updateSellRate}
           onSeedDefaultChartOfAccounts={seedDefaultChartOfAccounts}
-          onUpdateBankAccountStatus={updateBankAccountStatus}
           onUpdateChartOfAccount={updateChartOfAccount}
           onUpdateChartOfAccountStatus={updateChartOfAccountStatus}
           onAddPostingProfile={addPostingProfile}

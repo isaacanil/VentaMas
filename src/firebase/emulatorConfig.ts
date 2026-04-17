@@ -47,6 +47,16 @@ export const getAuthEmulatorPort = (): number =>
 
 export const shouldUseFirebaseEmulators = (): boolean => {
   const explicitOptIn = parseBooleanEnv(import.meta.env.VITE_USE_EMULATORS);
+
+  // Si se detectó explícitamente que NO están vivos tras el probe en index.html,
+  // devolvemos false para recuperar la versión normal (conectada a real firebase).
+  if (
+    typeof window !== 'undefined' &&
+    (window as any).__EMULATORS_ALIVE__ === false
+  ) {
+    return false;
+  }
+
   if (explicitOptIn !== null) {
     return explicitOptIn;
   }

@@ -14,6 +14,10 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import {
+  DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+} from '@/domain/banking/bankInstitutionCatalog';
+import { useBankInstitutionCatalog } from '@/domain/banking/useBankInstitutionCatalog';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import type { BankAccount } from '@/types/accounting';
 import {
@@ -57,9 +61,12 @@ interface DirtySectionsState {
 
 const buildBankAccountSnapshot = ({
   accountNumberLast4,
+  bankCode,
   bankAccountId,
   businessId,
+  countryCode,
   currency,
+  isCustomBank,
   institutionName,
   metadata,
   name,
@@ -70,9 +77,12 @@ const buildBankAccountSnapshot = ({
   type,
 }: {
   accountNumberLast4?: string | null;
+  bankCode?: string | null;
   bankAccountId: string;
   businessId: string;
+  countryCode?: string | null;
   currency: BankAccount['currency'];
+  isCustomBank?: boolean | null;
   institutionName?: string | null;
   metadata?: Record<string, unknown> | null;
   name: string;
@@ -89,6 +99,9 @@ const buildBankAccountSnapshot = ({
   status,
   type: type ?? null,
   institutionName: institutionName ?? null,
+  bankCode: bankCode ?? null,
+  countryCode: countryCode ?? null,
+  isCustomBank: isCustomBank === true,
   accountNumberLast4: accountNumberLast4 ?? null,
   openingBalance: openingBalance ?? null,
   openingBalanceDate: openingBalanceDate ?? null,
@@ -230,6 +243,11 @@ export const useAccountingConfig = ({
   const [error, setError] = useState<string | null>(null);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [bankAccountsLoading, setBankAccountsLoading] = useState(true);
+  const {
+    entries: bankInstitutionCatalog,
+    error: bankInstitutionCatalogError,
+    loading: bankInstitutionCatalogLoading,
+  } = useBankInstitutionCatalog(DEFAULT_BANK_INSTITUTION_COUNTRY_CODE);
   const [marketExchangeRateReference, setMarketExchangeRateReference] =
     useState<ExchangeRateProviderSnapshot | null>(null);
   const [lastPersistedConfig, setLastPersistedConfig] =
@@ -359,6 +377,9 @@ export const useAccountingConfig = ({
               bankAccountDoc.id,
               businessId,
               bankAccountDoc.data(),
+              {
+                bankInstitutionCatalog,
+              },
             ),
           )
           .sort((left, right) => {
@@ -379,7 +400,7 @@ export const useAccountingConfig = ({
     );
 
     return unsubscribe;
-  }, [businessId]);
+  }, [bankInstitutionCatalog, businessId]);
 
   useEffect(() => {
     const latestRef = doc(
@@ -526,7 +547,18 @@ export const useAccountingConfig = ({
     async (draft: Partial<BankAccountDraft>) => {
       if (!businessId) return;
 
-      const normalizedDraft = normalizeBankAccountDraft(draft);
+      let normalizedDraft: BankAccountDraft;
+      try {
+        normalizedDraft = normalizeBankAccountDraft(draft, {
+          bankInstitutionCatalog,
+        });
+      } catch (cause) {
+        const errorMessage =
+          cause instanceof Error ? cause.message : 'No se pudo normalizar el banco.';
+        void message.error(errorMessage);
+        return;
+      }
+
       if (!normalizedDraft.name) {
         void message.error('El nombre de la cuenta bancaria es requerido.');
         return;
@@ -543,37 +575,50 @@ export const useAccountingConfig = ({
         currency: normalizedDraft.currency,
         type: normalizedDraft.type ?? null,
         institutionName: normalizedDraft.institutionName ?? null,
+        bankCode: normalizedDraft.bankCode ?? null,
+        countryCode: normalizedDraft.countryCode ?? null,
+        isCustomBank: normalizedDraft.isCustomBank ?? null,
         accountNumberLast4: normalizedDraft.accountNumberLast4 ?? null,
         openingBalance: normalizedDraft.openingBalance ?? null,
         openingBalanceDate: normalizedDraft.openingBalanceDate ?? null,
         notes: normalizedDraft.notes ?? null,
+        metadata: normalizedDraft.metadata ?? {},
         status: 'active',
       });
       const batch = writeBatch(db);
 
-      batch.set(bankAccountRef, {
-        ...nextSnapshot,
-        createdAt: now,
-        updatedAt: now,
-        createdBy: userId ?? null,
-        updatedBy: userId ?? null,
-      });
+      try {
+        batch.set(bankAccountRef, {
+          ...nextSnapshot,
+          createdAt: now,
+          updatedAt: now,
+          createdBy: userId ?? null,
+          updatedBy: userId ?? null,
+        });
 
-      await batch.commit();
+        await batch.commit();
 
-      const nextActiveBankAccountIds = [
-        ...bankAccounts
-          .filter((bankAccount) => bankAccount.status === 'active')
-          .map((bankAccount) => bankAccount.id),
-        bankAccountRef.id,
-      ];
-      await syncDefaultBankAccountWithActiveAccountsRef.current({
-        activeBankAccountIds: nextActiveBankAccountIds,
-      });
+        const nextActiveBankAccountIds = [
+          ...bankAccounts
+            .filter((bankAccount) => bankAccount.status === 'active')
+            .map((bankAccount) => bankAccount.id),
+          bankAccountRef.id,
+        ];
+        await syncDefaultBankAccountWithActiveAccountsRef.current({
+          activeBankAccountIds: nextActiveBankAccountIds,
+        });
 
-      void message.success('Cuenta bancaria guardada.');
+        void message.success('Cuenta bancaria guardada.');
+      } catch (cause) {
+        const errorMessage =
+          cause instanceof Error
+            ? cause.message
+            : 'No se pudo guardar la cuenta bancaria.';
+        void message.error(errorMessage);
+        throw cause;
+      }
     },
-    [bankAccounts, businessId, userId],
+    [bankAccounts, bankInstitutionCatalog, businessId, userId],
   );
 
   const updateBankAccountStatus = useCallback(
@@ -603,6 +648,9 @@ export const useAccountingConfig = ({
         currency: currentBankAccount.currency,
         type: currentBankAccount.type ?? null,
         institutionName: currentBankAccount.institutionName ?? null,
+        bankCode: currentBankAccount.bankCode ?? null,
+        countryCode: currentBankAccount.countryCode ?? null,
+        isCustomBank: currentBankAccount.isCustomBank ?? null,
         accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
         openingBalance: currentBankAccount.openingBalance ?? null,
         openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
@@ -617,6 +665,9 @@ export const useAccountingConfig = ({
         currency: currentBankAccount.currency,
         type: currentBankAccount.type ?? null,
         institutionName: currentBankAccount.institutionName ?? null,
+        bankCode: currentBankAccount.bankCode ?? null,
+        countryCode: currentBankAccount.countryCode ?? null,
+        isCustomBank: currentBankAccount.isCustomBank ?? null,
         accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
         openingBalance: currentBankAccount.openingBalance ?? null,
         openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
@@ -678,7 +729,18 @@ export const useAccountingConfig = ({
         return;
       }
 
-      const normalizedDraft = normalizeBankAccountDraft(draft);
+      let normalizedDraft: BankAccountDraft;
+      try {
+        normalizedDraft = normalizeBankAccountDraft(draft, {
+          bankInstitutionCatalog,
+        });
+      } catch (cause) {
+        const errorMessage =
+          cause instanceof Error ? cause.message : 'No se pudo normalizar el banco.';
+        void message.error(errorMessage);
+        return;
+      }
+
       const now = Timestamp.now();
       const bankAccountRef = doc(
         db,
@@ -694,6 +756,9 @@ export const useAccountingConfig = ({
         currency: currentBankAccount.currency,
         type: currentBankAccount.type ?? null,
         institutionName: currentBankAccount.institutionName ?? null,
+        bankCode: currentBankAccount.bankCode ?? null,
+        countryCode: currentBankAccount.countryCode ?? null,
+        isCustomBank: currentBankAccount.isCustomBank ?? null,
         accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
         openingBalance: currentBankAccount.openingBalance ?? null,
         openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
@@ -708,30 +773,42 @@ export const useAccountingConfig = ({
         currency: normalizedDraft.currency,
         type: normalizedDraft.type ?? null,
         institutionName: normalizedDraft.institutionName ?? null,
+        bankCode: normalizedDraft.bankCode ?? null,
+        countryCode: normalizedDraft.countryCode ?? null,
+        isCustomBank: normalizedDraft.isCustomBank ?? null,
         accountNumberLast4: normalizedDraft.accountNumberLast4 ?? null,
         openingBalance: normalizedDraft.openingBalance ?? null,
         openingBalanceDate: normalizedDraft.openingBalanceDate ?? null,
         notes: normalizedDraft.notes ?? null,
         status: currentBankAccount.status,
-        metadata: currentBankAccount.metadata ?? {},
+        metadata: normalizedDraft.metadata ?? currentBankAccount.metadata ?? {},
       });
       const batch = writeBatch(db);
 
-      batch.set(
-        bankAccountRef,
-        {
-          ...nextSnapshot,
-          updatedAt: now,
-          updatedBy: userId ?? null,
-        },
-        { merge: true },
-      );
+      try {
+        batch.set(
+          bankAccountRef,
+          {
+            ...nextSnapshot,
+            updatedAt: now,
+            updatedBy: userId ?? null,
+          },
+          { merge: true },
+        );
 
-      await batch.commit();
+        await batch.commit();
 
-      void message.success('Cuenta bancaria actualizada.');
+        void message.success('Cuenta bancaria actualizada.');
+      } catch (cause) {
+        const errorMessage =
+          cause instanceof Error
+            ? cause.message
+            : 'No se pudo actualizar la cuenta bancaria.';
+        void message.error(errorMessage);
+        throw cause;
+      }
     },
-    [bankAccounts, businessId, userId],
+    [bankAccounts, bankInstitutionCatalog, businessId, userId],
   );
 
   const buildNextExchangeConfig = useCallback(
@@ -1130,6 +1207,9 @@ export const useAccountingConfig = ({
   return {
     addBankAccount,
     bankAccounts,
+    bankInstitutionCatalog,
+    bankInstitutionCatalogError,
+    bankInstitutionCatalogLoading,
     bankAccountsLoading,
     config,
     enabledForeignCurrencies,

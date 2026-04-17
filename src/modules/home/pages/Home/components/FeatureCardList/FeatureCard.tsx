@@ -62,7 +62,7 @@ const FeatureCardIcon = styled.div`
   width: 1.3em;
   height: 1.3em;
   font-size: 1.3em;
-  color: #0086df;
+  color: ${(props) => props.theme.bg.color};
   transition: color 0.2s ease-in-out;
 `;
 
@@ -95,15 +95,15 @@ const cardBaseStyles = css`
 
   &:hover {
     background-color: #f8f9fa;
-    border-color: #0086df;
+    border-color: ${(props) => props.theme.bg.color};
   }
 
   &:hover ${FeatureCardTitle} {
-    color: #0086df;
+    color: ${(props) => props.theme.bg.color};
   }
 
   &:hover ${FeatureCardIcon} {
-    color: #0086df;
+    color: ${(props) => props.theme.bg.color};
   }
 `;
 

@@ -14,7 +14,6 @@ import {
   faWallet,
   faBookOpen,
   faLayerGroup,
-  faLandmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { selectUser } from '@/features/auth/userSlice';
@@ -56,11 +55,6 @@ const ACCOUNTING_MENU_ITEMS: MenuItem[] = [
     icon: <FontAwesomeIcon icon={faLayerGroup} />,
     label: 'Perfiles contables',
   },
-  {
-    key: 'accounting-bank-accounts',
-    icon: <FontAwesomeIcon icon={faLandmark} />,
-    label: 'Cuentas bancarias',
-  },
 ];
 
 const MENU_ROUTES = {
@@ -69,8 +63,6 @@ const MENU_ROUTES = {
     ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_CHART_OF_ACCOUNTS,
   'accounting-posting-profiles':
     ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
-  'accounting-bank-accounts':
-    ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS,
 };
 
 type ConfigMenuKey = keyof typeof MENU_ROUTES;
@@ -85,14 +77,6 @@ const resolveActiveItemKey = (pathname: string): string => {
 
   if (pathname.includes('/modules')) {
     return 'modules';
-  }
-
-  if (
-    pathname.startsWith(
-      ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS,
-    )
-  ) {
-    return 'accounting-bank-accounts';
   }
 
   if (
@@ -186,7 +170,7 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
   {
     key: 'accounting',
     label: 'Contabilidad',
-    description: 'Ordena catálogo, perfiles y bancos del esquema contable.',
+    description: 'Ordena catálogo, perfiles y estructura base del esquema contable.',
     tab: 'accounting',
     route: TAB_ROUTES.accounting,
     category: 'Pantalla',
@@ -195,8 +179,6 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
       'plan contable',
       'perfiles',
       'contabilidad',
-      'bancos',
-      'cuentas bancarias',
     ],
   },
   {
@@ -218,16 +200,6 @@ const GENERAL_CONFIG_SEARCH_INDEX: GeneralConfigSearchEntry[] = [
     route: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_POSTING_PROFILES,
     category: 'Sección',
     extraTokens: ['perfiles contables', 'asientos', 'eventos', 'mapeo'],
-  },
-  {
-    key: 'accounting-bank-accounts',
-    label: 'Contabilidad · Cuentas bancarias',
-    description:
-      'Gestiona cuentas activas y la cuenta bancaria predeterminada por módulo.',
-    tab: 'accounting',
-    route: ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING_BANK_ACCOUNTS,
-    category: 'Sección',
-    extraTokens: ['banco', 'cuenta bancaria', 'tesoreria', 'modulos'],
   },
   {
     key: 'exchangeRates',

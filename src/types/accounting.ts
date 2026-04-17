@@ -154,6 +154,9 @@ export interface BankAccount {
   status: BankAccountStatus;
   type?: BankAccountType | null;
   institutionName?: string | null;
+  bankCode?: string | null;
+  countryCode?: string | null;
+  isCustomBank?: boolean | null;
   accountNumberLast4?: string | null;
   openingBalance?: number | null;
   openingBalanceDate?: TimestampLike | null;

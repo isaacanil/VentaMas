@@ -8,7 +8,8 @@ const TreasuryBankAccountsPage = lazy(
   () => import('@/modules/treasury/pages/TreasuryBankAccountsPage'),
 );
 
-const { TREASURY_HOME, TREASURY_BANK_ACCOUNTS } = ROUTES_NAME.TREASURY_TERM;
+const { TREASURY_HOME, TREASURY_BANK_ACCOUNTS, TREASURY_ACCOUNT_DETAIL } =
+  ROUTES_NAME.TREASURY_TERM;
 
 const Routes: AppRoute[] = [
   {
@@ -17,6 +18,10 @@ const Routes: AppRoute[] = [
   },
   {
     path: TREASURY_BANK_ACCOUNTS,
+    element: <TreasuryBankAccountsPage />,
+  },
+  {
+    path: TREASURY_ACCOUNT_DETAIL,
     element: <TreasuryBankAccountsPage />,
   },
 ];

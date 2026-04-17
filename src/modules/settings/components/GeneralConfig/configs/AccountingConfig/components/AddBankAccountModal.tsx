@@ -1,15 +1,23 @@
-import { useEffect } from 'react';
-import { Form, Input, InputNumber, Modal, Select } from 'antd';
+import { useEffect, useMemo } from 'react';
+import { Alert, Form, Input, InputNumber, Modal, Select } from 'antd';
 import { DateTime } from 'luxon';
 
 import DatePicker from '@/components/DatePicker';
 import {
+  CUSTOM_BANK_INSTITUTION_CODE,
+  DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
+  type BankInstitutionCatalogEntry,
+} from '@/domain/banking/bankInstitutionCatalog';
+import type { BankAccount, BankAccountType } from '@/types/accounting';
+import {
   ACCOUNTING_CURRENCY_CODES,
   getCurrencyOptionLabel,
 } from '@/utils/accounting/currencies';
-import type { BankAccount, BankAccountType } from '@/types/accounting';
+import {
+  getBankAccountDraftFormValues,
+  type BankAccountDraft,
+} from '@/utils/accounting/bankAccounts';
 import { toMillis } from '@/utils/firebase/toTimestamp';
-import type { BankAccountDraft } from '@/utils/accounting/bankAccounts';
 import type { SupportedDocumentCurrency } from '../utils/accountingConfig';
 
 const BANK_ACCOUNT_TYPES: Array<{
@@ -23,46 +31,96 @@ const BANK_ACCOUNT_TYPES: Array<{
 ];
 
 interface AddBankAccountModalProps {
+  bankInstitutionCatalog: readonly BankInstitutionCatalogEntry[];
+  bankInstitutionCatalogError?: string | null;
+  bankInstitutionCatalogLoading?: boolean;
   currencies: SupportedDocumentCurrency[];
   editingAccount?: BankAccount | null;
   open: boolean;
   onCancel: () => void;
   onSubmit: (draft: Partial<BankAccountDraft>, bankAccountId?: string) => Promise<void>;
+  submitting?: boolean;
 }
 
 export const AddBankAccountModal = ({
+  bankInstitutionCatalog,
+  bankInstitutionCatalogError,
+  bankInstitutionCatalogLoading = false,
   currencies,
   editingAccount,
   open,
   onCancel,
   onSubmit,
+  submitting = false,
 }: AddBankAccountModalProps) => {
   const [form] = Form.useForm<BankAccountDraft>();
+  const selectedBankCode = Form.useWatch('bankCode', form);
+  const isCustomBankSelected =
+    selectedBankCode === CUSTOM_BANK_INSTITUTION_CODE;
+  const institutionOptions = useMemo(
+    () => [
+      ...bankInstitutionCatalog.map((institution) => ({
+        label: institution.name,
+        value: institution.code,
+      })),
+      {
+        label: 'Otro banco',
+        value: CUSTOM_BANK_INSTITUTION_CODE,
+      },
+    ],
+    [bankInstitutionCatalog],
+  );
+  const selectedBankFallbackOption =
+    !selectedBankCode ||
+    selectedBankCode === CUSTOM_BANK_INSTITUTION_CODE ||
+    institutionOptions.some((option) => option.value === selectedBankCode)
+      ? null
+      : {
+          label: editingAccount?.institutionName
+            ? `${editingAccount.institutionName} (sin verificar)`
+            : `${selectedBankCode} (sin verificar)`,
+          value: selectedBankCode,
+        };
+  const resolvedInstitutionOptions = selectedBankFallbackOption
+    ? [selectedBankFallbackOption, ...institutionOptions]
+    : institutionOptions;
+  const catalogUnavailable =
+    !bankInstitutionCatalogLoading && !bankInstitutionCatalog.length;
+  const isSubmitBlocked =
+    submitting ||
+    (!isCustomBankSelected &&
+      (bankInstitutionCatalogLoading || !bankInstitutionCatalog.length));
 
   useEffect(() => {
-    if (open) {
-      if (editingAccount) {
-        form.setFieldsValue({
-          ...editingAccount,
-          openingBalanceDate: editingAccount.openingBalanceDate
-            ? DateTime.fromMillis(toMillis(editingAccount.openingBalanceDate as any))
-            : undefined,
-        } as any);
-      } else {
-        form.resetFields();
-      }
+    if (!open || !editingAccount) {
+      return;
     }
-  }, [open, editingAccount, form]);
+
+    form.setFieldsValue({
+      ...editingAccount,
+      ...getBankAccountDraftFormValues(editingAccount, {
+        bankInstitutionCatalog,
+      }),
+      openingBalanceDate: editingAccount.openingBalanceDate
+        ? DateTime.fromMillis(toMillis(editingAccount.openingBalanceDate as any))
+        : undefined,
+    } as any);
+  }, [bankInstitutionCatalog, editingAccount, form, open]);
+
+  useEffect(() => {
+    if (!open || editingAccount) {
+      return;
+    }
+
+    form.resetFields();
+  }, [editingAccount, form, open]);
+
   const currencyOptions = (
     currencies.length ? currencies : ACCOUNTING_CURRENCY_CODES
   ).map((currency) => ({
     label: getCurrencyOptionLabel(currency),
     value: currency,
   }));
-
-  const handleCancel = () => {
-    onCancel();
-  };
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -73,11 +131,17 @@ export const AddBankAccountModal = ({
     <Modal
       title={editingAccount ? 'Editar cuenta bancaria' : 'Agregar cuenta bancaria'}
       open={open}
-      onCancel={handleCancel}
+      onCancel={onCancel}
       onOk={handleSubmit}
       okText="Guardar"
       cancelText="Cancelar"
+      confirmLoading={submitting}
+      okButtonProps={{ disabled: isSubmitBlocked }}
+      cancelButtonProps={{ disabled: submitting }}
       destroyOnClose
+      closable={!submitting}
+      keyboard={!submitting}
+      maskClosable={!submitting}
     >
       <Form
         form={form}
@@ -85,6 +149,7 @@ export const AddBankAccountModal = ({
         initialValues={{
           currency: currencyOptions[0]?.value ?? 'DOP',
           type: 'checking',
+          countryCode: DEFAULT_BANK_INSTITUTION_COUNTRY_CODE,
         }}
       >
         <Form.Item
@@ -95,9 +160,82 @@ export const AddBankAccountModal = ({
           <Input placeholder="Ej. Cuenta operativa principal" maxLength={80} />
         </Form.Item>
 
-        <Form.Item label="Banco" name="institutionName">
-          <Input placeholder="Ej. Banco Popular" maxLength={80} />
+        <Form.Item name="countryCode" hidden>
+          <Input />
         </Form.Item>
+
+        {bankInstitutionCatalogLoading ? (
+          <Alert
+            type="info"
+            showIcon
+            message="Cargando catalogo bancario"
+            description="Validando bancos disponibles. Puedes esperar o registrar Otro banco."
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
+
+        {!bankInstitutionCatalogLoading && bankInstitutionCatalogError ? (
+          <Alert
+            type="warning"
+            showIcon
+            message="Catalogo bancario no disponible"
+            description={`${bankInstitutionCatalogError} Mientras tanto, solo conviene usar Otro banco.`}
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
+
+        {catalogUnavailable && !bankInstitutionCatalogError ? (
+          <Alert
+            type="warning"
+            showIcon
+            message="Catalogo bancario vacio"
+            description="No hay bancos activos cargados para Republica Dominicana. Usa Otro banco o revisa el catalogo."
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
+
+        <Form.Item
+          label="Banco"
+          name="bankCode"
+          rules={[
+            {
+              required: true,
+              message: 'Seleccione el banco de la cuenta.',
+            },
+          ]}
+        >
+          <Select
+            showSearch
+            optionFilterProp="label"
+            placeholder="Seleccione banco"
+            loading={bankInstitutionCatalogLoading}
+            notFoundContent={
+              bankInstitutionCatalogLoading
+                ? 'Cargando bancos...'
+                : 'No hay bancos disponibles.'
+            }
+            options={resolvedInstitutionOptions}
+          />
+        </Form.Item>
+
+        {isCustomBankSelected ? (
+          <Form.Item
+            label="Banco personalizado"
+            name="institutionCustomName"
+            rules={[
+              {
+                required: true,
+                message: 'Ingrese el nombre del banco.',
+              },
+              {
+                max: 80,
+                message: 'Use un nombre de banco mas corto.',
+              },
+            ]}
+          >
+            <Input placeholder="Ej. Banco multiple local" maxLength={80} />
+          </Form.Item>
+        ) : null}
 
         <Form.Item label="Tipo" name="type">
           <Select options={BANK_ACCOUNT_TYPES} />
