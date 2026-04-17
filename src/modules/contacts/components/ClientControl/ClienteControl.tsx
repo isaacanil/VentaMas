@@ -259,43 +259,38 @@ export const ClientControl = () => {
               disabled={ncfTypeLocked}
               placeholder="Selecciona comprobante"
               showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) => {
-                const optionLabel =
-                  typeof option?.children === 'string'
-                    ? option.children
-                    : String(option?.children ?? '');
-                return optionLabel.toLowerCase().includes(input.toLowerCase());
-              }}
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                typeof option?.label === 'string' &&
+                option.label.toLowerCase().includes(input.toLowerCase())
+              }
               title={comprobanteTooltipTitle}
-            >
-              <Select.OptGroup label="Comprobantes Fiscal">
-                {taxReceiptData.taxReceipt
-                  .filter((receipt) => !receipt.data?.disabled)
-                  .filter((receipt) => {
-                    const rawName = receipt?.data?.name || '';
-                    // Normalizar acentos
-                    const name = rawName
-                      .normalize('NFD')
-                      .replace(/\p{Diacritic}/gu, '')
-                      .toLowerCase();
-                    const serie = (receipt?.data?.serie || '')
-                      .toString()
-                      .padStart(2, '0');
-                    // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
-                    const containsNota = name.includes('nota');
-                    const containsCredito = name.includes('credito');
-                    const isCreditNoteBySerie = serie === '04';
-                    const isCreditNoteByName = containsNota && containsCredito;
-                    return !(isCreditNoteBySerie || isCreditNoteByName);
-                  })
-                  .map(({ data }, index) => (
-                    <Select.Option value={data.name} key={index}>
-                      {data.name}
-                    </Select.Option>
-                  ))}
-              </Select.OptGroup>
-            </Select>
+              options={[
+                {
+                  label: 'Comprobantes Fiscal',
+                  options: taxReceiptData.taxReceipt
+                    .filter((receipt) => !receipt.data?.disabled)
+                    .filter((receipt) => {
+                      const rawName = receipt?.data?.name || '';
+                      // Normalizar acentos
+                      const name = rawName
+                        .normalize('NFD')
+                        .replace(/\p{Diacritic}/gu, '')
+                        .toLowerCase();
+                      const serie = (receipt?.data?.serie || '')
+                        .toString()
+                        .padStart(2, '0');
+                      // Regla principal: excluir serie 04 (Notas de Crédito en RD) o nombres que contengan ambos tokens
+                      const containsNota = name.includes('nota');
+                      const containsCredito = name.includes('credito');
+                      const isCreditNoteBySerie = serie === '04';
+                      const isCreditNoteByName = containsNota && containsCredito;
+                      return !(isCreditNoteBySerie || isCreditNoteByName);
+                    })
+                    .map(({ data }) => ({ value: data.name, label: data.name })),
+                },
+              ]}
+            />
           )}
 
           {business?.businessType === 'pharmacy' && (

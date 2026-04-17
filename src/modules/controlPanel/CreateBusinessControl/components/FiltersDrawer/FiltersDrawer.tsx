@@ -121,13 +121,8 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               handleFilterChange('province', value ?? '')
             }
             allowClear
-          >
-            {availableProvinces.map((province) => (
-              <Select.Option key={province} value={province}>
-                {province}
-              </Select.Option>
-            ))}
-          </Select>
+            options={availableProvinces.map((province) => ({ value: province, label: province }))}
+          />
         </div>
 
         <div>
@@ -143,19 +138,18 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               handleFilterChange('country', value ?? '')
             }
             allowClear
-          >
-            {availableCountries.map((country) => (
-              <Select.Option key={country} value={country}>
-                {country === 'do'
+            options={availableCountries.map((country) => ({
+              value: country,
+              label:
+                country === 'do'
                   ? 'República Dominicana'
                   : country === 'co'
                     ? 'Colombia'
                     : country === 'us'
                       ? 'Estados Unidos'
-                      : country}
-              </Select.Option>
-            ))}
-          </Select>
+                      : country,
+            }))}
+          />
         </div>
 
         <div>
@@ -171,19 +165,18 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               handleFilterChange('businessType', value ?? '')
             }
             allowClear
-          >
-            {availableBusinessTypes.map((type) => (
-              <Select.Option key={type} value={type}>
-                {type === 'general'
+            options={availableBusinessTypes.map((type) => ({
+              value: type,
+              label:
+                type === 'general'
                   ? 'General'
                   : type === 'pharmacy'
                     ? 'Farmacia'
                     : type === 'restaurant'
                       ? 'Restaurante'
-                      : type}
-              </Select.Option>
-            ))}
-          </Select>
+                      : type,
+            }))}
+          />
         </div>
 
         <div>
@@ -200,11 +193,12 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
             onChange={(value: OwnerStateFilter) =>
               handleFilterChange('ownerState', value)
             }
-          >
-            <Select.Option value="all">Todos</Select.Option>
-            <Select.Option value="with_owner">Con dueño</Select.Option>
-            <Select.Option value="without_owner">Sin dueño</Select.Option>
-          </Select>
+            options={[
+              { value: 'all', label: 'Todos' },
+              { value: 'with_owner', label: 'Con dueño' },
+              { value: 'without_owner', label: 'Sin dueño' },
+            ]}
+          />
         </div>
 
         <div>
@@ -223,13 +217,11 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
               handleFilterChange('subscriptionStatus', value ?? '')
             }
             allowClear
-          >
-            {availableSubscriptionStatuses.map((status) => (
-              <Select.Option key={status} value={status}>
-                {getSubscriptionStatusLabel(status)}
-              </Select.Option>
-            ))}
-          </Select>
+            options={availableSubscriptionStatuses.map((status) => ({
+              value: status,
+              label: getSubscriptionStatusLabel(status),
+            }))}
+          />
         </div>
 
         <div>
@@ -244,24 +236,31 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
             style={{ width: '100%' }}
             value={filters.sortBy}
             onChange={(value: SortBy) => handleFilterChange('sortBy', value)}
-          >
-            <Select.Option value="newest">
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <FontAwesomeIcon icon={faSortAmountDown} />
-                <span>Más recientes primero</span>
-              </div>
-            </Select.Option>
-            <Select.Option value="oldest">
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <FontAwesomeIcon icon={faSortAmountUp} />
-                <span>Más antiguos primero</span>
-              </div>
-            </Select.Option>
-          </Select>
+            options={[
+              {
+                value: 'newest',
+                label: (
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <FontAwesomeIcon icon={faSortAmountDown} />
+                    <span>Más recientes primero</span>
+                  </div>
+                ),
+              },
+              {
+                value: 'oldest',
+                label: (
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <FontAwesomeIcon icon={faSortAmountUp} />
+                    <span>Más antiguos primero</span>
+                  </div>
+                ),
+              },
+            ]}
+          />
         </div>
       </Space>
     </Drawer>

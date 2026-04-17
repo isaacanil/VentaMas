@@ -285,16 +285,16 @@ const DueDateConfig = () => {
             }}
             placeholder="Selecciona un plazo"
             dropdownStyle={{ minWidth: '240px' }}
-          >
-            {options.map((opt: any) => (
-              <Select.Option key={opt.value} value={opt.value}>
+            options={options.map((opt: any) => ({
+              value: opt.value,
+              label: (
                 <OptionLabel>
                   <span className="period">{opt.label}</span>
                   <span className="desc">{opt.sub}</span>
                 </OptionLabel>
-              </Select.Option>
-            ))}
-          </Select>
+              ),
+            }))}
+          />
 
           {useCustomConfig && (
             <div style={{ marginTop: '20px' }}>

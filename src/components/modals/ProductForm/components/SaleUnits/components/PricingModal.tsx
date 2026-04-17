@@ -36,26 +36,18 @@ const PricingModal = ({ visible, unit, onClose }: PricingModalProps) => {
       ]}
     >
       {unit ? (
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Costo">
-            ${unit.pricing.cost.toFixed(2)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Precio">
-            ${unit.pricing.price.toFixed(2)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Precio de Lista">
-            ${unit.pricing.listPrice.toFixed(2)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Precio Promedio">
-            ${unit.pricing.avgPrice.toFixed(2)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Precio Mínimo">
-            ${unit.pricing.minPrice.toFixed(2)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Impuesto">
-            {formatTax(unit.pricing.tax)}
-          </Descriptions.Item>
-        </Descriptions>
+        <Descriptions
+          bordered
+          column={1}
+          items={[
+            { key: 'costo', label: 'Costo', children: `$${unit.pricing.cost.toFixed(2)}` },
+            { key: 'precio', label: 'Precio', children: `$${unit.pricing.price.toFixed(2)}` },
+            { key: 'lista', label: 'Precio de Lista', children: `$${unit.pricing.listPrice.toFixed(2)}` },
+            { key: 'promedio', label: 'Precio Promedio', children: `$${unit.pricing.avgPrice.toFixed(2)}` },
+            { key: 'minimo', label: 'Precio Mínimo', children: `$${unit.pricing.minPrice.toFixed(2)}` },
+            { key: 'impuesto', label: 'Impuesto', children: formatTax(unit.pricing.tax) },
+          ]}
+        />
       ) : (
         <p>No hay información disponible.</p>
       )}

@@ -337,15 +337,6 @@ export const AccountingSettingsForm = ({
       >
         <AccountingStack>
           <PanelSurface>
-            {accountingPanel === 'chart-of-accounts' && (
-              <PanelHeader>
-                <PanelHeaderLeft>
-                  <PanelTitle>{activePanelItem.label}</PanelTitle>
-                  <PanelDescription>{activePanelItem.description}</PanelDescription>
-                </PanelHeaderLeft>
-              </PanelHeader>
-            )}
-
             {(history.length > 0 || historyLoading) && (
               <HistoryLinkRow>
                 <Button
@@ -439,34 +430,3 @@ const PanelSurface = styled.div`
   min-height: 0;
 `;
 
-const PanelHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border: 1px solid var(--ds-color-border-default);
-  background: var(--ds-color-bg-surface);
-`;
-
-const PanelHeaderLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-`;
-
-const PanelTitle = styled.h2`
-  margin: 0;
-  font-size: var(--ds-font-size-lg);
-  line-height: var(--ds-line-height-tight);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-`;
-
-const PanelDescription = styled.p`
-  margin: 0;
-  font-size: var(--ds-font-size-base);
-  line-height: var(--ds-line-height-normal);
-  color: var(--ds-color-text-secondary);
-`;

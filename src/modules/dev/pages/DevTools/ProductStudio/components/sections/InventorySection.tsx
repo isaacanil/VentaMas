@@ -134,13 +134,11 @@ export const InventorySection = ({ domId }: InventorySectionProps) => (
               label="Unidad"
               style={{ marginBottom: 0, width: 140 }}
             >
-              <Select placeholder="Selecciona" disabled={!isSoldByWeight}>
-                {unitsOfMeasure.map((unit) => (
-                  <Select.Option key={unit.unit} value={unit.unit}>
-                    {unit.unit}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Select
+                placeholder="Selecciona"
+                disabled={!isSoldByWeight}
+                options={unitsOfMeasure.map((unit) => ({ value: unit.unit, label: unit.unit }))}
+              />
             </Form.Item>
           </CompactFields>
         );

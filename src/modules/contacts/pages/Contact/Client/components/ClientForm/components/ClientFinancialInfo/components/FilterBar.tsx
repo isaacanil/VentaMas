@@ -1,4 +1,4 @@
-import { Button } from 'antd';
+import { Button, Space } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -27,7 +27,7 @@ export const FilterBar = ({
 }: FilterBarProps) => {
   return (
     <Bar>
-      <Button.Group>
+      <Space.Compact>
         <Button
           type={filterStatus === 'open' ? 'primary' : 'default'}
           onClick={() => setFilterStatus('open')}
@@ -40,7 +40,7 @@ export const FilterBar = ({
         >
           Cerradas {closedAccountsCount}
         </Button>
-      </Button.Group>
+      </Space.Compact>
     </Bar>
   );
 };

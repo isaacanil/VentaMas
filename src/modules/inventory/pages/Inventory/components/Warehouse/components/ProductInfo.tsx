@@ -39,17 +39,31 @@ const ProductInfo = ({ product, loading }: ProductInfoProps) => {
         </>
       }
     >
-      <Descriptions column={2}>
-        <Descriptions.Item label="SKU">
-          <FontAwesomeIcon icon={faBarcode} style={{ marginRight: '8px' }} />
-          {product.sku || 'N/A'}
-        </Descriptions.Item>
-        <Descriptions.Item label="Categoría">
-          <FontAwesomeIcon icon={faTag} style={{ marginRight: '8px' }} />
-          {product.category || 'N/A'}
-        </Descriptions.Item>
-        {/* Añade más detalles según necesites */}
-      </Descriptions>
+      <Descriptions
+        column={2}
+        items={[
+          {
+            key: 'sku',
+            label: 'SKU',
+            children: (
+              <>
+                <FontAwesomeIcon icon={faBarcode} style={{ marginRight: '8px' }} />
+                {product.sku || 'N/A'}
+              </>
+            ),
+          },
+          {
+            key: 'categoria',
+            label: 'Categoría',
+            children: (
+              <>
+                <FontAwesomeIcon icon={faTag} style={{ marginRight: '8px' }} />
+                {product.category || 'N/A'}
+              </>
+            ),
+          },
+        ]}
+      />
     </ProductCard>
   );
 };

@@ -85,11 +85,12 @@ export default function WarehouseLayout() {
             />
           )}
           {breadcrumbs.length > 1 && (
-            <StyledBreadcrumb>
-              {(breadcrumbs as BreadcrumbItem[]).map((crumb, index) => (
-                <Breadcrumb.Item key={index}>{crumb.title}</Breadcrumb.Item>
-              ))}
-            </StyledBreadcrumb>
+            <StyledBreadcrumb
+              items={(breadcrumbs as BreadcrumbItem[]).map((crumb, index) => ({
+                key: index,
+                title: crumb.title,
+              }))}
+            />
           )}
         </Header>
         <ContentContainer>

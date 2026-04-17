@@ -692,18 +692,11 @@ export const InsuranceAuthModal = () => {
                   placeholder="Seleccione la aseguradora"
                   loading={configLoading}
                   onChange={handleInsuranceChange}
-                  optionLabelProp="label"
-                >
-                  {insuranceConfigData?.map((insurance) => (
-                    <Select.Option
-                      key={insurance.id}
-                      value={insurance.id}
-                      label={insurance.insuranceCompanyName}
-                    >
-                      {insurance.insuranceCompanyName}
-                    </Select.Option>
-                  ))}
-                </Select>
+                  options={insuranceConfigData?.map((insurance) => ({
+                    value: insurance.id,
+                    label: insurance.insuranceCompanyName,
+                  }))}
+                />
               </Form.Item>
             </Col>
             <Col>
@@ -720,19 +713,12 @@ export const InsuranceAuthModal = () => {
                 <Select
                   placeholder="Seleccione el tipo de seguro"
                   disabled={!selectedInsurance || isFormDisabled}
-                  optionLabelProp="label"
                   onChange={handleInsuranceTypeChange}
-                >
-                  {insuranceTypes.map((type) => (
-                    <Select.Option
-                      key={type.id}
-                      value={type.id}
-                      label={type.type}
-                    >
-                      {type.type}
-                    </Select.Option>
-                  ))}
-                </Select>
+                  options={insuranceTypes.map((type) => ({
+                    value: type.id,
+                    label: type.type,
+                  }))}
+                />
               </Form.Item>
             </Col>
           </Row>

@@ -118,25 +118,26 @@ const StockInfoSummary = ({ stockData }: StockInfoSummaryProps) => {
       style={{ marginBottom: '0.5rem' }}
       contentStyle={{ padding: '4px 8px' }}
       labelStyle={{ padding: '4px 8px' }}
-    >
-      {(stockData as any).numberId && (
-        <Descriptions.Item label="Número de Lote">
-          {String((stockData as any).numberId ?? '')}
-        </Descriptions.Item>
-      )}
-      <Descriptions.Item label="Cantidad Total">
-        {(stockData as any).quantity} unidades
-      </Descriptions.Item>
-      {expirationLabel && (
-        <Descriptions.Item label="Fecha de Vencimiento">
-          {expirationLabel}
-        </Descriptions.Item>
-      )}
-      <Descriptions.Item label="Ubicaciones">
-        {(stockData as any).locations}{' '}
-        {(stockData as any).locations > 1 ? 'ubicaciones' : 'ubicación'}
-      </Descriptions.Item>
-    </Descriptions>
+      items={[
+        ...((stockData as any).numberId
+          ? [{ key: 'lote', label: 'Número de Lote', children: String((stockData as any).numberId ?? '') }]
+          : []),
+        { key: 'qty', label: 'Cantidad Total', children: `${(stockData as any).quantity} unidades` },
+        ...(expirationLabel
+          ? [{ key: 'exp', label: 'Fecha de Vencimiento', children: expirationLabel }]
+          : []),
+        {
+          key: 'loc',
+          label: 'Ubicaciones',
+          children: (
+            <>
+              {(stockData as any).locations}{' '}
+              {(stockData as any).locations > 1 ? 'ubicaciones' : 'ubicación'}
+            </>
+          ),
+        },
+      ]}
+    />
   );
 };
 

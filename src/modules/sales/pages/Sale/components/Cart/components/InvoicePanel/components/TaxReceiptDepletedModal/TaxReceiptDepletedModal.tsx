@@ -138,22 +138,20 @@ export const TaxReceiptDepletedModal = ({
                 typeof option?.label === 'string' &&
                 option.label.toLowerCase().includes(input.toLowerCase())
               }
-            >
-              {options.map((option) => (
-                <Select.Option
-                  key={option.value}
-                  value={option.value}
-                  label={option.label}
-                >
-                  <OptionLabel>
-                    <span>{option.label}</span>
-                    {option.remaining && (
-                      <RemainingTag>Quedan: {option.remaining}</RemainingTag>
-                    )}
-                  </OptionLabel>
-                </Select.Option>
-              ))}
-            </Select>
+              options={options.map((option) => ({
+                value: option.value,
+                label: option.label,
+                remaining: option.remaining,
+              }))}
+              optionRender={(opt) => (
+                <OptionLabel>
+                  <span>{opt.data.label as string}</span>
+                  {(opt.data as any).remaining && (
+                    <RemainingTag>Quedan: {(opt.data as any).remaining}</RemainingTag>
+                  )}
+                </OptionLabel>
+              )}
+            />
           </div>
         ) : (
           <Typography.Text type="secondary">

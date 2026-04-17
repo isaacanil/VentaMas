@@ -151,22 +151,22 @@ interface IndividualRecoveryTabProps {
 
 export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
   form,
-  watchedBusinessId,
+  watchedBusinessId = undefined,
   businessOptions,
   loadingBusinesses,
   invoiceOptions,
   loadingInvoices,
   handleSubmit,
   loading,
-  errorMessage,
+  errorMessage = null,
   showEmptyState,
   handleFetch,
-  activeQuery,
-  invoiceData,
+  activeQuery = null,
+  invoiceData = null,
   summary,
-  canonicalData,
+  canonicalData = null,
   failedOutboxTasks,
-  resolvedInvoiceId,
+  resolvedInvoiceId = null,
   snapshot,
   v2CreatedAtLabel,
   canonicalDateLabel,
@@ -181,16 +181,16 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
   availableTaskKeys,
   availableAutoRecoveryTasks,
   handleSingleAutoRecovery,
-  repairResult,
+  repairResult = null,
   linkedCashCounts,
-  intendedCashCountId,
-  effectiveResolvedCashCountId,
+  intendedCashCountId = null,
+  effectiveResolvedCashCountId = null,
   isCashCountLinked,
   statusTimeline,
-  resolvedInvoiceNumber,
-  canonicalInvoiceNumber,
-  invoiceCounterValue,
-  invoiceCounterUpdatedAt,
+  resolvedInvoiceNumber = null,
+  canonicalInvoiceNumber = null,
+  invoiceCounterValue = null,
+  invoiceCounterUpdatedAt = null,
   loadingInvoiceCounter,
   updatingInvoiceCounter,
   refreshInvoiceCounter,
@@ -338,7 +338,7 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
               <Statistic
                 title="Estado canonical"
                 value={
-                  canonicalData ? canonicalData.status || 'active' : 'No existe'
+                  canonicalData ? String(canonicalData.status ?? 'active') : 'No existe'
                 }
               />
             </Space>
@@ -485,38 +485,22 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
           )}
 
           <Card title="Detalles del snapshot">
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="NCF">
-                {snapshot?.ncf?.code || '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tipo NCF">
-                {snapshot?.ncf?.type || '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Cliente">
-                {snapshot?.client?.name || 'Sin cliente'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Creada (Invoice V2)">
-                {v2CreatedAtLabel}
-              </Descriptions.Item>
-              <Descriptions.Item label="Fecha en invoices">
-                {canonicalDateLabel}
-              </Descriptions.Item>
-              <Descriptions.Item label="Due date">
-                {snapshot?.dueDate ? formatDateTime(snapshot.dueDate) : '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Comentario">
-                {snapshot?.invoiceComment || '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="NCF reservado">
-                {snapshot?.ncf?.status || '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Cuadre previsto">
-                {intendedCashCountId || '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Cuadre registrado">
-                {effectiveResolvedCashCountId || '—'}
-              </Descriptions.Item>
-            </Descriptions>
+            <Descriptions
+              column={2}
+              bordered
+              items={[
+                { key: 'ncf', label: 'NCF', children: snapshot?.ncf?.code || '—' },
+                { key: 'ncf-tipo', label: 'Tipo NCF', children: snapshot?.ncf?.type || '—' },
+                { key: 'cliente', label: 'Cliente', children: snapshot?.client?.name || 'Sin cliente' },
+                { key: 'creada', label: 'Creada (Invoice V2)', children: v2CreatedAtLabel },
+                { key: 'fecha-invoices', label: 'Fecha en invoices', children: canonicalDateLabel },
+                { key: 'due-date', label: 'Due date', children: snapshot?.dueDate ? formatDateTime(snapshot.dueDate) : '—' },
+                { key: 'comentario', label: 'Comentario', children: snapshot?.invoiceComment || '—' },
+                { key: 'ncf-reservado', label: 'NCF reservado', children: snapshot?.ncf?.status || '—' },
+                { key: 'cuadre-previsto', label: 'Cuadre previsto', children: intendedCashCountId || '—' },
+                { key: 'cuadre-registrado', label: 'Cuadre registrado', children: effectiveResolvedCashCountId || '—' },
+              ]}
+            />
           </Card>
 
           <Card title="Factura en invoices">
@@ -577,19 +561,18 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
 
           <Card title="Historial de estados">
             {Array.isArray(statusTimeline) && statusTimeline.length > 0 ? (
-              <Timeline>
-                {statusTimeline.map((entry, idx) => (
-                  <Timeline.Item
-                    key={`${entry.status}-${idx}`}
-                    color={STATUS_COLORS[entry.status] || 'gray'}
-                  >
+              <Timeline
+                items={statusTimeline.map((entry, idx) => ({
+                  key: `${entry.status}-${idx}`,
+                  color: STATUS_COLORS[entry.status] || 'gray',
+                  children: (
                     <Space orientation="vertical" size={0}>
                       <Text strong>{entry.status}</Text>
                       <Text type="secondary">{formatDateTime(entry?.at)}</Text>
                     </Space>
-                  </Timeline.Item>
-                ))}
-              </Timeline>
+                  ),
+                }))}
+              />
             ) : (
               <Text type="secondary">Sin historial disponible.</Text>
             )}
@@ -773,18 +756,4 @@ IndividualRecoveryTab.propTypes = {
   updatingInvoiceNumber: PropTypes.bool.isRequired,
 };
 
-IndividualRecoveryTab.defaultProps = {
-  watchedBusinessId: undefined,
-  errorMessage: null,
-  activeQuery: null,
-  invoiceData: null,
-  canonicalData: null,
-  resolvedInvoiceId: null,
-  repairResult: null,
-  intendedCashCountId: null,
-  effectiveResolvedCashCountId: null,
-  resolvedInvoiceNumber: null,
-  canonicalInvoiceNumber: null,
-  invoiceCounterValue: null,
-  invoiceCounterUpdatedAt: null,
-};
+

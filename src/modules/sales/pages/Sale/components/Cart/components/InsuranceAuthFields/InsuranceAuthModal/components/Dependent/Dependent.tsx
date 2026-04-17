@@ -184,13 +184,16 @@ const Dependent = ({ form, onDependentChange }: DependentProps) => {
               { required: true, message: 'Por favor seleccione el parentesco' },
             ]}
           >
-            <Select placeholder="Seleccione el parentesco">
-              <Select.Option value="child">Hijo/a</Select.Option>
-              <Select.Option value="spouse">Cónyuge</Select.Option>
-              <Select.Option value="father">Padre</Select.Option>
-              <Select.Option value="mother">Madre</Select.Option>
-              <Select.Option value="other">Otro</Select.Option>
-            </Select>
+            <Select
+              placeholder="Seleccione el parentesco"
+              options={[
+                { value: 'child', label: 'Hijo/a' },
+                { value: 'spouse', label: 'Cónyuge' },
+                { value: 'father', label: 'Padre' },
+                { value: 'mother', label: 'Madre' },
+                { value: 'other', label: 'Otro' },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item

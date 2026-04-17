@@ -193,13 +193,8 @@ export const PeriodSelectionModal = ({
                 value={customUnit}
                 onChange={(value) => setCustomUnit(value)}
                 style={{ width: 120 }}
-              >
-                {TIME_UNITS.map((unit) => (
-                  <Select.Option key={unit.value} value={unit.value}>
-                    {unit.pluralLabel}
-                  </Select.Option>
-                ))}
-              </Select>
+                options={TIME_UNITS.map((unit) => ({ value: unit.value, label: unit.pluralLabel }))}
+              />
             </Space>
           </Card>
         )}

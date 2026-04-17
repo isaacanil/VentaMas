@@ -351,7 +351,7 @@ export const CreditNoteModal = () => {
   };
 
   const handleClientChange = (client: InvoiceClient | null) => {
-    setLocalState({ selectedClientId: client?.id || null });
+    setLocalState({ selectedClientId: client?.id != null ? String(client.id) : null });
     resetSelection();
     setLocalState({ selectedInvoiceId: null });
   };
@@ -575,65 +575,69 @@ export const CreditNoteModal = () => {
             defaultActiveKey="productos"
             type="card"
             size={isMobile ? 'small' : 'middle'}
-          >
-            {/* TAB: Productos */}
-            <Tabs.TabPane tab="Productos" key="productos">
-              <ProductsTab
-                currentInvoice={currentInvoice}
-                hasAvailableProducts={hasAvailableProducts}
-                selectAll={selectAll}
-                effectiveIsView={effectiveIsView}
-                onSelectAll={handleSelectAll}
-                searchText={searchText}
-                onSearchTextChange={handleSearchTextChange}
-                isMobile={isMobile}
-                filteredProducts={filteredProducts}
-                columns={columns}
-                selectedInvoiceId={effectiveSelectedInvoiceId}
-                selectedItems={selectedItems}
-                itemQuantities={itemQuantities}
-                existingItemQuantities={existingItemQuantities}
-                creditedQuantities={creditedQuantities}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onPageChange={(page) => setCurrentPage(page)}
-                onItemChange={handleItemChange}
-                onQuantityChange={handleQuantityChange}
-                subtotal={subtotal}
-                totalItbis={totalItbis}
-                totalAmount={totalAmount}
-                formatPrice={memoizedFormatPrice}
-              />
-            </Tabs.TabPane>
-
-            {/* TAB: Historial de Aplicaciones */}
-            {(effectiveIsView || effectiveIsEdit) &&
-              creditNoteApplications?.length > 0 && (
-                <Tabs.TabPane
-                  tab={`Historial (${creditNoteApplications?.length || 0})`}
-                  key="historial"
-                >
-                  <ApplicationHistoryTab
-                    creditNoteApplications={creditNoteApplications}
-                    applicationsLoading={applicationsLoading}
+            items={[
+              {
+                key: 'productos',
+                label: 'Productos',
+                children: (
+                  <ProductsTab
+                    currentInvoice={currentInvoice}
+                    hasAvailableProducts={hasAvailableProducts}
+                    selectAll={selectAll}
+                    effectiveIsView={effectiveIsView}
+                    onSelectAll={handleSelectAll}
+                    searchText={searchText}
+                    onSearchTextChange={handleSearchTextChange}
+                    isMobile={isMobile}
+                    filteredProducts={filteredProducts}
+                    columns={columns}
+                    selectedInvoiceId={effectiveSelectedInvoiceId}
+                    selectedItems={selectedItems}
+                    itemQuantities={itemQuantities}
+                    existingItemQuantities={existingItemQuantities}
+                    creditedQuantities={creditedQuantities}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    onPageChange={(page) => setCurrentPage(page)}
+                    onItemChange={handleItemChange}
+                    onQuantityChange={handleQuantityChange}
+                    subtotal={subtotal}
+                    totalItbis={totalItbis}
+                    totalAmount={totalAmount}
                     formatPrice={memoizedFormatPrice}
-                    creditNoteData={creditNoteData}
                   />
-                </Tabs.TabPane>
-              )}
-
-            {/* TAB: Notas Relacionadas */}
-            <Tabs.TabPane
-              tab={`Notas Relacionadas (${relatedCreditNotes.length})`}
-              key="relacionadas"
-            >
-              <RelatedNotesTab
-                relatedCreditNotes={relatedCreditNotes}
-                onNavigateNote={handleNavigateNote}
-                isMobile={isMobile}
-              />
-            </Tabs.TabPane>
-          </Tabs>
+                ),
+              },
+              ...((effectiveIsView || effectiveIsEdit) &&
+              creditNoteApplications?.length > 0
+                ? [
+                    {
+                      key: 'historial',
+                      label: `Historial (${creditNoteApplications?.length || 0})`,
+                      children: (
+                        <ApplicationHistoryTab
+                          creditNoteApplications={creditNoteApplications}
+                          applicationsLoading={applicationsLoading}
+                          formatPrice={memoizedFormatPrice}
+                          creditNoteData={creditNoteData}
+                        />
+                      ),
+                    },
+                  ]
+                : []),
+              {
+                key: 'relacionadas',
+                label: `Notas Relacionadas (${relatedCreditNotes.length})`,
+                children: (
+                  <RelatedNotesTab
+                    relatedCreditNotes={relatedCreditNotes}
+                    onNavigateNote={handleNavigateNote}
+                    isMobile={isMobile}
+                  />
+                ),
+              },
+            ]}
+          />
         )}
 
         <CreditNoteActions

@@ -29,13 +29,10 @@ export const WarrantyInfo = () => {
             marginBottom: 0,
           }}
         >
-          <Select placeholder="Unidad">
-            {warrantyOptions.map((option) => (
-              <Select.Option key={option?.value} value={option?.value}>
-                {option?.label}
-              </Select.Option>
-            ))}
-          </Select>
+          <Select
+            placeholder="Unidad"
+            options={warrantyOptions.map((option) => ({ value: option?.value, label: option?.label }))}
+          />
         </Form.Item>
       </Group>
     </Card>

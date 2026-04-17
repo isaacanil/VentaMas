@@ -147,13 +147,9 @@ export const InventoryInfo = ({ onSaveAdjustments }: InventoryInfoProps) => {
                 },
               ]}
             >
-              <Select>
-                {unitsOfMeasure.map((unit) => (
-                  <Select.Option key={unit.unit} value={unit.unit}>
-                    {unit.unit}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Select
+                options={unitsOfMeasure.map((unit) => ({ value: unit.unit, label: unit.unit }))}
+              />
             </Form.Item>
           </Col>
         ) : (

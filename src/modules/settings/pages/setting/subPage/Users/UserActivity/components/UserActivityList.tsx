@@ -55,22 +55,22 @@ export const UserActivityList = ({
 
   return (
     <ListWrapper>
-      <Timeline mode="left">
-        {activities.map((item) => (
-          <Timeline.Item
-            color={getColorForType(item.type)}
-            dot={getIconForType(item.type)}
-            key={item.id}
-            label={formatDateTime(item.timestamp)}
-          >
+      <Timeline
+        mode="left"
+        items={activities.map((item) => ({
+          color: getColorForType(item.type),
+          dot: getIconForType(item.type),
+          key: item.id,
+          label: formatDateTime(item.timestamp.getTime()),
+          children: (
             <ActivityContent>
               <Text strong>{getActionLabel(item)}</Text>
               <br />
               <Text type="secondary">{item.details}</Text>
             </ActivityContent>
-          </Timeline.Item>
-        ))}
-      </Timeline>
+          ),
+        }))}
+      />
     </ListWrapper>
   );
 };

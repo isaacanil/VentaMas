@@ -112,19 +112,19 @@ export const GenerateTab = ({
       <MainContent>
         <Form form={form} layout="vertical" style={{ width: '100%' }}>
           <Form.Item label="País">
-            <Select value={selectedStandard} onChange={onStandardChange}>
-              <Select.Option value="gs1rd">
-                República Dominicana (746)
-              </Select.Option>
-              <Select.Option value="gs1us">
-                Estados Unidos/Canadá (0)
-              </Select.Option>
-              <Select.Option value="gs1mx">México (750)</Select.Option>
-              <Select.Option value="gs1co">Colombia (770)</Select.Option>
-              <Select.Option value="gs1ar">Argentina (778)</Select.Option>
-              <Select.Option value="gs1cl">Chile (780)</Select.Option>
-              <Select.Option value="gs1pe">Perú (775)</Select.Option>
-            </Select>
+            <Select
+              value={selectedStandard}
+              onChange={onStandardChange}
+              options={[
+                { value: 'gs1rd', label: 'República Dominicana (746)' },
+                { value: 'gs1us', label: 'Estados Unidos/Canadá (0)' },
+                { value: 'gs1mx', label: 'México (750)' },
+                { value: 'gs1co', label: 'Colombia (770)' },
+                { value: 'gs1ar', label: 'Argentina (778)' },
+                { value: 'gs1cl', label: 'Chile (780)' },
+                { value: 'gs1pe', label: 'Perú (775)' },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: '8px' }}>
