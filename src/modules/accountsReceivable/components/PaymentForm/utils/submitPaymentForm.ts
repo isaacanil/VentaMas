@@ -59,6 +59,10 @@ export const isPaymentFormValidationError = (
 export const validatePaymentSubmission = (paymentDetails: PaymentDetails) => {
   const totalAmount = Number(paymentDetails.totalAmount) || 0;
   const totalPaid = Number(paymentDetails.totalPaid) || 0;
+  const thirdPartyWithholding = paymentDetails.thirdPartyWithholding ?? null;
+  const itbisWithheld = Number(thirdPartyWithholding?.itbisWithheld) || 0;
+  const incomeTaxWithheld =
+    Number(thirdPartyWithholding?.incomeTaxWithheld) || 0;
 
   if (totalAmount <= 0) {
     throw new Error('El monto total debe ser mayor a cero.');
@@ -98,6 +102,18 @@ export const validatePaymentSubmission = (paymentDetails: PaymentDetails) => {
 
   if (paymentDetails.comments.length > 500) {
     throw new Error('Los comentarios no pueden exceder los 500 caracteres.');
+  }
+
+  if (itbisWithheld < 0 || incomeTaxWithheld < 0) {
+    throw new Error('Las retenciones sufridas no pueden tener montos negativos.');
+  }
+
+  if (itbisWithheld > 0 || incomeTaxWithheld > 0) {
+    if (!thirdPartyWithholding?.retentionDate?.trim()) {
+      throw new Error(
+        'Debe indicar la fecha de retención cuando existan retenciones sufridas.',
+      );
+    }
   }
 };
 

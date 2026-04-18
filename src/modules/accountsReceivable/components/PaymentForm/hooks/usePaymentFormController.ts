@@ -482,6 +482,31 @@ export const usePaymentFormController = () => {
     dispatch(setPaymentDetails({ printReceipt: checked }));
   };
 
+  const handleThirdPartyWithholdingChange = useCallback(
+    (
+      field: 'retentionDate' | 'itbisWithheld' | 'incomeTaxWithheld',
+      value: string | number | null,
+    ) => {
+      const current = paymentDetails.thirdPartyWithholding ?? {
+        retentionDate: '',
+        itbisWithheld: 0,
+        incomeTaxWithheld: 0,
+      };
+      const nextValue =
+        field === 'retentionDate' ? (typeof value === 'string' ? value : '') : Number(value) || 0;
+
+      dispatch(
+        setPaymentDetails({
+          thirdPartyWithholding: {
+            ...current,
+            [field]: nextValue,
+          },
+        }),
+      );
+    },
+    [dispatch, paymentDetails.thirdPartyWithholding],
+  );
+
   return {
     autoCompleteModalState,
     autoCompleting,
@@ -501,6 +526,7 @@ export const usePaymentFormController = () => {
     handleRetryAutoCompleteWithSelectedReceipt,
     handleSelectTaxReceiptFromModal,
     handleSubmit,
+    handleThirdPartyWithholdingChange,
     invoiceToPrintRef,
     isOpen,
     isPrintableReceipt,

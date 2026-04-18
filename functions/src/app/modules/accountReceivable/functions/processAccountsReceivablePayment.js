@@ -149,6 +149,158 @@ const validatePaymentMethods = ({ expectedAmount, paymentMethods }) => {
   return normalizedMethods;
 };
 
+const toDateValue = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  if (value instanceof Timestamp) {
+    return value.toDate();
+  }
+  if (typeof value?.toDate === 'function') {
+    const normalized = value.toDate();
+    return normalized instanceof Date && !Number.isNaN(normalized.getTime())
+      ? normalized
+      : null;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const plainDateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (plainDateMatch) {
+      return new Date(
+        Date.UTC(
+          Number(plainDateMatch[1]),
+          Number(plainDateMatch[2]) - 1,
+          Number(plainDateMatch[3]),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+    }
+
+    const normalized = new Date(trimmed);
+    return Number.isNaN(normalized.getTime()) ? null : normalized;
+  }
+
+  return null;
+};
+
+const normalizeThirdPartyWithholding = (withholding) => {
+  const record = asRecord(withholding);
+  const retentionDate = toDateValue(record.retentionDate);
+  const itbisWithheld = roundToTwoDecimals(record.itbisWithheld);
+  const incomeTaxWithheld = roundToTwoDecimals(record.incomeTaxWithheld);
+
+  if (itbisWithheld < 0 || incomeTaxWithheld < 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Las retenciones sufridas no pueden tener montos negativos.',
+    );
+  }
+
+  if (itbisWithheld <= THRESHOLD && incomeTaxWithheld <= THRESHOLD) {
+    return null;
+  }
+
+  if (!retentionDate) {
+    throw new HttpsError(
+      'invalid-argument',
+      'Debe indicar la fecha de retención cuando existan retenciones sufridas.',
+    );
+  }
+
+  return {
+    retentionDate,
+    itbisWithheld,
+    incomeTaxWithheld,
+  };
+};
+
+const resolveInvoiceTotalsForWithholding = (invoice) => {
+  const invoiceData = asRecord(invoice?.data);
+  const total =
+    roundToTwoDecimals(invoiceData?.totalPurchase?.value) ||
+    roundToTwoDecimals(invoiceData?.totalPurchase);
+  const tax =
+    roundToTwoDecimals(invoiceData?.totalTaxes?.value) ||
+    roundToTwoDecimals(invoiceData?.totalTaxes);
+
+  return {
+    totalAmount: total,
+    taxAmount: tax,
+  };
+};
+
+const buildThirdPartyWithholdingDoc = ({
+  businessId,
+  paymentId,
+  receiptId,
+  paymentScope,
+  paymentOption,
+  clientId,
+  arId,
+  invoiceAggregate,
+  withholding,
+  now,
+}) => {
+  const invoice = invoiceAggregate?.invoice;
+  const invoiceData = asRecord(invoice?.data);
+  const client = asRecord(invoiceData?.client);
+  const { totalAmount, taxAmount } = resolveInvoiceTotalsForWithholding(invoice);
+
+  return {
+    id: paymentId,
+    businessId,
+    paymentId,
+    receiptId,
+    invoiceId: toCleanString(invoice?.id) ?? null,
+    arId: toCleanString(arId) ?? null,
+    clientId: toCleanString(clientId) ?? null,
+    documentNumber:
+      toCleanString(invoiceData?.numberID) ??
+      toCleanString(invoiceData?.id) ??
+      toCleanString(invoice?.id),
+    documentFiscalNumber:
+      toCleanString(invoiceData?.NCF) ??
+      toCleanString(invoiceData?.comprobante) ??
+      null,
+    issuedAt: toDateValue(invoiceData?.date) ?? now.toDate(),
+    retentionDate: Timestamp.fromDate(withholding.retentionDate),
+    itbisWithheld: withholding.itbisWithheld,
+    incomeTaxWithheld: withholding.incomeTaxWithheld,
+    totalAmount,
+    taxAmount,
+    counterparty: {
+      id:
+        toCleanString(client?.id) ??
+        toCleanString(invoiceData?.clientId) ??
+        null,
+      identification: {
+        number:
+          toCleanString(client?.rnc) ??
+          toCleanString(client?.personalID) ??
+          toCleanString(client?.personalId) ??
+          null,
+      },
+    },
+    status: 'recorded',
+    source: {
+      kind: 'accountsReceivablePayment',
+      paymentScope: toCleanString(paymentScope) ?? null,
+      paymentOption: toCleanString(paymentOption) ?? null,
+      paymentPath: `businesses/${businessId}/accountsReceivablePayments/${paymentId}`,
+      invoicePath: invoice?.id
+        ? `businesses/${businessId}/invoices/${invoice.id}`
+        : null,
+    },
+    createdAt: now,
+    updatedAt: now,
+  };
+};
+
 const assertPilotBankAccountsForPaymentMethods = async ({
   businessId,
   paymentMethods,
@@ -515,6 +667,9 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
   const accountingRolloutEnabled = isAccountingRolloutEnabledForBusiness(
     businessId,
   );
+  const thirdPartyWithholding = normalizeThirdPartyWithholding(
+    paymentDetails.thirdPartyWithholding,
+  );
   const totalPaid = roundToTwoDecimals(paymentDetails.totalPaid);
   const paymentMethods = normalizeActivePaymentMethods(
     paymentDetails.paymentMethods,
@@ -585,6 +740,13 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
     preorderId: toCleanString(paymentDetails.preorderId) || null,
     originStage: toCleanString(paymentDetails.originStage) || null,
     createdFrom: toCleanString(paymentDetails.createdFrom) || null,
+    thirdPartyWithholding: thirdPartyWithholding
+      ? {
+          retentionDate: thirdPartyWithholding.retentionDate.toISOString(),
+          itbisWithheld: thirdPartyWithholding.itbisWithheld,
+          incomeTaxWithheld: thirdPartyWithholding.incomeTaxWithheld,
+        }
+      : null,
     paymentMethods: paymentMethods.map((method) => ({
       method: toCleanString(method?.method)?.toLowerCase() || null,
       value: roundToTwoDecimals(method?.value),
@@ -666,6 +828,13 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
     cashCountId: cashCountState.cashCountId || null,
     receiptId,
   };
+  if (thirdPartyWithholding) {
+    basePayment.thirdPartyWithholding = {
+      retentionDate: Timestamp.fromDate(thirdPartyWithholding.retentionDate),
+      itbisWithheld: thirdPartyWithholding.itbisWithheld,
+      incomeTaxWithheld: thirdPartyWithholding.incomeTaxWithheld,
+    };
+  }
   if (pilotMonetarySnapshot) {
     basePayment.monetary = pilotMonetarySnapshot;
   }
@@ -862,6 +1031,38 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       );
     }
 
+    const withholdingDoc = thirdPartyWithholding
+      ? (() => {
+          if (invoiceAggregates.size !== 1) {
+            throw new HttpsError(
+              'failed-precondition',
+              'Las retenciones sufridas solo se pueden registrar cuando el cobro impacta una sola factura.',
+            );
+          }
+
+          const [invoiceAggregate] = Array.from(invoiceAggregates.values());
+          if (!invoiceAggregate?.invoice) {
+            throw new HttpsError(
+              'failed-precondition',
+              'No se pudo resolver la factura asociada para registrar la retención sufrida.',
+            );
+          }
+
+          return buildThirdPartyWithholdingDoc({
+            businessId,
+            paymentId,
+            receiptId,
+            paymentScope,
+            paymentOption,
+            clientId,
+            arId,
+            invoiceAggregate,
+            withholding: thirdPartyWithholding,
+            now,
+          });
+        })()
+      : null;
+
     const change = roundToTwoDecimals(Math.max(remainingAmount, 0));
     const appliedAmount = roundToTwoDecimals(
       Math.max(appliedDocumentAmount - change, 0),
@@ -937,6 +1138,14 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
       db.doc(`businesses/${businessId}/accountsReceivablePayments/${paymentId}`),
       payment,
     );
+    if (withholdingDoc) {
+      transaction.set(
+        db.doc(
+          `businesses/${businessId}/salesThirdPartyWithholdings/${withholdingDoc.id}`,
+        ),
+        withholdingDoc,
+      );
+    }
     if (appliedAmount > THRESHOLD) {
       transaction.set(
         clientRef,

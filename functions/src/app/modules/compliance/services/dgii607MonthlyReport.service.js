@@ -113,6 +113,9 @@ const resolveInvoicePayload = (invoiceDoc) =>
 const resolveCreditNotePayload = (creditNoteDoc) =>
   isRecord(creditNoteDoc?.data) ? creditNoteDoc.data : creditNoteDoc;
 
+const resolveWithholdingPayload = (withholdingDoc) =>
+  isRecord(withholdingDoc?.data) ? withholdingDoc.data : withholdingDoc;
+
 const toRecordPeriodKey = (record) => {
   const issuedAt = toCleanString(record?.issuedAt) ?? toCleanString(record?.createdAt);
   return issuedAt?.slice(0, 7) ?? null;
@@ -257,6 +260,76 @@ export const mapCreditNoteDocToDgii607Record = ({
   };
 };
 
+export const mapThirdPartyWithholdingDocToDgii607Record = ({
+  businessId,
+  withholdingId,
+  withholdingDoc,
+}) => {
+  const withholdingData = resolveWithholdingPayload(withholdingDoc);
+  const issuedAt = toDate(withholdingData?.issuedAt);
+  const retentionDate = toDate(withholdingData?.retentionDate);
+  const total =
+    toFiniteNumber(withholdingData?.totalAmount) ??
+    toFiniteNumber(withholdingData?.totals?.total);
+  const tax =
+    toFiniteNumber(withholdingData?.taxAmount) ??
+    toFiniteNumber(withholdingData?.totals?.tax);
+  const itbisWithheld = toFiniteNumber(withholdingData?.itbisWithheld) ?? 0;
+  const incomeTaxWithheld =
+    toFiniteNumber(withholdingData?.incomeTaxWithheld) ?? 0;
+
+  return {
+    businessId,
+    issuedAt: issuedAt?.toISOString() ?? null,
+    retentionDate: retentionDate?.toISOString() ?? null,
+    documentNumber:
+      toCleanString(withholdingData?.documentNumber) ??
+      toCleanString(withholdingData?.invoiceNumber) ??
+      toCleanString(withholdingId),
+    invoiceId: toCleanString(withholdingData?.invoiceId) ?? null,
+    counterparty: {
+      id:
+        toCleanString(withholdingData?.counterparty?.id) ??
+        toCleanString(withholdingData?.clientId) ??
+        null,
+      identification: {
+        number:
+          toCleanString(
+            withholdingData?.counterparty?.identification?.number,
+          ) ?? null,
+      },
+    },
+    clientId:
+      toCleanString(withholdingData?.counterparty?.id) ??
+      toCleanString(withholdingData?.clientId) ??
+      null,
+    data: {
+      NCF:
+        toCleanString(withholdingData?.documentFiscalNumber) ??
+        toCleanString(withholdingData?.ncf) ??
+        null,
+    },
+    totals: {
+      total,
+      tax,
+    },
+    itbisWithheld,
+    incomeTaxWithheld,
+    paymentBreakdown: {
+      creditSale: total ?? 0,
+    },
+    status: toCleanString(withholdingData?.status) ?? 'recorded',
+    metadata: {
+      recordId: withholdingId,
+      sourcePath: `businesses/${businessId}/salesThirdPartyWithholdings/${withholdingId}`,
+      invoiceId: toCleanString(withholdingData?.invoiceId) ?? null,
+      paymentId: toCleanString(withholdingData?.paymentId) ?? null,
+      invoiceSourcePath:
+        toCleanString(withholdingData?.source?.invoicePath) ?? null,
+    },
+  };
+};
+
 const buildIssueSummary = (issues) =>
   issues.reduce(
     (summary, issue) => {
@@ -289,6 +362,9 @@ const buildSourceRecordsSnapshot = (records = []) =>
     invoiceId: record?.invoiceId ?? record?.metadata?.invoiceId ?? null,
     invoiceNcf: record?.metadata?.invoiceNcf ?? null,
     issuedAt: record?.issuedAt ?? record?.createdAt ?? null,
+    retentionDate: record?.retentionDate ?? null,
+    itbisWithheld: record?.itbisWithheld ?? null,
+    incomeTaxWithheld: record?.incomeTaxWithheld ?? null,
     status: record?.status ?? null,
   }));
 
@@ -376,6 +452,96 @@ const loadLinkedInvoicesById = async ({
   };
 };
 
+export const loadDgii607Datasets = async ({
+  businessId,
+  periodKey,
+  firestore = db,
+}) => {
+  const normalizedBusinessId = toCleanString(businessId);
+  if (!normalizedBusinessId) {
+    throw new Error('businessId es requerido para validar DGII_607');
+  }
+
+  const { periodKey: normalizedPeriodKey, start, endExclusive } =
+    resolveMonthlyPeriodRange(periodKey);
+
+  const invoicesRef = firestore.collection(
+    `businesses/${normalizedBusinessId}/invoices`,
+  );
+  const creditNotesRef = firestore.collection(
+    `businesses/${normalizedBusinessId}/creditNotes`,
+  );
+  const withholdingsRef = firestore.collection(
+    `businesses/${normalizedBusinessId}/salesThirdPartyWithholdings`,
+  );
+
+  const [invoicesSnap, creditNotesSnap, withholdingsSnap] = await Promise.all([
+    invoicesRef
+      .where('data.date', '>=', start)
+      .where('data.date', '<', endExclusive)
+      .orderBy('data.date', 'asc')
+      .get(),
+    creditNotesRef
+      .where('createdAt', '>=', start)
+      .where('createdAt', '<', endExclusive)
+      .orderBy('createdAt', 'asc')
+      .get(),
+    withholdingsRef
+      .where('retentionDate', '>=', start)
+      .where('retentionDate', '<', endExclusive)
+      .orderBy('retentionDate', 'asc')
+      .get(),
+  ]);
+
+  const mappedInvoices = invoicesSnap.docs.map((doc) =>
+    mapInvoiceDocToDgii607Record({
+      businessId: normalizedBusinessId,
+      invoiceId: doc.id,
+      invoiceDoc: doc.data(),
+    }),
+  );
+  const mappedCreditNotes = creditNotesSnap.docs.map((doc) =>
+    mapCreditNoteDocToDgii607Record({
+      businessId: normalizedBusinessId,
+      creditNoteId: doc.id,
+      creditNoteDoc: doc.data(),
+    }),
+  );
+  const mappedWithholdings = withholdingsSnap.docs.map((doc) =>
+    mapThirdPartyWithholdingDocToDgii607Record({
+      businessId: normalizedBusinessId,
+      withholdingId: doc.id,
+      withholdingDoc: doc.data(),
+    }),
+  );
+
+  const invoiceRecords = splitDgii607Records(mappedInvoices);
+  const creditNoteRecords = splitDgii607Records(mappedCreditNotes);
+  const withholdingRecords = splitDgii607Records(mappedWithholdings);
+
+  return {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    rawSnapshots: {
+      invoices: invoicesSnap,
+      creditNotes: creditNotesSnap,
+      thirdPartyWithholdings: withholdingsSnap,
+    },
+    datasets: {
+      invoices: invoiceRecords.included,
+      creditNotes: creditNoteRecords.included,
+      thirdPartyWithholdings: withholdingRecords.included,
+    },
+    excludedRecords: {
+      invoices: invoiceRecords.excluded,
+      creditNotes: creditNoteRecords.excluded,
+      thirdPartyWithholdings: withholdingRecords.excluded,
+    },
+  };
+};
+
 const buildCreditNoteCrossReferenceIssues = ({
   creditNotes,
   linkedInvoicesById,
@@ -451,59 +617,18 @@ export const buildDgii607ValidationPreview = async ({
   periodKey,
   firestore = db,
 }) => {
-  const normalizedBusinessId = toCleanString(businessId);
-  if (!normalizedBusinessId) {
-    throw new Error('businessId es requerido para validar DGII_607');
-  }
-
-  const { periodKey: normalizedPeriodKey, start, endExclusive } =
-    resolveMonthlyPeriodRange(periodKey);
-
-  const invoicesRef = firestore.collection(
-    `businesses/${normalizedBusinessId}/invoices`,
-  );
-  const creditNotesRef = firestore.collection(
-    `businesses/${normalizedBusinessId}/creditNotes`,
-  );
-  const [invoicesSnap, creditNotesSnap] = await Promise.all([
-    invoicesRef
-      .where('data.date', '>=', start)
-      .where('data.date', '<', endExclusive)
-      .orderBy('data.date', 'asc')
-      .get(),
-    creditNotesRef
-      .where('createdAt', '>=', start)
-      .where('createdAt', '<', endExclusive)
-      .orderBy('createdAt', 'asc')
-      .get(),
-  ]);
-
-  const mappedInvoices = invoicesSnap.docs.map((doc) =>
-    mapInvoiceDocToDgii607Record({
-      businessId: normalizedBusinessId,
-      invoiceId: doc.id,
-      invoiceDoc: doc.data(),
-    }),
-  );
-  const mappedCreditNotes = creditNotesSnap.docs.map((doc) =>
-    mapCreditNoteDocToDgii607Record({
-      businessId: normalizedBusinessId,
-      creditNoteId: doc.id,
-      creditNoteDoc: doc.data(),
-    }),
-  );
-
-  const invoiceRecords = splitDgii607Records(mappedInvoices);
-  const creditNoteRecords = splitDgii607Records(mappedCreditNotes);
-
-  const datasets = {
-    invoices: invoiceRecords.included,
-    creditNotes: creditNoteRecords.included,
-  };
-  const excludedRecords = {
-    invoices: invoiceRecords.excluded,
-    creditNotes: creditNoteRecords.excluded,
-  };
+  const {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    datasets,
+    excludedRecords,
+  } = await loadDgii607Datasets({
+    businessId,
+    periodKey,
+    firestore,
+  });
 
   const { linkedInvoicesById, sourceSnapshot: linkedInvoicesSnapshot } =
     await loadLinkedInvoicesById({
@@ -544,13 +669,25 @@ export const buildDgii607ValidationPreview = async ({
         recordsLoaded: datasets.creditNotes.length,
         recordsExcluded: excludedRecords.creditNotes.length,
       },
+      thirdPartyWithholdings: {
+        periodStart: start.toISOString(),
+        periodEndExclusive: endExclusive.toISOString(),
+        recordsLoaded: datasets.thirdPartyWithholdings.length,
+        recordsExcluded: excludedRecords.thirdPartyWithholdings.length,
+      },
       linkedInvoices: linkedInvoicesSnapshot,
     },
     sourceRecords: {
       invoices: buildSourceRecordsSnapshot(datasets.invoices),
       creditNotes: buildSourceRecordsSnapshot(datasets.creditNotes),
+      thirdPartyWithholdings: buildSourceRecordsSnapshot(
+        datasets.thirdPartyWithholdings,
+      ),
       excludedInvoices: buildSourceRecordsSnapshot(excludedRecords.invoices),
       excludedCreditNotes: buildSourceRecordsSnapshot(excludedRecords.creditNotes),
+      excludedThirdPartyWithholdings: buildSourceRecordsSnapshot(
+        excludedRecords.thirdPartyWithholdings,
+      ),
       linkedInvoices: Object.values(linkedInvoicesById)
         .filter((entry) => entry?.exists && entry.record)
         .map((entry) => ({

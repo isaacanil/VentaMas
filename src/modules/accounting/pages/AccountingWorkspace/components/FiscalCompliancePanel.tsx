@@ -59,15 +59,75 @@ const REPORT_DESCRIPTIONS: Record<MonthlyComplianceReportCode, string> = {
   DGII_608: 'Comprobantes anulados y documentos cancelados.',
 };
 
-const getStatusTagColor = (status: string) => {
-  const tone = resolveMonthlyComplianceStatusTone(status);
-  if (tone === 'success') return 'success';
-  if (tone === 'warning') return 'warning';
-  return 'default';
-};
+const getStatusTone = (status: string) =>
+  resolveMonthlyComplianceStatusTone(status);
 
 const normalizeIssueLabel = (value: unknown) =>
   typeof value === 'string' && value.trim().length ? value : 'Sin detalle';
+
+const toOptionalIssueLabel = (value: unknown) =>
+  typeof value === 'string' && value.trim().length ? value.trim() : null;
+
+interface GroupedFiscalIssue {
+  key: string;
+  severity: string;
+  code: string;
+  sourceId: string;
+  documentNumber: string;
+  fields: string[];
+}
+
+const groupFiscalIssues = (issues: MonthlyComplianceRun['issues']) => {
+  const groups = new Map<
+    string,
+    {
+      severity: string;
+      code: string;
+      sourceId: string;
+      documentNumber: string;
+      fields: Set<string>;
+    }
+  >();
+
+  issues.forEach((issue) => {
+    const severity = normalizeIssueLabel(issue.severity);
+    const code = normalizeIssueLabel(issue.code);
+    const sourceId = normalizeIssueLabel(issue.sourceId);
+    const documentNumber = normalizeIssueLabel(issue.documentNumber);
+    const recordId = toOptionalIssueLabel(issue.recordId);
+    const fieldPath = toOptionalIssueLabel(issue.fieldPath);
+    const issueKey = [severity, code, sourceId, documentNumber, recordId ?? ''].join('|');
+    const existingGroup = groups.get(issueKey);
+
+    if (existingGroup) {
+      if (fieldPath) {
+        existingGroup.fields.add(translateFieldPath(fieldPath));
+      }
+      return;
+    }
+
+    groups.set(issueKey, {
+      severity,
+      code,
+      sourceId,
+      documentNumber,
+      fields: new Set(
+        fieldPath ? [translateFieldPath(fieldPath)] : [],
+      ),
+    });
+  });
+
+  return Array.from(groups.entries()).map(
+    ([key, group]): GroupedFiscalIssue => ({
+      key,
+      severity: group.severity,
+      code: group.code,
+      sourceId: group.sourceId,
+      documentNumber: group.documentNumber,
+      fields: Array.from(group.fields),
+    }),
+  );
+};
 
 const resolveReportOptionLabel = (reportCode: MonthlyComplianceReportCode) =>
   MONTHLY_COMPLIANCE_REPORT_OPTIONS.find(
@@ -94,7 +154,8 @@ export const FiscalCompliancePanel = ({
     string | null
   >(null);
   const [running, setRunning] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [exportingReportCode, setExportingReportCode] =
+    useState<MonthlyComplianceReportCode | null>(null);
   const { error, loading, runs } = useMonthlyComplianceRuns({
     businessId,
     enabled,
@@ -179,18 +240,18 @@ export const FiscalCompliancePanel = ({
     }
   };
 
-  const handleExportTxt = async () => {
+  const handleExportTxt = async (reportCode: MonthlyComplianceReportCode) => {
     if (!businessId) {
       void message.error('No hay negocio activo para exportar.');
       return;
     }
 
-    setExporting(true);
+    setExportingReportCode(reportCode);
     try {
       const result = await fbExportDgiiTxtReport({
         businessId,
         periodKey: effectivePeriodKey,
-        reportCode: 'DGII_607',
+        reportCode,
       });
 
       const blob = new Blob([result.content], {
@@ -204,7 +265,7 @@ export const FiscalCompliancePanel = ({
       setTimeout(() => URL.revokeObjectURL(url), 100);
 
       void message.success(
-        `${result.fileName} generado (${result.rowCount} filas).`,
+        `${REPORT_LABELS[reportCode]} generado: ${result.fileName} (${result.rowCount} filas).`,
       );
     } catch (error) {
       console.error('Error exportando TXT DGII:', error);
@@ -214,7 +275,7 @@ export const FiscalCompliancePanel = ({
           : 'No se pudo generar el archivo TXT.',
       );
     } finally {
-      setExporting(false);
+      setExportingReportCode(null);
     }
   };
 
@@ -243,11 +304,11 @@ export const FiscalCompliancePanel = ({
             >
               Generar borrador
             </Button>
-            {reportCode === 'DGII_607' ? (
+            {reportCode === 'DGII_607' || reportCode === 'DGII_608' ? (
               <Button
                 icon={<DownloadOutlined />}
-                loading={exporting}
-                onClick={() => void handleExportTxt()}
+                loading={exportingReportCode === reportCode}
+                onClick={() => void handleExportTxt(reportCode)}
               >
                 Exportar TXT
               </Button>
@@ -298,6 +359,7 @@ export const FiscalCompliancePanel = ({
                   key={run.id}
                   type="button"
                   $selected={run.id === selectedRun?.id}
+                  $tone={resolveMonthlyComplianceStatusTone(run.status)}
                   onClick={() =>
                     setSelectedRunIds((currentValue) => ({
                       ...currentValue,
@@ -309,9 +371,9 @@ export const FiscalCompliancePanel = ({
                     <strong>
                       {REPORT_LABELS[reportCode]} · v{run.version}
                     </strong>
-                    <Tag color={getStatusTagColor(run.status)}>
+                    <StatusTag $tone={getStatusTone(run.status)}>
                       {resolveMonthlyComplianceStatusLabel(run.status)}
-                    </Tag>
+                    </StatusTag>
                   </RunItemTop>
                   <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
                   <span>{run.validationSummary.totalIssues} issues</span>
@@ -369,13 +431,13 @@ export const FiscalCompliancePanel = ({
                         {REPORT_DESCRIPTIONS[reportCode]}
                       </ReportCardDescription>
                     </div>
-                    <Tag
-                      color={getStatusTagColor(latestRun?.status ?? 'default')}
+                    <StatusTag
+                      $tone={latestRun ? getStatusTone(latestRun.status) : 'neutral'}
                     >
                       {latestRun
                         ? resolveMonthlyComplianceStatusLabel(latestRun.status)
                         : 'Sin corrida'}
-                    </Tag>
+                    </StatusTag>
                   </ReportCardTop>
 
                   <ReportCardStats>
@@ -474,15 +536,16 @@ export const FiscalCompliancePanel = ({
                     key={run.id}
                     type="button"
                     $selected={run.id === selectedOverviewRun?.id}
+                    $tone={resolveMonthlyComplianceStatusTone(run.status)}
                     onClick={() => setSelectedOverviewRunId(run.id)}
                   >
                     <RunItemTop>
                       <strong>
                         {REPORT_LABELS[run.reportCode]} · v{run.version}
                       </strong>
-                      <Tag color={getStatusTagColor(run.status)}>
+                      <StatusTag $tone={getStatusTone(run.status)}>
                         {resolveMonthlyComplianceStatusLabel(run.status)}
-                      </Tag>
+                      </StatusTag>
                     </RunItemTop>
                     <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
                     <span>{run.validationSummary.totalIssues} issues</span>
@@ -532,11 +595,11 @@ export const FiscalCompliancePanel = ({
               >
                 Generar {REPORT_LABELS[activeTab]}
               </Button>
-              {activeTab === 'DGII_607' ? (
+              {activeTab === 'DGII_607' || activeTab === 'DGII_608' ? (
                 <Button
                   icon={<DownloadOutlined />}
-                  loading={exporting}
-                  onClick={() => void handleExportTxt()}
+                  loading={exportingReportCode === activeTab}
+                  onClick={() => void handleExportTxt(activeTab)}
                 >
                   Exportar TXT
                 </Button>
@@ -566,7 +629,10 @@ export const FiscalCompliancePanel = ({
 
 const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
   const sourceSnapshots = run.sourceSnapshot.sourceSnapshots;
-  const visibleIssues = run.issues.slice(0, 8);
+  const visibleIssues = useMemo(
+    () => groupFiscalIssues(run.issues).slice(0, 8),
+    [run.issues],
+  );
 
   return (
     <>
@@ -580,9 +646,9 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
             Creado {formatMonthlyComplianceRunDate(run.createdAt)}
           </SectionDescription>
         </div>
-        <Tag color={getStatusTagColor(run.status)}>
+        <StatusTag $tone={getStatusTone(run.status)}>
           {resolveMonthlyComplianceStatusLabel(run.status)}
-        </Tag>
+        </StatusTag>
       </DetailHeader>
 
       <MiniStats>
@@ -656,19 +722,27 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
         ) : (
           <IssueList>
             {visibleIssues.map((issue, index) => (
-              <IssueItem key={`${run.id}-issue-${index}`}>
+              <IssueItem key={`${run.id}-issue-${issue.key}-${index}`}>
                 <IssueTop>
                   <Tag color={issue.severity === 'error' ? 'error' : 'warning'}>
-                    {translateSeverity(normalizeIssueLabel(issue.severity))}
+                    {translateSeverity(issue.severity)}
                   </Tag>
-                  <strong>{translateIssueCode(normalizeIssueLabel(issue.code))}</strong>
+                  <strong>{translateIssueCode(issue.code)}</strong>
                 </IssueTop>
                 <IssueDetail>
-                  <IssueDetailChip>{translateSourceId(normalizeIssueLabel(issue.sourceId))}</IssueDetailChip>
+                  <IssueDetailChip>{translateSourceId(issue.sourceId)}</IssueDetailChip>
                   <span>·</span>
-                  <span>{translateFieldPath(normalizeIssueLabel(issue.fieldPath))}</span>
+                  <IssueDocNumber>
+                    Comprobante #{issue.documentNumber}
+                  </IssueDocNumber>
                 </IssueDetail>
-                <IssueDocNumber>Comprobante #{normalizeIssueLabel(issue.documentNumber)}</IssueDocNumber>
+                {issue.fields.length ? (
+                  <IssueFieldList>
+                    {issue.fields.map((field) => (
+                      <li key={`${issue.key}-${field}`}>{field}</li>
+                    ))}
+                  </IssueFieldList>
+                ) : null}
               </IssueItem>
             ))}
           </IssueList>
@@ -737,6 +811,36 @@ const StyledTabs = styled(Tabs)`
 
   .ant-tabs-content-holder {
     min-height: 0;
+  }
+`;
+
+const StatusTag = styled(Tag)<{
+  $tone: 'success' | 'warning' | 'neutral';
+}>`
+  && {
+    border-radius: var(--ds-radius-pill);
+    padding-inline: 10px;
+    font-weight: var(--ds-font-weight-medium);
+    margin-inline-end: 0;
+
+    ${({ $tone }) =>
+      $tone === 'success'
+        ? `
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+    `
+        : $tone === 'warning'
+          ? `
+      background: var(--ds-color-state-warning-subtle);
+      border: 1px solid var(--ds-color-state-warning);
+      color: var(--ds-color-state-warning-text);
+    `
+          : `
+      background: var(--ds-color-bg-surface-hover);
+      border: 1px solid var(--ds-color-border-subtle);
+      color: var(--ds-color-text-secondary);
+    `}
   }
 `;
 
@@ -943,31 +1047,60 @@ const RunsGrid = styled.div`
 const RunsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-2);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-bg-surface);
+  overflow: hidden;
 `;
 
-const RunItemButton = styled.button<{ $selected: boolean }>`
+const RunItemButton = styled.button<{
+  $selected: boolean;
+  $tone: 'success' | 'warning' | 'neutral';
+}>`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
   align-items: flex-start;
-  padding: var(--ds-space-3);
-  border: 1px solid
-    ${({ $selected }) =>
-      $selected
-        ? 'var(--ds-color-accent-primary)'
-        : 'var(--ds-color-border-default)'};
-  border-radius: var(--ds-radius-md);
+  width: 100%;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 0;
+  border-bottom: 1px solid var(--ds-color-border-subtle);
   background: ${({ $selected }) =>
     $selected
-      ? 'var(--ds-color-bg-surface-hover)'
-      : 'var(--ds-color-bg-surface)'};
+      ? 'var(--ds-color-action-primary-subtle)'
+      : 'rgba(17, 24, 39, 0.02)'};
   color: inherit;
   cursor: pointer;
+  position: relative;
+  z-index: ${({ $selected }) => ($selected ? 1 : 0)};
+  transition:
+    background-color 0.16s ease,
+    box-shadow 0.16s ease;
+  border-color: var(--ds-color-border-subtle);
+  box-shadow: none;
+
+  &:hover {
+    background: ${({ $selected }) =>
+      $selected
+        ? 'var(--ds-color-action-primary-subtle)'
+        : 'rgba(17, 24, 39, 0.06)'};
+    box-shadow: none;
+  }
 
   span {
     color: var(--ds-color-text-secondary);
     text-align: left;
+  }
+
+  strong {
+    color: ${({ $selected }) =>
+      $selected
+        ? 'var(--ds-color-action-primary)'
+        : 'var(--ds-color-text-primary)'};
+  }
+
+  &:last-child {
+    border-bottom: 0;
   }
 `;
 
@@ -1106,4 +1239,17 @@ const IssueDetailChip = styled.span`
 const IssueDocNumber = styled.span`
   font-size: var(--ds-font-size-xs);
   color: var(--ds-color-text-disabled);
+`;
+
+const IssueFieldList = styled.ul`
+  margin: 0;
+  padding-left: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  li {
+    color: var(--ds-color-text-secondary);
+    font-size: var(--ds-font-size-sm);
+  }
 `;

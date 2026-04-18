@@ -140,7 +140,19 @@ export interface InvoiceData {
   status?: string;
   type?: string;
   sourceOfPurchase?: string;
-  cancel?: { reason?: string; cancelledAt?: InvoiceTimestamp; user?: unknown };
+  cancel?: {
+    reason?: string;
+    reasonCode?: string;
+    reasonLabel?: string;
+    note?: string | null;
+    cancelledAt?: InvoiceTimestamp;
+    user?: unknown;
+  };
+  voidedAt?: InvoiceTimestamp;
+  voidReason?: string | null;
+  voidReasonCode?: string | null;
+  voidReasonLabel?: string | null;
+  voidReasonCatalogVersion?: string | null;
   updatedAt?: InvoiceTimestamp;
   userID?: string | null;
   user?: unknown;

@@ -65,6 +65,9 @@ describe('dgii608MonthlyReport.service', () => {
       },
       voidedAt: '2026-04-20T13:20:00.000Z',
       voidReason: 'Cliente desistió',
+      voidReasonCode: '06',
+      voidReasonLabel: 'Devolución de productos',
+      voidReasonCatalogVersion: 'dgii-608-v1-2025',
       status: 'voided',
       documentNumber: '15',
       metadata: {
@@ -97,6 +100,9 @@ describe('dgii608MonthlyReport.service', () => {
       createdAt: '2026-04-11T09:30:00.000Z',
       status: 'cancelled',
       reason: 'Error en monto',
+      voidReasonCode: '04',
+      voidReasonLabel: 'Corrección de la información',
+      voidReasonCatalogVersion: 'dgii-608-v1-2025',
       documentNumber: 'NC-2026-000009',
       metadata: {
         recordId: 'credit-note-1',
@@ -119,6 +125,7 @@ describe('dgii608MonthlyReport.service', () => {
                 voidedAt: {
                   toDate: () => new Date('2026-04-20T13:20:00.000Z'),
                 },
+                voidReasonCode: '04',
                 voidReason: 'Duplicada',
                 status: 'voided',
               },
@@ -151,6 +158,7 @@ describe('dgii608MonthlyReport.service', () => {
               },
               invoiceId: 'invoice-1',
               reason: 'Error en monto',
+              reasonCode: '04',
               status: 'cancelled',
             }),
           },
@@ -182,6 +190,10 @@ describe('dgii608MonthlyReport.service', () => {
       'voidedAt',
       'asc',
     );
+    expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
+      'data.cancel.cancelledAt',
+      'asc',
+    );
     expect(queries['businesses/business-1/creditNotes'].orderBy).toHaveBeenCalledWith(
       'createdAt',
       'asc',
@@ -200,6 +212,8 @@ describe('dgii608MonthlyReport.service', () => {
         invoiceId: null,
         issuedAt: '2026-04-20T13:20:00.000Z',
         reason: 'Duplicada',
+        reasonCode: '04',
+        reasonLabel: 'Corrección de la información',
         status: 'voided',
       },
     ]);
@@ -214,13 +228,15 @@ describe('dgii608MonthlyReport.service', () => {
         invoiceId: 'invoice-1',
         issuedAt: '2026-04-11T09:30:00.000Z',
         reason: 'Error en monto',
+        reasonCode: '04',
+        reasonLabel: 'Corrección de la información',
         status: 'cancelled',
       },
     ]);
   });
 
-  it('marca timestamp faltante cuando llega anulación legacy sin fecha', async () => {
-    const { collection } = createFirestoreMock({
+  it('incluye anulaciones legacy usando data.cancel.cancelledAt', async () => {
+    const { collection, queries } = createFirestoreMock({
       docsByCollectionPath: {
         'businesses/business-1/invoices': [
           {
@@ -231,8 +247,15 @@ describe('dgii608MonthlyReport.service', () => {
                 numberID: 'INV-001',
                 NCF: 'B01000000015',
                 voidedAt: null,
-                voidReason: 'Duplicada',
-                status: 'voided',
+                cancel: {
+                  cancelledAt: {
+                    toDate: () => new Date('2026-04-22T12:00:00.000Z'),
+                  },
+                  reason: 'Cliente desistió',
+                  reasonCode: '06',
+                  reasonLabel: 'Devolución de productos',
+                },
+                status: 'cancelled',
               },
             }),
           },
@@ -247,29 +270,25 @@ describe('dgii608MonthlyReport.service', () => {
       firestore: { collection },
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.issues).toEqual([
+    expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
+      'data.cancel.cancelledAt',
+      'asc',
+    );
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(result.sourceRecords.invoices).toEqual([
       {
-        sourceId: 'invoices',
         index: 0,
-        fieldPath: 'voidedAt',
-        code: 'missing-required-field',
-        severity: 'error',
         recordId: 'invoice-voided',
         sourcePath: 'businesses/business-1/invoices/invoice-voided',
         documentNumber: 'INV-001',
         documentFiscalNumber: 'B01000000015',
-      },
-      {
-        sourceId: 'invoices',
-        index: 0,
-        fieldPath: 'voidedAt',
-        code: 'missing-cancellation-timestamp',
-        severity: 'warning',
-        recordId: 'invoice-voided',
-        sourcePath: 'businesses/business-1/invoices/invoice-voided',
-        documentNumber: 'INV-001',
-        documentFiscalNumber: 'B01000000015',
+        invoiceId: null,
+        issuedAt: '2026-04-22T12:00:00.000Z',
+        reason: 'Cliente desistió',
+        reasonCode: '06',
+        reasonLabel: 'Devolución de productos',
+        status: 'cancelled',
       },
     ]);
   });

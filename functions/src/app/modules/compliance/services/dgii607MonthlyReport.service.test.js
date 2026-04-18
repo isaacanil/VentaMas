@@ -179,7 +179,7 @@ describe('dgii607MonthlyReport.service', () => {
                   toDate: () => new Date('2026-04-10T14:00:00.000Z'),
                 },
                 client: {
-                  id: 'client-1',
+                  id: '',
                   personalID: '',
                 },
                 totalPurchase: { value: 1180 },
@@ -208,6 +208,7 @@ describe('dgii607MonthlyReport.service', () => {
             }),
           },
         ],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
       },
     });
 
@@ -219,6 +220,9 @@ describe('dgii607MonthlyReport.service', () => {
 
     expect(collection).toHaveBeenCalledWith('businesses/business-1/invoices');
     expect(collection).toHaveBeenCalledWith('businesses/business-1/creditNotes');
+    expect(collection).toHaveBeenCalledWith(
+      'businesses/business-1/salesThirdPartyWithholdings',
+    );
     expect(queries['businesses/business-1/invoices'].where).toHaveBeenCalledTimes(2);
     expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
       'data.date',
@@ -230,76 +234,39 @@ describe('dgii607MonthlyReport.service', () => {
       'asc',
     );
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBe(true);
     expect(result.periodKey).toBe('2026-04');
-    expect(result.sourceSnapshots.invoices.recordsLoaded).toBe(1);
-    expect(result.sourceSnapshots.creditNotes.recordsLoaded).toBe(1);
+    expect(result.sourceSnapshots.invoices.recordsLoaded).toBe(0);
+    expect(result.sourceSnapshots.invoices.recordsExcluded).toBe(1);
+    expect(result.sourceSnapshots.creditNotes.recordsLoaded).toBe(0);
+    expect(result.sourceSnapshots.creditNotes.recordsExcluded).toBe(1);
+    expect(result.sourceSnapshots.thirdPartyWithholdings.recordsLoaded).toBe(0);
     expect(result.sourceSnapshots.linkedInvoices).toEqual({
       recordsRequested: 0,
       recordsResolved: 0,
       recordsMissing: 0,
     });
-    expect(result.pendingGaps).toContain(
-      'Las retenciones sufridas por terceros todavía no tienen una colección canónica dedicada en backend.',
-    );
-    expect(result.issues).toEqual([
+    expect(result.pendingGaps).toEqual([]);
+    expect(result.issues).toEqual([]);
+    expect(result.sourceRecords.invoices).toEqual([]);
+    expect(result.sourceRecords.creditNotes).toEqual([]);
+    expect(result.sourceRecords.excludedInvoices).toEqual([
       {
-        sourceId: 'invoices',
         index: 0,
-        fieldPath: 'counterparty.identification.number',
-        code: 'missing-required-field',
-        severity: 'error',
         recordId: 'invoice-1',
         sourcePath: 'businesses/business-1/invoices/invoice-1',
         documentNumber: 'INV-001',
         documentFiscalNumber: null,
-      },
-      {
-        sourceId: 'invoices',
-        index: 0,
-        fieldPath: 'data.NCF',
-        code: 'missing-required-field',
-        severity: 'error',
-        recordId: 'invoice-1',
-        sourcePath: 'businesses/business-1/invoices/invoice-1',
-        documentNumber: 'INV-001',
-        documentFiscalNumber: null,
-      },
-      {
-        sourceId: 'creditNotes',
-        index: 0,
-        fieldPath: 'invoiceId',
-        code: 'missing-required-field',
-        severity: 'error',
-        recordId: 'credit-note-1',
-        sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
-        documentNumber: 'NC-2026-000001',
-        documentFiscalNumber: null,
-      },
-      {
-        sourceId: 'creditNotes',
-        index: 0,
-        fieldPath: 'ncf',
-        code: 'missing-required-field',
-        severity: 'error',
-        recordId: 'credit-note-1',
-        sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
-        documentNumber: 'NC-2026-000001',
-        documentFiscalNumber: null,
-      },
-      {
-        sourceId: 'creditNotes',
-        index: 0,
-        fieldPath: 'totals.total',
-        code: 'missing-required-field',
-        severity: 'error',
-        recordId: 'credit-note-1',
-        sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
-        documentNumber: 'NC-2026-000001',
-        documentFiscalNumber: null,
+        invoiceId: null,
+        invoiceNcf: null,
+        issuedAt: '2026-04-10T14:00:00.000Z',
+        retentionDate: null,
+        itbisWithheld: null,
+        incomeTaxWithheld: null,
+        status: 'completed',
       },
     ]);
-    expect(result.sourceRecords.creditNotes).toEqual([
+    expect(result.sourceRecords.excludedCreditNotes).toEqual([
       {
         index: 0,
         recordId: 'credit-note-1',
@@ -309,14 +276,17 @@ describe('dgii607MonthlyReport.service', () => {
         invoiceId: null,
         invoiceNcf: null,
         issuedAt: '2026-04-12T10:00:00.000Z',
+        retentionDate: null,
+        itbisWithheld: null,
+        incomeTaxWithheld: null,
         status: 'issued',
       },
     ]);
     expect(result.issueSummary).toEqual({
-      total: 5,
-      bySeverity: { error: 5 },
-      bySource: { invoices: 2, creditNotes: 3 },
-      byCode: { 'missing-required-field': 5 },
+      total: 0,
+      bySeverity: {},
+      bySource: {},
+      byCode: {},
     });
   });
 
@@ -344,6 +314,7 @@ describe('dgii607MonthlyReport.service', () => {
             }),
           },
         ],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
       },
       docsByDocumentPath: {
         'businesses/business-1/invoices/invoice-prev': {
@@ -514,6 +485,7 @@ describe('dgii607MonthlyReport.service', () => {
             }),
           },
         ],
+        'businesses/business-1/salesThirdPartyWithholdings': [],
       },
       docsByDocumentPath: {
         'businesses/business-1/invoices/invoice-active': {
@@ -560,6 +532,9 @@ describe('dgii607MonthlyReport.service', () => {
         invoiceId: null,
         invoiceNcf: null,
         issuedAt: '2026-04-11T14:00:00.000Z',
+        retentionDate: null,
+        itbisWithheld: null,
+        incomeTaxWithheld: null,
         status: 'cancelled',
       },
     ]);
@@ -573,6 +548,9 @@ describe('dgii607MonthlyReport.service', () => {
         invoiceId: 'invoice-active',
         invoiceNcf: 'B01000000015',
         issuedAt: '2026-04-13T10:00:00.000Z',
+        retentionDate: null,
+        itbisWithheld: null,
+        incomeTaxWithheld: null,
         status: 'cancelled',
       },
     ]);
@@ -587,6 +565,7 @@ describe('dgii607MonthlyReport.service', () => {
           docsByCollectionPath: {
             'businesses/business-1/invoices': [],
             'businesses/business-1/creditNotes': [],
+            'businesses/business-1/salesThirdPartyWithholdings': [],
           },
         }),
       }),

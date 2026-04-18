@@ -1,5 +1,6 @@
 import { db } from '../../../core/config/firebase.js';
 import { validateDgiiMonthlyReportDataset } from './dgiiMonthlyReportValidation.service.js';
+import { resolveDgii608Reason } from './dgii608ReasonCatalog.service.js';
 
 const PERIOD_KEY_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -126,6 +127,8 @@ const buildSourceRecordsSnapshot = (records = []) =>
     issuedAt:
       record?.voidedAt ?? record?.createdAt ?? record?.issuedAt ?? null,
     reason: record?.voidReason ?? record?.reason ?? null,
+    reasonCode: record?.voidReasonCode ?? null,
+    reasonLabel: record?.voidReasonLabel ?? null,
     status: record?.status ?? null,
   }));
 
@@ -155,11 +158,31 @@ export const mapInvoiceDocToDgii608Record = ({
   invoiceDoc,
 }) => {
   const invoiceData = isRecord(invoiceDoc?.data) ? invoiceDoc.data : invoiceDoc;
-  const voidedAt = toDate(invoiceData?.voidedAt);
+  const cancelData = isRecord(invoiceData?.cancel) ? invoiceData.cancel : {};
+  const voidedAt = toDate(
+    invoiceData?.voidedAt ??
+      cancelData?.cancelledAt ??
+      invoiceData?.cancelledAt,
+  );
   const status =
     toCleanString(invoiceData?.status) ??
     toCleanString(invoiceDoc?.status) ??
     null;
+  const reason = resolveDgii608Reason({
+    reasonCode:
+      invoiceData?.voidReasonCode ??
+      cancelData?.reasonCode ??
+      invoiceData?.cancelReasonCode,
+    reasonLabel:
+      invoiceData?.voidReasonLabel ??
+      cancelData?.reasonLabel ??
+      invoiceData?.cancelReasonLabel,
+    reasonText:
+      invoiceData?.voidReason ??
+      cancelData?.reason ??
+      invoiceData?.reason ??
+      invoiceData?.cancelReason,
+  });
 
   return {
     data: {
@@ -169,10 +192,10 @@ export const mapInvoiceDocToDgii608Record = ({
         null,
     },
     voidedAt: voidedAt?.toISOString() ?? null,
-    voidReason:
-      toCleanString(invoiceData?.voidReason) ??
-      toCleanString(invoiceData?.reason) ??
-      null,
+    voidReason: reason.rawReason ?? null,
+    voidReasonCode: reason.code,
+    voidReasonLabel: reason.label,
+    voidReasonCatalogVersion: reason.catalogVersion,
     status,
     documentNumber:
       toCleanString(invoiceData?.numberID) ??
@@ -195,6 +218,20 @@ export const mapCreditNoteDocToDgii608Record = ({
     : creditNoteDoc;
   const createdAt = toDate(creditNoteData?.createdAt);
   const status = toCleanString(creditNoteData?.status) ?? null;
+  const reason = resolveDgii608Reason({
+    reasonCode:
+      creditNoteData?.voidReasonCode ??
+      creditNoteData?.reasonCode ??
+      creditNoteData?.cancelReasonCode,
+    reasonLabel:
+      creditNoteData?.voidReasonLabel ??
+      creditNoteData?.reasonLabel ??
+      creditNoteData?.cancelReasonLabel,
+    reasonText:
+      creditNoteData?.reason ??
+      creditNoteData?.voidReason ??
+      creditNoteData?.cancelReason,
+  });
 
   return {
     invoiceId:
@@ -204,10 +241,10 @@ export const mapCreditNoteDocToDgii608Record = ({
     ncf: toCleanString(creditNoteData?.ncf) ?? null,
     createdAt: createdAt?.toISOString() ?? null,
     status,
-    reason:
-      toCleanString(creditNoteData?.reason) ??
-      toCleanString(creditNoteData?.voidReason) ??
-      null,
+    reason: reason.rawReason ?? null,
+    voidReasonCode: reason.code,
+    voidReasonLabel: reason.label,
+    voidReasonCatalogVersion: reason.catalogVersion,
     documentNumber:
       toCleanString(creditNoteData?.number) ??
       toCleanString(creditNoteData?.numberID) ??
@@ -220,30 +257,7 @@ export const mapCreditNoteDocToDgii608Record = ({
   };
 };
 
-const buildLegacyTimestampGapIssue = ({
-  sourceId,
-  datasets,
-}) =>
-  datasets[sourceId].flatMap((record, index) => {
-    if (sourceId === 'invoices' && record?.voidedAt) {
-      return [];
-    }
-    if (sourceId === 'creditNotes' && record?.createdAt) {
-      return [];
-    }
-
-    return [
-      {
-        sourceId,
-        index,
-        fieldPath: sourceId === 'invoices' ? 'voidedAt' : 'createdAt',
-        code: 'missing-cancellation-timestamp',
-        severity: 'warning',
-      },
-    ];
-  });
-
-export const buildDgii608ValidationPreview = async ({
+export const loadDgii608Datasets = async ({
   businessId,
   periodKey,
   firestore = db,
@@ -263,11 +277,16 @@ export const buildDgii608ValidationPreview = async ({
     `businesses/${normalizedBusinessId}/creditNotes`,
   );
 
-  const [invoicesSnap, creditNotesSnap] = await Promise.all([
+  const [invoicesSnap, legacyInvoicesSnap, creditNotesSnap] = await Promise.all([
     invoicesRef
       .where('voidedAt', '>=', start)
       .where('voidedAt', '<', endExclusive)
       .orderBy('voidedAt', 'asc')
+      .get(),
+    invoicesRef
+      .where('data.cancel.cancelledAt', '>=', start)
+      .where('data.cancel.cancelledAt', '<', endExclusive)
+      .orderBy('data.cancel.cancelledAt', 'asc')
       .get(),
     creditNotesRef
       .where('createdAt', '>=', start)
@@ -276,39 +295,61 @@ export const buildDgii608ValidationPreview = async ({
       .get(),
   ]);
 
-  const datasets = {
-    invoices: invoicesSnap.docs
-      .map((doc) =>
-        mapInvoiceDocToDgii608Record({
-          businessId: normalizedBusinessId,
-          invoiceId: doc.id,
-          invoiceDoc: doc.data(),
-        }),
-      )
-      .filter((record) => isVoidedStatus(record.status)),
-    creditNotes: creditNotesSnap.docs
-      .map((doc) =>
-        mapCreditNoteDocToDgii608Record({
-          businessId: normalizedBusinessId,
-          creditNoteId: doc.id,
-          creditNoteDoc: doc.data(),
-        }),
-      )
-      .filter((record) => isVoidedStatus(record.status)),
+  const invoiceDocsById = new Map();
+  [...invoicesSnap.docs, ...legacyInvoicesSnap.docs].forEach((doc) => {
+    invoiceDocsById.set(doc.id, doc);
+  });
+
+  return {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    datasets: {
+      invoices: Array.from(invoiceDocsById.values())
+        .map((doc) =>
+          mapInvoiceDocToDgii608Record({
+            businessId: normalizedBusinessId,
+            invoiceId: doc.id,
+            invoiceDoc: doc.data(),
+          }),
+        )
+        .filter((record) => isVoidedStatus(record.status)),
+      creditNotes: creditNotesSnap.docs
+        .map((doc) =>
+          mapCreditNoteDocToDgii608Record({
+            businessId: normalizedBusinessId,
+            creditNoteId: doc.id,
+            creditNoteDoc: doc.data(),
+          }),
+        )
+        .filter((record) => isVoidedStatus(record.status)),
+    },
   };
+};
+
+export const buildDgii608ValidationPreview = async ({
+  businessId,
+  periodKey,
+  firestore = db,
+}) => {
+  const {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    datasets,
+  } = await loadDgii608Datasets({
+    businessId,
+    periodKey,
+    firestore,
+  });
 
   const validation = validateDgiiMonthlyReportDataset({
     reportCode: 'DGII_608',
     datasets,
   });
-  const timestampIssues = [
-    ...buildLegacyTimestampGapIssue({ sourceId: 'invoices', datasets }),
-    ...buildLegacyTimestampGapIssue({ sourceId: 'creditNotes', datasets }),
-  ];
-  const issues = enrichIssues(
-    [...validation.issues, ...timestampIssues],
-    datasets,
-  );
+  const issues = enrichIssues(validation.issues, datasets);
 
   return {
     ...validation,
@@ -333,10 +374,6 @@ export const buildDgii608ValidationPreview = async ({
     },
     issues,
     issueSummary: buildIssueSummary(issues),
-    pendingGaps: [
-      ...validation.pendingGaps,
-      'Las anulaciones legacy sin timestamp dedicado pueden quedar fuera del preview 608 hasta normalizar voidedAt/updatedAt.',
-    ],
   };
 };
 

@@ -86,10 +86,23 @@ export const DGII_MONTHLY_REPORTS = Object.freeze({
           'totals.total',
         ]),
       }),
+      Object.freeze({
+        sourceId: 'thirdPartyWithholdings',
+        collectionPath: 'businesses/{businessId}/salesThirdPartyWithholdings',
+        ownerModule: 'accountsReceivablePayment',
+        requiredFields: Object.freeze([
+          'invoiceId',
+          'retentionDate',
+          'data.NCF',
+          'counterparty.identification.number',
+          'totals.total',
+          'totals.tax',
+          'itbisWithheld',
+          'incomeTaxWithheld',
+        ]),
+      }),
     ]),
-    pendingGaps: Object.freeze([
-      'Las retenciones sufridas por terceros todavía no tienen una colección canónica dedicada en backend.',
-    ]),
+    pendingGaps: Object.freeze([]),
   }),
   DGII_608: Object.freeze({
     reportCode: 'DGII_608',
@@ -104,7 +117,7 @@ export const DGII_MONTHLY_REPORTS = Object.freeze({
         requiredFields: Object.freeze([
           'data.NCF',
           'voidedAt',
-          'voidReason',
+          'voidReasonCode',
           'status',
         ]),
       }),
@@ -117,13 +130,11 @@ export const DGII_MONTHLY_REPORTS = Object.freeze({
           'ncf',
           'createdAt',
           'status',
-          'reason',
+          'voidReasonCode',
         ]),
       }),
     ]),
-    pendingGaps: Object.freeze([
-      'Los motivos de anulación deben normalizarse a un catálogo DGII versionado antes de exportar 608.',
-    ]),
+    pendingGaps: Object.freeze([]),
   }),
 });
 

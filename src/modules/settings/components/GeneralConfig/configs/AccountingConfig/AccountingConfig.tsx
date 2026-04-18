@@ -75,7 +75,7 @@ export default function AccountingConfig() {
     businessId,
     enabled: settingsWorkspaceEnabled,
     functionalCurrency: config.functionalCurrency,
-    referencedAccountIdsRef,
+    referencedAccountIdsRef: referencedChartAccountIdsRef,
     userId,
   });
   const {

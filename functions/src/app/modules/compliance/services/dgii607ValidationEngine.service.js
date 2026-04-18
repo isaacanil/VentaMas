@@ -156,6 +156,28 @@ const resolvePaymentAmounts = (firestoreDoc, grossTotal) => {
   };
 
   const invoiceData = firestoreDoc?.data ?? firestoreDoc ?? {};
+  const paymentBreakdown = firestoreDoc?.paymentBreakdown;
+  if (paymentBreakdown && typeof paymentBreakdown === 'object') {
+    const overrideResult = {
+      ...result,
+    };
+
+    let assigned = 0;
+    for (const key of Object.keys(overrideResult)) {
+      const amount = Number(paymentBreakdown[key] ?? 0);
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      overrideResult[key] = amount;
+      assigned += amount;
+    }
+
+    const remainder = grossTotal - assigned;
+    if (remainder > 0.005) {
+      overrideResult.otherSales += remainder;
+    }
+
+    return overrideResult;
+  }
+
   const methods =
     (Array.isArray(invoiceData?.paymentMethod) && invoiceData.paymentMethod.length
       ? invoiceData.paymentMethod
@@ -243,10 +265,13 @@ export const buildDgii607Draft = ({
   const ncf = resolveRecordNcf(record);
   const modifiedNcf = isCredit ? (toCleanString(originalNcf) ?? '') : '';
   const issuedAt = record?.issuedAt ?? record?.createdAt ?? '';
+  const retentionDate = record?.retentionDate ?? '';
   const total = Number(record?.totals?.total) || 0;
   const tax = Number(record?.totals?.tax ?? record?.totals?.itbis ?? 0) || 0;
   const billedAmount = Math.max(0, total - tax);
-  const payments = resolvePaymentAmounts(firestoreDoc, total);
+  const payments = resolvePaymentAmounts(firestoreDoc ?? record, total);
+  const itbisWithheld = Number(record?.itbisWithheld) || 0;
+  const incomeTaxWithheld = Number(record?.incomeTaxWithheld) || 0;
 
   return {
     isCredit,
@@ -258,12 +283,12 @@ export const buildDgii607Draft = ({
       modifiedNcf,
       incomeType: '1',
       issuedDate: formatDate(issuedAt),
-      retentionDate: '',
+      retentionDate: formatDate(retentionDate),
       billedAmount: formatAmount(billedAmount),
       itbisBilled: formatAmount(tax),
-      itbisWithheld: '0.00',
+      itbisWithheld: formatAmount(itbisWithheld),
       itbisReceived: '0.00',
-      incomeTaxWithheld: '0.00',
+      incomeTaxWithheld: formatAmount(incomeTaxWithheld),
       incomeTaxReceived: '0.00',
       selectiveTax: '0.00',
       otherTaxes: '0.00',

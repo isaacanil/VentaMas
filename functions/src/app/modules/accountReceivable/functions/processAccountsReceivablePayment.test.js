@@ -99,6 +99,10 @@ vi.mock('../../../core/config/firebase.js', () => ({
       this.millis = millis;
     }
 
+    static fromDate(date) {
+      return new MockTimestamp(date.getTime());
+    }
+
     static now() {
       return new MockTimestamp(Date.parse('2026-04-13T09:00:00.000Z'));
     }

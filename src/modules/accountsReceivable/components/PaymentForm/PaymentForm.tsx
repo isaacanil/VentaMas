@@ -1,5 +1,6 @@
-import { Button, Checkbox, Form, Modal as PaymentModal, Select } from 'antd';
+import { Button, Checkbox, DatePicker, Form, InputNumber, Modal as PaymentModal, Select } from 'antd';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 import { ShowcaseList } from '@/components/ui/ShowCase/ShowcaseList';
 import { Receipt } from '@/modules/checkout/pages/checkout/Receipt';
@@ -36,6 +37,7 @@ export const PaymentForm = () => {
     handleRetryAutoCompleteWithSelectedReceipt,
     handleSelectTaxReceiptFromModal,
     handleSubmit,
+    handleThirdPartyWithholdingChange,
     invoiceToPrintRef,
     isOpen,
     isPrintableReceipt,
@@ -141,6 +143,64 @@ export const PaymentForm = () => {
 
             <PaymentFields />
 
+            {paymentDetails.paymentScope === 'account' ? (
+              <RetentionSection>
+                <RetentionTitle>Retenciones sufridas por terceros</RetentionTitle>
+                <RetentionFields>
+                  <Form.Item
+                    label="Fecha de retención"
+                    tooltip="Se reporta en 607 cuando el cliente retiene ITBIS o ISR."
+                  >
+                    <DatePicker
+                      allowClear
+                      format="YYYY-MM-DD"
+                      value={
+                        paymentDetails.thirdPartyWithholding?.retentionDate
+                          ? dayjs(paymentDetails.thirdPartyWithholding.retentionDate)
+                          : null
+                      }
+                      onChange={(value) =>
+                        handleThirdPartyWithholdingChange(
+                          'retentionDate',
+                          value ? value.format('YYYY-MM-DD') : '',
+                        )
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="ITBIS retenido">
+                    <InputNumber
+                      min={0}
+                      precision={2}
+                      style={{ width: '100%' }}
+                      value={paymentDetails.thirdPartyWithholding?.itbisWithheld ?? 0}
+                      onChange={(value) =>
+                        handleThirdPartyWithholdingChange(
+                          'itbisWithheld',
+                          typeof value === 'number' ? value : 0,
+                        )
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item label="ISR retenido">
+                    <InputNumber
+                      min={0}
+                      precision={2}
+                      style={{ width: '100%' }}
+                      value={
+                        paymentDetails.thirdPartyWithholding?.incomeTaxWithheld ?? 0
+                      }
+                      onChange={(value) =>
+                        handleThirdPartyWithholdingChange(
+                          'incomeTaxWithheld',
+                          typeof value === 'number' ? value : 0,
+                        )
+                      }
+                    />
+                  </Form.Item>
+                </RetentionFields>
+              </RetentionSection>
+            ) : null}
+
             {client?.id && client.id !== 'GC-0000' ? (
               <CreditSelector
                 clientId={client.id}
@@ -231,4 +291,23 @@ export const PaymentForm = () => {
 const FormWrapper = styled.div`
   display: grid;
   gap: 1em;
+`;
+
+const RetentionSection = styled.div`
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--ds-color-border-subtle, #d9d9d9);
+  border-radius: 12px;
+  background: var(--ds-color-bg-surface, #fff);
+`;
+
+const RetentionTitle = styled.span`
+  font-weight: 600;
+`;
+
+const RetentionFields = styled.div`
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 `;

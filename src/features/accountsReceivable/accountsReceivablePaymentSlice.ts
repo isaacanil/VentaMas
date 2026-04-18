@@ -26,6 +26,12 @@ interface CreditNotePayment {
   originalAmount: number;
 }
 
+interface ThirdPartyWithholding {
+  retentionDate: string;
+  itbisWithheld: number;
+  incomeTaxWithheld: number;
+}
+
 interface PaymentDetails {
   paymentScope: string;
   paymentOption: string;
@@ -37,6 +43,7 @@ interface PaymentDetails {
   totalPaid: number;
   printReceipt: boolean;
   creditNotePayment: CreditNotePayment[];
+  thirdPartyWithholding?: ThirdPartyWithholding | null;
   originType?: string;
   originId?: string;
   preorderId?: string;
@@ -123,6 +130,7 @@ const paymentDetailsTemplate: PaymentDetails = {
   totalPaid: 0.0, // Monto total pagado
   printReceipt: true, // Si se debe imprimir el recibo de pago
   creditNotePayment: [], // Notas de crédito aplicadas
+  thirdPartyWithholding: null,
 };
 
 const createDefaultPaymentDetails = (amount = 0): PaymentDetails => {
@@ -147,6 +155,7 @@ const createDefaultPaymentDetails = (amount = 0): PaymentDetails => {
     totalPaid: normalizedAmount > 0 ? normalizedAmount : 0,
     paymentMethods: methods,
     creditNotePayment: [],
+    thirdPartyWithholding: null,
   };
 };
 

@@ -14,6 +14,35 @@ import type { UserIdentity } from '@/types/users';
 
 import type { BusinessInfoData } from './fbGetBusinessInfo';
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+
+export const normalizeBusinessInfoForUpdate = (
+  businessInfo: BusinessInfoData,
+): BusinessInfoData => {
+  const normalizedBusinessInfo = {
+    ...businessInfo,
+  };
+
+  // Old business docs may still contain business.business nesting.
+  // Keeping that stale subtree makes readers prefer outdated values after save.
+  delete normalizedBusinessInfo.business;
+
+  const normalizedInvoice = isRecord(normalizedBusinessInfo.invoice)
+    ? { ...normalizedBusinessInfo.invoice }
+    : undefined;
+
+  if (normalizedInvoice && isRecord(normalizedInvoice.business)) {
+    delete normalizedInvoice.business;
+  }
+
+  if (normalizedInvoice) {
+    normalizedBusinessInfo.invoice = normalizedInvoice;
+  }
+
+  return normalizedBusinessInfo;
+};
+
 export const createBusiness = async (
   businessData: BusinessInfoData,
 ): Promise<{
@@ -84,7 +113,9 @@ export const fbUpdateBusinessInfo = async (
     const businessDoc = await getDoc(businessInfoRef);
 
     if (businessDoc.exists()) {
-      await updateDoc(businessInfoRef, { business: { ...businessInfo } });
+      await updateDoc(businessInfoRef, {
+        business: normalizeBusinessInfoForUpdate(businessInfo),
+      });
     }
   } catch (error) {
     console.error('Error updating business info:', error);

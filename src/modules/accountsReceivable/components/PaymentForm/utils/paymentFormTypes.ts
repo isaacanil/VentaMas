@@ -10,6 +10,12 @@ export type AccountsReceivablePaymentMethod = {
   name?: string;
 };
 
+export type ThirdPartyWithholding = {
+  retentionDate: string;
+  itbisWithheld: number;
+  incomeTaxWithheld: number;
+};
+
 export type PaymentDetails = {
   paymentScope: string;
   paymentOption: string;
@@ -22,6 +28,7 @@ export type PaymentDetails = {
   totalAmountDue?: number;
   printReceipt: boolean;
   creditNotePayment?: CreditNoteSelection[];
+  thirdPartyWithholding?: ThirdPartyWithholding | null;
   originType?: string;
   originId?: string;
   preorderId?: string;

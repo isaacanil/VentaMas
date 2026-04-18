@@ -92,6 +92,7 @@ describe('exportDgiiTxtReport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     collectionDocsByPath.clear();
+    collectionDocsByPath.set('businesses/business-1/salesThirdPartyWithholdings', []);
 
     resolveCallableAuthUidMock.mockResolvedValue('user-1');
     assertUserAccessMock.mockResolvedValue(undefined);
@@ -238,7 +239,7 @@ describe('exportDgiiTxtReport', () => {
     expect(result.ok).toBe(true);
     expect(result.fileName).toBe('607_101010101_202604.txt');
     expect(result.rowCount).toBe(3);
-    expect(lines[0]).toBe('607|101010101|202604');
+    expect(lines[0]).toBe('607|101010101|202604|000000000003');
     expect(detailLines).toHaveLength(3);
     expect(detailLines.every((line) => line.split('|').length === 23)).toBe(true);
     expect(detailLines.some((line) => line.includes('B0200000771'))).toBe(false);
@@ -341,5 +342,64 @@ describe('exportDgiiTxtReport', () => {
         },
       }),
     ).rejects.toThrow('RNC o cédula del emisor requerido.');
+  });
+
+  it('exporta TXT 608 con conteo y códigos de anulación DGII', async () => {
+    collectionDocsByPath.set('businesses/business-1/invoices', [
+      {
+        id: 'invoice-1',
+        data: () => ({
+          data: {
+            id: 'invoice-1',
+            numberID: 'INV-001',
+            NCF: 'B01000000015',
+            voidedAt: {
+              toDate: () => new Date('2026-04-20T13:20:00.000Z'),
+            },
+            voidReasonCode: '04',
+            voidReasonLabel: 'Corrección de la información',
+            status: 'voided',
+          },
+        }),
+      },
+    ]);
+    collectionDocsByPath.set('businesses/business-1/creditNotes', [
+      {
+        id: 'credit-note-1',
+        data: () => ({
+          id: 'credit-note-1',
+          number: 'NC-2026-000009',
+          ncf: 'B04000000009',
+          createdAt: {
+            toDate: () => new Date('2026-04-10T09:30:00.000Z'),
+          },
+          invoiceId: 'invoice-1',
+          reasonCode: '06',
+          reasonLabel: 'Devolución de productos',
+          reason: 'Cliente desistió',
+          status: 'cancelled',
+        }),
+      },
+    ]);
+
+    const result = await exportDgiiTxtReport({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+        reportCode: 'DGII_608',
+      },
+    });
+
+    const lines = result.content.split('\r\n');
+    const detailLines = lines.slice(1);
+
+    expect(result.ok).toBe(true);
+    expect(result.fileName).toBe('608_101010101_202604.txt');
+    expect(result.rowCount).toBe(2);
+    expect(lines[0]).toBe('608|101010101|202604|000002');
+    expect(detailLines).toEqual([
+      'B04000000009|20260410|06',
+      'B01000000015|20260420|04',
+    ]);
   });
 });

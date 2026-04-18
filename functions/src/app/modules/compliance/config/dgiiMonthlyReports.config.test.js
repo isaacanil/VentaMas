@@ -27,17 +27,19 @@ describe('dgiiMonthlyReports.config', () => {
     expect(definition?.pendingGaps).toEqual([]);
   });
 
-  it('marca explícitamente los gaps pendientes de 607 y 608', () => {
+  it('declara fuentes canónicas nuevas para 607 y 608 sin gaps pendientes', () => {
     expect(
-      getDgiiMonthlyReportDefinition('DGII_607')?.pendingGaps,
-    ).toContain(
-      'Las retenciones sufridas por terceros todavía no tienen una colección canónica dedicada en backend.',
-    );
+      getDgiiMonthlyReportDefinition('DGII_607')?.sourceOfTruth.map(
+        (source) => source.sourceId,
+      ),
+    ).toEqual(['invoices', 'creditNotes', 'thirdPartyWithholdings']);
     expect(
-      getDgiiMonthlyReportDefinition('DGII_608')?.pendingGaps,
-    ).toContain(
-      'Los motivos de anulación deben normalizarse a un catálogo DGII versionado antes de exportar 608.',
-    );
+      getDgiiMonthlyReportDefinition('DGII_608')?.sourceOfTruth.find(
+        (source) => source.sourceId === 'invoices',
+      )?.requiredFields,
+    ).toContain('voidReasonCode');
+    expect(getDgiiMonthlyReportDefinition('DGII_607')?.pendingGaps).toEqual([]);
+    expect(getDgiiMonthlyReportDefinition('DGII_608')?.pendingGaps).toEqual([]);
   });
 
   it('retorna null para reportes no definidos', () => {

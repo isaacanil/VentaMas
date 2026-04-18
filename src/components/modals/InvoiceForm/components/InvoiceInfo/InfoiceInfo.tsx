@@ -4,7 +4,7 @@ import {
   faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Form, Input, Modal, Spin, Button, message } from 'antd';
+import { Form, Input, Modal, Select, Spin, Button, message } from 'antd';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -14,6 +14,10 @@ import { closeInvoiceForm } from '@/features/invoice/invoiceFormSlice';
 import { fbCancelInvoice } from '@/firebase/invoices/fbCancelInvoice';
 import type { UserIdentity } from '@/types/users';
 import type { InvoiceData } from '@/types/invoice';
+import {
+  DGII_608_REASON_OPTIONS,
+  getDgii608ReasonOption,
+} from '@/utils/fiscal/dgii608ReasonCatalog';
 import { Client } from '@/components/modals/InvoiceForm/components/Client/Client';
 import { InvoiceHeader } from '@/components/modals/InvoiceForm/components/InvoiceHeader/InvoiceHeader';
 import { PaymentInfoModal } from '@/components/modals/InvoiceForm/components/PaymentInfo/PaymentInfoModal';
@@ -99,9 +103,18 @@ const CancelInvoiceConfirm = ({
     setIsLoading(true);
     void form.validateFields().then(
       (values) => {
-        const cancellationReason = values.cancellationReason;
+        const selectedReason = getDgii608ReasonOption(values.cancellationReasonCode);
+        if (!selectedReason) {
+          message.error('Seleccione un motivo DGII válido.');
+          setIsLoading(false);
+          return;
+        }
 
-        return fbCancelInvoice(user, invoice, cancellationReason).then(
+        return fbCancelInvoice(user, invoice, {
+          reasonCode: selectedReason.code,
+          reasonLabel: selectedReason.label,
+          note: values.cancellationReasonNote,
+        }).then(
           () => {
             dispatch(closeInvoiceForm({ clear: true }));
             handleClose();
@@ -164,17 +177,34 @@ const CancelInvoiceConfirm = ({
 
           <StyledForm form={form} layout="vertical" onFinish={handleOk}>
             <StyledFormItem
-              label="Motivo de la anulación"
-              name="cancellationReason"
-              help="Ejemplo: El cliente se arrepintió de la compra"
+              label="Motivo de la anulación (DGII 608)"
+              name="cancellationReasonCode"
               rules={[
                 {
                   required: true,
-                  message: 'Por favor ingrese el motivo de la anulación',
+                  message: 'Seleccione el motivo DGII de la anulación',
                 },
               ]}
             >
-              <StyledInput type="text" placeholder="Motivo de la anulación" />
+              <Select
+                placeholder="Seleccione el motivo DGII"
+                options={DGII_608_REASON_OPTIONS.map((reason) => ({
+                  value: reason.code,
+                  label: `${reason.code} · ${reason.label}`,
+                }))}
+              />
+            </StyledFormItem>
+
+            <StyledFormItem
+              label="Nota interna"
+              name="cancellationReasonNote"
+              help="Opcional. Contexto adicional para auditoría interna."
+            >
+              <StyledTextArea
+                rows={3}
+                placeholder="Detalle interno opcional"
+                maxLength={280}
+              />
             </StyledFormItem>
 
             <FormActions>
@@ -288,7 +318,7 @@ const StyledFormItem = styled(Form.Item)`
   margin-bottom: 0;
 `;
 
-const StyledInput = styled(Input)`
+const StyledTextArea = styled(Input.TextArea)`
   padding: 0.6rem 0.75rem;
 `;
 

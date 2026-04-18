@@ -98,6 +98,11 @@ export interface PaymentDetails {
   createdFrom?: string | null;
   totalAmount?: number | string;
   creditNotePayment?: CreditNotePayment[];
+  thirdPartyWithholding?: {
+    retentionDate?: string | null;
+    itbisWithheld?: number | string | null;
+    incomeTaxWithheld?: number | string | null;
+  } | null;
   monetary?: Record<string, unknown> | null;
 }
 

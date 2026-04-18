@@ -9,8 +9,7 @@ import {
 } from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { resolveBusinessFiscalRollout } from '../../taxReceipt/utils/fiscalRollout.util.js';
 import {
-  mapCreditNoteDocToDgii607Record,
-  mapInvoiceDocToDgii607Record,
+  loadDgii607Datasets,
   resolveMonthlyPeriodRange,
 } from '../services/dgii607MonthlyReport.service.js';
 import {
@@ -20,6 +19,13 @@ import {
   buildDgii607TxtRow,
   shouldExcludeDgii607TxtRecord,
 } from '../services/dgii607TxtExport.service.js';
+import { loadDgii608Datasets } from '../services/dgii608MonthlyReport.service.js';
+import {
+  assertValidDgii608Header,
+  buildDgii608TxtContent,
+  buildDgii608TxtFileName,
+  buildDgii608TxtRow,
+} from '../services/dgii608TxtExport.service.js';
 
 const toCleanString = (value) => {
   if (typeof value !== 'string') return null;
@@ -45,7 +51,7 @@ export const exportDgiiTxtReport = onCall(
     if (!periodKey) {
       throw new HttpsError('invalid-argument', 'periodKey es requerido');
     }
-    if (reportCode !== 'DGII_607') {
+    if (!['DGII_607', 'DGII_608'].includes(reportCode)) {
       throw new HttpsError(
         'unimplemented',
         `Export TXT para ${reportCode} todavía no está disponible.`,
@@ -78,78 +84,107 @@ export const exportDgiiTxtReport = onCall(
     const businessRnc = toCleanString(businessData.rnc) || null;
 
     const {
-      start,
-      endExclusive,
       periodKey: normalizedPeriodKey,
     } = resolveMonthlyPeriodRange(periodKey);
 
-    const invoicesRef = db.collection(`businesses/${businessId}/invoices`);
-    const creditNotesRef = db.collection(`businesses/${businessId}/creditNotes`);
+    if (reportCode === 'DGII_607') {
+      const { datasets, rawSnapshots } = await loadDgii607Datasets({
+        businessId,
+        periodKey,
+        firestore: db,
+      });
 
-    const [invoicesSnap, creditNotesSnap] = await Promise.all([
-      invoicesRef
-        .where('data.date', '>=', start)
-        .where('data.date', '<', endExclusive)
-        .orderBy('data.date', 'asc')
-        .get(),
-      creditNotesRef
-        .where('createdAt', '>=', start)
-        .where('createdAt', '<', endExclusive)
-        .orderBy('createdAt', 'asc')
-        .get(),
-    ]);
-
-    const rowEntries = [
-      ...invoicesSnap.docs.map((doc) => {
-        const firestoreDoc = doc.data() || {};
-        const record = mapInvoiceDocToDgii607Record({
-          businessId,
-          invoiceId: doc.id,
-          invoiceDoc: firestoreDoc,
-        });
-
-        return {
+      const rowEntries = [
+        ...datasets.invoices.map((record) => ({
           isCredit: false,
-          firestoreDoc,
+          firestoreDoc: record,
           record,
-          sortKey: record?.issuedAt ?? record?.createdAt ?? '',
+          sortKey: record?.retentionDate ?? record?.issuedAt ?? record?.createdAt ?? '',
           originalNcf: null,
-        };
-      }),
-      ...creditNotesSnap.docs.map((doc) => {
-        const firestoreDoc = doc.data() || {};
-        const record = mapCreditNoteDocToDgii607Record({
-          businessId,
-          creditNoteId: doc.id,
-          creditNoteDoc: firestoreDoc,
-        });
-
-        return {
+        })),
+        ...datasets.creditNotes.map((record) => ({
           isCredit: true,
-          firestoreDoc,
+          firestoreDoc: record,
           record,
           sortKey: record?.issuedAt ?? record?.createdAt ?? '',
           originalNcf: record?.metadata?.invoiceNcf ?? '',
-        };
-      }),
-    ]
-      .filter(
-        ({ record, isCredit }) =>
-          !shouldExcludeDgii607TxtRecord({ record, isCredit }),
-      )
-      .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+        })),
+        ...datasets.thirdPartyWithholdings.map((record) => ({
+          isCredit: false,
+          firestoreDoc: record,
+          record,
+          sortKey: record?.retentionDate ?? record?.issuedAt ?? '',
+          originalNcf: null,
+        })),
+      ]
+        .filter(
+          ({ record, isCredit }) =>
+            !shouldExcludeDgii607TxtRecord({ record, isCredit }),
+        )
+        .sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+      let rows;
+      try {
+        rows = rowEntries.map(({ record, firestoreDoc, isCredit, originalNcf }) =>
+          buildDgii607TxtRow({
+            record,
+            firestoreDoc,
+            isCredit,
+            originalNcf,
+          }),
+        );
+        assertValidDgii607Header({
+          businessRnc,
+          periodKey: normalizedPeriodKey,
+          rowCount: rows.length,
+        });
+      } catch (error) {
+        throw new HttpsError(
+          'failed-precondition',
+          error instanceof Error
+            ? error.message
+            : 'No se pudo construir el TXT 607 con los datos actuales.',
+        );
+      }
+
+      const content = buildDgii607TxtContent({
+        businessRnc,
+        periodKey: normalizedPeriodKey,
+        rows,
+      });
+      const fileName = buildDgii607TxtFileName({
+        businessRnc,
+        periodKey: normalizedPeriodKey,
+      });
+
+      logger.info('[exportDgiiTxtReport] generated', {
+        businessId,
+        periodKey: normalizedPeriodKey,
+        reportCode,
+        invoicesLoaded: rawSnapshots.invoices.size,
+        creditNotesLoaded: rawSnapshots.creditNotes.size,
+        thirdPartyWithholdingsLoaded: rawSnapshots.thirdPartyWithholdings.size,
+        rowCount: rows.length,
+      });
+
+      return { ok: true, content, fileName, rowCount: rows.length };
+    }
+
+    const { datasets } = await loadDgii608Datasets({
+      businessId,
+      periodKey,
+      firestore: db,
+    });
+    const orderedRecords = [...datasets.invoices, ...datasets.creditNotes].sort((a, b) =>
+      (a?.voidedAt ?? a?.createdAt ?? '').localeCompare(
+        b?.voidedAt ?? b?.createdAt ?? '',
+      ),
+    );
 
     let rows;
     try {
-      rows = rowEntries.map(({ record, firestoreDoc, isCredit, originalNcf }) =>
-        buildDgii607TxtRow({
-          record,
-          firestoreDoc,
-          isCredit,
-          originalNcf,
-        }),
-      );
-      assertValidDgii607Header({
+      rows = orderedRecords.map((record) => buildDgii608TxtRow(record));
+      assertValidDgii608Header({
         businessRnc,
         periodKey: normalizedPeriodKey,
         rowCount: rows.length,
@@ -159,16 +194,16 @@ export const exportDgiiTxtReport = onCall(
         'failed-precondition',
         error instanceof Error
           ? error.message
-          : 'No se pudo construir el TXT 607 con los datos actuales.',
+          : 'No se pudo construir el TXT 608 con los datos actuales.',
       );
     }
 
-    const content = buildDgii607TxtContent({
+    const content = buildDgii608TxtContent({
       businessRnc,
       periodKey: normalizedPeriodKey,
       rows,
     });
-    const fileName = buildDgii607TxtFileName({
+    const fileName = buildDgii608TxtFileName({
       businessRnc,
       periodKey: normalizedPeriodKey,
     });
@@ -177,8 +212,8 @@ export const exportDgiiTxtReport = onCall(
       businessId,
       periodKey: normalizedPeriodKey,
       reportCode,
-      invoicesLoaded: invoicesSnap.size,
-      creditNotesLoaded: creditNotesSnap.size,
+      invoicesLoaded: datasets.invoices.length,
+      creditNotesLoaded: datasets.creditNotes.length,
       rowCount: rows.length,
     });
 

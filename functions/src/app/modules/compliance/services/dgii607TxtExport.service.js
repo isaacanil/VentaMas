@@ -81,7 +81,7 @@ export const buildDgii607TxtRow = ({
 
 export const buildDgii607TxtContent = ({ businessRnc, periodKey, rows }) => {
   const period = periodKey.replace('-', '');
-  const header = `607|${businessRnc}|${period}`;
+  const header = `607|${businessRnc}|${period}|${String(rows.length).padStart(12, '0')}`;
   return [header, ...rows].join('\r\n');
 };
 
