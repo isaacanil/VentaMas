@@ -79,7 +79,7 @@ export const buildJournalBookExportRows = (
     Periodo: record.periodKey ?? '',
     Modulo: record.moduleLabel,
     Origen: record.sourceLabel,
-    Referencia: record.reference,
+    Referencia: record.documentReference ?? record.reference,
     Descripcion: `${record.title}${record.description ? ` — ${record.description}` : ''}`,
     Monto: record.amount,
     Estado: record.statusLabel,

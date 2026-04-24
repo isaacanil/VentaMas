@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Form, Input, InputNumber, Modal, Select } from 'antd';
 import { DateTime } from 'luxon';
 
 import DatePicker from '@/components/DatePicker';
+import { fbPreviewBankReconciliation } from '@/firebase/treasury/fbCreateBankReconciliation';
 import type { BankAccount } from '@/types/accounting';
 import type { BankReconciliationDraft } from '@/modules/treasury/utils/records';
 
@@ -24,6 +25,36 @@ interface BankReconciliationFormValues {
   statementDate?: DateTime;
 }
 
+interface ReconciliationPreviewState {
+  error: string | null;
+  ledgerBalance: number | null;
+  loading: boolean;
+  reconciledMovementCount: number | null;
+  requestKey: string | null;
+  status: 'balanced' | 'variance' | null;
+  unreconciledMovementCount: number | null;
+  variance: number | null;
+}
+
+interface ReconciliationPreviewRequest {
+  bankAccountId: string;
+  businessId: string;
+  requestKey: string;
+  statementBalance: number;
+  statementDate: number | null;
+}
+
+const EMPTY_PREVIEW_STATE: ReconciliationPreviewState = {
+  error: null,
+  ledgerBalance: null,
+  loading: false,
+  reconciledMovementCount: null,
+  requestKey: null,
+  status: null,
+  unreconciledMovementCount: null,
+  variance: null,
+};
+
 export const BankReconciliationModal = ({
   bankAccounts,
   currentBalancesByAccountId,
@@ -34,6 +65,10 @@ export const BankReconciliationModal = ({
   submitting = false,
 }: BankReconciliationModalProps) => {
   const [form] = Form.useForm<BankReconciliationFormValues>();
+  const [previewRequest, setPreviewRequest] =
+    useState<ReconciliationPreviewRequest | null>(null);
+  const [previewState, setPreviewState] =
+    useState<ReconciliationPreviewState>(EMPTY_PREVIEW_STATE);
 
   useEffect(() => {
     if (!open) return;
@@ -60,16 +95,122 @@ export const BankReconciliationModal = ({
   const selectedBankAccount =
     bankAccounts.find((account) => account.id === selectedBankAccountId) ?? null;
   const statementBalanceInput = Form.useWatch('statementBalance', form);
-  const expectedLedgerBalance = selectedBankAccountId
+  const statementDateInput = Form.useWatch('statementDate', form);
+  const fallbackLedgerBalance = selectedBankAccountId
     ? currentBalancesByAccountId[selectedBankAccountId] ?? 0
     : 0;
   const statementBalance = Number(statementBalanceInput);
   const hasStatementBalance = Number.isFinite(statementBalance);
-  const variance = hasStatementBalance
-    ? Number((statementBalance - expectedLedgerBalance).toFixed(2))
-    : null;
-  const reconciliationStatus =
-    variance == null ? null : variance === 0 ? 'balanced' : 'variance';
+  const currentPreviewKey =
+    open && selectedBankAccountId && hasStatementBalance
+      ? [
+          selectedBankAccountId,
+          selectedBankAccount?.businessId ?? '',
+          statementBalance.toFixed(2),
+          statementDateInput?.toMillis?.() ?? '',
+        ].join(':')
+      : null;
+  const hasFreshPreview = previewState.requestKey === currentPreviewKey;
+  const visiblePreviewState = hasFreshPreview ? previewState : EMPTY_PREVIEW_STATE;
+  const expectedLedgerBalance =
+    visiblePreviewState.ledgerBalance ?? fallbackLedgerBalance;
+  const variance = visiblePreviewState.variance;
+  const reconciliationStatus = visiblePreviewState.status;
+
+  useEffect(() => {
+    if (!previewRequest) return;
+    let active = true;
+
+    void fbPreviewBankReconciliation({
+      bankAccountId: previewRequest.bankAccountId,
+      businessId: previewRequest.businessId,
+      statementBalance: previewRequest.statementBalance,
+      statementDate: previewRequest.statementDate,
+    })
+      .then((response) => {
+        if (!active) return;
+        setPreviewState({
+          error: null,
+          ledgerBalance: Number(response.preview.ledgerBalance ?? 0),
+          loading: false,
+          reconciledMovementCount: Number(
+            response.preview.reconciledMovementCount ?? 0,
+          ),
+          requestKey: previewRequest.requestKey,
+          status: response.preview.status ?? null,
+          unreconciledMovementCount: Number(
+            response.preview.unreconciledMovementCount ?? 0,
+          ),
+          variance: Number(response.preview.variance ?? 0),
+        });
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        const messageText =
+          typeof error === 'object' &&
+          error &&
+          'message' in error &&
+          typeof error.message === 'string'
+            ? error.message
+            : 'No se pudo calcular la previsualización de conciliación.';
+        setPreviewState({
+          error: messageText,
+          ledgerBalance: null,
+          loading: false,
+          reconciledMovementCount: null,
+          requestKey: previewRequest.requestKey,
+          status: null,
+          unreconciledMovementCount: null,
+          variance: null,
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [previewRequest]);
+
+  const handleValuesChange = (
+    _changedValues: Partial<BankReconciliationFormValues>,
+    allValues: BankReconciliationFormValues,
+  ) => {
+    const nextStatementBalance = Number(allValues.statementBalance);
+    const nextStatementDate =
+      allValues.statementDate?.toJSDate?.() ?? allValues.statementDate ?? null;
+    const nextBusinessId =
+      bankAccounts.find((account) => account.id === allValues.bankAccountId)
+        ?.businessId ?? '';
+
+    if (!allValues.bankAccountId || !Number.isFinite(nextStatementBalance)) {
+      setPreviewRequest(null);
+      setPreviewState(EMPTY_PREVIEW_STATE);
+      return;
+    }
+
+    const requestKey = [
+      allValues.bankAccountId,
+      nextBusinessId,
+      nextStatementBalance.toFixed(2),
+      allValues.statementDate?.toMillis?.() ?? '',
+    ].join(':');
+
+    setPreviewState({
+      error: null,
+      ledgerBalance: null,
+      loading: true,
+      requestKey,
+      status: null,
+      variance: null,
+    });
+    setPreviewRequest({
+      bankAccountId: allValues.bankAccountId,
+      businessId: nextBusinessId,
+      requestKey,
+      statementBalance: nextStatementBalance,
+      statementDate:
+        nextStatementDate instanceof Date ? nextStatementDate.getTime() : null,
+    });
+  };
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -95,13 +236,20 @@ export const BankReconciliationModal = ({
       keyboard={!submitting}
       maskClosable={false}
       cancelButtonProps={{ disabled: submitting }}
+      afterOpenChange={(isOpen) => {
+        if (!isOpen) return;
+        setPreviewRequest(null);
+        setPreviewState(EMPTY_PREVIEW_STATE);
+      }}
       onCancel={() => {
         if (submitting) return;
+        setPreviewRequest(null);
+        setPreviewState(EMPTY_PREVIEW_STATE);
         onCancel();
       }}
       onOk={handleSubmit}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" onValuesChange={handleValuesChange}>
         <Form.Item
           label="Cuenta bancaria"
           name="bankAccountId"
@@ -125,7 +273,12 @@ export const BankReconciliationModal = ({
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           }).format(expectedLedgerBalance)}`}
-        />
+            description={
+              visiblePreviewState.loading
+                ? 'Calculando desde backend...'
+                : `Previsualización backend usando cashMovements. ${visiblePreviewState.reconciledMovementCount ?? 0} movimiento(s) conciliados, ${visiblePreviewState.unreconciledMovementCount ?? 0} pendiente(s).`
+            }
+          />
 
         <Form.Item
           label="Balance estado de cuenta"
@@ -141,6 +294,16 @@ export const BankReconciliationModal = ({
             addonBefore="$"
           />
         </Form.Item>
+
+        {visiblePreviewState.error ? (
+          <Alert
+            style={{ marginBottom: 16 }}
+            type="error"
+            showIcon
+            message="No se pudo calcular la previsualización"
+            description={visiblePreviewState.error}
+          />
+        ) : null}
 
         {reconciliationStatus ? (
           <Alert

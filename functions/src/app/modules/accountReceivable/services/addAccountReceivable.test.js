@@ -10,6 +10,17 @@ vi.mock('nanoid', () => ({
   nanoid: () => 'ar-fixed-id',
 }));
 
+vi.mock('firebase-functions', () => ({
+  https: {
+    HttpsError: class MockHttpsError extends Error {
+      constructor(code, message) {
+        super(message);
+        this.code = code;
+      }
+    },
+  },
+}));
+
 vi.mock('../../../core/config/firebase.js', () => ({
   db: {
     doc: docMock,

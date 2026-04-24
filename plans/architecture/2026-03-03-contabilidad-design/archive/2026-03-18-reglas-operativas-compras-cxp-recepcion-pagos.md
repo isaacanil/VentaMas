@@ -1,5 +1,7 @@
 # Reglas operativas: compras, recepcion, inventario y pagos a proveedor
 
+> Estado 2026-04-23: `ARCHIVADO`. Evidencia historica; no usar como guia operativa vigente.
+
 Fecha: `2026-03-18`
 
 ## Objetivo

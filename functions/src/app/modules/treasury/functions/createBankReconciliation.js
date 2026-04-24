@@ -71,23 +71,72 @@ const isMovementPosted = (movementRecord) => {
   return normalizedStatus !== 'void' && normalizedStatus !== 'draft';
 };
 
-export const createBankReconciliation = onCall(async (request) => {
-  const authUid = await resolveCallableAuthUid(request);
-  if (!authUid) {
-    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
-  }
+const classifyMovementsForReconciliation = ({
+  cashMovementsSnap,
+  resolvedStatementDateMillis,
+}) => {
+  const eligibleMovementSnaps = [];
+  let unreconciledMovementCount = 0;
 
-  const payload = asRecord(request?.data);
+  cashMovementsSnap.docs.forEach((movementSnap) => {
+    const movementRecord = asRecord(movementSnap.data());
+    if (!isMovementPosted(movementRecord)) {
+      return;
+    }
+
+    const movementMillis = toMillis(
+      movementRecord.occurredAt ?? movementRecord.createdAt,
+    );
+    if (
+      movementMillis != null &&
+      movementMillis > resolvedStatementDateMillis
+    ) {
+      unreconciledMovementCount += 1;
+      return;
+    }
+
+    eligibleMovementSnaps.push(movementSnap);
+  });
+
+  return {
+    eligibleMovementSnaps,
+    unreconciledMovementCount,
+  };
+};
+
+const resolveBankReconciliationPayload = (payload) => {
   const businessId =
     toCleanString(payload.businessId) ||
     toCleanString(payload.businessID) ||
     null;
   const bankAccountId = toCleanString(payload.bankAccountId);
-  const idempotencyKey = toCleanString(payload.idempotencyKey);
   const reference = toCleanString(payload.reference);
   const note = toCleanString(payload.note ?? payload.notes);
   const statementBalance = roundToTwoDecimals(payload.statementBalance);
-  const statementDateMillis = toMillis(payload.statementDate) ?? Date.now();
+  const statementDateMillis = toMillis(payload.statementDate);
+
+  return {
+    bankAccountId,
+    businessId,
+    note,
+    reference,
+    statementBalance,
+    statementDateMillis,
+  };
+};
+
+const assertBankReconciliationPayload = ({
+  bankAccountId,
+  businessId,
+  requireIdempotencyKey = false,
+  statementBalance,
+  statementDateMillis,
+  payload,
+  idempotencyKey = null,
+}) => {
+  if (requireIdempotencyKey && !idempotencyKey) {
+    throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
+  }
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido.');
@@ -95,16 +144,24 @@ export const createBankReconciliation = onCall(async (request) => {
   if (!bankAccountId) {
     throw new HttpsError('invalid-argument', 'bankAccountId es requerido.');
   }
-  if (!idempotencyKey) {
-    throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
-  }
   if (!Number.isFinite(statementBalance)) {
     throw new HttpsError(
       'invalid-argument',
       'statementBalance debe ser numérico.',
     );
   }
+  if (payload.statementDate != null && statementDateMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'statementDate debe ser una fecha válida.',
+    );
+  }
+};
 
+const assertBankReconciliationAccess = async ({
+  authUid,
+  businessId,
+}) => {
   await assertUserAccess({
     authUid,
     businessId,
@@ -115,24 +172,21 @@ export const createBankReconciliation = onCall(async (request) => {
     action: 'write',
     requiredModule: 'cashReconciliation',
   });
+};
 
-  const requestHash = buildTreasuryIdempotencyRequestHash({
-    businessId,
-    bankAccountId,
-    statementBalance,
-    statementDate: statementDateMillis,
-    reference,
-    note,
-  });
-
+const buildReconciliationPreview = async ({
+  bankAccountId,
+  businessId,
+  resolvedStatementDateMillis,
+  statementBalance,
+  transaction,
+}) => {
   const bankAccountRef = db.doc(
     `businesses/${businessId}/bankAccounts/${bankAccountId}`,
   );
-  const idempotencyRef = db.doc(
-    `businesses/${businessId}/treasuryIdempotency/${idempotencyKey}`,
-  );
-
-  const bankAccountSnap = await bankAccountRef.get();
+  const bankAccountSnap = transaction
+    ? await transaction.get(bankAccountRef)
+    : await bankAccountRef.get();
   if (!bankAccountSnap.exists) {
     throw new HttpsError(
       'failed-precondition',
@@ -148,28 +202,141 @@ export const createBankReconciliation = onCall(async (request) => {
     );
   }
 
-  const statementDate = timestampFromMillis(statementDateMillis);
-  const cashMovementsSnap = await db
+  const cashMovementsQuery = db
     .collection(`businesses/${businessId}/cashMovements`)
-    .where('bankAccountId', '==', bankAccountId)
-    .get();
+    .where('bankAccountId', '==', bankAccountId);
+  const cashMovementsSnap = transaction
+    ? await transaction.get(cashMovementsQuery)
+    : await cashMovementsQuery.get();
+  const {
+    eligibleMovementSnaps,
+    unreconciledMovementCount,
+  } = classifyMovementsForReconciliation({
+    cashMovementsSnap,
+    resolvedStatementDateMillis,
+  });
   const ledgerBalance = roundToTwoDecimals(
     roundToTwoDecimals(bankAccount.openingBalance) +
-      cashMovementsSnap.docs.reduce((sum, movementSnap) => {
+      eligibleMovementSnaps.reduce((sum, movementSnap) => {
         const movementRecord = asRecord(movementSnap.data());
-        if (!isMovementPosted(movementRecord)) {
-          return sum;
-        }
-        const movementMillis = toMillis(
-          movementRecord.occurredAt ?? movementRecord.createdAt,
-        );
-        if (movementMillis != null && movementMillis > statementDateMillis) {
-          return sum;
-        }
         return sum + resolveMovementSignedAmount(movementRecord);
       }, 0),
   );
   const variance = roundToTwoDecimals(statementBalance - ledgerBalance);
+
+  return {
+    bankAccount,
+    eligibleMovementSnaps,
+    ledgerBalance,
+    reconciledMovementCount: eligibleMovementSnaps.length,
+    status: variance === 0 ? 'balanced' : 'variance',
+    unreconciledMovementCount,
+    variance,
+  };
+};
+
+export const previewBankReconciliation = onCall(async (request) => {
+  const authUid = await resolveCallableAuthUid(request);
+  if (!authUid) {
+    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+  }
+
+  const payload = asRecord(request?.data);
+  const {
+    bankAccountId,
+    businessId,
+    statementBalance,
+    statementDateMillis,
+  } = resolveBankReconciliationPayload(payload);
+
+  assertBankReconciliationPayload({
+    bankAccountId,
+    businessId,
+    payload,
+    statementBalance,
+    statementDateMillis,
+  });
+
+  await assertBankReconciliationAccess({
+    authUid,
+    businessId,
+  });
+
+  const resolvedStatementDateMillis = statementDateMillis ?? Date.now();
+  const statementDate = timestampFromMillis(resolvedStatementDateMillis);
+  const preview = await buildReconciliationPreview({
+    bankAccountId,
+    businessId,
+    resolvedStatementDateMillis,
+    statementBalance,
+  });
+
+  return {
+    ok: true,
+    preview: sanitizeForResponse({
+      bankAccountId,
+      ledgerBalance: preview.ledgerBalance,
+      reconciledMovementCount: preview.reconciledMovementCount,
+      referenceDate: statementDate,
+      statementBalance,
+      statementDate,
+      status: preview.status,
+      unreconciledMovementCount: preview.unreconciledMovementCount,
+      variance: preview.variance,
+    }),
+  };
+});
+
+export const createBankReconciliation = onCall(async (request) => {
+  const authUid = await resolveCallableAuthUid(request);
+  if (!authUid) {
+    throw new HttpsError('unauthenticated', 'Usuario no autenticado');
+  }
+
+  const payload = asRecord(request?.data);
+  const {
+    bankAccountId,
+    businessId,
+    note,
+    reference,
+    statementBalance,
+    statementDateMillis,
+  } = resolveBankReconciliationPayload(payload);
+  const idempotencyKey = toCleanString(payload.idempotencyKey);
+
+  assertBankReconciliationPayload({
+    bankAccountId,
+    businessId,
+    idempotencyKey,
+    payload,
+    requireIdempotencyKey: true,
+    statementBalance,
+    statementDateMillis,
+  });
+
+  await assertBankReconciliationAccess({
+    authUid,
+    businessId,
+  });
+
+  const resolvedStatementDateMillis = statementDateMillis ?? Date.now();
+  const requestHash = buildTreasuryIdempotencyRequestHash({
+    businessId,
+    bankAccountId,
+    statementBalance,
+    statementDate: resolvedStatementDateMillis,
+    reference,
+    note,
+  });
+
+  const bankAccountRef = db.doc(
+    `businesses/${businessId}/bankAccounts/${bankAccountId}`,
+  );
+  const idempotencyRef = db.doc(
+    `businesses/${businessId}/treasuryIdempotency/${idempotencyKey}`,
+  );
+
+  const statementDate = timestampFromMillis(resolvedStatementDateMillis);
 
   let result = null;
 
@@ -220,8 +387,19 @@ export const createBankReconciliation = onCall(async (request) => {
       return;
     }
 
+    const preview = await buildReconciliationPreview({
+      bankAccountId,
+      businessId,
+      resolvedStatementDateMillis,
+      statementBalance,
+      transaction,
+    });
+
     const reconciliationRef = db.collection(
       `businesses/${businessId}/bankReconciliations`,
+    ).doc();
+    const statementLineRef = db.collection(
+      `businesses/${businessId}/bankStatementLines`,
     ).doc();
     const now = Timestamp.now();
     const reconciliationRecord = {
@@ -230,9 +408,12 @@ export const createBankReconciliation = onCall(async (request) => {
       bankAccountId,
       statementDate,
       statementBalance,
-      ledgerBalance,
-      variance,
-      status: variance === 0 ? 'balanced' : 'variance',
+      ledgerBalance: preview.ledgerBalance,
+      reconciledMovementCount: preview.reconciledMovementCount,
+      statementLineCount: 1,
+      unreconciledMovementCount: preview.unreconciledMovementCount,
+      variance: preview.variance,
+      status: preview.status,
       reference,
       notes: note,
       createdAt: now,
@@ -241,10 +422,45 @@ export const createBankReconciliation = onCall(async (request) => {
       updatedBy: authUid,
       metadata: {
         idempotencyKey,
+        statementLineId: statementLineRef.id,
+      },
+    };
+    const statementLineRecord = {
+      id: statementLineRef.id,
+      businessId,
+      bankAccountId,
+      reconciliationId: reconciliationRef.id,
+      lineType: 'closing_balance',
+      status: 'reconciled',
+      statementDate,
+      amount: null,
+      runningBalance: statementBalance,
+      direction: null,
+      description: note || 'Cierre manual de conciliación',
+      reference,
+      createdAt: now,
+      createdBy: authUid,
+      metadata: {
+        idempotencyKey,
+        ledgerBalance: preview.ledgerBalance,
+        variance: preview.variance,
       },
     };
 
     transaction.set(reconciliationRef, reconciliationRecord);
+    transaction.set(statementLineRef, statementLineRecord);
+    preview.eligibleMovementSnaps.forEach((movementSnap) => {
+      transaction.set(
+        db.doc(`businesses/${businessId}/cashMovements/${movementSnap.id}`),
+        {
+          reconciliationId: reconciliationRef.id,
+          reconciliationStatus: 'reconciled',
+          reconciledAt: now,
+          bankStatementLineId: statementLineRef.id,
+        },
+        { merge: true },
+      );
+    });
     transaction.set(idempotencyRef, {
       id: idempotencyKey,
       command: 'createBankReconciliation',

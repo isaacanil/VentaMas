@@ -1203,6 +1203,14 @@ export const processAccountsReceivablePayment = onCall(async (request) => {
         payload: {
           paymentScope,
           paymentOption: paymentOption || null,
+          receiptNumber:
+            toCleanString(payment?.receiptNumber) ??
+            toCleanString(payment?.receiptId) ??
+            null,
+          reference:
+            toCleanString(payment?.reference) ??
+            toCleanString(payment?.referenceNumber) ??
+            null,
           accountEntryCount: enrichedAccountEntries.length,
           fxSettlementCount: fxSettlements.length,
           unappliedAmount: change,

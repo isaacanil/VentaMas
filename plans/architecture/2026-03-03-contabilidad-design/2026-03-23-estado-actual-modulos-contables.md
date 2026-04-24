@@ -278,7 +278,7 @@ Evidencia:
 - `src/firebase/purchase/fbAddAccountsPayablePayment.ts`
 - `src/modules/orderAndPurchase/pages/OrderAndPurchase/Compra/components/PurchasesTable/RegisterSupplierPaymentModal.tsx`
 - `functions/src/app/modules/purchase/functions/addSupplierPayment.js`
-- `plans/architecture/2026-03-03-contabilidad-design/2026-03-17-compras-cuentas-por-pagar-design.md`
+- `plans/architecture/2026-03-03-contabilidad-design/archive/2026-03-17-compras-cuentas-por-pagar-design.md`
 - `plans/architecture/2026-03-03-contabilidad-design/contabilidad-checklist.md`
 
 ### 6. Ventas y cuentas por cobrar

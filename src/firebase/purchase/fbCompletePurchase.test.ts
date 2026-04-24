@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const docMock = vi.fn();
+const deleteDocMock = vi.fn();
 const getDocMock = vi.fn();
 const runTransactionMock = vi.fn();
 const serverTimestampMock = vi.fn();
@@ -20,6 +21,7 @@ const getWarehouseMock = vi.fn();
 const safeTimestampMock = vi.fn();
 const resolveMonetarySnapshotForBusinessMock = vi.fn();
 const resolvePurchaseMonetaryTotalsMock = vi.fn();
+const resolvePurchaseDisplayNextPaymentAtMock = vi.fn();
 const resolvePurchasePaymentStateMock = vi.fn();
 const resolvePurchasePaymentTermsMock = vi.fn();
 const canCompletePurchaseMock = vi.fn();
@@ -31,6 +33,7 @@ const syncPurchaseAttachmentsMock = vi.fn();
 const assertPurchaseCompletionAccountingPeriodOpenMock = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
+  deleteDoc: (...args: unknown[]) => deleteDocMock(...args),
   doc: (...args: unknown[]) => docMock(...args),
   getDoc: (...args: unknown[]) => getDocMock(...args),
   runTransaction: (...args: unknown[]) => runTransactionMock(...args),
@@ -84,6 +87,8 @@ vi.mock('@/utils/accounting/monetary', () => ({
 }));
 
 vi.mock('@/utils/purchase/financials', () => ({
+  resolvePurchaseDisplayNextPaymentAt: (...args: unknown[]) =>
+    resolvePurchaseDisplayNextPaymentAtMock(...args),
   resolvePurchaseMonetaryTotals: (...args: unknown[]) =>
     resolvePurchaseMonetaryTotalsMock(...args),
   resolvePurchasePaymentState: (...args: unknown[]) =>
@@ -123,6 +128,7 @@ describe('fbCompletePurchase', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    deleteDocMock.mockResolvedValue(undefined);
     docMock.mockImplementation((...args: unknown[]) => ({
       path: args.slice(1).join('/'),
     }));
@@ -154,6 +160,7 @@ describe('fbCompletePurchase', () => {
     });
     safeTimestampMock.mockImplementation((value: unknown) => value);
     resolveMonetarySnapshotForBusinessMock.mockResolvedValue(null);
+    resolvePurchaseDisplayNextPaymentAtMock.mockReturnValue(null);
     resolvePurchaseMonetaryTotalsMock.mockReturnValue({ total: 150 });
     resolvePurchasePaymentStateMock.mockReturnValue({
       paid: 0,

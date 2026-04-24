@@ -404,7 +404,7 @@ describe('projectAccountingEventToJournalEntry', () => {
     });
   });
 
-  it('splits mixed sales between cash and accounts receivable', async () => {
+  it('splits mixed USD sales between cash and accounts receivable using functional amounts', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,
       generalAccountingEnabled: true,
@@ -514,13 +514,13 @@ describe('projectAccountingEventToJournalEntry', () => {
           sourceId: 'invoice-mixed-1',
           sourceDocumentId: 'invoice-mixed-1',
           sourceDocumentType: 'invoice',
-          currency: 'DOP',
+          currency: 'USD',
           functionalCurrency: 'DOP',
           monetary: {
             amount: 76.7,
             taxAmount: 11.7,
-            functionalAmount: 76.7,
-            functionalTaxAmount: 11.7,
+            functionalAmount: 4602,
+            functionalTaxAmount: 702,
           },
           payload: {
             paymentTerm: 'credit',
@@ -539,30 +539,30 @@ describe('projectAccountingEventToJournalEntry', () => {
       id: 'invoice.committed__invoice-mixed-1',
       eventType: 'invoice.committed',
       totals: {
-        debit: 76.7,
-        credit: 76.7,
+        debit: 4602,
+        credit: 4602,
       },
     });
     expect(journalEntry.lines).toEqual([
       expect.objectContaining({
         accountSystemKey: 'cash',
-        debit: 30,
+        debit: 1800,
         credit: 0,
       }),
       expect.objectContaining({
         accountSystemKey: 'accounts_receivable',
-        debit: 46.7,
+        debit: 2802,
         credit: 0,
       }),
       expect.objectContaining({
         accountSystemKey: 'sales',
         debit: 0,
-        credit: 65,
+        credit: 3900,
       }),
       expect.objectContaining({
         accountSystemKey: 'tax_payable',
         debit: 0,
-        credit: 11.7,
+        credit: 702,
       }),
     ]);
   });

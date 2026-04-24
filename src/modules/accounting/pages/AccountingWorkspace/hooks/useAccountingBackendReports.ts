@@ -110,6 +110,17 @@ const normalizeLedgerRecord = (value: unknown): AccountingLedgerRecord => {
     description: toCleanString(record.description) ?? '',
     reference: toCleanString(record.reference) ?? '',
     internalReference: toCleanString(record.internalReference),
+    entryReference:
+      toCleanString(record.entryReference) ??
+      toCleanString(record.reference) ??
+      toCleanString(record.id) ??
+      '',
+    documentReference: toCleanString(record.documentReference),
+    journalTypeKey: (toCleanString(record.journalTypeKey) ??
+      'adjustment') as AccountingLedgerRecord['journalTypeKey'],
+    journalTypeLabel:
+      toCleanString(record.journalTypeLabel) ?? 'Ajuste',
+    userLabel: toCleanString(record.userLabel),
     amount: toFiniteNumber(record.amount),
     statusLabel: toCleanString(record.statusLabel) ?? 'Posteado',
     statusTone: (toCleanString(record.statusTone) ??

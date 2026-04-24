@@ -310,6 +310,7 @@ export const syncBankPaymentPolicyDefaultAccount = ({
 
 export const resolveConfiguredBankAccountId = ({
   policy,
+  moduleKey,
   method,
   availableBankAccountIds,
 }: {
@@ -318,6 +319,19 @@ export const resolveConfiguredBankAccountId = ({
   method?: BankPaymentMethodCode | null | unknown;
   availableBankAccountIds?: ReadonlySet<string> | readonly string[];
 }): string | null => {
+  if (moduleKey) {
+    const moduleOverride = getBankPaymentModuleOverride(policy, moduleKey);
+    if (moduleOverride.enabled) {
+      const moduleBankAccountId = toCleanString(moduleOverride.bankAccountId);
+      return hasAvailableBankAccountId(
+        moduleBankAccountId,
+        availableBankAccountIds,
+      )
+        ? moduleBankAccountId
+        : null;
+    }
+  }
+
   const methodConfig = getBankPaymentMethodConfig(policy, method);
   const methodBankAccountId =
     methodConfig?.selectionMode === 'default'

@@ -70,6 +70,15 @@ const normalizeExchangeRate = (value: unknown): number | null => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 
+const normalizeRateEffectiveAt = (
+  value: unknown,
+): number | string | Date | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim().length) return value.trim();
+  if (value instanceof Date) return value;
+  return null;
+};
+
 const normalizeRateOverride = (
   value: MonetaryRateOverride | null | undefined,
 ): MonetaryRateOverride | null => {
@@ -93,10 +102,17 @@ const normalizeManualRatesByCurrency = (
   >((accumulator, [currency, rates]) => {
     const normalizedCurrency = normalizeDocumentCurrency(currency);
     const normalizedRates = normalizeAccountingCurrencyRateConfig(rates);
-    accumulator[normalizedCurrency] = {
+    const normalizedRateConfig: MonetaryRateConfig = {
       buyRate: normalizeExchangeRate(normalizedRates.buyRate),
       sellRate: normalizeExchangeRate(normalizedRates.sellRate),
     };
+    const effectiveAt = normalizeRateEffectiveAt(
+      (rates as MonetaryRateConfig | null | undefined)?.effectiveAt,
+    );
+    if (effectiveAt != null) {
+      normalizedRateConfig.effectiveAt = effectiveAt;
+    }
+    accumulator[normalizedCurrency] = normalizedRateConfig;
     return accumulator;
   }, {});
 
@@ -244,8 +260,13 @@ export const cartSlice = createSlice({
           processedCart.manualRatesByCurrency,
         );
         processedCart.mixedCurrencySale = processedCart.mixedCurrencySale === true;
+        const loadedExchangeRate = normalizeExchangeRate(
+          processedCart.exchangeRate,
+        );
         processedCart.exchangeRate =
-          normalizeExchangeRate(processedCart.exchangeRate) ?? 1;
+          processedCart.documentCurrency === processedCart.functionalCurrency
+            ? (loadedExchangeRate ?? 1)
+            : loadedExchangeRate;
         processedCart.rateOverride = normalizeRateOverride(
           processedCart.rateOverride as MonetaryRateOverride | null,
         );
@@ -403,14 +424,16 @@ export const cartSlice = createSlice({
         : normalizeDocumentCurrency(action.payload);
       state.data.documentCurrency = documentCurrency;
       state.data.exchangeRate =
-        normalizeExchangeRate(state.data.exchangeRate) ?? 1;
+        documentCurrency === functionalCurrency
+          ? (normalizeExchangeRate(state.data.exchangeRate) ?? 1)
+          : normalizeExchangeRate(state.data.exchangeRate);
       state.data.rateOverride = normalizeRateOverride(state.data.rateOverride);
     },
     setDocumentExchangeRate: (
       state: CartState,
       action: PayloadAction<number | string | null | undefined>,
     ) => {
-      state.data.exchangeRate = normalizeExchangeRate(action.payload) ?? 1;
+      state.data.exchangeRate = normalizeExchangeRate(action.payload);
     },
     setDocumentRateOverride: (
       state: CartState,

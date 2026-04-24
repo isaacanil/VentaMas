@@ -71,7 +71,7 @@ const {
 
 vi.mock('firebase-functions/v2/https', () => ({
   HttpsError: MockHttpsError,
-  onCall: (handler) => handler,
+  onCall: (...args) => (typeof args[0] === 'function' ? args[0] : args[1]),
 }));
 
 vi.mock('../../../core/config/firebase.js', () => ({

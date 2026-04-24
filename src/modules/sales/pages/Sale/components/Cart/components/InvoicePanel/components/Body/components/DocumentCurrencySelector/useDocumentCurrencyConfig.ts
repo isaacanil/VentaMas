@@ -25,6 +25,38 @@ const safeNumber = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const resolveTimestampMillis = (value: unknown): number | null => {
+  if (value == null) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (value instanceof Date) {
+    const millis = value.getTime();
+    return Number.isFinite(millis) ? millis : null;
+  }
+
+  const record = asRecord(value);
+  const toMillis = record.toMillis;
+  if (typeof toMillis === 'function') {
+    const millis = Number(toMillis.call(value));
+    return Number.isFinite(millis) ? millis : null;
+  }
+
+  const toDate = record.toDate;
+  if (typeof toDate === 'function') {
+    const date = toDate.call(value);
+    if (date instanceof Date) {
+      const millis = date.getTime();
+      return Number.isFinite(millis) ? millis : null;
+    }
+  }
+
+  const seconds = Number(record.seconds ?? record._seconds);
+  return Number.isFinite(seconds) ? seconds * 1000 : null;
+};
+
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -53,8 +85,12 @@ const normalizeManualRatesByCurrency = (
   value: unknown,
   functionalCurrency: SupportedDocumentCurrency,
   documentCurrencies: SupportedDocumentCurrency[],
+  fallbackEffectiveAt: unknown = null,
 ): DocumentCurrencyConfig['manualRatesByCurrency'] => {
   const record = asRecord(value);
+  const normalizedFallbackEffectiveAt = resolveTimestampMillis(
+    fallbackEffectiveAt ?? record.effectiveAt ?? record.updatedAt,
+  );
   const nestedRates = Object.entries(record).reduce<
     DocumentCurrencyConfig['manualRatesByCurrency']
   >((accumulator, [currencyKey, nestedValue]) => {
@@ -68,6 +104,13 @@ const normalizeManualRatesByCurrency = (
     }
 
     const nestedRecord = asRecord(nestedValue);
+    const effectiveAt =
+      resolveTimestampMillis(
+        nestedRecord.effectiveAt ??
+          nestedRecord.updatedAt ??
+          nestedRecord.appliedAt ??
+          nestedRecord.createdAt,
+      ) ?? normalizedFallbackEffectiveAt;
     accumulator[normalizedCurrency] = {
       purchase: safeNumber(
         nestedRecord.purchase ?? nestedRecord.purchaseRate ?? nestedRecord.buy,
@@ -75,6 +118,7 @@ const normalizeManualRatesByCurrency = (
       sale: safeNumber(
         nestedRecord.sale ?? nestedRecord.saleRate ?? nestedRecord.sell,
       ),
+      effectiveAt,
     };
     return accumulator;
   }, {});
@@ -98,6 +142,7 @@ const normalizeManualRatesByCurrency = (
               sale:
                 safeNumber(record.sale ?? record.saleRate ?? record.sell) ??
                 legacyUsdRate,
+              effectiveAt: normalizedFallbackEffectiveAt,
             },
           };
         })();
@@ -108,6 +153,7 @@ const normalizeManualRatesByCurrency = (
       accumulator[currency] = sourceRates[currency] ?? {
         purchase: null,
         sale: null,
+        effectiveAt: normalizedFallbackEffectiveAt,
       };
       return accumulator;
     },
@@ -167,6 +213,7 @@ export const useDocumentCurrencyConfig = (
             data.manualRatesByCurrency ?? data.manualRates,
             functionalCurrency,
             documentCurrencies,
+            data.updatedAt ?? data.effectiveAt ?? data.lastUpdatedAt,
           ),
         });
         setLoading(false);

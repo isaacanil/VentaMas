@@ -12,12 +12,16 @@ import {
 } from '@/features/invoice/invoiceFormSlice';
 import { markAuthorizationUsed } from '@/firebase/authorizations/invoiceEditAuthorizations';
 import { fbUpdateInvoice } from '@/firebase/invoices/fbUpdateInvoice';
+import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
+import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { InvoiceDocumentHeader } from '@/modules/invoice/components/InvoiceDocumentHeader/InvoiceDocumentHeader';
 import { formatPrice } from '@/utils/format';
 import { convertInvoiceDateToMillis } from '@/utils/invoice';
 import type { UserIdentity } from '@/types/users';
 import type { InvoiceData, InvoiceFormSliceState } from '@/types/invoice';
 
 import { InvoiceInfo } from './components/InvoiceInfo/InfoiceInfo';
+import { InvoiceLinkedRecords } from './components/InvoiceLinkedRecords/InvoiceLinkedRecords';
 import { Products } from './components/Products/Products';
 
 export const InvoiceForm = () => {
@@ -32,6 +36,14 @@ export const InvoiceForm = () => {
   ) as InvoiceFormSliceState;
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity | null;
+  const openAccountingEntry = useOpenAccountingEntry();
+  const businessId =
+    user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
+  const isAccountingRolloutEnabled = useAccountingRolloutEnabled(businessId);
+  const canOpenAccountingEntry =
+    isAccountingRolloutEnabled &&
+    typeof invoice?.id === 'string' &&
+    invoice.id.length > 0;
 
   const isEditLocked = (() => {
     if (!invoice?.date) return true;
@@ -131,6 +143,11 @@ export const InvoiceForm = () => {
         label: 'Productos',
         children: <Products invoice={invoice} isEditLocked={isEditLocked} />,
       },
+      {
+        key: '3',
+        label: 'Relaciones',
+        children: <InvoiceLinkedRecords invoice={invoice} />,
+      },
     ],
     [invoice, isEditLocked],
   );
@@ -138,6 +155,16 @@ export const InvoiceForm = () => {
   const handleCancel = () => {
     if (loading) return;
     dispatch(closeInvoiceForm({ clear: true }));
+  };
+
+  const handleOpenAccountingEntry = () => {
+    if (!invoice?.id) return;
+
+    openAccountingEntry({
+      eventType: 'invoice.committed',
+      sourceDocumentId: invoice.id,
+      sourceDocumentType: 'invoice',
+    });
   };
 
   const handleAfterOpenChange = (open: boolean) => {
@@ -257,6 +284,13 @@ export const InvoiceForm = () => {
           description="Puedes consultar la información de la factura, pero no es posible modificarla."
         />
       ) : null}
+      <HeaderBlock>
+        <InvoiceDocumentHeader
+          invoice={invoice}
+          canOpenAccountingEntry={canOpenAccountingEntry}
+          onOpenAccountingEntry={handleOpenAccountingEntry}
+        />
+      </HeaderBlock>
       <Form
         form={form}
         initialValues={invoice}
@@ -269,3 +303,7 @@ export const InvoiceForm = () => {
     </Modal>
   );
 };
+
+const HeaderBlock = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ marginBottom: 16 }}>{children}</div>
+);

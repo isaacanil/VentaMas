@@ -155,11 +155,12 @@ describe('bank payment policy helpers', () => {
     expect(nextPolicy.defaultBankAccountId).toBeNull();
   });
 
-  it('ignores module-specific overrides for runtime resolution and uses the global default', () => {
+  it('prefers a module-specific override over the global default', () => {
     const policy = normalizeBankPaymentPolicy({
       defaultBankAccountId: 'bank-1',
       moduleBankAccountIds: {
         purchases: 'bank-4',
+        sales: 'bank-sales',
       },
     });
 
@@ -167,16 +168,36 @@ describe('bank payment policy helpers', () => {
       resolveConfiguredBankAccountId({
         policy,
         moduleKey: 'sales',
-        availableBankAccountIds: ['bank-1', 'bank-4'],
+        availableBankAccountIds: ['bank-1', 'bank-4', 'bank-sales'],
       }),
-    ).toBe('bank-1');
+    ).toBe('bank-sales');
     expect(
       resolveConfiguredBankAccountId({
         policy,
         moduleKey: 'purchases',
-        availableBankAccountIds: ['bank-1', 'bank-4'],
+        availableBankAccountIds: ['bank-1', 'bank-4', 'bank-sales'],
       }),
-    ).toBe('bank-1');
+    ).toBe('bank-4');
+  });
+
+  it('does not fall back to the global default when an enabled module override is inactive', () => {
+    const policy = normalizeBankPaymentPolicy({
+      defaultBankAccountId: 'bank-1',
+      moduleOverrides: {
+        sales: {
+          enabled: true,
+          bankAccountId: 'bank-sales',
+        },
+      },
+    });
+
+    expect(
+      resolveConfiguredBankAccountId({
+        policy,
+        moduleKey: 'sales',
+        availableBankAccountIds: ['bank-1'],
+      }),
+    ).toBeNull();
   });
 
   it('prefers a method-specific default over the global default when the method is provided', () => {
@@ -312,5 +333,31 @@ describe('bank payment policy helpers', () => {
         availableBankAccountIds: new Set(['bank-3', 'bank-7', 'bank-9']),
       }),
     ).toBe('bank-9');
+  });
+
+  it('uses the module override over a method-specific configured account', () => {
+    expect(
+      resolveEffectiveBankAccountId({
+        method: 'card',
+        moduleKey: 'sales',
+        bankAccountId: 'bank-3',
+        policy: normalizeBankPaymentPolicy({
+          defaultBankAccountId: 'bank-7',
+          moduleBankAccountIds: {
+            sales: 'bank-sales',
+          },
+          card: {
+            selectionMode: 'default',
+            defaultBankAccountId: 'bank-9',
+          },
+        }),
+        availableBankAccountIds: new Set([
+          'bank-3',
+          'bank-7',
+          'bank-9',
+          'bank-sales',
+        ]),
+      }),
+    ).toBe('bank-sales');
   });
 });

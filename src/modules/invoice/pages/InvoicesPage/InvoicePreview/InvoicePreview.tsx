@@ -21,6 +21,12 @@ import { useFbGetAccountReceivableByInvoice } from '@/firebase/accountsReceivabl
 import { useFbGetCreditNotesByInvoice } from '@/firebase/creditNotes/useFbGetCreditNotesByInvoice';
 import { syncInvoicePaymentsFromAR } from '@/firebase/invoices/syncInvoicePaymentsFromAR';
 import { useFbGetCreditNoteApplicationsByInvoice } from '@/hooks/creditNote/useFbGetCreditNoteApplicationsByInvoice';
+import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
+import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
+import { CreditNotesInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/CreditNotesInfoCard';
+import { PaymentMethodInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/PaymentMethodInfoCard';
+import { ReceivablePaymentsInfoCard } from '@/modules/invoice/components/InvoiceDetailCards/ReceivablePaymentsInfoCard';
+import { InvoiceDocumentHeader } from '@/modules/invoice/components/InvoiceDocumentHeader/InvoiceDocumentHeader';
 import { formatPrice } from '@/utils/format';
 
 type InvoicePreviewState = {
@@ -30,9 +36,6 @@ type InvoicePreviewState = {
 
 import { AccountReceivableInfoCard } from './components/AccountReceivableInfoCard';
 import { ClientInfoCard } from './components/ClientInfo';
-import { CreditNotesInfoCard } from './components/CreditNotesInfoCard';
-import { PaymentMethodInfoCard } from './components/PaymentMethodInfoCard';
-import { ReceivablePaymentsInfoCard } from './components/ReceivablePaymentsInfoCard';
 import Products from './components/Products';
 import SummaryInfoCard from './components/SummaryInfoCard';
 
@@ -42,9 +45,13 @@ export const InvoicePreview = () => {
     selectInvoicePreview,
   ) as InvoicePreviewState;
   const user = useSelector(selectUser) as UserIdentity | null;
+  const openAccountingEntry = useOpenAccountingEntry();
   const isOpen = invoicePreviewSelected?.isOpen;
   const invoiceData = invoicePreviewSelected?.data || null;
   const [syncing, setSyncing] = useState(false);
+  const businessId =
+    user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
+  const isAccountingRolloutEnabled = useAccountingRolloutEnabled(businessId);
 
   // Destructuración segura con optional chaining y valores predeterminados
   const {
@@ -78,6 +85,18 @@ export const InvoicePreview = () => {
 
   const hasGeneratedCreditNotes = generatedCreditNotes.length > 0;
   const hasAccountsReceivable = accountsReceivable.length > 0;
+  const canOpenAccountingEntry =
+    isAccountingRolloutEnabled && typeof invoiceId === 'string' && invoiceId.length > 0;
+
+  const handleOpenAccountingEntry = () => {
+    if (!invoiceId) return;
+
+    openAccountingEntry({
+      eventType: 'invoice.committed',
+      sourceDocumentId: invoiceId,
+      sourceDocumentType: 'invoice',
+    });
+  };
 
   const handleSyncFromReceivables = () => {
     if (!invoiceId || !hasAccountsReceivable) {
@@ -122,38 +141,38 @@ export const InvoicePreview = () => {
     {
       key: 'payment',
       label: 'Pago y resumen',
-        children: (
-          <Group>
-            <PaymentMethodInfoCard
+      children: (
+        <Group>
+          <PaymentMethodInfoCard
+            invoiceData={invoiceData}
+            paymentMethod={paymentMethod as InvoicePaymentMethod[]}
+            creditNoteApplications={creditNoteApplications}
+          />
+          <SummaryInfoCard
+            invoiceData={invoiceData}
+            summaryData={{
+              sourceOfPurchase,
+              totalShoppingItems,
+              totalPurchaseWithoutTaxes,
+              totalTaxes,
+              payment,
+              change,
+            }}
+          />
+          {hasAccountsReceivable && (
+            <ReceivablePaymentsInfoCard
+              user={user}
+              invoiceId={invoiceId}
               invoiceData={invoiceData}
-              paymentMethod={paymentMethod as InvoicePaymentMethod[]}
-              creditNoteApplications={creditNoteApplications}
+              accountsReceivable={accountsReceivable as AccountsReceivableDoc[]}
+              invoiceTotal={Number((totalPurchase as any)?.value ?? 0)}
+              invoicePayment={payment as any}
+              invoiceChange={change as any}
             />
-            <SummaryInfoCard
-              invoiceData={invoiceData}
-              summaryData={{
-                sourceOfPurchase,
-                totalShoppingItems,
-                totalPurchaseWithoutTaxes,
-                totalTaxes,
-                payment,
-                change,
-              }}
-            />
-            {hasAccountsReceivable && (
-              <ReceivablePaymentsInfoCard
-                user={user}
-                invoiceId={invoiceId}
-                invoiceData={invoiceData}
-                accountsReceivable={accountsReceivable as AccountsReceivableDoc[]}
-                invoiceTotal={Number((totalPurchase as any)?.value ?? 0)}
-                invoicePayment={payment as any}
-                invoiceChange={change as any}
-              />
-            )}
-          </Group>
-        ),
-      },
+          )}
+        </Group>
+      ),
+    },
     {
       key: 'accountsReceivable',
       label: 'Cuentas por cobrar',
@@ -203,6 +222,11 @@ export const InvoicePreview = () => {
         width={800}
       >
         <Container>
+          <InvoiceDocumentHeader
+            invoice={invoiceData}
+            canOpenAccountingEntry={canOpenAccountingEntry}
+            onOpenAccountingEntry={handleOpenAccountingEntry}
+          />
           <ClientInfoCard client={client as InvoiceClient} />
           <Products
             products={products as InvoiceProduct[]}

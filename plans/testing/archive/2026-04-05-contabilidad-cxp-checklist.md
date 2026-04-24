@@ -1,5 +1,7 @@
 # Revision guiada de Contabilidad y CXP
 
+> Estado 2026-04-23: `ARCHIVADO`. La guia operativa vigente para nuevas corridas es `plans/testing/2026-04-23-finanzas-contabilidad-qa-maestro.md`.
+
 Fecha: 2026-04-05
 
 ## Objetivo

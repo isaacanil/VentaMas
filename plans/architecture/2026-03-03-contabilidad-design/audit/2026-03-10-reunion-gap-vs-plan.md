@@ -9,8 +9,8 @@ Base comparada:
 - `README.md`
 - `contabilidad-backlog.md`
 - `contabilidad-checklist.md`
-- `etapa-2026-03-10-precio-documental-y-facturacion-nativa-por-moneda.md`
-- `implementacion-2026-03-10-facturacion-usd-nativa.md`
+- `archive/etapa-2026-03-10-precio-documental-y-facturacion-nativa-por-moneda.md`
+- `archive/implementacion-2026-03-10-facturacion-usd-nativa.md`
 - `pending-2026-03-09-purchases-payment-state-gap.md`
 - `audit/2026-03-09-repo-audit.md`
 - `resumen-2026-03-10-flujo-y-alcance-actual.md`

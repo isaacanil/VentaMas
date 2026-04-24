@@ -10,14 +10,22 @@ import { formatDate, formatMoney } from '../utils/formatters';
 
 interface AccountInspectorRailProps {
   account: TreasuryLiquidityAccount;
+  currentBalance: number;
   latestReconciliation: BankReconciliationRecord | null;
+  pendingStatementLineCount: number;
+  statementLineCount: number;
   transfers: InternalTransfer[];
+  writtenOffStatementLineCount: number;
 }
 
 export const AccountInspectorRail = ({
   account,
+  currentBalance,
   latestReconciliation,
+  pendingStatementLineCount,
+  statementLineCount,
   transfers,
+  writtenOffStatementLineCount,
 }: AccountInspectorRailProps) => (
   <Rail>
     <Panel>
@@ -36,6 +44,53 @@ export const AccountInspectorRail = ({
           showIcon
           message="Cuenta inactiva"
           description="Revísala antes de registrar nuevas operaciones."
+        />
+      ) : null}
+
+      {account.kind === 'bank' && pendingStatementLineCount > 0 ? (
+        <Alert
+          type="warning"
+          showIcon
+          message="Excepciones de extracto pendientes"
+          description={`${pendingStatementLineCount} línea(s) de extracto siguen sin match exacto.`}
+        />
+      ) : null}
+
+      {account.kind === 'bank' && writtenOffStatementLineCount > 0 ? (
+        <Alert
+          type="info"
+          showIcon
+          message="Diferencias ajustadas"
+          description={`${writtenOffStatementLineCount} línea(s) se cerraron con write-off explícito.`}
+        />
+      ) : null}
+
+      {currentBalance < 0 ? (
+        <Alert
+          type="error"
+          showIcon
+          message="Saldo negativo detectado"
+          description={`Balance actual ${formatMoney(currentBalance, account.currency)}. Revisa transferencias, gastos o cobros pendientes antes de seguir operando.`}
+        />
+      ) : null}
+
+      {latestReconciliation?.status === 'variance' ? (
+        <Alert
+          type="warning"
+          showIcon
+          message="Conciliación con diferencia"
+          description={`Última diferencia registrada: ${formatMoney(latestReconciliation.variance, account.currency)}.`}
+        />
+      ) : null}
+
+      {account.kind === 'bank' &&
+      latestReconciliation &&
+      (latestReconciliation.unreconciledMovementCount ?? 0) > 0 ? (
+        <Alert
+          type="info"
+          showIcon
+          message="Movimientos pendientes de conciliación"
+          description={`${latestReconciliation.unreconciledMovementCount} movimiento(s) bancarios quedaron fuera del último corte.`}
         />
       ) : null}
 
@@ -104,6 +159,12 @@ export const AccountInspectorRail = ({
           <Value>{formatMoney(account.openingBalance, account.currency)}</Value>
         </ControlLine>
         <ControlLine>
+          <Label>Balance actual</Label>
+          <VarianceValue $warning={currentBalance < 0}>
+            {formatMoney(currentBalance, account.currency)}
+          </VarianceValue>
+        </ControlLine>
+        <ControlLine>
           <Label>Ubicación</Label>
           <Value>
             {account.kind === 'bank'
@@ -115,6 +176,36 @@ export const AccountInspectorRail = ({
           <Label>Transferencias visibles</Label>
           <Value>{transfers.length}</Value>
         </ControlLine>
+        {account.kind === 'bank' ? (
+          <>
+            <ControlLine>
+              <Label>Líneas extracto</Label>
+              <Value>{statementLineCount}</Value>
+            </ControlLine>
+            <ControlLine>
+              <Label>Mov. conciliados</Label>
+              <Value>{latestReconciliation?.reconciledMovementCount ?? 0}</Value>
+            </ControlLine>
+            <ControlLine>
+              <Label>Mov. pendientes</Label>
+              <VarianceValue
+                $warning={(latestReconciliation?.unreconciledMovementCount ?? 0) > 0}
+              >
+                {latestReconciliation?.unreconciledMovementCount ?? 0}
+              </VarianceValue>
+            </ControlLine>
+            <ControlLine>
+              <Label>Excepciones</Label>
+              <VarianceValue $warning={pendingStatementLineCount > 0}>
+                {pendingStatementLineCount}
+              </VarianceValue>
+            </ControlLine>
+            <ControlLine>
+              <Label>Write-off</Label>
+              <Value>{writtenOffStatementLineCount}</Value>
+            </ControlLine>
+          </>
+        ) : null}
       </ControlStack>
     </Panel>
   </Rail>

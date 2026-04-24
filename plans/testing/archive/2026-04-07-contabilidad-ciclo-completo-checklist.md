@@ -1,8 +1,10 @@
 # Checklist activo de cierre de ciclo contable
 
+> Estado 2026-04-23: `ARCHIVADO`. Evidencia util de corridas anteriores; la guia operativa vigente para nuevas pruebas es `plans/testing/2026-04-23-finanzas-contabilidad-qa-maestro.md`.
+
 Fecha base: `2026-04-07`
 
-Estado: `activo`
+Estado: `ARCHIVADO`
 
 Objetivo: cerrar el ciclo contable de VentaMas con pruebas reales por modulo hasta llegar a un comportamiento robusto tipo ERP, donde cada operacion relevante:
 

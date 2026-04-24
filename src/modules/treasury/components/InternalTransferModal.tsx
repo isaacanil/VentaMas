@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Alert, Form, Input, InputNumber, Modal, Select } from 'antd';
+import { Alert, Checkbox, Form, Input, InputNumber, Modal, Select } from 'antd';
 import { DateTime } from 'luxon';
 
 import DatePicker from '@/components/DatePicker';
@@ -9,6 +9,7 @@ import type { InternalTransferDraft } from '@/modules/treasury/utils/records';
 
 interface InternalTransferModalProps {
   accounts: TreasuryLiquidityAccount[];
+  currentBalancesByAccountKey: Record<string, number>;
   defaultSourceAccountKey?: string | null;
   open: boolean;
   onCancel: () => void;
@@ -17,6 +18,7 @@ interface InternalTransferModalProps {
 }
 
 interface InternalTransferFormValues {
+  allowOverdraft?: boolean;
   amount: number;
   fromAccountKey: string;
   notes?: string;
@@ -30,6 +32,7 @@ const getAccountOptionLabel = (account: TreasuryLiquidityAccount) =>
 
 export const InternalTransferModal = ({
   accounts,
+  currentBalancesByAccountKey,
   defaultSourceAccountKey,
   open,
   onCancel,
@@ -56,6 +59,23 @@ export const InternalTransferModal = ({
   const selectedSourceAccount =
     activeAccounts.find((account) => account.key === selectedSourceAccountKey) ??
     null;
+  const amountInput = Form.useWatch('amount', form);
+  const allowOverdraftInput = Form.useWatch('allowOverdraft', form);
+  const transferAmount = Number(amountInput);
+  const hasTransferAmount = Number.isFinite(transferAmount) && transferAmount > 0;
+  const sourceCurrentBalance = selectedSourceAccount
+    ? Number(
+        currentBalancesByAccountKey[selectedSourceAccount.key] ??
+          selectedSourceAccount.openingBalance ??
+          0,
+      )
+    : null;
+  const sourceProjectedBalance =
+    sourceCurrentBalance != null && hasTransferAmount
+      ? Number((sourceCurrentBalance - transferAmount).toFixed(2))
+      : null;
+  const hasOverdraftRisk =
+    sourceProjectedBalance != null && sourceProjectedBalance < 0;
   const sourceAccountOptions = useMemo(
     () =>
       activeAccounts.map((account) => ({
@@ -98,7 +118,8 @@ export const InternalTransferModal = ({
   );
   const canSubmit =
     activeAccounts.length >= 2 &&
-    (!selectedSourceAccount || availableDestinationCount > 0);
+    (!selectedSourceAccount || availableDestinationCount > 0) &&
+    (!hasOverdraftRisk || allowOverdraftInput === true);
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -113,6 +134,7 @@ export const InternalTransferModal = ({
     }
 
     await onSubmit({
+      allowOverdraft: values.allowOverdraft === true,
       amount: values.amount,
       currency: sourceAccount.currency,
       fromAccountId: fromAccount.accountId,
@@ -160,6 +182,36 @@ export const InternalTransferModal = ({
             showIcon
             message="No hay cuentas destino elegibles."
             description="Elige otra cuenta origen o activa una cuenta de la misma moneda."
+          />
+        ) : null}
+        {selectedSourceAccount && sourceCurrentBalance != null ? (
+          <Alert
+            style={{ marginBottom: 16 }}
+            type={hasOverdraftRisk ? 'warning' : 'info'}
+            showIcon
+            message={`Saldo origen actual: ${new Intl.NumberFormat('es-DO', {
+              style: 'currency',
+              currency: selectedSourceAccount.currency,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(sourceCurrentBalance)}`}
+            description={
+              hasOverdraftRisk
+                ? `Saldo proyectado: ${new Intl.NumberFormat('es-DO', {
+                    style: 'currency',
+                    currency: selectedSourceAccount.currency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(sourceProjectedBalance ?? 0)}. Debes autorizar sobregiro para continuar.`
+                : sourceProjectedBalance != null
+                  ? `Saldo proyectado después de transferir: ${new Intl.NumberFormat('es-DO', {
+                      style: 'currency',
+                      currency: selectedSourceAccount.currency,
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(sourceProjectedBalance)}`
+                  : 'Selecciona monto para ver saldo proyectado.'
+            }
           />
         ) : null}
 
@@ -238,6 +290,27 @@ export const InternalTransferModal = ({
             maxLength={80}
           />
         </Form.Item>
+
+        {hasOverdraftRisk ? (
+          <Form.Item
+            name="allowOverdraft"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: async (_, value) => {
+                  if (value === true) return;
+                  throw new Error(
+                    'Debes autorizar sobregiro explícitamente para registrar esta transferencia.',
+                  );
+                },
+              },
+            ]}
+          >
+            <Checkbox disabled={submitting}>
+              Autorizar sobregiro para esta transferencia
+            </Checkbox>
+          </Form.Item>
+        ) : null}
 
         <Form.Item label="Notas" name="notes">
           <Input.TextArea

@@ -25,6 +25,7 @@ interface AddCashAccountModalProps {
   open: boolean;
   onCancel: () => void;
   onSubmit: (draft: Partial<CashAccountDraft>, cashAccountId?: string) => Promise<void>;
+  submitting?: boolean;
 }
 
 export const AddCashAccountModal = ({
@@ -33,6 +34,7 @@ export const AddCashAccountModal = ({
   open,
   onCancel,
   onSubmit,
+  submitting = false,
 }: AddCashAccountModalProps) => {
   const [form] = Form.useForm<CashAccountDraft>();
 
@@ -71,7 +73,15 @@ export const AddCashAccountModal = ({
       open={open}
       okText="Guardar"
       cancelText="Cancelar"
-      onCancel={onCancel}
+      closable={!submitting}
+      confirmLoading={submitting}
+      keyboard={!submitting}
+      maskClosable={false}
+      cancelButtonProps={{ disabled: submitting }}
+      onCancel={() => {
+        if (submitting) return;
+        onCancel();
+      }}
       onOk={handleSubmit}
     >
       <Form
@@ -87,15 +97,23 @@ export const AddCashAccountModal = ({
           name="name"
           rules={[{ required: true, message: 'Ingrese el nombre de la caja.' }]}
         >
-          <Input placeholder="Ej. Caja principal" maxLength={80} />
+          <Input
+            disabled={submitting}
+            placeholder="Ej. Caja principal"
+            maxLength={80}
+          />
         </Form.Item>
 
         <Form.Item label="Ubicación" name="location">
-          <Input placeholder="Ej. Sucursal principal" maxLength={80} />
+          <Input
+            disabled={submitting}
+            placeholder="Ej. Sucursal principal"
+            maxLength={80}
+          />
         </Form.Item>
 
         <Form.Item label="Tipo" name="type">
-          <Select options={CASH_ACCOUNT_TYPES} />
+          <Select disabled={submitting} options={CASH_ACCOUNT_TYPES} />
         </Form.Item>
 
         <Form.Item
@@ -103,11 +121,12 @@ export const AddCashAccountModal = ({
           name="currency"
           rules={[{ required: true, message: 'Seleccione la moneda.' }]}
         >
-          <Select options={currencyOptions} />
+          <Select disabled={submitting} options={currencyOptions} />
         </Form.Item>
 
         <Form.Item label="Balance inicial" name="openingBalance">
           <InputNumber
+            disabled={submitting}
             style={{ width: '100%' }}
             min={0}
             step={0.01}
@@ -118,11 +137,16 @@ export const AddCashAccountModal = ({
         </Form.Item>
 
         <Form.Item label="Fecha balance inicial" name="openingBalanceDate">
-          <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <DatePicker
+            disabled={submitting}
+            style={{ width: '100%' }}
+            format="DD/MM/YYYY"
+          />
         </Form.Item>
 
         <Form.Item label="Notas" name="notes">
           <Input.TextArea
+            disabled={submitting}
             placeholder="Detalle operativo opcional"
             autoSize={{ minRows: 2, maxRows: 4 }}
             maxLength={240}

@@ -7,7 +7,6 @@ import { PageShell } from '@/components/layout/PageShell';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 import ROUTES_NAME from '@/router/routes/routesName';
 
-import { AccountingWorkspaceNav } from './components/AccountingWorkspaceNav';
 import { AccountingWorkspaceShell } from './components/AccountingWorkspaceShell';
 import { FinancialReportsPanel } from './components/FinancialReportsPanel';
 import { FiscalCompliancePanel } from './components/FiscalCompliancePanel';
@@ -23,7 +22,6 @@ import {
   getAccountingEntryLocatorKey,
 } from '@/modules/accounting/utils/accountingNavigation';
 import {
-  ACCOUNTING_WORKSPACE_PANELS,
   DEFAULT_ACCOUNTING_WORKSPACE_PANEL,
   getAccountingWorkspacePanel,
   resolveAccountingWorkspacePanelKey,
@@ -223,13 +221,6 @@ export default function AccountingWorkspace() {
         <AccountingWorkspaceShell
           loading={loading}
           notices={notices.length ? notices : null}
-          navigation={
-            <AccountingWorkspaceNav
-              activePanel={activePanel}
-              items={ACCOUNTING_WORKSPACE_PANELS}
-              onSelect={(route) => navigate(route)}
-            />
-          }
         >
           {content}
         </AccountingWorkspaceShell>

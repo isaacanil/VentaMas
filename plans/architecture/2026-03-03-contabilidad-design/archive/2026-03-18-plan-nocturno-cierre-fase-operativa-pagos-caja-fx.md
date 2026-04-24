@@ -1,5 +1,7 @@
 # Plan nocturno integral: cierre de fase operativa de pagos, caja y tasa de cambio
 
+> Estado 2026-04-23: `ARCHIVADO`. Reglas vigentes absorbidas en `../contabilidad-backlog.md`.
+
 Fecha: `2026-03-18`
 
 ## Objetivo

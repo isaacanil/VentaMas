@@ -71,6 +71,9 @@ const monthFormatter = new Intl.DateTimeFormat('es-DO', {
   timeZone: 'UTC',
 });
 
+const SYSTEM_GENERATED_REFERENCE_PATTERN =
+  /^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+__[\w-]+$/i;
+
 const asRecord = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
@@ -84,6 +87,95 @@ const toFiniteNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
+
+const pad2 = (value) => String(value).padStart(2, '0');
+
+const resolvePreferredAccountingDocumentReference = ({
+  eventType = null,
+  payload = null,
+}) => {
+  const snapshot = asRecord(payload);
+
+  switch (normalizeAccountingEventType(eventType, 'invoice.committed')) {
+    case 'invoice.committed':
+      return (
+        toCleanString(snapshot.ncfCode) ||
+        toCleanString(snapshot.invoiceNumber) ||
+        null
+      );
+    case 'accounts_receivable.payment.recorded':
+    case 'accounts_receivable.payment.voided':
+      return (
+        toCleanString(snapshot.receiptNumber) ||
+        toCleanString(snapshot.reference) ||
+        null
+      );
+    case 'purchase.committed':
+      return (
+        toCleanString(snapshot.vendorReference) ||
+        toCleanString(snapshot.invoiceNumber) ||
+        toCleanString(snapshot.purchaseNumber) ||
+        null
+      );
+    case 'accounts_payable.payment.recorded':
+    case 'accounts_payable.payment.voided':
+      return (
+        toCleanString(snapshot.receiptNumber) ||
+        toCleanString(snapshot.reference) ||
+        toCleanString(snapshot.purchaseNumber) ||
+        null
+      );
+    case 'expense.recorded':
+      return (
+        toCleanString(snapshot.invoiceNcf) ||
+        toCleanString(snapshot.reference) ||
+        toCleanString(snapshot.numberId) ||
+        null
+      );
+    case 'internal_transfer.posted':
+      return (
+        toCleanString(snapshot.reference) ||
+        toCleanString(snapshot.note) ||
+        null
+      );
+    default:
+      return null;
+  }
+};
+
+const sanitizeEntryAliasPart = (value) => {
+  const cleaned = toCleanString(value);
+  if (!cleaned) return 'ENTRY';
+
+  const normalized = cleaned
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toUpperCase();
+
+  return normalized || 'ENTRY';
+};
+
+const buildEntryAlias = (entryDate, entryId) => {
+  const year = entryDate?.getUTCFullYear?.() ?? entryDate?.getFullYear?.() ?? 0;
+  const month = pad2(
+    (entryDate?.getUTCMonth?.() ?? entryDate?.getMonth?.() ?? 0) + 1,
+  );
+  return `AST-${String(year).padStart(4, '0')}-${month}-${sanitizeEntryAliasPart(entryId)}`;
+};
+
+const assignStableEntryReferences = (records) =>
+  [...records].map((record) => {
+    const entryReference = buildEntryAlias(record.entryDate, record.journalEntry?.id);
+    return {
+      ...record,
+      entryReference,
+      searchIndex: `${record.searchIndex} ${entryReference}`.toLowerCase(),
+    };
+  });
+
+const shouldCompactVisibleReference = (value) =>
+  Boolean(value && SYSTEM_GENERATED_REFERENCE_PATTERN.test(value));
 
 const toBoolean = (value, fallback = false) =>
   typeof value === 'boolean' ? value : fallback;
@@ -256,6 +348,7 @@ const buildLedgerMovementSearchIndex = (entry) =>
   [
     entry.reference,
     entry.internalReference,
+    entry.entryReference,
     entry.title,
     entry.description,
     entry.lineDescription,
@@ -290,8 +383,8 @@ export const buildPostedLedgerRecords = ({
   journalEntries,
   eventsById = new Map(),
 } = {}) =>
-  (Array.isArray(journalEntries) ? journalEntries : [])
-    .map((entry) => {
+  assignStableEntryReferences(
+    (Array.isArray(journalEntries) ? journalEntries : []).map((entry) => {
       const effectiveDate = toDateOrNull(entry.entryDate) || toDateOrNull(entry.createdAt);
       const periodKey =
         toCleanString(entry.periodKey) ||
@@ -309,17 +402,16 @@ export const buildPostedLedgerRecords = ({
         entry.eventType === 'manual.entry.recorded'
           ? resolveManualEntryReference(entry)
           : null;
+      const rawEntryReference = entry.id;
       const eventReference =
+        resolvePreferredAccountingDocumentReference({
+          eventType: entry.eventType,
+          payload: event?.payload,
+        }) ||
         toCleanString(event?.sourceDocumentId) ||
         toCleanString(event?.sourceId) ||
         null;
-      const internalReference =
-        manualReference?.internalReference ||
-        (eventReference &&
-        toCleanString(entry.sourceId) &&
-        toCleanString(entry.sourceId) !== eventReference
-          ? toCleanString(entry.sourceId)
-          : null);
+      const internalReference = manualReference?.internalReference || rawEntryReference;
 
       return {
         id: `entry:${entry.id}`,
@@ -345,6 +437,8 @@ export const buildPostedLedgerRecords = ({
           toCleanString(entry.sourceId) ||
           entry.id,
         internalReference,
+        entryReference: rawEntryReference,
+        documentReference: manualReference?.reference || eventReference,
         amount: toFiniteNumber(entry.totals?.debit),
         statusLabel: entry.status === 'reversed' ? 'Revertido' : 'Posteado',
         statusTone: entry.status === 'reversed' ? 'neutral' : 'success',
@@ -354,6 +448,8 @@ export const buildPostedLedgerRecords = ({
         profile: null,
         searchIndex: [
           title,
+          rawEntryReference,
+          rawEntryReference,
           manualReference?.reference,
           manualReference?.internalReference,
           event?.sourceDocumentType,
@@ -367,12 +463,8 @@ export const buildPostedLedgerRecords = ({
           .join(' ')
           .toLowerCase(),
       };
-    })
-    .sort((left, right) => {
-      const leftTime = left.entryDate?.getTime() || 0;
-      const rightTime = right.entryDate?.getTime() || 0;
-      return rightTime - leftTime;
-    });
+    }),
+  );
 
 const buildAccountBalances = ({
   accounts,
@@ -498,6 +590,13 @@ export const buildGeneralLedgerSnapshot = ({
   let runningBalance = openingBalance;
   const entries = scopedLines.map(({ line, record }) => {
     runningBalance += resolveLineBalanceDelta(account, line);
+    const visibleReference = shouldCompactVisibleReference(record.reference)
+      ? record.documentReference || record.entryReference
+      : record.documentReference || record.reference;
+    const internalReference =
+      visibleReference !== record.reference
+        ? record.reference
+        : record.internalReference;
 
     const movement = {
       id: `${record.id}:${line.lineNumber}`,
@@ -505,8 +604,9 @@ export const buildGeneralLedgerSnapshot = ({
       periodKey: record.periodKey,
       moduleLabel: record.moduleLabel,
       sourceLabel: record.sourceLabel,
-      reference: record.reference,
-      internalReference: record.internalReference,
+      reference: visibleReference,
+      internalReference,
+      entryReference: record.entryReference,
       title: record.title,
       description: record.description,
       lineDescription: toCleanString(line.description),

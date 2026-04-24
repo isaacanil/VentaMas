@@ -21,7 +21,9 @@ import {
   limit,
 } from '@/utils/pricing';
 
-export type MonetaryRateConfig = AccountingCurrencyRateConfig;
+export type MonetaryRateConfig = AccountingCurrencyRateConfig & {
+  effectiveAt?: number | string | Date | null;
+};
 
 export interface ProductMonetarySnapshot {
   documentCurrency: SupportedDocumentCurrency;

@@ -48,6 +48,16 @@ const timestampFromMillis = (value) => {
   return new Timestamp(value);
 };
 
+const resolveMovementSignedAmount = (movementRecord) => {
+  const amount = roundToTwoDecimals(movementRecord.amount);
+  return movementRecord.direction === 'out' ? -amount : amount;
+};
+
+const isMovementPosted = (movementRecord) => {
+  const normalizedStatus = toCleanString(movementRecord?.status)?.toLowerCase();
+  return normalizedStatus !== 'void' && normalizedStatus !== 'draft';
+};
+
 const resolveLedgerAccountId = (ledger) =>
   ledger?.type === 'cash'
     ? toCleanString(ledger.cashAccountId ?? ledger.cashCountId)
@@ -70,6 +80,54 @@ const sanitizeForResponse = (value) => {
     next[key] = sanitizeForResponse(nestedValue);
   });
   return next;
+};
+
+const buildLedgerBalanceQuery = ({ businessId, ledger }) => {
+  const cashMovementsCollection = db.collection(
+    `businesses/${businessId}/cashMovements`,
+  );
+
+  if (ledger.type === 'bank') {
+    return cashMovementsCollection.where('bankAccountId', '==', ledger.bankAccountId);
+  }
+
+  const cashAccountId = resolveLedgerAccountId(ledger);
+  return cashMovementsCollection.where('cashAccountId', '==', cashAccountId);
+};
+
+const calculateLedgerBalanceThroughDate = async ({
+  businessId,
+  ledger,
+  openingBalance,
+  occurredAtMillis,
+  transaction,
+}) => {
+  const query = buildLedgerBalanceQuery({
+    businessId,
+    ledger,
+  });
+  const cashMovementsSnap = transaction
+    ? await transaction.get(query)
+    : await query.get();
+
+  return roundToTwoDecimals(
+    roundToTwoDecimals(openingBalance) +
+      cashMovementsSnap.docs.reduce((sum, movementSnap) => {
+        const movementRecord = asRecord(movementSnap.data());
+        if (!isMovementPosted(movementRecord)) {
+          return sum;
+        }
+
+        const movementMillis = toMillis(
+          movementRecord.occurredAt ?? movementRecord.createdAt,
+        );
+        if (movementMillis != null && movementMillis > occurredAtMillis) {
+          return sum;
+        }
+
+        return sum + resolveMovementSignedAmount(movementRecord);
+      }, 0),
+  );
 };
 
 const normalizeLedger = (value) => {
@@ -133,8 +191,8 @@ export const createInternalTransfer = onCall(async (request) => {
   const currency = toCleanString(payload.currency);
   const reference = toCleanString(payload.reference);
   const note = toCleanString(payload.note);
-  const occurredAtMillis = toMillis(payload.occurredAt) ?? Date.now();
-  const occurredAt = timestampFromMillis(occurredAtMillis);
+  const allowOverdraft = payload.allowOverdraft === true;
+  const occurredAtMillis = toMillis(payload.occurredAt);
   const fromLedger = normalizeLedger(payload.from);
   const toLedger = normalizeLedger(payload.to);
 
@@ -153,9 +211,17 @@ export const createInternalTransfer = onCall(async (request) => {
   if (amount <= 0) {
     throw new HttpsError('invalid-argument', 'El monto debe ser mayor que 0.');
   }
+  if (payload.occurredAt != null && occurredAtMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'occurredAt debe ser una fecha válida.',
+    );
+  }
 
   assertValidLedger(fromLedger, 'from');
   assertValidLedger(toLedger, 'to');
+  const resolvedOccurredAtMillis = occurredAtMillis ?? Date.now();
+  const occurredAt = timestampFromMillis(resolvedOccurredAtMillis);
 
   const fromIdentity = resolveLedgerAccountId(fromLedger);
   const toIdentity = resolveLedgerAccountId(toLedger);
@@ -182,7 +248,7 @@ export const createInternalTransfer = onCall(async (request) => {
     businessId,
     amount,
     currency,
-    occurredAt: occurredAtMillis,
+    occurredAt: resolvedOccurredAtMillis,
     reference,
     note,
     from: {
@@ -312,6 +378,21 @@ export const createInternalTransfer = onCall(async (request) => {
       );
     }
     const transferCurrency = currency ?? fromCurrency ?? toCurrency ?? null;
+    const sourceCurrentBalance = await calculateLedgerBalanceThroughDate({
+      businessId,
+      ledger: fromLedger,
+      openingBalance: safeNumber(fromLedgerSnap.get('openingBalance')),
+      occurredAtMillis: resolvedOccurredAtMillis,
+      transaction,
+    });
+    const sourceProjectedBalance = roundToTwoDecimals(sourceCurrentBalance - amount);
+
+    if (sourceProjectedBalance < 0 && !allowOverdraft) {
+      throw new HttpsError(
+        'failed-precondition',
+        'La transferencia deja saldo negativo en la cuenta origen. Reduce el monto o autoriza sobregiro explícitamente.',
+      );
+    }
 
     await assertAccountingPeriodOpenInTransaction({
       transaction,
@@ -344,7 +425,10 @@ export const createInternalTransfer = onCall(async (request) => {
       createdBy: authUid,
       updatedBy: authUid,
       metadata: {
+        allowOverdraft,
         idempotencyKey,
+        sourceCurrentBalance,
+        sourceProjectedBalance,
       },
     };
     const movements = buildInternalTransferCashMovements({
@@ -365,40 +449,6 @@ export const createInternalTransfer = onCall(async (request) => {
       transaction.set(
         db.doc(`businesses/${businessId}/cashMovements/${movement.id}`),
         movement,
-      );
-      const accountId =
-        movement.bankAccountId ??
-        toCleanString(movement.cashAccountId) ??
-        movement.cashCountId ??
-        null;
-      const counterpartyAccountId = accountId === fromIdentity ? toIdentity : fromIdentity;
-      const counterpartyAccountType =
-        accountId === fromIdentity ? toLedger.type : fromLedger.type;
-      transaction.set(
-        db.doc(`businesses/${businessId}/liquidityLedger/${movement.id}`),
-        {
-          id: movement.id,
-          businessId,
-          accountId,
-          accountType: movement.bankAccountId ? 'bank' : 'cash',
-          currency: transferCurrency,
-          direction: movement.direction,
-          amount: movement.amount,
-          occurredAt: movement.occurredAt,
-          createdAt: movement.createdAt,
-          createdBy: movement.createdBy ?? authUid,
-          status: movement.status === 'void' ? 'void' : 'posted',
-          sourceType: 'internal_transfer',
-          sourceId: transferId,
-          reference: movement.reference ?? reference,
-          description: note ?? 'Transferencia interna',
-          counterpartyAccountId,
-          counterpartyAccountType,
-          metadata: {
-            transferId,
-            idempotencyKey,
-          },
-        },
       );
     });
 

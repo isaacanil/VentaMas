@@ -1,10 +1,13 @@
-import { Card, Divider, Spin } from 'antd';
+import { ProfileOutlined } from '@ant-design/icons';
+import { Button, Card, Divider, Spin, Tooltip } from 'antd';
 import { DateTime } from 'luxon';
 import React, { useEffect, useMemo, useReducer } from 'react';
 import styled from 'styled-components';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
+import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
+import { useOpenAccountingEntry } from '@/modules/accounting/hooks/useOpenAccountingEntry';
 import type {
   InvoiceData,
   InvoiceMonetaryValue,
@@ -64,7 +67,9 @@ const resolvePaymentDateMs = (payment: ArPaymentDoc): number => {
   return toMillis(candidate as any) ?? 0;
 };
 
-const resolveMonetaryNumber = (value: InvoiceMonetaryValue | undefined): number => {
+const resolveMonetaryNumber = (
+  value: InvoiceMonetaryValue | undefined,
+): number => {
   const numeric = Number(value?.value ?? 0);
   return Number.isFinite(numeric) ? numeric : 0;
 };
@@ -87,11 +92,15 @@ export const ReceivablePaymentsInfoCard = ({
   invoiceChange?: InvoiceMonetaryValue;
 }) => {
   const businessId = user?.businessID ?? null;
+  const openAccountingEntry = useOpenAccountingEntry();
+  const isAccountingRolloutEnabled = useAccountingRolloutEnabled(businessId);
   const arIds = useMemo(
     () =>
       accountsReceivable
         .map((ar) => ar?.id)
-        .filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
+        .filter(
+          (id): id is string => typeof id === 'string' && id.trim().length > 0,
+        ),
     [accountsReceivable],
   );
 
@@ -207,26 +216,53 @@ export const ReceivablePaymentsInfoCard = ({
       ) : error ? (
         <ErrorText>{error}</ErrorText>
       ) : rows.length === 0 ? (
-        <EmptyText>No hay pagos registrados en CxC para esta factura.</EmptyText>
+        <EmptyText>
+          No hay pagos registrados en CxC para esta factura.
+        </EmptyText>
       ) : (
         <List>
           {rows.map((row) => {
             const dt = row.dateMs ? DateTime.fromMillis(row.dateMs) : null;
             const activeMethods = (row.methods ?? []).filter((m) => m?.status);
+            const canOpenAccountingEntry =
+              isAccountingRolloutEnabled && row.id.trim().length > 0;
             return (
               <Row key={row.id}>
                 <RowTop>
                   <RowDate>
-                    {dt?.isValid ? dt.toFormat('dd/MM/yyyy HH:mm') : 'Sin fecha'}
+                    {dt?.isValid
+                      ? dt.toFormat('dd/MM/yyyy HH:mm')
+                      : 'Sin fecha'}
                   </RowDate>
-                  <RowAmount>{formatAmount(row.amount)}</RowAmount>
+                  <RowActions>
+                    <RowAmount>{formatAmount(row.amount)}</RowAmount>
+                    {canOpenAccountingEntry ? (
+                      <Tooltip title="Ver asiento contable">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ProfileOutlined />}
+                          onClick={() =>
+                            openAccountingEntry({
+                              eventType:
+                                'accounts_receivable.payment.recorded',
+                              sourceDocumentId: row.id,
+                              sourceDocumentType: 'accountsReceivablePayment',
+                            })
+                          }
+                        />
+                      </Tooltip>
+                    ) : null}
+                  </RowActions>
                 </RowTop>
                 {activeMethods.length > 0 && (
                   <RowMethods>
                     {activeMethods.map((m, idx) => (
                       <MethodPill key={`${m.method ?? 'method'}-${idx}`}>
-                        {paymentMethodLabel[m.method ?? ''] ?? m.method ?? 'N/A'}:{' '}
-                        {formatAmount(m.value ?? 0)}
+                        {paymentMethodLabel[m.method ?? ''] ??
+                          m.method ??
+                          'N/A'}
+                        : {formatAmount(m.value ?? 0)}
                         {m.reference ? ` (${m.reference})` : ''}
                       </MethodPill>
                     ))}
@@ -296,6 +332,12 @@ const RowDate = styled.div`
 const RowAmount = styled.div`
   font-family: monospace;
   font-weight: 700;
+`;
+
+const RowActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 `;
 
 const RowMethods = styled.div`

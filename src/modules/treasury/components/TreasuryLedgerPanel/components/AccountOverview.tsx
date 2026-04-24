@@ -1,5 +1,11 @@
 import { Button, Empty } from 'antd';
-import { CheckCircleOutlined, RetweetOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  DownloadOutlined,
+  FileTextOutlined,
+  RetweetOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import styled from 'styled-components';
 
 import type { TreasuryLiquidityAccount } from '@/modules/treasury/utils/liquidity';
@@ -11,8 +17,14 @@ interface AccountOverviewProps {
   inflow: number;
   lastMovementAt: unknown;
   latestReconciliationDate?: unknown;
+  onExportLedger?: () => void;
+  onExportStatementLines?: () => void;
   onOpenReconciliation?: () => void;
+  onOpenStatementImport?: () => void;
+  onOpenResolveStatementLine?: () => void;
+  onOpenStatementLine?: () => void;
   onOpenTransfer?: () => void;
+  pendingStatementLineCount?: number;
   outflow: number;
 }
 
@@ -22,8 +34,14 @@ export const AccountOverview = ({
   inflow,
   lastMovementAt,
   latestReconciliationDate,
+  onExportLedger,
+  onExportStatementLines,
   onOpenReconciliation,
+  onOpenStatementImport,
+  onOpenResolveStatementLine,
+  onOpenStatementLine,
   onOpenTransfer,
+  pendingStatementLineCount = 0,
   outflow,
 }: AccountOverviewProps) => {
   if (!account) {
@@ -56,6 +74,29 @@ export const AccountOverview = ({
         <Button icon={<RetweetOutlined />} onClick={onOpenTransfer}>
           Transferir
         </Button>
+        <Button icon={<DownloadOutlined />} onClick={onExportLedger}>
+          Exportar ledger
+        </Button>
+        {account.kind === 'bank' ? (
+          <Button icon={<FileTextOutlined />} onClick={onOpenStatementLine}>
+            Línea extracto
+          </Button>
+        ) : null}
+        {account.kind === 'bank' ? (
+          <Button icon={<DownloadOutlined />} onClick={onExportStatementLines}>
+            Exportar extracto
+          </Button>
+        ) : null}
+        {account.kind === 'bank' ? (
+          <Button icon={<UploadOutlined />} onClick={onOpenStatementImport}>
+            Importar extracto
+          </Button>
+        ) : null}
+        {account.kind === 'bank' && pendingStatementLineCount > 0 ? (
+          <Button onClick={onOpenResolveStatementLine}>
+            Resolver excepción
+          </Button>
+        ) : null}
         {account.kind === 'bank' ? (
           <Button
             type="primary"

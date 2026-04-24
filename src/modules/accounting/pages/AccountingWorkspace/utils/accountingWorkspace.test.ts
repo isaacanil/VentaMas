@@ -110,6 +110,252 @@ describe('accountingWorkspace manual entry references', () => {
   });
 });
 
+describe('accountingWorkspace automatic entry aliases', () => {
+  it('genera un alias estable de asiento y conserva el id tecnico como referencia interna', () => {
+    const [record] = buildLedgerRecords({
+      accounts: [],
+      events: [
+        {
+          id: 'invoice.committed__GZEWUo6_n1XbZTaszmXPn',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-14T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-14T12:00:00.000Z'),
+          sourceId: 'invoice-1',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-1',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1250 },
+          treasury: {},
+          payload: {
+            ncfCode: 'B0100000339',
+            invoiceNumber: '339',
+          },
+          dedupeKey: 'dedupe-1',
+          idempotencyKey: 'idem-1',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-14T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [],
+    });
+
+    expect(record.entryReference).toBe(
+      'AST-2026-04-INVOICE-COMMITTED-GZEWUO6-N1XBZTASZMXPN',
+    );
+    expect(record.reference).toBe('B0100000339');
+    expect(record.documentReference).toBe('B0100000339');
+    expect(record.internalReference).toBe(
+      'invoice.committed__GZEWUo6_n1XbZTaszmXPn',
+    );
+    expect(record.searchIndex).toContain('b0100000339');
+    expect(record.searchIndex).toContain(
+      'ast-2026-04-invoice-committed-gzewuo6-n1xbztaszmxpn',
+    );
+  });
+
+  it('prefiere el nombre resuelto del usuario cuando createdBy es un uid', () => {
+    const [record] = buildLedgerRecords({
+      accounts: [],
+      events: [
+        {
+          id: 'invoice.committed__abc123',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-14T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-14T12:00:00.000Z'),
+          sourceId: 'invoice-1',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-1',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1250 },
+          treasury: {},
+          payload: {},
+          dedupeKey: 'dedupe-1',
+          idempotencyKey: 'idem-1',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-14T12:00:00.000Z'),
+          createdBy: 'BdNGtDt3y0',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [],
+      userNamesById: {
+        BdNGtDt3y0: 'Jonathan Lora',
+      },
+    });
+
+    expect(record.userLabel).toBe('Jonathan Lora');
+  });
+
+  it('asigna referencias AST estables derivadas del id de cada evento', () => {
+    const records = buildLedgerRecords({
+      accounts: [],
+      events: [
+        {
+          id: 'invoice.committed__older',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-14T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-14T12:00:00.000Z'),
+          sourceId: 'invoice-older',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-older',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1250 },
+          treasury: {},
+          payload: {},
+          dedupeKey: 'dedupe-older',
+          idempotencyKey: 'idem-older',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-14T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+        {
+          id: 'invoice.committed__newer',
+          businessId: 'business-1',
+          eventType: 'invoice.committed',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-15T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-15T12:00:00.000Z'),
+          sourceId: 'invoice-newer',
+          sourceDocumentType: 'invoice',
+          sourceDocumentId: 'invoice-newer',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 1500 },
+          treasury: {},
+          payload: {},
+          dedupeKey: 'dedupe-newer',
+          idempotencyKey: 'idem-newer',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-15T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [],
+    });
+
+    expect(records.map((record) => record.entryReference)).toEqual([
+      'AST-2026-04-INVOICE-COMMITTED-OLDER',
+      'AST-2026-04-INVOICE-COMMITTED-NEWER',
+    ]);
+  });
+
+  it('prefiere referencias negocio por modulo sin romper id tecnico de navegacion', () => {
+    const records = buildLedgerRecords({
+      accounts: [],
+      events: [
+        {
+          id: 'purchase.committed__purchase-1',
+          businessId: 'business-1',
+          eventType: 'purchase.committed',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-16T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-16T12:00:00.000Z'),
+          sourceId: 'purchase-1',
+          sourceDocumentType: 'purchase',
+          sourceDocumentId: 'purchase-1',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 700 },
+          treasury: {},
+          payload: {
+            vendorReference: 'B0100000044',
+            invoiceNumber: 'FAC-44',
+            purchaseNumber: 'PC-001',
+          },
+          dedupeKey: 'dedupe-purchase',
+          idempotencyKey: 'idem-purchase',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-16T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+        {
+          id: 'accounts_receivable.payment.recorded__payment-1',
+          businessId: 'business-1',
+          eventType: 'accounts_receivable.payment.recorded',
+          eventVersion: 1,
+          status: 'projected',
+          occurredAt: new Date('2026-04-17T12:00:00.000Z'),
+          recordedAt: new Date('2026-04-17T12:00:00.000Z'),
+          sourceId: 'payment-1',
+          sourceDocumentType: 'accountsReceivablePayment',
+          sourceDocumentId: 'payment-1',
+          counterpartyType: null,
+          counterpartyId: null,
+          currency: 'DOP',
+          functionalCurrency: 'DOP',
+          monetary: { amount: 700 },
+          treasury: {},
+          payload: {
+            receiptNumber: 'RCC-0001',
+            reference: 'DEP-001',
+          },
+          dedupeKey: 'dedupe-collection',
+          idempotencyKey: 'idem-collection',
+          projection: { status: 'projected', journalEntryId: null },
+          reversalOfEventId: null,
+          createdAt: new Date('2026-04-17T12:00:00.000Z'),
+          createdBy: 'ana@ventamas.do',
+          metadata: {},
+        },
+      ],
+      journalEntries: [],
+      postingProfiles: [],
+    });
+
+    expect(records[1]).toMatchObject({
+      reference: 'RCC-0001',
+      documentReference: 'RCC-0001',
+      event: expect.objectContaining({
+        sourceDocumentId: 'payment-1',
+      }),
+    });
+    expect(records[0]).toMatchObject({
+      reference: 'B0100000044',
+      documentReference: 'B0100000044',
+      event: expect.objectContaining({
+        sourceDocumentId: 'purchase-1',
+      }),
+    });
+  });
+});
+
 describe('buildGeneralLedgerSnapshot', () => {
   it('calcula saldo inicial y saldo corrido para cuentas deudoras', () => {
     const cashAccount = buildAccount({

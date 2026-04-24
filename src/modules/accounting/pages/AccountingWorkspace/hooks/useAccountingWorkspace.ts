@@ -16,6 +16,7 @@ import { useAccountingPostingProfiles } from '@/modules/settings/components/Gene
 import { useChartOfAccounts } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useChartOfAccounts';
 import type { AccountingEvent, JournalEntry } from '@/types/accounting';
 import { normalizeAccountingEventRecord } from '@/utils/accounting/accountingEvents';
+import { resolveUserDisplayNamesBatch } from '@/utils/users/resolveUserDisplayNamesBatch';
 import {
   normalizeJournalEntryRecord,
 } from '@/utils/accounting/journalEntries';
@@ -119,6 +120,7 @@ export const useAccountingWorkspace = ({
   const [eventsLoading, setEventsLoading] = useState(true);
   const [journalLoading, setJournalLoading] = useState(true);
   const [periodLoading, setPeriodLoading] = useState(true);
+  const [userNamesById, setUserNamesById] = useState<Record<string, string>>({});
   const [savingManualEntry, setSavingManualEntry] = useState(false);
   const [closingPeriod, setClosingPeriod] = useState(false);
   const [reversingEntryId, setReversingEntryId] = useState<string | null>(null);
@@ -226,6 +228,51 @@ export const useAccountingWorkspace = ({
     return () => unsubscribe();
   }, [businessId, config.generalAccountingEnabled]);
 
+  useEffect(() => {
+    if (!includeLedgerRecords || !businessId || !config.generalAccountingEnabled) {
+      setUserNamesById({});
+      return;
+    }
+
+    const candidateIds = Array.from(
+      new Set(
+        [
+          ...accountingEvents.map((event) => event.createdBy),
+          ...journalEntries.map((entry) => entry.createdBy),
+        ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0),
+      ),
+    );
+
+    if (!candidateIds.length) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void resolveUserDisplayNamesBatch(db, candidateIds, userNamesById)
+      .then((loaded) => {
+        if (cancelled || !Object.keys(loaded).length) return;
+        setUserNamesById((currentValue) => ({
+          ...currentValue,
+          ...loaded,
+        }));
+      })
+      .catch((cause) => {
+        console.error('Error resolviendo nombres de usuarios contables:', cause);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    accountingEvents,
+    businessId,
+    config.generalAccountingEnabled,
+    includeLedgerRecords,
+    journalEntries,
+    userNamesById,
+  ]);
+
   const ledgerRecords = useMemo(
     () =>
       buildLedgerRecords({
@@ -233,8 +280,9 @@ export const useAccountingWorkspace = ({
         events: accountingEvents,
         journalEntries,
         postingProfiles,
+        userNamesById,
       }),
-    [accountingEvents, chartOfAccounts, journalEntries, postingProfiles],
+    [accountingEvents, chartOfAccounts, journalEntries, postingProfiles, userNamesById],
   );
 
   const periodOptions = useMemo(

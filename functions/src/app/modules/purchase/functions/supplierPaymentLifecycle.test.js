@@ -358,4 +358,51 @@ describe('supplier payment lifecycle', () => {
       { merge: true },
     );
   });
+
+  it('rejects malformed occurredAt instead of silently using current time', async () => {
+    await expect(
+      addSupplierPayment({
+        data: {
+          businessId: 'business-1',
+          purchaseId: 'purchase-1',
+          idempotencyKey: 'idem-invalid-occurred-at',
+          occurredAt: 'not-a-date',
+          paymentMethods: [
+            {
+              method: 'cash',
+              amount: 10,
+              cashCountId: 'cash-1',
+            },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'La fecha del pago es inválida.',
+    });
+  });
+
+  it('rejects malformed nextPaymentAt instead of dropping the schedule', async () => {
+    await expect(
+      addSupplierPayment({
+        data: {
+          businessId: 'business-1',
+          purchaseId: 'purchase-1',
+          idempotencyKey: 'idem-invalid-next-payment',
+          occurredAt: '2026-04-12T12:00:00.000Z',
+          nextPaymentAt: 'not-a-date',
+          paymentMethods: [
+            {
+              method: 'cash',
+              amount: 10,
+              cashCountId: 'cash-1',
+            },
+          ],
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'La próxima fecha de pago es inválida.',
+    });
+  });
 });

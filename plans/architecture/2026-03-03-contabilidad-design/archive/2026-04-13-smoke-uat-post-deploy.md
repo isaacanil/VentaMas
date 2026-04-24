@@ -1,6 +1,8 @@
 # Smoke/UAT post-deploy contabilidad
 
-Estado: `ACTIVE`
+> Estado 2026-04-23: `ARCHIVADO`. Reemplazado por `plans/testing/2026-04-23-finanzas-contabilidad-qa-maestro.md` y futuras corridas en `plans/testing/runs/`.
+
+Estado: `ARCHIVADO`
 
 Fecha base: `2026-04-13`
 

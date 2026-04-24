@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Button, Modal, Skeleton } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,7 +13,10 @@ import { AddBankAccountModal } from '@/modules/settings/components/GeneralConfig
 import { BankPaymentPolicySection } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/components/BankPaymentPolicySection';
 import { AddCashAccountModal } from '@/modules/treasury/components/AddCashAccountModal';
 import { BankReconciliationModal } from '@/modules/treasury/components/BankReconciliationModal';
+import { BankStatementImportModal } from '@/modules/treasury/components/BankStatementImportModal';
+import { BankStatementLineModal } from '@/modules/treasury/components/BankStatementLineModal';
 import { InternalTransferModal } from '@/modules/treasury/components/InternalTransferModal';
+import { ResolveBankStatementLineModal } from '@/modules/treasury/components/ResolveBankStatementLineModal';
 import { TreasuryAccountGrid } from '@/modules/treasury/components/TreasuryAccountGrid';
 import { TreasuryLedgerPanel } from '@/modules/treasury/components/TreasuryLedgerPanel';
 import { useTreasuryWorkspace } from '@/modules/treasury/hooks/useTreasuryWorkspace';
@@ -22,9 +25,38 @@ import {
   getTransfersForLiquidityAccount,
   type TreasuryLiquidityAccount,
 } from '@/modules/treasury/utils/liquidity';
+import {
+  buildBankStatementLinesCsv,
+  buildLiquidityLedgerCsv,
+  buildTreasuryCockpitCsv,
+  buildTreasuryExportFileName,
+  downloadCsvFile,
+} from '@/modules/treasury/utils/treasuryExports';
 import type { BankAccount, CashAccount } from '@/types/accounting';
 import type { BankAccountDraft } from '@/utils/accounting/bankAccounts';
 import type { CashAccountDraft } from '@/utils/accounting/cashAccounts';
+
+const runSubmission = async <TResult,>({
+  onDone,
+  onSettled,
+  onStart,
+  task,
+}: {
+  onDone?: (result: TResult) => void;
+  onSettled?: () => void;
+  onStart?: () => void;
+  task: () => Promise<TResult>;
+}) => {
+  onStart?.();
+
+  try {
+    const result = await task();
+    onDone?.(result);
+    return result;
+  } finally {
+    onSettled?.();
+  }
+};
 
 export const TreasuryBankAccountsWorkspace = () => {
   const user = useSelector(selectUser);
@@ -43,6 +75,7 @@ export const TreasuryBankAccountsWorkspace = () => {
     config,
     currentBalancesByAccountKey,
     error,
+    importBankStatementLines,
     latestReconciliationsByBankAccountId,
     ledgerEntriesByAccountKey,
     liquidityAccounts,
@@ -51,12 +84,15 @@ export const TreasuryBankAccountsWorkspace = () => {
     recentTransfers,
     reconciliations,
     recordBankReconciliation,
+    recordBankStatementLine,
     recordInternalTransfer,
+    resolveBankStatementLine,
     updateBankAccount,
     updateBankAccountStatus,
     updateBankPaymentPolicy,
     updateCashAccount,
     updateCashAccountStatus,
+    statementLinesByBankAccountId,
   } = useTreasuryWorkspace({
     businessId,
     userId,
@@ -66,6 +102,7 @@ export const TreasuryBankAccountsWorkspace = () => {
   const [isBankAccountSubmitting, setIsBankAccountSubmitting] = useState(false);
   const [editingCashAccount, setEditingCashAccount] =
     useState<CashAccount | null>(null);
+  const [isCashAccountSubmitting, setIsCashAccountSubmitting] = useState(false);
   const [isBankAccountModalOpen, setIsBankAccountModalOpen] = useState(false);
   const [isCashAccountModalOpen, setIsCashAccountModalOpen] = useState(false);
   const [isBankingConfigModalOpen, setIsBankingConfigModalOpen] =
@@ -81,6 +118,23 @@ export const TreasuryBankAccountsWorkspace = () => {
     useState(false);
   const [reconciliationBankAccountId, setReconciliationBankAccountId] =
     useState<string | null>(null);
+  const [isStatementLineModalOpen, setIsStatementLineModalOpen] = useState(false);
+  const [isStatementLineSubmitting, setIsStatementLineSubmitting] =
+    useState(false);
+  const [statementLineBankAccountId, setStatementLineBankAccountId] =
+    useState<string | null>(null);
+  const [isResolveStatementLineModalOpen, setIsResolveStatementLineModalOpen] =
+    useState(false);
+  const [isResolveStatementLineSubmitting, setIsResolveStatementLineSubmitting] =
+    useState(false);
+  const [resolveStatementLineBankAccountId, setResolveStatementLineBankAccountId] =
+    useState<string | null>(null);
+  const [importStatementBankAccountId, setImportStatementBankAccountId] =
+    useState<string | null>(null);
+  const [isImportStatementModalOpen, setIsImportStatementModalOpen] =
+    useState(false);
+  const [isImportStatementSubmitting, setIsImportStatementSubmitting] =
+    useState(false);
 
   const routeAccountKey =
     routeParams.kind === 'bank' || routeParams.kind === 'cash'
@@ -116,6 +170,50 @@ export const TreasuryBankAccountsWorkspace = () => {
           (reconciliation) => reconciliation.bankAccountId === selectedAccount.id,
         )
       : [];
+  const selectedStatementLines =
+    selectedAccount?.kind === 'bank'
+      ? statementLinesByBankAccountId[selectedAccount.id] ?? []
+      : [];
+  const selectedPendingStatementLineCount = selectedStatementLines.filter(
+    (statementLine) => statementLine.status === 'pending',
+  ).length;
+  const selectedWrittenOffStatementLineCount = selectedStatementLines.filter(
+    (statementLine) => statementLine.status === 'written_off',
+  ).length;
+  const totalStatementLines = useMemo(
+    () => Object.values(statementLinesByBankAccountId).flat().length,
+    [statementLinesByBankAccountId],
+  );
+  const totalPendingStatementLines = useMemo(
+    () =>
+      Object.values(statementLinesByBankAccountId).reduce(
+        (sum, statementLines) =>
+          sum +
+          statementLines.filter((statementLine) => statementLine.status === 'pending')
+            .length,
+        0,
+      ),
+    [statementLinesByBankAccountId],
+  );
+  const totalWrittenOffStatementLines = useMemo(
+    () =>
+      Object.values(statementLinesByBankAccountId).reduce(
+        (sum, statementLines) =>
+          sum +
+          statementLines.filter(
+            (statementLine) => statementLine.status === 'written_off',
+          ).length,
+        0,
+      ),
+    [statementLinesByBankAccountId],
+  );
+  const bankAccountsWithPendingExceptions = useMemo(
+    () =>
+      Object.values(statementLinesByBankAccountId).filter((statementLines) =>
+        statementLines.some((statementLine) => statementLine.status === 'pending'),
+      ).length,
+    [statementLinesByBankAccountId],
+  );
 
   const currentBalancesByBankAccountId = useMemo(
     () =>
@@ -162,35 +260,36 @@ export const TreasuryBankAccountsWorkspace = () => {
   const handleSubmitBankAccount = async (
     draft: Partial<BankAccountDraft>,
     bankAccountId?: string,
-  ) => {
-    setIsBankAccountSubmitting(true);
-    try {
-      if (bankAccountId) {
-        await updateBankAccount(bankAccountId, draft);
-      } else {
-        await addBankAccount(draft);
-      }
-
-      setEditingBankAccount(null);
-      setIsBankAccountModalOpen(false);
-    } finally {
-      setIsBankAccountSubmitting(false);
-    }
-  };
+  ) =>
+    runSubmission({
+      onDone: () => {
+        setEditingBankAccount(null);
+        setIsBankAccountModalOpen(false);
+      },
+      onSettled: () => setIsBankAccountSubmitting(false),
+      onStart: () => setIsBankAccountSubmitting(true),
+      task: () =>
+        bankAccountId
+          ? updateBankAccount(bankAccountId, draft)
+          : addBankAccount(draft),
+    });
 
   const handleSubmitCashAccount = async (
     draft: Partial<CashAccountDraft>,
     cashAccountId?: string,
-  ) => {
-    if (cashAccountId) {
-      await updateCashAccount(cashAccountId, draft);
-    } else {
-      await addCashAccount(draft);
-    }
-
-    setEditingCashAccount(null);
-    setIsCashAccountModalOpen(false);
-  };
+  ) =>
+    runSubmission({
+      onDone: () => {
+        setEditingCashAccount(null);
+        setIsCashAccountModalOpen(false);
+      },
+      onSettled: () => setIsCashAccountSubmitting(false),
+      onStart: () => setIsCashAccountSubmitting(true),
+      task: () =>
+        cashAccountId
+          ? updateCashAccount(cashAccountId, draft)
+          : addCashAccount(draft),
+    });
 
   const handleOpenTransfer = (account?: TreasuryLiquidityAccount | null) => {
     setTransferSourceAccountKey(account?.key ?? selectedAccount?.key ?? null);
@@ -206,6 +305,35 @@ export const TreasuryBankAccountsWorkspace = () => {
     setIsReconciliationModalOpen(true);
   };
 
+  const handleOpenStatementLine = (account?: TreasuryLiquidityAccount | null) => {
+    if (!account || account.kind !== 'bank') {
+      return;
+    }
+
+    setStatementLineBankAccountId(account.id);
+    setIsStatementLineModalOpen(true);
+  };
+
+  const handleOpenResolveStatementLine = (
+    account?: TreasuryLiquidityAccount | null,
+  ) => {
+    if (!account || account.kind !== 'bank') {
+      return;
+    }
+
+    setResolveStatementLineBankAccountId(account.id);
+    setIsResolveStatementLineModalOpen(true);
+  };
+
+  const handleOpenStatementImport = (account?: TreasuryLiquidityAccount | null) => {
+    if (!account || account.kind !== 'bank') {
+      return;
+    }
+
+    setImportStatementBankAccountId(account.id);
+    setIsImportStatementModalOpen(true);
+  };
+
   const activeBankAccountsCount = bankAccounts.filter(
     (account) => account.status === 'active',
   ).length;
@@ -215,6 +343,62 @@ export const TreasuryBankAccountsWorkspace = () => {
   const outstandingBankReconciliationsCount = Object.values(
     latestReconciliationsByBankAccountId,
   ).filter((reconciliation) => reconciliation.status === 'variance').length;
+
+  const handleExportCockpit = () => {
+    const csv = buildTreasuryCockpitCsv({
+      accounts: liquidityAccounts,
+      currentBalancesByAccountKey,
+      latestReconciliationsByBankAccountId,
+      statementLinesByBankAccountId,
+    });
+
+    if (!csv) return;
+
+    downloadCsvFile({
+      csv,
+      fileName: buildTreasuryExportFileName({
+        prefix: 'treasury-cockpit',
+      }),
+    });
+  };
+
+  const handleExportSelectedLedger = () => {
+    if (!selectedAccount) return;
+
+    const csv = buildLiquidityLedgerCsv({
+      account: selectedAccount,
+      entries: selectedLedgerEntries,
+    });
+
+    if (!csv) return;
+
+    downloadCsvFile({
+      csv,
+      fileName: buildTreasuryExportFileName({
+        prefix: 'treasury-ledger',
+        suffix: selectedAccount.label,
+      }),
+    });
+  };
+
+  const handleExportSelectedStatementLines = () => {
+    if (!selectedAccount || selectedAccount.kind !== 'bank') return;
+
+    const csv = buildBankStatementLinesCsv({
+      account: selectedAccount,
+      statementLines: selectedStatementLines,
+    });
+
+    if (!csv) return;
+
+    downloadCsvFile({
+      csv,
+      fileName: buildTreasuryExportFileName({
+        prefix: 'bank-statement-lines',
+        suffix: selectedAccount.label,
+      }),
+    });
+  };
 
   if (overallLoading) {
     return (
@@ -244,9 +428,22 @@ export const TreasuryBankAccountsWorkspace = () => {
               <MetricLabel>Conciliaciones con variación</MetricLabel>
               <MetricValue>{outstandingBankReconciliationsCount}</MetricValue>
             </MetricCard>
+            <MetricCard>
+              <MetricLabel>Excepciones pendientes</MetricLabel>
+              <MetricValue>{totalPendingStatementLines}</MetricValue>
+              <MetricHint>{bankAccountsWithPendingExceptions} cuenta(s)</MetricHint>
+            </MetricCard>
+            <MetricCard>
+              <MetricLabel>Write-off registrados</MetricLabel>
+              <MetricValue>{totalWrittenOffStatementLines}</MetricValue>
+              <MetricHint>{totalStatementLines} línea(s) extracto</MetricHint>
+            </MetricCard>
           </MetricsStrip>
 
           <ToolbarActions>
+            <Button icon={<DownloadOutlined />} onClick={handleExportCockpit}>
+              Exportar cockpit
+            </Button>
             <Button onClick={() => setIsBankingConfigModalOpen(true)}>
               Métodos bancarios
             </Button>
@@ -301,14 +498,38 @@ export const TreasuryBankAccountsWorkspace = () => {
                     Number(selectedAccount.openingBalance ?? 0)
                   }
                   ledgerEntries={selectedLedgerEntries}
+                  onExportLedger={handleExportSelectedLedger}
+                  onExportStatementLines={
+                    selectedAccount.kind === 'bank'
+                      ? handleExportSelectedStatementLines
+                      : undefined
+                  }
                   onOpenReconciliation={
                     selectedAccount.kind === 'bank'
                       ? () => handleOpenReconciliation(selectedAccount)
                       : undefined
                   }
+                  onOpenStatementImport={
+                    selectedAccount.kind === 'bank'
+                      ? () => handleOpenStatementImport(selectedAccount)
+                      : undefined
+                  }
+                  onOpenResolveStatementLine={
+                    selectedAccount.kind === 'bank'
+                      ? () => handleOpenResolveStatementLine(selectedAccount)
+                      : undefined
+                  }
+                  onOpenStatementLine={
+                    selectedAccount.kind === 'bank'
+                      ? () => handleOpenStatementLine(selectedAccount)
+                      : undefined
+                  }
                   onOpenTransfer={() => handleOpenTransfer(selectedAccount)}
+                  pendingStatementLineCount={selectedPendingStatementLineCount}
                   reconciliations={selectedReconciliations}
+                  statementLineCount={selectedStatementLines.length}
                   transfers={selectedTransfers}
+                  writtenOffStatementLineCount={selectedWrittenOffStatementLineCount}
                 />
               ) : (
                 <Alert
@@ -377,14 +598,17 @@ export const TreasuryBankAccountsWorkspace = () => {
         editingAccount={editingCashAccount}
         open={isCashAccountModalOpen}
         onCancel={() => {
+          if (isCashAccountSubmitting) return;
           setEditingCashAccount(null);
           setIsCashAccountModalOpen(false);
         }}
         onSubmit={handleSubmitCashAccount}
+        submitting={isCashAccountSubmitting}
       />
 
       <InternalTransferModal
         accounts={liquidityAccounts}
+        currentBalancesByAccountKey={currentBalancesByAccountKey}
         defaultSourceAccountKey={transferSourceAccountKey}
         open={isTransferModalOpen}
         submitting={isTransferSubmitting}
@@ -394,14 +618,15 @@ export const TreasuryBankAccountsWorkspace = () => {
           setIsTransferModalOpen(false);
         }}
         onSubmit={async (draft) => {
-          setIsTransferSubmitting(true);
-          try {
-            await recordInternalTransfer(draft);
-            setTransferSourceAccountKey(null);
-            setIsTransferModalOpen(false);
-          } finally {
-            setIsTransferSubmitting(false);
-          }
+          await runSubmission({
+            onDone: () => {
+              setTransferSourceAccountKey(null);
+              setIsTransferModalOpen(false);
+            },
+            onSettled: () => setIsTransferSubmitting(false),
+            onStart: () => setIsTransferSubmitting(true),
+            task: () => recordInternalTransfer(draft),
+          });
         }}
       />
 
@@ -417,14 +642,101 @@ export const TreasuryBankAccountsWorkspace = () => {
           setIsReconciliationModalOpen(false);
         }}
         onSubmit={async (draft) => {
-          setIsReconciliationSubmitting(true);
-          try {
-            await recordBankReconciliation(draft);
-            setReconciliationBankAccountId(null);
-            setIsReconciliationModalOpen(false);
-          } finally {
-            setIsReconciliationSubmitting(false);
+          await runSubmission({
+            onDone: () => {
+              setReconciliationBankAccountId(null);
+              setIsReconciliationModalOpen(false);
+            },
+            onSettled: () => setIsReconciliationSubmitting(false),
+            onStart: () => setIsReconciliationSubmitting(true),
+            task: () => recordBankReconciliation(draft),
+          });
+        }}
+      />
+
+      <BankStatementLineModal
+        bankAccount={
+          bankAccounts.find((account) => account.id === statementLineBankAccountId) ??
+          null
+        }
+        ledgerEntries={selectedLedgerEntries}
+        open={isStatementLineModalOpen}
+        submitting={isStatementLineSubmitting}
+        onCancel={() => {
+          if (isStatementLineSubmitting) return;
+          setStatementLineBankAccountId(null);
+          setIsStatementLineModalOpen(false);
+        }}
+        onSubmit={async (draft) => {
+          await runSubmission({
+            onDone: () => {
+              setStatementLineBankAccountId(null);
+              setIsStatementLineModalOpen(false);
+            },
+            onSettled: () => setIsStatementLineSubmitting(false),
+            onStart: () => setIsStatementLineSubmitting(true),
+            task: () => recordBankStatementLine(draft),
+          });
+        }}
+      />
+
+      {isImportStatementModalOpen ? (
+        <BankStatementImportModal
+          bankAccount={
+            bankAccounts.find((account) => account.id === importStatementBankAccountId) ??
+            null
           }
+          ledgerEntries={selectedLedgerEntries}
+          open={isImportStatementModalOpen}
+          submitting={isImportStatementSubmitting}
+          onCancel={() => {
+            if (isImportStatementSubmitting) return;
+            setImportStatementBankAccountId(null);
+            setIsImportStatementModalOpen(false);
+          }}
+          onSubmit={async (drafts) => {
+            return runSubmission({
+              onDone: (summary) => {
+                if (!summary.failures.length) {
+                  setImportStatementBankAccountId(null);
+                  setIsImportStatementModalOpen(false);
+                }
+              },
+              onSettled: () => setIsImportStatementSubmitting(false),
+              onStart: () => setIsImportStatementSubmitting(true),
+              task: () => importBankStatementLines(drafts),
+            });
+          }}
+        />
+      ) : null}
+
+      <ResolveBankStatementLineModal
+        bankAccount={
+          bankAccounts.find(
+            (account) => account.id === resolveStatementLineBankAccountId,
+          ) ?? null
+        }
+        ledgerEntries={selectedLedgerEntries}
+        open={isResolveStatementLineModalOpen}
+        pendingStatementLines={selectedStatementLines.filter(
+          (statementLine) => statementLine.status === 'pending',
+        )}
+        submitting={isResolveStatementLineSubmitting}
+        onCancel={() => {
+          if (isResolveStatementLineSubmitting) return;
+          setResolveStatementLineBankAccountId(null);
+          setIsResolveStatementLineModalOpen(false);
+        }}
+        onSubmit={async (draft) => {
+          await runSubmission({
+            onDone: () => {
+              setResolveStatementLineBankAccountId(null);
+              setIsResolveStatementLineModalOpen(false);
+            },
+            onSettled: () => setIsResolveStatementLineSubmitting(false),
+            onStart: () => setIsResolveStatementLineSubmitting(true),
+            task: () => resolveBankStatementLine(draft),
+          });
         }}
       />
 
@@ -480,11 +792,16 @@ const Toolbar = styled.section`
 
 const MetricsStrip = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
   gap: var(--ds-space-3);
   flex: 1;
 
-  @media (max-width: 840px) {
+  @media (max-width: 1120px) {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    width: 100%;
+  }
+
+  @media (max-width: 720px) {
     grid-template-columns: 1fr;
     width: 100%;
   }
@@ -513,6 +830,11 @@ const MetricValue = styled.span`
   font-weight: var(--ds-font-weight-semibold);
   color: var(--ds-color-text-primary);
   font-variant-numeric: tabular-nums;
+`;
+
+const MetricHint = styled.span`
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-text-secondary);
 `;
 
 const ToolbarActions = styled.div`

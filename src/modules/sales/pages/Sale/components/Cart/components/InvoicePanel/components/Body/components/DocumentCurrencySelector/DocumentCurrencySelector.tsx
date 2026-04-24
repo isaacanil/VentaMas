@@ -40,6 +40,56 @@ import { useClickOutSide } from '@/hooks/useClickOutSide';
 
 const { Text } = Typography;
 
+const resolveTimestampMillis = (value: unknown): number | null => {
+  if (value == null) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (value instanceof Date) {
+    const millis = value.getTime();
+    return Number.isFinite(millis) ? millis : null;
+  }
+  if (typeof value === 'object') {
+    const record = value as {
+      toMillis?: () => number;
+      toDate?: () => Date;
+      seconds?: number;
+      _seconds?: number;
+    };
+    if (typeof record.toMillis === 'function') {
+      const millis = Number(record.toMillis());
+      return Number.isFinite(millis) ? millis : null;
+    }
+    if (typeof record.toDate === 'function') {
+      const date = record.toDate();
+      if (date instanceof Date) {
+        const millis = date.getTime();
+        return Number.isFinite(millis) ? millis : null;
+      }
+    }
+    const seconds = Number(record.seconds ?? record._seconds);
+    return Number.isFinite(seconds) ? seconds * 1000 : null;
+  }
+
+  return null;
+};
+
+const isSameLocalDay = (left: Date, right: Date): boolean =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
+const isFreshDocumentCurrencyRate = (
+  effectiveAt: unknown,
+  now: Date = new Date(),
+): boolean => {
+  const millis = resolveTimestampMillis(effectiveAt);
+  if (millis == null) return false;
+  return isSameLocalDay(new Date(millis), now);
+};
+
 interface DocumentCurrencySelectorProps {
   businessId: string | null;
   onChange?: (context: DocumentCurrencyContext) => void;
@@ -75,10 +125,16 @@ export const DocumentCurrencySelector = ({
   const foreignCurrencySelected = !isBaseCurrencySelected;
   const selectedRateConfig = config.manualRatesByCurrency[selectedCurrency];
   const displayedRate = foreignCurrencySelected ? selectedRateConfig?.sale : 1;
+  const selectedRateFresh = foreignCurrencySelected
+    ? isFreshDocumentCurrencyRate(selectedRateConfig?.effectiveAt)
+    : true;
   const blockedReason =
-    foreignCurrencySelected &&
-    (displayedRate == null || displayedRate <= 0)
-      ? `No hay tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} configurada. Ajustala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
+    foreignCurrencySelected
+      ? displayedRate == null || displayedRate <= 0
+        ? `No hay tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} configurada. Ajustala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
+        : !selectedRateFresh
+          ? `La tasa de venta ${selectedCurrency} -> ${config.functionalCurrency} no esta vigente para hoy. Actualizala en Ajustes > Contabilidad antes de facturar en ${selectedCurrency}.`
+          : undefined
       : undefined;
   const summaryTone = blockedReason
     ? 'error'
@@ -91,7 +147,7 @@ export const DocumentCurrencySelector = ({
   const summaryHelperText = error
     ? 'No se pudo cargar la configuración monetaria.'
     : blockedReason
-      ? 'Configura la tasa activa antes de facturar.'
+      ? blockedReason
       : hasCartProducts
         ? 'La moneda queda fijada por los productos del carrito.'
         : isBaseCurrencySelected
@@ -127,13 +183,24 @@ export const DocumentCurrencySelector = ({
       base.blockedReason = blockedReason;
     }
 
-    if (foreignCurrencySelected && displayedRate != null && displayedRate > 0) {
+    if (
+      foreignCurrencySelected &&
+      selectedRateFresh &&
+      displayedRate != null &&
+      displayedRate > 0
+    ) {
       base.exchangeRate = displayedRate;
       base.rateType = 'sell';
     }
 
     return base;
-  }, [blockedReason, displayedRate, foreignCurrencySelected, selectedCurrency]);
+  }, [
+    blockedReason,
+    displayedRate,
+    foreignCurrencySelected,
+    selectedCurrency,
+    selectedRateFresh,
+  ]);
 
   useEffect(() => {
     if (loading) return;
@@ -158,12 +225,18 @@ export const DocumentCurrencySelector = ({
       return;
     }
 
-    dispatch(setDocumentExchangeRate(selectedRateConfig?.sale));
+    dispatch(
+      setDocumentExchangeRate(
+        selectedRateFresh ? selectedRateConfig?.sale : null,
+      ),
+    );
   }, [
     config.functionalCurrency,
     dispatch,
     selectedRateConfig?.sale,
+    selectedRateConfig?.effectiveAt,
     selectedCurrency,
+    selectedRateFresh,
   ]);
 
   useEffect(() => {
@@ -178,7 +251,12 @@ export const DocumentCurrencySelector = ({
       dispatch(setDocumentExchangeRate(1));
       return;
     }
-    dispatch(setDocumentExchangeRate(config.manualRatesByCurrency[value]?.sale));
+    const nextRate = config.manualRatesByCurrency[value];
+    dispatch(
+      setDocumentExchangeRate(
+        isFreshDocumentCurrencyRate(nextRate?.effectiveAt) ? nextRate?.sale : null,
+      ),
+    );
   };
 
   if (!enabled || loading) return null;
@@ -227,9 +305,17 @@ export const DocumentCurrencySelector = ({
               {summaryLabel}
             </Tag>
             {foreignCurrencySelected && (
-              <Tag color={displayedRate != null && displayedRate > 0 ? 'green' : 'red'}>
+              <Tag
+                color={
+                  displayedRate != null && displayedRate > 0 && selectedRateFresh
+                    ? 'green'
+                    : 'red'
+                }
+              >
                 {displayedRate != null && displayedRate > 0
-                  ? `Venta ${displayedRate}`
+                  ? selectedRateFresh
+                    ? `Venta ${displayedRate}`
+                    : 'Tasa vencida'
                   : 'Sin tasa'}
               </Tag>
             )}
@@ -296,8 +382,10 @@ export const DocumentCurrencySelector = ({
                 <Text type="secondary">
                   Tasa venta {selectedCurrency} -&gt; {config.functionalCurrency}
                 </Text>
-                {displayedRate != null && displayedRate > 0 ? (
+                {displayedRate != null && displayedRate > 0 && selectedRateFresh ? (
                   <Tag color="green">{displayedRate}</Tag>
+                ) : displayedRate != null && displayedRate > 0 ? (
+                  <Tag color="red">Tasa vencida</Tag>
                 ) : (
                   <Tag color="red">Sin configurar</Tag>
                 )}

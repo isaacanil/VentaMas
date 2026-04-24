@@ -15,20 +15,36 @@ interface TreasuryLedgerPanelProps {
   account: TreasuryLiquidityAccount | null;
   currentBalance: number;
   ledgerEntries: LiquidityLedgerEntry[];
+  onExportLedger?: () => void;
+  onExportStatementLines?: () => void;
   onOpenReconciliation?: () => void;
+  onOpenStatementImport?: () => void;
+  onOpenResolveStatementLine?: () => void;
+  onOpenStatementLine?: () => void;
   onOpenTransfer?: () => void;
+  pendingStatementLineCount?: number;
   reconciliations: BankReconciliationRecord[];
+  statementLineCount?: number;
   transfers: InternalTransfer[];
+  writtenOffStatementLineCount?: number;
 }
 
 export const TreasuryLedgerPanel = ({
   account,
   currentBalance,
   ledgerEntries,
+  onExportLedger,
+  onExportStatementLines,
   onOpenReconciliation,
+  onOpenStatementImport,
+  onOpenResolveStatementLine,
+  onOpenStatementLine,
   onOpenTransfer,
+  pendingStatementLineCount = 0,
   reconciliations,
+  statementLineCount = 0,
   transfers,
+  writtenOffStatementLineCount = 0,
 }: TreasuryLedgerPanelProps) => {
   const { inflow, outflow } = getLedgerTotals(ledgerEntries);
   const latestReconciliation = reconciliations[0] ?? null;
@@ -56,8 +72,14 @@ export const TreasuryLedgerPanel = ({
         inflow={inflow}
         lastMovementAt={lastMovementAt}
         latestReconciliationDate={latestReconciliation?.statementDate}
+        onExportLedger={onExportLedger}
+        onExportStatementLines={onExportStatementLines}
         onOpenReconciliation={onOpenReconciliation}
+        onOpenStatementImport={onOpenStatementImport}
+        onOpenResolveStatementLine={onOpenResolveStatementLine}
+        onOpenStatementLine={onOpenStatementLine}
         onOpenTransfer={onOpenTransfer}
+        pendingStatementLineCount={pendingStatementLineCount}
         outflow={outflow}
       />
 
@@ -68,8 +90,12 @@ export const TreasuryLedgerPanel = ({
 
         <AccountInspectorRail
           account={account}
+          currentBalance={currentBalance}
           latestReconciliation={latestReconciliation}
+          pendingStatementLineCount={pendingStatementLineCount}
+          statementLineCount={statementLineCount}
           transfers={transfers}
+          writtenOffStatementLineCount={writtenOffStatementLineCount}
         />
       </ContentGrid>
     </PanelShell>

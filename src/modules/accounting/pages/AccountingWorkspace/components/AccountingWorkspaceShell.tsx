@@ -5,7 +5,7 @@ import styled from 'styled-components';
 interface AccountingWorkspaceShellProps {
   children: ReactNode;
   loading?: boolean;
-  navigation: ReactNode;
+  navigation?: ReactNode;
   notices?: ReactNode;
 }
 
@@ -19,7 +19,7 @@ export const AccountingWorkspaceShell = ({
     {notices ? <NoticeStack>{notices}</NoticeStack> : null}
 
     <WorkspaceSurface>
-      <NavigationSurface>{navigation}</NavigationSurface>
+      {navigation ? <NavigationSurface>{navigation}</NavigationSurface> : null}
       <BodySurface>
         {loading ? (
           <LoadingState>
@@ -38,8 +38,7 @@ const Shell = styled.section`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
-  width: min(100%, 1200px);
-  margin: 0 auto;
+  width: 100%;
 `;
 
 const NoticeStack = styled.div`
@@ -51,24 +50,15 @@ const NoticeStack = styled.div`
 const WorkspaceSurface = styled.section`
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
+  min-width: 0;
 `;
 
 const NavigationSurface = styled.div`
   border-bottom: 1px solid var(--ds-color-border-default);
-  background: var(--ds-color-bg-surface);
 `;
 
 const BodySurface = styled.div`
-  padding: 0 var(--ds-space-5);
-  background: var(--ds-color-bg-surface);
-
-  @media (max-width: 720px) {
-    padding: 0 var(--ds-space-4);
-  }
+  min-width: 0;
 `;
 
 const LoadingState = styled.div`

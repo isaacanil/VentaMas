@@ -3,6 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const getNextIDTransactionalSnapMock = vi.fn();
 const getInsuranceMock = vi.fn();
 
+vi.mock('firebase-functions', () => ({
+  https: {
+    HttpsError: class MockHttpsError extends Error {
+      constructor(code, message) {
+        super(message);
+        this.code = code;
+      }
+    },
+  },
+}));
+
 vi.mock('../../../core/config/firebase.js', () => ({
   db: {
     doc: vi.fn(),

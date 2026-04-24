@@ -45,7 +45,11 @@ const PanelStack = styled.div`
 `;
 
 const FlushPanelStack = styled(PanelStack)`
-  padding: 0;
+  padding: var(--ds-space-4) var(--ds-space-5);
+
+  @media (max-width: 640px) {
+    padding: var(--ds-space-3);
+  }
 `;
 
 const HistoryLinkRow = styled.div`
@@ -118,7 +122,6 @@ interface AccountingSettingsFormProps {
 }
 
 export const AccountingSettingsForm = ({
-  activePanelItem,
   accountingPanel,
   chartOfAccounts,
   chartOfAccountsError,
@@ -164,6 +167,9 @@ export const AccountingSettingsForm = ({
   const [selectedCurrenciesToAdd, setSelectedCurrenciesToAdd] = useState<
     SupportedDocumentCurrency[]
   >([]);
+  const shouldShowHistoryLink =
+    accountingPanel === 'exchange-rates' &&
+    (history.length > 0 || historyLoading);
   const availableCurrencies = getAvailableCurrencies(
     config.functionalCurrency,
     enabledForeignCurrencies,
@@ -337,7 +343,7 @@ export const AccountingSettingsForm = ({
       >
         <AccountingStack>
           <PanelSurface>
-            {(history.length > 0 || historyLoading) && (
+            {shouldShowHistoryLink && (
               <HistoryLinkRow>
                 <Button
                   type="link"
@@ -429,4 +435,3 @@ const PanelSurface = styled.div`
   background: var(--ds-color-bg-surface);
   min-height: 0;
 `;
-

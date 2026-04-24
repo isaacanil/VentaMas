@@ -12,6 +12,7 @@ interface TreasuryLedgerInput {
 }
 
 export interface CreateInternalTransferInput {
+  allowOverdraft?: boolean;
   businessId: string;
   amount: number;
   currency: SupportedDocumentCurrency;
@@ -56,6 +57,7 @@ export const fbCreateInternalTransfer = async (
 
   const response = await callable({
     ...input,
+    allowOverdraft: input.allowOverdraft === true,
     from: normalizeLedger(input.from),
     to: normalizeLedger(input.to),
     reference: toCleanString(input.reference),

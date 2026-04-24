@@ -158,15 +158,27 @@ const resolveSaleSettlementBreakdown = (event) => {
   const eventRecord = asRecord(event);
   const payload = asRecord(eventRecord.payload);
   const monetary = asRecord(eventRecord.monetary);
+  const documentTotal = safeNumber(monetary.amount);
   const total =
     safeNumber(monetary.functionalAmount) || safeNumber(monetary.amount);
+  const functionalRate =
+    documentTotal > 0 && total > 0 ? total / documentTotal : 1;
   const paymentMethods = Array.isArray(payload.paymentMethods)
     ? payload.paymentMethods
     : [];
 
   const breakdown = paymentMethods.reduce(
     (accumulator, method) => {
-      const amount = safeNumber(method?.value ?? method?.amount);
+      const explicitFunctionalAmount = safeNumber(
+        method?.functionalValue ??
+          method?.functionalAmount ??
+          method?.functionalTotal,
+      );
+      const documentAmount = safeNumber(method?.value ?? method?.amount);
+      const amount =
+        explicitFunctionalAmount > 0
+          ? explicitFunctionalAmount
+          : documentAmount * functionalRate;
       if (amount <= 0) {
         return accumulator;
       }
@@ -197,12 +209,18 @@ const resolveSaleSettlementBreakdown = (event) => {
   );
 
   const explicitSettled =
-    safeNumber(payload.settledAmount) || safeNumber(payload.paidAmount);
+    safeNumber(payload.functionalSettledAmount) ||
+    safeNumber(payload.functionalPaidAmount) ||
+    (safeNumber(payload.settledAmount) || safeNumber(payload.paidAmount)) *
+      functionalRate;
   const settledAmount = Math.max(
     explicitSettled || breakdown.cash + breakdown.bank + breakdown.other,
     0,
   );
-  const explicitReceivableBalance = safeNumber(payload.receivableBalance);
+  const explicitReceivableBalance =
+    safeNumber(payload.functionalReceivableBalance) ||
+    safeNumber(payload.receivableFunctionalBalance) ||
+    safeNumber(payload.receivableBalance) * functionalRate;
   const receivableBalance = Math.max(
     explicitReceivableBalance || total - settledAmount,
     0,

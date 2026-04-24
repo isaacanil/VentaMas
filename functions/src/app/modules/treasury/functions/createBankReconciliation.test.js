@@ -126,7 +126,10 @@ vi.mock('../../../versions/v2/billing/utils/subscriptionAccess.util.js', () => (
     assertBusinessSubscriptionAccessMock(...args),
 }));
 
-import { createBankReconciliation } from './createBankReconciliation.js';
+import {
+  createBankReconciliation,
+  previewBankReconciliation,
+} from './createBankReconciliation.js';
 
 describe('createBankReconciliation', () => {
   beforeEach(() => {
@@ -150,37 +153,45 @@ describe('createBankReconciliation', () => {
         };
       }
 
+      if (path === 'businesses/business-1/bankStatementLines') {
+        return {
+          doc: vi.fn(() =>
+            getDocRef(
+              'businesses/business-1/bankStatementLines/statement-line-1',
+            ),
+          ),
+        };
+      }
+
       if (path === 'businesses/business-1/cashMovements') {
         return {
           where: vi.fn(() => ({
-            get: vi.fn(async () => ({
-              docs: [
-                toSnapshot('businesses/business-1/cashMovements/in-1', {
-                  amount: 100,
-                  direction: 'in',
-                  status: 'posted',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
-                }),
-                toSnapshot('businesses/business-1/cashMovements/out-1', {
-                  amount: 25,
-                  direction: 'out',
-                  status: 'posted',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-11T12:00:00.000Z') },
-                }),
-                toSnapshot('businesses/business-1/cashMovements/future-1', {
-                  amount: 10,
-                  direction: 'in',
-                  status: 'posted',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-14T12:00:00.000Z') },
-                }),
-                toSnapshot('businesses/business-1/cashMovements/draft-1', {
-                  amount: 99,
-                  direction: 'in',
-                  status: 'draft',
-                  occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
-                }),
-              ],
-            })),
+            __queryDocs: [
+              toSnapshot('businesses/business-1/cashMovements/in-1', {
+                amount: 100,
+                direction: 'in',
+                status: 'posted',
+                occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+              }),
+              toSnapshot('businesses/business-1/cashMovements/out-1', {
+                amount: 25,
+                direction: 'out',
+                status: 'posted',
+                occurredAt: { toMillis: () => Date.parse('2026-04-11T12:00:00.000Z') },
+              }),
+              toSnapshot('businesses/business-1/cashMovements/future-1', {
+                amount: 10,
+                direction: 'in',
+                status: 'posted',
+                occurredAt: { toMillis: () => Date.parse('2026-04-14T12:00:00.000Z') },
+              }),
+              toSnapshot('businesses/business-1/cashMovements/draft-1', {
+                amount: 99,
+                direction: 'in',
+                status: 'draft',
+                occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+              }),
+            ],
           })),
         };
       }
@@ -188,9 +199,18 @@ describe('createBankReconciliation', () => {
       throw new Error(`Unexpected collection path: ${path}`);
     });
 
-    transactionGetMock.mockImplementation(async (ref) =>
-      toSnapshot(ref.path, transactionSnapshots.get(ref.path)),
-    );
+    transactionGetMock.mockImplementation(async (ref) => {
+      if (Array.isArray(ref?.__queryDocs)) {
+        return { docs: ref.__queryDocs };
+      }
+
+      return toSnapshot(
+        ref.path,
+        transactionSnapshots.has(ref.path)
+          ? transactionSnapshots.get(ref.path)
+          : documentSnapshots.get(ref.path),
+      );
+    });
     runTransactionMock.mockImplementation(async (callback) =>
       callback({
         get: transactionGetMock,
@@ -229,12 +249,38 @@ describe('createBankReconciliation', () => {
         reconciliation: expect.objectContaining({
           bankAccountId: 'bank-1',
           ledgerBalance: 275,
+          reconciledMovementCount: 2,
+          statementLineCount: 1,
           variance: 0,
           status: 'balanced',
+          unreconciledMovementCount: 1,
         }),
       }),
     );
-    expect(transactionSetMock).toHaveBeenCalledTimes(2);
+    expect(transactionSetMock).toHaveBeenCalledTimes(5);
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/bankStatementLines/statement-line-1',
+      }),
+      expect.objectContaining({
+        bankAccountId: 'bank-1',
+        lineType: 'closing_balance',
+        reconciliationId: 'reconciliation-1',
+        runningBalance: 275,
+        status: 'reconciled',
+      }),
+    );
+    expect(transactionSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'businesses/business-1/cashMovements/in-1',
+      }),
+      expect.objectContaining({
+        reconciliationId: 'reconciliation-1',
+        reconciliationStatus: 'reconciled',
+        bankStatementLineId: 'statement-line-1',
+      }),
+      { merge: true },
+    );
   });
 
   it('reuses the existing reconciliation for the same idempotency key', async () => {
@@ -280,6 +326,101 @@ describe('createBankReconciliation', () => {
         }),
       }),
     );
+    expect(transactionSetMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid statement date instead of falling back to now', async () => {
+    documentSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
+      status: 'active',
+      openingBalance: 200,
+    });
+
+    await expect(
+      createBankReconciliation({
+        data: {
+          businessId: 'business-1',
+          bankAccountId: 'bank-1',
+          idempotencyKey: 'recon-invalid-date',
+          statementDate: 'not-a-date',
+          statementBalance: 275,
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'statementDate debe ser una fecha válida.',
+    });
+
+    expect(runTransactionMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('previewBankReconciliation', () => {
+  beforeEach(() => {
+    documentSnapshots.clear();
+    transactionSnapshots.clear();
+    documentRefs.clear();
+    vi.clearAllMocks();
+
+    resolveCallableAuthUidMock.mockResolvedValue('user-1');
+    assertUserAccessMock.mockResolvedValue(undefined);
+    assertBusinessSubscriptionAccessMock.mockResolvedValue(undefined);
+
+    collectionMock.mockImplementation((path) => {
+      if (path === 'businesses/business-1/cashMovements') {
+        return {
+          where: vi.fn(() => ({
+            get: vi.fn(async () => ({
+              docs: [
+                toSnapshot('businesses/business-1/cashMovements/in-1', {
+                  amount: 100,
+                  direction: 'in',
+                  status: 'posted',
+                  occurredAt: { toMillis: () => Date.parse('2026-04-10T12:00:00.000Z') },
+                }),
+                toSnapshot('businesses/business-1/cashMovements/out-1', {
+                  amount: 25,
+                  direction: 'out',
+                  status: 'posted',
+                  occurredAt: { toMillis: () => Date.parse('2026-04-11T12:00:00.000Z') },
+                }),
+              ],
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected collection path: ${path}`);
+    });
+  });
+
+  it('returns backend preview using current bank movements without persisting reconciliation', async () => {
+    documentSnapshots.set('businesses/business-1/bankAccounts/bank-1', {
+      status: 'active',
+      openingBalance: 200,
+    });
+
+    const result = await previewBankReconciliation({
+      data: {
+        businessId: 'business-1',
+        bankAccountId: 'bank-1',
+        statementDate: '2026-04-12T00:00:00.000Z',
+        statementBalance: 290,
+      },
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      preview: expect.objectContaining({
+        bankAccountId: 'bank-1',
+        ledgerBalance: 275,
+        reconciledMovementCount: 2,
+        statementBalance: 290,
+        status: 'variance',
+        unreconciledMovementCount: 0,
+        variance: 15,
+      }),
+    });
+    expect(runTransactionMock).not.toHaveBeenCalled();
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 });

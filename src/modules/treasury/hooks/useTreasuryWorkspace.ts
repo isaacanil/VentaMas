@@ -4,17 +4,18 @@ import {
   Timestamp,
   collection,
   onSnapshot,
-  orderBy,
-  query,
 } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
 import { fbCreateBankReconciliation } from '@/firebase/treasury/fbCreateBankReconciliation';
+import { fbCreateBankStatementLine } from '@/firebase/treasury/fbCreateBankStatementLine';
 import { fbCreateInternalTransfer } from '@/firebase/treasury/fbCreateInternalTransfer';
+import { fbResolveBankStatementLineMatch } from '@/firebase/treasury/fbResolveBankStatementLineMatch';
 import { useAccountingConfig } from '@/modules/settings/components/GeneralConfig/configs/AccountingConfig/hooks/useAccountingConfig';
 import { useCashAccounts } from '@/modules/treasury/hooks/useCashAccounts';
 import type {
   BankReconciliationRecord,
+  BankStatementLine,
   InternalTransfer,
   LiquidityLedgerEntry,
 } from '@/types/accounting';
@@ -28,11 +29,14 @@ import {
 import { buildTreasuryIdempotencyKey } from '../utils/idempotency';
 import {
   normalizeBankReconciliationRecord,
+  normalizeBankStatementLineRecord,
+  normalizeCashMovementAsLiquidityLedgerEntry,
   normalizeInternalTransferRecord,
-  normalizeLiquidityLedgerEntryRecord,
   toNormalizedOccurredAt,
   type BankReconciliationDraft,
+  type BankStatementLineDraft,
   type InternalTransferDraft,
+  type ResolveBankStatementLineDraft,
 } from '../utils/records';
 
 interface UseTreasuryWorkspaceArgs {
@@ -128,6 +132,15 @@ export const useTreasuryWorkspace = ({
     key: null,
     reconciliations: [],
   });
+  const [statementLinesState, setStatementLinesState] = useState<{
+    error: string | null;
+    key: string | null;
+    statementLines: BankStatementLine[];
+  }>({
+    error: null,
+    key: null,
+    statementLines: [],
+  });
   const ledgerQueryKey = businessId ? `treasury-ledger:${businessId}` : null;
   const internalTransfersQueryKey = businessId
     ? `treasury-transfers:${businessId}`
@@ -135,24 +148,29 @@ export const useTreasuryWorkspace = ({
   const reconciliationsQueryKey = businessId
     ? `treasury-reconciliations:${businessId}`
     : null;
+  const statementLinesQueryKey = businessId
+    ? `treasury-bank-statement-lines:${businessId}`
+    : null;
 
   useEffect(() => {
     if (!ledgerQueryKey || !businessId) return undefined;
-    const ledgerQuery = query(
-      collection(db, 'businesses', businessId, 'liquidityLedger'),
-      orderBy('occurredAt', 'desc'),
-    );
 
     const unsubscribe = onSnapshot(
-      ledgerQuery,
+      collection(db, 'businesses', businessId, 'cashMovements'),
       (snapshot) => {
         setLedgerState({
-          entries: snapshot.docs.map((ledgerDoc) =>
-            normalizeLiquidityLedgerEntryRecord(
-              ledgerDoc.id,
-              businessId,
-              ledgerDoc.data(),
-            ),
+          entries: sortByOccurredAtDesc(
+            snapshot.docs
+              .map((movementDoc) =>
+                normalizeCashMovementAsLiquidityLedgerEntry(
+                  movementDoc.id,
+                  businessId,
+                  movementDoc.data(),
+                ),
+              )
+              .filter(
+                (entry): entry is LiquidityLedgerEntry => entry != null,
+              ),
           ),
           error: null,
           key: ledgerQueryKey,
@@ -173,20 +191,18 @@ export const useTreasuryWorkspace = ({
 
   useEffect(() => {
     if (!internalTransfersQueryKey || !businessId) return undefined;
-    const transfersQuery = query(
-      collection(db, 'businesses', businessId, 'internalTransfers'),
-      orderBy('occurredAt', 'desc'),
-    );
 
     const unsubscribe = onSnapshot(
-      transfersQuery,
+      collection(db, 'businesses', businessId, 'internalTransfers'),
       (snapshot) => {
         setInternalTransfersState({
-          transfers: snapshot.docs.map((transferDoc) =>
-            normalizeInternalTransferRecord(
-              transferDoc.id,
-              businessId,
-              transferDoc.data(),
+          transfers: sortByOccurredAtDesc(
+            snapshot.docs.map((transferDoc) =>
+              normalizeInternalTransferRecord(
+                transferDoc.id,
+                businessId,
+                transferDoc.data(),
+              ),
             ),
           ),
           error: null,
@@ -209,21 +225,24 @@ export const useTreasuryWorkspace = ({
 
   useEffect(() => {
     if (!reconciliationsQueryKey || !businessId) return undefined;
-    const reconciliationsQuery = query(
-      collection(db, 'businesses', businessId, 'bankReconciliations'),
-      orderBy('statementDate', 'desc'),
-    );
 
     const unsubscribe = onSnapshot(
-      reconciliationsQuery,
+      collection(db, 'businesses', businessId, 'bankReconciliations'),
       (snapshot) => {
         setReconciliationsState({
-          reconciliations: snapshot.docs.map((reconciliationDoc) =>
-            normalizeBankReconciliationRecord(
-              reconciliationDoc.id,
-              businessId,
-              reconciliationDoc.data(),
-            ),
+          reconciliations: sortByOccurredAtDesc(
+            snapshot.docs.map((reconciliationDoc) => {
+              const record = normalizeBankReconciliationRecord(
+                reconciliationDoc.id,
+                businessId,
+                reconciliationDoc.data(),
+              );
+
+              return {
+                ...record,
+                occurredAt: record.statementDate,
+              };
+            }),
           ),
           error: null,
           key: reconciliationsQueryKey,
@@ -242,6 +261,45 @@ export const useTreasuryWorkspace = ({
 
     return unsubscribe;
   }, [businessId, reconciliationsQueryKey]);
+
+  useEffect(() => {
+    if (!statementLinesQueryKey || !businessId) return undefined;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'businesses', businessId, 'bankStatementLines'),
+      (snapshot) => {
+        setStatementLinesState({
+          error: null,
+          key: statementLinesQueryKey,
+          statementLines: sortByOccurredAtDesc(
+            snapshot.docs.map((statementLineDoc) => {
+              const normalizedStatementLine = normalizeBankStatementLineRecord(
+                statementLineDoc.id,
+                businessId,
+                statementLineDoc.data(),
+              );
+
+              return {
+                ...normalizedStatementLine,
+                occurredAt: normalizedStatementLine.statementDate,
+              };
+            }),
+          ),
+        });
+      },
+      (cause) => {
+        console.error('Error cargando líneas de extracto bancario:', cause);
+        setStatementLinesState({
+          error:
+            cause.message || 'No se pudieron cargar las líneas de extracto bancario.',
+          key: statementLinesQueryKey,
+          statementLines: [],
+        });
+      },
+    );
+
+    return unsubscribe;
+  }, [businessId, statementLinesQueryKey]);
 
   const resolvedCashAccounts = useMemo(() => cashAccounts, [cashAccounts]);
   const resolvedLedgerEntries = useMemo(
@@ -282,6 +340,9 @@ export const useTreasuryWorkspace = ({
   const reconciliationsLoading = Boolean(
     reconciliationsQueryKey && reconciliationsState.key !== reconciliationsQueryKey,
   );
+  const statementLinesLoading = Boolean(
+    statementLinesQueryKey && statementLinesState.key !== statementLinesQueryKey,
+  );
 
   const liquidityAccounts = useMemo(
     () =>
@@ -314,6 +375,27 @@ export const useTreasuryWorkspace = ({
   const latestReconciliationsByBankAccountId = useMemo(
     () => getLatestReconciliationByBankAccount(resolvedReconciliations),
     [resolvedReconciliations],
+  );
+  const resolvedStatementLines = useMemo(
+    () =>
+      statementLinesQueryKey && statementLinesState.key === statementLinesQueryKey
+        ? statementLinesState.statementLines
+        : [],
+    [statementLinesQueryKey, statementLinesState.key, statementLinesState.statementLines],
+  );
+  const statementLinesByBankAccountId = useMemo(
+    () =>
+      resolvedStatementLines.reduce<Record<string, BankStatementLine[]>>(
+        (accumulator, statementLine) => {
+          if (!accumulator[statementLine.bankAccountId]) {
+            accumulator[statementLine.bankAccountId] = [];
+          }
+          accumulator[statementLine.bankAccountId].push(statementLine);
+          return accumulator;
+        },
+        {},
+      ),
+    [resolvedStatementLines],
   );
 
   const recordInternalTransfer = useCallback(
@@ -366,10 +448,24 @@ export const useTreasuryWorkspace = ({
         );
         return;
       }
+      const sourceCurrentBalance =
+        currentBalancesByAccountKey[sourceAccount.key] ??
+        Number(sourceAccount.openingBalance ?? 0);
+      const sourceProjectedBalance = Number(
+        (sourceCurrentBalance - amount).toFixed(2),
+      );
+
+      if (sourceProjectedBalance < 0 && draft.allowOverdraft !== true) {
+        void message.error(
+          'La transferencia deja saldo negativo en la cuenta origen. Autoriza sobregiro o reduce el monto.',
+        );
+        return;
+      }
 
       const occurredAt = toNormalizedOccurredAt(draft.occurredAt) ?? Timestamp.now();
       try {
         await fbCreateInternalTransfer({
+          allowOverdraft: draft.allowOverdraft === true,
           businessId,
           amount,
           currency: draft.currency,
@@ -419,7 +515,7 @@ export const useTreasuryWorkspace = ({
 
       void message.success('Transferencia interna registrada.');
     },
-    [businessId, liquidityAccounts],
+    [businessId, currentBalancesByAccountKey, liquidityAccounts],
   );
 
   const recordBankReconciliation = useCallback(
@@ -460,7 +556,6 @@ export const useTreasuryWorkspace = ({
             draft.bankAccountId,
             statementBalance,
             statementDate.toMillis(),
-            variance,
             draft.reference?.trim() || '',
           ]),
         });
@@ -479,17 +574,240 @@ export const useTreasuryWorkspace = ({
     [bankAccounts, businessId, currentBalancesByAccountKey],
   );
 
+  const recordBankStatementLine = useCallback(
+    async (draft: BankStatementLineDraft) => {
+      if (!businessId) return;
+
+      const bankAccount = bankAccounts.find(
+        (account) => account.id === draft.bankAccountId,
+      );
+      if (!bankAccount) {
+        void message.error('Selecciona una cuenta bancaria válida.');
+        return;
+      }
+
+      const amount = Number(draft.amount ?? 0);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        void message.error('El monto de la línea bancaria debe ser mayor a cero.');
+        return;
+      }
+
+      const statementDate =
+        toNormalizedOccurredAt(draft.statementDate) ?? Timestamp.now();
+      const movementIds = Array.isArray(draft.movementIds)
+        ? draft.movementIds.filter(Boolean)
+        : [];
+
+      const submitStatementLine = async () =>
+        fbCreateBankStatementLine({
+          amount,
+          bankAccountId: draft.bankAccountId,
+          businessId,
+          description: draft.description?.trim() || null,
+          direction: draft.direction,
+          idempotencyKey: buildTreasuryIdempotencyKey('bank-statement-line', [
+            businessId,
+            draft.bankAccountId,
+            draft.direction,
+            amount,
+            statementDate.toMillis(),
+            draft.reference?.trim() || '',
+            movementIds.join(','),
+          ]),
+          movementIds,
+          reference: draft.reference?.trim() || null,
+          statementDate: statementDate.toMillis(),
+        });
+
+      try {
+        const response = await submitStatementLine();
+
+        void message.success(
+          response.matchStatus === 'reconciled'
+            ? 'Línea bancaria conciliada.'
+            : 'Línea bancaria registrada como excepción pendiente.',
+        );
+      } catch (error) {
+        void message.error(
+          resolveTreasuryOperationErrorMessage(
+            error,
+            'No se pudo registrar la línea de extracto bancario.',
+          ),
+        );
+        throw error;
+      }
+    },
+    [bankAccounts, businessId],
+  );
+
+  const importBankStatementLines = useCallback(
+    async (drafts: BankStatementLineDraft[]) => {
+      if (!businessId) {
+        return {
+          failures: [],
+          imported: 0,
+          pending: 0,
+          reconciled: 0,
+        };
+      }
+
+      let imported = 0;
+      let pending = 0;
+      let reconciled = 0;
+      const failures: Array<{ lineNumber: number; message: string }> = [];
+
+      for (let index = 0; index < drafts.length; index += 1) {
+        const draft = drafts[index];
+        const bankAccount = bankAccounts.find(
+          (account) => account.id === draft.bankAccountId,
+        );
+        if (!bankAccount) {
+          failures.push({
+            lineNumber: index + 1,
+            message: 'Cuenta bancaria inválida.',
+          });
+          continue;
+        }
+
+        const amount = Number(draft.amount ?? 0);
+        const statementDate =
+          toNormalizedOccurredAt(draft.statementDate) ?? Timestamp.now();
+        const movementIds = Array.isArray(draft.movementIds)
+          ? draft.movementIds.filter(Boolean)
+          : [];
+
+        try {
+          const response = await fbCreateBankStatementLine({
+            amount,
+            bankAccountId: draft.bankAccountId,
+            businessId,
+            description: draft.description?.trim() || null,
+            direction: draft.direction,
+            idempotencyKey: buildTreasuryIdempotencyKey('bank-statement-line-import', [
+              businessId,
+              draft.bankAccountId,
+              draft.direction,
+              amount,
+              statementDate.toMillis(),
+              draft.reference?.trim() || '',
+              movementIds.join(','),
+              index + 1,
+            ]),
+            movementIds,
+            reference: draft.reference?.trim() || null,
+            statementDate: statementDate.toMillis(),
+          });
+
+          imported += 1;
+          if (response.matchStatus === 'reconciled') {
+            reconciled += 1;
+          } else {
+            pending += 1;
+          }
+        } catch (error) {
+          failures.push({
+            lineNumber: index + 1,
+            message: resolveTreasuryOperationErrorMessage(
+              error,
+              'No se pudo importar la línea.',
+            ),
+          });
+        }
+      }
+
+      if (imported > 0 && failures.length === 0) {
+        void message.success(
+          `${imported} línea(s) importadas. ${reconciled} conciliadas y ${pending} pendientes.`,
+        );
+      } else if (imported > 0) {
+        void message.warning(
+          `${imported} línea(s) importadas. ${failures.length} fallaron.`,
+        );
+      } else if (failures.length > 0) {
+        void message.error('Ninguna línea pudo importarse.');
+      }
+
+      return {
+        failures,
+        imported,
+        pending,
+        reconciled,
+      };
+    },
+    [bankAccounts, businessId],
+  );
+
+  const resolveBankStatementLine = useCallback(
+    async (draft: ResolveBankStatementLineDraft) => {
+      if (!businessId) return;
+
+      if (!draft.statementLineId) {
+        void message.error('Selecciona la excepción pendiente.');
+        return;
+      }
+
+      const resolutionMode = draft.resolutionMode === 'write_off' ? 'write_off' : 'match';
+      const movementIds = Array.isArray(draft.movementIds)
+        ? draft.movementIds.filter(Boolean)
+        : [];
+      if (resolutionMode === 'match' && !movementIds.length) {
+        void message.error('Selecciona al menos un movimiento para resolver.');
+        return;
+      }
+      if (resolutionMode === 'write_off' && !draft.writeOffReason?.trim()) {
+        void message.error('Indica el motivo del ajuste.');
+        return;
+      }
+
+      try {
+        const response = await fbResolveBankStatementLineMatch({
+          businessId,
+          idempotencyKey: buildTreasuryIdempotencyKey('resolve-bank-statement-line', [
+            businessId,
+            draft.statementLineId,
+            resolutionMode,
+            movementIds.join(','),
+            draft.writeOffReason?.trim() || '',
+            draft.writeOffNotes?.trim() || '',
+          ]),
+          movementIds,
+          resolutionMode,
+          statementLineId: draft.statementLineId,
+          writeOffNotes: draft.writeOffNotes?.trim() || null,
+          writeOffReason: draft.writeOffReason?.trim() || null,
+        });
+
+        void message.success(
+          response.resolutionMode === 'write_off'
+            ? 'Diferencia bancaria ajustada.'
+            : 'Excepción bancaria resuelta.',
+        );
+      } catch (error) {
+        void message.error(
+          resolveTreasuryOperationErrorMessage(
+            error,
+            'No se pudo resolver la excepción bancaria.',
+          ),
+        );
+        throw error;
+      }
+    },
+    [businessId],
+  );
+
   const overallLoading =
     accountingLoading ||
     bankAccountsLoading ||
     cashAccountsLoading ||
     ledgerLoading ||
     internalTransfersLoading ||
-    reconciliationsLoading;
+    reconciliationsLoading ||
+    statementLinesLoading;
   const error = businessId
     ? ledgerState.error ??
       internalTransfersState.error ??
       reconciliationsState.error ??
+      statementLinesState.error ??
       cashAccountsError ??
       accountingError ??
       null
@@ -521,6 +839,7 @@ export const useTreasuryWorkspace = ({
     internalTransfers: resolvedInternalTransfers,
     internalTransfersLoading,
     latestReconciliationsByBankAccountId,
+    importBankStatementLines,
     ledgerEntries: resolvedLedgerEntries,
     ledgerEntriesByAccountKey,
     ledgerLoading,
@@ -529,9 +848,14 @@ export const useTreasuryWorkspace = ({
     recentLedgerEntries,
     recentTransfers,
     recordBankReconciliation,
+    recordBankStatementLine,
     recordInternalTransfer,
+    resolveBankStatementLine,
     reconciliations: resolvedReconciliations,
     reconciliationsLoading,
+    statementLines: resolvedStatementLines,
+    statementLinesByBankAccountId,
+    statementLinesLoading,
     updateBankAccount,
     updateBankAccountStatus,
     updateBankPaymentPolicy,

@@ -73,7 +73,9 @@ export const resolveAccountingSourceDocumentType = ({
 export const resolveAccountingSourceDocumentId = ({
   sourceDocumentId = null,
   sourceId = null,
-} = {}) => toCleanString(sourceDocumentId) || toCleanString(sourceId);
+} = {}) =>
+  toCleanString(sourceDocumentId) ||
+  toCleanString(sourceId);
 
 export const buildAccountingEventId = ({ eventType, sourceId, qualifier } = {}) =>
   [

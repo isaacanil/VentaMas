@@ -66,25 +66,33 @@ describe('accountingReports.util', () => {
       },
     ],
     eventsById: new Map([
-      [
-        'evt-1',
-        {
-          id: 'evt-1',
-          eventType: 'invoice.committed',
-          sourceDocumentType: 'invoice',
-          sourceDocumentId: 'inv-1',
-        },
-      ],
-      [
-        'evt-2',
-        {
-          id: 'evt-2',
-          eventType: 'invoice.committed',
-          sourceDocumentType: 'invoice',
-          sourceDocumentId: 'inv-2',
-        },
-      ],
-    ]),
+        [
+          'evt-1',
+          {
+            id: 'evt-1',
+            eventType: 'invoice.committed',
+            sourceDocumentType: 'invoice',
+            sourceDocumentId: 'inv-1',
+            payload: {
+              ncfCode: 'B0100000338',
+              invoiceNumber: '338',
+            },
+          },
+        ],
+        [
+          'evt-2',
+          {
+            id: 'evt-2',
+            eventType: 'invoice.committed',
+            sourceDocumentType: 'invoice',
+            sourceDocumentId: 'inv-2',
+            payload: {
+              ncfCode: 'B0100000339',
+              invoiceNumber: '339',
+            },
+          },
+        ],
+      ]),
   });
 
   it('calcula opciones del mayor y periodos disponibles', () => {
@@ -133,7 +141,7 @@ describe('accountingReports.util', () => {
 
     expect(pagedSnapshot.entries).toHaveLength(1);
     expect(pagedSnapshot.entries[0]).toMatchObject({
-      reference: 'inv-2',
+      reference: 'B0100000339',
       runningBalance: 160,
     });
     expect(pagedSnapshot.pagination).toMatchObject({
@@ -154,10 +162,62 @@ describe('accountingReports.util', () => {
 
     expect(searchedSnapshot.entries).toHaveLength(1);
     expect(searchedSnapshot.entries[0]).toMatchObject({
-      reference: 'inv-2',
+      reference: 'B0100000339',
       runningBalance: 160,
     });
     expect(searchedSnapshot.pagination.totalEntries).toBe(1);
+  });
+
+  it('compacta referencias tecnicas del mayor con alias corto de asiento', () => {
+    const technicalRecords = buildPostedLedgerRecords({
+      journalEntries: [
+        {
+          id: 'je-tech-1',
+          eventId: 'evt-tech-1',
+          eventType: 'internal_transfer.posted',
+          status: 'posted',
+          entryDate: new Date('2026-04-18T12:00:00.000Z'),
+          periodKey: '2026-04',
+          description: 'Transferencia entre cuentas',
+          sourceType: 'internal_transfer',
+          sourceId: 'internal_transfer.posted__0L_9_bBzY6Lw2SEwXDVde',
+          totals: { debit: 80, credit: 80 },
+          lines: [
+            { lineNumber: 1, accountId: 'cash', accountCode: '1.1.01', accountName: 'Caja', debit: 80, credit: 0 },
+            { lineNumber: 2, accountId: 'sales', accountCode: '4.1.01', accountName: 'Ventas', debit: 0, credit: 80 },
+          ],
+        },
+      ],
+      eventsById: new Map([
+        [
+          'evt-tech-1',
+            {
+              id: 'evt-tech-1',
+              eventType: 'internal_transfer.posted',
+              sourceDocumentType: 'internal_transfer',
+              sourceDocumentId: 'internal_transfer.posted__0L_9_bBzY6Lw2SEwXDVde',
+              payload: {
+                reference: 'TRF-9001',
+              },
+            },
+          ],
+      ]),
+    });
+
+    const snapshot = buildGeneralLedgerSnapshot({
+      account: accounts[0],
+      periodKey: '2026-04',
+      records: technicalRecords,
+    });
+
+    expect(snapshot.entries).toHaveLength(1);
+    expect(snapshot.entries[0]).toMatchObject({
+      reference: 'TRF-9001',
+      internalReference: 'je-tech-1',
+    });
+    expect(snapshot.entries[0].sourceRecord.entryReference).toBe(
+      'AST-2026-04-JE-TECH-1',
+    );
   });
 
   it('construye reportes financieros desde asientos posteados', () => {
@@ -176,5 +236,42 @@ describe('accountingReports.util', () => {
       expense: 0,
       netIncome: 60,
     });
+  });
+
+  it('asigna referencias AST estables derivadas del id del asiento', () => {
+    const stableRecords = buildPostedLedgerRecords({
+      journalEntries: [
+        {
+          id: 'je-older',
+          eventType: 'manual.entry.recorded',
+          entryDate: new Date('2026-04-14T10:00:00.000Z'),
+          createdAt: new Date('2026-04-14T10:00:00.000Z'),
+          periodKey: '2026-04',
+          status: 'posted',
+          sourceId: null,
+          description: 'Asiento 1',
+          lines: [],
+          totals: { debit: 0, credit: 0 },
+        },
+        {
+          id: 'je-newer',
+          eventType: 'manual.entry.recorded',
+          entryDate: new Date('2026-04-15T10:00:00.000Z'),
+          createdAt: new Date('2026-04-15T10:00:00.000Z'),
+          periodKey: '2026-04',
+          status: 'posted',
+          sourceId: null,
+          description: 'Asiento 2',
+          lines: [],
+          totals: { debit: 0, credit: 0 },
+        },
+      ],
+      eventsById: new Map(),
+    });
+
+    expect(stableRecords.map((record) => record.entryReference)).toEqual([
+      'AST-2026-04-JE-OLDER',
+      'AST-2026-04-JE-NEWER',
+    ]);
   });
 });

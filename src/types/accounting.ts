@@ -14,9 +14,19 @@ export type LiquidityEntrySourceType =
   | 'opening_balance'
   | 'internal_transfer'
   | 'manual_adjustment'
-  | 'bank_reconciliation';
+  | 'bank_reconciliation'
+  | 'bank_statement_adjustment'
+  | 'invoice_pos'
+  | 'receivable_payment'
+  | 'receivable_payment_void'
+  | 'supplier_payment'
+  | 'expense'
+  | 'credit_note_application'
+  | 'cash_adjustment';
 export type InternalTransferStatus = 'posted' | 'void';
 export type BankReconciliationStatus = 'balanced' | 'variance';
+export type BankStatementLineStatus = 'pending' | 'reconciled' | 'written_off';
+export type BankStatementLineType = 'transaction' | 'closing_balance';
 export type ChartOfAccountStatus = 'active' | 'inactive';
 export type ChartOfAccountType =
   | 'asset'
@@ -206,6 +216,9 @@ export interface LiquidityLedgerEntry {
   sourceId?: string | null;
   reference?: string | null;
   description?: string | null;
+  reconciliationStatus?: 'reconciled' | 'unreconciled' | null;
+  reconciliationId?: string | null;
+  reconciledAt?: TimestampLike | null;
   counterpartyAccountId?: string | null;
   counterpartyAccountType?: LiquidityAccountType | null;
   metadata?: Record<string, unknown>;
@@ -239,7 +252,28 @@ export interface BankReconciliationRecord {
   ledgerBalance: number;
   variance: number;
   status: BankReconciliationStatus;
+  reconciledMovementCount?: number;
+  unreconciledMovementCount?: number;
+  statementLineCount?: number;
   notes?: string | null;
+  reference?: string | null;
+  createdAt?: TimestampLike | null;
+  createdBy?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface BankStatementLine {
+  id: string;
+  businessId: string;
+  bankAccountId: string;
+  reconciliationId?: string | null;
+  lineType: BankStatementLineType;
+  status: BankStatementLineStatus;
+  statementDate: TimestampLike;
+  amount?: number | null;
+  runningBalance?: number | null;
+  direction?: LiquidityEntryDirection | null;
+  description?: string | null;
   reference?: string | null;
   createdAt?: TimestampLike | null;
   createdBy?: string | null;

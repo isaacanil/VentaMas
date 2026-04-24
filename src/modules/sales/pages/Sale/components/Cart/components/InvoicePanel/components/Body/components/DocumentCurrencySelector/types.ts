@@ -5,6 +5,7 @@ export type { SupportedDocumentCurrency };
 export interface DocumentCurrencyRateConfig {
   purchase: number | null;
   sale: number | null;
+  effectiveAt?: number | string | Date | null;
 }
 
 export interface DocumentCurrencyConfig {

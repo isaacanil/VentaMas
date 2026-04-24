@@ -132,9 +132,9 @@ La regla es la misma en todos los casos: eventos inmutables, idempotentes y emit
 
 Este documento toma como base:
 
-- `2026-03-18-plan-nocturno-cierre-fase-operativa-pagos-caja-fx.md`
-- `2026-03-17-dominio-pagos-ventas-compras-design.md`
-- `2026-03-17-migracion-pagos-caja-design.md`
+- `archive/2026-03-18-plan-nocturno-cierre-fase-operativa-pagos-caja-fx.md`
+- `archive/2026-03-17-dominio-pagos-ventas-compras-design.md`
+- `archive/2026-03-17-migracion-pagos-caja-design.md`
 
 Su objetivo es marcar el punto de quiebre entre:
 

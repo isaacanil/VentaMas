@@ -25,8 +25,8 @@ interface ChartOfAccountsListProps {
 }
 
 const STATUS_FILTER_OPTIONS = [
-  { label: 'Todos los estados', value: 'all' },
   { label: 'Activas', value: 'active' },
+  { label: 'Todas', value: 'all' },
   { label: 'Inactivas', value: 'inactive' },
 ] as const;
 
@@ -49,9 +49,7 @@ const buildAccountPath = (
 
   while (current && safety < accountsById.size) {
     branch.unshift(current);
-    current = current.parentId
-      ? accountsById.get(current.parentId)
-      : undefined;
+    current = current.parentId ? accountsById.get(current.parentId) : undefined;
     safety += 1;
   }
 
@@ -67,14 +65,18 @@ export const ChartOfAccountsList = ({
   onToggleChartOfAccountStatus,
   seeding,
 }: ChartOfAccountsListProps) => {
-  const isWideWorkspace = useWindowWidth(1120);
+  const isWideWorkspace = useWindowWidth(1320);
   const [search, setSearch] = useState('');
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    null,
+  );
   const [statusFilter, setStatusFilter] = useState<
     'all' | ChartOfAccount['status']
-  >('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | ChartOfAccountType>('all');
+  >('active');
+  const [typeFilter, setTypeFilter] = useState<'all' | ChartOfAccountType>(
+    'all',
+  );
   const deferredSearch = useDeferredValue(search);
 
   const accountsById = useMemo(
@@ -186,11 +188,11 @@ export const ChartOfAccountsList = ({
     [accountsById, selectedAccount],
   );
   const selectedParent = selectedAccount?.parentId
-    ? accountsById.get(selectedAccount.parentId) ?? null
+    ? (accountsById.get(selectedAccount.parentId) ?? null)
     : null;
   const selectedChildren = selectedAccount
-    ? [...(childrenByParentId.get(selectedAccount.id) ?? [])].sort((left, right) =>
-        left.code.localeCompare(right.code),
+    ? [...(childrenByParentId.get(selectedAccount.id) ?? [])].sort(
+        (left, right) => left.code.localeCompare(right.code),
       )
     : [];
 
@@ -221,8 +223,12 @@ export const ChartOfAccountsList = ({
     <ChartOfAccountInspector
       account={selectedAccount}
       childAccounts={selectedChildren}
-      childCount={selectedAccount ? childCountByParentId.get(selectedAccount.id) ?? 0 : 0}
-      depth={selectedAccount ? depthById.get(selectedAccount.id) ?? 0 : 0}
+      childCount={
+        selectedAccount
+          ? (childCountByParentId.get(selectedAccount.id) ?? 0)
+          : 0
+      }
+      depth={selectedAccount ? (depthById.get(selectedAccount.id) ?? 0) : 0}
       loading={loading}
       parentAccount={selectedParent}
       path={selectedAccountPath}
@@ -237,6 +243,7 @@ export const ChartOfAccountsList = ({
       <ChartOfAccountsExplorer
         accounts={filteredAccounts}
         activeAccountsCount={activeAccounts.length}
+        childCountByParentId={childCountByParentId}
         depthById={depthById}
         loading={loading}
         postingAccountsCount={postingAccounts.length}
@@ -265,7 +272,11 @@ export const ChartOfAccountsList = ({
           height="78%"
           open={Boolean(selectedAccount) && isInspectorOpen}
           placement="bottom"
-          title={selectedAccount ? `${selectedAccount.code} · ${selectedAccount.name}` : 'Detalle de cuenta'}
+          title={
+            selectedAccount
+              ? `${selectedAccount.code} · ${selectedAccount.name}`
+              : 'Detalle de cuenta'
+          }
           onClose={() => setIsInspectorOpen(false)}
           styles={{
             body: {
@@ -283,12 +294,13 @@ export const ChartOfAccountsList = ({
 
 const Workspace = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.85fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.75fr);
   align-items: stretch;
+  gap: var(--ds-space-4);
   flex: 1;
   min-height: 0;
 
-  @media (max-width: 1120px) {
+  @media (max-width: 1320px) {
     grid-template-columns: 1fr;
   }
 `;

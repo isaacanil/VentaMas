@@ -1,5 +1,7 @@
 # Trazabilidad bidireccional documento <-> asiento
 
+> Estado 2026-04-23: `ARCHIVADO`. Reemplazado por el plan QA maestro y la auditoria end-to-end de abril.
+
 Fecha: 2026-04-05
 
 ## Cobertura activa

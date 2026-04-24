@@ -37,7 +37,12 @@ import { createAccountsReceivable } from './app/modules/accountReceivable/functi
 import { processAccountsReceivablePayment } from './app/modules/accountReceivable/functions/processAccountsReceivablePayment.js';
 import { voidAccountsReceivablePayment } from './app/modules/accountReceivable/functions/voidAccountsReceivablePayment.js';
 import { createInternalTransfer } from './app/modules/treasury/functions/createInternalTransfer.js';
-import { createBankReconciliation } from './app/modules/treasury/functions/createBankReconciliation.js';
+import {
+  createBankReconciliation,
+  previewBankReconciliation,
+} from './app/modules/treasury/functions/createBankReconciliation.js';
+import { createBankStatementLine } from './app/modules/treasury/functions/createBankStatementLine.js';
+import { resolveBankStatementLineMatch } from './app/modules/treasury/functions/resolveBankStatementLineMatch.js';
 
 import { quotationPdf } from './app/modules/quotation/quotationGenerate/quotationGenerate.js';
 import { keepSupabaseAlive } from './app/modules/supabase/controllers/keepSupabaseAlive.controller.js';
@@ -178,6 +183,9 @@ export {
   voidAccountsReceivablePayment,
   createInternalTransfer,
   createBankReconciliation,
+  createBankStatementLine,
+  previewBankReconciliation,
+  resolveBankStatementLineMatch,
   quotationPdf,
   createBusiness,
   ensureDefaultWarehouseForBusiness,

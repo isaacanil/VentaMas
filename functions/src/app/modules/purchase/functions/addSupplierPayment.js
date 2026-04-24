@@ -302,18 +302,22 @@ export const addSupplierPayment = onCall(async (request) => {
   const note = toCleanString(payload.note);
   const requestedOccurredAtMillis = toMillis(payload.occurredAt);
   const requestedNextPaymentAtMillis = toMillis(payload.nextPaymentAt);
-  const occurredAtMillis =
+  const hasOccurredAt = payload.occurredAt != null;
+  const hasNextPaymentAt = payload.nextPaymentAt != null;
+  const hasValidOccurredAt =
     typeof requestedOccurredAtMillis === 'number' &&
     Number.isFinite(requestedOccurredAtMillis) &&
-    requestedOccurredAtMillis > 0
-      ? Math.trunc(requestedOccurredAtMillis)
-      : Date.now();
-  const nextPaymentAtMillis =
+    requestedOccurredAtMillis > 0;
+  const hasValidNextPaymentAt =
     typeof requestedNextPaymentAtMillis === 'number' &&
     Number.isFinite(requestedNextPaymentAtMillis) &&
-    requestedNextPaymentAtMillis > 0
-      ? Math.trunc(requestedNextPaymentAtMillis)
-      : null;
+    requestedNextPaymentAtMillis > 0;
+  const occurredAtMillis = hasValidOccurredAt
+    ? Math.trunc(requestedOccurredAtMillis)
+    : null;
+  const nextPaymentAtMillis = hasValidNextPaymentAt
+    ? Math.trunc(requestedNextPaymentAtMillis)
+    : null;
 
   if (!businessId) {
     throw new HttpsError('invalid-argument', 'businessId es requerido.');
@@ -326,6 +330,18 @@ export const addSupplierPayment = onCall(async (request) => {
   }
   if (!idempotencyKey) {
     throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
+  }
+  if (hasOccurredAt && occurredAtMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'La fecha del pago es inválida.',
+    );
+  }
+  if (hasNextPaymentAt && nextPaymentAtMillis == null) {
+    throw new HttpsError(
+      'invalid-argument',
+      'La próxima fecha de pago es inválida.',
+    );
   }
 
   const accountingSettings =

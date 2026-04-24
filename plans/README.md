@@ -23,6 +23,7 @@ Uso: seguimiento del proyecto multi-negocio, roles por negocio, selector de nego
 ### `plans/architecture/`
 
 - `2026-03-03-contabilidad-design/README.md`
+- `fiscal-compliance/README.md`
 - `2026-03-23-multi-sucursal-y-analitica-enterprise-plan.md`
 - `2026-03-17-vite-8-migration.md`
 - `audits/2026-03-07-repo-architecture-audit.md`
@@ -40,11 +41,13 @@ Uso: plan de hardening de reglas de Firestore y Storage (aislamiento multi-tenan
 
 ### `plans/testing/`
 
+- `README.md`
+- `2026-04-23-finanzas-contabilidad-qa-maestro.md`
 - `2026-03-17-testing-plan.md`
 - `2026-03-17-testing-execution.md`
 - `2026-03-17-testing-module-audit.md`
 
-Uso: estrategia de testing del repo, prioridades por modulo, fases y checklist de cobertura para frontend y Cloud Functions.
+Uso: estrategia de testing del repo, prioridades por modulo, fases y checklist de cobertura para frontend y Cloud Functions. Para finanzas/contabilidad/CxP/CxC/tesoreria, usar primero `2026-04-23-finanzas-contabilidad-qa-maestro.md`.
 
 ### `plans/firestore-architecture/`
 

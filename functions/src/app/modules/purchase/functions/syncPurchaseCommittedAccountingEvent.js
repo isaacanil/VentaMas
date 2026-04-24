@@ -182,6 +182,12 @@ export const syncPurchaseCommittedAccountingEvent = onDocumentWritten(
           toCleanString(afterPurchase.numberId) ??
           toCleanString(afterPurchase.number) ??
           null,
+        vendorReference:
+          toCleanString(afterPurchase.vendorReference) ??
+          toCleanString(afterPurchase.invoiceNumber) ??
+          toCleanString(afterPurchase.reference) ??
+          null,
+        invoiceNumber: toCleanString(afterPurchase.invoiceNumber) ?? null,
         workflowStatus:
           toCleanString(afterPurchase.workflowStatus)?.toLowerCase() ?? null,
         purchaseStatus:

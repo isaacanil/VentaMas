@@ -66,6 +66,7 @@ export interface PaymentState {
 
 export type CashMovementDirection = 'in' | 'out';
 export type PaymentCounterpartyType = 'client' | 'supplier' | 'insurance';
+export type CashMovementReconciliationStatus = 'reconciled' | 'unreconciled';
 
 export type PaymentEventStatus = 'posted' | 'void' | 'draft';
 
@@ -136,7 +137,8 @@ export type CashMovementSourceType =
   | 'supplier_payment'
   | 'expense'
   | 'credit_note_application'
-  | 'cash_adjustment';
+  | 'cash_adjustment'
+  | 'bank_statement_adjustment';
 
 export interface CashMovement {
   id: string;
@@ -161,5 +163,9 @@ export interface CashMovement {
   impactsCashDrawer: boolean;
   impactsBankLedger: boolean;
   status?: Extract<PaymentEventStatus, 'posted' | 'void'>;
+  reconciliationStatus?: CashMovementReconciliationStatus | null;
+  reconciliationId?: string | null;
+  reconciledAt?: TimestampLike | null;
+  bankStatementLineId?: string | null;
   metadata?: Record<string, unknown>;
 }

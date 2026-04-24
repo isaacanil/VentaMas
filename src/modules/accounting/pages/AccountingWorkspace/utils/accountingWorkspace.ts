@@ -53,6 +53,18 @@ export interface AccountingLedgerRecord {
   description: string;
   reference: string;
   internalReference: string | null;
+  entryReference: string;
+  documentReference: string | null;
+  journalTypeKey:
+    | 'sale'
+    | 'purchase'
+    | 'payment'
+    | 'collection'
+    | 'expense'
+    | 'payroll'
+    | 'adjustment';
+  journalTypeLabel: string;
+  userLabel: string | null;
   amount: number;
   statusLabel: string;
   statusTone: 'success' | 'warning' | 'neutral';
@@ -166,6 +178,9 @@ const monthFormatter = new Intl.DateTimeFormat('es-DO', {
   year: 'numeric',
 });
 
+const SYSTEM_GENERATED_REFERENCE_PATTERN =
+  /^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+__[\w-]+$/i;
+
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -177,10 +192,101 @@ const toCleanString = (value: unknown): string | null => {
   return trimmed.length ? trimmed : null;
 };
 
+const resolvePreferredAccountingDocumentReference = ({
+  eventType,
+  payload,
+}: {
+  eventType: AccountingEventType;
+  payload: unknown;
+}): string | null => {
+  const snapshot = asRecord(payload);
+
+  switch (eventType) {
+    case 'invoice.committed':
+      return (
+        toCleanString(snapshot.ncfCode) ??
+        toCleanString(snapshot.invoiceNumber) ??
+        null
+      );
+    case 'accounts_receivable.payment.recorded':
+    case 'accounts_receivable.payment.voided':
+      return (
+        toCleanString(snapshot.receiptNumber) ??
+        toCleanString(snapshot.reference) ??
+        null
+      );
+    case 'purchase.committed':
+      return (
+        toCleanString(snapshot.vendorReference) ??
+        toCleanString(snapshot.invoiceNumber) ??
+        toCleanString(snapshot.purchaseNumber) ??
+        null
+      );
+    case 'accounts_payable.payment.recorded':
+    case 'accounts_payable.payment.voided':
+      return (
+        toCleanString(snapshot.receiptNumber) ??
+        toCleanString(snapshot.reference) ??
+        toCleanString(snapshot.purchaseNumber) ??
+        null
+      );
+    case 'expense.recorded':
+      return (
+        toCleanString(snapshot.invoiceNcf) ??
+        toCleanString(snapshot.reference) ??
+        toCleanString(snapshot.numberId) ??
+        null
+      );
+    case 'internal_transfer.posted':
+      return (
+        toCleanString(snapshot.reference) ??
+        toCleanString(snapshot.note) ??
+        null
+      );
+    default:
+      return null;
+  }
+};
+
 const toFiniteAmount = (value: unknown): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
+
+const buildEntryAlias = (
+  entryDate: Date | null,
+  entryId: string | null,
+): string => {
+  const cleanedEntryId = toCleanString(entryId);
+  const normalizedEntryId =
+    cleanedEntryId
+      ?.replace(/[^A-Za-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toUpperCase() || 'ENTRY';
+  const year = entryDate?.getFullYear() ?? 0;
+  const month = pad2((entryDate?.getMonth() ?? 0) + 1);
+  return `AST-${year.toString().padStart(4, '0')}-${month}-${normalizedEntryId}`;
+};
+
+const assignStableEntryReferences = (
+  records: AccountingLedgerRecord[],
+): AccountingLedgerRecord[] => {
+  return records.map((record) => {
+    const entryReference = buildEntryAlias(
+      record.entryDate,
+      record.journalEntry?.id ?? record.entryReference ?? record.internalReference,
+    );
+    return {
+      ...record,
+      entryReference,
+      searchIndex: `${record.searchIndex} ${entryReference}`.toLowerCase(),
+    };
+  });
+};
+
+const shouldCompactVisibleReference = (value: string | null): boolean =>
+  Boolean(value && SYSTEM_GENERATED_REFERENCE_PATTERN.test(value));
 
 const findFirstLineReference = (lines: JournalEntryLine[]): string | null =>
   lines.reduce<string | null>(
@@ -271,6 +377,48 @@ const matchesProfileConditions = (
   }
 
   return true;
+};
+
+const ACCOUNTING_JOURNAL_TYPE_LABELS = {
+  adjustment: 'Ajuste',
+  collection: 'Cobro',
+  expense: 'Gasto',
+  payment: 'Pago',
+  payroll: 'Nomina',
+  purchase: 'Compra',
+  sale: 'Venta',
+} as const;
+
+const resolveJournalTypeKey = (
+  eventType: AccountingEventType,
+): keyof typeof ACCOUNTING_JOURNAL_TYPE_LABELS => {
+  switch (eventType) {
+    case 'invoice.committed':
+      return 'sale';
+    case 'purchase.committed':
+      return 'purchase';
+    case 'accounts_payable.payment.recorded':
+    case 'accounts_payable.payment.voided':
+      return 'payment';
+    case 'accounts_receivable.payment.recorded':
+    case 'accounts_receivable.payment.voided':
+      return 'collection';
+    case 'expense.recorded':
+      return 'expense';
+    default:
+      return 'adjustment';
+  }
+};
+
+const resolveRecordUserLabel = (...values: Array<unknown>): string | null => {
+  for (const value of values) {
+    const cleaned = toCleanString(value);
+    if (cleaned) {
+      return cleaned;
+    }
+  }
+
+  return null;
 };
 
 const resolveEventAmountSource = (
@@ -431,11 +579,13 @@ export const buildLedgerRecords = ({
   events,
   journalEntries,
   postingProfiles,
+  userNamesById = {},
 }: {
   accounts: ChartOfAccount[];
   events: AccountingEvent[];
   journalEntries: JournalEntry[];
   postingProfiles: AccountingPostingProfile[];
+  userNamesById?: Record<string, string>;
 }): AccountingLedgerRecord[] => {
   const accountsById = new Map(
     accounts.map((account) => [account.id, account]),
@@ -475,6 +625,22 @@ export const buildLedgerRecords = ({
       (effectiveDate ? buildAccountingPeriodKey(effectiveDate) : null);
     const eventDefinition = getAccountingEventDefinition(event.eventType);
     const moduleKey = profile?.moduleKey ?? eventDefinition.moduleKey;
+    const journalTypeKey = resolveJournalTypeKey(event.eventType);
+    const rawEntryReference = journalEntry?.id ?? journalEntryId ?? event.id;
+    const resolvedDocumentReference =
+      resolvePreferredAccountingDocumentReference({
+        eventType: event.eventType,
+        payload: event.payload,
+      }) ??
+      event.sourceDocumentId ??
+      event.sourceId ??
+      null;
+    const userLabel = resolveRecordUserLabel(
+      userNamesById[journalEntry?.createdBy ?? ''],
+      userNamesById[event.createdBy ?? ''],
+      journalEntry?.createdBy,
+      event.createdBy,
+    );
     const status = getRecordStatus({
       event,
       hasLines: lines.length > 0,
@@ -497,8 +663,14 @@ export const buildLedgerRecords = ({
         profile?.description ??
         event.sourceDocumentType ??
         'Movimiento contable generado por la operacion.',
-      reference: event.sourceDocumentId ?? event.sourceId ?? event.id,
-      internalReference: null,
+      reference:
+        resolvedDocumentReference ?? event.sourceDocumentId ?? event.sourceId ?? event.id,
+      internalReference: rawEntryReference,
+      entryReference: rawEntryReference,
+      documentReference: resolvedDocumentReference,
+      journalTypeKey,
+      journalTypeLabel: ACCOUNTING_JOURNAL_TYPE_LABELS[journalTypeKey],
+      userLabel,
       amount:
         journalEntry?.totals.debit ??
         resolveEventAmountSource(event, 'document_total'),
@@ -510,9 +682,14 @@ export const buildLedgerRecords = ({
       profile,
       searchIndex: [
         ACCOUNTING_EVENT_TYPE_LABELS[event.eventType],
-        event.sourceDocumentId,
+        resolvedDocumentReference,
         event.sourceId,
         event.sourceDocumentType,
+        rawEntryReference,
+        rawEntryReference,
+        resolvedDocumentReference,
+        ACCOUNTING_JOURNAL_TYPE_LABELS[journalTypeKey],
+        userLabel,
         profile?.name,
       ]
         .filter(Boolean)
@@ -541,6 +718,14 @@ export const buildLedgerRecords = ({
         entry.eventType === 'manual.entry.recorded'
           ? resolveManualEntryReference(entry)
           : null;
+      const rawEntryReference = entry.id;
+      const journalTypeKey = resolveJournalTypeKey(entry.eventType);
+      const documentReference =
+        manualReference?.reference ?? toCleanString(entry.sourceId);
+      const userLabel = resolveRecordUserLabel(
+        userNamesById[entry.createdBy ?? ''],
+        entry.createdBy,
+      );
 
       return {
         id: `entry:${entry.id}`,
@@ -561,7 +746,13 @@ export const buildLedgerRecords = ({
           entry.description ??
           'Asiento posteado directamente en el libro diario.',
         reference: manualReference?.reference ?? entry.sourceId ?? entry.id,
-        internalReference: manualReference?.internalReference ?? null,
+        internalReference:
+          manualReference?.internalReference ?? rawEntryReference,
+        entryReference: rawEntryReference,
+        documentReference,
+        journalTypeKey,
+        journalTypeLabel: ACCOUNTING_JOURNAL_TYPE_LABELS[journalTypeKey],
+        userLabel,
         amount: entry.totals.debit,
         statusLabel: entry.status === 'reversed' ? 'Revertido' : 'Posteado',
         statusTone: entry.status === 'reversed' ? 'neutral' : 'success',
@@ -571,6 +762,12 @@ export const buildLedgerRecords = ({
         profile: null,
         searchIndex: [
           title,
+          rawEntryReference,
+          rawEntryReference,
+          entry.id,
+          documentReference,
+          ACCOUNTING_JOURNAL_TYPE_LABELS[journalTypeKey],
+          userLabel,
           manualReference?.reference,
           manualReference?.internalReference,
           entry.sourceId,
@@ -583,11 +780,10 @@ export const buildLedgerRecords = ({
       };
     });
 
-  return [...automaticRecords, ...standaloneEntries].sort((left, right) => {
-    const leftTime = left.entryDate?.getTime() ?? 0;
-    const rightTime = right.entryDate?.getTime() ?? 0;
-    return rightTime - leftTime;
-  });
+  return assignStableEntryReferences([
+    ...automaticRecords,
+    ...standaloneEntries,
+  ]);
 };
 
 const recordAffectsPeriod = (
@@ -745,6 +941,13 @@ export const buildGeneralLedgerSnapshot = ({
   let runningBalance = openingBalance;
   const entries = scopedLines.map(({ line, record }) => {
     runningBalance += resolveLineBalanceDelta(account, line);
+    const visibleReference = shouldCompactVisibleReference(record.reference)
+      ? record.documentReference ?? record.entryReference
+      : record.documentReference ?? record.reference;
+    const internalReference =
+      visibleReference !== record.reference
+        ? record.reference
+        : record.internalReference;
 
     return {
       id: `${record.id}:${line.lineNumber}`,
@@ -752,8 +955,8 @@ export const buildGeneralLedgerSnapshot = ({
       periodKey: record.periodKey,
       moduleLabel: record.moduleLabel,
       sourceLabel: record.sourceLabel,
-      reference: record.reference,
-      internalReference: record.internalReference,
+      reference: visibleReference,
+      internalReference,
       title: record.title,
       description: record.description,
       lineDescription: line.description ?? null,

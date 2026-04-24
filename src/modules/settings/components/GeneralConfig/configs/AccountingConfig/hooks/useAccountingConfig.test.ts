@@ -9,6 +9,7 @@ const onSnapshotMock = vi.hoisted(() => vi.fn());
 const orderByMock = vi.hoisted(() => vi.fn());
 const queryMock = vi.hoisted(() => vi.fn());
 const setDocMock = vi.hoisted(() => vi.fn());
+const whereMock = vi.hoisted(() => vi.fn());
 const writeBatchMock = vi.hoisted(() => vi.fn());
 const dbMock = vi.hoisted(() => ({ name: 'db-mock' }));
 const useAccountingRolloutEnabledMock = vi.hoisted(() => vi.fn());
@@ -25,6 +26,7 @@ vi.mock('firebase/firestore', () => ({
   Timestamp: {
     now: () => ({ seconds: 1, nanoseconds: 0 }),
   },
+  where: (...args: unknown[]) => whereMock(...args),
   writeBatch: (...args: unknown[]) => writeBatchMock(...args),
 }));
 
@@ -49,6 +51,7 @@ describe('useAccountingConfig loading', () => {
     orderByMock.mockReset();
     queryMock.mockReset();
     setDocMock.mockReset();
+    whereMock.mockReset();
     writeBatchMock.mockReset();
     useAccountingRolloutEnabledMock.mockReset();
 
@@ -83,6 +86,11 @@ describe('useAccountingConfig loading', () => {
     limitMock.mockImplementation((value: number) => ({ value }));
     queryMock.mockImplementation((ref: { path: string }) => ({
       path: ref.path,
+    }));
+    whereMock.mockImplementation((field: string, op: string, value: unknown) => ({
+      field,
+      op,
+      value,
     }));
     getDocMock.mockResolvedValue({
       exists: () => false,

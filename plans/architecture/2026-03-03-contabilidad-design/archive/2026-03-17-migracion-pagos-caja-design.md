@@ -1,5 +1,7 @@
 # Plan de Migracion: Pagos y Movimientos de Caja
 
+> Estado 2026-04-23: `ARCHIVADO`. Reglas vigentes absorbidas en `../contabilidad-backlog.md`.
+
 Fecha: `2026-03-17`
 
 ## Objetivo

@@ -17,10 +17,10 @@ Documentos revisados para armar este resumen:
 - `README.md`
 - `contabilidad-backlog.md`
 - `contabilidad-checklist.md`
-- `etapa-2026-03-10-precio-documental-y-facturacion-nativa-por-moneda.md`
-- `implementacion-2026-03-10-facturacion-usd-nativa.md`
-- `migracion-2026-03-10-datos-esenciales-por-moneda.md`
-- `2026-03-17-compras-cuentas-por-pagar-design.md`
+- `archive/etapa-2026-03-10-precio-documental-y-facturacion-nativa-por-moneda.md`
+- `archive/implementacion-2026-03-10-facturacion-usd-nativa.md`
+- `archive/migracion-2026-03-10-datos-esenciales-por-moneda.md`
+- `archive/2026-03-17-compras-cuentas-por-pagar-design.md`
 - `audit/2026-03-09-repo-audit.md`
 
 ## 1. Que problema estamos resolviendo
