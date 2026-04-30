@@ -56,6 +56,44 @@ export const Label = styled.span`
   white-space: nowrap;
 `;
 
+export const CurrencyMenuControl = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 174px;
+
+  .select {
+    flex: 1 1 auto;
+    min-width: 92px;
+  }
+
+  .select__trigger {
+    width: 100%;
+    min-height: 28px;
+    padding: 2px 24px 2px 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: none;
+  }
+
+  .select__value {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .select__indicator {
+    right: 6px;
+  }
+`;
+
+export const CurrencyMenuLabel = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+`;
+
 export const ActionButton = styled.button`
   padding: 8px 12px;
   color: white;

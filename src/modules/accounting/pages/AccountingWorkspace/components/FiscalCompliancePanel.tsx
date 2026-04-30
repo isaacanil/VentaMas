@@ -1,5 +1,20 @@
-import { DownloadOutlined } from '@ant-design/icons';
-import { Alert, Button, Select, Tabs, Tag, message } from 'antd';
+import {
+  DownloadOutlined,
+  HistoryOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
+import {
+  Alert as HeroAlert,
+  Button as HeroButton,
+  Card as HeroCard,
+  Chip as HeroChip,
+  Dropdown as HeroDropdown,
+  ListBox,
+  Modal as HeroModal,
+  Select as HeroSelect,
+  Tabs as HeroTabs,
+} from '@heroui/react';
+import { message } from 'antd';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -34,16 +49,11 @@ interface FiscalCompliancePanelProps {
   defaultPeriodKey: string | null;
 }
 
-type FiscalComplianceTabKey =
-  | 'summary'
-  | 'DGII_607'
-  | 'DGII_606'
-  | 'DGII_608'
-  | 'runs';
+type FiscalComplianceTabKey = MonthlyComplianceReportCode;
 
 const REPORT_CODES: MonthlyComplianceReportCode[] = [
-  'DGII_607',
   'DGII_606',
+  'DGII_607',
   'DGII_608',
 ];
 
@@ -51,12 +61,6 @@ const REPORT_LABELS: Record<MonthlyComplianceReportCode, string> = {
   DGII_606: '606',
   DGII_607: '607',
   DGII_608: '608',
-};
-
-const REPORT_DESCRIPTIONS: Record<MonthlyComplianceReportCode, string> = {
-  DGII_606: 'Compras, gastos y pagos relacionados del periodo.',
-  DGII_607: 'Ventas y retenciones sufridas por terceros.',
-  DGII_608: 'Comprobantes anulados y documentos cancelados.',
 };
 
 const getStatusTone = (status: string) =>
@@ -96,7 +100,13 @@ const groupFiscalIssues = (issues: MonthlyComplianceRun['issues']) => {
     const documentNumber = normalizeIssueLabel(issue.documentNumber);
     const recordId = toOptionalIssueLabel(issue.recordId);
     const fieldPath = toOptionalIssueLabel(issue.fieldPath);
-    const issueKey = [severity, code, sourceId, documentNumber, recordId ?? ''].join('|');
+    const issueKey = [
+      severity,
+      code,
+      sourceId,
+      documentNumber,
+      recordId ?? '',
+    ].join('|');
     const existingGroup = groups.get(issueKey);
 
     if (existingGroup) {
@@ -111,9 +121,7 @@ const groupFiscalIssues = (issues: MonthlyComplianceRun['issues']) => {
       code,
       sourceId,
       documentNumber,
-      fields: new Set(
-        fieldPath ? [translateFieldPath(fieldPath)] : [],
-      ),
+      fields: new Set(fieldPath ? [translateFieldPath(fieldPath)] : []),
     });
   });
 
@@ -134,10 +142,223 @@ const resolveReportOptionLabel = (reportCode: MonthlyComplianceReportCode) =>
     (option) => option.value === reportCode,
   )?.label ?? reportCode;
 
-const isReportTab = (
-  tab: FiscalComplianceTabKey,
-): tab is MonthlyComplianceReportCode =>
-  REPORT_CODES.includes(tab as MonthlyComplianceReportCode);
+const formatMoney = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed)
+    ? parsed.toLocaleString('es-DO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    : '-';
+};
+
+const formatCurrency = (value: unknown) => `RD$ ${formatMoney(value)}`;
+
+const padDatePart = (value: number) => String(value).padStart(2, '0');
+
+const formatShortDate = (value: unknown) => {
+  if (typeof value !== 'string' || !value.length) return '-';
+  const isoDateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!isoDateMatch) return '-';
+  const [, year, month, day] = isoDateMatch;
+  return `${day}/${month}/${year}`;
+};
+
+const toPreviewText = (value: unknown) =>
+  typeof value === 'string' && value.trim().length ? value.trim() : '-';
+
+const hasPreviewValue = (value: unknown) =>
+  typeof value === 'string' && value.trim().length > 0;
+
+const toSourceRows = (
+  sourceRecords: Record<string, unknown>,
+  sourceId: string,
+) => {
+  const records = Array.isArray(sourceRecords[sourceId])
+    ? sourceRecords[sourceId]
+    : [];
+
+  return records.map((record, index) => ({
+    ...(record && typeof record === 'object'
+      ? (record as Record<string, unknown>)
+      : {}),
+    sourceId,
+    index,
+  }));
+};
+
+const getDgii606ExcludedRows = (run: MonthlyComplianceRun) => {
+  const sourceRecords = run.sourceSnapshot.sourceRecords;
+  return [
+    ...toSourceRows(sourceRecords, 'excludedPurchases'),
+    ...toSourceRows(sourceRecords, 'excludedExpenses'),
+    ...toSourceRows(sourceRecords, 'excludedAccountsPayablePayments'),
+  ].sort((left, right) =>
+    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
+  );
+};
+
+const getDgii606Rows = (run: MonthlyComplianceRun) => {
+  const sourceRecords = run.sourceSnapshot.sourceRecords;
+  return [
+    ...toSourceRows(sourceRecords, 'purchases'),
+    ...toSourceRows(sourceRecords, 'expenses'),
+  ].sort((left, right) =>
+    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
+  );
+};
+
+const getDgii607Rows = (run: MonthlyComplianceRun) => {
+  const sourceRecords = run.sourceSnapshot.sourceRecords;
+  return [
+    ...toSourceRows(sourceRecords, 'invoices'),
+    ...toSourceRows(sourceRecords, 'thirdPartyWithholdings'),
+    ...toSourceRows(sourceRecords, 'creditNotes'),
+  ]
+    .filter((row) => hasPreviewValue(row.documentFiscalNumber))
+    .sort((left, right) =>
+      String(left.retentionDate ?? left.issuedAt ?? '').localeCompare(
+        String(right.retentionDate ?? right.issuedAt ?? ''),
+      ),
+    );
+};
+
+const getDgii607ExcludedRows = (run: MonthlyComplianceRun) => {
+  const sourceRecords = run.sourceSnapshot.sourceRecords;
+  return [
+    ...toSourceRows(sourceRecords, 'excludedInvoices'),
+    ...toSourceRows(sourceRecords, 'excludedThirdPartyWithholdings'),
+    ...toSourceRows(sourceRecords, 'excludedCreditNotes'),
+  ].sort((left, right) =>
+    String(left.retentionDate ?? left.issuedAt ?? '').localeCompare(
+      String(right.retentionDate ?? right.issuedAt ?? ''),
+    ),
+  );
+};
+
+const getDgii608Rows = (run: MonthlyComplianceRun) => {
+  const sourceRecords = run.sourceSnapshot.sourceRecords;
+  return [
+    ...toSourceRows(sourceRecords, 'invoices'),
+    ...toSourceRows(sourceRecords, 'creditNotes'),
+  ].sort((left, right) =>
+    String(left.issuedAt ?? '').localeCompare(String(right.issuedAt ?? '')),
+  );
+};
+
+const resolveDgiiDocumentType = (documentFiscalNumber: unknown) => {
+  const ncf = toPreviewText(documentFiscalNumber).toUpperCase();
+  if (ncf.startsWith('B01')) return '01';
+  if (ncf.startsWith('B02')) return '02';
+  if (ncf.startsWith('B04')) return '04';
+  return '-';
+};
+
+const resolveExcludedReason = (row: Record<string, unknown>) => {
+  if (!hasPreviewValue(row.documentFiscalNumber)) return 'Sin NCF';
+  return 'Fuera del reporte';
+};
+
+const getRunRecordCount = (run: MonthlyComplianceRun | null) => {
+  if (!run) return 0;
+  if (run.reportCode === 'DGII_606') return getDgii606Rows(run).length;
+  if (run.reportCode === 'DGII_607') return getDgii607Rows(run).length;
+  if (run.reportCode === 'DGII_608') return getDgii608Rows(run).length;
+
+  return run.validationSummary.sourceSummaries.reduce(
+    (total, source) => total + source.recordsScanned,
+    0,
+  );
+};
+
+const getDgii606ItbisTotal = (run: MonthlyComplianceRun | null) =>
+  run
+    ? getDgii606Rows(run).reduce((total, row) => {
+        const parsed = Number(row.itbisTotal);
+        return Number.isFinite(parsed) ? total + parsed : total;
+      }, 0)
+    : 0;
+
+const parsePeriodStart = (periodKey: string) => {
+  const [year, month] = periodKey.split('-').map(Number);
+  if (!year || !month) return new Date();
+  return new Date(year, month - 1, 1);
+};
+
+const addMonths = (date: Date, months: number) =>
+  new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
+
+const buildFiscalDate = (
+  periodKey: string,
+  monthOffset: number,
+  day: number,
+) => {
+  const periodStart = parsePeriodStart(periodKey);
+  return new Date(
+    periodStart.getFullYear(),
+    periodStart.getMonth() + monthOffset,
+    day,
+  );
+};
+
+const formatFiscalDate = (date: Date) =>
+  [
+    padDatePart(date.getDate()),
+    padDatePart(date.getMonth() + 1),
+    date.getFullYear(),
+  ].join('/');
+
+const getDaysUntil = (date: Date) => {
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const targetStart = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+  return Math.ceil(
+    (targetStart.getTime() - todayStart.getTime()) / (24 * 60 * 60 * 1000),
+  );
+};
+
+const getFiscalCalendarItems = (periodKey: string) => {
+  const nextMonth = addMonths(parsePeriodStart(periodKey), 1);
+  const monthLabel = nextMonth.toLocaleDateString('es-DO', { month: 'long' });
+  const capitalizedMonth =
+    monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+  return [
+    {
+      date: buildFiscalDate(periodKey, 1, 15),
+      label: 'Envio formatos 606, 607, 608',
+      tone: 'warning' as const,
+    },
+    {
+      date: buildFiscalDate(periodKey, 1, 20),
+      label: `Pago ITBIS (IT-1) - ${capitalizedMonth}`,
+      tone: 'warning' as const,
+    },
+    {
+      date: buildFiscalDate(periodKey, 1, 30),
+      label: 'Retención ISR asalariados',
+      tone: 'success' as const,
+    },
+    {
+      date: buildFiscalDate(periodKey, 2, 15),
+      label: 'Envio IR-17 - anticipo',
+      tone: 'success' as const,
+    },
+    {
+      date: buildFiscalDate(periodKey, 3, 28),
+      label: 'Declaración jurada anual IR-2',
+      tone: 'success' as const,
+    },
+  ];
+};
 
 export const FiscalCompliancePanel = ({
   businessId,
@@ -145,7 +366,8 @@ export const FiscalCompliancePanel = ({
   periods,
   defaultPeriodKey,
 }: FiscalCompliancePanelProps) => {
-  const [activeTab, setActiveTab] = useState<FiscalComplianceTabKey>('summary');
+  const [activeTab, setActiveTab] =
+    useState<FiscalComplianceTabKey>('DGII_606');
   const [requestedPeriodKey, setRequestedPeriodKey] = useState('');
   const [selectedRunIds, setSelectedRunIds] = useState<
     Partial<Record<MonthlyComplianceReportCode, string | null>>
@@ -153,10 +375,11 @@ export const FiscalCompliancePanel = ({
   const [selectedOverviewRunId, setSelectedOverviewRunId] = useState<
     string | null
   >(null);
+  const [runsModalOpen, setRunsModalOpen] = useState(false);
   const [running, setRunning] = useState(false);
   const [exportingReportCode, setExportingReportCode] =
     useState<MonthlyComplianceReportCode | null>(null);
-  const { error, loading, runs } = useMonthlyComplianceRuns({
+  const { error, runs } = useMonthlyComplianceRuns({
     businessId,
     enabled,
   });
@@ -206,9 +429,25 @@ export const FiscalCompliancePanel = ({
     (total, run) => total + run.validationSummary.totalIssues,
     0,
   );
-  const totalValidatedRuns = currentPeriodRuns.filter(
-    (run) => run.status === 'validated',
-  ).length;
+  const latestRunByCode = useMemo(
+    () =>
+      REPORT_CODES.reduce(
+        (accumulator, reportCode) => ({
+          ...accumulator,
+          [reportCode]: reportRunsByCode[reportCode][0] ?? null,
+        }),
+        {} as Record<MonthlyComplianceReportCode, MonthlyComplianceRun | null>,
+      ),
+    [reportRunsByCode],
+  );
+  const latest606Run = latestRunByCode.DGII_606;
+  const fiscalCalendarItems = useMemo(
+    () => getFiscalCalendarItems(effectivePeriodKey),
+    [effectivePeriodKey],
+  );
+  const fiscalDueDate = buildFiscalDate(effectivePeriodKey, 1, 15);
+  const itbisPaymentDate = buildFiscalDate(effectivePeriodKey, 1, 20);
+  const recentHistoryRuns = runs.slice(0, 4);
 
   const handleRun = async (reportCode: MonthlyComplianceReportCode) => {
     if (!businessId) {
@@ -289,343 +528,657 @@ export const FiscalCompliancePanel = ({
 
     return (
       <ReportWorkspace>
-        <ReportLead>
-          <ReportLeadText>
-            <ReportLeadTitle>DGII {REPORT_LABELS[reportCode]}</ReportLeadTitle>
-            <SectionDescription>
-              {REPORT_DESCRIPTIONS[reportCode]}
-            </SectionDescription>
-          </ReportLeadText>
-          <ActionCluster>
-            <Button
-              type="primary"
-              loading={running}
-              onClick={() => void handleRun(reportCode)}
-            >
-              Generar borrador
-            </Button>
-            {reportCode === 'DGII_607' || reportCode === 'DGII_608' ? (
-              <Button
-                icon={<DownloadOutlined />}
-                loading={exportingReportCode === reportCode}
-                onClick={() => void handleExportTxt(reportCode)}
-              >
-                Exportar TXT
-              </Button>
-            ) : null}
-            <Button onClick={() => setActiveTab('runs')}>
-              Ver corridas e issues
-            </Button>
-          </ActionCluster>
-        </ReportLead>
-
-        <SummaryStrip>
-          <SummaryItem>
-            <span>Corridas visibles</span>
-            <strong>{reportRuns.length}</strong>
-          </SummaryItem>
-          <SummaryItem
-            $warning={Boolean(selectedRun?.validationSummary.totalIssues)}
-          >
-            <span>Issues corrida activa</span>
-            <strong>{selectedRun?.validationSummary.totalIssues ?? 0}</strong>
-          </SummaryItem>
-          <SummaryItem>
-            <span>Estado activo</span>
-            <strong>
-              {selectedRun
-                ? resolveMonthlyComplianceStatusLabel(selectedRun.status)
-                : loading
-                  ? 'Cargando'
-                  : 'Sin corridas'}
-            </strong>
-          </SummaryItem>
-        </SummaryStrip>
+        {reportCode === 'DGII_606' && selectedRun ? (
+          <Dgii606Preview run={selectedRun} />
+        ) : null}
+        {reportCode === 'DGII_607' && selectedRun ? (
+          <Dgii607Preview run={selectedRun} />
+        ) : null}
+        {reportCode === 'DGII_608' && selectedRun ? (
+          <Dgii608Preview run={selectedRun} />
+        ) : null}
 
         {!reportRuns.length ? (
           <EmptyStateCard>
             <strong>Sin corridas para este reporte.</strong>
             <span>
               Genera un borrador {REPORT_LABELS[reportCode]} para{' '}
-              {formatAccountingPeriod(effectivePeriodKey)} y revisa los issues
-              antes de exportar.
+              {formatAccountingPeriod(effectivePeriodKey)} antes de exportar.
             </span>
           </EmptyStateCard>
-        ) : (
-          <RunsGrid>
-            <RunsList>
-              {reportRuns.map((run) => (
-                <RunItemButton
-                  key={run.id}
-                  type="button"
-                  $selected={run.id === selectedRun?.id}
-                  $tone={resolveMonthlyComplianceStatusTone(run.status)}
-                  onClick={() =>
-                    setSelectedRunIds((currentValue) => ({
-                      ...currentValue,
-                      [reportCode]: run.id,
-                    }))
-                  }
-                >
-                  <RunItemTop>
-                    <strong>
-                      {REPORT_LABELS[reportCode]} · v{run.version}
-                    </strong>
-                    <StatusTag $tone={getStatusTone(run.status)}>
-                      {resolveMonthlyComplianceStatusLabel(run.status)}
-                    </StatusTag>
-                  </RunItemTop>
-                  <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
-                  <span>{run.validationSummary.totalIssues} issues</span>
-                </RunItemButton>
-              ))}
-            </RunsList>
-
-            <RunDetails>
-              {selectedRun ? (
-                <SelectedRunDetails run={selectedRun} />
-              ) : (
-                <EmptyText>Selecciona una corrida para ver detalle.</EmptyText>
-              )}
-            </RunDetails>
-          </RunsGrid>
-        )}
+        ) : null}
       </ReportWorkspace>
     );
   };
 
-  const tabItems = [
-    {
-      key: 'summary',
-      label: 'Resumen',
-      children: (
-        <SummaryView>
-          <SummaryStrip>
-            <SummaryItem>
-              <span>Corridas del periodo</span>
-              <strong>{currentPeriodRuns.length}</strong>
-            </SummaryItem>
-            <SummaryItem $warning={totalIssuesAcrossPeriod > 0}>
-              <span>Issues visibles</span>
-              <strong>{totalIssuesAcrossPeriod}</strong>
-            </SummaryItem>
-            <SummaryItem>
-              <span>Corridas validadas</span>
-              <strong>{totalValidatedRuns}</strong>
-            </SummaryItem>
-          </SummaryStrip>
+  const handleOpenRunsModal = () => {
+    setSelectedOverviewRunId((currentValue) =>
+      currentValue && currentPeriodRuns.some((run) => run.id === currentValue)
+        ? currentValue
+        : (currentPeriodRuns[0]?.id ?? null),
+    );
+    setRunsModalOpen(true);
+  };
 
-          <ReportCardsGrid>
-            {REPORT_CODES.map((reportCode) => {
-              const reportRuns = reportRunsByCode[reportCode];
-              const latestRun = reportRuns[0] ?? null;
+  const handleSelectOverviewRun = (run: MonthlyComplianceRun) => {
+    setSelectedOverviewRunId(run.id);
+    setSelectedRunIds((currentValue) => ({
+      ...currentValue,
+      [run.reportCode]: run.id,
+    }));
+    setActiveTab(run.reportCode);
+  };
 
-              return (
-                <ReportCard key={reportCode}>
-                  <ReportCardTop>
-                    <div>
-                      <ReportCardTitle>
-                        DGII {REPORT_LABELS[reportCode]}
-                      </ReportCardTitle>
-                      <ReportCardDescription>
-                        {REPORT_DESCRIPTIONS[reportCode]}
-                      </ReportCardDescription>
-                    </div>
-                    <StatusTag
-                      $tone={latestRun ? getStatusTone(latestRun.status) : 'neutral'}
-                    >
-                      {latestRun
-                        ? resolveMonthlyComplianceStatusLabel(latestRun.status)
-                        : 'Sin corrida'}
-                    </StatusTag>
-                  </ReportCardTop>
+  const renderRunsWorkspace = () => (
+    <RunsWorkspace>
+      <SummaryStrip>
+        <SummaryItem>
+          <span>Corridas del periodo</span>
+          <strong>{currentPeriodRuns.length}</strong>
+        </SummaryItem>
+        <SummaryItem $warning={totalIssuesAcrossPeriod > 0}>
+          <span>Issues acumulados</span>
+          <strong>{totalIssuesAcrossPeriod}</strong>
+        </SummaryItem>
+        <SummaryItem>
+          <span>Reportes activos</span>
+          <strong>
+            {new Set(currentPeriodRuns.map((run) => run.reportCode)).size}
+          </strong>
+        </SummaryItem>
+      </SummaryStrip>
 
-                  <ReportCardStats>
-                    <ReportCardStat>
-                      <span>Corridas</span>
-                      <strong>{reportRuns.length}</strong>
-                    </ReportCardStat>
-                    <ReportCardStat
-                      $warning={Boolean(
-                        latestRun?.validationSummary.totalIssues,
-                      )}
-                    >
-                      <span>Issues</span>
-                      <strong>
-                        {latestRun?.validationSummary.totalIssues ?? 0}
-                      </strong>
-                    </ReportCardStat>
-                    <ReportCardStat>
-                      <span>Fuentes</span>
-                      <strong>
-                        {latestRun?.validationSummary.sourceSummaries.length ??
-                          0}
-                      </strong>
-                    </ReportCardStat>
-                  </ReportCardStats>
+      {!currentPeriodRuns.length ? (
+        <EmptyStateCard>
+          <strong>Sin corridas para este periodo.</strong>
+          <span>
+            Ejecuta 606, 607 o 608 para empezar a auditar issues y exportar
+            artefactos.
+          </span>
+        </EmptyStateCard>
+      ) : (
+        <RunsGrid>
+          <RunsList>
+            {currentPeriodRuns.map((run) => (
+              <RunItemButton
+                key={run.id}
+                type="button"
+                $selected={run.id === selectedOverviewRun?.id}
+                $tone={resolveMonthlyComplianceStatusTone(run.status)}
+                onClick={() => handleSelectOverviewRun(run)}
+              >
+                <RunItemTop>
+                  <strong>
+                    {REPORT_LABELS[run.reportCode]} · v{run.version}
+                  </strong>
+                  <StatusTag $tone={getStatusTone(run.status)}>
+                    {resolveMonthlyComplianceStatusLabel(run.status)}
+                  </StatusTag>
+                </RunItemTop>
+                <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
+                <span>{run.validationSummary.totalIssues} issues</span>
+              </RunItemButton>
+            ))}
+          </RunsList>
 
-                  <ReportCardFooter>
-                    <Button onClick={() => setActiveTab(reportCode)}>
-                      Abrir reporte
-                    </Button>
-                    <Button
-                      type="primary"
-                      loading={running}
-                      onClick={() => void handleRun(reportCode)}
-                    >
-                      Generar
-                    </Button>
-                  </ReportCardFooter>
-                </ReportCard>
-              );
-            })}
-          </ReportCardsGrid>
-        </SummaryView>
-      ),
-    },
-    {
-      key: 'DGII_607',
-      label: '607',
-      children: renderReportWorkspace('DGII_607'),
-    },
-    {
-      key: 'DGII_606',
-      label: '606',
-      children: renderReportWorkspace('DGII_606'),
-    },
-    {
-      key: 'DGII_608',
-      label: '608',
-      children: renderReportWorkspace('DGII_608'),
-    },
-    {
-      key: 'runs',
-      label: 'Corridas e issues',
-      children: (
-        <RunsWorkspace>
-          <SummaryStrip>
-            <SummaryItem>
-              <span>Corridas del periodo</span>
-              <strong>{currentPeriodRuns.length}</strong>
-            </SummaryItem>
-            <SummaryItem $warning={totalIssuesAcrossPeriod > 0}>
-              <span>Issues acumulados</span>
-              <strong>{totalIssuesAcrossPeriod}</strong>
-            </SummaryItem>
-            <SummaryItem>
-              <span>Reportes activos</span>
-              <strong>
-                {new Set(currentPeriodRuns.map((run) => run.reportCode)).size}
-              </strong>
-            </SummaryItem>
-          </SummaryStrip>
-
-          {!currentPeriodRuns.length ? (
-            <EmptyStateCard>
-              <strong>Sin corridas para este periodo.</strong>
-              <span>
-                Ejecuta 606, 607 o 608 para empezar a auditar issues y exportar
-                artefactos.
-              </span>
-            </EmptyStateCard>
-          ) : (
-            <RunsGrid>
-              <RunsList>
-                {currentPeriodRuns.map((run) => (
-                  <RunItemButton
-                    key={run.id}
-                    type="button"
-                    $selected={run.id === selectedOverviewRun?.id}
-                    $tone={resolveMonthlyComplianceStatusTone(run.status)}
-                    onClick={() => setSelectedOverviewRunId(run.id)}
-                  >
-                    <RunItemTop>
-                      <strong>
-                        {REPORT_LABELS[run.reportCode]} · v{run.version}
-                      </strong>
-                      <StatusTag $tone={getStatusTone(run.status)}>
-                        {resolveMonthlyComplianceStatusLabel(run.status)}
-                      </StatusTag>
-                    </RunItemTop>
-                    <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
-                    <span>{run.validationSummary.totalIssues} issues</span>
-                  </RunItemButton>
-                ))}
-              </RunsList>
-
-              <RunDetails>
-                {selectedOverviewRun ? (
-                  <SelectedRunDetails run={selectedOverviewRun} />
-                ) : (
-                  <EmptyText>
-                    Selecciona una corrida para ver detalle.
-                  </EmptyText>
-                )}
-              </RunDetails>
-            </RunsGrid>
-          )}
-        </RunsWorkspace>
-      ),
-    },
-  ];
+          <RunDetails>
+            {selectedOverviewRun ? (
+              <SelectedRunDetails run={selectedOverviewRun} />
+            ) : (
+              <EmptyText>Selecciona una corrida para ver detalle.</EmptyText>
+            )}
+          </RunDetails>
+        </RunsGrid>
+      )}
+    </RunsWorkspace>
+  );
 
   return (
     <Panel>
       <SectionHeader>
         <div>
-          <SectionTitle>Cumplimiento fiscal</SectionTitle>
+          <SectionTitle>Cumplimiento legal DGII</SectionTitle>
           <SectionDescription>
-            Corre, valida y exporta 606, 607 y 608.
+            Formatos 606, 607, 608 · periodo fiscal{' '}
+            <strong>{formatAccountingPeriod(effectivePeriodKey)}</strong> ·
+            vence el {formatFiscalDate(fiscalDueDate)}
           </SectionDescription>
         </div>
 
         <Toolbar>
           <PeriodSelect
-            size="middle"
-            value={effectivePeriodKey}
-            options={periodOptions}
-            onChange={setRequestedPeriodKey}
-          />
-          {isReportTab(activeTab) ? (
-            <>
-              <Button
-                type="primary"
-                loading={running}
-                onClick={() => void handleRun(activeTab)}
-              >
-                Generar {REPORT_LABELS[activeTab]}
-              </Button>
-              {activeTab === 'DGII_607' || activeTab === 'DGII_608' ? (
-                <Button
-                  icon={<DownloadOutlined />}
-                  loading={exportingReportCode === activeTab}
-                  onClick={() => void handleExportTxt(activeTab)}
-                >
-                  Exportar TXT
-                </Button>
-              ) : null}
-            </>
+            aria-label="Periodo fiscal"
+            selectedKey={effectivePeriodKey}
+            variant="secondary"
+            onSelectionChange={(key) => {
+              if (key) setRequestedPeriodKey(String(key));
+            }}
+          >
+            <HeroSelect.Trigger>
+              <HeroSelect.Value />
+              <HeroSelect.Indicator />
+            </HeroSelect.Trigger>
+            <HeroSelect.Popover>
+              <ListBox>
+                {periodOptions.map((option) => (
+                  <ListBox.Item
+                    key={option.value}
+                    id={option.value}
+                    textValue={option.label}
+                  >
+                    {option.label}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </HeroSelect.Popover>
+          </PeriodSelect>
+          <HeroButton
+            size="sm"
+            variant="primary"
+            isPending={running}
+            onPress={() => void handleRun(activeTab)}
+          >
+            Generar {REPORT_LABELS[activeTab]}
+          </HeroButton>
+          {activeTab === 'DGII_607' || activeTab === 'DGII_608' ? (
+            <HeroButton
+              size="sm"
+              variant="secondary"
+              isPending={exportingReportCode === activeTab}
+              onPress={() => void handleExportTxt(activeTab)}
+            >
+              <DownloadOutlined />
+              Exportar TXT
+            </HeroButton>
           ) : null}
+          <HeroDropdown>
+            <HeroButton
+              isIconOnly
+              aria-label="Mas acciones de cumplimiento fiscal"
+              size="sm"
+              variant="secondary"
+            >
+              <MoreOutlined />
+            </HeroButton>
+            <HeroDropdown.Popover placement="bottom end">
+              <HeroDropdown.Menu
+                aria-label="Acciones de cumplimiento fiscal"
+                onAction={(key) => {
+                  if (key === 'runs') handleOpenRunsModal();
+                }}
+              >
+                <HeroDropdown.Item
+                  id="runs"
+                  key="runs"
+                  textValue="Ver corridas e issues"
+                >
+                  <span data-slot="label">
+                    <HistoryOutlined />
+                    Ver corridas e issues
+                  </span>
+                </HeroDropdown.Item>
+              </HeroDropdown.Menu>
+            </HeroDropdown.Popover>
+          </HeroDropdown>
         </Toolbar>
       </SectionHeader>
 
+      <ExecutiveGrid>
+        <ExecutiveCard>
+          <HeroCard.Header>
+            <ExecutiveLabel>Total a pagar ITBIS</ExecutiveLabel>
+          </HeroCard.Header>
+          <HeroCard.Content>
+            <ExecutiveValue>
+              {formatCurrency(getDgii606ItbisTotal(latest606Run))}
+            </ExecutiveValue>
+            <ExecutiveMeta>
+              Vence {formatFiscalDate(itbisPaymentDate)} · IT-1
+            </ExecutiveMeta>
+          </HeroCard.Content>
+        </ExecutiveCard>
+        {REPORT_CODES.map((reportCode) => {
+          const latestRun = latestRunByCode[reportCode];
+          return (
+            <ExecutiveCard key={reportCode}>
+              <HeroCard.Header>
+                <ExecutiveLabel>
+                  Registros {REPORT_LABELS[reportCode]}
+                  {reportCode === 'DGII_608' ? ' (anulados)' : ''}
+                </ExecutiveLabel>
+              </HeroCard.Header>
+              <HeroCard.Content>
+                <ExecutiveValue>{getRunRecordCount(latestRun)}</ExecutiveValue>
+                <MiniStatus
+                  $tone={
+                    !latestRun
+                      ? 'neutral'
+                      : latestRun.validationSummary.totalIssues
+                        ? 'warning'
+                        : 'success'
+                  }
+                >
+                  {latestRun
+                    ? latestRun.validationSummary.totalIssues
+                      ? `${latestRun.validationSummary.totalIssues} issues`
+                      : 'Validado'
+                    : 'Sin corrida'}
+                </MiniStatus>
+              </HeroCard.Content>
+            </ExecutiveCard>
+          );
+        })}
+      </ExecutiveGrid>
+
       {error ? (
-        <Alert
-          type="error"
-          showIcon
-          message="No se pudieron cargar las corridas de cumplimiento fiscal."
-          description={error}
-        />
+        <ComplianceAlert status="danger">
+          <HeroAlert.Content>
+            <HeroAlert.Title>
+              No se pudieron cargar las corridas de cumplimiento fiscal.
+            </HeroAlert.Title>
+            <HeroAlert.Description>{error}</HeroAlert.Description>
+          </HeroAlert.Content>
+        </ComplianceAlert>
       ) : null}
 
       <StyledTabs
-        activeKey={activeTab}
-        items={tabItems}
-        onChange={(key) => setActiveTab(key as FiscalComplianceTabKey)}
-      />
+        selectedKey={activeTab}
+        variant="secondary"
+        onSelectionChange={(key) => setActiveTab(key as FiscalComplianceTabKey)}
+      >
+        <HeroTabs.ListContainer>
+          <HeroTabs.List aria-label="Reportes fiscales DGII">
+            {REPORT_CODES.map((reportCode) => (
+              <HeroTabs.Tab key={reportCode} id={reportCode}>
+                {REPORT_LABELS[reportCode]}
+                <HeroTabs.Indicator />
+              </HeroTabs.Tab>
+            ))}
+          </HeroTabs.List>
+        </HeroTabs.ListContainer>
+        {REPORT_CODES.map((reportCode) => (
+          <HeroTabs.Panel key={reportCode} id={reportCode}>
+            {renderReportWorkspace(reportCode)}
+          </HeroTabs.Panel>
+        ))}
+      </StyledTabs>
+
+      <HeroModal.Backdrop
+        isOpen={runsModalOpen}
+        onOpenChange={(open) => setRunsModalOpen(open)}
+        className="z-[350]"
+      >
+        <HeroModal.Container
+          placement="top"
+          scroll="inside"
+          size="cover"
+          className="max-w-[1040px] mt-4"
+        >
+          <HeroModal.Dialog>
+            <HeroModal.Header>
+              <HeroModal.Heading>
+                Corridas e issues · {formatAccountingPeriod(effectivePeriodKey)}
+              </HeroModal.Heading>
+              <HeroModal.CloseTrigger />
+            </HeroModal.Header>
+            <HeroModal.Body>
+              <ModalBody>{renderRunsWorkspace()}</ModalBody>
+            </HeroModal.Body>
+          </HeroModal.Dialog>
+        </HeroModal.Container>
+      </HeroModal.Backdrop>
+
+      <SupportGrid>
+        <SupportPanel>
+          <SupportTitle>Calendario fiscal</SupportTitle>
+          <SupportList>
+            {fiscalCalendarItems.map((item) => {
+              const daysUntil = getDaysUntil(item.date);
+              return (
+                <SupportRow
+                  key={`${item.label}-${formatFiscalDate(item.date)}`}
+                >
+                  <SupportDate>{formatFiscalDate(item.date)}</SupportDate>
+                  <SupportMain>{item.label}</SupportMain>
+                  <SupportAside>
+                    {daysUntil >= 0 ? `en ${daysUntil} dias` : 'vencido'}
+                  </SupportAside>
+                  <MiniStatus $tone={item.tone}>
+                    {item.tone === 'warning' ? 'Proximo' : 'Programado'}
+                  </MiniStatus>
+                </SupportRow>
+              );
+            })}
+          </SupportList>
+        </SupportPanel>
+
+        <SupportPanel>
+          <SupportTitle>Historial de corridas DGII</SupportTitle>
+          {!recentHistoryRuns.length ? (
+            <SupportEmpty>Sin corridas registradas.</SupportEmpty>
+          ) : (
+            <SupportList>
+              {recentHistoryRuns.map((run) => (
+                <SupportRow key={run.id}>
+                  <SupportDate>
+                    {formatMonthlyComplianceRunDate(run.createdAt)}
+                  </SupportDate>
+                  <SupportMain>
+                    {formatAccountingPeriod(run.periodKey)}
+                    <SupportSubtext>
+                      {REPORT_LABELS[run.reportCode]} · v{run.version}
+                    </SupportSubtext>
+                  </SupportMain>
+                  <SupportAside>
+                    {run.validationSummary.totalIssues} issues
+                  </SupportAside>
+                  <MiniStatus $tone={getStatusTone(run.status)}>
+                    {resolveMonthlyComplianceStatusLabel(run.status)}
+                  </MiniStatus>
+                </SupportRow>
+              ))}
+            </SupportList>
+          )}
+        </SupportPanel>
+      </SupportGrid>
     </Panel>
   );
 };
+
+const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
+  const rows = getDgii606Rows(run);
+  const excludedRows = getDgii606ExcludedRows(run);
+
+  return (
+    <PreviewPanel>
+      <HeroCard.Header>
+        <PreviewHeader>
+          <div>
+            <DetailTitle>Detalle 606</DetailTitle>
+            <SectionDescription>
+              Compras y gastos normalizados para revisión legal del periodo.
+            </SectionDescription>
+          </div>
+          <StatusTag $tone={getStatusTone(run.status)}>
+            {resolveMonthlyComplianceStatusLabel(run.status)}
+          </StatusTag>
+        </PreviewHeader>
+      </HeroCard.Header>
+      <HeroCard.Content>
+        {!rows.length ? (
+          <EmptyStateCard>
+            <strong>Sin registros 606 visibles.</strong>
+            <span>
+              Genera una corrida nueva o revisa si el periodo tiene compras y
+              gastos registrados.
+            </span>
+          </EmptyStateCard>
+        ) : (
+          <PreviewTableWrap>
+            <PreviewTable>
+              <thead>
+                <tr>
+                  <th>Fuente</th>
+                  <th>Documento</th>
+                  <th>ID origen</th>
+                  <th>RNC proveedor</th>
+                  <th>Tipo gasto</th>
+                  <th>NCF</th>
+                  <th>Fecha</th>
+                  <th>Total</th>
+                  <th>ITBIS</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <td>{translateSourceId(String(row.sourceId))}</td>
+                    <td>{toPreviewText(row.documentNumber)}</td>
+                    <td>{toPreviewText(row.recordId)}</td>
+                    <td>
+                      {toPreviewText(row.counterpartyIdentificationNumber)}
+                    </td>
+                    <td>{toPreviewText(row.expenseType)}</td>
+                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
+                    <td>{formatShortDate(row.issuedAt)}</td>
+                    <td>{formatMoney(row.total)}</td>
+                    <td>{formatMoney(row.itbisTotal)}</td>
+                    <td>
+                      <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </PreviewTable>
+          </PreviewTableWrap>
+        )}
+
+        {excludedRows.length ? (
+          <ExcludedRecordsTable
+            rows={excludedRows}
+            title="Registros leidos que no entran al 606"
+          />
+        ) : null}
+      </HeroCard.Content>
+    </PreviewPanel>
+  );
+};
+
+const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
+  const rows = getDgii607Rows(run);
+  const excludedRows = getDgii607ExcludedRows(run);
+
+  return (
+    <PreviewPanel>
+      <HeroCard.Header>
+        <PreviewHeader>
+          <div>
+            <DetailTitle>Detalle 607</DetailTitle>
+            <SectionDescription>
+              Ventas con NCF tipo B01 (credito fiscal) y B02 (consumidor final,
+              agrupable).
+            </SectionDescription>
+          </div>
+          <StatusTag $tone={getStatusTone(run.status)}>
+            {resolveMonthlyComplianceStatusLabel(run.status)}
+          </StatusTag>
+        </PreviewHeader>
+      </HeroCard.Header>
+      <HeroCard.Content>
+        {!rows.length ? (
+          <EmptyStateCard>
+            <strong>Sin registros 607 visibles.</strong>
+            <span>
+              No hay ventas con NCF B01/B02 en la corrida activa. Las facturas
+              sin comprobante fiscal no entran al 607.
+            </span>
+          </EmptyStateCard>
+        ) : (
+          <PreviewTableWrap>
+            <WidePreviewTable>
+              <thead>
+                <tr>
+                  <th>RNC cliente</th>
+                  <th>Fuente</th>
+                  <th>Documento</th>
+                  <th>NCF</th>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Total</th>
+                  <th>ITBIS</th>
+                  <th>ITBIS retenido</th>
+                  <th>ISR retenido</th>
+                  <th>Efectivo</th>
+                  <th>Cheque/Tr.</th>
+                  <th>Tarjeta</th>
+                  <th>Crédito</th>
+                  <th>Factura ref.</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <td>
+                      {toPreviewText(row.counterpartyIdentificationNumber)}
+                    </td>
+                    <td>{translateSourceId(String(row.sourceId))}</td>
+                    <td>{toPreviewText(row.documentNumber)}</td>
+                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
+                    <td>{resolveDgiiDocumentType(row.documentFiscalNumber)}</td>
+                    <td>
+                      {formatShortDate(row.retentionDate ?? row.issuedAt)}
+                    </td>
+                    <td>{formatMoney(row.total)}</td>
+                    <td>{formatMoney(row.itbisTotal)}</td>
+                    <td>{formatMoney(row.itbisWithheld)}</td>
+                    <td>{formatMoney(row.incomeTaxWithheld)}</td>
+                    <td>{formatMoney(row.cash)}</td>
+                    <td>{formatMoney(row.checkTransfer)}</td>
+                    <td>{formatMoney(row.card)}</td>
+                    <td>{formatMoney(row.creditSale)}</td>
+                    <td>{toPreviewText(row.invoiceId ?? row.invoiceNcf)}</td>
+                    <td>
+                      <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </WidePreviewTable>
+          </PreviewTableWrap>
+        )}
+
+        {excludedRows.length ? (
+          <ExcludedRecordsTable
+            rows={excludedRows}
+            title="Registros leidos que no entran al 607"
+          />
+        ) : null}
+      </HeroCard.Content>
+    </PreviewPanel>
+  );
+};
+
+const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
+  const rows = getDgii608Rows(run);
+
+  return (
+    <PreviewPanel>
+      <HeroCard.Header>
+        <PreviewHeader>
+          <div>
+            <DetailTitle>Detalle 608</DetailTitle>
+            <SectionDescription>
+              NCF anulados. Razon: 01 Deterioro - 02 Errores impresion - 03
+              Impresion defectuosa - 04 Duplicidad - 05 Cese operaciones - 06
+              Perdida - 07 Otros.
+            </SectionDescription>
+          </div>
+          <StatusTag $tone={getStatusTone(run.status)}>
+            {resolveMonthlyComplianceStatusLabel(run.status)}
+          </StatusTag>
+        </PreviewHeader>
+      </HeroCard.Header>
+      <HeroCard.Content>
+        {!rows.length ? (
+          <EmptyStateCard>
+            <strong>Sin registros 608 visibles.</strong>
+            <span>
+              Genera una corrida nueva o revisa si el periodo tiene comprobantes
+              anulados.
+            </span>
+          </EmptyStateCard>
+        ) : (
+          <PreviewTableWrap>
+            <PreviewTable>
+              <thead>
+                <tr>
+                  <th>Fuente</th>
+                  <th>Documento</th>
+                  <th>NCF anulado</th>
+                  <th>Fecha</th>
+                  <th>Razon</th>
+                  <th>Descripcion</th>
+                  <th>Factura ref.</th>
+                  <th>ID origen</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <td>{translateSourceId(String(row.sourceId))}</td>
+                    <td>{toPreviewText(row.documentNumber)}</td>
+                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
+                    <td>{formatShortDate(row.issuedAt)}</td>
+                    <td>{toPreviewText(row.reasonCode)}</td>
+                    <td>{toPreviewText(row.reasonLabel ?? row.reason)}</td>
+                    <td>{toPreviewText(row.invoiceId)}</td>
+                    <td>{toPreviewText(row.recordId)}</td>
+                    <td>
+                      <InlineStatus>
+                        {toPreviewText(row.status) === '-'
+                          ? 'Registrado'
+                          : toPreviewText(row.status)}
+                      </InlineStatus>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </PreviewTable>
+          </PreviewTableWrap>
+        )}
+      </HeroCard.Content>
+    </PreviewPanel>
+  );
+};
+
+const ExcludedRecordsTable = ({
+  rows,
+  title,
+}: {
+  rows: Record<string, unknown>[];
+  title: string;
+}) => (
+  <ExcludedPanel>
+    <ExcludedTitle>{title}</ExcludedTitle>
+    <PreviewTableWrap>
+      <PreviewTable>
+        <thead>
+          <tr>
+            <th>Fuente</th>
+            <th>Documento</th>
+            <th>ID origen</th>
+            <th>NCF</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>ITBIS</th>
+            <th>Estado</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
+              <td>{translateSourceId(String(row.sourceId))}</td>
+              <td>{toPreviewText(row.documentNumber)}</td>
+              <td>{toPreviewText(row.recordId)}</td>
+              <td>{toPreviewText(row.documentFiscalNumber)}</td>
+              <td>{formatShortDate(row.retentionDate ?? row.issuedAt)}</td>
+              <td>{formatMoney(row.total)}</td>
+              <td>{formatMoney(row.itbisTotal)}</td>
+              <td>
+                <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
+              </td>
+              <td>{resolveExcludedReason(row)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </PreviewTable>
+    </PreviewTableWrap>
+  </ExcludedPanel>
+);
 
 const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
   const sourceSnapshots = run.sourceSnapshot.sourceSnapshots;
@@ -698,18 +1251,18 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
       </SourceList>
 
       {run.validationSummary.pendingGaps.length ? (
-        <Alert
-          type="warning"
-          showIcon
-          message="Huecos pendientes del builder"
-          description={
-            <GapList>
-              {run.validationSummary.pendingGaps.map((gap) => (
-                <li key={gap}>{gap}</li>
-              ))}
-            </GapList>
-          }
-        />
+        <ComplianceAlert status="warning">
+          <HeroAlert.Content>
+            <HeroAlert.Title>Huecos pendientes del builder</HeroAlert.Title>
+            <HeroAlert.Description>
+              <GapList>
+                {run.validationSummary.pendingGaps.map((gap) => (
+                  <li key={gap}>{gap}</li>
+                ))}
+              </GapList>
+            </HeroAlert.Description>
+          </HeroAlert.Content>
+        </ComplianceAlert>
       ) : null}
 
       <IssueSection>
@@ -724,13 +1277,21 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
             {visibleIssues.map((issue, index) => (
               <IssueItem key={`${run.id}-issue-${issue.key}-${index}`}>
                 <IssueTop>
-                  <Tag color={issue.severity === 'error' ? 'error' : 'warning'}>
-                    {translateSeverity(issue.severity)}
-                  </Tag>
+                  <IssueSeverityChip
+                    color={issue.severity === 'error' ? 'danger' : 'warning'}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <HeroChip.Label>
+                      {translateSeverity(issue.severity)}
+                    </HeroChip.Label>
+                  </IssueSeverityChip>
                   <strong>{translateIssueCode(issue.code)}</strong>
                 </IssueTop>
                 <IssueDetail>
-                  <IssueDetailChip>{translateSourceId(issue.sourceId)}</IssueDetailChip>
+                  <IssueDetailChip>
+                    {translateSourceId(issue.sourceId)}
+                  </IssueDetailChip>
                   <span>·</span>
                   <IssueDocNumber>
                     Comprobante #{issue.documentNumber}
@@ -794,60 +1355,56 @@ const Toolbar = styled.div`
   gap: var(--ds-space-3);
 `;
 
-const PeriodSelect = styled(Select)`
+const PeriodSelect = styled(HeroSelect)`
   width: 196px;
   min-width: 196px;
   flex: 0 0 auto;
 `;
 
-const StyledTabs = styled(Tabs)`
-  .ant-tabs-nav {
-    margin-bottom: var(--ds-space-4);
+const StyledTabs = styled(HeroTabs)`
+  gap: var(--ds-space-4);
+`;
+
+const ComplianceAlert = styled(HeroAlert)`
+  .alert__title {
+    font-weight: var(--ds-font-weight-semibold);
   }
 
-  .ant-tabs-tab {
-    padding: var(--ds-space-2) var(--ds-space-1);
-  }
-
-  .ant-tabs-content-holder {
-    min-height: 0;
+  .alert__description {
+    color: var(--ds-color-text-secondary);
   }
 `;
 
-const StatusTag = styled(Tag)<{
+const StatusTag = styled(HeroChip)<{
   $tone: 'success' | 'warning' | 'neutral';
 }>`
-  && {
-    border-radius: var(--ds-radius-pill);
-    padding-inline: 10px;
-    font-weight: var(--ds-font-weight-medium);
-    margin-inline-end: 0;
+  border-radius: var(--ds-radius-pill);
+  padding-inline: 10px;
+  font-weight: var(--ds-font-weight-medium);
 
-    ${({ $tone }) =>
-      $tone === 'success'
+  ${({ $tone }) =>
+    $tone === 'success'
+      ? `
+    background: var(--ds-color-state-success-subtle);
+    border: 1px solid var(--ds-color-state-success);
+    color: var(--ds-color-state-success-text);
+  `
+      : $tone === 'warning'
         ? `
-      background: #dcfce7;
-      border: 1px solid #86efac;
-      color: #166534;
-    `
-        : $tone === 'warning'
-          ? `
-      background: var(--ds-color-state-warning-subtle);
-      border: 1px solid var(--ds-color-state-warning);
-      color: var(--ds-color-state-warning-text);
-    `
-          : `
-      background: var(--ds-color-bg-surface-hover);
-      border: 1px solid var(--ds-color-border-subtle);
-      color: var(--ds-color-text-secondary);
-    `}
-  }
+    background: var(--ds-color-state-warning-subtle);
+    border: 1px solid var(--ds-color-state-warning);
+    color: var(--ds-color-state-warning-text);
+  `
+        : `
+    background: var(--ds-color-bg-surface-hover);
+    border: 1px solid var(--ds-color-border-subtle);
+    color: var(--ds-color-text-secondary);
+  `}
 `;
 
-const SummaryView = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
+const IssueSeverityChip = styled(HeroChip)`
+  font-weight: var(--ds-font-weight-semibold);
+  text-transform: uppercase;
 `;
 
 const ReportWorkspace = styled.div`
@@ -860,38 +1417,6 @@ const RunsWorkspace = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
-`;
-
-const ReportLead = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-5);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-`;
-
-const ReportLeadText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-`;
-
-const ReportLeadTitle = styled.h3`
-  margin: 0;
-  font-size: var(--ds-font-size-lg);
-  line-height: var(--ds-line-height-tight);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-`;
-
-const ActionCluster = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-  align-items: flex-start;
 `;
 
 const SummaryStrip = styled.div`
@@ -936,81 +1461,6 @@ const SummaryItem = styled.div<{ $warning?: boolean }>`
   }
 `;
 
-const ReportCardsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-
-  @media (max-width: 1080px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const ReportCard = styled.article`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-`;
-
-const ReportCardTop = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  align-items: flex-start;
-`;
-
-const ReportCardTitle = styled.h3`
-  margin: 0;
-  font-size: var(--ds-font-size-md);
-  line-height: var(--ds-line-height-tight);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-`;
-
-const ReportCardDescription = styled.p`
-  margin: var(--ds-space-1) 0 0;
-  color: var(--ds-color-text-secondary);
-`;
-
-const ReportCardStats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ds-space-2);
-`;
-
-const ReportCardStat = styled.div<{ $warning?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--ds-space-3);
-  border-radius: var(--ds-radius-md);
-  background: ${({ $warning }) =>
-    $warning
-      ? 'var(--ds-color-state-warning-subtle)'
-      : 'var(--ds-color-bg-surface-hover)'};
-
-  span {
-    color: var(--ds-color-text-secondary);
-    font-size: var(--ds-font-size-xs);
-    text-transform: uppercase;
-  }
-
-  strong {
-    font-variant-numeric: tabular-nums;
-    color: var(--ds-color-text-primary);
-  }
-`;
-
-const ReportCardFooter = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-`;
-
 const EmptyText = styled.p`
   margin: 0;
   color: var(--ds-color-text-secondary);
@@ -1032,6 +1482,266 @@ const EmptyStateCard = styled.div`
   span {
     color: var(--ds-color-text-secondary);
   }
+`;
+
+const ExecutiveGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ds-space-3);
+
+  @media (max-width: 1080px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ExecutiveCard = styled(HeroCard)`
+  min-width: 0;
+
+  .card__header {
+    padding: 0;
+  }
+
+  .card__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    padding: 0;
+  }
+`;
+
+const ExecutiveLabel = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-letter-spacing-wide);
+`;
+
+const ExecutiveValue = styled.strong`
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-xl);
+  line-height: var(--ds-line-height-tight);
+  font-variant-numeric: tabular-nums;
+`;
+
+const ExecutiveMeta = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+`;
+
+const MiniStatus = styled.span<{
+  $tone: 'success' | 'warning' | 'neutral';
+}>`
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-pill);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+
+  ${({ $tone }) =>
+    $tone === 'success'
+      ? `
+    background: #dcfce7;
+    color: #166534;
+  `
+      : $tone === 'warning'
+        ? `
+    background: var(--ds-color-state-warning-subtle);
+    color: var(--ds-color-state-warning-text);
+  `
+        : `
+    background: var(--ds-color-bg-surface-hover);
+    color: var(--ds-color-text-secondary);
+  `}
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: var(--ds-radius-pill);
+    background: currentColor;
+  }
+`;
+
+const SupportGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SupportPanel = styled.section`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-color-bg-surface);
+  overflow: hidden;
+`;
+
+const SupportTitle = styled.h3`
+  margin: 0;
+  padding: var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-md);
+  line-height: var(--ds-line-height-tight);
+  font-weight: var(--ds-font-weight-semibold);
+`;
+
+const SupportList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const SupportRow = styled.div`
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto auto;
+  gap: var(--ds-space-3);
+  align-items: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+`;
+
+const SupportDate = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  font-variant-numeric: tabular-nums;
+`;
+
+const SupportMain = styled.span`
+  min-width: 0;
+  color: var(--ds-color-text-primary);
+  font-weight: var(--ds-font-weight-medium);
+`;
+
+const SupportSubtext = styled.span`
+  display: block;
+  margin-top: 2px;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+`;
+
+const SupportAside = styled.span`
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  white-space: nowrap;
+`;
+
+const SupportEmpty = styled.p`
+  margin: 0;
+  padding: var(--ds-space-4);
+  color: var(--ds-color-text-secondary);
+`;
+
+const PreviewPanel = styled(HeroCard)`
+  .card__header {
+    padding: 0;
+  }
+
+  .card__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+    padding: 0;
+  }
+`;
+
+const PreviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  align-items: flex-start;
+`;
+
+const PreviewTableWrap = styled.div`
+  overflow-x: auto;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+`;
+
+const PreviewTable = styled.table`
+  width: 100%;
+  min-width: 840px;
+  border-collapse: collapse;
+  font-size: var(--ds-font-size-sm);
+
+  th,
+  td {
+    padding: var(--ds-space-3);
+    border-bottom: 1px solid var(--ds-color-border-subtle);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    background: var(--ds-color-bg-surface-hover);
+    color: var(--ds-color-text-secondary);
+    font-size: var(--ds-font-size-xs);
+    font-weight: var(--ds-font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-letter-spacing-wide);
+  }
+
+  td {
+    color: var(--ds-color-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+`;
+
+const WidePreviewTable = styled(PreviewTable)`
+  min-width: 1680px;
+`;
+
+const ExcludedPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-top: var(--ds-space-2);
+`;
+
+const ExcludedTitle = styled.strong`
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-tight);
+`;
+
+const InlineStatus = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-color-bg-surface-hover);
+  border: 1px solid var(--ds-color-border-subtle);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+`;
+
+const ModalBody = styled.div`
+  padding-top: var(--ds-space-2);
 `;
 
 const RunsGrid = styled.div`

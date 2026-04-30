@@ -78,6 +78,16 @@ export interface PurchasePaymentTerms {
   [key: string]: unknown;
 }
 
+export interface PurchaseTaxReceipt {
+  ncf?: string | null;
+  [key: string]: unknown;
+}
+
+export interface PurchaseClassification {
+  dgii606ExpenseType?: string | null;
+  [key: string]: unknown;
+}
+
 export interface PurchaseReceiptActor {
   uid?: string | null;
   name?: string | null;
@@ -123,6 +133,11 @@ export interface Purchase {
   replenishments?: PurchaseReplenishment[];
   dates?: PurchaseDates;
   note?: string;
+  invoiceNumber?: string | number | null;
+  proofOfPurchase?: string | null;
+  documentType?: string | null;
+  taxReceipt?: PurchaseTaxReceipt | null;
+  classification?: PurchaseClassification | null;
   monetary?: Record<string, unknown> | null;
   paymentTerms?: PurchasePaymentTerms | null;
   paymentState?: PaymentState | null;

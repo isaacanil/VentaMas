@@ -91,6 +91,25 @@ const EMPTY_PURCHASE_ATTACHMENTS: PurchaseAttachment[] = [];
 const EMPTY_GENERAL_FORM_ERRORS: GeneralFormErrors = {};
 const EMPTY_PROVIDER_ITEMS: ProviderDataItem[] = [];
 const EMPTY_PENDING_ORDERS: Record<string, unknown>[] = [];
+const DOCUMENT_TYPE_OPTIONS = [
+  { value: 'inventory', label: 'Inventario' },
+  { value: 'service', label: 'Servicio' },
+  { value: 'expense', label: 'Gasto' },
+  { value: 'asset', label: 'Activo fijo' },
+];
+const DGII_606_EXPENSE_TYPE_OPTIONS = [
+  { value: '01', label: '01 - Gastos de personal' },
+  { value: '02', label: '02 - Trabajos, suministros y servicios' },
+  { value: '03', label: '03 - Arrendamientos' },
+  { value: '04', label: '04 - Activos fijos' },
+  { value: '05', label: '05 - Gastos de representación' },
+  { value: '06', label: '06 - Otras deducciones admitidas' },
+  { value: '07', label: '07 - Gastos financieros' },
+  { value: '08', label: '08 - Gastos extraordinarios' },
+  { value: '09', label: '09 - Costo de venta' },
+  { value: '10', label: '10 - Adquisición de activos' },
+  { value: '11', label: '11 - Gastos de seguros' },
+];
 
 const normalizeTransactionMillis = (value: unknown): number | null => {
   const rawMillis = toMillis(value as any);
@@ -143,6 +162,9 @@ const GeneralForm = ({
     replenishments,
     condition,
     provider: providerId,
+    documentType,
+    taxReceipt,
+    classification,
     deliveryAt,
     paymentAt,
     note,
@@ -157,6 +179,19 @@ const GeneralForm = ({
     typeof proofOfPurchase === 'string' || typeof proofOfPurchase === 'number'
       ? String(proofOfPurchase)
       : '';
+  const taxReceiptNcfValue =
+    typeof taxReceipt?.ncf === 'string' ||
+    typeof taxReceipt?.ncf === 'number'
+      ? String(taxReceipt.ncf)
+      : proofOfPurchaseValue;
+  const documentTypeValue =
+    typeof documentType === 'string' && documentType.trim()
+      ? documentType
+      : 'inventory';
+  const dgii606ExpenseTypeValue =
+    typeof classification?.dgii606ExpenseType === 'string'
+      ? classification.dgii606ExpenseType
+      : undefined;
 
   const providerIdValue = typeof providerId === 'string' ? providerId : null;
   const providerFromState =
@@ -269,6 +304,33 @@ const GeneralForm = ({
     value: string,
   ) => {
     dispatch(setPurchase({ [field]: value }));
+  };
+
+  const handleTaxReceiptNcfChange = (value: string) => {
+    dispatch(
+      setPurchase({
+        proofOfPurchase: value,
+        taxReceipt: {
+          ...(taxReceipt ?? {}),
+          ncf: value,
+        },
+      }),
+    );
+  };
+
+  const handleDocumentTypeChange = (value: string) => {
+    dispatch(setPurchase({ documentType: value }));
+  };
+
+  const handleDgii606ExpenseTypeChange = (value: string) => {
+    dispatch(
+      setPurchase({
+        classification: {
+          ...(classification ?? {}),
+          dgii606ExpenseType: value,
+        },
+      }),
+    );
   };
 
   const handleDateChange = (
@@ -425,7 +487,7 @@ const GeneralForm = ({
             onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
           />
         </Form.Item>
-        <Form.Item label="Comprobante de Compra">
+        <Form.Item label="NCF / Comprobante fiscal">
           <Input
             placeholder="Ej: B0100000001"
             prefix={<BarcodeOutlined style={{ color: '#bfbfbf' }} />}
@@ -434,10 +496,26 @@ const GeneralForm = ({
                 <InfoCircleOutlined style={{ color: '#bfbfbf' }} />
               </Tooltip>
             }
-            value={proofOfPurchaseValue}
-            onChange={(e) =>
-              handleInputChange('proofOfPurchase', e.target.value)
-            }
+            value={taxReceiptNcfValue}
+            onChange={(e) => handleTaxReceiptNcfChange(e.target.value)}
+          />
+        </Form.Item>
+        <Form.Item label="Tipo documento">
+          <Select
+            options={DOCUMENT_TYPE_OPTIONS}
+            value={documentTypeValue}
+            onChange={handleDocumentTypeChange}
+          />
+        </Form.Item>
+        <Form.Item label="Tipo gasto 606">
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder="Seleccionar"
+            options={DGII_606_EXPENSE_TYPE_OPTIONS}
+            value={dgii606ExpenseTypeValue}
+            onChange={handleDgii606ExpenseTypeChange}
           />
         </Form.Item>
       </InvoiceDetails>
@@ -558,13 +636,9 @@ const Group = styled.div`
 `;
 const InvoiceDetails = styled.div`
   display: grid;
-  grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1em;
-  align-items: start; // Align headers to the top
-
-  @media (width <= 1100px) {
-    grid-template-columns: 1fr 1fr;
-  }
+  align-items: start;
 
   @media (width <= 600px) {
     grid-template-columns: 1fr;

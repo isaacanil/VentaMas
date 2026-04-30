@@ -1,11 +1,5 @@
-import {
-  Input,
-  Button as AntButton,
-  Checkbox,
-  Select,
-  Button,
-  Tooltip,
-} from 'antd';
+import { Button as HeroButton, InputGroup } from '@heroui/react';
+import { Button as AntButton, Checkbox, Select, Tooltip } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useEffect, useMemo, useRef, type ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -192,59 +186,80 @@ export const ClientControl = () => {
   const comprobanteTooltipTitle = nfcType
     ? `Comprobante seleccionado: ${nfcType}`
     : 'Seleccionar el tipo de comprobante fiscal para la factura';
+  const clientInputValue =
+    mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name;
+  const clientAction =
+    mode === CLIENT_MODE_BAR.SEARCH.id
+      ? {
+          icon: icons.operationModes.add,
+          label: 'Cliente',
+          onPress: openAddClientModal,
+          title: 'Agregar nuevo cliente',
+        }
+      : mode === CLIENT_MODE_BAR.UPDATE.id
+        ? {
+            icon: icons.operationModes.edit,
+            label: 'Cliente',
+            onPress: openUpdateClientModal,
+            title: 'Editar cliente seleccionado',
+          }
+        : null;
 
   return (
     <Container ref={searchClientRef}>
       <Header>
         {!limitByWindowWidth && (
-          <Button
+          <AntButton
             onClick={handleCloseCart}
             data-client-control-input="true"
             icon={icons.arrows.chevronLeft}
           >
             Atrás
-          </Button>
+          </AntButton>
         )}
         <InputWrapper data-client-control-input="true">
-          <Input
-            prefix={inputIcon}
-            placeholder="Buscar cliente..."
-            value={
-              mode === CLIENT_MODE_BAR.SEARCH.id ? searchTerm : client.name
-            }
-            onChange={(e) => handleChangeClient(e)}
-            onClick={handleOpenClientList}
-            style={{ width: '100%' }}
-            allowClear
-            onClear={handleDeleteData}
-            data-client-control-input="true"
-          />
-          {mode === CLIENT_MODE_BAR.SEARCH.id && (
-            <Tooltip title="Agregar nuevo cliente">
-              <ClientButton
-                color="blue"
-                variant="solid"
-                icon={icons.operationModes.add}
-                onClick={openAddClientModal}
-                data-client-control-input="true"
-              >
-                Cliente
-              </ClientButton>
-            </Tooltip>
-          )}
-
-          {mode === CLIENT_MODE_BAR.UPDATE.id && (
-            <Tooltip title="Editar cliente seleccionado">
-              <ClientButton
-                type="primary"
-                icon={icons.operationModes.edit}
-                onClick={openUpdateClientModal}
-                data-client-control-input="true"
-              >
-                Cliente
-              </ClientButton>
-            </Tooltip>
-          )}
+          <ClientInputGroup fullWidth>
+            {inputIcon && (
+              <InputGroup.Prefix>{inputIcon}</InputGroup.Prefix>
+            )}
+            <InputGroup.Input
+              placeholder="Buscar cliente..."
+              value={clientInputValue}
+              onChange={(e) => handleChangeClient(e)}
+              onClick={handleOpenClientList}
+              data-client-control-input="true"
+            />
+            {(clientInputValue || clientAction) && (
+              <InputGroup.Suffix className="client-input-actions">
+                {clientInputValue && (
+                  <ClearClientButton
+                    aria-label="Limpiar cliente"
+                    data-client-control-input="true"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDeleteData();
+                    }}
+                    type="button"
+                  >
+                    ×
+                  </ClearClientButton>
+                )}
+                {clientAction && (
+                  <Tooltip title={clientAction.title}>
+                    <ClientButton
+                      size="sm"
+                      variant="primary"
+                      onPress={clientAction.onPress}
+                      data-client-control-input="true"
+                    >
+                      {clientAction.icon}
+                      {clientAction.label}
+                    </ClientButton>
+                  </Tooltip>
+                )}
+              </InputGroup.Suffix>
+            )}
+          </ClientInputGroup>
         </InputWrapper>
       </Header>
       <ClientDetails mode={mode === CLIENT_MODE_BAR.CREATE.id} />
@@ -334,29 +349,61 @@ const Header = styled.div`
 `;
 
 const InputWrapper = styled.div`
-  display: flex;
   width: 100%;
+  min-width: 0;
+`;
 
-  .ant-input-affix-wrapper {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+const ClientInputGroup = styled(InputGroup)`
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  overflow: hidden;
+
+  .input-group__input,
+  [data-slot='input-group-input'] {
+    min-width: 0;
+    height: 100%;
+    font-size: 14px;
+  }
+
+  .client-input-actions,
+  .input-group__suffix {
+    gap: 4px;
+    height: 100%;
+    padding-right: 0;
   }
 `;
 
-const ClientButton = styled(AntButton)`
+const ClearClientButton = styled.button`
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 16px;
+  line-height: 1;
+  color: currentColor;
+  cursor: pointer;
+  border-radius: 999px;
+  opacity: 0.62;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const ClientButton = styled(HeroButton)`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
+  height: 100%;
+  min-width: 86px;
   border-radius: 0;
+  white-space: nowrap;
 
-  &.ant-btn-primary {
-    background-color: #1890ff;
-  }
-
-  &:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+  svg {
+    width: 14px;
+    height: 14px;
   }
 `;
 

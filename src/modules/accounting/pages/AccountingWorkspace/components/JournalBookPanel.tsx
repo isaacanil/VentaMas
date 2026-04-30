@@ -102,6 +102,58 @@ const formatUserLabel = (record: AccountingLedgerRecord): string => {
   return record.sourceKind === 'automatic' ? 'Sistema' : '—';
 };
 
+const toCleanString = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const getNumericSuffix = (value: string | null | undefined): string | null => {
+  const match = value?.match(/(\d{1,6})$/);
+  return match ? match[1].padStart(6, '0') : null;
+};
+
+const buildStableSixDigitCode = (seed: string): string => {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) % 1000000;
+  }
+
+  return hash.toString().padStart(6, '0');
+};
+
+const formatEntryFolio = (record: AccountingLedgerRecord): string => {
+  const year = record.entryDate?.getFullYear() ?? 0;
+  const month = pad2((record.entryDate?.getMonth() ?? 0) + 1);
+  const sequence =
+    getNumericSuffix(record.documentReference) ??
+    getNumericSuffix(record.reference) ??
+    buildStableSixDigitCode(record.entryReference);
+
+  return `AST-${year.toString().padStart(4, '0')}-${month}-${sequence}`;
+};
+
+const formatJournalName = (record: AccountingLedgerRecord): string => {
+  switch (record.journalTypeKey) {
+    case 'sale':
+      return 'Ventas';
+    case 'purchase':
+      return 'Compras';
+    case 'payment':
+      return 'Pagos';
+    case 'collection':
+      return 'Cobros';
+    case 'expense':
+      return 'Gastos';
+    case 'payroll':
+      return 'Nomina';
+    case 'adjustment':
+      return 'Ajustes';
+    default:
+      return record.journalTypeLabel;
+  }
+};
+
 const formatAccountLabel = (
   line: AccountingLedgerRecord['lines'][number] | null | undefined,
 ): string => {
@@ -562,7 +614,7 @@ export const JournalBookPanel = ({
               <colgroup>
                 <col style={{ width: '44px' }} />
                 <col style={{ width: '120px' }} />
-                <col style={{ width: '190px' }} />
+                <col style={{ width: '240px' }} />
                 <col style={{ width: '130px' }} />
                 <col style={{ width: '280px' }} />
                 <col />
@@ -607,8 +659,11 @@ export const JournalBookPanel = ({
                         </SelectionCell>
                         <DateCell>{formatAccountingDate(record.entryDate)}</DateCell>
                         <EntryCell>
-                          <EntryReference>{record.entryReference}</EntryReference>
-                          <EntryMeta>{record.statusLabel}</EntryMeta>
+                          <EntryBusinessReference>
+                            {formatEntryFolio(record)}
+                          </EntryBusinessReference>
+                          <EntryMeta>Diario: {formatJournalName(record)}</EntryMeta>
+                          <EntryStatus>{record.statusLabel}</EntryStatus>
                         </EntryCell>
                         <TypeCell>
                           <TypeBadge>
@@ -1043,26 +1098,43 @@ const DateCell = styled.td`
 `;
 
 const EntryCell = styled.td`
-  min-width: 176px;
+  min-width: 220px;
 `;
 
-const EntryReference = styled.span`
+const EntryStatus = styled.span`
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: var(--ds-space-1);
+  min-height: 20px;
+  padding: 0 var(--ds-space-2);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-full, 999px);
+  background: var(--ds-color-bg-subtle);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-medium);
+  letter-spacing: var(--ds-letter-spacing-wide);
+  line-height: var(--ds-line-height-tight);
+  text-transform: uppercase;
+`;
+
+const EntryBusinessReference = styled.span`
   display: block;
   color: var(--ds-color-text-primary);
   font-family: var(--ds-font-family-mono, monospace);
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
   font-variant-numeric: tabular-nums;
 `;
 
 const EntryMeta = styled.span`
   display: block;
-  margin-top: 2px;
+  margin-top: var(--ds-space-1);
   color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
+  font-size: var(--ds-font-size-sm);
   line-height: var(--ds-line-height-tight);
-  text-transform: uppercase;
-  letter-spacing: var(--ds-letter-spacing-wide);
 `;
 
 const TypeCell = styled.td`

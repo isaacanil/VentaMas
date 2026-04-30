@@ -16,6 +16,18 @@ interface DashboardShortcutsProps {
   includeDeveloperFeatures?: boolean;
 }
 
+const SHORTCUT_WIDE_CATEGORIES = ['Contabilidad'];
+
+const SHORTCUT_CATEGORY_ORDER: Record<string, number> = {
+  Ventas: 10,
+  Inventario: 20,
+  Contabilidad: 30,
+  'Compras y gastos': 40,
+  Contactos: 50,
+  Tesorería: 60,
+  Administración: 70,
+};
+
 const isFeatureCardData = (card: unknown): card is FeatureCardData => {
   if (!card || typeof card !== 'object') return false;
   const candidate = card as Partial<FeatureCardData>;
@@ -49,7 +61,13 @@ export const DashboardShortcuts = ({
           loading={loading}
         />
       )}
-      <FeatureCardList title="Atajos" cardData={cardData} loading={loading} />
+      <FeatureCardList
+        title="Atajos"
+        cardData={cardData}
+        loading={loading}
+        categoryOrder={SHORTCUT_CATEGORY_ORDER}
+        wideCategoryNames={SHORTCUT_WIDE_CATEGORIES}
+      />
     </ShortcutsSection>
   );
 };

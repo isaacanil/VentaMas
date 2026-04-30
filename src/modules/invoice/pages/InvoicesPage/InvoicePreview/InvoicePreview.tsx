@@ -91,11 +91,14 @@ export const InvoicePreview = () => {
   const handleOpenAccountingEntry = () => {
     if (!invoiceId) return;
 
-    openAccountingEntry({
+    const opened = openAccountingEntry({
       eventType: 'invoice.committed',
       sourceDocumentId: invoiceId,
       sourceDocumentType: 'invoice',
     });
+    if (opened) {
+      dispatch(closeInvoicePreviewModal());
+    }
   };
 
   const handleSyncFromReceivables = () => {

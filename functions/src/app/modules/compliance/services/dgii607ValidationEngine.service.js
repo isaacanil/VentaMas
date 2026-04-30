@@ -144,7 +144,7 @@ const resolveFieldLabel = (fieldKey) =>
   DGII_607_FIELD_DEFINITIONS.find((field) => field.key === fieldKey)?.label ??
   fieldKey;
 
-const resolvePaymentAmounts = (firestoreDoc, grossTotal) => {
+export const resolvePaymentAmounts = (firestoreDoc, grossTotal) => {
   const result = {
     cash: 0,
     bank: 0,

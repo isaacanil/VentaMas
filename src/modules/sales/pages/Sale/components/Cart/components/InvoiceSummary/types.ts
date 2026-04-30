@@ -51,6 +51,7 @@ export type MenuOption = {
   action: () => void;
   icon?: ReactNode;
   disabled?: boolean;
+  variant?: 'default' | 'danger';
   theme?: MenuTheme;
 };
 

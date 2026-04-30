@@ -76,6 +76,10 @@ describe('dgii607MonthlyReport.service', () => {
             id: 'client-1',
             rnc: '101010101',
           },
+          paymentMethod: [
+            { method: 'cash', value: 500 },
+            { method: 'card', value: 680 },
+          ],
           totalPurchase: { value: 1180 },
           totalTaxes: { value: 180 },
           status: 'completed',
@@ -100,6 +104,15 @@ describe('dgii607MonthlyReport.service', () => {
       totals: {
         total: 1180,
         tax: 180,
+      },
+      paymentBreakdown: {
+        cash: 500,
+        bank: 0,
+        card: 680,
+        creditSale: 0,
+        giftCertificates: 0,
+        barter: 0,
+        otherSales: 0,
       },
       status: 'completed',
       metadata: {
@@ -219,20 +232,24 @@ describe('dgii607MonthlyReport.service', () => {
     });
 
     expect(collection).toHaveBeenCalledWith('businesses/business-1/invoices');
-    expect(collection).toHaveBeenCalledWith('businesses/business-1/creditNotes');
+    expect(collection).toHaveBeenCalledWith(
+      'businesses/business-1/creditNotes',
+    );
     expect(collection).toHaveBeenCalledWith(
       'businesses/business-1/salesThirdPartyWithholdings',
     );
-    expect(queries['businesses/business-1/invoices'].where).toHaveBeenCalledTimes(2);
-    expect(queries['businesses/business-1/invoices'].orderBy).toHaveBeenCalledWith(
-      'data.date',
-      'asc',
-    );
-    expect(queries['businesses/business-1/creditNotes'].where).toHaveBeenCalledTimes(2);
-    expect(queries['businesses/business-1/creditNotes'].orderBy).toHaveBeenCalledWith(
-      'createdAt',
-      'asc',
-    );
+    expect(
+      queries['businesses/business-1/invoices'].where,
+    ).toHaveBeenCalledTimes(2);
+    expect(
+      queries['businesses/business-1/invoices'].orderBy,
+    ).toHaveBeenCalledWith('data.date', 'asc');
+    expect(
+      queries['businesses/business-1/creditNotes'].where,
+    ).toHaveBeenCalledTimes(2);
+    expect(
+      queries['businesses/business-1/creditNotes'].orderBy,
+    ).toHaveBeenCalledWith('createdAt', 'asc');
 
     expect(result.ok).toBe(true);
     expect(result.periodKey).toBe('2026-04');
@@ -257,12 +274,19 @@ describe('dgii607MonthlyReport.service', () => {
         sourcePath: 'businesses/business-1/invoices/invoice-1',
         documentNumber: 'INV-001',
         documentFiscalNumber: null,
+        counterpartyIdentificationNumber: null,
         invoiceId: null,
         invoiceNcf: null,
         issuedAt: '2026-04-10T14:00:00.000Z',
         retentionDate: null,
+        total: 1180,
+        itbisTotal: 180,
         itbisWithheld: null,
         incomeTaxWithheld: null,
+        cash: null,
+        checkTransfer: null,
+        card: null,
+        creditSale: null,
         status: 'completed',
       },
     ]);
@@ -273,12 +297,19 @@ describe('dgii607MonthlyReport.service', () => {
         sourcePath: 'businesses/business-1/creditNotes/credit-note-1',
         documentNumber: 'NC-2026-000001',
         documentFiscalNumber: null,
+        counterpartyIdentificationNumber: null,
         invoiceId: null,
         invoiceNcf: null,
         issuedAt: '2026-04-12T10:00:00.000Z',
         retentionDate: null,
+        total: null,
+        itbisTotal: null,
         itbisWithheld: null,
         incomeTaxWithheld: null,
+        cash: null,
+        checkTransfer: null,
+        card: null,
+        creditSale: null,
         status: 'issued',
       },
     ]);
@@ -529,12 +560,19 @@ describe('dgii607MonthlyReport.service', () => {
         sourcePath: 'businesses/business-1/invoices/invoice-cancelled',
         documentNumber: 'INV-002',
         documentFiscalNumber: 'B01000000016',
+        counterpartyIdentificationNumber: '101010101',
         invoiceId: null,
         invoiceNcf: null,
         issuedAt: '2026-04-11T14:00:00.000Z',
         retentionDate: null,
+        total: 500,
+        itbisTotal: 76.27,
         itbisWithheld: null,
         incomeTaxWithheld: null,
+        cash: null,
+        checkTransfer: null,
+        card: null,
+        creditSale: null,
         status: 'cancelled',
       },
     ]);
@@ -545,12 +583,19 @@ describe('dgii607MonthlyReport.service', () => {
         sourcePath: 'businesses/business-1/creditNotes/credit-note-cancelled',
         documentNumber: 'NC-2026-000002',
         documentFiscalNumber: 'B04000000002',
+        counterpartyIdentificationNumber: '101010101',
         invoiceId: 'invoice-active',
         invoiceNcf: 'B01000000015',
         issuedAt: '2026-04-13T10:00:00.000Z',
         retentionDate: null,
+        total: 90,
+        itbisTotal: null,
         itbisWithheld: null,
         incomeTaxWithheld: null,
+        cash: null,
+        checkTransfer: null,
+        card: null,
+        creditSale: null,
         status: 'cancelled',
       },
     ]);

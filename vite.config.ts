@@ -148,6 +148,11 @@ export default defineConfig({
 
             // UI (Ant Design + rc-* + icons)
             {
+              name: 'ui-heroui',
+              test: /node_modules[\\/](?:@heroui|react-aria-components|react-aria|react-stately|@react-aria|@react-stately|@react-types)[\\/]/,
+              priority: 38,
+            },
+            {
               name: 'ui-antd-icons',
               test: /node_modules[\\/](?:@ant-design[\\/]icons|@ant-design[\\/]icons-svg)[\\/]/,
               priority: 37,
@@ -318,6 +323,7 @@ export default defineConfig({
       'react-router-dom',
       'styled-components',
       'react-compiler-runtime',
+      '@heroui/react',
     ],
   },
 }) satisfies UserConfig;

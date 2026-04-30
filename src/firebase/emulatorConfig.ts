@@ -1,12 +1,5 @@
 const TRUE_ENV_VALUES = new Set(['1', 'true', 'yes', 'on']);
 const FALSE_ENV_VALUES = new Set(['0', 'false', 'no', 'off']);
-const LOCAL_HOSTNAMES = new Set([
-  'localhost',
-  '127.0.0.1',
-  '0.0.0.0',
-  '::1',
-]);
-
 const normalizeString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -28,11 +21,6 @@ const parsePortEnv = (value: unknown, fallback: number): number => {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const getBrowserHostname = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return normalizeString(window.location?.hostname);
-};
-
 export const getFirebaseEmulatorHost = (): string =>
   normalizeString(import.meta.env.VITE_FIREBASE_EMULATOR_HOST) || '127.0.0.1';
 
@@ -47,26 +35,7 @@ export const getAuthEmulatorPort = (): number =>
 
 export const shouldUseFirebaseEmulators = (): boolean => {
   const explicitOptIn = parseBooleanEnv(import.meta.env.VITE_USE_EMULATORS);
-
-  // Si se detectó explícitamente que NO están vivos tras el probe en index.html,
-  // devolvemos false para recuperar la versión normal (conectada a real firebase).
-  if (
-    typeof window !== 'undefined' &&
-    (window as any).__EMULATORS_ALIVE__ === false
-  ) {
-    return false;
-  }
-
-  if (explicitOptIn !== null) {
-    return explicitOptIn;
-  }
-
-  if (!import.meta.env.DEV) {
-    return false;
-  }
-
-  const hostname = getBrowserHostname();
-  return hostname !== null && LOCAL_HOSTNAMES.has(hostname);
+  return explicitOptIn === true;
 };
 
 export const getFunctionsEmulatorBaseUrl = (): string | null => {

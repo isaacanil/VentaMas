@@ -324,17 +324,26 @@ export const usePinAuthorizationController = ({
       return;
     }
 
-    const authorizedUser = resolveAuthorizedUser(result.user, {
-      preferredBusinessId,
-    });
-    if (!authorizedUser || !isUserRoleAllowed(authorizedUser)) {
-      setError('Usuario no autorizado para aprobar esta accion.');
-      setLoading(false);
-      return;
-    }
+    try {
+      const authorizedUser = resolveAuthorizedUser(result.user, {
+        preferredBusinessId,
+      });
+      if (!authorizedUser || !isUserRoleAllowed(authorizedUser)) {
+        setError('Usuario no autorizado para aprobar esta accion.');
+        setLoading(false);
+        return;
+      }
 
-    await onAuthorized(authorizedUser);
-    resetAndClose();
+      await onAuthorized(authorizedUser);
+      resetAndClose();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo completar la autorizacion.';
+      setError(message);
+      setLoading(false);
+    }
   };
 
   const handleSubmitPassword = async ({
@@ -374,15 +383,24 @@ export const usePinAuthorizationController = ({
       return;
     }
 
-    const approver = await fetchUserById(uid);
-    if (!isUserRoleAllowed(approver)) {
-      setError('Usuario no autorizado para aprobar esta accion.');
-      setLoading(false);
-      return;
-    }
+    try {
+      const approver = await fetchUserById(uid);
+      if (!isUserRoleAllowed(approver)) {
+        setError('Usuario no autorizado para aprobar esta accion.');
+        setLoading(false);
+        return;
+      }
 
-    await onAuthorized(approver);
-    resetAndClose();
+      await onAuthorized(approver);
+      resetAndClose();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo completar la autorizacion.';
+      setError(message);
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {

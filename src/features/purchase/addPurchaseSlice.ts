@@ -46,6 +46,13 @@ interface PurchaseState {
   orderId: string;
   invoiceNumber: string;
   proofOfPurchase: string;
+  documentType: string | null;
+  taxReceipt: {
+    ncf?: string | null;
+  } | null;
+  classification: {
+    dgii606ExpenseType?: string | null;
+  } | null;
   completedAt: string | null;
   deliveryAt: string | null;
   paymentAt: string | null;
@@ -80,6 +87,9 @@ const EmptyPurchase = {
   orderId: '',
   invoiceNumber: '',
   proofOfPurchase: '',
+  documentType: 'inventory',
+  taxReceipt: { ncf: '' },
+  classification: { dgii606ExpenseType: null },
   completedAt: null,
   deliveryAt: DateTime.now().toISO(),
   paymentAt: DateTime.now().toISO(),

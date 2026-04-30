@@ -123,6 +123,95 @@ describe('dgii606MonthlyReport.service', () => {
     });
   });
 
+  it('usa comprobante legado y deriva inventario para compras con productos', () => {
+    const result = mapPurchaseDocToDgii606Record({
+      businessId: 'business-1',
+      purchaseId: 'purchase-legacy',
+      purchaseDoc: {
+        id: 'purchase-legacy',
+        numberId: 121,
+        completedAt: {
+          toDate: () => new Date('2026-04-06T13:20:00.000Z'),
+        },
+        providerId: 'supplier-1',
+        provider: {
+          rnc: '101010101',
+        },
+        proofOfPurchase: 'B01000000016',
+        totalAmount: 590,
+        taxBreakdown: {
+          itbisTotal: 90,
+        },
+        classification: {
+          dgii606ExpenseType: '09',
+        },
+        replenishments: [{ id: 'product-1', name: 'Producto fiscal' }],
+        workflowStatus: 'completed',
+      },
+    });
+
+    expect(result.taxReceipt.ncf).toBe('B01000000016');
+    expect(result.documentType).toBe('inventory');
+  });
+
+  it('hidrata RNC de proveedor cuando compra guarda provider como ID string', async () => {
+    const { collection, doc } = createFirestoreMock({
+      docsByCollectionPath: {
+        'businesses/business-1/purchases': [
+          {
+            id: 'purchase-provider-string',
+            data: () => ({
+              id: 'purchase-provider-string',
+              numberId: 'PUR-STRING',
+              completedAt: {
+                toDate: () => new Date('2026-04-05T13:20:00.000Z'),
+              },
+              provider: 'provider-1',
+              taxReceipt: {
+                ncf: 'B01000000015',
+              },
+              totalAmount: 1180,
+              taxBreakdown: {
+                itbisTotal: 180,
+              },
+              classification: {
+                dgii606ExpenseType: '01',
+              },
+              workflowStatus: 'completed',
+            }),
+          },
+        ],
+        'businesses/business-1/expenses': [],
+        'businesses/business-1/accountsPayablePayments': [],
+      },
+      docsByDocumentPath: {
+        'businesses/business-1/providers/provider-1': {
+          provider: {
+            id: 'provider-1',
+            rnc: '00100884501',
+          },
+        },
+      },
+    });
+
+    const result = await buildDgii606ValidationPreview({
+      businessId: 'business-1',
+      periodKey: '2026-04',
+      firestore: { collection, doc },
+    });
+
+    expect(result.sourceSnapshots.providerProfiles).toEqual({
+      recordsRequested: 1,
+      recordsResolved: 1,
+      recordsMissing: 0,
+    });
+    expect(result.sourceRecords.purchases[0]).toMatchObject({
+      recordId: 'purchase-provider-string',
+      supplierId: 'provider-1',
+      counterpartyIdentificationNumber: '00100884501',
+    });
+  });
+
   it('normaliza gasto y pago CxP a shapes auditables', () => {
     const expense = mapExpenseDocToDgii606Record({
       businessId: 'business-1',
@@ -341,17 +430,22 @@ describe('dgii606MonthlyReport.service', () => {
       firestore: { collection, doc },
     });
 
-    expect(queries['businesses/business-1/purchases'].where).toHaveBeenCalledTimes(2);
-    expect(queries['businesses/business-1/purchases'].orderBy).toHaveBeenCalledWith(
-      'completedAt',
-      'asc',
-    );
+    expect(
+      queries['businesses/business-1/purchases'].where,
+    ).toHaveBeenCalledTimes(2);
+    expect(
+      queries['businesses/business-1/purchases'].orderBy,
+    ).toHaveBeenCalledWith('completedAt', 'asc');
     expect(result.ok).toBe(true);
     expect(result.issues).toEqual([]);
     expect(result.sourceSnapshots.purchases.recordsLoaded).toBe(1);
     expect(result.sourceSnapshots.purchases.recordsExcluded).toBe(1);
-    expect(result.sourceSnapshots.accountsPayablePayments.recordsLoaded).toBe(1);
-    expect(result.sourceSnapshots.accountsPayablePayments.recordsExcluded).toBe(1);
+    expect(result.sourceSnapshots.accountsPayablePayments.recordsLoaded).toBe(
+      1,
+    );
+    expect(result.sourceSnapshots.accountsPayablePayments.recordsExcluded).toBe(
+      1,
+    );
     expect(result.sourceSnapshots.linkedPurchases).toEqual({
       recordsRequested: 1,
       recordsResolved: 1,
@@ -366,6 +460,11 @@ describe('dgii606MonthlyReport.service', () => {
         documentFiscalNumber: 'B01000000016',
         purchaseId: null,
         supplierId: 'supplier-2',
+        counterpartyIdentificationNumber: '202020202',
+        documentType: 'goods',
+        expenseType: '02',
+        total: 500,
+        itbisTotal: 76.27,
         issuedAt: '2026-04-06T13:20:00.000Z',
         status: 'canceled',
       },
@@ -374,11 +473,17 @@ describe('dgii606MonthlyReport.service', () => {
       {
         index: 0,
         recordId: 'payment-void',
-        sourcePath: 'businesses/business-1/accountsPayablePayments/payment-void',
+        sourcePath:
+          'businesses/business-1/accountsPayablePayments/payment-void',
         documentNumber: null,
         documentFiscalNumber: null,
         purchaseId: 'purchase-1',
         supplierId: null,
+        counterpartyIdentificationNumber: null,
+        documentType: null,
+        expenseType: null,
+        total: null,
+        itbisTotal: null,
         issuedAt: '2026-04-16T10:00:00.000Z',
         status: 'void',
       },
@@ -456,8 +561,7 @@ describe('dgii606MonthlyReport.service', () => {
         linkedSourcePath: 'businesses/business-1/purchases/purchase-prev',
         linkedPeriodKey: '2026-03',
         recordId: 'payment-1',
-        sourcePath:
-          'businesses/business-1/accountsPayablePayments/payment-1',
+        sourcePath: 'businesses/business-1/accountsPayablePayments/payment-1',
         documentNumber: null,
         documentFiscalNumber: null,
       },

@@ -1,5 +1,6 @@
 import { db } from '../../../core/config/firebase.js';
 import { validateDgiiMonthlyReportDataset } from './dgiiMonthlyReportValidation.service.js';
+import { resolvePaymentAmounts } from './dgii607ValidationEngine.service.js';
 
 const PERIOD_KEY_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -24,6 +25,11 @@ const toFiniteNumber = (value) => {
     return Number.isFinite(normalized) ? normalized : null;
   }
   return null;
+};
+
+const toPositiveNumberOrNull = (value) => {
+  const parsed = toFiniteNumber(value);
+  return parsed !== null && parsed > 0 ? parsed : null;
 };
 
 const toDate = (value) => {
@@ -117,7 +123,8 @@ const resolveWithholdingPayload = (withholdingDoc) =>
   isRecord(withholdingDoc?.data) ? withholdingDoc.data : withholdingDoc;
 
 const toRecordPeriodKey = (record) => {
-  const issuedAt = toCleanString(record?.issuedAt) ?? toCleanString(record?.createdAt);
+  const issuedAt =
+    toCleanString(record?.issuedAt) ?? toCleanString(record?.createdAt);
   return issuedAt?.slice(0, 7) ?? null;
 };
 
@@ -141,15 +148,17 @@ const resolveMonthlyPeriodRange = (periodKey) => {
   };
 };
 
-export const mapInvoiceDocToDgii607Record = ({ businessId, invoiceId, invoiceDoc }) => {
+export const mapInvoiceDocToDgii607Record = ({
+  businessId,
+  invoiceId,
+  invoiceDoc,
+}) => {
   const invoiceData = resolveInvoicePayload(invoiceDoc);
   const client = isRecord(invoiceData?.client) ? invoiceData.client : {};
   const issuedAt = toDate(invoiceData?.date);
 
   const counterpartyId =
-    toCleanString(client.id) ??
-    toCleanString(invoiceData?.clientId) ??
-    null;
+    toCleanString(client.id) ?? toCleanString(invoiceData?.clientId) ?? null;
   const identificationNumber =
     toCleanString(client.rnc) ??
     toCleanString(client.personalID) ??
@@ -192,6 +201,7 @@ export const mapInvoiceDocToDgii607Record = ({ businessId, invoiceId, invoiceDoc
       total,
       tax,
     },
+    paymentBreakdown: resolvePaymentAmounts(invoiceDoc, total ?? 0),
     status,
     metadata: {
       recordId: invoiceId,
@@ -359,12 +369,28 @@ const buildSourceRecordsSnapshot = (records = []) =>
     sourcePath: record?.metadata?.sourcePath ?? null,
     documentNumber: record?.documentNumber ?? null,
     documentFiscalNumber: record?.data?.NCF ?? record?.ncf ?? null,
+    counterpartyIdentificationNumber:
+      record?.counterparty?.identification?.number ?? null,
     invoiceId: record?.invoiceId ?? record?.metadata?.invoiceId ?? null,
     invoiceNcf: record?.metadata?.invoiceNcf ?? null,
     issuedAt: record?.issuedAt ?? record?.createdAt ?? null,
     retentionDate: record?.retentionDate ?? null,
+    total: record?.totals?.total ?? null,
+    itbisTotal: record?.totals?.tax ?? null,
     itbisWithheld: record?.itbisWithheld ?? null,
     incomeTaxWithheld: record?.incomeTaxWithheld ?? null,
+    cash:
+      toPositiveNumberOrNull(record?.paymentBreakdown?.cash) ??
+      toPositiveNumberOrNull(record?.paymentBreakdown?.cashAmount),
+    checkTransfer:
+      toPositiveNumberOrNull(record?.paymentBreakdown?.bank) ??
+      toPositiveNumberOrNull(record?.paymentBreakdown?.checkTransfer) ??
+      toPositiveNumberOrNull(record?.paymentBreakdown?.transfer) ??
+      toPositiveNumberOrNull(record?.paymentBreakdown?.bankTransfer),
+    card:
+      toPositiveNumberOrNull(record?.paymentBreakdown?.card) ??
+      toPositiveNumberOrNull(record?.paymentBreakdown?.cardAmount),
+    creditSale: toPositiveNumberOrNull(record?.paymentBreakdown?.creditSale),
     status: record?.status ?? null,
   }));
 
@@ -413,7 +439,9 @@ const loadLinkedInvoicesById = async ({
 
   const loadedEntries = await Promise.all(
     invoiceIds.map(async (invoiceId) => {
-      const ref = firestore.doc(`businesses/${businessId}/invoices/${invoiceId}`);
+      const ref = firestore.doc(
+        `businesses/${businessId}/invoices/${invoiceId}`,
+      );
       const snap = await ref.get();
       if (!snap?.exists) {
         return {
@@ -462,8 +490,11 @@ export const loadDgii607Datasets = async ({
     throw new Error('businessId es requerido para validar DGII_607');
   }
 
-  const { periodKey: normalizedPeriodKey, start, endExclusive } =
-    resolveMonthlyPeriodRange(periodKey);
+  const {
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+  } = resolveMonthlyPeriodRange(periodKey);
 
   const invoicesRef = firestore.collection(
     `businesses/${normalizedBusinessId}/invoices`,
@@ -582,7 +613,9 @@ const buildCreditNoteCrossReferenceIssues = ({
       });
     }
 
-    const creditNoteInvoiceNcf = toCleanString(creditNote?.metadata?.invoiceNcf);
+    const creditNoteInvoiceNcf = toCleanString(
+      creditNote?.metadata?.invoiceNcf,
+    );
     const linkedInvoiceNcf = toCleanString(linkedRecord?.data?.NCF);
 
     if (!creditNoteInvoiceNcf) {
@@ -684,7 +717,9 @@ export const buildDgii607ValidationPreview = async ({
         datasets.thirdPartyWithholdings,
       ),
       excludedInvoices: buildSourceRecordsSnapshot(excludedRecords.invoices),
-      excludedCreditNotes: buildSourceRecordsSnapshot(excludedRecords.creditNotes),
+      excludedCreditNotes: buildSourceRecordsSnapshot(
+        excludedRecords.creditNotes,
+      ),
       excludedThirdPartyWithholdings: buildSourceRecordsSnapshot(
         excludedRecords.thirdPartyWithholdings,
       ),

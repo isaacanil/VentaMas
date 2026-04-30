@@ -1,5 +1,9 @@
 import {
   faBookOpen,
+  faBuildingColumns,
+  faChartColumn,
+  faClipboardCheck,
+  faLock,
   faTicket,
   faWarehouse,
   faShieldAlt,
@@ -12,11 +16,15 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { MenuItem } from '@/types/menu';
 import type { UserIdentity } from '@/types/users';
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
+import { useBusinessFeatureEnabled } from '@/hooks/useBusinessFeatureEnabled';
 import { useFilterMenuItemsByAccess } from '@/utils/menuAccess';
+
+type ShortcutFeature = 'accounting' | 'treasury';
 
 interface MenuCardItem extends MenuItem {
   id: number;
   category: string;
+  requiresFeatures?: ShortcutFeature[];
   requiresAuthorizationApproveAccess?: boolean;
 }
 
@@ -26,12 +34,27 @@ const createMenuItems = <T extends MenuItem>(items: T[]): MenuCardItem[] =>
     id: index + 1,
   })) as MenuCardItem[];
 
-const { UTILITY_TERM, SETTING_TERM, AUTHORIZATIONS_TERM, ACCOUNTING_TERM } =
-  ROUTES_NAME;
+const {
+  UTILITY_TERM,
+  SETTING_TERM,
+  AUTHORIZATIONS_TERM,
+  ACCOUNTING_TERM,
+  ACCOUNT_PAYABLE,
+  TREASURY_TERM,
+} = ROUTES_NAME;
 const { UTILITY_REPORT } = UTILITY_TERM;
 const { USERS, USERS_LIST, USERS_SESSION_LOGS, SETTING } = SETTING_TERM;
 const { AUTHORIZATIONS_LIST } = AUTHORIZATIONS_TERM;
-const { ACCOUNTING_GENERAL_LEDGER } = ACCOUNTING_TERM;
+const {
+  ACCOUNTING_JOURNAL_BOOK,
+  ACCOUNTING_GENERAL_LEDGER,
+  ACCOUNTING_MANUAL_ENTRIES,
+  ACCOUNTING_REPORTS,
+  ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_PERIOD_CLOSE,
+} = ACCOUNTING_TERM;
+const { ACCOUNT_PAYABLE_LIST } = ACCOUNT_PAYABLE;
+const { TREASURY_BANK_ACCOUNTS } = TREASURY_TERM;
 
 const menuItems = createMenuItems([
   {
@@ -62,13 +85,13 @@ const menuItems = createMenuItems([
     title: 'Compras',
     icon: icons.menu.unSelected.purchase,
     route: ROUTES_NAME.PURCHASE_TERM.PURCHASES,
-    category: 'Operaciones',
+    category: 'Compras y gastos',
   },
   {
     title: 'Ordenes',
     icon: icons.menu.unSelected.order,
     route: ROUTES_NAME.ORDER_TERM.ORDERS,
-    category: 'Operaciones',
+    category: 'Compras y gastos',
   },
   {
     title: 'BackOrders',
@@ -80,25 +103,69 @@ const menuItems = createMenuItems([
     title: 'Cuentas por Cobrar',
     icon: icons.menu.unSelected.accountsReceivable,
     route: ROUTES_NAME.ACCOUNT_RECEIVABLE.ACCOUNT_RECEIVABLE_LIST,
-    category: 'Finanzas',
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
+  },
+  {
+    title: 'Cuentas por Pagar',
+    icon: icons.finances.fileInvoiceDollar,
+    route: ACCOUNT_PAYABLE_LIST,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
   },
   {
     title: 'Gastos',
     icon: icons.menu.unSelected.expenses.list,
     route: ROUTES_NAME.EXPENSES_TERM.EXPENSES_LIST,
-    category: 'Finanzas',
+    category: 'Compras y gastos',
+  },
+  {
+    title: 'Libro Diario',
+    icon: icons.menu.unSelected.list,
+    route: ACCOUNTING_JOURNAL_BOOK,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
   },
   {
     title: 'Libro Mayor',
     icon: <FontAwesomeIcon icon={faBookOpen} />,
     route: ACCOUNTING_GENERAL_LEDGER,
-    category: 'Finanzas',
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
+  },
+  {
+    title: 'Asientos Manuales',
+    icon: icons.menu.unSelected.register,
+    route: ACCOUNTING_MANUAL_ENTRIES,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
+  },
+  {
+    title: 'Reportes Contables',
+    icon: <FontAwesomeIcon icon={faChartColumn} />,
+    route: ACCOUNTING_REPORTS,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
+  },
+  {
+    title: 'Cumplimiento Fiscal',
+    icon: <FontAwesomeIcon icon={faClipboardCheck} />,
+    route: ACCOUNTING_FISCAL_COMPLIANCE,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
+  },
+  {
+    title: 'Cierre de Periodo',
+    icon: <FontAwesomeIcon icon={faLock} />,
+    route: ACCOUNTING_PERIOD_CLOSE,
+    category: 'Contabilidad',
+    requiresFeatures: ['accounting'],
   },
   {
     title: 'Notas de Crédito',
     icon: icons.finances.fileInvoiceDollar,
     route: ROUTES_NAME.CREDIT_NOTE_TERM.CREDIT_NOTE_LIST,
-    category: 'Finanzas',
+    category: 'Contabilidad',
   },
   {
     title: 'Control Inventario',
@@ -140,7 +207,15 @@ const menuItems = createMenuItems([
     title: 'Cuadre de Caja',
     icon: icons.menu.unSelected.cashReconciliation,
     route: ROUTES_NAME.CASH_RECONCILIATION_TERM.CASH_RECONCILIATION_LIST,
-    category: 'Finanzas',
+    category: 'Tesorería',
+    requiresFeatures: ['treasury'],
+  },
+  {
+    title: 'Bancos y cajas',
+    icon: <FontAwesomeIcon icon={faBuildingColumns} />,
+    route: TREASURY_BANK_ACCOUNTS,
+    category: 'Tesorería',
+    requiresFeatures: ['accounting', 'treasury'],
   },
   {
     title: 'Autorizaciones',
@@ -153,7 +228,7 @@ const menuItems = createMenuItems([
     title: 'Utilidad',
     icon: icons.menu.unSelected.sale,
     route: UTILITY_REPORT,
-    category: 'Finanzas',
+    category: 'Tesorería',
   },
   {
     title: 'Usuarios',
@@ -181,8 +256,16 @@ const menuItems = createMenuItems([
 const developerItems = createMenuItems(developerShortcuts);
 
 export const useMenuCardData = (user?: UserIdentity | null) => {
+  const accountingEnabled = useBusinessFeatureEnabled('accounting');
+  const treasuryEnabled = useBusinessFeatureEnabled('treasury');
   const filteredItems = useFilterMenuItemsByAccess(menuItems);
   return filteredItems.filter((item): item is MenuCardItem => {
+    if (item.requiresFeatures?.includes('accounting') && !accountingEnabled) {
+      return false;
+    }
+    if (item.requiresFeatures?.includes('treasury') && !treasuryEnabled) {
+      return false;
+    }
     if (item.requiresAuthorizationApproveAccess) {
       return hasAuthorizationApproveAccess(user);
     }

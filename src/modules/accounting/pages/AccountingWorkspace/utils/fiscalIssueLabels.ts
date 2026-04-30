@@ -27,13 +27,19 @@ const ISSUE_CODE_LABELS: Record<string, string> = {
 
 const SOURCE_ID_LABELS: Record<string, string> = {
   purchases: 'Compras',
+  excludedPurchases: 'Compras excluidas',
   expenses: 'Gastos',
+  excludedExpenses: 'Gastos excluidos',
   sales: 'Ventas',
   invoices: 'Facturas',
+  excludedInvoices: 'Facturas excluidas',
   creditNotes: 'Notas de crédito',
+  excludedCreditNotes: 'Notas de crédito excluidas',
   debitNotes: 'Notas de débito',
   thirdPartyWithholdings: 'Retenciones sufridas',
+  excludedThirdPartyWithholdings: 'Retenciones excluidas',
   accountsPayablePayments: 'Pagos de cuentas por pagar',
+  excludedAccountsPayablePayments: 'Pagos CxP excluidos',
   accountsReceivablePayments: 'Cobros de cuentas por cobrar',
   voidedDocuments: 'Documentos anulados',
   annulments: 'Anulaciones',
@@ -44,7 +50,8 @@ const FIELD_PATH_LABELS: Record<string, string> = {
   // Contraparte
   'counterparty.id': 'ID del proveedor/cliente',
   'counterparty.identification.number': 'RNC / Cédula del proveedor/cliente',
-  'counterparty.identification.type': 'Tipo de identificación del proveedor/cliente',
+  'counterparty.identification.type':
+    'Tipo de identificación del proveedor/cliente',
   'counterparty.name': 'Nombre del proveedor/cliente',
   // Proveedor
   supplierId: 'ID del proveedor',

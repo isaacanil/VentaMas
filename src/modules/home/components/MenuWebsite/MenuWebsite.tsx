@@ -1,11 +1,10 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
-import { useDialog } from '@/Context/Dialog/useDialog';
-import { logout, selectUser } from '@/features/auth/userSlice';
-import { fbSignOut } from '@/firebase/Auth/fbAuthV2/fbSignOut';
+import { zIndex } from '@/design-system/tokens/zIndex';
+import { selectUser } from '@/features/auth/userSlice';
 import ROUTES_PATH from '@/router/routes/routesName';
 import PersonalizedGreeting from '@/modules/home/pages/Home/components/PersonalizedGreeting/PersonalizedGreeting';
 import { NotificationButton } from '@/modules/navigation/components/MenuApp/Components/NotificationButton/NotificationButton';
@@ -13,32 +12,10 @@ import { hasBusinessSettingsManageAccess } from '@/utils/access/businessSettings
 
 export const MenuWebsite = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { onClose, setDialogConfirm } = useDialog();
   const { GENERAL_CONFIG_BUSINESS } = ROUTES_PATH.SETTING_TERM;
   const canManageBusinessSettings = hasBusinessSettingsManageAccess(user);
   const handleSetting = () => navigate(GENERAL_CONFIG_BUSINESS);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    fbSignOut();
-    navigate('/login', { replace: true });
-  };
-
-  const logoutOfApp = () => {
-    // dispatch to the store with the logout action
-    setDialogConfirm({
-      title: 'Cerrar sesión',
-      isOpen: true,
-      type: 'warning',
-      message: '¿Está seguro que desea cerrar sesión?',
-      onConfirm: () => {
-        handleLogout();
-        onClose();
-      },
-    });
-  };
 
   return (
     <Container>
@@ -62,13 +39,6 @@ export const MenuWebsite = () => {
       </CenterSection>
       <GreetingSection>
         <PersonalizedGreeting />
-        <ActionIconButton
-          type="button"
-          aria-label="Cerrar sesión"
-          onClick={logoutOfApp}
-        >
-          {icons.operationModes.logout}
-        </ActionIconButton>
       </GreetingSection>
     </Container>
   );
@@ -76,7 +46,7 @@ export const MenuWebsite = () => {
 const Container = styled.header`
   position: sticky;
   top: 0.1rem;
-  z-index: 100;
+  z-index: ${zIndex.sticky};
   display: flex;
   flex-wrap: wrap;
   gap: 0.8em;

@@ -52,6 +52,30 @@ describe('resolveAccountingOriginTarget', () => {
     });
   });
 
+  it('uses the internal invoice id when fiscal document id is the visible NCF', () => {
+    const record = createRecord({
+      event: {
+        id: 'event-1',
+        businessId: 'business-1',
+        eventType: 'invoice.committed',
+        eventVersion: 1,
+        status: 'projected',
+        sourceType: 'invoice',
+        sourceId: 'invoice-doc-1',
+        sourceDocumentType: 'invoice',
+        sourceDocumentId: 'B0100000144',
+        payload: {},
+        metadata: {},
+      },
+    });
+
+    expect(resolveAccountingOriginTarget(record)).toEqual({
+      kind: 'invoice-preview',
+      documentId: 'invoice-doc-1',
+      label: 'Ver origen',
+    });
+  });
+
   it('routes receivable payments to the related accounts receivable detail', () => {
     const record = createRecord({
       eventType: 'accounts_receivable.payment.recorded',

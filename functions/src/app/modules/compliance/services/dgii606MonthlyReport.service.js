@@ -150,8 +150,14 @@ const buildSourceRecordsSnapshot = (records = []) =>
     documentNumber: record?.documentNumber ?? null,
     documentFiscalNumber: record?.taxReceipt?.ncf ?? null,
     purchaseId: record?.purchaseId ?? null,
-    supplierId:
-      record?.supplierId ?? record?.counterparty?.id ?? null,
+    supplierId: record?.supplierId ?? record?.counterparty?.id ?? null,
+    counterpartyIdentificationNumber:
+      record?.counterparty?.identification?.number ?? null,
+    documentType: record?.documentType ?? null,
+    expenseType:
+      record?.classification?.dgii606ExpenseType ?? record?.expenseType ?? null,
+    total: record?.totals?.total ?? null,
+    itbisTotal: record?.taxBreakdown?.itbisTotal ?? null,
     issuedAt: record?.issuedAt ?? record?.occurredAt ?? null,
     status: record?.status ?? null,
   }));
@@ -184,22 +190,85 @@ const resolveExpensePayload = (expenseDoc) =>
 const resolvePaymentPayload = (paymentDoc) =>
   isRecord(paymentDoc?.data) ? paymentDoc.data : paymentDoc;
 
+const resolveCounterpartySource = (record) => {
+  if (isRecord(record?.provider?.provider)) return record.provider.provider;
+  if (isRecord(record?.supplier?.provider)) return record.supplier.provider;
+  if (isRecord(record?.counterparty?.provider)) {
+    return record.counterparty.provider;
+  }
+  if (isRecord(record?.provider)) return record.provider;
+  if (isRecord(record?.supplier)) return record.supplier;
+  if (isRecord(record?.counterparty)) return record.counterparty;
+  return {};
+};
+
+const resolveCounterpartyId = (record) =>
+  toCleanString(record?.supplierId) ??
+  toCleanString(record?.providerId) ??
+  toCleanString(record?.provider?.id) ??
+  toCleanString(record?.provider?.provider?.id) ??
+  toCleanString(record?.supplier?.id) ??
+  toCleanString(record?.supplier?.provider?.id) ??
+  toCleanString(record?.counterparty?.id) ??
+  toCleanString(record?.provider) ??
+  toCleanString(record?.supplier) ??
+  null;
+
 const resolveCounterpartyIdentificationNumber = (record) => {
-  const supplier = isRecord(record?.provider)
-    ? record.provider
-    : isRecord(record?.supplier)
-      ? record.supplier
-      : isRecord(record?.counterparty)
-        ? record.counterparty
-        : {};
+  const supplier = resolveCounterpartySource(record);
 
   return (
     toCleanString(supplier?.rnc) ??
+    toCleanString(supplier?.RNC) ??
     toCleanString(supplier?.identification?.number) ??
+    toCleanString(supplier?.identificationNumber) ??
+    toCleanString(supplier?.taxId) ??
     toCleanString(supplier?.personalID) ??
     toCleanString(supplier?.personalId) ??
     null
   );
+};
+
+const mergeCounterpartyProfile = (record, profile) => {
+  if (!profile) return record;
+
+  const counterpartyId = record?.counterparty?.id ?? resolveCounterpartyId(profile);
+  const currentIdentification = toCleanString(
+    record?.counterparty?.identification?.number,
+  );
+  const profileIdentification = resolveCounterpartyIdentificationNumber(profile);
+
+  if (currentIdentification || !profileIdentification) {
+    return {
+      ...record,
+      counterparty: {
+        ...(isRecord(record?.counterparty) ? record.counterparty : {}),
+        id: counterpartyId ?? null,
+        identification: {
+          ...(isRecord(record?.counterparty?.identification)
+            ? record.counterparty.identification
+            : {}),
+          number: currentIdentification ?? null,
+        },
+      },
+      supplierId: record?.supplierId ?? counterpartyId ?? null,
+    };
+  }
+
+  return {
+    ...record,
+    counterparty: {
+      ...(isRecord(record?.counterparty) ? record.counterparty : {}),
+      id: counterpartyId ?? null,
+      identification: {
+        ...(isRecord(record?.counterparty?.identification)
+          ? record.counterparty.identification
+          : {}),
+        number: profileIdentification,
+      },
+    },
+    supplierId: record?.supplierId ?? counterpartyId ?? null,
+  };
 };
 
 const resolvePurchaseIssuedAt = (purchaseData) =>
@@ -213,6 +282,20 @@ const resolveExpenseIssuedAt = (expenseData) =>
   toDate(expenseData?.dates?.expenseDate) ??
   toDate(expenseData?.createdAt);
 
+const resolvePurchaseDocumentType = (purchaseData) => {
+  const explicitType =
+    toCleanString(purchaseData?.documentType) ??
+    toCleanString(purchaseData?.financialType) ??
+    toCleanString(purchaseData?.purchaseNature);
+
+  if (explicitType) return explicitType;
+
+  return Array.isArray(purchaseData?.replenishments) &&
+    purchaseData.replenishments.length
+    ? 'inventory'
+    : null;
+};
+
 export const mapPurchaseDocToDgii606Record = ({
   businessId,
   purchaseId,
@@ -220,14 +303,11 @@ export const mapPurchaseDocToDgii606Record = ({
 }) => {
   const purchaseData = resolvePurchasePayload(purchaseDoc);
   const issuedAt = resolvePurchaseIssuedAt(purchaseData);
-  const supplierId =
-    toCleanString(purchaseData?.supplierId) ??
-    toCleanString(purchaseData?.providerId) ??
-    toCleanString(purchaseData?.provider?.id) ??
-    null;
+  const supplierId = resolveCounterpartyId(purchaseData);
   const ncf =
     toCleanString(purchaseData?.taxReceipt?.ncf) ??
     toCleanString(purchaseData?.invoice?.ncf) ??
+    toCleanString(purchaseData?.proofOfPurchase) ??
     toCleanString(purchaseData?.ncf) ??
     null;
   const total =
@@ -240,11 +320,7 @@ export const mapPurchaseDocToDgii606Record = ({
     toFiniteNumber(purchaseData?.totals?.tax) ??
     toFiniteNumber(purchaseData?.totalTaxes?.value) ??
     0;
-  const documentType =
-    toCleanString(purchaseData?.documentType) ??
-    toCleanString(purchaseData?.financialType) ??
-    toCleanString(purchaseData?.purchaseNature) ??
-    null;
+  const documentType = resolvePurchaseDocumentType(purchaseData);
   const expenseType =
     toCleanString(purchaseData?.classification?.dgii606ExpenseType) ??
     toCleanString(purchaseData?.expenseType) ??
@@ -297,11 +373,7 @@ export const mapExpenseDocToDgii606Record = ({
 }) => {
   const expenseData = resolveExpensePayload(expenseDoc);
   const issuedAt = resolveExpenseIssuedAt(expenseData);
-  const supplierId =
-    toCleanString(expenseData?.supplierId) ??
-    toCleanString(expenseData?.providerId) ??
-    toCleanString(expenseData?.provider?.id) ??
-    null;
+  const supplierId = resolveCounterpartyId(expenseData);
   const ncf =
     toCleanString(expenseData?.taxReceipt?.ncf) ??
     toCleanString(expenseData?.invoice?.ncf) ??
@@ -384,7 +456,9 @@ export const mapAccountsPayablePaymentDocToDgii606Record = ({
     metadata: {
       recordId: paymentId,
       sourcePath: `businesses/${businessId}/accountsPayablePayments/${paymentId}`,
-      appliedCreditNotes: Array.isArray(paymentData?.metadata?.appliedCreditNotes)
+      appliedCreditNotes: Array.isArray(
+        paymentData?.metadata?.appliedCreditNotes,
+      )
         ? paymentData.metadata.appliedCreditNotes
         : [],
     },
@@ -398,11 +472,73 @@ const toRecordPeriodKey = (record) => {
   return issuedAt?.slice(0, 7) ?? null;
 };
 
-const loadLinkedPurchasesById = async ({
-  businessId,
-  payments,
-  firestore,
-}) => {
+const loadProviderProfilesById = async ({ businessId, records, firestore }) => {
+  const providerIds = Array.from(
+    new Set(
+      records
+        .map((record) => resolveCounterpartyId(record))
+        .filter(Boolean),
+    ),
+  );
+
+  if (!providerIds.length || typeof firestore?.doc !== 'function') {
+    return {
+      providerProfilesById: {},
+      sourceSnapshot: {
+        recordsRequested: providerIds.length,
+        recordsResolved: 0,
+        recordsMissing: providerIds.length,
+      },
+    };
+  }
+
+  const loadedEntries = await Promise.all(
+    providerIds.map(async (providerId) => {
+      const ref = firestore.doc(
+        `businesses/${businessId}/providers/${providerId}`,
+      );
+      const snap = await ref.get();
+      if (!snap?.exists) {
+        return {
+          providerId,
+          exists: false,
+          record: null,
+        };
+      }
+
+      return {
+        providerId,
+        exists: true,
+        record: snap.data(),
+      };
+    }),
+  );
+
+  const providerProfilesById = Object.fromEntries(
+    loadedEntries
+      .filter((entry) => entry.exists && entry.record)
+      .map((entry) => [entry.providerId, entry.record]),
+  );
+  const recordsResolved = loadedEntries.filter((entry) => entry.exists).length;
+
+  return {
+    providerProfilesById,
+    sourceSnapshot: {
+      recordsRequested: providerIds.length,
+      recordsResolved,
+      recordsMissing: providerIds.length - recordsResolved,
+    },
+  };
+};
+
+const enrichRecordsWithProviderProfiles = (records, providerProfilesById) =>
+  records.map((record) => {
+    const providerId = resolveCounterpartyId(record);
+    const providerProfile = providerId ? providerProfilesById[providerId] : null;
+    return mergeCounterpartyProfile(record, providerProfile);
+  });
+
+const loadLinkedPurchasesById = async ({ businessId, payments, firestore }) => {
   const purchaseIds = Array.from(
     new Set(
       payments
@@ -424,7 +560,9 @@ const loadLinkedPurchasesById = async ({
 
   const loadedEntries = await Promise.all(
     purchaseIds.map(async (purchaseId) => {
-      const ref = firestore.doc(`businesses/${businessId}/purchases/${purchaseId}`);
+      const ref = firestore.doc(
+        `businesses/${businessId}/purchases/${purchaseId}`,
+      );
       const snap = await ref.get();
       if (!snap?.exists) {
         return {
@@ -516,8 +654,11 @@ export const buildDgii606ValidationPreview = async ({
     throw new Error('businessId es requerido para validar DGII_606');
   }
 
-  const { periodKey: normalizedPeriodKey, start, endExclusive } =
-    resolveMonthlyPeriodRange(periodKey);
+  const {
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+  } = resolveMonthlyPeriodRange(periodKey);
 
   const purchasesRef = firestore.collection(
     `businesses/${normalizedBusinessId}/purchases`,
@@ -575,14 +716,40 @@ export const buildDgii606ValidationPreview = async ({
     ),
   );
 
+  const {
+    providerProfilesById,
+    sourceSnapshot: providerProfilesSnapshot,
+  } = await loadProviderProfilesById({
+    businessId: normalizedBusinessId,
+    records: [
+      ...purchaseRecords.included,
+      ...purchaseRecords.excluded,
+      ...expenseRecords.included,
+      ...expenseRecords.excluded,
+    ],
+    firestore,
+  });
+
   const datasets = {
-    purchases: purchaseRecords.included,
-    expenses: expenseRecords.included,
+    purchases: enrichRecordsWithProviderProfiles(
+      purchaseRecords.included,
+      providerProfilesById,
+    ),
+    expenses: enrichRecordsWithProviderProfiles(
+      expenseRecords.included,
+      providerProfilesById,
+    ),
     accountsPayablePayments: paymentRecords.included,
   };
   const excludedRecords = {
-    purchases: purchaseRecords.excluded,
-    expenses: expenseRecords.excluded,
+    purchases: enrichRecordsWithProviderProfiles(
+      purchaseRecords.excluded,
+      providerProfilesById,
+    ),
+    expenses: enrichRecordsWithProviderProfiles(
+      expenseRecords.excluded,
+      providerProfilesById,
+    ),
     accountsPayablePayments: paymentRecords.excluded,
   };
 
@@ -632,6 +799,7 @@ export const buildDgii606ValidationPreview = async ({
         recordsExcluded: excludedRecords.accountsPayablePayments.length,
       },
       linkedPurchases: linkedPurchasesSnapshot,
+      providerProfiles: providerProfilesSnapshot,
     },
     sourceRecords: {
       purchases: buildSourceRecordsSnapshot(datasets.purchases),

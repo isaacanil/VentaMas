@@ -24,29 +24,6 @@
       } from '/src/utils/reactScan.ts';
 
       const startApp = async () => {
-        // Probe de emuladores antes de iniciar la app
-        if (import.meta.env.DEV) {
-          const host =
-            import.meta.env.VITE_FIREBASE_EMULATOR_HOST || '127.0.0.1';
-          const port = import.meta.env.VITE_FIRESTORE_EMULATOR_PORT || 8081;
-
-          try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 120);
-            // Intentamos un fetch simple al puerto de Firestore
-            await fetch(`http://${host}:${port}`, {
-              mode: 'no-cors',
-              signal: controller.signal,
-            });
-            clearTimeout(id);
-            window.__EMULATORS_ALIVE__ = true;
-          } catch (e) {
-            console.warn(
-              '[Emulator Probe] No se detectan emuladores en ejecución. Usando Firebase Real.',
-            );
-            window.__EMULATORS_ALIVE__ = false;
-          }
-        }
         return import('/src/main.tsx');
       };
 

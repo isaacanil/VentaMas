@@ -65,6 +65,7 @@ export default function AccountingWorkspace() {
     periodLoading,
     periodOptions,
     postingAccounts,
+    postingProfiles,
     postingProfilesError,
     postingProfilesLoading,
     reversePostedEntry,
@@ -118,6 +119,13 @@ export default function AccountingWorkspace() {
     }
   })();
 
+  const setupLoaded =
+    !chartLoading && !postingProfilesLoading && !configLoading;
+  const setupIncomplete =
+    accountingEnabled &&
+    setupLoaded &&
+    (chartOfAccounts.length === 0 || postingProfiles.length === 0);
+
   const notices = [
     !isAccountingRolloutBusiness ? (
       <Alert
@@ -137,6 +145,15 @@ export default function AccountingWorkspace() {
         description={
           configError ?? chartError ?? postingProfilesError ?? 'Error de carga.'
         }
+      />
+    ) : null,
+    setupIncomplete ? (
+      <Alert
+        key="setup-incomplete"
+        type="warning"
+        showIcon
+        message="Contabilidad habilitada sin base contable completa."
+        description="Completa el catalogo de cuentas y los perfiles contables en Configuracion > Contabilidad. Mientras falte esta base, los documentos crean eventos, pero no generan asientos posteados para mayor y reportes."
       />
     ) : null,
   ].filter(Boolean);

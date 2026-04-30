@@ -10,12 +10,7 @@ import '@/firebase/firebaseconfig';
 import { AntConfigProvider } from '@/ant/AntConfigProvider';
 import App from '@/App';
 import { injectTokens } from '@/design-system';
-import '@/styles/normalize/normalize.css';
-import '@/index.css';
-import '@/variable.css';
-import '@/styles/typography/typographyStyle.css';
-import '@/styles/theme.css';
-import '@/styles/darkTheme.css';
+import '@/styles/global.css';
 
 injectTokens();
 import { store } from '@/app/store';

@@ -160,11 +160,14 @@ export const InvoiceForm = () => {
   const handleOpenAccountingEntry = () => {
     if (!invoice?.id) return;
 
-    openAccountingEntry({
+    const opened = openAccountingEntry({
       eventType: 'invoice.committed',
       sourceDocumentId: invoice.id,
       sourceDocumentType: 'invoice',
     });
+    if (opened) {
+      dispatch(closeInvoiceForm({ clear: true }));
+    }
   };
 
   const handleAfterOpenChange = (open: boolean) => {

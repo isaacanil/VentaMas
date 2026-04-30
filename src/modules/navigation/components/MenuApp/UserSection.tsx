@@ -1,13 +1,14 @@
 import { SwapOutlined } from '@/constants/icons/antd';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AlertDialog, Button } from '@heroui/react';
 import { Tag } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { useDialog } from '@/Context/Dialog/useDialog';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import {
   logout,
@@ -37,29 +38,21 @@ interface UserSectionProps {
 export const UserSection = ({ user: userProp }: UserSectionProps) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { onClose, setDialogConfirm } = useDialog();
   const business = useSelector(selectBusinessData) as BusinessData | null;
   const storeUser = useSelector(selectUser) as MenuUser | null;
   const user = userProp ?? storeUser;
 
-  const handleLogout = () => {
-    dispatch(logout());
-    fbSignOut();
-    navigate('/login', { replace: true });
-  };
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const logoutOfApp = () => {
-    // dispatch to the store with the logout action
-    setDialogConfirm({
-      title: 'Cerrar sesión',
-      isOpen: true,
-      type: 'warning',
-      message: '¿Está seguro que desea cerrar sesión?',
-      onConfirm: () => {
-        handleLogout();
-        onClose();
-      },
-    });
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fbSignOut();
+    } finally {
+      dispatch(logout());
+      navigate('/login', { replace: true });
+    }
   };
   const getDisplayName = (user: MenuUser | null | undefined) => {
     return user?.displayName && user.displayName.trim() !== ''
@@ -88,6 +81,7 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
   const isTemporaryMode = useSelector(selectIsTemporaryMode);
 
   return (
+    <>
     <Container role="group" aria-label="Usuario">
       <Left>
         <AvatarCircle aria-hidden>
@@ -117,12 +111,52 @@ export const UserSection = ({ user: userProp }: UserSectionProps) => {
           type="button"
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
-          onClick={logoutOfApp}
+          onClick={() => setConfirmOpen(true)}
         >
           <FontAwesomeIcon icon={faArrowRightFromBracket} />
         </IconButton>
       </Action>
     </Container>
+
+      {createPortal(
+      <AlertDialog.Backdrop
+        isOpen={confirmOpen}
+        onOpenChange={(open) => {
+          if (!isLoggingOut) setConfirmOpen(open);
+        }}
+        className="z-[9999]"
+        isDismissable={!isLoggingOut}
+        isKeyboardDismissDisabled={isLoggingOut}
+      >
+        <AlertDialog.Container>
+          <AlertDialog.Dialog className="sm:max-w-[380px]">
+            <AlertDialog.Header>
+              <AlertDialog.Icon status="danger" />
+              <AlertDialog.Heading>¿Cerrar sesión?</AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body>
+              <p>
+                Tu sesión actual será cerrada y tendrás que iniciar sesión
+                nuevamente.
+              </p>
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button slot="close" variant="tertiary" isDisabled={isLoggingOut}>
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                isDisabled={isLoggingOut}
+                onPress={handleLogout}
+              >
+                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
+      , document.body)}
+    </>
   );
 };
 

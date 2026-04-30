@@ -7,7 +7,7 @@ import {
 } from '@/firebase/businessInfo/fbGetBusinessInfo';
 import { fbStopDeveloperBusinessImpersonation } from '@/firebase/Auth/fbAuthV2/fbSwitchDeveloperBusiness';
 
-import { setBusiness, type Business } from './businessSlice';
+import { setBusiness, setBusinessLoading, type Business } from './businessSlice';
 import {
   returnToOriginalBusiness,
   selectOriginalBusinessId,
@@ -31,6 +31,7 @@ export const useBusinessDataConfig = () => {
       dispatch(setBusiness(null));
       return;
     }
+    dispatch(setBusinessLoading(businessID));
 
     const normalizeBusiness = (
       business: BusinessInfoData | null,

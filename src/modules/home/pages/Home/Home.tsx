@@ -4,7 +4,10 @@ import { shallowEqual, useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { selectBusinessData } from '@/features/auth/businessSlice';
+import {
+  selectBusinessData,
+  selectBusinessLoading,
+} from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { MenuWebsite } from '@/modules/home/components/MenuWebsite/MenuWebsite';
 import { normalizeAvailableBusinesses } from '@/modules/auth/utils/businessContext';
@@ -38,6 +41,7 @@ type HomeUserMeta = {
   authReady: boolean;
   hasUser: boolean;
   role: UserRoleLike | null;
+  activeBusinessId: string | null;
   businessHasOwners: boolean | null;
   isDeveloper: boolean;
   canIssueOwnershipClaim: boolean;
@@ -58,6 +62,7 @@ const selectHomeUserMeta = (state: RootState): HomeUserMeta => {
       authReady: Boolean(state.user?.authReady),
       hasUser: false,
       role: null,
+      activeBusinessId: null,
       businessHasOwners: null,
       isDeveloper: false,
       canIssueOwnershipClaim: false,
@@ -70,6 +75,7 @@ const selectHomeUserMeta = (state: RootState): HomeUserMeta => {
       authReady: Boolean(state.user?.authReady),
       hasUser: false,
       role: null,
+      activeBusinessId: null,
       businessHasOwners: null,
       isDeveloper: false,
       canIssueOwnershipClaim: false,
@@ -79,6 +85,11 @@ const selectHomeUserMeta = (state: RootState): HomeUserMeta => {
   }
 
   const role = user.role ?? null;
+  const activeBusinessId =
+    (typeof user.activeBusinessId === 'string' && user.activeBusinessId.trim()) ||
+    (typeof user.businessId === 'string' && user.businessId.trim()) ||
+    (typeof user.businessID === 'string' && user.businessID.trim()) ||
+    null;
   const businessHasOwners =
     typeof user.businessHasOwners === 'boolean'
       ? user.businessHasOwners
@@ -96,6 +107,7 @@ const selectHomeUserMeta = (state: RootState): HomeUserMeta => {
     authReady: Boolean(state.user?.authReady),
     hasUser: true,
     role,
+    activeBusinessId,
     businessHasOwners,
     isDeveloper,
     canIssueOwnershipClaim,
@@ -114,6 +126,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   const {
     authReady,
     hasUser,
+    activeBusinessId,
     businessHasOwners,
     isDeveloper,
     canIssueOwnershipClaim,
@@ -124,8 +137,12 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
     shallowEqual,
   );
   const business = useSelector(selectBusinessData, shallowEqual);
+  const businessLoading = useSelector(selectBusinessLoading);
   const user = useSelector(selectUser, shallowEqual);
   const shouldForceOpenBusinessManager = hasBusinessManagerQuery(location.search);
+  const isBusinessContextPending =
+    Boolean(activeBusinessId) &&
+    (businessLoading || business?.id !== activeBusinessId);
 
   const handleBusinessManagerOpenChange = useCallback(
     (isOpen: boolean) => {
@@ -138,7 +155,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
     [location.pathname, location.search, navigate, shouldForceOpenBusinessManager],
   );
 
-  if (!authReady || !hasUser) {
+  if (!authReady || !hasUser || isBusinessContextPending) {
     return (
       <LoadingContainer>
         <Spin size="large" />

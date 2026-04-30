@@ -59,6 +59,10 @@ export const resolveAccountingOriginTarget = (
     toCleanString(event?.sourceDocumentId) ??
     toCleanString(journalEntry?.sourceId) ??
     toCleanString(event?.sourceId);
+  const sourceRecordId =
+    toCleanString(journalEntry?.sourceId) ??
+    toCleanString(event?.sourceId) ??
+    sourceDocumentId;
 
   if (!sourceDocumentType) {
     return null;
@@ -67,10 +71,10 @@ export const resolveAccountingOriginTarget = (
   switch (sourceDocumentType) {
     case 'invoice':
     case 'invoicepos':
-      return sourceDocumentId
+      return sourceRecordId
         ? {
             kind: 'invoice-preview',
-            documentId: sourceDocumentId,
+            documentId: sourceRecordId,
             label: 'Ver origen',
           }
         : null;

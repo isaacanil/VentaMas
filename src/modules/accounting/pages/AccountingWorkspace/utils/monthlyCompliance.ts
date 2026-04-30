@@ -1,10 +1,16 @@
-import { buildAccountingPeriodKey, toDateOrNull } from '@/utils/accounting/journalEntries';
+import {
+  buildAccountingPeriodKey,
+  toDateOrNull,
+} from '@/utils/accounting/journalEntries';
 
 import type { MonthlyComplianceReportCode } from '@/firebase/accounting/fbRunMonthlyComplianceReport';
 
 const runDateFormatter = new Intl.DateTimeFormat('es-DO', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
 });
 
 const toCleanString = (value: unknown): string | null => {
@@ -107,7 +113,10 @@ export const normalizeMonthlyComplianceRun = (
       ),
       issueSummary: {
         total: Math.max(0, toFiniteNumber(rawIssueSummary.total)),
-        bySeverity: asRecord(rawIssueSummary.bySeverity) as Record<string, number>,
+        bySeverity: asRecord(rawIssueSummary.bySeverity) as Record<
+          string,
+          number
+        >,
         bySource: asRecord(rawIssueSummary.bySource) as Record<string, number>,
         byCode: asRecord(rawIssueSummary.byCode) as Record<string, number>,
       },
@@ -116,7 +125,8 @@ export const normalizeMonthlyComplianceRun = (
             const sourceSummary = asRecord(summary);
             return {
               sourceId: toCleanString(sourceSummary.sourceId) ?? 'unknown',
-              ownerModule: toCleanString(sourceSummary.ownerModule) ?? 'unknown',
+              ownerModule:
+                toCleanString(sourceSummary.ownerModule) ?? 'unknown',
               collectionPath:
                 toCleanString(sourceSummary.collectionPath) ?? 'unknown',
               recordsScanned: Math.max(
@@ -136,7 +146,9 @@ export const normalizeMonthlyComplianceRun = (
       ? record.issues.map((issue) => asRecord(issue))
       : [],
     sourceSnapshot: {
-      sourceSnapshots: asRecord(asRecord(record.sourceSnapshot).sourceSnapshots),
+      sourceSnapshots: asRecord(
+        asRecord(record.sourceSnapshot).sourceSnapshots,
+      ),
       sourceRecords: asRecord(asRecord(record.sourceSnapshot).sourceRecords),
     },
   };

@@ -1,4 +1,4 @@
-import { Modal, Tooltip } from 'antd';
+import { Button, Chip, ListBox, Modal, Select, Tooltip } from '@heroui/react';
 import type { JSX } from 'react';
 import styled from 'styled-components';
 
@@ -45,180 +45,201 @@ export const BusinessWorkspaceModal = ({
 
   return (
     <>
-      <Modal
-        open={isOpen}
-        onCancel={onClose}
-        footer={null}
-        destroyOnHidden
-        title={<Title>Administrar negocios</Title>}
-        style={{ top: 10 }}
-        width={820}
+      <Modal.Backdrop
+        isOpen={isOpen}
+        onOpenChange={(open) => !open && onClose()}
+        className="z-[400]"
       >
-        <Body>
-          {SHOW_JOIN_BY_CODE && inviteFeedback ? (
-            <JoinByCodeFeedback $type={inviteFeedback.type}>
-              {inviteFeedback.message}
-            </JoinByCodeFeedback>
-          ) : null}
-
-          {hasBusinesses || SHOW_JOIN_BY_CODE || canAccessBusinessCreation ? (
-            <Toolbar>
-              {hasBusinesses ? (
-                <FilterGroup role="tablist" aria-label="Filtro de negocios">
-                  <FilterButton
-                    type="button"
-                    role="tab"
-                    aria-selected={businessFilter === 'active'}
-                    $active={businessFilter === 'active'}
-                    onClick={() => setBusinessFilter('active')}
-                  >
-                    Activos ({activeBusinessesCount})
-                  </FilterButton>
-                  <FilterButton
-                    type="button"
-                    role="tab"
-                    aria-selected={businessFilter === 'inactive'}
-                    $active={businessFilter === 'inactive'}
-                    onClick={() => setBusinessFilter('inactive')}
-                  >
-                    No activos ({inactiveBusinessesCount})
-                  </FilterButton>
-                </FilterGroup>
-              ) : (
-                <ToolbarSpacer aria-hidden="true" />
-              )}
-
-              <ToolbarActions>
-                {SHOW_JOIN_BY_CODE ? (
-                  <ActionPrimary
-                    type="button"
-                    onClick={() => setInviteModalOpen(true)}
-                  >
-                    Unirme con código
-                  </ActionPrimary>
+        <Modal.Container placement="top" className="max-w-[820px] mt-2.5">
+          <Modal.Dialog>
+            <Modal.Header>
+              <Modal.Heading>Administrar negocios</Modal.Heading>
+              <Modal.CloseTrigger />
+            </Modal.Header>
+            <Modal.Body>
+              <Body>
+                {SHOW_JOIN_BY_CODE && inviteFeedback ? (
+                  <JoinByCodeFeedback $type={inviteFeedback.type}>
+                    {inviteFeedback.message}
+                  </JoinByCodeFeedback>
                 ) : null}
 
-                {canAccessBusinessCreation ? (
-                  <Tooltip title={createBusinessTooltip}>
-                    <ActionTooltipAnchor>
-                      <ActionPrimary
-                        type="button"
-                        onClick={handleCreateBusiness}
-                        disabled={!canCreateBusiness}
+                {hasBusinesses || SHOW_JOIN_BY_CODE || canAccessBusinessCreation ? (
+                  <Toolbar>
+                    {hasBusinesses ? (
+                      <Select
+                        selectedKey={businessFilter}
+                        onSelectionChange={(key) =>
+                          setBusinessFilter(key as typeof businessFilter)
+                        }
+                        aria-label="Filtro de negocios"
+                        className="w-44"
                       >
-                        + Crear negocio
-                      </ActionPrimary>
-                    </ActionTooltipAnchor>
-                  </Tooltip>
-                ) : null}
-              </ToolbarActions>
-            </Toolbar>
-          ) : null}
+                        <Select.Trigger>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            <ListBox.Item id="active" textValue="Activos">
+                              Activos ({activeBusinessesCount})
+                            </ListBox.Item>
+                            <ListBox.Item id="inactive" textValue="No activos">
+                              No activos ({inactiveBusinessesCount})
+                            </ListBox.Item>
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    ) : (
+                      <ToolbarSpacer aria-hidden="true" />
+                    )}
 
-          {!hasBusinesses ? (
-            <EmptyState>
-              <EmptyTitle>No tienes negocios disponibles</EmptyTitle>
-              <EmptyText>Crea uno nuevo para empezar.</EmptyText>
-            </EmptyState>
-          ) : !visibleBusinessCards.length ? (
-            <EmptyState>
-              <EmptyTitle>
-                {businessFilter === 'active'
-                  ? 'No hay negocios activos'
-                  : 'No hay negocios no activos'}
-              </EmptyTitle>
-              <EmptyText>
-                {businessFilter === 'active'
-                  ? 'Selecciona "No activos" para ver los demás negocios.'
-                  : 'Todos tus negocios actuales están activos.'}
-              </EmptyText>
-            </EmptyState>
-          ) : (
-            <BusinessGrid>
-              {visibleBusinessCards.map(
-                ({
-                  business,
-                  businessDevIdLabel,
-                  displayName,
-                  isCurrent,
-                  isSelectingCard,
-                  roleLabel,
-                }) => (
-                  <BusinessCard
-                    key={business.businessId}
-                    type="button"
-                    onClick={() => handleSelectBusiness(business)}
-                    disabled={!business.isActive || isSelectingBusiness}
-                    $active={isCurrent}
-                    $disabled={!business.isActive || isSelectingBusiness}
-                    $loading={isSelectingCard}
-                  >
-                    <CardHeader>
-                      <BusinessTitle>
-                        <BusinessName title={displayName}>{displayName}</BusinessName>
-                        {businessDevIdLabel ? (
-                          <BusinessId>{businessDevIdLabel}</BusinessId>
-                        ) : null}
-                      </BusinessTitle>
-                      {!business.isActive ? <InactiveBadge>No activo</InactiveBadge> : null}
-                    </CardHeader>
-                    <MetaRow>
-                      <MetaLabel>Rol</MetaLabel>
-                      <MetaValue>{roleLabel}</MetaValue>
-                    </MetaRow>
-                  </BusinessCard>
-                ),
-              )}
-            </BusinessGrid>
-          )}
-        </Body>
-      </Modal>
+                    <ToolbarActions>
+                      {SHOW_JOIN_BY_CODE ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onPress={() => setInviteModalOpen(true)}
+                        >
+                          Unirme con código
+                        </Button>
+                      ) : null}
+
+                      {canAccessBusinessCreation ? (
+                        <Tooltip>
+                          <Tooltip.Trigger>
+                            <span className="inline-flex">
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onPress={handleCreateBusiness}
+                                isDisabled={!canCreateBusiness}
+                              >
+                                + Crear negocio
+                              </Button>
+                            </span>
+                          </Tooltip.Trigger>
+                          {createBusinessTooltip ? (
+                            <Tooltip.Content>{createBusinessTooltip}</Tooltip.Content>
+                          ) : null}
+                        </Tooltip>
+                      ) : null}
+                    </ToolbarActions>
+                  </Toolbar>
+                ) : null}
+
+                {!hasBusinesses ? (
+                  <EmptyState>
+                    <EmptyTitle>No tienes negocios disponibles</EmptyTitle>
+                    <EmptyText>Crea uno nuevo para empezar.</EmptyText>
+                  </EmptyState>
+                ) : !visibleBusinessCards.length ? (
+                  <EmptyState>
+                    <EmptyTitle>
+                      {businessFilter === 'active'
+                        ? 'No hay negocios activos'
+                        : 'No hay negocios no activos'}
+                    </EmptyTitle>
+                    <EmptyText>
+                      {businessFilter === 'active'
+                        ? 'Selecciona "No activos" para ver los demás negocios.'
+                        : 'Todos tus negocios actuales están activos.'}
+                    </EmptyText>
+                  </EmptyState>
+                ) : (
+                  <BusinessGrid>
+                    {visibleBusinessCards.map(
+                      ({
+                        business,
+                        businessDevIdLabel,
+                        displayName,
+                        isCurrent,
+                        isSelectingCard,
+                        roleLabel,
+                      }) => (
+                        <BusinessCard
+                          key={business.businessId}
+                          type="button"
+                          onClick={() => handleSelectBusiness(business)}
+                          disabled={!business.isActive || isSelectingBusiness}
+                          $active={isCurrent}
+                          $disabled={!business.isActive || isSelectingBusiness}
+                          $loading={isSelectingCard}
+                        >
+                          <CardHeader>
+                            <BusinessTitle>
+                              <BusinessName title={displayName}>{displayName}</BusinessName>
+                              {businessDevIdLabel ? (
+                                <BusinessId>{businessDevIdLabel}</BusinessId>
+                              ) : null}
+                            </BusinessTitle>
+                            {!business.isActive ? (
+                              <Chip size="sm" variant="outline">
+                                <Chip.Label>No activo</Chip.Label>
+                              </Chip>
+                            ) : null}
+                          </CardHeader>
+                          <MetaRow>
+                            <MetaLabel>Rol</MetaLabel>
+                            <MetaValue>{roleLabel}</MetaValue>
+                          </MetaRow>
+                        </BusinessCard>
+                      ),
+                    )}
+                  </BusinessGrid>
+                )}
+              </Body>
+            </Modal.Body>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
 
       {SHOW_JOIN_BY_CODE ? (
-        <Modal
-          title="Unirme con código"
-          open={inviteModalOpen}
-          onCancel={() => setInviteModalOpen(false)}
-          footer={null}
-          destroyOnHidden
+        <Modal.Backdrop
+          isOpen={inviteModalOpen}
+          onOpenChange={(open) => !open && setInviteModalOpen(false)}
+          className="z-[500]"
         >
-          <JoinByCodeModalForm onSubmit={handleRedeemInvite}>
-            <JoinByCodeRow>
-              <JoinByCodeInput
-                type="text"
-                inputMode="text"
-                value={inviteCode}
-                onChange={handleInviteCodeChange}
-                placeholder="VM-XXXXXX..."
-                autoComplete="off"
-                maxLength={40}
-              />
-              <JoinByCodeButton
-                type="submit"
-                disabled={redeemingInvite || !inviteCode.trim()}
-              >
-                {redeemingInvite ? 'Validando...' : 'Ingresar'}
-              </JoinByCodeButton>
-            </JoinByCodeRow>
-            {inviteFeedback ? (
-              <JoinByCodeFeedback $type={inviteFeedback.type}>
-                {inviteFeedback.message}
-              </JoinByCodeFeedback>
-            ) : null}
-          </JoinByCodeModalForm>
-        </Modal>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>Unirme con código</Modal.Heading>
+                <Modal.CloseTrigger />
+              </Modal.Header>
+              <Modal.Body>
+                <JoinByCodeModalForm onSubmit={handleRedeemInvite}>
+                  <JoinByCodeRow>
+                    <JoinByCodeInput
+                      type="text"
+                      inputMode="text"
+                      value={inviteCode}
+                      onChange={handleInviteCodeChange}
+                      placeholder="VM-XXXXXX..."
+                      autoComplete="off"
+                      maxLength={40}
+                    />
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      isDisabled={redeemingInvite || !inviteCode.trim()}
+                    >
+                      {redeemingInvite ? 'Validando...' : 'Ingresar'}
+                    </Button>
+                  </JoinByCodeRow>
+                  {inviteFeedback ? (
+                    <JoinByCodeFeedback $type={inviteFeedback.type}>
+                      {inviteFeedback.message}
+                    </JoinByCodeFeedback>
+                  ) : null}
+                </JoinByCodeModalForm>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       ) : null}
     </>
   );
 };
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
-  letter-spacing: -0.01em;
-`;
 
 const Body = styled.div`
   display: flex;
@@ -246,35 +267,6 @@ const ToolbarActions = styled.div`
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-left: auto;
-`;
-
-const ActionPrimary = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.25rem;
-  padding: 0 1.25rem;
-  border: none;
-  border-radius: 8px;
-  background: #0f172a;
-  color: #f8fafc;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: #334155;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-`;
-
-const ActionTooltipAnchor = styled.span`
-  display: inline-flex;
 `;
 
 const EmptyState = styled.div`
@@ -307,33 +299,6 @@ const BusinessGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
-`;
-
-const FilterGroup = styled.div`
-  display: inline-flex;
-  width: fit-content;
-  gap: 0.5rem;
-  padding: 0.35rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #f8fafc;
-`;
-
-const FilterButton = styled.button<{ $active: boolean }>`
-  height: 2rem;
-  padding: 0 0.9rem;
-  border: 1px solid ${({ $active }) => ($active ? '#0f172a' : 'transparent')};
-  border-radius: 8px;
-  background: ${({ $active }) => ($active ? '#0f172a' : 'transparent')};
-  color: ${({ $active }) => ($active ? '#f8fafc' : '#475569')};
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: ${({ $active }) => ($active ? '#f8fafc' : '#0f172a')};
-  }
 `;
 
 const BusinessCard = styled.button<{
@@ -408,18 +373,6 @@ const BusinessId = styled.span`
   color: #64748b;
 `;
 
-const InactiveBadge = styled.span`
-  display: inline-flex;
-  flex-shrink: 0;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid #cbd5e1;
-  color: #475569;
-  background: #f1f5f9;
-  font-size: 0.72rem;
-  font-weight: 600;
-`;
-
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
@@ -473,32 +426,6 @@ const JoinByCodeInput = styled.input`
 
   &::placeholder {
     color: #94a3b8;
-  }
-`;
-
-const JoinByCodeButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.75rem;
-  padding: 0 1.5rem;
-  border: none;
-  border-radius: 8px;
-  background: #0f172a;
-  color: #f8fafc;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &:hover:not(:disabled) {
-    background: #334155;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
   }
 `;
 

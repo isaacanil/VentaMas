@@ -205,7 +205,7 @@ export const runAccountingEventProjection = async ({
       status: 'projected',
       journalEntryId: normalizedEventId,
       reusedExistingEntry: true,
-      deadLetterId: normalizedEventId,
+      deadLetterId: null,
       lastError: null,
     };
   }
@@ -427,7 +427,7 @@ export const runAccountingEventProjection = async ({
     status: 'projected',
     journalEntryId: normalizedEventId,
     reusedExistingEntry: false,
-    deadLetterId: normalizedEventId,
+    deadLetterId: null,
     lastError: null,
   };
 };

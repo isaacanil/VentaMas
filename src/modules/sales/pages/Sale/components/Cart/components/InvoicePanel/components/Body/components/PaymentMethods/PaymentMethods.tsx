@@ -15,12 +15,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { icons } from '@/constants/icons/icons';
+import { selectBusinessData } from '@/features/auth/businessSlice';
 import { selectUser } from '@/features/auth/userSlice';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
 import { useAccountingBankingSettings } from '@/hooks/useAccountingBankPaymentPolicy';
 import { normalizeSupportedDocumentCurrency } from '@/utils/accounting/currencies';
 import { getPriceSymbolByCurrency } from '@/utils/format';
-import { useActiveBankAccounts } from '@/modules/expenses/pages/Expenses/ExpensesForm/hooks/useActiveBankAccounts';
+import { useActiveBankAccountsState } from '@/modules/expenses/pages/Expenses/ExpensesForm/hooks/useActiveBankAccounts';
 import {
   resolveConfiguredBankAccountId,
   resolveEffectiveBankAccountId,
@@ -71,6 +72,11 @@ export const PaymentMethods = () => {
     businessId?: string;
     activeBusinessId?: string;
   } | null;
+  const business = useSelector(selectBusinessData) as {
+    id?: string;
+    businessID?: string;
+    businessId?: string;
+  } | null;
   const cart = useSelector(selectCart) as CartState;
   const showCxcAutoRemovalNotification = useSelector(
     SelectCxcAutoRemovalNotification,
@@ -82,7 +88,13 @@ export const PaymentMethods = () => {
   );
   const totalPurchase = cartData?.totalPurchase?.value ?? 0;
   const businessId =
-    user?.businessID ?? user?.businessId ?? user?.activeBusinessId ?? null;
+    business?.id ??
+    business?.businessID ??
+    business?.businessId ??
+    user?.activeBusinessId ??
+    user?.businessId ??
+    user?.businessID ??
+    null;
   const isAccountingRolloutEnabled = useAccountingRolloutEnabled(
     businessId,
     Boolean(businessId),
@@ -91,26 +103,51 @@ export const PaymentMethods = () => {
     useAccountingBankingSettings(businessId, isAccountingRolloutEnabled);
   const isBankAccountsModuleEnabled =
     isAccountingRolloutEnabled && bankAccountsEnabled;
-  const bankAccounts = useActiveBankAccounts(
-    businessId,
-    isBankAccountsModuleEnabled,
-  );
+  const { loading: bankAccountsLoading, options: bankAccounts } =
+    useActiveBankAccountsState(businessId, isBankAccountsModuleEnabled);
   const activeBankAccountIds = useMemo(
     () => new Set(bankAccounts.map((bankAccount) => bankAccount.value)),
     [bankAccounts],
   );
-  const configuredBankAccountId = isBankAccountsModuleEnabled
-    ? resolveConfiguredBankAccountId({
-        policy: bankPaymentPolicy,
-        moduleKey: 'sales',
-        availableBankAccountIds: activeBankAccountIds,
-      })
-    : null;
-  const configuredBankAccountLabel =
-    configuredBankAccountId != null
-      ? (bankAccounts.find(
-          (bankAccount) => bankAccount.value === configuredBankAccountId,
-        )?.label ?? 'Cuenta bancaria configurada')
+  const configuredBankAccountByMethod = useMemo(() => {
+    if (!isBankAccountsModuleEnabled) {
+      return new Map<PaymentMethodKey, string | null>();
+    }
+
+    return new Map(
+      paymentMethods
+        .filter((method) => paymentMethodRequiresBankAccount(method.method))
+        .map((method) => [
+          method.method,
+          resolveConfiguredBankAccountId({
+            policy: bankPaymentPolicy,
+            moduleKey: 'sales',
+            method: method.method,
+            availableBankAccountIds: activeBankAccountIds,
+          }),
+        ]),
+    );
+  }, [
+    activeBankAccountIds,
+    bankPaymentPolicy,
+    isBankAccountsModuleEnabled,
+    paymentMethods,
+  ]);
+  const unresolvedBankAccountMethods = useMemo(
+    () =>
+      paymentMethods.filter(
+        (method) =>
+          method.status &&
+          isBankAccountsModuleEnabled &&
+          paymentMethodRequiresBankAccount(method.method) &&
+          !configuredBankAccountByMethod.get(method.method),
+      ),
+    [configuredBankAccountByMethod, isBankAccountsModuleEnabled, paymentMethods],
+  );
+  const getConfiguredBankAccountLabel = (bankAccountId: string | null) =>
+    bankAccountId != null
+      ? (bankAccounts.find((bankAccount) => bankAccount.value === bankAccountId)
+          ?.label ?? 'Cuenta bancaria configurada')
       : bankAccounts.length > 1
         ? 'Configura una cuenta bancaria en Ajustes > Contabilidad'
         : 'Sin cuenta bancaria activa configurada';
@@ -366,7 +403,9 @@ export const PaymentMethods = () => {
 
   return (
     <Container>
-      {isBankAccountsModuleEnabled && !bankAccounts.length ? (
+      {isBankAccountsModuleEnabled &&
+      !bankAccountsLoading &&
+      !bankAccounts.length ? (
         <Alert
           type="warning"
           showIcon
@@ -376,8 +415,9 @@ export const PaymentMethods = () => {
         />
       ) : null}
       {isBankAccountsModuleEnabled &&
+      !bankAccountsLoading &&
       bankAccounts.length > 1 &&
-      !configuredBankAccountId ? (
+      unresolvedBankAccountMethods.length > 0 ? (
         <Alert
           type="warning"
           showIcon
@@ -395,6 +435,11 @@ export const PaymentMethods = () => {
           const requiresBankAccount =
             isBankAccountsModuleEnabled &&
             paymentMethodRequiresBankAccount(method.method);
+          const configuredBankAccountId =
+            configuredBankAccountByMethod.get(method.method) ?? null;
+          const configuredBankAccountLabel = getConfiguredBankAccountLabel(
+            configuredBankAccountId,
+          );
           return (
             <MethodGrid key={method.method}>
               {/* Row 1: empty | label | empty */}

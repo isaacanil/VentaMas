@@ -18,15 +18,19 @@ const MANAGED_PORTS = [4000, 4400, 4500, 5001, 8081, 9099, 9150, 5173, 5174, 517
 const DEFAULT_PROJECT_ID = 'ventamaxpos';
 const DEFAULT_FIRESTORE_HOST = '127.0.0.1:8081';
 const DEFAULT_AUTH_HOST = '127.0.0.1:9099';
-const DEFAULT_START_TIMEOUT_MS = 90_000;
+const DEFAULT_START_TIMEOUT_MS = 240_000;
 const DEFAULT_POLL_INTERVAL_MS = 750;
 const DEFAULT_JAVA_HOME =
   'C:\\Tools\\microsoft-jdk-21.0.10-windows-x64\\jdk-21.0.10+7';
 
-const FIREBASE_BIN =
-  process.platform === 'win32'
-    ? path.resolve(process.cwd(), 'node_modules', '.bin', 'firebase.cmd')
-    : path.resolve(process.cwd(), 'node_modules', '.bin', 'firebase');
+const FIREBASE_CLI_JS = path.resolve(
+  process.cwd(),
+  'node_modules',
+  'firebase-tools',
+  'lib',
+  'bin',
+  'firebase.js',
+);
 
 const NPM_BIN = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const DEFAULT_OPENING_CASH = 2000;
@@ -168,8 +172,8 @@ const getActiveSessionInfo = async () => {
 };
 
 const ensureLocalBinaries = async () => {
-  if (!(await fileExists(FIREBASE_BIN))) {
-    throw new Error(`No encontre firebase local en ${FIREBASE_BIN}`);
+  if (!(await fileExists(FIREBASE_CLI_JS))) {
+    throw new Error(`No encontre firebase local en ${FIREBASE_CLI_JS}`);
   }
 };
 
@@ -406,12 +410,24 @@ const getManagedPidSet = async () => {
 
 const taskKillPid = async (pid) => {
   if (process.platform === 'win32') {
-    await runCommand({
-      command: 'taskkill',
-      args: ['/PID', String(pid), '/T', '/F'],
-      env: process.env,
-      label: `taskkill ${pid}`,
-    });
+    try {
+      await runCommand({
+        command: 'taskkill',
+        args: ['/PID', String(pid), '/T', '/F'],
+        env: process.env,
+        label: `taskkill ${pid}`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('no se encontró el proceso') ||
+        message.includes('no se encontr') ||
+        message.includes('not found')
+      ) {
+        return;
+      }
+      throw error;
+    }
     return;
   }
 
@@ -1098,8 +1114,8 @@ const startStack = async (flags) => {
   const startedAt = new Date().toISOString();
   let controlServer = null;
   const emulatorChild = spawnManagedChild({
-    command: FIREBASE_BIN,
-    args: emulatorArgs,
+    command: process.execPath,
+    args: [FIREBASE_CLI_JS, ...emulatorArgs],
     env,
     label: 'firebase emulators',
   });

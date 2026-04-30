@@ -1,4 +1,4 @@
-import { Input } from 'antd';
+import { InputGroup } from '@heroui/react';
 import {
   useEffect,
   useState,
@@ -279,16 +279,38 @@ export const MenuAppUI = ({
           {/* Input de búsqueda para desktop */}
           {setSearchData && (
             <SearchInputWrapper data-role="search-wrapper">
-              <Input
-                prefix={icons.operationModes.search}
-                placeholder={`Buscar ${displayName || sectionName || ''}...`}
-                value={desktopSearchValue}
-                onChange={handleDesktopSearchChange}
-                onPressEnter={flushSearchCommit}
-                onBlur={flushSearchCommit}
-                allowClear
-                style={{ width: '100%', maxWidth: 300 }}
-              />
+              <SearchInputGroup fullWidth>
+                <InputGroup.Prefix>
+                  {icons.operationModes.search}
+                </InputGroup.Prefix>
+                <InputGroup.Input
+                  type="search"
+                  placeholder={`Buscar ${displayName || sectionName || ''}...`}
+                  value={desktopSearchValue}
+                  onChange={handleDesktopSearchChange}
+                  onBlur={flushSearchCommit}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      flushSearchCommit();
+                    }
+                  }}
+                />
+                {desktopSearchValue && (
+                  <InputGroup.Suffix className="search-input-actions">
+                    <ClearSearchButton
+                      aria-label="Limpiar búsqueda"
+                      onClick={() => {
+                        clearSearchCommitTimer();
+                        setDesktopSearchValue('');
+                        commitSearchValue('');
+                      }}
+                      type="button"
+                    >
+                      ×
+                    </ClearSearchButton>
+                  </InputGroup.Suffix>
+                )}
+              </SearchInputGroup>
             </SearchInputWrapper>
           )}
         </Group>
@@ -438,6 +460,7 @@ const SearchInputWrapper = styled.div`
   display: flex;
   flex: 1 1 auto;
   min-width: 160px;
+  max-width: 300px;
   overflow: hidden;
   width: auto;
 
@@ -447,6 +470,43 @@ const SearchInputWrapper = styled.div`
 
   @media (width <= 768px) {
     display: none;
+  }
+`;
+
+const SearchInputGroup = styled(InputGroup)`
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+
+  .input-group__input,
+  [data-slot='input-group-input'] {
+    min-width: 0;
+    height: 100%;
+    font-size: 14px;
+  }
+
+  .search-input-actions,
+  .input-group__suffix {
+    height: 100%;
+    padding-right: 6px;
+  }
+`;
+
+const ClearSearchButton = styled.button`
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 16px;
+  line-height: 1;
+  color: currentColor;
+  cursor: pointer;
+  border-radius: 999px;
+  opacity: 0.62;
+
+  &:hover {
+    opacity: 1;
   }
 `;
 

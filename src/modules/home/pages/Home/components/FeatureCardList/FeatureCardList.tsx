@@ -13,12 +13,16 @@ interface FeatureCardListProps {
   title?: string;
   cardData: FeatureCardData[];
   loading?: boolean;
+  categoryOrder?: Record<string, number>;
+  wideCategoryNames?: string[];
 }
 
 export const FeatureCardList = ({
   title,
   cardData,
   loading = false,
+  categoryOrder = {},
+  wideCategoryNames = [],
 }: FeatureCardListProps): JSX.Element => {
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = !prefersReducedMotion && cardData.length <= 40;
@@ -51,37 +55,48 @@ export const FeatureCardList = ({
       ) : categoryEntries.length === 0 ? (
         <EmptyMessage>No hay elementos disponibles para mostrar.</EmptyMessage>
       ) : (
-        categoryEntries.map(([category, cards]) => (
-          <Category key={category}>
-            <CategoryHeader>{category}</CategoryHeader>
-            {shouldAnimate ? (
-              <MotionFeatureContainer
-                $cardsCount={cards.length}
-                variants={featureContainerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={viewportOnce}
-              >
-                {cards.map((card, index) => (
-                  <CardMotionWrapper
-                    key={card.id ?? `${category}-${index}`}
-                    variants={featureCardVariants}
-                  >
-                    <FeatureCard card={card} />
-                  </CardMotionWrapper>
-                ))}
-              </MotionFeatureContainer>
-            ) : (
-              <StaticFeatureContainer $cardsCount={cards.length}>
-                {cards.map((card, index) => (
-                  <CardStaticWrapper key={card.id ?? `${category}-${index}`}>
-                    <FeatureCard card={card} />
-                  </CardStaticWrapper>
-                ))}
-              </StaticFeatureContainer>
-            )}
-          </Category>
-        ))
+        categoryEntries.map(([category, cards]) => {
+          const isWideCategory = wideCategoryNames.includes(category);
+          return (
+            <Category
+              key={category}
+              $isWide={isWideCategory}
+              $order={categoryOrder[category] ?? 100}
+            >
+              <CategoryHeader>{category}</CategoryHeader>
+              {shouldAnimate ? (
+                <MotionFeatureContainer
+                  $cardsCount={cards.length}
+                  $isWide={isWideCategory}
+                  variants={featureContainerVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={viewportOnce}
+                >
+                  {cards.map((card, index) => (
+                    <CardMotionWrapper
+                      key={card.id ?? `${category}-${index}`}
+                      variants={featureCardVariants}
+                    >
+                      <FeatureCard card={card} />
+                    </CardMotionWrapper>
+                  ))}
+                </MotionFeatureContainer>
+              ) : (
+                <StaticFeatureContainer
+                  $cardsCount={cards.length}
+                  $isWide={isWideCategory}
+                >
+                  {cards.map((card, index) => (
+                    <CardStaticWrapper key={card.id ?? `${category}-${index}`}>
+                      <FeatureCard card={card} />
+                    </CardStaticWrapper>
+                  ))}
+                </StaticFeatureContainer>
+              )}
+            </Category>
+          );
+        })
       )}
     </Wrapper>
   );
@@ -132,13 +147,20 @@ const Wrapper = styled.div`
   }
 `;
 
-const Category = styled.div`
+const Category = styled.div<{ $isWide: boolean; $order: number }>`
   display: grid;
   gap: 0.2em;
   align-content: start;
+  min-width: 0;
   padding: 0.6em;
+  order: ${(props) => props.$order};
   background-color: #fafafa;
   border-radius: 8px;
+  grid-column: ${(props) => (props.$isWide ? 'span 2' : 'span 1')};
+
+  @media (width <= 768px) {
+    grid-column: 1 / -1;
+  }
 `;
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -168,18 +190,42 @@ const featureCardVariants = {
 
 const viewportOnce = { once: true, amount: 0.25 };
 
-const MotionFeatureContainer = styled(m.div)<{ $cardsCount: number }>`
+const resolveFeatureColumns = ({
+  $cardsCount,
+  $isWide,
+}: {
+  $cardsCount: number;
+  $isWide: boolean;
+}) => {
+  if ($cardsCount === 1) return '1fr';
+  if ($isWide) return 'repeat(2, minmax(180px, 1fr))';
+  return 'repeat(auto-fit, minmax(230px, 1fr))';
+};
+
+const MotionFeatureContainer = styled(m.div)<{
+  $cardsCount: number;
+  $isWide: boolean;
+}>`
   display: grid;
-  grid-template-columns: ${(props) =>
-    props.$cardsCount === 1 ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))'};
+  grid-template-columns: ${resolveFeatureColumns};
   gap: 0.4em;
+
+  @media (width <= 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const StaticFeatureContainer = styled.div<{ $cardsCount: number }>`
+const StaticFeatureContainer = styled.div<{
+  $cardsCount: number;
+  $isWide: boolean;
+}>`
   display: grid;
-  grid-template-columns: ${(props) =>
-    props.$cardsCount === 1 ? '1fr' : 'repeat(auto-fit, minmax(230px, 1fr))'};
+  grid-template-columns: ${resolveFeatureColumns};
   gap: 0.4em;
+
+  @media (width <= 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const CardMotionWrapper = styled(m.div)`

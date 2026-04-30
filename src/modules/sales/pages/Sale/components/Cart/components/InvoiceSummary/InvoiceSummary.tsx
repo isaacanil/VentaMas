@@ -1,4 +1,7 @@
-import { notification, Spin, message, Tooltip } from 'antd';
+import { notification, Spin, message } from 'antd';
+import { Button, ButtonGroup, Dropdown, Select, ListBox } from '@heroui/react';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
   Fragment,
   useRef,
@@ -65,7 +68,7 @@ import { useDocumentCurrencyConfig } from '@/modules/sales/pages/Sale/components
 
 import { useInvoiceSummaryUiState } from './hooks/useInvoiceSummaryUiState';
 import { useLocalStorageBoolean } from './hooks/useLocalStorageBoolean';
-import { ActionMenu } from './components/ActionMenu/Actionmenu';
+
 import { Delivery } from './components/Delivery/Delivery';
 import { PreorderConfirmation } from './components/Delivery/PreorderConfirmation/PreorderConfirmation';
 import WarningPill from './components/WarningPill/WarningPill';
@@ -84,7 +87,8 @@ import {
   TotalLine,
   TotalLabel,
   Label,
-  ActionButton,
+  CurrencyMenuControl,
+  CurrencyMenuLabel,
 } from './InvoiceSummary.styles';
 
 import type {
@@ -659,25 +663,14 @@ const useInvoiceSummaryViewModel = () => {
     }
   }, [disabled, warningMessage, text, isSavingPreorder]);
 
-  const currencyMenuOptions = !hasCartProducts
-    ? availableDocumentCurrencies
-        .filter((currency) => currency !== documentCurrency)
-        .map((currency) => ({
-          text: `Usar ${currency} para esta venta`,
-          action: () => dispatch(setDocumentCurrency(currency)),
-          disabled: false,
-        }))
-    : [];
+  const handleCurrencyChange = useCallback(
+    (key: React.Key) => {
+      dispatch(setDocumentCurrency(key as SupportedDocumentCurrency));
+    },
+    [dispatch],
+  );
 
   const menuOptions = [
-    {
-      text: hasCartProducts
-        ? `Moneda del documento: ${documentCurrency}`
-        : `Moneda automática: ${documentCurrency}`,
-      action: () => {},
-      disabled: true,
-    },
-    ...currencyMenuOptions,
     isEditingPreorder && {
       text: 'Completar preventa',
       action: handleInvoicePanelOpen,
@@ -705,6 +698,7 @@ const useInvoiceSummaryViewModel = () => {
     },
     {
       text: 'Cancelar venta',
+      variant: 'danger' as const,
       action: () => {
         activateSaleMode();
         handleCancelShipping({
@@ -779,6 +773,9 @@ const useInvoiceSummaryViewModel = () => {
     total,
     totalIndividualDiscounts,
     warningMessage,
+    availableDocumentCurrencies,
+    handleCurrencyChange,
+    hasCartProducts,
   };
 };
 
@@ -821,6 +818,9 @@ const InvoiceSummary = () => {
     total,
     totalIndividualDiscounts,
     warningMessage,
+    availableDocumentCurrencies,
+    handleCurrencyChange,
+    hasCartProducts,
   } = useInvoiceSummaryViewModel();
 
   return (
@@ -913,12 +913,81 @@ const InvoiceSummary = () => {
         )}
         {warningMessage && <WarningPill message={warningMessage} />}
         <TotalLine>
-          <Tooltip title={tooltipTitle}>
-            <ActionButton onClick={action} disabled={disabled}>
+          <ButtonGroup isDisabled={isSavingPreorder}>
+            <Button
+              variant="primary"
+              isDisabled={disabled}
+              onPress={action}
+            >
               {text}
-            </ActionButton>
-          </Tooltip>
-          <ActionMenu disabled={isSavingPreorder} options={menuOptions} />
+            </Button>
+            <Dropdown>
+              <Button variant="primary" isIconOnly aria-label="Más opciones">
+                <ButtonGroup.Separator />
+                <FontAwesomeIcon icon={faChevronDown} />
+              </Button>
+              <Dropdown.Popover placement="top end">
+                <Dropdown.Menu
+                  onAction={(key) => {
+                    if (key === 'document-currency') return;
+                    const opt = menuOptions.find((o) => o.text === key);
+                    opt?.action();
+                  }}
+                >
+                  <Dropdown.Item
+                    key="document-currency"
+                    id="document-currency"
+                    textValue="Moneda del documento"
+                  >
+                    <CurrencyMenuControl
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      <CurrencyMenuLabel>Moneda</CurrencyMenuLabel>
+                      <Select
+                        selectedKey={documentCurrency}
+                        onSelectionChange={handleCurrencyChange}
+                        isDisabled={hasCartProducts}
+                        aria-label="Moneda del documento"
+                      >
+                        <Select.Trigger>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            {availableDocumentCurrencies.map((currency) => (
+                              <ListBox.Item
+                                key={currency}
+                                id={currency}
+                                textValue={currency}
+                              >
+                                {currency}
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    </CurrencyMenuControl>
+                  </Dropdown.Item>
+                  {menuOptions.map((option) => (
+                    <Dropdown.Item
+                      key={option.text}
+                      id={option.text}
+                      textValue={option.text}
+                      isDisabled={option.disabled}
+                      variant={option.variant ?? 'default'}
+                    >
+                      <span data-slot="label" className="flex items-center gap-2">
+                        {option.icon}
+                        {option.text}
+                      </span>
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          </ButtonGroup>
           <TotalLabel>
             <AnimatedNumber value={formatPriceByCurrency(total, documentCurrency)} />
           </TotalLabel>
