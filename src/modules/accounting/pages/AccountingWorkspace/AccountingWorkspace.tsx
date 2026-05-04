@@ -1,7 +1,6 @@
-import { Alert } from 'antd';
+import { Alert } from '@heroui/react';
 import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 
 import { PageShell } from '@/components/layout/PageShell';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
@@ -128,45 +127,67 @@ export default function AccountingWorkspace() {
 
   const notices = [
     !isAccountingRolloutBusiness ? (
-      <Alert
-        key="rollout-info"
-        type="info"
-        showIcon
-        message="Este negocio no esta marcado como rollout contable piloto."
-        description="La pantalla sigue disponible para disenar el flujo y probar asientos manuales, pero algunos eventos automaticos pueden no aparecer."
-      />
+      <Alert key="rollout-info" status="accent">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>
+            Este negocio no esta marcado como rollout contable piloto.
+          </Alert.Title>
+          <Alert.Description>
+            La pantalla sigue disponible para disenar el flujo y probar asientos
+            manuales, pero algunos eventos automaticos pueden no aparecer.
+          </Alert.Description>
+        </Alert.Content>
+      </Alert>
     ) : null,
     configError || chartError || postingProfilesError ? (
-      <Alert
-        key="load-error"
-        type="error"
-        showIcon
-        message="Hay datos contables que no cargaron por completo."
-        description={
-          configError ?? chartError ?? postingProfilesError ?? 'Error de carga.'
-        }
-      />
+      <Alert key="load-error" status="danger">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>
+            Hay datos contables que no cargaron por completo.
+          </Alert.Title>
+          <Alert.Description>
+            {configError ??
+              chartError ??
+              postingProfilesError ??
+              'Error de carga.'}
+          </Alert.Description>
+        </Alert.Content>
+      </Alert>
     ) : null,
     setupIncomplete ? (
-      <Alert
-        key="setup-incomplete"
-        type="warning"
-        showIcon
-        message="Contabilidad habilitada sin base contable completa."
-        description="Completa el catalogo de cuentas y los perfiles contables en Configuracion > Contabilidad. Mientras falte esta base, los documentos crean eventos, pero no generan asientos posteados para mayor y reportes."
-      />
+      <Alert key="setup-incomplete" status="warning">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>
+            Contabilidad habilitada sin base contable completa.
+          </Alert.Title>
+          <Alert.Description>
+            Completa el catalogo de cuentas y los perfiles contables en
+            Configuracion &gt; Contabilidad. Mientras falte esta base, los
+            documentos crean eventos, pero no generan asientos posteados para
+            mayor y reportes.
+          </Alert.Description>
+        </Alert.Content>
+      </Alert>
     ) : null,
   ].filter(Boolean);
 
   const content = (() => {
     if (!accountingEnabled) {
       return (
-        <Alert
-          type="warning"
-          showIcon
-          message="La contabilidad general aun no esta habilitada para este negocio."
-          description="Activa contabilidad desde Settings > Accounting para usar libro diario, reportes y cierres."
-        />
+        <Alert status="warning">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>
+              La contabilidad general aun no esta habilitada para este negocio.
+            </Alert.Title>
+            <Alert.Description>
+              Activa contabilidad desde Settings &gt; Accounting para usar libro
+              diario, reportes y cierres.            </Alert.Description>
+          </Alert.Content>
+        </Alert>
       );
     }
 
@@ -231,34 +252,18 @@ export default function AccountingWorkspace() {
   })();
 
   return (
-    <Wrapper>
+    <PageShell className="bg-[var(--ds-color-bg-page)]">
       <MenuApp sectionName={activePanelItem.label} />
 
-      <Content>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-4 pb-10 sm:px-4 sm:pb-8">
         <AccountingWorkspaceShell
           loading={loading}
           notices={notices.length ? notices : null}
         >
           {content}
         </AccountingWorkspaceShell>
-      </Content>
-    </Wrapper>
+      </div>
+    </PageShell>
   );
 }
 
-const Wrapper = styled(PageShell)`
-  background: var(--ds-color-bg-page);
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  padding: var(--ds-space-4) var(--ds-space-6) var(--ds-space-10);
-  overflow-y: auto;
-
-  @media (max-width: 720px) {
-    padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-8);
-  }
-`;

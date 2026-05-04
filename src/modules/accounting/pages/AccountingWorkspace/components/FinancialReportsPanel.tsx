@@ -1,6 +1,16 @@
-import { Alert, Button, Select, Tooltip, message } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  ListBox,
+  SearchField,
+  Select,
+  Surface,
+  Table,
+  Tooltip,
+} from '@heroui/react';
+import { message } from 'antd';
 import { useState } from 'react';
-import styled from 'styled-components';
 
 import { FileExcelOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
 
@@ -23,6 +33,7 @@ export const FinancialReportsPanel = ({
   enabled,
 }: FinancialReportsPanelProps) => {
   const [periodKey, setPeriodKey] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [exporting, setExporting] = useState(false);
   const {
     error,
@@ -60,391 +71,304 @@ export const FinancialReportsPanel = ({
     }
   };
 
+  const filteredTrialBalance = reports?.trialBalance.filter((row) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      row.name.toLowerCase().includes(query) || row.code.includes(searchQuery)
+    );
+  });
+
   return (
-    <Panel>
+    <div className="flex flex-col gap-5 py-6 pb-8">
       {selectedPeriodKey && reports ? (
         <>
-          <Toolbar>
-            <Select
-              style={{ minWidth: 220 }}
-              value={selectedPeriodKey}
-              options={periods.map((period) => ({
-                label: formatAccountingPeriod(period),
-                value: period,
-              }))}
-              onChange={setPeriodKey}
-            />
+          <Surface
+            variant="secondary"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 shadow-sm"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <Select
+                variant="secondary"
+                className="min-w-[220px]"
+                placeholder="Seleccionar periodo"
+                value={selectedPeriodKey}
+                onChange={(key) => {
+                  if (key) setPeriodKey(key as string);
+                }}
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {periods.map((period) => (
+                      <ListBox.Item
+                        key={period}
+                        id={period}
+                        textValue={formatAccountingPeriod(period)}
+                      >
+                        {formatAccountingPeriod(period)}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+
+              <SearchField
+                variant="secondary"
+                aria-label="Buscar cuenta"
+                value={searchQuery}
+                onChange={setSearchQuery}
+              >
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input
+                    className="w-[240px]"
+                    placeholder="Buscar cuenta o código..."
+                  />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+            </div>
+
             <Button
-              icon={<FileExcelOutlined />}
-              loading={exporting}
-              onClick={() => {
+              variant="outline"
+              isPending={exporting}
+              onPress={() => {
                 void handleExport();
               }}
             >
+              {exporting ? null : <FileExcelOutlined />}
               Exportar Excel
             </Button>
-          </Toolbar>
+          </Surface>
 
-          <SummaryStrip>
-            <SummaryItem>
-              <SummaryLabelRow>
-                <span>Debitos acumulados</span>
-                <Tooltip
-                  title="Suma de debitos registrada hasta el cierre del periodo seleccionado."
-                  placement="top"
-                >
-                  <InfoIcon />
-                </Tooltip>
-              </SummaryLabelRow>
-              <strong>
-                {formatAccountingMoney(reports.trialBalanceTotals.debit)}
-              </strong>
-            </SummaryItem>
-            <SummaryItem>
-              <SummaryLabelRow>
-                <span>Creditos acumulados</span>
-                <Tooltip
-                  title="Suma de creditos registrada hasta el cierre del periodo seleccionado."
-                  placement="top"
-                >
-                  <InfoIcon />
-                </Tooltip>
-              </SummaryLabelRow>
-              <strong>
-                {formatAccountingMoney(reports.trialBalanceTotals.credit)}
-              </strong>
-            </SummaryItem>
-            <SummaryItem $negative={reports.incomeTotals.netIncome < 0}>
-              <SummaryLabelRow>
-                <span>Resultado neto del periodo</span>
-                <Tooltip
-                  title="Ingresos menos gastos del periodo seleccionado; no representa el acumulado historico."
-                  placement="top"
-                >
-                  <InfoIcon />
-                </Tooltip>
-              </SummaryLabelRow>
-              <strong>
-                {formatAccountingMoney(reports.incomeTotals.netIncome)}
-              </strong>
-            </SummaryItem>
-          </SummaryStrip>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <SummaryCard
+              label="Debitos acumulados"
+              value={formatAccountingMoney(reports.trialBalanceTotals.debit)}
+              tooltip="Suma de debitos registrada hasta el cierre del periodo seleccionado."
+            />
+            <SummaryCard
+              label="Creditos acumulados"
+              value={formatAccountingMoney(reports.trialBalanceTotals.credit)}
+              tooltip="Suma de creditos registrada hasta el cierre del periodo seleccionado."
+            />
+            <SummaryCard
+              isNegative={reports.incomeTotals.netIncome < 0}
+              label="Resultado neto del periodo"
+              value={formatAccountingMoney(reports.incomeTotals.netIncome)}
+              tooltip="Ingresos menos gastos del periodo seleccionado; no representa el acumulado historico."
+            />
+          </div>
 
-          <ReportSection>
-            <ReportTitle>Balanza de comprobacion</ReportTitle>
-            <ReportTableShell>
-              <ReportTable>
-                <thead>
-                  <tr>
-                    <th>Cuenta</th>
-                    <th>Debito</th>
-                    <th>Credito</th>
-                    <th>Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reports.trialBalance.map((row) => (
-                    <tr key={row.accountId}>
-                      <td>
-                        <strong>{row.code}</strong>
-                        <span>{row.name}</span>
-                      </td>
-                      <td>{formatAccountingMoney(row.debit)}</td>
-                      <td>{formatAccountingMoney(row.credit)}</td>
-                      <td>{formatAccountingMoney(row.balance)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </ReportTable>
-            </ReportTableShell>
-          </ReportSection>
+          <Card className="flex flex-col gap-3 p-5">
+            <h3 className="m-0 text-md font-semibold text-primary">
+              Balanza de comprobación
+            </h3>
+            <Table aria-label="Balanza de comprobación">
+              <Table.ScrollContainer>
+                <Table.Content>
+                  <Table.Header>
+                    <Table.Column>Cuenta</Table.Column>
+                    <Table.Column align="end">Debito</Table.Column>
+                    <Table.Column align="end">Credito</Table.Column>
+                    <Table.Column align="end">Balance</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {(filteredTrialBalance ?? []).map((row) => (
+                      <Table.Row id={row.accountId}>
+                        <Table.Cell>
+                          <div className="flex flex-col gap-0.5">
+                            <strong className="font-semibold text-primary">
+                              {row.code}
+                            </strong>
+                            <span className="text-sm text-secondary">
+                              {row.name}
+                            </span>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="tabular-nums text-right">
+                            {formatAccountingMoney(row.debit)}
+                          </span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="tabular-nums text-right">
+                            {formatAccountingMoney(row.credit)}
+                          </span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="tabular-nums text-right">
+                            {formatAccountingMoney(row.balance)}
+                          </span>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </Card>
 
-          <DualReportGrid>
-            <ReportSection>
-              <ReportTitle>Estado de resultados</ReportTitle>
-              <CompactList>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Card className="flex flex-col gap-3 p-5">
+              <h3 className="m-0 text-md font-semibold text-primary">
+                Estado de resultados
+              </h3>
+              <div className="flex flex-col">
                 {reports.incomeRows.map((row) => (
-                  <CompactRow key={row.accountId}>
-                    <span>
-                      {row.code} · {row.name}
-                    </span>
-                    <strong>{formatAccountingMoney(row.amount)}</strong>
-                  </CompactRow>
+                  <CompactRow
+                    key={row.accountId}
+                    label={`${row.code} · ${row.name}`}
+                    value={formatAccountingMoney(row.amount)}
+                  />
                 ))}
-                <CompactTotal $negative={reports.incomeTotals.netIncome < 0}>
-                  <span>Utilidad neta</span>
-                  <strong>
+                <div className="flex justify-between border-t border-subtle py-3 font-semibold">
+                  <span className="text-secondary">Utilidad neta</span>
+                  <strong
+                    className={`min-w-[128px] text-right tabular-nums ${
+                      reports.incomeTotals.netIncome < 0 ? 'text-danger' : ''
+                    }`}
+                  >
                     {formatAccountingMoney(reports.incomeTotals.netIncome)}
                   </strong>
-                </CompactTotal>
-              </CompactList>
-            </ReportSection>
+                </div>
+              </div>
+            </Card>
 
-            <ReportSection>
-              <ReportTitle>Balance general</ReportTitle>
-              <BalanceColumns>
-                <BalanceGroup>
-                  <BalanceGroupTitle>Activos</BalanceGroupTitle>
-                  {reports.balanceSheet.assets.map((row) => (
-                    <BalanceRow key={row.accountId} row={row} />
-                  ))}
-                </BalanceGroup>
-                <BalanceGroup>
-                  <BalanceGroupTitle>Pasivos</BalanceGroupTitle>
-                  {reports.balanceSheet.liabilities.map((row) => (
-                    <BalanceRow key={row.accountId} row={row} />
-                  ))}
-                </BalanceGroup>
-                <BalanceGroup>
-                  <BalanceGroupTitle>Patrimonio</BalanceGroupTitle>
-                  {reports.balanceSheet.equity.map((row) => (
-                    <BalanceRow key={row.accountId} row={row} />
-                  ))}
-                  <CompactTotal>
-                    <span>Resultado acumulado del periodo</span>
-                    <strong>
-                      {formatAccountingMoney(
-                        reports.balanceSheet.currentEarnings,
-                      )}
-                    </strong>
-                  </CompactTotal>
-                </BalanceGroup>
-              </BalanceColumns>
-            </ReportSection>
-          </DualReportGrid>
+            <Card className="flex flex-col gap-3 p-5">
+              <h3 className="m-0 text-md font-semibold text-primary">
+                Balance general
+              </h3>
+              <div className="flex flex-col gap-4">
+                <BalanceGroup
+                  title="Activos"
+                  rows={reports.balanceSheet.assets}
+                />
+                <BalanceGroup
+                  title="Pasivos"
+                  rows={reports.balanceSheet.liabilities}
+                />
+                <BalanceGroup
+                  title="Patrimonio"
+                  rows={reports.balanceSheet.equity}
+                />
+                <div className="flex justify-between border-t border-subtle py-3 font-semibold">
+                  <span className="text-secondary">
+                    Resultado acumulado del periodo
+                  </span>
+                  <strong className="min-w-[128px] text-right tabular-nums">
+                    {formatAccountingMoney(
+                      reports.balanceSheet.currentEarnings,
+                    )}
+                  </strong>
+                </div>
+              </div>
+            </Card>
+          </div>
         </>
       ) : error ? (
-        <Alert
-          type="error"
-          showIcon
-          message="No se pudieron cargar los reportes financieros."
-          description={error}
-        />
+        <Alert status="danger">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>
+              No se pudieron cargar los reportes financieros.
+            </Alert.Title>
+            <Alert.Description>{error}</Alert.Description>
+          </Alert.Content>
+        </Alert>
       ) : (
-        <EmptyText>
+        <p className="m-0 text-base leading-normal text-secondary">
           {loading
             ? 'Cargando reportes financieros...'
             : 'No hay periodos disponibles para generar reportes.'}
-        </EmptyText>
+        </p>
       )}
-    </Panel>
+    </div>
   );
 };
 
-const BalanceRow = ({ row }: { row: TrialBalanceRow }) => (
-  <CompactRow>
-    <span>
-      {row.code} · {row.name}
-    </span>
-    <strong>{formatAccountingMoney(row.balance)}</strong>
-  </CompactRow>
+const SummaryCard = ({
+  label,
+  value,
+  tooltip,
+  isNegative,
+}: {
+  label: string;
+  value: string;
+  tooltip: string;
+  isNegative?: boolean;
+}) => (
+  <Card
+    className={`flex flex-col gap-1 p-4 ${
+      isNegative ? 'border-danger-subtle bg-danger-subtle' : ''
+    }`}
+  >
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-medium uppercase tracking-wide text-secondary">
+        {label}
+      </span>
+      <Tooltip delay={0}>
+        <Tooltip.Trigger>
+          <InfoCircleOutlined className="cursor-default text-sm text-muted" />
+        </Tooltip.Trigger>
+        <Tooltip.Content showArrow placement="top">
+          <Tooltip.Arrow />
+          <div className="px-1 py-0.5 text-sm">{tooltip}</div>
+        </Tooltip.Content>
+      </Tooltip>
+    </div>
+    <strong
+      className={`text-md tabular-nums leading-tight ${
+        isNegative ? 'text-danger' : 'text-primary'
+      }`}
+    >
+      {value}
+    </strong>
+  </Card>
 );
 
-const Panel = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
-  padding: var(--ds-space-6) 0 var(--ds-space-8);
-`;
+const CompactRow = ({
+  label,
+  value,
+  isNegative,
+}: {
+  label: string;
+  value: string;
+  isNegative?: boolean;
+}) => (
+  <div className="flex justify-between gap-3 border-b border-subtle py-3">
+    <span className="text-secondary">{label}</span>
+    <strong
+      className={`min-w-[128px] text-right font-medium tabular-nums ${
+        isNegative ? 'text-danger' : 'text-primary'
+      }`}
+    >
+      {value}
+    </strong>
+  </div>
+);
 
-const Toolbar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  font-size: var(--ds-font-size-base);
-  line-height: var(--ds-line-height-normal);
-  color: var(--ds-color-text-secondary);
-`;
-
-const SummaryStrip = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SummaryItem = styled.div<{ $negative?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-4);
-  border: 1px solid
-    ${({ $negative }) =>
-      $negative
-        ? 'var(--ds-color-state-danger-subtle)'
-        : 'var(--ds-color-border-default)'};
-  border-radius: var(--ds-radius-lg);
-  background: ${({ $negative }) =>
-    $negative
-      ? 'var(--ds-color-state-danger-subtle)'
-      : 'var(--ds-color-bg-surface)'};
-
-  span {
-    font-size: var(--ds-font-size-xs);
-    font-weight: var(--ds-font-weight-medium);
-    text-transform: uppercase;
-    letter-spacing: var(--ds-letter-spacing-wide);
-    color: var(--ds-color-text-secondary);
-  }
-
-  strong {
-    font-size: var(--ds-font-size-md);
-    line-height: var(--ds-line-height-tight);
-    color: ${({ $negative }) =>
-      $negative
-        ? 'var(--ds-color-state-danger-text)'
-        : 'var(--ds-color-text-primary)'};
-    font-variant-numeric: tabular-nums;
-  }
-`;
-
-const SummaryLabelRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-`;
-
-const ReportSection = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-5);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-`;
-
-const ReportTableShell = styled.div`
-  overflow-x: auto;
-`;
-
-const ReportTitle = styled.h3`
-  margin: 0;
-  font-size: var(--ds-font-size-md);
-  line-height: var(--ds-line-height-tight);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-`;
-
-const ReportTable = styled.table`
-  width: 100%;
-  min-width: 680px;
-  border-collapse: collapse;
-
-  th,
-  td {
-    padding: var(--ds-space-3) 0;
-    border-bottom: 1px solid var(--ds-color-border-subtle);
-    text-align: left;
-  }
-
-  th:first-child,
-  td:first-child {
-    width: 43%;
-  }
-
-  th:nth-child(n + 2),
-  td:nth-child(n + 2) {
-    width: 19%;
-    text-align: right;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-
-  th {
-    font-size: var(--ds-font-size-xs);
-    text-transform: uppercase;
-    letter-spacing: var(--ds-letter-spacing-wide);
-    font-weight: var(--ds-font-weight-semibold);
-    color: var(--ds-color-text-secondary);
-    border-bottom: 1px solid var(--ds-color-border-default);
-  }
-
-  td:first-child {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  td:first-child span {
-    color: var(--ds-color-text-secondary);
-    font-size: var(--ds-font-size-sm);
-  }
-`;
-
-const DualReportGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const CompactList = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const CompactRow = styled.div<{ $negative?: boolean }>`
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-3) 0;
-  border-bottom: 1px solid var(--ds-color-border-subtle);
-
-  span {
-    color: var(--ds-color-text-secondary);
-    line-height: var(--ds-line-height-normal);
-  }
-
-  strong {
-    color: ${({ $negative }) =>
-      $negative
-        ? 'var(--ds-color-state-danger-text)'
-        : 'var(--ds-color-text-primary)'};
-    min-width: 128px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    font-weight: var(--ds-font-weight-medium);
-  }
-`;
-
-const CompactTotal = styled(CompactRow)`
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const InfoIcon = styled(InfoCircleOutlined)`
-  color: var(--ds-color-text-muted);
-  font-size: var(--ds-font-size-sm);
-  cursor: default;
-`;
-
-const BalanceColumns = styled.div`
-  display: grid;
-  gap: 16px;
-`;
-
-const BalanceGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-1);
-`;
-
-const BalanceGroupTitle = styled.h4`
-  margin: 0;
-  font-size: var(--ds-font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: var(--ds-letter-spacing-wide);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-secondary);
-`;
+const BalanceGroup = ({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: TrialBalanceRow[];
+}) => (
+  <div className="flex flex-col gap-1">
+    <h4 className="m-0 text-xs font-semibold uppercase tracking-wide text-secondary">
+      {title}
+    </h4>
+    {rows.map((row) => (
+      <CompactRow
+        key={row.accountId}
+        label={`${row.code} · ${row.name}`}
+        value={formatAccountingMoney(row.balance)}
+      />
+    ))}
+  </div>
+);

@@ -12,6 +12,7 @@ import {
   ListBox,
   Modal as HeroModal,
   Select as HeroSelect,
+  Table as HeroTable,
   Tabs as HeroTabs,
 } from '@heroui/react';
 import { message } from 'antd';
@@ -611,9 +612,19 @@ export const FiscalCompliancePanel = ({
                   <strong>
                     {REPORT_LABELS[run.reportCode]} · v{run.version}
                   </strong>
-                  <StatusTag $tone={getStatusTone(run.status)}>
-                    {resolveMonthlyComplianceStatusLabel(run.status)}
-                  </StatusTag>
+                  <HeroChip
+                    className="w-fit"
+                    color={
+                      getStatusTone(run.status) === 'neutral'
+                        ? 'default'
+                        : getStatusTone(run.status)
+                    }
+                    variant="soft"
+                  >
+                    <HeroChip.Label>
+                      {resolveMonthlyComplianceStatusLabel(run.status)}
+                    </HeroChip.Label>
+                  </HeroChip>
                 </RunItemTop>
                 <span>{formatMonthlyComplianceRunDate(run.createdAt)}</span>
                 <span>{run.validationSummary.totalIssues} issues</span>
@@ -672,6 +683,34 @@ export const FiscalCompliancePanel = ({
               </ListBox>
             </HeroSelect.Popover>
           </PeriodSelect>
+
+          <ReportSelect
+            aria-label="Tipo de reporte"
+            selectedKey={activeTab}
+            variant="secondary"
+            onSelectionChange={(key) => {
+              if (key) setActiveTab(key as FiscalComplianceTabKey);
+            }}
+          >
+            <HeroSelect.Trigger>
+              <HeroSelect.Value />
+              <HeroSelect.Indicator />
+            </HeroSelect.Trigger>
+            <HeroSelect.Popover>
+              <ListBox>
+                {REPORT_CODES.map((reportCode) => (
+                  <ListBox.Item
+                    key={reportCode}
+                    id={reportCode}
+                    textValue={REPORT_LABELS[reportCode]}
+                  >
+                    DGII {REPORT_LABELS[reportCode]}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </HeroSelect.Popover>
+          </ReportSelect>
+
           <HeroButton
             size="sm"
             variant="primary"
@@ -749,21 +788,26 @@ export const FiscalCompliancePanel = ({
               </HeroCard.Header>
               <HeroCard.Content>
                 <ExecutiveValue>{getRunRecordCount(latestRun)}</ExecutiveValue>
-                <MiniStatus
-                  $tone={
+                <HeroChip
+                  className="w-fit"
+                  color={
                     !latestRun
-                      ? 'neutral'
+                      ? 'default'
                       : latestRun.validationSummary.totalIssues
                         ? 'warning'
                         : 'success'
                   }
+                  size="sm"
+                  variant="soft"
                 >
-                  {latestRun
-                    ? latestRun.validationSummary.totalIssues
-                      ? `${latestRun.validationSummary.totalIssues} issues`
-                      : 'Validado'
-                    : 'Sin corrida'}
-                </MiniStatus>
+                  <HeroChip.Label>
+                    {latestRun
+                      ? latestRun.validationSummary.totalIssues
+                        ? `${latestRun.validationSummary.totalIssues} issues`
+                        : 'Validado'
+                      : 'Sin corrida'}
+                  </HeroChip.Label>
+                </HeroChip>
               </HeroCard.Content>
             </ExecutiveCard>
           );
@@ -781,27 +825,9 @@ export const FiscalCompliancePanel = ({
         </ComplianceAlert>
       ) : null}
 
-      <StyledTabs
-        selectedKey={activeTab}
-        variant="secondary"
-        onSelectionChange={(key) => setActiveTab(key as FiscalComplianceTabKey)}
-      >
-        <HeroTabs.ListContainer>
-          <HeroTabs.List aria-label="Reportes fiscales DGII">
-            {REPORT_CODES.map((reportCode) => (
-              <HeroTabs.Tab key={reportCode} id={reportCode}>
-                {REPORT_LABELS[reportCode]}
-                <HeroTabs.Indicator />
-              </HeroTabs.Tab>
-            ))}
-          </HeroTabs.List>
-        </HeroTabs.ListContainer>
-        {REPORT_CODES.map((reportCode) => (
-          <HeroTabs.Panel key={reportCode} id={reportCode}>
-            {renderReportWorkspace(reportCode)}
-          </HeroTabs.Panel>
-        ))}
-      </StyledTabs>
+      <WorkspaceWrapper>
+        {renderReportWorkspace(activeTab)}
+      </WorkspaceWrapper>
 
       <HeroModal.Backdrop
         isOpen={runsModalOpen}
@@ -829,57 +855,125 @@ export const FiscalCompliancePanel = ({
       </HeroModal.Backdrop>
 
       <SupportGrid>
-        <SupportPanel>
-          <SupportTitle>Calendario fiscal</SupportTitle>
-          <SupportList>
-            {fiscalCalendarItems.map((item) => {
-              const daysUntil = getDaysUntil(item.date);
-              return (
-                <SupportRow
-                  key={`${item.label}-${formatFiscalDate(item.date)}`}
-                >
-                  <SupportDate>{formatFiscalDate(item.date)}</SupportDate>
-                  <SupportMain>{item.label}</SupportMain>
-                  <SupportAside>
-                    {daysUntil >= 0 ? `en ${daysUntil} dias` : 'vencido'}
-                  </SupportAside>
-                  <MiniStatus $tone={item.tone}>
-                    {item.tone === 'warning' ? 'Proximo' : 'Programado'}
-                  </MiniStatus>
-                </SupportRow>
-              );
-            })}
-          </SupportList>
-        </SupportPanel>
+        <HeroCard>
+          <HeroCard.Header>
+            <DetailTitle>Calendario fiscal</DetailTitle>
+          </HeroCard.Header>
+          <HeroCard.Content>
+            <HeroTable>
+              <HeroTable.ScrollContainer>
+                <HeroTable.Content aria-label="Calendario fiscal">
+                  <HeroTable.Header>
+                    <HeroTable.Column isRowHeader>Fecha</HeroTable.Column>
+                    <HeroTable.Column>Evento</HeroTable.Column>
+                    <HeroTable.Column>Plazo</HeroTable.Column>
+                    <HeroTable.Column align="end">Estado</HeroTable.Column>
+                  </HeroTable.Header>
+                  <HeroTable.Body items={fiscalCalendarItems}>
+                    {(item) => {
+                      const daysUntil = getDaysUntil(item.date);
+                      return (
+                        <HeroTable.Row id={`${item.label}-${formatFiscalDate(item.date)}`}>
+                          <HeroTable.Cell>
+                            <span className="tabular-nums text-sm text-[var(--ds-color-text-secondary)]">
+                              {formatFiscalDate(item.date)}
+                            </span>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <span className="font-medium text-[var(--ds-color-text-primary)]">
+                              {item.label}
+                            </span>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <span className="text-sm text-[var(--ds-color-text-secondary)]">
+                              {daysUntil >= 0 ? `en ${daysUntil} días` : 'vencido'}
+                            </span>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <HeroChip
+                              color={item.tone === 'warning' ? 'warning' : 'success'}
+                              size="sm"
+                              variant="soft"
+                            >
+                              <HeroChip.Label>
+                                {item.tone === 'warning' ? 'Próximo' : 'Programado'}
+                              </HeroChip.Label>
+                            </HeroChip>
+                          </HeroTable.Cell>
+                        </HeroTable.Row>
+                      );
+                    }}
+                  </HeroTable.Body>
+                </HeroTable.Content>
+              </HeroTable.ScrollContainer>
+            </HeroTable>
+          </HeroCard.Content>
+        </HeroCard>
 
-        <SupportPanel>
-          <SupportTitle>Historial de corridas DGII</SupportTitle>
-          {!recentHistoryRuns.length ? (
-            <SupportEmpty>Sin corridas registradas.</SupportEmpty>
-          ) : (
-            <SupportList>
-              {recentHistoryRuns.map((run) => (
-                <SupportRow key={run.id}>
-                  <SupportDate>
-                    {formatMonthlyComplianceRunDate(run.createdAt)}
-                  </SupportDate>
-                  <SupportMain>
-                    {formatAccountingPeriod(run.periodKey)}
-                    <SupportSubtext>
-                      {REPORT_LABELS[run.reportCode]} · v{run.version}
-                    </SupportSubtext>
-                  </SupportMain>
-                  <SupportAside>
-                    {run.validationSummary.totalIssues} issues
-                  </SupportAside>
-                  <MiniStatus $tone={getStatusTone(run.status)}>
-                    {resolveMonthlyComplianceStatusLabel(run.status)}
-                  </MiniStatus>
-                </SupportRow>
-              ))}
-            </SupportList>
-          )}
-        </SupportPanel>
+        <HeroCard>
+          <HeroCard.Header>
+            <DetailTitle>Historial de corridas DGII</DetailTitle>
+          </HeroCard.Header>
+          <HeroCard.Content>
+            {!recentHistoryRuns.length ? (
+              <EmptyText className="p-4">Sin corridas registradas.</EmptyText>
+            ) : (
+              <HeroTable>
+                <HeroTable.ScrollContainer>
+                  <HeroTable.Content aria-label="Historial de corridas DGII">
+                    <HeroTable.Header>
+                      <HeroTable.Column isRowHeader>Fecha corrida</HeroTable.Column>
+                      <HeroTable.Column>Periodo / Reporte</HeroTable.Column>
+                      <HeroTable.Column>Resultado</HeroTable.Column>
+                      <HeroTable.Column align="end">Estado</HeroTable.Column>
+                    </HeroTable.Header>
+                    <HeroTable.Body items={recentHistoryRuns}>
+                      {(run) => (
+                        <HeroTable.Row id={run.id}>
+                          <HeroTable.Cell>
+                            <span className="tabular-nums text-sm text-[var(--ds-color-text-secondary)]">
+                              {formatMonthlyComplianceRunDate(run.createdAt)}
+                            </span>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-[var(--ds-color-text-primary)]">
+                                {formatAccountingPeriod(run.periodKey)}
+                              </span>
+                              <span className="text-xs text-[var(--ds-color-text-secondary)]">
+                                {REPORT_LABELS[run.reportCode]} · v{run.version}
+                              </span>
+                            </div>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <span className="text-sm text-[var(--ds-color-text-secondary)]">
+                              {run.validationSummary.totalIssues} issues
+                            </span>
+                          </HeroTable.Cell>
+                          <HeroTable.Cell>
+                            <HeroChip
+                              color={
+                                getStatusTone(run.status) === 'neutral'
+                                  ? 'default'
+                                  : getStatusTone(run.status)
+                              }
+                              size="sm"
+                              variant="soft"
+                            >
+                              <HeroChip.Label>
+                                {resolveMonthlyComplianceStatusLabel(run.status)}
+                              </HeroChip.Label>
+                            </HeroChip>
+                          </HeroTable.Cell>
+                        </HeroTable.Row>
+                      )}
+                    </HeroTable.Body>
+                  </HeroTable.Content>
+                </HeroTable.ScrollContainer>
+              </HeroTable>
+            )}
+          </HeroCard.Content>
+        </HeroCard>
       </SupportGrid>
     </Panel>
   );
@@ -899,60 +993,90 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               Compras y gastos normalizados para revisión legal del periodo.
             </SectionDescription>
           </div>
-          <StatusTag $tone={getStatusTone(run.status)}>
-            {resolveMonthlyComplianceStatusLabel(run.status)}
-          </StatusTag>
+          <HeroChip
+            className="w-fit"
+            color={
+              getStatusTone(run.status) === 'neutral'
+                ? 'default'
+                : getStatusTone(run.status)
+            }
+            variant="soft"
+          >
+            <HeroChip.Label>
+              {resolveMonthlyComplianceStatusLabel(run.status)}
+            </HeroChip.Label>
+          </HeroChip>
         </PreviewHeader>
       </HeroCard.Header>
       <HeroCard.Content>
-        {!rows.length ? (
-          <EmptyStateCard>
-            <strong>Sin registros 606 visibles.</strong>
-            <span>
-              Genera una corrida nueva o revisa si el periodo tiene compras y
-              gastos registrados.
-            </span>
-          </EmptyStateCard>
-        ) : (
-          <PreviewTableWrap>
-            <PreviewTable>
-              <thead>
-                <tr>
-                  <th>Fuente</th>
-                  <th>Documento</th>
-                  <th>ID origen</th>
-                  <th>RNC proveedor</th>
-                  <th>Tipo gasto</th>
-                  <th>NCF</th>
-                  <th>Fecha</th>
-                  <th>Total</th>
-                  <th>ITBIS</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
-                    <td>{translateSourceId(String(row.sourceId))}</td>
-                    <td>{toPreviewText(row.documentNumber)}</td>
-                    <td>{toPreviewText(row.recordId)}</td>
-                    <td>
+        <HeroTable>
+          <HeroTable.ScrollContainer>
+            <HeroTable.Content
+              aria-label="Detalle 606"
+              className="min-w-[1040px]"
+            >
+              <HeroTable.Header>
+                <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
+                <HeroTable.Column>Documento</HeroTable.Column>
+                <HeroTable.Column>ID origen</HeroTable.Column>
+                <HeroTable.Column>RNC proveedor</HeroTable.Column>
+                <HeroTable.Column>Tipo gasto</HeroTable.Column>
+                <HeroTable.Column>NCF</HeroTable.Column>
+                <HeroTable.Column>Fecha</HeroTable.Column>
+                <HeroTable.Column>Total</HeroTable.Column>
+                <HeroTable.Column>ITBIS</HeroTable.Column>
+                <HeroTable.Column>Estado</HeroTable.Column>
+              </HeroTable.Header>
+              <HeroTable.Body
+                items={rows}
+                renderEmptyState={() => (
+                  <EmptyStateCard>
+                    <strong>Sin registros 606 visibles.</strong>
+                    <span>
+                      Genera una corrida nueva o revisa si el periodo tiene
+                      compras y gastos registrados.
+                    </span>
+                  </EmptyStateCard>
+                )}
+              >
+                {(row) => (
+                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <HeroTable.Cell>
+                      {translateSourceId(String(row.sourceId))}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.recordId)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
                       {toPreviewText(row.counterpartyIdentificationNumber)}
-                    </td>
-                    <td>{toPreviewText(row.expenseType)}</td>
-                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
-                    <td>{formatShortDate(row.issuedAt)}</td>
-                    <td>{formatMoney(row.total)}</td>
-                    <td>{formatMoney(row.itbisTotal)}</td>
-                    <td>
-                      <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </PreviewTable>
-          </PreviewTableWrap>
-        )}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.expenseType)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentFiscalNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatShortDate(row.issuedAt)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.itbisTotal)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      <HeroChip color="default" size="sm" variant="soft">
+                        <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
+                      </HeroChip>
+                    </HeroTable.Cell>
+                  </HeroTable.Row>
+                )}
+              </HeroTable.Body>
+            </HeroTable.Content>
+          </HeroTable.ScrollContainer>
+        </HeroTable>
 
         {excludedRows.length ? (
           <ExcludedRecordsTable
@@ -980,74 +1104,106 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               agrupable).
             </SectionDescription>
           </div>
-          <StatusTag $tone={getStatusTone(run.status)}>
-            {resolveMonthlyComplianceStatusLabel(run.status)}
-          </StatusTag>
+          <HeroChip
+            className="w-fit"
+            color={
+              getStatusTone(run.status) === 'neutral'
+                ? 'default'
+                : getStatusTone(run.status)
+            }
+            variant="soft"
+          >
+            <HeroChip.Label>
+              {resolveMonthlyComplianceStatusLabel(run.status)}
+            </HeroChip.Label>
+          </HeroChip>
         </PreviewHeader>
       </HeroCard.Header>
       <HeroCard.Content>
-        {!rows.length ? (
-          <EmptyStateCard>
-            <strong>Sin registros 607 visibles.</strong>
-            <span>
-              No hay ventas con NCF B01/B02 en la corrida activa. Las facturas
-              sin comprobante fiscal no entran al 607.
-            </span>
-          </EmptyStateCard>
-        ) : (
-          <PreviewTableWrap>
-            <WidePreviewTable>
-              <thead>
-                <tr>
-                  <th>RNC cliente</th>
-                  <th>Fuente</th>
-                  <th>Documento</th>
-                  <th>NCF</th>
-                  <th>Tipo</th>
-                  <th>Fecha</th>
-                  <th>Total</th>
-                  <th>ITBIS</th>
-                  <th>ITBIS retenido</th>
-                  <th>ISR retenido</th>
-                  <th>Efectivo</th>
-                  <th>Cheque/Tr.</th>
-                  <th>Tarjeta</th>
-                  <th>Crédito</th>
-                  <th>Factura ref.</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
-                    <td>
+        <HeroTable >
+          <HeroTable.ScrollContainer>
+            <HeroTable.Content
+              aria-label="Detalle 607"
+              className="min-w-[1680px]"
+            >
+              <HeroTable.Header>
+                <HeroTable.Column isRowHeader>RNC cliente</HeroTable.Column>
+                <HeroTable.Column>Fuente</HeroTable.Column>
+                <HeroTable.Column>Documento</HeroTable.Column>
+                <HeroTable.Column>NCF</HeroTable.Column>
+                <HeroTable.Column>Tipo</HeroTable.Column>
+                <HeroTable.Column>Fecha</HeroTable.Column>
+                <HeroTable.Column>Total</HeroTable.Column>
+                <HeroTable.Column>ITBIS</HeroTable.Column>
+                <HeroTable.Column>ITBIS retenido</HeroTable.Column>
+                <HeroTable.Column>ISR retenido</HeroTable.Column>
+                <HeroTable.Column>Efectivo</HeroTable.Column>
+                <HeroTable.Column>Cheque/Tr.</HeroTable.Column>
+                <HeroTable.Column>Tarjeta</HeroTable.Column>
+                <HeroTable.Column>Crédito</HeroTable.Column>
+                <HeroTable.Column>Factura ref.</HeroTable.Column>
+                <HeroTable.Column>Estado</HeroTable.Column>
+              </HeroTable.Header>
+              <HeroTable.Body
+                items={rows}
+                renderEmptyState={() => (
+                  <EmptyStateCard>
+                    <strong>Sin registros 607 visibles.</strong>
+                    <span>
+                      No hay ventas con NCF B01/B02 en la corrida activa. Las
+                      facturas sin comprobante fiscal no entran al 607.
+                    </span>
+                  </EmptyStateCard>
+                )}
+              >
+                {(row) => (
+                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <HeroTable.Cell>
                       {toPreviewText(row.counterpartyIdentificationNumber)}
-                    </td>
-                    <td>{translateSourceId(String(row.sourceId))}</td>
-                    <td>{toPreviewText(row.documentNumber)}</td>
-                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
-                    <td>{resolveDgiiDocumentType(row.documentFiscalNumber)}</td>
-                    <td>
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {translateSourceId(String(row.sourceId))}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentFiscalNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {resolveDgiiDocumentType(row.documentFiscalNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
                       {formatShortDate(row.retentionDate ?? row.issuedAt)}
-                    </td>
-                    <td>{formatMoney(row.total)}</td>
-                    <td>{formatMoney(row.itbisTotal)}</td>
-                    <td>{formatMoney(row.itbisWithheld)}</td>
-                    <td>{formatMoney(row.incomeTaxWithheld)}</td>
-                    <td>{formatMoney(row.cash)}</td>
-                    <td>{formatMoney(row.checkTransfer)}</td>
-                    <td>{formatMoney(row.card)}</td>
-                    <td>{formatMoney(row.creditSale)}</td>
-                    <td>{toPreviewText(row.invoiceId ?? row.invoiceNcf)}</td>
-                    <td>
-                      <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </WidePreviewTable>
-          </PreviewTableWrap>
-        )}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.itbisTotal)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.itbisWithheld)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.incomeTaxWithheld)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.cash)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.checkTransfer)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.card)}</HeroTable.Cell>
+                    <HeroTable.Cell>{formatMoney(row.creditSale)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.invoiceId ?? row.invoiceNcf)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      <HeroChip color="default" size="sm" variant="soft">
+                        <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
+                      </HeroChip>
+                    </HeroTable.Cell>
+                  </HeroTable.Row>
+                )}
+              </HeroTable.Body>
+            </HeroTable.Content>
+          </HeroTable.ScrollContainer>
+        </HeroTable>
 
         {excludedRows.length ? (
           <ExcludedRecordsTable
@@ -1075,60 +1231,88 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
               Perdida - 07 Otros.
             </SectionDescription>
           </div>
-          <StatusTag $tone={getStatusTone(run.status)}>
-            {resolveMonthlyComplianceStatusLabel(run.status)}
-          </StatusTag>
+          <HeroChip
+            className="w-fit"
+            color={
+              getStatusTone(run.status) === 'neutral'
+                ? 'default'
+                : getStatusTone(run.status)
+            }
+            variant="soft"
+          >
+            <HeroChip.Label>
+              {resolveMonthlyComplianceStatusLabel(run.status)}
+            </HeroChip.Label>
+          </HeroChip>
         </PreviewHeader>
       </HeroCard.Header>
       <HeroCard.Content>
-        {!rows.length ? (
-          <EmptyStateCard>
-            <strong>Sin registros 608 visibles.</strong>
-            <span>
-              Genera una corrida nueva o revisa si el periodo tiene comprobantes
-              anulados.
-            </span>
-          </EmptyStateCard>
-        ) : (
-          <PreviewTableWrap>
-            <PreviewTable>
-              <thead>
-                <tr>
-                  <th>Fuente</th>
-                  <th>Documento</th>
-                  <th>NCF anulado</th>
-                  <th>Fecha</th>
-                  <th>Razon</th>
-                  <th>Descripcion</th>
-                  <th>Factura ref.</th>
-                  <th>ID origen</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
-                    <td>{translateSourceId(String(row.sourceId))}</td>
-                    <td>{toPreviewText(row.documentNumber)}</td>
-                    <td>{toPreviewText(row.documentFiscalNumber)}</td>
-                    <td>{formatShortDate(row.issuedAt)}</td>
-                    <td>{toPreviewText(row.reasonCode)}</td>
-                    <td>{toPreviewText(row.reasonLabel ?? row.reason)}</td>
-                    <td>{toPreviewText(row.invoiceId)}</td>
-                    <td>{toPreviewText(row.recordId)}</td>
-                    <td>
-                      <InlineStatus>
-                        {toPreviewText(row.status) === '-'
-                          ? 'Registrado'
-                          : toPreviewText(row.status)}
-                      </InlineStatus>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </PreviewTable>
-          </PreviewTableWrap>
-        )}
+        <HeroTable>
+          <HeroTable.ScrollContainer>
+            <HeroTable.Content
+              aria-label="Detalle 608"
+              className="min-w-[1040px]"
+            >
+              <HeroTable.Header>
+                <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
+                <HeroTable.Column>Documento</HeroTable.Column>
+                <HeroTable.Column>NCF anulado</HeroTable.Column>
+                <HeroTable.Column>Fecha</HeroTable.Column>
+                <HeroTable.Column>Razon</HeroTable.Column>
+                <HeroTable.Column>Descripcion</HeroTable.Column>
+                <HeroTable.Column>Factura ref.</HeroTable.Column>
+                <HeroTable.Column>ID origen</HeroTable.Column>
+                <HeroTable.Column>Estado</HeroTable.Column>
+              </HeroTable.Header>
+              <HeroTable.Body
+                items={rows}
+                renderEmptyState={() => (
+                  <EmptyStateCard>
+                    <strong>Sin registros 608 visibles.</strong>
+                    <span>
+                      Genera una corrida nueva o revisa si el periodo tiene
+                      comprobantes anulados.
+                    </span>
+                  </EmptyStateCard>
+                )}
+              >
+                {(row) => (
+                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                    <HeroTable.Cell>
+                      {translateSourceId(String(row.sourceId))}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.documentFiscalNumber)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatShortDate(row.issuedAt)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{toPreviewText(row.reasonCode)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.reasonLabel ?? row.reason)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.invoiceId)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>{toPreviewText(row.recordId)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      <HeroChip color="default" size="sm" variant="soft">
+                        <HeroChip.Label>
+                          {toPreviewText(row.status) === '-'
+                            ? 'Registrado'
+                            : toPreviewText(row.status)}
+                        </HeroChip.Label>
+                      </HeroChip>
+                    </HeroTable.Cell>
+                  </HeroTable.Row>
+                )}
+              </HeroTable.Body>
+            </HeroTable.Content>
+          </HeroTable.ScrollContainer>
+        </HeroTable>
       </HeroCard.Content>
     </PreviewPanel>
   );
@@ -1143,40 +1327,50 @@ const ExcludedRecordsTable = ({
 }) => (
   <ExcludedPanel>
     <ExcludedTitle>{title}</ExcludedTitle>
-    <PreviewTableWrap>
-      <PreviewTable>
-        <thead>
-          <tr>
-            <th>Fuente</th>
-            <th>Documento</th>
-            <th>ID origen</th>
-            <th>NCF</th>
-            <th>Fecha</th>
-            <th>Total</th>
-            <th>ITBIS</th>
-            <th>Estado</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={`${row.sourceId}-${row.recordId ?? row.index}`}>
-              <td>{translateSourceId(String(row.sourceId))}</td>
-              <td>{toPreviewText(row.documentNumber)}</td>
-              <td>{toPreviewText(row.recordId)}</td>
-              <td>{toPreviewText(row.documentFiscalNumber)}</td>
-              <td>{formatShortDate(row.retentionDate ?? row.issuedAt)}</td>
-              <td>{formatMoney(row.total)}</td>
-              <td>{formatMoney(row.itbisTotal)}</td>
-              <td>
-                <InlineStatus>{toPreviewText(row.status)}</InlineStatus>
-              </td>
-              <td>{resolveExcludedReason(row)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </PreviewTable>
-    </PreviewTableWrap>
+    <HeroTable>
+      <HeroTable.ScrollContainer>
+        <HeroTable.Content aria-label={title} className="min-w-[1040px]">
+          <HeroTable.Header>
+            <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
+            <HeroTable.Column>Documento</HeroTable.Column>
+            <HeroTable.Column>ID origen</HeroTable.Column>
+            <HeroTable.Column>NCF</HeroTable.Column>
+            <HeroTable.Column>Fecha</HeroTable.Column>
+            <HeroTable.Column>Total</HeroTable.Column>
+            <HeroTable.Column>ITBIS</HeroTable.Column>
+            <HeroTable.Column>Estado</HeroTable.Column>
+            <HeroTable.Column>Motivo</HeroTable.Column>
+          </HeroTable.Header>
+          <HeroTable.Body items={rows}>
+            {(row) => (
+              <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                <HeroTable.Cell>
+                  {translateSourceId(String(row.sourceId))}
+                </HeroTable.Cell>
+                <HeroTable.Cell>
+                  {toPreviewText(row.documentNumber)}
+                </HeroTable.Cell>
+                <HeroTable.Cell>{toPreviewText(row.recordId)}</HeroTable.Cell>
+                <HeroTable.Cell>
+                  {toPreviewText(row.documentFiscalNumber)}
+                </HeroTable.Cell>
+                <HeroTable.Cell>
+                  {formatShortDate(row.retentionDate ?? row.issuedAt)}
+                </HeroTable.Cell>
+                <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
+                <HeroTable.Cell>{formatMoney(row.itbisTotal)}</HeroTable.Cell>
+                <HeroTable.Cell>
+                  <HeroChip color="default" size="sm" variant="soft">
+                    <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
+                  </HeroChip>
+                </HeroTable.Cell>
+                <HeroTable.Cell>{resolveExcludedReason(row)}</HeroTable.Cell>
+              </HeroTable.Row>
+            )}
+          </HeroTable.Body>
+        </HeroTable.Content>
+      </HeroTable.ScrollContainer>
+    </HeroTable>
   </ExcludedPanel>
 );
 
@@ -1199,9 +1393,19 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
             Creado {formatMonthlyComplianceRunDate(run.createdAt)}
           </SectionDescription>
         </div>
-        <StatusTag $tone={getStatusTone(run.status)}>
-          {resolveMonthlyComplianceStatusLabel(run.status)}
-        </StatusTag>
+        <HeroChip
+          className="w-fit"
+          color={
+            getStatusTone(run.status) === 'neutral'
+              ? 'default'
+              : getStatusTone(run.status)
+          }
+          variant="soft"
+        >
+          <HeroChip.Label>
+            {resolveMonthlyComplianceStatusLabel(run.status)}
+          </HeroChip.Label>
+        </HeroChip>
       </DetailHeader>
 
       <MiniStats>
@@ -1361,8 +1565,17 @@ const PeriodSelect = styled(HeroSelect)`
   flex: 0 0 auto;
 `;
 
-const StyledTabs = styled(HeroTabs)`
+const ReportSelect = styled(HeroSelect)`
+  width: 140px;
+  min-width: 140px;
+  flex: 0 0 auto;
+`;
+
+const WorkspaceWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: var(--ds-space-4);
+  margin-top: var(--ds-space-2);
 `;
 
 const ComplianceAlert = styled(HeroAlert)`
@@ -1373,33 +1586,6 @@ const ComplianceAlert = styled(HeroAlert)`
   .alert__description {
     color: var(--ds-color-text-secondary);
   }
-`;
-
-const StatusTag = styled(HeroChip)<{
-  $tone: 'success' | 'warning' | 'neutral';
-}>`
-  border-radius: var(--ds-radius-pill);
-  padding-inline: 10px;
-  font-weight: var(--ds-font-weight-medium);
-
-  ${({ $tone }) =>
-    $tone === 'success'
-      ? `
-    background: var(--ds-color-state-success-subtle);
-    border: 1px solid var(--ds-color-state-success);
-    color: var(--ds-color-state-success-text);
-  `
-      : $tone === 'warning'
-        ? `
-    background: var(--ds-color-state-warning-subtle);
-    border: 1px solid var(--ds-color-state-warning);
-    color: var(--ds-color-state-warning-text);
-  `
-        : `
-    background: var(--ds-color-bg-surface-hover);
-    border: 1px solid var(--ds-color-border-subtle);
-    color: var(--ds-color-text-secondary);
-  `}
 `;
 
 const IssueSeverityChip = styled(HeroChip)`
@@ -1533,43 +1719,6 @@ const ExecutiveMeta = styled.span`
   font-size: var(--ds-font-size-sm);
 `;
 
-const MiniStatus = styled.span<{
-  $tone: 'success' | 'warning' | 'neutral';
-}>`
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 8px;
-  border-radius: var(--ds-radius-pill);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-semibold);
-
-  ${({ $tone }) =>
-    $tone === 'success'
-      ? `
-    background: #dcfce7;
-    color: #166534;
-  `
-      : $tone === 'warning'
-        ? `
-    background: var(--ds-color-state-warning-subtle);
-    color: var(--ds-color-state-warning-text);
-  `
-        : `
-    background: var(--ds-color-bg-surface-hover);
-    color: var(--ds-color-text-secondary);
-  `}
-
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: var(--ds-radius-pill);
-    background: currentColor;
-  }
-`;
-
 const SupportGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1578,79 +1727,6 @@ const SupportGrid = styled.div`
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
-`;
-
-const SupportPanel = styled.section`
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-  overflow: hidden;
-`;
-
-const SupportTitle = styled.h3`
-  margin: 0;
-  padding: var(--ds-space-4);
-  border-bottom: 1px solid var(--ds-color-border-subtle);
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-md);
-  line-height: var(--ds-line-height-tight);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const SupportList = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const SupportRow = styled.div`
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr) auto auto;
-  gap: var(--ds-space-3);
-  align-items: center;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  border-bottom: 1px solid var(--ds-color-border-subtle);
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  @media (max-width: 720px) {
-    grid-template-columns: 1fr;
-    align-items: flex-start;
-  }
-`;
-
-const SupportDate = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  font-variant-numeric: tabular-nums;
-`;
-
-const SupportMain = styled.span`
-  min-width: 0;
-  color: var(--ds-color-text-primary);
-  font-weight: var(--ds-font-weight-medium);
-`;
-
-const SupportSubtext = styled.span`
-  display: block;
-  margin-top: 2px;
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-`;
-
-const SupportAside = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  white-space: nowrap;
-`;
-
-const SupportEmpty = styled.p`
-  margin: 0;
-  padding: var(--ds-space-4);
-  color: var(--ds-color-text-secondary);
 `;
 
 const PreviewPanel = styled(HeroCard)`
@@ -1673,49 +1749,6 @@ const PreviewHeader = styled.div`
   align-items: flex-start;
 `;
 
-const PreviewTableWrap = styled.div`
-  overflow-x: auto;
-  border: 1px solid var(--ds-color-border-subtle);
-  border-radius: var(--ds-radius-md);
-`;
-
-const PreviewTable = styled.table`
-  width: 100%;
-  min-width: 840px;
-  border-collapse: collapse;
-  font-size: var(--ds-font-size-sm);
-
-  th,
-  td {
-    padding: var(--ds-space-3);
-    border-bottom: 1px solid var(--ds-color-border-subtle);
-    text-align: left;
-    white-space: nowrap;
-  }
-
-  th {
-    background: var(--ds-color-bg-surface-hover);
-    color: var(--ds-color-text-secondary);
-    font-size: var(--ds-font-size-xs);
-    font-weight: var(--ds-font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--ds-letter-spacing-wide);
-  }
-
-  td {
-    color: var(--ds-color-text-primary);
-    font-variant-numeric: tabular-nums;
-  }
-
-  tbody tr:last-child td {
-    border-bottom: 0;
-  }
-`;
-
-const WidePreviewTable = styled(PreviewTable)`
-  min-width: 1680px;
-`;
-
 const ExcludedPanel = styled.div`
   display: flex;
   flex-direction: column;
@@ -1727,17 +1760,6 @@ const ExcludedTitle = styled.strong`
   color: var(--ds-color-text-primary);
   font-size: var(--ds-font-size-sm);
   line-height: var(--ds-line-height-tight);
-`;
-
-const InlineStatus = styled.span`
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-color-bg-surface-hover);
-  border: 1px solid var(--ds-color-border-subtle);
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
 `;
 
 const ModalBody = styled.div`

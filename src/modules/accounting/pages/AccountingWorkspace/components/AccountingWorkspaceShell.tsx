@@ -1,6 +1,5 @@
-import { Skeleton } from 'antd';
+import { Skeleton } from '@heroui/react';
 import type { ReactNode } from 'react';
-import styled from 'styled-components';
 
 interface AccountingWorkspaceShellProps {
   children: ReactNode;
@@ -15,62 +14,35 @@ export const AccountingWorkspaceShell = ({
   navigation,
   notices,
 }: AccountingWorkspaceShellProps) => (
-  <Shell>
-    {notices ? <NoticeStack>{notices}</NoticeStack> : null}
+  <section className="flex w-full flex-col gap-3">
+    {notices ? <div className="flex flex-col gap-3">{notices}</div> : null}
 
-    <WorkspaceSurface>
-      {navigation ? <NavigationSurface>{navigation}</NavigationSurface> : null}
-      <BodySurface>
+    <section className="flex min-w-0 flex-col">
+      {navigation ? (
+        <div className="border-b border-default">{navigation}</div>
+      ) : null}
+      <div className="min-w-0">
         {loading ? (
-          <LoadingState>
-            <LoadingCopy>Preparando datos del modulo contable...</LoadingCopy>
-            <Skeleton active paragraph={{ rows: 8 }} />
-          </LoadingState>
+          <div className="flex flex-col gap-4 py-6">
+            <p className="m-0 text-sm leading-normal text-secondary">
+              Preparando datos del modulo contable...
+            </p>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-full rounded-lg" />
+              <Skeleton className="h-4 w-3/4 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-lg" />
+              <Skeleton className="h-4 w-1/2 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-lg" />
+              <Skeleton className="h-4 w-2/3 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-lg" />
+              <Skeleton className="h-4 w-3/4 rounded-lg" />
+            </div>
+          </div>
         ) : (
           children
         )}
-      </BodySurface>
-    </WorkspaceSurface>
-  </Shell>
+      </div>
+    </section>
+  </section>
 );
 
-const Shell = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  width: 100%;
-`;
-
-const NoticeStack = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-`;
-
-const WorkspaceSurface = styled.section`
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-`;
-
-const NavigationSurface = styled.div`
-  border-bottom: 1px solid var(--ds-color-border-default);
-`;
-
-const BodySurface = styled.div`
-  min-width: 0;
-`;
-
-const LoadingState = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-6) 0;
-`;
-
-const LoadingCopy = styled.p`
-  margin: 0;
-  font-size: var(--ds-font-size-sm);
-  line-height: var(--ds-line-height-normal);
-  color: var(--ds-color-text-secondary);
-`;
