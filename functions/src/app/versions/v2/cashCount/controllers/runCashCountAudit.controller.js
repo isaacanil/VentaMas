@@ -12,6 +12,10 @@ import { isAccountingRolloutEnabledForBusiness } from '../../accounting/utils/ac
 const ALL_BUSINESSES_SENTINEL = 'ALL';
 const CARD_METHODS = new Set(['card', 'credit_card', 'debit_card']);
 const TRANSFER_METHODS = new Set(['transfer', 'bank_transfer', 'check']);
+const RECEIVABLE_MOVEMENT_SOURCE_TYPES = new Set([
+  'receivable_payment',
+  'receivable_payment_void',
+]);
 
 const toBusinessId = (value) =>
   typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
@@ -104,6 +108,36 @@ const sumCashMovementMetrics = (movements = [], sourceType) =>
       acc.total += amount;
       if (isCardMethod(movement?.method)) acc.card += amount;
       if (isTransferMethod(movement?.method)) acc.transfer += amount;
+      return acc;
+    },
+    { count: 0, total: 0, card: 0, transfer: 0 },
+  );
+
+const sumReceivableCashMovementMetrics = (movements = []) =>
+  (Array.isArray(movements) ? movements : []).reduce(
+    (acc, movement) => {
+      if (
+        !RECEIVABLE_MOVEMENT_SOURCE_TYPES.has(movement?.sourceType) ||
+        movement?.status === 'void'
+      ) {
+        return acc;
+      }
+
+      const amount = toNumber(movement?.amount);
+      if (amount <= 0) {
+        return acc;
+      }
+
+      const signedAmount =
+        movement?.sourceType === 'receivable_payment_void' ||
+        movement?.direction === 'out'
+          ? -amount
+          : amount;
+
+      acc.count += 1;
+      acc.total += signedAmount;
+      if (isCardMethod(movement?.method)) acc.card += signedAmount;
+      if (isTransferMethod(movement?.method)) acc.transfer += signedAmount;
       return acc;
     },
     { count: 0, total: 0, card: 0, transfer: 0 },
@@ -252,10 +286,8 @@ async function auditBusiness({ businessId, startMs, endMs, absThreshold }) {
         cashMovements,
         'invoice_pos',
       );
-      const receivableMovementMetrics = sumCashMovementMetrics(
-        cashMovements,
-        'receivable_payment',
-      );
+      const receivableMovementMetrics =
+        sumReceivableCashMovementMetrics(cashMovements);
       const expenseMovementMetrics = sumExpenseCashMovementTotal(cashMovements);
 
       const legacyInvoiceMetrics = sumInvoiceMetrics(invoices);

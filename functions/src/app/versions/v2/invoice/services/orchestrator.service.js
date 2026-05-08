@@ -64,8 +64,24 @@ export async function createPendingInvoice({
   const { invoiceId, alreadyExists } = await db.runTransaction(async (tx) => {
     const idemSnap = await tx.get(idempotencyRef);
     if (idemSnap.exists) {
-      const data = idemSnap.data();
-      return { invoiceId: data.invoiceId, alreadyExists: true };
+      const data = idemSnap.data() || {};
+      const storedPayloadHash = toCleanString(data.payloadHash ?? data.requestHash);
+      if (storedPayloadHash && storedPayloadHash !== requestHash) {
+        throw new https.HttpsError(
+          'already-exists',
+          'La llave de idempotencia ya fue utilizada con otro payload.',
+        );
+      }
+
+      const existingInvoiceId = toCleanString(data.invoiceId);
+      if (!existingInvoiceId) {
+        throw new https.HttpsError(
+          'failed-precondition',
+          'El registro de idempotencia no apunta a una factura valida.',
+        );
+      }
+
+      return { invoiceId: existingInvoiceId, alreadyExists: true };
     }
 
     const monthKey = new Date().toISOString().slice(0, 7);

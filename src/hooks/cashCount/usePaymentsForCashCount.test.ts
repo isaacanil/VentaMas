@@ -43,6 +43,16 @@ describe('isReceivableCashMovement', () => {
       }),
     ).toBe(false);
   });
+
+  it('accepts posted receivable void movements as negative cash count entries', () => {
+    expect(
+      isReceivableCashMovement({
+        ...baseMovement,
+        direction: 'out',
+        sourceType: 'receivable_payment_void',
+      }),
+    ).toBe(true);
+  });
 });
 
 describe('mapCashMovementToReceivablePayment', () => {
@@ -63,11 +73,33 @@ describe('mapCashMovementToReceivablePayment', () => {
       originId: 'payment-1',
       paymentMethods: [
         {
-          method: 'credit_card',
+          method: 'card',
           status: true,
           value: 250,
           amount: 250,
           reference: 'REF-1',
+        },
+      ],
+    });
+  });
+
+  it('maps receivable void movements with negative amounts', () => {
+    const payment = mapCashMovementToReceivablePayment({
+      ...baseMovement,
+      direction: 'out',
+      sourceType: 'receivable_payment_void',
+      amount: 75,
+    });
+
+    expect(payment).toMatchObject({
+      amount: -75,
+      totalPaid: -75,
+      totalAmount: -75,
+      originType: 'receivable_payment_void',
+      paymentMethods: [
+        {
+          value: -75,
+          amount: -75,
         },
       ],
     });

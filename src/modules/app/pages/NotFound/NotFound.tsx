@@ -12,43 +12,71 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   height: 100%;
-  background-color: #f8f8f8;
+  min-height: 100vh;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  background-color: var(--ds-color-bg-page);
 `;
 
 const IconWrapper = styled.div`
-  margin-bottom: 2rem;
-  font-size: 6rem;
-  color: #ff8c00;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: var(--ds-space-5);
+  color: var(--ds-color-state-warning-text);
+  font-size: 2.5rem;
+  background: var(--ds-color-state-warning-subtle);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-2xl);
 `;
 
 const Title = styled.h1`
   margin: 0;
-  font-size: 3rem;
-  font-weight: 700;
-  color: #333;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-2xl);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
   text-align: center;
 `;
 
 const Subtitle = styled.p`
-  margin: 1rem 0 3.4rem;
-  font-size: 1.5rem;
-  color: #555;
+  max-width: 420px;
+  margin: var(--ds-space-3) 0 var(--ds-space-6);
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-base);
+  line-height: var(--ds-line-height-normal);
   text-align: center;
 `;
 
 const Button = styled(Link)`
-  padding: 0.4em 1.6rem;
-  font-size: 1.2rem;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--ds-space-4);
+  color: var(--ds-color-action-on-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-normal);
+  text-decoration: none;
   cursor: pointer;
-  background-color: var(--color);
+  background-color: var(--ds-color-action-primary);
   border: none;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease-in-out;
+  border-radius: var(--ds-radius-md);
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 
   &:hover {
-    background-color: var(--color);
-    transform: translateY(-2px);
+    color: var(--ds-color-action-on-primary);
+    background-color: var(--ds-color-action-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ds-color-border-focus);
+    outline-offset: 3px;
   }
 `;
 
@@ -59,8 +87,10 @@ export const NotFound = () => {
       <IconWrapper>
         <FontAwesomeIcon icon={faExclamationTriangle} />
       </IconWrapper>
-      <Title>¡Vaya!</Title>
-      <Subtitle>No pudimos encontrar la página que estás buscando.</Subtitle>
+      <Title>Pagina no encontrada</Title>
+      <Subtitle>
+        La ruta no existe, fue movida o ya no esta disponible para este negocio.
+      </Subtitle>
       <Button to={HOME}>Volver al inicio</Button>
     </Container>
   );

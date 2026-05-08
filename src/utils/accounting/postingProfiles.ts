@@ -146,6 +146,7 @@ export const ACCOUNTING_POSTING_AMOUNT_SOURCE_LABELS: Record<
   sale_cash_received: 'Monto cobrado en caja',
   sale_bank_received: 'Monto cobrado por banco',
   sale_other_received: 'Monto cobrado por otro medio',
+  credit_note_net_total: 'Nota de crédito sin impuesto',
   purchase_total: 'Total de compra',
   expense_total: 'Total de gasto',
   tax_total: 'Total de impuesto',
@@ -236,6 +237,7 @@ export const normalizeAccountingPostingAmountSource = (
     case 'sale_cash_received':
     case 'sale_bank_received':
     case 'sale_other_received':
+    case 'credit_note_net_total':
     case 'purchase_total':
     case 'expense_total':
     case 'tax_total':
@@ -359,7 +361,7 @@ export const normalizeAccountingPostingProfileRecord = (
     status: normalizeAccountingPostingProfileStatus(record.status),
     priority: draft.priority,
     conditions: draft.conditions,
-    linesTemplate: draft.linesTemplate,
+    linesTemplate: draft.linesTemplate as AccountingPostingLineTemplate[],
     createdAt: (record.createdAt as AccountingPostingProfile['createdAt']) ?? null,
     updatedAt: (record.updatedAt as AccountingPostingProfile['updatedAt']) ?? null,
     createdBy: toCleanString(record.createdBy),
@@ -561,6 +563,100 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
     ],
   },
   {
+    seedKey: 'ar_payment_void_cash',
+    name: 'Anulación de cobro en caja',
+    description: 'Reversa un cobro aplicado a cuentas por cobrar usando caja.',
+    eventType: 'accounts_receivable.payment.voided',
+    moduleKey: 'accounts_receivable',
+    priority: 32,
+    conditions: {
+      settlementKind: 'cash',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'accounts_receivable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'cash',
+        amountSource: 'accounts_receivable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ar_payment_void_bank',
+    name: 'Anulación de cobro por banco',
+    description: 'Reversa un cobro aplicado a cuentas por cobrar usando banco.',
+    eventType: 'accounts_receivable.payment.voided',
+    moduleKey: 'accounts_receivable',
+    priority: 37,
+    conditions: {
+      settlementKind: 'bank',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'accounts_receivable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'bank',
+        amountSource: 'accounts_receivable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'customer_credit_note_issued',
+    name: 'Nota de crédito emitida a cliente',
+    description:
+      'Reconoce una nota de crédito emitida contra ventas, impuestos y crédito a favor del cliente.',
+    eventType: 'customer_credit_note.issued',
+    moduleKey: 'accounts_receivable',
+    priority: 38,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'sales',
+        amountSource: 'credit_note_net_total',
+      },
+      {
+        side: 'debit',
+        accountSystemKey: 'tax_payable',
+        amountSource: 'tax_total',
+        omitIfZero: true,
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'customer_credits',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
+    seedKey: 'customer_credit_note_applied',
+    name: 'Nota de crédito aplicada a CxC',
+    description:
+      'Aplica saldo a favor del cliente contra una cuenta por cobrar.',
+    eventType: 'customer_credit_note.applied',
+    moduleKey: 'accounts_receivable',
+    priority: 39,
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'customer_credits',
+        amountSource: 'document_total',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_receivable',
+        amountSource: 'document_total',
+      },
+    ],
+  },
+  {
     seedKey: 'purchase_committed_inventory',
     name: 'Compra inventariable a crédito',
     description: 'Compra confirmada de inventario con obligación al suplidor.',
@@ -698,6 +794,52 @@ const DEFAULT_ACCOUNTING_POSTING_PROFILE_SEEDS: DefaultPostingProfileSeed[] = [
       {
         side: 'credit',
         accountSystemKey: 'cash',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_void_bank',
+    name: 'Anulación de pago a suplidor por banco',
+    description: 'Reversa un pago de cuentas por pagar usando banco.',
+    eventType: 'accounts_payable.payment.voided',
+    moduleKey: 'accounts_payable',
+    priority: 52,
+    conditions: {
+      settlementKind: 'bank',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'bank',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+    ],
+  },
+  {
+    seedKey: 'ap_payment_void_cash',
+    name: 'Anulación de pago a suplidor por caja',
+    description: 'Reversa un pago de cuentas por pagar usando caja.',
+    eventType: 'accounts_payable.payment.voided',
+    moduleKey: 'accounts_payable',
+    priority: 47,
+    conditions: {
+      settlementKind: 'cash',
+    },
+    linesTemplate: [
+      {
+        side: 'debit',
+        accountSystemKey: 'cash',
+        amountSource: 'accounts_payable_payment_amount',
+      },
+      {
+        side: 'credit',
+        accountSystemKey: 'accounts_payable',
         amountSource: 'accounts_payable_payment_amount',
       },
     ],

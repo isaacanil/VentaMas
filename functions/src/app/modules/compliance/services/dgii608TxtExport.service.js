@@ -49,14 +49,18 @@ export const buildDgii608TxtRow = (record) => {
   const fiscalNumber =
     toCleanString(record?.data?.NCF) ?? toCleanString(record?.ncf) ?? '';
   if (!/^[A-Z0-9]{11,19}$/i.test(fiscalNumber)) {
-    throw new Error(`NCF inválido para exportar 608: ${fiscalNumber || 'sin valor'}.`);
+    throw new Error(
+      `NCF inválido para exportar 608: ${fiscalNumber || 'sin valor'}.`,
+    );
   }
 
   const cancellationDate = formatDate(
     record?.voidedAt ?? record?.createdAt ?? record?.issuedAt,
   );
   if (!cancellationDate) {
-    throw new Error(`Fecha de anulación faltante para exportar el NCF ${fiscalNumber}.`);
+    throw new Error(
+      `Fecha de anulación faltante para exportar el NCF ${fiscalNumber}.`,
+    );
   }
 
   const normalizedReasonCode = normalizeDigits(record?.voidReasonCode);
@@ -64,7 +68,9 @@ export const buildDgii608TxtRow = (record) => {
     ? normalizedReasonCode.padStart(2, '0')
     : '';
   if (!/^(0[1-9]|10)$/.test(reasonCode)) {
-    throw new Error(`Tipo de anulación faltante para exportar el NCF ${fiscalNumber}.`);
+    throw new Error(
+      `Tipo de anulación faltante para exportar el NCF ${fiscalNumber}.`,
+    );
   }
 
   return [fiscalNumber, cancellationDate, reasonCode].join('|');
@@ -78,5 +84,5 @@ export const buildDgii608TxtContent = ({ businessRnc, periodKey, rows }) => {
 
 export const buildDgii608TxtFileName = ({ businessRnc, periodKey }) => {
   const period = periodKey.replace('-', '');
-  return `608_${normalizeDigits(businessRnc)}_${period}.txt`;
+  return `DGII_F_608_${normalizeDigits(businessRnc)}_${period}.TXT`;
 };

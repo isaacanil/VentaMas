@@ -1,16 +1,18 @@
-// ESLint 9 + Vite + React + Storybook + unused-imports + import/order
+// ESLint 9 + Vite + React + optional Storybook + import/no-unresolved
 import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import reactHooks from 'eslint-plugin-react-hooks';
-import storybook from 'eslint-plugin-storybook';
-import unusedImports from 'eslint-plugin-unused-imports';
 import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 const ENABLE_TYPED_LINT = process.env.ESLINT_TYPED === 'true';
+const ENABLE_STORYBOOK_LINT = process.env.ESLINT_STORYBOOK === 'true';
+const storybookConfigs = ENABLE_STORYBOOK_LINT
+  ? (await import('eslint-plugin-storybook')).default.configs['flat/recommended']
+  : [];
 
 export default [
   {
@@ -36,8 +38,7 @@ export default [
       react: { version: 'detect' },
     },
   },
-  ...storybook.configs['flat/recommended'],
-  ...tseslint.configs.stylistic,
+  ...storybookConfigs,
 
   {
     files: ['src/**/*.{js,jsx,mjs,cjs}'],
@@ -64,7 +65,6 @@ export default [
       },
     },
     plugins: {
-      'unused-imports': unusedImports,
       import: importPlugin,
       react,
       'react-refresh': reactRefresh,
@@ -76,9 +76,6 @@ export default [
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'off',
-      'unused-imports/no-unused-vars': 'off',
-
       // === import/order útil en Vite ===
       'import/no-unresolved': [
         'error',
@@ -160,7 +157,6 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-      'unused-imports': unusedImports,
       import: importPlugin,
       react,
       'react-refresh': reactRefresh,
@@ -175,9 +171,6 @@ export default [
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'off',
-      'unused-imports/no-unused-vars': 'off',
-
       // Import helpers
       'import/no-unresolved': [
         'error',

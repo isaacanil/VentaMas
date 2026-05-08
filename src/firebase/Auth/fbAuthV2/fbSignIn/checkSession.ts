@@ -230,6 +230,8 @@ export function useAutomaticLogin() {
   >(null);
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [error, setError] = useState<Error | null>(null);
+  const [sessionExpiredDialogOpen, setSessionExpiredDialogOpen] =
+    useState(false);
 
   const openModalOnce = useCallback(
     (key: string, renderModal: (reset: () => void) => void) => {
@@ -355,19 +357,17 @@ export function useAutomaticLogin() {
   );
 
   const showSessionExpiredModal = useCallback(() => {
-    openModalOnce('session-expired', (reset) => {
-      Modal.warning({
-        title: 'Sesion expirada',
-        content: 'Tu sesion ha expirado. Por favor, inicia sesion nuevamente.',
-        okText: 'Aceptar',
-        centered: true,
-        maskClosable: false,
-        keyboard: false,
-        onOk: () => handleLogout({ redirect: true }),
-        afterClose: reset,
-      });
+    openModalOnce('session-expired', () => {
+      setSessionExpiredDialogOpen(true);
     });
-  }, [handleLogout, openModalOnce]);
+  }, [openModalOnce]);
+
+  const closeSessionExpiredDialog = useCallback(() => {
+    setSessionExpiredDialogOpen(false);
+    if (modalKeyRef.current === 'session-expired') {
+      modalKeyRef.current = null;
+    }
+  }, []);
 
   const refreshSession = useCallback(
     async (
@@ -643,5 +643,10 @@ export function useAutomaticLogin() {
     showInactivityWarning,
   ]);
 
-  return { status, error };
+  return {
+    status,
+    error,
+    sessionExpiredDialogOpen,
+    closeSessionExpiredDialog,
+  };
 }

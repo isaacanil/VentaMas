@@ -28,14 +28,21 @@ import { SubscriptionStatusBanner } from './components/SubscriptionStatusBanner/
 import type { JSX } from 'react';
 
 const DashboardShortcuts = lazy(() =>
-  import('./components/DashboardShortcuts/DashboardShortcuts').then(
-    (module) => ({ default: module.DashboardShortcuts }),
+  import('./components/HomeDashboard/HomeDashboard').then(
+    (module) => ({ default: module.HomeDashboard }),
   ),
 );
 
 type AuthUser = {
   role?: UserRoleLike | null;
+  activeBusinessId?: string | null;
+  businessId?: string | null;
+  businessID?: string | null;
   businessHasOwners?: boolean | null;
+  displayName?: string | null;
+  realName?: string | null;
+  name?: string | null;
+  [key: string]: unknown;
 } | null | false;
 type HomeUserMeta = {
   authReady: boolean;
@@ -52,6 +59,7 @@ type HomeUserMeta = {
 interface RootState {
   user?: {
     user?: AuthUser;
+    authReady?: boolean;
   };
 }
 
@@ -214,7 +222,11 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
               }
             >
               <SubscriptionStatusBanner business={business} user={user} />
-              <DashboardShortcuts includeDeveloperFeatures={developerMode} />
+              <DashboardShortcuts
+                businessName={business?.name ?? null}
+                displayName={displayName}
+                includeDeveloperFeatures={developerMode}
+              />
             </Suspense>
           )}
         </MainContentInner>

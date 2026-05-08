@@ -26,13 +26,34 @@ export const PAYMENT_METHOD_ALIASES: Record<
   supplierCreditNote: 'supplierCreditNote',
 };
 
-export const CANONICAL_PAYMENT_METHOD_CODES: CanonicalPaymentMethodCode[] = [
+export const CASH_PAYMENT_METHOD_CODES = [
   'cash',
+] as const satisfies readonly CanonicalPaymentMethodCode[];
+
+export const BANK_PAYMENT_METHOD_CODES = [
   'card',
   'transfer',
+] as const satisfies readonly CanonicalPaymentMethodCode[];
+
+export const CREDIT_PAYMENT_METHOD_CODES = [
   'creditNote',
   'supplierCreditNote',
-];
+] as const satisfies readonly CanonicalPaymentMethodCode[];
+
+export const CANONICAL_PAYMENT_METHOD_CODES = [
+  ...CASH_PAYMENT_METHOD_CODES,
+  ...BANK_PAYMENT_METHOD_CODES,
+  ...CREDIT_PAYMENT_METHOD_CODES,
+] as const satisfies readonly CanonicalPaymentMethodCode[];
+
+export const CANONICAL_PAYMENT_METHOD_CODE_SET =
+  new Set<CanonicalPaymentMethodCode>([
+    'cash',
+    'card',
+    'transfer',
+    'creditNote',
+    'supplierCreditNote',
+  ]);
 
 export const normalizePaymentMethodCode = (
   value: unknown,
@@ -48,4 +69,4 @@ export const isCanonicalPaymentMethodCode = (
   value: unknown,
 ): value is CanonicalPaymentMethodCode =>
   typeof value === 'string' &&
-  CANONICAL_PAYMENT_METHOD_CODES.includes(value as CanonicalPaymentMethodCode);
+  CANONICAL_PAYMENT_METHOD_CODE_SET.has(value as CanonicalPaymentMethodCode);

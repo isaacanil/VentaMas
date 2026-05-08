@@ -92,7 +92,16 @@ describe('exportDgiiTxtReport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     collectionDocsByPath.clear();
-    collectionDocsByPath.set('businesses/business-1/salesThirdPartyWithholdings', []);
+    collectionDocsByPath.set('businesses/business-1/purchases', []);
+    collectionDocsByPath.set('businesses/business-1/expenses', []);
+    collectionDocsByPath.set(
+      'businesses/business-1/accountsPayablePayments',
+      [],
+    );
+    collectionDocsByPath.set(
+      'businesses/business-1/salesThirdPartyWithholdings',
+      [],
+    );
 
     resolveCallableAuthUidMock.mockResolvedValue('user-1');
     assertUserAccessMock.mockResolvedValue(undefined);
@@ -101,8 +110,8 @@ describe('exportDgiiTxtReport', () => {
         return {
           exists: true,
           data: () => ({
-            rnc: '101010101',
             business: {
+              rnc: '101010101',
               features: {
                 fiscal: {
                   reportingEnabled: true,
@@ -119,6 +128,126 @@ describe('exportDgiiTxtReport', () => {
         data: () => ({}),
       };
     });
+  });
+
+  it('exporta TXT 606 con compras, gastos y pagos vinculados', async () => {
+    collectionDocsByPath.set('businesses/business-1/purchases', [
+      {
+        id: 'purchase-1',
+        data: () => ({
+          id: 'purchase-1',
+          numberId: 'PUR-001',
+          supplierId: 'supplier-1',
+          supplier: {
+            rnc: '101010101',
+          },
+          documentType: 'inventory',
+          completedAt: {
+            toDate: () => new Date('2026-04-04T13:20:00.000Z'),
+          },
+          taxReceipt: {
+            ncf: 'B01000000010',
+          },
+          totals: {
+            total: 1180,
+          },
+          taxBreakdown: {
+            itbisTotal: 180,
+          },
+          classification: {
+            dgii606ExpenseType: '09',
+          },
+          status: 'completed',
+        }),
+      },
+    ]);
+    collectionDocsByPath.set('businesses/business-1/expenses', [
+      {
+        id: 'expense-1',
+        data: () => ({
+          id: 'expense-1',
+          number: 'EXP-001',
+          supplierId: 'supplier-2',
+          supplier: {
+            personalID: '001-2345678-9',
+          },
+          documentType: 'expense',
+          expenseDate: {
+            toDate: () => new Date('2026-04-06T10:00:00.000Z'),
+          },
+          paymentAt: {
+            toDate: () => new Date('2026-04-06T15:00:00.000Z'),
+          },
+          paymentMethods: [{ method: 'cash', amount: 590 }],
+          taxReceipt: {
+            ncf: 'B01000000011',
+          },
+          totals: {
+            total: 590,
+          },
+          taxBreakdown: {
+            itbisTotal: 90,
+          },
+          classification: {
+            dgii606ExpenseType: '02',
+          },
+          status: 'recorded',
+        }),
+      },
+    ]);
+    collectionDocsByPath.set('businesses/business-1/accountsPayablePayments', [
+      {
+        id: 'payment-1',
+        data: () => ({
+          purchaseId: 'purchase-1',
+          occurredAt: {
+            toDate: () => new Date('2026-04-08T10:30:00.000Z'),
+          },
+          paymentMethods: [{ method: 'transfer', amount: 1180 }],
+          paymentStateSnapshot: { paid: 1180 },
+          metadata: { appliedCreditNotes: [] },
+          status: 'completed',
+        }),
+      },
+    ]);
+
+    const result = await exportDgiiTxtReport({
+      data: {
+        businessId: 'business-1',
+        periodKey: '2026-04',
+        reportCode: 'DGII_606',
+      },
+    });
+
+    const lines = result.content.split('\r\n');
+    const purchaseColumns = lines[1].split('|');
+    const expenseColumns = lines[2].split('|');
+
+    expect(result.ok).toBe(true);
+    expect(result.fileName).toBe('DGII_F_606_101010101_202604.TXT');
+    expect(result.rowCount).toBe(2);
+    expect(lines[0]).toBe('606|101010101|202604|000000000002');
+    expect(purchaseColumns).toHaveLength(23);
+    expect(purchaseColumns.slice(0, 11)).toEqual([
+      '101010101',
+      '1',
+      '09',
+      'B01000000010',
+      '',
+      '20260404',
+      '20260408',
+      '0.00',
+      '1000.00',
+      '1000.00',
+      '180.00',
+    ]);
+    expect(purchaseColumns[22]).toBe('02');
+    expect(expenseColumns).toHaveLength(23);
+    expect(expenseColumns[0]).toBe('00123456789');
+    expect(expenseColumns[2]).toBe('02');
+    expect(expenseColumns[7]).toBe('500.00');
+    expect(expenseColumns[8]).toBe('0.00');
+    expect(expenseColumns[22]).toBe('01');
   });
 
   it('exporta solo filas válidas para 607 y genera 23 columnas', async () => {
@@ -237,18 +366,22 @@ describe('exportDgiiTxtReport', () => {
     const detailLines = lines.slice(1);
 
     expect(result.ok).toBe(true);
-    expect(result.fileName).toBe('607_101010101_202604.txt');
+    expect(result.fileName).toBe('DGII_F_607_101010101_202604.TXT');
     expect(result.rowCount).toBe(3);
     expect(lines[0]).toBe('607|101010101|202604|000000000003');
     expect(detailLines).toHaveLength(3);
-    expect(detailLines.every((line) => line.split('|').length === 23)).toBe(true);
-    expect(detailLines.some((line) => line.includes('B0200000771'))).toBe(false);
-    expect(detailLines.some((line) => line.startsWith('00123456789|2|B0200000500|'))).toBe(
+    expect(detailLines.every((line) => line.split('|').length === 23)).toBe(
       true,
     );
-    expect(detailLines.some((line) => line.includes('|B04000000009|B01000000015|'))).toBe(
-      true,
+    expect(detailLines.some((line) => line.includes('B0200000771'))).toBe(
+      false,
     );
+    expect(
+      detailLines.some((line) => line.startsWith('00123456789|2|B0200000500|')),
+    ).toBe(true);
+    expect(
+      detailLines.some((line) => line.includes('|B04000000009|B01000000015|')),
+    ).toBe(true);
   });
 
   it('rechaza exportación cuando una fila detallada requiere identificación y no la tiene', async () => {
@@ -294,7 +427,9 @@ describe('exportDgiiTxtReport', () => {
           reportCode: 'DGII_607',
         },
       }),
-    ).rejects.toThrow('Falta identificación del cliente para exportar el NCF B01000000015.');
+    ).rejects.toThrow(
+      'Falta identificación del cliente para exportar el NCF B01000000015.',
+    );
   });
 
   it('rechaza exportación cuando el negocio no tiene RNC para el encabezado', async () => {
@@ -394,7 +529,7 @@ describe('exportDgiiTxtReport', () => {
     const detailLines = lines.slice(1);
 
     expect(result.ok).toBe(true);
-    expect(result.fileName).toBe('608_101010101_202604.txt');
+    expect(result.fileName).toBe('DGII_F_608_101010101_202604.TXT');
     expect(result.rowCount).toBe(2);
     expect(lines[0]).toBe('608|101010101|202604|000002');
     expect(detailLines).toEqual([

@@ -7,13 +7,13 @@ describe('accumulatePurchaseData', () => {
     const result = accumulatePurchaseData([
       {
         data: {
-          createdAt: Date.UTC(2026, 2, 1),
+          createdAt: Date.UTC(2026, 2, 1, 12),
           total: 100,
         },
       },
       {
         data: {
-          createdAt: Date.UTC(2026, 2, 15),
+          createdAt: Date.UTC(2026, 2, 15, 12),
           total: 25,
         },
       },

@@ -1,6 +1,7 @@
 import type {
   AccountingOperationType,
   ExchangeRateSnapshot,
+  LiquidityEntrySourceType,
 } from '@/types/accounting';
 import type { TimestampLike } from '@/utils/date/types';
 
@@ -131,14 +132,48 @@ export interface SupplierCreditNote {
   metadata?: Record<string, unknown>;
 }
 
-export type CashMovementSourceType =
-  | 'invoice_pos'
-  | 'receivable_payment'
-  | 'supplier_payment'
-  | 'expense'
-  | 'credit_note_application'
-  | 'cash_adjustment'
-  | 'bank_statement_adjustment';
+export type CashMovementSourceType = LiquidityEntrySourceType;
+
+export const CASH_MOVEMENT_SOURCE_OPENING_BALANCE = 'opening_balance' as const;
+export const CASH_MOVEMENT_SOURCE_INTERNAL_TRANSFER =
+  'internal_transfer' as const;
+export const CASH_MOVEMENT_SOURCE_MANUAL_ADJUSTMENT =
+  'manual_adjustment' as const;
+export const CASH_MOVEMENT_SOURCE_BANK_RECONCILIATION =
+  'bank_reconciliation' as const;
+export const CASH_MOVEMENT_SOURCE_BANK_STATEMENT_ADJUSTMENT =
+  'bank_statement_adjustment' as const;
+export const CASH_MOVEMENT_SOURCE_INVOICE_POS = 'invoice_pos' as const;
+export const CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT =
+  'receivable_payment' as const;
+export const CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID =
+  'receivable_payment_void' as const;
+export const CASH_MOVEMENT_SOURCE_SUPPLIER_PAYMENT =
+  'supplier_payment' as const;
+export const CASH_MOVEMENT_SOURCE_EXPENSE = 'expense' as const;
+export const CASH_MOVEMENT_SOURCE_CREDIT_NOTE_APPLICATION =
+  'credit_note_application' as const;
+export const CASH_MOVEMENT_SOURCE_CASH_ADJUSTMENT = 'cash_adjustment' as const;
+
+export const CASH_MOVEMENT_SOURCE_TYPES = [
+  CASH_MOVEMENT_SOURCE_OPENING_BALANCE,
+  CASH_MOVEMENT_SOURCE_INTERNAL_TRANSFER,
+  CASH_MOVEMENT_SOURCE_MANUAL_ADJUSTMENT,
+  CASH_MOVEMENT_SOURCE_BANK_RECONCILIATION,
+  CASH_MOVEMENT_SOURCE_BANK_STATEMENT_ADJUSTMENT,
+  CASH_MOVEMENT_SOURCE_INVOICE_POS,
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT,
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID,
+  CASH_MOVEMENT_SOURCE_SUPPLIER_PAYMENT,
+  CASH_MOVEMENT_SOURCE_EXPENSE,
+  CASH_MOVEMENT_SOURCE_CREDIT_NOTE_APPLICATION,
+  CASH_MOVEMENT_SOURCE_CASH_ADJUSTMENT,
+] as const satisfies readonly CashMovementSourceType[];
+
+export const RECEIVABLE_CASH_MOVEMENT_SOURCE_TYPES = [
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT,
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID,
+] as const satisfies readonly CashMovementSourceType[];
 
 export interface CashMovement {
   id: string;

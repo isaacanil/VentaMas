@@ -719,17 +719,15 @@ export const FiscalCompliancePanel = ({
           >
             Generar {REPORT_LABELS[activeTab]}
           </HeroButton>
-          {activeTab === 'DGII_607' || activeTab === 'DGII_608' ? (
-            <HeroButton
-              size="sm"
-              variant="secondary"
-              isPending={exportingReportCode === activeTab}
-              onPress={() => void handleExportTxt(activeTab)}
-            >
-              <DownloadOutlined />
-              Exportar TXT
-            </HeroButton>
-          ) : null}
+          <HeroButton
+            size="sm"
+            variant="secondary"
+            isPending={exportingReportCode === activeTab}
+            onPress={() => void handleExportTxt(activeTab)}
+          >
+            <DownloadOutlined />
+            Exportar TXT
+          </HeroButton>
           <HeroDropdown>
             <HeroButton
               isIconOnly
@@ -825,9 +823,7 @@ export const FiscalCompliancePanel = ({
         </ComplianceAlert>
       ) : null}
 
-      <WorkspaceWrapper>
-        {renderReportWorkspace(activeTab)}
-      </WorkspaceWrapper>
+      <WorkspaceWrapper>{renderReportWorkspace(activeTab)}</WorkspaceWrapper>
 
       <HeroModal.Backdrop
         isOpen={runsModalOpen}
@@ -873,7 +869,9 @@ export const FiscalCompliancePanel = ({
                     {(item) => {
                       const daysUntil = getDaysUntil(item.date);
                       return (
-                        <HeroTable.Row id={`${item.label}-${formatFiscalDate(item.date)}`}>
+                        <HeroTable.Row
+                          id={`${item.label}-${formatFiscalDate(item.date)}`}
+                        >
                           <HeroTable.Cell>
                             <span className="tabular-nums text-sm text-[var(--ds-color-text-secondary)]">
                               {formatFiscalDate(item.date)}
@@ -886,17 +884,23 @@ export const FiscalCompliancePanel = ({
                           </HeroTable.Cell>
                           <HeroTable.Cell>
                             <span className="text-sm text-[var(--ds-color-text-secondary)]">
-                              {daysUntil >= 0 ? `en ${daysUntil} días` : 'vencido'}
+                              {daysUntil >= 0
+                                ? `en ${daysUntil} días`
+                                : 'vencido'}
                             </span>
                           </HeroTable.Cell>
                           <HeroTable.Cell>
                             <HeroChip
-                              color={item.tone === 'warning' ? 'warning' : 'success'}
+                              color={
+                                item.tone === 'warning' ? 'warning' : 'success'
+                              }
                               size="sm"
                               variant="soft"
                             >
                               <HeroChip.Label>
-                                {item.tone === 'warning' ? 'Próximo' : 'Programado'}
+                                {item.tone === 'warning'
+                                  ? 'Próximo'
+                                  : 'Programado'}
                               </HeroChip.Label>
                             </HeroChip>
                           </HeroTable.Cell>
@@ -922,7 +926,9 @@ export const FiscalCompliancePanel = ({
                 <HeroTable.ScrollContainer>
                   <HeroTable.Content aria-label="Historial de corridas DGII">
                     <HeroTable.Header>
-                      <HeroTable.Column isRowHeader>Fecha corrida</HeroTable.Column>
+                      <HeroTable.Column isRowHeader>
+                        Fecha corrida
+                      </HeroTable.Column>
                       <HeroTable.Column>Periodo / Reporte</HeroTable.Column>
                       <HeroTable.Column>Resultado</HeroTable.Column>
                       <HeroTable.Column align="end">Estado</HeroTable.Column>
@@ -961,7 +967,9 @@ export const FiscalCompliancePanel = ({
                               variant="soft"
                             >
                               <HeroChip.Label>
-                                {resolveMonthlyComplianceStatusLabel(run.status)}
+                                {resolveMonthlyComplianceStatusLabel(
+                                  run.status,
+                                )}
                               </HeroChip.Label>
                             </HeroChip>
                           </HeroTable.Cell>
@@ -1013,7 +1021,7 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
           <HeroTable.ScrollContainer>
             <HeroTable.Content
               aria-label="Detalle 606"
-              className="min-w-[1040px]"
+              className="min-w-[1320px]"
             >
               <HeroTable.Header>
                 <HeroTable.Column isRowHeader>Fuente</HeroTable.Column>
@@ -1023,6 +1031,10 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 <HeroTable.Column>Tipo gasto</HeroTable.Column>
                 <HeroTable.Column>NCF</HeroTable.Column>
                 <HeroTable.Column>Fecha</HeroTable.Column>
+                <HeroTable.Column>Pago</HeroTable.Column>
+                <HeroTable.Column>Forma pago</HeroTable.Column>
+                <HeroTable.Column>Servicios</HeroTable.Column>
+                <HeroTable.Column>Bienes</HeroTable.Column>
                 <HeroTable.Column>Total</HeroTable.Column>
                 <HeroTable.Column>ITBIS</HeroTable.Column>
                 <HeroTable.Column>Estado</HeroTable.Column>
@@ -1040,7 +1052,9 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                  <HeroTable.Row
+                    id={`${row.sourceId}-${row.recordId ?? row.index}`}
+                  >
                     <HeroTable.Cell>
                       {translateSourceId(String(row.sourceId))}
                     </HeroTable.Cell>
@@ -1062,13 +1076,27 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                     <HeroTable.Cell>
                       {formatShortDate(row.issuedAt)}
                     </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatShortDate(row.paymentAt)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.paymentFormCode)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.serviceAmount)}
+                    </HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.goodsAmount)}
+                    </HeroTable.Cell>
                     <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
                     <HeroTable.Cell>
                       {formatMoney(row.itbisTotal)}
                     </HeroTable.Cell>
                     <HeroTable.Cell>
                       <HeroChip color="default" size="sm" variant="soft">
-                        <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
+                        <HeroChip.Label>
+                          {toPreviewText(row.status)}
+                        </HeroChip.Label>
                       </HeroChip>
                     </HeroTable.Cell>
                   </HeroTable.Row>
@@ -1120,7 +1148,7 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
         </PreviewHeader>
       </HeroCard.Header>
       <HeroCard.Content>
-        <HeroTable >
+        <HeroTable>
           <HeroTable.ScrollContainer>
             <HeroTable.Content
               aria-label="Detalle 607"
@@ -1157,7 +1185,9 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                  <HeroTable.Row
+                    id={`${row.sourceId}-${row.recordId ?? row.index}`}
+                  >
                     <HeroTable.Cell>
                       {toPreviewText(row.counterpartyIdentificationNumber)}
                     </HeroTable.Cell>
@@ -1177,7 +1207,9 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                       {formatShortDate(row.retentionDate ?? row.issuedAt)}
                     </HeroTable.Cell>
                     <HeroTable.Cell>{formatMoney(row.total)}</HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.itbisTotal)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.itbisTotal)}
+                    </HeroTable.Cell>
                     <HeroTable.Cell>
                       {formatMoney(row.itbisWithheld)}
                     </HeroTable.Cell>
@@ -1189,13 +1221,17 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                       {formatMoney(row.checkTransfer)}
                     </HeroTable.Cell>
                     <HeroTable.Cell>{formatMoney(row.card)}</HeroTable.Cell>
-                    <HeroTable.Cell>{formatMoney(row.creditSale)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {formatMoney(row.creditSale)}
+                    </HeroTable.Cell>
                     <HeroTable.Cell>
                       {toPreviewText(row.invoiceId ?? row.invoiceNcf)}
                     </HeroTable.Cell>
                     <HeroTable.Cell>
                       <HeroChip color="default" size="sm" variant="soft">
-                        <HeroChip.Label>{toPreviewText(row.status)}</HeroChip.Label>
+                        <HeroChip.Label>
+                          {toPreviewText(row.status)}
+                        </HeroChip.Label>
                       </HeroChip>
                     </HeroTable.Cell>
                   </HeroTable.Row>
@@ -1227,8 +1263,9 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
             <DetailTitle>Detalle 608</DetailTitle>
             <SectionDescription>
               NCF anulados. Razon: 01 Deterioro - 02 Errores impresion - 03
-              Impresion defectuosa - 04 Duplicidad - 05 Cese operaciones - 06
-              Perdida - 07 Otros.
+              Impresion defectuosa - 04 Correccion informacion - 05 Cambio
+              productos - 06 Devolucion productos - 07 Omision productos - 08
+              Secuencia NCF - 09 Cese operaciones - 10 Perdida o hurto.
             </SectionDescription>
           </div>
           <HeroChip
@@ -1277,7 +1314,9 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                 )}
               >
                 {(row) => (
-                  <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+                  <HeroTable.Row
+                    id={`${row.sourceId}-${row.recordId ?? row.index}`}
+                  >
                     <HeroTable.Cell>
                       {translateSourceId(String(row.sourceId))}
                     </HeroTable.Cell>
@@ -1290,14 +1329,18 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
                     <HeroTable.Cell>
                       {formatShortDate(row.issuedAt)}
                     </HeroTable.Cell>
-                    <HeroTable.Cell>{toPreviewText(row.reasonCode)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.reasonCode)}
+                    </HeroTable.Cell>
                     <HeroTable.Cell>
                       {toPreviewText(row.reasonLabel ?? row.reason)}
                     </HeroTable.Cell>
                     <HeroTable.Cell>
                       {toPreviewText(row.invoiceId)}
                     </HeroTable.Cell>
-                    <HeroTable.Cell>{toPreviewText(row.recordId)}</HeroTable.Cell>
+                    <HeroTable.Cell>
+                      {toPreviewText(row.recordId)}
+                    </HeroTable.Cell>
                     <HeroTable.Cell>
                       <HeroChip color="default" size="sm" variant="soft">
                         <HeroChip.Label>
@@ -1343,7 +1386,9 @@ const ExcludedRecordsTable = ({
           </HeroTable.Header>
           <HeroTable.Body items={rows}>
             {(row) => (
-              <HeroTable.Row id={`${row.sourceId}-${row.recordId ?? row.index}`}>
+              <HeroTable.Row
+                id={`${row.sourceId}-${row.recordId ?? row.index}`}
+              >
                 <HeroTable.Cell>
                   {translateSourceId(String(row.sourceId))}
                 </HeroTable.Cell>

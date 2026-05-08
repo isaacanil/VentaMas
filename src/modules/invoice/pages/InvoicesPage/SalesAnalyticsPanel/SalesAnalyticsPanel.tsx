@@ -32,9 +32,7 @@ const SalesAnalyticsPanel = ({
         <StateBlock>
           <StateTitle>Cargando datos</StateTitle>
           <StateDescription>
-            En cuanto termine la consulta podras revisar como se movieron las
-            ventas, que clientes aportan mas y desde donde se genera la
-            facturacion del rango.
+            Preparando ventas, clientes, pagos y origenes del rango activo.
           </StateDescription>
         </StateBlock>
       </Container>
@@ -46,11 +44,10 @@ const SalesAnalyticsPanel = ({
       <Container>
         {actions ? <Actions>{actions}</Actions> : null}
         <StateBlock>
-          <StateTitle>No hay datos en este corte</StateTitle>
+          <StateTitle>Sin ventas para mostrar</StateTitle>
           <StateDescription>
-            Esta vista necesita al menos una factura dentro del filtro activo.
-            Prueba ampliando la fecha, cambiando cliente o quitando filtros de
-            pago.
+            Amplia el rango, cambia el cliente o limpia filtros de pago para
+            revisar facturas en esta vista.
           </StateDescription>
         </StateBlock>
       </Container>
@@ -125,49 +122,51 @@ export default SalesAnalyticsPanel;
 
 const Container = styled.section`
   display: grid;
-  gap: 1rem;
+  gap: var(--ds-space-4);
   width: min(100%, 1280px);
   margin: 0 auto;
-  padding: 1rem 0 1.5rem;
+  padding: var(--ds-space-4) 0 var(--ds-space-6);
 
   @media (width <= 768px) {
-    padding: 0.75rem 0 1rem;
+    padding: var(--ds-space-3) 0 var(--ds-space-4);
   }
 `;
 
 const Actions = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   justify-content: flex-end;
 `;
 
 const StateBlock = styled.section`
   display: grid;
-  gap: 0.35rem;
-  padding: 1.35rem 1.4rem;
-  background: var(--white);
-  border: 1px solid rgb(15 23 42 / 12%);
-  border-radius: 10px;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-5);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
 `;
 
 const StateTitle = styled.h3`
   margin: 0;
-  color: var(--black-3);
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
 `;
 
 const StateDescription = styled.p`
   margin: 0;
-  color: var(--gray-6);
-  font-size: 0.86rem;
-  line-height: 1.5;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
 `;
 
 const InsightsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--ds-space-4);
 
   @media (width <= 920px) {
     grid-template-columns: 1fr;
@@ -177,8 +176,8 @@ const InsightsGrid = styled.div`
 const MixFooter = styled.section`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  padding: 0.15rem 0;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-1) 0;
 
   @media (width <= 768px) {
     grid-template-columns: 1fr;
@@ -187,22 +186,22 @@ const MixFooter = styled.section`
 
 const MixItem = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   align-items: center;
   justify-content: space-between;
-  padding: 0.9rem 1rem;
-  background: var(--white-2);
-  border: 1px solid rgb(15 23 42 / 8%);
-  border-radius: 10px;
+  padding: var(--ds-space-4);
+  background: var(--ds-color-bg-subtle);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-lg);
 
   span {
-    color: var(--gray-7);
-    font-size: 0.82rem;
+    color: var(--ds-color-text-secondary);
+    font-size: var(--ds-font-size-sm);
   }
 
   strong {
-    color: var(--black-3);
-    font-size: 0.9rem;
-    font-weight: 600;
+    color: var(--ds-color-text-primary);
+    font-size: var(--ds-font-size-sm);
+    font-weight: var(--ds-font-weight-semibold);
   }
 `;

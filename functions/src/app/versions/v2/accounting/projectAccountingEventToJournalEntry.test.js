@@ -404,6 +404,220 @@ describe('projectAccountingEventToJournalEntry', () => {
     });
   });
 
+  it('projects receivable and payable payment voids as inverse ledger lines', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-ar-void-cash',
+        data: {
+          id: 'profile-ar-void-cash',
+          name: 'Anulación de cobro en caja',
+          eventType: 'accounts_receivable.payment.voided',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            settlementKind: 'cash',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'accounts_receivable_payment_amount',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'cash',
+              amountSource: 'accounts_receivable_payment_amount',
+            },
+          ],
+        },
+      },
+      {
+        id: 'profile-ap-void-bank',
+        data: {
+          id: 'profile-ap-void-bank',
+          name: 'Anulación de pago a suplidor por banco',
+          eventType: 'accounts_payable.payment.voided',
+          status: 'active',
+          priority: 10,
+          conditions: {
+            settlementKind: 'bank',
+          },
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'bank',
+              amountSource: 'accounts_payable_payment_amount',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'accounts_payable',
+              amountSource: 'accounts_payable_payment_amount',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'cash-1',
+        data: {
+          id: 'cash-1',
+          code: '1100',
+          name: 'Caja general',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'cash',
+        },
+      },
+      {
+        id: 'bank-1',
+        data: {
+          id: 'bank-1',
+          code: '1110',
+          name: 'Banco',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'bank',
+        },
+      },
+      {
+        id: 'ar-1',
+        data: {
+          id: 'ar-1',
+          code: '1120',
+          name: 'Cuentas por cobrar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_receivable',
+        },
+      },
+      {
+        id: 'ap-1',
+        data: {
+          id: 'ap-1',
+          code: '2100',
+          name: 'Cuentas por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_payable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'accounts_receivable.payment.voided__payment-1',
+      },
+      data: {
+        data: () => ({
+          id: 'accounts_receivable.payment.voided__payment-1',
+          businessId: 'business-1',
+          eventType: 'accounts_receivable.payment.voided',
+          eventVersion: 1,
+          sourceType: 'accountsReceivablePayment',
+          sourceId: 'payment-1',
+          sourceDocumentId: 'payment-1',
+          sourceDocumentType: 'accountsReceivablePayment',
+          monetary: {
+            amount: 100,
+            functionalAmount: 100,
+          },
+          treasury: {
+            paymentChannel: 'cash',
+          },
+          reversalOfEventId: 'accounts_receivable.payment.recorded__payment-1',
+        }),
+      },
+    });
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'accounts_payable.payment.voided__payment-2',
+      },
+      data: {
+        data: () => ({
+          id: 'accounts_payable.payment.voided__payment-2',
+          businessId: 'business-1',
+          eventType: 'accounts_payable.payment.voided',
+          eventVersion: 1,
+          sourceType: 'accountsPayablePayment',
+          sourceId: 'payment-2',
+          sourceDocumentId: 'payment-2',
+          sourceDocumentType: 'accountsPayablePayment',
+          monetary: {
+            amount: 70,
+            functionalAmount: 70,
+          },
+          treasury: {
+            paymentChannel: 'bank',
+          },
+          reversalOfEventId: 'accounts_payable.payment.recorded__payment-2',
+        }),
+      },
+    });
+
+    const receivableVoidEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/accounts_receivable.payment.voided__payment-1',
+      ) ?? null;
+    expect(receivableVoidEntry).toMatchObject({
+      eventType: 'accounts_receivable.payment.voided',
+      reversalOfEventId: 'accounts_receivable.payment.recorded__payment-1',
+      totals: {
+        debit: 100,
+        credit: 100,
+      },
+    });
+    expect(receivableVoidEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 100,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'cash',
+        debit: 0,
+        credit: 100,
+      }),
+    ]);
+
+    const payableVoidEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/accounts_payable.payment.voided__payment-2',
+      ) ?? null;
+    expect(payableVoidEntry).toMatchObject({
+      eventType: 'accounts_payable.payment.voided',
+      reversalOfEventId: 'accounts_payable.payment.recorded__payment-2',
+      totals: {
+        debit: 70,
+        credit: 70,
+      },
+    });
+    expect(payableVoidEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'bank',
+        debit: 70,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_payable',
+        debit: 0,
+        credit: 70,
+      }),
+    ]);
+  });
+
   it('splits mixed USD sales between cash and accounts receivable using functional amounts', async () => {
     documentSnapshots.set('businesses/business-1/settings/accounting', {
       rolloutEnabled: true,
@@ -563,6 +777,244 @@ describe('projectAccountingEventToJournalEntry', () => {
         accountSystemKey: 'tax_payable',
         debit: 0,
         credit: 702,
+      }),
+    ]);
+  });
+
+  it('projects issued customer credit notes into customer credits', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-customer-credit-note-issued',
+        data: {
+          id: 'profile-customer-credit-note-issued',
+          name: 'Nota de crédito emitida a cliente',
+          eventType: 'customer_credit_note.issued',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'sales',
+              amountSource: 'credit_note_net_total',
+            },
+            {
+              id: 'l2',
+              side: 'debit',
+              accountSystemKey: 'tax_payable',
+              amountSource: 'tax_total',
+            },
+            {
+              id: 'l3',
+              side: 'credit',
+              accountSystemKey: 'customer_credits',
+              amountSource: 'document_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'sales-1',
+        data: {
+          id: 'sales-1',
+          code: '4100',
+          name: 'Ventas',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'sales',
+        },
+      },
+      {
+        id: 'tax-1',
+        data: {
+          id: 'tax-1',
+          code: '2200',
+          name: 'Impuestos por pagar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'tax_payable',
+        },
+      },
+      {
+        id: 'customer-credits-1',
+        data: {
+          id: 'customer-credits-1',
+          code: '2300',
+          name: 'Créditos a clientes',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'customer_credits',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'customer_credit_note.issued__credit-note-1',
+      },
+      data: {
+        data: () => ({
+          id: 'customer_credit_note.issued__credit-note-1',
+          businessId: 'business-1',
+          eventType: 'customer_credit_note.issued',
+          eventVersion: 1,
+          sourceType: 'creditNote',
+          sourceId: 'credit-note-1',
+          sourceDocumentId: 'credit-note-1',
+          sourceDocumentType: 'creditNote',
+          monetary: {
+            amount: 118,
+            taxAmount: 18,
+            functionalAmount: 118,
+            functionalTaxAmount: 18,
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/customer_credit_note.issued__credit-note-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      id: 'customer_credit_note.issued__credit-note-1',
+      eventType: 'customer_credit_note.issued',
+      totals: {
+        debit: 118,
+        credit: 118,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'sales',
+        debit: 100,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'tax_payable',
+        debit: 18,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'customer_credits',
+        debit: 0,
+        credit: 118,
+      }),
+    ]);
+  });
+
+  it('projects applied customer credit notes against accounts receivable', async () => {
+    documentSnapshots.set('businesses/business-1/settings/accounting', {
+      rolloutEnabled: true,
+      generalAccountingEnabled: true,
+      functionalCurrency: 'DOP',
+    });
+    collectionSnapshots.set('businesses/business-1/accountingPostingProfiles', [
+      {
+        id: 'profile-customer-credit-note-applied',
+        data: {
+          id: 'profile-customer-credit-note-applied',
+          name: 'Nota de crédito aplicada a CxC',
+          eventType: 'customer_credit_note.applied',
+          status: 'active',
+          priority: 10,
+          linesTemplate: [
+            {
+              id: 'l1',
+              side: 'debit',
+              accountSystemKey: 'customer_credits',
+              amountSource: 'document_total',
+            },
+            {
+              id: 'l2',
+              side: 'credit',
+              accountSystemKey: 'accounts_receivable',
+              amountSource: 'document_total',
+            },
+          ],
+        },
+      },
+    ]);
+    collectionSnapshots.set('businesses/business-1/chartOfAccounts', [
+      {
+        id: 'customer-credits-1',
+        data: {
+          id: 'customer-credits-1',
+          code: '2300',
+          name: 'Créditos a clientes',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'customer_credits',
+        },
+      },
+      {
+        id: 'ar-1',
+        data: {
+          id: 'ar-1',
+          code: '1120',
+          name: 'Cuentas por cobrar',
+          status: 'active',
+          postingAllowed: true,
+          systemKey: 'accounts_receivable',
+        },
+      },
+    ]);
+
+    await projectAccountingEventToJournalEntry({
+      params: {
+        businessId: 'business-1',
+        eventId: 'customer_credit_note.applied__application-1',
+      },
+      data: {
+        data: () => ({
+          id: 'customer_credit_note.applied__application-1',
+          businessId: 'business-1',
+          eventType: 'customer_credit_note.applied',
+          eventVersion: 1,
+          sourceType: 'creditNoteApplication',
+          sourceId: 'application-1',
+          sourceDocumentId: 'application-1',
+          sourceDocumentType: 'creditNoteApplication',
+          monetary: {
+            amount: 75,
+            functionalAmount: 75,
+          },
+        }),
+      },
+    });
+
+    const journalEntry =
+      documentSnapshots.get(
+        'businesses/business-1/journalEntries/customer_credit_note.applied__application-1',
+      ) ?? null;
+
+    expect(journalEntry).toMatchObject({
+      id: 'customer_credit_note.applied__application-1',
+      eventType: 'customer_credit_note.applied',
+      totals: {
+        debit: 75,
+        credit: 75,
+      },
+    });
+    expect(journalEntry.lines).toEqual([
+      expect.objectContaining({
+        accountSystemKey: 'customer_credits',
+        debit: 75,
+        credit: 0,
+      }),
+      expect.objectContaining({
+        accountSystemKey: 'accounts_receivable',
+        debit: 0,
+        credit: 75,
       }),
     ]);
   });

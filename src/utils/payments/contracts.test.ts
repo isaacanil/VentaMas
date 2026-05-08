@@ -10,6 +10,9 @@ describe('payment contracts', () => {
     expect(normalizePaymentMethodCode('credit_card')).toBe('card');
     expect(normalizePaymentMethodCode('bank_transfer')).toBe('transfer');
     expect(normalizePaymentMethodCode('credit_note')).toBe('creditNote');
+    expect(normalizePaymentMethodCode('supplier_credit_note')).toBe(
+      'supplierCreditNote',
+    );
     expect(normalizePaymentMethodCode('open_cash')).toBe('cash');
   });
 

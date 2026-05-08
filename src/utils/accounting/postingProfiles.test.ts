@@ -39,6 +39,12 @@ describe('postingProfiles', () => {
       type: 'liability',
       systemKey: 'accounts_payable',
     }),
+    normalizeChartOfAccountRecord('customer-credits-id', 'business-1', {
+      code: '2300',
+      name: 'Créditos a clientes',
+      type: 'liability',
+      systemKey: 'customer_credits',
+    }),
     normalizeChartOfAccountRecord('tax-id', 'business-1', {
       code: '2200',
       name: 'Impuestos por pagar',
@@ -120,6 +126,36 @@ describe('postingProfiles', () => {
     ).toBe(true);
     expect(
       result.some((profile) => profile.name === 'Pago a suplidor por caja'),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Anulación de cobro en caja',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Anulación de cobro por banco',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Nota de crédito emitida a cliente',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Nota de crédito aplicada a CxC',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Anulación de pago a suplidor por caja',
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (profile) => profile.name === 'Anulación de pago a suplidor por banco',
+      ),
     ).toBe(true);
     expect(result.some((profile) => profile.name === 'Gasto por banco')).toBe(
       true,

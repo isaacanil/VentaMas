@@ -21,6 +21,8 @@ describe('dgiiMonthlyReportValidation.service', () => {
             taxReceipt: { ncf: 'B010100000001' },
             totals: { total: 1000 },
             taxBreakdown: { itbisTotal: 180 },
+            fiscalAmounts: { totalAmount: 820 },
+            paymentInfo: { formCode: '01' },
             classification: { dgii606ExpenseType: '01' },
           },
         ],
@@ -37,6 +39,8 @@ describe('dgiiMonthlyReportValidation.service', () => {
             taxReceipt: { ncf: 'B010100000002' },
             totals: { total: 500 },
             taxBreakdown: { itbisTotal: 90 },
+            fiscalAmounts: { totalAmount: 410 },
+            paymentInfo: { formCode: '01' },
             classification: { dgii606ExpenseType: '02' },
           },
         ],
@@ -82,9 +86,12 @@ describe('dgiiMonthlyReportValidation.service', () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.pendingGaps).toContain(
-      'Las retenciones sufridas por terceros todavía no tienen una colección canónica dedicada en backend.',
-    );
+    expect(result.pendingGaps).toEqual([]);
+    expect(result.sourceSummaries.map((summary) => summary.sourceId)).toEqual([
+      'invoices',
+      'creditNotes',
+      'thirdPartyWithholdings',
+    ]);
     expect(result.issues).toEqual([
       {
         sourceId: 'invoices',

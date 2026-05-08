@@ -1,11 +1,17 @@
-import { Select as AntSelect } from 'antd';
-import { SearchField } from '@heroui/react';
+import { ListBox, SearchField, Select } from '@heroui/react';
+import { useCallback, useMemo } from 'react';
+import type { Key } from 'react';
 import styled from 'styled-components';
 
 import { HeroUIDatePicker } from '@/components/common/DatePicker/HeroUIDatePicker';
 import type { DatePickerRangeValue } from '@/components/common/DatePicker/types';
 
 import type { GeneralLedgerAccountOption } from '../../utils/accountingWorkspace';
+
+interface AccountSelectItem {
+  id: string;
+  label: string;
+}
 
 interface GeneralLedgerToolbarProps {
   accountOptions: GeneralLedgerAccountOption[];
@@ -25,60 +31,97 @@ export const GeneralLedgerToolbar = ({
   onAccountChange,
   onDateRangeChange,
   onQueryChange,
-}: GeneralLedgerToolbarProps) => (
-  <ToolbarShell>
-    <Toolbar>
-      <ToolbarField>
-        <ToolbarLabel htmlFor="general-ledger-account">Cuenta</ToolbarLabel>
-        <AntSelect
-          id="general-ledger-account"
-          showSearch
-          optionFilterProp="label"
-          value={selectedAccountId || undefined}
-          options={accountOptions.map((option) => ({
-            label:
-              option.movementCount > 0
-                ? `${option.code} — ${option.name}`
-                : `${option.code} — ${option.name} (sin movimientos)`,
-            value: option.id,
-          }))}
-          onChange={onAccountChange}
-        />
-      </ToolbarField>
+}: GeneralLedgerToolbarProps) => {
+  const accountSelectItems = useMemo<AccountSelectItem[]>(
+    () =>
+      accountOptions.map((option) => ({
+        id: option.id,
+        label:
+          option.movementCount > 0
+            ? `${option.code} — ${option.name}`
+            : `${option.code} — ${option.name} (sin movimientos)`,
+      })),
+    [accountOptions],
+  );
 
-      <ToolbarField $dateRange>
-        <ToolbarLabel>Fechas</ToolbarLabel>
-        <HeroUIDatePicker
-          mode="range"
-          value={dateRangeValue}
-          placeholder="Seleccionar rango"
-          allowClear
-          onChange={(nextValue) => {
-            onDateRangeChange(Array.isArray(nextValue) ? nextValue : null);
-          }}
-        />
-      </ToolbarField>
+  const handleAccountSelectionChange = useCallback(
+    (key: Key | null) => {
+      if (key === null) return;
 
-      <ToolbarField $search>
-        <ToolbarLabel htmlFor="general-ledger-search">Buscar</ToolbarLabel>
-        <SearchField
-          aria-label="Buscar movimientos del libro mayor"
-          value={query}
-          onChange={onQueryChange}
-        >
-          <SearchField.Group>
-            <SearchField.SearchIcon />
-            <SearchField.Input
-              id="general-ledger-search"
-              placeholder="Filtrar movimientos..."
-            />
-            <SearchField.ClearButton />
-          </SearchField.Group>
-        </SearchField>
-      </ToolbarField>
-    </Toolbar>
-  </ToolbarShell>
-);
+      const nextAccountId = String(key);
+      if (nextAccountId === selectedAccountId) return;
+
+      onAccountChange(nextAccountId);
+    },
+    [onAccountChange, selectedAccountId],
+  );
+
+  return (
+    <ToolbarShell>
+      <Toolbar>
+        <ToolbarField>
+          <ToolbarLabel>Cuenta</ToolbarLabel>
+          <SelectWrapper>
+            <Select
+              aria-label="Cuenta contable"
+              placeholder="Seleccionar cuenta"
+              selectedKey={selectedAccountId || null}
+              variant="secondary"
+              fullWidth
+              onSelectionChange={handleAccountSelectionChange}
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox items={accountSelectItems}>
+                  {(option) => (
+                    <ListBox.Item id={option.id} textValue={option.label}>
+                      {option.label}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  )}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+          </SelectWrapper>
+        </ToolbarField>
+
+        <ToolbarField $dateRange>
+          <ToolbarLabel>Fechas</ToolbarLabel>
+          <HeroUIDatePicker
+            mode="range"
+            value={dateRangeValue}
+            placeholder="Seleccionar rango"
+            allowClear
+            onChange={(nextValue) => {
+              onDateRangeChange(Array.isArray(nextValue) ? nextValue : null);
+            }}
+          />
+        </ToolbarField>
+
+        <ToolbarField $search>
+          <ToolbarLabel htmlFor="general-ledger-search">Buscar</ToolbarLabel>
+          <SearchField
+            aria-label="Buscar movimientos del libro mayor"
+            value={query}
+            onChange={onQueryChange}
+          >
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input
+                id="general-ledger-search"
+                placeholder="Filtrar movimientos..."
+              />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
+        </ToolbarField>
+      </Toolbar>
+    </ToolbarShell>
+  );
+};
 
 const ToolbarShell = styled.section`
   padding: var(--ds-space-4);
@@ -123,4 +166,9 @@ const ToolbarLabel = styled.label`
   font-weight: var(--ds-font-weight-medium);
   letter-spacing: var(--ds-letter-spacing-wide);
   text-transform: uppercase;
+`;
+
+const SelectWrapper = styled.div`
+  width: 100%;
+  min-width: 0;
 `;

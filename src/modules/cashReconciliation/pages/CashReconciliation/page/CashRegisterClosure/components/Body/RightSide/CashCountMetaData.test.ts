@@ -196,4 +196,91 @@ describe('CashCountMetaData', () => {
       totalDiscrepancy: 0,
     });
   });
+
+  it('nets receivable payment void movements in cash movement totals', () => {
+    const meta = CashCountMetaData(
+      {
+        opening: { banknotes: [] },
+        closing: { banknotes: [{ ref: '20', value: 20, quantity: 1 }] },
+      },
+      [],
+      [],
+      [],
+      [
+        {
+          id: 'arp-cash',
+          businessId: 'biz-1',
+          direction: 'in',
+          sourceType: 'receivable_payment',
+          sourceId: 'pay-1',
+          sourceDocumentId: 'inv-1',
+          sourceDocumentType: 'invoice',
+          cashCountId: 'cash-1',
+          method: 'cash',
+          amount: 50,
+          occurredAt: Date.now(),
+          createdAt: Date.now(),
+          impactsCashDrawer: true,
+          impactsBankLedger: false,
+        },
+        {
+          id: 'arp-card',
+          businessId: 'biz-1',
+          direction: 'in',
+          sourceType: 'receivable_payment',
+          sourceId: 'pay-2',
+          sourceDocumentId: 'inv-2',
+          sourceDocumentType: 'invoice',
+          cashCountId: 'cash-1',
+          method: 'card',
+          amount: 100,
+          occurredAt: Date.now(),
+          createdAt: Date.now(),
+          impactsCashDrawer: false,
+          impactsBankLedger: true,
+        },
+        {
+          id: 'arpv-cash',
+          businessId: 'biz-1',
+          direction: 'out',
+          sourceType: 'receivable_payment_void',
+          sourceId: 'pay-1',
+          sourceDocumentId: 'inv-1',
+          sourceDocumentType: 'invoice',
+          cashCountId: 'cash-1',
+          method: 'cash',
+          amount: 30,
+          occurredAt: Date.now(),
+          createdAt: Date.now(),
+          impactsCashDrawer: true,
+          impactsBankLedger: false,
+        },
+        {
+          id: 'arpv-card',
+          businessId: 'biz-1',
+          direction: 'out',
+          sourceType: 'receivable_payment_void',
+          sourceId: 'pay-2',
+          sourceDocumentId: 'inv-2',
+          sourceDocumentType: 'invoice',
+          cashCountId: 'cash-1',
+          method: 'card',
+          amount: 20,
+          occurredAt: Date.now(),
+          createdAt: Date.now(),
+          impactsCashDrawer: false,
+          impactsBankLedger: true,
+        },
+      ],
+    );
+
+    expect(meta).toMatchObject({
+      totalCard: 80,
+      totalTransfer: 0,
+      totalReceivables: 100,
+      totalSystem: 100,
+      totalRegister: 100,
+      totalDiscrepancy: 0,
+    });
+  });
 });

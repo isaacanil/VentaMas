@@ -10,25 +10,21 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 
 const SCRIPTS = {
-  '🚀 Full Quality Check (Format + Lint + Typecheck + Styles + Build)': [
+  '🚀 Full Quality Check (Format + Lint + Typecheck + Build)': [
     'format',
+    'lint:fast',
     'lint:web',
     'typecheck',
-    'lint:styles',
     'build',
   ],
   '🧹 Format Code (Prettier)': ['format'],
-  '🔍 Logic Lint (ESLint)': ['lint:web'],
+  '⚡ Fast Lint (Oxlint)': ['lint:fast'],
+  '🔍 Web Lint (ESLint)': ['lint:web'],
   '💪 Type Check (TSC)': ['typecheck'],
   '🎨 Styles Check (Stylelint)': ['lint:styles'],
   '📦 Build Application (Vite)': ['build'],
   '--- Diagnostics & Reports ---': null,
-  '📊 Lint Stats Report': ['lint:report'],
-  '📑 TypeScript Audit': ['audit:ts'],
-  '🚫 Scan Suppressions (eslint_disable/ts-ignore)': ['audit:suppressions'],
-  '♻️  Find Unused Exports': ['check-unused-exports'],
-  '⚖️  Analyze File Sizes (Diagnose)': ['diagnose'],
-  '🔤 Scan Encoding Issues': ['scan-encoding'],
+  '🔤 Scan Encoding Issues': ['scan-bom'],
   '❌ Exit': null,
 };
 

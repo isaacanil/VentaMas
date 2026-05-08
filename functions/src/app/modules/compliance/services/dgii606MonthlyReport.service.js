@@ -39,6 +39,9 @@ const toFiniteNumber = (value) => {
   return null;
 };
 
+const roundToTwoDecimals = (value) =>
+  Math.round((Number(value) || 0) * 100) / 100;
+
 const toDate = (value) => {
   if (!value) return null;
 
@@ -159,6 +162,10 @@ const buildSourceRecordsSnapshot = (records = []) =>
     total: record?.totals?.total ?? null,
     itbisTotal: record?.taxBreakdown?.itbisTotal ?? null,
     issuedAt: record?.issuedAt ?? record?.occurredAt ?? null,
+    paymentAt: record?.paymentAt ?? null,
+    paymentFormCode: record?.paymentInfo?.formCode ?? null,
+    serviceAmount: record?.fiscalAmounts?.serviceAmount ?? null,
+    goodsAmount: record?.fiscalAmounts?.goodsAmount ?? null,
     status: record?.status ?? null,
   }));
 
@@ -232,11 +239,13 @@ const resolveCounterpartyIdentificationNumber = (record) => {
 const mergeCounterpartyProfile = (record, profile) => {
   if (!profile) return record;
 
-  const counterpartyId = record?.counterparty?.id ?? resolveCounterpartyId(profile);
+  const counterpartyId =
+    record?.counterparty?.id ?? resolveCounterpartyId(profile);
   const currentIdentification = toCleanString(
     record?.counterparty?.identification?.number,
   );
-  const profileIdentification = resolveCounterpartyIdentificationNumber(profile);
+  const profileIdentification =
+    resolveCounterpartyIdentificationNumber(profile);
 
   if (currentIdentification || !profileIdentification) {
     return {
@@ -277,10 +286,22 @@ const resolvePurchaseIssuedAt = (purchaseData) =>
   toDate(purchaseData?.dates?.paymentDate) ??
   toDate(purchaseData?.dates?.deliveryDate);
 
+const resolvePurchasePaymentAt = (purchaseData) =>
+  toDate(purchaseData?.paymentAt) ??
+  toDate(purchaseData?.paymentTerms?.lastPaymentAt) ??
+  toDate(purchaseData?.paymentState?.lastPaymentAt) ??
+  toDate(purchaseData?.dates?.paymentDate);
+
 const resolveExpenseIssuedAt = (expenseData) =>
   toDate(expenseData?.expenseDate) ??
   toDate(expenseData?.dates?.expenseDate) ??
   toDate(expenseData?.createdAt);
+
+const resolveExpensePaymentAt = (expenseData) =>
+  toDate(expenseData?.paymentAt) ??
+  toDate(expenseData?.paidAt) ??
+  toDate(expenseData?.paymentDate) ??
+  toDate(expenseData?.dates?.paymentDate);
 
 const resolvePurchaseDocumentType = (purchaseData) => {
   const explicitType =
@@ -296,6 +317,148 @@ const resolvePurchaseDocumentType = (purchaseData) => {
     : null;
 };
 
+const GOODS_DOCUMENT_TYPES = new Set([
+  'goods',
+  'inventory',
+  'asset',
+  'fixed_asset',
+  'product',
+  'products',
+]);
+
+const SERVICE_DOCUMENT_TYPES = new Set([
+  'service',
+  'services',
+  'expense',
+  'expenses',
+  'fee',
+]);
+
+const CASH_PAYMENT_METHODS = new Set(['cash', 'open_cash', 'efectivo']);
+const BANK_PAYMENT_METHODS = new Set([
+  'transfer',
+  'bank_transfer',
+  'wire',
+  'check',
+  'cheque',
+  'deposit',
+  'deposito',
+]);
+const CARD_PAYMENT_METHODS = new Set([
+  'card',
+  'credit_card',
+  'debit_card',
+  'tarjeta',
+  'tarjeta_credito',
+  'tarjeta_debito',
+]);
+const CREDIT_NOTE_PAYMENT_METHODS = new Set([
+  'suppliercreditnote',
+  'supplier_credit_note',
+  'supplier_creditnote',
+  'supplier_credit',
+  'suppliercredit',
+  'credit_note',
+  'nota_credito',
+]);
+const BARTER_PAYMENT_METHODS = new Set(['barter', 'permuta']);
+const CREDIT_PAYMENT_CONDITIONS = new Set([
+  'credit',
+  'credito',
+  'one_week',
+  'fifteen_days',
+  'thirty_days',
+  'other',
+]);
+
+const normalizeCode = (value) =>
+  toCleanString(value)?.toLowerCase().replace(/\s+/g, '_') ?? null;
+
+const resolvePaymentMethods = (record) => {
+  if (Array.isArray(record?.paymentMethods)) return record.paymentMethods;
+  if (Array.isArray(record?.paymentMethod)) return record.paymentMethod;
+  if (Array.isArray(record?.payment?.paymentMethods)) {
+    return record.payment.paymentMethods;
+  }
+  if (Array.isArray(record?.payment?.paymentMethod)) {
+    return record.payment.paymentMethod;
+  }
+  return [];
+};
+
+const resolveDgii606PaymentFormCode = (record) => {
+  const methods = resolvePaymentMethods(record)
+    .map((method) => normalizeCode(method?.method ?? method?.type ?? method))
+    .filter(Boolean);
+  const uniqueMethods = Array.from(new Set(methods));
+
+  if (uniqueMethods.length > 1) return '07';
+
+  const method = uniqueMethods[0] ?? null;
+  if (method) {
+    if (CASH_PAYMENT_METHODS.has(method)) return '01';
+    if (BANK_PAYMENT_METHODS.has(method)) return '02';
+    if (CARD_PAYMENT_METHODS.has(method)) return '03';
+    if (BARTER_PAYMENT_METHODS.has(method)) return '05';
+    if (CREDIT_NOTE_PAYMENT_METHODS.has(method)) return '06';
+    if (method === 'credit') return '04';
+    return null;
+  }
+
+  const condition = normalizeCode(
+    record?.condition ?? record?.paymentTerms?.condition,
+  );
+  if (condition === 'cash') return '01';
+  if (condition && CREDIT_PAYMENT_CONDITIONS.has(condition)) return '04';
+
+  return null;
+};
+
+const buildDgii606FiscalAmounts = ({ total, itbisTotal, documentType }) => {
+  if (total === null || total === undefined) {
+    return {
+      serviceAmount: null,
+      goodsAmount: null,
+      totalAmount: null,
+      itbisToAdvance: null,
+    };
+  }
+
+  const netAmount = roundToTwoDecimals(Math.max(0, total - (itbisTotal ?? 0)));
+  const normalizedDocumentType = normalizeCode(documentType);
+
+  if (
+    normalizedDocumentType &&
+    GOODS_DOCUMENT_TYPES.has(normalizedDocumentType)
+  ) {
+    return {
+      serviceAmount: 0,
+      goodsAmount: netAmount,
+      totalAmount: netAmount,
+      itbisToAdvance: roundToTwoDecimals(itbisTotal ?? 0),
+    };
+  }
+
+  if (
+    normalizedDocumentType &&
+    SERVICE_DOCUMENT_TYPES.has(normalizedDocumentType)
+  ) {
+    return {
+      serviceAmount: netAmount,
+      goodsAmount: 0,
+      totalAmount: netAmount,
+      itbisToAdvance: roundToTwoDecimals(itbisTotal ?? 0),
+    };
+  }
+
+  return {
+    serviceAmount: null,
+    goodsAmount: null,
+    totalAmount: null,
+    itbisToAdvance: null,
+  };
+};
+
 export const mapPurchaseDocToDgii606Record = ({
   businessId,
   purchaseId,
@@ -303,12 +466,20 @@ export const mapPurchaseDocToDgii606Record = ({
 }) => {
   const purchaseData = resolvePurchasePayload(purchaseDoc);
   const issuedAt = resolvePurchaseIssuedAt(purchaseData);
+  const paymentAt = resolvePurchasePaymentAt(purchaseData);
   const supplierId = resolveCounterpartyId(purchaseData);
   const ncf =
     toCleanString(purchaseData?.taxReceipt?.ncf) ??
     toCleanString(purchaseData?.invoice?.ncf) ??
     toCleanString(purchaseData?.proofOfPurchase) ??
     toCleanString(purchaseData?.ncf) ??
+    null;
+  const modifiedNcf =
+    toCleanString(purchaseData?.taxReceipt?.modifiedNcf) ??
+    toCleanString(purchaseData?.taxReceipt?.modifiedNCF) ??
+    toCleanString(purchaseData?.invoice?.modifiedNcf) ??
+    toCleanString(purchaseData?.ncfModified) ??
+    toCleanString(purchaseData?.modifiedNcf) ??
     null;
   const total =
     toFiniteNumber(purchaseData?.totals?.total) ??
@@ -329,10 +500,16 @@ export const mapPurchaseDocToDgii606Record = ({
     toCleanString(purchaseData?.workflowStatus) ??
     toCleanString(purchaseData?.status) ??
     null;
+  const fiscalAmounts = buildDgii606FiscalAmounts({
+    total,
+    itbisTotal,
+    documentType,
+  });
 
   return {
     businessId,
     issuedAt: issuedAt?.toISOString() ?? null,
+    paymentAt: paymentAt?.toISOString() ?? null,
     documentNumber:
       toCleanString(purchaseData?.numberId) ??
       toCleanString(purchaseData?.id) ??
@@ -347,12 +524,22 @@ export const mapPurchaseDocToDgii606Record = ({
     documentType,
     taxReceipt: {
       ncf,
+      modifiedNcf,
     },
     totals: {
       total,
     },
     taxBreakdown: {
       itbisTotal,
+    },
+    fiscalAmounts,
+    paymentInfo: {
+      formCode: resolveDgii606PaymentFormCode(purchaseData),
+      condition:
+        toCleanString(purchaseData?.condition) ??
+        toCleanString(purchaseData?.paymentTerms?.condition) ??
+        null,
+      methods: resolvePaymentMethods(purchaseData),
     },
     classification: {
       dgii606ExpenseType: expenseType,
@@ -373,11 +560,19 @@ export const mapExpenseDocToDgii606Record = ({
 }) => {
   const expenseData = resolveExpensePayload(expenseDoc);
   const issuedAt = resolveExpenseIssuedAt(expenseData);
+  const paymentAt = resolveExpensePaymentAt(expenseData);
   const supplierId = resolveCounterpartyId(expenseData);
   const ncf =
     toCleanString(expenseData?.taxReceipt?.ncf) ??
     toCleanString(expenseData?.invoice?.ncf) ??
     toCleanString(expenseData?.ncf) ??
+    null;
+  const modifiedNcf =
+    toCleanString(expenseData?.taxReceipt?.modifiedNcf) ??
+    toCleanString(expenseData?.taxReceipt?.modifiedNCF) ??
+    toCleanString(expenseData?.invoice?.modifiedNcf) ??
+    toCleanString(expenseData?.ncfModified) ??
+    toCleanString(expenseData?.modifiedNcf) ??
     null;
   const total =
     toFiniteNumber(expenseData?.totals?.total) ??
@@ -394,11 +589,21 @@ export const mapExpenseDocToDgii606Record = ({
     toCleanString(expenseData?.categoryId) ??
     toCleanString(expenseData?.category) ??
     null;
+  const documentType =
+    toCleanString(expenseData?.documentType) ??
+    toCleanString(expenseData?.expenseNature) ??
+    'expense';
   const status = toCleanString(expenseData?.status) ?? null;
+  const fiscalAmounts = buildDgii606FiscalAmounts({
+    total,
+    itbisTotal,
+    documentType,
+  });
 
   return {
     businessId,
     issuedAt: issuedAt?.toISOString() ?? null,
+    paymentAt: paymentAt?.toISOString() ?? null,
     documentNumber:
       toCleanString(expenseData?.number) ??
       toCleanString(expenseData?.numberId) ??
@@ -411,14 +616,25 @@ export const mapExpenseDocToDgii606Record = ({
       },
     },
     expenseType,
+    documentType,
     taxReceipt: {
       ncf,
+      modifiedNcf,
     },
     totals: {
       total,
     },
     taxBreakdown: {
       itbisTotal,
+    },
+    fiscalAmounts,
+    paymentInfo: {
+      formCode: resolveDgii606PaymentFormCode(expenseData),
+      condition:
+        toCleanString(expenseData?.condition) ??
+        toCleanString(expenseData?.paymentTerms?.condition) ??
+        null,
+      methods: resolvePaymentMethods(expenseData),
     },
     classification: {
       dgii606ExpenseType: expenseType,
@@ -475,9 +691,7 @@ const toRecordPeriodKey = (record) => {
 const loadProviderProfilesById = async ({ businessId, records, firestore }) => {
   const providerIds = Array.from(
     new Set(
-      records
-        .map((record) => resolveCounterpartyId(record))
-        .filter(Boolean),
+      records.map((record) => resolveCounterpartyId(record)).filter(Boolean),
     ),
   );
 
@@ -534,7 +748,9 @@ const loadProviderProfilesById = async ({ businessId, records, firestore }) => {
 const enrichRecordsWithProviderProfiles = (records, providerProfilesById) =>
   records.map((record) => {
     const providerId = resolveCounterpartyId(record);
-    const providerProfile = providerId ? providerProfilesById[providerId] : null;
+    const providerProfile = providerId
+      ? providerProfilesById[providerId]
+      : null;
     return mergeCounterpartyProfile(record, providerProfile);
   });
 
@@ -644,7 +860,56 @@ const buildPaymentCrossReferenceIssues = ({
     return [];
   });
 
-export const buildDgii606ValidationPreview = async ({
+const mergeDgii606PurchasesWithPayments = ({
+  purchases = [],
+  payments = [],
+}) => {
+  const paymentsByPurchaseId = payments.reduce((accumulator, payment) => {
+    const purchaseId = toCleanString(payment?.purchaseId);
+    if (!purchaseId) return accumulator;
+
+    const currentPayments = accumulator.get(purchaseId) ?? [];
+    currentPayments.push(payment);
+    accumulator.set(purchaseId, currentPayments);
+    return accumulator;
+  }, new Map());
+
+  return purchases.map((purchase) => {
+    const paymentsForPurchase = paymentsByPurchaseId.get(
+      toCleanString(purchase?.metadata?.recordId),
+    );
+    if (!paymentsForPurchase?.length) return purchase;
+
+    const sortedPayments = [...paymentsForPurchase].sort((left, right) =>
+      (left?.occurredAt ?? '').localeCompare(right?.occurredAt ?? ''),
+    );
+    const linkedPaymentMethods = sortedPayments.flatMap((payment) =>
+      Array.isArray(payment?.paymentMethods) ? payment.paymentMethods : [],
+    );
+    const existingPaymentMethods = Array.isArray(purchase?.paymentInfo?.methods)
+      ? purchase.paymentInfo.methods
+      : [];
+    const mergedPaymentMethods = existingPaymentMethods.length
+      ? existingPaymentMethods
+      : linkedPaymentMethods;
+
+    return {
+      ...purchase,
+      paymentAt: purchase.paymentAt ?? sortedPayments[0]?.occurredAt ?? null,
+      paymentInfo: {
+        ...(purchase.paymentInfo ?? {}),
+        formCode:
+          purchase.paymentInfo?.formCode ??
+          resolveDgii606PaymentFormCode({
+            paymentMethods: mergedPaymentMethods,
+          }),
+        methods: mergedPaymentMethods,
+      },
+    };
+  });
+};
+
+export const loadDgii606Datasets = async ({
   businessId,
   periodKey,
   firestore = db,
@@ -715,24 +980,26 @@ export const buildDgii606ValidationPreview = async ({
       }),
     ),
   );
-
-  const {
-    providerProfilesById,
-    sourceSnapshot: providerProfilesSnapshot,
-  } = await loadProviderProfilesById({
-    businessId: normalizedBusinessId,
-    records: [
-      ...purchaseRecords.included,
-      ...purchaseRecords.excluded,
-      ...expenseRecords.included,
-      ...expenseRecords.excluded,
-    ],
-    firestore,
+  const purchasesWithPaymentInfo = mergeDgii606PurchasesWithPayments({
+    purchases: purchaseRecords.included,
+    payments: paymentRecords.included,
   });
+
+  const { providerProfilesById, sourceSnapshot: providerProfilesSnapshot } =
+    await loadProviderProfilesById({
+      businessId: normalizedBusinessId,
+      records: [
+        ...purchasesWithPaymentInfo,
+        ...purchaseRecords.excluded,
+        ...expenseRecords.included,
+        ...expenseRecords.excluded,
+      ],
+      firestore,
+    });
 
   const datasets = {
     purchases: enrichRecordsWithProviderProfiles(
-      purchaseRecords.included,
+      purchasesWithPaymentInfo,
       providerProfilesById,
     ),
     expenses: enrichRecordsWithProviderProfiles(
@@ -759,6 +1026,41 @@ export const buildDgii606ValidationPreview = async ({
       payments: datasets.accountsPayablePayments,
       firestore,
     });
+
+  return {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    datasets,
+    excludedRecords,
+    linkedPurchasesById,
+    sourceSnapshots: {
+      linkedPurchases: linkedPurchasesSnapshot,
+      providerProfiles: providerProfilesSnapshot,
+    },
+  };
+};
+
+export const buildDgii606ValidationPreview = async ({
+  businessId,
+  periodKey,
+  firestore = db,
+}) => {
+  const {
+    businessId: normalizedBusinessId,
+    periodKey: normalizedPeriodKey,
+    start,
+    endExclusive,
+    datasets,
+    excludedRecords,
+    linkedPurchasesById,
+    sourceSnapshots,
+  } = await loadDgii606Datasets({
+    businessId,
+    periodKey,
+    firestore,
+  });
 
   const validation = validateDgiiMonthlyReportDataset({
     reportCode: 'DGII_606',
@@ -798,8 +1100,8 @@ export const buildDgii606ValidationPreview = async ({
         recordsLoaded: datasets.accountsPayablePayments.length,
         recordsExcluded: excludedRecords.accountsPayablePayments.length,
       },
-      linkedPurchases: linkedPurchasesSnapshot,
-      providerProfiles: providerProfilesSnapshot,
+      linkedPurchases: sourceSnapshots.linkedPurchases,
+      providerProfiles: sourceSnapshots.providerProfiles,
     },
     sourceRecords: {
       purchases: buildSourceRecordsSnapshot(datasets.purchases),

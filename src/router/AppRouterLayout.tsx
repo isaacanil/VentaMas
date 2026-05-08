@@ -10,6 +10,7 @@ import { useAutomaticLogin } from '@/firebase/Auth/fbAuthV2/fbSignIn/checkSessio
 import { resolveDefaultHomeRoute } from '@/modules/auth/utils/defaultHomeRoute';
 import SEO from '@/Seo/Seo';
 import { SessionManager } from '@/components/ui/SessionManager';
+import { SessionExpiredAlertDialog } from '@/firebase/Auth/fbAuthV2/fbSignIn/components/SessionExpiredAlertDialog';
 
 // Tipo básico para User (ajustar según la estructura real)
 export interface User {
@@ -126,7 +127,12 @@ const AppLayout = memo(({ blockContent }: { blockContent: boolean }) => {
 AppLayout.displayName = 'AppLayout';
 
 export const RootElement = () => {
-  const { status: bootStatus, error: bootError } = useAutomaticLogin();
+  const {
+    status: bootStatus,
+    error: bootError,
+    sessionExpiredDialogOpen,
+    closeSessionExpiredDialog,
+  } = useAutomaticLogin();
   const user = useSelector(selectUser) as UserState;
   const authReady = useSelector(selectAuthReady);
   const location = useLocation();
@@ -144,11 +150,18 @@ export const RootElement = () => {
 
   // Bloquear contenido hasta que la verificación de auth termine (authReady)
   const blockContent = !authReady;
+  const sessionExpiredAlert = (
+    <SessionExpiredAlertDialog
+      isOpen={sessionExpiredDialogOpen}
+      onAccept={closeSessionExpiredDialog}
+    />
+  );
 
   if (shouldRedirectToHome) {
     return (
       <>
         <SessionManager status={bootStatus} error={bootError as Error | null} />
+        {sessionExpiredAlert}
         <Navigate to={defaultHomePath} replace />
       </>
     );
@@ -157,6 +170,7 @@ export const RootElement = () => {
   return (
     <>
       <SessionManager status={bootStatus} error={bootError as Error | null} />
+      {sessionExpiredAlert}
       {shouldAttachListeners ? (
         <Suspense fallback={null}>
           <GlobalListeners user={user} />

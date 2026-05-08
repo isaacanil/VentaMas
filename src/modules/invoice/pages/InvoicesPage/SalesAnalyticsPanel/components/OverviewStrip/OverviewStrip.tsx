@@ -74,9 +74,10 @@ export const OverviewStrip = ({
 const Container = styled.section`
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  background: var(--white);
-  border: 1px solid rgb(15 23 42 / 12%);
-  border-radius: 10px;
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
 
   @media (width <= 1200px) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -93,10 +94,10 @@ const Container = styled.section`
 
 const Metric = styled.div`
   display: grid;
-  gap: 0.3rem;
-  padding: 1rem 1.1rem;
   min-width: 0;
-  border-right: 1px solid rgb(15 23 42 / 8%);
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border-right: 1px solid var(--ds-color-border-subtle);
 
   &:last-child {
     border-right: none;
@@ -108,13 +109,13 @@ const Metric = styled.div`
     }
 
     &:nth-child(n + 4) {
-      border-top: 1px solid rgb(15 23 42 / 8%);
+      border-top: 1px solid var(--ds-color-border-subtle);
     }
   }
 
   @media (width <= 640px) {
     &:nth-child(3n) {
-      border-right: 1px solid rgb(15 23 42 / 8%);
+      border-right: 1px solid var(--ds-color-border-subtle);
     }
 
     &:nth-child(2n) {
@@ -122,7 +123,7 @@ const Metric = styled.div`
     }
 
     &:nth-child(n + 3) {
-      border-top: 1px solid rgb(15 23 42 / 8%);
+      border-top: 1px solid var(--ds-color-border-subtle);
     }
   }
 
@@ -130,28 +131,28 @@ const Metric = styled.div`
     border-right: none;
 
     &:not(:first-child) {
-      border-top: 1px solid rgb(15 23 42 / 8%);
+      border-top: 1px solid var(--ds-color-border-subtle);
     }
   }
 `;
 
 const MetricLabel = styled.span`
-  color: var(--gray-7);
-  font-size: 0.78rem;
-  font-weight: 500;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-medium);
 `;
 
 const MetricValue = styled.strong`
   overflow: hidden;
-  color: var(--black-3);
-  font-size: 1.25rem;
-  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-xl);
+  font-weight: var(--ds-font-weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
 const MetricDetail = styled.span`
-  color: var(--gray-6);
-  font-size: 0.74rem;
-  line-height: 1.35;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-line-height-normal);
 `;

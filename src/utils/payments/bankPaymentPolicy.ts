@@ -1,12 +1,14 @@
 import type { PaymentMethodCode } from '@/types/payments';
+import { BANK_PAYMENT_METHOD_CODES } from '@/utils/payments/contracts';
 
-export const BANK_PAYMENT_METHOD_CODES = ['card', 'transfer'] as const;
 export const BANK_PAYMENT_MODULE_KEYS = [
   'sales',
   'expenses',
   'accountsReceivable',
   'purchases',
 ] as const;
+
+export { BANK_PAYMENT_METHOD_CODES };
 
 export type BankPaymentMethodCode = (typeof BANK_PAYMENT_METHOD_CODES)[number];
 export type BankPaymentModuleKey = (typeof BANK_PAYMENT_MODULE_KEYS)[number];
@@ -234,9 +236,15 @@ const hasAvailableBankAccountId = (
     return true;
   }
 
-  return availableBankAccountIds instanceof Set
-    ? availableBankAccountIds.has(bankAccountId)
-    : availableBankAccountIds.includes(bankAccountId);
+  const availableBankAccountArray = Array.isArray(availableBankAccountIds)
+    ? availableBankAccountIds
+    : null;
+
+  if (availableBankAccountArray) {
+    return availableBankAccountArray.includes(bankAccountId);
+  }
+
+  return (availableBankAccountIds as ReadonlySet<string>).has(bankAccountId);
 };
 
 const getSoleAvailableBankAccountId = (
@@ -246,18 +254,24 @@ const getSoleAvailableBankAccountId = (
     return null;
   }
 
-  if (availableBankAccountIds instanceof Set) {
-    if (availableBankAccountIds.size !== 1) {
-      return null;
-    }
+  const availableBankAccountArray = Array.isArray(availableBankAccountIds)
+    ? availableBankAccountIds
+    : null;
 
-    const [onlyBankAccountId] = Array.from(availableBankAccountIds);
-    return onlyBankAccountId ?? null;
+  if (availableBankAccountArray) {
+    return availableBankAccountArray.length === 1
+      ? (availableBankAccountArray[0] ?? null)
+      : null;
   }
 
-  return availableBankAccountIds.length === 1
-    ? (availableBankAccountIds[0] ?? null)
-    : null;
+  const availableBankAccountSet =
+    availableBankAccountIds as ReadonlySet<string>;
+  if (availableBankAccountSet.size !== 1) {
+    return null;
+  }
+
+  const [onlyBankAccountId] = Array.from(availableBankAccountSet);
+  return onlyBankAccountId ?? null;
 };
 
 const normalizeAvailableBankAccountIds = (
@@ -267,9 +281,9 @@ const normalizeAvailableBankAccountIds = (
     return [];
   }
 
-  return availableBankAccountIds instanceof Set
-    ? Array.from(availableBankAccountIds)
-    : [...availableBankAccountIds];
+  return Array.isArray(availableBankAccountIds)
+    ? [...availableBankAccountIds]
+    : Array.from(availableBankAccountIds);
 };
 
 export const syncBankPaymentPolicyDefaultAccount = ({
@@ -299,8 +313,7 @@ export const syncBankPaymentPolicyDefaultAccount = ({
     ? normalizedPolicy.defaultBankAccountId
     : null;
   const nextDefaultBankAccountId =
-    preferredAvailableBankAccountId ??
-    currentDefaultBankAccountId;
+    preferredAvailableBankAccountId ?? currentDefaultBankAccountId;
 
   return {
     ...normalizedPolicy,

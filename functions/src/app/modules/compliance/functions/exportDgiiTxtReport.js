@@ -8,6 +8,13 @@ import {
   assertUserAccess,
 } from '../../../versions/v2/invoice/services/repairTasks.service.js';
 import { resolveBusinessFiscalRollout } from '../../taxReceipt/utils/fiscalRollout.util.js';
+import { loadDgii606Datasets } from '../services/dgii606MonthlyReport.service.js';
+import {
+  assertValidDgii606Header,
+  buildDgii606TxtContent,
+  buildDgii606TxtFileName,
+  buildDgii606TxtRow,
+} from '../services/dgii606TxtExport.service.js';
 import {
   loadDgii607Datasets,
   resolveMonthlyPeriodRange,
@@ -51,7 +58,7 @@ export const exportDgiiTxtReport = onCall(
     if (!periodKey) {
       throw new HttpsError('invalid-argument', 'periodKey es requerido');
     }
-    if (!['DGII_607', 'DGII_608'].includes(reportCode)) {
+    if (!['DGII_606', 'DGII_607', 'DGII_608'].includes(reportCode)) {
       throw new HttpsError(
         'unimplemented',
         `Export TXT para ${reportCode} todavía no está disponible.`,
@@ -81,11 +88,88 @@ export const exportDgiiTxtReport = onCall(
       );
     }
 
-    const businessRnc = toCleanString(businessData.rnc) || null;
+    const businessRnc =
+      toCleanString(businessData.rnc) ||
+      toCleanString(businessData.business?.rnc) ||
+      null;
 
-    const {
-      periodKey: normalizedPeriodKey,
-    } = resolveMonthlyPeriodRange(periodKey);
+    const { periodKey: normalizedPeriodKey } =
+      resolveMonthlyPeriodRange(periodKey);
+
+    if (reportCode === 'DGII_606') {
+      const { datasets } = await loadDgii606Datasets({
+        businessId,
+        periodKey,
+        firestore: db,
+      });
+
+      const paymentsByPurchaseId = datasets.accountsPayablePayments.reduce(
+        (accumulator, payment) => {
+          const purchaseId = toCleanString(payment?.purchaseId);
+          if (!purchaseId) return accumulator;
+
+          const existingPayments = accumulator.get(purchaseId) ?? [];
+          existingPayments.push(payment);
+          accumulator.set(purchaseId, existingPayments);
+          return accumulator;
+        },
+        new Map(),
+      );
+      const rowEntries = [
+        ...datasets.purchases.map((record) => ({
+          record,
+          sortKey: record?.issuedAt ?? '',
+          payments:
+            paymentsByPurchaseId.get(record?.metadata?.recordId ?? '') ?? [],
+        })),
+        ...datasets.expenses.map((record) => ({
+          record,
+          sortKey: record?.issuedAt ?? '',
+          payments: [],
+        })),
+      ].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+      let rows;
+      try {
+        rows = rowEntries.map(({ record, payments }) =>
+          buildDgii606TxtRow({ record, payments }),
+        );
+        assertValidDgii606Header({
+          businessRnc,
+          periodKey: normalizedPeriodKey,
+          rowCount: rows.length,
+        });
+      } catch (error) {
+        throw new HttpsError(
+          'failed-precondition',
+          error instanceof Error
+            ? error.message
+            : 'No se pudo construir el TXT 606 con los datos actuales.',
+        );
+      }
+
+      const content = buildDgii606TxtContent({
+        businessRnc,
+        periodKey: normalizedPeriodKey,
+        rows,
+      });
+      const fileName = buildDgii606TxtFileName({
+        businessRnc,
+        periodKey: normalizedPeriodKey,
+      });
+
+      logger.info('[exportDgiiTxtReport] generated', {
+        businessId,
+        periodKey: normalizedPeriodKey,
+        reportCode,
+        purchasesLoaded: datasets.purchases.length,
+        expensesLoaded: datasets.expenses.length,
+        accountsPayablePaymentsLoaded: datasets.accountsPayablePayments.length,
+        rowCount: rows.length,
+      });
+
+      return { ok: true, content, fileName, rowCount: rows.length };
+    }
 
     if (reportCode === 'DGII_607') {
       const { datasets, rawSnapshots } = await loadDgii607Datasets({
@@ -99,7 +183,11 @@ export const exportDgiiTxtReport = onCall(
           isCredit: false,
           firestoreDoc: record,
           record,
-          sortKey: record?.retentionDate ?? record?.issuedAt ?? record?.createdAt ?? '',
+          sortKey:
+            record?.retentionDate ??
+            record?.issuedAt ??
+            record?.createdAt ??
+            '',
           originalNcf: null,
         })),
         ...datasets.creditNotes.map((record) => ({
@@ -125,13 +213,14 @@ export const exportDgiiTxtReport = onCall(
 
       let rows;
       try {
-        rows = rowEntries.map(({ record, firestoreDoc, isCredit, originalNcf }) =>
-          buildDgii607TxtRow({
-            record,
-            firestoreDoc,
-            isCredit,
-            originalNcf,
-          }),
+        rows = rowEntries.map(
+          ({ record, firestoreDoc, isCredit, originalNcf }) =>
+            buildDgii607TxtRow({
+              record,
+              firestoreDoc,
+              isCredit,
+              originalNcf,
+            }),
         );
         assertValidDgii607Header({
           businessRnc,
@@ -175,10 +264,11 @@ export const exportDgiiTxtReport = onCall(
       periodKey,
       firestore: db,
     });
-    const orderedRecords = [...datasets.invoices, ...datasets.creditNotes].sort((a, b) =>
-      (a?.voidedAt ?? a?.createdAt ?? '').localeCompare(
-        b?.voidedAt ?? b?.createdAt ?? '',
-      ),
+    const orderedRecords = [...datasets.invoices, ...datasets.creditNotes].sort(
+      (a, b) =>
+        (a?.voidedAt ?? a?.createdAt ?? '').localeCompare(
+          b?.voidedAt ?? b?.createdAt ?? '',
+        ),
     );
 
     let rows;

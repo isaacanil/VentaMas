@@ -80,6 +80,7 @@ export type AccountingPostingAmountSource =
   | 'sale_cash_received'
   | 'sale_bank_received'
   | 'sale_other_received'
+  | 'credit_note_net_total'
   | 'purchase_total'
   | 'expense_total'
   | 'tax_total'

@@ -235,6 +235,24 @@ describe('resolveBankStatementLineMatch', () => {
     expect(transactionSetMock).not.toHaveBeenCalled();
   });
 
+  it('rejects duplicated movement ids before opening the transaction', async () => {
+    await expect(
+      resolveBankStatementLineMatch({
+        data: {
+          businessId: 'business-1',
+          idempotencyKey: 'resolve-line-dup',
+          movementIds: ['mov-1', 'mov-1'],
+          statementLineId: 'statement-line-dup',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'movementIds no puede contener duplicados.',
+    });
+
+    expect(runTransactionMock).not.toHaveBeenCalled();
+  });
+
   it('writes off a pending bank statement line and creates an explicit adjustment movement for the difference', async () => {
     transactionSnapshots.set(
       'businesses/business-1/treasuryIdempotency/resolve-line-3',

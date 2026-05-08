@@ -20,6 +20,8 @@ const safeNumber = (value) => {
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
+const hasDuplicates = (values) => new Set(values).size !== values.length;
+
 const toMillis = (value) => {
   if (value == null) return null;
   if (typeof value === 'number') {
@@ -74,8 +76,8 @@ const resolvePayload = (payload) => {
     idempotencyKey: toCleanString(payload.idempotencyKey),
     movementIds: Array.isArray(payload.movementIds)
       ? payload.movementIds
-          .map((movementId) => toCleanString(movementId))
-          .filter(Boolean)
+        .map((movementId) => toCleanString(movementId))
+        .filter(Boolean)
       : [],
     resolutionMode:
       toCleanString(payload.resolutionMode) === 'write_off'
@@ -90,6 +92,7 @@ const resolvePayload = (payload) => {
 const assertPayload = ({
   businessId,
   idempotencyKey,
+  movementIds,
   resolutionMode,
   statementLineId,
   writeOffReason,
@@ -102,6 +105,12 @@ const assertPayload = ({
   }
   if (!idempotencyKey) {
     throw new HttpsError('invalid-argument', 'idempotencyKey es requerido.');
+  }
+  if (hasDuplicates(movementIds)) {
+    throw new HttpsError(
+      'invalid-argument',
+      'movementIds no puede contener duplicados.',
+    );
   }
   if (!['match', 'write_off'].includes(resolutionMode)) {
     throw new HttpsError(
@@ -205,6 +214,7 @@ export const resolveBankStatementLineMatch = onCall(async (request) => {
   assertPayload({
     businessId,
     idempotencyKey,
+    movementIds,
     resolutionMode,
     statementLineId,
     writeOffReason,

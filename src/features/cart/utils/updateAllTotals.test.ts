@@ -9,6 +9,7 @@ describe('updateAllTotals', () => {
   it('calculates subtotal, taxes, total, payment and change for a regular sale', () => {
     const state = buildState();
     state.settings.taxReceipt.enabled = true;
+    state.settings.fiscal.taxationEnabled = true;
     state.data.products = [
       {
         id: 'product-1',
@@ -41,6 +42,7 @@ describe('updateAllTotals', () => {
   it('forces the functional currency when the sale mixes currencies and uses active payment methods', () => {
     const state = buildState();
     state.settings.taxReceipt.enabled = true;
+    state.settings.fiscal.taxationEnabled = true;
     state.data.documentCurrency = 'USD';
     state.data.functionalCurrency = 'DOP';
     state.data.paymentMethod = [

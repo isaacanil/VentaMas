@@ -197,6 +197,10 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/modules/dev/pages/DevTools/BSeriesInvoices/BSeriesInvoices'),
   [DEV_VIEW_TERM.PRUEBA]: () =>
     import('@/modules/dev/pages/DevTools/TestPlayground'),
+  [DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW]: () =>
+    import('@/modules/dev/pages/DevTools/ErrorScreenPreview/ErrorScreenPreview'),
+  [DEV_VIEW_TERM.ERROR_REPORTS]: () =>
+    import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
   [SUBSCRIPTION_MAINTENANCE]: () =>
     import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePage'),
   [SUBSCRIPTION_MAINTENANCE_OVERVIEW]: async () => {

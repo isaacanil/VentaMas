@@ -53,99 +53,101 @@ export const BreakdownList = ({
 
 const Section = styled.section`
   display: grid;
-  gap: 1rem;
-  padding: 1.1rem 1.15rem;
-  background: var(--white);
-  border: 1px solid rgb(15 23 42 / 12%);
-  border-radius: 10px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
 `;
 
 const Header = styled.header`
   display: grid;
-  gap: 0.2rem;
+  gap: var(--ds-space-1);
 `;
 
 const Title = styled.h3`
   margin: 0;
-  color: var(--black-3);
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
 `;
 
 const Subtitle = styled.p`
   margin: 0;
-  color: var(--gray-6);
-  font-size: 0.82rem;
-  line-height: 1.45;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
 `;
 
 const List = styled.div`
   display: grid;
-  gap: 0.9rem;
+  gap: var(--ds-space-3);
 `;
 
 const Item = styled.div`
   display: grid;
-  gap: 0.35rem;
+  gap: var(--ds-space-2);
 `;
 
 const ItemHeader = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   align-items: baseline;
   justify-content: space-between;
 `;
 
 const ItemLabel = styled.span`
   overflow: hidden;
-  color: var(--black-3);
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
 const ItemValue = styled.strong`
-  color: var(--black-3);
-  font-size: 0.92rem;
-  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
   text-align: right;
 `;
 
 const ItemDetailRow = styled.div`
   display: flex;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   align-items: center;
   justify-content: space-between;
 `;
 
 const ItemDetail = styled.span`
-  color: var(--gray-6);
-  font-size: 0.78rem;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
 `;
 
 const ItemShare = styled.span`
-  color: var(--gray-7);
-  font-size: 0.76rem;
-  font-weight: 600;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
 `;
 
 const Track = styled.div`
   width: 100%;
   height: 5px;
   overflow: hidden;
-  background: rgb(15 23 42 / 6%);
-  border-radius: 999px;
+  background: var(--ds-color-bg-muted);
+  border-radius: var(--ds-radius-pill);
 `;
 
 const Fill = styled.div`
   height: 100%;
-  background: #1d69a8;
+  background: var(--ds-color-action-primary);
   border-radius: inherit;
 `;
 
 const EmptyState = styled.p`
   margin: 0;
-  color: var(--gray-6);
-  font-size: 0.85rem;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
 `;

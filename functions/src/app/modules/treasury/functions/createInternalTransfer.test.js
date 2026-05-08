@@ -218,6 +218,7 @@ describe('createInternalTransfer accounting period validation', () => {
           businessId: 'business-1',
           idempotencyKey: 'itf-1',
           amount: 75,
+          occurredAt: Date.parse('2026-04-15T12:00:00.000Z'),
           from: {
             type: 'cash',
             cashAccountId: 'cash-1',

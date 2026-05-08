@@ -1,15 +1,18 @@
-import type { PaymentMethodEntry, SupplierCreditNote } from '@/types/payments';
+import type {
+  CanonicalPaymentMethodCode,
+  PaymentMethodEntry,
+  SupplierCreditNote,
+} from '@/types/payments';
 import { toMillis } from '@/utils/date/toMillis';
 import {
   paymentMethodRequiresBankAccount,
   paymentMethodRequiresCashCount,
 } from '@/utils/payments/methods';
 
-export type SupplierPaymentMethodCode =
-  | 'cash'
-  | 'card'
-  | 'transfer'
-  | 'supplierCreditNote';
+export type SupplierPaymentMethodCode = Extract<
+  CanonicalPaymentMethodCode,
+  'cash' | 'card' | 'transfer' | 'supplierCreditNote'
+>;
 
 export interface SupplierPaymentMethodDraft extends PaymentMethodEntry {
   method: SupplierPaymentMethodCode;

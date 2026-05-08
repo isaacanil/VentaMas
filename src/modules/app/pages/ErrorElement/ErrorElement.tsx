@@ -1,10 +1,6 @@
-import {
-  BugOutlined,
-  HomeOutlined,
-  RollbackOutlined,
-} from '@/constants/icons/antd';
-import { Button, Checkbox, Typography, Space, Alert } from 'antd';
-import { AnimatePresence, m } from 'framer-motion';
+import { HomeOutlined, RollbackOutlined } from '@/constants/icons/antd';
+import { Alert, Button } from '@heroui/react';
+import { m } from 'framer-motion';
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
@@ -17,25 +13,19 @@ import { ErrorDetails } from './components/ErrorDetails';
 import { MESSAGES, ANIMATIONS } from './constants';
 import { useErrorHandling } from './hooks/useErrorHandling';
 
-const { Title: AntTitle, Text } = Typography;
-
 interface ErrorElementProps {
   errorInfo?: string | null;
   errorStackTrace?: string | null;
+  autoReport?: boolean;
 }
 
 export const ErrorElement = ({
+  autoReport = true,
   errorInfo,
   errorStackTrace,
 }: ErrorElementProps) => {
-  const {
-    user,
-    loading,
-    canGoBack,
-    handleBack,
-    handleGoBack,
-    handleReportChange,
-  } = useErrorHandling(errorInfo, errorStackTrace);
+  const { user, loading, canGoBack, handleBack, handleGoBack } =
+    useErrorHandling(errorInfo, errorStackTrace, { autoReport });
 
   return (
     <Container
@@ -45,184 +35,110 @@ export const ErrorElement = ({
       exit="exit"
     >
       <ErrorCard>
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <AnimatePresence>
-            <LogoWrapper
-              key="logo"
-              variants={ANIMATIONS.logo}
-              initial="hidden"
-              animate="visible"
-            >
-              <Logo />
-            </LogoWrapper>
+        <ContentStack>
+          <LogoWrapper
+            variants={ANIMATIONS.logo}
+            initial="hidden"
+            animate="visible"
+          >
+            <Logo />
+          </LogoWrapper>
 
-            <StyledAlert
-              key="alert"
-              icon={<BugOutlined className="error-icon" />}
-              message={
-                <AntTitle level={4} style={{ margin: 0, color: '#cf1322' }}>
-                  {MESSAGES.ERROR_TITLE}
-                </AntTitle>
-              }
-              description={<Text>{MESSAGES.ERROR_DESCRIPTION}</Text>}
-              type="error"
-              showIcon
-            />
+          <StyledAlert status="danger">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>{MESSAGES.ERROR_TITLE}</Alert.Title>
+              <Alert.Description>
+                {MESSAGES.ERROR_DESCRIPTION}
+              </Alert.Description>
+            </Alert.Content>
+          </StyledAlert>
 
-            <ReportSection key="report">
-              <Checkbox onChange={handleReportChange}>
-                <Text strong>{MESSAGES.REPORT_ERROR}</Text>
-              </Checkbox>
-              <Text type="secondary" className="report-description">
-                {MESSAGES.REPORT_DESCRIPTION}
-              </Text>
-            </ReportSection>
-
-            <ButtonGroup key="actions">
-              {canGoBack && (
-                <Button
-                  icon={<RollbackOutlined />}
-                  onClick={handleGoBack}
-                  size="large"
-                  className="back-button"
-                >
-                  {MESSAGES.GO_BACK}
-                </Button>
-              )}
-              <Button
-                type="primary"
-                size="large"
-                icon={<HomeOutlined />}
-                onClick={handleBack}
-                loading={loading}
-                className="home-button"
-              >
-                {MESSAGES.GO_HOME}
+          <ButtonGroup>
+            {canGoBack && (
+              <Button variant="secondary" size="lg" onPress={handleGoBack}>
+                <RollbackOutlined />
+                {MESSAGES.GO_BACK}
               </Button>
-            </ButtonGroup>
-            {hasDeveloperAccess(user) && (
-              <ErrorDetails
-                key="details"
-                errorStackTrace={errorStackTrace}
-                variants={ANIMATIONS.errorDetails}
-              />
             )}
-          </AnimatePresence>
-        </Space>
+            <Button
+              variant="primary"
+              size="lg"
+              onPress={handleBack}
+              isPending={loading}
+            >
+              <HomeOutlined />
+              {MESSAGES.GO_HOME}
+            </Button>
+          </ButtonGroup>
+          {hasDeveloperAccess(user) && (
+            <ErrorDetails
+              errorStackTrace={errorStackTrace}
+              variants={ANIMATIONS.errorDetails}
+            />
+          )}
+        </ContentStack>
       </ErrorCard>
     </Container>
   );
 };
 
 ErrorElement.propTypes = {
+  autoReport: PropTypes.bool,
   errorInfo: PropTypes.string,
   errorStackTrace: PropTypes.string,
 };
 
-// --- STYLED COMPONENTS ACTUALIZADOS ---
-
-const Container = styled(m.div)`
+const Container = styled(m.main)`
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centrado vertical */
-  justify-content: center; /* Centrado horizontal */
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
   width: 100%;
-  background-color: #f8f9fa; /* Fondo gris suave para contexto */
-  padding: 20px;
+  background: var(--ds-color-bg-page, #f8f9fa);
+  padding: clamp(20px, 5vw, 48px);
   overflow-y: auto;
+`;
+
+const ContentStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5, 20px);
+  width: 100%;
 `;
 
 const LogoWrapper = styled(m.div)`
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
-  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 10%));
+  margin-bottom: var(--ds-space-2, 8px);
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 8%));
 `;
 
 const StyledAlert = styled(Alert)`
-  margin: 1.5rem 0;
-  border: none;
-  border-left: 4px solid #ff4d4f; /* Borde de acento elegante */
-  border-radius: 4px;
-  background: #fff1f0;
-  box-shadow: none; /* Eliminamos sombra para diseño plano */
-
-  .error-icon {
-    font-size: 24px;
-    color: #ff4d4f;
-    margin-top: 4px;
-  }
-
-  .ant-alert-message {
-    margin-bottom: 4px;
-  }
-`;
-
-const ReportSection = styled(Space)`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-start;
-  padding: 1rem 1.5rem;
   width: 100%;
+  border: 1px solid var(--ds-color-state-danger-border, #fecaca);
+  background: var(--ds-color-state-danger-subtle, #fef2f2);
 
-  /* Diseño sutil y técnico */
-  background: rgb(0 0 0 / 2%);
-  border: 1px dashed #d9d9d9;
-  border-radius: 8px;
-
-  /* Sin sombras pesadas */
-
-  .report-description {
-    padding-left: 24px;
-    font-size: 0.85rem;
-    opacity: 0.85;
+  .alert__title {
+    font-size: var(--ds-font-size-md, 1rem);
+    font-weight: var(--ds-font-weight-semibold, 600);
   }
 
-  .ant-checkbox-wrapper:hover {
-    opacity: 0.8;
+  .alert__description {
+    color: var(--ds-color-text-secondary, #52525b);
   }
 `;
 
-const ButtonGroup = styled(Space)`
-  gap: 16px !important;
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: var(--ds-space-3, 12px);
   justify-content: center;
   width: 100%;
-  margin-top: 2rem;
-  flex-wrap: wrap; /* Para móviles */
+  flex-wrap: wrap;
 
   button {
-    height: 48px;
-    padding: 0 32px;
-    border-radius: 12px; /* Bordes más modernos */
-    font-weight: 500;
-    box-shadow: 0 4px 10px rgb(0 0 0 / 5%);
-  }
-
-  .back-button {
-    border: 1px solid #d9d9d9;
-    background: white;
-    transition: all 0.3s ease;
-
-    &:hover {
-      border-color: #40a9ff;
-      color: #40a9ff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-    }
-  }
-
-  .home-button {
-    /* Gradiente sutil */
-    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-    border: none;
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgb(24 144 255 / 40%); /* Glow azul */
-    }
+    min-width: 160px;
   }
 `;
 

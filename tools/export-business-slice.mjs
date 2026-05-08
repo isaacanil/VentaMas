@@ -69,6 +69,58 @@ const toCleanString = (value) => {
   return trimmed.length > 0 ? trimmed : null;
 };
 
+const DGII_VOID_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'void',
+  'voided',
+  'annulled',
+  'annulado',
+]);
+
+const readPath = (source, pathValue) => {
+  const normalizedPath = toCleanString(pathValue);
+  if (!normalizedPath || !isRecord(source)) return undefined;
+
+  return normalizedPath.split('.').reduce((current, segment) => {
+    if (!isRecord(current)) return undefined;
+    return current[segment];
+  }, source);
+};
+
+const uniqueEntriesByPath = (entries) => {
+  const byPath = new Map();
+  for (const entry of entries) {
+    if (!entry?.path) continue;
+    byPath.set(entry.path, entry);
+  }
+  return Array.from(byPath.values());
+};
+
+const isVoidedInvoiceEntry = (entry) => {
+  const root = isRecord(entry?.data) ? entry.data : {};
+  const nested = isRecord(root.data) ? root.data : root;
+  const cancelData = isRecord(nested.cancel)
+    ? nested.cancel
+    : isRecord(root.cancel)
+      ? root.cancel
+      : {};
+  const status =
+    toCleanString(nested.status) ?? toCleanString(root.status) ?? null;
+  const normalizedStatus = status?.toLowerCase() ?? null;
+
+  return (
+    (normalizedStatus && DGII_VOID_STATUSES.has(normalizedStatus)) ||
+    Boolean(
+      readPath(root, 'voidedAt') ||
+        readPath(root, 'data.voidedAt') ||
+        readPath(root, 'cancelledAt') ||
+        readPath(root, 'data.cancelledAt') ||
+        cancelData.cancelledAt,
+    )
+  );
+};
+
 const collectCandidateIds = (data, fields) => {
   const result = new Set();
   const source = isRecord(data) ? data : {};
@@ -135,8 +187,24 @@ const selectInvoices = async ({ db, businessId, filters, invoiceLimit }) => {
     return byNumber.size > 0 && number && byNumber.has(number);
   });
 
-  if (targeted.length > 0) return targeted;
-  return pickLatestDocs(invoices, invoiceLimit, ['date']);
+  const latestByIssueDate = pickLatestDocs(invoices, invoiceLimit, ['data.date', 'date']);
+  const latestVoided = pickLatestDocs(
+    invoices.filter((entry) => isVoidedInvoiceEntry(entry)),
+    invoiceLimit,
+    [
+      'voidedAt',
+      'data.voidedAt',
+      'data.cancel.cancelledAt',
+      'data.cancelledAt',
+      'cancelledAt',
+    ],
+  );
+
+  if (targeted.length > 0) {
+    return uniqueEntriesByPath([...targeted, ...latestVoided]);
+  }
+
+  return uniqueEntriesByPath([...latestByIssueDate, ...latestVoided]);
 };
 
 const selectCashCounts = async ({ db, businessId, cashCountIds, cashCountLimit }) => {
@@ -450,6 +518,8 @@ const exportFiscalDomain = async ({
   );
   latestTaxReportRuns.forEach((entry) => docs.add(entry.path, entry.data, domain));
 
+  const invoiceIdsToHydrate = new Set();
+
   const fiscalConfigs = [
     {
       collectionName: 'ncfUsage',
@@ -463,7 +533,16 @@ const exportFiscalDomain = async ({
     },
     {
       collectionName: 'creditNotes',
-      fields: ['invoiceId', 'clientId'],
+      fields: ['invoiceId', 'sourceInvoiceId', 'clientId'],
+      invoiceFields: ['invoiceId', 'sourceInvoiceId'],
+      clientFields: ['clientId'],
+      limit: options.creditNoteLimit,
+    },
+    {
+      collectionName: 'salesThirdPartyWithholdings',
+      fields: ['invoiceId', 'sourceInvoiceId', 'clientId', 'documentId'],
+      invoiceFields: ['invoiceId', 'sourceInvoiceId', 'documentId'],
+      clientFields: ['clientId'],
       limit: options.creditNoteLimit,
     },
     {
@@ -489,7 +568,23 @@ const exportFiscalDomain = async ({
         matchesAnyId(entry.data, config.fields, state.clientIds),
     );
     const selected = filtered.length > 0 ? filtered : pickLatestDocs(allEntries, config.limit);
-    selected.forEach((entry) => docs.add(entry.path, entry.data, domain));
+    selected.forEach((entry) => {
+      docs.add(entry.path, entry.data, domain);
+      collectCandidateIds(entry.data, config.invoiceFields || []).forEach((id) => {
+        invoiceIdsToHydrate.add(id);
+        state.invoiceIds.add(id);
+      });
+      collectCandidateIds(entry.data, config.clientFields || []).forEach((id) => {
+        state.clientIds.add(id);
+      });
+    });
+  }
+
+  for (const invoiceId of invoiceIdsToHydrate) {
+    const invoiceDoc = await getDocData(db, `businesses/${businessId}/invoices/${invoiceId}`);
+    if (invoiceDoc) {
+      docs.add(invoiceDoc.path, invoiceDoc.data, 'sales');
+    }
   }
 };
 

@@ -21,16 +21,19 @@ const createQueryMock = (docs) => {
   return query;
 };
 
-const createDocSnap = (data) =>
-  data
-    ? {
-        exists: true,
-        data: () => data,
-      }
-    : {
-        exists: false,
-        data: () => null,
-      };
+const createDocSnap = (data) => {
+  if (data) {
+    return {
+      exists: true,
+      data: () => data,
+    };
+  }
+
+  return {
+    exists: false,
+    data: () => null,
+  };
+};
 
 const createFirestoreMock = ({
   docsByCollectionPath,
@@ -86,6 +89,7 @@ describe('dgii606MonthlyReport.service', () => {
         classification: {
           dgii606ExpenseType: '01',
         },
+        condition: 'cash',
         workflowStatus: 'completed',
       },
     });
@@ -93,6 +97,7 @@ describe('dgii606MonthlyReport.service', () => {
     expect(result).toEqual({
       businessId: 'business-1',
       issuedAt: '2026-04-05T13:20:00.000Z',
+      paymentAt: null,
       documentNumber: '120',
       counterparty: {
         id: 'supplier-1',
@@ -104,12 +109,24 @@ describe('dgii606MonthlyReport.service', () => {
       documentType: 'goods',
       taxReceipt: {
         ncf: 'B01000000015',
+        modifiedNcf: null,
       },
       totals: {
         total: 1180,
       },
       taxBreakdown: {
         itbisTotal: 180,
+      },
+      fiscalAmounts: {
+        serviceAmount: 0,
+        goodsAmount: 1000,
+        totalAmount: 1000,
+        itbisToAdvance: 180,
+      },
+      paymentInfo: {
+        formCode: '01',
+        condition: 'cash',
+        methods: [],
       },
       classification: {
         dgii606ExpenseType: '01',
@@ -177,6 +194,7 @@ describe('dgii606MonthlyReport.service', () => {
               classification: {
                 dgii606ExpenseType: '01',
               },
+              condition: 'cash',
               workflowStatus: 'completed',
             }),
           },
@@ -234,6 +252,7 @@ describe('dgii606MonthlyReport.service', () => {
         taxReceipt: {
           ncf: 'B13000000001',
         },
+        paymentMethods: [{ method: 'transfer', amount: 400 }],
         status: 'posted',
       },
     });
@@ -303,6 +322,7 @@ describe('dgii606MonthlyReport.service', () => {
               classification: {
                 dgii606ExpenseType: '01',
               },
+              condition: 'cash',
               workflowStatus: 'completed',
             }),
           },
@@ -329,6 +349,7 @@ describe('dgii606MonthlyReport.service', () => {
               classification: {
                 dgii606ExpenseType: '02',
               },
+              condition: 'cash',
               workflowStatus: 'canceled',
             }),
           },
@@ -354,6 +375,7 @@ describe('dgii606MonthlyReport.service', () => {
               taxReceipt: {
                 ncf: 'B13000000001',
               },
+              paymentMethods: [{ method: 'cash', amount: 400 }],
               status: 'posted',
             }),
           },
@@ -419,6 +441,7 @@ describe('dgii606MonthlyReport.service', () => {
           classification: {
             dgii606ExpenseType: '01',
           },
+          condition: 'cash',
           workflowStatus: 'completed',
         },
       },
@@ -466,6 +489,10 @@ describe('dgii606MonthlyReport.service', () => {
         total: 500,
         itbisTotal: 76.27,
         issuedAt: '2026-04-06T13:20:00.000Z',
+        paymentAt: null,
+        paymentFormCode: '01',
+        serviceAmount: 0,
+        goodsAmount: 423.73,
         status: 'canceled',
       },
     ]);
@@ -485,6 +512,10 @@ describe('dgii606MonthlyReport.service', () => {
         total: null,
         itbisTotal: null,
         issuedAt: '2026-04-16T10:00:00.000Z',
+        paymentAt: null,
+        paymentFormCode: null,
+        serviceAmount: null,
+        goodsAmount: null,
         status: 'void',
       },
     ]);
@@ -538,6 +569,7 @@ describe('dgii606MonthlyReport.service', () => {
           classification: {
             dgii606ExpenseType: '01',
           },
+          condition: 'cash',
           workflowStatus: 'completed',
         },
       },

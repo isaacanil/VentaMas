@@ -256,4 +256,25 @@ describe('createBankStatementLine', () => {
       { merge: true },
     );
   });
+
+  it('rejects duplicated movement ids before opening the transaction', async () => {
+    await expect(
+      createBankStatementLine({
+        data: {
+          amount: 100,
+          bankAccountId: 'bank-1',
+          businessId: 'business-1',
+          direction: 'in',
+          idempotencyKey: 'statement-line-dup',
+          movementIds: ['mov-1', 'mov-1'],
+          statementDate: '2026-04-12T00:00:00.000Z',
+        },
+      }),
+    ).rejects.toMatchObject({
+      code: 'invalid-argument',
+      message: 'movementIds no puede contener duplicados.',
+    });
+
+    expect(runTransactionMock).not.toHaveBeenCalled();
+  });
 });

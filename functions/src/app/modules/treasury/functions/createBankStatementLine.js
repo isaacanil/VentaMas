@@ -20,6 +20,8 @@ const safeNumber = (value) => {
 
 const roundToTwoDecimals = (value) => Math.round(safeNumber(value) * 100) / 100;
 
+const hasDuplicates = (values) => new Set(values).size !== values.length;
+
 const toMillis = (value) => {
   if (value == null) return null;
   if (typeof value === 'number') {
@@ -85,8 +87,8 @@ const resolvePayload = (payload) => {
     idempotencyKey: toCleanString(payload.idempotencyKey),
     movementIds: Array.isArray(payload.movementIds)
       ? payload.movementIds
-          .map((movementId) => toCleanString(movementId))
-          .filter(Boolean)
+        .map((movementId) => toCleanString(movementId))
+        .filter(Boolean)
       : [],
     reference: toCleanString(payload.reference),
     statementDateMillis: toMillis(payload.statementDate),
@@ -99,6 +101,7 @@ const assertPayload = ({
   businessId,
   direction,
   idempotencyKey,
+  movementIds,
   payload,
   statementDateMillis,
 }) => {
@@ -116,6 +119,12 @@ const assertPayload = ({
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new HttpsError('invalid-argument', 'amount debe ser mayor que 0.');
+  }
+  if (hasDuplicates(movementIds)) {
+    throw new HttpsError(
+      'invalid-argument',
+      'movementIds no puede contener duplicados.',
+    );
   }
   if (payload.statementDate != null && statementDateMillis == null) {
     throw new HttpsError(
@@ -166,6 +175,7 @@ export const createBankStatementLine = onCall(async (request) => {
     businessId,
     direction,
     idempotencyKey,
+    movementIds,
     payload,
     statementDateMillis,
   });

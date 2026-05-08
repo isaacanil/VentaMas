@@ -1,6 +1,17 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Alert, Button, Input, InputNumber, Select, message } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Input,
+  ListBox,
+  NumberField,
+  Select,
+  Table,
+} from '@heroui/react';
+import { message } from 'antd';
+import type { Key } from 'react';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 
@@ -58,6 +69,8 @@ const RECENT_TEMPLATES = [
   'Cierre ITBIS mensual',
 ] as const;
 
+type EntryType = (typeof ENTRY_TYPE_OPTIONS)[number]['value'];
+
 const buildInitialLines = (): ManualLineState[] => [
   {
     id: createManualLineId(),
@@ -84,12 +97,20 @@ export const ManualEntriesPanel = ({
   const [entryDate, setEntryDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
-  const [entryType, setEntryType] =
-    useState<(typeof ENTRY_TYPE_OPTIONS)[number]['value']>('adjustment');
+  const [entryType, setEntryType] = useState<EntryType>('adjustment');
   const [description, setDescription] = useState('');
   const [note, setNote] = useState('');
   const [lines, setLines] = useState<ManualLineState[]>(buildInitialLines);
   const [error, setError] = useState<string | null>(null);
+
+  const accountOptions = useMemo(
+    () =>
+      postingAccounts.map((account) => ({
+        id: account.id,
+        label: `${account.code} — ${account.name}`,
+      })),
+    [postingAccounts],
+  );
 
   const totals = useMemo(
     () =>
@@ -168,6 +189,15 @@ export const ManualEntriesPanel = ({
       },
     ]);
 
+  const handleEntryTypeChange = (key: Key | null) => {
+    if (!key) return;
+    setEntryType(String(key) as EntryType);
+  };
+
+  const handleLineAccountChange = (lineId: string, key: Key | null) => {
+    updateLine(lineId, 'accountId', key ? String(key) : '');
+  };
+
   const handleSubmit = async () => {
     setError(null);
 
@@ -215,43 +245,54 @@ export const ManualEntriesPanel = ({
           <HeaderMeta>Borrador · sin contabilizar</HeaderMeta>
         </HeaderCopy>
         <HeaderActions>
-          <Button type="text" onClick={resetDraft}>
+          <Button variant="tertiary" onPress={resetDraft}>
             Descartar
           </Button>
           <Button
-            onClick={() =>
+            variant="secondary"
+            onPress={() =>
               void message.info('Borrador local aun no disponible.')
             }
           >
             Guardar borrador
           </Button>
           <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            loading={saving}
-            disabled={!canSave}
-            onClick={() => void handleSubmit()}
+            variant="primary"
+            isPending={saving}
+            isDisabled={!canSave}
+            onPress={() => void handleSubmit()}
           >
+            <SaveOutlined />
             Contabilizar asiento
           </Button>
         </HeaderActions>
       </HeaderBar>
 
-      {error ? <Alert message={error} type="error" showIcon /> : null}
+      {error ? (
+        <Alert status="danger">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>{error}</Alert.Title>
+          </Alert.Content>
+        </Alert>
+      ) : null}
 
       <EditorLayout>
-        <MainCard>
+        <MainCard variant="secondary">
           <CardHeader>
             <SectionTitle>
               Asiento <span>{validLinesCount} lineas</span>
             </SectionTitle>
-            <Button type="text">Desde plantilla</Button>
+            <Button variant="tertiary">Desde plantilla</Button>
           </CardHeader>
 
           <FormGrid>
             <Field $compact>
               <FieldLabel>Fecha</FieldLabel>
               <Input
+                fullWidth
+                variant="secondary"
+                aria-label="Fecha del asiento"
                 type="date"
                 value={entryDate}
                 onChange={(event) => setEntryDate(event.target.value)}
@@ -261,6 +302,9 @@ export const ManualEntriesPanel = ({
             <Field>
               <FieldLabel>Concepto / memo</FieldLabel>
               <Input
+                fullWidth
+                variant="secondary"
+                aria-label="Concepto o memo del asiento"
                 type="text"
                 placeholder="Descripcion general del asiento"
                 value={description}
@@ -271,15 +315,39 @@ export const ManualEntriesPanel = ({
             <Field $compact>
               <FieldLabel>Tipo</FieldLabel>
               <Select
-                value={entryType}
-                options={[...ENTRY_TYPE_OPTIONS]}
-                onChange={setEntryType}
-              />
+                fullWidth
+                variant="secondary"
+                aria-label="Tipo de asiento"
+                selectedKey={entryType}
+                onSelectionChange={handleEntryTypeChange}
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {ENTRY_TYPE_OPTIONS.map((option) => (
+                      <ListBox.Item
+                        key={option.value}
+                        id={option.value}
+                        textValue={option.label}
+                      >
+                        {option.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
             </Field>
 
             <Field $compact>
               <FieldLabel>Ref. externa</FieldLabel>
               <Input
+                fullWidth
+                variant="secondary"
+                aria-label="Referencia externa"
                 type="text"
                 placeholder="ej. NC-023"
                 value={note}
@@ -289,119 +357,161 @@ export const ManualEntriesPanel = ({
           </FormGrid>
 
           <LinesShell>
-            <LinesTable>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cuenta</th>
-                  <th>Descripcion</th>
-                  <th>Debito</th>
-                  <th>Credito</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {lines.map((line, index) => {
-                  const isLastLine = index === lines.length - 1;
-                  return (
-                    <tr key={line.id}>
-                      <td>{index + 1}</td>
-                      <td>
-                        <Select
-                          style={{ width: '100%' }}
-                          value={line.accountId || undefined}
-                          placeholder="Seleccionar cuenta"
-                          options={postingAccounts.map((account) => ({
-                            label: `${account.code} — ${account.name}`,
-                            value: account.id,
-                          }))}
-                          onChange={(value) =>
-                            updateLine(line.id, 'accountId', value)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <Input
-                          value={line.description}
-                          onChange={(event) =>
-                            updateLine(
-                              line.id,
-                              'description',
-                              event.target.value,
-                            )
-                          }
-                          placeholder="Descripcion de la linea"
-                        />
-                      </td>
-                      <td>
-                        <InputNumber
-                          min={0}
-                          step={0.01}
-                          style={{ width: '100%' }}
-                          value={line.debit || 0}
-                          onChange={(value) =>
-                            updateLine(line.id, 'debit', Number(value) || 0)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <InputNumber
-                          min={0}
-                          step={0.01}
-                          style={{ width: '100%' }}
-                          value={line.credit || 0}
-                          onChange={(value) =>
-                            updateLine(line.id, 'credit', Number(value) || 0)
-                          }
-                          onKeyDown={(e) => {
-                            if (
-                              isLastLine &&
-                              (e.key === 'Enter' ||
-                                (e.key === 'Tab' && !e.shiftKey))
-                            ) {
-                              e.preventDefault();
-                              addLine();
-                            }
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <Button
-                          aria-label="Quitar linea"
-                          danger
-                          disabled={lines.length <= 2}
-                          icon={<FontAwesomeIcon icon={faTrash} />}
-                          size="small"
-                          title="Quitar linea"
-                          type="text"
-                          onClick={() => removeLine(line.id)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <TotalsRow>
-                  <td colSpan={3}>
-                    <TfootLabel>Totales · RD$</TfootLabel>
-                  </td>
-                  <TotalsNumCell $tone="debit" $error={hasAmounts && !balanced}>
-                    {formatAccountingMoney(totals.debit)}
-                  </TotalsNumCell>
-                  <TotalsNumCell
-                    $tone="credit"
-                    $error={hasAmounts && !balanced}
-                  >
-                    {formatAccountingMoney(totals.credit)}
-                  </TotalsNumCell>
-                  <td />
-                </TotalsRow>
-              </tfoot>
+            <LinesTable variant="secondary">
+              <Table.ScrollContainer>
+                <ManualLinesContent aria-label="Lineas del asiento manual">
+                  <ManualLinesHeader>
+                    <Table.Column isRowHeader>#</Table.Column>
+                    <Table.Column>Cuenta</Table.Column>
+                    <Table.Column>Descripcion</Table.Column>
+                    <Table.Column align="end">Debito</Table.Column>
+                    <Table.Column align="end">Credito</Table.Column>
+                    <Table.Column aria-label="Acciones" />
+                  </ManualLinesHeader>
+                  <Table.Body>
+                    {lines.map((line, index) => {
+                      const isLastLine = index === lines.length - 1;
+                      return (
+                        <Table.Row key={line.id} id={line.id}>
+                          <Table.Cell>{index + 1}</Table.Cell>
+                          <Table.Cell>
+                            <Select
+                              fullWidth
+                              variant="secondary"
+                              aria-label={`Cuenta linea ${index + 1}`}
+                              placeholder="Seleccionar cuenta"
+                              selectedKey={line.accountId || null}
+                              onSelectionChange={(key) =>
+                                handleLineAccountChange(line.id, key)
+                              }
+                            >
+                              <Select.Trigger>
+                                <Select.Value />
+                                <Select.Indicator />
+                              </Select.Trigger>
+                              <Select.Popover>
+                                <ListBox>
+                                  {accountOptions.map((account) => (
+                                    <ListBox.Item
+                                      key={account.id}
+                                      id={account.id}
+                                      textValue={account.label}
+                                    >
+                                      {account.label}
+                                      <ListBox.ItemIndicator />
+                                    </ListBox.Item>
+                                  ))}
+                                </ListBox>
+                              </Select.Popover>
+                            </Select>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Input
+                              fullWidth
+                              variant="secondary"
+                              aria-label={`Descripcion linea ${index + 1}`}
+                              value={line.description}
+                              onChange={(event) =>
+                                updateLine(
+                                  line.id,
+                                  'description',
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="Descripcion de la linea"
+                            />
+                          </Table.Cell>
+                          <Table.Cell>
+                            <AmountNumberField
+                              fullWidth
+                              variant="secondary"
+                              aria-label={`Debito linea ${index + 1}`}
+                              minValue={0}
+                              step={0.01}
+                              value={line.debit || 0}
+                              onChange={(value) =>
+                                updateLine(line.id, 'debit', Number(value) || 0)
+                              }
+                            >
+                              <NumberField.Group>
+                                <NumberField.Input />
+                              </NumberField.Group>
+                            </AmountNumberField>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <AmountNumberField
+                              fullWidth
+                              variant="secondary"
+                              aria-label={`Credito linea ${index + 1}`}
+                              minValue={0}
+                              step={0.01}
+                              value={line.credit || 0}
+                              onChange={(value) =>
+                                updateLine(
+                                  line.id,
+                                  'credit',
+                                  Number(value) || 0,
+                                )
+                              }
+                            >
+                              <NumberField.Group>
+                                <NumberField.Input
+                                  onKeyDown={(e) => {
+                                    if (
+                                      isLastLine &&
+                                      (e.key === 'Enter' ||
+                                        (e.key === 'Tab' && !e.shiftKey))
+                                    ) {
+                                      e.preventDefault();
+                                      addLine();
+                                    }
+                                  }}
+                                />
+                              </NumberField.Group>
+                            </AmountNumberField>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Button
+                              aria-label="Quitar linea"
+                              isIconOnly
+                              isDisabled={lines.length <= 2}
+                              size="sm"
+                              title="Quitar linea"
+                              variant="danger-soft"
+                              onPress={() => removeLine(line.id)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
+                    <TotalsRow id="manual-entry-totals">
+                      <Table.Cell colSpan={3}>
+                        <TfootLabel>Totales · RD$</TfootLabel>
+                      </Table.Cell>
+                      <TotalsNumCell
+                        $tone="debit"
+                        $error={hasAmounts && !balanced}
+                      >
+                        {formatAccountingMoney(totals.debit)}
+                      </TotalsNumCell>
+                      <TotalsNumCell
+                        $tone="credit"
+                        $error={hasAmounts && !balanced}
+                      >
+                        {formatAccountingMoney(totals.credit)}
+                      </TotalsNumCell>
+                      <Table.Cell />
+                    </TotalsRow>
+                  </Table.Body>
+                </ManualLinesContent>
+              </Table.ScrollContainer>
             </LinesTable>
           </LinesShell>
 
-          <AddLineButton type="text" icon={<PlusOutlined />} onClick={addLine}>
+          <AddLineButton variant="tertiary" onPress={addLine}>
+            <PlusOutlined />
             Agregar linea
           </AddLineButton>
 
@@ -427,8 +537,8 @@ export const ManualEntriesPanel = ({
           ) : null}
         </MainCard>
 
-        <SidePanel>
-          <SideCard>
+        <SupportGrid>
+          <SideCard variant="secondary">
             <SideTitle>Resumen</SideTitle>
             <SummaryRows>
               <SummaryRow>
@@ -456,7 +566,7 @@ export const ManualEntriesPanel = ({
             </SummaryRows>
           </SideCard>
 
-          <SideCard>
+          <SideCard variant="secondary">
             <SideTitle>Validaciones</SideTitle>
             <ValidationList>
               <ValidationItem $ok={balanced}>
@@ -482,14 +592,15 @@ export const ManualEntriesPanel = ({
             </ValidationList>
           </SideCard>
 
-          <SideCard>
+          <SideCard variant="secondary">
             <SideTitle>Plantillas recientes</SideTitle>
             <TemplateList>
               {RECENT_TEMPLATES.map((template) => (
                 <TemplateButton
                   key={template}
-                  type="button"
-                  onClick={() =>
+                  fullWidth
+                  variant="tertiary"
+                  onPress={() =>
                     void message.info(
                       'Plantillas contables aun no disponibles.',
                     )
@@ -501,7 +612,7 @@ export const ManualEntriesPanel = ({
               ))}
             </TemplateList>
           </SideCard>
-        </SidePanel>
+        </SupportGrid>
       </EditorLayout>
     </Panel>
   );
@@ -551,18 +662,12 @@ const HeaderActions = styled.div`
 `;
 
 const EditorLayout = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(320px, 0.95fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--ds-space-4);
-  align-items: start;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
-const MainCard = styled.section`
-  min-height: 620px;
+const MainCard = styled(Card)`
   border: 1px solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-lg);
   background: var(--ds-color-bg-surface);
@@ -677,20 +782,25 @@ const LinesShell = styled.div`
   background: var(--ds-color-bg-surface);
 `;
 
-const LinesTable = styled.table`
+const LinesTable = styled(Table)`
   width: 100%;
-  min-width: 920px;
-  border-collapse: collapse;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 
-  th,
-  td {
+  .table__scroll-container {
+    border-radius: 0;
+  }
+
+  .table__column,
+  .table__cell {
     padding: var(--ds-space-3) var(--ds-space-4);
     border-bottom: 1px solid var(--ds-color-border-subtle);
     text-align: left;
     vertical-align: top;
   }
 
-  th {
+  .table__column {
     font-size: var(--ds-font-size-xs);
     text-transform: uppercase;
     letter-spacing: var(--ds-letter-spacing-wide);
@@ -700,32 +810,56 @@ const LinesTable = styled.table`
     border-bottom: 1px solid var(--ds-color-border-default);
   }
 
-  th:first-child,
-  td:first-child {
+  .table__column:first-child,
+  .table__cell:first-child {
     width: 44px;
     min-width: 44px;
     text-align: center;
     color: var(--ds-color-text-secondary);
   }
 
-  th:nth-child(2),
-  td:nth-child(2) {
+  .table__column:nth-child(2),
+  .table__cell:nth-child(2) {
     min-width: 280px;
   }
 
-  th:nth-child(4),
-  td:nth-child(4),
-  th:nth-child(5),
-  td:nth-child(5) {
+  .table__column:nth-child(3),
+  .table__cell:nth-child(3) {
+    min-width: 260px;
+  }
+
+  .table__column:nth-child(4),
+  .table__cell:nth-child(4),
+  .table__column:nth-child(5),
+  .table__cell:nth-child(5) {
     width: 140px;
     min-width: 140px;
   }
 
-  th:last-child,
-  td:last-child {
+  .table__column:last-child,
+  .table__cell:last-child {
     width: 56px;
     min-width: 56px;
     text-align: center;
+  }
+`;
+
+const ManualLinesContent = styled(Table.Content)`
+  min-width: 920px;
+`;
+
+const ManualLinesHeader = styled(Table.Header)`
+  .table__column {
+    background: var(--ds-color-bg-subtle);
+  }
+`;
+
+const AmountNumberField = styled(NumberField)`
+  width: 100%;
+
+  .number-field__input {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 `;
 
@@ -756,10 +890,10 @@ const BalanceBanner = styled.div<{ $balanced: boolean }>`
   }
 `;
 
-const TotalsRow = styled.tr`
+const TotalsRow = styled(Table.Row)`
   background: var(--ds-color-bg-subtle);
 
-  td {
+  .table__cell {
     padding: var(--ds-space-3) var(--ds-space-4);
     border-top: 1px solid var(--ds-color-border-default);
   }
@@ -773,7 +907,7 @@ const TfootLabel = styled.span`
   color: var(--ds-color-text-secondary);
 `;
 
-const TotalsNumCell = styled.td<{
+const TotalsNumCell = styled(Table.Cell)<{
   $error?: boolean;
   $tone: 'debit' | 'credit';
 }>`
@@ -789,13 +923,18 @@ const TotalsNumCell = styled.td<{
   white-space: nowrap;
 `;
 
-const SidePanel = styled.aside`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
+const SupportGrid = styled.section`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+  align-items: stretch;
+
+  @media (max-width: 980px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const SideCard = styled.section`
+const SideCard = styled(Card)`
   border: 1px solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-lg);
   background: var(--ds-color-bg-surface);
@@ -876,7 +1015,7 @@ const TemplateList = styled.div`
   flex-direction: column;
 `;
 
-const TemplateButton = styled.button`
+const TemplateButton = styled(Button)`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -890,7 +1029,6 @@ const TemplateButton = styled.button`
   font: inherit;
   font-size: var(--ds-font-size-sm);
   text-align: left;
-  cursor: pointer;
 
   &:last-child {
     border-bottom: none;

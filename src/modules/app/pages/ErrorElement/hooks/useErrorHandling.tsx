@@ -1,7 +1,5 @@
-import { WarningOutlined } from '@/constants/icons/antd';
 import { notification } from 'antd';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import { useState, createElement } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,34 +13,34 @@ type ErrorMessage = string | null | undefined;
 export const useErrorHandling = (
   errorInfo: ErrorMessage,
   errorStackTrace: ErrorMessage,
+  options: { autoReport?: boolean } = {},
 ) => {
+  const { autoReport = true } = options;
   const user = useSelector(selectUser);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [reportError, setReportError] = useState(false);
   const [canGoBack] = useState(() => window.history.length > 2);
+  const reportedErrorKeyRef = useRef<string | null>(null);
   const { HOME } = ROUTES_NAME.BASIC_TERM;
 
-  const handleReportChange = (e: CheckboxChangeEvent) => {
-    setReportError(e.target.checked);
-  };
+  useEffect(() => {
+    if (!autoReport) return;
+    if (errorInfo == null && errorStackTrace == null) return;
 
-  const handleBack = async (event?: React.MouseEvent<HTMLElement>) => {
-    event?.preventDefault();
+    const errorKey = `${errorStackTrace ?? ''}\n${errorInfo ?? ''}`;
+    if (reportedErrorKeyRef.current === errorKey) return;
+
+    reportedErrorKeyRef.current = errorKey;
+    void fbRecordError(user, errorStackTrace, errorInfo);
+  }, [autoReport, errorInfo, errorStackTrace, user]);
+
+  const handleBack = () => {
     try {
       setLoading(true);
-      if (reportError) {
-        await fbRecordError(user, errorInfo, errorStackTrace);
-        notification.success({
-          message: MESSAGES.ERROR_REPORTED,
-          description: MESSAGES.ERROR_REPORTED_DESC,
-          icon: createElement(WarningOutlined, { style: { color: '#52c41a' } }),
-        });
-      }
       window.location.href = HOME;
     } catch (error) {
       setLoading(false);
-      console.error('Error al reportar:', error);
+      console.error('Error al redirigir:', error);
     }
   };
 
@@ -62,10 +60,8 @@ export const useErrorHandling = (
   return {
     user,
     loading,
-    reportError,
     canGoBack,
     handleBack,
     handleGoBack,
-    handleReportChange,
   };
 };

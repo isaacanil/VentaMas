@@ -2,17 +2,11 @@ export const MESSAGES = {
   ERROR_TITLE: '¡Ups! Algo salió mal',
   ERROR_DESCRIPTION:
     'Un error inesperado ha ocurrido. Por favor, intenta de nuevo más tarde.',
-  REPORT_ERROR: 'Reportar error',
-  REPORT_DESCRIPTION:
-    'Si marcas esta casilla, el error será registrado para su posterior revisión',
   GO_BACK: 'Volver Atrás',
   GO_HOME: 'Ir a Inicio',
   CANT_GO_BACK: 'No se puede retroceder',
   CANT_GO_BACK_DESC:
     'No hay páginas anteriores disponibles. Serás redirigido al inicio.',
-  ERROR_REPORTED: 'Error reportado',
-  ERROR_REPORTED_DESC:
-    'El error ha sido reportado con éxito. Gracias por tu colaboración.',
 } as const;
 
 export const ANIMATIONS = {

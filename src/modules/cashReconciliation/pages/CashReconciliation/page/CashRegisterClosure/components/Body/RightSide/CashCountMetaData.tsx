@@ -10,7 +10,14 @@ import type {
   InvoicePaymentMethod,
   InvoiceMonetaryValue,
 } from '@/types/invoice';
-import type { CashMovement } from '@/types/payments';
+import {
+  CASH_MOVEMENT_SOURCE_EXPENSE,
+  CASH_MOVEMENT_SOURCE_INVOICE_POS,
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID,
+  RECEIVABLE_CASH_MOVEMENT_SOURCE_TYPES,
+  type CashMovement,
+} from '@/types/payments';
+import { normalizePaymentMethodCode } from '@/utils/payments/contracts';
 
 interface ReceivablePaymentMethod {
   method?: string;
@@ -64,14 +71,18 @@ interface CashCountForMeta {
   receivablePayments?: ReceivablePaymentRecord[];
 }
 
-const CARD_METHODS = new Set(['card', 'credit_card', 'debit_card']);
-const TRANSFER_METHODS = new Set(['transfer', 'bank_transfer', 'check']);
-const REGISTER_METHODS = new Set(['cash', 'card', 'transfer', 'credit_card', 'debit_card', 'bank_transfer', 'check']);
+const CARD_METHODS = new Set(['card']);
+const TRANSFER_METHODS = new Set(['transfer']);
+const REGISTER_METHODS = new Set(['cash', 'card', 'transfer']);
+const RECEIVABLE_MOVEMENT_SOURCE_TYPES: ReadonlySet<
+  CashMovement['sourceType']
+> = new Set(RECEIVABLE_CASH_MOVEMENT_SOURCE_TYPES);
 
 const normalizeMethod = (value?: string) =>
-  typeof value === 'string' ? value.trim().toLowerCase() : '';
+  normalizePaymentMethodCode(value) ?? '';
 
-const isCardMethod = (value?: string) => CARD_METHODS.has(normalizeMethod(value));
+const isCardMethod = (value?: string) =>
+  CARD_METHODS.has(normalizeMethod(value));
 const isTransferMethod = (value?: string) =>
   TRANSFER_METHODS.has(normalizeMethod(value));
 const impactsRegister = (value?: string) =>
@@ -130,11 +141,43 @@ const sumCashMovementMetrics = (
     { count: 0, card: 0, transfer: 0, total: 0 },
   );
 
+const sumReceivableCashMovementMetrics = (
+  movements: CashMovement[] = [],
+): MovementMetrics =>
+  ensureArray(movements).reduce<MovementMetrics>(
+    (acc, movement) => {
+      if (
+        !RECEIVABLE_MOVEMENT_SOURCE_TYPES.has(movement.sourceType) ||
+        movement?.status === 'void'
+      ) {
+        return acc;
+      }
+
+      const amount = toNumber(movement?.amount);
+      if (amount <= 0) {
+        return acc;
+      }
+
+      const signedAmount =
+        movement.sourceType === CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID ||
+        movement.direction === 'out'
+          ? -amount
+          : amount;
+
+      acc.count += 1;
+      acc.total += signedAmount;
+      if (isCardMethod(movement?.method)) acc.card += signedAmount;
+      if (isTransferMethod(movement?.method)) acc.transfer += signedAmount;
+      return acc;
+    },
+    { count: 0, card: 0, transfer: 0, total: 0 },
+  );
+
 const sumExpenseCashMovementTotal = (movements: CashMovement[] = []) =>
   ensureArray(movements).reduce(
     (acc, movement) => {
       if (
-        movement?.sourceType !== 'expense' ||
+        movement?.sourceType !== CASH_MOVEMENT_SOURCE_EXPENSE ||
         movement?.direction !== 'out' ||
         movement?.status === 'void'
       ) {
@@ -232,7 +275,11 @@ const sumInvoiceMetrics = (invoices: InvoiceDoc[]) =>
         paymentSnapshotGross - Math.max(0, change),
       );
       const hasPosCollectionEvidence = paidGross > 0 || paidNetFromSnapshot > 0;
-      const collectedAmount = hasPosCollectionEvidence ? (paidGross > 0 ? paidNet : paidNetFromSnapshot) : 0;
+      const collectedAmount = hasPosCollectionEvidence
+        ? paidGross > 0
+          ? paidNet
+          : paidNetFromSnapshot
+        : 0;
 
       const invoicedAmount =
         invoiceTotal > 0 ? invoiceTotal : Math.max(0, paidGross - change);
@@ -278,12 +325,10 @@ export const CashCountMetaData = (
     : receivablePayments;
   const movementInvoiceMetrics = sumCashMovementMetrics(
     cashMovements,
-    'invoice_pos',
+    CASH_MOVEMENT_SOURCE_INVOICE_POS,
   );
-  const movementReceivableMetrics = sumCashMovementMetrics(
-    cashMovements,
-    'receivable_payment',
-  );
+  const movementReceivableMetrics =
+    sumReceivableCashMovementMetrics(cashMovements);
   const movementExpenseMetrics = sumExpenseCashMovementTotal(cashMovements);
 
   const legacyInvoiceMetrics = sumInvoiceMetrics(invoices);

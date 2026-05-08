@@ -164,16 +164,17 @@ export const SalesTrendSection = ({ summary }: SalesTrendSectionProps) => {
 
 const Section = styled.section`
   display: grid;
-  gap: 1rem;
-  padding: 1.15rem;
-  background: var(--white);
-  border: 1px solid rgb(15 23 42 / 12%);
-  border-radius: 10px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-sm);
 `;
 
 const Header = styled.header`
   display: flex;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   align-items: flex-start;
   justify-content: space-between;
 
@@ -184,41 +185,42 @@ const Header = styled.header`
 
 const TitleGroup = styled.div`
   display: grid;
-  gap: 0.25rem;
+  gap: var(--ds-space-1);
 `;
 
 const Title = styled.h3`
   margin: 0;
-  color: var(--black-3);
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-tight);
 `;
 
 const Subtitle = styled.p`
   margin: 0;
   max-width: 48rem;
-  color: var(--gray-6);
-  font-size: 0.84rem;
-  line-height: 1.45;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-line-height-normal);
 `;
 
 const Pill = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35rem 0.65rem;
-  color: #1d69a8;
-  font-size: 0.76rem;
-  font-weight: 600;
-  background: rgba(29, 105, 168, 0.08);
-  border: 1px solid rgba(29, 105, 168, 0.16);
-  border-radius: 999px;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  color: var(--ds-color-action-on-primary-subtle);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  background: var(--ds-color-action-primary-subtle);
+  border: 1px solid var(--ds-color-interactive-selected-border);
+  border-radius: var(--ds-radius-pill);
 `;
 
 const Body = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.9fr);
-  gap: 1rem;
+  gap: var(--ds-space-4);
 
   @media (width <= 920px) {
     grid-template-columns: 1fr;
@@ -232,15 +234,15 @@ const ChartArea = styled.div`
 
 const Highlights = styled.div`
   display: grid;
-  gap: 0.75rem;
+  gap: var(--ds-space-3);
   align-content: start;
 `;
 
 const HighlightItem = styled.div`
   display: grid;
-  gap: 0.2rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgb(15 23 42 / 8%);
+  gap: var(--ds-space-1);
+  padding-bottom: var(--ds-space-3);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
 
   &:last-child {
     padding-bottom: 0;
@@ -249,14 +251,14 @@ const HighlightItem = styled.div`
 `;
 
 const HighlightLabel = styled.span`
-  color: var(--gray-7);
-  font-size: 0.76rem;
-  font-weight: 500;
+  color: var(--ds-color-text-secondary);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-medium);
 `;
 
 const HighlightValue = styled.strong`
-  color: var(--black-3);
-  font-size: 0.92rem;
-  font-weight: 600;
-  line-height: 1.4;
+  color: var(--ds-color-text-primary);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  line-height: var(--ds-line-height-normal);
 `;

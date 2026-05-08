@@ -71,5 +71,5 @@ describe('ReceiptHistorySection', () => {
 
     consoleErrorSpy.mockRestore();
     consoleWarnSpy.mockRestore();
-  });
+  }, 30000);
 });

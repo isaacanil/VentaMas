@@ -109,12 +109,14 @@ interface RegisterSupplierPaymentModalProps {
   open: boolean;
   purchase: Purchase | null;
   onCancel: () => void;
+  onPaymentRegistered?: (purchase: Purchase) => void;
 }
 
 export const RegisterSupplierPaymentModal = ({
   open,
   purchase,
   onCancel,
+  onPaymentRegistered,
 }: RegisterSupplierPaymentModalProps) => {
   const user = useSelector(selectUser) as UserIdentity | null;
   const businessId =
@@ -300,6 +302,7 @@ export const RegisterSupplierPaymentModal = ({
         idempotencyKey,
       });
       message.success('Pago a proveedor registrado correctamente.');
+      onPaymentRegistered?.(purchase);
       onCancel();
     } catch (error) {
       console.error('Failed to register supplier payment', error);

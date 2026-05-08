@@ -52,6 +52,13 @@ const SyncDiagnostics = lazy(
 const TestPlayground = lazy(
   () => import('@/modules/dev/pages/DevTools/TestPlayground'),
 );
+const ErrorScreenPreview = lazy(
+  () =>
+    import('@/modules/dev/pages/DevTools/ErrorScreenPreview/ErrorScreenPreview'),
+);
+const ErrorReports = lazy(
+  () => import('@/modules/dev/pages/DevTools/ErrorReports/ErrorReports'),
+);
 const BusinessSelectorPage = lazy(() =>
   import('@/modules/auth/pages/BusinessSelectorPage/BusinessSelectorPage').then(
     (module) => ({ default: module.BusinessSelectorPage }),
@@ -80,7 +87,12 @@ const DeveloperSubscriptionMaintenancePlansPage = lazy(
     import('@/modules/settings/pages/subscription/DeveloperSubscriptionMaintenancePlansPage'),
 );
 const AccountingPilotAudit = lazy(
-  () => import('@/modules/dev/pages/DevTools/AccountingPilotAudit/AccountingPilotAudit'),
+  () =>
+    import('@/modules/dev/pages/DevTools/AccountingPilotAudit/AccountingPilotAudit'),
+);
+const FinanceReadinessAudit = lazy(
+  () =>
+    import('@/modules/dev/pages/DevTools/FinanceReadinessAudit/FinanceReadinessAudit'),
 );
 
 const {
@@ -94,11 +106,14 @@ const {
   SYNC_DIAGNOSTICS,
   INVOICE_V2_RECOVERY,
   PRICE_LIST_AUDIT,
+  ERROR_SCREEN_PREVIEW,
+  ERROR_REPORTS,
   AI_BUSINESS_SEEDING,
   CASH_COUNT_AUDIT,
   SELECT_BUSINESS_TEST,
   PRODUCT_FORM_V2_TEST,
   ACCOUNTING_PILOT_AUDIT,
+  FINANCE_READINESS_AUDIT,
 } = RoutesName.DEV_VIEW_TERM;
 
 // Todas estas rutas se consideran de desarrollo; se filtrarán en producción salvo que se active VITE_ENABLE_DEV_ROUTES
@@ -163,6 +178,18 @@ const Routes: AppRoute[] = [
     path: RoutesName.DEV_VIEW_TERM.PRUEBA,
     element: <TestPlayground />,
     requiresDevAccess: true,
+  },
+  {
+    path: ERROR_SCREEN_PREVIEW,
+    element: <ErrorScreenPreview />,
+    requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
+  },
+  {
+    path: ERROR_REPORTS,
+    element: <ErrorReports />,
+    requiresDevAccess: true,
+    status: ROUTE_STATUS.BETA,
   },
   {
     path: SELECT_BUSINESS_TEST,
@@ -236,6 +263,12 @@ const Routes: AppRoute[] = [
   {
     path: ACCOUNTING_PILOT_AUDIT,
     element: <AccountingPilotAudit />,
+    devOnly: true,
+    status: ROUTE_STATUS.WIP,
+  },
+  {
+    path: FINANCE_READINESS_AUDIT,
+    element: <FinanceReadinessAudit />,
     devOnly: true,
     status: ROUTE_STATUS.WIP,
   },

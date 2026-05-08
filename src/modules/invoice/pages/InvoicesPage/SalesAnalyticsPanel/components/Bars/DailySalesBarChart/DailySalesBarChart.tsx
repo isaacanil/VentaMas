@@ -1,14 +1,18 @@
 import { useMemo, useState, useEffect } from 'react';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
-import type { SalesRecord } from '../../../utils';
-import { getInvoiceDateSeconds, toNumber } from '../../../utils';
+import type { SalesPeriodType, SalesRecord } from '../../../utils';
+import {
+  filterSalesByPeriod,
+  formatSalesPeriodDisplay,
+  formatSalesChartDate,
+  getAvailableSalesPeriods,
+  getInvoiceDateSeconds,
+  shouldGroupSalesByMonth,
+  toNumber,
+} from '../../../utils';
 
 import { formatPrice } from '@/utils/format';
-import {
-  formatLocaleDate,
-  formatLocaleMonthYear,
-} from '@/utils/date/dateUtils';
 import Typography from '@/components/ui/Typografy/Typografy';
 
 type SalesByDayEntry = {
@@ -79,77 +83,6 @@ const createChartOptions = (
   },
 });
 
-const formatDate = (seconds: number, byMonth = false) => {
-  const date = new Date(seconds * 1000);
-  return byMonth
-    ? formatLocaleDate(date, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : formatLocaleDate(date);
-};
-
-// Función para obtener el período (mes o trimestre) de una fecha
-const getPeriod = (date: Date, periodType: string) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-
-  if (periodType === 'monthly') {
-    return `${year}-${month.toString().padStart(2, '0')}`;
-  } else if (periodType === 'quarterly') {
-    const quarter = Math.floor(month / 3) + 1;
-    return `${year}-Q${quarter}`;
-  }
-  return date.toISOString().split('T')[0];
-};
-
-// Función para formatear el período para mostrar
-const formatPeriodDisplay = (period: string, periodType: string) => {
-  if (periodType === 'monthly') {
-    const [year, month] = period.split('-');
-    const yearNumber = Number(year);
-    const monthNumber = Number(month);
-    const date = new Date(
-      Number.isFinite(yearNumber) ? yearNumber : new Date().getFullYear(),
-      Number.isFinite(monthNumber) ? monthNumber : 0,
-      1,
-    );
-    return formatLocaleMonthYear(date);
-  } else if (periodType === 'quarterly') {
-    const [year, quarter] = period.split('-');
-    return `${quarter} ${year}`;
-  }
-  return period;
-};
-
-// Función para obtener todos los períodos disponibles
-const getAvailablePeriods = (sales: SalesRecord[], periodType: string) => {
-  const periods = new Set<string>();
-  sales.forEach((sale) => {
-    const seconds = getInvoiceDateSeconds(sale.data);
-    if (!seconds) return;
-    const date = new Date(seconds * 1000);
-    const period = getPeriod(date, periodType);
-    periods.add(period);
-  });
-  return Array.from(periods).sort();
-};
-
-// Función para filtrar ventas por período
-const filterSalesByPeriod = (
-  sales: SalesRecord[],
-  period: string,
-  periodType: string,
-) =>
-  sales.filter((sale) => {
-    const seconds = getInvoiceDateSeconds(sale.data);
-    if (!seconds) return false;
-    const date = new Date(seconds * 1000);
-    const salePeriod = getPeriod(date, periodType);
-    return salePeriod === period;
-  });
-
 const accumulateSalesData = (sales: SalesRecord[], byMonth = false) => {
   return sales.reduce<SalesByDay>((acc, sale) => {
     // Crear una clave de fecha que sea fácil de ordenar (YYYY-MM-DD)
@@ -157,7 +90,10 @@ const accumulateSalesData = (sales: SalesRecord[], byMonth = false) => {
     if (!seconds) return acc;
     const dateObj = new Date(seconds * 1000);
     const dateKey = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const displayDate = formatDate(seconds, byMonth);
+    const displayDate = formatSalesChartDate(
+      seconds,
+      byMonth ? 'longDate' : 'shortDate',
+    );
 
     // Usar la fecha formateada para mostrar, pero mantener la clave ordenable
     acc[dateKey] = acc[dateKey] || {
@@ -224,9 +160,7 @@ const useIsMobile = () => {
 };
 
 export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
-  const [periodType, setPeriodType] = useState<'monthly' | 'quarterly'>(
-    'monthly',
-  );
+  const [periodType, setPeriodType] = useState<SalesPeriodType>('monthly');
   const [rawPeriodIndex, setRawPeriodIndex] = useState<number>(0);
   const isMobile = useIsMobile();
 
@@ -237,7 +171,7 @@ export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
 
   // Obtener períodos disponibles
   const availablePeriods = useMemo(
-    () => getAvailablePeriods(salesArray, periodType),
+    () => getAvailableSalesPeriods(salesArray, periodType),
     [salesArray, periodType],
   );
 
@@ -263,23 +197,7 @@ export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
 
   // Determinar si mostrar por mes basado en el span de fechas del período actual
   const byMonth = useMemo(() => {
-    if (filteredSales.length === 0) return false;
-
-    const dateSpan = filteredSales.reduce(
-      (span, sale) => {
-        const seconds = getInvoiceDateSeconds(sale.data);
-        if (!seconds) return span;
-        const date = seconds * 1000;
-        span.min = Math.min(span.min, date);
-        span.max = Math.max(span.max, date);
-        return span;
-      },
-      { min: Infinity, max: -Infinity },
-    );
-
-    const spanInMonths =
-      (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30);
-    return spanInMonths > 2;
+    return shouldGroupSalesByMonth(filteredSales);
   }, [filteredSales]);
 
   const salesByDay = useMemo(
@@ -383,7 +301,7 @@ export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
     );
   };
 
-  const handlePeriodTypeChange = (newPeriodType: 'monthly' | 'quarterly') => {
+  const handlePeriodTypeChange = (newPeriodType: SalesPeriodType) => {
     setPeriodType(newPeriodType);
     setRawPeriodIndex(0); // Reset to first period when changing type
   };
@@ -427,7 +345,8 @@ export const DailySalesBarChart = ({ sales }: { sales: SalesRecord[] }) => {
             </NavButton>
 
             <PeriodDisplay>
-              {currentPeriod && formatPeriodDisplay(currentPeriod, periodType)}
+              {currentPeriod &&
+                formatSalesPeriodDisplay(currentPeriod, periodType)}
             </PeriodDisplay>
 
             <NavButton

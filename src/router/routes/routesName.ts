@@ -55,6 +55,9 @@ const DEV_VIEW_TERM = {
   AI_BUSINESS_SEEDING: '/dev/tools/ai-business-seeding',
   PRODUCT_FORM_V2_TEST: '/dev/tools/product-form-v2',
   ACCOUNTING_PILOT_AUDIT: '/dev/tools/accounting-pilot-audit',
+  FINANCE_READINESS_AUDIT: '/dev/tools/finance-readiness-audit',
+  ERROR_SCREEN_PREVIEW: '/dev/tools/error-screen-preview',
+  ERROR_REPORTS: '/dev/tools/error-reports',
 } as const;
 
 const UTILITY_TERM = {

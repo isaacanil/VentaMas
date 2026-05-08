@@ -15,6 +15,7 @@ import { exportDgiiTxtReport } from './app/modules/compliance/functions/exportDg
 import { closeAccountingPeriod } from './app/modules/accounting/functions/closeAccountingPeriod.js';
 import { createManualJournalEntry } from './app/modules/accounting/functions/createManualJournalEntry.js';
 import { getAccountingReports } from './app/modules/accounting/functions/getAccountingReports.js';
+import { analyzeFinanceReadiness } from './app/modules/accounting/functions/analyzeFinanceReadiness.js';
 import { replayAccountingEventProjection } from './app/modules/accounting/functions/replayAccountingEventProjection.js';
 import { reverseJournalEntry } from './app/modules/accounting/functions/reverseJournalEntry.js';
 import { syncAccountingPostingProfilesDerivedHistory } from './app/modules/accounting/functions/syncAccountingPostingProfilesDerivedHistory.js';
@@ -35,6 +36,10 @@ import { changeCashCountState } from './app/modules/cashCount/functions/changeCa
 import { closeCashCount } from './app/modules/cashCount/functions/closeCashCount.js';
 import { createAccountsReceivable } from './app/modules/accountReceivable/functions/createAccountsReceivable.js';
 import { processAccountsReceivablePayment } from './app/modules/accountReceivable/functions/processAccountsReceivablePayment.js';
+import {
+  syncCustomerCreditNoteApplicationAccountingEvent,
+  syncCustomerCreditNoteIssuedAccountingEvent,
+} from './app/modules/accountReceivable/functions/syncCustomerCreditNoteAccountingEvents.js';
 import { voidAccountsReceivablePayment } from './app/modules/accountReceivable/functions/voidAccountsReceivablePayment.js';
 import { createInternalTransfer } from './app/modules/treasury/functions/createInternalTransfer.js';
 import {
@@ -160,6 +165,7 @@ export {
   closeAccountingPeriod,
   createManualJournalEntry,
   getAccountingReports,
+  analyzeFinanceReadiness,
   replayAccountingEventProjection,
   reverseJournalEntry,
   syncAccountingPostingProfilesDerivedHistory,
@@ -180,6 +186,8 @@ export {
   closeCashCount,
   createAccountsReceivable,
   processAccountsReceivablePayment,
+  syncCustomerCreditNoteApplicationAccountingEvent,
+  syncCustomerCreditNoteIssuedAccountingEvent,
   voidAccountsReceivablePayment,
   createInternalTransfer,
   createBankReconciliation,

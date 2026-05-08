@@ -251,7 +251,7 @@ const resolveTrendKey = (
   if (groupBy === 'hour') {
     return {
       key: date.toFormat('yyyy-MM-dd-HH'),
-      label: date.toFormat('HH:mm'),
+      label: date.startOf('hour').toFormat('HH:mm'),
     };
   }
 
@@ -411,7 +411,15 @@ export const buildSalesAnalyticsSummary = (
   const hasDates =
     Number.isFinite(minDateSeconds) && Number.isFinite(maxDateSeconds);
   const spanInDays = hasDates
-    ? Math.max(1, Math.ceil((maxDateSeconds - minDateSeconds) / 86400) + 1)
+    ? Math.max(
+        1,
+        Math.floor(
+          DateTime.fromSeconds(maxDateSeconds)
+            .startOf('day')
+            .diff(DateTime.fromSeconds(minDateSeconds).startOf('day'), 'days')
+            .days,
+        ) + 1,
+      )
     : 0;
   const trendGroupBy =
     spanInDays <= 1 ? 'hour' : spanInDays > 62 ? 'month' : 'day';

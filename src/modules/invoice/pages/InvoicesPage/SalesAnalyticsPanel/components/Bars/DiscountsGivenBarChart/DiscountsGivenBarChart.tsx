@@ -2,13 +2,14 @@ import React, { useMemo } from 'react';
 import { LazyBar } from '@/components/charts/LazyCharts';
 import styled from 'styled-components';
 import type { SalesRecord } from '../../../utils';
-import { getInvoiceDateSeconds, toNumber } from '../../../utils';
+import {
+  formatSalesChartDate,
+  getInvoiceDateSeconds,
+  shouldGroupSalesByMonth,
+  toNumber,
+} from '../../../utils';
 
 import Typography from '@/components/ui/Typografy/Typografy';
-import {
-  formatLocaleDate,
-  formatLocaleMonthYear,
-} from '@/utils/date/dateUtils';
 
 const options = {
   responsive: true,
@@ -30,16 +31,14 @@ const options = {
   },
 };
 
-const formatDate = (seconds: number, byMonth = false) => {
-  const date = new Date(seconds * 1000);
-  return byMonth ? formatLocaleMonthYear(date) : formatLocaleDate(date);
-};
-
 const accumulateDiscountsData = (sales: SalesRecord[], byMonth = false) => {
   return sales.reduce<Record<string, number>>((acc, sale) => {
     const seconds = getInvoiceDateSeconds(sale.data);
     if (!seconds) return acc;
-    const date = formatDate(seconds, byMonth);
+    const date = formatSalesChartDate(
+      seconds,
+      byMonth ? 'monthYear' : 'shortDate',
+    );
     acc[date] = (acc[date] || 0) + toNumber(sale?.data?.discount?.value);
     return acc;
   }, {});
@@ -51,28 +50,7 @@ export const DiscountsGivenBarChart = ({ sales }: { sales: SalesRecord[] }) => {
     [sales],
   );
 
-  const dateSpan = useMemo(
-    () =>
-      normalizedSales.reduce(
-        (span, sale) => {
-          const seconds = getInvoiceDateSeconds(sale.data);
-          if (!seconds) return span;
-          const date = seconds * 1000;
-          return {
-            min: Math.min(span.min, date),
-            max: Math.max(span.max, date),
-          };
-        },
-        { min: Infinity, max: -Infinity },
-      ),
-    [normalizedSales],
-  );
-
-  const spanInMonths =
-    normalizedSales.length > 0
-      ? (dateSpan.max - dateSpan.min) / (1000 * 60 * 60 * 24 * 30)
-      : 0;
-  const byMonth = spanInMonths > 2;
+  const byMonth = shouldGroupSalesByMonth(normalizedSales);
 
   const discountsByDate = useMemo(
     () => accumulateDiscountsData(normalizedSales, byMonth),

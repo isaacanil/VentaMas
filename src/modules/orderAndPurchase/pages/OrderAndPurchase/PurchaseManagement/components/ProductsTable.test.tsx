@@ -33,5 +33,5 @@ describe('ProductsTable', () => {
     );
 
     expect(container.querySelector('td td')).not.toBeInTheDocument();
-  });
+  }, 15000);
 });

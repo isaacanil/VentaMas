@@ -23,13 +23,18 @@ describe('payment methods helpers', () => {
 
   it('requires cash count only for cash-backed methods', () => {
     expect(paymentMethodRequiresCashCount('cash')).toBe(true);
+    expect(paymentMethodRequiresCashCount('open_cash')).toBe(true);
     expect(paymentMethodRequiresCashCount('transfer')).toBe(false);
     expect(paymentMethodRequiresCashCount('card')).toBe(false);
   });
 
   it('requires bank account only for bank-backed methods', () => {
     expect(paymentMethodRequiresBankAccount('card')).toBe(true);
+    expect(paymentMethodRequiresBankAccount('credit_card')).toBe(true);
+    expect(paymentMethodRequiresBankAccount('debit_card')).toBe(true);
     expect(paymentMethodRequiresBankAccount('transfer')).toBe(true);
+    expect(paymentMethodRequiresBankAccount('bank_transfer')).toBe(true);
+    expect(paymentMethodRequiresBankAccount('check')).toBe(true);
     expect(paymentMethodRequiresBankAccount('cash')).toBe(false);
   });
 });

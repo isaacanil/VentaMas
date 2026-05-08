@@ -78,8 +78,12 @@ const FIELD_PATH_LABELS: Record<string, string> = {
   totalAmount: 'Monto total',
   'totals.total': 'Monto total',
   'totals.tax': 'Monto de impuesto (ITBIS)',
+  'fiscalAmounts.totalAmount': 'Total facturado 606 sin impuestos',
+  'fiscalAmounts.serviceAmount': 'Monto facturado en servicios',
+  'fiscalAmounts.goodsAmount': 'Monto facturado en bienes',
   itbisWithheld: 'ITBIS retenido por terceros',
   incomeTaxWithheld: 'ISR retenido por terceros',
+  'paymentInfo.formCode': 'Forma de pago 606',
   // Fechas
   transactionDate: 'Fecha de la transacción',
   paymentDate: 'Fecha de pago',

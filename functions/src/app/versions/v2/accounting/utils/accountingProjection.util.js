@@ -314,6 +314,8 @@ export const resolveEventAmountSource = (event, amountSource) => {
       return saleSettlement.bank;
     case 'sale_other_received':
       return saleSettlement.other;
+    case 'credit_note_net_total':
+      return roundJournalAmount(netSales);
     case 'purchase_total':
     case 'expense_total':
     case 'document_total':

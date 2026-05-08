@@ -29,6 +29,7 @@ describe('normalizeExpensePayment', () => {
     ).toEqual({
       method: 'bank_transfer',
       sourceType: 'bank',
+      cashAccountId: null,
       bankAccountId: 'bank_1',
       bank: 'Cuenta principal',
       cashRegister: null,
@@ -53,6 +54,7 @@ describe('normalizeExpensePayment', () => {
     ).toEqual({
       method: 'bank_transfer',
       sourceType: 'bank',
+      cashAccountId: null,
       bankAccountId: 'bank_1',
       bank: 'Cuenta principal',
       cashRegister: null,
@@ -73,6 +75,7 @@ describe('normalizeExpensePayment', () => {
     ).toEqual({
       method: 'open_cash',
       sourceType: 'cash_drawer',
+      cashAccountId: null,
       cashRegister: 'cash_1',
       bankAccountId: null,
       bank: null,

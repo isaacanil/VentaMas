@@ -50,6 +50,16 @@ const toCleanString = (value) => {
   return trimmed.length > 0 ? trimmed : null;
 };
 
+const readPath = (source, pathValue) => {
+  const normalizedPath = toCleanString(pathValue);
+  if (!normalizedPath || !isRecord(source)) return undefined;
+
+  return normalizedPath.split('.').reduce((current, segment) => {
+    if (!isRecord(current)) return undefined;
+    return current[segment];
+  }, source);
+};
+
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const isTimestampLike = (value) =>
@@ -348,8 +358,8 @@ export const pickLatestDocs = (docs, limit, extraFields = []) => {
     const rightData = isRecord(right.data) ? right.data : {};
 
     for (const field of sortFields) {
-      const leftMillis = extractTimestampMillis(leftData[field]);
-      const rightMillis = extractTimestampMillis(rightData[field]);
+      const leftMillis = extractTimestampMillis(readPath(leftData, field));
+      const rightMillis = extractTimestampMillis(readPath(rightData, field));
       if (leftMillis === null && rightMillis === null) continue;
       if (leftMillis === null) return 1;
       if (rightMillis === null) return -1;

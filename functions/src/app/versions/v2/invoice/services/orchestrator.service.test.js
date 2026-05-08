@@ -171,6 +171,35 @@ describe('orchestrator.service', () => {
     expect(tx.set).not.toHaveBeenCalled();
   });
 
+  it('rejects reused idempotency keys with a different payload hash', async () => {
+    tx.get.mockImplementation(async (ref) => {
+      if (ref.path === 'idempotency:business-1:idem-1') {
+        return {
+          exists: true,
+          data: () => ({
+            invoiceId: 'invoice-existing',
+            payloadHash: 'other-payload-hash',
+          }),
+        };
+      }
+      throw new Error(`Unexpected tx.get path: ${ref.path}`);
+    });
+
+    await expect(
+      createPendingInvoice({
+        businessId: 'business-1',
+        userId: 'user-1',
+        payload: { cart: {} },
+        idempotencyKey: 'idem-1',
+      }),
+    ).rejects.toMatchObject({
+      code: 'already-exists',
+      message: 'La llave de idempotencia ya fue utilizada con otro payload.',
+    });
+
+    expect(tx.set).not.toHaveBeenCalled();
+  });
+
   it('creates a pending invoice with derived due date, comment and usage updates', async () => {
     const result = await createPendingInvoice({
       businessId: 'business-1',

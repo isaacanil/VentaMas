@@ -2,21 +2,27 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { db } from '@/firebase/firebaseconfig';
 import { useAccountingRolloutEnabled } from '@/hooks/useAccountingRolloutEnabled';
-import type { CashMovement, PaymentMethodCode } from '@/types/payments';
+import {
+  CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID,
+  RECEIVABLE_CASH_MOVEMENT_SOURCE_TYPES,
+  type CashMovement,
+  type PaymentMethodCode,
+} from '@/types/payments';
 import { toValidDate } from '@/utils/date/toValidDate';
 import type { UserIdentity } from '@/types/users';
 import type { AccountsReceivablePayment } from '@/utils/accountsReceivable/types';
 import type { TimestampLike } from '@/utils/date/types';
+import { normalizePaymentMethodCode } from '@/utils/payments/contracts';
 
 const EMPTY_PAYMENTS: AccountsReceivablePayment[] = [];
-const RECEIVABLE_MOVEMENT_SOURCE_TYPE = 'receivable_payment';
+const RECEIVABLE_MOVEMENT_SOURCE_TYPES: ReadonlySet<
+  CashMovement['sourceType']
+> = new Set(RECEIVABLE_CASH_MOVEMENT_SOURCE_TYPES);
 
 const normalizeMethodCode = (
   method: PaymentMethodCode | string | undefined,
 ): PaymentMethodCode | undefined => {
-  if (typeof method !== 'string') return undefined;
-  const normalized = method.trim().toLowerCase();
-  return normalized.length ? (normalized as PaymentMethodCode) : undefined;
+  return normalizePaymentMethodCode(method) ?? undefined;
 };
 
 export const isReceivableCashMovement = (
@@ -24,23 +30,28 @@ export const isReceivableCashMovement = (
 ): movement is CashMovement =>
   Boolean(
     movement &&
-      movement.sourceType === RECEIVABLE_MOVEMENT_SOURCE_TYPE &&
-      movement.direction === 'in' &&
-      movement.status !== 'void' &&
-      Number(movement.amount) > 0,
+    RECEIVABLE_MOVEMENT_SOURCE_TYPES.has(movement.sourceType) &&
+    (movement.direction === 'in' || movement.direction === 'out') &&
+    movement.status !== 'void' &&
+    Number(movement.amount) > 0,
   );
 
 export const mapCashMovementToReceivablePayment = (
   movement: CashMovement,
 ): AccountsReceivablePayment => {
   const normalizedMethod = normalizeMethodCode(movement.method);
+  const signedAmount =
+    movement.sourceType === CASH_MOVEMENT_SOURCE_RECEIVABLE_PAYMENT_VOID ||
+    movement.direction === 'out'
+      ? -(Number(movement.amount) || 0)
+      : Number(movement.amount) || 0;
   const paymentMethod = normalizedMethod
     ? [
         {
           method: normalizedMethod,
           status: true,
-          value: Number(movement.amount) || 0,
-          amount: Number(movement.amount) || 0,
+          value: signedAmount,
+          amount: signedAmount,
           reference: movement.reference ?? null,
         },
       ]
@@ -48,9 +59,9 @@ export const mapCashMovementToReceivablePayment = (
 
   return {
     id: movement.id,
-    amount: Number(movement.amount) || 0,
-    totalPaid: Number(movement.amount) || 0,
-    totalAmount: Number(movement.amount) || 0,
+    amount: signedAmount,
+    totalPaid: signedAmount,
+    totalAmount: signedAmount,
     createdAt: movement.createdAt,
     date: movement.occurredAt ?? movement.createdAt,
     createdUserId: movement.createdBy ?? undefined,

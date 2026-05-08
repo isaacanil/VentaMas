@@ -42,7 +42,10 @@ export const registerRoutes = (routesArray: AppRoute[]): void => {
 
 const resolveRegisteredRouteMatch = (pathname: string): AppRoute | undefined => {
   if (!registeredRoutes.length) return undefined;
-  const matches = matchRoutes(registeredRoutes, normalizePathname(pathname));
+  const matches = matchRoutes(
+    registeredRoutes as Parameters<typeof matchRoutes>[0],
+    normalizePathname(pathname),
+  );
   if (!matches?.length) return undefined;
   const lastMatch = matches[matches.length - 1];
   return lastMatch?.route as AppRoute | undefined;

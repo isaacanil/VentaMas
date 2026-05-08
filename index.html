@@ -27,6 +27,15 @@
         return import('/src/main.tsx');
       };
 
+      let appStarted = false;
+      let reactScanFallbackId;
+      const startAppOnce = () => {
+        if (appStarted) return;
+        appStarted = true;
+        window.clearTimeout(reactScanFallbackId);
+        return startApp();
+      };
+
       const reactScanRequested =
         import.meta.env.DEV &&
         import.meta.env.VITE_ENABLE_REACT_SCAN === 'true';
@@ -36,17 +45,18 @@
         script.crossOrigin = 'anonymous';
         script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
         script.onload = () => {
-          startApp();
+          startAppOnce();
         };
         script.onerror = () => {
-          startApp();
+          startAppOnce();
         };
         document.head.appendChild(script);
+        reactScanFallbackId = window.setTimeout(startAppOnce, 2500);
       } else {
         if (reactScanRequested && isReactDevToolsDetected(window)) {
           console.warn(getReactScanDevToolsConflictMessage());
         }
-        startApp();
+        startAppOnce();
       }
     </script>
   </body>

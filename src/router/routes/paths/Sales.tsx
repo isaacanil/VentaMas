@@ -4,11 +4,6 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { AppRoute } from '@/router/routes/routes';
 
 // Lazy load components
-const CashReconciliation = lazy(() =>
-  import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation').then(
-    (module) => ({ default: module.CashReconciliation }),
-  ),
-);
 const InvoicesPage = lazy(() =>
   import('@/modules/invoice/pages/InvoicesPage/InvoicesPage').then(
     (module) => ({
@@ -35,8 +30,6 @@ const Sales = lazy(() =>
 );
 
 const { SALES, BILLS, BILLS_ANALYTICS, PREORDERS } = ROUTES_NAME.SALES_TERM;
-const { CASH_RECONCILIATION_LIST: CASH_RECONCILIATION } =
-  ROUTES_NAME.CASH_RECONCILIATION_TERM;
 
 const routes: AppRoute[] = [
   {
@@ -59,13 +52,6 @@ const routes: AppRoute[] = [
     title: 'Análisis de Ventas - Ventamax',
     metaDescription:
       'Explora tendencias, clientes, categorías y comportamiento de facturación en Ventamax POS.',
-  },
-  {
-    path: CASH_RECONCILIATION,
-    element: <CashReconciliation />,
-    title: 'Cuadre de Caja - Ventamax',
-    metaDescription:
-      'Realiza el cuadre de caja en Ventamax POS. Revisa, concilia y cierra el flujo de efectivo diario para asegurar la precisión de las transacciones.',
   },
   {
     path: PREORDERS,

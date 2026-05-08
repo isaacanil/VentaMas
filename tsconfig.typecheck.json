@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "incremental": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ant-design/icons": ["./src/types/ant-design-icons.d.ts"],
+      "@/modules/dev/*": ["./src/types/typecheck-empty-module.d.ts"],
+      "@/router/routes/paths/Dev": ["./src/types/typecheck-empty-routes.ts"]
+    },
+    "tsBuildInfoFile": "node_modules/.cache/typescript/tsconfig.typecheck.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.functions.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "coverage",
+    "storybook-static",
+    ".storybook",
+    "src/dev/**",
+    "src/modules/dev/**",
+    "src/router/routes/paths/Dev.tsx",
+    "src/setupTests.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/*.stories.ts",
+    "src/**/*.stories.tsx",
+    "src/stories/**"
+  ]
+}

@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 const ESLINT_EXTENSIONS = 'js,jsx,ts,tsx';
+const ESLINT_CACHE_LOCATION = 'node_modules/.cache/eslint/.eslintcache';
 const STYLELINT_GLOB = '{src,functions}/**/*.{css,scss,js,jsx,ts,tsx}';
 
 function isInteractive() {
@@ -52,6 +53,10 @@ const LINT_TARGETS = {
     label: 'Stylelint con fix',
     needsPaths: false,
   },
+  'styles:check': {
+    label: 'Stylelint sin fix',
+    needsPaths: false,
+  },
 };
 
 const LINT_ALIASES = {
@@ -60,6 +65,7 @@ const LINT_ALIASES = {
   typed: 'path:typed',
   fix: 'path:fix',
   styles: 'styles:fix',
+  stylecheck: 'styles:check',
 };
 
 function parseArgs(argv) {
@@ -156,14 +162,43 @@ async function promptPaths() {
 
 async function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
-    const child = spawn(command, args, {
+    const resolved = resolveCommand(command, args);
+    const child = spawn(resolved.command, resolved.args, {
       cwd: ROOT_DIR,
       stdio: 'inherit',
-      shell: true,
+      shell: false,
       ...options,
     });
     child.on('close', (code) => resolve(code ?? 1));
   });
+}
+
+function resolveCommand(command, args) {
+  if (process.platform !== 'win32') {
+    return { command, args };
+  }
+
+  if (command === 'npm') {
+    return { command: 'cmd.exe', args: ['/d', '/s', '/c', 'npm', ...args] };
+  }
+
+  const localNodeBins = {
+    eslint: path.join(ROOT_DIR, 'node_modules', 'eslint', 'bin', 'eslint.js'),
+    oxlint: path.join(ROOT_DIR, 'node_modules', 'oxlint', 'bin', 'oxlint'),
+    stylelint: path.join(
+      ROOT_DIR,
+      'node_modules',
+      'stylelint',
+      'bin',
+      'stylelint.mjs',
+    ),
+  };
+  const localBin = localNodeBins[command];
+  if (localBin) {
+    return { command: process.execPath, args: [localBin, ...args] };
+  }
+
+  return { command, args };
 }
 
 function formatDuration(ms) {
@@ -184,7 +219,15 @@ async function runOrExit(command, args, options = {}) {
 }
 
 function buildEslintArgs({ fix = false, paths = [] } = {}) {
-  const args = ['--ext', ESLINT_EXTENSIONS];
+  const args = [
+    '--cache',
+    '--cache-strategy',
+    'content',
+    '--cache-location',
+    ESLINT_CACHE_LOCATION,
+    '--ext',
+    ESLINT_EXTENSIONS,
+  ];
   if (paths.length > 0) {
     args.push(...paths);
   } else {
@@ -202,7 +245,9 @@ async function runLintTarget(target, args) {
       await runOrExit('oxlint', ['src', 'functions/src', '-f', 'stylish']);
       return;
     case 'all':
-      await runOrExit('eslint', buildEslintArgs());
+      await runOrExit('eslint', buildEslintArgs(), {
+        env: { ...process.env, ESLINT_STORYBOOK: 'true' },
+      });
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint']);
       await runOrExit('stylelint', [STYLELINT_GLOB]);
       return;
@@ -228,6 +273,9 @@ async function runLintTarget(target, args) {
       return;
     case 'styles:fix':
       await runOrExit('stylelint', [STYLELINT_GLOB, '--fix']);
+      return;
+    case 'styles:check':
+      await runOrExit('stylelint', [STYLELINT_GLOB]);
       return;
     default:
       consola.error(`Unsupported lint target "${target}".`);

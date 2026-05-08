@@ -11,6 +11,7 @@ import {
   buildDgii607Draft,
   isConsumerFinalNcf,
   isExcludedStatus,
+  normalizeIdentificationNumber,
   resolveIdentType,
   serializeDgii607Draft,
 } from './dgii607ValidationEngine.service.js';
@@ -37,10 +38,7 @@ export {
   resolveIdentType,
 };
 
-export const shouldExcludeDgii607TxtRecord = ({
-  record,
-  isCredit = false,
-}) => {
+export const shouldExcludeDgii607TxtRecord = ({ record, isCredit = false }) => {
   if (isExcludedStatus(record?.status)) {
     return true;
   }
@@ -80,12 +78,14 @@ export const buildDgii607TxtRow = ({
 };
 
 export const buildDgii607TxtContent = ({ businessRnc, periodKey, rows }) => {
+  const businessDigits = normalizeIdentificationNumber(businessRnc);
   const period = periodKey.replace('-', '');
-  const header = `607|${businessRnc}|${period}|${String(rows.length).padStart(12, '0')}`;
+  const header = `607|${businessDigits}|${period}|${String(rows.length).padStart(12, '0')}`;
   return [header, ...rows].join('\r\n');
 };
 
 export const buildDgii607TxtFileName = ({ businessRnc, periodKey }) => {
+  const businessDigits = normalizeIdentificationNumber(businessRnc);
   const period = periodKey.replace('-', '');
-  return `607_${businessRnc}_${period}.txt`;
+  return `DGII_F_607_${businessDigits}_${period}.TXT`;
 };

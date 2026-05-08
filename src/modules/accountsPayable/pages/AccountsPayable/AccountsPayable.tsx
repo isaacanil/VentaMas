@@ -141,6 +141,7 @@ export const AccountsPayable = () => {
       <RegisterSupplierPaymentModal
         key={paymentRegistrationPurchase?.id ?? 'accounts-payable-register'}
         onCancel={() => setPaymentRegistrationPurchase(null)}
+        onPaymentRegistered={() => setSelectedRow(null)}
         open={Boolean(paymentRegistrationPurchase)}
         purchase={paymentRegistrationPurchase}
       />

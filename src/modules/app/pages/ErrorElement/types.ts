@@ -5,6 +5,7 @@ export type ErrorInfo = string | null | undefined;
 export type ErrorStackTrace = string | null | undefined;
 
 export interface ErrorElementProps {
+  autoReport?: boolean;
   errorInfo?: ErrorInfo;
   errorStackTrace?: ErrorStackTrace;
 }

@@ -40,6 +40,20 @@ export const developerShortcuts = [
     category: 'Herramientas',
   },
   {
+    id: 'error-screen-preview',
+    title: 'Vista de error',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.ERROR_SCREEN_PREVIEW,
+    category: 'Herramientas',
+  },
+  {
+    id: 'error-reports',
+    title: 'Errores reportados',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.ERROR_REPORTS,
+    category: 'Herramientas',
+  },
+  {
     id: 'subscription-maintenance',
     title: 'Sandbox suscripcion',
     icon: <BugOutlined />,
@@ -121,6 +135,13 @@ export const developerShortcuts = [
     title: 'Auditoría Monetary (Piloto)',
     icon: <BugOutlined />,
     route: ROUTES_NAME.DEV_VIEW_TERM.ACCOUNTING_PILOT_AUDIT,
+    category: 'Contabilidad',
+  },
+  {
+    id: 'finance-readiness-audit',
+    title: 'Preparación financiera',
+    icon: <BugOutlined />,
+    route: ROUTES_NAME.DEV_VIEW_TERM.FINANCE_READINESS_AUDIT,
     category: 'Contabilidad',
   },
 ];

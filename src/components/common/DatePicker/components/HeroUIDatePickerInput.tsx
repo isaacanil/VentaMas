@@ -5,6 +5,43 @@ import styled from 'styled-components';
 
 import type { DatePickerInputProps } from '../types';
 
+export const HeroUIDatePickerInput = ({
+  value,
+  placeholder,
+  disabled,
+  allowClear,
+  hasValue,
+  onClear,
+  onClick,
+}: DatePickerInputProps) => (
+  <InputShell>
+    <PrefixIcon>
+      <CalendarOutlined />
+    </PrefixIcon>
+    <StyledInput
+      aria-label={placeholder ?? 'Seleccionar fecha'}
+      value={hasValue ? (value ?? '') : ''}
+      placeholder={placeholder}
+      readOnly
+      disabled={disabled}
+      onClick={() => !disabled && onClick?.()}
+      $hasValue={hasValue}
+    />
+    {allowClear && hasValue ? (
+      <ClearButton
+        type="button"
+        aria-label="Limpiar fecha"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClear?.(event as unknown as React.MouseEvent<HTMLElement>);
+        }}
+      >
+        <CloseOutlined />
+      </ClearButton>
+    ) : null}
+  </InputShell>
+);
+
 const InputShell = styled.div`
   position: relative;
   width: 100%;
@@ -13,17 +50,19 @@ const InputShell = styled.div`
 const PrefixIcon = styled.span`
   position: absolute;
   top: 50%;
-  left: 12px;
+  left: 10px;
   z-index: 1;
   display: inline-flex;
   color: var(--ds-color-text-secondary);
   transform: translateY(-50%);
   pointer-events: none;
+  font-size: 13px;
 `;
 
 const StyledInput = styled(Input)<{ $hasValue?: boolean }>`
   width: 100%;
-
+  /* leave room for the prefix calendar icon */
+  padding-left: 32px !important;
 
   color: ${({ $hasValue }) =>
     $hasValue
@@ -63,51 +102,3 @@ const ClearButton = styled.button`
     background: var(--ds-color-text-secondary);
   }
 `;
-
-const mapInputSize = (
-  size: DatePickerInputProps['size'],
-): 'sm' | 'md' | 'lg' => {
-  if (size === 'small') return 'sm';
-  if (size === 'large') return 'lg';
-  return 'md';
-};
-
-export const HeroUIDatePickerInput = ({
-  value,
-  placeholder,
-  size,
-  disabled,
-  allowClear,
-  hasValue,
-  onClear,
-  onClick,
-  ...props
-}: DatePickerInputProps) => (
-  <InputShell>
-    <PrefixIcon>
-      <CalendarOutlined />
-    </PrefixIcon>
-    <StyledInput
-      aria-label={placeholder}
-      value={hasValue ? value : ''}
-      placeholder={placeholder}
-      readOnly
-      disabled={disabled}
-      onClick={() => !disabled && onClick?.()}
-      $hasValue={hasValue}
-      {...props}
-    />
-    {allowClear && hasValue ? (
-      <ClearButton
-        type="button"
-        aria-label="Limpiar fecha"
-        onClick={(event) => {
-          event.stopPropagation();
-          onClear?.(event);
-        }}
-      >
-        <CloseOutlined />
-      </ClearButton>
-    ) : null}
-  </InputShell>
-);
