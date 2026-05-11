@@ -19,9 +19,8 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import type { UserRoleLike } from '@/types/users';
 import { hasBusinessOwnershipClaimIssueAccess } from '@/utils/access/businessOwnershipClaimIssueAccess';
 import { hasDeveloperAccess } from '@/utils/access/developerAccess';
+import { zIndex } from '@/design-system/tokens/zIndex';
 
-import { AppVersionBadge } from './components/AppVersionBadge/AppVersionBadge';
-import { BusinessInfoPill } from './components/BusinessInfoPill/BusinessInfoPill';
 import { HomeOnboardingEmptyState } from './components/Onboarding/HomeOnboardingEmptyState';
 import { SubscriptionStatusBanner } from './components/SubscriptionStatusBanner/SubscriptionStatusBanner';
 
@@ -180,7 +179,6 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
     );
   }
 
-  const shouldShowVersionBadge = developerMode && isDeveloper;
   const shouldShowMissingOwnerBadge =
     hasBusinesses &&
     canIssueOwnershipClaim &&
@@ -188,49 +186,43 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
 
   return (
     <HomeLayout>
-      <MenuWebsite />
-      {hasBusinesses ? (
-        <TopInfoRow>
-          <BusinessInfoPill
+      <PageScroll>
+        <StickyTopBar>
+          <MenuWebsite
             forceWorkspaceOpen={shouldForceOpenBusinessManager}
+            includeDeveloperFeatures={developerMode}
             onWorkspaceOpenChange={handleBusinessManagerOpenChange}
+            showBusinessSelector={hasBusinesses}
           />
-          <BadgesRow>
-            {shouldShowMissingOwnerBadge && (
+          {shouldShowMissingOwnerBadge && (
+            <BadgesRow>
               <MissingOwnerBadge>Sin propietario</MissingOwnerBadge>
-            )}
-            {shouldShowVersionBadge && <AppVersionBadge showLabel={false} />}
-          </BadgesRow>
-        </TopInfoRow>
-      ) : (
-        <TopInfoRow>
-          <BadgesRow>
-            {shouldShowVersionBadge && <AppVersionBadge showLabel={false} />}
-          </BadgesRow>
-        </TopInfoRow>
-      )}
-      <MainContent>
-        <MainContentInner>
-          {!hasBusinesses ? (
-            <HomeOnboardingEmptyState displayName={displayName} />
-          ) : (
-            <Suspense
-              fallback={
-                <LoadingContainer style={{ height: '200px', background: 'none' }}>
-                  <Spin />
-                </LoadingContainer>
-              }
-            >
-              <SubscriptionStatusBanner business={business} user={user} />
-              <DashboardShortcuts
-                businessName={business?.name ?? null}
-                displayName={displayName}
-                includeDeveloperFeatures={developerMode}
-              />
-            </Suspense>
+            </BadgesRow>
           )}
-        </MainContentInner>
-      </MainContent>
+        </StickyTopBar>
+        <MainContent>
+          <MainContentInner>
+            {!hasBusinesses ? (
+              <HomeOnboardingEmptyState displayName={displayName} />
+            ) : (
+              <Suspense
+                fallback={
+                  <LoadingContainer style={{ height: '200px', background: 'none' }}>
+                    <Spin />
+                  </LoadingContainer>
+                }
+              >
+                <SubscriptionStatusBanner business={business} user={user} />
+                <DashboardShortcuts
+                  businessName={business?.name ?? null}
+                  displayName={displayName}
+                  includeDeveloperFeatures={developerMode}
+                />
+              </Suspense>
+            )}
+          </MainContentInner>
+        </MainContent>
+      </PageScroll>
     </HomeLayout>
   );
 };
@@ -247,20 +239,43 @@ const LoadingContainer = styled.div`
 const HomeLayout = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
   width: 100%;
-  min-height: 100vh;
-  padding-bottom: 2rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   background-color: var(--color2);
+`;
+
+const PageScroll = styled.div`
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+`;
+
+const StickyTopBar = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: ${zIndex.sticky};
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.25rem 1rem 0.45rem;
+  background: transparent;
 `;
 
 const MainContent = styled.main`
   display: flex;
   flex: 1;
   justify-content: center;
+  min-height: 0;
   width: 100%;
-  padding: 0 1rem;
-  overflow-y: auto;
+  padding: 0 1rem 1em;
+  overflow: visible;
 `;
 
 const MainContentInner = styled.div`
@@ -272,21 +287,12 @@ const MainContentInner = styled.div`
   margin: 0 auto;
 `;
 
-const TopInfoRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  width: min(1200px, calc(100% - 2rem));
-  padding: 0.2em 0;
-  margin: 0 auto;
-`;
-
 const BadgesRow = styled.div`
   display: inline-flex;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-end;
+  width: min(1200px, 100%);
 `;
 
 const MissingOwnerBadge = styled.span`

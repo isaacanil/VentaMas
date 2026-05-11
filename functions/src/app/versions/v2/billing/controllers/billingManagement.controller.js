@@ -108,7 +108,7 @@ const resolveUserIdFromSession = async (request) => {
   if (!DISABLE_SESSION_EXPIRY) {
     const now = Date.now();
     const expiresAt = toMillis(data.expiresAt);
-    if (expiresAt && expiresAt <= now) {
+    if (!expiresAt || expiresAt <= now) {
       throw new HttpsError('unauthenticated', 'La sesion ha expirado');
     }
     if (SESSION_IDLE_TIMEOUT_MS > 0) {
@@ -905,7 +905,7 @@ export const createSubscriptionBillingPortalSession = onCall(async (request) => 
   });
 
   await ensureBusinessBillingSetup({ businessId, actorUserId: userId });
-  const subscriptionSnapshot = await getBusinessSubscriptionSnapshot(businessId);
+  await getBusinessSubscriptionSnapshot(businessId);
   const { billingAccountId, ownerUid } = await resolveBillingAccountIdFromBusiness(
     businessId,
   );
@@ -1314,14 +1314,14 @@ export const devPublishPlanCatalogVersion = onCall(
     const notifications = noNotice
       ? { recipientCount: 0, delivered: 0, skipped: 0, failed: 0 }
       : await sendPlanVersionNoticeEmails({
-          planCode: result.planCode,
-          versionId: result.versionId,
-          displayName,
-          effectiveAt: result.effectiveAt,
-          noticeWindowDays: result.noticeWindowDays,
-          previousVersion,
-          nextVersion,
-        });
+        planCode: result.planCode,
+        versionId: result.versionId,
+        displayName,
+        effectiveAt: result.effectiveAt,
+        noticeWindowDays: result.noticeWindowDays,
+        previousVersion,
+        nextVersion,
+      });
 
     if (!noNotice) {
       await db
@@ -1478,9 +1478,6 @@ export const devRecordPaymentHistoryItem = onCall(async (request) => {
     paymentId: paymentRef.id,
   };
 });
-
-
-
 
 
 

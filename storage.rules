@@ -70,21 +70,50 @@ service firebase.storage {
         );
     }
 
+    function isImageUpload(maxSize) {
+      return request.resource != null
+        && request.resource.size <= maxSize
+        && request.resource.contentType != null
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    function isBusinessUpload() {
+      return request.resource != null
+        && request.resource.size <= 26214400
+        && request.resource.contentType != null
+        && request.resource.contentType.matches(
+          'image/.*|application/pdf|text/plain|text/csv|text/comma-separated-values|application/msword|application/vnd\\.ms-excel|application/vnd\\.openxmlformats-officedocument\\.wordprocessingml\\.document|application/vnd\\.openxmlformats-officedocument\\.spreadsheetml\\.sheet'
+        );
+    }
+
+    function isReportUpload() {
+      return request.resource != null
+        && request.resource.size <= 52428800
+        && request.resource.contentType != null
+        && request.resource.contentType.matches(
+          'application/pdf|text/plain|text/csv|application/vnd\\.ms-excel|application/vnd\\.openxmlformats-officedocument\\.spreadsheetml\\.sheet'
+        );
+    }
+
     // Imagen de login visible antes de autenticación.
     match /app-config/login-image/{fileName} {
       allow read: if true;
-      allow write: if hasGlobalRole();
+      allow create, update: if hasGlobalRole() && isImageUpload(5242880);
+      allow delete: if hasGlobalRole();
     }
 
     // Reportes generados por funciones.
     match /reports/stock-digest/{businessId}/{allPaths=**} {
       allow read: if hasBusinessAccess(businessId);
-      allow write: if hasGlobalRole();
+      allow create, update: if hasGlobalRole() && isReportUpload();
+      allow delete: if hasGlobalRole();
     }
 
     // Namespace principal multi-tenant.
     match /businesses/{businessId}/{allPaths=**} {
-      allow read, write: if hasBusinessAccess(businessId);
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId) && isBusinessUpload();
+      allow delete: if hasBusinessAccess(businessId);
     }
 
     // Ruta legacy detectada en código; solo soporte dev/admin global.

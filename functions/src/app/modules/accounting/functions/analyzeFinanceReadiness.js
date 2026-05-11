@@ -99,6 +99,21 @@ const resolvePurchaseTotal = (purchase) => {
   );
 };
 
+const resolvePurchaseSupplierId = (purchase) => {
+  const providerId = toCleanString(purchase.providerId);
+  if (providerId) return providerId;
+
+  const supplierId = toCleanString(purchase.supplierId);
+  if (supplierId) return supplierId;
+
+  if (typeof purchase.provider === 'string') {
+    return toCleanString(purchase.provider);
+  }
+
+  const provider = asRecord(purchase.provider);
+  return toCleanString(provider.id ?? provider.providerId);
+};
+
 const resolveCurrency = (record) => {
   const monetary = asRecord(record.monetary);
   const documentCurrency = asRecord(monetary.documentCurrency);
@@ -270,10 +285,7 @@ const analyzeBusiness = async ({ businessId, businessRecord = {}, maxDocuments }
       });
     }
 
-    const supplierId =
-      toCleanString(purchase.supplierId) ??
-      toCleanString(purchase.providerId) ??
-      toCleanString(asRecord(purchase.provider).id);
+    const supplierId = resolvePurchaseSupplierId(purchase);
     if (!supplierId) {
       addIssue(modules.cxp, {
         severity: 'blocker',

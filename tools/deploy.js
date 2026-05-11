@@ -1,5 +1,5 @@
 import pkg from 'enquirer';
-const { Confirm, Select } = pkg;
+const { Confirm, Input, Select } = pkg;
 import { consola } from 'consola';
 import { spawn } from 'child_process';
 import fs from 'fs';
@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
+const FIREBASE_CLI_ARGS = ['-y', 'firebase-tools@latest'];
 
 function isInteractive() {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
@@ -18,6 +19,7 @@ function parseArgs(argv) {
   let env = null;
   let forceBuild = null; // true | false | null
   let help = false;
+  let printOnly = false;
   const passthrough = [];
   let inPassthrough = false;
 
@@ -37,6 +39,11 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (a === '--dry-run' || a === '--print') {
+      printOnly = true;
+      continue;
+    }
+
     if (a === '--build') {
       forceBuild = true;
       continue;
@@ -51,54 +58,110 @@ function parseArgs(argv) {
       continue;
     }
 
-    // Any extra flags/args are forwarded to the underlying deploy command.
     passthrough.push(a);
   }
 
-  return { env, forceBuild, help, passthrough };
+  return { env, forceBuild, help, passthrough, printOnly };
 }
 
 function usage() {
   return [
     'Usage:',
-    '  node tools/deploy.js <prod|staging|beta|vercel> [--build|--no-build] [...args forwarded to firebase/vercel]',
+    '  node tools/deploy.js <prod|staging|prod:functions|staging:functions|beta|vercel> [--build|--no-build|--dry-run] [function names or firebase args]',
     '',
     'Examples:',
     '  npm run deploy',
     '  npm run deploy -- --help',
+    '  npm run deploy -- staging',
+    '  npm run deploy -- staging:functions reserveCreditNoteNcf,createBusiness',
+    '  npm run deploy -- prod:functions reserveCreditNoteNcf',
+    '  npm run deploy -- staging:functions reserveCreditNoteNcf --dry-run',
     '  npm run deploy -- prod --no-build',
-    '  npm run deploy -- prod --build -- --project <firebase-project-id>',
   ].join('\n');
 }
 
 const DEPLOYS = {
-  prod: {
-    label: 'Firebase hosting:prod',
-    buildScript: 'build:compiler',
-    cmd: 'firebase',
-    args: ['deploy', '--only', 'hosting:prod'],
+  staging: {
+    label: 'Firebase staging hosting (ventamax-staging)',
+    environment: 'staging',
+    projectAlias: 'staging',
+    projectId: 'ventamax-staging',
+    buildScript: 'build:staging',
+    cmd: 'npx',
+    args: [
+      ...FIREBASE_CLI_ARGS,
+      'deploy',
+      '--project',
+      'staging',
+      '--only',
+      'hosting:staging',
+    ],
     requiresDist: true,
   },
-  staging: {
-    label: 'Firebase hosting:staging',
-    buildScript: 'build',
-    cmd: 'firebase',
-    args: ['deploy', '--only', 'hosting:staging'],
+  'staging:functions': {
+    label: 'Firebase staging functions especificas (ventamax-staging)',
+    environment: 'staging',
+    projectAlias: 'staging',
+    projectId: 'ventamax-staging',
+    cmd: 'npx',
+    args: [...FIREBASE_CLI_ARGS, 'deploy', '--project', 'staging'],
+    requiresDist: false,
+    requiresFunctionNames: true,
+  },
+  prod: {
+    label: 'Firebase produccion hosting (ventamaxpos)',
+    environment: 'prod',
+    projectAlias: 'prod',
+    projectId: 'ventamaxpos',
+    buildScript: 'build:prod',
+    cmd: 'npx',
+    args: [
+      ...FIREBASE_CLI_ARGS,
+      'deploy',
+      '--project',
+      'prod',
+      '--only',
+      'hosting:prod',
+    ],
     requiresDist: true,
+    productionGuard: true,
+  },
+  'prod:functions': {
+    label: 'Firebase produccion functions especificas (ventamaxpos)',
+    environment: 'prod',
+    projectAlias: 'prod',
+    projectId: 'ventamaxpos',
+    cmd: 'npx',
+    args: [...FIREBASE_CLI_ARGS, 'deploy', '--project', 'prod'],
+    requiresDist: false,
+    requiresFunctionNames: true,
+    productionGuard: true,
   },
   beta: {
-    label: 'Firebase hosting channel: beta',
-    buildScript: 'build',
-    cmd: 'firebase',
-    args: ['hosting:channel:deploy', 'beta'],
+    label: 'Firebase prod hosting channel: beta (ventamaxpos)',
+    environment: 'prod',
+    projectAlias: 'prod',
+    projectId: 'ventamaxpos',
+    buildScript: 'build:prod',
+    cmd: 'npx',
+    args: [
+      ...FIREBASE_CLI_ARGS,
+      'hosting:channel:deploy',
+      'beta',
+      '--project',
+      'prod',
+    ],
     requiresDist: true,
+    productionGuard: true,
   },
   vercel: {
     label: 'Vercel --prod',
-    buildScript: 'build:compiler',
+    environment: 'external',
+    buildScript: 'build:prod',
     cmd: 'vercel',
     args: ['--prod'],
     requiresDist: false,
+    productionGuard: true,
   },
 };
 
@@ -112,6 +175,11 @@ function distLooksBuilt() {
 
 async function confirm(message, initial = true) {
   const prompt = new Confirm({ name: 'confirm', message, initial });
+  return await prompt.run();
+}
+
+async function input(message) {
+  const prompt = new Input({ name: 'input', message });
   return await prompt.run();
 }
 
@@ -136,19 +204,85 @@ async function promptDeploySelection() {
 }
 
 async function promptBuildMode({ buildScript }) {
+  if (!buildScript) return 'no-build';
+
   const prompt = new Select({
     name: 'buildMode',
-    message: `¿Cómo quieres proceder con el build? (script: npm run ${buildScript})`,
+    message: `Como quieres proceder con el build? (script: npm run ${buildScript})`,
     choices: [
       { name: 'build', message: 'Con build (recomendado)' },
       { name: 'no-build', message: 'Sin build' },
       { name: 'help', message: 'Ver ayuda / ejemplos' },
-      { name: 'back', message: 'Volver al menú anterior' },
+      { name: 'back', message: 'Volver al menu anterior' },
       { name: 'exit', message: 'Salir' },
     ],
   });
 
   return await prompt.run();
+}
+
+function hasOnlyArg(args) {
+  return args.includes('--only') || args.some((arg) => arg.startsWith('--only='));
+}
+
+function normalizeFunctionTargets(rawNames) {
+  return rawNames
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .map((name) => (name.startsWith('functions:') ? name : `functions:${name}`))
+    .join(',');
+}
+
+async function resolveDeployArgs(cfg, passthrough, canPrompt) {
+  if (!cfg.requiresFunctionNames) {
+    return [...cfg.args, ...passthrough];
+  }
+
+  if (hasOnlyArg(passthrough)) {
+    return [...cfg.args, ...passthrough];
+  }
+
+  const functionNameArgs = passthrough.filter((arg) => !arg.startsWith('-'));
+  const flagArgs = passthrough.filter((arg) => arg.startsWith('-'));
+  let rawNames = functionNameArgs.join(',');
+
+  if (!rawNames && canPrompt) {
+    rawNames = await input(
+      'Funciones a desplegar (coma separada, sin "functions:" si prefieres)',
+    );
+  }
+
+  const only = normalizeFunctionTargets(rawNames || '');
+  if (!only) {
+    consola.error('Debes indicar funciones especificas. Deploy all functions bloqueado.');
+    consola.info('Ejemplo: npm run deploy -- staging:functions createInvoiceV2');
+    process.exit(1);
+  }
+
+  return [...cfg.args, '--only', only, ...flagArgs];
+}
+
+async function assertProductionGuard(cfg, canPrompt) {
+  if (!cfg.productionGuard) return;
+
+  const expected = 'PROD';
+  if (!canPrompt) {
+    if (process.env.CONFIRM_PROD_DEPLOY === expected) return;
+    consola.error(
+      'Deploy a produccion bloqueado. Define CONFIRM_PROD_DEPLOY=PROD para modo no interactivo.',
+    );
+    process.exit(1);
+  }
+
+  const typed = await input(
+    `Destino produccion (${cfg.projectId}). Escribe ${expected} para continuar`,
+  );
+
+  if (typed !== expected) {
+    consola.warn('Deploy a produccion cancelado.');
+    process.exit(0);
+  }
 }
 
 async function runCommand(command, args) {
@@ -172,7 +306,9 @@ async function runOrExit(command, args) {
 }
 
 async function main() {
-  let { env, forceBuild, help, passthrough } = parseArgs(process.argv.slice(2));
+  let { env, forceBuild, help, passthrough, printOnly } = parseArgs(
+    process.argv.slice(2),
+  );
 
   if (help) {
     process.stdout.write(`${usage()}\n`);
@@ -230,14 +366,33 @@ async function main() {
     process.exit(1);
   }
 
+  const deployArgs = await resolveDeployArgs(cfg, passthrough, canPrompt);
+
   consola.box({
     title: 'Deploy',
-    message: `Target: ${cfg.label}`,
+    message: [
+      `Target: ${cfg.label}`,
+      cfg.projectAlias ? `Project alias: ${cfg.projectAlias}` : null,
+      cfg.projectId ? `Project id: ${cfg.projectId}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n'),
     style: { padding: 1, borderColor: 'cyan', borderStyle: 'double' },
   });
 
+  if (printOnly) {
+    consola.info(`Build script: ${cfg.buildScript || '(none)'}`);
+    consola.info(`Command: ${cfg.cmd} ${deployArgs.join(' ')}`);
+    process.exit(0);
+  }
+
+  await assertProductionGuard(cfg, canPrompt);
+
   let shouldBuild =
-    forceBuild ?? (canPrompt ? await confirm(`Run "npm run ${cfg.buildScript}" before deploy?`) : true);
+    forceBuild ??
+    (cfg.buildScript && canPrompt
+      ? await confirm(`Run "npm run ${cfg.buildScript}" before deploy?`)
+      : Boolean(cfg.buildScript));
 
   if (!shouldBuild && cfg.requiresDist && !distLooksBuilt()) {
     if (!canPrompt) {
@@ -252,13 +407,13 @@ async function main() {
     shouldBuild = buildNow;
   }
 
-  if (shouldBuild) {
+  if (shouldBuild && cfg.buildScript) {
     await runOrExit('npm', ['run', cfg.buildScript]);
-  } else {
+  } else if (cfg.buildScript) {
     consola.warn('Skipping build.');
   }
 
-  await runOrExit(cfg.cmd, [...cfg.args, ...passthrough]);
+  await runOrExit(cfg.cmd, deployArgs);
 }
 
 main().catch((err) => {

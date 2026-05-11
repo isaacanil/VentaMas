@@ -162,7 +162,7 @@ describe('analyzeFinanceReadiness', () => {
         data: {
           id: 'purchase-1',
           workflowStatus: 'completed',
-          providerId: 'supplier-1',
+          provider: 'supplier-1',
           completedAt: 1_700_000_100_000,
           paymentState: {
             status: 'paid',

@@ -5,107 +5,265 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function currentUid() {
+      return request.auth.uid;
+    }
+
+    function currentUserPath() {
+      return /databases/$(database)/documents/users/$(currentUid());
+    }
+
+    function currentUserDoc() {
+      return get(currentUserPath());
+    }
+
+    function currentUserExists() {
+      return isSignedIn() && exists(currentUserPath());
+    }
+
+    function currentUserRole() {
+      return currentUserDoc().data.role != null
+        ? currentUserDoc().data.role
+        : (
+          currentUserDoc().data.activeRole != null
+            ? currentUserDoc().data.activeRole
+            : (
+              currentUserDoc().data.user.role != null
+                ? currentUserDoc().data.user.role
+                : currentUserDoc().data.user.activeRole
+            )
+        );
+    }
+
+    function isPlatformDev() {
+      return currentUserExists()
+        && (
+          currentUserDoc().data.platformRoles.dev == true
+          || currentUserDoc().data.user.platformRoles.dev == true
+        );
+    }
+
+    function hasGlobalRole() {
+      return currentUserExists() && (
+        isPlatformDev()
+        || currentUserRole() in ['dev']
+      );
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && currentUid() == userId;
+    }
+
+    function memberPath(businessId) {
+      return /databases/$(database)/documents/businesses/$(businessId)/members/$(currentUid());
+    }
+
+    function memberDoc(businessId) {
+      return get(memberPath(businessId));
+    }
+
+    function hasCanonicalBusinessAccess(businessId) {
+      return exists(memberPath(businessId))
+        && !(memberDoc(businessId).data.status in ['inactive', 'suspended', 'revoked'])
+        && memberDoc(businessId).data.active != false;
+    }
+
+    function hasLegacyBusinessAccess(businessId) {
+      return currentUserExists()
+        && (
+          currentUserDoc().data.activeBusinessId == businessId
+          || currentUserDoc().data.businessID == businessId
+          || currentUserDoc().data.businessId == businessId
+          || currentUserDoc().data.defaultBusinessId == businessId
+          || currentUserDoc().data.lastSelectedBusinessId == businessId
+        );
+    }
+
+    function hasBusinessAccess(businessId) {
+      return isSignedIn()
+        && (
+          hasGlobalRole()
+          || hasCanonicalBusinessAccess(businessId)
+          || hasLegacyBusinessAccess(businessId)
+        );
+    }
+
+    function isSelfProfileCreate() {
+      return !request.resource.data.keys().hasAny([
+        'role',
+        'activeRole',
+        'platformRoles',
+        'accessControl',
+        'memberships',
+        'availableBusinesses',
+        'devBusinessSimulation'
+      ]);
+    }
+
+    function isSelfProfileUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'displayName',
+        'name',
+        'realName',
+        'photoURL',
+        'avatarUrl',
+        'preferences',
+        'settings',
+        'lastSelectedBusinessId',
+        'updatedAt'
+      ]);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSelf(userId) && isSelfProfileCreate();
+      allow update: if isSelf(userId) && isSelfProfileUpdate();
+      allow delete: if false;
+
+      match /{document=**} {
+        allow read, write: if isSelf(userId) || hasGlobalRole();
+      }
+    }
+
+    match /app/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if hasGlobalRole();
+    }
+
+    match /changelogs/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if hasGlobalRole();
+    }
+
+    match /errors/{document=**} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if hasGlobalRole();
+    }
+
+    match /sessionTokens/{document=**} {
+      allow read, write: if hasGlobalRole();
+    }
+
+    match /rncData/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if hasGlobalRole();
+    }
+
+    match /businesses/{businessId} {
+      allow read, update: if hasBusinessAccess(businessId);
+      allow create: if isSignedIn();
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/members/{memberId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
     // Primer recorte P0-E:
     // estas colecciones ya deben mutarse desde backend/callables y no
     // deben seguir abiertas a escrituras arbitrarias desde cliente.
     match /businesses/{businessId}/journalEntries/{journalEntryId} {
-      allow read: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/accountingEvents/{eventId} {
-      allow read: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/accountingPeriodClosures/{periodKey} {
-      allow read: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/settings/accounting {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
 
       match /audit/{entryId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
 
       match /exchangeRateReference/{documentId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
 
         match /{nestedDocument=**} {
-          allow read: if isSignedIn();
+          allow read: if hasBusinessAccess(businessId);
           allow write: if false;
         }
       }
     }
 
     match /businesses/{businessId}/exchangeRates/{exchangeRateId} {
-      allow read: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/bankAccounts/{bankAccountId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/chartOfAccounts/{chartOfAccountId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/accountingPostingProfiles/{postingProfileId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
-        allow read: if isSignedIn();
+        allow read: if hasBusinessAccess(businessId);
         allow write: if false;
       }
     }
 
-    // TEMP: fallback relajado mientras se migra el resto del app.
+    match /businesses/{businessId}/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
     match /{document=**} {
-      allow read, write: if isSignedIn();
+      allow read, write: if false;
     }
   }
 }

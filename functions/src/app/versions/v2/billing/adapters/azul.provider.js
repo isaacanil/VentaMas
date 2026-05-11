@@ -12,6 +12,14 @@ const DEFAULT_WEBHOOK_RESPONSE_URL =
 const resolveBaseUrl = (envValue, fallback) =>
   toCleanString(envValue) || fallback;
 
+const resolveRequiredEnv = (name) => {
+  const value = toCleanString(process.env[name]);
+  if (!value) {
+    throw new Error(`${name} is required for Azul billing`);
+  }
+  return value;
+};
+
 const resolveCheckoutBaseUrl = (returnUrl) => {
   const envBaseUrl = toCleanString(process.env.BILLING_AZUL_CHECKOUT_BASE_URL);
   if (envBaseUrl) return envBaseUrl;
@@ -64,7 +72,7 @@ const generateAzulAuthHash = (params) => {
     toCleanString(process.env.BILLING_AZUL_MERCHANT_NAME) || '';
   const merchantType =
     toCleanString(process.env.BILLING_AZUL_MERCHANT_TYPE) || '';
-  const authKey = toCleanString(process.env.BILLING_AZUL_AUTH_KEY) || '';
+  const authKey = resolveRequiredEnv('BILLING_AZUL_AUTH_KEY');
 
   const {
     CurrencyCode = '$',

@@ -109,30 +109,35 @@ BusinessInfoPill.displayName = 'BusinessInfoPill';
 
 const PillButton = styled.button`
   display: inline-flex;
-  gap: 0.4rem;
+  flex: 0 1 auto;
+  gap: 0.35rem;
   align-items: center;
-  min-height: 48px;
-  padding: 0.45rem 1rem;
-  color: rgb(15 23 42 / 88%);
+  min-width: 132px;
+  max-width: 178px;
+  height: 42px;
+  padding: 0 0.7rem;
+  color: var(--ds-color-nav-text);
   cursor: pointer;
-  background: rgb(255 255 255 / 100%);
-  border: 1px solid rgb(15 23 42 / 8%);
+  background: rgb(15 23 42 / 16%);
+  border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 999px;
-  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
+  backdrop-filter: blur(14px);
   transition:
-    transform 160ms ease,
+    background-color 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease;
 
-  &:hover {
-    border-color: rgb(15 23 42 / 25%);
-    transform: translateY(-1px);
+  &:active {
+    background: rgb(15 23 42 / 22%);
   }
 
   &:focus-visible {
     outline: none;
-    border-color: rgb(37 99 235 / 55%);
-    box-shadow: 0 0 0 3px rgb(37 99 235 / 25%);
+    border-color: rgb(255 255 255 / 72%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 18%),
+      0 0 0 3px rgb(255 255 255 / 22%);
   }
 `;
 
@@ -144,18 +149,20 @@ const TextGroup = styled.span`
 `;
 
 const Label = styled.span`
-  font-size: 0.68rem;
-  color: rgb(15 23 42 / 55%);
+  font-size: 0.62rem;
+  line-height: 1;
+  color: rgb(255 255 255 / 66%);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 `;
 
 const Name = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: rgb(15 23 42 / 90%);
+  line-height: 1.2;
+  color: rgb(255 255 255 / 96%);
   white-space: nowrap;
 `;
 
@@ -163,12 +170,7 @@ const IconWrapper = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0.2rem;
-  color: rgb(15 23 42 / 55%);
+  margin-left: 0.1rem;
+  color: rgb(255 255 255 / 66%);
   font-size: 0.75rem;
-  transition: color 160ms ease;
-
-  ${PillButton}:hover & {
-    color: rgb(15 23 42 / 90%);
-  }
 `;

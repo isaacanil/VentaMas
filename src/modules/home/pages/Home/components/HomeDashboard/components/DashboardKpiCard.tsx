@@ -75,10 +75,10 @@ const cardBase = css<{ $tone: HomeDashboardTone }>`
 
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
   min-width: 0;
-  min-height: 166px;
-  padding: var(--ds-space-5);
+  min-height: 128px;
+  padding: var(--ds-space-4);
   color: var(--ds-color-text-primary);
   text-decoration: none;
   background: var(--ds-color-bg-surface);
@@ -112,7 +112,7 @@ const CardHeader = styled.div`
   gap: var(--ds-space-2);
   align-items: center;
   justify-content: space-between;
-  min-height: 28px;
+  min-height: 26px;
 `;
 
 const IconWrap = styled.span<{ $tone: HomeDashboardTone }>`
@@ -121,8 +121,8 @@ const IconWrap = styled.span<{ $tone: HomeDashboardTone }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   color: var(--tone-text);
   background: var(--tone-bg);
   border: 1px solid var(--tone-border);
@@ -146,13 +146,12 @@ const MetricLabel = styled.span`
 
 const MetricValue = styled.strong`
   overflow-wrap: anywhere;
-  font-size: clamp(1.35rem, 1.1rem + 0.5vw, 1.9rem);
+  font-size: clamp(1.25rem, 1.05rem + 0.35vw, 1.65rem);
   line-height: var(--ds-line-height-tight);
   color: var(--ds-color-text-primary);
 `;
 
 const MetricDetail = styled.span`
-  min-height: 36px;
   font-size: var(--ds-font-size-sm);
   line-height: var(--ds-line-height-normal);
   color: var(--ds-color-text-muted);

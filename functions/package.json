@@ -15,7 +15,9 @@
     "preshell": "npm run build",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "node -e \"console.error('Deploy all functions bloqueado. Usa desde la raiz: npm run deploy -- staging:functions <nombreFuncion>'); process.exit(1)\"",
+    "deploy:staging": "cd .. && npm run deploy -- staging:functions",
+    "deploy:prod": "cd .. && npm run deploy -- prod:functions",
     "logs": "firebase functions:log"
   },
   "engines": {
@@ -28,7 +30,7 @@
     "@google-cloud/firestore": "^7.11.0",
     "@supabase/supabase-js": "^2.49.4",
     "argon2": "^0.43.0",
-    "axios": "^1.8.4",
+    "axios": "^1.16.0",
     "bcryptjs": "^3.0.2",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
@@ -37,16 +39,16 @@
     "firebase-functions": "^7.2.3",
     "genkit": "^1.18.0",
     "nanoid": "^5.1.5",
-    "nodemailer": "^7.0.6",
+    "nodemailer": "^8.0.7",
     "pdfmake": "^0.2.19",
     "typeface-roboto": "^1.1.13",
     "ventamax": "file:..",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@sourcegraph/scip-typescript": "^0.4.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.15.0",
+    "@sourcegraph/scip-typescript": "^0.4.0",
     "@types/istanbul-lib-coverage": "^2.0.6",
     "@types/mime": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^8.46.2",

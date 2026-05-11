@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { Button, Spin } from 'antd';
+import { Button } from '@heroui/react';
+import { Spin } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRight,
@@ -7,7 +8,7 @@ import {
   faChartLine,
   faReceipt,
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import ROUTES_NAME from '@/router/routes/routesName';
@@ -15,7 +16,6 @@ import ROUTES_NAME from '@/router/routes/routesName';
 import { DashboardAlertList } from './components/DashboardAlertList';
 import { DashboardKpiCard } from './components/DashboardKpiCard';
 import { HomeActivityFeed } from './components/HomeActivityFeed';
-import { HomeQuickActions } from './components/HomeQuickActions';
 import { HomeTrendPanel } from './components/HomeTrendPanel';
 import { useHomeDashboardData } from './hooks/useHomeDashboardData';
 
@@ -37,51 +37,69 @@ const HOME_DASHBOARD_WIDGETS = [
   { id: 'kpis', label: 'Indicadores', enabled: true },
   { id: 'alerts', label: 'Alertas', enabled: true },
   { id: 'activity', label: 'Actividad', enabled: true },
-  { id: 'quick-actions', label: 'Acciones rapidas', enabled: true },
   { id: 'trend', label: 'Tendencia', enabled: true },
 ] as const;
 
+const getGreetingLabel = (hour: number): string => {
+  if (hour >= 5 && hour < 12) return 'Buenos días';
+  if (hour >= 12 && hour < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+};
+
+const resolveFirstName = (displayName?: string | null): string | null => {
+  const trimmed = displayName?.trim();
+  if (!trimmed) return null;
+  return trimmed.split(/\s+/)[0] ?? null;
+};
+
+const buildGreetingTitle = (displayName?: string | null): string => {
+  const greeting = getGreetingLabel(new Date().getHours());
+  const firstName = resolveFirstName(displayName);
+  return firstName ? `${greeting}, ${firstName}` : greeting;
+};
+
 export const HomeDashboard = ({
-  businessName,
+  businessName: _businessName,
   displayName,
   includeDeveloperFeatures = false,
 }: HomeDashboardProps): JSX.Element => {
+  const navigate = useNavigate();
   const dashboard = useHomeDashboardData();
   const activeWidgets = HOME_DASHBOARD_WIDGETS.filter((widget) => widget.enabled);
-  const headerTitle = businessName
-    ? `Panel de ${businessName}`
-    : 'Panel operativo';
-  const operatorLabel = displayName ? `Operador: ${displayName}` : 'Sesion activa';
+  const headerTitle = buildGreetingTitle(displayName);
 
   return (
     <DashboardShell>
       <HeaderBand>
         <HeaderContent>
-          <Eyebrow>Dashboard ERP/POS</Eyebrow>
           <HeaderTitle>{headerTitle}</HeaderTitle>
           <HeaderMeta>
-            {operatorLabel} · {dashboard.updatedAtLabel} · {activeWidgets.length}{' '}
-            widgets activos
+            {dashboard.updatedAtLabel} · {activeWidgets.length} widgets activos
           </HeaderMeta>
         </HeaderContent>
         <HeaderActions>
           <Button
-            type="primary"
-            icon={<FontAwesomeIcon icon={faCashRegister} />}
-            href={ROUTES_NAME.SALES_TERM.SALES}
+            onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
+            size="sm"
+            variant="primary"
           >
+            <FontAwesomeIcon icon={faCashRegister} />
             Nueva venta
           </Button>
           <Button
-            icon={<FontAwesomeIcon icon={faReceipt} />}
-            href={ROUTES_NAME.SALES_TERM.BILLS}
+            onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
+            size="sm"
+            variant="secondary"
           >
+            <FontAwesomeIcon icon={faReceipt} />
             Facturas
           </Button>
           <Button
-            icon={<FontAwesomeIcon icon={faChartLine} />}
-            href={ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS}
+            onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
+            size="sm"
+            variant="secondary"
           >
+            <FontAwesomeIcon icon={faChartLine} />
             Analiticas
           </Button>
         </HeaderActions>
@@ -104,7 +122,6 @@ export const HomeDashboard = ({
           topProducts={dashboard.topProducts}
           preparedWidgets={dashboard.preparedWidgets}
         />
-        <HomeQuickActions includeDeveloperFeatures={includeDeveloperFeatures} />
       </SecondaryGrid>
 
       <AllShortcutsBlock>
@@ -169,12 +186,12 @@ const Eyebrow = styled.span`
 
 const HeaderTitle = styled.h1`
   margin: 0;
-  font-size: var(--ds-font-size-3xl);
+  font-size: var(--ds-font-size-2xl);
   line-height: var(--ds-line-height-tight);
   color: var(--ds-color-text-primary);
 
   @media (width <= 640px) {
-    font-size: var(--ds-font-size-2xl);
+    font-size: var(--ds-font-size-xl);
   }
 `;
 
@@ -221,7 +238,7 @@ const MainGrid = styled.section`
 
 const SecondaryGrid = styled.section`
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-4);
 
   @media (width <= 1040px) {

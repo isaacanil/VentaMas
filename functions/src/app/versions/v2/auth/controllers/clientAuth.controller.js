@@ -62,6 +62,7 @@ const CLIENT_AUTH_CORS_ORIGINS = [
   'http://localhost:4173',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:4173',
+  'https://ventamax-staging.web.app',
   'https://ventamaxpos-staging.web.app',
   'https://ventamaxpos.web.app',
   'https://ventamax.web.app',

@@ -7,8 +7,9 @@
     - materializa vendorBills canónicas desde purchases existentes.
 
   Usage:
-    node functions/scripts/backfillAccountingCore.js --service-account C:/path/key.json
-    node functions/scripts/backfillAccountingCore.js --service-account C:/path/key.json --business <businessId>
+    node functions/scripts/backfillAccountingCore.js --service-account C:/path/key.json --business <businessId> --dry-run
+    node functions/scripts/backfillAccountingCore.js --service-account C:/path/key.json --business <businessId> --write
+    node functions/scripts/backfillAccountingCore.js --service-account C:/path/key.json --all-businesses --dry-run
 */
 
 import fs from 'node:fs';
@@ -48,6 +49,7 @@ const REQUIRED_CHART_OF_ACCOUNTS = [
 ];
 
 const args = process.argv.slice(2);
+const hasFlag = (flag) => args.includes(flag);
 
 const getFlagValue = (flag) => {
   const index = args.indexOf(flag);
@@ -101,7 +103,7 @@ const loadServiceAccountCredential = (filePath) => {
   );
 };
 
-const ensureChartOfAccounts = async (db, businessId) => {
+const ensureChartOfAccounts = async (db, businessId, { dryRun }) => {
   const accountsSnap = await db
     .collection(`businesses/${businessId}/chartOfAccounts`)
     .get();
@@ -150,18 +152,24 @@ const ensureChartOfAccounts = async (db, businessId) => {
   }
 
   if (!writes.length) {
-    return { created: 0 };
+    return { planned: 0, created: 0 };
+  }
+
+  if (dryRun) {
+    return { planned: writes.length, created: 0 };
   }
 
   const batch = db.batch();
   writes.forEach(({ ref, payload }) => batch.set(ref, payload, { merge: true }));
   await batch.commit();
-  return { created: writes.length };
+  return { planned: writes.length, created: writes.length };
 };
 
-const syncVendorBillsFromPurchases = async (db, businessId) => {
+const syncVendorBillsFromPurchases = async (db, businessId, { dryRun }) => {
   const purchasesSnap = await db.collection(`businesses/${businessId}/purchases`).get();
+  let plannedMaterialized = 0;
   let materialized = 0;
+  let plannedDeleted = 0;
   let deleted = 0;
 
   for (const purchaseSnap of purchasesSnap.docs) {
@@ -200,16 +208,22 @@ const syncVendorBillsFromPurchases = async (db, businessId) => {
     );
 
     if (!vendorBillProjection) {
-      await vendorBillRef.delete().catch(() => null);
-      deleted += 1;
+      plannedDeleted += 1;
+      if (!dryRun) {
+        await vendorBillRef.delete().catch(() => null);
+        deleted += 1;
+      }
       continue;
     }
 
-    await vendorBillRef.set(vendorBillProjection, { merge: true });
-    materialized += 1;
+    plannedMaterialized += 1;
+    if (!dryRun) {
+      await vendorBillRef.set(vendorBillProjection, { merge: true });
+      materialized += 1;
+    }
   }
 
-  return { materialized, deleted };
+  return { plannedMaterialized, materialized, plannedDeleted, deleted };
 };
 
 const main = async () => {
@@ -218,10 +232,18 @@ const main = async () => {
     process.env.GOOGLE_APPLICATION_CREDENTIALS ??
     null;
   const targetBusinessId = getFlagValue('--business');
+  const dryRun = !hasFlag('--write') || hasFlag('--dry-run');
+  const allBusinesses = hasFlag('--all-businesses');
 
   if (!serviceAccountPath) {
     throw new Error(
       'Debe indicar --service-account o GOOGLE_APPLICATION_CREDENTIALS.',
+    );
+  }
+
+  if (!targetBusinessId && !allBusinesses) {
+    throw new Error(
+      'Debe indicar --business <businessId> o --all-businesses. Dry-run por defecto; agregue --write para escribir.',
     );
   }
 
@@ -240,16 +262,26 @@ const main = async () => {
       }
     : await db.collection('businesses').get();
 
+  console.log(
+    JSON.stringify({
+      mode: dryRun ? 'dry-run' : 'write',
+      target: targetBusinessId ?? 'all-businesses',
+    }),
+  );
+
   for (const businessSnap of businessesSnap.docs) {
     const businessId = businessSnap.id;
-    const accounts = await ensureChartOfAccounts(db, businessId);
-    const vendorBills = await syncVendorBillsFromPurchases(db, businessId);
+    const accounts = await ensureChartOfAccounts(db, businessId, { dryRun });
+    const vendorBills = await syncVendorBillsFromPurchases(db, businessId, { dryRun });
 
     console.log(
       JSON.stringify({
         businessId,
+        plannedChartAccounts: accounts.planned,
         createdChartAccounts: accounts.created,
+        plannedVendorBills: vendorBills.plannedMaterialized,
         materializedVendorBills: vendorBills.materialized,
+        plannedDeletedVendorBills: vendorBills.plannedDeleted,
         deletedVendorBills: vendorBills.deleted,
       }),
     );

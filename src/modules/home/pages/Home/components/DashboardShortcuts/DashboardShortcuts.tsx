@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { Tabs } from 'antd';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
@@ -51,23 +52,51 @@ export const DashboardShortcuts = ({
   const cardData = normalizeCardData(useMenuCardData(user));
   const developer = normalizeCardData(useDeveloperFeaturesData());
   const { abilities, loading } = useUserAccess();
+  const canShowDeveloperTools =
+    includeDeveloperFeatures && abilities?.can('developerAccess', 'all');
+
+  const shortcutList = (
+    <FeatureCardList
+      title={canShowDeveloperTools ? undefined : 'Atajos'}
+      cardData={cardData}
+      loading={loading}
+      categoryOrder={SHORTCUT_CATEGORY_ORDER}
+      wideCategoryNames={SHORTCUT_WIDE_CATEGORIES}
+      showContainer={!canShowDeveloperTools}
+    />
+  );
+
+  if (canShowDeveloperTools) {
+    return (
+      <ShortcutsSection>
+        <ShortcutTabs
+          defaultActiveKey="developer-tools"
+          items={[
+            {
+              key: 'developer-tools',
+              label: 'Herramientas de desarrollador',
+              children: (
+                <FeatureCardList
+                  cardData={developer}
+                  loading={loading}
+                  showContainer={false}
+                />
+              ),
+            },
+            {
+              key: 'system-shortcuts',
+              label: 'Atajos del sistema',
+              children: shortcutList,
+            },
+          ]}
+        />
+      </ShortcutsSection>
+    );
+  }
 
   return (
     <ShortcutsSection>
-      {includeDeveloperFeatures && abilities?.can('developerAccess', 'all') && (
-        <FeatureCardList
-          title="Funciones de desarrollador"
-          cardData={developer}
-          loading={loading}
-        />
-      )}
-      <FeatureCardList
-        title="Atajos"
-        cardData={cardData}
-        loading={loading}
-        categoryOrder={SHORTCUT_CATEGORY_ORDER}
-        wideCategoryNames={SHORTCUT_WIDE_CATEGORIES}
-      />
+      {shortcutList}
     </ShortcutsSection>
   );
 };
@@ -76,9 +105,33 @@ const ShortcutsSection = styled.div`
   gap: 1em;
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto;
+  margin: 0 auto 1em;
 
   @media (width <= 768px) {
     gap: 0.8em;
+  }
+`;
+
+const ShortcutTabs = styled(Tabs)`
+  width: 100%;
+  padding: 1rem;
+  background: var(--ds-color-bg-surface);
+  border: 1px solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+
+  .ant-tabs-nav {
+    margin-bottom: 1rem;
+  }
+
+  .ant-tabs-tab {
+    font-weight: 600;
+  }
+
+  .ant-tabs-tab-btn {
+    color: var(--ds-color-text-secondary);
+  }
+
+  .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--ds-color-action-primary);
   }
 `;

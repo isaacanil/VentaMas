@@ -1,11 +1,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 
-import { db, FieldValue } from '../config/firebase.js';
 import { toCleanString } from '../../versions/v2/billing/utils/billingCommon.util.js';
-
-const SESSION_COLLECTION = 'sessionTokens';
-
-const sessionsCol = db.collection(SESSION_COLLECTION);
+import { resolveUserIdFromSessionToken } from '../../versions/v2/auth/utils/sessionAuth.util.js';
 
 export const resolveCallableAuthUid = async (request) => {
   const sessionToken = toCleanString(request?.data?.sessionToken);
@@ -13,25 +9,15 @@ export const resolveCallableAuthUid = async (request) => {
     return request?.auth?.uid || null;
   }
 
-  const sessionRef = sessionsCol.doc(sessionToken);
-  const sessionSnap = await sessionRef.get();
-  if (!sessionSnap.exists) {
-    throw new HttpsError('unauthenticated', 'Sesion invalida o expirada');
-  }
-
-  const data = sessionSnap.data() || {};
-  const userId = toCleanString(data.userId);
-  if (!userId) {
-    throw new HttpsError('unauthenticated', 'Sesion sin usuario asociado');
-  }
-
-  await sessionRef.set(
-    {
-      lastActivity: FieldValue.serverTimestamp(),
-      status: 'active',
+  return resolveUserIdFromSessionToken({
+    sessionToken,
+    normalizeUserId: toCleanString,
+    createAuthError: (message) => new HttpsError('unauthenticated', message),
+    messages: {
+      invalidSession: 'Sesion invalida o expirada',
+      missingUser: 'Sesion sin usuario asociado',
+      expired: 'La sesion ha expirado',
+      inactive: 'Sesion cerrada por inactividad',
     },
-    { merge: true },
-  );
-
-  return userId;
+  });
 };

@@ -9,6 +9,7 @@ import {
 import { toCleanString } from '../utils/billingCommon.util.js';
 
 const CHECKOUT_SESSIONS_SUBCOLLECTION = 'checkoutSessions';
+const AUTH_HASH_HEX_PATTERN = /^[a-f0-9]{128}$/i;
 
 const isApprovedAzulPayment = ({ responseCode, isoCode }) =>
   responseCode === 'ISO8583' && isoCode === '00';
@@ -33,6 +34,13 @@ const resolveAmountFromGateway = (rawAmount) => {
   return amountNumber / 100;
 };
 
+const amountsMatch = (receivedAmount, expectedAmount) => {
+  const received = Number(receivedAmount);
+  const expected = Number(expectedAmount);
+  if (!Number.isFinite(received) || !Number.isFinite(expected)) return false;
+  return Math.abs(received - expected) < 0.01;
+};
+
 const resolveCheckoutSessionRef = ({ billingAccountId, orderNumber }) => {
   const normalizedBillingAccountId = toCleanString(billingAccountId);
   const normalizedOrderNumber = toCleanString(orderNumber);
@@ -42,6 +50,19 @@ const resolveCheckoutSessionRef = ({ billingAccountId, orderNumber }) => {
     .doc(`billingAccounts/${normalizedBillingAccountId}`)
     .collection(CHECKOUT_SESSIONS_SUBCOLLECTION)
     .doc(normalizedOrderNumber);
+};
+
+const timingSafeEqualHex = (expected, received) => {
+  if (!AUTH_HASH_HEX_PATTERN.test(expected) || !AUTH_HASH_HEX_PATTERN.test(received)) {
+    return false;
+  }
+
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const receivedBuffer = Buffer.from(received, 'hex');
+  return (
+    expectedBuffer.length === receivedBuffer.length &&
+    crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
+  );
 };
 
 export const azulWebhookAuth2 = onRequest(async (req, res) => {
@@ -69,6 +90,20 @@ export const azulWebhookAuth2 = onRequest(async (req, res) => {
     const businessId = toCleanString(payload.CustomField2) || ''; // businessId
 
     const authKey = toCleanString(process.env.BILLING_AZUL_AUTH_KEY) || '';
+    if (!authKey) {
+      console.error('Azul webhook auth key is not configured');
+      res.status(500).send('Webhook not configured');
+      return;
+    }
+
+    if (!AUTH_HASH_HEX_PATTERN.test(receivedAuthHash)) {
+      console.error('Invalid Auth2 Hash format from Azul webhook', {
+        orderNumber,
+        billingAccountId,
+      });
+      res.status(400).send('Invalid Signature');
+      return;
+    }
 
     // Auth2 Hash generation: OrderNumber + Amount + AuthorizationCode + DateTime + ResponseCode + ISOCode + ResponseMessage + ErrorDescription + RRN
     const stringToHash = `${orderNumber}${amount}${authorizationCode}${dateTime}${responseCode}${isoCode}${responseMessage}${errorDescription}${rrn}`;
@@ -77,10 +112,10 @@ export const azulWebhookAuth2 = onRequest(async (req, res) => {
       .update(stringToHash)
       .digest('hex');
 
-    if (computedHash.toLowerCase() !== receivedAuthHash.toLowerCase()) {
+    if (!timingSafeEqualHex(computedHash, receivedAuthHash)) {
       console.error('Invalid Auth2 Hash from Azul webhook', {
-        receivedAuthHash,
-        computedHash,
+        orderNumber,
+        billingAccountId,
       });
       res.status(400).send('Invalid Signature');
       return;
@@ -97,21 +132,66 @@ export const azulWebhookAuth2 = onRequest(async (req, res) => {
       billingAccountId,
       orderNumber,
     });
-    let checkoutSession = {};
-
-    if (checkoutSessionRef) {
-      const checkoutSessionSnap = await checkoutSessionRef.get();
-      if (checkoutSessionSnap.exists) {
-        checkoutSession = checkoutSessionSnap.data() || {};
-      }
+    if (!checkoutSessionRef) {
+      console.error('Missing Azul checkout binding', {
+        orderNumber,
+        billingAccountId,
+        businessId,
+      });
+      res.status(400).send('Invalid Checkout Session');
+      return;
     }
+
+    const checkoutSessionSnap = await checkoutSessionRef.get();
+    if (!checkoutSessionSnap.exists) {
+      console.error('Unknown Azul checkout session', {
+        orderNumber,
+        billingAccountId,
+        businessId,
+      });
+      res.status(404).send('Unknown Checkout Session');
+      return;
+    }
+
+    const checkoutSession = checkoutSessionSnap.data() || {};
+    const checkoutBusinessId = toCleanString(checkoutSession.businessId);
+    const checkoutBillingAccountId = toCleanString(
+      checkoutSession.billingAccountId,
+    );
+    const checkoutProvider = toCleanString(
+      checkoutSession.provider,
+    )?.toLowerCase();
+    const checkoutAmount = Number(checkoutSession.amount);
+    if (
+      checkoutBusinessId !== businessId ||
+      checkoutBillingAccountId !== billingAccountId ||
+      (checkoutProvider && checkoutProvider !== 'azul') ||
+      !amountsMatch(amountNum, checkoutAmount)
+    ) {
+      console.error('Azul checkout binding mismatch', {
+        orderNumber,
+        billingAccountId,
+        businessId,
+        checkoutBillingAccountId,
+        checkoutBusinessId,
+        checkoutProvider,
+        amountNum,
+        checkoutAmount,
+      });
+      res.status(400).send('Checkout Binding Mismatch');
+      return;
+    }
+
     const requestedPlanCode = toCleanString(checkoutSession.planCode);
+    const previousCheckoutStatus = toCleanString(
+      checkoutSession.status,
+    )?.toLowerCase();
 
     if (billingAccountId) {
       const paymentRef = db
         .doc(`billingAccounts/${billingAccountId}`)
         .collection('paymentHistory')
-        .doc();
+        .doc(orderNumber);
 
       await paymentRef.set(
         {
@@ -160,7 +240,7 @@ export const azulWebhookAuth2 = onRequest(async (req, res) => {
       );
     }
 
-    if (isApproved && billingAccountId) {
+    if (isApproved && billingAccountId && previousCheckoutStatus !== 'paid') {
       const currentSubscription = await getActiveSubscriptionForBillingAccount(
         billingAccountId,
       );

@@ -15,6 +15,7 @@ interface FeatureCardListProps {
   loading?: boolean;
   categoryOrder?: Record<string, number>;
   wideCategoryNames?: string[];
+  showContainer?: boolean;
 }
 
 export const FeatureCardList = ({
@@ -23,6 +24,7 @@ export const FeatureCardList = ({
   loading = false,
   categoryOrder = {},
   wideCategoryNames = [],
+  showContainer = true,
 }: FeatureCardListProps): JSX.Element => {
   const prefersReducedMotion = useReducedMotion();
   const shouldAnimate = !prefersReducedMotion && cardData.length <= 40;
@@ -101,25 +103,29 @@ export const FeatureCardList = ({
     </Wrapper>
   );
 
-  return (
+  const content = (
     <Container>
-      <Header onClick={handleToggle}>
-        <Title level={4}>{title}</Title>
-        <Button
-          type="text"
-          icon={
-            isCollapsed ? (
-              <FontAwesomeIcon icon={faChevronDown} size="lg" />
-            ) : (
-              <FontAwesomeIcon icon={faChevronUp} size="lg" />
-            )
-          }
-          style={{ color: '#2c3e50' }}
-        />
-      </Header>
+      {title && (
+        <Header onClick={handleToggle}>
+          <Title level={4}>{title}</Title>
+          <Button
+            type="text"
+            icon={
+              isCollapsed ? (
+                <FontAwesomeIcon icon={faChevronDown} size="lg" />
+              ) : (
+                <FontAwesomeIcon icon={faChevronUp} size="lg" />
+              )
+            }
+            style={{ color: '#2c3e50' }}
+          />
+        </Header>
+      )}
       {!isCollapsed && listContent}
     </Container>
   );
+
+  return showContainer ? content : <>{!isCollapsed && listContent}</>;
 };
 const Container = styled.div`
   display: grid;

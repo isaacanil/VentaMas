@@ -16,8 +16,62 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fontsPath = path.join(__dirname, '../../../../../../fonts');
+const ALLOWED_LOGO_HOSTS = new Set([
+  'firebasestorage.googleapis.com',
+  'storage.googleapis.com',
+]);
+const LOGO_FETCH_TIMEOUT_MS = 5000;
+const MAX_LOGO_BYTES = 1_000_000;
+const SUPPORTED_LOGO_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
 
 let printer = null;
+
+function isAllowedLogoUrl(rawUrl) {
+  try {
+    const url = new URL(String(rawUrl));
+    return url.protocol === 'https:' && ALLOWED_LOGO_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+async function fetchLogoDataUri(rawUrl) {
+  if (!rawUrl || !isAllowedLogoUrl(rawUrl)) return null;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), LOGO_FETCH_TIMEOUT_MS);
+
+  try {
+    const resp = await fetch(rawUrl, { signal: controller.signal });
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch logo: ${resp.statusText}`);
+    }
+
+    const contentType = (resp.headers.get('content-type') || '')
+      .split(';')[0]
+      .trim()
+      .toLowerCase();
+    if (!SUPPORTED_LOGO_MIME_TYPES.has(contentType)) {
+      throw new Error(
+        `Unsupported logo content type: ${contentType || 'unknown'}`,
+      );
+    }
+
+    const contentLength = Number(resp.headers.get('content-length'));
+    if (Number.isFinite(contentLength) && contentLength > MAX_LOGO_BYTES) {
+      throw new Error('Logo exceeds maximum allowed size');
+    }
+
+    const arrayBuffer = await resp.arrayBuffer();
+    if (arrayBuffer.byteLength > MAX_LOGO_BYTES) {
+      throw new Error('Logo exceeds maximum allowed size');
+    }
+
+    return `data:${contentType};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function getPrinter() {
   if (!printer) {
@@ -42,16 +96,12 @@ export const invoiceLetterPdf = https.onCall(async (req) => {
   const images = {};
   if (biz.logoUrl) {
     try {
-      const resp = await fetch(biz.logoUrl);
-      if (resp.ok) {
-        const arrayBuffer = await resp.arrayBuffer();
-        const ext = biz.logoUrl.split('.').pop().split(/[?#]/)[0].toLowerCase();
-        const mime =
-          ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
-        images.logo = `data:${mime};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
+      const logoDataUri = await fetchLogoDataUri(biz.logoUrl);
+      if (logoDataUri) {
+        images.logo = logoDataUri;
       }
     } catch (error) {
-      console.warn('Logo fetch failed:', error);
+      console.warn('Logo fetch failed:', error.message);
     }
   }
 

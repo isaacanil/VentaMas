@@ -2,6 +2,17 @@ import React, { useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import type { ConsoleLine, SelectionItem, SelectionModeProps } from '../types';
 
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPE_MAP[char] || char);
+
 /**
  * Componente para manejar el modo de selección interactiva en la consola
  */
@@ -45,7 +56,7 @@ const SelectionMode = ({
 
   const buildSelectionContent = useCallback(
     (currentSelectedIndex: number) =>
-      `<div style="color:#66d9ef;font-weight:bold;margin-bottom:10px;">${title}</div>
+      `<div style="color:#66d9ef;font-weight:bold;margin-bottom:10px;">${escapeHtml(title)}</div>
 <div style="margin-left:4px;margin-bottom:10px;">
 ${items
   .map((item, index) => {
@@ -54,9 +65,9 @@ ${items
     const icon = isSelected ? '🔹' : '▫️';
     return `<div style="padding:4px 0;cursor:pointer;margin-bottom:2px;" 
       data-index="${index}" 
-      data-selection-command="${command}"
+      data-selection-command="${escapeHtml(command)}"
       class="selectable-item ${isSelected ? 'selected' : ''}">
-      <span class="${itemClass}">${icon} ${resolveItemLabel(item)}</span>
+      <span class="${itemClass}">${icon} ${escapeHtml(resolveItemLabel(item))}</span>
   </div>`;
   })
   .join('')}

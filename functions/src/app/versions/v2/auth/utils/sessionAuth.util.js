@@ -53,7 +53,7 @@ export async function resolveUserIdFromSessionToken({
   if (!DISABLE_SESSION_EXPIRY) {
     const now = Date.now();
     const expiresAt = toMillis(data.expiresAt);
-    if (expiresAt && expiresAt <= now) {
+    if (!expiresAt || expiresAt <= now) {
       throw createAuthError(messages.expired);
     }
     if (SESSION_IDLE_TIMEOUT_MS > 0) {
