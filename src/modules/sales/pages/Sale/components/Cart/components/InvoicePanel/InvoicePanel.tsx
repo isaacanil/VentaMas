@@ -146,6 +146,18 @@ export const InvoicePanel = () => {
       </ButtonGroup>
     </>
   );
+  const taxReceiptDialog = (
+    <TaxReceiptDepletedModal
+      open={taxReceiptModalOpen}
+      receipts={taxReceiptState?.data}
+      currentReceipt={ncfType}
+      loading={loading.status}
+      onSelectReceipt={handleSelectTaxReceiptFromModal}
+      onRetry={retryWithTaxReceipt}
+      onCancel={closeTaxReceiptModal}
+      getContainer={false}
+    />
+  );
 
   return (
     <>
@@ -164,6 +176,7 @@ export const InvoicePanel = () => {
                 </Drawer.Header>
                 <InvoicePanelDrawerBody>{panelBody}</InvoicePanelDrawerBody>
                 <InvoicePanelDrawerFooter>{panelFooter}</InvoicePanelDrawerFooter>
+                {taxReceiptDialog}
               </InvoicePanelDrawerDialog>
             </Drawer.Content>
           </Drawer.Backdrop>
@@ -179,20 +192,12 @@ export const InvoicePanel = () => {
                 </Modal.Header>
                 <InvoicePanelBody>{panelBody}</InvoicePanelBody>
                 <InvoicePanelFooter>{panelFooter}</InvoicePanelFooter>
+                {taxReceiptDialog}
               </InvoicePanelDialog>
             </Modal.Container>
           </Modal.Backdrop>
         </Modal>
       )}
-      <TaxReceiptDepletedModal
-        open={taxReceiptModalOpen}
-        receipts={taxReceiptState?.data}
-        currentReceipt={ncfType}
-        loading={loading.status}
-        onSelectReceipt={handleSelectTaxReceiptFromModal}
-        onRetry={retryWithTaxReceipt}
-        onCancel={closeTaxReceiptModal}
-      />
     </>
   );
 };

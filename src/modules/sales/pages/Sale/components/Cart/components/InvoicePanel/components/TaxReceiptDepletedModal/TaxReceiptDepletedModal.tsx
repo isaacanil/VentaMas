@@ -1,4 +1,10 @@
-import { Modal, Select, Typography, Button } from 'antd';
+import {
+  Modal,
+  Select,
+  Typography,
+  Button,
+  type ModalProps as AntdModalProps,
+} from 'antd';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import type { TaxReceiptData, TaxReceiptItem } from '@/types/taxReceipt';
@@ -17,9 +23,12 @@ type TaxReceiptDepletedModalProps = {
   onSelectReceipt?: (value: string) => void;
   onRetry?: () => void;
   onCancel?: () => void;
+  getContainer?: AntdModalProps['getContainer'];
 };
 
 const EMPTY_TAX_RECEIPT_ITEMS: TaxReceiptItem[] = [];
+const getSelectPopupContainer = (triggerNode: HTMLElement) =>
+  triggerNode.parentElement ?? triggerNode;
 
 const resolveReceiptData = (
   receipt: TaxReceiptItem | null | undefined,
@@ -103,6 +112,7 @@ export const TaxReceiptDepletedModal = ({
   onSelectReceipt = () => undefined,
   onRetry = () => undefined,
   onCancel = () => undefined,
+  getContainer = undefined,
 }: TaxReceiptDepletedModalProps) => {
   const options = buildOptions(receipts);
   const selectedOption = options.find(
@@ -116,6 +126,8 @@ export const TaxReceiptDepletedModal = ({
       footer={null}
       title="Sin comprobantes"
       destroyOnHidden
+      getContainer={getContainer}
+      focusable={{ focusTriggerAfterClose: false }}
     >
       <ContentWrapper>
         <Typography.Paragraph>
@@ -133,6 +145,7 @@ export const TaxReceiptDepletedModal = ({
               placeholder="Elige un comprobante"
               showSearch
               optionFilterProp="label"
+              getPopupContainer={getSelectPopupContainer}
               onChange={onSelectReceipt}
               filterOption={(input, option) =>
                 typeof option?.label === 'string' &&
@@ -196,4 +209,9 @@ TaxReceiptDepletedModal.propTypes = {
   onSelectReceipt: PropTypes.func,
   onRetry: PropTypes.func,
   onCancel: PropTypes.func,
+  getContainer: PropTypes.oneOfType([
+    PropTypes.bool,
+    PropTypes.func,
+    PropTypes.object,
+  ]),
 };

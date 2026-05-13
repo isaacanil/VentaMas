@@ -2,7 +2,8 @@ import { Drawer, Modal } from '@heroui/react';
 import styled from 'styled-components';
 
 export const InvoicePanelDialog = styled(Modal.Dialog)`
-  width: min(640px, calc(100vw - 32px));
+  width: min(520px, calc(100vw - 40px));
+  max-width: min(520px, calc(100vw - 40px));
   max-height: calc(100vh - 32px);
   padding: 0;
 

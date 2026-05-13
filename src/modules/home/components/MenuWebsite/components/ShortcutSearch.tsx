@@ -1,20 +1,25 @@
-import { Header, ListBox, SearchField, Surface } from '@heroui/react';
-import { useCallback, useMemo, useState } from 'react';
+import { SearchField } from '@heroui/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
+import { useUserAccess } from '@/hooks/abilities/useAbilities';
 import {
   useDeveloperFeaturesData,
   useMenuCardData,
 } from '@/modules/home/pages/Home/CardData';
 
 import type { FeatureCardData } from '@/modules/home/pages/Home/components/FeatureCardList/FeatureCard';
-import type { JSX, Key } from 'react';
+import type { JSX } from 'react';
 
 interface ShortcutSearchProps {
+  activeScope?: ShortcutTabKey;
   includeDeveloperFeatures?: boolean;
+  onFocusSearch?: () => void;
+  onSearchValueChange?: (value: string) => void;
+  searchValue?: string;
 }
 
 interface ShortcutOption {
@@ -25,10 +30,7 @@ interface ShortcutOption {
   value: string;
 }
 
-interface ShortcutOptionGroup {
-  category: string;
-  options: ShortcutOption[];
-}
+type ShortcutTabKey = 'user' | 'developer';
 
 const normalizeSearch = (value: string): string =>
   value
@@ -50,157 +52,152 @@ const isFeatureCardData = (card: unknown): card is FeatureCardData => {
 const normalizeCardData = (data: unknown): FeatureCardData[] =>
   Array.isArray(data) ? data.filter(isFeatureCardData) : [];
 
+const uniqueShortcutsByRoute = (
+  shortcuts: FeatureCardData[],
+): FeatureCardData[] => {
+  const seenRoutes = new Set<string>();
+
+  return shortcuts.filter((shortcut) => {
+    if (!shortcut.route || seenRoutes.has(shortcut.route)) return false;
+    seenRoutes.add(shortcut.route);
+    return true;
+  });
+};
+
+const toShortcutOptions = (shortcuts: FeatureCardData[]): ShortcutOption[] =>
+  shortcuts.map((shortcut) => ({
+    category: shortcut.category,
+    route: shortcut.route ?? '',
+    searchText: normalizeSearch(
+      `${shortcut.title} ${shortcut.category} ${shortcut.route}`,
+    ),
+    title: shortcut.title,
+    value: shortcut.route ?? '',
+  }));
+
 export const ShortcutSearch = ({
+  activeScope = 'user',
   includeDeveloperFeatures = false,
+  onFocusSearch,
+  onSearchValueChange,
+  searchValue,
 }: ShortcutSearchProps): JSX.Element => {
   const navigate = useNavigate();
   const user = useSelector(selectUser);
-  const [searchValue, setSearchValue] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const menuShortcuts = normalizeCardData(useMenuCardData(user));
-  const developerShortcuts = normalizeCardData(useDeveloperFeaturesData());
-  const shortcuts = useMemo(() => {
-    const base = includeDeveloperFeatures
-      ? [...developerShortcuts, ...menuShortcuts]
-      : menuShortcuts;
-    const seenRoutes = new Set<string>();
-
-    return base.filter((shortcut) => {
-      if (!shortcut.route || seenRoutes.has(shortcut.route)) return false;
-      seenRoutes.add(shortcut.route);
-      return true;
-    });
-  }, [developerShortcuts, includeDeveloperFeatures, menuShortcuts]);
-
-  const options = useMemo<ShortcutOption[]>(() => {
-    return shortcuts.map((shortcut) => ({
-      category: shortcut.category,
-      route: shortcut.route ?? '',
-      searchText: normalizeSearch(
-        `${shortcut.title} ${shortcut.category} ${shortcut.route}`,
-      ),
-      title: shortcut.title,
-      value: shortcut.route ?? '',
-    }));
-  }, [shortcuts]);
-
-  const normalizedQuery = normalizeSearch(searchValue);
-  const visibleOptions = useMemo(
-    () =>
-      normalizedQuery
-        ? options
-            .filter((option) => option.searchText.includes(normalizedQuery))
-            .slice(0, 8)
-        : [],
-    [normalizedQuery, options],
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uncontrolledSearchValue, setUncontrolledSearchValue] = useState('');
+  const resolvedSearchValue = searchValue ?? uncontrolledSearchValue;
+  const menuShortcuts = uniqueShortcutsByRoute(
+    normalizeCardData(useMenuCardData(user)),
   );
-  const visibleOptionGroups = useMemo<ShortcutOptionGroup[]>(() => {
-    const groups = new Map<string, ShortcutOption[]>();
+  const developerShortcuts = uniqueShortcutsByRoute(
+    normalizeCardData(useDeveloperFeaturesData()),
+  );
+  const { abilities } = useUserAccess();
+  const canUseDeveloperShortcuts = Boolean(
+    includeDeveloperFeatures && abilities?.can('developerAccess', 'all'),
+  );
 
-    visibleOptions.forEach((option) => {
-      const group = groups.get(option.category) ?? [];
-      group.push(option);
-      groups.set(option.category, group);
-    });
+  const userOptions = useMemo<ShortcutOption[]>(
+    () => toShortcutOptions(menuShortcuts),
+    [menuShortcuts],
+  );
+  const developerOptions = useMemo<ShortcutOption[]>(
+    () =>
+      canUseDeveloperShortcuts ? toShortcutOptions(developerShortcuts) : [],
+    [canUseDeveloperShortcuts, developerShortcuts],
+  );
+  const selectedScope: ShortcutTabKey =
+    canUseDeveloperShortcuts && activeScope === 'developer'
+      ? 'developer'
+      : 'user';
+  const activeOptions =
+    selectedScope === 'developer' ? developerOptions : userOptions;
 
-    return Array.from(groups, ([category, groupOptions]) => ({
-      category,
-      options: groupOptions,
-    }));
-  }, [visibleOptions]);
-  const shouldShowResults = isSearchFocused && Boolean(normalizedQuery);
-
-  const handleSelect = useCallback(
-    (route: string): void => {
-      if (!route) return;
-      setSearchValue('');
-      setIsSearchFocused(false);
-      navigate(route);
+  const setResolvedSearchValue = useCallback(
+    (value: string): void => {
+      onSearchValueChange?.(value);
+      if (searchValue === undefined) {
+        setUncontrolledSearchValue(value);
+      }
     },
-    [navigate],
+    [onSearchValueChange, searchValue],
+  );
+
+  const handleSearchFocus = useCallback((): void => {
+    onFocusSearch?.();
+  }, [onFocusSearch]);
+
+  const handleValueChange = useCallback(
+    (value: string): void => {
+      onFocusSearch?.();
+      setResolvedSearchValue(value);
+    },
+    [onFocusSearch, setResolvedSearchValue],
   );
 
   const handleSubmit = useCallback(
     (value: string): void => {
       const query = normalizeSearch(value);
       if (!query) return;
-      const firstMatch = options.find((option) =>
+      const firstMatch = activeOptions.find((option) =>
         option.searchText.includes(query),
       );
-      handleSelect(firstMatch?.route ?? '');
+      if (!firstMatch?.route) return;
+      setResolvedSearchValue('');
+      navigate(firstMatch.route);
     },
-    [handleSelect, options],
-  );
-
-  const handleAction = useCallback(
-    (key: Key): void => {
-      handleSelect(String(key));
-    },
-    [handleSelect],
+    [activeOptions, navigate, setResolvedSearchValue],
   );
 
   const handleClear = useCallback((): void => {
-    setSearchValue('');
-  }, []);
+    setResolvedSearchValue('');
+  }, [setResolvedSearchValue]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent): void => {
+      if (
+        event.key.toLowerCase() !== 'k' ||
+        (!event.ctrlKey && !event.metaKey)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      onFocusSearch?.();
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [onFocusSearch]);
 
   return (
-    <SearchContainer
-      onBlurCapture={(event) => {
-        const nextFocus = event.relatedTarget;
-        if (nextFocus instanceof Node && event.currentTarget.contains(nextFocus)) {
-          return;
-        }
-        setIsSearchFocused(false);
-      }}
-      onFocusCapture={() => setIsSearchFocused(true)}
-    >
+    <SearchContainer onFocusCapture={handleSearchFocus}>
       <SearchField
         aria-label="Buscar atajo"
         fullWidth
         name="shortcut-search"
-        onChange={setSearchValue}
+        onChange={handleValueChange}
         onClear={handleClear}
         onSubmit={handleSubmit}
-        value={searchValue}
+        value={resolvedSearchValue}
         variant="secondary"
       >
         <SearchField.Group>
           <SearchField.SearchIcon />
-          <SearchField.Input autoComplete="off" placeholder="Buscar atajo" />
+          <SearchField.Input
+            ref={inputRef}
+            autoComplete="off"
+            placeholder="Buscar módulo o acción"
+          />
+          {!resolvedSearchValue && (
+            <SearchShortcutHint aria-hidden="true">Ctrl K</SearchShortcutHint>
+          )}
           <SearchField.ClearButton />
         </SearchField.Group>
       </SearchField>
-
-      {shouldShowResults ? (
-        <ResultsSurface variant="default">
-          {visibleOptions.length > 0 ? (
-            <ListBox
-              aria-label="Atajos encontrados"
-              onAction={handleAction}
-              selectionMode="none"
-            >
-              {visibleOptionGroups.map((group) => (
-                <ListBox.Section key={group.category}>
-                  <GroupHeader>{group.category}</GroupHeader>
-                  {group.options.map((option) => (
-                    <ListBox.Item
-                      id={option.value}
-                      key={option.value}
-                      textValue={`${option.title} ${option.category}`}
-                    >
-                      <OptionLabel>
-                        <OptionTitle>{option.title}</OptionTitle>
-                      </OptionLabel>
-                    </ListBox.Item>
-                  ))}
-                </ListBox.Section>
-              ))}
-            </ListBox>
-          ) : (
-            <EmptyResult>Sin atajos</EmptyResult>
-          )}
-        </ResultsSurface>
-      ) : null}
     </SearchContainer>
   );
 };
@@ -296,78 +293,12 @@ const SearchContainer = styled.div`
   }
 `;
 
-const ResultsSurface = styled(Surface)`
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  right: 0;
-  left: 0;
-  z-index: 20;
-  min-width: 0;
-  max-height: min(23rem, calc(100vh - 6.5rem));
-  overflow-y: auto;
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  box-shadow: var(--ds-shadow-xl);
-
-  .list-box {
-    width: 100%;
-    padding: 0.35rem;
-  }
-
-  .list-box-section + .list-box-section {
-    padding-top: 0.35rem;
-    margin-top: 0.35rem;
-    border-top: 1px solid var(--ds-color-border-subtle);
-  }
-
-  .list-box-item {
-    display: flex;
-    align-items: flex-start;
-    width: 100%;
-    min-width: 0;
-    padding: 0.65rem 0.75rem;
-    border-radius: var(--ds-radius-sm);
-  }
-
-  .list-box-item:hover,
-  .list-box-item[data-hovered='true'],
-  .list-box-item[data-focus-visible='true'] {
-    background: rgb(37 99 235 / 9%);
-    outline: 0;
-  }
-`;
-
-const GroupHeader = styled(Header)`
-  display: flex;
-  align-items: center;
-  min-height: 1.5rem;
-  padding: 0.2rem 0.75rem 0.15rem;
-  margin: 0.05rem 0 0.2rem;
+const SearchShortcutHint = styled.span`
+  flex: 0 0 auto;
+  padding: 0.1rem 0.4rem;
   font-size: var(--ds-font-size-xs);
   font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-action-primary);
-  letter-spacing: var(--ds-letter-spacing-wide);
-  text-transform: uppercase;
-`;
-
-const OptionLabel = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-`;
-
-const EmptyResult = styled.div`
-  padding: 0.8rem 0.85rem;
-  font-size: var(--ds-font-size-sm);
-  color: var(--ds-color-text-muted);
-`;
-
-const OptionTitle = styled.span`
-  overflow: hidden;
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-semibold);
-  color: var(--ds-color-text-primary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: rgb(30 64 175 / 60%);
+  border: 1px solid rgb(30 64 175 / 16%);
+  border-radius: var(--ds-radius-sm);
 `;

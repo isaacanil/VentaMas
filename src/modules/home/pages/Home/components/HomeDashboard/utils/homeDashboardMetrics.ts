@@ -14,7 +14,6 @@ import type { CashCountRecord, CashCountState } from '@/utils/cashCount/types';
 import type {
   HomeDashboardActivity,
   HomeDashboardAlert,
-  HomeDashboardPreparedWidget,
   HomeDashboardProduct,
   HomeDashboardTrendPoint,
 } from '../types';
@@ -263,6 +262,7 @@ export const buildCashActivity = ({
       title: 'Caja sin apertura propia',
       description: 'Hay caja activa de otro usuario o contexto cerrado.',
       route: '/cash-reconciliation',
+      timestampLabel: 'Ahora',
       tone: 'neutral',
     };
   }
@@ -275,20 +275,19 @@ export const buildCashActivity = ({
       toNumber(cashCount.totalSystem ?? cashCount.totalSales ?? cashCount.total),
     ),
     route: '/cash-reconciliation',
+    timestampLabel: 'Ahora',
     tone: status === 'open' ? 'success' : 'warning',
   };
 };
 
 export const buildOperationalAlerts = ({
   pendingInvoices,
-  receivables,
   payables,
   stockSummary,
   fiscalIssues,
   fiscalMessage,
 }: {
   pendingInvoices: { count: number; amount: number };
-  receivables: { count: number; amount: number };
   payables: { count: number; amount: number; overdueCount: number };
   stockSummary: {
     lowCount: number;
@@ -307,7 +306,7 @@ export const buildOperationalAlerts = ({
       description: fiscalMessage,
       tone: 'danger',
       route: '/settings/tax-receipt',
-      meta: `${fiscalIssues} serie${fiscalIssues === 1 ? '' : 's'}`,
+      meta: fiscalMessage,
     });
   }
 
@@ -321,6 +320,10 @@ export const buildOperationalAlerts = ({
           : `${stockSummary.criticalCount} productos en nivel crítico.`,
       tone: 'danger',
       route: '/inventory/summary',
+      meta:
+        stockSummary.missingStockCount > 0
+          ? `${stockSummary.criticalCount} críticos · ${stockSummary.missingStockCount} sin existencia`
+          : `${stockSummary.criticalCount} críticos`,
     });
   }
 
@@ -346,37 +349,5 @@ export const buildOperationalAlerts = ({
     });
   }
 
-  if (receivables.count > 0) {
-    alerts.push({
-      id: 'receivables',
-      title: 'Cuentas por cobrar activas',
-      description: `${receivables.count} cuenta${receivables.count === 1 ? '' : 's'} abierta${receivables.count === 1 ? '' : 's'}.`,
-      tone: 'info',
-      route: '/account-receivable/list',
-      meta: formatDashboardMoney(receivables.amount),
-    });
-  }
-
   return alerts.slice(0, 5);
 };
-
-export const buildPreparedWidgets = (): HomeDashboardPreparedWidget[] => [
-  {
-    id: 'cash-flow-forecast',
-    title: 'Flujo de efectivo proyectado',
-    description:
-      'Pendiente de unir tesorería, bancos, CxC y CxP por fecha de vencimiento.',
-  },
-  {
-    id: 'customer-recent',
-    title: 'Clientes recientes',
-    description:
-      'Preparado para usar actividad de clientes cuando exista snapshot dedicado.',
-  },
-  {
-    id: 'fiscal-compliance-runs',
-    title: 'Vencimientos fiscales',
-    description:
-      'Preparado para conectar corridas DGII y calendario fiscal consolidado.',
-  },
-];

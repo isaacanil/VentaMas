@@ -1,5 +1,5 @@
 import { Spin } from 'antd';
-import { lazy, Suspense, useCallback } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -27,22 +27,25 @@ import { SubscriptionStatusBanner } from './components/SubscriptionStatusBanner/
 import type { JSX } from 'react';
 
 const DashboardShortcuts = lazy(() =>
-  import('./components/HomeDashboard/HomeDashboard').then(
-    (module) => ({ default: module.HomeDashboard }),
-  ),
+  import('./components/HomeDashboard/HomeDashboard').then((module) => ({
+    default: module.HomeDashboard,
+  })),
 );
 
-type AuthUser = {
-  role?: UserRoleLike | null;
-  activeBusinessId?: string | null;
-  businessId?: string | null;
-  businessID?: string | null;
-  businessHasOwners?: boolean | null;
-  displayName?: string | null;
-  realName?: string | null;
-  name?: string | null;
-  [key: string]: unknown;
-} | null | false;
+type AuthUser =
+  | {
+      role?: UserRoleLike | null;
+      activeBusinessId?: string | null;
+      businessId?: string | null;
+      businessID?: string | null;
+      businessHasOwners?: boolean | null;
+      displayName?: string | null;
+      realName?: string | null;
+      name?: string | null;
+      [key: string]: unknown;
+    }
+  | null
+  | false;
 type HomeUserMeta = {
   authReady: boolean;
   hasUser: boolean;
@@ -93,14 +96,13 @@ const selectHomeUserMeta = (state: RootState): HomeUserMeta => {
 
   const role = user.role ?? null;
   const activeBusinessId =
-    (typeof user.activeBusinessId === 'string' && user.activeBusinessId.trim()) ||
+    (typeof user.activeBusinessId === 'string' &&
+      user.activeBusinessId.trim()) ||
     (typeof user.businessId === 'string' && user.businessId.trim()) ||
     (typeof user.businessID === 'string' && user.businessID.trim()) ||
     null;
   const businessHasOwners =
-    typeof user.businessHasOwners === 'boolean'
-      ? user.businessHasOwners
-      : null;
+    typeof user.businessHasOwners === 'boolean' ? user.businessHasOwners : null;
   const isDeveloper = hasDeveloperAccess(user);
   const canIssueOwnershipClaim = hasBusinessOwnershipClaimIssueAccess(user);
   const hasBusinesses = normalizeAvailableBusinesses(user).length > 0;
@@ -127,9 +129,13 @@ export interface HomeProps {
   developerMode?: boolean;
 }
 
+type HomePanelKey = 'metrics' | 'modules' | 'developer';
+
 export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+  const [activePanel, setActivePanel] = useState<HomePanelKey>('metrics');
+  const [shortcutSearchValue, setShortcutSearchValue] = useState('');
   const {
     authReady,
     hasUser,
@@ -139,14 +145,13 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
     canIssueOwnershipClaim,
     hasBusinesses,
     displayName,
-  } = useSelector(
-    selectHomeUserMeta,
-    shallowEqual,
-  );
+  } = useSelector(selectHomeUserMeta, shallowEqual);
   const business = useSelector(selectBusinessData, shallowEqual);
   const businessLoading = useSelector(selectBusinessLoading);
   const user = useSelector(selectUser, shallowEqual);
-  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(search);
+  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(
+    search,
+  );
   const isBusinessContextPending =
     Boolean(activeBusinessId) &&
     (businessLoading || business?.id !== activeBusinessId);
@@ -159,8 +164,25 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
       );
       navigate(cleanPath, { replace: true });
     },
-    [pathname, search, navigate, shouldForceOpenBusinessManager],
+    [
+      pathname,
+      search,
+      navigate,
+      shouldForceOpenBusinessManager,
+    ],
   );
+  const handleShortcutSearchFocus = useCallback(() => {
+    setActivePanel((currentPanel) =>
+      currentPanel === 'developer' ? 'developer' : 'modules',
+    );
+  }, []);
+
+  const handleShortcutSearchValueChange = useCallback((value: string) => {
+    setShortcutSearchValue(value);
+    setActivePanel((currentPanel) =>
+      currentPanel === 'developer' ? 'developer' : 'modules',
+    );
+  }, []);
 
   if (!authReady || !hasUser || isBusinessContextPending) {
     return (
@@ -180,18 +202,22 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   }
 
   const shouldShowMissingOwnerBadge =
-    hasBusinesses &&
-    canIssueOwnershipClaim &&
-    businessHasOwners === false;
+    hasBusinesses && canIssueOwnershipClaim && businessHasOwners === false;
 
   return (
     <HomeLayout>
       <PageScroll>
         <StickyTopBar>
           <MenuWebsite
+            activeShortcutScope={
+              activePanel === 'developer' ? 'developer' : 'user'
+            }
             forceWorkspaceOpen={shouldForceOpenBusinessManager}
             includeDeveloperFeatures={developerMode}
+            onShortcutSearchFocus={handleShortcutSearchFocus}
+            onShortcutSearchValueChange={handleShortcutSearchValueChange}
             onWorkspaceOpenChange={handleBusinessManagerOpenChange}
+            shortcutSearchValue={shortcutSearchValue}
             showBusinessSelector={hasBusinesses}
           />
           {shouldShowMissingOwnerBadge && (
@@ -207,16 +233,22 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
             ) : (
               <Suspense
                 fallback={
-                  <LoadingContainer style={{ height: '200px', background: 'none' }}>
+                  <LoadingContainer
+                    style={{ height: '200px', background: 'none' }}
+                  >
                     <Spin />
                   </LoadingContainer>
                 }
               >
                 <SubscriptionStatusBanner business={business} user={user} />
                 <DashboardShortcuts
+                  activePanel={activePanel}
                   businessName={business?.name ?? null}
                   displayName={displayName}
                   includeDeveloperFeatures={developerMode}
+                  onActivePanelChange={setActivePanel}
+                  onShortcutSearchValueChange={setShortcutSearchValue}
+                  shortcutSearchValue={shortcutSearchValue}
                 />
               </Suspense>
             )}
@@ -265,7 +297,7 @@ const StickyTopBar = styled.div`
   align-items: center;
   width: 100%;
   padding: 0.25rem 1rem 0.45rem;
-  background: transparent;
+  background: var(--color2);
 `;
 
 const MainContent = styled.main`

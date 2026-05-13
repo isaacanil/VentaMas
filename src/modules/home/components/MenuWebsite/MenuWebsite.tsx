@@ -7,19 +7,26 @@ import { BusinessInfoPill } from '@/modules/home/pages/Home/components/BusinessI
 import { ShortcutSearch } from './components/ShortcutSearch';
 
 interface MenuWebsiteProps {
+  activeShortcutScope?: 'developer' | 'user';
   forceWorkspaceOpen?: boolean;
   includeDeveloperFeatures?: boolean;
+  onShortcutSearchFocus?: () => void;
+  onShortcutSearchValueChange?: (value: string) => void;
   onWorkspaceOpenChange?: (isOpen: boolean) => void;
+  shortcutSearchValue?: string;
   showBusinessSelector?: boolean;
 }
 
 export const MenuWebsite = ({
+  activeShortcutScope = 'user',
   forceWorkspaceOpen = false,
   includeDeveloperFeatures = false,
+  onShortcutSearchFocus,
+  onShortcutSearchValueChange,
   onWorkspaceOpenChange,
+  shortcutSearchValue = '',
   showBusinessSelector = true,
 }: MenuWebsiteProps) => {
-
   return (
     <Container>
       {showBusinessSelector ? (
@@ -30,7 +37,13 @@ export const MenuWebsite = ({
       ) : (
         <HeaderSpacer aria-hidden="true" />
       )}
-      <ShortcutSearch includeDeveloperFeatures={includeDeveloperFeatures} />
+      <ShortcutSearch
+        activeScope={activeShortcutScope}
+        includeDeveloperFeatures={includeDeveloperFeatures}
+        onFocusSearch={onShortcutSearchFocus}
+        onSearchValueChange={onShortcutSearchValueChange}
+        searchValue={shortcutSearchValue}
+      />
       <RightActions>
         <StyledNotificationButton aria-label="Centro de notificaciones" />
         <PersonalizedGreeting />

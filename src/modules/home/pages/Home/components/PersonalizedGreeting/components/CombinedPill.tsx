@@ -15,7 +15,7 @@ export const CombinedPill = ({
 }: CombinedPillProps): JSX.Element => {
   const isInteractive = typeof onClick === 'function';
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLSpanElement>): void => {
     if (!isInteractive) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -38,7 +38,7 @@ export const CombinedPill = ({
   );
 };
 
-const PillContainer = styled.div<{ $interactive: boolean }>`
+const PillContainer = styled.span<{ $interactive: boolean }>`
   display: flex;
   gap: 0.65rem;
   align-items: center;
@@ -53,14 +53,12 @@ const PillContainer = styled.div<{ $interactive: boolean }>`
   box-shadow: 0 10px 20px rgb(15 23 42 / 18%);
   backdrop-filter: blur(18px);
   transition:
-    transform 180ms ease,
     box-shadow 180ms ease,
     border-color 180ms ease;
 
   &:hover {
     border-color: rgb(255 255 255 / 70%);
     box-shadow: 0 4px 10px rgb(15 23 42 / 18%);
-    transform: scale(1.01);
   }
 
   &:focus-visible {
@@ -69,7 +67,7 @@ const PillContainer = styled.div<{ $interactive: boolean }>`
   }
 `;
 
-const UserRow = styled.div`
+const UserRow = styled.span`
   display: flex;
   gap: 0.45rem;
   align-items: center;

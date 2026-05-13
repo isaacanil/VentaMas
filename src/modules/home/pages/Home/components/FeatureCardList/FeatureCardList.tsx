@@ -145,8 +145,10 @@ const Header = styled.div`
 
 const Wrapper = styled.div`
   display: grid;
+  grid-auto-flow: dense;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 0.8em;
+  align-items: start;
 
   @media (width <= 768px) {
     grid-template-columns: 1fr;

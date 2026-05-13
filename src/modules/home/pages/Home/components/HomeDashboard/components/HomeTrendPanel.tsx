@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+import ROUTES_NAME from '@/router/routes/routesName';
+
 import type {
-  HomeDashboardPreparedWidget,
   HomeDashboardProduct,
   HomeDashboardTrendPoint,
 } from '../types';
@@ -11,15 +13,14 @@ import type { JSX } from 'react';
 interface HomeTrendPanelProps {
   trend: HomeDashboardTrendPoint[];
   topProducts: HomeDashboardProduct[];
-  preparedWidgets: HomeDashboardPreparedWidget[];
 }
 
 export const HomeTrendPanel = ({
   trend,
   topProducts,
-  preparedWidgets,
 }: HomeTrendPanelProps): JSX.Element => {
   const maxTrendValue = Math.max(...trend.map((point) => point.total), 0);
+  const hasTrendData = trend.some((point) => point.total > 0);
 
   return (
     <Panel>
@@ -28,24 +29,34 @@ export const HomeTrendPanel = ({
           <Eyebrow>Tendencia</Eyebrow>
           <PanelTitle>Ventas y productos</PanelTitle>
         </div>
+        <RangeLabel>7 días</RangeLabel>
       </PanelHeader>
-      <TrendBars>
-        {trend.map((point) => {
-          const height =
-            maxTrendValue > 0 ? Math.max((point.total / maxTrendValue) * 100, 8) : 8;
-          return (
-            <TrendItem key={point.key}>
-              <TrendBarTrack aria-label={`${point.label}: ${point.valueLabel}`}>
-                <TrendBar style={{ height: `${height}%` }} />
-              </TrendBarTrack>
-              <TrendLabel>{point.label}</TrendLabel>
-            </TrendItem>
-          );
-        })}
-      </TrendBars>
-      <ProductsBlock>
-        <BlockTitle>Productos más vendidos del mes</BlockTitle>
-        {topProducts.length ? (
+      {hasTrendData ? (
+        <TrendBars>
+          {trend.map((point) => {
+            const height = Math.max((point.total / maxTrendValue) * 100, 8);
+            return (
+              <TrendItem key={point.key}>
+                <TrendBarTrack aria-label={`${point.label}: ${point.valueLabel}`}>
+                  <TrendBar style={{ height: `${height}%` }} />
+                </TrendBarTrack>
+                <TrendLabel>{point.label}</TrendLabel>
+              </TrendItem>
+            );
+          })}
+        </TrendBars>
+      ) : (
+        <EmptyState>
+          <EmptyTitle>Sin ventas en el período</EmptyTitle>
+          <EmptyText>Registra una venta para activar la tendencia.</EmptyText>
+          <EmptyAction to={ROUTES_NAME.SALES_TERM.SALES}>
+            Nueva venta
+          </EmptyAction>
+        </EmptyState>
+      )}
+      {topProducts.length ? (
+        <ProductsBlock>
+          <BlockTitle>Productos más vendidos del mes</BlockTitle>
           <ProductList>
             {topProducts.map((product) => (
               <ProductRow key={product.id}>
@@ -56,21 +67,8 @@ export const HomeTrendPanel = ({
               </ProductRow>
             ))}
           </ProductList>
-        ) : (
-          <EmptyState>Sin ventas de productos en el mes.</EmptyState>
-        )}
-      </ProductsBlock>
-      <PreparedBlock>
-        <BlockTitle>Widgets preparados</BlockTitle>
-        <PreparedGrid>
-          {preparedWidgets.map((widget) => (
-            <PreparedItem key={widget.id}>
-              <PreparedTitle>{widget.title}</PreparedTitle>
-              <PreparedText>{widget.description}</PreparedText>
-            </PreparedItem>
-          ))}
-        </PreparedGrid>
-      </PreparedBlock>
+        </ProductsBlock>
+      ) : null}
     </Panel>
   );
 };
@@ -91,6 +89,7 @@ const PanelHeader = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: var(--ds-space-3);
 `;
 
 const Eyebrow = styled.span`
@@ -107,6 +106,16 @@ const PanelTitle = styled.h2`
   font-size: var(--ds-font-size-lg);
   line-height: var(--ds-line-height-tight);
   color: var(--ds-color-text-primary);
+`;
+
+const RangeLabel = styled.span`
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-action-primary);
+  background: var(--ds-color-action-primary-subtle);
+  border-radius: var(--ds-radius-pill);
 `;
 
 const TrendBars = styled.div`
@@ -158,11 +167,6 @@ const ProductsBlock = styled.div`
   gap: var(--ds-space-3);
 `;
 
-const PreparedBlock = styled.div`
-  display: grid;
-  gap: var(--ds-space-3);
-`;
-
 const BlockTitle = styled.h3`
   margin: 0;
   font-size: var(--ds-font-size-md);
@@ -205,37 +209,31 @@ const ProductMeta = styled.span`
   white-space: nowrap;
 `;
 
-const PreparedGrid = styled.div`
+const EmptyState = styled.div`
   display: grid;
   gap: var(--ds-space-2);
-`;
-
-const PreparedItem = styled.div`
-  padding: var(--ds-space-3);
-  background: var(--ds-color-bg-subtle);
-  border: 1px dashed var(--ds-color-border-default);
-  border-radius: var(--ds-radius-md);
-`;
-
-const PreparedTitle = styled.strong`
-  display: block;
-  font-size: var(--ds-font-size-sm);
-  color: var(--ds-color-text-primary);
-`;
-
-const PreparedText = styled.span`
-  display: block;
-  margin-top: var(--ds-space-1);
-  font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
-  color: var(--ds-color-text-muted);
-`;
-
-const EmptyState = styled.div`
-  padding: var(--ds-space-4);
-  font-size: var(--ds-font-size-sm);
-  color: var(--ds-color-text-muted);
+  place-items: center;
+  min-height: 140px;
+  padding: var(--ds-space-5);
   text-align: center;
   background: var(--ds-color-bg-subtle);
   border-radius: var(--ds-radius-md);
+`;
+
+const EmptyTitle = styled.strong`
+  font-size: var(--ds-font-size-md);
+  color: var(--ds-color-text-primary);
+`;
+
+const EmptyText = styled.span`
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-text-muted);
+`;
+
+const EmptyAction = styled(Link)`
+  margin-top: var(--ds-space-1);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-action-primary);
+  text-decoration: none;
 `;

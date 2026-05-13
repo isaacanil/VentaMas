@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { CombinedPill } from './components/CombinedPill';
-import { SessionInfoModal } from './components/SessionInfoModal';
+import { SessionInfoDropdown } from './components/SessionInfoDropdown';
 
 import type { JSX } from 'react';
 
@@ -34,8 +32,6 @@ const PersonalizedGreeting = (): JSX.Element => {
       ? state.business.data
       : null,
   );
-  const [isSessionModalOpen, setSessionModalOpen] = useState(false);
-
   const realName =
     user?.realName && typeof user.realName === 'string'
       ? user.realName.trim()
@@ -55,19 +51,12 @@ const PersonalizedGreeting = (): JSX.Element => {
     .toUpperCase();
 
   return (
-    <>
-      <CombinedPill
-        userName={initials}
-        fullName={fullName}
-        onClick={() => setSessionModalOpen(true)}
-      />
-      <SessionInfoModal
-        isOpen={isSessionModalOpen}
-        onClose={() => setSessionModalOpen(false)}
-        user={user}
-        business={business}
-      />
-    </>
+    <SessionInfoDropdown
+      userName={initials}
+      fullName={fullName}
+      user={user}
+      business={business}
+    />
   );
 };
 

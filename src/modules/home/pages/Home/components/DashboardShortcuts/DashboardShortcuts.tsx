@@ -70,8 +70,13 @@ export const DashboardShortcuts = ({
     return (
       <ShortcutsSection>
         <ShortcutTabs
-          defaultActiveKey="developer-tools"
+          defaultActiveKey="system-shortcuts"
           items={[
+            {
+              key: 'system-shortcuts',
+              label: 'Atajos del sistema',
+              children: shortcutList,
+            },
             {
               key: 'developer-tools',
               label: 'Herramientas de desarrollador',
@@ -82,11 +87,6 @@ export const DashboardShortcuts = ({
                   showContainer={false}
                 />
               ),
-            },
-            {
-              key: 'system-shortcuts',
-              label: 'Atajos del sistema',
-              children: shortcutList,
             },
           ]}
         />

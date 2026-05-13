@@ -1,26 +1,9 @@
-import type { ReactNode } from 'react';
-
 export type HomeDashboardTone =
   | 'neutral'
   | 'info'
   | 'success'
   | 'warning'
   | 'danger';
-
-export type HomeDashboardStatus = 'ready' | 'pending';
-
-export interface HomeDashboardMetric {
-  id: string;
-  label: string;
-  value: string;
-  detail: string;
-  supportingValue?: string;
-  tone: HomeDashboardTone;
-  route?: string;
-  icon?: ReactNode;
-  loading?: boolean;
-  status?: HomeDashboardStatus;
-}
 
 export interface HomeDashboardAlert {
   id: string;
@@ -56,19 +39,51 @@ export interface HomeDashboardTrendPoint {
   valueLabel: string;
 }
 
-export interface HomeDashboardPreparedWidget {
-  id: string;
-  title: string;
-  description: string;
+export interface HomeDashboardSummary {
+  today: {
+    salesAmount: number;
+    salesLabel: string;
+    invoiceCount: number;
+    invoiceLabel: string;
+  };
+  cash: {
+    statusLabel: string;
+    detail: string;
+    amountLabel?: string;
+    tone: HomeDashboardTone;
+  };
+  finance: {
+    receivableAmount: number;
+    receivableLabel: string;
+    receivableCount: number;
+    payableAmount: number;
+    payableLabel: string;
+    payableCount: number;
+    payableOverdueCount: number;
+    netAmount: number;
+    netLabel: string;
+  };
+  inventory: {
+    criticalCount: number;
+    lowCount: number;
+    missingStockCount: number;
+    lowThreshold: number;
+  };
+  fiscal: {
+    issueCount: number;
+    message: string;
+    name?: string;
+    series?: string;
+    remainingNumbers?: number;
+  };
 }
 
 export interface HomeDashboardData {
-  metrics: HomeDashboardMetric[];
   alerts: HomeDashboardAlert[];
   activities: HomeDashboardActivity[];
   topProducts: HomeDashboardProduct[];
   trend: HomeDashboardTrendPoint[];
-  preparedWidgets: HomeDashboardPreparedWidget[];
+  summary: HomeDashboardSummary;
   loading: boolean;
   updatedAtLabel: string;
 }

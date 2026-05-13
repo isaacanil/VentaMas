@@ -1,4 +1,4 @@
-import { AlertDialog, Avatar, Button, Chip, Menu, Modal, Separator } from '@heroui/react';
+import { AlertDialog, Avatar, Button, Chip, Dropdown, Separator } from '@heroui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCreditCard,
@@ -16,7 +16,9 @@ import ROUTES_PATH from '@/router/routes/routesName';
 import { hasBillingAccountManageAccess } from '@/utils/access/accountLevelCapabilities';
 import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess';
 
-import type { JSX } from 'react';
+import { CombinedPill } from './CombinedPill';
+
+import type { JSX, Key } from 'react';
 
 interface UserInfo {
   realName?: string | null;
@@ -39,9 +41,9 @@ interface BusinessInfo {
   [key: string]: unknown;
 }
 
-interface SessionInfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface SessionInfoDropdownProps {
+  userName: string;
+  fullName: string;
   user?: UserInfo | null;
   business?: BusinessInfo | null;
 }
@@ -61,14 +63,17 @@ const resolveDisplayName = (user?: UserInfo | null): string => {
   );
 };
 
-export const SessionInfoModal = ({
-  isOpen,
-  onClose,
+export const SessionInfoDropdown = ({
+  userName,
+  fullName,
   user,
   business,
-}: SessionInfoModalProps): JSX.Element => {
+}: SessionInfoDropdownProps): JSX.Element => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isOpen, setIsOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const canAccessSubscriptionManagement = isFrontendFeatureEnabled(
     'subscriptionManagement',
   );
@@ -79,32 +84,6 @@ export const SessionInfoModal = ({
     toCleanString(user?.role) ||
     'No definido';
   const role = getRoleLabelById(rawRole);
-
-  const handleOpenSubscriptionCenter = () => {
-    if (!canAccessSubscriptionManagement) return;
-    onClose();
-    navigate(ROUTES_PATH.SETTING_TERM.ACCOUNT_SUBSCRIPTION_MANAGE);
-  };
-
-  const handleOpenSettings = () => {
-    onClose();
-    navigate(ROUTES_PATH.SETTING_TERM.SETTINGS);
-  };
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await fbSignOut();
-    } finally {
-      dispatch(logout());
-      onClose();
-      navigate('/login', { replace: true });
-    }
-  };
-
   const canManagePayments =
     canAccessSubscriptionManagement &&
     hasBillingAccountManageAccess({
@@ -112,78 +91,128 @@ export const SessionInfoModal = ({
       business,
     });
 
+  const handleOpenSubscriptionCenter = () => {
+    if (!canManagePayments) return;
+    setIsOpen(false);
+    navigate(ROUTES_PATH.SETTING_TERM.ACCOUNT_SUBSCRIPTION_MANAGE);
+  };
+
+  const handleOpenSettings = () => {
+    setIsOpen(false);
+    navigate(ROUTES_PATH.SETTING_TERM.SETTINGS);
+  };
+
+  const handleOpenLogoutConfirmation = () => {
+    setIsOpen(false);
+    setConfirmOpen(true);
+  };
+
+  const handleMenuAction = (key: Key) => {
+    if (key === 'settings') {
+      handleOpenSettings();
+      return;
+    }
+    if (key === 'subscription') {
+      handleOpenSubscriptionCenter();
+      return;
+    }
+    if (key === 'logout') {
+      handleOpenLogoutConfirmation();
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fbSignOut();
+    } finally {
+      dispatch(logout());
+      setConfirmOpen(false);
+      navigate('/login', { replace: true });
+    }
+  };
+
   return (
     <>
-      <Modal.Backdrop
-        isOpen={isOpen}
-        onOpenChange={(nextIsOpen) => {
-          if (!nextIsOpen) onClose();
-        }}
-        variant="opaque"
-        className="z-[400]"
-      >
-        <Modal.Container placement="center" size="xs">
-          <Modal.Dialog aria-label="Opciones de sesión">
-            <Modal.Header className="flex-row items-center gap-3">
-              <Avatar size="md" variant="soft">
-                <Avatar.Fallback>{initial}</Avatar.Fallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <Modal.Heading className="truncate text-sm">
-                  {displayName}
-                </Modal.Heading>
-                <div className="mt-0.5">
-                  <Chip size="sm" variant="soft" color="accent">
-                    <Chip.Label>{role}</Chip.Label>
-                  </Chip>
-                </div>
+      <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
+        <Dropdown.Trigger
+          aria-label={`Opciones de sesión de ${fullName}`}
+          className="rounded-full bg-transparent p-0 outline-none"
+        >
+          <CombinedPill userName={userName} fullName={fullName} />
+        </Dropdown.Trigger>
+
+        <Dropdown.Popover
+          placement="bottom end"
+          className="z-[450] w-80 overflow-hidden p-0"
+        >
+          <div className="flex items-center gap-3 px-3 py-3">
+            <Avatar size="md" variant="soft">
+              <Avatar.Fallback>{initial}</Avatar.Fallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold">
+                {displayName}
               </div>
-            </Modal.Header>
+              <div className="mt-1">
+                <Chip size="sm" variant="soft" color="accent">
+                  <Chip.Label>{role}</Chip.Label>
+                </Chip>
+              </div>
+            </div>
+          </div>
+          <Separator />
 
-            <Modal.Body>
-              <Separator />
+          <Dropdown.Menu
+            aria-label="Opciones de sesión"
+            onAction={handleMenuAction}
+            className="p-1"
+          >
+            <Dropdown.Section>
+              <Dropdown.Item id="settings" textValue="Configuración">
+                <span
+                  data-slot="label"
+                  className="inline-flex items-center gap-2"
+                >
+                  <FontAwesomeIcon icon={faGear} fixedWidth />
+                  Configuración
+                </span>
+              </Dropdown.Item>
 
-              <Menu aria-label="Opciones de sesión">
-                <Menu.Section>
-                  <Menu.Item
-                    id="settings"
-                    textValue="Configuración"
-                    onAction={handleOpenSettings}
+              {canManagePayments && (
+                <Dropdown.Item
+                  id="subscription"
+                  textValue="Gestionar suscripción"
+                >
+                  <span
+                    data-slot="label"
+                    className="inline-flex items-center gap-2"
                   >
-                    <FontAwesomeIcon icon={faGear} fixedWidth />
-                    Configuración
-                  </Menu.Item>
-
-                  {canManagePayments && (
-                    <Menu.Item
-                      id="subscription"
-                      textValue="Gestionar suscripción"
-                      onAction={handleOpenSubscriptionCenter}
-                    >
-                      <FontAwesomeIcon icon={faCreditCard} fixedWidth />
-                      Gestionar suscripción
-                    </Menu.Item>
-                  )}
-                </Menu.Section>
-              </Menu>
-              <Separator />
-              <Menu aria-label="Opciones de sesión">
-                <Menu.Section>
-                  <Menu.Item
-                    id="logout"
-                    variant="danger"
-                    textValue="Cerrar sesión"
-                    onAction={() => setConfirmOpen(true)}
-                  >
-                    <FontAwesomeIcon icon={faRightToBracket} fixedWidth />
-                    Cerrar sesión
-                  </Menu.Item>
-                </Menu.Section>
-              </Menu>
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
+                    <FontAwesomeIcon icon={faCreditCard} fixedWidth />
+                    Gestionar suscripción
+                  </span>
+                </Dropdown.Item>
+              )}
+            </Dropdown.Section>
+            <Separator />
+            <Dropdown.Section>
+              <Dropdown.Item
+                id="logout"
+                variant="danger"
+                textValue="Cerrar sesión"
+              >
+                <span
+                  data-slot="label"
+                  className="inline-flex items-center gap-2"
+                >
+                  <FontAwesomeIcon icon={faRightToBracket} fixedWidth />
+                  Cerrar sesión
+                </span>
+              </Dropdown.Item>
+            </Dropdown.Section>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
 
       <AlertDialog.Backdrop
         isOpen={confirmOpen}
