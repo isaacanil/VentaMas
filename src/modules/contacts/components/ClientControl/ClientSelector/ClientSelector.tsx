@@ -80,17 +80,20 @@ export const ClientSelector = () => {
 
   const getDuplicateClients = (clients: ClientListItem[]) => {
     const namesCount = clients.reduce<Record<string, number>>(
-      (acc, { client }) => {
-        const name = client.name?.toLowerCase();
+      (acc, item) => {
+        const rawName = (item as { client?: { name?: unknown } }).client?.name;
+        const name = typeof rawName === 'string' ? rawName.toLowerCase() : '';
         if (name) acc[name] = (acc[name] || 0) + 1;
         return acc;
       },
       {},
     );
 
-    return clients.filter(
-      ({ client }) => client.name && namesCount[client.name.toLowerCase()] > 1,
-    );
+    return clients.filter((item) => {
+      const rawName = (item as { client?: { name?: unknown } }).client?.name;
+      const name = typeof rawName === 'string' ? rawName.toLowerCase() : '';
+      return Boolean(name && namesCount[name] > 1);
+    });
   };
 
   const getClientsWithoutNames = (clients: ClientListItem[]) =>

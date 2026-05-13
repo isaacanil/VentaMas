@@ -209,12 +209,14 @@ const FiscalReceiptsAlertSettings = ({
         globalThresholds,
         baseGlobalThresholds,
       ),
-      customThresholds: EMPTY_CUSTOM_THRESHOLDS,
+      customThresholds:
+        EMPTY_CUSTOM_THRESHOLDS as FiscalAlertsConfig['customThresholds'],
       expirationThresholds: normalizeThresholdPair(
         expirationThresholds,
         baseExpirationThresholds,
       ),
-      customExpirationThresholds: EMPTY_CUSTOM_THRESHOLDS,
+      customExpirationThresholds:
+        EMPTY_CUSTOM_THRESHOLDS as FiscalAlertsConfig['customExpirationThresholds'],
       channels,
       execution: {
         ...execution,
@@ -369,12 +371,14 @@ const FiscalReceiptsAlertSettings = ({
         globalThresholds,
         baseGlobalThresholds,
       ),
-      customThresholds: EMPTY_CUSTOM_THRESHOLDS,
+      customThresholds:
+        EMPTY_CUSTOM_THRESHOLDS as FiscalAlertsConfig['customThresholds'],
       expirationThresholds: normalizeThresholdPair(
         expirationThresholds,
         baseExpirationThresholds,
       ),
-      customExpirationThresholds: EMPTY_CUSTOM_THRESHOLDS,
+      customExpirationThresholds:
+        EMPTY_CUSTOM_THRESHOLDS as FiscalAlertsConfig['customExpirationThresholds'],
       channels,
       execution: {
         ...execution,

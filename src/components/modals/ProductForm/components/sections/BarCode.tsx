@@ -148,6 +148,7 @@ const BarCodeComponent = ({ product }: BarCodeProps) => {
     validationIcon,
     validationInfo,
   } = useBarCodeController(product);
+  const validationStatus = String(overallValidation.status);
 
   const renderedValidationIcon =
     validationIcon === 'valid' ? (
@@ -201,14 +202,14 @@ const BarCodeComponent = ({ product }: BarCodeProps) => {
             <Form.Item
               label="Código de barras"
               validateStatus={
-                overallValidation.status === 'error'
+                validationStatus === 'error'
                   ? 'error'
-                  : overallValidation.status === 'warning'
+                  : validationStatus === 'warning'
                     ? 'warning'
                     : ''
               }
               help={
-                overallValidation.status !== 'success'
+                validationStatus !== 'success'
                   ? overallValidation.message
                   : undefined
               }

@@ -7,6 +7,7 @@ import { usePendingBalance } from '@/firebase/accountsReceivable/fbGetPendingBal
 import type { QuotationData } from '@/pdf/invoicesAndQuotation/types';
 import type { UserIdentity } from '@/types/users';
 import { formatInvoicePrice } from '@/utils/invoice/documentCurrency';
+import { toNumber } from '@/utils/number/toNumber';
 import {
   resolveInvoicePaymentLabel,
   resolveInvoicePaymentMethods,
@@ -54,9 +55,13 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const hasIndividualDiscounts = individualDiscounts > 0;
   const changeValue = Number(data?.change?.value ?? 0);
   const formatNumber = (num?: number | string | null) =>
-    formatInvoicePrice(num ?? 0, data);
+    formatInvoicePrice(toNumber(num), data);
 
-  usePendingBalance(businessID, clientId, setPendingBalance);
+  usePendingBalance(
+    businessID ? String(businessID) : undefined,
+    clientId ? String(clientId) : undefined,
+    setPendingBalance,
+  );
 
   const paymentRows: PaymentRow[] = resolveInvoicePaymentMethods(
     data?.paymentMethod,

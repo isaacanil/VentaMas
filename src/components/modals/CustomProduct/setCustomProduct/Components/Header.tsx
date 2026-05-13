@@ -1,5 +1,12 @@
 import { nanoid } from 'nanoid';
-import React, { useCallback, useEffect, useMemo, useReducer } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -229,8 +236,13 @@ export const Header = ({
 
   useEffect(() => {
     if (size !== '') {
-      fbGetProductsQueryByType(
-        (items) => dispatch({ type: 'setProducts', payload: items }),
+      fbGetProductsQueryByType<CustomProductItem>(
+        ((items: SetStateAction<CustomProductItem[]>) => {
+          dispatch({
+            type: 'setProducts',
+            payload: typeof items === 'function' ? items([]) : items,
+          });
+        }) as Dispatch<SetStateAction<CustomProductItem[]>>,
         productType,
         size,
         user,

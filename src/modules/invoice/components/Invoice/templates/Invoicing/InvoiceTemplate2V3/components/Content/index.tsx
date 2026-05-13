@@ -42,10 +42,7 @@ export default function Content({ products, documentCurrency }: ContentProps) {
                   documentCurrency,
                 );
                 const taxPerUnit = resolveDisplayTaxForCurrency(
-                  {
-                    ...product,
-                    amountToBuy: 1,
-                  },
+                  { ...(product as Record<string, unknown>), amountToBuy: 1 } as any,
                   documentCurrency,
                 );
                 const rowTotal = resolveDisplayTotalForCurrency(

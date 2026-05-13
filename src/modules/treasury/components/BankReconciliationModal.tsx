@@ -198,8 +198,10 @@ export const BankReconciliationModal = ({
       error: null,
       ledgerBalance: null,
       loading: true,
+      reconciledMovementCount: null,
       requestKey,
       status: null,
+      unreconciledMovementCount: null,
       variance: null,
     });
     setPreviewRequest({

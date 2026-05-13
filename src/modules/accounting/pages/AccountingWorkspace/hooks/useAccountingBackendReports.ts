@@ -166,7 +166,7 @@ export const normalizeGeneralLedgerSnapshot = (
   const pagination = asRecord(record.pagination);
 
   return {
-    account: account as GeneralLedgerSnapshot['account'],
+    account: account as unknown as GeneralLedgerSnapshot['account'],
     openingBalance: toFiniteNumber(record.openingBalance),
     periodDebit: toFiniteNumber(record.periodDebit),
     periodCredit: toFiniteNumber(record.periodCredit),

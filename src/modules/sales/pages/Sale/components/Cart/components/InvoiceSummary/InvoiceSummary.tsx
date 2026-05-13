@@ -93,6 +93,7 @@ import {
 
 import type {
   Authorizer,
+  BillingSettings,
   CartSummary,
   DiscountAuthorizationContext,
   InsuranceValidationResult,
@@ -130,7 +131,9 @@ const useInvoiceSummaryViewModel = () => {
     enabled: isAccountingPilot,
     config: documentCurrencyConfig,
     loading: documentCurrencyConfigLoading,
-  } = useDocumentCurrencyConfig(business?.id ?? null);
+  } = useDocumentCurrencyConfig(
+    typeof business?.id === 'string' ? business.id : null,
+  );
   const total = Number(cartData?.totalPurchase?.value ?? 0);
   const subTotal = Number(cartData?.totalPurchaseWithoutTaxes?.value ?? 0);
   const itbis = Number(cartData?.totalTaxes?.value ?? 0);
@@ -724,7 +727,8 @@ const useInvoiceSummaryViewModel = () => {
     dispatch(
       setAccountingContext({
         functionalCurrency: documentCurrencyConfig.functionalCurrency,
-        manualRatesByCurrency: documentCurrencyConfig.manualRatesByCurrency,
+        manualRatesByCurrency:
+          documentCurrencyConfig.manualRatesByCurrency as any,
       }),
     );
   }, [

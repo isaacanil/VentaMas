@@ -168,7 +168,11 @@ export const resolvePurchaseWorkflowStatus = (
   const replenishments = normalizePurchaseReplenishments(
     (purchase as Purchase).replenishments,
   );
-  const totals = replenishments.reduce(
+  const totals = replenishments.reduce<{
+    ordered: number;
+    received: number;
+    pending: number;
+  }>(
     (acc, item) => {
       const quantities = resolvePurchaseLineQuantities(item);
       return {
@@ -247,7 +251,7 @@ export const canCancelPurchase = (
 
 export const enrichPurchaseWorkflow = <T extends Purchase | Record<string, unknown>>(
   purchase: T,
-): T & { workflowStatus: PurchaseWorkflowStatus } => {
+): T & { workflowStatus: PurchaseWorkflowStatus; status: string } => {
   const workflowStatus = resolvePurchaseWorkflowStatus(purchase);
   const normalizedStatus = toNonEmptyString((purchase as Purchase).status);
 

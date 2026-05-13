@@ -65,7 +65,7 @@ export const useDeveloperCommands = () => {
           sequence = '';
           return;
         } else if (sequence.endsWith('dev')) {
-          dispatch(toggleDeveloperModal());
+          dispatch(toggleDeveloperModal(undefined));
           sequence = '';
           return;
         }
@@ -74,7 +74,7 @@ export const useDeveloperCommands = () => {
       // Comando alternativo con Ctrl+Shift+D
       if (event.ctrlKey && event.shiftKey && event.key === 'D') {
         event.preventDefault();
-        dispatch(toggleDeveloperModal());
+        dispatch(toggleDeveloperModal(undefined));
         sequence = '';
         return;
       }
@@ -84,7 +84,7 @@ export const useDeveloperCommands = () => {
         if (sequence.includes('escape')) {
           const escapeCount = (sequence.match(/escape/g) || []).length;
           if (escapeCount >= 2) {
-            dispatch(toggleDeveloperModal());
+            dispatch(toggleDeveloperModal(undefined));
             sequence = '';
             return;
           }

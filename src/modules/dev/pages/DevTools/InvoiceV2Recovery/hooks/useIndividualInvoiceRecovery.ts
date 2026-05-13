@@ -400,9 +400,7 @@ export const useIndividualInvoiceRecovery = ({
         message.warning('Completa los campos requeridos.');
         return;
       }
-      const meta = values.invoiceId
-        ? invoiceLookup?.[values.invoiceId]
-        : undefined;
+      const meta = undefined;
       if (meta && meta.hasV2 === false) {
         message.warning(
           'Esta factura pertenece al flujo anterior y no tiene Invoice V2.',
@@ -411,7 +409,7 @@ export const useIndividualInvoiceRecovery = ({
       }
       handleFetch(values);
     },
-    [handleFetch, invoiceLookup],
+    [handleFetch],
   );
 
   const refreshInvoiceCounter = useCallback(() => {
@@ -480,7 +478,7 @@ export const useIndividualInvoiceRecovery = ({
           ...activeQuery,
           tasks,
           reason: trimmedReason,
-        });
+        } as any);
         setRepairResult(response as RepairResult);
         message.success(
           'Tareas reprogramadas. El worker procesará los cambios.',
@@ -498,10 +496,10 @@ export const useIndividualInvoiceRecovery = ({
 
   const handleRepair = useCallback(() => {
     runRepairTasks({
-      tasks: effectiveSelectedTasks,
+      tasks: selectedTasks,
       customReason: reason,
     });
-  }, [effectiveSelectedTasks, reason, runRepairTasks]);
+  }, [reason, runRepairTasks, selectedTasks]);
 
   const invoiceSummary: InvoiceSummary = invoiceData?.summary ?? {};
   const canonicalData = invoiceData?.canonical?.data || null;
@@ -570,11 +568,13 @@ export const useIndividualInvoiceRecovery = ({
     canonicalData?.number ??
     canonicalData?.invoiceNumber ??
     null;
+  const currentInvoiceCounterValue =
+    counterKey && counterState.key === counterKey ? counterState.value : null;
 
   const shouldWarnInvoiceNumber =
     resolvedInvoiceNumber != null &&
-    invoiceCounterValue != null &&
-    resolvedInvoiceNumber !== invoiceCounterValue;
+    currentInvoiceCounterValue != null &&
+    resolvedInvoiceNumber !== currentInvoiceCounterValue;
 
   const syncCounterWithInvoiceNumber = useCallback(() => {
     if (resolvedInvoiceNumber == null) {
@@ -708,8 +708,7 @@ export const useIndividualInvoiceRecovery = ({
   }, [invoicesKey, invoicesState.key, invoicesState.lookup]);
   const loadingInvoices = !!invoicesKey && invoicesState.key !== invoicesKey;
 
-  const invoiceCounterValue =
-    counterKey && counterState.key === counterKey ? counterState.value : null;
+  const invoiceCounterValue = currentInvoiceCounterValue;
   const invoiceCounterUpdatedAt =
     counterKey && counterState.key === counterKey
       ? counterState.updatedAt

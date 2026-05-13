@@ -205,11 +205,11 @@ export const resolveInvoiceProductCurrency = (
   invoiceData?: InvoiceData | null,
 ): SupportedDocumentCurrency =>
   normalizeSupportedDocumentCurrency(
-    product?.monetary?.documentCurrency ??
-      product?.pricing?.currency ??
-      product?.selectedSaleUnit?.pricing?.currency ??
-      invoiceData?.documentCurrency ??
-      invoiceData?.monetary?.functionalCurrency?.code,
+    (product as any)?.monetary?.documentCurrency ??
+      (product as any)?.pricing?.currency ??
+      (product as any)?.selectedSaleUnit?.pricing?.currency ??
+      (invoiceData as any)?.documentCurrency ??
+      (invoiceData as any)?.monetary?.functionalCurrency?.code,
     DEFAULT_FUNCTIONAL_CURRENCY,
   );
 

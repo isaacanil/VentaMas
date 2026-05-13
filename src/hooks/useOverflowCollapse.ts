@@ -3,6 +3,7 @@ import { useState, useLayoutEffect, useRef, useCallback } from 'react';
 type OverflowCollapseOptions = {
   gap?: number;
   endPadding?: number;
+  moreButtonWidth?: number;
 };
 
 /**
@@ -17,6 +18,7 @@ type OverflowCollapseOptions = {
 export const useOverflowCollapse = ({
   gap = 16,
   endPadding = 0,
+  moreButtonWidth = 0,
 }: OverflowCollapseOptions = {}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Array<HTMLElement | null>>([]);
@@ -38,7 +40,10 @@ export const useOverflowCollapse = ({
 
     const calculateVisibleItems = () => {
       const containerWidth = containerRef.current?.clientWidth ?? 0;
-      const availableWidth = Math.max(0, containerWidth - endPadding);
+      const availableWidth = Math.max(
+        0,
+        containerWidth - Math.max(endPadding, moreButtonWidth),
+      );
       const items = itemRefs.current.filter(Boolean);
 
       if (availableWidth <= 0 || items.length === 0) {
@@ -98,7 +103,7 @@ export const useOverflowCollapse = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [endPadding, gap, itemCount]);
+  }, [endPadding, gap, itemCount, moreButtonWidth]);
 
   useLayoutEffect(() => {
     return () => {

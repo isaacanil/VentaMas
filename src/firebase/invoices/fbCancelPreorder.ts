@@ -53,7 +53,7 @@ export async function fbCancelPreorder(
       bill?.id,
     );
     await updateDoc(billDocRef, { data: bill });
-    return bill;
+    return bill as unknown as InvoiceData;
   } catch (error) {
     console.error('Error al generar la factura:', error);
   }

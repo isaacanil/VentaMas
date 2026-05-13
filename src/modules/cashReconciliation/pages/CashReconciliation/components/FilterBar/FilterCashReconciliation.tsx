@@ -3,7 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from 'antd';
 import React, { useCallback, useMemo } from 'react';
 import type { CashCountState } from '@/utils/cashCount/types';
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar as CommonFilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar/FilterBar';
 
 interface DateRangeFilter {
   startDate: number | null;
@@ -155,7 +158,7 @@ export const FilterCashReconciliation: React.FC<
 
   return (
     <CommonFilterBar
-      items={items}
+      items={items as FilterBarItem[]}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={handleClearFilters}
       labels={{

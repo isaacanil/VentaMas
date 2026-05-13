@@ -86,7 +86,7 @@ export const useProductHandling = (
       );
 
     return resolveProductForCartDocumentCurrency(
-      nextProduct as CartProduct,
+      nextProduct as unknown as CartProduct,
       normalizeSupportedDocumentCurrency(cartData?.documentCurrency),
       {
         hasCartProducts: cartProducts.length > 0,

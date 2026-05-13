@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { db } from '@/firebase/firebaseconfig';
 import type { UserWithBusiness } from '@/types/users';
 
-import type { CategoryDocument, CategoryRecord } from './types';
+import type { CategoryRecord } from './types';
 
 export const fbAddCategory = async (
   user: UserWithBusiness | null | undefined,
@@ -21,7 +21,7 @@ export const fbAddCategory = async (
     id,
     createdAt: Timestamp.now(),
   };
-  const categoryRef = doc<CategoryDocument>(
+  const categoryRef = doc(
     db,
     'businesses',
     businessID,

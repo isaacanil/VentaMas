@@ -65,16 +65,23 @@ export const resolveReceiptConditionLabel = (
 export const resolveReceiptTotals = (
   replenishments: Purchase['replenishments'],
 ) =>
-  (Array.isArray(replenishments) ? replenishments : []).reduce(
+  (Array.isArray(replenishments) ? replenishments : []).reduce<{
+    orderedQuantity: number;
+    receivedQuantity: number;
+    pendingQuantity: number;
+  }>(
     (acc, item) => {
       const quantities = resolvePurchaseLineQuantities(
         item as PurchaseReplenishment,
       );
 
       return {
-        orderedQuantity: acc.orderedQuantity + quantities.orderedQuantity,
-        receivedQuantity: acc.receivedQuantity + quantities.receivedQuantity,
-        pendingQuantity: acc.pendingQuantity + quantities.pendingQuantity,
+        orderedQuantity:
+          acc.orderedQuantity + Number(quantities.orderedQuantity || 0),
+        receivedQuantity:
+          acc.receivedQuantity + Number(quantities.receivedQuantity || 0),
+        pendingQuantity:
+          acc.pendingQuantity + Number(quantities.pendingQuantity || 0),
       };
     },
     {

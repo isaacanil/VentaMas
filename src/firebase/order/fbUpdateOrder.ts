@@ -60,13 +60,13 @@ export const fbUpdateOrder = async ({
       uploadedFiles = (await fbUploadFiles(
         user,
         'purchaseAndOrderFiles',
-        files,
+        files as unknown as Parameters<typeof fbUploadFiles>[2],
         {
           customMetadata: {
             type: 'purchase_attachment',
           },
         },
-      )) as Attachment[];
+      )) as unknown as Attachment[];
     }
 
     const existingAttachments = order.attachmentUrls || [];

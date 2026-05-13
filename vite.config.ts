@@ -175,6 +175,13 @@ export default defineConfig({
               priority: 32,
             },
 
+            // React core separado del fallback vendor para cache estable.
+            {
+              name: 'react-core',
+              test: /node_modules[\\/](?:react|react-dom|scheduler|react-is|object-assign|react-compiler-runtime)[\\/]/,
+              priority: 32,
+            },
+
             // Router
             {
               name: 'router',
@@ -213,6 +220,11 @@ export default defineConfig({
             {
               name: 'html2canvas',
               test: /node_modules[\\/]html2canvas[\\/]/,
+              priority: 27,
+            },
+            {
+              name: 'react-pdf',
+              test: /node_modules[\\/](?:@react-pdf|fontkit|yoga-layout|unicode-trie|linebreak|png-js|brotli)[\\/]/,
               priority: 27,
             },
 
@@ -278,6 +290,11 @@ export default defineConfig({
               test: /[\\/](?:chart\.js|react-chartjs-2|lightweight-charts)[\\/]/,
               priority: 20,
             },
+            {
+              name: 'validation',
+              test: /node_modules[\\/](?:zod|yup|property-expr|tiny-case|toposort)[\\/]/,
+              priority: 20,
+            },
 
             // Lightbox
             {
@@ -290,6 +307,16 @@ export default defineConfig({
             {
               name: 'utils-vendor',
               test: /[\\/](?:luxon|moment)[\\/]/,
+              priority: 15,
+            },
+            {
+              name: 'media-utils',
+              test: /node_modules[\\/](?:browser-image-compression|file-saver|print-js|react-to-print|react-resizable|react-zoom-pan-pinch|gsap|chroma-js)[\\/]/,
+              priority: 15,
+            },
+            {
+              name: 'ai-vendor',
+              test: /node_modules[\\/]@google[\\/]generative-ai[\\/]/,
               priority: 15,
             },
 

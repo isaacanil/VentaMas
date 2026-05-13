@@ -6,6 +6,8 @@ import {
   Timestamp,
   limit as firebaseLimit,
   query,
+  type Query,
+  type DocumentData,
 } from 'firebase/firestore';
 import { nanoid } from 'nanoid';
 
@@ -27,7 +29,7 @@ export const transferProducts = async (
     `businesses/${businessIdB}/products`,
   );
 
-  let q = productsBusinessA;
+  let q: Query<DocumentData> = productsBusinessA;
 
   if (limit) {
     q = query(productsBusinessA, firebaseLimit(limit));

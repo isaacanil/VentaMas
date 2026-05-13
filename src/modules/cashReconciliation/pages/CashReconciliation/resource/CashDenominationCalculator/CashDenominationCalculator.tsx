@@ -62,7 +62,9 @@ export const CashDenominationCalculator: React.FC<
             <FormattedValue size={'small'} type={'title'} value={title} />
           </Group>
           <Group>
-            {datetime && <FormattedValue size={'xsmall'} value={datetime} />}
+            {datetime && (
+              <FormattedValue size={'xsmall'} value={String(datetime)} />
+            )}
             <OpenControllerSmall
               onClick={handleExpanded}
               isExpanded={isExpanded}

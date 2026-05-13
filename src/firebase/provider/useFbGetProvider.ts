@@ -20,7 +20,7 @@ export const useFbGetProviders = (userOverride?: UserIdentity | null) => {
       return undefined;
     }
 
-    const providersRef = collection<ProviderDocument>(
+    const providersRef = collection(
       db,
       'businesses',
       businessId,
@@ -30,7 +30,9 @@ export const useFbGetProviders = (userOverride?: UserIdentity | null) => {
     const unsubscribe = onSnapshot(
       providersRef,
       (snapshot) => {
-        const providersArray = snapshot.docs.map((item) => item.data());
+        const providersArray = snapshot.docs.map(
+          (item) => item.data() as ProviderDocument,
+        );
         setLoadedBusinessId(businessId);
         setProviders(providersArray);
       },

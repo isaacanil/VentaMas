@@ -134,19 +134,54 @@ export function formatRNC(rnc: string): string {
   return 'listo';
 }
 
-type TimestampLike = { seconds: number; nanoseconds?: number };
+type TimestampLike =
+  | { seconds: number; nanoseconds?: number }
+  | {
+      toDate?: () => Date;
+      toMillis?: () => number;
+      seconds?: number;
+      _seconds?: number;
+      nanoseconds?: number;
+      _nanoseconds?: number;
+    }
+  | number
+  | string
+  | Date
+  | null
+  | undefined;
 
 export function formatTimestamp(timestamp: TimestampLike): string {
-  const formattedDate = new Date(timestamp.seconds * 1000).toLocaleString(
-    'es-ES',
-    {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    },
-  );
+  let date: Date;
+  if (!timestamp) return '';
+  if (timestamp instanceof Date) {
+    date = timestamp;
+  } else if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    date = new Date(timestamp);
+  } else {
+    const timestampObject = timestamp as {
+      toDate?: () => Date;
+      toMillis?: () => number;
+      seconds?: number;
+      _seconds?: number;
+    };
+    if (typeof timestampObject.toMillis === 'function') {
+      date = new Date(timestampObject.toMillis());
+    } else if (typeof timestampObject.toDate === 'function') {
+      date = timestampObject.toDate();
+    } else if (typeof timestampObject._seconds === 'number') {
+      date = new Date(timestampObject._seconds * 1000);
+    } else {
+      date = new Date((timestampObject.seconds ?? 0) * 1000);
+    }
+  }
+  if (Number.isNaN(date.getTime())) return '';
+  const formattedDate = date.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return formattedDate;
 }

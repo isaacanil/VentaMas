@@ -158,7 +158,7 @@ export const useInventorySummaryData = () => {
   }, [category, products, query]);
 
   const ptTotals = useMemo(() => {
-    return productsFiltered.reduce(
+    return productsFiltered.reduce<{ stock: number; cost: number; listPrice: number }>(
       (acc, product) => {
         const qty = Number(product?.stock) || 0;
         const unitCost = Number(product?.pricing?.cost) || 0;

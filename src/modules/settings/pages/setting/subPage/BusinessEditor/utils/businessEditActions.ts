@@ -34,7 +34,7 @@ export const uploadBusinessLogoUpdate = async ({
     const downloadURL = await fbUpdateBusinessLogo(user, file);
     return {
       status: 'success',
-      downloadURL,
+      downloadURL: downloadURL || '',
     };
   } catch {
     return {
@@ -59,7 +59,7 @@ export const submitBusinessUpdate = async ({
     ...(business?.invoice || {}),
     invoiceMessage: business?.invoice?.invoiceMessage || '',
     invoiceType: business?.invoice?.invoiceType || 'invoiceTemplate1',
-    ...(values?.invoice || {}),
+    ...(((values as any)?.invoice as Record<string, unknown> | undefined) || {}),
   };
   const businessData = {
     ...business,

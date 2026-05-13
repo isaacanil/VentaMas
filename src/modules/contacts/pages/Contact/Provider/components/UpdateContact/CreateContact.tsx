@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { handleModalCreateClient } from '@/features/modals/modalSlice';
+import { openModalAddClient as handleModalCreateClient } from '@/features/modals/modalSlice';
 import { formatRNC } from '@/utils/format';
 import { formatPhoneNumber } from '@/utils/format/formatPhoneNumber';
 import { Button } from '@/components/ui/Button/Button';
@@ -137,8 +137,8 @@ export const CreateContact = ({ isOpen }: CreateContactProps) => {
             <textarea
               name="address"
               id=""
-              cols="20"
-              rows="5"
+              cols={20}
+              rows={5}
               placeholder="27 de Febrero #12, Ensanche Ozama, Santo Domingo"
               onChange={handleFieldChange}
             ></textarea>

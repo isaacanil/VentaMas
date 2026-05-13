@@ -2,6 +2,7 @@ import {
   Suspense,
   lazy,
   type ComponentType,
+  type ComponentProps,
   type JSX,
   type ReactNode,
 } from 'react';
@@ -14,9 +15,13 @@ import {
 } from './loadChart';
 
 type ReactChartModule = typeof import('react-chartjs-2');
-type LazyChartProps = {
+type LazyChartProps<T extends ComponentType<any>> = Omit<
+  ComponentProps<T>,
+  'data' | 'options'
+> & {
+  data?: unknown;
+  options?: unknown;
   fallback?: ReactNode;
-  [key: string]: unknown;
 };
 
 export type LazyChartHandle = {
@@ -32,9 +37,9 @@ const createLazyChart = <T extends ComponentType<any>>(
   const WrappedChart = ({
     fallback = null,
     ...props
-  }: LazyChartProps): JSX.Element => (
+  }: LazyChartProps<T>): JSX.Element => (
     <Suspense fallback={fallback}>
-      <LazyChartComponent {...props} />
+      <LazyChartComponent {...(props as ComponentProps<T>)} />
     </Suspense>
   );
 

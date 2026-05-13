@@ -284,7 +284,7 @@ const parseOfxRows = (text: string): ParsedBankStatementImportResult => {
   const issues: string[] = [];
   const blocks = text.match(/<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi) ?? [];
 
-  blocks.forEach((block, index) => {
+  blocks.forEach((block: string, index) => {
     const extractTag = (tag: string) => {
       const match = block.match(new RegExp(`<${tag}>([^<\\r\\n]+)`, 'i'));
       return cleanText(match?.[1]);

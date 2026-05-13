@@ -5,6 +5,7 @@ import { functions } from '@/firebase/firebaseconfig';
 import { resolveBillingCallableErrorMessage } from './callableErrors';
 
 type UnknownRecord = Record<string, unknown>;
+type BillingPayload = object;
 
 const toCleanString = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
@@ -17,7 +18,9 @@ const toFiniteNumber = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const withSessionToken = <T extends UnknownRecord>(payload: T): T => {
+const withSessionToken = <T extends BillingPayload>(
+  payload: T,
+): T & { sessionToken?: string } => {
   const { sessionToken } = getStoredSession();
   if (!sessionToken) return payload;
   return {
@@ -26,11 +29,14 @@ const withSessionToken = <T extends UnknownRecord>(payload: T): T => {
   };
 };
 
-const callBilling = async <TInput extends UnknownRecord, TOutput>(
+const callBilling = async <TInput extends BillingPayload, TOutput>(
   callableName: string,
   payload: TInput,
 ): Promise<TOutput> => {
-  const callable = httpsCallable<TInput, TOutput>(functions, callableName);
+  const callable = httpsCallable<TInput & { sessionToken?: string }, TOutput>(
+    functions,
+    callableName,
+  );
   try {
     const response = await callable(withSessionToken(payload));
     return response.data;

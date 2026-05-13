@@ -10,7 +10,8 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 const ESLINT_EXTENSIONS = 'js,jsx,ts,tsx';
 const ESLINT_CACHE_LOCATION = 'node_modules/.cache/eslint/.eslintcache';
-const STYLELINT_GLOB = '{src,functions}/**/*.{css,scss,js,jsx,ts,tsx}';
+const STYLELINT_CSS_GLOB = 'src/**/*.{css,scss}';
+const STYLELINT_STYLED_GLOB = 'src/**/*.{js,jsx,ts,tsx}';
 
 function isInteractive() {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
@@ -55,6 +56,10 @@ const LINT_TARGETS = {
   },
   'styles:check': {
     label: 'Stylelint sin fix',
+    needsPaths: false,
+  },
+  'styles:styled': {
+    label: 'Stylelint styled-components (lento)',
     needsPaths: false,
   },
 };
@@ -249,7 +254,7 @@ async function runLintTarget(target, args) {
         env: { ...process.env, ESLINT_STORYBOOK: 'true' },
       });
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint']);
-      await runOrExit('stylelint', [STYLELINT_GLOB]);
+      await runOrExit('stylelint', [STYLELINT_CSS_GLOB]);
       return;
     case 'web:fix':
       await runOrExit('eslint', buildEslintArgs({ fix: true }));
@@ -272,10 +277,13 @@ async function runLintTarget(target, args) {
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint:fix']);
       return;
     case 'styles:fix':
-      await runOrExit('stylelint', [STYLELINT_GLOB, '--fix']);
+      await runOrExit('stylelint', [STYLELINT_CSS_GLOB, '--fix']);
       return;
     case 'styles:check':
-      await runOrExit('stylelint', [STYLELINT_GLOB]);
+      await runOrExit('stylelint', [STYLELINT_CSS_GLOB]);
+      return;
+    case 'styles:styled':
+      await runOrExit('stylelint', [STYLELINT_STYLED_GLOB]);
       return;
     default:
       consola.error(`Unsupported lint target "${target}".`);

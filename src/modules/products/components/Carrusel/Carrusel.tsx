@@ -111,7 +111,7 @@ export const Carrusel = ({
     array.some((category) => category === element);
   return (
     <LazyMotion features={domAnimation}>
-      <Container themeColor={themeColor}>
+      <Container $themeColor={themeColor}>
         <Button
           onClick={() => handleMoveScroll('left')}
           onDoubleClick={() => handleMoveScroll('start')}
@@ -151,7 +151,7 @@ export const Carrusel = ({
     </LazyMotion>
   );
 };
-const Container = styled.div`
+const Container = styled.div<{ $themeColor?: string | null }>`
   align-items: center;
   background-color: ${(props) => props.theme.bg.shade};
   display: grid;
@@ -161,7 +161,7 @@ const Container = styled.div`
   padding: 0 1em;
   width: 100%;
   ${(props) => {
-    switch (props.themeColor) {
+    switch (props.$themeColor) {
       case 'transparent':
         return `
                     background-color: var(--color2);

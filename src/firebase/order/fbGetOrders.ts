@@ -1,6 +1,7 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import type {
   DocumentData,
+  Query,
   QueryConstraint,
   QuerySnapshot,
   Unsubscribe,
@@ -44,7 +45,7 @@ export const subscribeToOrder = (
   callback: (snapshot: QuerySnapshot<DocumentData>) => void,
 ): Unsubscribe => {
   const collectionRef = collection(db, 'businesses', businessID, 'orders');
-  let q = collectionRef;
+  let q: Query<DocumentData> = collectionRef;
 
   if (filters) {
     const conditions: QueryConstraint[] = [];

@@ -154,7 +154,6 @@ const main = async () => {
         : 25;
 
     const snap = await db.collection('businesses').limit(safeLimit).get();
-    // eslint-disable-next-line no-console
     console.log(
       JSON.stringify(
         snap.docs.map((d) => {
@@ -232,7 +231,6 @@ const main = async () => {
 
     rows.sort((a, b) => safeNumber(b.score) - safeNumber(a.score));
 
-    // eslint-disable-next-line no-console
     console.log(
       JSON.stringify(
         {
@@ -390,7 +388,6 @@ const main = async () => {
 
   await commitBatch();
 
-  // eslint-disable-next-line no-console
   console.log(
     JSON.stringify(
       {
@@ -416,7 +413,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });

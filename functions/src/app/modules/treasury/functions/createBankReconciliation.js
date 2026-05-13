@@ -329,9 +329,6 @@ export const createBankReconciliation = onCall(async (request) => {
     note,
   });
 
-  const bankAccountRef = db.doc(
-    `businesses/${businessId}/bankAccounts/${bankAccountId}`,
-  );
   const idempotencyRef = db.doc(
     `businesses/${businessId}/treasuryIdempotency/${idempotencyKey}`,
   );

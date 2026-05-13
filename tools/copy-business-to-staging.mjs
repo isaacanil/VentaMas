@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 /* eslint-env node */
-/* global console, setTimeout */
-
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';

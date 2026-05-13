@@ -43,6 +43,7 @@ export interface ClientDocumentData extends Record<string, unknown> {
 export interface NormalizedDelivery {
   status: boolean;
   value: number;
+  [key: string]: unknown;
 }
 
 export interface NormalizedClient extends Omit<
@@ -140,15 +141,17 @@ export function extractNormalizedClient(
       ? { ...(docData.client as ClientInput) }
       : {};
 
+  const baseRecord = base as Record<string, unknown>;
+
   for (const field of FIELDS_TO_EXTRACT) {
     if (docData[field] !== undefined) {
-      base[field] = docData[field];
+      baseRecord[field] = docData[field];
     }
   }
 
   for (const [alias, canonical] of Object.entries(FIELD_ALIASES)) {
     if (docData[alias] !== undefined && docData[alias] !== null) {
-      base[canonical] = docData[alias];
+      baseRecord[canonical] = docData[alias];
     }
   }
 

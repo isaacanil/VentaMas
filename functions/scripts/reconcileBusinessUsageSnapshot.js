@@ -152,7 +152,6 @@ const findUserByName = async (normalizedName) => {
 
   const seen = new Map();
   for (const query of queries) {
-    // eslint-disable-next-line no-await-in-loop
     const snapshot = await query.get();
     snapshot.docs.forEach((docSnap) => {
       if (seen.has(docSnap.id)) return;

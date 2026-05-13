@@ -10,6 +10,13 @@
     "tsBuildInfoFile": "node_modules/.cache/typescript/tsconfig.typecheck.dev.tsbuildinfo"
   },
   "include": [
+    "src/vite-env.d.ts",
+    "src/types/global-jsx.d.ts",
+    "src/types/styled-components.d.ts",
+    "src/types/ant-design-icons.d.ts",
+    "src/types/dev-globals.d.ts",
+    "src/types/typecheck-empty-module.d.ts",
+    "src/types/typecheck-empty-routes.ts",
     "src/dev/**/*.ts",
     "src/dev/**/*.tsx",
     "src/modules/dev/**/*.ts",

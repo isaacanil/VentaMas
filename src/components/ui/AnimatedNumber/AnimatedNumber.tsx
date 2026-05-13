@@ -3,12 +3,9 @@ import styled from 'styled-components';
 import AnimatedDigit from '@/components/ui/AnimatedDigit/AnimatedDigit';
 
 export const AnimatedNumber = ({ value }) => {
-  let position = 0;
-  const digits = String(value).split('').map((digit) => {
-    const key = `${position}-${digit}`;
-    position += 1;
-    return { digit, key };
-  });
+  const digits = String(value)
+    .split('')
+    .map((digit, position) => ({ digit, key: `${position}-${digit}` }));
 
   return (
     <CounterContainer>

@@ -16,6 +16,7 @@ import type {
 } from '@/modules/utility/pages/Utility/types';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
+const MotionDiv = m.div as any;
 
 interface BestDayHighlightCardProps {
   summary: UtilitySummary;
@@ -57,7 +58,7 @@ export const BestDayHighlightCard = ({
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 210, damping: 20 }}
     >
-      <CardHeader role="heading" aria-level="3">
+      <CardHeader role="heading" aria-level={3}>
         <SimpleTypography as="span" size="medium" weight="bold">
           Mejor día del período
         </SimpleTypography>
@@ -111,7 +112,7 @@ export const BestDayHighlightCard = ({
   );
 };
 
-const Card = styled(m.div)`
+const Card = styled(MotionDiv)`
   display: flex;
   flex-direction: column;
   gap: ${spacing.md};

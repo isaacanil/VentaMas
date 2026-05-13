@@ -6,7 +6,10 @@ import type { ProductRecord } from '@/types/products';
 import type { UserWithBusiness } from '@/types/users';
 
 type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
-type ProductWithStock = ProductRecord & { stock: number };
+type ProductWithStock = Omit<ProductRecord, 'activeIngredients'> & {
+  stock: number;
+  activeIngredients?: string[] | string | null;
+};
 
 type CreateProductRequest = {
   businessId: string;

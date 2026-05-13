@@ -288,7 +288,8 @@ export const ProductCardForCart = ({
                 Seleccionar ubicación
               </span>
             ),
-            onClick: () => dispatch(openProductStockSimple(item as ProductRecord)),
+            onClick: () =>
+              dispatch(openProductStockSimple(item as unknown as ProductRecord)),
           },
         ]
       : []),
@@ -418,7 +419,7 @@ export const ProductCardForCart = ({
   const saleUnitItem: SaleUnitItem = {
     ...item,
     pricing: item.pricing,
-  };
+  } as any;
 
   return (
     <Container $expired={isExpired}>

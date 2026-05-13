@@ -203,9 +203,13 @@ const ProductsTable = ({
       const normalized = resolvePurchaseLineQuantities({
         ...newData,
         orderedQuantity:
-          dataIndex === 'orderedQuantity' ? value : newData.orderedQuantity,
+          dataIndex === 'orderedQuantity'
+            ? Number(value) || 0
+            : newData.orderedQuantity,
         purchaseQuantity:
-          dataIndex === 'purchaseQuantity' ? value : newData.purchaseQuantity,
+          dataIndex === 'purchaseQuantity'
+            ? Number(value) || 0
+            : newData.purchaseQuantity,
         receivedQuantity:
           dataIndex === 'receivedQuantity' ||
           (dataIndex as string) === 'receivingNow'
@@ -228,7 +232,7 @@ const ProductsTable = ({
     if (loadingQuantity === record.key) return;
 
     setLoadingQuantity(record.key ?? null);
-    const quantityClickError = await onQuantityClick(record)
+    const quantityClickError = await Promise.resolve(onQuantityClick(record))
       .then(() => null)
       .catch((error) => error);
 

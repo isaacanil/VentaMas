@@ -194,7 +194,7 @@ const EditUser = () => {
             type="text"
             placeholder="Nombre de Usuario"
             errorMessage={errors.name}
-            validate={errors.name}
+            validate={Boolean(errors.name)}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               handleInputChange({ ['name']: e.target.value })
             }

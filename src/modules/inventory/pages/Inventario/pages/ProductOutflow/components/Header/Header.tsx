@@ -9,7 +9,7 @@ import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 export const Header = () => {
   const dispatch = useDispatch();
   const handleClick = () => {
-    dispatch(toggleAddProductOutflow());
+    dispatch(toggleAddProductOutflow(undefined));
   };
   return (
     <Container>

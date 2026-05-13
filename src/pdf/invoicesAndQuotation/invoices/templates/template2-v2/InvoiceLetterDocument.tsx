@@ -13,6 +13,7 @@ import type {
   InvoicePdfData,
   InvoicePdfProduct,
 } from '@/pdf/invoicesAndQuotation/types';
+import type { SupportedDocumentCurrency } from '@/types/products';
 import {
   betaInvoicePageLayout,
   estimateInvoicePageLayout,
@@ -295,7 +296,7 @@ const resolveTaxRate = (product: InvoicePdfProduct): number => {
 
 const buildDescriptionLines = (
   product: InvoicePdfProduct,
-  currency: 'DOP' | 'USD',
+  currency: SupportedDocumentCurrency,
 ): string[] => {
   const lines = [
     product?.name || product?.productName || 'Producto sin nombre',
@@ -542,7 +543,7 @@ const ProductTable = ({
   currency,
 }: {
   products: InvoicePdfProduct[];
-  currency: 'DOP' | 'USD';
+  currency: SupportedDocumentCurrency;
 }): React.JSX.Element => (
   <View style={styles.table} wrap={false}>
     <View style={styles.tableHeader}>

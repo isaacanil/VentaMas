@@ -61,7 +61,7 @@ const MonthlyExpenseBarChart = ({ expenses }: MonthlyExpenseBarChartProps) => {
     const monthlyData: Record<string, number> = {};
     let total = 0;
     normalizedExpenses.forEach((entry) => {
-      const expense = 'expense' in entry ? entry.expense : entry;
+      const expense = 'expense' in entry ? (entry.expense as Expense) : entry;
       const date = resolveExpenseDate(expense?.dates?.expenseDate);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
       const amountRaw = expense?.amount ?? 0;
@@ -93,7 +93,7 @@ const MonthlyExpenseBarChart = ({ expenses }: MonthlyExpenseBarChartProps) => {
 
     if (!chart.current) {
       chart.current = createChart(chartContainerRef.current, {
-        layout: { backgroundColor: '#ffffff', textColor: '#333' },
+        layout: { background: { color: '#ffffff' }, textColor: '#333' },
         grid: { vertLines: { color: '#eee' }, horzLines: { color: '#eee' } },
         rightPriceScale: { scaleMargins: { top: 0.3, bottom: 0.25 } },
         timeScale: { timeVisible: true },
@@ -102,7 +102,6 @@ const MonthlyExpenseBarChart = ({ expenses }: MonthlyExpenseBarChartProps) => {
       barSeries.current = chart.current.addSeries(HistogramSeries, {
         color: 'rgba(54, 162, 235, 0.5)',
         priceFormat: { type: 'volume' },
-        scaleMargins: { top: 0.7, bottom: 0 },
       });
 
       lineSeries.current = chart.current.addSeries(LineSeries, {

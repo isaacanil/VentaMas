@@ -96,7 +96,10 @@ const formatNumberForDisplay = (value: number | string): string => {
 
 export const InsuranceCoverage = ({ item }: InsuranceCoverageProps) => {
   const dispatch = useDispatch();
-  const productId = item?.cid ?? item?.id;
+  const productId = useMemo(() => {
+    const candidate = item?.cid ?? item?.id;
+    return candidate === null || candidate === undefined ? null : String(candidate);
+  }, [item?.cid, item?.id]);
 
   const derivedState = useMemo(() => deriveInitialState(item), [item]);
   const derivedKey = `${derivedState.mode}|${derivedState.rawValue}`;
@@ -140,8 +143,7 @@ export const InsuranceCoverage = ({ item }: InsuranceCoverageProps) => {
         updateProductInsurance({
           id: productId,
           mode,
-          value:
-            rawValue === null || rawValue === undefined ? '' : String(rawValue),
+          value: Number.isFinite(Number(rawValue)) ? Number(rawValue) : 0,
         }),
       );
     },
@@ -352,7 +354,12 @@ const ToggleThumb = styled(m.div)`
   box-shadow: 0 2px 4px rgb(15 23 42 / 10%);
 `;
 
-const SwitchOption = styled.span`
+type SwitchOptionProps = {
+  $active: boolean;
+  $position: 'left' | 'right';
+};
+
+const SwitchOption = styled.span<SwitchOptionProps>`
   position: absolute;
   left: ${({ $position }) => ($position === 'left' ? '10px' : '32px')};
   z-index: 2;

@@ -709,7 +709,7 @@ export const getWarehouseStockAggregates = async (
   user: InventoryUser | null | undefined,
   warehouseId: string | number | null | undefined,
 ): Promise<StockAggregateSummary> => {
-  return getLocationStockAggregates(user, warehouseId);
+  return getLocationStockAggregates(user, String(warehouseId ?? ''));
 };
 
 export const getWarehousesStockAggregates = async (

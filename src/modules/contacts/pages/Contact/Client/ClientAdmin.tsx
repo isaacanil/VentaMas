@@ -1,7 +1,10 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { FilterBar } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar/FilterBar';
 import { useFbGetClients } from '@/firebase/client/useFbGetClients';
 import { filterData } from '@/hooks/search/useSearch';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
@@ -169,7 +172,7 @@ export const ClientAdmin = () => {
       <Container>
         <BarWrapper>
           <FilterBar
-            items={filterItems}
+            items={filterItems as FilterBarItem[]}
             hasActiveFilters={hasActiveFilters}
             onClearFilters={handleClearFilters}
           />

@@ -5,7 +5,7 @@ import type { CSSProperties, MouseEvent, RefObject } from 'react';
 export type DatePickerMode = 'single' | 'range';
 
 export type DatePickerSingleValue = DateTime | null;
-export type DatePickerRangeValue = [DateTime | null, DateTime | null];
+export type DatePickerRangeValue = Array<DateTime | null>;
 export type DatePickerValue =
   | DatePickerSingleValue
   | DatePickerRangeValue

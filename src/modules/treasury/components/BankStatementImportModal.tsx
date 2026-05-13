@@ -107,8 +107,10 @@ export const BankStatementImportModal = ({
   };
 
   const handleSubmit = async () => {
-    const result = await onSubmit(validRows);
-    if (!result?.failures?.length) {
+    const result = (await onSubmit(validRows)) as
+      | { failures?: { lineNumber: number; message: string }[] }
+      | void;
+    if (!result || !result.failures?.length) {
       resetState();
     }
   };

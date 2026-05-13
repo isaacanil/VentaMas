@@ -11,6 +11,7 @@ export interface DeveloperBusinessImpersonationStatus {
   active?: boolean;
   restored?: boolean;
   expired?: boolean;
+  businessId?: string | null;
   currentBusinessId?: string | null;
   originalBusinessId?: string | null;
   overrideBusinessId?: string | null;

@@ -20,6 +20,7 @@ import type {
 } from '@/modules/utility/pages/Utility/types';
 
 const { colors, spacing, radii, shadows } = designSystemV2;
+const MotionDiv = m.div as any;
 
 const TREND_VARIANTS: Record<
   UtilityTrend,
@@ -214,7 +215,7 @@ export const TotalSalesCard = ({
         whileHover={{ y: -4 }}
         transition={{ type: 'spring', stiffness: 210, damping: 20 }}
       >
-        <CardHeader role="heading" aria-level="3">
+        <CardHeader role="heading" aria-level={3}>
           <HeaderInfo>
             <SimpleTypography as="span" size="medium" weight="bold">
               {title}
@@ -255,7 +256,7 @@ export const TotalSalesCard = ({
   );
 };
 
-const ComparisonCard = styled(m.div)`
+const ComparisonCard = styled(MotionDiv)`
   display: flex;
   flex-direction: column;
   gap: ${spacing.xs};

@@ -12,7 +12,9 @@ import type { UserIdentity, UserWithBusiness } from '@/types/users';
 type ReceiptParams = {
   user: UserIdentity;
   clientId?: string | null;
-  paymentReceipt: Partial<AccountsReceivablePaymentReceipt>;
+  paymentReceipt:
+    | Partial<AccountsReceivablePaymentReceipt>
+    | Record<string, unknown>;
 };
 
 const removeUndefined = (value: unknown): unknown => {
@@ -62,7 +64,7 @@ export async function fbAddAccountReceivablePaymentReceipt({
   }
 
   const userId = user.uid ?? user.id ?? null;
-  const receipt: AccountsReceivablePaymentReceipt = {
+  const receipt = {
     id: nanoid(),
     client: client || null, // Ensure client is null if falsy
     user: {
@@ -74,7 +76,7 @@ export async function fbAddAccountReceivablePaymentReceipt({
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
     ...paymentReceipt,
-  };
+  } as AccountsReceivablePaymentReceipt;
 
   const sanitizedReceipt = removeUndefined(
     receipt,

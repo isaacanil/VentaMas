@@ -243,7 +243,13 @@ export default function InventorySessionsList() {
                 <RangeDatePicker
                   mode="range"
                   value={dateRange}
-                  onChange={setDateRange}
+                  onChange={(value) =>
+                    setDateRange(
+                      Array.isArray(value)
+                        ? [value[0] ?? null, value[1] ?? null]
+                        : null,
+                    )
+                  }
                   placeholder="Rango de fechas"
                   allowClear
                 />

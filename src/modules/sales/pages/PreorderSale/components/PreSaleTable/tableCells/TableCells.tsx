@@ -112,7 +112,6 @@ export const PreorderActionsCell = ({
     closeTaxReceiptModal,
     handleCompletePreorder,
     handleConfirmReceivable,
-    handleContinueAutoCompleteWithoutReceipt,
     handleRetryAutoCompleteWithSelectedReceipt,
     handleSelectInvoiceDecision,
     handleSelectTaxReceiptFromModal,
@@ -317,9 +316,6 @@ export const PreorderActionsCell = ({
           loading={isAutoCompletingPreorder}
           onSelectReceipt={handleSelectTaxReceiptFromModal}
           onRetry={() => void handleRetryAutoCompleteWithSelectedReceipt()}
-          onContinueWithout={() =>
-            void handleContinueAutoCompleteWithoutReceipt()
-          }
           onCancel={closeTaxReceiptModal}
         />
       ) : null}

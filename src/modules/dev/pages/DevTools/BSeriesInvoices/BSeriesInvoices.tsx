@@ -93,7 +93,7 @@ const formatCurrency = (amount: unknown) =>
     style: 'currency',
     currency: 'DOP',
     minimumFractionDigits: 2,
-  }).format(amount || 0);
+  }).format(Number(amount || 0));
 
 const buildDataset = (invoices: InvoiceDocWithId[]): InvoiceRow[] =>
   invoices.map((invoice) => {
@@ -107,7 +107,7 @@ const buildDataset = (invoices: InvoiceDocWithId[]): InvoiceRow[] =>
     return {
       key,
       raw: invoice,
-      ncf: data?.NCF || invoice?.NCF || '—',
+      ncf: String(data?.NCF || invoice?.NCF || '—'),
       serie,
       type,
       sequence,

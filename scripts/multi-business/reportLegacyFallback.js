@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 /* eslint-env node */
-/* global console */
-
 import process from 'node:process';
 
 import { applicationDefault, initializeApp } from 'firebase-admin/app';

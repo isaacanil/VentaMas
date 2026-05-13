@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react';
 
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar as CommonFilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar/FilterBar';
 import type {
   DateRangeSelection,
   InvoiceFilters,
@@ -204,7 +207,7 @@ export const FilterBar = ({
 
   return (
     <CommonFilterBar
-      items={filterItems}
+      items={filterItems as FilterBarItem[]}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={handleClearFilters}
       labels={{

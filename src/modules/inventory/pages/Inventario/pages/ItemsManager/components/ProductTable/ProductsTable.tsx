@@ -125,7 +125,7 @@ export const ProductsTable = ({ products, searchTerm }: ProductTableProps) => {
         const stockValue = value as ProductRow['stock'];
         return (
           <StockIndicator
-            stock={formatNumber(Number(stockValue?.stock ?? 0))}
+            stock={Number(stockValue?.stock ?? 0)}
             trackInventory={stockValue?.trackInventory}
           ></StockIndicator>
         );

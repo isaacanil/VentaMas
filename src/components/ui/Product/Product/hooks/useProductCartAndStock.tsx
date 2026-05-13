@@ -21,8 +21,11 @@ import type { CartProductRecord, ProductRecord } from '@/types/products';
  */
 export const useProductInCart = (productId?: string | number | null) => {
   const selectedProduct = useSelector((state: RootState) =>
-    selectCartProductByProductId(state, productId),
-  ) as CartProductRecord | null;
+    selectCartProductByProductId(
+      state as Parameters<typeof selectCartProductByProductId>[0],
+      productId,
+    ),
+  ) as unknown as CartProductRecord | null;
 
   return {
     status: !!selectedProduct,

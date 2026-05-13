@@ -32,7 +32,7 @@ export const MenuWebsite = ({
   return (
     <Container>
       {showBusinessSelector ? (
-        <BusinessInfoPill
+        <StyledBusinessInfoPill
           forceWorkspaceOpen={forceWorkspaceOpen}
           onWorkspaceOpenChange={onWorkspaceOpenChange}
           ownershipIssueCount={ownershipIssueCount}
@@ -69,11 +69,37 @@ const Container = styled.header`
   border: 1px solid rgb(255 255 255 / 25%);
   border-radius: 100px;
   backdrop-filter: blur(6px);
+
+  @media (width <= 768px) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'business actions'
+      'search search';
+    gap: var(--ds-space-2);
+    align-items: center;
+    width: 100%;
+    padding: var(--ds-space-2);
+    border-radius: var(--ds-radius-3xl);
+  }
 `;
 
 const HeaderSpacer = styled.span`
   flex: 0 0 180px;
   min-width: 0;
+
+  @media (width <= 768px) {
+    display: none;
+  }
+`;
+
+const StyledBusinessInfoPill = styled(BusinessInfoPill)`
+  @media (width <= 768px) {
+    grid-area: business;
+    justify-self: start;
+    min-width: 0;
+    max-width: min(100%, 178px);
+  }
 `;
 
 const RightActions = styled.div`
@@ -84,6 +110,7 @@ const RightActions = styled.div`
   justify-content: flex-end;
 
   @media (width <= 768px) {
+    grid-area: actions;
     margin-left: auto;
   }
 `;

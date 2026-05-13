@@ -45,7 +45,8 @@ export const useFbGetOrders = () => {
           | Record<string, unknown>
           | undefined;
         if (orderData.data) {
-          orderData.data.provider = providerDoc?.provider ?? null;
+          orderData.data.provider =
+            (providerDoc?.provider as OrderDocument['data']['provider']) ?? null;
         }
         return orderData;
       });

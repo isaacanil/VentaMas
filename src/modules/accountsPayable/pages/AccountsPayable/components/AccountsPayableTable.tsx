@@ -26,6 +26,11 @@ interface AccountsPayableTableProps {
   rows: AccountsPayableRow[];
 }
 
+type AccountsPayableTableRow = AccountsPayableRow &
+  Record<string, unknown> & {
+    actions: AccountsPayableRow;
+  };
+
 const formatDate = (value: number | null) =>
   value ? DateTime.fromMillis(value).toFormat('dd/MM/yyyy') : 'Sin fecha';
 
@@ -106,7 +111,7 @@ const RowActions = ({
   );
 };
 
-const columns: ColumnConfig<AccountsPayableRow>[] = [
+const columns: ColumnConfig<AccountsPayableTableRow>[] = [
   {
     Header: 'Compra',
     accessor: 'reference',
@@ -133,7 +138,7 @@ const columns: ColumnConfig<AccountsPayableRow>[] = [
     Header: 'Aging',
     accessor: 'agingLabel',
     minWidth: '180px',
-    cell: ({ row }) => <AgingBadge row={row as AccountsPayableRow} />,
+    cell: ({ row }) => <AgingBadge row={row} />,
   },
   {
     Header: 'Pagado',
@@ -153,7 +158,7 @@ const columns: ColumnConfig<AccountsPayableRow>[] = [
     Header: 'Trazabilidad',
     accessor: 'traceabilitySummary',
     minWidth: '200px',
-    cell: ({ row }) => <TraceabilityCell row={row as AccountsPayableRow} />,
+    cell: ({ row }) => <TraceabilityCell row={row} />,
   },
 ];
 
@@ -166,7 +171,7 @@ export const AccountsPayableTable = ({
   onRegisterPayment,
   rows,
 }: AccountsPayableTableProps) => {
-  const data = rows.map((row) => ({
+  const data: AccountsPayableTableRow[] = rows.map((row) => ({
     ...row,
     actions: row,
   }));
@@ -178,7 +183,7 @@ export const AccountsPayableTable = ({
         ? 'agingGroup'
         : null;
 
-  const actionColumn: ColumnConfig<AccountsPayableRow> = {
+  const actionColumn: ColumnConfig<AccountsPayableTableRow> = {
     Header: ' ',
     accessor: 'actions',
     minWidth: '56px',
@@ -206,7 +211,7 @@ export const AccountsPayableTable = ({
       }
       groupBy={groupedBy}
       loading={loading}
-      onRowClick={onOpenDetail}
+      onRowClick={(row) => onOpenDetail(row)}
       rowBorder="#e5e7eb"
       rowSize="large"
       showPagination

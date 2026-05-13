@@ -157,19 +157,12 @@ const CashierMigrationTool = () => {
       (details) => {
         const errors = details
           .filter(
-            (
-              detail,
-            ): detail is {
-              userId: string;
-              userName: string;
-              status: 'error';
-              error: string;
-            } => detail.status === 'error',
+            (detail) => detail.status === 'error',
           )
           .map((detail) => ({
             userId: detail.userId,
             userName: detail.userName,
-            error: detail.error,
+            error: (detail as { error?: string }).error || '',
           }));
 
         const results: MigrationResults = {
@@ -177,7 +170,7 @@ const CashierMigrationTool = () => {
           migrated: details.filter((detail) => detail.status === 'success')
             .length,
           errors,
-          details,
+          details: details as MigrationDetail[],
         };
 
         setMigrationStatus({

@@ -79,7 +79,7 @@ export const syncPurchaseAttachments = async ({
       customMetadata: {
         type: 'purchase_attachment',
       },
-    })) as PurchaseAttachment[];
+    })) as unknown as PurchaseAttachment[];
   }
 
   return updateLocalAttachmentsWithRemoteURLs(

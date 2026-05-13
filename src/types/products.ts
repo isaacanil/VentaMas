@@ -1,4 +1,6 @@
-export type { SupportedDocumentCurrency } from '@/utils/accounting/currencies';
+import type { SupportedDocumentCurrency } from '@/utils/accounting/currencies';
+
+export type { SupportedDocumentCurrency };
 
 export type ProductItemType = 'product' | 'service' | 'combo';
 

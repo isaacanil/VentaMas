@@ -105,9 +105,10 @@ export const CategorySelector = () => {
   const categoriesSelected = useSelector(
     SelectCategoryList,
   ) as CategorySelectionItem[];
-  const { data: activeIngredients = [] } = useListenActiveIngredients() as {
-    data?: CategoryRecord[];
-  };
+  const { data: activeIngredients = [] } =
+    useListenActiveIngredients() as unknown as {
+      data?: CategoryRecord[];
+    };
   const { items } = useSelector(SelectCategoryState) as {
     items: CategorySelectionItem[];
   };

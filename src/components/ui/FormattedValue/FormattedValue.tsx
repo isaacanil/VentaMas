@@ -10,9 +10,12 @@ const formatDateValue = (value: number | string | null | undefined): string => {
   );
 };
 
-const formatValue = (type: string | undefined, value: unknown): unknown => {
+const formatValue = (
+  type: string | undefined,
+  value: FormattedValueProps['value'],
+): string | number | null => {
   if (type === 'number') {
-    return formatNumber(value);
+    return formatNumber(value ?? 0);
   }
 
   if (type === 'date') {
@@ -23,7 +26,7 @@ const formatValue = (type: string | undefined, value: unknown): unknown => {
     return formatPrice(value);
   }
 
-  return value;
+  return value ?? '';
 };
 
 export const FormattedValue = ({
@@ -39,7 +42,7 @@ export const FormattedValue = ({
   const formattedValue = transformValue ? formatValue(type, value) : value;
 
   if (type === 'text') {
-    return <div>{value}</div>;
+    return <div>{value ?? ''}</div>;
   }
 
   return (
@@ -58,7 +61,7 @@ export const FormattedValue = ({
 
 interface TextProps {
   $type?: string;
-  $size?: string;
+  $size?: number | string;
   $bold?: boolean;
   $noWrap?: boolean;
   $color?: string;
@@ -97,6 +100,10 @@ const typeStyles = (props: TextProps) => {
 };
 
 const sizeStyles = (props: TextProps) => {
+  if (typeof props.$size === 'number') {
+    return `font-size: ${props.$size}px;`;
+  }
+
   switch (props.$size) {
     case 'xsmall':
       return 'font-size: 12px;';

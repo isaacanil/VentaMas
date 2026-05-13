@@ -32,7 +32,7 @@ const createMenuItems = <T extends MenuItem>(items: T[]): MenuCardItem[] =>
   items.map((item, index) => ({
     ...item,
     id: index + 1,
-  })) as MenuCardItem[];
+  })) as unknown as MenuCardItem[];
 
 const {
   UTILITY_TERM,
@@ -260,13 +260,14 @@ export const useMenuCardData = (user?: UserIdentity | null) => {
   const treasuryEnabled = useBusinessFeatureEnabled('treasury');
   const filteredItems = useFilterMenuItemsByAccess(menuItems);
   return filteredItems.filter((item): item is MenuCardItem => {
-    if (item.requiresFeatures?.includes('accounting') && !accountingEnabled) {
+    const menuItem = item as MenuCardItem;
+    if (menuItem.requiresFeatures?.includes('accounting') && !accountingEnabled) {
       return false;
     }
-    if (item.requiresFeatures?.includes('treasury') && !treasuryEnabled) {
+    if (menuItem.requiresFeatures?.includes('treasury') && !treasuryEnabled) {
       return false;
     }
-    if (item.requiresAuthorizationApproveAccess) {
+    if (menuItem.requiresAuthorizationApproveAccess) {
       return hasAuthorizationApproveAccess(user);
     }
     return true;

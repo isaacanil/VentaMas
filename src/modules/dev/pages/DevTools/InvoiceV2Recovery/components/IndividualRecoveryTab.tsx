@@ -104,15 +104,15 @@ interface IndividualRecoveryTabProps {
   loadingBusinesses: boolean;
   invoiceOptions: OptionItem[];
   loadingInvoices: boolean;
-  handleSubmit: () => void;
+  handleSubmit: (values: any) => void;
   loading: boolean;
   errorMessage?: string | null;
   showEmptyState: boolean;
   handleFetch: (query: Record<string, unknown> | null) => void;
-  activeQuery: Record<string, unknown> | null;
-  invoiceData: InvoiceData | null;
+  activeQuery: any;
+  invoiceData: any;
   summary: InvoiceSummary;
-  canonicalData: Record<string, unknown> | null;
+  canonicalData: any;
   failedOutboxTasks: OutboxTask[];
   resolvedInvoiceId?: string | null;
   snapshot: SnapshotData;
@@ -126,7 +126,7 @@ interface IndividualRecoveryTabProps {
   setReason: (value: string) => void;
   handleRepair: () => void;
   repairing: boolean;
-  availableTaskKeys: string[];
+  availableTaskKeys: readonly string[];
   availableAutoRecoveryTasks: string[];
   handleSingleAutoRecovery: () => void;
   repairResult: RepairResult | null;
@@ -755,4 +755,3 @@ IndividualRecoveryTab.propTypes = {
   updateInvoiceNumberEverywhere: PropTypes.func.isRequired,
   updatingInvoiceNumber: PropTypes.bool.isRequired,
 };
-

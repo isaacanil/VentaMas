@@ -7,6 +7,10 @@ declare module 'styled-components' {
     divider?: string;
     bg?: Record<string, string>;
     background?: Record<string, string>;
+    palette?: {
+      background?: Record<string, string>;
+      text?: Record<string, string>;
+    };
     border?: Record<string, string>;
     action?: Record<string, string | number>;
     [key: string]: unknown;

@@ -52,7 +52,7 @@ export const MiniClientSelector = ({
 
   const handleSelectClient = (clientData: ClientRow) => {
     // dispatch(setClient(clientData.client));
-    dispatch(addClient(clientData.client));
+    dispatch(addClient(clientData.client as any));
     onClose();
   };
 

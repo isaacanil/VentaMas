@@ -27,7 +27,7 @@ export const TaxNormalizationResultAlert = ({
         type="error"
         showIcon
         message="No se pudo completar la normalizacion"
-        description={result.error}
+        description={(result as { error: string }).error}
       />
     );
   }
@@ -83,7 +83,7 @@ export const ClientNormalizationResultAlert = ({
         type="error"
         showIcon
         message="No se pudo completar la normalizacion de clientes"
-        description={result.error}
+        description={(result as { error: string }).error}
       />
     );
   }
@@ -135,7 +135,7 @@ export const ProductFixResultAlert = ({
         type="error"
         showIcon
         message="No se pudo corregir los IDs de productos"
-        description={result.error}
+        description={(result as { error: string }).error}
       />
     );
   }
@@ -165,7 +165,7 @@ export const ExpenseTimestampResultAlert = ({
         type="error"
         showIcon
         message="No se pudo normalizar las fechas de los gastos"
-        description={result.error}
+        description={(result as { error: string }).error}
       />
     );
   }

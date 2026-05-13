@@ -27,7 +27,7 @@ type GroupRow = {
 
 type DataRow = {
   key: string;
-  isGroupRow?: false;
+  isGroupRow: false;
   time: string;
   actor: string;
   warehouse: string | null;
@@ -36,6 +36,9 @@ type DataRow = {
 };
 
 type TableRowData = GroupRow | DataRow;
+
+const isGroupRow = (record: TableRowData): record is GroupRow =>
+  record.isGroupRow === true;
 
 const buildTableData = (events: PurchaseReceiptEvent[]): TableRowData[] => {
   const rows: TableRowData[] = [];
@@ -60,6 +63,7 @@ const buildTableData = (events: PurchaseReceiptEvent[]): TableRowData[] => {
     if (!items.length) {
       rows.push({
         key: `${event.id ?? eventIdx}-empty`,
+        isGroupRow: false,
         time,
         actor,
         warehouse,
@@ -70,6 +74,7 @@ const buildTableData = (events: PurchaseReceiptEvent[]): TableRowData[] => {
       items.forEach((item, itemIdx) => {
         rows.push({
           key: `${event.id ?? eventIdx}-${item.id ?? itemIdx}`,
+          isGroupRow: false,
           time,
           actor,
           warehouse,
@@ -91,7 +96,7 @@ const tableColumns: ColumnsType<TableRowData> = [
     dataIndex: 'time',
     width: 70,
     render: (_v, record) => {
-      if (record.isGroupRow) {
+      if (isGroupRow(record)) {
         return {
           children: <DateGroupCell>{record.dateLabel}</DateGroupCell>,
           props: { colSpan: COL_COUNT },
@@ -105,7 +110,7 @@ const tableColumns: ColumnsType<TableRowData> = [
     dataIndex: 'product',
     ellipsis: true,
     render: (_v, record) => {
-      if (record.isGroupRow) return { children: null, props: { colSpan: 0 } };
+      if (isGroupRow(record)) return { children: null, props: { colSpan: 0 } };
       return <span style={{ fontSize: 13, fontWeight: 500 }}>{record.product}</span>;
     },
   },
@@ -115,7 +120,7 @@ const tableColumns: ColumnsType<TableRowData> = [
     width: 140,
     ellipsis: true,
     render: (_v, record) => {
-      if (record.isGroupRow) return { children: null, props: { colSpan: 0 } };
+      if (isGroupRow(record)) return { children: null, props: { colSpan: 0 } };
       return (
         <span style={{ fontSize: 13, color: record.warehouse ? '#262626' : '#bfbfbf' }}>
           {record.warehouse ?? '—'}
@@ -129,7 +134,7 @@ const tableColumns: ColumnsType<TableRowData> = [
     width: 150,
     ellipsis: true,
     render: (_v, record) => {
-      if (record.isGroupRow) return { children: null, props: { colSpan: 0 } };
+      if (isGroupRow(record)) return { children: null, props: { colSpan: 0 } };
       return <span style={{ fontSize: 13 }}>{record.actor}</span>;
     },
   },
@@ -139,7 +144,7 @@ const tableColumns: ColumnsType<TableRowData> = [
     align: 'right',
     width: 90,
     render: (_v, record) => {
-      if (record.isGroupRow) return { children: null, props: { colSpan: 0 } };
+      if (isGroupRow(record)) return { children: null, props: { colSpan: 0 } };
       return <span style={{ fontWeight: 600 }}>{formatQty(record.received)}</span>;
     },
   },

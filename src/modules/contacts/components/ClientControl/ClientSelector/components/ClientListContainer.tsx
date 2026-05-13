@@ -62,11 +62,6 @@ const LoadingContainer = styled.div`
   }
 `;
 
-const VirtuosoContainer = styled(Virtuoso)`
-  height: 100%;
-  width: 100%;
-`;
-
 const ListWrapper = styled.div`
   padding: 0.75em 0.6em 0.8em;
   box-sizing: border-box;
@@ -124,6 +119,7 @@ const VirtuosoItem = forwardRef<
   </ItemContainer>
 ));
 VirtuosoItem.displayName = 'VirtuosoItem';
+const VirtuosoContainer = Virtuoso as React.ComponentType<Record<string, any>>;
 
 const ClientListContainerComponent = ({
   clients,
@@ -163,11 +159,13 @@ const ClientListContainerComponent = ({
             </ClientsHeader>
           </HeaderWrapper>
           <VirtuosoContainer
+            style={{ height: '100%', width: '100%' }}
             data={clients}
             itemContent={(index, item) => {
+              const listItem = item as ClientListItem;
               const resolvedClient: ClientDataWithId = {
-                ...item.client,
-                id: String(item.client.id ?? item.id ?? ''),
+                ...listItem.client,
+                id: String(listItem.client.id ?? listItem.id ?? ''),
               };
               return (
                 <Client
@@ -180,9 +178,15 @@ const ClientListContainerComponent = ({
                 />
               );
             }}
-            itemKey={(index, item) =>
-              item?.id ?? item?.client?.id ?? item?.client?.numberId ?? index
-            }
+            itemKey={(index, item) => {
+              const listItem = item as ClientListItem | undefined;
+              return (
+                listItem?.id ??
+                listItem?.client?.id ??
+                listItem?.client?.numberId ??
+                index
+              );
+            }}
             components={{
               List: VirtuosoList,
               Item: VirtuosoItem,

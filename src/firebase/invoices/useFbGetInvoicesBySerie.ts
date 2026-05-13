@@ -79,7 +79,7 @@ export const useFbGetInvoicesBySerie = (
         }));
 
         const filtered = rawInvoices.filter((invoice) => {
-          const ncf = invoice?.data?.NCF || invoice?.NCF || '';
+          const ncf = String(invoice?.data?.NCF || invoice?.NCF || '');
           if (!ncf) return false;
           // Validación extra aunque la query ya filtra por rango
           if (!ncf.toUpperCase().startsWith(boundsNormalized)) return false;

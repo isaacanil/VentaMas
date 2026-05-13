@@ -62,7 +62,7 @@ interface BulkRecoveryTabProps {
 
 export const BulkRecoveryTab: React.FC<BulkRecoveryTabProps> = ({
   bulkOptions,
-  bulkResult,
+  bulkResult = null,
   bulkLoading,
   updateBulkOption,
   setBulkResult,
@@ -271,8 +271,4 @@ BulkRecoveryTab.propTypes = {
   updateBulkOption: PropTypes.func.isRequired,
   setBulkResult: PropTypes.func.isRequired,
   handleBulkAutoRecovery: PropTypes.func.isRequired,
-};
-
-BulkRecoveryTab.defaultProps = {
-  bulkResult: null,
 };

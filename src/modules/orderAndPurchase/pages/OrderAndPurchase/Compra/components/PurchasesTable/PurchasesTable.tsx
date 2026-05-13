@@ -150,8 +150,8 @@ export function PurchaseTable({
     <>
       <AdvancedTable
         tableName={tableName}
-        columns={columns}
-        data={mappedData}
+        columns={columns as any}
+        data={mappedData as any}
         loading={loadingPurchases}
         groupBy={'dateGroup'}
         rowSize={'large'}

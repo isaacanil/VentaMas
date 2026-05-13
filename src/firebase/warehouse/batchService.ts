@@ -79,7 +79,7 @@ export const createBatch = async (
 
     await setDoc(batchDocRef, batch);
 
-    return batch;
+    return batch as unknown as BatchRecord;
   } catch (error) {
     console.error('Error al añadir el batch:', error);
     throw error;
@@ -396,30 +396,21 @@ export const useListenBatchesByIds = (
 ) => {
   const user = useSelector(selectUser) as InventoryUser | null;
   const [data, setData] = useState<BatchRecord[]>([]);
-  const [loading, setLoading] = useState(
-    () =>
-      Array.isArray(batchIDs) &&
-      batchIDs.length > 0 &&
-      Boolean(user?.businessID),
-  );
   const [error, setError] = useState<unknown | null>(null);
-
-  const stableBatchIDs = useMemo(
-    () => (Array.isArray(batchIDs) ? batchIDs : []),
-    // eslint_disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(batchIDs)],
-  );
+  const [resolvedKey, setResolvedKey] = useState('');
+  const batchIDsKey = Array.isArray(batchIDs)
+    ? batchIDs.map((batchID) => String(batchID)).join('\u001f')
+    : '';
+  const canListen = Boolean(batchIDsKey && user?.businessID);
+  const listenKey = canListen ? `${user?.businessID ?? ''}\u001e${batchIDsKey}` : '';
 
   useEffect(() => {
+    const stableBatchIDs = batchIDsKey ? batchIDsKey.split('\u001f') : [];
+
     // Validaciones iniciales
     if (stableBatchIDs.length === 0 || !user?.businessID) {
-      setData([]);
-      setLoading(false);
       return undefined;
     }
-
-    setLoading(true);
-    setError(null);
 
     // Escuchar en tiempo real los IDs de batches
     const unsubscribe = listenAllBatchesByIds(
@@ -428,19 +419,25 @@ export const useListenBatchesByIds = (
       (updatedBatches) => {
         try {
           setData(updatedBatches);
-          setLoading(false);
+          setError(null);
+          setResolvedKey(listenKey);
         } catch (callbackError) {
           console.error('Error en el callback de onSnapshot:', callbackError);
           setError(callbackError);
+          setResolvedKey(listenKey);
         }
       },
     );
 
     // Cleanup
     return () => unsubscribe?.();
-  }, [stableBatchIDs, user]);
+  }, [batchIDsKey, listenKey, user]);
 
-  return { data, loading, error };
+  return {
+    data: canListen && resolvedKey === listenKey ? data : [],
+    loading: canListen ? resolvedKey !== listenKey : false,
+    error: canListen && resolvedKey === listenKey ? error : null,
+  };
 };
 
 export const checkAndDeleteEmptyBatch = async ({
@@ -489,9 +486,7 @@ export const checkAndDeleteEmptyBatch = async ({
     );
 
     // Obtener documentos con/sin transacción
-    const productStocksSnap = transaction
-      ? await transaction.get(q)
-      : await getDocs(q);
+    const productStocksSnap = await getDocs(q);
 
     if (productStocksSnap.empty) {
       const updateData = {

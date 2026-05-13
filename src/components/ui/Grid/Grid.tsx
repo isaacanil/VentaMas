@@ -2,7 +2,15 @@ import { LazyMotion, domAnimation, m } from 'framer-motion';
 import type { ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 
-const GridList = styled(m.ul)`
+type GridListProps = {
+  columns?: string;
+  isRow?: boolean;
+  padding?: 'bottom';
+};
+
+const MotionUl = m.ul as any;
+
+const GridList = styled(MotionUl)<GridListProps>`
   position: relative;
   display: grid;
   padding: 0;

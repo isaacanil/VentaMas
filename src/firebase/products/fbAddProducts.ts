@@ -5,7 +5,7 @@ import { fbAddProduct } from './fbAddProduct';
 
 type UserWithBusinessAndUid = UserWithBusiness & { uid: string };
 
-type ProductImport = ProductRecord & {
+type ProductImport = Omit<ProductRecord, 'activeIngredients'> & {
   id?: string;
   name?: string;
   stock?: number;
@@ -14,6 +14,7 @@ type ProductImport = ProductRecord & {
   activeIngredients?: string[] | string | null;
   barcode?: string | number;
 };
+type SanitizedProductImport = ProductImport & { stock: number };
 
 type ImportStats = {
   totalProducts: number;
@@ -101,7 +102,7 @@ const normalizeActiveIngredients = (
   return [];
 };
 
-const sanitizeProduct = (product: ProductImport): ProductImport => {
+const sanitizeProduct = (product: ProductImport): SanitizedProductImport => {
   const next = validateProductPricing(product);
   const normalizedName =
     typeof next.name === 'string' ? next.name.trim() : '';

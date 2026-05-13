@@ -208,7 +208,7 @@ export const DocumentCurrencySelector = ({
     dispatch(
       setAccountingContext({
         functionalCurrency: config.functionalCurrency,
-        manualRatesByCurrency: config.manualRatesByCurrency,
+        manualRatesByCurrency: config.manualRatesByCurrency as any,
       }),
     );
   }, [

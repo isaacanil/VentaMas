@@ -28,7 +28,7 @@ export const useFbGetDoctors = () => {
       return undefined;
     }
 
-    const doctorsRef = collection<DoctorRecord>(
+    const doctorsRef = collection(
       db,
       'businesses',
       user.businessID,
@@ -41,7 +41,7 @@ export const useFbGetDoctors = () => {
       (snapshot) => {
         const doctorsArray = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as DoctorRecord),
         }));
         setDoctors(doctorsArray);
         setLoading(false);

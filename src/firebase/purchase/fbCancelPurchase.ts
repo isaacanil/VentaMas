@@ -3,7 +3,7 @@ import { db } from '@/firebase/firebaseconfig';
 import { syncVendorBillFromPurchase } from '@/firebase/vendorBills/fbUpsertVendorBill';
 import type { UserIdentity } from '@/types/users';
 import { buildOrderStatusPatch } from '@/utils/order/status';
-import type { PurchaseReplenishment } from '@/utils/purchase/types';
+import type { Purchase, PurchaseReplenishment } from '@/utils/purchase/types';
 import { canCancelPurchase } from '@/utils/purchase/workflow';
 
 interface CancelPurchaseResult {
@@ -116,7 +116,7 @@ export const fbCancelPurchase = async (
         ...purchaseData,
         status: 'canceled',
         workflowStatus: 'canceled',
-      },
+      } as Purchase,
     });
 
     console.log(

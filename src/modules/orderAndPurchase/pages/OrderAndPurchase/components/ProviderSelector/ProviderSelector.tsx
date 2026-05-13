@@ -9,7 +9,10 @@ import type { FormItemProps, MenuProps, InputRef } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { normalizeText } from '@/utils/text';
-import type { ProviderDataItem, ProviderInfo } from '@/utils/provider/types';
+import type {
+  ProviderDataItem,
+  ProviderInfo as ProviderInfoRecord,
+} from '@/utils/provider/types';
 import { comprobantesOptions } from '@/modules/contacts/pages/Contact/Provider/components/CreateContact/constants';
 
 const Wrapper = styled.div`
@@ -81,7 +84,7 @@ const ProviderCard = styled.div<{ $isSelected?: boolean }>`
   }
 `;
 
-const ProviderInfo = styled.div`
+const ProviderInfoCard = styled.div`
   padding: 0.4em 0.6em 0.6em;
   cursor: pointer;
   border: 1px solid #d9d9d9;
@@ -135,10 +138,10 @@ const ProviderInfo = styled.div`
 interface ProviderSelectorProps {
   label?: FormItemProps['label'];
   providers?: ProviderDataItem[];
-  selectedProvider?: ProviderInfo | null;
-  onSelectProvider?: (provider: ProviderInfo | null) => void;
+  selectedProvider?: ProviderInfoRecord | null;
+  onSelectProvider?: (provider: ProviderInfoRecord | null) => void;
   onAddProvider?: () => void;
-  onEditProvider?: (provider: ProviderInfo) => void;
+  onEditProvider?: (provider: ProviderInfoRecord) => void;
   validateStatus?: FormItemProps['validateStatus'];
   help?: FormItemProps['help'];
 }
@@ -212,12 +215,12 @@ const ProviderSelector = ({
     handleProviderSelect(providerData);
   };
 
-  const openModalUpdateMode = (provider: ProviderInfo) => {
+  const openModalUpdateMode = (provider: ProviderInfoRecord) => {
     onEditProvider?.(provider);
     setVisible(false);
   };
 
-  const getMenuItems = (provider: ProviderInfo): MenuProps['items'] => [
+  const getMenuItems = (provider: ProviderInfoRecord): MenuProps['items'] => [
     {
       key: 'edit',
       label: 'Editar',
@@ -243,7 +246,7 @@ const ProviderSelector = ({
       validateStatus={validateStatus}
       help={help}
     >
-      <ProviderInfo
+      <ProviderInfoCard
         className={!selectedProvider ? 'empty' : ''}
         onClick={() => setVisible(true)}
       >
@@ -273,7 +276,7 @@ const ProviderSelector = ({
             </div>
           </>
         )}
-      </ProviderInfo>
+      </ProviderInfoCard>
 
       <Drawer
         title="Lista de Proveedores"

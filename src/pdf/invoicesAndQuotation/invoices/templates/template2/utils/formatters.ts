@@ -5,6 +5,7 @@ import { resolveInvoiceDocumentCurrency } from '@/utils/invoice/documentCurrency
 import { toMillis } from '@/utils/date/dateUtils';
 import type { TimestampLike } from '@/utils/date/types';
 import type { InvoiceProduct } from '@/types/invoice';
+import type { SupportedDocumentCurrency } from '@/types/products';
 import type { InvoicePdfData } from '@/pdf/invoicesAndQuotation/types';
 
 type DiscountSource =
@@ -14,11 +15,11 @@ type DiscountSource =
 
 export const resolvePdfCurrency = (
   data?: InvoicePdfData | null,
-): 'DOP' | 'USD' => resolveInvoiceDocumentCurrency(data);
+): SupportedDocumentCurrency => resolveInvoiceDocumentCurrency(data);
 
 export function money(
   value: number | string | null | undefined,
-  currency: 'DOP' | 'USD' = 'DOP',
+  currency: SupportedDocumentCurrency = 'DOP',
 ): string {
   return formatPriceByCurrency(value ?? 0, currency);
 }

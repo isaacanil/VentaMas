@@ -237,7 +237,7 @@ export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
 
   return (
     <Container
-      variants={SIDEBAR_VARIANTS}
+      variants={SIDEBAR_VARIANTS as any}
       initial="closed"
       animate={isOpen ? 'open' : 'closed'}
     >

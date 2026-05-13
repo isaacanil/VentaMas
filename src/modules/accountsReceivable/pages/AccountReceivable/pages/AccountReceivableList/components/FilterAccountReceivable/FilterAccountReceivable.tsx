@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar as CommonFilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar/FilterBar';
 import { icons } from '@/constants/icons/icons';
 import useBusiness from '@/hooks/useBusiness';
 
@@ -348,7 +351,7 @@ export const FilterAccountReceivable = ({
 
   return (
     <CommonFilterBar
-      items={items}
+      items={items as FilterBarItem[]}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={hasActiveFilters ? handleClearFilters : null}
       mobileHeaderRight={mobileTotals}

@@ -67,8 +67,6 @@ export const CheckoutAction = ({
       <Receipt ref={componentToPrintRef} data={bill} />
       <ButtonGroup>
         <Button
-          borderRadius="normal"
-          title="Cancelar"
           onClick={showCancelSaleConfirm}
           disabled={ProductSelected.length >= 1 ? false : true}
         >
@@ -77,8 +75,6 @@ export const CheckoutAction = ({
 
         <Button
           type="primary"
-          borderRadius="normal"
-          title="Facturar"
           onClick={handleInvoice}
           color="primary"
           disabled={ProductSelected.length >= 1 ? false : true}

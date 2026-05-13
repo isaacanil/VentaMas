@@ -79,7 +79,8 @@ export const ClientForm = ({ isOpen, mode, data }: ClientFormProps) => {
   const handleCreateClient = async () => {
     if (validateClient(client)) {
       try {
-        fbAddClient(user, client);
+        if (!user?.businessID) return;
+        fbAddClient({ businessID: user.businessID }, client);
       } catch {
         // Handle error appropriately
       }
@@ -87,7 +88,11 @@ export const ClientForm = ({ isOpen, mode, data }: ClientFormProps) => {
   };
   const handleUpdateClient = async () => {
     try {
-      fbUpdateClient(user, client);
+      if (!user?.businessID) return;
+      fbUpdateClient(
+        { businessID: user.businessID },
+        client as ClientInput & { id: string },
+      );
     } catch {
       // Handle error appropriately
     }
@@ -194,8 +199,8 @@ export const ClientForm = ({ isOpen, mode, data }: ClientFormProps) => {
               value={client.address ?? ''}
               name="address"
               id=""
-              cols="20"
-              rows="5"
+              cols={20}
+              rows={5}
               placeholder="27 de Febrero #12, Ensanche Ozama, Santo Domingo"
               onChange={handleFieldChange}
             ></textarea>

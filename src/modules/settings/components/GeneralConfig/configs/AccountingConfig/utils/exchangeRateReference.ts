@@ -60,7 +60,7 @@ const normalizeCurrency = (
   value: unknown,
 ): SupportedDocumentCurrency | null =>
   typeof value === 'string' && isSupportedDocumentCurrency(value)
-    ? value.trim().toUpperCase()
+    ? (value.trim().toUpperCase() as SupportedDocumentCurrency)
     : null;
 
 const normalizeDocumentCurrencies = (

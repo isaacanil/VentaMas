@@ -18,6 +18,8 @@ import {
   type TimestampLike,
 } from '../utils/activityUtils';
 
+export type { PresenceState } from '../utils/activityUtils';
+
 export type UserActivityUser = UserIdentity & {
   realName?: string;
   displayName?: string;

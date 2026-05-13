@@ -7,7 +7,10 @@ import {
 } from '@/utils/pricing';
 import type { InvoiceData, InvoiceProduct } from '@/types/invoice';
 
-type LegacyInvoiceProduct = InvoiceProduct & {
+type LegacyInvoiceProduct = Omit<
+  InvoiceProduct,
+  'amountToBuy' | 'cost' | 'price' | 'tax'
+> & {
   productName?: string;
   productImageURL?: string;
   barCode?: string;
@@ -16,6 +19,7 @@ type LegacyInvoiceProduct = InvoiceProduct & {
   averagePrice?: number;
   minimumPrice?: number;
   cost?: { unit?: number };
+  price?: number | { unit?: number | string };
   tax?: { value?: number };
   isVisible?: boolean;
   trackInventory?: boolean;
@@ -26,7 +30,7 @@ type LegacyInvoiceProduct = InvoiceProduct & {
 };
 
 type InvoiceDocData = {
-  data?: InvoiceData & { products?: LegacyInvoiceProduct[] };
+  data?: Omit<InvoiceData, 'products'> & { products?: LegacyInvoiceProduct[] };
 };
 
 const toStringValue = (value: unknown): string =>
@@ -71,7 +75,11 @@ export const fbFixInvoicesForMultipleBusinesses = async (): Promise<void> => {
         if (data && data.products) {
           const productsTransformed = data.products.map((product) => {
             if (product?.productName) {
-              const price = product?.price?.unit || 0;
+              const rawPrice = product.price;
+              const price =
+                typeof rawPrice === 'object' && rawPrice !== null
+                  ? Number(rawPrice.unit) || 0
+                  : Number(rawPrice) || 0;
               const taxPercentage =
                 convertDecimalToPercentage(product?.tax?.value) || 0;
               const total = getPriceWithoutTax(price, taxPercentage);

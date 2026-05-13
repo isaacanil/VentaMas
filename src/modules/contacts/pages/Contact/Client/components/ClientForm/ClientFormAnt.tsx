@@ -15,6 +15,7 @@ import { CLIENT_MODE_BAR } from '@/features/clientCart/clientMode';
 import { toggleClientModal } from '@/features/modals/modalSlice';
 import type {
   ClientInput,
+  NormalizedClient,
 } from '@/firebase/client/clientNormalizer';
 import type { UserIdentity, UserWithBusiness } from '@/types/users';
 import { submitClientForm } from './utils/submitClientForm';

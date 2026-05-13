@@ -84,8 +84,8 @@ export const fbAddOrder = async (
       const files = (await fbUploadFiles(
         user,
         'orderReceipts',
-        fileList,
-      )) as Attachment[];
+        fileList as unknown as Parameters<typeof fbUploadFiles>[2],
+      )) as unknown as Attachment[];
       data.fileList = [...(data?.fileList || []), ...files];
     }
     await setDoc(OrderRef, {
@@ -122,13 +122,13 @@ export async function addOrder({
       uploadedFiles = (await fbUploadFiles(
         user,
         'purchaseAndOrderFiles',
-        files,
+        files as unknown as Parameters<typeof fbUploadFiles>[2],
         {
           customMetadata: {
             type: 'purchase_attachment',
           },
         },
-      )) as Attachment[];
+      )) as unknown as Attachment[];
     }
 
     const existingAttachments = order.attachmentUrls || [];

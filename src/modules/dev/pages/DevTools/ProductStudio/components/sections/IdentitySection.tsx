@@ -338,7 +338,7 @@ export const IdentitySection = ({
       </Form.Item>
     </FieldGrid>
 
-    <Divider orientation="left">
+    <Divider titlePlacement="left">
       <DividerLabel>
         <SettingOutlined /> Visibilidad
       </DividerLabel>

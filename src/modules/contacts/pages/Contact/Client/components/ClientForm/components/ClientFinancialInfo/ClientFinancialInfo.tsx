@@ -40,7 +40,7 @@ const ClientFinancialInfo = ({ client }: ClientFinancialInfoProps) => {
 
   const [currentPageOpen, setCurrentPageOpen] = useState(1);
   const [currentPageClosed, setCurrentPageClosed] = useState(1);
-  const [filterStatus, setFilterStatus] = useState('open');
+  const [filterStatus, setFilterStatus] = useState<'open' | 'closed'>('open');
   const isActiveValue = filterStatus === 'open';
 
   // listener dinámico según filtro
@@ -127,7 +127,7 @@ const ClientFinancialInfo = ({ client }: ClientFinancialInfoProps) => {
               return (
                 <AccountCard
                   key={accountKey ?? accountNumber}
-                  account={account}
+                  account={account as any}
                   accountNumber={accountNumber}
                   date={account.date}
                   frequency={account.frequency}

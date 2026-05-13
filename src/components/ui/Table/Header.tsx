@@ -5,12 +5,12 @@ import { Row } from './Row';
 
 type HeaderProps = {
   children: ReactNode;
-  colWidth?: number | string;
+  colWidth?: Array<{ max: number | string; min: number | string }>;
   scrolled?: boolean;
 };
 
 type HeaderStyleProps = {
-  scrolled?: boolean;
+  $scrolled?: boolean;
 };
 
 export const Header = ({
@@ -19,14 +19,14 @@ export const Header = ({
   scrolled = false,
 }: HeaderProps) => {
   return (
-    <Container scrolled={scrolled}>
+    <Container $scrolled={scrolled}>
       <Row element="header" col={colWidth}>
         {children}
       </Row>
     </Container>
   );
 };
-const Container = styled.div`
+const Container = styled.div<HeaderStyleProps>`
   position: sticky;
   top: 0;
   height: 2.4em;
@@ -40,7 +40,7 @@ const Container = styled.div`
   font-weight: 500;
   border-bottom: var(--border-primary);
   ${(props: HeaderStyleProps) =>
-    props.scrolled &&
+    props.$scrolled &&
     `
         background-color: var(--white);
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.249);

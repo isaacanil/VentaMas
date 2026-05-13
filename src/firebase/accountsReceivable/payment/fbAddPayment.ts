@@ -9,11 +9,20 @@ import {
 } from '@/utils/accounting/monetary';
 import type { AccountsReceivablePayment } from '@/utils/accountsReceivable/types';
 
+type AccountsReceivablePaymentInput = Omit<
+  Partial<AccountsReceivablePayment>,
+  'amount' | 'totalAmount' | 'totalPaid'
+> & {
+  amount?: number | string;
+  totalAmount?: number | string;
+  totalPaid?: number | string;
+  paymentMethod?: AccountsReceivablePayment['paymentMethods'];
+  paymentMethods?: AccountsReceivablePayment['paymentMethods'];
+};
+
 export const fbAddPayment = async (
   user: UserIdentity,
-  paymentDetails: AccountsReceivablePayment & {
-    paymentMethod?: AccountsReceivablePayment['paymentMethods'];
-  },
+  paymentDetails: AccountsReceivablePaymentInput,
 ): Promise<AccountsReceivablePayment> => {
   const id = nanoid();
   const paymentsRef = getDocRef(
@@ -24,18 +33,32 @@ export const fbAddPayment = async (
   );
   const paymentMethod =
     paymentDetails?.paymentMethod || paymentDetails?.paymentMethods || [];
-  const amountPaid =
+  const amountPaid = Number(
     paymentDetails?.totalPaid ||
-    paymentDetails?.totalAmount ||
-    paymentDetails?.amount ||
-    0;
+      paymentDetails?.totalAmount ||
+      paymentDetails?.amount ||
+      0,
+  );
+  const safeAmountPaid = Number.isFinite(amountPaid) ? amountPaid : 0;
+  const {
+    amount: _amount,
+    totalAmount: _totalAmount,
+    totalPaid: _totalPaid,
+    ...paymentDetailsData
+  } = paymentDetails;
   const paymentData: AccountsReceivablePayment = {
     ...defaultPaymentsAR,
-    ...paymentDetails,
+    ...paymentDetailsData,
     id,
     paymentMethod,
     paymentMethods: paymentMethod,
-    amount: amountPaid,
+    amount: safeAmountPaid,
+    ...(paymentDetails.totalPaid !== undefined
+      ? { totalPaid: Number(paymentDetails.totalPaid) }
+      : {}),
+    ...(paymentDetails.totalAmount !== undefined
+      ? { totalAmount: Number(paymentDetails.totalAmount) }
+      : {}),
     date: Timestamp.now(),
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),

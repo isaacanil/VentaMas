@@ -61,7 +61,7 @@ export const fbUpdateFiscalAlertsConfig = async (
 
     if (docSnap.exists()) {
       // Actualizar documento existente
-      await updateDoc(configRef, configData);
+      await updateDoc(configRef, configData as unknown as Record<string, unknown>);
     } else {
       // Crear nuevo documento
       await setDoc(configRef, configData);

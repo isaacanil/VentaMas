@@ -48,7 +48,7 @@ const Dependent = ({ form, onDependentChange }: DependentProps) => {
 
   // Cargamos beneficiarios (dependientes) del usuario/cliente actual
   const beneficiaries = useInsuranceBeneficiaries(
-    user,
+    user as any,
     client?.id,
   ) as DependentRecord[];
   const dependentId = Form.useWatch('dependentId', form) as string | null;
@@ -76,7 +76,7 @@ const Dependent = ({ form, onDependentChange }: DependentProps) => {
           relationship: values.relationship as string | undefined,
         };
 
-        return addInsuranceBeneficiary(user, formattedValues, client?.id).then(
+        return addInsuranceBeneficiary(user as any, formattedValues, client?.id).then(
           () => {
             message.success('Dependiente agregado exitosamente');
             setShowNewDependentModal(false);

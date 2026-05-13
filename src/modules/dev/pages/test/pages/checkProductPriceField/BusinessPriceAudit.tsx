@@ -201,6 +201,9 @@ export default function BusinessPriceAudit() {
   const handleProgress = (p: ProgressPayload) => {
     dispatch({ type: 'applyProgress', value: p });
   };
+  const setProgress = (value: ProgressState | null) => {
+    dispatch({ type: 'setProgress', value });
+  };
 
   // Helpers para exportar CSV después de cada acción
   const ts = () => new Date().toISOString().replace(/[:.]/g, '-');

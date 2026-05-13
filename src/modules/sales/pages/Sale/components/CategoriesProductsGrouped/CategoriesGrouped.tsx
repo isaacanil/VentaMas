@@ -63,7 +63,7 @@ export const CategoriesGrouped = ({
             >
               <Title>{category}</Title>
               <Grid
-                variants={containerVariants}
+                variants={containerVariants as any}
                 initial="hidden"
                 animate="visible"
                 padding="bottom"

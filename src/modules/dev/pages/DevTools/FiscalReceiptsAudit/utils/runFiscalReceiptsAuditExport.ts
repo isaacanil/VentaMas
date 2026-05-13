@@ -21,7 +21,7 @@ export const runFiscalReceiptsAuditExport = async ({
   startDate: Date | null;
 }): Promise<FiscalReceiptsAuditExportResult> => {
   try {
-    await exportBusinessWorkbook(businessResult, startDate, endDate);
+    await exportBusinessWorkbook(businessResult as any, startDate, endDate);
     return {
       status: 'success',
     };

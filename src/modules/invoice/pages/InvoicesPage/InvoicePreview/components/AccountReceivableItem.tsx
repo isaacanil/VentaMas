@@ -128,9 +128,9 @@ export const AccountReceivableItem = ({
         <Payment
           installments={totalInstallments}
           isActive={ar.isActive}
-          balance={ar.arBalance}
+          balance={Number(ar.arBalance ?? 0)}
           account={ar}
-          client={client}
+          client={client as Record<string, unknown> & { id?: string }}
         />
       </ActionBar>
 
@@ -225,7 +225,7 @@ const DetailLabel = styled.span`
   color: #666;
 `;
 
-const DetailValue = styled.span`
+const DetailValue = styled.span<{ $highlight?: boolean }>`
   font-size: 0.75rem;
   font-weight: ${({ $highlight }) => ($highlight ? '700' : '500')};
   color: ${({ $highlight }) => ($highlight ? '#cf1322' : '#333')};

@@ -165,7 +165,7 @@ const assertAccountingPeriodOpenWithReader = async ({
   const accountingSettings = await getAccountingSettingsForBusiness(
     normalizedBusinessId,
   );
-  if (accountingSettings?.generalAccountingEnabled !== true) {
+  if ((accountingSettings as any)?.generalAccountingEnabled !== true) {
     return null;
   }
 

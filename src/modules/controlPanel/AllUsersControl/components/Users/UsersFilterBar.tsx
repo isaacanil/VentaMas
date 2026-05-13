@@ -1,7 +1,7 @@
 import { Input, Select, Space } from 'antd';
 import { useMemo } from 'react';
 
-import type { ChangeEvent, FC, ReactNode } from 'react';
+import type { CSSProperties, ChangeEvent, FC, ReactNode } from 'react';
 
 export interface UsersFilterBarFilters {
   search: string;
@@ -39,17 +39,17 @@ interface SearchableOption {
   searchText?: string;
 }
 
-const optionContainerStyle = {
+const optionContainerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   lineHeight: 1.2,
 };
 
-const optionPrimaryStyle = {
+const optionPrimaryStyle: CSSProperties = {
   fontWeight: 500,
 };
 
-const optionSecondaryStyle = {
+const optionSecondaryStyle: CSSProperties = {
   fontSize: 12,
   color: '#6b7280',
 };

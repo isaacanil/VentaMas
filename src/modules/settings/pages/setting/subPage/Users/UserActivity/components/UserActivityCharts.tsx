@@ -159,7 +159,7 @@ const DayLabel = styled.div`
   align-items: center;
 `;
 
-const Cell = styled.div`
+const Cell = styled.div<{ $intensity?: number }>`
   aspect-ratio: 1;
   background-color: #22caec;
   opacity: ${({ $intensity }) => ($intensity > 0 ? $intensity : 0.1)};

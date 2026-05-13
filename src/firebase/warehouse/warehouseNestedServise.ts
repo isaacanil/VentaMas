@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import { selectUser } from '../../features/auth/userSlice';
 import { buildLocationPath } from '@/utils/inventory/locations';
 import type {
-  InventoryStockItem,
   InventoryUser,
+  ProductStockRecord,
   RowShelfRecord,
   SegmentRecord,
   ShelfRecord,
@@ -21,23 +21,23 @@ import { listenAllWarehouses } from './warehouseService';
 
 type WarehouseNode = WarehouseRecord & {
   shelves?: ShelfNode[];
-  productStock?: InventoryStockItem[];
+  productStock?: ProductStockRecord[];
 };
 
 type ShelfNode = ShelfRecord & {
   rows?: RowNode[];
-  productStock?: InventoryStockItem[];
+  productStock?: ProductStockRecord[];
 };
 
 type RowNode = RowShelfRecord & {
   segments?: SegmentNode[];
-  productStock?: InventoryStockItem[];
+  productStock?: ProductStockRecord[];
   warehouseId?: string;
   shelfId?: string;
 };
 
 type SegmentNode = SegmentRecord & {
-  productStock?: InventoryStockItem[];
+  productStock?: ProductStockRecord[];
 };
 
 type WarehouseStockMap = Record<string, ProductStockRecord[]>;

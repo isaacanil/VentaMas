@@ -435,7 +435,9 @@ export const usePaymentFormController = () => {
       const errorMessage =
         typedError instanceof Error
           ? typedError.message
-          : typedError?.message || 'Ocurrió un error desconocido';
+          : error && typeof error === 'object' && 'message' in error
+            ? String((error as { message?: unknown }).message)
+            : 'Ocurrió un error desconocido';
       notification.error({
         message: 'Error al procesar el pago',
         description: errorMessage,

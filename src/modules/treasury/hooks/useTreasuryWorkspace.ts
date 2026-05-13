@@ -468,7 +468,7 @@ export const useTreasuryWorkspace = ({
           allowOverdraft: draft.allowOverdraft === true,
           businessId,
           amount,
-          currency: draft.currency,
+          currency: draft.currency as any,
           occurredAt: occurredAt.toMillis(),
           reference: draft.reference?.trim() || null,
           note: draft.notes?.trim() || null,

@@ -118,7 +118,10 @@ export const ProductOutflowModal = ({
         message.error('No se encontró un negocio válido.');
         return;
       }
-      await fbUpdateProductOutflow(user, normalizeOutflowData(outFlowProduct.data));
+      await fbUpdateProductOutflow(
+        user,
+        normalizeOutflowData(outFlowProduct.data as DraftProductOutflowData),
+      );
     } catch (error) {
       console.error('Error updating product outflow', error);
     }
@@ -129,7 +132,10 @@ export const ProductOutflowModal = ({
         message.error('No se encontró un usuario válido.');
         return;
       }
-      await fbAddProductOutFlow(user, normalizeOutflowData(outFlowProduct.data));
+      await fbAddProductOutFlow(
+        user,
+        normalizeOutflowData(outFlowProduct.data as DraftProductOutflowData),
+      );
     } catch (error) {
       console.error('Error creating product outflow', error);
     }

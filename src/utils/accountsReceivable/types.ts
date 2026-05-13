@@ -81,6 +81,7 @@ export interface ReceivableInvoice {
 export interface ReceivableClient {
   id?: string;
   name?: string;
+  numberId?: number | string;
   personalID?: string;
   tel?: string;
   tel2?: string;

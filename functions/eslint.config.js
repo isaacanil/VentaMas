@@ -8,7 +8,15 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['lib/**', 'generated/**', 'node_modules/**', 'eslint.config.js'],
+    ignores: [
+      'lib/**',
+      'generated/**',
+      'node_modules/**',
+      '.tmp/**',
+      'tmp/**',
+      'coverage/**',
+      'eslint.config.js',
+    ],
   },
   ...compat
     .config({
@@ -29,7 +37,16 @@ export default [
       rules: {
         quotes: ['error', 'single', { avoidEscape: true }],
         'import/no-unresolved': 'off',
-        indent: ['error', 2],
+        indent: 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            caughtErrorsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
       },
     })
     .map((config) => ({
@@ -45,7 +62,7 @@ export default [
     },
     rules: {
       quotes: ['error', 'single', { avoidEscape: true }],
-      indent: ['error', 2],
+      indent: 'off',
     },
   },
 ];

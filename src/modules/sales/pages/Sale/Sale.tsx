@@ -265,7 +265,7 @@ export const Sales = (): JSX.Element => {
   );
   const currentCartCurrencies = Array.isArray(cartData?.products)
     ? cartData.products
-        .map((item) => item?.monetary?.documentCurrency)
+        .map((item) => (item as any)?.monetary?.documentCurrency)
         .filter(
           (currency): currency is SupportedDocumentCurrency =>
             Boolean(currency),
@@ -294,7 +294,7 @@ export const Sales = (): JSX.Element => {
       cartData?.documentCurrency,
     );
     const resolution = resolveProductForCartDocumentCurrency(
-      product,
+      product as any,
       documentCurrency,
       {
         hasCartProducts: Array.isArray(cartData?.products)

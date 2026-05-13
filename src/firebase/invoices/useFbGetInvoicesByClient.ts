@@ -3,6 +3,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  type QueryConstraint,
   where,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -21,7 +22,7 @@ const toMs = (value: TimestampLike): number | null => {
   return typeof millis === 'number' && Number.isFinite(millis) ? millis : null;
 };
 
-type DateRange = [TimestampLike, TimestampLike] | null;
+type DateRange = TimestampLike[] | null;
 
 export const useFbGetInvoicesByClient = (
   clientId: string | null | undefined,
@@ -51,7 +52,9 @@ export const useFbGetInvoicesByClient = (
 
     const invoicesRef = collection(db, 'businesses', businessID, 'invoices');
 
-    const constraints = [where('data.client.id', '==', clientId)];
+    const constraints: QueryConstraint[] = [
+      where('data.client.id', '==', clientId),
+    ];
 
     if (startMs != null && endMs != null) {
       constraints.push(where('data.date', '>=', new Date(startMs)));

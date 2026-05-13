@@ -94,7 +94,8 @@ export const MenuLink = ({
   };
 
   const isSubmenuItem = Boolean(item?.submenu);
-  const Component = item?.route && !isSubmenuItem ? MenuItemLink : MenuItemDiv;
+  const Component: React.ElementType =
+    item?.route && !isSubmenuItem ? MenuItemLink : MenuItemDiv;
   const componentProps = Component === MenuItemLink ? { to: item?.route } : {};
 
   return (

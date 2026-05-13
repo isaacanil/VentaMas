@@ -108,7 +108,7 @@ const normalizeRoleFields = <T extends Record<string, any>>(payload: T): T => {
   const normalizedRole = normalizeRoleId(payload?.activeRole ?? payload?.role);
   if (!normalizedRole) return payload;
 
-  const nextPayload = { ...payload, role: normalizedRole };
+  const nextPayload: Record<string, any> = { ...payload, role: normalizedRole };
   nextPayload.activeRole = normalizedRole;
   return nextPayload as T;
 };

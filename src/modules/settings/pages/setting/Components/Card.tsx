@@ -7,7 +7,7 @@ import type { SettingItem } from '../SettingData';
 
 type CardProps = {
   data: SettingItem;
-} & ComponentPropsWithoutRef<typeof Link>;
+} & Omit<ComponentPropsWithoutRef<typeof Link>, 'to'>;
 
 const CardComponent = (
   { data, ...rest }: CardProps,

@@ -1,6 +1,6 @@
 import type { InputNumberProps } from 'antd';
 import { InputNumber } from 'antd';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import styled from 'styled-components';
 
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
@@ -18,7 +18,7 @@ const THEME_COLOR_TO_CSS_VAR = {
 type ThemeColorKey = keyof typeof THEME_COLOR_TO_CSS_VAR;
 
 type InputWithHorizontalLabelProps = InputNumberProps & {
-  label?: ReactNode;
+  label?: number | string;
   themeColor?: ThemeColorKey | string;
   style?: CSSProperties;
 };

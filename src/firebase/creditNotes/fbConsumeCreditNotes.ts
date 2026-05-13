@@ -57,7 +57,7 @@ export const fbConsumeCreditNotes = async (
       async (transaction) => {
         // Leer todas las notas de crédito primero
         const creditNoteRefs = creditNotePayments.map((payment) =>
-          doc<CreditNoteRecord>(
+          doc(
             db,
             'businesses',
             user.businessID,
@@ -78,7 +78,7 @@ export const fbConsumeCreditNotes = async (
             );
           }
 
-          const creditNoteData = snapshot.data();
+          const creditNoteData = snapshot.data() as CreditNoteRecord;
           const currentAvailable = getAvailableAmount(creditNoteData);
           const amountToConsume = toNumber(
             creditNotePayments[index].amountUsed,

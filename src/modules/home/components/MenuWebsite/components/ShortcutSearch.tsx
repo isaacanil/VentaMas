@@ -287,8 +287,11 @@ const SearchContainer = styled.div`
   }
 
   @media (width <= 768px) {
+    grid-area: search;
     order: 3;
     flex-basis: 100%;
+    width: 100%;
+    min-width: 0;
     max-width: none;
   }
 `;

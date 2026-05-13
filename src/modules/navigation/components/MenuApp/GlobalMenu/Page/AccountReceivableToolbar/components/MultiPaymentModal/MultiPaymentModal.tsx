@@ -560,9 +560,9 @@ export const MultiPaymentModal = ({
     };
 
     const processingError = await fbProcessMultiplePaymentsAR(
-      user,
-      paymentData,
-      setReceipt,
+      user as any,
+      paymentData as any,
+      setReceipt as any,
     )
       .then(() => null)
       .catch((error) => error);

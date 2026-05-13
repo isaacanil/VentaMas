@@ -18,7 +18,7 @@ export async function getNextID(
     if (!user?.businessID) throw new Error('No user or businessID provided');
     if (quantity < 1) throw new Error('Quantity debe ser al menos 1');
 
-    const counterRef = doc<CounterDoc>(
+    const counterRef = doc(
       db,
       'businesses',
       user.businessID,
@@ -28,7 +28,7 @@ export async function getNextID(
 
     if (transaction) {
       const counterSnap = await transaction.get(counterRef);
-      const currentValue = counterSnap.data()?.value ?? 0;
+      const currentValue = (counterSnap.data() as CounterDoc | undefined)?.value ?? 0;
 
       if (counterSnap.exists()) {
         transaction.update(counterRef, { value: currentValue + quantity });
@@ -41,7 +41,8 @@ export async function getNextID(
 
     return await runTransaction(db, async (internalTransaction) => {
       const counterSnap = await internalTransaction.get(counterRef);
-      const currentValue = counterSnap.data()?.value ?? 0;
+      const currentValue =
+        (counterSnap.data() as CounterDoc | undefined)?.value ?? 0;
 
       if (counterSnap.exists()) {
         internalTransaction.update(counterRef, {
@@ -66,7 +67,7 @@ export async function getNextIDInTransaction(
   name: string,
   quantity = 1,
 ): Promise<number> {
-  const counterRef = doc<CounterDoc>(
+  const counterRef = doc(
     db,
     'businesses',
     user.businessID,
@@ -75,7 +76,7 @@ export async function getNextIDInTransaction(
   );
   const counterSnap = await transaction.get(counterRef);
 
-  const currentValue = counterSnap.data()?.value ?? 0;
+  const currentValue = (counterSnap.data() as CounterDoc | undefined)?.value ?? 0;
   if (counterSnap.exists()) {
     transaction.update(counterRef, { value: currentValue + quantity });
   } else {

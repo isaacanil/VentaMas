@@ -154,6 +154,7 @@ export default function InventoryMigration({
         return acc;
       },
       {
+        requested: 0,
         businesses: 0,
         updatedProducts: 0,
         totalProducts: 0,
@@ -285,7 +286,9 @@ export default function InventoryMigration({
             {results
               .map((item) => {
                 if (item?.error) {
-                  return `[${item.businessId}] ❌ ${item.error.message || item.error}`;
+                  return `[${item.businessId}] ❌ ${
+                    (item.error as { message?: string })?.message || item.error
+                  }`;
                 }
                 const updatedCount = Array.isArray(item?.updates)
                   ? item.updates.length

@@ -112,18 +112,19 @@ const normalizeCreditNotePayments = (
             ? note.amountToUse
             : Number(note.amountUsed ?? note.amountToUse ?? 0);
 
-      return {
+      const payment: CreditNotePaymentInput = {
         id,
         amountUsed: Number.isFinite(amountCandidate) ? amountCandidate : 0,
-        ncf: typeof note.ncf === 'string' ? note.ncf : undefined,
-        originalAmount:
-          typeof (note as { originalAmount?: unknown }).originalAmount ===
-          'number'
-            ? (note as { originalAmount: number }).originalAmount
-            : undefined,
       };
+      if (typeof note.ncf === 'string') {
+        payment.ncf = note.ncf;
+      }
+      if (typeof (note as { originalAmount?: unknown }).originalAmount === 'number') {
+        payment.originalAmount = (note as { originalAmount: number }).originalAmount;
+      }
+      return payment;
     })
-    .filter((note): note is CreditNotePaymentInput => Boolean(note));
+    .filter((note): note is CreditNotePaymentInput => note !== null);
 };
 
 export const fbProcessClientPaymentAR = async (

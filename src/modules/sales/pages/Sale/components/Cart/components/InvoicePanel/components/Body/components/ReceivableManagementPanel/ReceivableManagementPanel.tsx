@@ -121,7 +121,7 @@ export const ReceivableManagementPanel = ({
     comments,
   } = useSelector(selectAR) as any as AccountsReceivableState;
 
-  const cartData = useSelector(SelectCartData);
+  const cartData = useSelector(SelectCartData) as any;
   const client = useSelector(selectClient) as ClientIdentity | null;
 
   const change = useMemo(() => {

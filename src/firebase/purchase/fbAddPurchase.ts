@@ -114,7 +114,7 @@ export async function addPurchase({
       const files = localFiles
         .map(({ file }) => file)
         .filter(Boolean) as File[];
-      uploadedFiles = await fbUploadFiles(
+      uploadedFiles = (await fbUploadFiles(
         user,
         'purchaseAndOrderFiles',
         files,
@@ -123,7 +123,7 @@ export async function addPurchase({
             type: 'purchase_attachment',
           },
         },
-      );
+      )) as unknown as PurchaseAttachment[];
     }
 
     const existingAttachments = purchase.attachmentUrls || [];
@@ -216,7 +216,7 @@ export async function addPurchase({
     await setDoc(purchasesRef, data);
     await syncVendorBillFromPurchase({
       user,
-      purchase: data,
+      purchase: data as Purchase,
     });
     setLoading(false);
     return data;
@@ -324,7 +324,7 @@ export const fbAddPurchase = async (
         user,
         'purchaseReceipts',
         fileList,
-      )) as PurchaseAttachment[];
+      )) as unknown as PurchaseAttachment[];
       const existingFileList =
         (data as { fileList?: PurchaseAttachment[] }).fileList ?? [];
       data.fileList = [...existingFileList, ...files];

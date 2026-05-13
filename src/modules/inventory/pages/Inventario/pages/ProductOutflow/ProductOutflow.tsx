@@ -20,7 +20,7 @@ import { ButtonGroup } from '@/components/ui/Button/ButtonGroup';
 import { CenteredText } from '@/components/ui/CentredText';
 import { FormattedValue } from '@/components/ui/FormattedValue/FormattedValue';
 import Loader from '@/components/ui/loader/Loader';
-import type { InventoryUser } from '@/utils/inventory/types';
+import type { UserWithBusiness } from '@/types/users';
 import { MenuApp } from '@/modules/navigation/components/MenuApp/MenuApp';
 
 import { Header } from './components/Header/Header';
@@ -56,10 +56,10 @@ export const ProductOutflow = () => {
   ) as ProductOutflowState;
   const [outflowListLoader, setOutflowListLoader] = useState(true);
   const isScrolled = useScroll(tableRef);
-  const user = useSelector(selectUser) as InventoryUser | null;
+  const user = useSelector(selectUser) as unknown as UserWithBusiness | null;
 
   const handleClick = () => {
-    dispatch(toggleAddProductOutflow());
+    dispatch(toggleAddProductOutflow(undefined));
   };
 
   const handleDeleteProductOutflow = async (item: ProductOutflowRecord) => {

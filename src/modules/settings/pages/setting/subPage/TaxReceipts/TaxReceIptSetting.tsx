@@ -44,9 +44,9 @@ export const TaxReceiptSetting = () => {
   const { setDialogConfirm, onClose } = useDialog();
 
   const baseReceipts = useMemo(() => {
-    const serialized = serializeFirestoreDocuments(taxReceipt);
+    const serialized = serializeFirestoreDocuments(taxReceipt as any);
     return Array.isArray(serialized)
-      ? (serialized as TaxReceiptDocument[])
+      ? (serialized as unknown as TaxReceiptDocument[])
       : [];
   }, [taxReceipt]);
   const [taxReceiptLocal, setTaxReceiptLocal] = useState<TaxReceiptDocument[]>(

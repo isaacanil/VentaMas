@@ -15,6 +15,7 @@ import { LotNameCell } from './LotNameCell';
 import { SourceActionsMenu } from './GroupedLotsSourceRow/SourceActionsMenu';
 import { SourceExpirationCell } from './GroupedLotsSourceRow/SourceExpirationCell';
 
+import { CLEAR_SENTINEL } from '@/utils/inventory/constants';
 import type {
   CountsMap,
   CountsMetaMap,

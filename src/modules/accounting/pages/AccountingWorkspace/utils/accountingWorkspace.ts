@@ -341,6 +341,8 @@ const resolveEventContext = (event: AccountingEvent) => {
       settlementKindCandidate === 'cash' || settlementKindCandidate === 'bank'
         ? settlementKindCandidate
         : 'any',
+    documentNature: 'any',
+    settlementTiming: 'any',
     taxTreatment: taxAmount > 0 ? 'taxed' : 'untaxed',
   } satisfies Required<AccountingPostingCondition>;
 };
@@ -595,7 +597,7 @@ export const buildLedgerRecords = ({
   );
   const usedEntryIds = new Set<string>();
 
-  const automaticRecords = events.map((event) => {
+  const automaticRecords: AccountingLedgerRecord[] = events.map((event) => {
     const journalEntryId =
       toCleanString(event.projection?.journalEntryId) ??
       toCleanString(event.metadata?.journalEntryId);
@@ -698,7 +700,7 @@ export const buildLedgerRecords = ({
     };
   });
 
-  const standaloneEntries = journalEntries
+  const standaloneEntries: AccountingLedgerRecord[] = journalEntries
     .filter((entry) => !usedEntryIds.has(entry.id))
     .map((entry) => {
       const effectiveDate =
@@ -980,6 +982,15 @@ export const buildGeneralLedgerSnapshot = ({
     periodCredit,
     closingBalance: runningBalance,
     entries,
+    pagination: {
+      page: 1,
+      pageSize: entries.length || 1,
+      totalEntries: entries.length,
+      totalPages: 1,
+      hasPreviousPage: false,
+      hasNextPage: false,
+      searchQuery: null,
+    },
   };
 };
 
@@ -1046,7 +1057,7 @@ export const buildFinancialReports = ({
       accountId: account.id,
       code: account.code,
       name: account.name,
-      kind: account.type,
+      kind: account.type as 'expense' | 'income',
       amount: account.type === 'income' ? credit - debit : debit - credit,
     }))
     .sort((left, right) => left.code.localeCompare(right.code));
@@ -1121,7 +1132,13 @@ export const buildPeriodOptions = (
   periods: string[],
   records: AccountingLedgerRecord[],
   closures: AccountingPeriodClosure[],
-) =>
+): Array<{
+  amount: number;
+  entries: number;
+  label: string;
+  periodKey: string;
+  status: 'closed' | 'open';
+}> =>
   periods.map((periodKey) => ({
     periodKey,
     label: normalizePeriodLabel(periodKey),

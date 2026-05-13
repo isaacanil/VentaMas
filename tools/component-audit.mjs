@@ -199,7 +199,6 @@ const main = async () => {
   );
   fs.writeFileSync(path.resolve(resolvedOutDir, 'component-duplicates.md'), toMd(report), 'utf8');
 
-  // eslint-disable-next-line no-console
   console.log(
     JSON.stringify(
       {
@@ -215,8 +214,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exitCode = 1;
 });
-

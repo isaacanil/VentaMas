@@ -48,10 +48,10 @@ export const BusinessProfileForm = ({
   uploading,
 }: BusinessProfileFormProps) => (
   <StyledForm
-    form={form}
+    form={form as any}
     layout="vertical"
     onFinish={onSubmit}
-    onValuesChange={onValuesChange}
+    onValuesChange={onValuesChange as any}
     initialValues={initialValues}
   >
     <BusinessProfileHeader />

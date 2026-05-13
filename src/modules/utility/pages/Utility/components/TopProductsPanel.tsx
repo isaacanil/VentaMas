@@ -11,7 +11,10 @@ import { EmptyState } from './EmptyState';
 
 const MAX_PRODUCTS = 6;
 
-type ProductEntry = UtilityProductBreakdown & { units?: number | null };
+type ProductEntry = UtilityProductBreakdown & {
+  id?: string | number | null;
+  units?: number | null;
+};
 
 interface TopProductsPanelProps {
   products?: ProductEntry[];

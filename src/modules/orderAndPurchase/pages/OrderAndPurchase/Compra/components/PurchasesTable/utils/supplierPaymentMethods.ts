@@ -206,7 +206,7 @@ export const getSupplierPaymentSubmissionMethods = (
     availableCreditNotes?: SupplierCreditNote[] | null;
   } = {},
 ): PaymentMethodEntry[] =>
-  methods.flatMap((method) => {
+  methods.flatMap<PaymentMethodEntry>((method) => {
     if (!method.status) {
       return [];
     }

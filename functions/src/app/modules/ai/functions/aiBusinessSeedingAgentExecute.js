@@ -369,6 +369,8 @@ const runCreateBusinessExecution = async ({
       },
     };
   } catch (error) {
+    let handledError = error;
+
     if (error instanceof HttpsError) {
       const duplicateEmailMatch =
         typeof error.message === 'string'
@@ -379,7 +381,7 @@ const runCreateBusinessExecution = async ({
         /usuario con este nombre/i.test(error.message);
 
       if (duplicateEmailMatch?.[1]) {
-        error = attachRecoverableError(error, {
+        handledError = attachRecoverableError(error, {
           code: 'EMAIL_ALREADY_EXISTS',
           message: `El correo ${duplicateEmailMatch[1]} ya está registrado.`,
           field: 'users.email',
@@ -392,7 +394,7 @@ const runCreateBusinessExecution = async ({
       } else if (duplicateUsernameGeneric && Array.isArray(users) && users.length > 0) {
         const user = users[0];
         const username = readString(user?.name).toLowerCase();
-        error = attachRecoverableError(error, {
+        handledError = attachRecoverableError(error, {
           code: 'USERNAME_ALREADY_EXISTS',
           message: username
             ? `El nombre de usuario "${username}" ya existe o se ocupó durante el proceso.`
@@ -416,7 +418,7 @@ const runCreateBusinessExecution = async ({
 
     const recoverableResponse = maybeExtractRecoverableErrorResponse({
       logs,
-      error,
+      error: handledError,
       rawActionData,
       business,
       users,
@@ -425,7 +427,7 @@ const runCreateBusinessExecution = async ({
       return recoverableResponse;
     }
 
-    throw error;
+    throw handledError;
   }
 };
 

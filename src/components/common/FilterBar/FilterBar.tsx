@@ -85,6 +85,7 @@ type DateRangeMillisValue = {
 };
 
 type FilterBarItemBase = {
+  [key: string]: unknown;
   key?: string | number;
   id?: string | number;
   label?: React.ReactNode;

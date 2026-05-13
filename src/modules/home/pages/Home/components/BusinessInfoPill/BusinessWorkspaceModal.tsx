@@ -196,7 +196,7 @@ export const BusinessWorkspaceModal = ({
                               ) : null}
                             </BusinessTitle>
                             {!business.isActive ? (
-                              <Chip size="sm" variant="outline">
+                              <Chip size="sm" variant="soft">
                                 <Chip.Label>No activo</Chip.Label>
                               </Chip>
                             ) : null}

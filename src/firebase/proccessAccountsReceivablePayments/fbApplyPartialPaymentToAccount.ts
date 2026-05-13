@@ -164,7 +164,7 @@ export const fbApplyPartialPaymentToAccount = async ({
         });
       }
 
-      const paidInstallments = new Set();
+      const paidInstallments = new Set<string>();
 
       for (const installment of accountInstallments) {
         if (remainingAmount <= THRESHOLD) break;

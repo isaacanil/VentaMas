@@ -4,6 +4,7 @@ import type {
   ReactNode,
   RefObject,
 } from 'react';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 type ClickHandler = MouseEventHandler<HTMLElement>;
 
@@ -115,10 +116,14 @@ export interface LoaderProps {
 }
 
 export interface SimplePanelHeaderProps {
-  icon?: ReactNode;
+  icon?: IconProp;
   title?: ReactNode;
   badgeCount?: number;
-  metaItems?: ReactNode[];
+  metaItems?: Array<{
+    hint?: ReactNode;
+    label: string;
+    value: number | string;
+  }>;
   showMeta?: boolean;
 }
 

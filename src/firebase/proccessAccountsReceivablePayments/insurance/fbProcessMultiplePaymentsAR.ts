@@ -58,6 +58,7 @@ type MultiplePaymentsData = {
   paymentDetails: PaymentDetails & { paymentMethods: InvoicePaymentMethod[] };
   insuranceId?: string | null;
   clientId?: string | null;
+  date?: number | string | Date | null;
 };
 
 type AccountsDataEntry = {
@@ -427,9 +428,12 @@ export const fbProcessMultiplePaymentsAR = async (
           });
         }
 
+        const invoiceRecord = invoiceData as
+          | { data?: { numberID?: unknown }; numberID?: unknown }
+          | null;
         const invoiceNumber =
-          invoiceData?.data?.numberID ||
-          invoiceData?.numberID ||
+          invoiceRecord?.data?.numberID ||
+          invoiceRecord?.numberID ||
           accountData?.invoiceNumber ||
           null;
         const totalInstallments = Number(accountData.totalInstallments ?? 0);
@@ -470,11 +474,11 @@ export const fbProcessMultiplePaymentsAR = async (
     // Si no es válido, simplemente no pasamos el clientId para evitar errores
     const receiptParams: {
       user: UserWithBusinessAndUid;
-      paymentReceipt: InsurancePaymentReceipt;
+      paymentReceipt: Record<string, unknown>;
       clientId?: string;
     } = {
       user,
-      paymentReceipt,
+      paymentReceipt: paymentReceipt as unknown as Record<string, unknown>,
     };
 
     // Solo incluir el clientId si es una cadena válida

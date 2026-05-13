@@ -364,8 +364,8 @@ export const ManualEntriesPanel = ({
                     <Table.Column isRowHeader>#</Table.Column>
                     <Table.Column>Cuenta</Table.Column>
                     <Table.Column>Descripcion</Table.Column>
-                    <Table.Column align="end">Debito</Table.Column>
-                    <Table.Column align="end">Credito</Table.Column>
+                    <Table.Column>Debito</Table.Column>
+                    <Table.Column>Credito</Table.Column>
                     <Table.Column aria-label="Acciones" />
                   </ManualLinesHeader>
                   <Table.Body>
@@ -476,7 +476,6 @@ export const ManualEntriesPanel = ({
                               isIconOnly
                               isDisabled={lines.length <= 2}
                               size="sm"
-                              title="Quitar linea"
                               variant="danger-soft"
                               onPress={() => removeLine(line.id)}
                             >

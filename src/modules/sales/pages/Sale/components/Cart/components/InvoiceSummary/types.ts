@@ -8,6 +8,8 @@ export type Authorizer = {
   username?: string;
   email?: string;
   uid?: string;
+  businessID?: string;
+  businessId?: string;
   role?: string;
 };
 
@@ -56,4 +58,3 @@ export type MenuOption = {
 };
 
 export type PreorderConfirmationAction = 'complete' | 'update';
-

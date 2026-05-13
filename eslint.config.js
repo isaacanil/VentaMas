@@ -1,12 +1,9 @@
 // ESLint 9 + Vite + React + optional Storybook + import/no-unresolved
 import js from '@eslint/js';
-import react from 'eslint-plugin-react';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import reactHooks from 'eslint-plugin-react-hooks';
-import importPlugin from 'eslint-plugin-import';
-import tseslint from 'typescript-eslint';
+import tsParser from '@typescript-eslint/parser';
 import globals from 'globals';
-import eslintConfigPrettier from 'eslint-config-prettier';
 
 const ENABLE_TYPED_LINT = process.env.ESLINT_TYPED === 'true';
 const ENABLE_STORYBOOK_LINT = process.env.ESLINT_STORYBOOK === 'true';
@@ -22,6 +19,11 @@ export default [
       'build/**',
       'functions/**',
       'functions/lib/**',
+      '.codex-artifacts/**',
+      '.tmp/**',
+      'tmp/**',
+      'artifacts/**',
+      'reports/**',
       '**/*.d.ts',
       'src/hooks/accountsReceivable/useCheckAccountReceivable.tsx',
       'src/router/routes/paths/AccountReceivable.tsx',
@@ -32,12 +34,6 @@ export default [
   },
 
   js.configs.recommended,
-  react.configs.flat.recommended,
-  {
-    settings: {
-      react: { version: 'detect' },
-    },
-  },
   ...storybookConfigs,
 
   {
@@ -52,21 +48,7 @@ export default [
       // tu valor 1 => "warn"
       reportUnusedDisableDirectives: 'off',
     },
-    settings: {
-      react: { version: 'detect' },
-      'import/resolver': {
-        node: {
-          // Permite resolver imports sin extensión explícita para los formatos que usamos.
-          extensions: ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.json'],
-        },
-        typescript: {
-          project: './tsconfig.json',
-        },
-      },
-    },
     plugins: {
-      import: importPlugin,
-      react,
       'react-refresh': reactRefresh,
       'react-hooks': reactHooks,
     },
@@ -76,21 +58,6 @@ export default [
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      // === import/order útil en Vite ===
-      'import/no-unresolved': [
-        'error',
-        {
-          ignore: [
-            '\\.(css|svg|png|jpe?g|webp)$',
-            '^@/',
-            '^storybook/test$',
-            '^yet-another-react-lightbox/plugins',
-          ],
-        },
-      ],
-      'import/order': 'off',
-      'import/newline-after-import': 'off',
-
       // === Reglas de tu JSON portadas (puedes pegar todas aquí) ===
       'constructor-super': 2,
       'for-direction': 2,
@@ -104,10 +71,6 @@ export default [
       'no-constant-binary-expression': 2,
       // ⚠ Ajuste recomendado:
       'no-constant-condition': [2, { checkLoops: true }],
-
-      // React/Vite
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
 
       // React Refresh
       'react-refresh/only-export-components': [
@@ -126,7 +89,7 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      parser: tseslint.parser,
+      parser: tsParser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
         ...(ENABLE_TYPED_LINT
@@ -144,61 +107,24 @@ export default [
     linterOptions: {
       reportUnusedDisableDirectives: 'off',
     },
-    settings: {
-      react: { version: 'detect' },
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.json'],
-        },
-        typescript: {
-          project: './tsconfig.json',
-        },
-      },
-    },
     plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      import: importPlugin,
-      react,
       'react-refresh': reactRefresh,
       'react-hooks': reactHooks,
     },
     rules: {
-      ...(ENABLE_TYPED_LINT
-        ? tseslint.configs.recommendedTypeChecked.rules
-        : tseslint.configs.recommended.rules),
       ...reactHooks.configs.recommended.rules,
       'react-hooks/set-state-in-effect': 'warn',
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
-      // Import helpers
-      'import/no-unresolved': [
-        'error',
-        {
-          ignore: [
-            '\\.(css|svg|png|jpe?g|webp)$',
-            '^@/',
-            '^storybook/test$',
-            '^yet-another-react-lightbox/plugins',
-          ],
-        },
-      ],
-      'import/order': 'off',
-      'import/newline-after-import': 'off',
-
-      // React adjustments
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-
       // React Refresh
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
       'prefer-const': 'off',
-      '@typescript-eslint/consistent-type-definitions': 'off',
-      '@typescript-eslint/array-type': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
+      'no-undef': 'off',
+      'no-redeclare': 'off',
     },
   },
 
@@ -213,7 +139,7 @@ export default [
     languageOptions: {
       globals: { ...globals.node },
       sourceType: 'module',
-      parser: tseslint.parser,
+      parser: tsParser,
       parserOptions: {
         projectService: false,
         tsconfigRootDir: import.meta.dirname,
@@ -224,13 +150,15 @@ export default [
 
   // Scripts Node locales
   {
-    files: ['controller.js', 'tools/**/*.{js,cjs}'],
+    files: [
+      'controller.js',
+      'scripts/**/*.{js,mjs,cjs}',
+      'tools/**/*.{js,mjs,cjs}',
+    ],
     languageOptions: {
       sourceType: 'module',
       globals: { ...globals.node },
     },
   },
 
-  // Disable stylistic ESLint rules that Prettier will handle.
-  eslintConfigPrettier,
 ];

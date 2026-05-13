@@ -83,9 +83,9 @@ export const InvoiceTemplate3 = React.forwardRef<
   };
 
   return data ? (
-    <Container style={{ display: ignoreHidden ? 'block' : 'none' }}>
+    <Container ref={ref} style={{ display: ignoreHidden ? 'block' : 'none' }}>
       <button onClick={handleGeneratePDF}>Generar PDF</button>
-      <PrintLayout ref={ref}>
+      <PrintLayout>
         <FixedHeader>
           <Header business={business} data={data} />
         </FixedHeader>

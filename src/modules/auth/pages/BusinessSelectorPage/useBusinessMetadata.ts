@@ -70,7 +70,6 @@ export const useBusinessMetadata = (
 
   useEffect(() => {
     if (!businessIds.length) {
-      setMetadataMap(new Map());
       return;
     }
 

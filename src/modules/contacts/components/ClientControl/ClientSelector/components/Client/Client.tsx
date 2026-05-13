@@ -343,7 +343,7 @@ export const Client = ({
           <Button
             size="small"
             variant="text"
-            color="gray"
+            color="default"
             icon={<FontAwesomeIcon icon={faPencil} />}
             onClick={handleEdit}
           />

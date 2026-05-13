@@ -58,7 +58,11 @@ const getMinimumWidth = (data: unknown[]) => {
 const getMaximumWidth = (data: unknown[]) => {
   const hasVeryLong = data.some((v) => String(v).length > 50);
   const hasNumbers = data.some((v) => typeof v === 'number');
-  const avgLen = data.reduce((s, v) => s + String(v).length, 0) / data.length;
+  let totalLength = 0;
+  data.forEach((value) => {
+    totalLength += String(value).length;
+  });
+  const avgLen = data.length > 0 ? totalLength / data.length : 0;
   if (hasVeryLong) return 60;
   if (hasNumbers) return 18;
   if (avgLen > 30) return 40;

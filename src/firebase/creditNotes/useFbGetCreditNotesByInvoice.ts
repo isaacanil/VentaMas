@@ -25,7 +25,7 @@ export const useFbGetCreditNotesByInvoice = (
       return undefined;
     }
 
-    const ref = collection<CreditNoteRecord>(
+    const ref = collection(
       db,
       'businesses',
       businessID,
@@ -37,7 +37,7 @@ export const useFbGetCreditNotesByInvoice = (
       q,
       (snap) => {
         const list = snap.docs.map((doc) => ({
-          ...doc.data(),
+          ...(doc.data() as CreditNoteRecord),
           id: doc.id,
         }));
         setCreditNotes(list);

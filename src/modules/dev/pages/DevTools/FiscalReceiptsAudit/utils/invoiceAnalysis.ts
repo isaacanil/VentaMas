@@ -113,7 +113,7 @@ export const analyzeInvoices = (
     const invoiceDate = parseInvoiceDate(
       invoiceData?.date ?? invoice?.date ?? null,
     );
-    const status = invoiceData?.status ?? invoice?.status ?? '';
+    const status = String(invoiceData?.status ?? invoice?.status ?? '');
 
     const entry: InvoiceEntry = {
       invoiceId: invoice?.id || invoiceNumber || ncf,

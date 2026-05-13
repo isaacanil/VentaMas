@@ -128,7 +128,7 @@ export const fbUpdatePurchase = async ({
     await updateDoc(purchaseRef, updatedData);
     await syncVendorBillFromPurchase({
       user,
-      purchase: updatedData,
+      purchase: updatedData as Purchase,
     });
     setLoading(false);
     return updatedData;

@@ -279,7 +279,8 @@ const InfoPair = styled.div`
   }
 
   strong {
-    font-family: ${(props) => props.theme?.fonts?.mono || 'monospace'};
+    font-family: ${({ theme }) =>
+      (theme as { fonts?: { mono?: string } })?.fonts?.mono || 'monospace'};
     font-size: 0.82rem;
     color: #333;
   }

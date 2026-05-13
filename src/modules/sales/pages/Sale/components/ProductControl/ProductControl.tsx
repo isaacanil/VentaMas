@@ -107,8 +107,8 @@ export const ProductControl = ({
                 padding="bottom"
                 columns="4"
                 isRow={viewRowModeRef ? true : false}
-                onScroll={handleGridScroll}
-                variants={containerVariants}
+                onScroll={handleGridScroll as any}
+                variants={containerVariants as any}
               >
                 {products.map(({ product }, index) =>
                   product.custom ? (
@@ -149,7 +149,8 @@ const Container = styled.div`
   position: relative;
   height: 100%;
   overflow: hidden;
-  background-color: ${(props: ContainerStyleProps) => props.theme.bg.color2};
+  background-color: ${(props) =>
+    (props.theme as unknown as ContainerStyleProps['theme']).bg.color2};
   border-radius: var(--border-radius-light);
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;

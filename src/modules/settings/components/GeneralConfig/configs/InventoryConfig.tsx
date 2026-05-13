@@ -56,7 +56,9 @@ const recalculateInventoryStock = async ({
   user: ReturnType<typeof selectUser>;
 }): Promise<InventoryActionResult> => {
   try {
-    const summary = await fbRecalculateProductStockTotals(user);
+    const summary = (await fbRecalculateProductStockTotals(user)) as {
+      productsUpdated?: number;
+    };
     return {
       status: 'success',
       updatedProducts: Number(summary?.productsUpdated ?? 0),

@@ -27,6 +27,7 @@ type ButtonProps = {
   size?: string;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
+  icon?: React.ReactNode;
   onClick?: any;
   width?: string;
   height?: string;
@@ -40,7 +41,9 @@ type ButtonProps = {
   iconOff?: React.ReactNode;
   iconColor?: string;
   titlePosition?: string;
-  type?: 'button' | 'submit' | 'reset';
+  type?: 'button' | 'submit' | 'reset' | string;
+  tooltipDescription?: string;
+  tooltipPlacement?: string;
   ref?: any;
 };
 
@@ -53,6 +56,7 @@ export const Button = ({
   size = 'small',
   startIcon,
   endIcon,
+  icon,
   onClick,
   width,
   height,
@@ -69,6 +73,9 @@ export const Button = ({
   type = 'button',
   ref,
 }: ButtonProps) => {
+  const nativeType =
+    type === 'submit' || type === 'reset' || type === 'button' ? type : 'button';
+  const buttonVariant = variant ?? (type !== nativeType ? type : 'contained');
   const handleClick = (e: any) => {
     e.stopPropagation();
     if (onClick) onClick();
@@ -80,9 +87,9 @@ export const Button = ({
       onClick={onClick ? handleClick : undefined}
       $width={width}
       $height={height}
-      $variant={variant}
+      $variant={buttonVariant}
       disabled={disabled}
-      type={type}
+      type={nativeType}
       $borderRadius={borderRadius}
       $isActivated={isActivated}
       $titlePosition={titlePosition}
@@ -94,7 +101,7 @@ export const Button = ({
       ref={ref}
     >
       {isActivated ? iconOn : iconOff}
-      {startIcon ? startIcon : null}
+      {startIcon || icon ? startIcon || icon : null}
       {title ? title : null}
       {endIcon ? endIcon : null}
     </Container>

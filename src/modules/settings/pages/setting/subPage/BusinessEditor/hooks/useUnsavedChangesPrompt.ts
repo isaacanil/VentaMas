@@ -7,7 +7,7 @@ type Transition = {
 };
 
 type NavigatorWithBlock = {
-  block: (tx: Transition) => () => void;
+  block: (blocker: (tx: Transition) => void) => () => void;
 };
 
 const isNavigatorWithBlock = (

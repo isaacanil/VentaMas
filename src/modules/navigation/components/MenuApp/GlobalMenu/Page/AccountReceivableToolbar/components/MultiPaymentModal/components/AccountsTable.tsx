@@ -142,9 +142,9 @@ const AccountsTable = ({
   }));
 
   return (
-    <StyledTable
+    <Table<ProcessedAccountRow>
       columns={columns}
-      dataSource={tableData}
+      dataSource={tableData as ProcessedAccountRow[]}
       rowKey={(record) => record.ver.account.id}
       pagination={{
         pageSize: 5,
@@ -162,10 +162,6 @@ const AccountsTable = ({
     />
   );
 };
-
-const StyledTable = styled(Table)`
-  /* Estilo minimalista, usando configuración por defecto de Ant Design */
-`;
 
 const EmptyStateContainer = styled.div`
   display: flex;

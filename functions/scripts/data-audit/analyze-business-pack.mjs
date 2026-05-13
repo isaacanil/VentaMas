@@ -635,7 +635,6 @@ const main = async () => {
   writeJson(path.resolve(resolvedOutDir, 'invariants.json'), invariants);
   writeText(path.resolve(resolvedOutDir, 'analysis.md'), toMd({ cashCounts, invariants }));
 
-  // eslint-disable-next-line no-console
   console.log(
     JSON.stringify(
       {
@@ -650,7 +649,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exitCode = 1;
 });

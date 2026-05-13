@@ -107,7 +107,10 @@ export const filterConfig: FilterConfigItem[] = [
   {
     label: 'Estado',
     accessor: 'state',
-    format: (value) => `${getOrderStateByID(value as string)?.name || ''}`,
+    format: (value) => {
+      const state = getOrderStateByID(value as string);
+      return typeof state === 'string' ? state : `${state?.name || ''}`;
+    },
     defaultValue: 'state_2',
   },
   {

@@ -1,12 +1,12 @@
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import type { UserIdentity } from '@/types/users';
+import type { UserWithBusiness } from '@/types/users';
 
 import { fbUpdateStock } from './fbUpdateStock';
 
 export const fbDeleteProductOutflow = async (
-  user: UserIdentity | null,
+  user: UserWithBusiness | null,
   item: any,
 ): Promise<void> => {
   if (!user?.businessID || !item?.id) return;

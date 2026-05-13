@@ -46,7 +46,7 @@ export function OrderActionButtons({ order }: OrderActionButtonsProps) {
       isOpen: true,
       type: 'error',
       message: '¿Está seguro que desea cancelar este pedido?',
-      onConfirm: () => fbDeleteOrder(user, order.id as string),
+      onConfirm: () => fbDeleteOrder(user as any, order.id as string),
     });
   };
 

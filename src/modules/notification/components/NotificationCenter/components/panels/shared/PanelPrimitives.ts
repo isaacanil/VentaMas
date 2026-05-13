@@ -185,7 +185,7 @@ export const ReferenceValue = styled.span`
   color: #1f2937;
 `;
 
-export const StatusPill = styled.span`
+export const StatusPill = styled.span<{ $color?: string }>`
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 600;

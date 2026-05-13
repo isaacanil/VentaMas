@@ -32,7 +32,7 @@ export const fbGetFavoriteProductCategories = (
     return null; // Retorna null para indicar que no se estableció el listener
   }
 
-  const favoriteCategoriesRef = doc<FavoriteCategoriesDocument>(
+  const favoriteCategoriesRef = doc(
     db,
     'businesses',
     businessID,
@@ -47,7 +47,7 @@ export const fbGetFavoriteProductCategories = (
     favoriteCategoriesRef,
     (snapshot) => {
       if (snapshot.exists()) {
-        const data = snapshot.data();
+        const data = snapshot.data() as FavoriteCategoriesDocument;
         const favoriteCategories = Array.isArray(data.favoriteCategories)
           ? data.favoriteCategories.filter(
               (id): id is string => typeof id === 'string',

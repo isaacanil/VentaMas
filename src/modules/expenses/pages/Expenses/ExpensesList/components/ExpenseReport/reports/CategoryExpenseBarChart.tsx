@@ -47,7 +47,7 @@ const options: ChartOptions<'bar'> = {
 };
 
 const getExpenseFromEntry = (entry: ExpenseEntry): Expense =>
-    'expense' in entry ? entry.expense : entry;
+    'expense' in entry ? (entry.expense as Expense) : entry;
 
 const coerceExpenseAmount = (amount: Expense['amount']): number => {
     const value = typeof amount === 'number' ? amount : Number(amount);

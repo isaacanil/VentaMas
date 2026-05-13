@@ -26,7 +26,7 @@ export const WeightInput = ({ item }: WeightInputProps) => {
     dispatch(
       changeProductWeight({
         id: item.cid,
-        weight: e.target.value,
+        weight: Number(e.target.value) || 0,
       }),
     );
   };

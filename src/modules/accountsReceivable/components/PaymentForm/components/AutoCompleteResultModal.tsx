@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 
 import type { AutoCompleteModalState } from '../utils/paymentFormTypes';
-import type { TaxReceiptItem } from '@/types/taxReceipt';
+import type { TaxReceiptData, TaxReceiptItem } from '@/types/taxReceipt';
 import { formatPrice } from '@/utils/format';
 
 type AutoCompleteResultModalProps = {
@@ -23,6 +23,9 @@ type AutoCompleteResultModalProps = {
 
 const EMPTY_TAX_RECEIPTS: TaxReceiptItem[] = [];
 
+const toTaxReceiptData = (receipt: TaxReceiptItem): TaxReceiptData =>
+  'data' in receipt ? receipt.data : receipt;
+
 export const AutoCompleteResultModal = ({
   open,
   state,
@@ -41,19 +44,14 @@ export const AutoCompleteResultModal = ({
 
   const options = useMemo(() => {
     return (taxReceipts || [])
-      .map((receipt) =>
-        typeof receipt === 'object' && receipt && 'data' in receipt
-          ? receipt.data
-          : receipt,
-      )
+      .map((receipt) => toTaxReceiptData(receipt))
       .filter(
         (receipt) =>
           Boolean(receipt?.name) &&
           !receipt?.disabled &&
           !isCreditNoteReceipt(
             receipt?.name,
-            (receipt as { serie?: unknown; series?: unknown }).serie ??
-              (receipt as { serie?: unknown; series?: unknown }).series,
+            receipt.serie ?? receipt.series,
           ),
       )
       .map((receipt) => {

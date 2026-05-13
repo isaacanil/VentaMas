@@ -163,7 +163,7 @@ export const useListenInsuranceConfig = () => {
   const [data, setData] = useState<InsuranceConfigData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
-  const user = useSelector(selectUser) as UserWithBusinessAndUid | null;
+  const user = useSelector(selectUser) as unknown as UserWithBusinessAndUid | null;
 
   const [prevBusinessID, setPrevBusinessID] = useState(user?.businessID);
 

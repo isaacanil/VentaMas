@@ -49,11 +49,11 @@ const getAsyncErrorMessage = (error: unknown): string =>
 
 export const useTestPlaygroundController = () => {
   const [state, setState] = useReducer(
-    <
-      T extends Record<string, unknown>
-    >(
-      current: T,
-      update: Partial<T> | ((prev: T) => Partial<T>),
+    (
+      current: TestPlaygroundState,
+      update:
+        | Partial<TestPlaygroundState>
+        | ((prev: TestPlaygroundState) => Partial<TestPlaygroundState>),
     ) => ({
       ...current,
       ...(typeof update === 'function' ? update(current) : update),

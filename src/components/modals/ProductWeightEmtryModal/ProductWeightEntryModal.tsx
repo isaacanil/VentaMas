@@ -57,17 +57,18 @@ export const ProductWeightEntryModal = ({
     products?: Product[];
   } | null;
   const watchedWeight = Form.useWatch('weight', form);
+  const cartProducts = cartData?.products;
   const currentCartCurrencies = useMemo(
     () =>
-      Array.isArray(cartData?.products)
-        ? cartData.products
+      Array.isArray(cartProducts)
+        ? cartProducts
             .map((item) => item?.monetary?.documentCurrency)
             .filter(
               (currency): currency is SupportedDocumentCurrency =>
                 Boolean(currency),
             )
         : [],
-    [cartData?.products],
+    [cartProducts],
   );
 
   const pricePerUnit = useMemo(() => getPricePerUnit(product), [product]);

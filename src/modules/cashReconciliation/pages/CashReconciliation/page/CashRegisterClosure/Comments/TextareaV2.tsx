@@ -37,7 +37,12 @@ export const TextareaV2: React.FC<TextareaV2Props> = ({
           <Label>{label}</Label>
         </Fragment>
       )}
-      <InputWrapper bgColor={bgColor} search={search} validate={validate}>
+      <InputWrapper
+        bgColor={bgColor}
+        search={search}
+        validate={validate}
+        $disabled={props.disabled}
+      >
         {icon}
         <StyledInput {...props} ref={inputRef} />
         {onClear && clearButton && (
@@ -65,6 +70,7 @@ const InputWrapper = styled.div.attrs(() => ({
   search?: boolean;
   validate?: TextareaValidationState;
   bgColor?: string;
+  $disabled?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -94,7 +100,7 @@ const InputWrapper = styled.div.attrs(() => ({
     return '1px solid #ccc';
   }};
   ${(props) =>
-    props.disabled &&
+    props.$disabled &&
     `
       background-color: #f8f8f8;
   `}

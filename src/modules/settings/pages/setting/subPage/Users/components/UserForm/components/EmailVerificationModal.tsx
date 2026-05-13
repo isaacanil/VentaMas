@@ -112,7 +112,7 @@ export const EmailVerificationModal = ({
             >
               Verificar
             </Button>
-            <Button onClick={onSend} disabled={state === 'sending'}>
+            <Button onClick={onSend}>
               Reenviar
             </Button>
           </Space.Compact>
@@ -121,4 +121,3 @@ export const EmailVerificationModal = ({
     </Modal>
   );
 };
-

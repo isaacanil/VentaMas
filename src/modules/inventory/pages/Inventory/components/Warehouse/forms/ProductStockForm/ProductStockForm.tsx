@@ -121,7 +121,12 @@ export function ProductStockForm(_props: ProductStockFormProps) {
   const productsList = Array.isArray(products)
     ? (products as ProductRecord[])
     : [];
-  const batchesList = Array.isArray(batches) ? batches : [];
+  const batchesList = Array.isArray(batches)
+    ? batches.map((batch) => ({
+        ...batch,
+        id: batch.id ?? '',
+      }))
+    : [];
   const productsErrorMessage = productsError ? String(productsError) : null;
   const batchesErrorMessage = batchesError ? String(batchesError) : null;
 
@@ -142,8 +147,8 @@ export function ProductStockForm(_props: ProductStockFormProps) {
     totalStockFromBatches > 0
       ? Number(((stockDifference / totalStockFromBatches) * 100).toFixed(2))
       : 0;
-  const formattedStockDifference = formatNumber(stockDifference);
-  const formattedTotalStock = formatNumber(totalStockFromBatches);
+  const formattedStockDifference = String(formatNumber(stockDifference));
+  const formattedTotalStock = String(formatNumber(totalStockFromBatches));
 
   useEffect(() => {
     if (isOpen && warehouseId) {

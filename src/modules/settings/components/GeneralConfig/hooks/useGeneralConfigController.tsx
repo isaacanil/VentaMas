@@ -434,10 +434,11 @@ export const useGeneralConfigController = () => {
       }, 2000);
     };
 
-    if (element.dataset.configExpandable === 'true') {
+    const expandableElement = element as HTMLElement;
+    if (expandableElement.dataset.configExpandable === 'true') {
       const header = element.querySelector(
         '[data-role="config-section-header"]',
-      );
+      ) as HTMLElement | null;
       if (header && header.getAttribute('data-expanded') === 'false') {
         header.click();
         window.setTimeout(emphasize, 220);
@@ -582,7 +583,7 @@ export const useGeneralConfigController = () => {
           : item.key === 'accounting' || item.key === 'exchangeRates'
             ? accountingEnabled
             : true,
-      ),
+      ) as MenuItem[],
     [accountingEnabled, canManageSubscriptions],
   );
 

@@ -1080,7 +1080,7 @@ const startStack = async (flags) => {
         });
         withSeed = await prompt.run();
       }
-    } catch (e) {
+    } catch {
       console.log('\n[local-dev] Cancelado por el usuario.');
       process.exit(0);
     }

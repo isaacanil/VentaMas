@@ -4,7 +4,6 @@ import {
 } from '@/components/modals/ProductForm/constants/brandOptions';
 import {
   PRODUCT_BRAND_DEFAULT,
-  type ChangeProductData,
 } from '@/features/updateProduct/updateProductSlice';
 import {
   buildNormalizedProductSnapshot,
@@ -23,6 +22,8 @@ import type {
   PricingValues,
   ProductFormValues,
 } from '@/modules/dev/pages/DevTools/ProductStudio/components/form/ProductForm';
+
+type ProductPatch = Partial<ProductRecord> & Record<string, unknown>;
 import type { ProductSnapshot } from '@/modules/dev/pages/DevTools/ProductStudio/hooks/useProductPreviewMetrics';
 
 type FormErrorField = { name?: (string | number)[]; errors?: string[] };
@@ -163,7 +164,7 @@ export const getChangedProductPatch = ({
   value: unknown;
   product: ProductRecord | null | undefined;
   productBrands?: BrandOptionSource[];
-}): ChangeProductData['product'] | null => {
+}): ProductPatch | null => {
   if (key === 'weightDetail') {
     return {
       weightDetail: {
@@ -229,5 +230,5 @@ export const getChangedProductPatch = ({
     };
   }
 
-  return { [key]: value } as ChangeProductData['product'];
+  return { [key]: value } as ProductPatch;
 };

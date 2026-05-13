@@ -109,9 +109,9 @@ const fetchLedgerInsightsSafe = async (
   payload: LedgerInsightsPayload,
 ): Promise<LedgerResponse> => {
   try {
-    const result: unknown = await getNcfLedgerInsights(payload);
+    const result: unknown = await getNcfLedgerInsights(payload as any);
     if (isRecord(result) && result.source === 'ledger') {
-      return result as LedgerInsightsResponse;
+      return result as unknown as LedgerInsightsResponse;
     }
     return result as LedgerResponse;
   } catch (error) {
@@ -158,7 +158,7 @@ export const createSequenceConflictChecker = ({
 
     const sequenceLengthEstimate = resolver(
       Math.max(normalizedDigits.length, normalizedNextDigits.length),
-      formValues.sequenceLength,
+      Number(formValues.sequenceLength || 0),
     );
 
     const quantityNumeric = Number(formValues.quantity);

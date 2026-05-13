@@ -100,7 +100,7 @@ export const Setting = () => {
       clearTimeout(highlightTimersRef.current[route]);
     }
 
-    highlightTimersRef.current[route] = setTimeout(() => {
+    highlightTimersRef.current[route] = window.setTimeout(() => {
       target.classList.remove('search-highlight');
       delete highlightTimersRef.current[route];
     }, 1800);

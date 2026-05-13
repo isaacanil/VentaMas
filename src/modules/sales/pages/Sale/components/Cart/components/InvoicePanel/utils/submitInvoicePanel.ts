@@ -24,7 +24,10 @@ import { calculateDueDate } from './calculateDueDate';
 import { getInvoiceErrorNotification } from './getInvoiceErrorNotification';
 import { getTaxReceiptAvailability } from './getTaxReceiptAvailability';
 import { isTaxReceiptDepletedError } from './isTaxReceiptDepletedError';
-import { validateInvoiceSubmissionGuards } from './validateInvoiceSubmissionGuards';
+import {
+  validateInvoiceSubmissionGuards,
+  type InvoiceSubmissionGuardsResult,
+} from './validateInvoiceSubmissionGuards';
 
 type BusinessLike = {
   id?: string | null;
@@ -36,6 +39,22 @@ type BusinessLike = {
 type LoadingState = {
   status: boolean;
   message: string;
+};
+
+type InvoiceSubmissionGuardFailure = Extract<
+  InvoiceSubmissionGuardsResult,
+  { ok: false }
+>;
+
+const isInvoiceSubmissionGuardFailure = (
+  result: InvoiceSubmissionGuardsResult,
+): result is InvoiceSubmissionGuardFailure => result.ok === false;
+
+const toInvoiceRecord = (
+  value: unknown,
+): NonNullable<InvoiceProcessParams['insuranceAR']> | null => {
+  if (!value || typeof value !== 'object') return null;
+  return value as NonNullable<InvoiceProcessParams['insuranceAR']>;
 };
 
 interface SubmitInvoicePanelArgs {
@@ -129,12 +148,12 @@ export const submitInvoicePanel = async ({
       user,
     });
 
-    if (!guardResult.ok) {
+    if (isInvoiceSubmissionGuardFailure(guardResult)) {
       dispatch(unlockTaxReceiptType());
 
       if (guardResult.code === 'cash-count') {
         getCashCountStrategy(
-          guardResult.cashCountState,
+          guardResult.cashCountState as Parameters<typeof getCashCountStrategy>[0],
           dispatch as Parameters<typeof getCashCountStrategy>[1],
         ).handleConfirm();
         return;
@@ -186,7 +205,7 @@ export const submitInvoicePanel = async ({
         ncfType: effectiveTaxReceiptEnabled ? ncfType : null,
         dueDate,
         insuranceEnabled,
-        insuranceAR,
+        insuranceAR: toInvoiceRecord(insuranceAR),
         insuranceAuth,
         invoiceComment,
         isTestMode,

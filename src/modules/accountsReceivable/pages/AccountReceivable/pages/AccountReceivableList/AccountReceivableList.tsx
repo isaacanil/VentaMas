@@ -373,7 +373,13 @@ export const AccountReceivableList = () => {
         data={processedAccount}
         searchData={searchTerm}
         setSearchData={(value) =>
-          dispatchState({ type: 'setSearchTerm', value })
+          dispatchState({
+            type: 'setSearchTerm',
+            value:
+              typeof value === 'function'
+                ? value(searchTerm)
+                : value,
+          })
         }
       />
       <FilterAccountReceivable

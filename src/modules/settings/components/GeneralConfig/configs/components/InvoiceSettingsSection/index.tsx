@@ -296,7 +296,7 @@ const InvoiceSettingsSection = () => {
           [assetType]: 'preparing',
         }));
 
-        const processedFile = await processAssetBeforeUpload(file as RcFile);
+        const processedFile = await processAssetBeforeUpload(file as RcFile, []);
 
         if (!processedFile) {
           setUploadingAsset(null);

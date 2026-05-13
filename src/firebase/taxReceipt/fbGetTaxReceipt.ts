@@ -55,8 +55,8 @@ export const useFbGetTaxReceipt = () => {
           (item) => item.data() as TaxReceiptDocument,
         );
         const serializedTaxReceipts = serializeFirestoreDocuments(
-          taxReceiptsArray,
-        ) as TaxReceiptDocument[];
+          taxReceiptsArray as any,
+        ) as unknown as TaxReceiptDocument[];
         setTaxReceipt(
           serializedTaxReceipts.map((item) => buildTaxReceiptDocument(item.data)),
         );

@@ -139,7 +139,7 @@ export const useClientOptions = () => {
 
   const clientOptions = useMemo<ClientOption[]>(() => {
     const clients = (fetchedClients || [])
-      .map((c: ClientRecord) => c?.client)
+      .map((c: any) => c?.client)
       .filter(Boolean) as Array<NonNullable<ClientRecord['client']>>;
 
     return [

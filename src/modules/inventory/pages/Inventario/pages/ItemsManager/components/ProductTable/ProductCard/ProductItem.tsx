@@ -61,7 +61,7 @@ export const ProductItem = ({ data, taxReceiptEnabled }: ProductItemProps) => {
   };
 
   const handleDelete = () => {
-    dispatch(handleDeleteProductAlert({ id: data.id }));
+    dispatch(handleDeleteProductAlert({ id: data.id ?? null, user: null }));
   };
 
   const getStockStatus = (): StockStatus => {

@@ -75,7 +75,7 @@ export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }: MonthlyAndAcc
     );
 
     const { monthlyData, totalAccumulated } = useMemo<AccumulatedPurchaseData>(() => {
-        const result = accumulatePurchaseData(purchasesForAccumulation) as Partial<AccumulatedPurchaseData> | null;
+        const result = accumulatePurchaseData(purchasesForAccumulation as any) as Partial<AccumulatedPurchaseData> | null;
         const safeMonthlyData: MonthlyData = {};
         if (result?.monthlyData && typeof result.monthlyData === 'object') {
             Object.entries(result.monthlyData as Record<string, unknown>).forEach(([key, value]) => {

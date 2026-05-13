@@ -12,6 +12,7 @@ import {
   clearAbilities,
 } from '@/features/abilities/abilitiesSlice';
 import { selectUser } from '@/features/auth/userSlice';
+import type { AppDispatch } from '@/app/store';
 
 type AbilitiesRootState = Parameters<typeof selectAbilities>[0];
 type UserRootState = Parameters<typeof selectUser>[0];
@@ -41,12 +42,12 @@ export const useLoadUserAbilities = () => {
     AbilitiesRootState,
     ReturnType<typeof selectAbilitiesLoading>
   >(selectAbilitiesLoading);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const lastRequestedSessionKeyRef = useRef<string | null>(null);
 
   const userId =
     typeof (user as { uid?: unknown } | null)?.uid === 'string'
-      ? (user as { uid: string }).uid
+      ? (user as unknown as { uid: string }).uid
       : typeof (user as { id?: unknown } | null)?.id === 'string'
         ? ((user as { id: string }).id as string)
         : null;

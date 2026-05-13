@@ -214,7 +214,7 @@ const InsuranceConfigForm = () => {
     initialValues: RawInsuranceConfig | null;
   };
   const { isOpen, initialValues } = modalState;
-  const user = useSelector(selectUser) as UserWithBusinessAndUid | null;
+  const user = useSelector(selectUser) as unknown as UserWithBusinessAndUid | null;
   const [form] = Form.useForm<InsuranceFormValues>();
   const [loading, setLoading] = useState(false);
   const [insuranceTypes, setInsuranceTypes] = useState<InsuranceTypeForm[]>([]);

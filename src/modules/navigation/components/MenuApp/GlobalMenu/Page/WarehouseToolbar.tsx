@@ -40,7 +40,7 @@ export const WarehouseToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
   // Verificar si la ruta actual coincide con alguna de las rutas
   const matchWithWarehouses = paths.some(isMatchingPath);
   const handleAddWarehouse = () => {
-    dispatch(openWarehouseForm());
+    dispatch(openWarehouseForm(undefined));
   };
   const handleOpenInventorySettings = () => {
     navigate(ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_INVENTORY);

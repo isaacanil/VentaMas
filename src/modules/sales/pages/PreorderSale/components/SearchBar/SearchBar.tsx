@@ -57,7 +57,9 @@ export const SearchBar = ({
       <StyledSelect
         showSearch
         value={selectedClient}
-        onChange={(value) => onClientChange?.(value)}
+        onChange={(value) => {
+          if (typeof value === 'string') onClientChange?.(value);
+        }}
         options={enhancedOptions}
         placeholder="Filtrar por cliente"
         optionFilterProp="label"

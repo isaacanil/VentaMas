@@ -11,12 +11,8 @@ interface BusinessInfo {
   name?: string;
 }
 
-interface BusinessDoc {
-  business: BusinessInfo;
-}
-
 const SwitchBusiness = () => {
-  const [businesses, setBusinesses] = useState<BusinessDoc[]>([]);
+  const [businesses, setBusinesses] = useState<any[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,11 +37,14 @@ const SwitchBusiness = () => {
         onChange={handleChange}
         value={selectedBusiness}
       >
-        {businesses.map(({ business }) => (
+        {businesses.map((item) => {
+          const business = item.business || item;
+          return (
           <Option key={business.id || business.name} value={business.id}>
             {business.name}
           </Option>
-        ))}
+          );
+        })}
       </Select>
       <Button type="primary" onClick={handleSwitch} style={{ marginLeft: 16 }}>
         Cambiar

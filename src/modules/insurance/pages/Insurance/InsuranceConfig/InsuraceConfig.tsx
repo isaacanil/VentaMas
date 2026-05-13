@@ -16,7 +16,7 @@ import { InsuranceTypesDisplay } from './components/InsuranceTypesDisplay';
 
 import type { ColumnConfig } from '@/components/ui/AdvancedTable/types/ColumnTypes';
 
-interface InsuranceTableRow {
+interface InsuranceTableRow extends Record<string, unknown> {
   insuranceName?: string;
   insuranceCompanyName?: string;
   insuranceCompanyRNC?: string;
@@ -106,7 +106,7 @@ const InsuranceConfig = () => {
         sectionNameIcon={icons.insurance.insurance}
       />
       <Content>
-        <AdvancedTable
+        <AdvancedTable<InsuranceTableRow>
           columns={columns}
           data={data}
           searchTerm={searchTerm}

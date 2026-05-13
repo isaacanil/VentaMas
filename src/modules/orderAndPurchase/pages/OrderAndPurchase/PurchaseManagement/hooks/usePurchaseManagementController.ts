@@ -507,14 +507,15 @@ export const usePurchaseManagementController = () => {
     }
   }, [dispatch, mode]);
 
+  const fetchedReplenishments = fetchedPurchase?.replenishments;
   const initialReceivedMap = useMemo(() => {
     const map = new Map<string | number, number>();
-    (fetchedPurchase?.replenishments || []).forEach((r, idx) => {
+    (fetchedReplenishments || []).forEach((r, idx) => {
       const q = resolvePurchaseLineQuantities(r);
       map.set(resolveReceiptRowKey(r, idx), q.receivedQuantity);
     });
     return map;
-  }, [fetchedPurchase?.id]);
+  }, [fetchedReplenishments]);
 
   const canSubmit = useMemo(() => {
     if (!purchaseData) return false;

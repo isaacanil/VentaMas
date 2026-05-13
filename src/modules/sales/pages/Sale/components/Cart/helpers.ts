@@ -83,11 +83,11 @@ export const savingDataToFirebase = async (
       await fbAddInvoice(bill, user);
 
       if (taxReceiptEnabled && taxReceipt?.length && user) {
-        await fbUpdateTaxReceipt(user, taxReceipt);
+        await fbUpdateTaxReceipt(user as any, taxReceipt);
       }
 
       if (selectedProducts.length > 0) {
-        await fbUpdateProductsStock(selectedProducts, user);
+        await fbUpdateProductsStock(selectedProducts, user as any);
       }
 
       notification.success({

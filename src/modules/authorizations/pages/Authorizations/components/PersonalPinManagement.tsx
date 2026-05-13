@@ -724,8 +724,6 @@ export const PersonalPinManagement = () => {
           onCancel={closeGenerateModal}
           onConfirm={handleGeneratePin}
           user={{
-            id: user?.uid || user?.id,
-            name: user?.name,
             displayName: user?.displayName || user?.name,
             hasPin: pinStatus?.hasPin,
             pinModules: pinStatus?.modules || [],
@@ -739,7 +737,6 @@ export const PersonalPinManagement = () => {
           pinData={generatedPin}
           user={{
             id: user?.uid || user?.id,
-            name: user?.name,
             displayName: user?.displayName || user?.name,
           }}
         />
@@ -759,6 +756,5 @@ export const PersonalPinManagement = () => {
 };
 
 export default PersonalPinManagement;
-
 
 

@@ -217,8 +217,14 @@ export const InvoiceTemplate2V31 = React.forwardRef<
   HTMLDivElement,
   InvoiceTemplateProps
 >(({ data, ignoreHidden, previewSignatureAssets }, ref) => {
-  const business = (useSelector(selectBusinessData) ||
-    {}) as InvoiceBusinessInfo;
+  const selectedBusiness = useSelector(selectBusinessData) as
+    | InvoiceBusinessInfo
+    | null
+    | undefined;
+  const business = useMemo(
+    () => selectedBusiness || {},
+    [selectedBusiness],
+  ) as InvoiceBusinessInfo;
   const headerMeasureRef = useRef<HTMLDivElement>(null);
   const footerMeasureRef = useRef<HTMLDivElement>(null);
   const contentMeasureRefs = useRef<Array<HTMLDivElement | null>>([]);

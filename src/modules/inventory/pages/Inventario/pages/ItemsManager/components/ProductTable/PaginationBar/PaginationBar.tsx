@@ -44,7 +44,7 @@ export const PaginationBar = ({
         key={page}
         color={page !== currentPage ? 'gray-dark' : null}
         onClick={() => handlePageChange(page)}
-        disabled={page === currentPage && 'style1'}
+        disabled={page === currentPage}
         title={`${page}`}
         borderRadius={'normal'}
         width="icon32"

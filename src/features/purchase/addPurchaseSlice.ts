@@ -128,7 +128,9 @@ const initialState: AddPurchaseState = {
 };
 
 const normalizeSelectedProduct = (product: ProductSelected): ProductSelected => {
-  const normalized = normalizePurchaseReplenishment(product);
+  const normalized = normalizePurchaseReplenishment(
+    product as unknown as Parameters<typeof normalizePurchaseReplenishment>[0],
+  );
   return {
     ...product,
     orderedQuantity: Number(normalized.orderedQuantity) || 0,

@@ -10,6 +10,7 @@ import RequestInvoiceEditAuthorization from '@/components/modals/RequestInvoiceE
 import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAccess';
 import {
   MAX_EDIT_WINDOW_SECONDS,
+  type AuthorizationRequest,
   resolveInvoiceEditAuthorization,
   resolveInvoiceTimestamp,
 } from './utils/resolveInvoiceEditAuthorization';

@@ -53,7 +53,7 @@ const Items = styled.ul`
   margin: 0;
   list-style: none;
 `;
-const Item = styled.li`
+const Item = styled.li<{ $align?: string }>`
   ${({ $align }) => ($align === 'right' ? 'margin-left: auto;' : '')}
   ${({ $align }) => ($align === 'left' ? 'margin-right: auto;' : '')}
     

@@ -41,6 +41,9 @@ export interface HomeDashboardProps {
 
 type HomePanelKey = 'metrics' | 'modules' | 'developer';
 
+const MOBILE_DOCK_RESERVED_SPACE =
+  'calc(96px + env(safe-area-inset-bottom, 0px))';
+
 const getGreetingLabel = (hour: number): string => {
   if (hour >= 5 && hour < 12) return 'Buenos días';
   if (hour >= 12 && hour < 19) return 'Buenas tardes';
@@ -170,41 +173,6 @@ export const HomeDashboard = ({
 
   return (
     <DashboardShell>
-      {resolvedPanel === 'metrics' ? (
-        <HeaderBand>
-          <HeaderContent>
-            <HeaderTitle>{headerTitle}</HeaderTitle>
-            <HeaderMeta>{todayLabel}</HeaderMeta>
-          </HeaderContent>
-          <HeaderActions>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
-              size="sm"
-              variant="primary"
-            >
-              <FontAwesomeIcon icon={faCashRegister} />
-              Nueva venta
-            </Button>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
-              size="sm"
-              variant="secondary"
-            >
-              <FontAwesomeIcon icon={faReceipt} />
-              Facturas
-            </Button>
-            <Button
-              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
-              size="sm"
-              variant="secondary"
-            >
-              <FontAwesomeIcon icon={faChartLine} />
-              Analíticas
-            </Button>
-          </HeaderActions>
-        </HeaderBand>
-      ) : null}
-
       <HomePanelTabs aria-label="Vista principal" role="tablist">
         <HomePanelTab
           $active={resolvedPanel === 'metrics'}
@@ -245,6 +213,41 @@ export const HomeDashboard = ({
           </HomePanelTab>
         ) : null}
       </HomePanelTabs>
+
+      {resolvedPanel === 'metrics' ? (
+        <HeaderBand>
+          <HeaderContent>
+            <HeaderTitle>{headerTitle}</HeaderTitle>
+            <HeaderMeta>{todayLabel}</HeaderMeta>
+          </HeaderContent>
+          <HeaderActions>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
+              size="sm"
+              variant="primary"
+            >
+              <FontAwesomeIcon icon={faCashRegister} />
+              Nueva venta
+            </Button>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
+              size="sm"
+              variant="secondary"
+            >
+              <FontAwesomeIcon icon={faReceipt} />
+              Facturas
+            </Button>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
+              size="sm"
+              variant="secondary"
+            >
+              <FontAwesomeIcon icon={faChartLine} />
+              Analíticas
+            </Button>
+          </HeaderActions>
+        </HeaderBand>
+      ) : null}
 
       {resolvedPanel === 'metrics' ? (
         <PanelRegion
@@ -385,8 +388,12 @@ const FinancialHealthCard = ({
 const DashboardShell = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
   width: 100%;
+
+  @media (width <= 768px) {
+    padding-bottom: ${MOBILE_DOCK_RESERVED_SPACE};
+  }
 `;
 
 const HeaderBand = styled.section`
@@ -490,7 +497,7 @@ const HomePanelTab = styled.button<{ $active: boolean }>`
 
 const PanelRegion = styled.div`
   display: grid;
-  gap: var(--ds-space-5);
+  gap: var(--ds-space-4);
 `;
 
 const ModulesPanel = styled.section`
@@ -505,7 +512,7 @@ const ModulesPanel = styled.section`
 const OverviewGrid = styled.section`
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
 
   @media (width <= 1040px) {
     grid-template-columns: 1fr;
@@ -647,7 +654,7 @@ const FinanceFooter = styled.span`
 const MainGrid = styled.section`
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
 
   @media (width <= 980px) {
     grid-template-columns: 1fr;

@@ -37,7 +37,7 @@ const formatDate = (dateLike: TimestampLike): string | null => {
 // Accumulate expenses by date
 const accumulateExpenseData = (expenses: ExpenseEntry[]): Record<string, number> => {
   return expenses.reduce<Record<string, number>>((acc, entry) => {
-    const expense = 'expense' in entry ? entry.expense : entry;
+    const expense = 'expense' in entry ? (entry.expense as Expense) : entry;
     const dateKey = formatDate(expense?.dates?.expenseDate);
 
     if (!dateKey) {
@@ -90,8 +90,6 @@ export const DailyExpenseBarChart = ({ expenses }: DailyExpenseBarChartProps) =>
     const series = chart.addSeries(HistogramSeries, {
       color: 'rgba(41, 98, 255, 0.5)',
       priceFormat: { type: 'volume' },
-      overlay: false,
-      scaleMargins: { top: 0.2, bottom: 0.1 },
     });
     seriesRef.current = series;
 

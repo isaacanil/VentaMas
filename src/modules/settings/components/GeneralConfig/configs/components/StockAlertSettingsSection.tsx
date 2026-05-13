@@ -50,8 +50,8 @@ const StockAlertSettingsSection = () => {
   const [form] = Form.useForm<StockAlertFormValues>();
 
   const user = useSelector(selectUser);
-  const settingsCart = useSelector(SelectSettingCart) || {};
-  const { billing = {} } = settingsCart;
+  const settingsCart = (useSelector(SelectSettingCart) || {}) as CartSettings;
+  const billing = (settingsCart.billing || {}) as StockAlertFormValues;
   const {
     stockAlertsEnabled,
     stockLowThreshold,

@@ -71,6 +71,6 @@ export const parseInvoiceDate = (rawDate: unknown): Date | null => {
   if (rawDate instanceof Date) {
     return Number.isNaN(rawDate.getTime()) ? null : rawDate;
   }
-  const parsed = new Date(rawDate);
+  const parsed = new Date(rawDate as string | number | Date);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };

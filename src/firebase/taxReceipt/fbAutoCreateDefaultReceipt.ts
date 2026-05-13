@@ -102,8 +102,8 @@ export const useAutoCreateDefaultTaxReceipt = () => {
         (docItem) => docItem.data() as TaxReceiptDocument,
       );
       const serializedTaxReceipts = serializeFirestoreDocuments(
-        taxReceiptsArray,
-      ) as TaxReceiptDocument[];
+        taxReceiptsArray as any,
+      ) as unknown as TaxReceiptDocument[];
       dispatch(getTaxReceiptData(serializedTaxReceipts));
     });
 

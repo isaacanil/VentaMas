@@ -3,7 +3,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseconfig';
 import type { UserWithBusiness } from '@/types/users';
 
-import type { CategoryDocument, CategoryRecord } from './types';
+import type { CategoryRecord } from './types';
 
 export const fbUpdateCategory = async (
   category: CategoryRecord,
@@ -17,7 +17,7 @@ export const fbUpdateCategory = async (
     return;
   }
   const { businessID } = user;
-  const counterRef = doc<CategoryDocument>(
+  const counterRef = doc(
     db,
     'businesses',
     String(businessID),

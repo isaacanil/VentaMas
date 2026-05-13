@@ -88,6 +88,7 @@ export const SessionsTable = ({
       },
       {
         Header: 'Acción',
+        accessor: 'action',
         align: 'center',
         width: '80px',
         minWidth: '80px',
@@ -125,10 +126,10 @@ export const SessionsTable = ({
   );
 
   return (
-    <AdvancedTable
+    <AdvancedTable<any>
       tableName="user-activity"
-      data={sessions}
-      columns={columns}
+      data={sessions as any}
+      columns={columns as any}
       loading={loading}
       emptyText={emptyText}
       numberOfElementsPerPage={15}

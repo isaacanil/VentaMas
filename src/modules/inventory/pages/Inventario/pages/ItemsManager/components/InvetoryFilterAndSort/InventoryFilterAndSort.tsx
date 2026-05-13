@@ -206,15 +206,17 @@ export const InventoryFilterAndSort = ({
         onClick={handleOpen}
         indicator={hasActiveFilters}
         indicatorCount={activeFiltersCount}
-        tooltip={tooltip}
-        tooltipDescription={tooltipDescription}
-        tooltipPlacement={tooltipPlacement}
+        tooltip={typeof tooltip === 'string' ? tooltip : undefined}
+        tooltipDescription={
+          typeof tooltipDescription === 'string' ? tooltipDescription : undefined
+        }
+        tooltipPlacement={String(tooltipPlacement ?? 'bottom')}
       />
         <FloatingMenu
         role="dialog"
         aria-modal="true"
         aria-hidden={!isOpen}
-        variants={menuVariant}
+        variants={menuVariant as any}
         ref={menuRef}
         initial="hidden"
         animate={isOpen ? 'visible' : 'hidden'}

@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from 'react';
+import { Badge } from '@heroui/react';
 import { shallowEqual, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -83,28 +84,40 @@ export const BusinessInfoPill = memo(
       }
     };
 
+    const businessPill = (
+      <PillButton
+        type="button"
+        onClick={handleInteraction}
+        onKeyDown={handleKeyDown}
+        aria-label={pillAriaLabel}
+      >
+        <TextGroup>
+          <Label>Negocio</Label>
+          <Name title={businessName}>{businessName}</Name>
+        </TextGroup>
+        {hasMultipleBusinesses ? (
+          <IconWrapper title="Cambiar de negocio">
+            <DownOutlined />
+          </IconWrapper>
+        ) : null}
+      </PillButton>
+    );
+
     return (
       <>
-        <PillButton
-          type="button"
-          className={className}
-          onClick={handleInteraction}
-          onKeyDown={handleKeyDown}
-          aria-label={pillAriaLabel}
-        >
+        <Badge.Anchor className={className}>
+          {businessPill}
           {ownershipIssueCount > 0 ? (
-            <IssueBadge aria-hidden="true">{ownershipIssueCount}</IssueBadge>
+            <Badge
+              color="danger"
+              placement="top-right"
+              size="sm"
+              aria-hidden="true"
+            >
+              {ownershipIssueCount}
+            </Badge>
           ) : null}
-          <TextGroup>
-            <Label>Negocio</Label>
-            <Name title={businessName}>{businessName}</Name>
-          </TextGroup>
-          {hasMultipleBusinesses ? (
-            <IconWrapper title="Cambiar de negocio">
-              <DownOutlined />
-            </IconWrapper>
-          ) : null}
-        </PillButton>
+        </Badge.Anchor>
         <BusinessWorkspaceModal
           isOpen={isModalOpen}
           onClose={() => handleOpenChange(false)}
@@ -150,26 +163,6 @@ const PillButton = styled.button`
       inset 0 1px 0 rgb(255 255 255 / 18%),
       0 0 0 3px rgb(255 255 255 / 22%);
   }
-`;
-
-const IssueBadge = styled.span`
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 0.25rem;
-  font-size: 0.66rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--ds-color-state-on-danger);
-  background: var(--ds-color-state-danger);
-  border: 2px solid var(--ds-color-nav-bg);
-  border-radius: 999px;
-  box-shadow: 0 6px 12px rgb(15 23 42 / 22%);
 `;
 
 const TextGroup = styled.span`

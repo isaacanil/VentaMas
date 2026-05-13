@@ -133,20 +133,6 @@ const collectCandidateIds = (data, fields) => {
   return result;
 };
 
-const addCollectionEntries = async ({
-  db,
-  docs,
-  domain,
-  collectionPath,
-  predicate = () => true,
-}) => {
-  const entries = await filterCollectionDocs(db, collectionPath, predicate);
-  for (const entry of entries) {
-    docs.add(entry.path, entry.data, domain);
-  }
-  return entries;
-};
-
 const findUserDoc = async ({ db, uid, username }) => {
   if (uid) {
     const byUid = await getDocData(db, `users/${uid}`);

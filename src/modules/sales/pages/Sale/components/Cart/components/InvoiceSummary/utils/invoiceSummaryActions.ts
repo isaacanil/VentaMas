@@ -119,7 +119,7 @@ export const downloadQuotationAction = async ({
           : null,
     });
 
-    const data = await addQuotation(user, cartData, billingSettings);
+    const data = await addQuotation(user as any, cartData, billingSettings);
     console.info('[QuotationDebug][UI] Quotation saved', {
       quotationId: (data as any)?.id ?? null,
       quotationNumber: (data as any)?.numberID ?? null,

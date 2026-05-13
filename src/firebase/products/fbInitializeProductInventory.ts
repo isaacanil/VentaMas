@@ -34,9 +34,9 @@ type InventoryRefs = {
 };
 type ProgressCallback = (info: Record<string, unknown>) => void;
 type CreatedDocs = {
-  batchDoc: Record<string, unknown>;
-  stockDoc: Record<string, unknown>;
-  movementDoc?: Record<string, unknown>;
+  batchDoc: Record<string, unknown> & { id: string };
+  stockDoc: Record<string, unknown> & { id: string };
+  movementDoc?: Record<string, unknown> & { id: string };
 };
 
 async function processBatchOfProducts(

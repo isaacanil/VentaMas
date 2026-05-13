@@ -22,7 +22,6 @@ import {
   asRecord,
   buildIdempotencyRequestHash,
   buildPurchasePaymentState,
-  normalizePaymentMethodsForAggregation,
   normalizeSupplierPaymentMethodCode,
   paymentMethodRequiresBankAccount,
   paymentMethodRequiresCashCount,

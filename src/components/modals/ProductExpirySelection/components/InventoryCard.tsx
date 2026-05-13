@@ -21,6 +21,8 @@ import {
 import type { InventoryDisplayItem } from '../fbFetchAllInventoryData';
 import type { ProductRecord } from '@/types/products';
 
+type CartProductPricing = NonNullable<CartProduct['pricing']>;
+
 const StyledCard = styled.div`
   overflow: hidden;
   background: #fff;
@@ -146,6 +148,16 @@ const InventoryCard = ({ item }: InventoryCardProps) => {
         (pricing as { cost?: number }).cost ??
         0,
     );
+    const selectedSaleUnit: CartProduct['selectedSaleUnit'] = base.selectedSaleUnit
+      ? {
+          ...(base.selectedSaleUnit as unknown as Record<string, unknown>),
+          pricing: {
+            ...(base.selectedSaleUnit.pricing as Record<string, unknown>),
+            currency: base.selectedSaleUnit.pricing.currency,
+            price: Number(base.selectedSaleUnit.pricing.price ?? priceValue),
+          },
+        }
+      : null;
 
     return {
       ...(base as ProductRecord),
@@ -158,9 +170,11 @@ const InventoryCard = ({ item }: InventoryCardProps) => {
         ...(pricing as Record<string, unknown>),
         listPrice: listPriceValue,
         price: priceValue,
-        currency: (pricing as { currency?: string }).currency,
+        currency: (pricing as { currency?: CartProductPricing['currency'] })
+          .currency,
         tax: taxValue,
       },
+      selectedSaleUnit,
       cost: { total: costTotal },
     };
   };

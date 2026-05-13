@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import { useCallback, useMemo } from 'react';
 
-import { FilterBar as CommonFilterBar } from '@/components/common/FilterBar/FilterBar';
+import {
+  FilterBar as CommonFilterBar,
+  type FilterBarItem,
+} from '@/components/common/FilterBar/FilterBar';
 
 interface DateRangeFilter {
   startDate?: number | Date | null;
@@ -124,7 +127,7 @@ export const FilterExpenses = ({
 
   return (
     <CommonFilterBar
-      items={items}
+      items={items as FilterBarItem[]}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={handleClearFilters}
       labels={{

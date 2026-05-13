@@ -283,7 +283,7 @@ export const applyPaymentToInstallment = (
     clientId,
     arId,
   }: {
-    user: UserWithBusinessAndUid;
+    user: UserWithBusiness;
     installment: AccountsReceivableInstallment;
     amountToApply: number;
     paymentId: string;
@@ -791,7 +791,7 @@ export const processInstallmentPayment = (
     clientId,
     arId,
   }: {
-    user: UserWithBusinessAndUid;
+    user: UserWithBusiness;
     installment: AccountsReceivableInstallment;
     remainingAmount: number;
     paymentId: string;

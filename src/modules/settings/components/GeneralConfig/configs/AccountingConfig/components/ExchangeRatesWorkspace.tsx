@@ -35,6 +35,7 @@ interface ExchangeRatesWorkspaceProps {
   hasUnsavedChanges: boolean;
   manualRatesByCurrency?: AccountingManualRatesByCurrency;
   onAddRateClick: () => void;
+  onSave?: () => void;
   reference: ExchangeRateReferenceSnapshot | null;
   saving: boolean;
 }

@@ -108,9 +108,9 @@ export const validateInvoiceSubmissionGuards = async ({
       description: buildMissingPhysicalSelectionMessage({
         availableLocationCount: summary.availableLocationCount,
         availableStockCount: summary.availableStockCount,
-        product: invalidProduct,
+        product: invalidProduct as unknown as ProductRecord,
       }),
-      product: invalidProduct as ProductRecord,
+      product: invalidProduct as unknown as ProductRecord,
     };
   } catch (error) {
     console.error(
@@ -125,9 +125,9 @@ export const validateInvoiceSubmissionGuards = async ({
       description: buildMissingPhysicalSelectionMessage({
         availableLocationCount: 0,
         availableStockCount: 0,
-        product: invalidProduct,
+        product: invalidProduct as unknown as ProductRecord,
       }),
-      product: invalidProduct as ProductRecord,
+      product: invalidProduct as unknown as ProductRecord,
     };
   }
 };

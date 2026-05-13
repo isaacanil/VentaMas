@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import AutoComplete from './AutoComplete';
 import type {
-  ConsoleLine,
+  ConsoleLine as ConsoleLineRecord,
   ConsoleLineType,
   ConsoleProps,
   AutoCompleteSuggestion,
@@ -167,14 +167,14 @@ const Console = ({
         <WelcomeText>{welcomeText}</WelcomeText>
 
         {/* Salida de la consola */}
-        {consoleOutput.map((line: ConsoleLine) => (
+        {consoleOutput.map((line: ConsoleLineRecord) => (
           <m.div
             key={line.id}
             initial="hidden"
             animate="visible"
             variants={consoleLineVariants}
           >
-            <ConsoleLine type={line.type}>
+            <ConsoleLineEntry type={line.type}>
               {line.type === 'command' ? (
                 <div className="content">
                   <span className="prompt">{line.content.prompt}</span>
@@ -221,7 +221,7 @@ const Console = ({
               ) : (
                 <div className="content">{line.content}</div>
               )}
-            </ConsoleLine>
+            </ConsoleLineEntry>
           </m.div>
         ))}
       </ConsoleTerminal>
@@ -377,7 +377,7 @@ interface ConsoleLineProps {
   type: ConsoleLineType;
 }
 
-const ConsoleLine = styled.div<ConsoleLineProps>`
+const ConsoleLineEntry = styled.div<ConsoleLineProps>`
   margin-bottom: ${(props: ConsoleLineProps) => {
     switch (props.type) {
       case 'command':

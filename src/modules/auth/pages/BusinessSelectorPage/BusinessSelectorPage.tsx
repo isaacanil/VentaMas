@@ -53,6 +53,19 @@ const getStatusLabel = (status?: MembershipStatus) => {
   return STATUS_LABELS[key] || key;
 };
 
+const toCleanString = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return null;
+};
+
 const SUBSCRIPTION_LABELS: Record<string, string> = {
   none: 'Sin suscripción',
   active: 'Activa',

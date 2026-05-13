@@ -106,24 +106,25 @@ export const useListenVendorBills = (filterState?: VendorBillFilterState) => {
     : null;
   const isLoading =
     currentQueryKey !== null && resolvedQueryKey !== currentQueryKey;
+  const isAscending = filterState?.isAscending;
 
   const sortedVendorBills = useMemo(() => {
-    if (filterState?.isAscending == null) return vendorBills;
+    if (isAscending == null) return vendorBills;
 
     return [...vendorBills].sort((left, right) => {
       const leftReference = Number(left.reference ?? 0);
       const rightReference = Number(right.reference ?? 0);
       if (Number.isFinite(leftReference) && Number.isFinite(rightReference)) {
-        return filterState.isAscending
+        return isAscending
           ? leftReference - rightReference
           : rightReference - leftReference;
       }
 
-      return filterState.isAscending
+      return isAscending
         ? String(left.reference ?? '').localeCompare(String(right.reference ?? ''))
         : String(right.reference ?? '').localeCompare(String(left.reference ?? ''));
     });
-  }, [filterState?.isAscending, vendorBills]);
+  }, [isAscending, vendorBills]);
 
   useEffect(() => {
     if (!user?.businessID) {

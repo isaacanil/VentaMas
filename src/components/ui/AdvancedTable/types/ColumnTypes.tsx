@@ -53,6 +53,7 @@ export type ColumnAlign =
   | string;
 
 export interface ColumnConfig<Row = TableRow> {
+  [key: string]: unknown;
   Header: ReactNode;
   accessor: string;
   status?: ColumnStatus;

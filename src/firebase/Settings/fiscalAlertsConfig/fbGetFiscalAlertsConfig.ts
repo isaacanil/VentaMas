@@ -9,10 +9,13 @@ import type { UserIdentity } from '@/types/users';
 
 import type { FiscalAlertsConfig } from './types';
 
-interface FiscalAlertsConfigDoc extends Partial<FiscalAlertsConfig> {
+type FiscalAlertsConfigDoc = Omit<
+  Partial<FiscalAlertsConfig>,
+  'globalThresholds' | 'expirationThresholds'
+> & {
   globalThresholds?: Partial<FiscalAlertsConfig['globalThresholds']>;
   expirationThresholds?: Partial<FiscalAlertsConfig['expirationThresholds']>;
-}
+};
 
 /**
  * Obtiene la configuracion de alertas de comprobantes fiscales desde Firebase

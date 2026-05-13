@@ -44,8 +44,8 @@ export const OrdersTable = ({
   return (
     <AdvancedTable
       tableName={'Lista de Pedidos Pendientes'}
-      columns={columns}
-      data={data}
+      columns={columns as any}
+      data={data as any}
       loading={loading}
     />
   );

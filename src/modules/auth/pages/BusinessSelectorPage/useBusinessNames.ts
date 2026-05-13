@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
@@ -9,69 +9,75 @@ import type { AvailableBusinessContext } from '@/utils/auth-adapter';
  * Returns a Map<businessId, name> that can be used to enrich the displayed name.
  */
 export const useBusinessNames = (
-    businesses: AvailableBusinessContext[],
+  businesses: AvailableBusinessContext[],
 ): Map<string, string> => {
-    const [namesMap, setNamesMap] = useState<Map<string, string>>(new Map());
+  const [namesMap, setNamesMap] = useState<Map<string, string>>(new Map());
+  const businessIdsKey = useMemo(
+    () => businesses.map((business) => business.businessId).sort().join(','),
+    [businesses],
+  );
+  const businessIds = useMemo(
+    () => (businessIdsKey ? businessIdsKey.split(',') : []),
+    [businessIdsKey],
+  );
 
-    // Create a stable key from business IDs to avoid unnecessary re-fetches.
-    const businessIdsKey = businesses.map((b) => b.businessId).sort().join(',');
+  useEffect(() => {
+    if (!businessIds.length) {
+      return;
+    }
 
-    useEffect(() => {
-        if (!businesses.length) {
-            setNamesMap(new Map());
-            return;
-        }
+    let cancelled = false;
 
-        let cancelled = false;
+    const fetchNames = async () => {
+      const results = new Map<string, string>();
 
-        const fetchNames = async () => {
-            const results = new Map<string, string>();
+      await Promise.all(
+        businessIds.map(async (businessId) => {
+          try {
+            const businessRef = doc(db, 'businesses', businessId);
+            const snapshot = await getDoc(businessRef);
 
-            await Promise.all(
-                businesses.map(async (business) => {
-                    try {
-                        const businessRef = doc(db, 'businesses', business.businessId);
-                        const snapshot = await getDoc(businessRef);
+            if (!snapshot.exists()) return;
 
-                        if (!snapshot.exists()) return;
+            const data = snapshot.data();
+            const businessData = data && typeof data === 'object' ? data : null;
+            const nestedBusiness =
+              businessData &&
+              typeof businessData.business === 'object' &&
+              businessData.business !== null
+                ? (businessData.business as Record<string, unknown>)
+                : null;
 
-                        const data = snapshot.data();
-                        const businessData =
-                            data && typeof data === 'object' ? data : null;
-                        const nestedBusiness =
-                            businessData &&
-                                typeof businessData.business === 'object' &&
-                                businessData.business !== null
-                                ? (businessData.business as Record<string, unknown>)
-                                : null;
+            const name =
+              (nestedBusiness &&
+                typeof nestedBusiness.name === 'string' &&
+                nestedBusiness.name.trim()) ||
+              null;
 
-                        const name =
-                            (nestedBusiness &&
-                                typeof nestedBusiness.name === 'string' &&
-                                nestedBusiness.name.trim()) ||
-                            null;
-
-                        if (name) {
-                            results.set(business.businessId, name);
-                        }
-                    } catch {
-                        // Silently ignore individual fetch errors.
-                    }
-                }),
-            );
-
-            if (!cancelled) {
-                setNamesMap(results);
+            if (name) {
+              results.set(businessId, name);
             }
-        };
+          } catch {
+            // Silently ignore individual fetch errors.
+          }
+        }),
+      );
 
-        void fetchNames();
+      if (!cancelled) {
+        setNamesMap(results);
+      }
+    };
 
-        return () => {
-            cancelled = true;
-        };
-        // eslint_disable-next-line react-hooks/exhaustive-deps
-    }, [businessIdsKey]);
+    void fetchNames();
 
-    return namesMap;
+    return () => {
+      cancelled = true;
+    };
+  }, [businessIds]);
+
+  if (!businessIds.length) {
+    return new Map();
+  }
+
+  return namesMap;
 };

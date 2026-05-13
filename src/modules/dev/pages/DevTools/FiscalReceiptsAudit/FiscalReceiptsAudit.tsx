@@ -151,7 +151,9 @@ export const FiscalReceiptsAudit: React.FC = () => {
   );
 
   const handleAnalyze = async () => {
-    const { start, end } = getRangeFromPreset(selectedPreset) as DateRange;
+    const { start, end } = getRangeFromPreset(
+      selectedPreset,
+    ) as unknown as DateRange;
     if (start && end && end.isBefore(start)) {
       message.warning('El rango de fechas no es válido.');
       return;
@@ -203,7 +205,9 @@ export const FiscalReceiptsAudit: React.FC = () => {
       return;
     }
 
-    const { start, end } = getRangeFromPreset(selectedPreset) as DateRange;
+    const { start, end } = getRangeFromPreset(
+      selectedPreset,
+    ) as unknown as DateRange;
     const startDate = start ? start.toDate() : null;
     const endDate = end ? end.toDate() : null;
 

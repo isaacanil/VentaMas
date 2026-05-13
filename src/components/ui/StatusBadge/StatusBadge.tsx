@@ -107,7 +107,22 @@ const renderIconNode = (
     });
   }
 
-  return <AppIcon icon={icon} color={color} sizeToken={size === 'sm' ? 'xs' : 'sm'} />;
+  if (
+    typeof icon === 'object' &&
+    icon !== null &&
+    'iconName' in icon &&
+    'prefix' in icon
+  ) {
+    return (
+      <AppIcon
+        icon={icon as IconDefinition}
+        color={color}
+        sizeToken={size === 'sm' ? 'xs' : 'sm'}
+      />
+    );
+  }
+
+  return null;
 };
 
 export interface StatusBadgeProps {

@@ -1,4 +1,4 @@
-import type { Client } from '@/features/cart/types';
+import type { Client as ClientCartClient } from '@/features/clientCart/clientCartSlice';
 import type { InvoiceData } from '@/types/invoice';
 
 import type { ClientLike, TimestampRecord } from './types';
@@ -12,21 +12,29 @@ export const resolveClientId = (client?: ClientLike | null): string => {
 
 export const normalizeClientForCart = (
   client?: ClientLike | null,
-): Client | null => {
+): ClientCartClient | null => {
   if (!client) return null;
   const id = resolveClientId(client);
   if (!id) return null;
 
-  const normalized: Client = {
+  const normalized: ClientCartClient = {
     id,
     name: typeof client.name === 'string' ? client.name : '',
     tel: typeof client.tel === 'string' ? client.tel : '',
     address: typeof client.address === 'string' ? client.address : '',
     personalID: typeof client.personalID === 'string' ? client.personalID : '',
+    delivery: {
+      status: false,
+      value: 0,
+    },
   };
 
   if (client.delivery) {
-    normalized.delivery = client.delivery;
+    const deliveryValue = Number(client.delivery.value);
+    normalized.delivery = {
+      status: Boolean(client.delivery.status),
+      value: Number.isFinite(deliveryValue) ? deliveryValue : 0,
+    };
   }
 
   return normalized;

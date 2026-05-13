@@ -44,7 +44,7 @@ function _transformProductToNewSchema(
   // Suponiendo que la estructura de "product" ya contiene los campos necesarios
   // y solo necesitamos ajustarlos o calcular nuevos valores como el precio sin impuestos.
   const taxPercentage = convertDecimalToPercentage(product.tax?.unit ?? 0);
-  const tax = getTax(product.price?.unit ?? 0, taxPercentage);
+  const tax = ((product.price?.unit ?? 0) * taxPercentage) / 100;
   const price = (product.price?.unit ?? 0) - tax;
 
   return {

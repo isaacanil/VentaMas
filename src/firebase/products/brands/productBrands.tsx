@@ -87,6 +87,7 @@ export const fbAddProductBrand = async (
   const newBrand: ProductBrand = {
     ...data,
     id: nanoid(),
+    name: typeof data.name === 'string' ? data.name : '',
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
   };

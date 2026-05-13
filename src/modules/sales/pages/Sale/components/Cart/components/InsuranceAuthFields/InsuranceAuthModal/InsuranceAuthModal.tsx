@@ -584,7 +584,11 @@ export const InsuranceAuthModal = () => {
         });
 
         if (!saveResult.success) {
-          message.error(saveResult.errorMessage);
+          message.error(
+            'errorMessage' in saveResult
+              ? saveResult.errorMessage
+              : 'No se pudieron guardar los datos de seguro.',
+          );
           return;
         }
 

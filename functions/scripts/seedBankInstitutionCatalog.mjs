@@ -120,7 +120,6 @@ const run = async () => {
 
   for (const document of documents) {
     // Idempotente para reruns y expansión futura.
-    // eslint-disable-next-line no-await-in-loop
     await db.doc(`bankInstitutionCatalog/${document.id}`).set(document, {
       merge: true,
     });

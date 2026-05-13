@@ -32,7 +32,7 @@ export const fbToggleFavoriteProductCategory = async (
     return;
   }
 
-  const favoriteProductCategoryRef = doc<FavoriteCategoriesDocument>(
+  const favoriteProductCategoryRef = doc(
     db,
     'businesses',
     businessID,
@@ -46,7 +46,7 @@ export const fbToggleFavoriteProductCategory = async (
     const docSnapshot = await getDoc(favoriteProductCategoryRef);
 
     if (docSnapshot.exists()) {
-      const data = docSnapshot.data();
+      const data = docSnapshot.data() as FavoriteCategoriesDocument;
       const favoriteCategories = Array.isArray(data.favoriteCategories)
         ? data.favoriteCategories
         : [];

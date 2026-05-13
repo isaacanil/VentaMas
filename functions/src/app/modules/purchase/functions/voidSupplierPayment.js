@@ -20,8 +20,6 @@ import {
   asRecord,
   buildPurchasePaymentState,
   normalizePaymentMethodsForAggregation,
-  paymentMethodRequiresBankAccount,
-  paymentMethodRequiresCashCount,
   resolvePaymentAmount,
   resolvePurchaseDocumentTotal,
   roundToTwoDecimals,

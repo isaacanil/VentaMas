@@ -62,14 +62,18 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   const totalInsuranceValue = totals.totalInsurance;
   const changeValue = totals.change;
 
-  usePendingBalance(businessID, clientId, setPendingBalance);
+  usePendingBalance(
+    businessID ? String(businessID) : undefined,
+    clientId ? String(clientId) : undefined,
+    setPendingBalance,
+  );
 
   const paymentLabel = {
     cash: 'Efectivo',
     card: 'Tarjeta',
     transfer: 'Transferencia',
   };
-  const items = [
+  const items: PaymentAreaRow[] = [
     {
       label: 'ENVÍO',
       value1: null,

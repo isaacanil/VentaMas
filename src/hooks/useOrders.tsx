@@ -109,7 +109,7 @@ export const useListenOrders = (filterState?: FilterState) => {
   const sortedOrders = useMemo(() => {
     if (!orders) return [];
     return isAscending !== undefined
-      ? (sortOrders(orders, isAscending) as Order[])
+      ? (sortOrders(orders as any, isAscending) as Order[])
       : orders;
   }, [orders, isAscending]);
 
@@ -133,11 +133,12 @@ export const useListenOrders = (filterState?: FilterState) => {
               const processedData = convertTimestamps(
                 normalizeOrderRecord(orderData, doc.id),
               );
-              return processOrder(
+              const processedOrder = await processOrder(
                 processedData,
                 user.businessID,
                 doc.id,
-              ) as Order;
+              );
+              return processedOrder as unknown as Order;
             }),
           );
 

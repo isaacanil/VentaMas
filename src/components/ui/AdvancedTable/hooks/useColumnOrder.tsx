@@ -79,15 +79,16 @@ const mergeColumns = <Col extends ColumnLike>(
   savedColumns: ColumnLike[],
 ): Col[] => {
   // Paso 1: Mantener columnas y orden del localStorage, asegurando que el estado se preserva
-  const updatedColumns = savedColumns
-    .map((savedCol) => {
-      const originalCol = defaultColumns.find(
-        (col) => col.accessor === savedCol.accessor,
-      );
-      // Si la columna original existe, se preserva el estado del localStorage
-      return originalCol ? { ...originalCol, status: savedCol.status } : null;
-    })
-    .filter((col): col is Col => col !== null);
+  const updatedColumns: Col[] = [];
+  savedColumns.forEach((savedCol) => {
+    const originalCol = defaultColumns.find(
+      (col) => col.accessor === savedCol.accessor,
+    );
+    // Si la columna original existe, se preserva el estado del localStorage
+    if (originalCol) {
+      updatedColumns.push({ ...originalCol, status: savedCol.status } as Col);
+    }
+  });
 
   // Paso 2: Agregar nuevas columnas que no estén en el localStorage al final
   defaultColumns.forEach((col) => {

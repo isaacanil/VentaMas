@@ -24,22 +24,22 @@ const toCleanString = (value: unknown): string | null => {
 };
 
 export const normalizeBankInstitutionName = (
-  value: string | null | undefined,
+  value: unknown,
 ) =>
-  (value ?? '')
+  (toCleanString(value) ?? '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 
 export const normalizeBankInstitutionCountryCode = (
-  value: string | null | undefined,
+  value: unknown,
 ) =>
   (toCleanString(value)?.toUpperCase() ??
     DEFAULT_BANK_INSTITUTION_COUNTRY_CODE) as string;
 
 export const normalizeBankInstitutionCode = (
-  value: string | null | undefined,
+  value: unknown,
 ) => {
   const normalizedValue = toCleanString(value);
   if (!normalizedValue) {

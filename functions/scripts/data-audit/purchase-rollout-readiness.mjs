@@ -392,7 +392,6 @@ const run = async () => {
         updatedCount += 1;
 
         if (batchOps >= 400) {
-          // eslint-disable-next-line no-await-in-loop
           await batch.commit();
           batch = db.batch();
           batchOps = 0;

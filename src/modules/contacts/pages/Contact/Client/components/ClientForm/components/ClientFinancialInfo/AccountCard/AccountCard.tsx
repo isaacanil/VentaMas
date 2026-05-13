@@ -14,6 +14,7 @@ import { Payment } from './components/Payment';
 type AccountCardProps = {
   account: AccountsReceivableDoc;
   accountNumber?: string | number;
+  date?: TimestampLike;
   frequency?: string;
   balance?: number;
   installments?: number;
@@ -98,12 +99,9 @@ export const AccountCard = ({
 
       <ActionBar>
         <Payment
-          installmentAmount={installmentAmount}
           installments={installments}
-          lastPayment={lastPayment}
-          lastPaymentDate={lastPaymentDate}
           isActive={isActive}
-          balance={balance}
+          balance={balance ?? 0}
           account={account}
         />
       </ActionBar>

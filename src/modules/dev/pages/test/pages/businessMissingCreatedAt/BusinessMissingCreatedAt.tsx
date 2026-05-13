@@ -466,13 +466,13 @@ const th = {
   top: 0,
   background: 'white',
   zIndex: 1,
-};
+} as const;
 
 const td = {
   padding: '6px 10px',
   borderBottom: '1px solid #f2f2f2',
   fontSize: 13,
-};
+} as const;
 
 function sanitizeCsv(text) {
   if (!text) return '';

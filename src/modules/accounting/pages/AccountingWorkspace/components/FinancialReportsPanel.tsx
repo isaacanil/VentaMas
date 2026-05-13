@@ -173,9 +173,9 @@ export const FinancialReportsPanel = ({
                 <Table.Content>
                   <Table.Header>
                     <Table.Column>Cuenta</Table.Column>
-                    <Table.Column align="end">Debito</Table.Column>
-                    <Table.Column align="end">Credito</Table.Column>
-                    <Table.Column align="end">Balance</Table.Column>
+                    <Table.Column>Debito</Table.Column>
+                    <Table.Column>Credito</Table.Column>
+                    <Table.Column>Balance</Table.Column>
                   </Table.Header>
                   <Table.Body>
                     {(filteredTrialBalance ?? []).map((row) => (

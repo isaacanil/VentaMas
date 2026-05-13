@@ -13,7 +13,7 @@ export const NotificationButton = ({
 }: NotificationButtonProps) => {
   const dispatch = useDispatch();
   const handleOpenNotifications = () => {
-    dispatch(openNotificationCenter('taxReceipt'));
+    dispatch(openNotificationCenter());
     handleCloseMenu?.();
   };
 

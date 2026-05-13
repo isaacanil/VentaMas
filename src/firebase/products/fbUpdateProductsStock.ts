@@ -62,7 +62,7 @@ async function executeBatchesWithConcurrency(
     }
   }
 
-  return Promise.all(results);
+  await Promise.all(results);
 }
 
 export async function fbUpdateProductsStock(

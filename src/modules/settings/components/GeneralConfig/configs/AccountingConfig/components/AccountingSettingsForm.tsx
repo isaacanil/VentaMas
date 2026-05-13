@@ -365,8 +365,10 @@ export const AccountingSettingsForm = ({
         availableCurrencies={availableCurrencies}
         enabledForeignCurrencies={enabledForeignCurrencies}
         functionalCurrency={config.functionalCurrency}
+        hasUnsavedChanges={hasUnsavedExchangeChanges}
         manualRatesByCurrency={config.manualRatesByCurrency}
         open={isAddRateModalOpen}
+        saving={savingExchange}
         selectedCurrencies={selectedCurrenciesToAdd}
         onBuyRateChange={onBuyRateChange}
         onCancel={handleCloseAddRateModal}
@@ -375,6 +377,7 @@ export const AccountingSettingsForm = ({
         onRemoveCurrency={handleRemoveCurrency}
         onSelectionChange={setSelectedCurrenciesToAdd}
         onSellRateChange={onSellRateChange}
+        onSave={onSaveExchange}
       />
 
       <AddChartOfAccountModal

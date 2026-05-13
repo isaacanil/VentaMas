@@ -93,7 +93,7 @@ export const CashReconciliationTable = () => {
         date: JSON.stringify(cashCount.opening?.date ?? null),
       },
     };
-    dispatch(setCashCount(cashCountToUpdate));
+    dispatch(setCashCount(cashCountToUpdate as any));
     navigate(`/cash-register-closure/${cashCountToUpdate?.id}`);
   };
 

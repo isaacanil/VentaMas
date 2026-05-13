@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { addProduct, updateProductFields } from '@/features/cart/cartSlice';
+import type { Product as CartProduct } from '@/features/cart/types';
 import {
   DEFAULT_FILTER_CONTEXT,
   selectStockLocations,
@@ -24,6 +25,7 @@ import { useLocationNames } from '@/hooks/useLocationNames';
 import { formatLocaleDate } from '@/utils/date/dateUtils';
 import { toExpirationTimestamp } from '@/utils/inventory/dates';
 import { normalizeLocationId } from '@/utils/inventory/locations';
+import type { ProductBatchInfo } from '@/types/products';
 import type { ProductStockRecord } from '@/utils/inventory/types';
 
 const numberFormatter = new Intl.NumberFormat('es-DO');
@@ -405,25 +407,32 @@ export function ProductBatchModal() {
 
     if (!chosenStock) return;
 
-    const batchInfo = {
-      productStockId: chosenStock.id ?? null,
+    const stockId = chosenStock.id != null ? String(chosenStock.id) : null;
+    const locationId = chosenStock.location
+      ? normalizeLocationId(chosenStock.location)
+      : null;
+    const numericQuantity = Number(chosenStock.quantity);
+    const batchInfo: ProductBatchInfo = {
+      productStockId: stockId,
       batchId: chosenStock.batchId ?? null,
       batchNumber: chosenStock.batchNumberId ?? null,
-      quantity: chosenStock.quantity ?? null,
+      quantity: Number.isFinite(numericQuantity) ? numericQuantity : null,
       expirationDate: toExpirationTimestamp(chosenStock.expirationDate),
-      locationId: chosenStock.location ?? null,
-      locationName: chosenStock.location
-        ? formatLocation(normalizeLocationId(chosenStock.location))
-        : null,
+      locationId,
+      locationName: locationId ? formatLocation(locationId) : null,
     };
     const cartLineId =
       typeof typedProduct?.cid === 'string' && typedProduct.cid.trim().length > 0
         ? typedProduct.cid
         : null;
+    const selectedBatchId =
+      batchInfo.batchId === null || batchInfo.batchId === undefined
+        ? null
+        : String(batchInfo.batchId);
     const resolvedCartLineCid =
       typedProduct?.id && (batchInfo.productStockId || batchInfo.batchId)
         ? `${typedProduct.id}::${batchInfo.productStockId ?? 'no-stock'}::${batchInfo.batchId ?? 'no-batch'}`
-        : typedProduct?.cid;
+        : cartLineId;
 
     if (cartLineId) {
       dispatch(
@@ -432,8 +441,8 @@ export function ProductBatchModal() {
           data: {
             cid: resolvedCartLineCid,
             productStockId: batchInfo.productStockId,
-            batchId: batchInfo.batchId,
-            stock: chosenStock.quantity,
+            batchId: selectedBatchId,
+            stock: batchInfo.quantity ?? 0,
             batchInfo,
           },
         }),
@@ -443,10 +452,10 @@ export function ProductBatchModal() {
         addProduct({
           ...(typedProduct ?? {}),
           productStockId: batchInfo.productStockId,
-          batchId: batchInfo.batchId,
-          stock: chosenStock.quantity,
+          batchId: selectedBatchId,
+          stock: batchInfo.quantity ?? 0,
           batchInfo,
-        }),
+        } as CartProduct),
       );
     }
     handleCloseModal();

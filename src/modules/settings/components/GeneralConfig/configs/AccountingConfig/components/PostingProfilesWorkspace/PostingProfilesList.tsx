@@ -337,7 +337,7 @@ export const PostingProfilesList = ({
           />
         </FilterGroup>
         <Select
-          options={STATUS_FILTER_OPTIONS}
+          options={[...STATUS_FILTER_OPTIONS]}
           value={statusFilter}
           onChange={(value) => setStatusFilter(value)}
         />

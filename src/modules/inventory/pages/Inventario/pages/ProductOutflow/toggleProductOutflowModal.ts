@@ -78,7 +78,7 @@ export const toggleProductOutflowModal = ({
   dispatch,
 }: ToggleProductOutflowModalParams) => {
   //abrir el modal de productOutflow
-  dispatch(toggleAddProductOutflow());
+  dispatch(toggleAddProductOutflow(undefined));
   //enviar los datos al modal
 
   const newData = new OutflowData({

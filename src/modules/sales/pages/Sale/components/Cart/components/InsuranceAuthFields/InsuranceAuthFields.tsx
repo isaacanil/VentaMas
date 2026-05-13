@@ -62,11 +62,11 @@ export const InsuranceAuthFields = () => {
     const fetchClientInsurance = async () => {
       if (client?.id) {
         const insuranceData = await getClientInsuranceByClientId(
-          user,
+          user as any,
           client.id,
         );
         if (insuranceData) {
-          setClientInsurance(insuranceData);
+          setClientInsurance(insuranceData as ClientInsuranceData);
           dispatch(
             setAuthData({
               insuranceId: insuranceData.insuranceId,
@@ -99,7 +99,7 @@ export const InsuranceAuthFields = () => {
     );
   };
 
-  const handleRecurrenceChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleRecurrenceChange = (e: { target: { checked: boolean } }) => {
     dispatch(updateInsuranceData({ recurrence: e.target.checked }));
   };
 

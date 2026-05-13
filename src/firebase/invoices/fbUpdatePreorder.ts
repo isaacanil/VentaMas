@@ -36,6 +36,10 @@ type PreorderInput = InvoiceData & {
   selectedTaxReceiptType?: string | null;
 };
 
+type MutablePreorderDetails = Omit<InvoicePreorderDetails, 'date'> & {
+  date?: InvoicePreorderDetails['date'] | ReturnType<typeof serverTimestamp>;
+};
+
 export const fbUpdatePreOrder = async (
   user: UserIdentity | null | undefined,
   cartData: PreorderInput,
@@ -55,13 +59,15 @@ export const fbUpdatePreOrder = async (
     `businesses/${user.businessID}/invoices/${cartData.id}`,
   );
 
-  const preorderDetails = {
+  const preorderDetails: MutablePreorderDetails = {
     ...(cartData?.preorderDetails || {}),
     isOrWasPreorder: true,
   };
 
   if (preorderDetails.date) {
-    preorderDetails.date = toFirestoreTimestamp(preorderDetails.date);
+    preorderDetails.date = toFirestoreTimestamp(
+      preorderDetails.date as TimestampLike,
+    );
   } else {
     preorderDetails.date = serverTimestamp();
   }

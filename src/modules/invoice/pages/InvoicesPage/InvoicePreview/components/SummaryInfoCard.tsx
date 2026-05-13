@@ -156,7 +156,9 @@ const InfoLabel = styled.span`
 `;
 
 const InfoValue = styled.span`
-  font-family: ${(props) => props.theme?.fonts?.mono || 'monospace'};
+  font-family: ${(props) =>
+    (props.theme as { fonts?: { mono?: string } } | undefined)?.fonts?.mono ||
+    'monospace'};
   font-size: 0.93rem;
   font-weight: 500;
   color: #333;

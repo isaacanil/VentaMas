@@ -1,5 +1,4 @@
 @layer reset, legacy, theme, base, components, utilities;
-
 @import './normalize/normalize.css' layer(reset);
 @import '../index.css' layer(legacy);
 @import '../variable.css' layer(legacy);

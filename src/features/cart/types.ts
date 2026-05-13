@@ -7,6 +7,8 @@ import type {
   ProductMonetarySnapshot,
 } from '@/utils/accounting/lineMonetary';
 
+export type { SupportedDocumentCurrency };
+
 export interface MonetaryRateOverride {
   applied: boolean;
   value?: number | null;
@@ -38,8 +40,9 @@ export interface Product {
   stock?: number;
   batchInfo?: ProductBatchInfo;
   weightDetail?: {
-    isSoldByWeight: boolean;
-    weight: number;
+    isSoldByWeight?: boolean;
+    weight?: number;
+    weightUnit?: string;
   };
   pricing?: {
     currency?: SupportedDocumentCurrency;
@@ -87,6 +90,7 @@ export interface DuePeriod {
 
 export interface PreorderDetails {
   date?: number | { seconds: number; nanoseconds: number };
+  numberID?: string | number;
   preorderNumber?: string | null;
   createdAt?: number | null;
 }
@@ -105,9 +109,10 @@ export interface CreditNotePayment {
 }
 
 export interface DiscountContext {
-  value: number;
+  value?: number;
   reason?: string;
   authorizedBy?: string;
+  [key: string]: unknown;
 }
 
 export interface CartAccountingContext {

@@ -13,7 +13,7 @@ export const useFbGetCategories = () => {
   const user = useSelector(selectUser) as UserIdentity | null | undefined;
 
   useEffect(() => {
-    const categoriesRef = collection<CategoryDocument>(
+    const categoriesRef = collection(
       db,
       'businesses',
       String(user?.businessID),
@@ -22,7 +22,9 @@ export const useFbGetCategories = () => {
     const q = query(categoriesRef, orderBy('category.name', 'desc'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let categoriesArray = snapshot.docs.map((item) => item.data());
+      const categoriesArray = snapshot.docs.map(
+        (item) => item.data() as CategoryDocument,
+      );
       setCategories(categoriesArray);
     });
 

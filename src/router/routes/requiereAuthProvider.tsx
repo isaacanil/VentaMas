@@ -2,10 +2,10 @@ import { RequireAuth } from '@/modules/auth/components/RequireAuth';
 import { ErrorBoundary } from '@/modules/app/pages/ErrorElement/ErrorBoundary';
 import { mergeRouteHandleMeta } from '@/router/routes/routeHandle';
 
-import type { ReactElement } from 'react';
+import { isValidElement, type ReactElement, type ReactNode } from 'react';
 
 interface GuardedRoute {
-  element?: ReactElement | null;
+  element?: ReactNode | null;
   isPublic?: boolean;
   handle?: unknown;
 }
@@ -33,7 +33,7 @@ export const processRoute = <TRoute extends GuardedRoute>(
 ): TRoute => {
   const { element, isPublic = false } = route;
   const handle = mergeRouteHandleMeta(route);
-  if (!element) {
+  if (!isValidElement(element)) {
     return {
       ...route,
       ...(handle ? { handle } : {}),

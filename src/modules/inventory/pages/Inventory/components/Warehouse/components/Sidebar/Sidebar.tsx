@@ -338,7 +338,7 @@ const Sidebar = ({
   }, [defaultWarehouse, items]);
 
   const handleAddWarehouse = () => {
-    dispatch(openWarehouseForm() as any);
+    dispatch(openWarehouseForm(undefined) as any);
   };
 
   const handleUpdateWarehouse = (node: SidebarNodeRecord) => {

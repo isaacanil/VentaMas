@@ -45,6 +45,7 @@ interface MenuAppProps {
   setSearchData?: Dispatch<SetStateAction<string>>;
   searchData?: string;
   displayName?: string;
+  sectionStatus?: string;
   toolbarProps?: Omit<ToolbarComponentProps, 'side'>;
   showBackButton?: boolean;
   showNotificationButton?: boolean;

@@ -193,7 +193,7 @@ export const useBulkInvoiceRecovery = ({
           }
         }
 
-        const response = (await autoRepairInvoiceV2(payload)) as BulkResult;
+        const response = (await autoRepairInvoiceV2(payload as any)) as BulkResult;
         aggregatedResult = mergeBatchResults(
           aggregatedResult,
           response,

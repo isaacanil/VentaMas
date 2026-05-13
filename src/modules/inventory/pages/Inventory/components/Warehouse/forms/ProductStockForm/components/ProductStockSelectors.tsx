@@ -5,8 +5,8 @@ const { Option } = Select;
 type ProductRecord = { id: string; name?: string } & Record<string, unknown>;
 
 interface BatchOption {
-  id: string;
-  shortName?: string;
+  id: string | number;
+  shortName?: string | number;
 }
 
 interface ProductStockSelectorsProps {
@@ -83,8 +83,8 @@ export const ProductStockSelectors = ({
             allowClear
           >
             {batchesList.map((batch) => (
-              <Option key={batch.id} value={batch.id}>
-                {batch.shortName}
+              <Option key={String(batch.id)} value={String(batch.id)}>
+                {String(batch.shortName ?? '')}
               </Option>
             ))}
           </Select>

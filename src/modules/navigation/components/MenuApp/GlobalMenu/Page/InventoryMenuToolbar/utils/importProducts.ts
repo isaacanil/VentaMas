@@ -19,6 +19,8 @@ type ImportProductsResult = {
   importedProducts?: InventoryProduct[];
 };
 
+type ImportUser = UserWithBusiness & { uid: string };
+
 export const runProductImport = async (
   file: File,
   user: UserWithBusiness | null,
@@ -43,8 +45,9 @@ export const runProductImport = async (
       };
     }
 
-    await fbAddActiveIngredients(user, productData);
-    await fbAddProducts(user, productData, 10000, (progress) => {
+    const importUser = user as ImportUser;
+    await fbAddActiveIngredients(importUser, productData);
+    await fbAddProducts(importUser, productData, 10000, (progress) => {
       const stats = (progress as { stats?: ImportProgressStats }).stats;
       if (stats) {
         setImportProgress(stats);

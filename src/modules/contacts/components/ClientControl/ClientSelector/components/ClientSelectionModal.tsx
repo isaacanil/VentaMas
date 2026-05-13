@@ -108,7 +108,7 @@ export const ClientSelectionModal = ({
               />
               <MotionContainer
                 ref={containerRef}
-                variants={containerVariants}
+                variants={containerVariants as any}
                 initial="hidden"
                 animate="visible"
                 exit="exit"

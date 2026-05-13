@@ -527,7 +527,7 @@ const CashCountAudit: React.FC = () => {
         const meta = CashCountMetaData(
           ccData,
           invoices || [],
-          expenses || [],
+          (expenses || []) as any,
           arPayments || [],
         ) as CashCountData;
 

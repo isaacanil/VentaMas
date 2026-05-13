@@ -428,7 +428,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
         username: normalizedUsername,
       });
     },
-    [dispatch, form, navigate, setLoading],
+    [dispatch, form, navigate, notification, setLoading],
   );
 
   const handleFinishFailed = useCallback(

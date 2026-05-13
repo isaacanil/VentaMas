@@ -168,11 +168,9 @@ const run = async () => {
 
   for (const plan of plans) {
     // Keep writes idempotent so reruns are safe across environments.
-    // eslint-disable-next-line no-await-in-loop
     await db.doc(`billingPlanCatalog/${plan.planCode}`).set(plan.planDocument, {
       merge: true,
     });
-    // eslint-disable-next-line no-await-in-loop
     await db
       .doc(`billingPlanCatalog/${plan.planCode}/versions/${plan.versionId}`)
       .set(plan.versionDocument, { merge: true });

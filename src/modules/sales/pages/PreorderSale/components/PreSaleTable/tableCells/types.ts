@@ -1,4 +1,3 @@
-import type { Client } from '@/features/cart/types';
 import type { InvoiceData } from '@/types/invoice';
 
 export type PreorderActionCellValue = {
@@ -27,5 +26,8 @@ export type ClientLike = {
   tel?: string;
   address?: string;
   personalID?: string;
-  delivery?: Client['delivery'];
+  delivery?: {
+    status: boolean;
+    value: number | string;
+  };
 };

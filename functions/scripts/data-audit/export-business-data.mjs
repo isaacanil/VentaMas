@@ -189,7 +189,6 @@ const tryQuery = async ({ colRef, orderByFields, limit }) => {
   let ref = colRef;
   if (Array.isArray(orderByFields) && orderByFields.length > 0) {
     for (const f of orderByFields) {
-      // eslint-disable-next-line no-await-in-loop
       try {
         ref = ref.orderBy(f, 'desc');
       } catch {
@@ -602,10 +601,8 @@ const main = async () => {
     // Export inventorySessions/{id}/counts (best-effort; may not exist in older schemas)
     let exportedCounts = 0;
     for (const session of inventoryCollections.inventorySessions) {
-      // eslint-disable-next-line no-await-in-loop
       let snap = null;
       try {
-        // eslint-disable-next-line no-await-in-loop
         snap = await db
           .collection(`businesses/${businessId}/inventorySessions/${session.id}/counts`)
           .limit(limitInventorySessionCounts)
@@ -647,7 +644,6 @@ const main = async () => {
   writeJson(path.resolve(resolvedOutDir, 'join-stats.json'), invoiceJoinStats);
   writeJson(path.resolve(resolvedOutDir, 'anomalies.json'), anomalies);
 
-  // eslint-disable-next-line no-console
   console.log(
     JSON.stringify(
       {
@@ -663,7 +659,6 @@ const main = async () => {
 };
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exitCode = 1;
 });

@@ -54,7 +54,7 @@ export const Delivery = ({ inputWidth = '170px' }: DeliveryProps) => {
           status: value,
           value: client.delivery?.value ?? 0,
         },
-      }),
+      } as any),
     );
   };
   const updateClient = (value: number | null) => {
@@ -66,13 +66,13 @@ export const Delivery = ({ inputWidth = '170px' }: DeliveryProps) => {
           status: client.delivery?.status ?? false,
           value: Number(value),
         },
-      }),
+      } as any),
     );
   };
 
   return (
     <LineItem>
-      <Label htmlFor="delivery">Delivery:</Label>
+      <Label>Delivery:</Label>
       <span
         style={{
           display: 'grid',

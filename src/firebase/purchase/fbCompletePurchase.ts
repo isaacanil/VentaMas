@@ -210,13 +210,21 @@ const updatePurchaseWarehouseStock = async (
       : 'sin-fecha';
 
     const providerId = resolveProviderId(purchase.provider);
-    const existingBatches = await getAllBatches(user as any, batch.productId);
+    const existingBatches = (await getAllBatches(user as any, batch.productId)) as Array<
+      Record<string, unknown> & {
+        id?: string;
+        numberId?: string | number;
+        purchaseId?: string;
+        batchNumber?: string | number;
+        isDeleted?: boolean;
+      }
+    >;
     const existingBatch = existingBatches.find(
       (item) =>
         item.purchaseId === purchase.id &&
         item.batchNumber === batchNumber &&
         item.isDeleted !== true,
-    ) as (Record<string, unknown> & { id?: string; numberId?: string | number }) | undefined;
+    );
 
     const batchData = existingBatch?.id
       ? await updateBatch(user as any, {
@@ -493,7 +501,7 @@ export const fbCompletePurchase = async ({
     await updateDoc(purchaseRef, updatedData);
     await syncVendorBillFromPurchase({
       user,
-      purchase: updatedData,
+      purchase: updatedData as Purchase,
     });
     await updatePurchaseWarehouseStock(
       user,

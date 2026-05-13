@@ -50,6 +50,14 @@ const FEATURE_COPY: Record<
     primaryTo: '/home',
     primaryLabel: 'Volver al inicio',
   },
+  invoiceTemplateV2Beta: {
+    eyebrow: 'Plantilla en validación',
+    title: 'Esta plantilla de factura todavía no está disponible en producción.',
+    description:
+      'La plantilla nueva sigue habilitada solo para validaciones internas en staging y localhost.',
+    primaryTo: '/home',
+    primaryLabel: 'Volver al inicio',
+  },
 };
 
 export const FrontendFeatureRouteGate = ({

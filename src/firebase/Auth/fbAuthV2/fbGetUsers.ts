@@ -37,8 +37,6 @@ export const fbGetUsers = async (maxUsers = 50): Promise<BasicUserDoc[]> => {
     console.error('❌ Error en la consulta:', queryError);
     return [];
   }
-
-  return [];
 };
 
 /**

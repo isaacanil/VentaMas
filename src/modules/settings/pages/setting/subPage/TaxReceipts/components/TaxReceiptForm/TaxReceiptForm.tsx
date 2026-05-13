@@ -182,7 +182,7 @@ export default function TaxReceiptForm({
     useSequenceFinder({
       form,
       resolveSequenceLength,
-      checkSequenceConflicts,
+      checkSequenceConflicts: checkSequenceConflicts as any,
     });
 
   const currentNcfPreview = previewData.current;

@@ -1,4 +1,5 @@
 import { m } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import React, { lazy, Suspense } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -13,7 +14,7 @@ import Loader from '@/components/ui/loader/Loader';
 const ModulesNavigator = lazy(() => import('./components/ModulesNavigator'));
 
 // Animaciones optimizadas para apertura/cierre
-const notificationVariants = {
+const notificationVariants: Variants = {
   open: {
     y: 0,
     opacity: 1,
@@ -72,7 +73,7 @@ const NotificationCenter = () => {
   );
 };
 
-const Backdrop = styled.div`
+const Backdrop = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
   z-index: 9950;

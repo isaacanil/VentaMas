@@ -125,7 +125,7 @@ export const newProductSchema = (
 
   return filteredProducts.map(({ product }) => {
     const taxPercentage = convertDecimalToPercentage(product.tax.unit);
-    const tax = getTax(product.price.unit, taxPercentage);
+    const tax = (product.price.unit * taxPercentage) / 100;
     const price = product.price.unit - tax;
     return {
       id: product.id,

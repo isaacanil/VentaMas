@@ -67,6 +67,13 @@ const REPORT_LABELS: Record<MonthlyComplianceReportCode, string> = {
 const getStatusTone = (status: string) =>
   resolveMonthlyComplianceStatusTone(status);
 
+type HeroChipColor = 'default' | 'accent' | 'danger' | 'success' | 'warning';
+
+const getStatusChipColor = (status: string): HeroChipColor => {
+  const tone = getStatusTone(status);
+  return tone === 'neutral' ? 'default' : tone;
+};
+
 const normalizeIssueLabel = (value: unknown) =>
   typeof value === 'string' && value.trim().length ? value : 'Sin detalle';
 
@@ -81,6 +88,11 @@ interface GroupedFiscalIssue {
   documentNumber: string;
   fields: string[];
 }
+
+type FiscalSourceRow = Record<string, unknown> & {
+  sourceId: string;
+  index: number;
+};
 
 const groupFiscalIssues = (issues: MonthlyComplianceRun['issues']) => {
   const groups = new Map<
@@ -174,7 +186,7 @@ const hasPreviewValue = (value: unknown) =>
 const toSourceRows = (
   sourceRecords: Record<string, unknown>,
   sourceId: string,
-) => {
+): FiscalSourceRow[] => {
   const records = Array.isArray(sourceRecords[sourceId])
     ? sourceRecords[sourceId]
     : [];
@@ -614,11 +626,7 @@ export const FiscalCompliancePanel = ({
                   </strong>
                   <HeroChip
                     className="w-fit"
-                    color={
-                      getStatusTone(run.status) === 'neutral'
-                        ? 'default'
-                        : getStatusTone(run.status)
-                    }
+                    color={getStatusChipColor(run.status)}
                     variant="soft"
                   >
                     <HeroChip.Label>
@@ -863,7 +871,7 @@ export const FiscalCompliancePanel = ({
                     <HeroTable.Column isRowHeader>Fecha</HeroTable.Column>
                     <HeroTable.Column>Evento</HeroTable.Column>
                     <HeroTable.Column>Plazo</HeroTable.Column>
-                    <HeroTable.Column align="end">Estado</HeroTable.Column>
+                    <HeroTable.Column>Estado</HeroTable.Column>
                   </HeroTable.Header>
                   <HeroTable.Body items={fiscalCalendarItems}>
                     {(item) => {
@@ -931,7 +939,7 @@ export const FiscalCompliancePanel = ({
                       </HeroTable.Column>
                       <HeroTable.Column>Periodo / Reporte</HeroTable.Column>
                       <HeroTable.Column>Resultado</HeroTable.Column>
-                      <HeroTable.Column align="end">Estado</HeroTable.Column>
+                      <HeroTable.Column>Estado</HeroTable.Column>
                     </HeroTable.Header>
                     <HeroTable.Body items={recentHistoryRuns}>
                       {(run) => (
@@ -958,11 +966,7 @@ export const FiscalCompliancePanel = ({
                           </HeroTable.Cell>
                           <HeroTable.Cell>
                             <HeroChip
-                              color={
-                                getStatusTone(run.status) === 'neutral'
-                                  ? 'default'
-                                  : getStatusTone(run.status)
-                              }
+                              color={getStatusChipColor(run.status)}
                               size="sm"
                               variant="soft"
                             >
@@ -1003,11 +1007,7 @@ const Dgii606Preview = ({ run }: { run: MonthlyComplianceRun }) => {
           </div>
           <HeroChip
             className="w-fit"
-            color={
-              getStatusTone(run.status) === 'neutral'
-                ? 'default'
-                : getStatusTone(run.status)
-            }
+            color={getStatusChipColor(run.status)}
             variant="soft"
           >
             <HeroChip.Label>
@@ -1134,11 +1134,7 @@ const Dgii607Preview = ({ run }: { run: MonthlyComplianceRun }) => {
           </div>
           <HeroChip
             className="w-fit"
-            color={
-              getStatusTone(run.status) === 'neutral'
-                ? 'default'
-                : getStatusTone(run.status)
-            }
+            color={getStatusChipColor(run.status)}
             variant="soft"
           >
             <HeroChip.Label>
@@ -1270,11 +1266,7 @@ const Dgii608Preview = ({ run }: { run: MonthlyComplianceRun }) => {
           </div>
           <HeroChip
             className="w-fit"
-            color={
-              getStatusTone(run.status) === 'neutral'
-                ? 'default'
-                : getStatusTone(run.status)
-            }
+            color={getStatusChipColor(run.status)}
             variant="soft"
           >
             <HeroChip.Label>
@@ -1440,11 +1432,7 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
         </div>
         <HeroChip
           className="w-fit"
-          color={
-            getStatusTone(run.status) === 'neutral'
-              ? 'default'
-              : getStatusTone(run.status)
-          }
+          color={getStatusChipColor(run.status)}
           variant="soft"
         >
           <HeroChip.Label>
@@ -1531,7 +1519,7 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
                   <IssueSeverityChip
                     color={issue.severity === 'error' ? 'danger' : 'warning'}
                     size="sm"
-                    variant="outline"
+                    variant="soft"
                   >
                     <HeroChip.Label>
                       {translateSeverity(issue.severity)}

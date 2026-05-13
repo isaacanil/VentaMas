@@ -1,5 +1,7 @@
 import type { UserIdentity, UserRoleLike } from '@/types/users';
 
+export type { UserRoleLike };
+
 export type AbilityLike = {
   can: (action: string, subject: string) => boolean;
 };

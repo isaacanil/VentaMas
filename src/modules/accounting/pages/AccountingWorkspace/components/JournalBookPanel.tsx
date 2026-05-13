@@ -304,10 +304,9 @@ export const JournalBookPanel = ({
           <Button
             variant="primary"
             aria-label="Nuevo asiento"
-            title="Nuevo asiento"
-            onPress={() =>
-              navigate(ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING_MANUAL_ENTRIES)
-            }
+            onPress={() => {
+              void navigate(ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING_MANUAL_ENTRIES);
+            }}
           >
             <PlusOutlined />
             Nuevo Asiento

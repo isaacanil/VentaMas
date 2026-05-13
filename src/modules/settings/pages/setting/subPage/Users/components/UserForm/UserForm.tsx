@@ -261,7 +261,9 @@ const SignUpModalInner = ({
         businessID: businessID || user?.businessID || null,
       };
 
-      const submitPromise = isEditMode ? fbUpdateUser(payload) : fbSignUp(payload);
+      const submitPromise = isEditMode
+        ? fbUpdateUser(payload)
+        : fbSignUp(payload as any);
 
       void submitPromise.then(
         () => {

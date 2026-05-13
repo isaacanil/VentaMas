@@ -44,6 +44,12 @@ type FiscalReceiptStatus = {
   daysUntilExpiration: number | null;
 };
 
+type FiscalReceiptDataWithCounters = TaxReceiptData & {
+  currentNumber?: number | string;
+  endNumber?: number | string;
+  startNumber?: number | string;
+};
+
 const ALERT_SEVERITY: Record<FiscalAlertLevel, number> = {
   normal: 0,
   warning: 1,
@@ -194,7 +200,7 @@ export const FISCAL_RECEIPTS_CONFIG = {
 export const calculateReceiptStatus = (
   receipt: TaxReceiptDocument,
   alertConfig: FiscalAlertsConfig | null = null,
-) => {
+): FiscalReceiptStatus | null => {
   if (!receipt?.data) return null;
 
   const { data } = receipt;
@@ -206,7 +212,7 @@ export const calculateReceiptStatus = (
     currentNumber = 0,
     quantity = 0,
     disabled = false,
-  } = data as TaxReceiptData;
+  } = data as FiscalReceiptDataWithCounters;
 
   const monitoring = alertConfig?.monitoring ?? {
     quantityEnabled: true,
@@ -232,8 +238,11 @@ export const calculateReceiptStatus = (
     },
   );
 
+  const normalizedStartNumber = getValidNumber(startNumber);
+  const normalizedEndNumber = getValidNumber(endNumber);
+  const normalizedCurrentNumber = getValidNumber(currentNumber);
   const remainingNumbers = getValidNumber(quantity);
-  const totalNumbers = Math.max(endNumber - startNumber + 1, 0);
+  const totalNumbers = Math.max(normalizedEndNumber - normalizedStartNumber + 1, 0);
   const usedNumbers = Math.max(totalNumbers - remainingNumbers, 0);
   const percentageUsed =
     totalNumbers > 0 ? Math.round((usedNumbers / totalNumbers) * 100) : 0;
@@ -296,9 +305,9 @@ export const calculateReceiptStatus = (
     id: receipt.id ?? data.id,
     name,
     series: data.fiscalSeries || data.serie || data.series || series,
-    startNumber: getValidNumber(startNumber),
-    endNumber: getValidNumber(endNumber),
-    currentNumber: getValidNumber(currentNumber),
+    startNumber: normalizedStartNumber,
+    endNumber: normalizedEndNumber,
+    currentNumber: normalizedCurrentNumber,
     totalNumbers,
     usedNumbers,
     remainingNumbers,

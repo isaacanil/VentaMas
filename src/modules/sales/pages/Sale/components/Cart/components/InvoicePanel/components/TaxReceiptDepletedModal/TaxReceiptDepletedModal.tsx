@@ -22,6 +22,7 @@ type TaxReceiptDepletedModalProps = {
   loading?: boolean;
   onSelectReceipt?: (value: string) => void;
   onRetry?: () => void;
+  onContinueWithout?: () => void;
   onCancel?: () => void;
   getContainer?: AntdModalProps['getContainer'];
 };
@@ -111,6 +112,7 @@ export const TaxReceiptDepletedModal = ({
   loading = false,
   onSelectReceipt = () => undefined,
   onRetry = () => undefined,
+  onContinueWithout = undefined,
   onCancel = () => undefined,
   getContainer = undefined,
 }: TaxReceiptDepletedModalProps) => {
@@ -178,6 +180,11 @@ export const TaxReceiptDepletedModal = ({
           <Button onClick={onCancel} disabled={loading}>
             Volver
           </Button>
+          {onContinueWithout ? (
+            <Button onClick={onContinueWithout} disabled={loading}>
+              Continuar sin comprobante
+            </Button>
+          ) : null}
           <Button
             type="primary"
             onClick={onRetry}

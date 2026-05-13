@@ -285,7 +285,7 @@ export const FilterBar = memo(
 
     return (
       <CommonFilterBar
-        items={items}
+        items={items as FilterBarItem[]}
         hasActiveFilters={shouldShowClearButton ? hasAnyActiveFilters : false}
         onClearFilters={shouldShowClearButton ? handleClearFilters : undefined}
         labels={{

@@ -13,8 +13,9 @@ import type { UserIdentity } from '@/types/users';
 
 import { isInvoiceUser } from './types';
 
-type InvoiceWriteData = InvoiceData & {
+type InvoiceWriteData = Omit<InvoiceData, 'date' | 'history'> & {
   date?: InvoiceData['date'] | ReturnType<typeof serverTimestamp>;
+  history?: InvoiceData['history'] | ReturnType<typeof arrayUnion>;
 };
 
 export async function fbGenerateInvoiceFromPreorder(
@@ -46,9 +47,9 @@ export async function fbGenerateInvoiceFromPreorder(
     const billDocRef = doc(
       db,
       'businesses',
-      user?.businessID,
+      user.businessID,
       'invoices',
-      bill?.id,
+      String(bill.id),
     );
     await updateDoc(billDocRef, { data: bill });
     return bill;

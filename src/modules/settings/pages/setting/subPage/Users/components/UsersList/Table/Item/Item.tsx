@@ -50,7 +50,7 @@ export const Item = ({ data, num, colWidth }: ItemProps) => {
   };
   return (
     <Container onClick={handleEditUser} role={data?.user?.role}>
-      <Row col={colWidth}>
+      <Row col={Array.isArray(colWidth) ? (colWidth as any) : undefined}>
         <Col>{num + 1}</Col>
         <Col>{data?.user?.name}</Col>
         <Col>
@@ -149,7 +149,7 @@ const Container = styled.div`
     background-color: var(--white-2);
   }
 `;
-const Col = styled.div`
+const Col = styled.div<{ text?: 'left' | 'right'; align?: 'left' | 'right' }>`
   width: 100%;
   padding: 0 0.4em;
   ${(props) => {

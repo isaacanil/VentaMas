@@ -79,7 +79,7 @@ export const processOrder = async (
   const normalizedOrder = normalizeOrderRecord(
     data as Record<string, unknown> | undefined,
     orderId,
-  ) as OrderData;
+  ) as unknown as OrderData;
   const providerId =
     typeof normalizedOrder?.provider === 'string' ? normalizedOrder.provider : '';
   const provider = await getProvider(businessID, providerId);

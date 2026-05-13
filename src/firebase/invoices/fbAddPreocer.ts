@@ -21,8 +21,13 @@ type PreorderInput = InvoiceData & {
   selectedTaxReceiptType?: string | null;
 };
 
-type PreorderWriteData = PreorderInput & {
+type PreorderWriteDetails = Omit<InvoicePreorderDetails, 'date'> & {
+  date?: InvoicePreorderDetails['date'] | ReturnType<typeof serverTimestamp>;
+};
+
+type PreorderWriteData = Omit<PreorderInput, 'date' | 'preorderDetails'> & {
   date: ReturnType<typeof serverTimestamp> | null;
+  preorderDetails?: PreorderWriteDetails | null;
 };
 
 export const fbAddPreOrder = async (

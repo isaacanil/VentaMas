@@ -30,7 +30,7 @@ const EmptyClient = {
   id: '',
 };
 
-interface Client {
+export interface Client {
   name: string;
   tel: string;
   address: string;
