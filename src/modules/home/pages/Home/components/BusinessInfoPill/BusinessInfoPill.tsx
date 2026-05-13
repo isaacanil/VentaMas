@@ -30,6 +30,7 @@ interface BusinessInfoPillProps {
   className?: string;
   forceWorkspaceOpen?: boolean;
   onWorkspaceOpenChange?: (isOpen: boolean) => void;
+  ownershipIssueCount?: number;
 }
 
 // Memoized selector to extract business data
@@ -43,6 +44,7 @@ export const BusinessInfoPill = memo(
     className,
     forceWorkspaceOpen = false,
     onWorkspaceOpenChange,
+    ownershipIssueCount = 0,
   }: BusinessInfoPillProps): JSX.Element => {
     const business = useSelector(selectBusinessData, shallowEqual);
     const user = useSelector(selectUser) as any;
@@ -58,6 +60,10 @@ export const BusinessInfoPill = memo(
         'Tu negocio',
       [business],
     );
+    const pillAriaLabel =
+      ownershipIssueCount > 0
+        ? `Administrar negocio activo, ${ownershipIssueCount} alerta de negocio`
+        : 'Administrar negocio activo';
 
     const isModalOpen = forceWorkspaceOpen || isWorkspaceModalOpen;
 
@@ -84,8 +90,11 @@ export const BusinessInfoPill = memo(
           className={className}
           onClick={handleInteraction}
           onKeyDown={handleKeyDown}
-          aria-label="Administrar negocio activo"
+          aria-label={pillAriaLabel}
         >
+          {ownershipIssueCount > 0 ? (
+            <IssueBadge aria-hidden="true">{ownershipIssueCount}</IssueBadge>
+          ) : null}
           <TextGroup>
             <Label>Negocio</Label>
             <Name title={businessName}>{businessName}</Name>
@@ -99,6 +108,7 @@ export const BusinessInfoPill = memo(
         <BusinessWorkspaceModal
           isOpen={isModalOpen}
           onClose={() => handleOpenChange(false)}
+          ownershipIssueCount={ownershipIssueCount}
         />
       </>
     );
@@ -108,6 +118,7 @@ export const BusinessInfoPill = memo(
 BusinessInfoPill.displayName = 'BusinessInfoPill';
 
 const PillButton = styled.button`
+  position: relative;
   display: inline-flex;
   flex: 0 1 auto;
   gap: 0.35rem;
@@ -139,6 +150,26 @@ const PillButton = styled.button`
       inset 0 1px 0 rgb(255 255 255 / 18%),
       0 0 0 3px rgb(255 255 255 / 22%);
   }
+`;
+
+const IssueBadge = styled.span`
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ds-color-state-on-danger);
+  background: var(--ds-color-state-danger);
+  border: 2px solid var(--ds-color-nav-bg);
+  border-radius: 999px;
+  box-shadow: 0 6px 12px rgb(15 23 42 / 22%);
 `;
 
 const TextGroup = styled.span`

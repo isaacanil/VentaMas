@@ -56,9 +56,9 @@ export const FilterUI = ({
       </FilterLabel>
       <Filters>
         {filterConfig.length > 0 &&
-          filterConfig.map((filterItem, index) => (
+          filterConfig.map((filterItem) => (
             <Item
-              key={index}
+              key={filterItem.accessor}
               label={filterItem.label}
               filterOptions={filterItem.options}
               format={filterItem.format}

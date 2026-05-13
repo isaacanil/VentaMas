@@ -23,12 +23,13 @@ export const Account = () => {
   };
 
   return (
-    <div className={Style.Component_container} onClick={handleOpenMenu}>
+    <div className={Style.Component_container}>
       <Button
         color="gray-dark"
         borderRadius={'normal'}
         width={'icon32'}
         title={<FontAwesomeIcon icon={faUserCog} />}
+        onClick={handleOpenMenu}
       />
       <article
         className={

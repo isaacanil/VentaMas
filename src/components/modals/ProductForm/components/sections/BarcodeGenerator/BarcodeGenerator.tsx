@@ -868,7 +868,7 @@ export const BarcodeGenerator = ({
                   type="secondary"
                   style={{ fontSize: '12px', color: '#faad14' }}
                 >
-                  Conectando...
+                  Conectando…
                 </Text>
               ) : (
                 <Space size={4} style={{ color: '#ff4d4f' }}>
@@ -886,7 +886,7 @@ export const BarcodeGenerator = ({
                   type="secondary"
                   style={{ fontSize: '12px', color: '#1890ff' }}
                 >
-                  Actualizando...
+                  Actualizando…
                 </Text>
               )}
             </Space>
@@ -927,7 +927,7 @@ export const BarcodeGenerator = ({
     >
       {settingsLoading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Text>Cargando configuración...</Text>
+          <Text>Cargando configuración…</Text>
         </div>
       ) : (
         <>

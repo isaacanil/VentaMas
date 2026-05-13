@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const AutoCompletingHint = () => (
-  <HintContainer>Generando factura automática desde la preventa...</HintContainer>
+  <HintContainer>Generando factura automática desde la preventa…</HintContainer>
 );
 
 const HintContainer = styled.div`

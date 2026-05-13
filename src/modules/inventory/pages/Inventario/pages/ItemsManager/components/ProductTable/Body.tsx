@@ -11,6 +11,29 @@ type BodyProps<T> = {
   colWidth?: number | string;
 };
 
+const bodyItemKeys = new WeakMap<object, string>();
+let bodyItemKeyCounter = 0;
+
+const resolveBodyItemKey = (item: unknown): React.Key => {
+  if (item && typeof item === 'object') {
+    const record = item as Record<string, unknown>;
+    const explicitKey = record.id ?? record.key ?? record.productId ?? record.name;
+    if (explicitKey != null) {
+      return String(explicitKey);
+    }
+    const existingKey = bodyItemKeys.get(item);
+    if (existingKey) {
+      return existingKey;
+    }
+    bodyItemKeyCounter += 1;
+    const generatedKey = `body-item-${bodyItemKeyCounter}`;
+    bodyItemKeys.set(item, generatedKey);
+    return generatedKey;
+  }
+
+  return `${typeof item}-${String(item)}`;
+};
+
 export const Body = <T,>({ data, Item, colWidth }: BodyProps<T>) => {
   if (!Array.isArray(data)) {
     console.error('Data is not an array.');
@@ -20,7 +43,12 @@ export const Body = <T,>({ data, Item, colWidth }: BodyProps<T>) => {
   return (
     <Container>
       {data.map((item, index) => (
-        <Item key={index} num={index} data={item} colWidth={colWidth} />
+        <Item
+          key={resolveBodyItemKey(item)}
+          num={index}
+          data={item}
+          colWidth={colWidth}
+        />
       ))}
     </Container>
   );

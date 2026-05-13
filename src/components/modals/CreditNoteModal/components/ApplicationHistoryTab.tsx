@@ -52,7 +52,7 @@ export const ApplicationHistoryTab = ({
   <ApplicationHistorySection>
     <ApplicationHistoryTitle>Historial de Aplicaciones</ApplicationHistoryTitle>
     {applicationsLoading ? (
-      <div>Cargando historial...</div>
+      <div>Cargando historial…</div>
     ) : (
       <>
         <ApplicationHistoryList>

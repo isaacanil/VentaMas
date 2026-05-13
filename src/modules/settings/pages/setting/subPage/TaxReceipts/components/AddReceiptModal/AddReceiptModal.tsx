@@ -212,8 +212,9 @@ const AddReceiptDrawer = ({
     >
       <Content>
         <SelectContainer>
-          <label>Selecciona un país:</label>
+          <label htmlFor="tax-receipt-country-select">Selecciona un país:</label>
           <Select<string>
+            id="tax-receipt-country-select"
             value={selectedCountry}
             onChange={(value: string) => setSelectedCountry(value)}
             style={{ width: '100%' }}
@@ -235,12 +236,12 @@ const AddReceiptDrawer = ({
           </Title>
           <TemplatesGrid>
             {countryComprobantes[selectedCountry].templates.map(
-              (template, idx) => {
+              (template) => {
                 const isExisting = isTemplateExisting(template);
                 const selected = isTemplateSelected(template);
                 return (
                   <TemplateCard
-                    key={`${template.name}-${idx}`}
+                    key={`${template.type}-${template.serie}-${template.name}`}
                     $selected={selected}
                     $disabled={isExisting}
                     onClick={() =>

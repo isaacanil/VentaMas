@@ -91,6 +91,8 @@ const compactItems = [
   { id: 'cxp', label: 'CxP' },
   { id: 'fiscal', label: 'Fiscal' },
 ];
+const scrollLineNumbers = Array.from({ length: 8 }, (_, position) => position + 1);
+const otpSlotIndexes = Array.from({ length: 6 }, (_, position) => position);
 
 const HeroUiPlayground = () => {
   return (
@@ -232,9 +234,9 @@ const HeroUiPlayground = () => {
             </Text>
           </Surface>
           <ScrollShadow className="h-28 w-72 rounded-lg border border-zinc-200 p-3">
-            {Array.from({ length: 8 }, (_, index) => (
-              <p key={index} className="text-sm">
-                Linea desplazable {index + 1}
+            {scrollLineNumbers.map((lineNumber) => (
+              <p key={`scroll-line-${lineNumber}`} className="text-sm">
+                Linea desplazable {lineNumber}
               </p>
             ))}
           </ScrollShadow>
@@ -387,8 +389,8 @@ const HeroUiPlayground = () => {
           </Menu>
           <InputOTP maxLength={6}>
             <InputOTP.Group>
-              {Array.from({ length: 6 }, (_, index) => (
-                <InputOTP.Slot key={index} index={index} />
+              {otpSlotIndexes.map((slotIndex) => (
+                <InputOTP.Slot key={`otp-slot-${slotIndex}`} index={slotIndex} />
               ))}
             </InputOTP.Group>
           </InputOTP>

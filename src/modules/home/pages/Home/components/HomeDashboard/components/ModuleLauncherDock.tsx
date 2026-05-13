@@ -42,7 +42,7 @@ export const ModuleLauncherDock = ({
     <div className="heroui-scope pointer-events-none fixed bottom-4 left-1/2 z-[260] -translate-x-1/2 md:bottom-auto md:left-auto md:right-5 md:top-1/2 md:-translate-y-1/2 md:translate-x-0">
       <nav
         aria-label="Dock de módulos"
-        className="pointer-events-auto flex max-w-[calc(100vw-1rem)] items-center gap-1.5 overflow-x-auto rounded-full border border-slate-200/80 bg-white/95 p-1.5 shadow-xl shadow-slate-900/10 backdrop-blur-xl md:max-w-none md:flex-col md:overflow-visible"
+        className="pointer-events-auto flex max-w-[calc(100vw-1rem)] items-center gap-1.5 overflow-x-auto rounded-full border border-neutral-200/80 bg-white/95 p-1.5 shadow-xl shadow-neutral-900/10 backdrop-blur-xl md:max-w-none md:flex-col md:overflow-visible"
       >
         {controller.pinnedShortcuts.map((shortcut) => {
           const isPinned = controller.pinnedKeys.includes(shortcut.key);
@@ -53,7 +53,7 @@ export const ModuleLauncherDock = ({
                 <span className="inline-flex">
                   <Button
                     aria-label={shortcut.title}
-                    className="h-11 w-11 min-w-11 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                    className="size-11 min-w-11 rounded-full border border-neutral-200 bg-white text-blue-700 shadow-sm hover:border-blue-200 hover:bg-blue-50"
                     isIconOnly
                     onPress={() => navigateToShortcut(shortcut)}
                     size="sm"
@@ -71,14 +71,14 @@ export const ModuleLauncherDock = ({
           );
         })}
 
-        <div className="mx-1 h-7 w-px bg-slate-200 md:mx-0 md:my-1 md:h-px md:w-7" />
+        <div className="mx-1 h-7 w-px bg-neutral-200 md:mx-0 md:my-1 md:h-px md:w-7" />
 
         <Tooltip>
           <Tooltip.Trigger>
-            <span className="relative inline-flex h-11 w-11">
+            <span className="relative inline-flex size-11">
               <Button
                 aria-label="Ver módulos"
-                className="h-11 w-11 min-w-11 rounded-full bg-blue-600 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700"
+                className="size-11 min-w-11 rounded-full bg-blue-600 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700"
                 isIconOnly
                 onPress={onOpenModules}
                 size="sm"

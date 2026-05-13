@@ -337,7 +337,7 @@ export const GenerateTab = ({
                     display: 'block',
                   }}
                 >
-                  Generando código...
+                  Generando código…
                 </Text>
               )}
             </Form.Item>

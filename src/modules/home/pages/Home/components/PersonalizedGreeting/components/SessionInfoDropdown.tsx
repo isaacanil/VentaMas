@@ -146,7 +146,7 @@ export const SessionInfoDropdown = ({
           placement="bottom end"
           className="z-[450] w-80 overflow-hidden p-0"
         >
-          <div className="flex items-center gap-3 px-3 py-3">
+          <div className="flex items-center gap-3 p-3">
             <Avatar size="md" variant="soft">
               <Avatar.Fallback>{initial}</Avatar.Fallback>
             </Avatar>

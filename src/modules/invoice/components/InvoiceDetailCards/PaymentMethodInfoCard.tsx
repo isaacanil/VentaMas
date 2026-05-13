@@ -77,8 +77,10 @@ export const PaymentMethodInfoCard = ({
       </CardHeader>
 
       <CardContent>
-        {activePaymentMethods.map((method, index) => (
-          <PaymentMethodSection key={index}>
+        {activePaymentMethods.map((method) => (
+          <PaymentMethodSection
+            key={`${method.method}-${method.reference ?? 'sin-ref'}-${method.value ?? 0}`}
+          >
             <MethodHeader>
               <MethodName>
                 {paymentmethodLabel[method.method] || method.method}

@@ -91,7 +91,7 @@ export const ReceivableManagementPanel = ({
   const dispatch = useDispatch();
   const user = useSelector(selectUser) as UserIdentity;
   const [userModifiedDate, setUserModifiedDate] = useState(false);
-  const [baseCalculationDate, setBaseCalculationDate] = useState(
+  const [baseCalculationDate, setBaseCalculationDate] = useState(() =>
     DateTime.now().startOf('day').toMillis(),
   );
 

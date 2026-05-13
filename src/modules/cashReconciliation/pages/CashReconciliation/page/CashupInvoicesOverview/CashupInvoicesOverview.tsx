@@ -21,7 +21,7 @@ interface CashupInvoicesOverviewProps {
 }
 
 const Spinner = () => (
-  <div style={{ padding: '2em', textAlign: 'center' }}>Cargando...</div>
+  <div style={{ padding: '2em', textAlign: 'center' }}>Cargando…</div>
 );
 
 export const CashupInvoicesOverview = memo(

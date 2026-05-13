@@ -12,6 +12,29 @@ interface BodyProps<Row> {
   reverse?: boolean;
 }
 
+const rowObjectKeys = new WeakMap<object, string>();
+let rowObjectKeyCounter = 0;
+
+const resolveRowKey = (item: unknown): React.Key => {
+  if (item && typeof item === 'object') {
+    const record = item as Record<string, unknown>;
+    const explicitKey = record.id ?? record.key ?? record.uid ?? record.email;
+    if (explicitKey != null) {
+      return String(explicitKey);
+    }
+    const existingKey = rowObjectKeys.get(item);
+    if (existingKey) {
+      return existingKey;
+    }
+    rowObjectKeyCounter += 1;
+    const generatedKey = `user-row-${rowObjectKeyCounter}`;
+    rowObjectKeys.set(item, generatedKey);
+    return generatedKey;
+  }
+
+  return `${typeof item}:${String(item)}`;
+};
+
 export const Body = <Row,>({
   data,
   Item,
@@ -24,7 +47,7 @@ export const Body = <Row,>({
   }
 
   const itemsArray = data.map((item, index) => (
-    <Item key={index} num={index} data={item} colWidth={colWidth} />
+    <Item key={resolveRowKey(item)} num={index} data={item} colWidth={colWidth} />
   ));
 
   const finalItems = reverse ? itemsArray.reverse() : itemsArray;

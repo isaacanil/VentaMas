@@ -225,7 +225,9 @@ export const PreorderActionsCell = ({
         gap: '10px',
         alignItems: 'center',
       }}
+      role="presentation"
       onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
     >
       {shouldRenderPrintable ? (
         <div

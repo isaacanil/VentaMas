@@ -112,7 +112,7 @@ export const ViewExpenses = ({
         {loading ? (
           <LoadingContainer>
             <Spin size="large" />
-            <p>Cargando gastos...</p>
+            <p>Cargando gastos…</p>
           </LoadingContainer>
         ) : (
           <>

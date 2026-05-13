@@ -63,8 +63,10 @@ export const OutputProductEntry = () => {
   return (
     <Container>
       <Row $columns={tableColumns}>
-        {tableColumns.map((col, index) => (
-          <Col key={index}>{col.render(col.subtitle)}</Col>
+        {tableColumns.map((col) => (
+          <Col key={`${col.subtitle}-${col.width}`}>
+            {col.render(col.subtitle)}
+          </Col>
         ))}
       </Row>
       <Row $columns={tableColumns}>

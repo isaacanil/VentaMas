@@ -257,7 +257,7 @@ const CashierMigrationTool = () => {
 
         {migrationStatus.running && (
           <LoadingContainer>
-            <h4>?? Ejecutando migración...</h4>
+            <h4>?? Ejecutando migración…</h4>
             <p>Por favor espera mientras se migran los usuarios.</p>
           </LoadingContainer>
         )}

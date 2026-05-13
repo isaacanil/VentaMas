@@ -27,6 +27,50 @@ export const normalizeSearch = (value: string): string =>
     .toLowerCase()
     .trim();
 
+const normalizeSearchFragment = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+export interface SearchMatchRange {
+  end: number;
+  start: number;
+}
+
+export const findSearchMatchRange = (
+  value: string,
+  query: string,
+): SearchMatchRange | null => {
+  const normalizedQuery = normalizeSearch(query);
+  if (!normalizedQuery) return null;
+
+  let normalizedValue = '';
+  const startMap: number[] = [];
+  const endMap: number[] = [];
+  let originalIndex = 0;
+
+  for (const char of value) {
+    const normalizedChar = normalizeSearchFragment(char);
+    for (let index = 0; index < normalizedChar.length; index += 1) {
+      startMap.push(originalIndex);
+      endMap.push(originalIndex + char.length);
+    }
+    normalizedValue += normalizedChar;
+    originalIndex += char.length;
+  }
+
+  const normalizedStart = normalizedValue.indexOf(normalizedQuery);
+  if (normalizedStart === -1) return null;
+
+  const normalizedEnd = normalizedStart + normalizedQuery.length - 1;
+
+  return {
+    end: endMap[normalizedEnd],
+    start: startMap[normalizedStart],
+  };
+};
+
 export const isRoutableFeature = (card: unknown): card is FeatureCardData => {
   if (!card || typeof card !== 'object') return false;
   const candidate = card as Partial<FeatureCardData>;

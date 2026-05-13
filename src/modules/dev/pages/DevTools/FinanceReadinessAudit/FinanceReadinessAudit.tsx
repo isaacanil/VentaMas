@@ -312,8 +312,10 @@ const FinanceReadinessAudit: React.FC = () => {
 
                     <IssueList>
                       {selectedIssues.length ? (
-                        selectedIssues.map((issue, index) => (
-                          <IssueRow key={`${issue.code}-${index}`}>
+                        selectedIssues.map((issue) => (
+                          <IssueRow
+                            key={`${issue.moduleKey}-${issue.code}-${issue.collection ?? ''}-${issue.documentId ?? ''}`}
+                          >
                             <WarningOutlined />
                             <IssueBody>
                               <IssueTitle>

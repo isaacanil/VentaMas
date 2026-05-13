@@ -36,13 +36,16 @@ export const Category = ({
   const highlightMatch = (text: string) => {
     if (!searchTerm) return text;
     const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-    return parts.map((part, index) =>
-      part.toLowerCase() === searchTerm.toLowerCase() ? (
-        <mark key={index}>{part}</mark>
+    let offset = 0;
+    return parts.map((part) => {
+      const key = `${offset}-${part}`;
+      offset += part.length;
+      return part.toLowerCase() === searchTerm.toLowerCase() ? (
+        <mark key={key}>{part}</mark>
       ) : (
         part
-      ),
-    );
+      );
+    });
   };
 
   const name = typeof item?.name === 'string' ? item.name : '';

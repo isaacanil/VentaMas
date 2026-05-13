@@ -56,7 +56,7 @@ export const RevenueDistributionChart = ({
       </SectionHeader>
       <ChartBody>
         {loading ? (
-          <EmptyState>Cargando datos...</EmptyState>
+          <EmptyState>Cargando datos…</EmptyState>
         ) : chartData ? (
           <PieWrapper>
             <DoughnutContainer>

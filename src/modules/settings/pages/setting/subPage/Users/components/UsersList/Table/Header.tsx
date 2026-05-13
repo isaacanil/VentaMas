@@ -11,8 +11,8 @@ interface HeaderProps {
 }
 
 export const Header = ({ data }: HeaderProps) => {
-  return data.map(({ align, name }, index) => (
-    <ITEMS text={align} key={index}>
+  return data.map(({ align, name }) => (
+    <ITEMS text={align} key={name}>
       {name}
     </ITEMS>
   ));

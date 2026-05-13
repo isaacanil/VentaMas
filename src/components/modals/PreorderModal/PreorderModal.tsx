@@ -204,8 +204,10 @@ export const PreorderModal = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((item, index) => (
-                      <tr key={`${item?.name || 'producto'}-${index}`}>
+                    {products.map((item) => (
+                      <tr
+                        key={`${item?.id ?? item?.name ?? 'producto'}-${item?.size ?? 'sin-medida'}-${item?.pricing?.price ?? 0}`}
+                      >
                         <td>
                           {typeof item?.name === 'string'
                             ? item.name

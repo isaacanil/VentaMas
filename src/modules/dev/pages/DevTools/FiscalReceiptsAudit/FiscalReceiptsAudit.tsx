@@ -233,7 +233,7 @@ export const FiscalReceiptsAudit: React.FC = () => {
 
   return (
     <>
-      <MenuApp sectionName="Análisis comprobantes f..." />
+      <MenuApp sectionName="Análisis comprobantes f…" />
       <div style={{ padding: 24 }}>
         <Typography.Title level={3} style={{ marginBottom: 8 }}>
           Analisis de comprobantes fiscales
@@ -274,7 +274,7 @@ export const FiscalReceiptsAudit: React.FC = () => {
             <Space orientation="vertical" style={{ width: '100%' }}>
               <div>
                 <Typography.Text strong>
-                  Analizando comprobantes...
+                  Analizando comprobantes…
                 </Typography.Text>
                 {currentBusiness ? (
                   <Typography.Text style={{ marginLeft: 8 }} type="secondary">
@@ -313,10 +313,10 @@ export const FiscalReceiptsAudit: React.FC = () => {
               exportingBusiness ? (
                 <span>
                   Exportando reporte de{' '}
-                  <strong>{exportingBusiness.name}</strong>...
+                  <strong>{exportingBusiness.name}</strong>…
                 </span>
               ) : (
-                'Generando reporte...'
+                'Generando reporte…'
               )
             }
           />

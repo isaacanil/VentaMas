@@ -71,10 +71,10 @@ export const ProductFilter = ({
             </span>
           </ProductsListHead>
           <ProductsListBody>
-            {productsFiltered.map((data: any, index: number) => (
+            {productsFiltered.map((data: any) => (
               <ProductCard
                 fn={handleSelectProduct}
-                key={index}
+                key={data.id ?? data.productId ?? data.name ?? data.barcode}
                 data={data}
                 close={close}
               />

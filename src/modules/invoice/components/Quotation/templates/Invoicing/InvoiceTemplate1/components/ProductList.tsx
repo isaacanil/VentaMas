@@ -37,8 +37,10 @@ export const ProductList = ({ data, taxReceipt }: ProductListProps) => {
     <Container>
       <Products>
         {(products?.length || 0) > 0
-          ? products?.map((product, index) => (
-              <Product key={index}>
+          ? products?.map((product) => (
+              <Product
+                key={`${product?.id ?? getFullProductName(product)}-${product?.pricing?.price ?? 0}`}
+              >
                 <Row cols="3">
                   <Col>
                     {product?.weightDetail?.isSoldByWeight ? (

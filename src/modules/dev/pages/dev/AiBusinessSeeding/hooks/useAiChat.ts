@@ -33,7 +33,7 @@ export function useAiChat() {
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
   const [historyTurns, setHistoryTurns] = useState<ConversationTurn[]>([]);
   const [isTestMode, setIsTestMode] = useState(false);
-  const [enabledActions, setEnabledActions] = useState<string[]>(
+  const [enabledActions, setEnabledActions] = useState<string[]>(() =>
     Object.keys(ACTIONS),
   );
   const [executionSuccess, setExecutionSuccess] = useState(false);

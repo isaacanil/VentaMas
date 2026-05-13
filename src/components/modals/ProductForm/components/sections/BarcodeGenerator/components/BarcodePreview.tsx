@@ -151,7 +151,7 @@ export const BarcodePreview = ({
                     {isUpdating && (
                       <span style={{ color: '#1890ff' }}>
                         {' '}
-                        (Actualizando...)
+                        (Actualizando…)
                       </span>
                     )}
                     {hasManualChanges && (
@@ -200,7 +200,7 @@ export const BarcodePreview = ({
                   ) : isUpdating ? (
                     <>
                       <span>🔄</span>
-                      <span>Actualizando...</span>
+                      <span>Actualizando…</span>
                     </>
                   ) : (
                     <>

@@ -41,7 +41,7 @@ function MyEditor() {
           <EditorSheet>
             <RichTextPlugin
               contentEditable={<StyledContentEditable />}
-              placeholder={<Placeholder>Empieza a escribir...</Placeholder>}
+              placeholder={<Placeholder>Empieza a escribir…</Placeholder>}
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />

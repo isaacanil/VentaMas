@@ -74,9 +74,9 @@ const BusinessInfoCard: React.FC<BusinessInfoCardProps> = ({ data, success }) =>
           >
             USUARIOS ({data.users?.length || 0})
           </Text>
-          {data.users?.map((user, idx) => (
+          {data.users?.map((user) => (
             <div
-              key={idx}
+              key={`${user.email ?? user.name}-${user.role ?? 'sin-rol'}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',

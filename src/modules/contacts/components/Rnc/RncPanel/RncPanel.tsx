@@ -87,7 +87,7 @@ const Field = styled.div`
   gap: 12px;
   align-items: baseline;
 
-  label {
+  span:first-child {
     font-size: 13px;
     color: #595959;
   }
@@ -244,12 +244,15 @@ export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
   if (!rncInfo && !loading) return null;
 
   const formatDetails = (details: string) => {
+    let offset = 0;
     return details
       .split('\n')
-      .map((line, index) => {
+      .map((line) => {
         const trimmedLine = line.trim();
+        const key = `${offset}-${trimmedLine}`;
+        offset += line.length + 1;
         if (trimmedLine.startsWith('•')) {
-          return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
+          return <li key={key}>{trimmedLine.substring(1).trim()}</li>;
         }
         return null;
       })
@@ -273,15 +276,15 @@ export const RncPanel = ({ rncInfo, loading }: RncPanelProps) => {
 
       <Info style={{ opacity: loading ? 0.6 : 1 }}>
         <Field>
-          <label>Razón Social:</label>
+          <span>Razón Social:</span>
           <span>{rncInfo?.full_name}</span>
         </Field>
         <Field>
-          <label>Nombre Comercial:</label>
+          <span>Nombre Comercial:</span>
           <span>{rncInfo?.business_name}</span>
         </Field>
         <Field>
-          <label>Condición:</label>
+          <span>Condición:</span>
           <span>{rncInfo?.condition}</span>
         </Field>
       </Info>

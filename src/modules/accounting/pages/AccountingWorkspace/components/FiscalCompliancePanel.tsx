@@ -1523,8 +1523,10 @@ const SelectedRunDetails = ({ run }: { run: MonthlyComplianceRun }) => {
           <EmptyText>Sin issues para esta corrida.</EmptyText>
         ) : (
           <IssueList>
-            {visibleIssues.map((issue, index) => (
-              <IssueItem key={`${run.id}-issue-${issue.key}-${index}`}>
+            {visibleIssues.map((issue) => (
+              <IssueItem
+                key={`${run.id}-issue-${issue.key}-${issue.sourceId}-${issue.documentNumber}-${issue.fields.join('|')}`}
+              >
                 <IssueTop>
                   <IssueSeverityChip
                     color={issue.severity === 'error' ? 'danger' : 'warning'}

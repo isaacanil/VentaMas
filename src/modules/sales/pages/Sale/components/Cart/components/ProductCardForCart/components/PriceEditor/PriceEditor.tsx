@@ -121,7 +121,7 @@ export const PriceEditor = ({ item, onModalOpen }: PriceEditorProps) => {
   if (loading) {
     return (
       <PriceContainer>
-        <div style={{ padding: '8px', textAlign: 'center' }}>Cargando...</div>
+        <div style={{ padding: '8px', textAlign: 'center' }}>Cargando…</div>
       </PriceContainer>
     );
   }

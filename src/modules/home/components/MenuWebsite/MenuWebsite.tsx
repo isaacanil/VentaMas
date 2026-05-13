@@ -13,6 +13,7 @@ interface MenuWebsiteProps {
   onShortcutSearchFocus?: () => void;
   onShortcutSearchValueChange?: (value: string) => void;
   onWorkspaceOpenChange?: (isOpen: boolean) => void;
+  ownershipIssueCount?: number;
   shortcutSearchValue?: string;
   showBusinessSelector?: boolean;
 }
@@ -24,6 +25,7 @@ export const MenuWebsite = ({
   onShortcutSearchFocus,
   onShortcutSearchValueChange,
   onWorkspaceOpenChange,
+  ownershipIssueCount = 0,
   shortcutSearchValue = '',
   showBusinessSelector = true,
 }: MenuWebsiteProps) => {
@@ -33,6 +35,7 @@ export const MenuWebsite = ({
         <BusinessInfoPill
           forceWorkspaceOpen={forceWorkspaceOpen}
           onWorkspaceOpenChange={onWorkspaceOpenChange}
+          ownershipIssueCount={ownershipIssueCount}
         />
       ) : (
         <HeaderSpacer aria-hidden="true" />

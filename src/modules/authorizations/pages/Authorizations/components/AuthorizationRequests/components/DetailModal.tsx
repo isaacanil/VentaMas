@@ -214,8 +214,8 @@ export const DetailModal = ({
               <NoteLabel>Motivos asociados</NoteLabel>
             </ListHeader>
             <ReasonList>
-              {reasonList.map((reason, index) => (
-                <li key={`${reason}-${index}`}>{reason}</li>
+              {reasonList.map((reason) => (
+                <li key={reason}>{reason}</li>
               ))}
             </ReasonList>
           </ListSection>

@@ -99,8 +99,8 @@ export function SummaryBar({
         ...style,
       }}
     >
-      {stats.map((stat, idx) => (
-        <div key={idx} style={{ minWidth: 120 }}>
+      {stats.map((stat) => (
+        <div key={stat.label} style={{ minWidth: 120 }}>
           <div
             style={{
               fontSize: 11,

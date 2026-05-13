@@ -106,6 +106,32 @@ interface NotificationSectionProps {
 }
 
 const EMPTY_PAGES: unknown[] = [];
+const pageObjectKeys = new WeakMap<object, string>();
+let pageObjectKeyCounter = 0;
+
+const resolvePageKey = (pageData: unknown): React.Key => {
+  if (Array.isArray(pageData)) {
+    return pageData
+      .map((item) =>
+        item && typeof item === 'object'
+          ? JSON.stringify(item)
+          : `${typeof item}:${String(item)}`,
+      )
+      .join('|');
+  }
+  if (pageData && typeof pageData === 'object') {
+    const existingKey = pageObjectKeys.get(pageData);
+    if (existingKey) {
+      return existingKey;
+    }
+    pageObjectKeyCounter += 1;
+    const generatedKey = `page-${pageObjectKeyCounter}`;
+    pageObjectKeys.set(pageData, generatedKey);
+    return generatedKey;
+  }
+
+  return `${typeof pageData}:${String(pageData)}`;
+};
 
 const NotificationSection = ({
   title,
@@ -192,7 +218,7 @@ const NotificationSection = ({
       <ContentContainer ref={containerRef}>
         <ScrollableContent $offset={offset}>
           {finalPages.map((pageData, index) => (
-            <PageContainer key={index}>
+            <PageContainer key={resolvePageKey(pageData)}>
               {renderPage ? renderPage(pageData, index) : pageData}
             </PageContainer>
           ))}

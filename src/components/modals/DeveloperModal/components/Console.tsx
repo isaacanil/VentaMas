@@ -187,7 +187,6 @@ const Console = ({
                 ? 'Escribe para filtrar las opciones...'
                 : 'Escriba un comando...'
             }
-            autoFocus
             style={{
               opacity: 1,
               cursor: 'text',

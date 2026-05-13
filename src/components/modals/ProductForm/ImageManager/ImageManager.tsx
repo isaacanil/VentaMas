@@ -339,7 +339,7 @@ const ImageManager = ({ open, onCancel }: ImageManagerProps) => {
                       textAlign: 'center',
                     }}
                   >
-                    Cargando imagen...
+                    Cargando imagen…
                   </Typography.Text>
                   <Progress
                     percent={Math.round(uploadProgress)}

@@ -60,7 +60,7 @@ export const InvoicesPage = () => {
         <Suspense
           fallback={
             <div style={{ padding: '2em', textAlign: 'center' }}>
-              Cargando...
+              Cargando…
             </div>
           }
         >

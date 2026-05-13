@@ -119,7 +119,7 @@ export const ReceivablePaymentReceipt = () => {
         <Suspense
           fallback={
             <div style={{ padding: '2em', textAlign: 'center' }}>
-              Cargando...
+              Cargando…
             </div>
           }
         >

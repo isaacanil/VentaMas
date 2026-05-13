@@ -117,8 +117,8 @@ export const PaymentArea = ({ data }: PaymentAreaProps) => {
   ];
   return (
     <Container>
-      {items.map((row, index) => (
-        <Item key={index} row={row} />
+      {items.map((row) => (
+        <Item key={`${row.subtitle ?? row.label}-${row.value1 ?? ''}-${row.value2 ?? ''}`} row={row} />
       ))}
     </Container>
   );

@@ -25,7 +25,7 @@ export const AccountingWorkspaceShell = ({
         {loading ? (
           <div className="flex flex-col gap-4 py-6">
             <p className="m-0 text-sm leading-normal text-secondary">
-              Preparando datos del modulo contable...
+              Preparando datos del modulo contable…
             </p>
             <div className="flex flex-col gap-2">
               <Skeleton className="h-4 w-full rounded-lg" />

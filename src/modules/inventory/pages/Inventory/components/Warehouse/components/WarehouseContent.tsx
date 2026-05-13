@@ -106,7 +106,7 @@ export default function WarehouseContent() {
   };
 
   if (warehouseLoading) {
-    return <div>Loading warehouse data...</div>;
+    return <div>Loading warehouse data…</div>;
   }
   const handleUpdateShelf = async (data: ShelfRecord) => {
     dispatch(setShelfLoading(true));

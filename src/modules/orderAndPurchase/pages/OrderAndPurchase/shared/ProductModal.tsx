@@ -11,7 +11,12 @@ import {
   useCallback,
   forwardRef,
 } from 'react';
-import type { ChangeEvent, HTMLAttributes, ReactNode } from 'react';
+import type {
+  ChangeEvent,
+  HTMLAttributes,
+  KeyboardEvent,
+  ReactNode,
+} from 'react';
 import { useSelector } from 'react-redux';
 import { VirtuosoGrid } from 'react-virtuoso';
 import styled from 'styled-components';
@@ -331,7 +336,7 @@ const ProductModal = ({
         </TooltipRow>
       )}
       {countsLoading && (
-        <TooltipRow $muted>Calculando totales del catálogo...</TooltipRow>
+        <TooltipRow $muted>Calculando totales del catálogo…</TooltipRow>
       )}
       <TooltipRow $muted>
         Los productos no inventariables no se listan en este selector.
@@ -376,19 +381,36 @@ const ProductModal = ({
     setSearch(event.target.value);
   };
 
+  const openDrawer = () => setVisible(true);
+
+  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    event.preventDefault();
+    openDrawer();
+  };
+
   const isSelected = (product: ProductOption) =>
     multiselect && selectedProducts.some((p) => p.id === product.id);
 
   return (
     <div>
       {children ? (
-        <div onClick={() => setVisible(true)}>{children}</div>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={openDrawer}
+          onKeyDown={handleTriggerKeyDown}
+        >
+          {children}
+        </div>
       ) : (
         <Input
           value={selectedProduct?.name || ''}
-          placeholder="Buscar y seleccionar producto..."
+          placeholder="Buscar y seleccionar producto…"
           readOnly
-          onClick={() => setVisible(true)}
+          onClick={openDrawer}
         />
       )}
       <Drawer
@@ -410,7 +432,7 @@ const ProductModal = ({
           <Header>
             <Input
               ref={searchInputRef}
-              placeholder="Buscar productos..."
+              placeholder="Buscar productos…"
               value={search}
               onChange={handleSearchChange}
               allowClear

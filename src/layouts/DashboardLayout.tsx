@@ -72,7 +72,7 @@ export const DashboardLayout = () => {
             fallback={
               <PageFallback>
                 <Spinner />
-                Cargando...
+                Cargando…
               </PageFallback>
             }
           >

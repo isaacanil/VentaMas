@@ -256,7 +256,7 @@ export const PreorderModal = ({
           {isLoading ? (
             <LoadingState>
               <Spinner />
-              <span>Cargando preventas...</span>
+              <span>Cargando preventas…</span>
             </LoadingState>
           ) : entries.length === 0 ? (
             <EmptyState>

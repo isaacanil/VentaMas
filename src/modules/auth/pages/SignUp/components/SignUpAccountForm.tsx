@@ -496,7 +496,7 @@ export const SignUpAccountForm: FC<SignUpAccountFormProps> = ({ setLoading }) =>
             {isSubmitting ? (
               <>
                 <LoadingSpinner />
-                Creando cuenta...
+                Creando cuenta…
               </>
             ) : (
               'Crear cuenta'

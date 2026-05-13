@@ -51,7 +51,7 @@ export const AccountingHistoryList = ({
   if (loading) {
     return (
       <LoadingWrap>
-        <Text type="secondary">Cargando bitacora...</Text>
+        <Text type="secondary">Cargando bitacora…</Text>
       </LoadingWrap>
     );
   }

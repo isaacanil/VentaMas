@@ -80,7 +80,7 @@ export const CashDenominationCalculator: React.FC<
             .reverse()
             .map((bill, index) => (
               <BillRow
-                key={`${bill.ref}-${index}`}
+                key={bill.ref}
                 bill={bill}
                 inputDisabled={inputDisabled}
                 readOnly={readOnly}

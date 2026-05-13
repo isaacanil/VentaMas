@@ -10,6 +10,28 @@ interface ReceiptListProps<TItem> {
 }
 
 const EMPTY_RECEIPTS: unknown[] = [];
+const receiptObjectKeys = new WeakMap<object, string>();
+let receiptObjectKeyCounter = 0;
+
+const resolveReceiptItemKey = (item: unknown): React.Key => {
+  if (item && typeof item === 'object') {
+    const record = item as Record<string, unknown>;
+    const explicitKey = record.id ?? record.key ?? record.ref ?? record.number;
+    if (explicitKey != null) {
+      return String(explicitKey);
+    }
+    const existingKey = receiptObjectKeys.get(item);
+    if (existingKey) {
+      return existingKey;
+    }
+    receiptObjectKeyCounter += 1;
+    const generatedKey = `receipt-${receiptObjectKeyCounter}`;
+    receiptObjectKeys.set(item, generatedKey);
+    return generatedKey;
+  }
+
+  return `${typeof item}:${String(item)}`;
+};
 
 export function ReceiptList<TItem>({
   title,
@@ -20,8 +42,8 @@ export function ReceiptList<TItem>({
     <Group>
       <Paragraph>{title}</Paragraph>
       <ul>
-        {list.map((item, idx) => (
-          <li key={idx}>{formatReceipt(item)}</li>
+        {list.map((item) => (
+          <li key={resolveReceiptItemKey(item)}>{formatReceipt(item)}</li>
         ))}
       </ul>
     </Group>

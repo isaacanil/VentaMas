@@ -269,11 +269,11 @@ const UnifiedARAlert = ({
           gap: '8px',
         }}
       >
-        {validations.map((validation, index) => {
+        {validations.map((validation) => {
           const itemStyle = getStatusStyle(validation.status);
           return (
             <div
-              key={index}
+              key={`${validation.priority}-${validation.status}-${validation.title}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',

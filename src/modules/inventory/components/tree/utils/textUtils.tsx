@@ -11,11 +11,14 @@ export const renderHighlightedText = (
 ): React.ReactNode => {
   if (!highlight) return text;
   const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-  return parts.map((part, index) =>
-    part.toLowerCase() === highlight.toLowerCase() ? (
-      <Highlight key={index}>{part}</Highlight>
+  let offset = 0;
+  return parts.map((part) => {
+    const key = `${offset}-${part}`;
+    offset += part.length;
+    return part.toLowerCase() === highlight.toLowerCase() ? (
+      <Highlight key={key}>{part}</Highlight>
     ) : (
       part
-    ),
-  );
+    );
+  });
 };

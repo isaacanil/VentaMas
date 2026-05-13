@@ -41,7 +41,7 @@ export const AccountReceivableToolbar = ({
   const { isPharmacy } = useBusiness();
 
   // Usar un periodo de tiempo por defecto (últimos 30 días)
-  const [datesSelected] = useState(getDateRange('last30Days'));
+  const [datesSelected] = useState(() => getDateRange('last30Days'));
 
   // Obtener las cuentas por cobrar para mostrar en el modal
   const { accountsReceivable: accounts } = useListenAccountsReceivable(

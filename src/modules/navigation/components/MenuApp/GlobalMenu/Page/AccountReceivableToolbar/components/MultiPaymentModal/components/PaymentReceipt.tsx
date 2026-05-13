@@ -38,8 +38,8 @@ const PaymentReceipt = React.forwardRef<HTMLDivElement, PaymentReceiptProps>(
         <h3>Cuentas pagadas:</h3>
         <ul>
           {Array.isArray(receipt.accounts) &&
-            receipt.accounts.map((account, index) => (
-              <li key={index}>
+            receipt.accounts.map((account) => (
+              <li key={account.arId ?? account.id ?? account.arNumber}>
                 <div>Cuenta: {account.arNumber || account.id}</div>
                 {account.arId && <div>ID: {account.arId}</div>}
                 {account.invoiceNumber && (
@@ -57,8 +57,10 @@ const PaymentReceipt = React.forwardRef<HTMLDivElement, PaymentReceiptProps>(
                     <div>
                       <h4>Cuotas pagadas:</h4>
                       <ul>
-                        {account.paidInstallments.map((installment, idx) => (
-                          <li key={idx}>
+                        {account.paidInstallments.map((installment) => (
+                          <li
+                            key={`${installment.number ?? 'cuota'}-${installment.amount ?? 0}`}
+                          >
                             Cuota #{installment.number} - Monto:{' '}
                             {formatCurrency(installment.amount || 0)}
                           </li>
@@ -77,8 +79,10 @@ const PaymentReceipt = React.forwardRef<HTMLDivElement, PaymentReceiptProps>(
         <ul>
           {Array.isArray(receipt.paymentMethod || receipt.paymentMethods) &&
             (receipt.paymentMethod || receipt.paymentMethods).map(
-              (method: PaymentMethod, index: number) => (
-                <li key={index}>
+              (method: PaymentMethod) => (
+                <li
+                  key={`${method.method}-${method.reference ?? 'sin-ref'}-${method.value ?? 0}`}
+                >
                   {method.method === 'cash'
                     ? 'Efectivo'
                     : method.method === 'card'

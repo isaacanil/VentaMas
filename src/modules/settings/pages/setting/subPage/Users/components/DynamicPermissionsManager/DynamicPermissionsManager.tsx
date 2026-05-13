@@ -222,7 +222,7 @@ const DynamicPermissionsManager = ({
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <Spin size="large" />
-          <div style={{ marginTop: '1rem' }}>Cargando permisos...</div>
+          <div style={{ marginTop: '1rem' }}>Cargando permisos…</div>
         </div>
       ) : (
         <Content>

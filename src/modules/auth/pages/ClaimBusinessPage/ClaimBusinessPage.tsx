@@ -215,7 +215,7 @@ export const ClaimBusinessPage = (): JSX.Element => {
           {!authReady ? (
             <InlineLoading>
               <Spin size="small" />
-              Verificando sesion...
+              Verificando sesion…
             </InlineLoading>
           ) : !user ? (
             <>
@@ -260,8 +260,8 @@ export const ClaimBusinessPage = (): JSX.Element => {
                 <InlineLoading>
                   <Spin size="small" />
                   {submitting
-                    ? 'Validando token y reclamando negocio...'
-                    : 'Redirigiendo al inicio...'}
+                    ? 'Validando token y reclamando negocio…'
+                    : 'Redirigiendo al inicio…'}
                 </InlineLoading>
               ) : null}
             </>

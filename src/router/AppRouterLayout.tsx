@@ -95,7 +95,7 @@ const FallbackText = styled.span`
 const RouteSuspenseFallback = () => (
   <FallbackContainer>
     <NavSpinner />
-    <FallbackText>Cargando...</FallbackText>
+    <FallbackText>Cargando…</FallbackText>
   </FallbackContainer>
 );
 

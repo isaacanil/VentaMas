@@ -20,6 +20,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -216,6 +217,21 @@ const DoctorSelector = ({
     }
   };
 
+  const handleCardKeyDown = (
+    event: ReactKeyboardEvent<HTMLDivElement>,
+    doctor: DoctorRecord,
+  ) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.dropdown-container')) {
+      return;
+    }
+    event.preventDefault();
+    handleDoctorSelect(doctor);
+  };
+
   const openModalUpdateMode = (_event: unknown, doctor: DoctorRecord) => {
     dispatch(openModal({ mode: 'edit', doctor }));
     setVisible(false);
@@ -302,17 +318,15 @@ const DoctorSelector = ({
             {filteredDoctors.map((doctor) => (
               <DoctorCard
                 key={doctor.id}
+                role="button"
+                tabIndex={0}
                 onClick={(e) => handleCardClick(e, doctor)}
+                onKeyDown={(event) => handleCardKeyDown(event, doctor)}
                 $isSelected={selectedDoctor?.id === doctor.id}
               >
                 <div className="card-header">
                   <div className="name">{doctor.name}</div>
-                  <div
-                    className="dropdown-container"
-                    onClick={(e: ReactMouseEvent<HTMLDivElement>) =>
-                      e.stopPropagation()
-                    }
-                  >
+                  <div className="dropdown-container">
                     <Dropdown
                       menu={{ items: getMenuItems(doctor) }}
                       trigger={['click']}
@@ -321,6 +335,9 @@ const DoctorSelector = ({
                         type="text"
                         className="actions"
                         icon={<MoreOutlined />}
+                        onClick={(e: ReactMouseEvent<HTMLElement>) =>
+                          e.stopPropagation()
+                        }
                       />
                     </Dropdown>
                   </div>

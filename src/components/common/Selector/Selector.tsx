@@ -204,7 +204,6 @@ export const Selector = ({
               placeholder="Buscar..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              autoFocus
             />
           </SearchContainer>
           {allowClear && (

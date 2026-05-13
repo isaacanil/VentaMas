@@ -536,7 +536,7 @@ export const LoginForm: FC<LoginFormProps> = ({ setLoading }) => {
             {isSubmitting ? (
               <>
                 <LoadingSpinner />
-                Iniciando...
+                Iniciando…
               </>
             ) : (
               'Iniciar sesión'

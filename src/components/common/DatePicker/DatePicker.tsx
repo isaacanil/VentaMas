@@ -165,6 +165,14 @@ export const DatePicker = ({
   const inputValue = formatDisplayValue(value ?? null, format, mode);
   const hasValue = inputValue !== '';
 
+  const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled || (event.key !== 'Enter' && event.key !== ' ')) {
+      return;
+    }
+    event.preventDefault();
+    setOpen((currentOpen) => !currentOpen);
+  };
+
   const mobileContent = (
     <DatePickerContent $isMobile>
       <PresetsSection
@@ -284,7 +292,14 @@ export const DatePicker = ({
         destroyOnHidden={true}
         fresh={true}
       >
-        <div onClick={() => !disabled && setOpen(!open)}>
+        <div
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-disabled={disabled}
+          aria-haspopup="dialog"
+          onClick={() => !disabled && setOpen(!open)}
+          onKeyDown={handleTriggerKeyDown}
+        >
           <DatePickerInput
             value={inputValue}
             placeholder={placeholder}

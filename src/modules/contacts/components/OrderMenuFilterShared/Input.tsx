@@ -27,9 +27,13 @@ export const Input = ({ data, onChange, fn }: OrderFilterInputProps) => {
         onChange={onChange}
         placeholder={`Buscar ${data.name}`}
       />
-      <div onClick={handleDeleteText}>
+      <button
+        type="button"
+        aria-label="Limpiar busqueda"
+        onClick={handleDeleteText}
+      >
         <FontAwesomeIcon icon={faTimes} />
-      </div>
+      </button>
     </Container>
   );
 };
@@ -49,13 +53,15 @@ const Container = styled.div`
     border: none;
   }
 
-  div {
+  button {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 1.2em;
     height: 1.2em;
+    padding: 0;
+    cursor: pointer;
     background-color: var(--white-2, var(--white2));
+    border: 0;
   }
 `;
-

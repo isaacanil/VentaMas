@@ -117,7 +117,6 @@ export const SearchPanel = ({
                 onChange={handleSearchChange}
                 onPressEnter={onClose}
                 size="large"
-                autoFocus
                 allowClear
                 onClear={handleClearSearch}
               />

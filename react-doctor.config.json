@@ -1,0 +1,41 @@
+{
+  "$schema": "https://react.doctor/schema.json",
+  "lint": true,
+  "deadCode": true,
+  "verbose": false,
+  "diff": false,
+  "failOn": "none",
+  "ignore": {
+    "rules": [
+      "knip/files",
+      "knip/exports",
+      "knip/types",
+      "knip/duplicates",
+      "react-doctor/js-combine-iterations",
+      "react-doctor/async-await-in-loop",
+      "react-doctor/js-flatmap-filter",
+      "react-doctor/js-hoist-intl",
+      "react-doctor/js-tosorted-immutable",
+      "react-doctor/no-tiny-text",
+      "react-doctor/no-giant-component",
+      "react-doctor/no-generic-handler-names",
+      "react-doctor/no-react19-deprecated-apis",
+      "react-doctor/design-no-em-dash-in-jsx-text",
+      "react-doctor/rendering-hydration-mismatch-time",
+      "react-doctor/prefer-dynamic-import",
+      "react-doctor/prefer-useReducer",
+      "react-doctor/rerender-functional-setstate",
+      "react-doctor/no-effect-event-handler",
+      "react-doctor/no-inline-exhaustive-style",
+      "react-doctor/no-default-props",
+      "react-doctor/no-derived-useState",
+      "react-doctor/no-prop-callback-in-effect"
+    ],
+    "files": [
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "functions/lib/**"
+    ]
+  }
+}

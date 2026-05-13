@@ -218,14 +218,14 @@ export const SupplierPaymentHistoryModal = ({
                   </CardHeader>
 
                   <MethodsList>
-                    {paymentMethods.map((method, index) => {
+                    {paymentMethods.map((method) => {
                       const amount = resolvePaymentMethodAmount(method);
                       const label =
                         PAYMENT_METHOD_LABELS[String(method.method || '')] ??
                         String(method.method || 'Método');
 
                       return (
-                        <MethodRow key={`${payment.id}-${label}-${index}`}>
+                        <MethodRow key={`${payment.id}-${label}-${amount}`}>
                           <span>{label}</span>
                           <span>{formatPrice(amount)}</span>
                         </MethodRow>

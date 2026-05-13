@@ -149,9 +149,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   const business = useSelector(selectBusinessData, shallowEqual);
   const businessLoading = useSelector(selectBusinessLoading);
   const user = useSelector(selectUser, shallowEqual);
-  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(
-    search,
-  );
+  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(search);
   const isBusinessContextPending =
     Boolean(activeBusinessId) &&
     (businessLoading || business?.id !== activeBusinessId);
@@ -159,17 +157,10 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   const handleBusinessManagerOpenChange = useCallback(
     (isOpen: boolean) => {
       if (isOpen || !shouldForceOpenBusinessManager) return;
-      const cleanPath = withoutBusinessManagerQuery(
-        `${pathname}${search}`,
-      );
+      const cleanPath = withoutBusinessManagerQuery(`${pathname}${search}`);
       navigate(cleanPath, { replace: true });
     },
-    [
-      pathname,
-      search,
-      navigate,
-      shouldForceOpenBusinessManager,
-    ],
+    [pathname, search, navigate, shouldForceOpenBusinessManager],
   );
   const handleShortcutSearchFocus = useCallback(() => {
     setActivePanel((currentPanel) =>
@@ -203,6 +194,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
 
   const shouldShowMissingOwnerBadge =
     hasBusinesses && canIssueOwnershipClaim && businessHasOwners === false;
+  const ownershipIssueCount = shouldShowMissingOwnerBadge ? 1 : 0;
 
   return (
     <HomeLayout>
@@ -217,14 +209,10 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
             onShortcutSearchFocus={handleShortcutSearchFocus}
             onShortcutSearchValueChange={handleShortcutSearchValueChange}
             onWorkspaceOpenChange={handleBusinessManagerOpenChange}
+            ownershipIssueCount={ownershipIssueCount}
             shortcutSearchValue={shortcutSearchValue}
             showBusinessSelector={hasBusinesses}
           />
-          {shouldShowMissingOwnerBadge && (
-            <BadgesRow>
-              <MissingOwnerBadge>Sin propietario</MissingOwnerBadge>
-            </BadgesRow>
-          )}
         </StickyTopBar>
         <MainContent>
           <MainContentInner>
@@ -317,27 +305,4 @@ const MainContentInner = styled.div`
   align-items: stretch;
   width: min(1200px, 100%);
   margin: 0 auto;
-`;
-
-const BadgesRow = styled.div`
-  display: inline-flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: flex-end;
-  width: min(1200px, 100%);
-`;
-
-const MissingOwnerBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 0.7rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #9f1239;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: rgb(251 113 133 / 16%);
-  border: 1px solid rgb(251 113 133 / 45%);
-  border-radius: 999px;
 `;

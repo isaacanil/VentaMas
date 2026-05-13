@@ -19,7 +19,6 @@ export const Body = ({ user, setUser }: BodyProps) => {
         value={user.name}
         onChange={(e) => setUser({ ...user, name: e.target.value })}
         size="large"
-        autoFocus
       />
       <Input.Password
         placeholder="Password"

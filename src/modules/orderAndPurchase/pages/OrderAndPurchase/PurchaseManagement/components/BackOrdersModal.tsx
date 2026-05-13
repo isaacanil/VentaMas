@@ -313,8 +313,11 @@ const BackOrdersModal = ({
       <ModalContent>
         <CompactStatsSection>
           <QuantityInputSection>
-            <label>Cantidad a comprar:</label>
+            <label htmlFor="backorders-purchase-quantity">
+              Cantidad a comprar:
+            </label>
             <InputNumber
+              id="backorders-purchase-quantity"
               value={purchaseQuantity}
               onChange={(value) => setPurchaseQuantity(value || 0)}
               min={totalBackordersQuantity}

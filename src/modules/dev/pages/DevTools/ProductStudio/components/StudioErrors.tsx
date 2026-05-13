@@ -78,8 +78,8 @@ export const StudioErrors: React.FC<StudioErrorsProps> = ({ product }) => {
         <ErrorBannerWrapper>
             <WarningOutlined style={{ color: '#dc2626', fontSize: 18, marginTop: 2 }} />
             <ErrorList>
-                {errors.map((err, index) => (
-                    <li key={index}>{err}</li>
+                {errors.map((err) => (
+                    <li key={err}>{err}</li>
                 ))}
             </ErrorList>
         </ErrorBannerWrapper>

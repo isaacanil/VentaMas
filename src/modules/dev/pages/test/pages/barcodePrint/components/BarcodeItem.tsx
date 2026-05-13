@@ -165,7 +165,7 @@ const BarcodeItem = ({
             fontStyle: 'italic',
           }}
         >
-          Generando código...
+          Generando código…
         </div>
       )}
 

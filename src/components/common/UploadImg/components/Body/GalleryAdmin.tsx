@@ -24,7 +24,8 @@ export const GalleryAdmin = ({ images, setImg }: GalleryAdminProps) => {
         <div className="wrapper">
           {images.length > 0
             ? images.map((img) => (
-                <div
+                <button
+                  type="button"
                   className="imgContainer"
                   key={img.id}
                   onClick={() => {
@@ -33,7 +34,7 @@ export const GalleryAdmin = ({ images, setImg }: GalleryAdminProps) => {
                   }}
                 >
                   <img src={img.url} alt="" />
-                </div>
+                </button>
               ))
             : null}
         </div>
@@ -84,8 +85,11 @@ const Body = styled.div`
   .imgContainer {
     width: 100px;
     height: 100px;
+    padding: 0;
     overflow: hidden;
+    cursor: pointer;
     background-color: white;
+    border: 0;
     border-radius: 8px;
 
     img {

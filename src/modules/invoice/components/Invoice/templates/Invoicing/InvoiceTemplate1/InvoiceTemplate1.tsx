@@ -53,8 +53,8 @@ export const InvoiceTemplate1 = React.forwardRef<
             <Line />
             <P align="center">Notas de Crédito Aplicadas</P>
             <Line />
-            {creditNotes.map((note, index) => (
-              <Row key={index} cols="2" space>
+            {creditNotes.map((note) => (
+              <Row key={note.id ?? note.ncf} cols="2" space>
                 <P>NCF: {note.ncf}</P>
                 <P align="right">{formatInvoicePrice(note.amountUsed, data)}</P>
               </Row>

@@ -125,7 +125,7 @@ const BusinessManagerToolbar = ({ side = 'left' }: ToolbarComponentProps) => {
             ]}
           >
             {auditLoading ? (
-              <p>Revisando negocios...</p>
+              <p>Revisando negocios…</p>
             ) : auditSummary ? (
               <div>
                 <p>Negocios revisados: {auditSummary.scanned}</p>

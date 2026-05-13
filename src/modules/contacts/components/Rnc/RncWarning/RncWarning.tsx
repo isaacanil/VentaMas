@@ -174,12 +174,15 @@ export const RncWarning = ({ status }: RncWarningProps) => {
         };
 
   const formatDetails = (details: string) => {
-    return details.split('\n').map((line, index) => {
+    let offset = 0;
+    return details.split('\n').map((line) => {
       const trimmedLine = line.trim();
+      const key = `${offset}-${trimmedLine}`;
+      offset += line.length + 1;
       if (trimmedLine.startsWith('•')) {
-        return <li key={index}>{trimmedLine.substring(1).trim()}</li>;
+        return <li key={key}>{trimmedLine.substring(1).trim()}</li>;
       }
-      return <p key={index}>{trimmedLine}</p>;
+      return <p key={key}>{trimmedLine}</p>;
     });
   };
 

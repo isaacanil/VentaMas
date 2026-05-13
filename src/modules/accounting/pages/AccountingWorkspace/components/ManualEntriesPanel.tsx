@@ -94,7 +94,7 @@ export const ManualEntriesPanel = ({
   postingAccounts,
   saving,
 }: ManualEntriesPanelProps) => {
-  const [entryDate, setEntryDate] = useState(
+  const [entryDate, setEntryDate] = useState(() =>
     new Date().toISOString().slice(0, 10),
   );
   const [entryType, setEntryType] = useState<EntryType>('adjustment');

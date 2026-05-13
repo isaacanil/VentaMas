@@ -202,7 +202,7 @@ export const InputV4 = ({
           >
             {buttons.map((button: InputButtonConfig, index: number) => (
               <InputButton
-                key={`btn-${index}`}
+                key={button.name ?? button.className ?? button.color ?? 'button'}
                 onClick={button.onClick}
                 disabled={button.disabled}
                 $color={button.color || 'primary'}
@@ -224,8 +224,8 @@ export const InputV4 = ({
       {validate === false && errorMessage && (
         <ErrorContainer>
           {Array.isArray(errorMessage) ? (
-            errorMessage.map((message: string, index: number) => (
-              <ErrorMessage key={index} $show>
+            errorMessage.map((message: string) => (
+              <ErrorMessage key={message} $show>
                 {message}
               </ErrorMessage>
             ))

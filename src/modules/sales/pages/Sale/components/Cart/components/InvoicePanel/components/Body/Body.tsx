@@ -86,7 +86,7 @@ export const Body = ({ form, businessId, onMonetaryContextChange }: BodyProps) =
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading…</div>;
   }
 
   if (error) {

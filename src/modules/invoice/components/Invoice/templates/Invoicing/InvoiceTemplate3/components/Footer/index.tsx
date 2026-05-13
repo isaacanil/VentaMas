@@ -45,14 +45,17 @@ export default function Footer({ data }: FooterProps) {
               {(data?.paymentMethod?.length ?? 0) > 0 && (
                 <PaymentMethodsSection>
                   <BoldText>Métodos de Pago:</BoldText>
-                  {data?.paymentMethod?.map((method, index) => {
+                  {data?.paymentMethod?.map((method) => {
                     if (!method?.status) return null;
                     const methodKey =
                       typeof method.method === 'string'
                         ? method.method.toLowerCase()
                         : '';
                     return (
-                      <p key={index} style={{ margin: 0 }}>
+                      <p
+                        key={`${method.method ?? 'method'}-${method.reference ?? 'sin-ref'}-${method.value ?? 0}`}
+                        style={{ margin: 0 }}
+                      >
                         {PAYMENT_METHODS[
                           methodKey as keyof typeof PAYMENT_METHODS
                         ] || method.method}

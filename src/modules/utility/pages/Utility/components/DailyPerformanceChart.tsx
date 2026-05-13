@@ -34,7 +34,7 @@ export const DailyPerformanceChart = ({
       </SectionHeader>
       <ChartBody>
         {loading ? (
-          <EmptyState>Cargando datos...</EmptyState>
+          <EmptyState>Cargando datos…</EmptyState>
         ) : chartData ? (
           <LazyLine data={chartData} options={chartOptions} />
         ) : (

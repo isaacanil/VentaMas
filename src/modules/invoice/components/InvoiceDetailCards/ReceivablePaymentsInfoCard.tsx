@@ -257,8 +257,10 @@ export const ReceivablePaymentsInfoCard = ({
                 </RowTop>
                 {activeMethods.length > 0 && (
                   <RowMethods>
-                    {activeMethods.map((m, idx) => (
-                      <MethodPill key={`${m.method ?? 'method'}-${idx}`}>
+                    {activeMethods.map((m) => (
+                      <MethodPill
+                        key={`${m.method ?? 'method'}-${m.reference ?? 'sin-ref'}-${m.value ?? 0}`}
+                      >
                         {paymentMethodLabel[m.method ?? ''] ??
                           m.method ??
                           'N/A'}

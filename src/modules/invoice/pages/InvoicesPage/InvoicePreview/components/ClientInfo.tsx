@@ -18,14 +18,21 @@ export const ClientInfoCard = ({ client }: ClientInfoCardProps) => {
   const addressElement = safeClient.address ? (
     safeClient.address.length > 40 && !showFullAddress ? (
       <>
-        {safeClient.address.slice(0, 40)}...
-        <span
-          style={{ color: '#2563eb', cursor: 'pointer' }}
+        {safeClient.address.slice(0, 40)}…
+        <button
+          type="button"
+          style={{
+            padding: 0,
+            color: '#2563eb',
+            cursor: 'pointer',
+            background: 'none',
+            border: 0,
+          }}
           onClick={() => setShowFullAddress(true)}
         >
           {' '}
           ver más
-        </span>
+        </button>
       </>
     ) : (
       safeClient.address

@@ -592,7 +592,7 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
                   description={`Invoice V2: ${v2CreatedAtLabel} · invoices: ${canonicalDateLabel}`}
                 />
               )}
-              {shouldWarnCashCount && (
+              {shouldWarnCashCount ? (
                 <Alert
                   type="warning"
                   showIcon
@@ -603,7 +603,7 @@ export const IndividualRecoveryTab: React.FC<IndividualRecoveryTabProps> = ({
                       : 'No pudimos identificar el cuadre de caja asociado a esta factura.'
                   }
                 />
-              )}
+              ) : null}
               <Paragraph type="secondary" style={{ marginBottom: 0 }}>
                 Selecciona las tareas que deseas reprogramar. Todas las
                 operaciones son idempotentes y quedan registradas en el auditor
@@ -755,5 +755,4 @@ IndividualRecoveryTab.propTypes = {
   updateInvoiceNumberEverywhere: PropTypes.func.isRequired,
   updatingInvoiceNumber: PropTypes.bool.isRequired,
 };
-
 

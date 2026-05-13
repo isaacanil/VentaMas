@@ -481,8 +481,8 @@ const InvoiceFooter = ({
             {paymentLines.length ? (
               <View style={styles.summaryBlock}>
                 <Text style={styles.summaryBlockTitle}>Metodos de Pago:</Text>
-                {paymentLines.map((line, index) => (
-                  <Text key={`payment-${index}`} style={styles.summaryListItem}>
+                {paymentLines.map((line) => (
+                  <Text key={`payment-${line}`} style={styles.summaryListItem}>
                     • {line}
                   </Text>
                 ))}
@@ -493,9 +493,9 @@ const InvoiceFooter = ({
                 <Text style={styles.summaryBlockTitle}>
                   Notas de Credito Aplicadas:
                 </Text>
-                {creditNoteLines.map((line, index) => (
+                {creditNoteLines.map((line) => (
                   <Text
-                    key={`credit-note-${index}`}
+                    key={`credit-note-${line}`}
                     style={styles.summaryListItem}
                   >
                     • {line}
@@ -518,7 +518,7 @@ const InvoiceFooter = ({
               const isTotalRow = index === totals.length - 1;
 
               return (
-                <View key={`${label}-${index}`} style={styles.totalRow}>
+                <View key={label} style={styles.totalRow}>
                   <Text style={isTotalRow ? styles.totalRowStrong : undefined}>
                     {label}:
                   </Text>
@@ -566,7 +566,11 @@ const ProductTable = ({
           <View
             key={String(
               product?.previewDuplicateKey ||
-                `${product?.id || product?.barcode || product?.cid || 'product'}-${index}`,
+                product?.id ||
+                product?.barcode ||
+                product?.cid ||
+                product?.name ||
+                'product',
             )}
             style={styles.tableRow}
           >
@@ -577,7 +581,7 @@ const ProductTable = ({
             <View style={styles.cellDescription}>
               {descriptionLines.map((line, lineIndex) => (
                 <Text
-                  key={`${product?.id || 'product'}-line-${lineIndex}`}
+                  key={`${product?.id || product?.barcode || product?.cid || product?.name || 'product'}-line-${line}`}
                   style={lineIndex === 0 ? undefined : styles.tableRowMuted}
                 >
                   {line}
@@ -618,7 +622,7 @@ export const InvoiceLetterDocument = ({
   const products = buildPreviewProducts(sourceProducts);
   const productPages = paginateInvoiceProducts(
     products,
-    (product) => buildDescriptionLines(product).length,
+    (product) => buildDescriptionLines(product, currency).length,
     PAGE_PRODUCT_CAPACITY,
   );
   const paymentLines = (data?.paymentMethod || [])

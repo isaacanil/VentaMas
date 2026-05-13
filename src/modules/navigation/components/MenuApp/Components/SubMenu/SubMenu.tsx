@@ -53,10 +53,12 @@ export const SubMenu = ({
           ? Object.keys(groupedSubmenus).map((group) => (
               <Group key={group}>
                 <MenuLinkList>
-                  {groupedSubmenus[group].map((submenu, index) => (
+                  {groupedSubmenus[group].map((submenu) => (
                     <MenuLink
                       item={submenu}
-                      key={index}
+                      key={String(
+                        submenu.key ?? submenu.route ?? submenu.title,
+                      )}
                       onActionDone={handleSubmenuItemActionDone}
                       parentTitle={item.title}
                     />

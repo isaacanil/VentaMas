@@ -61,7 +61,11 @@ export default function Content({ products, documentCurrency }: ContentProps) {
                   <ProductRow
                     key={String(
                       product?.previewDuplicateKey ||
-                        `${product?.id || product?.barcode || product?.cid || 'product'}-${index}`,
+                        product?.id ||
+                        product?.barcode ||
+                        product?.cid ||
+                        product?.name ||
+                        'product',
                     )}
                   >
                     <BodyCell className="qty">{quantity}</BodyCell>
@@ -71,7 +75,7 @@ export default function Content({ products, documentCurrency }: ContentProps) {
                     <DescriptionCell>
                       {descriptionLines.map((line, lineIndex) => (
                         <DescriptionLine
-                          key={`${product?.id || 'product'}-line-${lineIndex}-${index}`}
+                          key={`${product?.id || product?.barcode || product?.cid || product?.name || 'product'}-line-${lineIndex}-${line}`}
                           $muted={lineIndex > 0}
                         >
                           {line}

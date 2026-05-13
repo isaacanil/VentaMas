@@ -244,6 +244,21 @@ const DependentSelector = ({
     }
   };
 
+  const handleCardKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    dependent: DependentRecord,
+  ) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.dropdown-container')) {
+      return;
+    }
+    event.preventDefault();
+    handleDependentSelect(dependent);
+  };
+
   const openModalUpdateMode = (dependent: DependentRecord) => {
     onEditDependent?.(dependent);
     setVisible(false);
@@ -356,15 +371,15 @@ const DependentSelector = ({
               filteredDependents.map((dependent) => (
                 <DependentCard
                   key={dependent.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => handleCardClick(e, dependent)}
+                  onKeyDown={(event) => handleCardKeyDown(event, dependent)}
                   $isSelected={selectedDependent?.id === dependent.id}
                 >
                   <div className="card-header">
                     <div className="name">{dependent.name}</div>
-                    <div
-                      className="dropdown-container"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="dropdown-container">
                       <Dropdown
                         menu={{ items: getMenuItems(dependent) }}
                         trigger={['click']}
@@ -373,6 +388,7 @@ const DependentSelector = ({
                           type="text"
                           className="actions"
                           icon={<MoreOutlined />}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       </Dropdown>
                     </div>

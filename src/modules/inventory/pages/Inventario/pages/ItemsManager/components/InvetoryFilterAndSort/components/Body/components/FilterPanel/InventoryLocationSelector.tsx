@@ -204,7 +204,7 @@ export const InventoryLocationSelector = ({
       >
         <SelectorContent>
           {loading ? (
-            <Placeholder>Actualizando ubicaciones...</Placeholder>
+            <Placeholder>Actualizando ubicaciones…</Placeholder>
           ) : !hasSelections ? (
             <Placeholder>{placeholder}</Placeholder>
           ) : (
@@ -236,14 +236,14 @@ export const InventoryLocationSelector = ({
                 type="search"
                 value={search}
                 onChange={handleSearchChange}
-                placeholder="Buscar ubicacion..."
+                placeholder="Buscar ubicacion…"
                 aria-label="Buscar ubicacion de inventario"
               />
             </SearchBar>
             <OptionsList>
               {loading ? (
                 <StateMessage>
-                  Calculando agregados de inventario...
+                  Calculando agregados de inventario…
                 </StateMessage>
               ) : isEmptyState ? (
                 <StateMessage>No hay almacenes disponibles.</StateMessage>

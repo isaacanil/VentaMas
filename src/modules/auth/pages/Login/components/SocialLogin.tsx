@@ -142,7 +142,7 @@ export const SocialLogin: FC<SocialLoginProps> = ({
             {provider.isLoading ? (
               <>
                 <LoadingSpinner />
-                Cargando...
+                Cargando…
               </>
             ) : (
               <>

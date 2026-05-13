@@ -14,13 +14,16 @@ const LevelIndicator = styled.div`
 `;
 
 const LevelGroup = ({ level }: { level: number }) => {
+  const levelIndicatorKeys = Array.from(
+    { length: level },
+    (_, position) => `level-${position}`,
+  );
+
   return (
     <LevelContainer>
-      {Array(level)
-        .fill(null)
-        .map((_, index) => (
-          <LevelIndicator key={index} />
-        ))}
+      {levelIndicatorKeys.map((indicatorKey) => (
+        <LevelIndicator key={indicatorKey} />
+      ))}
     </LevelContainer>
   );
 };

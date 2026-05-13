@@ -163,8 +163,8 @@ const buildCorrectionsList = (pairs: CorrectionPair[]): ReactElement => {
   }
   return (
     <ul style={{ paddingLeft: 20, margin: 0 }}>
-      {pairs.map(({ wrong, right }, i) => (
-        <li key={i} style={{ marginBottom: 4 }}>
+      {pairs.map(({ wrong, right }) => (
+        <li key={`${wrong}-${right}`} style={{ marginBottom: 4 }}>
           <strong style={{ color: '#d32f2f' }}>{wrong}</strong> →{' '}
           <em style={{ color: '#388e3c' }}>{right}</em>
         </li>

@@ -10,6 +10,7 @@ import {
 interface BusinessWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
+  ownershipIssueCount?: number;
 }
 
 const SHOW_JOIN_BY_CODE = false;
@@ -18,6 +19,7 @@ type InviteFeedbackType = InviteFeedback['type'];
 export const BusinessWorkspaceModal = ({
   isOpen,
   onClose,
+  ownershipIssueCount = 0,
 }: BusinessWorkspaceModalProps): JSX.Element => {
   const {
     activeBusinessesCount,
@@ -58,13 +60,29 @@ export const BusinessWorkspaceModal = ({
             </Modal.Header>
             <Modal.Body>
               <Body>
+                {ownershipIssueCount > 0 ? (
+                  <OwnershipIssue>
+                    <OwnershipIssueText>
+                      <OwnershipIssueTitle>Sin propietario</OwnershipIssueTitle>
+                      <OwnershipIssueDescription>
+                        Negocio activo sin owner asignado.
+                      </OwnershipIssueDescription>
+                    </OwnershipIssueText>
+                    <OwnershipIssueCount>
+                      {ownershipIssueCount}
+                    </OwnershipIssueCount>
+                  </OwnershipIssue>
+                ) : null}
+
                 {SHOW_JOIN_BY_CODE && inviteFeedback ? (
                   <JoinByCodeFeedback $type={inviteFeedback.type}>
                     {inviteFeedback.message}
                   </JoinByCodeFeedback>
                 ) : null}
 
-                {hasBusinesses || SHOW_JOIN_BY_CODE || canAccessBusinessCreation ? (
+                {hasBusinesses ||
+                SHOW_JOIN_BY_CODE ||
+                canAccessBusinessCreation ? (
                   <Toolbar>
                     {hasBusinesses ? (
                       <Select
@@ -120,7 +138,9 @@ export const BusinessWorkspaceModal = ({
                             </span>
                           </Tooltip.Trigger>
                           {createBusinessTooltip ? (
-                            <Tooltip.Content>{createBusinessTooltip}</Tooltip.Content>
+                            <Tooltip.Content>
+                              {createBusinessTooltip}
+                            </Tooltip.Content>
                           ) : null}
                         </Tooltip>
                       ) : null}
@@ -168,7 +188,9 @@ export const BusinessWorkspaceModal = ({
                         >
                           <CardHeader>
                             <BusinessTitle>
-                              <BusinessName title={displayName}>{displayName}</BusinessName>
+                              <BusinessName title={displayName}>
+                                {displayName}
+                              </BusinessName>
                               {businessDevIdLabel ? (
                                 <BusinessId>{businessDevIdLabel}</BusinessId>
                               ) : null}
@@ -256,6 +278,56 @@ const Toolbar = styled.div`
   flex-wrap: wrap;
 `;
 
+const OwnershipIssue = styled.div`
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  color: var(--ds-color-state-danger-text);
+  background: var(--ds-color-state-danger-subtle);
+  border: 1px solid var(--ds-color-state-danger);
+  border-radius: var(--ds-radius-lg);
+`;
+
+const OwnershipIssueText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+`;
+
+const OwnershipIssueTitle = styled.span`
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+`;
+
+const OwnershipIssueDescription = styled.span`
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ds-color-text-primary);
+`;
+
+const OwnershipIssueCount = styled.span`
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  padding: 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ds-color-state-on-danger);
+  background: var(--ds-color-state-danger);
+  border-radius: 999px;
+`;
+
 const ToolbarSpacer = styled.div`
   flex: 1;
   min-width: 280px;
@@ -330,7 +402,8 @@ const BusinessCard = styled.button<{
 
   &:hover:not(:disabled) {
     border-color: ${({ $active }) => ($active ? '#7dd3fc' : '#cbd5e1')};
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
       0 2px 4px -1px rgba(0, 0, 0, 0.03);
     transform: translateY(-1px);
   }

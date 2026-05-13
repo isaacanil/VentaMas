@@ -123,8 +123,8 @@ export default function Footer({
               {paymentLines.length ? (
                 <SummaryBlock>
                   <SummaryTitle>Metodos de Pago:</SummaryTitle>
-                  {paymentLines.map((line, index) => (
-                    <SummaryItem key={`payment-${index}`}>{line}</SummaryItem>
+                  {paymentLines.map((line) => (
+                    <SummaryItem key={`payment-${line}`}>{line}</SummaryItem>
                   ))}
                 </SummaryBlock>
               ) : null}
@@ -132,8 +132,8 @@ export default function Footer({
               {creditNoteLines.length ? (
                 <SummaryBlock>
                   <SummaryTitle>Notas de Credito Aplicadas:</SummaryTitle>
-                  {creditNoteLines.map((line, index) => (
-                    <SummaryItem key={`credit-note-${index}`}>{line}</SummaryItem>
+                  {creditNoteLines.map((line) => (
+                    <SummaryItem key={`credit-note-${line}`}>{line}</SummaryItem>
                   ))}
                 </SummaryBlock>
               ) : null}
@@ -158,7 +158,7 @@ export default function Footer({
                 const isTotalRow = index === totals.length - 1;
 
                 return (
-                  <TotalRow key={`${label}-${index}`} $strong={isTotalRow}>
+                  <TotalRow key={label} $strong={isTotalRow}>
                     <span>{label}:</span>
                     <span>{value}</span>
                   </TotalRow>

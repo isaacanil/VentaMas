@@ -5,6 +5,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { findSearchMatchRange } from './moduleLauncherUtils';
+
 import type { JSX, ReactNode } from 'react';
 import type { LauncherShortcut, ModuleShortcutsController } from './types';
 
@@ -35,7 +37,7 @@ export const ModuleShortcutGrid = ({
       {showScopeTabs && controller.canShowDeveloperTools ? (
         <div
           aria-label="Tipo de módulo"
-          className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
+          className="grid grid-cols-2 gap-1 rounded-xl border border-neutral-200 bg-neutral-50 p-1"
           role="tablist"
         >
           {controller.launcherTabs.map((tab) => (
@@ -46,7 +48,7 @@ export const ModuleShortcutGrid = ({
                 'flex min-w-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition',
                 controller.selectedTab === tab.key
                   ? 'bg-white text-blue-700 shadow-sm'
-                  : 'text-slate-600 hover:bg-white/70 hover:text-slate-950',
+                  : 'text-neutral-600 hover:bg-white/70 hover:text-neutral-950',
               ].join(' ')}
               id={tab.tabId}
               key={tab.key}
@@ -58,7 +60,7 @@ export const ModuleShortcutGrid = ({
               type="button"
             >
               <span className="truncate">{tab.label}</span>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500">
                 {tab.count}
               </span>
             </button>
@@ -77,7 +79,7 @@ export const ModuleShortcutGrid = ({
         >
           <SearchField.Group>
             <FontAwesomeIcon
-              className="mx-2 text-sm text-slate-400"
+              className="mx-2 text-sm text-neutral-400"
               icon={faMagnifyingGlass}
             />
             <SearchField.Input
@@ -127,6 +129,7 @@ export const ModuleShortcutGrid = ({
                     key={shortcut.key}
                     onOpen={() => onOpenShortcut(shortcut)}
                     onTogglePin={() => controller.handleTogglePin(shortcut)}
+                    searchValue={controller.searchValue}
                     showCategory
                     shortcut={shortcut}
                   />
@@ -134,7 +137,7 @@ export const ModuleShortcutGrid = ({
               </div>
             </section>
 
-            <div className="h-px bg-slate-200" />
+            <div className="h-px bg-neutral-200" />
           </>
         ) : null}
 
@@ -157,6 +160,7 @@ export const ModuleShortcutGrid = ({
                     key={shortcut.key}
                     onOpen={() => onOpenShortcut(shortcut)}
                     onTogglePin={() => controller.handleTogglePin(shortcut)}
+                    searchValue={controller.searchValue}
                     shortcut={shortcut}
                   />
                 ))}
@@ -164,7 +168,7 @@ export const ModuleShortcutGrid = ({
             </section>
           ))
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+          <div className="rounded-lg border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500">
             Sin módulos
           </div>
         )}
@@ -178,7 +182,7 @@ export const ShortcutIcon = ({
 }: {
   children: ReactNode;
 }): JSX.Element => (
-  <span className="flex h-5 w-5 items-center justify-center text-base [&_svg]:h-4 [&_svg]:w-4">
+  <span className="flex size-5 items-center justify-center text-base [&_svg]:size-4">
     {children}
   </span>
 );
@@ -188,6 +192,7 @@ export const ModuleLauncherTile = ({
   isPinned,
   onOpen,
   onTogglePin,
+  searchValue = '',
   showCategory = false,
   shortcut,
 }: {
@@ -195,24 +200,28 @@ export const ModuleLauncherTile = ({
   isPinned: boolean;
   onOpen: () => void;
   onTogglePin: () => void;
+  searchValue?: string;
   showCategory?: boolean;
   shortcut: LauncherShortcut;
 }): JSX.Element => (
-  <div className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/70">
+  <div className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/70">
     <button
       className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-2 text-left"
       onClick={onOpen}
       type="button"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-700 [&_svg]:h-4 [&_svg]:w-4">
+      <span className="flex size-8 items-center justify-center rounded-lg bg-neutral-100 text-blue-700 group-hover:bg-blue-100 [&_svg]:size-4">
         {shortcut.icon}
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold text-slate-900">
-          {shortcut.title}
+        <span className="block truncate text-sm font-semibold text-neutral-900">
+          <HighlightedShortcutTitle
+            searchValue={searchValue}
+            title={shortcut.title}
+          />
         </span>
         {showCategory ? (
-          <span className="block truncate text-xs text-slate-500">
+          <span className="block truncate text-xs text-neutral-500">
             {shortcut.category}
           </span>
         ) : null}
@@ -223,8 +232,8 @@ export const ModuleLauncherTile = ({
         <Button
           aria-label={isPinned ? 'Quitar atajo fijado' : 'Fijar atajo'}
           className={[
-            'h-8 w-8 min-w-8 rounded-lg',
-            isPinned ? 'text-blue-700' : 'text-slate-400',
+            'size-8 min-w-8 rounded-lg',
+            isPinned ? 'text-blue-700' : 'text-neutral-400',
           ].join(' ')}
           isIconOnly
           onPress={onTogglePin}
@@ -237,3 +246,30 @@ export const ModuleLauncherTile = ({
     ) : null}
   </div>
 );
+
+const HighlightedShortcutTitle = ({
+  searchValue,
+  title,
+}: {
+  searchValue: string;
+  title: string;
+}): JSX.Element => {
+  const match = findSearchMatchRange(title, searchValue);
+  if (!match) return <>{title}</>;
+
+  return (
+    <>
+      {title.slice(0, match.start)}
+      <mark
+        className="rounded px-0.5 font-semibold"
+        style={{
+          backgroundColor: 'var(--ds-color-action-primary-subtle)',
+          color: 'var(--ds-color-action-on-primary-subtle)',
+        }}
+      >
+        {title.slice(match.start, match.end)}
+      </mark>
+      {title.slice(match.end)}
+    </>
+  );
+};

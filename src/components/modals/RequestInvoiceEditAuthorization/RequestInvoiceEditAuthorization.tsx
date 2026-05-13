@@ -22,8 +22,8 @@ const ReasonsList = ({ reasons }: ReasonsListProps) =>
         lineHeight: 1.8,
       }}
     >
-      {reasons.map((r, idx) => (
-        <li key={idx} style={{ fontSize: 14, marginBottom: 8 }}>
+      {reasons.map((r) => (
+        <li key={r} style={{ fontSize: 14, marginBottom: 8 }}>
           {r}
         </li>
       ))}
@@ -159,4 +159,3 @@ export const RequestInvoiceEditAuthorization = ({
 };
 
 export default RequestInvoiceEditAuthorization;
-

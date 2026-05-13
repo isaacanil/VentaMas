@@ -170,38 +170,40 @@ export const HomeDashboard = ({
 
   return (
     <DashboardShell>
-      <HeaderBand>
-        <HeaderContent>
-          <HeaderTitle>{headerTitle}</HeaderTitle>
-          <HeaderMeta>{todayLabel}</HeaderMeta>
-        </HeaderContent>
-        <HeaderActions>
-          <Button
-            onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
-            size="sm"
-            variant="primary"
-          >
-            <FontAwesomeIcon icon={faCashRegister} />
-            Nueva venta
-          </Button>
-          <Button
-            onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
-            size="sm"
-            variant="secondary"
-          >
-            <FontAwesomeIcon icon={faReceipt} />
-            Facturas
-          </Button>
-          <Button
-            onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
-            size="sm"
-            variant="secondary"
-          >
-            <FontAwesomeIcon icon={faChartLine} />
-            Analíticas
-          </Button>
-        </HeaderActions>
-      </HeaderBand>
+      {resolvedPanel === 'metrics' ? (
+        <HeaderBand>
+          <HeaderContent>
+            <HeaderTitle>{headerTitle}</HeaderTitle>
+            <HeaderMeta>{todayLabel}</HeaderMeta>
+          </HeaderContent>
+          <HeaderActions>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.SALES)}
+              size="sm"
+              variant="primary"
+            >
+              <FontAwesomeIcon icon={faCashRegister} />
+              Nueva venta
+            </Button>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS)}
+              size="sm"
+              variant="secondary"
+            >
+              <FontAwesomeIcon icon={faReceipt} />
+              Facturas
+            </Button>
+            <Button
+              onPress={() => navigate(ROUTES_NAME.SALES_TERM.BILLS_ANALYTICS)}
+              size="sm"
+              variant="secondary"
+            >
+              <FontAwesomeIcon icon={faChartLine} />
+              Analíticas
+            </Button>
+          </HeaderActions>
+        </HeaderBand>
+      ) : null}
 
       <HomePanelTabs aria-label="Vista principal" role="tablist">
         <HomePanelTab

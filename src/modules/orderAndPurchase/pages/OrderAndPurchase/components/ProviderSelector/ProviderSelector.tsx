@@ -197,6 +197,21 @@ const ProviderSelector = ({
     }
   };
 
+  const handleCardKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    providerData: ProviderDataItem,
+  ) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.dropdown-container')) {
+      return;
+    }
+    event.preventDefault();
+    handleProviderSelect(providerData);
+  };
+
   const openModalUpdateMode = (provider: ProviderInfo) => {
     onEditProvider?.(provider);
     setVisible(false);
@@ -294,15 +309,15 @@ const ProviderSelector = ({
             {filteredProviders.map((providerData) => (
               <ProviderCard
                 key={providerData.provider.id}
+                role="button"
+                tabIndex={0}
                 onClick={(event) => handleCardClick(event, providerData)}
+                onKeyDown={(event) => handleCardKeyDown(event, providerData)}
                 $isSelected={selectedProvider?.id === providerData.provider.id}
               >
                 <div className="card-header">
                   <div className="name">{providerData.provider.name}</div>
-                  <div
-                    className="dropdown-container"
-                    onClick={(event) => event.stopPropagation()}
-                  >
+                  <div className="dropdown-container">
                     <Dropdown
                       menu={{ items: getMenuItems(providerData.provider) }}
                       trigger={['click']}
@@ -311,6 +326,7 @@ const ProviderSelector = ({
                         type="text"
                         className="actions"
                         icon={<MoreOutlined />}
+                        onClick={(event) => event.stopPropagation()}
                       />
                     </Dropdown>
                   </div>

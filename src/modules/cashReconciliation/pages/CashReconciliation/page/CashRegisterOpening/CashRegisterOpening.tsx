@@ -38,7 +38,7 @@ const { Text } = Typography;
 export const CashRegisterOpening: React.FC = () => {
   const cashCount = useSelector(selectCashCount) as CashCountRecord;
   const banknotes = cashCount.opening?.banknotes || [];
-  const [openingDate] = useState(DateTime.now());
+  const [openingDate] = useState(() => DateTime.now());
   const [calculatorIsOpen, setCalculatorIsOpen] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 

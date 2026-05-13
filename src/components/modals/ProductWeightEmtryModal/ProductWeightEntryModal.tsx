@@ -192,7 +192,6 @@ export const ProductWeightEntryModal = ({
             suffix={product?.weightDetail?.weightUnit}
             type="number"
             step="0.001"
-            autoFocus
           />
         </Form.Item>
         <Form.Item label="Precio Total">

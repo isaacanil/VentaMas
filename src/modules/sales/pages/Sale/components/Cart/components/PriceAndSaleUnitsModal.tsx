@@ -458,9 +458,9 @@ const PriceAndSaleUnitsModal = ({
             </InfoMessage>
           ) : (
             <PriceOptions>
-              {combinedPrices.map((price, index) => (
+              {combinedPrices.map((price) => (
                 <PriceOptionCard
-                  key={index}
+                  key={`${price.label}-${price.valueWithTax}`}
                   selected={isPriceSelected(price)}
                   onClick={() => handleSelectPrice(price)}
                 >

@@ -124,7 +124,7 @@ export const BusinessControl: React.FC = () => {
         <SearchAndFilterContainer>
           <SearchInputWrapper>
             <Input
-              placeholder="Buscar por nombre, ID, dirección, teléfono..."
+              placeholder="Buscar por nombre, ID, dirección, teléfono…"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               prefix={<FontAwesomeIcon icon={faSearch} />}
@@ -166,7 +166,7 @@ export const BusinessControl: React.FC = () => {
         )}
         {isLoading ? (
           <LoadingMessage>
-            <FontAwesomeIcon icon={faStoreAlt} spin /> Cargando negocios...
+            <FontAwesomeIcon icon={faStoreAlt} spin /> Cargando negocios…
           </LoadingMessage>
         ) : error && businesses.length === 0 ? (
           <ErrorMessage>{error}</ErrorMessage>

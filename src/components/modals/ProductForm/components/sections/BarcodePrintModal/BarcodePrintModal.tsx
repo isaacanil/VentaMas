@@ -283,10 +283,14 @@ export const BarcodePrintModal = ({
         destroyOnHidden
       >
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>
+          <label
+            htmlFor="barcode-label-profile"
+            style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}
+          >
             Perfil de Etiqueta:
           </label>
           <Select
+            id="barcode-label-profile"
             value={labelProfile}
             onChange={setLabelProfile}
             style={{ width: '100%', marginBottom: 12 }}
@@ -295,10 +299,14 @@ export const BarcodePrintModal = ({
               { value: 'variable', label: 'Personalizado (Variable)' },
             ]}
           />
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>
+          <label
+            htmlFor="barcode-label-quantity"
+            style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}
+          >
             Cantidad:
           </label>
           <InputNumber
+            id="barcode-label-quantity"
             min={1}
             max={100}
             value={qty}
