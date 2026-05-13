@@ -2,17 +2,6 @@ import React, { useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import type { ConsoleLine, SelectionItem, SelectionModeProps } from '../types';
 
-const HTML_ESCAPE_MAP: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;',
-};
-
-const escapeHtml = (value: unknown): string =>
-  String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPE_MAP[char] || char);
-
 /**
  * Componente para manejar el modo de selección interactiva en la consola
  */
@@ -34,49 +23,13 @@ const SelectionMode = ({
     [command],
   );
 
-  const resolveItemLabel = (item: SelectionItem) => {
-    if (typeof item === 'string') return item;
-    if (typeof item === 'object' && item !== null) {
-      const candidate = item as {
-        display?: string;
-        name?: string;
-        title?: string;
-        label?: string;
-      };
-      return (
-        candidate.display ||
-        candidate.name ||
-        candidate.title ||
-        candidate.label ||
-        String(item)
-      );
-    }
-    return String(item);
-  };
-
   const buildSelectionContent = useCallback(
-    (currentSelectedIndex: number) =>
-      `<div style="color:#66d9ef;font-weight:bold;margin-bottom:10px;">${escapeHtml(title)}</div>
-<div style="margin-left:4px;margin-bottom:10px;">
-${items
-  .map((item, index) => {
-    const isSelected = index === currentSelectedIndex;
-    const itemClass = isSelected ? 'selection-active' : 'selection-inactive';
-    const icon = isSelected ? '🔹' : '▫️';
-    return `<div style="padding:4px 0;cursor:pointer;margin-bottom:2px;" 
-      data-index="${index}" 
-      data-selection-command="${escapeHtml(command)}"
-      class="selectable-item ${isSelected ? 'selected' : ''}">
-      <span class="${itemClass}">${icon} ${escapeHtml(resolveItemLabel(item))}</span>
-  </div>`;
-  })
-  .join('')}
-</div>
-<div style="color:#888;font-size:12px;margin-top:5px;border-top:1px solid #333;padding-top:8px;">
-🔸 <strong>Filtrar:</strong> Escribe en la consola para filtrar opciones<br/>
-🔸 <strong>Navegación:</strong> ESC para cancelar<br/>
-🔸 <strong>Clic:</strong> Una vez para seleccionar, dos veces en el mismo para confirmar
-</div>`,
+    (currentSelectedIndex: number) => ({
+      title,
+      items,
+      selectedIndex: currentSelectedIndex,
+      command,
+    }),
     [command, items, title],
   );
 
@@ -97,7 +50,6 @@ ${items
             id: Date.now() + Math.random(),
             content,
             type: 'selection',
-            html: true,
             command,
           };
           return [...prev, selectionLine];
@@ -109,8 +61,7 @@ ${items
         }
         if (
           existingLine.content === content &&
-          existingLine.command === command &&
-          existingLine.html === true
+          existingLine.command === command
         ) {
           return prev;
         }
@@ -118,7 +69,6 @@ ${items
         const updatedLine: ConsoleLine = {
           ...existingLine,
           content,
-          html: true,
           command,
         };
 

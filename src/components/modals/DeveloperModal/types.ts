@@ -23,12 +23,26 @@ export interface ConsoleCommandLine {
 export interface ConsoleResultLine {
   id: number;
   content: string;
-  type: Exclude<ConsoleLineType, 'command'>;
-  html?: boolean;
+  type: Exclude<ConsoleLineType, 'command' | 'selection'>;
   command?: string;
 }
 
-export type ConsoleLine = ConsoleCommandLine | ConsoleResultLine;
+export interface ConsoleSelectionLine {
+  id: number;
+  content: {
+    title: string;
+    items: SelectionItem[];
+    selectedIndex: number;
+    command: string;
+  };
+  type: 'selection';
+  command?: string;
+}
+
+export type ConsoleLine =
+  | ConsoleCommandLine
+  | ConsoleResultLine
+  | ConsoleSelectionLine;
 
 export type SelectionItem =
   | string

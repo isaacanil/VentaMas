@@ -3,9 +3,48 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import AutoComplete from './AutoComplete';
-import type { ConsoleLine, ConsoleLineType, ConsoleProps } from '../types';
+import type {
+  ConsoleLine,
+  ConsoleLineType,
+  ConsoleProps,
+  AutoCompleteSuggestion,
+  SelectionItem,
+} from '../types';
 
-const EMPTY_AUTOCOMPLETE_SUGGESTIONS: string[] = [];
+const EMPTY_AUTOCOMPLETE_SUGGESTIONS: AutoCompleteSuggestion[] = [];
+
+const resolveSelectionItemLabel = (item: SelectionItem) => {
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object' && item !== null) {
+    const candidate = item as {
+      display?: string;
+      name?: string;
+      title?: string;
+      label?: string;
+    };
+    return (
+      candidate.display ||
+      candidate.name ||
+      candidate.title ||
+      candidate.label ||
+      String(item)
+    );
+  }
+  return String(item);
+};
+
+const getSelectionItemKey = (command: string, item: SelectionItem) => {
+  if (typeof item === 'object' && item !== null) {
+    const candidate = item as {
+      id?: unknown;
+      key?: unknown;
+      value?: unknown;
+    };
+    const stableId = candidate.id ?? candidate.key ?? candidate.value;
+    if (stableId != null) return `${command}-${String(stableId)}`;
+  }
+  return `${command}-${resolveSelectionItemLabel(item)}`;
+};
 
 // Variantes de animación para los elementos de la consola
 const consoleLineVariants: Variants = {
@@ -143,11 +182,42 @@ const Console = ({
                     {line.content.userCommand}
                   </span>
                 </div>
-              ) : line.html ? (
-                <div
-                  className="content"
-                  dangerouslySetInnerHTML={{ __html: line.content }}
-                />
+              ) : line.type === 'selection' ? (
+                <SelectionContent className="content">
+                  <div className="selection-title">{line.content.title}</div>
+                  <div className="selection-list">
+                    {line.content.items.map((item, index) => {
+                      const isSelected = index === line.content.selectedIndex;
+                      const itemClass = isSelected
+                        ? 'selection-active'
+                        : 'selection-inactive';
+                      const icon = isSelected ? '🔹' : '▫️';
+                      return (
+                        <div
+                          key={getSelectionItemKey(line.content.command, item)}
+                          className={`selectable-item ${
+                            isSelected ? 'selected' : ''
+                          }`}
+                          data-index={index}
+                          data-selection-command={line.content.command}
+                        >
+                          <span className={itemClass}>
+                            {icon} {resolveSelectionItemLabel(item)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="selection-help">
+                    🔸 <strong>Filtrar:</strong> Escribe en la consola para
+                    filtrar opciones
+                    <br />
+                    🔸 <strong>Navegación:</strong> ESC para cancelar
+                    <br />
+                    🔸 <strong>Clic:</strong> Una vez para seleccionar, dos
+                    veces en el mismo para confirmar
+                  </div>
+                </SelectionContent>
               ) : (
                 <div className="content">{line.content}</div>
               )}
@@ -275,6 +345,32 @@ const WelcomeText = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.2;
+`;
+
+const SelectionContent = styled.div`
+  .selection-title {
+    color: #66d9ef;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .selection-list {
+    margin-left: 4px;
+    margin-bottom: 10px;
+  }
+
+  .selectable-item {
+    padding: 4px 0;
+    margin-bottom: 2px;
+  }
+
+  .selection-help {
+    color: #888;
+    font-size: 12px;
+    margin-top: 5px;
+    border-top: 1px solid #333;
+    padding-top: 8px;
+  }
 `;
 
 interface ConsoleLineProps {

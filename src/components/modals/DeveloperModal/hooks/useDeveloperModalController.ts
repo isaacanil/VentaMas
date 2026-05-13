@@ -103,16 +103,11 @@ export const useDeveloperModalController = () => {
   );
 
   const addOutput = useCallback(
-    (
-      content: string,
-      type: ConsoleResultLine['type'] = 'result',
-      html = false,
-    ) => {
+    (content: string, type: ConsoleResultLine['type'] = 'result') => {
       const newLine: ConsoleResultLine = {
         id: Date.now() + Math.random(),
         content,
         type,
-        html,
       };
       setConsoleOutputState((prev) => [...prev, newLine]);
     },
