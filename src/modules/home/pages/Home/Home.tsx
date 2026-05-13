@@ -128,7 +128,7 @@ export interface HomeProps {
 }
 
 export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
-  const location = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const {
     authReady,
@@ -146,7 +146,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   const business = useSelector(selectBusinessData, shallowEqual);
   const businessLoading = useSelector(selectBusinessLoading);
   const user = useSelector(selectUser, shallowEqual);
-  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(location.search);
+  const shouldForceOpenBusinessManager = hasBusinessManagerQuery(search);
   const isBusinessContextPending =
     Boolean(activeBusinessId) &&
     (businessLoading || business?.id !== activeBusinessId);
@@ -155,11 +155,11 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
     (isOpen: boolean) => {
       if (isOpen || !shouldForceOpenBusinessManager) return;
       const cleanPath = withoutBusinessManagerQuery(
-        `${location.pathname}${location.search}`,
+        `${pathname}${search}`,
       );
       navigate(cleanPath, { replace: true });
     },
-    [location.pathname, location.search, navigate, shouldForceOpenBusinessManager],
+    [pathname, search, navigate, shouldForceOpenBusinessManager],
   );
 
   if (!authReady || !hasUser || isBusinessContextPending) {
@@ -173,7 +173,7 @@ export const Home = ({ developerMode = false }: HomeProps): JSX.Element => {
   if (!developerMode && isDeveloper) {
     return (
       <Navigate
-        to={`${ROUTES_NAME.BASIC_TERM.DEVELOPER_HUB}${location.search}`}
+        to={`${ROUTES_NAME.BASIC_TERM.DEVELOPER_HUB}${search}`}
         replace
       />
     );

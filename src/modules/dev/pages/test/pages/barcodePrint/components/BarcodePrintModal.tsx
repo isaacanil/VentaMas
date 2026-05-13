@@ -156,13 +156,21 @@ const BarcodePrintModal = ({
 
   useLayoutEffect(() => {
     if (printBarcodes.length > 0) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
+      let printTimer: number | undefined;
+      const frameId = requestAnimationFrame(() => {
+        printTimer = window.setTimeout(() => {
           setIsLoading(false);
           handlePrint();
         }, 200);
       });
+      return () => {
+        cancelAnimationFrame(frameId);
+        if (printTimer !== undefined) {
+          window.clearTimeout(printTimer);
+        }
+      };
     }
+    return undefined;
   }, [handlePrint, printBarcodes]);
 
   const handleOk = () => {

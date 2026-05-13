@@ -20,10 +20,12 @@ export const CenteredText = ({
 
   useEffect(() => {
     if (showAfter || showAfter === 0) {
-      setTimeout(() => {
+      const showTimer = window.setTimeout(() => {
         setShow(true);
       }, showAfter);
+      return () => window.clearTimeout(showTimer);
     }
+    return undefined;
   }, [showAfter]);
 
   return (

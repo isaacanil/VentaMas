@@ -27,19 +27,19 @@ import {
 } from './utils/accountingPanels';
 
 export default function AccountingWorkspace() {
-  const location = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const activePanel = useMemo(
-    () => resolveAccountingWorkspacePanelKey(location.pathname),
-    [location.pathname],
+    () => resolveAccountingWorkspacePanelKey(pathname),
+    [pathname],
   );
   const activePanelItem = useMemo(
     () => getAccountingWorkspacePanel(activePanel),
     [activePanel],
   );
   const requestedEntryLocator = useMemo(
-    () => getAccountingEntryLocatorFromSearch(location.search),
-    [location.search],
+    () => getAccountingEntryLocatorFromSearch(search),
+    [search],
   );
   const requestedSelectionKey = useMemo(
     () => getAccountingEntryLocatorKey(requestedEntryLocator),
@@ -86,8 +86,8 @@ export default function AccountingWorkspace() {
 
   useEffect(() => {
     if (
-      location.pathname === ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING ||
-      location.pathname === `${ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING}/`
+      pathname === ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING ||
+      pathname === `${ROUTES_NAME.ACCOUNTING_TERM.ACCOUNTING}/`
     ) {
       navigate(
         getAccountingWorkspacePanel(DEFAULT_ACCOUNTING_WORKSPACE_PANEL).route,
@@ -96,7 +96,7 @@ export default function AccountingWorkspace() {
         },
       );
     }
-  }, [location.pathname, navigate]);
+  }, [pathname, navigate]);
 
   const loading = (() => {
     switch (activePanel) {
@@ -266,4 +266,3 @@ export default function AccountingWorkspace() {
     </PageShell>
   );
 }
-

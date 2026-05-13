@@ -16,11 +16,11 @@ export interface GlobalMenuProps extends Omit<ToolbarComponentProps, 'side'> {
 }
 
 export const GlobalMenu: FC<GlobalMenuProps> = (props) => {
-  const location = useLocation();
+  const { pathname } = useLocation();
 
   const activeEntry = useMemo(
-    () => findToolbarEntry(location.pathname),
-    [location.pathname],
+    () => findToolbarEntry(pathname),
+    [pathname],
   );
 
   if (!activeEntry) return null;

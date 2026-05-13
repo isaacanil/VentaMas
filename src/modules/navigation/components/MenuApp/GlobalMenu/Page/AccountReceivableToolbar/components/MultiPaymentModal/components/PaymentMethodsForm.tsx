@@ -56,11 +56,13 @@ const PaymentMethodsForm = ({
   useEffect(() => {
     const activeMethod = paymentMethods.find((m) => m.status);
     if (activeMethod && inputRefs.current[activeMethod.method]) {
-      setTimeout(() => {
+      const focusTimer = window.setTimeout(() => {
         inputRefs.current[activeMethod.method]?.focus();
         inputRefs.current[activeMethod.method]?.select();
       }, 100);
+      return () => window.clearTimeout(focusTimer);
     }
+    return undefined;
   }, [paymentMethods]);
 
   // Manejar cambio de estado de un método de pago

@@ -58,7 +58,7 @@ export const UsersLandingRedirect = () => {
 };
 
 export const UserAdmin = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const { abilities, loading } = useUserAccess() as {
     abilities: AbilityLike;
     loading: boolean;
@@ -106,7 +106,7 @@ export const UserAdmin = () => {
     return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
   };
 
-  const normalizedPath = normalizePath(location.pathname);
+  const normalizedPath = normalizePath(pathname);
   const currentRoute = managedRoutes.find(({ match }) => match(normalizedPath));
   const fallbackManagedRoute = managedRoutes.find(({ allowed }) => allowed);
   const deniedRouteRedirectTarget =
@@ -116,9 +116,9 @@ export const UserAdmin = () => {
 
   const sectionName = useMemo(() => {
     const normalizedPath =
-      location.pathname.length > 1 && location.pathname.endsWith('/')
-        ? location.pathname.slice(0, -1)
-        : location.pathname;
+      pathname.length > 1 && pathname.endsWith('/')
+        ? pathname.slice(0, -1)
+        : pathname;
 
     if (normalizedPath === sessionLogsRoute) {
       return 'Sesiones de usuarios';
@@ -134,7 +134,7 @@ export const UserAdmin = () => {
     }
     return 'Usuarios';
   }, [
-    location.pathname,
+    pathname,
     sessionLogsRoute,
     userActivityPattern,
     userActivityRoute,

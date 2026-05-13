@@ -96,8 +96,13 @@ const CreditSelector = ({
   // Focus search input when modal opens
   useEffect(() => {
     if (visible && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current.focus(), 120);
+      const focusTimer = window.setTimeout(
+        () => searchInputRef.current?.focus(),
+        120,
+      );
+      return () => window.clearTimeout(focusTimer);
     }
+    return undefined;
   }, [visible]);
 
   // Derived values

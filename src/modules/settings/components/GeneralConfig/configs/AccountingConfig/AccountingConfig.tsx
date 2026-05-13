@@ -34,7 +34,7 @@ const Content = styled.div`
 `;
 
 export default function AccountingConfig() {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const user = useSelector(selectUser);
   const businessId =
@@ -113,23 +113,23 @@ export default function AccountingConfig() {
       settingsHistory: history,
     });
   const activePanel = useMemo(
-    () => resolveAccountingPanelKey(location.pathname),
-    [location.pathname],
+    () => resolveAccountingPanelKey(pathname),
+    [pathname],
   );
   const activePanelItem = getAccountingPanelItem(activePanel);
 
   useEffect(() => {
     if (
-      location.pathname ===
+      pathname ===
         ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING ||
-      location.pathname ===
+      pathname ===
         `${ROUTES_NAME.SETTING_TERM.GENERAL_CONFIG_ACCOUNTING}/`
     ) {
       navigate(getAccountingPanelItem(DEFAULT_ACCOUNTING_PANEL_KEY).route, {
         replace: true,
       });
     }
-  }, [location.pathname, navigate]);
+  }, [pathname, navigate]);
 
   return (
     <PageWrapper>

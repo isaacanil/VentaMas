@@ -232,7 +232,7 @@ const Sidebar = ({
     selectedSegment,
   } = useSelector(selectWarehouse);
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
   const [stockSummaryResponse, setStockSummaryResponse] = useState<{
     requestKey: string | null;
@@ -745,7 +745,7 @@ const Sidebar = ({
   };
 
   useEffect(() => {
-    const path = location.pathname;
+    const path = pathname;
     if (
       path === '/inventory/warehouses' ||
       path === '/inventory/warehouses/warehouse/:warehouseId'
@@ -755,7 +755,7 @@ const Sidebar = ({
         navigate(`/inventory/warehouses/warehouse/${defaultId}`);
       }
     }
-  }, [location.pathname, navigate, getDefaultWarehouseId, loadingDefault]);
+  }, [pathname, navigate, getDefaultWarehouseId, loadingDefault]);
 
   useEffect(() => {
     if (!stockSummaryRequestKey || !user?.businessID || !locationPaths.length) {

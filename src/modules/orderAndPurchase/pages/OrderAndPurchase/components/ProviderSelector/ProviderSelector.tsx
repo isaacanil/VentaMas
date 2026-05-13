@@ -161,10 +161,12 @@ const ProviderSelector = ({
 
   useEffect(() => {
     if (visible && searchInputRef.current) {
-      setTimeout(() => {
+      const focusTimer = window.setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
+      return () => window.clearTimeout(focusTimer);
     }
+    return undefined;
   }, [visible]);
 
   const filteredProviders = search

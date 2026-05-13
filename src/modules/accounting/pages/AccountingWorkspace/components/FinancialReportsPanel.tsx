@@ -179,7 +179,7 @@ export const FinancialReportsPanel = ({
                   </Table.Header>
                   <Table.Body>
                     {(filteredTrialBalance ?? []).map((row) => (
-                      <Table.Row id={row.accountId}>
+                      <Table.Row key={row.accountId} id={row.accountId}>
                         <Table.Cell>
                           <div className="flex flex-col gap-0.5">
                             <strong className="font-semibold text-primary">

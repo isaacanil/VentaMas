@@ -179,10 +179,12 @@ const OrderSelector = ({
 
   useEffect(() => {
     if (visible && searchInputRef.current) {
-      setTimeout(() => {
+      const focusTimer = window.setTimeout(() => {
         searchInputRef.current?.focus?.();
       }, 100);
+      return () => window.clearTimeout(focusTimer);
     }
+    return undefined;
   }, [visible]);
 
   const filteredOrders = search

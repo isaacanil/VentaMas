@@ -214,10 +214,11 @@ const DependentSelector = ({
   const searchInputRef = useRef<InputRef | null>(null);
 
   useEffect(() => {
-    if (!visible) return;
-    setTimeout(() => {
+    if (!visible) return undefined;
+    const focusTimer = window.setTimeout(() => {
       searchInputRef.current?.focus();
     }, 100);
+    return () => window.clearTimeout(focusTimer);
   }, [visible]);
 
   const filteredDependents = search

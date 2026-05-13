@@ -54,7 +54,7 @@ const ExternalArrow = styled.span`
 
 const InventoryMenu = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { pathname } = useLocation();
   const { defaultWarehouse, loading: loadingDefault } = useDefaultWarehouse();
 
   const { INVENTORY_TERM, PURCHASE_TERM, ORDER_TERM } = ROUTES_PATH;
@@ -93,25 +93,25 @@ const InventoryMenu = () => {
   };
 
   const activeValue = useMemo(() => {
-    const path = location.pathname;
+    const path = pathname;
     if (path === `${WAREHOUSES}/products-stock`) return 1;
     if (path.startsWith(`${WAREHOUSES}/warehouse/`)) return 0;
     if (path.includes('/backorders')) return 2;
     if (path.includes('/purchases')) return 3;
     if (path.includes('/orders')) return 4;
     return 0;
-  }, [location.pathname, WAREHOUSES]);
+  }, [pathname, WAREHOUSES]);
 
   useEffect(() => {
     if (
-      location.pathname === WAREHOUSES &&
+      pathname === WAREHOUSES &&
       !loadingDefault &&
       defaultWarehouse
     ) {
       navigate(`${WAREHOUSES}/warehouse/${defaultWarehouse.id}`);
     }
   }, [
-    location.pathname,
+    pathname,
     loadingDefault,
     defaultWarehouse,
     navigate,

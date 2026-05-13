@@ -81,14 +81,16 @@ export const ProductWeightEntryModal = ({
   useEffect(() => {
     // Asegúrate de que el input de peso esté enfocado y seleccionado al abrir el modal
     if (isVisible) {
-      setTimeout(() => {
+      const focusTimer = window.setTimeout(() => {
         const el = document.getElementById(
           'weightInput',
         ) as HTMLInputElement | null;
         el?.focus();
         el?.select();
       }, 100);
+      return () => window.clearTimeout(focusTimer);
     }
+    return undefined;
   }, [isVisible]);
 
   const handleOk = () => {

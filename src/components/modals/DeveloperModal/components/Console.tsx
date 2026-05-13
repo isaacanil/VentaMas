@@ -62,15 +62,17 @@ const Console = ({
 
   // (Removed auto-scroll logic as requested)  // Enfocar el input cuando el componente se monta y asegurar que capture eventos de teclado
   useEffect(() => {
+    const focusTimers: number[] = [];
     const focusInput = () => {
       if (inputRef.current && !selectionMode.active) {
         inputRef.current.focus();
         // Asegurar que el input esté realmente enfocado
-        setTimeout(() => {
+        const focusTimer = window.setTimeout(() => {
           if (!selectionMode.active) {
             inputRef.current?.focus();
           }
         }, 100);
+        focusTimers.push(focusTimer);
       }
     };
 
@@ -78,10 +80,14 @@ const Console = ({
 
     // Re-enfocar cuando salgamos del modo selección
     if (!selectionMode.active) {
-      setTimeout(() => {
+      const refocusTimer = window.setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
+      focusTimers.push(refocusTimer);
     }
+    return () => {
+      focusTimers.forEach((timer) => window.clearTimeout(timer));
+    };
   }, [selectionMode.active]); // Función para manejar el clic en la consola
   const handleConsoleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // No enfocar si estamos en modo de selección, pero no prevenir otros eventos
