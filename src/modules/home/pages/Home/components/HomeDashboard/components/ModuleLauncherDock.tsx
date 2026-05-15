@@ -1,10 +1,8 @@
-import { Button, Tooltip } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { faGrip } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-import useViewportWidth from '@/hooks/windows/useViewportWidth';
 
 import { ShortcutIcon } from './ModuleLauncher/ModuleShortcutGrid';
 
@@ -60,8 +58,6 @@ export const ModuleLauncherDock = ({
 }: ModuleLauncherDockProps): JSX.Element => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const viewportWidth = useViewportWidth();
-  const isMobileLauncher = viewportWidth <= 768;
 
   const navigateToShortcut = useCallback(
     (shortcut: LauncherShortcut) => {
@@ -81,65 +77,52 @@ export const ModuleLauncherDock = ({
           const label = getDockLabel(shortcut);
 
           return (
-            <Tooltip key={shortcut.key}>
-              <Tooltip.Trigger>
-                <span className="inline-flex">
-                  <Button
-                    aria-label={shortcut.title}
-                    className={[
-                      'flex h-[58px] w-[58px] min-w-[58px] flex-col justify-center gap-1 rounded-[14px] border px-1.5 shadow-sm transition md:w-[66px] md:min-w-[66px]',
-                      isActive
-                        ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-blue-900/10'
-                        : 'border-neutral-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700',
-                    ].join(' ')}
-                    onPress={() => navigateToShortcut(shortcut)}
-                    size="sm"
-                    variant={isActive ? 'secondary' : 'ghost'}
-                  >
-                    <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
-                    <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
-                      {label}
-                    </span>
-                  </Button>
+            <span key={shortcut.key} className="inline-flex" title={shortcut.title}>
+              <Button
+                aria-label={shortcut.title}
+                className={[
+                  'flex h-[58px] w-[58px] min-w-[58px] flex-col justify-center gap-1 rounded-[14px] border px-1.5 shadow-sm transition md:w-[66px] md:min-w-[66px]',
+                  isActive
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-blue-900/10'
+                    : 'border-neutral-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700',
+                ].join(' ')}
+                onPress={() => navigateToShortcut(shortcut)}
+                size="sm"
+                variant={isActive ? 'secondary' : 'ghost'}
+              >
+                <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
+                <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
+                  {label}
                 </span>
-              </Tooltip.Trigger>
-              <Tooltip.Content placement={isMobileLauncher ? 'top' : 'left'}>
-                <Tooltip.Arrow />
-                {shortcut.title}
-              </Tooltip.Content>
-            </Tooltip>
+              </Button>
+            </span>
           );
         })}
 
         <div className="mx-0.5 h-10 w-px self-center bg-neutral-200 md:mx-0 md:my-0.5 md:h-px md:w-12" />
 
-        <Tooltip>
-          <Tooltip.Trigger>
-            <span className="relative inline-flex h-[58px] min-w-[60px] md:w-[66px] md:min-w-[66px]">
-              <Button
-                aria-label="Ver módulos"
-                className="flex h-[58px] w-[60px] min-w-[60px] flex-col justify-center gap-1 rounded-[14px] bg-blue-600 px-1.5 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700 md:w-[66px] md:min-w-[66px]"
-                onPress={onOpenModules}
-                size="sm"
-                variant="primary"
-              >
-                <FontAwesomeIcon icon={faGrip} />
-                <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
-                  Módulos
-                </span>
-              </Button>
-              {alertCount > 0 ? (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white md:right-0 md:top-0">
-                  {alertCount}
-                </span>
-              ) : null}
+        <span
+          className="relative inline-flex h-[58px] min-w-[60px] md:w-[66px] md:min-w-[66px]"
+          title="Módulos"
+        >
+          <Button
+            aria-label="Ver módulos"
+            className="flex h-[58px] w-[60px] min-w-[60px] flex-col justify-center gap-1 rounded-[14px] bg-blue-600 px-1.5 text-white shadow-md shadow-blue-900/20 hover:bg-blue-700 md:w-[66px] md:min-w-[66px]"
+            onPress={onOpenModules}
+            size="sm"
+            variant="primary"
+          >
+            <FontAwesomeIcon icon={faGrip} />
+            <span className="max-w-full truncate text-[10px] font-semibold leading-none tracking-normal">
+              Módulos
             </span>
-          </Tooltip.Trigger>
-          <Tooltip.Content placement={isMobileLauncher ? 'top' : 'left'}>
-            <Tooltip.Arrow />
-            Módulos
-          </Tooltip.Content>
-        </Tooltip>
+          </Button>
+          {alertCount > 0 ? (
+            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white md:right-0 md:top-0">
+              {alertCount}
+            </span>
+          ) : null}
+        </span>
       </nav>
     </div>
   );

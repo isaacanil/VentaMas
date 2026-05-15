@@ -52,7 +52,7 @@ const fetchDomain = async (
     try {
       snap = await getDocs(query(colRef, orderBy(field, 'desc'), limit(PILOT_LIMIT)));
       break;
-    } catch (error) {
+    } catch {
       if (field === orderedFields[orderedFields.length - 1]) {
         snap = null;
       }

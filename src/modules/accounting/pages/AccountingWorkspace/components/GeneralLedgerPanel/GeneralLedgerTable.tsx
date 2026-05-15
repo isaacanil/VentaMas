@@ -7,7 +7,6 @@ import {
   formatAccountingMoney,
 } from '../../utils/accountingWorkspace';
 import {
-  formatDateInputValue,
   type VisibleLedgerMetrics,
 } from './generalLedgerPanelUtils';
 import {

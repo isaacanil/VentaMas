@@ -190,7 +190,7 @@ const cashCountManagementSlice = createSlice({
 });
 
 function calculateTotalAmount(banknotesByCurrency: any[]) {
-  let total = banknotesByCurrency.reduce((acc, curr) => acc + curr.quantity, 0);
+  const total = banknotesByCurrency.reduce((acc, curr) => acc + curr.quantity, 0);
 
   return Number(total);
 }

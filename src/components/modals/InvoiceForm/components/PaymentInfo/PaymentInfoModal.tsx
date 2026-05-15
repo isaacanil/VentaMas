@@ -14,7 +14,7 @@ export const PaymentInfoModal = ({
     footer={null}
     onCancel={handleClose}
     closable={false}
-    maskClosable={false}
+    mask={{ closable: false }}
     keyboard={false}
     destroyOnHidden
     style={{ top: '10px' }}

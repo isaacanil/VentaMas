@@ -7,14 +7,13 @@ export const expandMatchingNodes = (
     node: TreeNodeData | null | undefined,
     term: string,
     path: TreeNodeId[],
-    found: boolean,
     newExpandedKeys: Set<TreeNodeId>,
   ) => boolean,
   setSearchExpandedNodes: (value: Record<string, boolean>) => void,
 ) => {
   const newExpandedKeys = new Set<TreeNodeId>();
   if (term) {
-    data.forEach((node) => traverse(node, term, [], false, newExpandedKeys));
+    data.forEach((node) => traverse(node, term, [], newExpandedKeys));
   }
 
   const newSearchExpandedNodes = {};

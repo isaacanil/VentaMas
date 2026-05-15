@@ -133,11 +133,12 @@ interface CanonicalInvoiceWrapper {
   data?: CanonicalInvoiceData | null;
 }
 
-interface InvoiceData {
+export interface InvoiceData {
   summary?: InvoiceSummary;
   canonical?: CanonicalInvoiceWrapper;
   failedTasks?: OutboxTask[];
   invoiceId?: string;
+  status?: string;
   snapshot?: SnapshotData;
   createdAt?: unknown;
   canonicalDate?: unknown;
@@ -224,7 +225,7 @@ export const useIndividualInvoiceRecovery = ({
     if (initialInvoiceId) {
       form.setFieldsValue({ invoiceId: initialInvoiceId });
       setActiveQuery((prev) => ({
-        ...(prev ?? {}),
+        ...prev,
         invoiceId: initialInvoiceId,
         businessId: prev?.businessId || initialBusinessId || null,
       }));
@@ -271,7 +272,7 @@ export const useIndividualInvoiceRecovery = ({
         if (initialInvoiceId) {
           form.setFieldsValue({ invoiceId: initialInvoiceId });
           setActiveQuery((prev) => ({
-            ...(prev ?? {}),
+            ...prev,
             invoiceId: initialInvoiceId,
           }));
         } else {
@@ -313,7 +314,7 @@ export const useIndividualInvoiceRecovery = ({
           if (exists) {
             form.setFieldsValue({ invoiceId: initialInvoiceId });
             setActiveQuery((prev) => ({
-              ...(prev ?? {}),
+              ...prev,
               businessId: watchedBusinessId,
               invoiceId: initialInvoiceId,
             }));
@@ -701,11 +702,6 @@ export const useIndividualInvoiceRecovery = ({
       : [];
   }, [invoicesKey, invoicesState.key, invoicesState.options]);
 
-  const invoiceLookup = useMemo(() => {
-    return invoicesKey && invoicesState.key === invoicesKey
-      ? invoicesState.lookup
-      : {};
-  }, [invoicesKey, invoicesState.key, invoicesState.lookup]);
   const loadingInvoices = !!invoicesKey && invoicesState.key !== invoicesKey;
 
   const invoiceCounterValue = currentInvoiceCounterValue;

@@ -11,7 +11,7 @@ export const fbAddProductImgData = async (
   if (!user || !user?.businessID) {
     return;
   }
-  let id = nanoid(10);
+  const id = nanoid(10);
   const imgRef = doc(db, 'businesses', user.businessID, 'productsImages', id);
   try {
     await setDoc(imgRef, {

@@ -168,7 +168,7 @@ export const getChangedProductPatch = ({
   if (key === 'weightDetail') {
     return {
       weightDetail: {
-        ...(product?.weightDetail ?? {}),
+        ...product?.weightDetail,
         ...(isRecord(value) ? (value as ProductWeightDetail) : {}),
       },
     };
@@ -177,7 +177,7 @@ export const getChangedProductPatch = ({
   if (key === 'warranty') {
     return {
       warranty: {
-        ...(product?.warranty ?? {}),
+        ...product?.warranty,
         ...(isRecord(value) ? (value as ProductWarranty) : {}),
       },
     };

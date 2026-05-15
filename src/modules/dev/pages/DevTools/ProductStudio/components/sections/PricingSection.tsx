@@ -200,7 +200,10 @@ const hasGainValue = (
   margin: number | null,
   percent: number | null,
 ): boolean => {
-  return margin !== null && !Number.isNaN(margin);
+  return (
+    (margin !== null && !Number.isNaN(margin)) ||
+    (percent !== null && !Number.isNaN(percent))
+  );
 };
 
 export const PricingSection = ({

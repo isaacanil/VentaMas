@@ -310,7 +310,7 @@ const GeneralForm = ({
         if (!snapshotProvider) return;
 
         setProviderSnapshot((prev) => ({
-          ...(prev ?? {}),
+          ...prev,
           ...snapshotProvider,
           id: providerID,
         }));

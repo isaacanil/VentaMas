@@ -15,7 +15,6 @@ import { fbValidateUserPin } from '@/firebase/authorization/pinAuth';
 import { db } from '@/firebase/firebaseconfig';
 import { normalizeCurrentUserContext } from '@/utils/auth-adapter';
 import { normalizeRoleId } from '@/utils/roles/normalizeRole';
-import { CORE_PRIVILEGED_ROLES } from '@/utils/roles/roleGroups';
 
 import type {
   AuthorizedUser,

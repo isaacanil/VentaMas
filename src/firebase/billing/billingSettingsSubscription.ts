@@ -59,7 +59,7 @@ export const initializeAndSubscribeBillingSettings = ({
     (docSnapshot) => {
       const data = {
         ...DEFAULT_BILLING_SETTINGS,
-        ...(docSnapshot.data() || {}),
+        ...docSnapshot.data(),
       } as CartSettings['billing'];
 
       queryClient.setQueryData(['billingSettings', businessId], data);

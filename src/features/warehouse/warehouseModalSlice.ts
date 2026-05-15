@@ -30,7 +30,7 @@ const normalizeWarehouseFormData = (data: Partial<WarehouseFormData> = {}) => {
     ...data,
     dimension: {
       ...base.dimension,
-      ...(data.dimension || {}),
+      ...data.dimension,
     },
   };
 };

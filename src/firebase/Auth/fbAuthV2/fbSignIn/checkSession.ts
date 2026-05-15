@@ -454,7 +454,10 @@ export function useAutomaticLogin() {
         resetRetryState();
         return { ok: true, session };
       } catch (refreshError) {
-        console.error(
+        const logSessionRefreshError = isTransientSessionError(refreshError)
+          ? console.warn
+          : console.error;
+        logSessionRefreshError(
           'session refresh error:',
           getErrorMessage(refreshError) || refreshError,
         );

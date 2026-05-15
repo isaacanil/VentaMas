@@ -337,10 +337,10 @@ export const TableTaxReceipt = ({
             </CompositeCell>
 
             <CompositeCell>
-              <PrimaryText tone={healthState.tone}>
+              <PrimaryText $tone={healthState.tone}>
                 {quantity === null ? 'Disponibilidad N/D' : `${quantity} disponibles`}
               </PrimaryText>
-              <SecondaryText tone={healthState.tone}>
+              <SecondaryText $tone={healthState.tone}>
                 <Tooltip title="Ultimo NCF disponible dentro del rango configurado">
                   <span>{limit === 'N/D' ? 'Límite no disponible' : `Límite ${limit}`}</span>
                 </Tooltip>
@@ -348,10 +348,10 @@ export const TableTaxReceipt = ({
             </CompositeCell>
 
             <CompositeCell>
-              <StatusPill tone={healthState.pillTone}>
+              <StatusPill $tone={healthState.pillTone}>
                 {healthState.label}
               </StatusPill>
-              <SecondaryText tone={healthState.tone}>
+              <SecondaryText $tone={healthState.tone}>
                 {healthState.detail}
               </SecondaryText>
             </CompositeCell>
@@ -453,7 +453,7 @@ const CompositeCell = styled.div`
   min-width: 0;
 `;
 
-const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
+const StatusPill = styled.span<{ $tone: HealthState['pillTone'] }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -467,7 +467,7 @@ const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
   white-space: nowrap;
 
   ${(props) => {
-    if (props.tone === 'positive') {
+    if (props.$tone === 'positive') {
       return `
         color: #166534;
         background: #dcfce7;
@@ -475,7 +475,7 @@ const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
       `;
     }
 
-    if (props.tone === 'warning') {
+    if (props.$tone === 'warning') {
       return `
         color: #92400e;
         background: #fef3c7;
@@ -483,7 +483,7 @@ const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
       `;
     }
 
-    if (props.tone === 'danger') {
+    if (props.$tone === 'danger') {
       return `
         color: #991b1b;
         background: #fee2e2;
@@ -499,12 +499,12 @@ const StatusPill = styled.span<{ tone: HealthState['pillTone'] }>`
   }}
 `;
 
-const PrimaryText = styled.span<{ tone?: HealthState['tone'] }>`
+const PrimaryText = styled.span<{ $tone?: HealthState['tone'] }>`
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-semibold);
   color: ${(props) => {
-    if (props.tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
-    if (props.tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    if (props.$tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
+    if (props.$tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
     return 'var(--ds-color-text-primary)';
   }};
   white-space: nowrap;
@@ -512,11 +512,11 @@ const PrimaryText = styled.span<{ tone?: HealthState['tone'] }>`
   text-overflow: ellipsis;
 `;
 
-const SecondaryText = styled.span<{ tone?: HealthState['tone'] }>`
+const SecondaryText = styled.span<{ $tone?: HealthState['tone'] }>`
   font-size: var(--ds-font-size-xs);
   color: ${(props) => {
-    if (props.tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
-    if (props.tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
+    if (props.$tone === 'danger') return 'var(--ds-color-text-danger, #cf1322)';
+    if (props.$tone === 'warning') return 'var(--ds-color-text-warning, #ad6800)';
     return 'var(--ds-color-text-secondary)';
   }};
   white-space: nowrap;

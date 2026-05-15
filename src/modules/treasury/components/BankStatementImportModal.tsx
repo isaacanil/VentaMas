@@ -126,7 +126,7 @@ export const BankStatementImportModal = ({
       closable={!submitting}
       confirmLoading={submitting}
       keyboard={!submitting}
-      maskClosable={false}
+      mask={{ closable: false }}
       cancelButtonProps={{ disabled: submitting }}
       okButtonProps={{ disabled: !canImport || submitting }}
       onCancel={() => {

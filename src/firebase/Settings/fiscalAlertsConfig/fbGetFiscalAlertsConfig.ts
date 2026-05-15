@@ -113,7 +113,30 @@ export const fbGetFiscalAlertsConfig = async (
     );
     return getDefaultConfig();
   } catch (error) {
-    console.error('Error al obtener la configuracion de alertas:', error);
+    const code =
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      typeof (error as { code?: unknown }).code === 'string'
+        ? (error as { code: string }).code.toLowerCase()
+        : '';
+    const message =
+      error instanceof Error
+        ? error.message.toLowerCase()
+        : error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            typeof (error as { message?: unknown }).message === 'string'
+          ? (error as { message: string }).message.toLowerCase()
+          : '';
+    const logFiscalConfigError =
+      code.includes('unavailable') ||
+      message.includes('offline') ||
+      message.includes('network')
+        ? console.warn
+        : console.error;
+
+    logFiscalConfigError('Error al obtener la configuracion de alertas:', error);
     return getDefaultConfig();
   }
 };

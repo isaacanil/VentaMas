@@ -20,9 +20,6 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const resolvePricing = (record: InvoiceProduct) =>
-  record?.pricing || record?.selectedSaleUnit?.pricing || null;
-
 interface ContentProps {
   data?: InvoiceData | null;
 }

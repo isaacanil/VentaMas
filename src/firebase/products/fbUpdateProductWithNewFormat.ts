@@ -1,7 +1,6 @@
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { db } from '@/firebase/firebaseconfig';
-import { getTax } from '@/utils/pricing';
 import type { ProductRecord } from '@/types/products';
 
 export async function fbUpdateProductToNewFormat(

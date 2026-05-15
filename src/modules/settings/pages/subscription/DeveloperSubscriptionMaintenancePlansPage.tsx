@@ -176,7 +176,6 @@ interface PlanDetailModalProps {
   open: boolean;
   onClose: () => void;
   displayName: string;
-  planCode: string;
   catalogStatus: string;
   currentPrice: number | null;
   limits: UnknownRecord;
@@ -188,7 +187,6 @@ const PlanDetailModal = ({
   open,
   onClose,
   displayName,
-  planCode,
   catalogStatus,
   currentPrice,
   limits,
@@ -506,7 +504,6 @@ const PlanCard = ({
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
         displayName={displayName}
-        planCode={planCode}
         catalogStatus={catalogStatus}
         currentPrice={currentPrice}
         limits={limits}
@@ -522,7 +519,6 @@ const DeveloperSubscriptionMaintenancePlansPage = () => {
   const {
     plans = [],
     plansLoading,
-    loadPlans,
     openDefinitionForPlan,
     openVersioningForPlan,
     updatePlanLifecycle,
@@ -805,91 +801,10 @@ const PricePeriod = styled.span`
   font-size: 0.85rem;
 `;
 
-const SectionLabel = styled.p`
-  margin: 0;
-  font-size: 0.68rem;
-  color: #94a3b8;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-`;
-
-const ModulesSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
 const Divider = styled.hr`
   margin: 0;
   border: none;
   border-top: 1px solid #f1f5f9;
-`;
-
-const LimitPillsRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;
-
-const LimitPill = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 6px;
-  border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  white-space: nowrap;
-`;
-
-const LimitPillIcon = styled.span`
-  color: #64748b;
-  font-size: 10px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-`;
-
-const LimitPillLabel = styled.span`
-  font-size: 0.72rem;
-  color: #64748b;
-`;
-
-const LimitPillSep = styled.span`
-  font-size: 0.65rem;
-  color: #cbd5e1;
-`;
-
-const LimitPillValue = styled.span`
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #0f172a;
-`;
-
-const EntitlementChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-`;
-
-const EntitlementChip = styled.span`
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  background: rgb(13 148 136 / 8%);
-  color: #0f766e;
-  white-space: nowrap;
-`;
-
-const EntitlementChipMore = styled.span`
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  background: #f1f5f9;
-  color: #64748b;
 `;
 
 const CardFooter = styled.div`
@@ -1169,12 +1084,6 @@ const ModalVersionList = styled.div`
   flex-direction: column;
   gap: 10px;
   padding-top: 8px;
-`;
-
-const VersionList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 `;
 
 const VersionRowContainer = styled.div`

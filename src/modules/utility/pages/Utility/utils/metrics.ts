@@ -507,10 +507,10 @@ export const buildFinancialMetrics = (
     summary.totalSales - summary.totalCost - summary.totalTaxes;
   summary.netProfit = summary.profitBeforeExpenses - summary.totalExpenses;
 
-  let startDay = range?.startDate
+  const startDay = range?.startDate
     ? DateTime.fromMillis(range.startDate).startOf('day')
     : null;
-  let endDay = range?.endDate
+  const endDay = range?.endDate
     ? DateTime.fromMillis(range.endDate).startOf('day')
     : null;
 

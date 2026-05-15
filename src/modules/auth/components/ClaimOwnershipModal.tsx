@@ -7,7 +7,6 @@ import {
   resolveCurrentActiveBusinessId,
   resolveCurrentActiveRole,
 } from '@/modules/auth/utils/businessContext';
-import ROUTES_PATH from '@/router/routes/routesName';
 import { hasBusinessOwnershipClaimIssueAccess } from '@/utils/access/businessOwnershipClaimIssueAccess';
 import { isFrontendFeatureEnabled } from '@/utils/runtime/frontendFeatureAccess';
 import {
@@ -194,7 +193,7 @@ export const ClaimOwnershipModal = () => {
       open={open}
       title="Actualizacion de Seguridad: Reclamar Propiedad"
       onCancel={handleDismiss}
-      maskClosable={false}
+      mask={{ closable: false }}
       footer={[
         claimUrl ? (
           <Button

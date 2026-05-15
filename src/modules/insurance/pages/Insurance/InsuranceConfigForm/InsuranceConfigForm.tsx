@@ -485,7 +485,7 @@ const InsuranceConfigForm = () => {
           resetForm();
         }}
         footer={null}
-        maskClosable={false}
+        mask={{ closable: false }}
         width={800}
         style={{ top: 20 }}
       >

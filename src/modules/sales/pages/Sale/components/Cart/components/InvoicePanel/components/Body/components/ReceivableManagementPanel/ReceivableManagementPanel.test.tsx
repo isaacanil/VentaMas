@@ -141,7 +141,7 @@ vi.mock('antd', () => {
 
 vi.mock('@/components/DatePicker', () => ({
   default: ({
-    disabledDate,
+    disabledDate: _disabledDate,
     ...props
   }: {
     disabledDate?: unknown;

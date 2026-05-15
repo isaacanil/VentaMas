@@ -3,7 +3,6 @@ import type { ChangeEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { monetarySymbols } from '@/constants/monetarySymbols';
 import {
   SelectCartData,
   SelectDelivery,

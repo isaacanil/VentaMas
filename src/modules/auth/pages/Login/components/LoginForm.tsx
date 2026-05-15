@@ -1,5 +1,4 @@
 import {
-  faEnvelope,
   faEye,
   faEyeSlash,
   faLock,

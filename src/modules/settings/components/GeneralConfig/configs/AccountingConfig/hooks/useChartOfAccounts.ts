@@ -374,8 +374,8 @@ export const useChartOfAccounts = ({
         );
         const now = Timestamp.now();
         const nextMetadata = {
-          ...(existingAccount.metadata ?? {}),
-          ...(draft.metadata ?? {}),
+          ...existingAccount.metadata,
+          ...draft.metadata,
         };
         const nextSnapshot = buildChartOfAccountSnapshot({
           businessId,

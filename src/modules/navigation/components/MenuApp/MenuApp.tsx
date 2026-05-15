@@ -11,7 +11,6 @@ import {
   type SetStateAction,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import {
@@ -26,12 +25,10 @@ import {
   closeMenu,
   selectMenuOpenStatus,
 } from '@/features/nav/navSlice';
-import { selectUser } from '@/features/auth/userSlice';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import { ButtonIconMenu } from '@/components/ui/Button/ButtonIconMenu';
 import { GoBackButton } from '@/components/ui/Button/GoBackButton';
 import { OpenMenuButton } from '@/components/ui/Button/OpenMenuButton';
-import ROUTES_PATH from '@/router/routes/routesName';
 
 import { NotificationButton } from './Components/NotificationButton/NotificationButton';
 import { SideBar } from './Components/SideBar';
@@ -158,9 +155,7 @@ export const MenuAppUI = ({
 }: MenuAppUIProps) => {
   const SEARCH_COMMIT_DELAY_MS = 120;
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const ref = useRef<HTMLDivElement | null>(null);
-  const user = useSelector(selectUser) as Record<string, unknown> | null;
 
   const isOpenMenu = useSelector(selectMenuOpenStatus);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);

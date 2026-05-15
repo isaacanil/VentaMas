@@ -897,7 +897,7 @@ const mergeDgii606PurchasesWithPayments = ({
       ...purchase,
       paymentAt: purchase.paymentAt ?? sortedPayments[0]?.occurredAt ?? null,
       paymentInfo: {
-        ...(purchase.paymentInfo ?? {}),
+        ...purchase.paymentInfo,
         formCode:
           purchase.paymentInfo?.formCode ??
           resolveDgii606PaymentFormCode({

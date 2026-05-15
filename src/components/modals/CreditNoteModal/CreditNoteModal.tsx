@@ -404,7 +404,7 @@ export const CreditNoteModal = () => {
     const saveResult = effectiveIsEdit
       ? await fbUpdateCreditNote(user, creditNoteData?.id ?? '', payload)
           .then(() => ({
-            note: { ...(creditNoteData ?? {}), ...payload } as CreditNoteRecord,
+            note: { ...creditNoteData, ...payload } as CreditNoteRecord,
             error: null,
           }))
           .catch((error) => ({

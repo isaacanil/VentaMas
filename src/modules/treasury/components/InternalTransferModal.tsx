@@ -157,7 +157,7 @@ export const InternalTransferModal = ({
       closable={!submitting}
       confirmLoading={submitting}
       keyboard={!submitting}
-      maskClosable={false}
+      mask={{ closable: false }}
       okButtonProps={{ disabled: !canSubmit || submitting }}
       cancelButtonProps={{ disabled: submitting }}
       onCancel={() => {

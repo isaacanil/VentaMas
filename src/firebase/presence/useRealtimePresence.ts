@@ -165,7 +165,7 @@ export const useRealtimePresence = ({
       lastMetadataSignatureRef.current = null;
 
       try {
-        unsubscribe && unsubscribe();
+        unsubscribe();
       } catch {
         /* Ignore unsubscribe errors */
       }

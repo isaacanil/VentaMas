@@ -130,9 +130,9 @@ const buildCartForReceivableAutoComplete = (cart: InvoiceData): InvoiceData => {
     ...cart,
     // Ensure the invoice is emitted without POS payment snapshot.
     paymentMethod: [],
-    payment: { ...(cart.payment ?? {}), value: 0 },
-    change: { ...(cart.change ?? {}), value: 0 },
-    payWith: { ...(cart.payWith ?? {}), value: 0 },
+    payment: { ...cart.payment, value: 0 },
+    change: { ...cart.change, value: 0 },
+    payWith: { ...cart.payWith, value: 0 },
     // Keep the CF from trying to create a new AR. Existing AR already handled the payments.
     isAddedToReceivables: false,
     // Flag for analytics/UI/cash reconciliation (frontend-only consumers can use this).

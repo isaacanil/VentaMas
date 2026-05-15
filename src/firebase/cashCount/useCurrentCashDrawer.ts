@@ -95,13 +95,13 @@ const sanitizeCashCount = ({
     createdAt: toMillisSafe(restCashCount.createdAt),
     updatedAt: toMillisSafe(restCashCount.updatedAt),
     opening: {
-      ...(restCashCount.opening || {}),
+      ...restCashCount.opening,
       date: toMillisSafe(restCashCount?.opening?.date),
       employee: employeeData,
       approvalEmployee: approvalEmployeeData,
     },
     closing: {
-      ...(restCashCount.closing || {}),
+      ...restCashCount.closing,
       date: toMillisSafe(restCashCount?.closing?.date),
       employee: closingEmployeeData,
       approvalEmployee: closingApprovalEmployeeData,

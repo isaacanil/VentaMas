@@ -8,7 +8,7 @@ import {
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Alert, Button, Skeleton, Tag, Typography } from 'antd';
+import { Alert, Button, Tag, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -194,7 +194,13 @@ const SubscriptionSuccessPage = () => {
         value: formatLimit(row.limit),
       }));
 
-    return resolvedRows.length > 0 ? resolvedRows : FALLBACK_HIGHLIGHTS.map(f => ({ icon: f.icon, label: f.title, value: f.value }));
+    return resolvedRows.length > 0
+      ? resolvedRows
+      : FALLBACK_HIGHLIGHTS.map((fallback) => ({
+          icon: fallback.icon,
+          label: fallback.title,
+          value: fallback.value,
+        }));
   }, [limitRows]);
 
   const handleGoHome = () => {
@@ -241,6 +247,22 @@ const SubscriptionSuccessPage = () => {
           />
         )}
 
+        {verificationState === 'paid' && (
+          <BenefitList>
+            {benefits.map((benefit) => (
+              <BenefitItem key={`${benefit.label}-${benefit.value}`}>
+                <span className="icon-box">
+                  <FontAwesomeIcon icon={benefit.icon} />
+                </span>
+                <span className="text-box">
+                  <span className="label">{benefit.label}</span>
+                  <span className="value">{benefit.value}</span>
+                </span>
+              </BenefitItem>
+            ))}
+          </BenefitList>
+        )}
+
         <ActionContainer>
           <Button
             type="primary"
@@ -256,6 +278,7 @@ const SubscriptionSuccessPage = () => {
             size="large"
             block
             onClick={handleGoToSubscription}
+            loading={loading === 'reload'}
             style={{ color: '#64748b', fontWeight: 500 }}
           >
             Detalles de suscripción <FontAwesomeIcon icon={faArrowRight} style={{ marginLeft: 8, fontSize: '12px' }} />

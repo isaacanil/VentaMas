@@ -2,16 +2,13 @@ import {
   Card,
   Typography,
   Space,
-  Button,
   Table,
-  Tag,
   Alert,
 } from 'antd';
 import React, { useCallback, useReducer } from 'react';
 import { useSelector } from 'react-redux';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { syncProductsStockFromProductsStock } from '@/firebase/warehouse/stockSyncService';
 import {
   fetchBatches,
   fetchProducts,

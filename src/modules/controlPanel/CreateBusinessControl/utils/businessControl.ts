@@ -3,7 +3,6 @@ import type {
   BusinessDoc,
   BusinessFeedState,
   BusinessFilters,
-  BusinessInfo,
   OwnerSource,
   SortBy,
   UnknownRecord,

@@ -10,7 +10,6 @@ import useSelectedNode from './hooks/useSelectedNode';
 import { defaultFilterNodes } from './utils/filterUtils';
 import { findPathToNode } from './utils/nodeUtils';
 import { renderHighlightedText } from './utils/textUtils';
-import { traverse } from './utils/traverseUtils';
 import type {
   TreeConfig,
   TreeFooterContext,
@@ -225,7 +224,6 @@ const Tree = memo<TreeProps>(
                   selectedNode={selectedNode}
                   setSelectedNode={setSelectedNode}
                   config={resolvedConfig}
-                  traverse={traverse}
                   renderHighlightedText={renderHighlightedText}
                   path={path}
                   onToggleNode={handleToggleNode}

@@ -31,13 +31,13 @@ export const IngredientCard = ({ item, index }: IngredientCardProps) => {
   const dispatch = useDispatch();
   const IngredientsList = useSelector(selectIngredientList);
   const handleIngredient = (status: boolean, item: Ingredient) => {
-    status
-      ? (dispatch(addIngredient(item)),
-        dispatch(totalPurchase()),
-        dispatch(gettingIngredientList()))
-      : (dispatch(deleteIngredient(item)),
-        dispatch(totalPurchase()),
-        dispatch(gettingIngredientList()));
+    if (status) {
+      dispatch(addIngredient(item));
+    } else {
+      dispatch(deleteIngredient(item));
+    }
+    dispatch(totalPurchase());
+    dispatch(gettingIngredientList());
   };
   return (
     <Container htmlFor={String(index)}>

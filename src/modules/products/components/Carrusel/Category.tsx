@@ -70,7 +70,7 @@ export const Category = ({
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ delay: (index ?? 0) * 0.4 }}
       >
-        {icon && icon}
+        {icon}
         {getIconFromText(category.name)}
         {category.name}
       </Container>

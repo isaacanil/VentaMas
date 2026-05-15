@@ -10,7 +10,6 @@ import { hasAuthorizationApproveAccess } from '@/utils/access/authorizationAcces
 
 import { usePendingAuthorizations } from './hooks/usePendingAuthorizations';
 import { executeAuthorizationRequestAction } from './utils/executeAuthorizationRequestAction';
-import type { AuthorizationRequest } from './utils/authorizationsPanel';
 import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
 import AuthorizationsPanelContent from './components/AuthorizationsPanelContent';

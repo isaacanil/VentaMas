@@ -5,7 +5,6 @@ import type { TreeNodeData, TreeNodeId } from '../types';
  * @param {Object} node - Current tree node
  * @param {string} term - Search term
  * @param {Array} path - Current path in tree
- * @param {boolean} found - Whether match was found
  * @param {Set} newExpandedKeys - Set of node IDs to expand
  * @returns {boolean} - Whether match was found in this branch
  */
@@ -13,7 +12,6 @@ export const traverse = (
   node: TreeNodeData | null | undefined,
   term: string,
   path: TreeNodeId[] = [],
-  found = false,
   newExpandedKeys: Set<TreeNodeId>,
 ): boolean => {
   if (!node) return false;
@@ -41,7 +39,6 @@ export const traverse = (
         child,
         term,
         [...path, node.id],
-        found,
         newExpandedKeys,
       );
       if (childMatch) {
@@ -70,7 +67,7 @@ export const findPathToNode = (
   targetId: TreeNodeId,
   path: Array<{ id: TreeNodeId; name?: string }> = [],
 ) => {
-  for (let node of nodes) {
+  for (const node of nodes) {
     const newPath = [...path, { id: node.id, name: node.name }];
     if (node.id === targetId) {
       return newPath;

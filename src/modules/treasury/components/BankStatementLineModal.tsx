@@ -131,7 +131,7 @@ export const BankStatementLineModal = ({
       closable={!submitting}
       confirmLoading={submitting}
       keyboard={!submitting}
-      maskClosable={false}
+      mask={{ closable: false }}
       cancelButtonProps={{ disabled: submitting }}
       onCancel={() => {
         if (submitting) return;

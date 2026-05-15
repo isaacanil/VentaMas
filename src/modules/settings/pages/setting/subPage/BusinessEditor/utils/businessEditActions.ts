@@ -56,10 +56,10 @@ export const submitBusinessUpdate = async ({
   values: BusinessProfileFormValues;
 }): Promise<BusinessUpdateResult> => {
   const invoiceData = {
-    ...(business?.invoice || {}),
+    ...business?.invoice,
     invoiceMessage: business?.invoice?.invoiceMessage || '',
     invoiceType: business?.invoice?.invoiceType || 'invoiceTemplate1',
-    ...(((values as any)?.invoice as Record<string, unknown> | undefined) || {}),
+    ...((values as any)?.invoice as Record<string, unknown> | undefined),
   };
   const businessData = {
     ...business,

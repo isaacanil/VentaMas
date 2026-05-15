@@ -138,7 +138,7 @@ export function parseCorrections(rawText: string): CorrectionPair[] {
   }
   // fallback: extrae pares con la lógica de applyCorrections
   // pero sólo devolviendo los pares, no aplicándolos
-  let pairs: CorrectionPair[] = [];
+  const pairs: CorrectionPair[] = [];
   rawText.split('\n').forEach((line) => {
     if (line.includes('→')) {
       const [w, r] = line.split('→').map((s) => s.replace(/["*–]/g, '').trim());

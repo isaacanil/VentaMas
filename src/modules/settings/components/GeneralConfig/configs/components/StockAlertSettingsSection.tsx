@@ -145,7 +145,7 @@ const StockAlertSettingsSection = () => {
     // Validación de dominios permitidos (frontend) usando variable de entorno VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS
     const allowedDomainsEnv =
       import.meta.env.VITE_STOCK_ALERT_ALLOWED_RECIPIENT_DOMAINS || '';
-    let allowedDomains = allowedDomainsEnv
+    const allowedDomains = allowedDomainsEnv
       .split(',')
       .map((d) => d.trim().toLowerCase())
       .filter(Boolean);

@@ -48,7 +48,7 @@ export const resolveReceiptProvider = (
       : null;
 
     return {
-      ...(matchedProvider ?? {}),
+      ...matchedProvider,
       ...providerInfo,
     };
   }

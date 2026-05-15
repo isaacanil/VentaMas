@@ -161,8 +161,8 @@ export const usePaymentFormController = () => {
     }
 
     return {
-      ...(extraClient ?? {}),
-      ...(baseClient ?? {}),
+      ...extraClient,
+      ...baseClient,
       id: resolvedId,
       name: resolvedName,
     };

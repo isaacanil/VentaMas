@@ -25,8 +25,8 @@ export const sortInvoices = <T extends object>(
         return '';
       }, obj as unknown);
 
-    let valueA = getValue(a);
-    let valueB = getValue(b);
+    const valueA = getValue(a);
+    const valueB = getValue(b);
 
     const numericA = typeof valueA === 'string' ? Number(valueA) : valueA;
     const numericB = typeof valueB === 'string' ? Number(valueB) : valueB;
@@ -74,7 +74,7 @@ export const useFilterHandlers = (
     (filterKey: keyof InvoiceFilters) => (value: unknown) => {
       const nextValue =
         filterKey === 'paymentStatus' ? value || '' : (value ?? null);
-      onFiltersChange?.({ ...(filters ?? {}), [filterKey]: nextValue });
+      onFiltersChange?.({ ...filters, [filterKey]: nextValue });
     },
     [filters, onFiltersChange],
   );
@@ -93,7 +93,7 @@ export const useFilterHandlers = (
 
   const handleClearFilters = useCallback(() => {
     onFiltersChange?.({
-      ...(filters ?? {}),
+      ...filters,
       clientId: null,
       paymentMethod: null,
       paymentStatus: '',

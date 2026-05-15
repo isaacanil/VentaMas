@@ -58,7 +58,7 @@ const PrintModal = ({
       onOk={handleOk}
       onCancel={handleCancel}
       confirmLoading={isLoading}
-      maskClosable={false}
+      mask={{ closable: false }}
       centered
       destroyOnHidden
       afterClose={onClose}

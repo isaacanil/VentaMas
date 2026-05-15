@@ -6,13 +6,12 @@ import {
   LockOutlined,
   EyeOutlined,
 } from '@/constants/icons/antd';
-import { Button, message, Alert, Typography, Modal, Tag, Spin } from 'antd';
+import { Button, Alert, Typography, Modal, Tag, Spin } from 'antd';
 import type { ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { selectUser } from '@/features/auth/userSlice';
-import { type PinStatus } from '@/firebase/authorization/pinAuth';
 import { useAuthorizationModules } from '@/hooks/useAuthorizationModules';
 import { GeneratePinModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/GeneratePinModal';
 import { PinDetailsModal } from '@/modules/settings/pages/setting/subPage/AuthorizationConfig/components/PinDetailsModal';

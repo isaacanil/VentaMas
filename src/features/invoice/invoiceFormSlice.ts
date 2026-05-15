@@ -39,8 +39,8 @@ const updateProductAmount = (
 };
 
 const calculateTotals = (products: any[]) => {
-  let totalPurchase = getProductsTotalPrice(products);
-  let totalTaxes = getProductsTax(products);
+  const totalPurchase = getProductsTotalPrice(products);
+  const totalTaxes = getProductsTax(products);
 
   return {
     totalPurchase: roundToTwoDecimals(totalPurchase),
@@ -55,7 +55,7 @@ const calculateTotals = (products: any[]) => {
 // };
 
 const calculateTotalItems = (products: any[]): number => {
-  let totalItems = getTotalItems(products);
+  const totalItems = getTotalItems(products);
   // products.forEach(product => {
   //     totalItems += product.amountToBuy;
   // });
@@ -332,7 +332,7 @@ const invoiceFormSlice = createSlice({
       action: PayloadAction<{ client: any }>,
     ) {
       const { client } = action.payload;
-      state.invoice.client = { ...(state.invoice.client || {}), ...client };
+      state.invoice.client = { ...state.invoice.client, ...client };
     },
     deleteProductInvoiceForm(
       state: InvoiceFormSliceState,
@@ -398,7 +398,7 @@ const invoiceFormSlice = createSlice({
         return; // Si el producto no está en la lista, no hacer nada
       }
 
-      let currentAmountToBuy = products[index].amountToBuy;
+      const currentAmountToBuy = products[index].amountToBuy;
       let numericAmount =
         typeof currentAmountToBuy === 'object' && currentAmountToBuy !== null
           ? (currentAmountToBuy as InvoiceProductAmount).total || 0

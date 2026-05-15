@@ -216,7 +216,7 @@ const BarcodePrintModal = ({
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={isLoading}
-        maskClosable={false}
+        mask={{ closable: false }}
         centered
       >
         <Spin spinning={isLoading} tip="Preparando impresión...">

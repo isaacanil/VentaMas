@@ -226,7 +226,7 @@ const GeneralForm = ({
         if (!next) return;
 
         setProviderSnapshot((prev) => ({
-          ...(prev ?? {}),
+          ...prev,
           ...next,
           id: providerID,
         }));
@@ -311,7 +311,7 @@ const GeneralForm = ({
       setPurchase({
         proofOfPurchase: value,
         taxReceipt: {
-          ...(taxReceipt ?? {}),
+          ...taxReceipt,
           ncf: value,
         },
       }),
@@ -326,7 +326,7 @@ const GeneralForm = ({
     dispatch(
       setPurchase({
         classification: {
-          ...(classification ?? {}),
+          ...classification,
           dgii606ExpenseType: value,
         },
       }),

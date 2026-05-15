@@ -53,7 +53,7 @@ export const PreorderConfirmation = ({
       okText={primaryLabel}
       cancelText="Cancelar"
       centered
-      maskClosable={!loading}
+      mask={{ closable: !loading }}
       closable={!loading}
       keyboard={!loading}
       footer={[

@@ -134,7 +134,7 @@ export const useBarcodeSettings = () => {
   const updateCompanyPrefix = async (companyPrefix: string): Promise<void> => {
     try {
       const updatedSettings: BarcodeSettings = {
-        ...(settings ?? {}),
+        ...settings,
         companyPrefix,
       };
 

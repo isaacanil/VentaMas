@@ -695,7 +695,7 @@ export const BarcodeGenerator = ({
 
     // Crear nueva configuración con el valor actualizado
     let newConfig: BarcodeSettings = {
-      ...(selectedConfig ?? {}), // Mantener configuración existente
+      ...selectedConfig, // Mantener configuración existente
       companyPrefix,
     };
 
@@ -775,7 +775,7 @@ export const BarcodeGenerator = ({
   const handleToggleUseCompanyPrefix = async (checked: boolean) => {
     setUseCompanyPrefix(checked);
     const nextSettings = {
-      ...(settings || {}),
+      ...settings,
       useCompanyPrefixDefault: checked,
     };
 
@@ -799,7 +799,7 @@ export const BarcodeGenerator = ({
       setItemReferenceValid(null);
     }
 
-    const nextSettings = { ...(settings || {}), autoModeDefault: checked };
+    const nextSettings = { ...settings, autoModeDefault: checked };
 
     try {
       await saveSettings(nextSettings);

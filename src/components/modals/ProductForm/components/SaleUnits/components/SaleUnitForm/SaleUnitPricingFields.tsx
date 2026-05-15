@@ -3,7 +3,6 @@ import React from 'react';
 
 import { FormContainer, Grid } from './styles';
 
-import type { SaleUnitFormValues } from './types';
 
 const ConditionalPriceField = ({
   checkboxName,

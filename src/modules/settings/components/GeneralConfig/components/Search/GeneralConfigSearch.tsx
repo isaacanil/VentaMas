@@ -264,30 +264,6 @@ const TriggerIcon = styled.span`
   flex-shrink: 0;
 `;
 
-const TriggerLabel = styled.span`
-  flex: 1;
-  text-align: left;
-`;
-
-const TriggerShortcut = styled.kbd`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  font-size: 0.68rem;
-  font-family: inherit;
-  font-weight: 600;
-  color: #5d6d7e;
-  background: #ffffff;
-  border: 1px solid #c9d0db;
-  border-bottom: 3px solid #b0bac6;
-  border-radius: 4px;
-  padding: 1px 6px;
-  letter-spacing: 0.03em;
-  box-shadow: 0 1px 0 #b0bac6;
-  line-height: 1.6;
-`;
-
 // ─── Styled — Spotlight overlay ───────────────────────────────────────────────
 
 const backdropIn = keyframes`

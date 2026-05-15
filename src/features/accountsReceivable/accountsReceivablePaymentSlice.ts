@@ -476,7 +476,7 @@ const accountsReceivablePaymentSlice = createSlice({
           const { arId, lastInstallmentAmount } = action.payload;
           if (state.paymentDetails.arId === arId) {
             state.extra = {
-              ...(state.extra ?? {}),
+              ...state.extra,
               installmentAmount: lastInstallmentAmount,
             };
             if (state.paymentDetails.paymentOption === 'installment') {

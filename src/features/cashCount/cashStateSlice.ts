@@ -13,7 +13,7 @@ interface CashCountStateRoot {
   cashCountState: CashCountState;
 }
 
-let initialState: CashCountState = {
+const initialState: CashCountState = {
   cashReconciliation: {
     state: 'closed',
     cashCount: {},

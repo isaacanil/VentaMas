@@ -55,8 +55,8 @@ export const productOutflowSlice = createSlice({
     ) => {
       const newData = actions.payload;
       state.productSelected = {
-        ...(state.productSelected || {}),
-        ...(newData || {}),
+        ...state.productSelected,
+        ...newData,
         id: state.productSelected?.id || nanoid(10),
       };
     },

@@ -318,7 +318,7 @@ export async function createPendingInvoice({
         throw error;
       }
       baseDoc.snapshot.ncf = {
-        ...(baseDoc.snapshot.ncf || {}),
+        ...baseDoc.snapshot.ncf,
         type: ncfType,
         code: ncfReservation.ncfCode,
         usageId: ncfReservation.usageId,

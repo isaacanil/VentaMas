@@ -69,7 +69,7 @@ export const normalizePreorderForPrint = (
     numberID: source?.numberID || source?.preorderDetails?.numberID,
     date: resolvedInvoiceMillis,
     preorderDetails: {
-      ...(source?.preorderDetails ?? {}),
+      ...source?.preorderDetails,
       date: resolvedPreorderMillis,
     },
     copyType: source?.copyType || 'PREVENTA',

@@ -79,13 +79,6 @@ type TreeNodeProps = {
   selectedNode: TreeNodeId | null;
   setSelectedNode: (id: TreeNodeId | null) => void;
   config: TreeConfig<TreeNodeData>;
-  traverse: (
-    node: TreeNodeData | null | undefined,
-    term: string,
-    path: TreeNodeId[],
-    found: boolean,
-    newExpandedKeys: Set<TreeNodeId>,
-  ) => boolean;
   renderHighlightedText: (text: string, highlight: string) => React.ReactNode;
   path?: TreeNodeId[];
   onToggleNode: (nodeId: TreeNodeId) => void;
@@ -100,7 +93,6 @@ const TreeNode = ({
   selectedNode,
   setSelectedNode,
   config,
-  traverse,
   renderHighlightedText,
   path, // Agregar 'path' como prop
   onToggleNode, // Add onToggleNode prop
@@ -251,7 +243,6 @@ const TreeNode = ({
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNode}
             config={config}
-            traverse={traverse}
             renderHighlightedText={renderHighlightedText}
             path={currentPath}
             onToggleNode={onToggleNode} // Ensure onToggleNode is passed to children

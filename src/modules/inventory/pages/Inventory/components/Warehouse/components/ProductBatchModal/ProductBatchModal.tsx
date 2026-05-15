@@ -450,7 +450,7 @@ export function ProductBatchModal() {
     } else {
       dispatch(
         addProduct({
-          ...(typedProduct ?? {}),
+          ...typedProduct,
           productStockId: batchInfo.productStockId,
           batchId: selectedBatchId,
           stock: batchInfo.quantity ?? 0,

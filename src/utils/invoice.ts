@@ -1,9 +1,58 @@
 import DateUtils from './date/dateUtils';
 import { roundDecimals } from './pricing';
 import { isReference } from './refereceUtils';
+import type { InvoiceData, InvoicePaymentMethod } from '@/types/invoice';
 import { buildPaymentState } from '@/utils/payments/paymentState';
+import type { TimestampLike } from '@/utils/date/types';
 
-export function getInvoicePaymentInfo(invoice) {
+type PaymentHistoryEntry = {
+  date?: TimestampLike | null;
+  [key: string]: unknown;
+};
+type InvoicePaymentSource = {
+  accumulatedPaid?: unknown;
+  payment?: { value?: unknown } | null;
+  change?: { value?: unknown } | null;
+  totalPurchase?: { value?: unknown } | null;
+  totalAmount?: unknown;
+  paymentHistory?: unknown;
+  data?: Record<string, unknown> | null;
+  [key: string]: unknown;
+};
+type FirestoreTimestampLike = {
+  seconds: number;
+  nanoseconds: number;
+};
+type ReduxSerializable =
+  | string
+  | number
+  | boolean
+  | null
+  | ReduxSerializable[]
+  | { [key: string]: ReduxSerializable };
+type SanitizedReduxValue = ReduxSerializable | undefined;
+
+const PAYMENT_METHOD_TRANSLATIONS: Record<string, string> = {
+  cash: 'efectivo',
+  card: 'tarjeta',
+  transfer: 'transferencia',
+};
+
+const PAYMENT_METHOD_ABBREVIATIONS: Record<string, string> = {
+  cash: 'Efectivo',
+  card: 'TC',
+  transfer: 'Transf',
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const getUnknownRecordArray = (value: unknown): PaymentHistoryEntry[] =>
+  Array.isArray(value) ? (value as PaymentHistoryEntry[]) : [];
+
+export function getInvoicePaymentInfo(
+  invoice: InvoicePaymentSource | null | undefined,
+) {
   const accumulatedPaidRaw = Number(invoice?.accumulatedPaid);
   const hasAccumulatedPaid = Number.isFinite(accumulatedPaidRaw);
 
@@ -32,16 +81,21 @@ export function getInvoicePaymentInfo(invoice) {
   };
 }
 
-export function isInvoicePaidInFull(invoice) {
+export function isInvoicePaidInFull(
+  invoice: InvoicePaymentSource | null | undefined,
+) {
   return getInvoicePaymentInfo(invoice).isPaidInFull;
 }
 
-export function getInvoicePaymentState(invoice) {
+export function getInvoicePaymentState(
+  invoice: InvoicePaymentSource | null | undefined,
+) {
   const paymentInfo = getInvoicePaymentInfo(invoice);
+  const nestedData = isRecord(invoice?.data) ? invoice.data : null;
   const paymentHistory = Array.isArray(invoice?.paymentHistory)
-    ? invoice.paymentHistory
-    : Array.isArray(invoice?.data?.paymentHistory)
-      ? invoice.data.paymentHistory
+    ? getUnknownRecordArray(invoice.paymentHistory)
+    : Array.isArray(nestedData?.paymentHistory)
+      ? getUnknownRecordArray(nestedData.paymentHistory)
       : [];
   const lastPaymentEntry =
     paymentHistory.length > 0 ? paymentHistory[paymentHistory.length - 1] : null;
@@ -55,14 +109,19 @@ export function getInvoicePaymentState(invoice) {
   });
 }
 
-export function getActivePaymentMethods(invoice) {
+export function getActivePaymentMethods(
+  invoice: Pick<InvoiceData, 'paymentMethod'> | null | undefined,
+): string {
   // Initialize an array to hold the names of active payment methods
-  const activeMethods = [];
+  const activeMethods: string[] = [];
+  const paymentMethods = Array.isArray(invoice?.paymentMethod)
+    ? invoice.paymentMethod
+    : [];
 
   // Loop through each payment method in the invoice
-  invoice.paymentMethod.forEach((method) => {
+  paymentMethods.forEach((method: InvoicePaymentMethod) => {
     // If the payment method is active, add its name to the array
-    if (method.status) {
+    if (method.status && method.method) {
       activeMethods.push(method.method);
     }
   });
@@ -71,54 +130,42 @@ export function getActivePaymentMethods(invoice) {
   return activeMethods.join(', ') || '';
 }
 
-export function translatePaymentMethods(methodsString) {
-  // Mapa de traducciones de los métodos de pago del inglés al español
-  const translations = {
-    cash: 'efectivo',
-    card: 'tarjeta',
-    transfer: 'transferencia',
-  };
-
+export function translatePaymentMethods(methodsString: string): string {
   // Dividir la cadena de métodos de pago en un arreglo
   const methodsArray = methodsString.split(', ');
 
   // Traducir cada método de pago utilizando el mapa de traducciones
   const translatedMethodsArray = methodsArray.map(
-    (method) => translations[method] || method,
+    (method) => PAYMENT_METHOD_TRANSLATIONS[method] || method,
   );
 
   // Unir los métodos traducidos en una sola cadena y retornar
   return translatedMethodsArray.join(', ');
 }
 
-export function abbreviatePaymentMethods(methodsArray) {
-  // Mapa de abreviaturas específicas para cada método de pago en español
-  const abbreviations = {
-    cash: 'Efectivo', // O "Efec"
-    card: 'TC', // O "Tjta"
-    transfer: 'Transf', // O "Trans"
-  };
-
+export function abbreviatePaymentMethods(methodsArray: string[]): string {
   // Generar abreviaturas específicas para cada método de pago
   const abbreviatedMethodsArray = methodsArray.map(
-    (method) => abbreviations[method.toLowerCase()] || method,
+    (method) => PAYMENT_METHOD_ABBREVIATIONS[method.toLowerCase()] || method,
   );
 
   // Unir los métodos abreviados en una sola cadena y retornar
   return abbreviatedMethodsArray.join(', ');
 }
 
-export function calculateInvoicesTotal(invoices) {
+export function calculateInvoicesTotal(
+  invoices: ReadonlyArray<{ data?: InvoiceData | null }> = [],
+): number {
   return invoices.reduce(
-    (total, invoice) => total + invoice.data.totalPurchase.value,
+    (total, invoice) => total + Number(invoice.data?.totalPurchase?.value ?? 0),
     0,
   );
 }
-export function countInvoices(invoices) {
+export function countInvoices<T>(invoices: ReadonlyArray<T> = []): number {
   return invoices.length;
 }
 
-export const normalizeInvoiceChange = (value) => {
+export const normalizeInvoiceChange = (value: unknown): number => {
   const numericValue = Number(value);
 
   if (!Number.isFinite(numericValue)) return 0;
@@ -127,7 +174,9 @@ export const normalizeInvoiceChange = (value) => {
   return Math.abs(rounded) < 0.005 ? 0 : rounded;
 };
 
-export const calculateInvoiceChange = (invoice) => {
+export const calculateInvoiceChange = (
+  invoice: InvoicePaymentSource | null | undefined,
+): number => {
   const snapshotChange = Number(invoice?.change?.value);
 
   if (Number.isFinite(snapshotChange)) {
@@ -142,13 +191,14 @@ export const calculateInvoiceChange = (invoice) => {
   return normalizeInvoiceChange(payment - totalPurchase);
 };
 
-const isFirestoreTimestampLike = (value) =>
-  typeof value === 'object' &&
-  value !== null &&
+const isFirestoreTimestampLike = (
+  value: unknown,
+): value is FirestoreTimestampLike =>
+  isRecord(value) &&
   typeof value.seconds === 'number' &&
   typeof value.nanoseconds === 'number';
 
-export const normalizeInvoiceTimestamp = (input) => {
+export const normalizeInvoiceTimestamp = (input: unknown): number | null => {
   if (!input) return null;
   if (typeof input === 'number') {
     return input > 1e12 ? input : input * 1000;
@@ -166,9 +216,9 @@ export const normalizeInvoiceTimestamp = (input) => {
   if (input instanceof Date) {
     return input.getTime();
   }
-  if (typeof input?.toMillis === 'function') {
+  if (isRecord(input) && typeof input.toMillis === 'function') {
     const millis = input.toMillis();
-    return Number.isFinite(millis) ? millis : null;
+    return typeof millis === 'number' && Number.isFinite(millis) ? millis : null;
   }
   if (isFirestoreTimestampLike(input)) {
     return DateUtils.convertTimestampToMillis(input);
@@ -176,7 +226,7 @@ export const normalizeInvoiceTimestamp = (input) => {
   return null;
 };
 
-const sanitizeForRedux = (value) => {
+const sanitizeForRedux = (value: unknown): SanitizedReduxValue => {
   if (value === undefined) return undefined;
   if (value === null) return null;
 
@@ -199,8 +249,8 @@ const sanitizeForRedux = (value) => {
     return DateUtils.convertTimestampToMillis(value);
   }
 
-  if (typeof value === 'object') {
-    const result = {};
+  if (isRecord(value)) {
+    const result: Record<string, ReduxSerializable> = {};
     Object.entries(value).forEach(([key, entryValue]) => {
       const sanitized = sanitizeForRedux(entryValue);
       if (sanitized !== undefined) {
@@ -210,10 +260,20 @@ const sanitizeForRedux = (value) => {
     return result;
   }
 
-  return value;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+
+  return undefined;
 };
 
-export const prepareInvoiceForEdit = (invoice) => {
+export const prepareInvoiceForEdit = (
+  invoice: InvoiceData | null | undefined,
+): InvoiceData | null => {
   if (!invoice) return null;
 
   const activePayment = Array.isArray(invoice.paymentMethod)
@@ -233,7 +293,8 @@ export const prepareInvoiceForEdit = (invoice) => {
       : null,
   };
 
-  return sanitizeForRedux(normalized);
+  const sanitized = sanitizeForRedux(normalized);
+  return isRecord(sanitized) ? (sanitized as InvoiceData) : null;
 };
 
 export const convertInvoiceDateToMillis = normalizeInvoiceTimestamp;

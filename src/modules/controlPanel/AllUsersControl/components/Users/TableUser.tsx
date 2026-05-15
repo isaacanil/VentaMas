@@ -7,15 +7,6 @@ import { ChangerPasswordModal } from './ChangerPasswordModal';
 import type { FC } from 'react';
 import type { TableProps } from 'antd';
 
-interface UserInfo {
-  id?: string;
-  name?: string;
-  businessID?: string;
-  role?: string;
-  active?: boolean;
-  loginAttempts?: number;
-}
-
 export interface UserRow {
   id: string;
   uid?: string;

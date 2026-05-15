@@ -520,13 +520,13 @@ export function buildGroupedRowMeta({
                   !!originalVal || !!manualVal || !!currentStr;
                 if (!hadExisting) {
                   // Eliminar del estado para que se vea vacío inmediatamente
-                  onChangeExpiration && onChangeExpiration(key, undefined);
+                  onChangeExpiration?.(key, undefined);
                   return;
                 }
                 if (childType === 'batch' && hasOriginal) {
                   // Marcar sentinel para eliminar, pero eliminar inmediatamente del estado edit
                   const prevVal = manualVal || originalVal;
-                  onChangeExpiration && onChangeExpiration(key, undefined);
+                  onChangeExpiration?.(key, undefined);
                   Modal.confirm({
                     title: 'Eliminar fecha de lote',
                     content:
@@ -536,22 +536,22 @@ export function buildGroupedRowMeta({
                     okButtonProps: { danger: true },
                     onOk: () => {
                       // Confirmar: marcar para eliminar
-                      onChangeExpiration &&
-                        onChangeExpiration(key, CLEAR_SENTINEL);
+                      onChangeExpiration?.(key, CLEAR_SENTINEL);
                     },
                     onCancel: () => {
                       // Cancelar: restaurar fecha previa
-                      if (prevVal)
-                        onChangeExpiration && onChangeExpiration(key, prevVal);
+                      if (prevVal) {
+                        onChangeExpiration?.(key, prevVal);
+                      }
                     },
                   });
                 } else {
-                  onChangeExpiration && onChangeExpiration(key, undefined);
+                  onChangeExpiration?.(key, undefined);
                 }
                 return;
               }
               const iso = date.toISODate();
-              onChangeExpiration && onChangeExpiration(key, iso);
+              onChangeExpiration?.(key, iso);
             }}
             style={FULL_WIDTH_STYLE}
           />

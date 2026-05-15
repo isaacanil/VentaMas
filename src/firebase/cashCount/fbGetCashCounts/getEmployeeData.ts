@@ -56,7 +56,10 @@ export async function getEmployeeData(
   try {
     const employeeSnap = await getDoc(employeeRef);
     if (!employeeSnap.exists()) {
-      throw new Error('Documento de empleado no encontrado');
+      return {
+        id: employeeRef.id,
+        uid: employeeRef.id,
+      };
     }
 
     const employeeUser = normalizeFirestoreUser(employeeSnap.id, employeeSnap.data());
@@ -72,7 +75,10 @@ export async function getEmployeeData(
           : employeeUser.name || null;
 
     if (!resolvedId && !resolvedName) {
-      throw new Error('Documento de empleado sin identidad visible');
+      return {
+        id: employeeSnap.id,
+        uid: employeeSnap.id,
+      };
     }
 
     return {

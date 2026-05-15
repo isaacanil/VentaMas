@@ -9,10 +9,14 @@ const { Option } = Select;
 interface BusinessInfo {
   id?: string;
   name?: string;
+  business?: {
+    id?: string;
+    name?: string;
+  };
 }
 
 const SwitchBusiness = () => {
-  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessInfo[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<string | null>(null);
 
   useEffect(() => {

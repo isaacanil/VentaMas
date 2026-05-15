@@ -150,7 +150,7 @@ export const ProductWeightEntryModal = ({
   };
 
   const handleCancel = () => {
-    onCancel && onCancel();
+    onCancel();
     form.resetFields();
   };
 

@@ -207,6 +207,7 @@ export const ExchangeRatesWorkspace = ({
   hasUnsavedChanges,
   manualRatesByCurrency = EMPTY_MANUAL_RATES,
   onAddRateClick,
+  onSave,
   reference,
   saving,
 }: ExchangeRatesWorkspaceProps) => {
@@ -260,6 +261,14 @@ export const ExchangeRatesWorkspace = ({
             onClick={onAddRateClick}
           >
             Configurar monedas
+          </Button>
+          <Button
+            type="primary"
+            disabled={!hasUnsavedChanges || !onSave}
+            loading={saving}
+            onClick={onSave}
+          >
+            Guardar tasas
           </Button>
         </HeaderActions>
       </Header>

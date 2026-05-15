@@ -14,13 +14,10 @@ import { useGeneralProductForm } from '@/components/modals/ProductForm/component
 import {
   selectUpdateProductData,
 } from '@/features/updateProduct/updateProductSlice';
-import { BarCode } from '@/components/modals/ProductForm/components/sections/BarCode';
 import { InventoryInfo } from '@/components/modals/ProductForm/components/sections/InventoryInfo';
 import { PriceCalculator } from '@/components/modals/ProductForm/components/sections/PriceCalculator';
 import { PriceInfo } from '@/components/modals/ProductForm/components/sections/PriceInfo';
 import { ProductInfo } from '@/components/modals/ProductForm/components/sections/ProductInfo';
-import { QRCode } from '@/components/modals/ProductForm/components/sections/QRCode';
-import { WarrantyInfo } from '@/components/modals/ProductForm/components/sections/WarrantyInfo';
 import type { ProductRecord } from '@/types/products';
 
 type GeneralProps = {

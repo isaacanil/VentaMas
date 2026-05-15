@@ -144,7 +144,7 @@ export const InventoryMenuToolbar = ({
       return {
         ...product,
         pricing: {
-          ...(product.pricing ?? {}),
+          ...product.pricing,
           tax: resolvedTax,
         },
       };

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.typecheck.json",
+  "compilerOptions": {
+    "strict": true,
+    "tsBuildInfoFile": "node_modules/.cache/typescript/tsconfig.strict.pilot.tsbuildinfo"
+  },
+  "include": [
+    "src/utils/pricing.ts",
+    "src/utils/invoice.ts",
+    "src/utils/formatters.ts",
+    "src/utils/sales.ts",
+    "src/utils/inventory/expiration.ts"
+  ]
+}

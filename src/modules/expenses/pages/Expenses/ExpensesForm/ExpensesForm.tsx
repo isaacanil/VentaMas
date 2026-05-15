@@ -106,7 +106,7 @@ const ExpensesForm = () => {
       width={600}
       destroyOnHidden
       centered
-      maskClosable={false}
+      mask={{ closable: false }}
     >
       <Loader
         useRedux={false}

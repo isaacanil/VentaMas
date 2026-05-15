@@ -9,7 +9,7 @@ import { selectClient, setClient } from '@/features/clientCart/clientCartSlice';
 import { useClientPendingBalance } from '@/firebase/accountsReceivable/useClientPendingBalance';
 import { useClickOutSide } from '@/hooks/useClickOutSide';
 import useInsuranceEnabled from '@/hooks/useInsuranceEnabled';
-import { formatPrice as formatPrice } from '@/utils/format';
+import { formatPrice } from '@/utils/format';
 import { updateObject } from '@/utils/object/updateObject';
 import { InputV4 } from '@/components/ui/Inputs/GeneralInput/InputV4';
 import type { UserIdentity } from '@/types/users';

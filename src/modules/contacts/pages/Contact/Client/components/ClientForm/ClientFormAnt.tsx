@@ -90,11 +90,11 @@ const ClientFormAnt = ({
       status: false,
       value: '',
     },
-    ...(data ?? {}),
+    ...data,
   };
   const client = {
     ...customerData,
-    ...(data ?? {}),
+    ...data,
     ...clientData,
   };
 

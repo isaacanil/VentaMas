@@ -61,7 +61,7 @@ export const BusinessEditModal: React.FC<BusinessEditModalProps> = ({
       }
       open={isOpen}
       onCancel={handleCancel}
-      maskClosable={true}
+      mask={{ closable: true }}
       keyboard={true}
       width={600}
       footer={[

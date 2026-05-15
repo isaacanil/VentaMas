@@ -544,12 +544,6 @@ const EditorHeader = styled.div`
   border-bottom: 1px solid #e8ecf1;
 `;
 
-const FieldInline = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
 const LabelHelp = styled.span`
   display: inline-flex;
   align-items: center;

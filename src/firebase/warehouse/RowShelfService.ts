@@ -120,7 +120,7 @@ const listenAllRowShelves = (
       },
       (error) => {
         console.error('Error al escuchar documentos en tiempo real: ', error);
-        onError && onError(error);
+        onError?.(error);
       },
     );
   } catch (error) {

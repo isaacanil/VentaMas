@@ -90,7 +90,7 @@ const formatColumn = (
   width: number,
   align: 'left' | 'right' | 'center' = 'left',
 ): string => {
-  let str = text.toString();
+  const str = text.toString();
 
   // Si excede el ancho, lo envolvemos
   if (str.length > width) {

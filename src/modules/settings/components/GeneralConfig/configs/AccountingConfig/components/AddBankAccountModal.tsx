@@ -141,7 +141,7 @@ export const AddBankAccountModal = ({
       destroyOnClose
       closable={!submitting}
       keyboard={!submitting}
-      maskClosable={!submitting}
+      mask={{ closable: !submitting }}
     >
       <Form
         form={form}

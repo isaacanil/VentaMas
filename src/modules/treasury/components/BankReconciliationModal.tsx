@@ -236,7 +236,7 @@ export const BankReconciliationModal = ({
       closable={!submitting}
       confirmLoading={submitting}
       keyboard={!submitting}
-      maskClosable={false}
+      mask={{ closable: false }}
       cancelButtonProps={{ disabled: submitting }}
       afterOpenChange={(isOpen) => {
         if (!isOpen) return;

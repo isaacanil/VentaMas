@@ -322,8 +322,8 @@ export const useAccountingPostingProfiles = ({
       try {
         const now = Timestamp.now();
         const nextMetadata = {
-          ...(existingProfile.metadata ?? {}),
-          ...(draft.metadata ?? {}),
+          ...existingProfile.metadata,
+          ...draft.metadata,
         };
         const collectionRef = collection(
           db,
@@ -371,7 +371,7 @@ export const useAccountingPostingProfiles = ({
               updatedAt: now,
               updatedBy: userId ?? null,
               metadata: {
-                ...(existingProfile.metadata ?? {}),
+                ...existingProfile.metadata,
                 rootProfileId,
                 profileVersion: currentVersion,
                 replacedByProfileId: nextProfileRef.id,
@@ -543,7 +543,7 @@ export const useAccountingPostingProfiles = ({
           profileId: profileRef.id,
           draft: template,
           metadata: {
-            ...(template.metadata ?? {}),
+            ...template.metadata,
             seededBy: 'default_posting_profiles',
           },
         });

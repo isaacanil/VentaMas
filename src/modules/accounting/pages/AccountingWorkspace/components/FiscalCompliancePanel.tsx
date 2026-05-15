@@ -13,7 +13,6 @@ import {
   Modal as HeroModal,
   Select as HeroSelect,
   Table as HeroTable,
-  Tabs as HeroTabs,
 } from '@heroui/react';
 import { message } from 'antd';
 import { useMemo, useState } from 'react';

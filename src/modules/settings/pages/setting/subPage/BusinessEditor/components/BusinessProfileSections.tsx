@@ -23,7 +23,7 @@ import styled from 'styled-components';
 import type { UploadProps } from 'antd/es/upload/interface';
 
 const { Option } = Select;
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 export const Wrapper = styled.div`
   display: grid;
@@ -205,12 +205,6 @@ const LogoUpload = styled(Upload)`
   .ant-upload {
     width: 100%;
   }
-`;
-
-const LogoHint = styled(Text)`
-  color: #6b7280;
-  max-width: 360px;
-  line-height: 1.4;
 `;
 
 const InfoIcon = styled(InfoCircleOutlined)`

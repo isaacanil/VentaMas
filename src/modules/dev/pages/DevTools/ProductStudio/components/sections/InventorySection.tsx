@@ -1,11 +1,10 @@
 import { BarcodeOutlined, InfoCircleOutlined } from '@/constants/icons/antd';
-import { Divider, InputNumber, Select, Switch, Tooltip, Typography } from 'antd';
+import { InputNumber, Select, Switch, Tooltip } from 'antd';
 import { Form } from 'antd';
 import styled from 'styled-components';
 
 import { unitsOfMeasure } from '@/constants/unitsOfMeasure';
 import {
-  DividerLabel,
   FieldGrid,
   SectionCard,
   SectionDescription,

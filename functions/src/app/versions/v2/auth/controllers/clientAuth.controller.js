@@ -1548,7 +1548,7 @@ export const clientRefreshSession = onCall(
     if (sessionInfo.platform) updates.platform = sessionInfo.platform;
     if (sessionInfo.metadata) {
       updates.metadata = {
-        ...(snap.get('metadata') || {}),
+        ...snap.get('metadata'),
         ...sessionInfo.metadata,
       };
     }

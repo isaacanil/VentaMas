@@ -1,6 +1,5 @@
 import {
   Select,
-  Checkbox,
   InputNumber,
   Button,
   message,
@@ -12,7 +11,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import {
-  ClockCircleOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
 

@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { selectBusinessData } from '@/features/auth/businessSlice';
 import type {
   InvoiceBusinessInfo,
-  InvoiceSignatureAssets,
   InvoiceTemplateProps,
 } from '@/types/invoice';
 import { resolveInvoiceDocumentCurrency } from '@/utils/invoice/documentCurrency';
@@ -71,7 +70,7 @@ const paginateProductsForPrint = ({
   const rowHeights = products.map((product) =>
     estimateRowHeight(product, documentCurrency),
   );
-  const suffixSums = new Array(rowHeights.length + 1).fill(0);
+  const suffixSums = Array.from({ length: rowHeights.length + 1 }, () => 0);
 
   for (let index = rowHeights.length - 1; index >= 0; index -= 1) {
     suffixSums[index] = suffixSums[index + 1] + rowHeights[index];

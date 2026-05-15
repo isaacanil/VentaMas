@@ -30,7 +30,7 @@ const ConfirmBarcodeModal = ({
       onCancel={onCancel}
       // Habilitar todas las formas comunes de cierre
       closable
-      maskClosable
+      mask={{ closable: true }}
       keyboard
       footer={
         <Space>

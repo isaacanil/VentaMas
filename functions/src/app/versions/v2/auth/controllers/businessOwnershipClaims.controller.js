@@ -80,8 +80,8 @@ const hasLegacyOwners = (businessData) => {
   const nestedOwners = Array.isArray(nestedBusiness.owners)
     ? nestedBusiness.owners
     : [];
-  return [...new Set([...rootOwners, ...nestedOwners].map((uid) => toCleanString(uid)).filter(Boolean))]
-    .length > 0;
+  return new Set([...rootOwners, ...nestedOwners].map((uid) => toCleanString(uid)).filter(Boolean))
+    .size > 0;
 };
 
 const hasActiveCanonicalOwner = (membersSnapshot) => {
@@ -493,9 +493,7 @@ export const redeemBusinessOwnershipClaimToken = onCall(async (request) => {
     const shouldPromoteRole =
       !existingBusinessId || existingBusinessId === businessId;
     if (shouldPromoteRole) {
-      Object.assign(userUpdatePayload, {
-        ...(isPlatformDevActor ? {} : { activeRole: ROLE.ADMIN }),
-      });
+      Object.assign(userUpdatePayload, (isPlatformDevActor ? {} : { activeRole: ROLE.ADMIN }));
     }
 
     tx.set(userRef, userUpdatePayload, { merge: true });

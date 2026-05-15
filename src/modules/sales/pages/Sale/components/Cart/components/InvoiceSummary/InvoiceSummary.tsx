@@ -643,29 +643,6 @@ const useInvoiceSummaryViewModel = () => {
   const { text, action, disabled } =
     billingButtons[billing?.billingMode ?? 'default'] || billingButtons.default;
 
-  const tooltipTitle = useMemo(() => {
-    if (isSavingPreorder) {
-      return 'Guardando preventa...';
-    }
-    if (disabled) {
-      return warningMessage;
-    }
-    switch (text) {
-      case 'Facturar':
-        return 'Proceder a facturar';
-      case 'Completar preventa':
-        return 'Completar la preventa';
-      case 'Actualizar':
-        return 'Guardar cambios de la preventa';
-      case 'Actualizando...':
-        return 'Guardando cambios de la preventa';
-      case 'Preventa':
-        return 'Guardar como preventa';
-      default:
-        return '';
-    }
-  }, [disabled, warningMessage, text, isSavingPreorder]);
-
   const handleCurrencyChange = useCallback(
     (key: React.Key) => {
       dispatch(setDocumentCurrency(key as SupportedDocumentCurrency));
@@ -773,7 +750,6 @@ const useInvoiceSummaryViewModel = () => {
     shouldRequirePinForDiscount,
     subTotal,
     text,
-    tooltipTitle,
     total,
     totalIndividualDiscounts,
     warningMessage,
@@ -818,7 +794,6 @@ const InvoiceSummary = () => {
     shouldRequirePinForDiscount,
     subTotal,
     text,
-    tooltipTitle,
     total,
     totalIndividualDiscounts,
     warningMessage,

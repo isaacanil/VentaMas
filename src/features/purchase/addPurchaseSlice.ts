@@ -161,7 +161,7 @@ export const addPurchaseSlice = createSlice({
     },
     SelectProduct: (state: AddPurchaseState, actions: PayloadAction<any>) => {
       const product = actions.payload;
-      let productData = {
+      const productData = {
         key: nanoid(),
         id: product.id,
         name: product.name,

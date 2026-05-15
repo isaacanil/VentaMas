@@ -1,4 +1,4 @@
-import { Button, Empty, Typography } from 'antd';
+import { Button, Empty } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
@@ -7,8 +7,6 @@ import type {
   AccountingManualRatesByCurrency,
   SupportedDocumentCurrency,
 } from '../utils/accountingConfig';
-
-const { Text } = Typography;
 
 const EMPTY_CURRENCIES: SupportedDocumentCurrency[] = [];
 const EMPTY_MANUAL_RATES: AccountingManualRatesByCurrency = {};

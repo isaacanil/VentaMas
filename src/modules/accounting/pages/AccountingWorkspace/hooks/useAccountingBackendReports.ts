@@ -352,11 +352,11 @@ export const useAccountingBackendReports = ({
       .catch((error) => {
         if (cancelled) return;
         console.error('Error cargando reportes contables backend:', error);
-        setState((current) => ({
+        setState({
           ...initialState,
           requestKey,
           error: 'No se pudieron cargar los reportes contables.',
-        }));
+        });
       });
 
     return () => {

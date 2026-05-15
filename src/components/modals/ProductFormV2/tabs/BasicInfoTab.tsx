@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Row, Col, Card, Upload, Space, Typography, Button } from 'antd';
+import { Form, Input, Select, Row, Col, Card, Upload, Typography } from 'antd';
 
 const { Text } = Typography;
 const { Option } = Select;

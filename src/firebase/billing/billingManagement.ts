@@ -7,12 +7,6 @@ import { resolveBillingCallableErrorMessage } from './callableErrors';
 type UnknownRecord = Record<string, unknown>;
 type BillingPayload = object;
 
-const toCleanString = (value: unknown): string | null => {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
-};
-
 const toFiniteNumber = (value: unknown): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;

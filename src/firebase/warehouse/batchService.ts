@@ -19,7 +19,6 @@ import type {
 import { nanoid } from 'nanoid'; // Importación correcta de nanoid
 import {
   useEffect,
-  useMemo,
   useState,
   type Dispatch,
   type SetStateAction,

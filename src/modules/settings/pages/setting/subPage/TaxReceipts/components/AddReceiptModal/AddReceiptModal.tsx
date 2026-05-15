@@ -187,7 +187,7 @@ const AddReceiptDrawer = ({
       onClose={onCancel}
       open={visible}
       afterOpenChange={handleAfterOpenChange}
-      styles={{ content: { height: '100%' } }}
+      styles={{ section: { height: '100%' } }}
       footer={
         <FooterContainer>
           <SelectedCount>

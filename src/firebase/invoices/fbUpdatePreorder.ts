@@ -60,7 +60,7 @@ export const fbUpdatePreOrder = async (
   );
 
   const preorderDetails: MutablePreorderDetails = {
-    ...(cartData?.preorderDetails || {}),
+    ...cartData?.preorderDetails,
     isOrWasPreorder: true,
   };
 

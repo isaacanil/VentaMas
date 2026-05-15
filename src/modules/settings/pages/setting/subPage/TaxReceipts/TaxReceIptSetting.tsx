@@ -76,7 +76,7 @@ export const TaxReceiptSetting = () => {
         if (!ignore) {
           setAlertConfig(nextConfig);
         }
-      } catch (error) {
+      } catch {
         if (!ignore) {
           message.error('No se pudo cargar la configuración de alertas.');
         }
@@ -305,7 +305,7 @@ export const TaxReceiptSetting = () => {
   // Utilizamos useLoadingStatus para centralizar la lógica de carga
   const { isLoading, tip } = useLoadingStatus(loadEntries);
   return (
-    <Spin spinning={isLoading} tip={tip}>
+    <Spin spinning={isLoading} description={tip}>
       <Page>
         <Head>
           <Title

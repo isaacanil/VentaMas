@@ -997,7 +997,7 @@ export const updateInvoiceTotals = (
       accumulatedPaid: newAccumulatedPaid,
       balanceDue: newBalanceDue,
       preorderDetails: {
-        ...(invoiceData?.preorderDetails ?? {}),
+        ...invoiceData?.preorderDetails,
         paymentStatus,
         balanceDue: newBalanceDue,
         accumulatedPaid: newAccumulatedPaid,

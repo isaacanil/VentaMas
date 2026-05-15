@@ -34,8 +34,8 @@ const resolveBusinessPayload = (snapshotData: unknown): BusinessInfoData | null 
 
   const merged: BusinessInfoData = {
     ...root,
-    ...(businessNode || {}),
-    ...(nestedBusinessNode || {}),
+    ...businessNode,
+    ...nestedBusinessNode,
   };
 
   // Normaliza el nombre para no caer en fallback cuando existe en algún nivel.

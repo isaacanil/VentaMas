@@ -25,12 +25,15 @@ export default [
       'artifacts/**',
       'reports/**',
       '**/*.d.ts',
-      'src/hooks/accountsReceivable/useCheckAccountReceivable.tsx',
-      'src/router/routes/paths/AccountReceivable.tsx',
       '**/.vite/**',
       'coverage/**',
       'storybook-static/**',
     ],
+  },
+  {
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error',
+    },
   },
 
   js.configs.recommended,
@@ -45,8 +48,7 @@ export default [
       globals: { ...globals.browser, ...globals.node },
     },
     linterOptions: {
-      // tu valor 1 => "warn"
-      reportUnusedDisableDirectives: 'off',
+      reportUnusedDisableDirectives: 'error',
     },
     plugins: {
       'react-refresh': reactRefresh,
@@ -54,7 +56,7 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/set-state-in-effect': 'error',
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
@@ -74,10 +76,10 @@ export default [
 
       // React Refresh
       'react-refresh/only-export-components': [
-        'warn',
+        'error',
         { allowConstantExport: true },
       ],
-      'prefer-const': 'off',
+      'prefer-const': 'error',
 
       // Pega aquí el resto de tus reglas del JSON…
       // "no-dupe-args": 2, etc.
@@ -105,7 +107,7 @@ export default [
       globals: { ...globals.browser, ...globals.node },
     },
     linterOptions: {
-      reportUnusedDisableDirectives: 'off',
+      reportUnusedDisableDirectives: 'error',
     },
     plugins: {
       'react-refresh': reactRefresh,
@@ -113,16 +115,16 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/set-state-in-effect': 'error',
 
       // === Limpieza automática ===
       'no-unused-vars': 'off',
       // React Refresh
       'react-refresh/only-export-components': [
-        'warn',
+        'error',
         { allowConstantExport: true },
       ],
-      'prefer-const': 'off',
+      'prefer-const': 'error',
       'no-undef': 'off',
       'no-redeclare': 'off',
     },

@@ -32,6 +32,7 @@ import { formatDateTime } from '../utils/time';
 import { Centered, CodeBlock } from './StyledComponents';
 
 import type { FormInstance } from 'antd';
+import type { InvoiceData } from '../hooks/useIndividualInvoiceRecovery';
 
 const { Text, Paragraph } = Typography;
 
@@ -44,10 +45,6 @@ interface InvoiceSummary {
   pending?: number;
   done?: number;
   failed?: number;
-}
-
-interface InvoiceData {
-  status?: string;
 }
 
 interface OutboxTask {
@@ -110,7 +107,7 @@ interface IndividualRecoveryTabProps {
   showEmptyState: boolean;
   handleFetch: (query: Record<string, unknown> | null) => void;
   activeQuery: any;
-  invoiceData: any;
+  invoiceData: InvoiceData | null;
   summary: InvoiceSummary;
   canonicalData: any;
   failedOutboxTasks: OutboxTask[];

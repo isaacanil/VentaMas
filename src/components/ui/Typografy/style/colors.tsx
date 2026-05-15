@@ -1,9 +1,5 @@
 import { css } from 'styled-components';
 
-import palette from '@/theme/colors/light/Palette';
-
-palette.colors;
-
 export const colors = {
   primary: css`
     color: #007bff;

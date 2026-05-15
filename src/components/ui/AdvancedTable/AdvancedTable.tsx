@@ -36,7 +36,6 @@ import type {
   ColumnConfig,
   FilterConfig as AdvancedTableFilterConfig,
   FilterOption as AdvancedTableFilterOption,
-  SortConfig,
   TableRow,
 } from './types/ColumnTypes';
 import type { DefaultTheme } from 'styled-components';

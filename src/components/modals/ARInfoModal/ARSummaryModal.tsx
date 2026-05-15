@@ -298,6 +298,7 @@ export default function ARSummaryModal() {
             data?.client?.numberId ?? data?.client?.id ?? data?.ar?.clientId,
           documentLabel,
           documentNumber: invoiceNumber,
+          invoiceDate,
           preorderNumber: preorderNum,
           invoiceNumber: invoiceNum,
         },

@@ -3,32 +3,37 @@ import { formatDate } from './formatDate';
 
 export { formatDate, formatPrice };
 
-export const formatMoney = (amount) => {
+const toFiniteNumber = (value: unknown, fallback = 0): number => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+export const formatMoney = (amount: unknown): string => {
   return new Intl.NumberFormat('es-DO', {
     style: 'currency',
     currency: 'DOP',
     minimumFractionDigits: 2,
-  }).format(amount || 0);
+  }).format(toFiniteNumber(amount));
 };
 
-export const formatNumber = (number, decimals = 2) => {
+export const formatNumber = (value: unknown, decimals = 2): string => {
   return new Intl.NumberFormat('es-DO', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(number || 0);
+  }).format(toFiniteNumber(value));
 };
 
-export const formatPercentage = (value) => {
+export const formatPercentage = (value: unknown): string => {
   return new Intl.NumberFormat('es-DO', {
     style: 'percent',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value / 100 || 0);
+  }).format(toFiniteNumber(value) / 100);
 };
 
-export const formatQuantity = (quantity, decimals = 2) => {
+export const formatQuantity = (quantity: unknown, decimals = 2): string => {
   return new Intl.NumberFormat('es-DO', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(quantity || 0);
+  }).format(toFiniteNumber(quantity));
 };

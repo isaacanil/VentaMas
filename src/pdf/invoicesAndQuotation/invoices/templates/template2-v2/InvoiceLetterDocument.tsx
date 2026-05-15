@@ -556,7 +556,7 @@ const ProductTable = ({
     </View>
 
     {products.length ? (
-      products.map((product, index) => {
+      products.map((product) => {
         const quantity = resolveQuantity(product);
         const unitPrice = resolveUnitPrice(product);
         const taxPerUnit = unitPrice * (resolveTaxRate(product) / 100);

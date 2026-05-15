@@ -50,11 +50,12 @@ const firebaseConfig = {
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 const useFirebaseEmulators = shouldUseFirebaseEmulators();
+const useMemoryFirestoreCache = import.meta.env.DEV || useFirebaseEmulators;
 
 export const db = initializeFirestore(app, {
-  // Firebase recomienda evitar persistencia local al usar emuladores
-  // para no mezclar cache offline con datos efimeros del emulador.
-  localCache: useFirebaseEmulators
+  // Evita cache persistente en desarrollo para no mezclar sesiones,
+  // HMR y datos efimeros de emuladores durante pruebas locales.
+  localCache: useMemoryFirestoreCache
     ? memoryLocalCache()
     : persistentLocalCache({
         tabManager: persistentMultipleTabManager(),

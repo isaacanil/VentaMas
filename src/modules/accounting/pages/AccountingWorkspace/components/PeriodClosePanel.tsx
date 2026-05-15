@@ -42,12 +42,6 @@ const STATUS_COPY = {
   },
 } as const;
 
-const GUIDANCE_POINTS = [
-  'Confirma ventas, cobros, gastos y pagos pendientes antes de bloquear el mes.',
-  'Si falta una operacion, registrala en un periodo abierto o reabre el periodo luego del control.',
-  'Usa la nota de cierre para dejar contexto fiscal, de auditoria o de aprobacion interna.',
-];
-
 const getInitialPeriodKey = (periods: PeriodOption[]) =>
   periods.find((period) => period.status === 'open')?.periodKey ??
   periods[0]?.periodKey ??
@@ -421,173 +415,6 @@ const SectionText = styled.p`
   line-height: var(--ds-line-height-relaxed);
 `;
 
-const HeaderStats = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
-  gap: var(--ds-space-3);
-  width: min(280px, 100%);
-`;
-
-const HeaderStat = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-
-  span {
-    color: var(--ds-color-text-secondary);
-    font-size: var(--ds-font-size-xs);
-    font-weight: var(--ds-font-weight-medium);
-  }
-
-  strong {
-    color: var(--ds-color-text-primary);
-    font-size: var(--ds-font-size-2xl);
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
-  }
-`;
-
-const OverviewCard = styled.section`
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5) var(--ds-space-6);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const OverviewLead = styled.div`
-  display: flex;
-  gap: var(--ds-space-3);
-`;
-
-const OverviewIcon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-color-bg-subtle);
-  color: var(--ds-color-state-info-text);
-`;
-
-const OverviewTitle = styled.h3`
-  margin: 0;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-xl);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const OverviewText = styled.p`
-  margin: 6px 0 0;
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  line-height: var(--ds-line-height-relaxed);
-`;
-
-const OverviewMetrics = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const MetricCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  min-height: 108px;
-  padding: var(--ds-space-4);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-`;
-
-const MetricLabel = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-medium);
-`;
-
-const MetricValue = styled.strong`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-lg);
-  font-weight: var(--ds-font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-  line-height: 1.35;
-`;
-
-const GuidanceCard = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5) var(--ds-space-6);
-  border: 1px solid var(--ds-color-border-default);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-surface);
-`;
-
-const GuidanceHeader = styled.div`
-  display: flex;
-  gap: var(--ds-space-3);
-`;
-
-const GuidanceIcon = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-color-state-info-subtle);
-  color: var(--ds-color-state-info-text);
-`;
-
-const GuidanceTitle = styled.h3`
-  margin: 0;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-md);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const GuidanceList = styled.ul`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const GuidanceItem = styled.li`
-  min-height: 92px;
-  padding: var(--ds-space-4);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-bg-subtle);
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-sm);
-  line-height: var(--ds-line-height-relaxed);
-`;
-
 const ModalBody = styled.div`
   display: flex;
   flex-direction: column;
@@ -604,12 +431,6 @@ const ModalFooter = styled.div`
   margin-top: var(--ds-space-1);
 `;
 
-const MainGrid = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 480px);
-  gap: var(--ds-space-4);
-`;
-
 const BaseCard = css`
   display: flex;
   flex-direction: column;
@@ -618,20 +439,6 @@ const BaseCard = css`
   border: 1px solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-lg);
   background: var(--ds-color-bg-surface);
-`;
-
-const ActionCard = styled.section`
-  ${BaseCard}
-`;
-
-const SideColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-`;
-
-const PeriodsCard = styled.section`
-  ${BaseCard}
 `;
 
 const CardHeader = styled.div`
@@ -661,12 +468,6 @@ const FieldLabel = styled.span`
   font-weight: var(--ds-font-weight-medium);
   letter-spacing: var(--ds-letter-spacing-wide);
   text-transform: uppercase;
-`;
-
-const FieldHint = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
 `;
 
 const StatusBadge = styled.span<{ $tone: 'closed' | 'open' }>`
@@ -729,68 +530,6 @@ const ActionNoticeText = styled.p`
   color: var(--ds-color-text-secondary);
   font-size: var(--ds-font-size-sm);
   line-height: var(--ds-line-height-relaxed);
-`;
-
-const PeriodsList = styled.div`
-  display: grid;
-  gap: var(--ds-space-3);
-`;
-
-const PeriodButton = styled.button<{ $active: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  width: 100%;
-  padding: var(--ds-space-4);
-  border: 2px solid;
-  border-radius: var(--ds-radius-lg);
-  background: ${(props) =>
-    props.$active
-      ? 'var(--ds-color-interactive-selected-bg)'
-      : 'var(--ds-color-bg-surface)'};
-  border-color: ${(props) =>
-    props.$active
-      ? 'var(--ds-color-interactive-selected-border)'
-      : 'var(--ds-color-border-default)'};
-  cursor: pointer;
-  text-align: left;
-
-  &:hover {
-    border-color: var(--ds-color-interactive-selected-border);
-    background: var(--ds-color-interactive-selected-bg);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ds-color-border-focus);
-    outline-offset: 2px;
-  }
-`;
-
-const PeriodButtonHeader = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-`;
-
-const PeriodTitle = styled.strong`
-  display: block;
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-md);
-  font-weight: var(--ds-font-weight-semibold);
-`;
-
-const PeriodAmount = styled.strong`
-  color: var(--ds-color-text-primary);
-  font-size: var(--ds-font-size-md);
-  font-weight: var(--ds-font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-`;
-
-const PeriodMeta = styled.span`
-  color: var(--ds-color-text-secondary);
-  font-size: var(--ds-font-size-xs);
-  line-height: var(--ds-line-height-normal);
 `;
 
 const HistorySection = styled.section`

@@ -172,7 +172,7 @@ export const ResolveBankStatementLineModal = ({
       closable={!submitting}
       confirmLoading={submitting}
       keyboard={!submitting}
-      maskClosable={false}
+      mask={{ closable: false }}
       cancelButtonProps={{ disabled: submitting }}
       okButtonProps={{
         disabled: resolutionMode === 'write_off' ? !canWriteOff : !exactMatch,

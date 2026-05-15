@@ -454,7 +454,7 @@ export default function TaxReceiptForm({
     };
 
     const data = {
-      ...(currentEditItem ?? {}),
+      ...currentEditItem,
       ...finalValues,
     } as TaxReceiptData;
 

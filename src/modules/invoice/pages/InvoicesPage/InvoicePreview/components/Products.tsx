@@ -43,15 +43,6 @@ type ProductTableProps = {
 const ProductTable = ({ products, invoiceData = null }: ProductTableProps) => {
   const formatAmount = (value: number | string | null | undefined) =>
     formatInvoicePrice(value, invoiceData);
-  const resolveQuantity = (product: InvoiceProduct) => {
-    if (typeof product.amountToBuy === 'number') return product.amountToBuy;
-    if (typeof product.amountToBuy?.total === 'number')
-      return product.amountToBuy.total;
-    if (typeof product.amountToBuy?.unit === 'number')
-      return product.amountToBuy.unit;
-    return 0;
-  };
-
   const columns = [
     {
       title: 'Descripción',

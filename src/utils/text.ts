@@ -11,8 +11,8 @@ export const normalizeText = (text: string): string => {
 export const firstLetter = (word: string | null | undefined): string => {
   if (word !== undefined && word !== null && word !== '') {
     const wordStr = String(word);
-    let first = wordStr[0].toUpperCase();
-    let rest = wordStr.toLowerCase().slice(1);
+    const first = wordStr[0].toUpperCase();
+    const rest = wordStr.toLowerCase().slice(1);
     return first + rest;
   } else {
     return '';
@@ -37,7 +37,7 @@ export const removeMatchesString = (
   string: string | null | undefined,
   matches: RegExp,
 ): string => {
-  let paragraph = String(string || '');
-  let found = paragraph.match(matches);
+  const paragraph = String(string || '');
+  const found = paragraph.match(matches);
   return found ? found.toString() : '';
 };

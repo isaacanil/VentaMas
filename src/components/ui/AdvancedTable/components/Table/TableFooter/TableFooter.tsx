@@ -58,7 +58,7 @@ const TableFooter = ({
         </PaginationContainer>
       )}
       <FooterRightSide>
-        {footerRightSide && footerRightSide}
+        {footerRightSide}
         <Button
           title={'columnas'}
           onClick={toggleReorderMenu}

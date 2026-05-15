@@ -12,6 +12,63 @@ const ESLINT_EXTENSIONS = 'js,jsx,ts,tsx';
 const ESLINT_CACHE_LOCATION = 'node_modules/.cache/eslint/.eslintcache';
 const STYLELINT_CSS_GLOB = 'src/**/*.{css,scss}';
 const STYLELINT_STYLED_GLOB = 'src/**/*.{js,jsx,ts,tsx}';
+const WEB_LINT_GROUPS = [
+  ['src/components', 'src/features', 'src/firebase', 'src/hooks'],
+  [
+    'src/modules/dev',
+    'src/modules/accounting',
+    'src/modules/sales',
+    'src/modules/settings',
+    'src/modules/treasury',
+  ],
+  [
+    'src/modules',
+    '--ignore-pattern',
+    'src/modules/dev/**',
+    '--ignore-pattern',
+    'src/modules/accounting/**',
+    '--ignore-pattern',
+    'src/modules/sales/**',
+    '--ignore-pattern',
+    'src/modules/settings/**',
+    '--ignore-pattern',
+    'src/modules/treasury/**',
+  ],
+  [
+    'src/abilities',
+    'src/ant',
+    'src/app',
+    'src/assets',
+    'src/config',
+    'src/constants',
+    'src/Context',
+    'src/design-system',
+    'src/dev',
+    'src/domain',
+    'src/helper',
+    'src/i18n',
+    'src/layouts',
+    'src/models',
+    'src/motion',
+    'src/notification',
+    'src/pdf',
+    'src/router',
+    'src/schema',
+    'src/Seo',
+    'src/services',
+    'src/shared',
+    'src/stories',
+    'src/styles',
+    'src/supabase',
+    'src/theme',
+    'src/types',
+    'src/utils',
+    'src/validates',
+    'vite.config.ts',
+    'vitest.config.ts',
+    'vitest.functions.config.ts',
+  ],
+];
 
 function isInteractive() {
   return Boolean(process.stdin.isTTY && process.stdout.isTTY && !process.env.CI);
@@ -23,7 +80,11 @@ const LINT_TARGETS = {
     needsPaths: false,
   },
   all: {
-    label: 'Lint completo (web + functions + styles)',
+    label: 'Lint completo (web + functions + styles + typecheck + strict pilot)',
+    needsPaths: false,
+  },
+  strict: {
+    label: 'Typecheck strict piloto',
     needsPaths: false,
   },
   'web:fix': {
@@ -223,6 +284,12 @@ async function runOrExit(command, args, options = {}) {
   consola.success(`Finished in ${duration}: ${command}`);
 }
 
+async function runWebLintGroups({ fix = false, env } = {}) {
+  for (const group of WEB_LINT_GROUPS) {
+    await runOrExit('eslint', buildEslintArgs({ fix, paths: group }), { env });
+  }
+}
+
 function buildEslintArgs({ fix = false, paths = [] } = {}) {
   const args = [
     '--cache',
@@ -230,6 +297,7 @@ function buildEslintArgs({ fix = false, paths = [] } = {}) {
     'content',
     '--cache-location',
     ESLINT_CACHE_LOCATION,
+    '--no-error-on-unmatched-pattern',
     '--ext',
     ESLINT_EXTENSIONS,
   ];
@@ -250,14 +318,16 @@ async function runLintTarget(target, args) {
       await runOrExit('oxlint', ['src', 'functions/src', '-f', 'stylish']);
       return;
     case 'all':
-      await runOrExit('eslint', buildEslintArgs(), {
+      await runWebLintGroups({
         env: { ...process.env, ESLINT_STORYBOOK: 'true' },
       });
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint']);
       await runOrExit('stylelint', [STYLELINT_CSS_GLOB]);
+      await runOrExit('npm', ['run', 'typecheck:all']);
+      await runOrExit('npm', ['run', 'typecheck:strict:pilot']);
       return;
     case 'web:fix':
-      await runOrExit('eslint', buildEslintArgs({ fix: true }));
+      await runWebLintGroups({ fix: true });
       return;
     case 'path':
       await runOrExit('eslint', buildEslintArgs({ paths: args }));
@@ -269,6 +339,9 @@ async function runLintTarget(target, args) {
       return;
     case 'path:fix':
       await runOrExit('eslint', buildEslintArgs({ fix: true, paths: args }));
+      return;
+    case 'strict':
+      await runOrExit('npm', ['run', 'typecheck:strict:pilot']);
       return;
     case 'functions':
       await runOrExit('npm', ['--prefix', 'functions', 'run', 'lint']);

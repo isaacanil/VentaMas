@@ -132,7 +132,7 @@ const addOrderSlice = createSlice({
     },
     SelectProduct: (state: AddOrderState, actions: PayloadAction<any>) => {
       const product = actions.payload;
-      let productData: ProductSelected = {
+      const productData: ProductSelected = {
         key: nanoid(),
         id: product.id,
         name: product.name,

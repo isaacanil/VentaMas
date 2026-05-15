@@ -102,7 +102,7 @@ const renderIconNode = (
     return cloneElement(icon, {
       style: {
         color,
-        ...(icon.props.style ?? {}),
+        ...icon.props.style,
       },
     });
   }

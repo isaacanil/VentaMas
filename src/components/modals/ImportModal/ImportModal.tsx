@@ -1,7 +1,7 @@
 import { UploadOutlined } from '@/constants/icons/antd';
 import { Button, Modal, Tabs } from 'antd';
 import type { TabsProps } from 'antd';
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { ImportTabContent } from './components/ImportTabContent';

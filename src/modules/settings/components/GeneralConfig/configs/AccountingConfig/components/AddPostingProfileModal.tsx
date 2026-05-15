@@ -1,7 +1,6 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useEffect, useMemo } from 'react';
 import {
-  Badge,
   Button,
   Checkbox,
   Divider,
@@ -11,7 +10,6 @@ import {
   Modal,
   Select,
   Space,
-  Switch,
   Tag,
   Tooltip,
   Typography,

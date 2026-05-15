@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import type { ConsoleLine, SelectionItem, SelectionModeProps } from '../types';
+import type { ConsoleLine, SelectionModeProps } from '../types';
 
 /**
  * Componente para manejar el modo de selección interactiva en la consola

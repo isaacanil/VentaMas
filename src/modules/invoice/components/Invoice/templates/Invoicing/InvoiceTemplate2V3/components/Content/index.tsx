@@ -35,7 +35,7 @@ export default function Content({ products, documentCurrency }: ContentProps) {
         <tbody>
           {products.length ? (
             <>
-              {products.map((product, index) => {
+              {products.map((product) => {
                 const quantity = resolveQuantity(product);
                 const unitPrice = resolveDisplayUnitPriceForCurrency(
                   product,

@@ -175,7 +175,7 @@ export const fbPayActiveInstallmentForAccount = async ({
     }
 
     // Handle the balance during payment
-    let amountToApply = roundToTwoDecimals(
+    const amountToApply = roundToTwoDecimals(
       Math.min(paymentAmountFloat, Number(installment.installmentBalance ?? 0)),
     );
     let newInstallmentBalance = roundToTwoDecimals(

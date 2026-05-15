@@ -34,7 +34,7 @@ export const ReceivableDecisionModal = ({
       if (!decisionLoading) onCancel();
     }}
     closable={!decisionLoading}
-    maskClosable={!decisionLoading}
+    mask={{ closable: !decisionLoading }}
     keyboard={!decisionLoading}
     footer={null}
     width={480}

@@ -418,7 +418,7 @@ const renderItems = (
             style={{
               marginBottom: 0,
               width: '100%',
-              ...(item.fieldStyle || {}),
+              ...item.fieldStyle,
             }}
           >
             {control}
@@ -438,7 +438,7 @@ const renderItems = (
           style={{
             display: 'inline-flex',
             ...(item.minWidth ? { minWidth: item.minWidth } : {}),
-            ...(item.wrapperStyle || {}),
+            ...item.wrapperStyle,
           }}
         >
           {content}

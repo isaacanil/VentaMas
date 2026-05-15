@@ -244,7 +244,7 @@ export const PreorderModal = ({
       footer={null}
       onCancel={onClose}
       destroyOnHidden
-      maskClosable
+      mask={{ closable: true }}
       width={520}
     >
       <ModalCard>

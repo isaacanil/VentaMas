@@ -1,7 +1,7 @@
 import { m } from 'framer-motion';
 import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import type { MenuItem } from '@/types/menu';
 import type { UserIdentity } from '@/types/users';
@@ -147,7 +147,6 @@ const useMenuFiltering = () => {
 export const SideBar = ({ isOpen, handleOpenMenu }: SideBarProps) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
   const didPrefetchRoutesRef = useRef(false);
   const user = useSelector(selectUser) as UserIdentity | null;
   const groupedLinks = useMenuFiltering();

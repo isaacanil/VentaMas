@@ -133,7 +133,7 @@ export async function generateInvoicePDF({
     );
 
     // Grupo de firmas (lado izquierdo)
-    let leftX = marginLeft;
+    const leftX = marginLeft;
     let leftY = footerStartY;
     const signatureLineWidth = 70;
     doc.setFontSize(10);

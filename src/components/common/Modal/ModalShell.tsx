@@ -23,11 +23,11 @@ export const ModalShell = ({
         container: {
           ['--modal-viewport-offset' as string]: '0px',
           maxHeight: 'calc(100dvh - 0px)',
-          ...(styles?.container ?? {}),
+          ...styles?.container,
         },
         body: {
           padding: 0,
-          ...(styles?.body ?? {}),
+          ...styles?.body,
         },
         ...styles,
       }}

@@ -186,14 +186,14 @@ export function GroupedLotsRecordRow({
                 !!meta?.manualExpirationDate ||
                 !!dateValue;
               if (!hadExisting) {
-                onChangeExpiration && onChangeExpiration(record.key, undefined);
+                onChangeExpiration?.(record.key, undefined);
                 return;
               }
               if (record.type === 'batch') {
                 const prevVal = meta?.manualExpirationDate
                   ? formatInputDate(meta.manualExpirationDate)
                   : formatInputDate(record.expirationDate);
-                onChangeExpiration && onChangeExpiration(record.key, undefined);
+                onChangeExpiration?.(record.key, undefined);
                 Modal.confirm({
                   title: 'Eliminar fecha de lote',
                   content:
@@ -202,23 +202,22 @@ export function GroupedLotsRecordRow({
                   cancelText: 'Cancelar',
                   okButtonProps: { danger: true },
                   onOk: () => {
-                    onChangeExpiration &&
-                      onChangeExpiration(record.key, CLEAR_SENTINEL);
+                    onChangeExpiration?.(record.key, CLEAR_SENTINEL);
                     syncSameLotRecords(record.key, CLEAR_SENTINEL, record);
                   },
                   onCancel: () => {
-                    if (prevVal)
-                      onChangeExpiration &&
-                        onChangeExpiration(record.key, prevVal);
+                    if (prevVal) {
+                      onChangeExpiration?.(record.key, prevVal);
+                    }
                   },
                 });
               } else {
-                onChangeExpiration && onChangeExpiration(record.key, undefined);
+                onChangeExpiration?.(record.key, undefined);
               }
               return;
             }
             const iso = date.toISODate();
-            onChangeExpiration && onChangeExpiration(record.key, iso);
+            onChangeExpiration?.(record.key, iso);
             if (record.type === 'batch')
               syncSameLotRecords(record.key, iso, record);
           }}
@@ -293,8 +292,7 @@ export function GroupedLotsRecordRow({
                 label: 'Restablecer fecha de vencimiento original',
                 disabled: !isDifferentFromOriginal,
                 onClick: () => {
-                  onChangeExpiration &&
-                    onChangeExpiration(record.key, originalDateStr);
+                  onChangeExpiration?.(record.key, originalDateStr);
                   syncSameLotRecords(record.key, originalDateStr, record);
                 },
               });
@@ -309,8 +307,7 @@ export function GroupedLotsRecordRow({
                 key: 'clear-date',
                 label: 'Borrar fecha de vencimiento',
                 onClick: () => {
-                  onChangeExpiration &&
-                    onChangeExpiration(record.key, CLEAR_SENTINEL);
+                  onChangeExpiration?.(record.key, CLEAR_SENTINEL);
                   if (record.type === 'batch')
                     syncSameLotRecords(record.key, CLEAR_SENTINEL, record);
                 },

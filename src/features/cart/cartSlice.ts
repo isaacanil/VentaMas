@@ -476,15 +476,6 @@ export const cartSlice = createSlice({
         }
       }
     },
-    changePaymentMethod: (state: CartState) => {
-      const paymentMethod = state.data.paymentMethod;
-      const paymentMethodSelected = paymentMethod.findIndex(
-        (method) => method.status === true,
-      );
-      if (paymentMethodSelected) {
-        paymentMethodSelected;
-      }
-    },
     addPaymentMethodAutoValue: (state: CartState) => {
       const totalPurchase = state.data.totalPurchase.value;
       state.data.payment.value = totalPurchase;

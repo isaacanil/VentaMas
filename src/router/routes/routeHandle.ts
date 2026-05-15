@@ -73,7 +73,7 @@ export const mergeRouteHandleMeta = (route: RouteMetaCarrier): AppRouteHandle | 
   const existingRouteMeta = getRouteMetaFromHandle(existingHandle) ?? undefined;
   const flatRouteMeta = pickDefinedRouteMeta(route);
   const mergedRouteMeta = {
-    ...(existingRouteMeta || {}),
+    ...existingRouteMeta,
     ...flatRouteMeta,
   };
 
@@ -87,7 +87,7 @@ export const mergeRouteHandleMeta = (route: RouteMetaCarrier): AppRouteHandle | 
   }
 
   return {
-    ...(existingHandle || {}),
+    ...existingHandle,
     routeMeta: mergedRouteMeta,
   };
 };

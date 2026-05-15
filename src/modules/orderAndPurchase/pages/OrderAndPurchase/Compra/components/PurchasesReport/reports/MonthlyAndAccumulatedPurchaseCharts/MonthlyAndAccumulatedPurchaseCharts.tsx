@@ -102,7 +102,7 @@ export const MonthlyAndAccumulatedPurchaseCharts = ({ purchases }: MonthlyAndAcc
         scales: {
             ...baseOptions.scales,
             y: {
-                ...(baseOptions.scales?.y || {}),
+                ...baseOptions.scales?.y,
                 max: maxScaleValue,
             },
         },

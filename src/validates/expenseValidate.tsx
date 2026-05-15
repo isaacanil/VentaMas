@@ -44,14 +44,14 @@ export const validateExpense = (
     !expense.payment?.bankAccountId
   ) {
     errors.payment = {
-      ...(errors.payment ?? {}),
+      ...errors.payment,
       bankAccountId: 'Cuenta bancaria es requerida',
     };
   }
 
   if (paymentMethod === 'cash' && !expense.payment?.cashAccountId) {
     errors.payment = {
-      ...(errors.payment ?? {}),
+      ...errors.payment,
       cashAccountId: 'Cuenta de caja es requerida',
     };
   }
@@ -61,7 +61,7 @@ export const validateExpense = (
     !expense.payment?.cashRegister
   ) {
     errors.payment = {
-      ...(errors.payment ?? {}),
+      ...errors.payment,
       cashRegister: 'Cuadre de caja es requerido',
     };
   }

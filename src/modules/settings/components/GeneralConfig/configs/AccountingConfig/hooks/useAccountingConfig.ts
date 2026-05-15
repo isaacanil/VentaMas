@@ -641,40 +641,6 @@ export const useAccountingConfig = ({
         'bankAccounts',
         bankAccountId,
       );
-      const previousSnapshot = buildBankAccountSnapshot({
-        bankAccountId: currentBankAccount.id,
-        businessId,
-        name: currentBankAccount.name,
-        currency: currentBankAccount.currency,
-        type: currentBankAccount.type ?? null,
-        institutionName: currentBankAccount.institutionName ?? null,
-        bankCode: currentBankAccount.bankCode ?? null,
-        countryCode: currentBankAccount.countryCode ?? null,
-        isCustomBank: currentBankAccount.isCustomBank ?? null,
-        accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
-        openingBalance: currentBankAccount.openingBalance ?? null,
-        openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
-        notes: currentBankAccount.notes ?? null,
-        status: currentBankAccount.status,
-        metadata: currentBankAccount.metadata ?? {},
-      });
-      const nextSnapshot = buildBankAccountSnapshot({
-        bankAccountId: currentBankAccount.id,
-        businessId,
-        name: currentBankAccount.name,
-        currency: currentBankAccount.currency,
-        type: currentBankAccount.type ?? null,
-        institutionName: currentBankAccount.institutionName ?? null,
-        bankCode: currentBankAccount.bankCode ?? null,
-        countryCode: currentBankAccount.countryCode ?? null,
-        isCustomBank: currentBankAccount.isCustomBank ?? null,
-        accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
-        openingBalance: currentBankAccount.openingBalance ?? null,
-        openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
-        notes: currentBankAccount.notes ?? null,
-        status,
-        metadata: currentBankAccount.metadata ?? {},
-      });
       const batch = writeBatch(db);
 
       batch.set(
@@ -749,23 +715,6 @@ export const useAccountingConfig = ({
         'bankAccounts',
         bankAccountId,
       );
-      const previousSnapshot = buildBankAccountSnapshot({
-        bankAccountId: currentBankAccount.id,
-        businessId,
-        name: currentBankAccount.name,
-        currency: currentBankAccount.currency,
-        type: currentBankAccount.type ?? null,
-        institutionName: currentBankAccount.institutionName ?? null,
-        bankCode: currentBankAccount.bankCode ?? null,
-        countryCode: currentBankAccount.countryCode ?? null,
-        isCustomBank: currentBankAccount.isCustomBank ?? null,
-        accountNumberLast4: currentBankAccount.accountNumberLast4 ?? null,
-        openingBalance: currentBankAccount.openingBalance ?? null,
-        openingBalanceDate: currentBankAccount.openingBalanceDate ?? null,
-        notes: currentBankAccount.notes ?? null,
-        status: currentBankAccount.status,
-        metadata: currentBankAccount.metadata ?? {},
-      });
       const nextSnapshot = buildBankAccountSnapshot({
         bankAccountId,
         businessId,
@@ -1000,12 +949,6 @@ export const useAccountingConfig = ({
           'accounting',
         );
         const now = Timestamp.now();
-        const persistedConfig: AccountingSettingsConfig = {
-          ...lastPersistedConfig,
-          bankAccountsEnabled: normalizedBankAccountsEnabled,
-          bankPaymentPolicy: normalizedPolicy,
-          updatedBy: userId,
-        };
         const batch = writeBatch(db);
 
         batch.set(
@@ -1152,11 +1095,6 @@ export const useAccountingConfig = ({
           'accounting',
         );
         const now = Timestamp.now();
-        const persistedConfig: AccountingSettingsConfig = {
-          ...lastPersistedConfig,
-          generalAccountingEnabled,
-          updatedBy: userId,
-        };
         const batch = writeBatch(db);
 
         batch.set(

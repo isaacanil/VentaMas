@@ -148,7 +148,7 @@ const fixExpenseTimestampsForBusiness = async ({
     const expensePayload = {
       ...expense,
       dates: {
-        ...(expense.dates ?? {}),
+        ...expense.dates,
       },
     };
 

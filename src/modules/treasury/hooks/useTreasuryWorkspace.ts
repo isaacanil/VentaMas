@@ -538,11 +538,6 @@ export const useTreasuryWorkspace = ({
 
       const statementDate =
         toNormalizedOccurredAt(draft.statementDate) ?? Timestamp.now();
-      const ledgerBalance =
-        currentBalancesByAccountKey[`bank:${draft.bankAccountId}`] ??
-        Number(bankAccount.openingBalance ?? 0);
-      const variance = Number((statementBalance - ledgerBalance).toFixed(2));
-
       try {
         await fbCreateBankReconciliation({
           businessId,
@@ -571,7 +566,7 @@ export const useTreasuryWorkspace = ({
 
       void message.success('Conciliación bancaria registrada.');
     },
-    [bankAccounts, businessId, currentBalancesByAccountKey],
+    [bankAccounts, businessId],
   );
 
   const recordBankStatementLine = useCallback(

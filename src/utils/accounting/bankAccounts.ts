@@ -75,7 +75,7 @@ const normalizeCountryCode = (value: unknown): string =>
 const removeLegacyInstitutionCatalogMetadata = (
   metadata?: Record<string, unknown>,
 ): Record<string, unknown> => {
-  const nextMetadata = { ...(metadata ?? {}) };
+  const nextMetadata = { ...metadata };
   delete nextMetadata.institutionCatalog;
   return nextMetadata;
 };

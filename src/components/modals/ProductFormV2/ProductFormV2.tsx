@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Modal, Button, Tabs, Layout, Typography, Space } from 'antd';
+import { Form, Modal, Button, Tabs, Typography, Space } from 'antd';
 import { BasicInfoTab } from './tabs/BasicInfoTab';
 import { PricingTab } from './tabs/PricingTab';
 import { InventoryTab } from './tabs/InventoryTab';

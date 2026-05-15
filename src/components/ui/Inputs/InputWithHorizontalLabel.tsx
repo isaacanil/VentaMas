@@ -49,7 +49,7 @@ export const InputWithHorizontalLabel = ({
       <InputNumber
         prefix="$"
         {...inputProps}
-        style={{ width: '100%', ...(style ?? {}) }}
+        style={{ width: '100%', ...style }}
       />
     </Container>
   );

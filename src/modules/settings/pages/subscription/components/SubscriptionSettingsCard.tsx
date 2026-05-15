@@ -257,7 +257,7 @@ export const SubscriptionSettingsCard = ({
         footer={null}
         title={cancelStep === 'confirm' ? 'Cancelar Suscripción' : null}
         width={440}
-        maskClosable={cancelStep !== 'done'}
+        mask={{ closable: cancelStep !== 'done' }}
         closable={cancelStep !== 'done'}
       >
         {cancelStep === 'done' && (

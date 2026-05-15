@@ -42,10 +42,9 @@ export function useBusinessUsers() {
   useEffect(() => {
     if (!businessID) return undefined;
 
-    let unsubscribe: (() => void) | undefined;
     let cancelled = false;
 
-    unsubscribe = fbGetUsers(
+    const unsubscribe = fbGetUsers(
       { businessID },
       (usersArray) => {
         if (cancelled) return;

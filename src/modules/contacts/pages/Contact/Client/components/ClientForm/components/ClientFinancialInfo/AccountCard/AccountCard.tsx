@@ -30,8 +30,6 @@ export const AccountCard = ({
   balance,
   installments = 0,
   installmentAmount,
-  lastPayment,
-  lastPaymentDate,
   isActive,
 }: AccountCardProps) => {
   // const formatDate = (dateValue) => {

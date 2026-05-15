@@ -11,7 +11,7 @@ export const ConfirmCancelButtons: React.FC<ConfirmCancelButtonsProps> = ({
   onCancel,
 }) => {
   const handleCancel = () => {
-    onCancel && onCancel();
+    onCancel?.();
   };
   return (
     <Container>

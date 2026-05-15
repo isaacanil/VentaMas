@@ -84,7 +84,10 @@ export const AddExchangeRateModal = ({
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
-      okButtonProps={{ loading: saving }}
+      okButtonProps={{
+        disabled: !hasUnsavedChanges && localFunctional === functionalCurrency,
+        loading: saving,
+      }}
       okText="Guardar cambios"
       cancelText="Cancelar"
       destroyOnClose

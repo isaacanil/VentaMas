@@ -6,11 +6,11 @@ import type {
 } from './types';
 
 export function getEffectiveExpirationDate(
-  item: InventoryStockItem,
+  item: InventoryStockItem | null | undefined,
   expirationEdits: ExpirationEditsMap,
   countsMeta: CountsMetaMap,
 ): InventoryStockItem['expirationDate'] {
-  if (!item) return item?.expirationDate;
+  if (!item) return undefined;
   const edits = expirationEdits || {};
   const meta = countsMeta || {};
   const itemId = item.id;
@@ -41,7 +41,7 @@ export function getEffectiveExpirationDate(
   const fallbackKey = itemId ? `batchGroup:stock:${itemId}` : null;
 
   const candidateKeys = [itemKey, byIdKey, byNumberKey, fallbackKey].filter(
-    Boolean,
+    (key): key is string => Boolean(key),
   );
   for (const k of candidateKeys) {
     if (!Object.prototype.hasOwnProperty.call(edits, k)) continue;

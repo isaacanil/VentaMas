@@ -1,11 +1,9 @@
 import {
   requestMockSubscriptionScenario,
-  type BillingOverviewResponse,
 } from '@/firebase/billing/billingManagement';
 
 import type { MockScenarioPayload } from '../components/MockSubscriptionFlowCard';
 import type {
-  SimulatedBillingResult,
   SimulatedPlanOption,
 } from '../components/SimulatedPlanSelectionCard';
 import { toCleanString } from '../subscription.utils';

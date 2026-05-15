@@ -1,10 +1,7 @@
 import { WarningOutlined } from '@/constants/icons/antd';
-import { Space, Typography } from 'antd';
 import styled from 'styled-components';
 
 import type { ProductRecord } from '@/types/products';
-
-const { Text } = Typography;
 
 const ErrorBannerWrapper = styled.div`
   display: flex;

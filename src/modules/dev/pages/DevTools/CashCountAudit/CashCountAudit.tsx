@@ -18,7 +18,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useMemo, useReducer } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 

@@ -199,7 +199,7 @@ const modalSlice = createSlice({
       }>,
     ) => {
       const { mode, addClientToCart } = actions.payload;
-      let isOpen = state.modalToggleClient.isOpen;
+      const isOpen = state.modalToggleClient.isOpen;
       state.modalToggleClient.isOpen = !isOpen;
       if (isOpen === false) {
         state.modalToggleClient.mode = OPERATION_MODES.CREATE.id;
@@ -227,7 +227,7 @@ const modalSlice = createSlice({
       const update = OPERATION_MODES.UPDATE.id;
 
       const mode = actions.payload.mode;
-      let isOpen = state.modalToggleProvider.isOpen;
+      const isOpen = state.modalToggleProvider.isOpen;
       state.modalToggleProvider.isOpen = !isOpen;
       if (isOpen === false) {
         state.modalToggleProvider.mode = create;
