@@ -21,6 +21,7 @@ const {
   CHANGELOG_TERM,
   SETTING_TERM,
   DEV_VIEW_TERM,
+  ACCOUNTING_TERM,
 } = ROUTES_NAME;
 
 const {
@@ -44,6 +45,19 @@ const {
   SUBSCRIPTION_MAINTENANCE_TOOLS,
   SUBSCRIPTION_MAINTENANCE_PLANS,
 } = DEV_VIEW_TERM;
+
+const {
+  ACCOUNTING,
+  ACCOUNTING_JOURNAL_BOOK,
+  ACCOUNTING_GENERAL_LEDGER,
+  ACCOUNTING_MANUAL_ENTRIES,
+  ACCOUNTING_REPORTS,
+  ACCOUNTING_FISCAL_COMPLIANCE,
+  ACCOUNTING_PERIOD_CLOSE,
+} = ACCOUNTING_TERM;
+
+const preloadAccountingWorkspace = () =>
+  import('@/modules/accounting/pages/AccountingWorkspace/AccountingWorkspace');
 
 export const routePreloaders: Record<string, RoutePreloader> = {
   [BASIC_TERM.HOME]: () => import('@/modules/home/pages/Home/Home'),
@@ -77,6 +91,14 @@ export const routePreloaders: Record<string, RoutePreloader> = {
     import('@/modules/cashReconciliation/pages/CashReconciliation/CashReconciliation'),
   [TREASURY_TERM.TREASURY_BANK_ACCOUNTS]: () =>
     import('@/modules/treasury/pages/TreasuryBankAccountsPage'),
+
+  [ACCOUNTING]: preloadAccountingWorkspace,
+  [ACCOUNTING_JOURNAL_BOOK]: preloadAccountingWorkspace,
+  [ACCOUNTING_GENERAL_LEDGER]: preloadAccountingWorkspace,
+  [ACCOUNTING_MANUAL_ENTRIES]: preloadAccountingWorkspace,
+  [ACCOUNTING_REPORTS]: preloadAccountingWorkspace,
+  [ACCOUNTING_FISCAL_COMPLIANCE]: preloadAccountingWorkspace,
+  [ACCOUNTING_PERIOD_CLOSE]: preloadAccountingWorkspace,
 
   [INVENTORY_TERM.INVENTORY_ITEMS]: () =>
     import('@/modules/inventory/pages/Inventario/pages/ItemsManager/Inventario'),

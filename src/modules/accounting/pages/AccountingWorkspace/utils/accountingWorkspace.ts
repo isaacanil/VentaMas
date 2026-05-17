@@ -203,6 +203,7 @@ const resolvePreferredAccountingDocumentReference = ({
 
   switch (eventType) {
     case 'invoice.committed':
+    case 'invoice.voided':
       return (
         toCleanString(snapshot.ncfCode) ??
         toCleanString(snapshot.invoiceNumber) ??
@@ -396,6 +397,7 @@ const resolveJournalTypeKey = (
 ): keyof typeof ACCOUNTING_JOURNAL_TYPE_LABELS => {
   switch (eventType) {
     case 'invoice.committed':
+    case 'invoice.voided':
       return 'sale';
     case 'purchase.committed':
       return 'purchase';

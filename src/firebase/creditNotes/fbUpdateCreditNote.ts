@@ -1,14 +1,30 @@
-import { doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
-import { db } from '@/firebase/firebaseconfig';
+import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { functions } from '@/firebase/firebaseconfig';
 import type { CreditNoteRecord } from '@/types/creditNote';
 import type { UserIdentity } from '@/types/users';
 
+interface UpdateCustomerCreditNoteRequest {
+  businessId: string;
+  creditNoteId: string;
+  updates: Partial<CreditNoteRecord>;
+  sessionToken?: string;
+}
+
+interface UpdateCustomerCreditNoteResponse {
+  ok: boolean;
+  creditNoteId: string;
+}
+
+const updateCustomerCreditNoteCallable = httpsCallable<
+  UpdateCustomerCreditNoteRequest,
+  UpdateCustomerCreditNoteResponse
+>(functions, 'updateCustomerCreditNote');
+
 /**
- * Actualiza una Nota de Crédito existente.
- * @param {Object} user - Usuario con businessID.
- * @param {string} creditNoteId - ID de la nota de crédito (document).
- * @param {Object} updates - Campos a actualizar.
+ * Actualiza una nota no emitida por callable. Las notas emitidas/aplicadas son
+ * inmutables desde cliente.
  */
 export const fbUpdateCreditNote = async (
   user: UserIdentity | null | undefined,
@@ -18,16 +34,11 @@ export const fbUpdateCreditNote = async (
   if (!user?.businessID) throw new Error('Usuario sin businessID');
   if (!creditNoteId) throw new Error('creditNoteId requerido');
 
-  const creditNoteRef = doc(
-    db,
-    'businesses',
-    user.businessID,
-    'creditNotes',
+  const { sessionToken } = getStoredSession();
+  await updateCustomerCreditNoteCallable({
+    businessId: user.businessID,
     creditNoteId,
-  );
-  const dataWithTimestamp = {
-    ...updates,
-    updatedAt: Timestamp.now(),
-  };
-  await updateDoc(creditNoteRef, dataWithTimestamp);
+    updates,
+    ...(sessionToken ? { sessionToken } : {}),
+  });
 };

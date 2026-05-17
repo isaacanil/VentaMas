@@ -51,6 +51,7 @@ export type AccountingModuleKey =
   | 'tax';
 export type AccountingEventType =
   | 'invoice.committed'
+  | 'invoice.voided'
   | 'accounts_receivable.payment.recorded'
   | 'accounts_receivable.payment.voided'
   | 'customer_credit_note.issued'

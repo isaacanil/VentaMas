@@ -22,6 +22,12 @@ export async function consumeCreditNotesTx(
       throw new Error(`Nota de crédito ${note.id} no encontrada`);
     }
     const cnData = cnSnap.data();
+    const status = String(cnData?.status || '').trim().toLowerCase();
+    if (status === 'cancelled' || status === 'voided') {
+      throw new Error(
+        `La nota de crédito ${cnData?.ncf || cnData?.number || note.id} está anulada y no puede aplicarse`,
+      );
+    }
     const currentAvailable = Number(
       cnData?.availableAmount ?? cnData?.totalAmount ?? 0,
     );

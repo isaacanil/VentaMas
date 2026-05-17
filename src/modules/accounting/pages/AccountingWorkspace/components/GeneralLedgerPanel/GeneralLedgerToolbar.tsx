@@ -133,7 +133,7 @@ const ToolbarShell = styled.section`
 const Toolbar = styled.div`
   display: grid;
   grid-template-columns:
-    minmax(300px, 1fr) 260px
+    minmax(300px, 1fr) max-content
     minmax(240px, 0.9fr);
   gap: 12px;
   align-items: flex-end;
@@ -152,10 +152,10 @@ const ToolbarField = styled.div<{ $dateRange?: boolean; $search?: boolean }>`
   flex-direction: column;
   gap: var(--ds-space-2);
   min-width: 0;
-  ${({ $dateRange }) => ($dateRange ? 'width: 260px;' : '')}
+  ${({ $dateRange }) => ($dateRange ? 'width: max-content;' : '')}
   ${({ $search }) => ($search ? 'width: 100%;' : '')}
 
-  @media (max-width: 640px) {
+  @media (max-width: 1080px) {
     ${({ $dateRange }) => ($dateRange ? 'width: 100%;' : '')}
   }
 `;

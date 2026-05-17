@@ -72,11 +72,11 @@ export const replayAccountingEventProjection = onCall(
     throw new HttpsError('invalid-argument', 'eventId es requerido.');
   }
 
-  await assertUserAccess({
-    authUid,
-    businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
-  });
+    await assertUserAccess({
+      authUid,
+      businessId,
+      allowedRoles: MEMBERSHIP_ROLE_GROUPS.ACCOUNTING_WRITE,
+    });
 
   const accountingSettings =
     await getPilotAccountingSettingsForBusiness(businessId);

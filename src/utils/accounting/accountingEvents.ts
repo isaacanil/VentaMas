@@ -42,6 +42,13 @@ export const ACCOUNTING_EVENT_DEFINITIONS: AccountingEventDefinition[] = [
       'Venta confirmada que ya debe quedar disponible para proyeccion contable.',
   },
   {
+    eventType: 'invoice.voided',
+    moduleKey: 'sales',
+    label: 'Factura anulada',
+    description:
+      'Anulacion formal de una factura con reverso contable cuando aplica.',
+  },
+  {
     eventType: 'accounts_receivable.payment.recorded',
     moduleKey: 'accounts_receivable',
     label: 'Cobro registrado',

@@ -102,6 +102,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
 
 vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
+    ACCOUNTING_WRITE: ['accounting-write'],
     INVOICE_OPERATOR: ['invoice-operator'],
   },
   assertUserAccess: (...args) => assertUserAccessMock(...args),

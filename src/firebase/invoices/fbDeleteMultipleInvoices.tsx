@@ -1,6 +1,7 @@
-import { deleteDoc, doc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
-import { db } from '@/firebase/firebaseconfig';
+import { getStoredSession } from '@/firebase/Auth/fbAuthV2/sessionClient';
+import { functions } from '@/firebase/firebaseconfig';
 import type { UserIdentity } from '@/types/users';
 
 import { isInvoiceUser, type InvoiceDoc } from './types';
@@ -8,29 +9,35 @@ import { isInvoiceUser, type InvoiceDoc } from './types';
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
+interface DeleteDraftInvoiceRequest {
+  businessId: string;
+  invoiceId: string;
+  sessionToken?: string;
+}
+
+interface DeleteDraftInvoiceResponse {
+  ok: boolean;
+  invoiceId: string;
+}
+
+const deleteDraftInvoiceCallable = httpsCallable<
+  DeleteDraftInvoiceRequest,
+  DeleteDraftInvoiceResponse
+>(functions, 'deleteDraftInvoice');
+
 export async function fbDeleteMultipleInvoices(
   user: UserIdentity | null | undefined,
   invoices: InvoiceDoc[],
 ): Promise<void> {
   if (!isInvoiceUser(user)) return;
   const ids = invoices.map(({ data }) => data?.id).filter(isNonEmptyString);
+  const { sessionToken } = getStoredSession();
 
-  for (const id of ids) {
-    console.log(id);
-    try {
-      await fbDeleteInvoiceById(user, id);
-    } catch (error) {
-      console.error(`Error eliminando la factura con ID ${id}:`, error);
-    }
+  for (const invoiceId of ids) {
+    await deleteDraftInvoiceCallable({
+      businessId: user.businessID,
+      invoiceId,
+      ...(sessionToken ? { sessionToken } : {}),
+    });
   }
-}
-
-async function fbDeleteInvoiceById(
-  user: UserIdentity,
-  ventaID: string,
-): Promise<void> {
-  if (!isInvoiceUser(user)) return;
-  const ventaRef = doc(db, 'businesses', user.businessID, 'invoices', ventaID);
-  await deleteDoc(ventaRef);
-  console.log(`Venta con ID ${ventaID} eliminada exitosamente`);
 }

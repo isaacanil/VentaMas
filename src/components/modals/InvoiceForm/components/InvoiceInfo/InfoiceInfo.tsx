@@ -30,11 +30,30 @@ interface InvoiceInfoProps {
   isEditLocked?: boolean;
 }
 
+const VOIDED_INVOICE_STATUSES = new Set(['voided', 'canceled', 'cancelled']);
+
+const toSafeNumber = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const canRequestInvoiceVoid = (invoice: InvoiceData) => {
+  const status =
+    typeof invoice.status === 'string' ? invoice.status.toLowerCase() : '';
+  const paymentHistory = invoice.paymentHistory;
+  const hasPaymentHistory =
+    Array.isArray(paymentHistory) && paymentHistory.length > 0;
+  const hasAppliedPayment =
+    toSafeNumber(invoice.accumulatedPaid) > 0 || hasPaymentHistory;
+
+  return !VOIDED_INVOICE_STATUSES.has(status) && !hasAppliedPayment;
+};
+
 export const InvoiceInfo = ({ invoice, isEditLocked }: InvoiceInfoProps) => {
   const [isOpenCancelInvoiceConfirm, setIsOpenCancelInvoiceConfirm] =
     useState(false);
   const [isOpenPaymentInfoModal, setIsOpenPaymentInfoModal] = useState(false);
-  const isCancelable = !invoice?.NCF;
+  const isCancelable = canRequestInvoiceVoid(invoice);
 
   const handleCloseCancelInvoiceConfirm = () =>
     setIsOpenCancelInvoiceConfirm(false);

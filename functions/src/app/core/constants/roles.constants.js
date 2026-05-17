@@ -4,6 +4,9 @@ export const ROLE = Object.freeze({
   MANAGER: 'manager',
   CASHIER: 'cashier',
   BUYER: 'buyer',
+  ACCOUNTANT: 'accountant',
+  CONTROLLER: 'controller',
+  AUDITOR: 'auditor',
   DEV: 'dev',
 });
 
@@ -13,6 +16,11 @@ const ROLE_ALIASES = new Map([
   ['superadmin', ROLE.ADMIN],
   ['super-admin', ROLE.ADMIN],
   ['super_admin', ROLE.ADMIN],
+  ['accounting', ROLE.ACCOUNTANT],
+  ['contador', ROLE.ACCOUNTANT],
+  ['contable', ROLE.ACCOUNTANT],
+  ['contralor', ROLE.CONTROLLER],
+  ['auditor', ROLE.AUDITOR],
 ]);
 
 export const normalizeRole = (roleString) => {

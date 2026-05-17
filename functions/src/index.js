@@ -10,6 +10,11 @@ import { createProduct } from './app/modules/products/functions/createProduct.js
 import { createClient } from './app/modules/client/functions/createClient.js';
 import { createProvider } from './app/modules/provider/functions/createProvider.js';
 import { reserveCreditNoteNcf } from './app/modules/taxReceipt/functions/reserveCreditNoteNcf.js';
+import {
+  deleteDraftInvoice,
+  updateInvoiceFinancialDocument,
+  voidInvoiceFinancialDocument,
+} from './app/modules/invoice/functions/invoiceLifecycle.js';
 import { runMonthlyComplianceReport } from './app/modules/compliance/functions/runMonthlyComplianceReport.js';
 import { exportDgiiTxtReport } from './app/modules/compliance/functions/exportDgiiTxtReport.js';
 import { closeAccountingPeriod } from './app/modules/accounting/functions/closeAccountingPeriod.js';
@@ -36,6 +41,11 @@ import { changeCashCountState } from './app/modules/cashCount/functions/changeCa
 import { closeCashCount } from './app/modules/cashCount/functions/closeCashCount.js';
 import { createAccountsReceivable } from './app/modules/accountReceivable/functions/createAccountsReceivable.js';
 import { processAccountsReceivablePayment } from './app/modules/accountReceivable/functions/processAccountsReceivablePayment.js';
+import {
+  applyCustomerCreditNotes,
+  createCustomerCreditNote,
+  updateCustomerCreditNote,
+} from './app/modules/accountReceivable/functions/customerCreditNotes.js';
 import {
   syncCustomerCreditNoteApplicationAccountingEvent,
   syncCustomerCreditNoteIssuedAccountingEvent,
@@ -160,6 +170,9 @@ export {
   createClient,
   createProvider,
   reserveCreditNoteNcf,
+  deleteDraftInvoice,
+  updateInvoiceFinancialDocument,
+  voidInvoiceFinancialDocument,
   runMonthlyComplianceReport,
   exportDgiiTxtReport,
   closeAccountingPeriod,
@@ -186,6 +199,9 @@ export {
   closeCashCount,
   createAccountsReceivable,
   processAccountsReceivablePayment,
+  applyCustomerCreditNotes,
+  createCustomerCreditNote,
+  updateCustomerCreditNote,
   syncCustomerCreditNoteApplicationAccountingEvent,
   syncCustomerCreditNoteIssuedAccountingEvent,
   voidAccountsReceivablePayment,

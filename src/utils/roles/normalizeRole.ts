@@ -6,6 +6,11 @@ const ROLE_ALIASES: Record<string, UserRoleLike> = {
   superadmin: 'admin',
   'super-admin': 'admin',
   super_admin: 'admin',
+  accounting: 'accountant',
+  contador: 'accountant',
+  contable: 'accountant',
+  contralor: 'controller',
+  auditor: 'auditor',
 };
 
 const toCleanString = (value: unknown): string | null => {
@@ -20,6 +25,9 @@ export const ROLE_LABELS: Record<string, string> = {
   manager: 'Gerente',
   cashier: 'Cajero',
   buyer: 'Comprador',
+  accountant: 'Contador',
+  controller: 'Contralor',
+  auditor: 'Auditor',
   dev: 'Dev',
 };
 

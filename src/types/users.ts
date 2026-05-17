@@ -4,6 +4,9 @@ export type UserRoleId =
   | 'manager'
   | 'cashier'
   | 'buyer'
+  | 'accountant'
+  | 'controller'
+  | 'auditor'
   | 'dev'
   | 'specialCashier1'
   | 'specialCashier2';

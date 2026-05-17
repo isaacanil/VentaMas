@@ -44,7 +44,7 @@ const DesktopLayout = styled.div`
   grid-template-columns: auto 220px;
   gap: 0;
   align-items: stretch;
-  height: 100%;
+  flex: 1;
   min-height: 0;
 `;
 

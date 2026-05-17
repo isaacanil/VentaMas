@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const ACCOUNTING_EVENT_TYPE_VALUES = [
   'invoice.committed',
+  'invoice.voided',
   'accounts_receivable.payment.recorded',
   'accounts_receivable.payment.voided',
   'customer_credit_note.issued',

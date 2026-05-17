@@ -117,7 +117,7 @@ export const createManualJournalEntry = onCall(
   await assertUserAccess({
     authUid,
     businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
+    allowedRoles: MEMBERSHIP_ROLE_GROUPS.ACCOUNTING_WRITE,
   });
 
   const accountingSettings =

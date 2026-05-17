@@ -59,7 +59,15 @@ vi.mock('../../../core/config/firebase.js', () => ({
 
 vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
-    AUDIT: new Set(['owner', 'admin', 'manager', 'dev']),
+    AUDIT: new Set([
+      'owner',
+      'admin',
+      'manager',
+      'accountant',
+      'controller',
+      'auditor',
+      'dev',
+    ]),
   },
   assertUserAccess: (...args) => assertUserAccessMock(...args),
   getUserAccessProfile: (...args) => getUserAccessProfileMock(...args),
@@ -146,7 +154,15 @@ describe('analyzeFinanceReadiness', () => {
     expect(assertUserAccessMock).toHaveBeenCalledWith({
       authUid: 'dev-1',
       businessId: 'business-1',
-      allowedRoles: new Set(['owner', 'admin', 'manager', 'dev']),
+      allowedRoles: new Set([
+        'owner',
+        'admin',
+        'manager',
+        'accountant',
+        'controller',
+        'auditor',
+        'dev',
+      ]),
     });
   });
 

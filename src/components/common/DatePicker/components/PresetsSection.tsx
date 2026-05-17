@@ -1,13 +1,28 @@
 import { CloseOutlined } from '@ant-design/icons';
-import { ListBox } from '@heroui/react';
+import { Label, ListBox } from '@heroui/react';
 import React, { useMemo } from 'react';
-import { Header } from 'react-aria-components';
 import styled from 'styled-components';
 
 import { isPresetActive } from '@/components/common/DatePicker/utils/dateUtils';
 import type { DatePickerPreset, PresetsSectionProps } from '../types';
 
 type PresetLayout = 'grid' | 'sidebar';
+
+type SidebarPresetItem =
+  | {
+      id: string;
+      kind: 'header';
+      label: string;
+    }
+  | {
+      id: string;
+      isActive: boolean;
+      kind: 'preset';
+      label: string;
+      preset: DatePickerPreset;
+    };
+
+type SidebarPresetOption = Extract<SidebarPresetItem, { kind: 'preset' }>;
 
 interface PresetsContainerProps {
   $layout: PresetLayout;
@@ -178,38 +193,85 @@ const PresetButton = styled.button<PresetButtonProps>`
   }
 `;
 
-const SidebarWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+const SidebarListBoxScope = styled.div`
   height: 100%;
-  flex: 1;
   min-height: 0;
+
+  .vm-date-picker-presets-listbox {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 10px 12px;
+  }
+
+  .vm-date-picker-presets-item,
+  .vm-date-picker-presets-header-item {
+    padding: 0;
+    min-height: auto;
+    background: transparent;
+  }
+
+  .vm-date-picker-presets-item {
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    color: #374151;
+  }
+
+  .vm-date-picker-presets-item[data-active='true'] {
+    background: #e6f7ff;
+    color: #1890ff;
+    font-weight: 600;
+  }
+
+  .vm-date-picker-presets-item[data-hovered],
+  .vm-date-picker-presets-item[data-focused] {
+    background: #f5f7fb;
+    color: #1d4ed8;
+  }
+
+  .vm-date-picker-presets-item[data-active='true'][data-hovered],
+  .vm-date-picker-presets-item[data-active='true'][data-focused] {
+    background: #bae7ff;
+    color: #1890ff;
+  }
+
+  .vm-date-picker-presets-header-item[data-disabled] {
+    background: transparent;
+  }
+
+  .vm-date-picker-presets-item[data-focus-visible] {
+    box-shadow: 0 0 0 2px rgb(24 144 255 / 18%);
+  }
 `;
 
-const SidebarScroll = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  max-height: 100%;
-`;
-
-const SidebarGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const SidebarGroupTitle = styled.div`
+const SidebarGroupTitle = styled.span`
+  display: block;
+  padding: 8px 4px 4px;
+  color: var(--ds-color-text-secondary);
   font-size: 11px;
   font-weight: 600;
-  color: #8c8c8c;
+  letter-spacing: var(--ds-letter-spacing-wide);
+  line-height: 1.2;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+`;
+
+const SidebarPresetLabel = styled(Label)`
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  color: inherit;
+  font-size: 14px;
+  font-weight: inherit;
+  line-height: 1.25;
+  cursor: pointer;
+
+  .vm-date-picker-presets-item[data-pressed] & {
+    transform: translateY(1px);
+  }
 `;
 
 const DEFAULT_GROUP = 'Rangos rápidos';
@@ -335,42 +397,82 @@ export const PresetsSection = ({
     return active ? active.label : null;
   }, [presetItems, value, mode]);
 
+  const sidebarPresetItems = useMemo<SidebarPresetItem[]>(() => {
+    return groupedEntries.flatMap(([groupName, items]) => {
+      const presetOptions = items.map<SidebarPresetItem>((preset) => ({
+        id: `${groupName}:${preset.label}`,
+        isActive: preset.label === selectedKey,
+        kind: 'preset',
+        label: preset.label,
+        preset,
+      }));
+
+      if (groupedEntries.length <= 1) {
+        return presetOptions;
+      }
+
+      return [
+        {
+          id: `header:${groupName}`,
+          kind: 'header',
+          label: groupName,
+        },
+        ...presetOptions,
+      ];
+    });
+  }, [groupedEntries, selectedKey]);
+
+  const sidebarPresetById = useMemo(() => {
+    return new Map(
+      sidebarPresetItems
+        .filter((item): item is SidebarPresetOption => item.kind === 'preset')
+        .map((item) => [item.id, item]),
+    );
+  }, [sidebarPresetItems]);
+
   if (normalizedLayout === 'sidebar') {
     return (
-      <ListBox
-        aria-label="Rangos de fecha"
-        selectionMode="single"
-        disallowEmptySelection
-        selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
-        onSelectionChange={(keys) => {
-          if (keys === 'all') return;
-          const key = [...keys][0] as string | undefined;
-          if (!key) return;
-          const preset = presetItems.find((p) => p.label === key);
-          if (preset) onPresetClick?.(preset);
-        }}
-        className="h-full overflow-y-auto"
-      >
-        {groupedEntries.map(([groupName, items]) => (
-          <ListBox.Section key={groupName} id={groupName}>
-            {groupedEntries.length > 1 && (
-              <Header className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-default-400">
-                {groupName}
-              </Header>
-            )}
-            {items.map((preset) => (
+      <SidebarListBoxScope>
+        <ListBox
+          aria-label="Rangos de fecha"
+          selectionMode="none"
+          items={sidebarPresetItems}
+          onAction={(key) => {
+            const selectedItem = sidebarPresetById.get(String(key));
+            if (!selectedItem || selectedItem.isActive) return;
+            onPresetClick?.(selectedItem.preset);
+          }}
+          className="vm-date-picker-presets-listbox"
+        >
+          {(item) => {
+            if (item.kind === 'header') {
+              return (
+                <ListBox.Item
+                  id={item.id}
+                  textValue={item.label}
+                  isDisabled
+                  className="vm-date-picker-presets-header-item"
+                >
+                  <SidebarGroupTitle>{item.label}</SidebarGroupTitle>
+                </ListBox.Item>
+              );
+            }
+
+            return (
               <ListBox.Item
-                key={preset.label}
-                id={preset.label}
-                textValue={preset.label}
-                className="data-[selected=true]:bg-primary/10 data-[selected=true]:font-medium data-[selected=true]:text-primary"
+                id={item.id}
+                textValue={item.label}
+                data-active={item.isActive ? 'true' : undefined}
+                className="vm-date-picker-presets-item"
               >
-                {preset.label}
+                <SidebarPresetLabel>
+                  {item.label}
+                </SidebarPresetLabel>
               </ListBox.Item>
-            ))}
-          </ListBox.Section>
-        ))}
-      </ListBox>
+            );
+          }}
+        </ListBox>
+      </SidebarListBoxScope>
     );
   }
 

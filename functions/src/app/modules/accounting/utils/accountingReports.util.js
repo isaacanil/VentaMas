@@ -18,6 +18,7 @@ import {
 
 const ACCOUNTING_EVENT_TYPE_LABELS = {
   'invoice.committed': 'Factura confirmada',
+  'invoice.voided': 'Factura anulada',
   'accounts_receivable.payment.recorded': 'Cobro registrado',
   'accounts_receivable.payment.voided': 'Cobro anulado',
   'customer_credit_note.issued': 'Nota de crédito de cliente emitida',
@@ -50,6 +51,7 @@ const ACCOUNTING_MODULE_LABELS = {
 
 const ACCOUNTING_EVENT_MODULES = {
   'invoice.committed': 'sales',
+  'invoice.voided': 'sales',
   'accounts_receivable.payment.recorded': 'accounts_receivable',
   'accounts_receivable.payment.voided': 'accounts_receivable',
   'customer_credit_note.issued': 'accounts_receivable',

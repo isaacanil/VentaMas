@@ -41,6 +41,24 @@ export const userRoles = [
     secondaryColor: '#e3ffef',
   },
   {
+    id: 'accountant',
+    label: 'Contador',
+    primaryColor: '#2563EB',
+    secondaryColor: '#DBEAFE',
+  },
+  {
+    id: 'controller',
+    label: 'Contralor',
+    primaryColor: '#0F766E',
+    secondaryColor: '#CCFBF1',
+  },
+  {
+    id: 'auditor',
+    label: 'Auditor',
+    primaryColor: '#6D28D9',
+    secondaryColor: '#EDE9FE',
+  },
+  {
     id: 'dev',
     label: 'Dev',
     primaryColor: '#f312bb',
@@ -92,6 +110,11 @@ export const getAvailableRoles = (
     case 'manager':
       // Los gerentes pueden cambiar a roles de nivel inferior
       return userRoles.filter((role) => ['cashier', 'buyer'].includes(role.id));
+
+    case 'accountant':
+    case 'controller':
+    case 'auditor':
+      return userRoles.filter((role) => role.id === currentRole);
 
     case 'cashier':
       // Los cajeros solo pueden ver su propio rol (no pueden cambiar)

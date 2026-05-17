@@ -36,7 +36,7 @@ export const reserveCreditNoteNcf = onCall(
     await assertUserAccess({
       authUid,
       businessId,
-      allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
+      allowedRoles: MEMBERSHIP_ROLE_GROUPS.FINANCIAL_DOCUMENT_VOID,
     });
 
     const businessRef = db.doc(`businesses/${businessId}`);

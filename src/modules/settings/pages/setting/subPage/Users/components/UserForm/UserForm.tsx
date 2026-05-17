@@ -590,6 +590,9 @@ const ROLE_HIERARCHY: Record<string, number> = {
   owner: 5,
   admin: 4,
   manager: 3,
+  controller: 3,
+  accountant: 2,
+  auditor: 2,
   buyer: 2,
   cashier: 1,
 };

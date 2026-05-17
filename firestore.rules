@@ -88,6 +88,103 @@ service cloud.firestore {
         );
     }
 
+    function currentBusinessRole(businessId) {
+      return hasGlobalRole()
+        ? 'dev'
+        : (
+          hasCanonicalBusinessAccess(businessId)
+            ? memberDoc(businessId).data.role
+            : currentUserRole()
+        );
+    }
+
+    function hasBusinessRole(businessId, roles) {
+      return hasBusinessAccess(businessId)
+        && currentBusinessRole(businessId) in roles;
+    }
+
+    function hasAccountingReadAccess(businessId) {
+      return hasBusinessRole(businessId, [
+        'owner',
+        'admin',
+        'manager',
+        'accountant',
+        'controller',
+        'auditor',
+        'dev'
+      ]);
+    }
+
+    function hasFinanceConfigAccess(businessId) {
+      return hasBusinessRole(businessId, [
+        'owner',
+        'admin',
+        'accountant',
+        'controller',
+        'dev'
+      ]);
+    }
+
+    function hasTreasuryConfigAccess(businessId) {
+      return hasBusinessRole(businessId, [
+        'owner',
+        'admin',
+        'accountant',
+        'controller',
+        'dev'
+      ]);
+    }
+
+    function documentPayload(data) {
+      return data.keys().hasAny(['data']) && data.data is map ? data.data : data;
+    }
+
+    function documentStatus(data) {
+      return documentPayload(data).status;
+    }
+
+    function isDraftFinancialDocument(data) {
+      return documentStatus(data) in ['draft'];
+    }
+
+    function isLockedInvoiceStatus(data) {
+      return documentStatus(data) in [
+        'issued',
+        'posted',
+        'committed',
+        'completed',
+        'partial',
+        'paid',
+        'voided',
+        'canceled',
+        'cancelled',
+        'reversed'
+      ];
+    }
+
+    function hasPostedInvoiceFootprint(data) {
+      return documentPayload(data).keys().hasAny([
+        'NCF',
+        'ncf',
+        'comprobante',
+        'numberID',
+        'receivableState',
+        'accumulatedPaid',
+        'balanceDue',
+        'paymentHistory',
+        'cashCountId',
+        'voidedAt',
+        'cancel'
+      ]) || data.keys().hasAny([
+        'accountingEventId',
+        'journalEntryId'
+      ]);
+    }
+
+    function isLockedInvoiceDocument(data) {
+      return isLockedInvoiceStatus(data) || hasPostedInvoiceFootprint(data);
+    }
+
     function isSelfProfileCreate() {
       return !request.resource.data.keys().hasAny([
         'role',
@@ -191,8 +288,8 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/settings/accounting {
-      allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update: if hasFinanceConfigAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
@@ -217,17 +314,17 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/exchangeRates/{exchangeRateId} {
-      allow read: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
       allow create, update, delete: if false;
       match /{document=**} {
-        allow read: if hasBusinessAccess(businessId);
+        allow read: if hasAccountingReadAccess(businessId);
         allow write: if false;
       }
     }
 
     match /businesses/{businessId}/bankAccounts/{bankAccountId} {
       allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId);
+      allow create, update: if hasTreasuryConfigAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
@@ -237,8 +334,8 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/chartOfAccounts/{chartOfAccountId} {
-      allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update: if hasFinanceConfigAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
@@ -248,8 +345,8 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId}/accountingPostingProfiles/{postingProfileId} {
-      allow read: if hasBusinessAccess(businessId);
-      allow create, update: if hasBusinessAccess(businessId);
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update: if hasFinanceConfigAccess(businessId);
       allow delete: if false;
 
       match /history/{entryId} {
@@ -258,8 +355,245 @@ service cloud.firestore {
       }
     }
 
-    match /businesses/{businessId}/{document=**} {
+    match /businesses/{businessId}/invoices/{invoiceId} {
+      allow read: if hasBusinessAccess(businessId);
+      // Creación directa se mantiene temporalmente por compatibilidad legacy.
+      // Una vez creada con huella fiscal/operativa, la factura queda inmutable
+      // desde cliente y debe corregirse por callable/anulación formal.
+      allow create: if hasBusinessAccess(businessId);
+      allow update: if hasBusinessAccess(businessId)
+        && isDraftFinancialDocument(resource.data)
+        && isDraftFinancialDocument(request.resource.data)
+        && !isLockedInvoiceDocument(resource.data)
+        && !isLockedInvoiceDocument(request.resource.data);
+      allow delete: if hasBusinessAccess(businessId)
+        && isDraftFinancialDocument(resource.data)
+        && !isLockedInvoiceDocument(resource.data);
+
+      match /{document=**} {
+        allow read: if hasBusinessAccess(businessId);
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/invoicesV2/{invoiceId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+
+      match /{document=**} {
+        allow read: if hasBusinessAccess(businessId);
+        allow write: if false;
+      }
+    }
+
+    match /businesses/{businessId}/creditNotes/{creditNoteId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/creditNoteApplications/{applicationId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsReceivable/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsReceivablePayments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsReceivableInstallments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsReceivableInstallmentPayments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsPayable/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/accountsPayablePayments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/payments/{documentId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/cashMovements/{movementId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/cashCounts/{cashCountId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/cashAccounts/{cashAccountId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasTreasuryConfigAccess(businessId);
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/treasuryAccounts/{accountId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasTreasuryConfigAccess(businessId);
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/internalTransfers/{transferId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/bankReconciliations/{reconciliationId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/bankStatementLines/{lineId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/ncfUsage/{usageId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/ncfLedger/{ledgerId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/taxReportRuns/{runId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/dgiiReports/{reportId} {
+      allow read: if hasAccountingReadAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/taxReceipts/{taxReceiptId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasFinanceConfigAccess(businessId);
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/settings/{settingId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update: if hasBusinessAccess(businessId)
+        && !(settingId in ['accounting']);
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/counters/{counterId} {
+      allow read, create, update: if hasBusinessAccess(businessId);
+      allow delete: if false;
+    }
+
+    match /businesses/{businessId}/products/{document=**} {
       allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/productsImages/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/clients/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/providers/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/warehouses/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/warehouseStructure/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/rows/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/shelves/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/segments/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/batches/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/productsStock/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/movements/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/inventorySessions/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/backOrders/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/categories/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/orders/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/purchases/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/expenses/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/vendorBills/{vendorBillId} {
+      allow read: if hasBusinessAccess(businessId);
+      allow create, update, delete: if false;
+    }
+
+    match /businesses/{businessId}/doctors/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/userPermissions/{document=**} {
+      allow read, write: if hasBusinessAccess(businessId);
+    }
+
+    match /businesses/{businessId}/{document=**} {
+      allow read: if hasBusinessAccess(businessId);
+      allow write: if false;
     }
 
     match /{document=**} {

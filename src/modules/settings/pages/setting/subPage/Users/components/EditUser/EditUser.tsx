@@ -69,6 +69,12 @@ const getRol = (id?: UserRoleLike | null) => {
       return 'Administrador';
     case 'manager':
       return 'Gerente';
+    case 'accountant':
+      return 'Contador';
+    case 'controller':
+      return 'Contralor';
+    case 'auditor':
+      return 'Auditor';
     case 'cashier':
     case 'specialCashier1': // Migración: mostrar como Cajero
     case 'specialCashier2': // Migración: mostrar como Cajero
@@ -104,6 +110,9 @@ const EditUser = () => {
   const rolOptions = [
     { id: 'admin', label: 'Admin' },
     { id: 'manager', label: 'Gerente' },
+    { id: 'accountant', label: 'Contador' },
+    { id: 'controller', label: 'Contralor' },
+    { id: 'auditor', label: 'Auditor' },
     { id: 'cashier', label: 'Cajero' },
     // MIGRACIÓN: specialCashier1 y specialCashier2 ahora usan cashier + permisos dinámicos
     // { id: 'specialCashier1', label: 'Cajero - Especial 1' },

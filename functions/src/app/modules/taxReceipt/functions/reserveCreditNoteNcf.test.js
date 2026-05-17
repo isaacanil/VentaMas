@@ -70,6 +70,7 @@ vi.mock('../../../core/utils/callableSessionAuth.util.js', () => ({
 
 vi.mock('../../../versions/v2/invoice/services/repairTasks.service.js', () => ({
   MEMBERSHIP_ROLE_GROUPS: {
+    FINANCIAL_DOCUMENT_VOID: ['financial-document-void'],
     INVOICE_OPERATOR: ['invoice-operator'],
   },
   assertUserAccess: (...args) => assertUserAccessMock(...args),
@@ -131,7 +132,7 @@ describe('reserveCreditNoteNcf', () => {
     expect(assertUserAccessMock).toHaveBeenCalledWith({
       authUid: 'user-1',
       businessId: 'business-1',
-      allowedRoles: ['invoice-operator'],
+      allowedRoles: ['financial-document-void'],
     });
     expect(reserveNcfMock).toHaveBeenCalledWith(
       { kind: 'tx', set: txSetMock },

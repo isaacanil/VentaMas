@@ -131,11 +131,11 @@ const assertAccess = async ({
   authUid,
   businessId,
 }) => {
-  await assertUserAccess({
-    authUid,
-    businessId,
-    allowedRoles: MEMBERSHIP_ROLE_GROUPS.INVOICE_OPERATOR,
-  });
+    await assertUserAccess({
+      authUid,
+      businessId,
+      allowedRoles: MEMBERSHIP_ROLE_GROUPS.TREASURY_OPERATOR,
+    });
   await assertBusinessSubscriptionAccess({
     businessId,
     action: 'write',
